@@ -1,0 +1,120 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -3475,6 +3475,38 @@
+ 		availableLocales: availableLocales ? toRustLocales(availableLocales) : void 0
+ 	});
+ }
++// Vize docs integration: repair the native core before native asset hashing.
++// Remove this patch once the pinned provider ships an equivalent anchor lookup.
++function vizeRepairSsgHashTargets(html) {
++	const start = "<!-- ox-content:scripts:start -->";
++	const end = "<!-- ox-content:scripts:end -->";
++	const prefix = '<script>const toggle = document.querySelector(".menu-toggle"),\n';
++	const lookup = "document.querySelector(hash)";
++	const scroll = "const scrollToHash = () => {";
++	const next = '\nconst mobileMenuBtn = document.querySelector("[data-mobile-menu]"),';
++	if (html.split(start).length !== 2 || html.split(end).length !== 2 || html.split(prefix).length !== 2) throw new Error("Vize docs: unsupported Ox Content core markers");
++	const first = html.indexOf(prefix);
++	const last = html.indexOf("</script>", first);
++	if (first < html.indexOf(start) || last <= first || last > html.indexOf(end)) throw new Error("Vize docs: invalid Ox Content core section");
++	const core = html.slice(first, last);
++	if (core.includes("oxContentHashTarget")) throw new Error("Vize docs: Ox Content core hash helper collision");
++	if (core.split(scroll).length !== 2 || core.split(next).length !== 2) throw new Error("Vize docs: unsupported Ox Content anchor handler boundary");
++	const anchorFirst = core.indexOf(scroll);
++	const anchorLast = core.indexOf(next);
++	const anchor = core.slice(anchorFirst, anchorLast);
++	if (anchorLast <= anchorFirst || anchor.split(lookup).length !== 3) throw new Error("Vize docs: expected exactly two owned Ox Content hash lookups");
++	const safeLookup = `const oxContentHashTarget = (hash) => {
++  if (!hash || hash[0] !== "#") return null;
++  const raw = hash.slice(1);
++  let decoded = raw;
++  try { decoded = decodeURIComponent(raw); } catch {}
++  const target = document.getElementById(decoded) || document.getElementById(raw);
++  if (target) return target;
++  try { return document.querySelector(hash); } catch { return null; }
++};`;
++	const repaired = core.slice(0, anchorFirst) + safeLookup + "\n\n" + anchor.replaceAll(lookup, "oxContentHashTarget(hash)") + core.slice(anchorLast);
++	return html.slice(0, first) + repaired + html.slice(last);
++}
+ async function externalizeSharedPageAssets(pages, outDir, base) {
+ 	const optimized = (await importNapiModule()).externalizeSsgAssets(pages, outDir, base);
+ 	await Promise.all(optimized.assets.map(async (asset) => {
+@@ -3747,7 +3779,8 @@
+ 	};
+ }
+ async function writeGeneratedPages(generatedPages, context, generatedFiles) {
+-	const optimizedOutput = await externalizeSharedPageAssets(generatedPages, context.outDir, context.base);
++	const preparedPages = context.ssgOptions.bare ? generatedPages : generatedPages.map((page) => ({ ...page, html: vizeRepairSsgHashTargets(page.html) }));
++	const optimizedOutput = await externalizeSharedPageAssets(preparedPages, context.outDir, context.base);
+ 	generatedFiles.push(...optimizedOutput.assets);
+ 	for (const page of optimizedOutput.pages) {
+ 		await fs$2.mkdir(path$2.dirname(page.outputPath), { recursive: true });
+@@ -6287,6 +6320,7 @@
+ 				if (result.files.length > 0) console.log(`[ox-content] Generated ${result.files.length} output files`);
+ 				for (const error of result.errors) console.warn(`[ox-content] ${error}`);
+ 			} catch (err) {
++				if (err instanceof Error && err.message.startsWith("Vize docs:")) throw err;
+ 				console.error("[ox-content] SSG build failed:", err);
+ 			}
+ 		}
+diff --git a/dist/index.cjs b/dist/index.cjs
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -3482,6 +3482,38 @@
+ 		availableLocales: availableLocales ? toRustLocales(availableLocales) : void 0
+ 	});
+ }
++// Vize docs integration: repair the native core before native asset hashing.
++// Remove this patch once the pinned provider ships an equivalent anchor lookup.
++function vizeRepairSsgHashTargets(html) {
++	const start = "<!-- ox-content:scripts:start -->";
++	const end = "<!-- ox-content:scripts:end -->";
++	const prefix = '<script>const toggle = document.querySelector(".menu-toggle"),\n';
++	const lookup = "document.querySelector(hash)";
++	const scroll = "const scrollToHash = () => {";
++	const next = '\nconst mobileMenuBtn = document.querySelector("[data-mobile-menu]"),';
++	if (html.split(start).length !== 2 || html.split(end).length !== 2 || html.split(prefix).length !== 2) throw new Error("Vize docs: unsupported Ox Content core markers");
++	const first = html.indexOf(prefix);
++	const last = html.indexOf("</script>", first);
++	if (first < html.indexOf(start) || last <= first || last > html.indexOf(end)) throw new Error("Vize docs: invalid Ox Content core section");
++	const core = html.slice(first, last);
++	if (core.includes("oxContentHashTarget")) throw new Error("Vize docs: Ox Content core hash helper collision");
++	if (core.split(scroll).length !== 2 || core.split(next).length !== 2) throw new Error("Vize docs: unsupported Ox Content anchor handler boundary");
++	const anchorFirst = core.indexOf(scroll);
++	const anchorLast = core.indexOf(next);
++	const anchor = core.slice(anchorFirst, anchorLast);
++	if (anchorLast <= anchorFirst || anchor.split(lookup).length !== 3) throw new Error("Vize docs: expected exactly two owned Ox Content hash lookups");
++	const safeLookup = `const oxContentHashTarget = (hash) => {
++  if (!hash || hash[0] !== "#") return null;
++  const raw = hash.slice(1);
++  let decoded = raw;
++  try { decoded = decodeURIComponent(raw); } catch {}
++  const target = document.getElementById(decoded) || document.getElementById(raw);
++  if (target) return target;
++  try { return document.querySelector(hash); } catch { return null; }
++};`;
++	const repaired = core.slice(0, anchorFirst) + safeLookup + "\n\n" + anchor.replaceAll(lookup, "oxContentHashTarget(hash)") + core.slice(anchorLast);
++	return html.slice(0, first) + repaired + html.slice(last);
++}
+ async function externalizeSharedPageAssets(pages, outDir, base) {
+ 	const optimized = (await require_vitepress.importNapiModule()).externalizeSsgAssets(pages, outDir, base);
+ 	await Promise.all(optimized.assets.map(async (asset) => {
+@@ -3754,7 +3786,8 @@
+ 	};
+ }
+ async function writeGeneratedPages(generatedPages, context, generatedFiles) {
+-	const optimizedOutput = await externalizeSharedPageAssets(generatedPages, context.outDir, context.base);
++	const preparedPages = context.ssgOptions.bare ? generatedPages : generatedPages.map((page) => ({ ...page, html: vizeRepairSsgHashTargets(page.html) }));
++	const optimizedOutput = await externalizeSharedPageAssets(preparedPages, context.outDir, context.base);
+ 	generatedFiles.push(...optimizedOutput.assets);
+ 	for (const page of optimizedOutput.pages) {
+ 		await fs_promises.mkdir(path.dirname(page.outputPath), { recursive: true });
+@@ -6294,6 +6327,7 @@
+ 				if (result.files.length > 0) console.log(`[ox-content] Generated ${result.files.length} output files`);
+ 				for (const error of result.errors) console.warn(`[ox-content] ${error}`);
+ 			} catch (err) {
++				if (err instanceof Error && err.message.startsWith("Vize docs:")) throw err;
+ 				console.error("[ox-content] SSG build failed:", err);
+ 			}
+ 		}

@@ -1,5 +1,7 @@
 //! `v-slots` — the `@vue/babel-plugin-jsx` built-in that supplies a component's
-//! slots from an attribute instead of from its children.
+//! slots from an attribute instead of from its children. The exact camelCase
+//! alias `vSlots` shares this lowering path, including value validation and
+//! duplicate detection across both spellings (#9250).
 //!
 //! `v-slots={{ default: () => <i/>, foo: (p) => <b/> }}` is the same object the
 //! object-children idiom (`<B>{{ … }}</B>`) accepts, so it is lowered through the
@@ -229,7 +231,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             ),
             JSXAttributeName::Identifier(id) => (self.mapper().slice(id.span()), id.span()),
         };
-        (raw == "v-slots").then_some(span)
+        matches!(raw, "v-slots" | "vSlots").then_some(span)
     }
 }
 

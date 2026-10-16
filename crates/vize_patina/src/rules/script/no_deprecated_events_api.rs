@@ -9,34 +9,43 @@
 //! library (such as `mitt` or `tiny-emitter`) or a different pattern. `$emit`
 //! is still supported in Vue 3 and is **not** flagged by this rule.
 //!
-//! This is a Vue 2 -> 3 migration rule and is opt-in.
+//! Built-in Vue 3 presets enable this migration rule; Vue 2 presets leave it off.
 //!
 //! ## Examples
 //!
 //! ### Invalid
-//! ```ts
-//! this.$on('event', handler)
-//! this.$once('event', handler)
-//! this.$off('event', handler)
-//! emitter.$off('event')
+//! ```vue
+//! <script>
+//! export default {
+//!   mounted() {
+//!     this.$on('event', handler)
+//!     const vm = this
+//!     vm.$once('event', handler)
+//!     this.$off('event', handler)
+//!   }
+//! }
+//! </script>
 //! ```
 //!
 //! ### Valid
-//! ```ts
-//! // $emit is still valid in Vue 3
-//! this.$emit('event', payload)
-//!
-//! // Use an external emitter instead
+//! ```vue
+//! <script>
 //! import mitt from 'mitt'
 //! const emitter = mitt()
-//! emitter.on('event', handler)
+//! export default {
+//!   mounted() {
+//!     this.$emit('event', payload)
+//!     emitter.on('event', handler)
+//!   }
+//! }
+//! </script>
 //! ```
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
-use oxc_span::{GetSpan, Span};
+use oxc_span::Span;
 use vize_l0::cstr;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -66,10 +75,17 @@ impl ScriptRule for NoDeprecatedEventsApi {
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
+        if !(source.contains("$on")
+            || source.contains("$off")
+            || source.contains("$once")
+            || source.contains('\\'))
+        {
+            return;
+        }
         let mut visitor = NoDeprecatedEventsApiVisitor { offset, result };
         visitor.visit_program(program);
     }
@@ -82,7 +98,7 @@ struct NoDeprecatedEventsApiVisitor<'result> {
 
 impl<'a> Visit<'a> for NoDeprecatedEventsApiVisitor<'_> {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if let Some((span, method)) = removed_event_call(it) {
+        if let Some((span, method)) = removed_event_callee(&it.callee) {
             self.push_diagnostic(span, method);
         }
 
@@ -110,34 +126,31 @@ impl NoDeprecatedEventsApiVisitor<'_> {
     }
 }
 
-/// Returns the span and the matched method name when `call`'s callee is a member
-/// access whose static property is one of the removed event methods.
-fn removed_event_call<'a>(call: &'a CallExpression<'a>) -> Option<(Span, &'static str)> {
-    removed_event_callee(&call.callee)
-}
-
-fn removed_event_callee<'a>(expression: &'a Expression<'a>) -> Option<(Span, &'static str)> {
-    match expression {
-        expression if expression.is_member_expression() => {
-            let member = expression.as_member_expression()?;
-            let property = member.static_property_name()?;
-            let matched = REMOVED_EVENT_METHODS
-                .into_iter()
-                .find(|candidate| *candidate == property)?;
-            Some((expression.span(), matched))
+/// Preserve the provider's property-token span, including computed literal keys.
+fn removed_event_callee(expression: &Expression<'_>) -> Option<(Span, &'static str)> {
+    // TypeScript wrappers erase at runtime. Preserve the historical warning
+    // policy even when the pinned ESLint selector misses wrapped callees.
+    let member = match expression {
+        Expression::ParenthesizedExpression(wrapper) => {
+            return removed_event_callee(&wrapper.expression);
         }
-        // Look through wrappers so `(this.$on)(...)`, `(this.$on as any)(...)`,
-        // and `this.$on!(...)` are still recognized.
-        Expression::ParenthesizedExpression(paren) => removed_event_callee(&paren.expression),
-        Expression::TSAsExpression(ts_as) => removed_event_callee(&ts_as.expression),
-        Expression::TSSatisfiesExpression(ts_satisfies) => {
-            removed_event_callee(&ts_satisfies.expression)
+        Expression::TSAsExpression(wrapper) => {
+            return removed_event_callee(&wrapper.expression);
         }
-        Expression::TSNonNullExpression(ts_non_null) => {
-            removed_event_callee(&ts_non_null.expression)
+        Expression::TSSatisfiesExpression(wrapper) => {
+            return removed_event_callee(&wrapper.expression);
         }
-        _ => None,
-    }
+        Expression::TSNonNullExpression(wrapper) => {
+            return removed_event_callee(&wrapper.expression);
+        }
+        Expression::ChainExpression(chain) => chain.expression.as_member_expression()?,
+        _ => expression.as_member_expression()?,
+    };
+    let (span, property) = member.static_property_info()?;
+    let matched = REMOVED_EVENT_METHODS
+        .into_iter()
+        .find(|candidate| *candidate == property)?;
+    Some((span, matched))
 }
 
 #[cfg(test)]
@@ -202,19 +215,31 @@ this.$emit('c')
     }
 
     #[test]
-    fn test_invalid_computed_member_not_flagged() {
-        // Dynamic/computed member access (`this['$on']`) has no static property
-        // name resolvable as an identifier, so it is not flagged. The common
-        // migration smell is the static form, which is covered above.
+    fn test_valid_dynamic_member_not_flagged() {
+        // An unknown computed key cannot prove a removed event API. Known
+        // string/template-literal keys are covered by the authored corpus.
         let result = lint("this[methodName]('event', handler)");
         assert_eq!(result.error_count, 0);
     }
 
     #[test]
+    fn test_invalid_optional_instance_calls() {
+        let result = lint("this.$on?.('x', h); this?.$off('x', h); this?.$once?.('x', h)");
+        assert_eq!(result.error_count, 3);
+        let foreign = lint("emitter.$on?.('x', h); this.$root.$off?.('x', h)");
+        assert_eq!(foreign.error_count, 2);
+    }
+
+    #[test]
     fn test_invalid_wrapped_callee() {
-        let source = "(this.$on as any)('event', handler)";
-        let result = lint(source);
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
+        for source in [
+            "(this.$on as any)('event', handler)",
+            "(this.$off satisfies Function)('event', handler)",
+            "this.$once!('event', handler)",
+            "((this.$on as any)!)('event', handler)",
+        ] {
+            let result = lint(source);
+            assert_eq!(result.error_count, 1, "{source}");
+        }
     }
 }

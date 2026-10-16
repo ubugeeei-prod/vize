@@ -37,27 +37,35 @@ vp run lint
 
 ## Bad
 
-The member reads and the bare argument reference all use `$listeners`, which Vue 3 removed after merging listeners into attributes.
+The script reads the removed `$listeners` property. This rule currently diagnoses scripts only; the template line illustrates migration and is not yet enforced (Draft follow-up #9251).
 
 ```vue
-<script setup lang="ts">
-const handlers = this.$listeners
-const forwarded = ctx.$listeners
-emit('input', $listeners)
+<script>
+export default {
+  mounted() {
+    const vm = this
+    return vm.$listeners
+  }
+}
 </script>
+<template><Child v-on="$listeners" /></template>
 ```
 
 ## Good
 
-The reads move to `this.$attrs` and setup-context `ctx.attrs`. These replace the removed listener surface; the illustrated receivers must exist in the surrounding component context.
+The script uses `$attrs`. Forwarding with `v-bind="$attrs"` illustrates Vue 3 migration; template enforcement is deferred to #9251. Script warnings retain their existing broad receiver/reference coverage.
 
 ```vue
-<script setup lang="ts">
-const handlers = this.$attrs
-const forwarded = ctx.attrs
+<script>
+export default {
+  mounted() {
+    return this.$attrs
+  }
+}
 </script>
+<template><Child v-bind="$attrs" /></template>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L40) · [All rules](../all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L54) · [All rules](../all.md)

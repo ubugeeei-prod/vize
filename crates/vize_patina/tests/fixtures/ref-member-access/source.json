@@ -1,0 +1,28 @@
+{
+  "project": "vue-data-ui",
+  "originals": [
+    {
+      "project": "vue-data-ui",
+      "path": "src/components/vue-ui-ridgeline.vue",
+      "pin": "14628946a8185252a7051b40be931e93a0b480a1",
+      "repository": "graphieros/vue-data-ui",
+      "sha256": "638014de39fd8fd294d3b3f41c8758344db73e5f478959f3c7740a6145829364",
+      "bytes": 93005,
+      "gitBlob": "9beec93bf561ca64e9d216262f8a07e1901abcca"
+    },
+    {
+      "project": "vue-data-ui",
+      "path": "src/components/vue-ui-xy.vue",
+      "pin": "14628946a8185252a7051b40be931e93a0b480a1",
+      "repository": "graphieros/vue-data-ui",
+      "sha256": "b340250c14475bf4b80fed266ffb79a96b6e14993cf472fa1bf321a4da85ac48",
+      "bytes": 416617,
+      "gitBlob": "6ac596ba28617da6f2fa80172c9b77123750054f"
+    }
+  ],
+  "originalMatrix": {
+    "bytes": 7915807,
+    "sha256": "4bbba35db12e1c22ae42506114f4b6eafb2989a9b908cc45c83677eff7241a6b",
+    "files": 403
+  }
+}

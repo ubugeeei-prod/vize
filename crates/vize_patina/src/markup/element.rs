@@ -127,8 +127,11 @@ impl<'a> MarkupElement<'a> {
     pub fn kind(&self) -> MarkupElementKind {
         match self.inner {
             MarkupElementInner::Authored {
-                element, frozen, ..
-            } => super::authored::kind(element, frozen),
+                element,
+                frozen,
+                opens_v_pre,
+                ..
+            } => super::authored::kind(element, frozen, opens_v_pre),
             MarkupElementInner::Relief(node) => match node.tag_type {
                 ElementType::Element => MarkupElementKind::Element,
                 ElementType::Component => MarkupElementKind::Component,
@@ -143,14 +146,14 @@ impl<'a> MarkupElement<'a> {
                 op: L2ElementOp::Slot(_),
                 ..
             } => MarkupElementKind::Slot,
-            MarkupElementInner::L2 { op, surface, .. } => {
+            MarkupElementInner::L2 { op, surface, doc } => {
                 let tag = match surface {
                     Some(element) => element.tag(),
                     None => op.tag(),
                 };
                 match op {
                     L2ElementOp::Slot(_) => MarkupElementKind::Slot,
-                    _ if tag == "template" && l2_template_is_special(op, surface) => {
+                    _ if tag == "template" && l2_template_is_special(op, surface, doc) => {
                         MarkupElementKind::Template
                     }
                     // A template classifies the way the lint-mode parse does: a

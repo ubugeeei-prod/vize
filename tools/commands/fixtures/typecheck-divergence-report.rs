@@ -85,6 +85,7 @@ fn run() -> Result<(), String> {
 fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<Value, String> {
     validate_performance(project)?;
     let project_id = project_string(project, "id")?;
+    quarantine_previous_typecheck_artifacts(&args.report_dir, &project_id)?;
     let fixture_root = root.join(project_string(project, "fixturePath")?);
     let summary = read_and_validate_summary(root, &args.report_dir, project)?;
     let vize_run = read_and_validate_vize_run(root, &args.report_dir, project, &summary)?;
@@ -199,6 +200,39 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
             coverage_baseline.run.duration_ms, coverage_baseline.run.status
         );
     }
+    // Keep original streams for successful and rejected comparisons alike:
+    // hashes bind evidence, but cannot explain provider/configuration drift.
+    let observations = json!({
+        "schema": "vize.fixtureTypecheckObservations",
+        "version": 1,
+        "project": project_id,
+        "evidence": summary["evidence"],
+        "preparation": preparation,
+        "source": vize_run.source,
+        "vize": vize_run.payload,
+        "baseline": {
+            "command": display_command(&args.vue_tsc_bin, &baseline_args),
+            "version": vue_tsc_version,
+            "exitCode": captured_exit_code(&baseline),
+            "runError": baseline.run_error,
+            "stdout": baseline.run.stdout,
+            "stderr": baseline.run.stderr,
+            "config": baseline_config.source,
+            "sourceConfig": source_config,
+        },
+        "coverage": {
+            "command": display_command(&args.vue_tsc_bin, &coverage_args),
+            "exitCode": captured_exit_code(&coverage_baseline),
+            "runError": coverage_baseline.run_error,
+            "stdout": coverage_baseline.run.stdout,
+            "stderr": coverage_baseline.run.stderr,
+        },
+    });
+    let observations_path = args
+        .report_dir
+        .join(format!("{project_id}-typecheck-observations.json"));
+    common::write_json_pretty(&observations_path, &observations)?;
+    println!("Wrote {}", display_relative(root, &observations_path));
     let documented_differences = read_documented_differences(&args.documented_differences)?;
     let expected_documented_differences =
         select_documented_differences(&documented_differences, &project_id, &fixture_root)?;
@@ -245,12 +279,13 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         vue_tsc_bin: &args.vue_tsc_bin,
         documented_differences: &documented_differences,
     })?;
-    reject_stale_documented_differences(
+    let ledger_error = reject_stale_documented_differences(
         &project_id,
         &expected_documented_differences,
         &divergence,
         &mutation_oracle,
-    )?;
+    )
+    .err();
     let budget = evaluate_budget(
         performance,
         &divergence,
@@ -293,6 +328,27 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         "budget": budget,
         "divergence": divergence,
     });
+    if let Some(error) = ledger_error {
+        // A stale waiver must still fail in every budget mode. Retain the
+        // complete observations under a distinct failure schema, rather than
+        // losing the real-project run or publishing an accepted comparison.
+        let failure_path = args
+            .report_dir
+            .join(format!("{project_id}-typecheck-divergence-failure.json"));
+        common::write_json_pretty(
+            &failure_path,
+            &json!({
+                "schema": "vize.fixtureTypecheckDivergenceFailure",
+                "version": 1,
+                "stage": "documented-differences",
+                "error": error,
+                "comparison": artifact,
+                "observations": observations,
+            }),
+        )?;
+        println!("Wrote {}", display_relative(root, &failure_path));
+        return Err(error);
+    }
     let json_path = args
         .report_dir
         .join(format!("{project_id}-typecheck-divergence.json"));
@@ -304,6 +360,83 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
     println!("Wrote {}", display_relative(root, &json_path));
     println!("Wrote {}", display_relative(root, &markdown_path));
     Ok(artifact)
+}
+
+/// Reusing a report directory must not leave an earlier accepted comparison at
+/// the live path when this attempt fails. Preserve only this collector's owned
+/// files, under names that cannot be mistaken for current matrix reports.
+fn quarantine_previous_typecheck_artifacts(
+    report_dir: &Path,
+    project_id: &str,
+) -> Result<(), String> {
+    let mut previous = Vec::new();
+    let mut previous_evidence = Value::Null;
+    for (suffix, archived_name) in [
+        ("typecheck-divergence.json", "comparison.json"),
+        ("typecheck-divergence.md", "comparison.md"),
+        ("typecheck-observations.json", "observations.json"),
+        ("typecheck-divergence-failure.json", "failure.json"),
+    ] {
+        let filename = format!("{project_id}-{suffix}");
+        let path = report_dir.join(&filename);
+        match fs::symlink_metadata(&path) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(error) => return Err(format!("Cannot inspect {}: {error}", path.display())),
+            Ok(metadata) if !metadata.file_type().is_file() => {
+                return Err(format!(
+                    "Owned typecheck report is not a regular file: {}",
+                    path.display()
+                ));
+            }
+            Ok(_) => {}
+        }
+        let bytes = fs::read(&path)
+            .map_err(|error| format!("Cannot retain {}: {error}", path.display()))?;
+        if let Ok(value) = serde_json::from_slice::<Value>(&bytes)
+            && let Some(evidence) = value
+                .get("evidence")
+                .or_else(|| value.pointer("/comparison/evidence"))
+        {
+            previous_evidence = evidence.clone();
+        }
+        previous.push((
+            path,
+            archived_name,
+            json!({
+                "originalName": filename,
+                "archivedName": archived_name,
+                "sizeBytes": bytes.len(),
+                "sha256": format!("{:x}", Sha256::digest(&bytes)),
+            }),
+        ));
+    }
+    if previous.is_empty() {
+        return Ok(());
+    }
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|error| format!("Cannot timestamp prior typecheck reports: {error}"))?
+        .as_nanos();
+    let directory = report_dir
+        .join("previous-typecheck-comparisons")
+        .join(project_id)
+        .join(format!("{}-{nanos}", std::process::id()));
+    fs::create_dir_all(&directory)
+        .map_err(|error| format!("Cannot create {}: {error}", directory.display()))?;
+    let receipt = json!({
+        "schema": "vize.fixtureTypecheckPreviousAttempt",
+        "version": 1,
+        "project": project_id,
+        "previousEvidence": previous_evidence,
+        "nextSourceCommit": env::var("GITHUB_SHA").ok(),
+        "files": previous.iter().map(|(_, _, receipt)| receipt.clone()).collect::<Vec<_>>(),
+    });
+    common::write_json_pretty(directory.join("manifest.json"), &receipt)?;
+    for (path, archived_name, _) in previous {
+        fs::rename(&path, directory.join(archived_name))
+            .map_err(|error| format!("Cannot quarantine {}: {error}", path.display()))?;
+    }
+    Ok(())
 }
 
 struct BaselineConfig {

@@ -7,20 +7,21 @@ use super::{
 };
 use oxc_ast::ast::{
     AssignmentExpression, BinaryExpression, BlockStatement, CatchClause, Class,
-    ConditionalExpression, DoWhileStatement, ForInStatement, ForOfStatement, ForStatement,
-    ForStatementLeft, Function, FunctionBody, IfStatement, LogicalExpression, Program, Statement,
-    StaticBlock, SwitchStatement, TemplateLiteral, UnaryExpression, UpdateExpression,
-    WhileStatement,
+    ComputedMemberExpression, ConditionalExpression, DoWhileStatement, Expression, ForInStatement,
+    ForOfStatement, ForStatement, ForStatementLeft, Function, FunctionBody, IfStatement,
+    LogicalExpression, Program, Statement, StaticBlock, StaticMemberExpression, SwitchStatement,
+    TemplateLiteral, UnaryExpression, UpdateExpression, WhileStatement,
 };
 use oxc_ast_visit::{
     Visit,
     walk::{
         walk_assignment_expression, walk_binary_expression, walk_block_statement,
-        walk_catch_clause, walk_class, walk_conditional_expression, walk_do_while_statement,
-        walk_for_in_statement, walk_for_of_statement, walk_for_statement, walk_function,
-        walk_function_body, walk_if_statement, walk_logical_expression, walk_program,
-        walk_static_block, walk_template_literal, walk_unary_expression, walk_update_expression,
-        walk_while_statement,
+        walk_catch_clause, walk_class, walk_computed_member_expression,
+        walk_conditional_expression, walk_do_while_statement, walk_for_in_statement,
+        walk_for_of_statement, walk_for_statement, walk_function, walk_function_body,
+        walk_if_statement, walk_logical_expression, walk_program, walk_static_block,
+        walk_static_member_expression, walk_template_literal, walk_unary_expression,
+        walk_update_expression, walk_while_statement,
     },
 };
 
@@ -163,6 +164,26 @@ impl<'a> Visit<'a> for RefOperandVisitor<'_> {
     }
 
     // --- Operator contexts ---
+
+    fn visit_static_member_expression(&mut self, it: &StaticMemberExpression<'a>) {
+        if !matches!(it.property.name.as_str(), "value" | "effect") {
+            self.check_operand(&it.object);
+        }
+        walk_static_member_expression(self, it);
+    }
+
+    fn visit_computed_member_expression(&mut self, it: &ComputedMemberExpression<'a>) {
+        // An unknown computed key may deliberately address the ref object.
+        // Static keys follow the same value/effect exemptions as dot access.
+        if it
+            .static_property_name()
+            .is_some_and(|name| !matches!(name.as_ref(), "value" | "effect"))
+            || matches!(&it.expression, Expression::NumericLiteral(_))
+        {
+            self.check_operand(&it.object);
+        }
+        walk_computed_member_expression(self, it);
+    }
 
     fn visit_update_expression(&mut self, it: &UpdateExpression<'a>) {
         // `count++`, `--count`: the target is read and written as a value.

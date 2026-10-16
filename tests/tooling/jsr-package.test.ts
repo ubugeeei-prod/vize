@@ -99,3 +99,61 @@ await test("the JSR channel is an explicit boolean and never defaults to disable
   }
   parseChannel(readFileSync(resolve(root, "jsr/vize/channel.json"), "utf8"));
 });
+
+await test("Deno exempts exactly the fresh Vize dependency closure and retains the external age policy", () => {
+  interface Manifest {
+    readonly name: string;
+    readonly dependencies?: Readonly<Record<string, string>>;
+    readonly optionalDependencies?: Readonly<Record<string, string>>;
+    readonly peerDependencies?: Readonly<Record<string, string>>;
+  }
+  const directories = new Set([
+    ...Object.values(entrypoints).map(({ directory }) => directory),
+    "npm/builder/unplugin",
+  ]);
+  const manifests = new Map<string, Manifest>();
+  for (const directory of directories) {
+    const manifest: Manifest = JSON.parse(
+      readFileSync(resolve(root, directory, "package.json"), "utf8"),
+    );
+    manifests.set(manifest.name, manifest);
+  }
+  const jsrManifest = JSON.parse(readFileSync(resolve(root, "jsr/vize/jsr.json"), "utf8"));
+  const expected = new Set([`jsr:${jsrManifest.name}`]);
+  const pending = Object.values(entrypoints).map(({ name }) => name);
+  for (const name of pending) {
+    if (expected.has(`npm:${name}`)) continue;
+    expected.add(`npm:${name}`);
+    const manifest = manifests.get(name);
+    assert.ok(manifest, `Review the fresh consumer dependency closure for ${name}`);
+    for (const [dependency, version] of Object.entries({
+      ...manifest.dependencies,
+      ...manifest.optionalDependencies,
+      ...manifest.peerDependencies,
+    })) {
+      if (version.startsWith("workspace:")) {
+        pending.push(dependency);
+      } else if (version === "catalog:native-binaries") {
+        expected.add(`npm:${dependency}`);
+      } else {
+        assert.ok(
+          dependency !== "vize" && !dependency.startsWith("@vizejs/"),
+          `Review the fresh consumer dependency closure for ${dependency}`,
+        );
+      }
+    }
+  }
+  const config = JSON.parse(
+    readFileSync(resolve(root, "tools/support/release/jsr/consumer-deno.json"), "utf8"),
+  );
+  config.minimumDependencyAge.exclude.sort((left: string, right: string) =>
+    left.localeCompare(right),
+  );
+  assert.deepEqual(config, {
+    nodeModulesDir: "none",
+    minimumDependencyAge: {
+      age: "P1D",
+      exclude: [...expected].sort((left, right) => left.localeCompare(right)),
+    },
+  });
+});

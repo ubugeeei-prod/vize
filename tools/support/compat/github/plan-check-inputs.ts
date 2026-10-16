@@ -26,8 +26,10 @@ export function planCheckInputs(paths: readonly string[], full = false) {
       ),
     apps:
       dependencies ||
+      // npm SFCs, including composable examples, are authored inputs to the
+      // current-source opinionated lint step in check-vize-apps.
       matches(
-        /^(?:crates|davinci|vendor|playground|examples\/vite-musea)\/|^npm\/(?:cli|native|builder\/(?:vite|vite-musea|unplugin))\/|^\.cargo\/|^rust-toolchain(?:\.toml)?$|^docs\/davinci\/plan\/(?!.*\.md$)|^docs\/davinci\/plan\/.*fact-alpha-schemas\.md$|^\.github\/actions\/(?:setup-rust-sticky-cache|check-vize-apps)\/|^tools\/commands\/ci\/opinionated-source-lint\./,
+        /^(?:crates|davinci|vendor|playground|examples\/vite-musea)\/|^npm\/.*\.vue$|^npm\/(?:cli|native|builder\/(?:vite|vite-musea|unplugin))\/|^\.cargo\/|^rust-toolchain(?:\.toml)?$|^docs\/davinci\/plan\/(?!.*\.md$)|^docs\/davinci\/plan\/.*fact-alpha-schemas\.md$|^\.github\/actions\/(?:setup-rust-sticky-cache|check-vize-apps)\/|^tools\/commands\/ci\/opinionated-source-lint\./,
       ),
   };
 }

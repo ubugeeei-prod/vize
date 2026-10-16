@@ -1,6 +1,6 @@
 //! VNode fallback expression generation used by slot fallback paths.
 
-use super::super::helpers::collect_for_scoped_params;
+use super::super::helpers::{branch_fragment, collect_for_scoped_params, loop_children};
 use super::component::{has_slot_directive, slot_template_in_children, template_slot_is_dynamic};
 use super::props::{
     component_prop_entry, component_props_object, is_dynamic_component_tag, is_valid_js_identifier,
@@ -169,12 +169,21 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     fn vnode_component_expression(&mut self, el: &ElementNode<'a>) -> String {
+        self.vnode_component_expression_with_key(el, None)
+    }
+
+    fn vnode_component_expression_with_key(
+        &mut self,
+        el: &ElementNode<'a>,
+        key: Option<&str>,
+    ) -> String {
         self.use_core_helper(RuntimeHelper::CreateVNode);
         let mut out = String::from("_createVNode(");
         out.push_str(&self.vnode_component_callee(el));
         out.push_str(", ");
         let dynamic = is_dynamic_component_tag(el, self.source);
-        out.push_str(&self.build_component_props(el, false, dynamic));
+        let props = self.build_component_props(el, false, dynamic);
+        out.push_str(&self.vnode_loop_key_props(&props, key));
         out.push_str(", ");
         out.push_str(&self.vnode_component_slots_expression(el));
         out.push(')');
@@ -512,12 +521,21 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     fn vnode_slot_outlet_expression(&mut self, el: &ElementNode<'a>) -> String {
+        self.vnode_slot_outlet_expression_with_key(el, None)
+    }
+
+    fn vnode_slot_outlet_expression_with_key(
+        &mut self,
+        el: &ElementNode<'a>,
+        key: Option<&str>,
+    ) -> String {
         self.use_core_helper(RuntimeHelper::RenderSlot);
 
         let mut out = String::from("_renderSlot(_ctx.$slots, ");
         out.push_str(&self.slot_outlet_name_expression(el));
         out.push_str(", ");
-        out.push_str(&self.build_slot_outlet_props(el));
+        let props = self.build_slot_outlet_props(el);
+        out.push_str(&self.vnode_loop_key_props(&props, key));
         // Slot outlet children are the fallback content rendered when the
         // parent provides no slot — dropping them loses e.g. nuxt-ui Button's
         // `<slot>{{ label }}</slot>` label in the vnode branch.
@@ -556,7 +574,17 @@ impl<'a> SsrCodegenContext<'a> {
                 out.push_str(") ? ");
             }
 
-            out.push_str(&self.vnode_branch_expression(&branch.children));
+            if branch_fragment::needs_fragment(&branch.children) {
+                let children =
+                    self.vnode_fragment_children_expression(loop_children(&branch.children));
+                self.use_core_helper(RuntimeHelper::CreateVNode);
+                self.use_core_helper(RuntimeHelper::Fragment);
+                out.push_str("_createVNode(_Fragment, null, ");
+                out.push_str(&children);
+                out.push(')');
+            } else {
+                out.push_str(&self.vnode_branch_expression(&branch.children));
+            }
         }
 
         if if_node
@@ -584,18 +612,21 @@ impl<'a> SsrCodegenContext<'a> {
 
         self.push_scoped_params(collect_for_scoped_params(for_node, self.source));
         let key = single_for_child_key_expression(self, for_node);
-        let body = if let Some(template_el) = single_template_for_child(for_node) {
-            if let Some(key) = key.as_deref() {
-                if let Some(child_el) = single_plain_element_child(template_el) {
-                    self.vnode_plain_element_expression_with_key(child_el, Some(key))
-                } else {
-                    self.vnode_keyed_template_for_body(template_el, key)
+        let children = loop_children(&for_node.children);
+        let body = match children {
+            [TemplateChildNode::Element(element)] => match element.tag_type {
+                ElementType::Element => {
+                    self.vnode_plain_element_expression_with_key(element, key.as_deref())
                 }
-            } else {
-                self.vnode_branch_expression(&for_node.children)
-            }
-        } else {
-            self.vnode_branch_expression(&for_node.children)
+                ElementType::Component => {
+                    self.vnode_component_expression_with_key(element, key.as_deref())
+                }
+                ElementType::Slot => {
+                    self.vnode_slot_outlet_expression_with_key(element, key.as_deref())
+                }
+                ElementType::Template => self.vnode_fragment_for_body(children, key.as_deref()),
+            },
+            _ => self.vnode_fragment_for_body(children, key.as_deref()),
         };
         self.pop_scoped_params();
 
@@ -610,17 +641,37 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn vnode_keyed_template_for_body(
+    fn vnode_fragment_for_body(
         &mut self,
-        template_el: &ElementNode<'a>,
-        key: &str,
+        children: &[TemplateChildNode<'a>],
+        key: Option<&str>,
     ) -> String {
-        let children = self.vnode_fragment_children_expression(&template_el.children);
-        let mut out = String::from("(_openBlock(), _createBlock(_Fragment, { key: ");
-        out.push_str(key);
-        out.push_str(" }, ");
+        let children = self.vnode_fragment_children_expression(children);
+        let mut out = String::from("(_openBlock(), _createBlock(_Fragment, ");
+        if let Some(key) = key {
+            out.push_str("{ key: ");
+            out.push_str(key);
+            out.push_str(" }");
+        } else {
+            out.push_str("null");
+        }
+        out.push_str(", ");
         out.push_str(&children);
         out.push_str(", 64 /* STABLE_FRAGMENT */))");
+        out
+    }
+
+    /// Forward a template loop's key into a component or renderSlot props.
+    pub(crate) fn vnode_loop_key_props(&mut self, props: &str, key: Option<&str>) -> String {
+        let Some(key) = key else {
+            return props.to_compact_string();
+        };
+        self.use_core_helper(RuntimeHelper::MergeProps);
+        let mut out = String::from("_mergeProps({ key: ");
+        out.push_str(key);
+        out.push_str(" }, ");
+        out.push_str(props);
+        out.push(')');
         out
     }
 
@@ -785,26 +836,6 @@ fn has_vnode_array_child(children: &[TemplateChildNode]) -> bool {
 fn has_vnode_array_child_ref(children: &[&TemplateChildNode]) -> bool {
     let _ = children;
     false
-}
-
-fn single_template_for_child<'node, 'a>(
-    for_node: &'node ForNode<'a>,
-) -> Option<&'node ElementNode<'a>> {
-    let [TemplateChildNode::Element(el)] = for_node.children.as_slice() else {
-        return None;
-    };
-
-    (el.tag_type == ElementType::Template).then_some(el.as_ref())
-}
-
-fn single_plain_element_child<'node, 'a>(
-    template_el: &'node ElementNode<'a>,
-) -> Option<&'node ElementNode<'a>> {
-    let [TemplateChildNode::Element(child_el)] = template_el.children.as_slice() else {
-        return None;
-    };
-
-    (child_el.tag_type == ElementType::Element).then_some(child_el.as_ref())
 }
 
 fn single_for_child_key_expression(

@@ -2140,13 +2140,25 @@ script/no-deprecated-dollar-listeners-api · lint 规则
 文档: docs/content/rules/type-and-script.md
 
 错误示例:
-  const handlers = this.$listeners
-  const forwarded = ctx.$listeners
-  emit('input', $listeners)
+  <script>
+  export default {
+    mounted() {
+      const vm = this
+      return vm.$listeners
+    }
+  }
+  </script>
+  <template><Child v-on="$listeners" /></template>
 
 正确示例:
-  const handlers = this.$attrs
-  const forwarded = ctx.attrs
+  <script>
+  export default {
+    mounted() {
+      return this.$attrs
+    }
+  }
+  </script>
+  <template><Child v-bind="$attrs" /></template>
 === script/no-deprecated-dollar-scopedslots-api
 script/no-deprecated-dollar-scopedslots-api · lint 规则
 禁止使用 Vue 3 中已移除的 $scopedSlots 实例属性（请使用 $slots）
@@ -2179,19 +2191,28 @@ script/no-deprecated-events-api · lint 规则
 文档: docs/content/rules/type-and-script.md
 
 错误示例:
-  this.$on('event', handler)
-  this.$once('event', handler)
-  this.$off('event', handler)
-  emitter.$off('event')
+  <script>
+  export default {
+    mounted() {
+      this.$on('event', handler)
+      const vm = this
+      vm.$once('event', handler)
+      this.$off('event', handler)
+    }
+  }
+  </script>
 
 正确示例:
-  // $emit is still valid in Vue 3
-  this.$emit('event', payload)
-  
-  // Use an external emitter instead
+  <script>
   import mitt from 'mitt'
   const emitter = mitt()
-  emitter.on('event', handler)
+  export default {
+    mounted() {
+      this.$emit('event', payload)
+      emitter.on('event', handler)
+    }
+  }
+  </script>
 === script/no-deprecated-props-default-this
 script/no-deprecated-props-default-this · lint 规则
 禁止在 prop 的 default/validator 函数中使用 `this`（Vue 3 已移除）
@@ -4661,9 +4682,6 @@ vue/no-template-shadow · lint 规则
 文档: docs/content/rules/vue.md
 
 错误示例:
-  <!-- If 'item' is a component property -->
-  <div v-for="item in items">{{ item }}</div>
-  
   <!-- Nested v-for with same variable name -->
   <div v-for="item in items">
     <div v-for="item in item.children">{{ item }}</div>

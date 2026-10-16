@@ -4,8 +4,9 @@ use super::MarkupElement;
 use crate::markup::attribute::MarkupAttribute;
 use crate::markup::binding::{MarkupBinding, MarkupBindingKind};
 use crate::markup::element::MarkupElementInner;
-use crate::markup::l2::L2ElementOp;
-use crate::markup::l2::surface::SurfaceDirective;
+use crate::markup::l2::binding::opens_v_pre;
+use crate::markup::l2::surface::{SurfaceDirective, attr_span};
+use crate::markup::l2::{L2ElementOp, L2Markup};
 use crate::markup::node::MarkupNode;
 use vize_l0::String;
 use vize_relief::ElementNode;
@@ -118,12 +119,23 @@ impl<'a> MarkupElement<'a> {
 pub(super) fn l2_template_is_special(
     op: L2ElementOp<'_>,
     surface: Option<&vize_l1::Element<'_>>,
+    doc: &L2Markup<'_>,
 ) -> bool {
     match surface {
-        Some(element) => element.open.attrs.iter().any(|attr| {
-            SurfaceDirective::parse(attr.name.text)
-                .is_some_and(|directive| directive.is_structural() || directive.name == "slot")
-        }),
+        Some(element) => {
+            // The retained parser classifies the opening boundary before
+            // freezing its attributes. Inherited raw headers are already plain.
+            let opening_v_pre = opens_v_pre(doc, element, op.attributes());
+            element.open.attrs.iter().any(|attr| {
+                SurfaceDirective::parse(attr.name.text)
+                    .is_some_and(|directive| directive.is_structural() || directive.name == "slot")
+                    && (opening_v_pre
+                        || !op
+                            .attributes()
+                            .iter()
+                            .any(|kept| kept.span == attr_span(doc.source, attr)))
+            })
+        }
         None => op
             .bindings()
             .iter()

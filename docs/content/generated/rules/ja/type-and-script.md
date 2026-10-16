@@ -928,32 +928,40 @@ vp run lint
 
 **悪い**
 
-`this.$listeners` と `ctx.$listeners` のメンバー参照、および引数に直接渡した `$listeners` が、削除された API を使っています。Vue 3 ではリスナーが属性に統合され、この API は削除されました。
+スクリプトが削除済みの `$listeners` を参照しています。現在の診断対象はスクリプトのみです。テンプレート行は移行例で、診断は Draft #9251 の後続対応です。
 
-```vue annotate="remove:2,3,4"
-<script setup lang="ts">
-const handlers = this.$listeners
-const forwarded = ctx.$listeners
-emit('input', $listeners)
+```vue annotate="remove:4,5,9"
+<script>
+export default {
+  mounted() {
+    const vm = this
+    return vm.$listeners
+  }
+}
 </script>
+<template><Child v-on="$listeners" /></template>
 ```
 
 <span id="script-no-deprecated-dollar-listeners-api-good"></span>
 
 **良い**
 
-参照を `this.$attrs` と setup コンテキストの `ctx.attrs` に置き換え、削除されたリスナー API の使用をなくします。この例は、それぞれの参照元を使えるコンポーネントの文脈を前提にしています。
+`this.$attrs` に置き換えています。`v-bind="$attrs"` は Vue 3 への移行例で、テンプレート診断は #9251 の後続対応です。スクリプトの受信側・参照に対する既存の広い警告範囲は維持します。
 
-```vue annotate="add:2,3"
-<script setup lang="ts">
-const handlers = this.$attrs
-const forwarded = ctx.attrs
+```vue annotate="add:4,8"
+<script>
+export default {
+  mounted() {
+    return this.$attrs
+  }
+}
 </script>
+<template><Child v-bind="$attrs" /></template>
 ```
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L40) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L54) · [全ルール](all.md)
 
 ### `script/no-deprecated-dollar-scopedslots-api`
 
@@ -1059,12 +1067,16 @@ vp run lint
 
 `$on`、`$once`、`$off` の呼び出しが、Vue 3 で削除されたインスタンスのイベントバスメソッドを使っています。
 
-```vue annotate="remove:2,3,4,5"
-<script setup lang="ts">
-this.$on('event', handler)
-this.$once('event', handler)
-this.$off('event', handler)
-emitter.$off('event')
+```vue annotate="remove:4,5,6,7"
+<script>
+export default {
+  mounted() {
+    this.$on('event', handler)
+    const vm = this
+    vm.$once('event', handler)
+    this.$off('event', handler)
+  }
+}
 </script>
 ```
 
@@ -1074,21 +1086,22 @@ emitter.$off('event')
 
 有効な `$emit` は維持し、イベントバスへの購読は外部 emitter の `on` に移します。親へのイベント送信と外部イベントバスを別々の API で表します。
 
-```vue annotate="add:2,3,4,5,6,7,8"
-<script setup lang="ts">
-// $emit is still valid in Vue 3
-this.$emit('event', payload)
-
-// Use an external emitter instead
+```vue annotate="add:2,3,6,7"
+<script>
 import mitt from 'mitt'
 const emitter = mitt()
-emitter.on('event', handler)
+export default {
+  mounted() {
+    this.$emit('event', payload)
+    emitter.on('event', handler)
+  }
+}
 </script>
 ```
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L42) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L51) · [全ルール](all.md)
 
 ### `script/no-deprecated-props-default-this`
 

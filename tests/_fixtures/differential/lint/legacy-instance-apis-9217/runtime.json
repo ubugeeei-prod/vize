@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "provider": {
+    "vue": "3.6.0-rc.9",
+    "typescript": "6.0.3",
+    "source": {
+      "package": "@vue/runtime-core",
+      "path": "dist/runtime-core.cjs.js",
+      "sha256": "1b9c48230e0ff3b381080b5c64f4e725378d22cda1838e44fad809a722701ef6"
+    }
+  },
+  "expected": {
+    "mountedOptionsFactory": true,
+    "relations": [
+      {
+        "kind": "root",
+        "rootIsSelf": true,
+        "parent": null,
+        "rootOn": "undefined"
+      },
+      {
+        "kind": "child",
+        "rootIsSelf": false,
+        "parentIsRoot": true,
+        "rootOn": "undefined",
+        "parentOn": "undefined",
+        "rootEmit": "function"
+      }
+    ],
+    "wrappedFailures": 6,
+    "optionalHandlers": 0,
+    "emitEvents": 1,
+    "foreignHandlers": 1
+  }
+}

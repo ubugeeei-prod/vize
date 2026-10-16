@@ -64,3 +64,31 @@ test("inventory markdown documents exactly the corpus cases", () => {
   const expected = corpus.cases.map((entry: { id: string }) => entry.id).sort();
   assert.deepEqual([...documented].sort(), expected);
 });
+
+// The plugin's `v` + uppercase directive spelling includes the built-in slots
+// directive. Compare whole independently generated modules with the existing
+// recorded hyphenated controls; do not derive expected output from Vize.
+test("vSlots is the exact camelCase alias of the recorded slots built-in", async () => {
+  const [{ default: babel }, { default: plugin }, { default: tsSyntaxPlugin }] = await Promise.all([
+    import("@babel/core"),
+    import("@vue/babel-plugin-jsx"),
+    import("@babel/plugin-syntax-typescript"),
+  ]);
+  const corpus = oracle.readCorpus();
+  const recorded = oracle.readRecorded();
+  const ids = [
+    "slots/v_slots_only",
+    "slots/v_slots_with_children",
+    "slots/v_slots_object_literal",
+    "slots/v_slots_object_with_children",
+    "optimize/v_slots_stability",
+  ];
+  for (const id of ids) {
+    const entry = corpus.cases.find((entry: { id: string }) => entry.id === id);
+    assert.ok(entry, id);
+    const camel = { ...entry, source: entry.source.replaceAll("v-slots", "vSlots") };
+    assert.notEqual(camel.source, entry.source, id);
+    const actual = await oracle.transformCase(babel, plugin, tsSyntaxPlugin, camel);
+    assert.deepEqual(actual, recorded.cases[id], id);
+  }
+});

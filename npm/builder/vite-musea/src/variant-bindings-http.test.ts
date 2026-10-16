@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createServer as createHttpServer } from "node:http";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { createServer } from "vite";
 import { registerMiddleware } from "./server-middleware.ts";
 import type { ArtFileInfo } from "./types/art.ts";
@@ -20,7 +23,11 @@ void test("actual Vite HTTP previews bound duplicate-name errors and remain resp
     styleCount: 0,
   };
   const valid = { ...art, path: "/repo/Valid.art.vue", variants: art.variants.slice(0, 1) };
+  // This synthetic middleware contract must not scan the package gallery or share its cache.
+  const root = await mkdtemp(path.join(tmpdir(), "musea-http-contract-"));
   const server = await createServer({
+    root,
+    cacheDir: path.join(root, ".vite-cache"),
     configFile: false,
     logLevel: "silent",
     server: { middlewareMode: true, hmr: false },
@@ -52,7 +59,11 @@ void test("actual Vite HTTP previews bound duplicate-name errors and remain resp
         http.close((error) => (error ? reject(error) : resolve())),
       );
     }
-    await server.close();
+    try {
+      await server.close();
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
   await new Promise<void>((resolve) => http.listen(0, "127.0.0.1", resolve));
   const address = http.address();

@@ -124,6 +124,121 @@ if (handler) {
 }
 
 #[test]
+fn import_directive_does_not_suppress_an_independent_import_before_a_later_call() {
+    for directive in ["@ts-ignore", "@ts-expect-error"] {
+        // Varlet's playground suppresses its untyped Monaco import. Deleting
+        // Header.vue must still expose the independent SFC import below it.
+        let source = vize_carton::cstr!(
+            "<script setup lang=\"ts\">\n// {directive} no types\nimport Monaco from '@vue/repl/monaco-editor'\nimport Header from './Missing.vue'\nconst store = new ReplStore({{\n  serializedState: ''\n}})\n</script>\n"
+        );
+        let missing = diagnostic(
+            &source,
+            "./Missing.vue",
+            Some(2307),
+            "Cannot find module './Missing.vue' or its corresponding type declarations.",
+        );
+        let mut diagnostics = vec![missing.clone()];
+        filter(&AuthoredSource::vue(&source), &mut diagnostics);
+        assert_eq!(diagnostics, [missing], "{directive}");
+    }
+}
+
+#[test]
+fn declaration_directive_does_not_extend_to_an_unrelated_later_call() {
+    let source = "// @ts-ignore\nconst ignored: number = 'value'\nconst independent: number = 'wrong'\nconsume(\n  independent\n)\n";
+    let independent = diagnostic(source, "'wrong'", Some(2322), "Type mismatch.");
+    let mut diagnostics = vec![independent.clone()];
+    filter(&AuthoredSource::vue(source), &mut diagnostics);
+    assert_eq!(diagnostics, [independent]);
+}
+
+#[test]
+fn parentheses_in_literals_and_comments_do_not_start_a_suppressed_call() {
+    for statement in [
+        "import Ignored from './missing(parenthesis.ts'",
+        "const ignored: number = 'parenthesis('",
+        "const ignored: number = 1 /* ( */",
+        "const ignored = /[(]/",
+    ] {
+        let source = vize_carton::cstr!(
+            "// @ts-ignore\n{statement}\nconst independent: number = 'wrong)'\nconsume(\n  independent\n)\n"
+        );
+        let independent = diagnostic(&source, "'wrong)'", Some(2322), "Type mismatch.");
+        let mut diagnostics = vec![independent.clone()];
+        filter(&AuthoredSource::vue(&source), &mut diagnostics);
+        assert_eq!(diagnostics, [independent], "{statement}");
+    }
+}
+
+#[test]
+fn multiline_call_directive_preserves_a_following_independent_diagnostic() {
+    for directive in ["@ts-ignore", "@ts-expect-error"] {
+        let source = vize_carton::cstr!(
+            "// {directive}\nconsume(\n  invalidArgument,\n)\nconst independent: number = 'wrong'\n"
+        );
+        let independent = diagnostic(&source, "'wrong'", Some(2322), "Type mismatch.");
+        let mut diagnostics = vec![overload(&source, "invalidArgument,"), independent.clone()];
+        filter(&AuthoredSource::vue(&source), &mut diagnostics);
+        assert_eq!(diagnostics, [independent], "{directive}");
+    }
+}
+
+#[test]
+fn literal_parentheses_do_not_end_a_real_multiline_call_early() {
+    let source = "// @ts-ignore\nconsume(\n  ')', // )\n  invalidArgument,\n)\nconst independent: number = 'wrong'\n";
+    let independent = diagnostic(source, "'wrong'", Some(2322), "Type mismatch.");
+    let mut diagnostics = vec![overload(source, "invalidArgument,"), independent.clone()];
+    filter(&AuthoredSource::vue(source), &mut diagnostics);
+    assert_eq!(diagnostics, [independent]);
+}
+
+#[test]
+fn refused_pathological_script_parse_preserves_every_diagnostic() {
+    // The shared guard must refuse this before OXC or the AST visitor sees it.
+    // Merely observing empty call ranges is insufficient: the legacy VueUse
+    // rule must not remove diagnostics after a refused parse either.
+    let script = vize_carton::cstr!(
+        "// @ts-ignore\nconsume(\n  invalidArgument,\n)\nconst nested = {}value{};\n{CONSUMED_EXPECT_ERROR}const independent: number = 'wrong'\n",
+        "(".repeat(60_000),
+        ")".repeat(60_000),
+    );
+    assert!(!vize_l0::expression_guard::expression_is_safe_to_parse(
+        &script
+    ));
+    for source in [
+        script.clone(),
+        vize_carton::cstr!("<script setup lang=\"ts\">\n{script}</script>\n"),
+    ] {
+        let expected = vec![
+            overload(&source, "invalidArgument,"),
+            overload(&source, "passive:"),
+            diagnostic(&source, "'wrong'", Some(2322), "Type mismatch."),
+        ];
+        assert_eq!(super::authored_call_lines(&source), None);
+        let mut diagnostics = expected.clone();
+        filter(&AuthoredSource::vue(&source), &mut diagnostics);
+        assert_eq!(diagnostics, expected);
+    }
+}
+
+#[test]
+fn script_at_shared_nesting_limit_keeps_the_legitimate_multiline_suppression() {
+    let depth = vize_l0::expression_guard::MAX_EXPRESSION_NESTING_DEPTH - 1;
+    let source = vize_carton::cstr!(
+        "// @ts-ignore\nconsume(\n  {}invalidArgument{},\n)\nconst independent: number = 'wrong'\n",
+        "(".repeat(depth),
+        ")".repeat(depth),
+    );
+    assert!(vize_l0::expression_guard::expression_is_safe_to_parse(
+        &source
+    ));
+    let independent = diagnostic(&source, "'wrong'", Some(2322), "Type mismatch.");
+    let mut diagnostics = vec![overload(&source, "invalidArgument"), independent.clone()];
+    filter(&AuthoredSource::vue(&source), &mut diagnostics);
+    assert_eq!(diagnostics, [independent]);
+}
+
+#[test]
 fn template_diagnostics_are_not_multiline_directive_candidates() {
     let source = "<script setup lang=\"ts\">\n</script>\n<template>\n  <!-- @ts-ignore -->\n  <Comp\n    :a=\"x\"\n  />\n</template>\n";
     let mut diagnostics = vec![diagnostic(source, ":a=", Some(2322), "Type mismatch.")];

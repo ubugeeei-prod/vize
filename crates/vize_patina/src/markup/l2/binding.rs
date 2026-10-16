@@ -8,6 +8,32 @@ use crate::markup::MarkupBindingKind;
 use vize_l0::Span;
 use vize_l2::op::{Attribute, BindingOp};
 
+/// Directive-name boundaries are case-sensitive; arguments/modifiers stay pre.
+pub(in crate::markup) fn is_v_pre(attr: &vize_l1::Attribute<'_>) -> bool {
+    attr.name
+        .text
+        .strip_prefix("v-pre")
+        .is_some_and(|tail| tail.is_empty() || tail.starts_with(':') || tail.starts_with('.'))
+}
+
+/// A missing opening pre distinguishes this boundary from an inherited raw
+/// attribute. The retained parser drops all semantic pre spellings here.
+pub(in crate::markup) fn opens_v_pre(
+    doc: &L2Markup<'_>,
+    element: &vize_l1::Element<'_>,
+    attributes: &[Attribute<'_>],
+) -> bool {
+    element
+        .open
+        .attrs
+        .iter()
+        .find(|attr| is_v_pre(attr))
+        .is_some_and(|attr| {
+            let span = attr_span(doc.source, attr);
+            !attributes.iter().any(|kept| kept.span == span)
+        })
+}
+
 /// One authored item on an L2 element's opening tag, in authored order.
 #[derive(Clone, Copy)]
 pub(in crate::markup) enum L2Item<'a> {
@@ -65,7 +91,11 @@ pub(in crate::markup) fn walk_items<'a>(
     visitor: &mut dyn FnMut(L2Item<'a>),
 ) {
     if let Some(element) = surface {
+        let opening_v_pre = opens_v_pre(doc, element, attributes);
         for attr in &element.open.attrs {
+            if opening_v_pre && is_v_pre(attr) {
+                continue;
+            }
             let span = attr_span(doc.source, attr);
             if let Some(attribute) = attributes.iter().find(|attribute| attribute.span == span) {
                 visitor(L2Item::Attribute { attribute, doc });
@@ -114,7 +144,7 @@ pub(in crate::markup) fn walk_items<'a>(
 /// scope), or the `v-pre` that opened a raw subtree (the parser drops it; a
 /// nested `v-pre` inside the subtree is a frozen attribute L2 keeps).
 pub(in crate::markup) fn is_consumed_spelling(attr: &vize_l1::Attribute<'_>) -> bool {
-    attr.name.text == "v-pre"
+    is_v_pre(attr)
         || SurfaceDirective::parse(attr.name.text)
             .is_some_and(|directive| directive.is_structural())
 }

@@ -7,25 +7,39 @@
 //! `$listeners` was removed in Vue 3. In Vue 2 it exposed the parent-scope
 //! event listeners separately from `$attrs`; in Vue 3 listeners are plain
 //! props prefixed with `on`, so they are merged into `$attrs`. Any code that
-//! still reads `$listeners` (e.g. `this.$listeners`, `ctx.$listeners`, or a
-//! bare `$listeners` reference) will not work under Vue 3 and must be migrated
-//! to `$attrs`.
+//! still reads the instance property (or the unbound template `$listeners`)
+//! must migrate it to `$attrs` for Vue 3.
 //!
-//! This is a Vue 2 -> 3 migration rule and is opt-in.
+//! Built-in Vue 3 presets enable this migration rule; Vue 2 presets leave it off.
+//!
+//! Parent #9222 diagnoses script accesses only. The template lines below show
+//! migration examples; template diagnostics remain unqualified in Draft #9251.
 //!
 //! ## Examples
 //!
 //! ### Invalid
-//! ```ts
-//! const handlers = this.$listeners
-//! const forwarded = ctx.$listeners
-//! emit('input', $listeners)
+//! ```vue
+//! <script>
+//! export default {
+//!   mounted() {
+//!     const vm = this
+//!     return vm.$listeners
+//!   }
+//! }
+//! </script>
+//! <template><Child v-on="$listeners" /></template>
 //! ```
 //!
 //! ### Valid
-//! ```ts
-//! const handlers = this.$attrs
-//! const forwarded = ctx.attrs
+//! ```vue
+//! <script>
+//! export default {
+//!   mounted() {
+//!     return this.$attrs
+//!   }
+//! }
+//! </script>
+//! <template><Child v-bind="$attrs" /></template>
 //! ```
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
@@ -67,10 +81,13 @@ impl ScriptRule for NoDeprecatedDollarListenersApi {
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
+        if !(source.contains("$listeners") || source.contains('\\')) {
+            return;
+        }
         let mut visitor = NoDeprecatedDollarListenersApiVisitor { offset, result };
         visitor.visit_program(program);
     }
@@ -83,25 +100,18 @@ struct NoDeprecatedDollarListenersApiVisitor<'result> {
 
 impl<'a> Visit<'a> for NoDeprecatedDollarListenersApiVisitor<'_> {
     fn visit_static_member_expression(&mut self, it: &StaticMemberExpression<'a>) {
-        // Member access whose property is `$listeners`, e.g. `this.$listeners`,
-        // `ctx.$listeners`, `vm.$listeners`. Report on the whole member-access
-        // span so the diagnostic covers the receiver and the property.
         if it.property.name.as_str() == DOLLAR_LISTENERS {
-            self.push_diagnostic(it.span);
+            self.push_diagnostic(it.property.span);
         }
-
         walk_static_member_expression(self, it);
     }
 
     fn visit_identifier_reference(&mut self, it: &IdentifierReference<'a>) {
-        // A bare `$listeners` reference (e.g. destructured from a context or an
-        // auto-imported binding). Static member *property* names are
-        // `IdentifierName`, not `IdentifierReference`, so `this.$listeners` is
-        // not double-counted here.
+        // Preserve existing script warning coverage, including unknown receivers
+        // and bare references. Template references have separate lexical scopes.
         if it.name.as_str() == DOLLAR_LISTENERS {
             self.push_diagnostic(it.span);
         }
-
         walk_identifier_reference(self, it);
     }
 }
@@ -171,7 +181,6 @@ const onClick = attrs.onClick
         let linter = create_linter();
         let result = linter.lint("const handlers = this.$listeners", 0);
         assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

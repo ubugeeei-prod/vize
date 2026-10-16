@@ -106,11 +106,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
             (Kind::Component, Source::Component(component)) => {
                 let expression =
-                    vize_l0::ensure_sufficient_stack(|| self.vnode_component(component))?;
+                    vize_l0::ensure_sufficient_stack(|| self.vnode_component(component, None))?;
                 out.push(expression);
             }
             (Kind::SlotOutlet, Source::Slot(slot)) => {
-                let expression = vize_l0::ensure_sufficient_stack(|| self.vnode_outlet(slot))?;
+                let expression =
+                    vize_l0::ensure_sufficient_stack(|| self.vnode_outlet(slot, None))?;
                 out.push(expression);
             }
             (Kind::If, Source::If(if_op)) => {
@@ -189,7 +190,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     /// `_createVNode(callee, props, slots)`.
-    fn vnode_component(&mut self, component: &'r l2::ComponentOp<'a>) -> Result<String> {
+    pub(super) fn vnode_component(
+        &mut self,
+        component: &'r l2::ComponentOp<'a>,
+        key: Option<&str>,
+    ) -> Result<String> {
         let open = self.segment(self.pos)?;
         let name = plan_source(&open, SsrStringPayloadKind::ComponentName)?;
         self.pos += 1;
@@ -211,6 +216,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         } else {
             self.component_props(attached)?
         };
+        let props = self.ctx.vnode_loop_key_props(&props, key);
         let slots = self.vnode_slots(component)?;
         self.close(Kind::CloseComponent, |source| {
             matches!(source, Source::Component(closed) if core::ptr::eq(*closed, component))
