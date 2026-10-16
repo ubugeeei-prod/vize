@@ -1,4 +1,7 @@
-// Whole-corpus lint parity for the n8n adoption contract (#8142).
+// Historical file/line/rule projection for the n8n adoption contract (#8142).
+// This does not retain whole provider packets or compare complete coordinates,
+// severities, suppressions or fix metadata; it is not whole51 parity authority.
+// Use n8n-whole-corpus-observer.mjs for complete provenance-preserving research.
 //
 // Runs the pinned eslint-plugin-vue toolchain and the Vize CLI with the same
 // n8n rule set and rule options over every Vue file of the licensed n8n
@@ -239,7 +242,18 @@ const documented = (finding: Finding) =>
 const undocumented = eslintOnly.filter((finding) => !documented(finding));
 writeFileSync(
   join(output, "parity.json"),
-  `${JSON.stringify({ shared, vizeOnly, eslintOnly, undocumented }, null, 1)}\n`,
+  `${JSON.stringify(
+    {
+      qualification:
+        "Historical file/line/rule projection only; not complete packet or whole51 parity authority",
+      shared,
+      vizeOnly,
+      eslintOnly,
+      undocumented,
+    },
+    null,
+    1,
+  )}\n`,
 );
 console.log(
   `n8n lint parity: shared=${shared} vizeOnly=${vizeOnly.length} eslintOnly=${eslintOnly.length} (documented ${eslintOnly.length - undocumented.length})`,
