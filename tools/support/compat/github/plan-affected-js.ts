@@ -87,6 +87,20 @@ export function planAffectedJs(
       reasons.add(`shared product fixture: ${path}`);
       continue;
     }
+    // Every canonical package group executes this shared filtered installer.
+    if (path === "tools/support/compat/github/install-js-checks.ts") {
+      for (const pkg of workspace) {
+        if (
+          testedPackageGroups.some((group) =>
+            group.packages.some((entry) => entry.slice(2) === pkg.path),
+          )
+        ) {
+          changed.add(pkg.name);
+        }
+      }
+      reasons.add(`shared JS package installer: ${path}`);
+      continue;
+    }
     const owner = workspace
       .filter((pkg) => path.startsWith(`${pkg.path}/`))
       .sort((a, b) => b.path.length - a.path.length)[0];

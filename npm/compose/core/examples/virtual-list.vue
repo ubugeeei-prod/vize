@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, useId, watch } from "vue";
 import { useVirtualList } from "@vizejs/composable/virtual-list";
 
 const query = ref("");
+const searchId = useId();
+const scrollHelpId = useId();
 const guides = Array.from({ length: 1_000 }, (_, index) => ({
   id: index + 1,
   title: `Guide ${String(index + 1).padStart(4, "0")}`,
@@ -21,25 +23,29 @@ watch(query, () => scrollTo(0), { flush: "post" });
 
 <template>
   <div class="composable-example">
-    <label for="guide-search">Find a guide</label>
-    <input id="guide-search" v-model="query" type="search" placeholder="Try 099 or missing" />
+    <label :for="searchId">Find a guide</label>
+    <input :id="searchId" v-model="query" type="search" placeholder="Try 099 or missing" />
     <div class="example-actions">
-      <button type="button" :disabled="matches.length === 0" @click="scrollTo(0)">
+      <button type="button" :disabled="matches.length === 0" @click="() => scrollTo(0)">
         First result
       </button>
-      <button type="button" :disabled="matches.length === 0" @click="scrollTo(matches.length - 1)">
+      <button
+        type="button"
+        :disabled="matches.length === 0"
+        @click="() => scrollTo(matches.length - 1)"
+      >
         Last result
       </button>
     </div>
     <output aria-live="polite">{{ matches.length }} matching guides</output>
-    <p id="guide-scroll-help">Focus the list and use Arrow keys, Page Down, Home or End.</p>
+    <p :id="scrollHelpId">Focus the list and use Arrow keys, Page Down, Home or End.</p>
     <div
       v-bind="containerProps"
       role="region"
       aria-label="Guide catalogue"
-      aria-describedby="guide-scroll-help"
+      :aria-describedby="scrollHelpId"
       tabindex="0"
-      style="height: 200px; border: 1px solid #888; border-radius: 6px"
+      class="guide-catalogue"
     >
       <div v-bind="wrapperProps" role="list" aria-label="Matching guides">
         <div
@@ -48,12 +54,7 @@ watch(query, () => scrollTo(0), { flush: "post" });
           role="listitem"
           :aria-posinset="row.index + 1"
           :aria-setsize="matches.length"
-          style="
-            height: 40px;
-            box-sizing: border-box;
-            padding: 8px 12px;
-            border-bottom: 1px solid #8884;
-          "
+          class="guide-row"
         >
           {{ row.data.title }}
         </div>
@@ -68,3 +69,17 @@ watch(query, () => scrollTo(0), { flush: "post" });
     </p>
   </div>
 </template>
+
+<style scoped>
+.guide-catalogue {
+  height: 200px;
+  border: 1px solid #888;
+  border-radius: 6px;
+}
+.guide-row {
+  height: 40px;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-bottom: 1px solid #8884;
+}
+</style>

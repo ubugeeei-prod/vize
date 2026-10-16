@@ -35,3 +35,15 @@ failed Vue template checking. Both style interfaces now extend Vue's
 Existing compile-only assertions check Vue binding compatibility and those narrow
 types; the complete example also passes through the normal Vue SFC typecheck.
 No runtime behavior, navigation, site renderer or upstream package is changed.
+
+## Follow-up: example lint contracts
+
+PR #9254's functional browser checks passed, but a later merge-queue composition
+ran the application lint lane and exposed seven real warnings in the new SFC.
+Use Vue's SSR-stable `useId()` for the input label and scroll-help relationship,
+move the unchanged 200px container/40px row dimensions into scoped CSS, and use
+the project's preferred inline function handlers. Do not suppress the rules.
+Recheck the same native keyboard/filter/focus/geometry/hydration behavior and
+source identity after this repair. The initial source/Docs success did not prove
+whole-main lint health; the affected-path selection gap is tracked separately
+with the CI owner so future example additions run the actual lint lane.
