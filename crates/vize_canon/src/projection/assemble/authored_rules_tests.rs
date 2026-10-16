@@ -129,7 +129,7 @@ fn import_directive_does_not_suppress_an_independent_import_before_a_later_call(
         // Varlet's playground suppresses its untyped Monaco import. Deleting
         // Header.vue must still expose the independent SFC import below it.
         let source = vize_carton::cstr!(
-            "<script setup lang=\"ts\">\n// {directive} no types\nimport Monaco from '@vue/repl/monaco-editor'\nimport Header from './Missing.vue'\nconst store = new ReplStore({\n  serializedState: ''\n})\n</script>\n"
+            "<script setup lang=\"ts\">\n// {directive} no types\nimport Monaco from '@vue/repl/monaco-editor'\nimport Header from './Missing.vue'\nconst store = new ReplStore({{\n  serializedState: ''\n}})\n</script>\n"
         );
         let missing = diagnostic(
             &source,
