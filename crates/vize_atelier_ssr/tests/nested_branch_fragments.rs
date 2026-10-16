@@ -29,6 +29,51 @@ const CASES: &[(&str, &str, bool)] = &[
         r#"<template v-if="outer"><button v-for="n in 2">{{ n }}</button></template>"#,
         false,
     ),
+    (
+        "loop-conditional-boundary",
+        r#"<template v-for="n in 2"><template v-if="outer"><button v-if="inner">a</button><button v-else>b</button></template></template>"#,
+        false,
+    ),
+    (
+        "loop-single-conditional",
+        r#"<template v-for="n in 2"><button v-if="inner">a</button><button v-else>b</button></template>"#,
+        false,
+    ),
+    (
+        "loop-nested-loop",
+        r#"<template v-for="n in 2"><button v-for="m in 2">{{ n }}:{{ m }}</button></template>"#,
+        false,
+    ),
+    (
+        "loop-single-element",
+        r#"<button v-for="n in 2">{{ n }}</button>"#,
+        false,
+    ),
+    (
+        "loop-single-text",
+        r#"<template v-for="n in 2">text</template>"#,
+        false,
+    ),
+    (
+        "loop-empty",
+        r#"<template v-for="n in 2"></template>"#,
+        false,
+    ),
+    (
+        "transition-group-loop-conditional",
+        r#"<TransitionGroup tag="section"><template v-for="n in 2"><template v-if="outer"><button v-if="inner">a</button><button v-else>b</button></template></template></TransitionGroup>"#,
+        false,
+    ),
+    (
+        "loop-keyed-element",
+        r#"<template v-for="n in 2" :key="n"><button>{{ n }}</button></template>"#,
+        false,
+    ),
+    (
+        "loop-keyed-conditional",
+        r#"<template v-for="n in 2" :key="n"><button v-if="inner">a</button><button v-else>b</button></template>"#,
+        false,
+    ),
 ];
 
 #[test]

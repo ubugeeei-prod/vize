@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { test } from "node:test";
 import { compileFunction } from "node:vm";
+import { gunzipSync } from "node:zlib";
 
 const capture = process.env.VIZE_NESTED_BRANCH_CAPTURE;
 
@@ -18,7 +19,7 @@ await test(
     assert.equal(vue.version, "3.6.0-beta.10");
     assert.equal(compiler.version, vue.version);
     const modules = JSON.parse(readFileSync(capture, "utf8"));
-    assert.equal(modules.length, 10);
+    assert.equal(modules.length, 28);
 
     function load(preamble, body) {
       const imports = preamble.replace(
@@ -46,8 +47,16 @@ await test(
     for (const entry of modules) {
       assert.equal(entry.lane, "s4");
       assert.deepEqual(entry.selected, entry.legacy);
+      // Vize's Vapor TransitionGroup retains nested ranges, like a physical
+      // section. Official Vue SSR has only the VDOM flattening policy.
+      const referenceSource =
+        entry.vapor && entry.name === "transition-group-loop-conditional"
+          ? entry.source
+              .replace('<TransitionGroup tag="section">', "<section>")
+              .replace("</TransitionGroup>", "</section>")
+          : entry.source;
       const reference = compiler.compileTemplate({
-        source: entry.source,
+        source: referenceSource,
         filename: "NestedBranch.vue",
         id: "nested-branch",
         ssr: true,
@@ -79,6 +88,15 @@ await test(
             if (entry.name === "loop-owns-fragment" && outer) {
               assert.equal(html, "<!--[--><button>1</button><button>2</button><!--]-->");
             }
+            if (entry.name === "loop-conditional-boundary") {
+              const item = outer
+                ? `<!--[--><button>${inner ? "a" : "b"}</button><!--]-->`
+                : "<!---->";
+              assert.equal(html, `<!--[--><!--[-->${item}<!--]--><!--[-->${item}<!--]--><!--]-->`);
+            }
+            if (entry.name === "loop-single-element") {
+              assert.equal(html, "<!--[--><button>1</button><button>2</button><!--]-->");
+            }
             lanes[lane] = html;
           }
           observations.push({
@@ -86,17 +104,58 @@ await test(
             vapor: entry.vapor,
             outer,
             inner,
+            referenceSource,
             officialHtml,
             lanes,
           });
         }
       }
     }
+    const published = JSON.parse(
+      gunzipSync(
+        readFileSync(
+          new URL(
+            "../../docs/davinci/decisions/fixtures/ssr-loop-fragments-20261016/published-0.457.0.json.gz",
+            import.meta.url,
+          ),
+        ),
+      ),
+    );
+    assert.equal(published.vueVersion, vue.version);
+    const publicCode = published.modules.vize;
+    const publicRender = load(
+      publicCode.match(/^import[^\n]+/gm)?.join("\n") ?? "",
+      publicCode.replace(/^import[^\n]+\n/gm, "").replace(/^export default[^\n]+$/gm, ""),
+    );
+    const publishedObservations = [];
+    for (const retained of published.observations) {
+      const html = await render(publicRender, retained.outer, retained.inner);
+      assert.equal(html, retained.vize, "retained public module reproduces its original HTML");
+      const current = observations.find(
+        (entry) =>
+          entry.name === "loop-conditional-boundary" &&
+          !entry.vapor &&
+          entry.outer === retained.outer &&
+          entry.inner === retained.inner,
+      );
+      assert.equal(current.officialHtml, retained.official);
+      assert.notEqual(
+        html,
+        current.officialHtml,
+        "public compiler must fail the anchor regression",
+      );
+      publishedObservations.push({ ...retained, publicHtml: html });
+    }
     const destination = process.env.VIZE_NESTED_BRANCH_RUNTIME_CAPTURE;
     assert.ok(destination, "retain complete actual runtime outcomes");
     writeFileSync(
       destination,
-      JSON.stringify({ vueVersion: vue.version, compilerVersion: compiler.version, observations }),
+      JSON.stringify({
+        vueVersion: vue.version,
+        compilerVersion: compiler.version,
+        observations,
+        publishedObservations,
+      }),
     );
   },
 );

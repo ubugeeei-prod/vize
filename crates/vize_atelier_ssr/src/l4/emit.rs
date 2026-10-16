@@ -192,7 +192,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 )
             }),
             (Kind::For, Source::For(for_op)) => {
-                vize_l0::ensure_sufficient_stack(|| self.for_loop(segment, for_op, disable))
+                vize_l0::ensure_sufficient_stack(|| self.for_loop(for_op, disable))
             }
             (Kind::Comment, Source::Comment(comment)) => {
                 self.pos += 1;

@@ -6,8 +6,8 @@ mod escape;
 mod match_scope;
 
 use vize_atelier_core::{
-    CommentNode, ElementType, ForNode, IfNode, InterpolationNode, PropNode, RuntimeHelper,
-    TemplateChildNode, TextNode,
+    CommentNode, ElementType, ForNode, IfNode, InterpolationNode, RuntimeHelper, TemplateChildNode,
+    TextNode,
 };
 
 use super::{SsrCodegenContext, css_vars::RootCssVars};
@@ -224,11 +224,12 @@ impl<'a> SsrCodegenContext<'a> {
 
         self.push_scoped_params(collect_for_scoped_params(for_node, self.source));
 
-        // Process for body
-        let needs_fragment = !disable_nested_fragments
-            && (rendered_child_count(&for_node.children) > 1
-                || has_keyed_template_v_for_child(for_node));
-        self.process_children(&for_node.children, needs_fragment, true, false);
+        // The loop and its items own separate ranges. Only a single element
+        // can be an item's root; conditions, lists, and text need a Fragment.
+        let needs_fragment = !disable_nested_fragments && loop_needs_fragment(&for_node.children);
+        // Like Vue's processChildrenAsStatement, the callback starts a fresh
+        // fragment context, including when this loop is inside TransitionGroup.
+        self.process_children(&for_node.children, needs_fragment, false, false);
         self.flush_push();
 
         self.pop_scoped_params();
@@ -313,32 +314,12 @@ pub(crate) fn rendered_child_count(children: &[TemplateChildNode]) -> usize {
         .sum()
 }
 
-fn has_keyed_template_v_for_child(for_node: &ForNode) -> bool {
-    let [TemplateChildNode::Element(el)] = for_node.children.as_slice() else {
-        return false;
-    };
-
-    el.tag_type == ElementType::Template
-        && el.props.iter().any(is_key_prop)
-        && !has_single_plain_element_child(el)
-}
-
-fn has_single_plain_element_child(el: &vize_atelier_core::ElementNode) -> bool {
-    matches!(
-        el.children.as_slice(),
-        [TemplateChildNode::Element(child_el)] if child_el.tag_type == ElementType::Element
-    )
-}
-
-fn is_key_prop(prop: &PropNode) -> bool {
-    match prop {
-        PropNode::Attribute(attr) => attr.name == "key",
-        PropNode::Directive(dir) if dir.name == "bind" => {
-            matches!(
-                &dir.arg,
-                Some(vize_atelier_core::ExpressionNode::Simple(arg)) if arg.content == "key"
-            )
+fn loop_needs_fragment(children: &[TemplateChildNode<'_>]) -> bool {
+    match children {
+        [TemplateChildNode::Element(element)] if element.tag_type == ElementType::Template => {
+            loop_needs_fragment(&element.children)
         }
-        _ => false,
+        [TemplateChildNode::Element(_)] => false,
+        _ => true,
     }
 }
