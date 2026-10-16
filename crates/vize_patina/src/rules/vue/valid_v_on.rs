@@ -196,7 +196,6 @@ impl Rule for ConfiguredValidVOn {
     }
 }
 
-#[path = "valid_v_on/key_aliases.rs"]
 mod key_aliases;
 
 const VALID_MODIFIERS: &[&str] = &[
@@ -250,5 +249,4 @@ fn is_keyword_expression(exp: &ExpressionNode) -> bool {
 }
 
 #[cfg(test)]
-#[path = "valid_v_on/tests.rs"]
 mod tests;

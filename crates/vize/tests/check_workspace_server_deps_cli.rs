@@ -32,6 +32,21 @@ fn run_check(app: &Path, corsa: &str, servers: Option<&str>) -> serde_json::Valu
     let output = command.output().unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
     let stderr = String::from_utf8(output.stderr).unwrap();
+    if let Some(directory) = std::env::var_os("VIZE_NATIVE_STRICT_CAPTURE_DIR") {
+        static SEQUENCE: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let sequence = SEQUENCE.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        let directory = Path::new(&directory).join("workspace-cli");
+        std::fs::create_dir_all(&directory).unwrap();
+        std::fs::write(
+            directory.join(vize_l0::cstr!("{sequence:02}.json").as_str()),
+            serde_json::to_vec_pretty(&serde_json::json!({
+                "cwd": app, "servers": servers, "exitCode": output.status.code(),
+                "wholeStdout": stdout, "wholeStderr": stderr,
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+    }
     let result: serde_json::Value = serde_json::from_str(&stdout)
         .unwrap_or_else(|error| panic!("invalid check output: {error}\n{stdout}\n{stderr}"));
     assert_eq!(
@@ -104,7 +119,7 @@ fn check_workspace_server_deps(vue_files: usize) {
     for name in 0..vue_files {
         write_file(
             root,
-            vize_carton::cstr!("app/src/{name}.vue").as_str(),
+            vize_l0::cstr!("app/src/{name}.vue").as_str(),
             "<template><div /></template>",
         );
     }

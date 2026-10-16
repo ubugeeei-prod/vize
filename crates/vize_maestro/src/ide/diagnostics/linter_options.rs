@@ -372,6 +372,14 @@ mod valid_v_on_options_tests {
             r#"<div @click.custom="handler" @click.unknown="handler" />"#,
             "test.vue",
         );
+        if let Some(directory) = std::env::var_os("VIZE_NATIVE_STRICT_CAPTURE_DIR") {
+            std::fs::create_dir_all(&directory).unwrap();
+            std::fs::write(
+                std::path::Path::new(&directory).join("lsp-custom-modifier.txt"),
+                vize_l0::cstr!("{result:#?}").as_bytes(),
+            )
+            .unwrap();
+        }
         assert_eq!(result.error_count, 1);
         assert!(result.diagnostics[0].message.contains("unknown"));
         let empty = apply_rule_options(Linter::with_registry(RuleRegistry::new()), &options, false);

@@ -63,7 +63,7 @@ fn shared_workspace_package_native_queries_and_freshness_share_one_server() {
 
     let warm = Instant::now();
     for index in 0..12 {
-        let name = vize_carton::cstr!("src/Consumer{index}.vue");
+        let name = vize_l0::cstr!("src/Consumer{index}.vue");
         let uri = fixture.write_file(&name, APP);
         assert_eq!(fixture.open_file(&uri, APP), json!([]));
         let hover =
@@ -85,7 +85,7 @@ fn shared_workspace_package_native_queries_and_freshness_share_one_server() {
         &fixture.request("textDocument/hover", &string_source, "toUpperCase()"),
         "toUpperCase",
     );
-    let wrong_string = vize_carton::cstr!("{APP}<!-- changed package -->\n");
+    let wrong_string = vize_l0::cstr!("{APP}<!-- changed package -->\n");
     assert_native_missing_method(&fixture.change(&wrong_string, 5), "string", "toPrecision");
 
     // Replacing a manifest target after deleting its old implementation must
@@ -101,7 +101,7 @@ fn shared_workspace_package_native_queries_and_freshness_share_one_server() {
         "packages/widgets/package.json",
         r#"{"name":"widget-package","type":"module","exports":"./src/next-entry.ts"}"#,
     );
-    let restored = vize_carton::cstr!("{APP}<!-- replacement module -->\n");
+    let restored = vize_l0::cstr!("{APP}<!-- replacement module -->\n");
     assert_eq!(fixture.change(&restored, 6), json!([]));
     assert_number_queries(&mut fixture, &restored);
 
@@ -109,14 +109,14 @@ fn shared_workspace_package_native_queries_and_freshness_share_one_server() {
     // warm. A paths target switches the same authored bare package spelling.
     fixture.write_file("packages/widgets/src/text-entry.ts", "export { default as Widget } from './Root.vue';\nexport const value = 'changed config' as string;\n");
     fixture.write_file("tsconfig.json", r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"bundler","noEmit":true,"paths":{"widget-package":["./packages/widgets/src/text-entry.ts"]}},"include":["src/**/*.vue"]}"#);
-    let configured = vize_carton::cstr!("{string_source}<!-- changed config -->\n");
+    let configured = vize_l0::cstr!("{string_source}<!-- changed config -->\n");
     assert_eq!(fixture.change(&configured, 7), json!([]));
     assert_method(
         &fixture.request("textDocument/hover", &configured, "toUpperCase()"),
         "toUpperCase",
     );
     fixture.write_file("tsconfig.json", CONFIG);
-    let final_source = vize_carton::cstr!("{APP}<!-- restored config -->\n");
+    let final_source = vize_l0::cstr!("{APP}<!-- restored config -->\n");
     assert_eq!(fixture.change(&final_source, 8), json!([]));
     assert_number_queries(&mut fixture, &final_source);
     eprintln!(
