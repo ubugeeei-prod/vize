@@ -45,6 +45,9 @@ The collector copies only fingerprint JSON associated with hashes actually
 present in emitted output paths, under the canonical target directory. It never
 copies compiled objects or the whole target. Host/proc-macro, cross-target, test
 and release observations retain their distinct raw identities and paths.
+Export paths omit the hidden `.fingerprint` component so the artifact action's
+default hidden-file exclusion does not discard the evidence. Original source
+paths remain recorded separately in `units.json`.
 Rust 1.99.1 pins Cargo revision `5f94df4789f005f9a352888e8355ffc645b7ed0e`.
 Its [unit metadata implementation](https://github.com/rust-lang/cargo/blob/5f94df4789f005f9a352888e8355ffc645b7ed0e/src/compiler/build_runner/compilation_files.rs#L112-L118)
 uses the unit ID for emitted filename/directory suffixes; its fingerprint directory

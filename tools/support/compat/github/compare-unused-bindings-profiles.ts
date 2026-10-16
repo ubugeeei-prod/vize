@@ -9,7 +9,7 @@ import {
   realpathSync,
   writeFileSync,
 } from "node:fs";
-import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { performance } from "node:perf_hooks";
 
 const suites = [
@@ -105,11 +105,20 @@ export function collectUnitEvidence(output, target, context = {}) {
           unit.gaps.push({ filename, hash, reason: "fingerprint JSON unavailable" });
         for (const file of files) {
           const source = join(directory, file.name);
-          const name = relative(canonicalTarget, realpathSync(source));
+          const sourcePath = relative(canonicalTarget, realpathSync(source));
+          const name = sourcePath
+            .split(sep)
+            .filter((part) => part !== ".fingerprint")
+            .join(sep);
           const destination = join(output, "fingerprints", name);
           mkdirSync(dirname(destination), { recursive: true });
           copyFileSync(source, destination);
-          unit.fingerprints.push({ filename, hash, path: join("fingerprints", name) });
+          unit.fingerprints.push({
+            filename,
+            hash,
+            source: sourcePath,
+            path: join("fingerprints", name),
+          });
         }
       }
     }

@@ -201,6 +201,14 @@ await test("unit evidence retains actual artifact identity and only emitted fing
     assert.equal(result.units.length, fixtures.length);
     const retained = result.units.flatMap((unit) => unit.fingerprints.map((fp) => fp.path));
     assert.equal(new Set(retained).size, fixtures.length);
+    // upload-artifact excludes hidden components by default. Retain the exact
+    // Cargo source path in metadata, while exporting through visible paths.
+    assert.ok(retained.every((name) => name.split(/[\\/]/).every((part) => !part.startsWith("."))));
+    assert.ok(
+      result.units.every((unit) =>
+        unit.fingerprints.every((fp) => fp.source.includes(".fingerprint")),
+      ),
+    );
     for (const [index, name] of retained.entries())
       assert.deepEqual(
         JSON.parse(readFileSync(join(output, name), "utf8")).rustflags,
