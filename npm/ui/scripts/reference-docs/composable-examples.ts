@@ -22,6 +22,16 @@ import { deviceExamples } from "./device-examples.ts";
 
 const stateExamples = [
   {
+    name: "textarea-autosize",
+    title: "Write a release note in a growing editor",
+    purpose:
+      "Keep a multiline draft readable as it grows, without losing the editing position when the available width changes.",
+    observe:
+      "Type several lines or insert the release template. The editor grows with the text; Compact editor changes the wrapping and the height automatically. Clear draft returns to two rows. Long drafts scroll inside the editor once it reaches 12rem.",
+    context:
+      "The draft stays in memory and is never saved or submitted. Bind the returned input ref with v-model and pass a template ref for the native textarea. The default height mode allows the example's CSS max-height to cap the editor; min-height is a separate minimum-sizing mode and can override a smaller CSS maximum. Padding and borders are included correctly for either box-sizing value. Programmatic changes are measured after Vue updates the textarea, and real width changes are observed automatically. Server markup keeps the declared rows; measurement and the ResizeObserver belong to the component scope. The package remains experimental.",
+  },
+  {
     name: "async-resource",
     title: "Request a delivery quote with cancellation",
     purpose:
@@ -135,6 +145,7 @@ export const composableExamples = [
 /** Reviewed Japanese task labels; shared demo source and API names remain unchanged. */
 export const japaneseComposableGoals: Record<(typeof composableExamples)[number]["name"], string> =
   {
+    "textarea-autosize": "入力に合わせて広がる欄でリリースノートを書く",
     "async-resource": "配送の見積もりを取得し、中止や再試行を行う",
     "virtual-list": "1,000 件のガイドを検索して一覧をスクロールする",
     "use-toggle": "配送の詳細を開閉する",
