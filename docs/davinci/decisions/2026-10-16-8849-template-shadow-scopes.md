@@ -36,7 +36,10 @@ name length. Named and numeric entities retain their complete authored extent.
 The compatibility parser consumes semantic `v-pre`. To avoid changing its public
 parse/retention behavior, the rule checks a candidate authored opening span with
 the shared L1 lexer only when that span contains `v-pre`, then skips the subtree.
-Text inside quoted values cannot impersonate a directive. Legacy `scope` applies
+The existing authored-opening validator first proves the span ends at its own
+opening delimiter; widened whole-element spans are refused before lexing, so the
+rule cannot repeatedly lex descendant subtrees. Text inside quoted values cannot
+impersonate a directive. Legacy `scope` applies
 only to `<template>`; `slot-scope` applies to scoped-slot owners generally.
 
 ## Regression and evidence custody

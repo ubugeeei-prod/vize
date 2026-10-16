@@ -6,8 +6,10 @@ use vize_l1::markup::{Component, LexErrorCode, LexOptions, Lexer, QuoteType, Sin
 use vize_relief::ElementNode;
 
 pub(super) fn opens(element: &ElementNode<'_>, source: &str) -> bool {
-    let Some(header) = source.get(element.loc.span.start as usize..element.loc.span.end as usize)
-    else {
+    // The canonical parser gives opening-only locations. Authenticate that
+    // contract before lexing, including externally supplied/lowered nodes:
+    // a widened whole-element range must never lex its subtree per ancestor.
+    let Some(header) = super::super::authored_element::opening(source, element) else {
         return false;
     };
     if !header.contains("v-pre") {
@@ -61,4 +63,40 @@ impl Sink for Pre<'_> {
     fn on_processing_instruction(&mut self, _: usize, _: usize) {}
     fn on_end(&mut self) {}
     fn on_error(&mut self, _: LexErrorCode, _: usize) {}
+}
+
+#[cfg(test)]
+mod tests {
+    use super::opens;
+    use vize_l0::Allocator;
+    use vize_relief::TemplateChildNode;
+
+    #[test]
+    fn only_an_authenticated_opening_header_can_reach_the_lexer() {
+        let source = r#"<Panel v-pre><Nested slot-scope="{ item }" /></Panel>"#;
+        let allocator = Allocator::new();
+        let (mut root, errors) = vize_armature::parse(&allocator, source);
+        assert!(errors.is_empty(), "{errors:?}");
+        let Some(TemplateChildNode::Element(element)) = root.children.first_mut() else {
+            panic!("original element");
+        };
+        assert!(opens(element, source));
+        element.loc.span.end = source.len() as u32;
+        assert!(
+            !opens(element, source),
+            "a subtree is not an opening header"
+        );
+    }
+
+    #[test]
+    fn quoted_text_and_descendant_pre_do_not_freeze_the_owner() {
+        let source = r#"<Panel title="v-pre"><Nested v-pre /></Panel>"#;
+        let allocator = Allocator::new();
+        let (root, errors) = vize_armature::parse(&allocator, source);
+        assert!(errors.is_empty(), "{errors:?}");
+        let Some(TemplateChildNode::Element(element)) = root.children.first() else {
+            panic!("original element");
+        };
+        assert!(!opens(element, source));
+    }
 }
