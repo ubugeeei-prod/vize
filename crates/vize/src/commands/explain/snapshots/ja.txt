@@ -2059,13 +2059,25 @@ Vue 3 で削除された $listeners インスタンスプロパティを禁止�
 ドキュメント: docs/content/rules/type-and-script.md
 
 不正な例:
-  const handlers = this.$listeners
-  const forwarded = ctx.$listeners
-  emit('input', $listeners)
+  <script>
+  export default {
+    mounted() {
+      const vm = this
+      return vm.$listeners
+    }
+  }
+  </script>
+  <template><Child v-on="$listeners" /></template>
 
 正しい例:
-  const handlers = this.$attrs
-  const forwarded = ctx.attrs
+  <script>
+  export default {
+    mounted() {
+      return this.$attrs
+    }
+  }
+  </script>
+  <template><Child v-bind="$attrs" /></template>
 === script/no-deprecated-dollar-scopedslots-api
 script/no-deprecated-dollar-scopedslots-api · lint ルール
 Vue 3 で削除された $scopedSlots インスタンスプロパティを禁止する（$slots を使用）
@@ -2098,19 +2110,28 @@ script/no-deprecated-events-api · lint ルール
 ドキュメント: docs/content/rules/type-and-script.md
 
 不正な例:
-  this.$on('event', handler)
-  this.$once('event', handler)
-  this.$off('event', handler)
-  emitter.$off('event')
+  <script>
+  export default {
+    mounted() {
+      this.$on('event', handler)
+      const vm = this
+      vm.$once('event', handler)
+      this.$off('event', handler)
+    }
+  }
+  </script>
 
 正しい例:
-  // $emit is still valid in Vue 3
-  this.$emit('event', payload)
-  
-  // Use an external emitter instead
+  <script>
   import mitt from 'mitt'
   const emitter = mitt()
-  emitter.on('event', handler)
+  export default {
+    mounted() {
+      this.$emit('event', payload)
+      emitter.on('event', handler)
+    }
+  }
+  </script>
 === script/no-deprecated-props-default-this
 script/no-deprecated-props-default-this · lint ルール
 props の default・validator 関数の中での `this` を禁止する（Vue 3 で削除）
