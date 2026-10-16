@@ -31,9 +31,10 @@ fn findings<'a>(source: &'a str, result: &'a LintResult) -> Vec<(&'a str, &'a st
 /// Relief/L1-L2 hook trace before their unchanged diagnostic assertions.
 fn lint_with_markup_parity(source: &str) -> LintResult {
     use crate::markup::differential::{TemplateComparison, compare_template};
+    let compared = compare_template(source);
     assert!(
-        matches!(compare_template(source), Ok(TemplateComparison::Compared(lines)) if lines > 0),
-        "markup projections diverged for {source}"
+        matches!(compared, Ok(TemplateComparison::Compared(lines)) if lines > 0),
+        "markup projections diverged for {source}: {compared:?}"
     );
     linter().lint_template(source, "test.vue")
 }

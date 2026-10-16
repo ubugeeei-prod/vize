@@ -37,6 +37,7 @@ mod differential_battery {
     #[test]
     fn v_pre_directive_names_freeze_only_their_own_subtree() {
         use crate::markup::differential::{TemplateComparison, compare_template};
+        let mut failures = Vec::new();
         for source in [
             r#"<div class="a" v-pre:arg.mod="foo" id="b"><span v-if="x" /></div>"#,
             r#"<div v-pre:arg :title="x">{{ raw }}<span v-for="x in xs" /></div>"#,
@@ -52,11 +53,11 @@ mod differential_battery {
             "<section>🦀<div\n v-pre:arg.mod='foo'\n :title='x'>{{ raw }}</div><p v-if='ok'/></section>",
         ] {
             let compared = compare_template(source);
-            assert!(
-                matches!(compared, Ok(TemplateComparison::Compared(lines)) if lines > 0),
-                "{source}: {compared:?}"
-            );
+            if !matches!(compared, Ok(TemplateComparison::Compared(lines)) if lines > 0) {
+                failures.push((source, compared));
+            }
         }
+        assert!(failures.is_empty(), "{failures:#?}");
     }
 
     /// The JSX roots the P2-16 projection refuses are named, so the refused

@@ -2,7 +2,7 @@
 
 use super::element::{MarkupElement, MarkupElementInner};
 use super::jsx_names::jsx_element_ref;
-use super::l2::binding::L2Item;
+use super::l2::binding::{L2Item, is_v_pre, opens_v_pre};
 use super::l2::surface::{SurfaceDirective, attr_span};
 use super::{l2_range, loc_to_range, span_to_range};
 use crate::ir::ByteRange;
@@ -103,14 +103,11 @@ impl MarkupElement<'_> {
                 doc,
                 op,
             } => {
+                let opening_v_pre = opens_v_pre(doc, element, op.attributes());
                 for attr in &element.open.attrs {
-                    let span = attr_span(doc.source, attr);
-                    // The parser drops the `v-pre` that opens a raw subtree;
-                    // L2 keeps a nested one as a frozen attribute.
-                    let opening_v_pre = super::authored::is_v_pre(attr)
-                        && !op.attributes().iter().any(|kept| kept.span == span);
-                    if !opening_v_pre {
-                        visitor(l2_range(span));
+                    // Opening semantic pre is consumed; inherited pre stays literal.
+                    if !opening_v_pre || !is_v_pre(attr) {
+                        visitor(l2_range(attr_span(doc.source, attr)));
                     }
                 }
             }
@@ -121,7 +118,7 @@ impl MarkupElement<'_> {
                 ..
             } => {
                 for attr in &element.open.attrs {
-                    if !opens_v_pre || !super::authored::is_v_pre(attr) {
+                    if !opens_v_pre || !is_v_pre(attr) {
                         visitor(l2_range(attr_span(doc.source, attr)));
                     }
                 }

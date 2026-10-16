@@ -7,7 +7,7 @@
 use super::element::queries::is_lint_component;
 use super::element::{MarkupElement, MarkupElementInner};
 use super::l2::L2Markup;
-use super::l2::binding::is_consumed_spelling;
+use super::l2::binding::{is_consumed_spelling, is_v_pre};
 use super::l2::surface::{SurfaceDirective, offset_in, token_range};
 use super::{MarkupAttribute, MarkupElementKind, MarkupNode, MarkupText};
 use crate::ir::ByteRange;
@@ -37,12 +37,6 @@ fn wrap<'a>(
         ns,
     });
     (node, frozen, ns)
-}
-
-/// Vue freezes by the directive name, including arguments and modifiers.
-/// Read only the existing L1 attribute token; lookalike names stay ordinary.
-pub(super) fn is_v_pre(attr: &Attribute<'_>) -> bool {
-    SurfaceDirective::parse(attr.name.text).is_some_and(|directive| directive.name == "pre")
 }
 
 fn children_ns(ns: Namespace, tag: &str) -> Namespace {
