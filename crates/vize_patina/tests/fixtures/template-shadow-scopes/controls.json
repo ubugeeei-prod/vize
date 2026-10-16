@@ -1,0 +1,2628 @@
+{
+  "runtimeVersions": {
+    "eslint": "10.4.1",
+    "eslint-plugin-vue": "10.9.2",
+    "vue-eslint-parser": "10.4.1",
+    "@typescript-eslint/parser": "8.65.0"
+  },
+  "ruleConfiguration": {
+    "vue/no-template-shadow": "warn"
+  },
+  "cases": [
+    {
+      "id": "nested-for",
+      "source": "<template><div v-for=\"item in items\"><span v-for=\"item in item.children\" /></div></template>",
+      "sourceSha256": "1904bebd7d9d992655cc79d4ed9f36d4f6b2ad084d5a5481783fc21e39a5ed6c",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 51,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 55
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><div v-for=\"item in items\"><span v-for=\"item in item.children\" /></div></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 50,
+            "end": 54,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "script-setup-for",
+      "source": "<script setup>const item = 1</script><template><div v-for=\"item in items\" /></template>",
+      "sourceSha256": "af751c946be1f795fd68822fc37a6411540abfb49a1334a38096c460c9b8561d",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 60,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 64
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup>const item = 1</script><template><div v-for=\"item in items\" /></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": true,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "script-setup-slot",
+      "source": "<script setup>const item = 1</script><template><Panel v-slot=\"{ item }\" /></template>",
+      "sourceSha256": "5bf056be7a5826a97298fa01a16ea2b6141c39bf3ef8c0940cfbe142e6821ab7",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 65,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 69
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup>const item = 1</script><template><Panel v-slot=\"{ item }\" /></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": true,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "props-slot",
+      "source": "<script setup lang=\"ts\">defineProps<{ item: string }>()</script><template><Panel v-slot=\"{ item }\" /></template>",
+      "sourceSha256": "71619550cb8904c379f626cbfe5ccc19863f18481bf4d33fc2b04c18dca0fe02",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 92,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 96
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup lang=\"ts\">defineProps<{ item: string }>()</script><template><Panel v-slot=\"{ item }\" /></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": true,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "nested-slot",
+      "source": "<template><Panel v-slot=\"{ item }\"><Other v-slot=\"{ item }\" /></Panel></template>",
+      "sourceSha256": "9c0e2b26b7dda9368cdedbf67b3d09e8c10c0ebb9103a222b3911bf167759f05",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 53,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 57
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><Panel v-slot=\"{ item }\"><Other v-slot=\"{ item }\" /></Panel></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 52,
+            "end": 56,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "legacy-slot",
+      "source": "<template><div v-for=\"item in items\"><Panel slot-scope=\"{ item }\" /></div></template>",
+      "sourceSha256": "b69aaf182c5afec253d608785e777c41d405abdbe3209b4141d6a06cd48bf829",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 59,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 63
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><div v-for=\"item in items\"><Panel slot-scope=\"{ item }\" /></div></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 58,
+            "end": 62,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "legacy-parent-for",
+      "source": "<template><Panel slot-scope=\"{ item }\"><div v-for=\"item in items\" /></Panel></template>",
+      "sourceSha256": "4d2450e562a220f033885b2cdf930e8b44f0e4f7d1df7221657c50eaf37d6a0b",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 52,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 56
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><Panel slot-scope=\"{ item }\"><div v-for=\"item in items\" /></Panel></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 51,
+            "end": 55,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "same-owner",
+      "source": "<template><Panel v-for=\"item in items\" v-slot=\"{ item }\" /></template>",
+      "sourceSha256": "bceff80a41ef5d7f22134b202badb5df34698c2211097334a2f84ef8fed0a627",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 50,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 54
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><Panel v-for=\"item in items\" v-slot=\"{ item }\" /></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 49,
+            "end": 53,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "property-rename-negative",
+      "source": "<template><Panel v-slot=\"{ item: renamed }\"><div v-for=\"item in items\" /></Panel></template>",
+      "sourceSha256": "354e4980adff9dd444c303af846bca935a44741948f255590207d16b8ef157fb",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "sibling-negative",
+      "source": "<template><div v-for=\"item in items\" /><div v-for=\"item in others\" /></template>",
+      "sourceSha256": "ac25fe0a44e0bc1a9c40f600e13c38a7a7fba3129e0739661627de396bde2c53",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "ordinary-script-local-negative",
+      "source": "<script>const item=1;export default {}</script><template><div v-for=\"item in items\" /></template>",
+      "sourceSha256": "91cc40694cd6e16266c93f7e0756c981782d59c494dcdd3f841a96659708adba",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "function-local-negative",
+      "source": "<script setup>function f(){const item=1}</script><template><div v-for=\"item in items\" /></template>",
+      "sourceSha256": "618b188359a6bb5e08c57af3c2a0716067251a32936899e74e0f2fc5cf24f4a5",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "globals-negative",
+      "source": "<template><div v-for=\"window in items\" /></template>",
+      "sourceSha256": "df0956f07de3fc732cf400c8746e21af3cd0b1bb14678e4a2c4ea24859c5aac3",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "type-only-boundary",
+      "source": "<script setup lang=\"ts\">type Item=string</script><template><div v-for=\"Item in items\" /></template>",
+      "sourceSha256": "1981885e19ec1f6018bd7a27d38bea011b8891d8d095879c52dc71ad3085f1b6",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/private/tmp/vize-no-template-shadow-audit/Control.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'Item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 72,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 76
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup lang=\"ts\">type Item=string</script><template><div v-for=\"Item in items\" /></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": true,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "boundary-tupleHole",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(item, , index) in ys\"/></Panel></template>",
+      "sourceSha256": "da6ee97267f32bee6bc1c7a47e49052415dc8793ab4a78ece39fba2ab0f8b750",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 52,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 56
+          }
+        ],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 36,
+            "lineNumber": 1,
+            "column": 36
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 82],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 74],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [51, 55],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 51
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 55
+                  }
+                }
+              },
+              {
+                "kind": "v-for",
+                "name": "index",
+                "range": [59, 64],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 59
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 64
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 51,
+            "end": 55,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary-tupleTrailingComma",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(item, index,) in ys\"/></Panel></template>",
+      "sourceSha256": "df8d8ddce439914c2f116ba6bfff12513b33d72ba9834f0330a259b1aa84c3c3",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 52,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 56
+          }
+        ],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 36,
+            "lineNumber": 1,
+            "column": 36
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 81],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 73],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [51, 55],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 51
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 55
+                  }
+                }
+              },
+              {
+                "kind": "v-for",
+                "name": "index",
+                "range": [57, 62],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 57
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 62
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 51,
+            "end": 55,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary-fourAliases",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(item,index,third,fourth) in ys\"/></Panel></template>",
+      "sourceSha256": "d55ffeed8b2ab4aad57f8e572ffa8ff1fbc9f56a7e133990754b1d6b73317d14",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 52,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 56
+          }
+        ],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 36,
+            "lineNumber": 1,
+            "column": 36
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 92],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 84],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [51, 55],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 51
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 55
+                  }
+                }
+              },
+              {
+                "kind": "v-for",
+                "name": "index",
+                "range": [56, 61],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 56
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 61
+                  }
+                }
+              },
+              {
+                "kind": "v-for",
+                "name": "third",
+                "range": [62, 67],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 62
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 67
+                  }
+                }
+              },
+              {
+                "kind": "v-for",
+                "name": "fourth",
+                "range": [68, 74],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 68
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 74
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 51,
+            "end": 55,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary-duplicateTuple",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(item,item) in ys\"/></Panel></template>",
+      "sourceSha256": "ad068d62fd615e1b7b9f6b982a6a889df9edd8de90df32ac8820e47a0e66ba95",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 36,
+            "lineNumber": 1,
+            "column": 36
+          },
+          {
+            "message": "Identifier 'item' has already been declared",
+            "index": 56,
+            "lineNumber": 1,
+            "column": 56
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 78],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 70],
+            "tag": "Panel",
+            "variables": []
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "boundary-arrayHole",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"([item,,x], i) in ys\"/></Panel></template>",
+      "sourceSha256": "693b66a767115e5441eba315da3407ffe3ce66c332c6742e213cdd91926d3067",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 53,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 57
+          }
+        ],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 36,
+            "lineNumber": 1,
+            "column": 36
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 81],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 73],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [52, 56],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 52
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 56
+                  }
+                }
+              },
+              {
+                "kind": "v-for",
+                "name": "x",
+                "range": [58, 59],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 58
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 59
+                  }
+                }
+              },
+              {
+                "kind": "v-for",
+                "name": "i",
+                "range": [62, 63],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 62
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 63
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 52,
+            "end": 56,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary-forThenSlot",
+      "source": "<template><Panel v-for=\"item in items\" #default=\"{ item }\"/></template>",
+      "sourceSha256": "af980aa6af6ff815e442aebc34c2eba8368fd812ac98b1acdc5b821da9c2e6d2",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 52,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 56
+          }
+        ],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 10,
+            "lineNumber": 1,
+            "column": 10
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 60],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              },
+              {
+                "kind": "scope",
+                "name": "item",
+                "range": [51, 55],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 51
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 55
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 51,
+            "end": 55,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary-slotThenFor",
+      "source": "<template><Panel #default=\"{ item }\" v-for=\"item in items\"/></template>",
+      "sourceSha256": "69f4da49e17cc19c68ae30bda6beb4785558c06a0284f15687e1bd659d517752",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 45,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 49
+          }
+        ],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 10,
+            "lineNumber": 1,
+            "column": 10
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 60],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "scope",
+                "name": "item",
+                "range": [29, 33],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 29
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 33
+                  }
+                }
+              },
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [44, 48],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 44
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 48
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 44,
+            "end": 48,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary-forThenLegacy",
+      "source": "<template><Panel v-for=\"item in items\" slot-scope=\"{ item }\"/></template>",
+      "sourceSha256": "889bb41721e4e50ff9afd0380cd4be270684845ec4d9bf4825de44e2b7968a01",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 54,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 58
+          }
+        ],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 10,
+            "lineNumber": 1,
+            "column": 10
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 62],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              },
+              {
+                "kind": "scope",
+                "name": "item",
+                "range": [53, 57],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 53
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 57
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 53,
+            "end": 57,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary-legacyThenFor",
+      "source": "<template><Panel slot-scope=\"{ item }\" v-for=\"item in items\"/></template>",
+      "sourceSha256": "cea33d2cb6b52aca2727eac2c5ffe1368bf632d846785d297650bdfe20a6396a",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 47,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 51
+          }
+        ],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 10,
+            "lineNumber": 1,
+            "column": 10
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 62],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "scope",
+                "name": "item",
+                "range": [31, 35],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 31
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 35
+                  }
+                }
+              },
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [46, 50],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 46
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 50
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 46,
+            "end": 50,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary-duplicateSlot",
+      "source": "<template><Panel #default=\"{ x: item, y: item }\"/></template>",
+      "sourceSha256": "25436a9db736972f0d15ad32cf84efdf22835527b9d2776a9343967cf182a813",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 10,
+            "lineNumber": 1,
+            "column": 10
+          },
+          {
+            "message": "Argument name clash",
+            "index": 41,
+            "lineNumber": 1,
+            "column": 41
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 50],
+            "tag": "Panel",
+            "variables": []
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "boundary-ancestorDuplicates",
+      "source": "<template><Panel v-for=\"item in items\"><Panel #default=\"item\"><Panel v-for=\"item in others\"/></Panel></Panel></template>",
+      "sourceSha256": "2915f49710714f9eddb9ee28100b67ed874eecef3c9ca308bf148fbdecbc9054",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 57,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 61
+          },
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 77,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 81
+          }
+        ],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 62,
+            "lineNumber": 1,
+            "column": 62
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 109],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [39, 101],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "scope",
+                "name": "item",
+                "range": [56, 60],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 56
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 60
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [62, 93],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [76, 80],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 76
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 80
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 56,
+            "end": 60,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 76,
+            "end": 80,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary-mixedSlots",
+      "source": "<template><Panel slot-scope=\"item\" #default=\"other\"><Panel v-for=\"item in items\"/></Panel></template>",
+      "sourceSha256": "ccf5ad196c47443a79d2113931edf45711854b4721c66014a0b37dc26b2b98be",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 67,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 71
+          }
+        ],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 52,
+            "lineNumber": 1,
+            "column": 52
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 90],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "scope",
+                "name": "item",
+                "range": [29, 33],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 29
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 33
+                  }
+                }
+              },
+              {
+                "kind": "scope",
+                "name": "other",
+                "range": [45, 50],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 45
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 50
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [52, 82],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [66, 70],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 66
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 70
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 66,
+            "end": 70,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary-escaped",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"\\u0069tem in ys\"/></Panel></template>",
+      "sourceSha256": "ce179261c44920504f185a2c265936ab171a87646d67f005e1599573e2861d37",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 51,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 60
+          }
+        ],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 36,
+            "lineNumber": 1,
+            "column": 36
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 76],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 68],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [50, 59],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 50
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 59
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 50,
+            "end": 59,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary-propertyKeyNegative",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel #default=\"{ item: renamed }\"/></Panel></template>",
+      "sourceSha256": "57074ccfed30cb7ec3a492a4bb4379abe41981b25d2d92f48134feb0ffc5f2a7",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 36,
+            "lineNumber": 1,
+            "column": 36
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 81],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 73],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "scope",
+                "name": "renamed",
+                "range": [61, 68],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 61
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 68
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "boundary-defaultReferenceNegative",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel #default=\"{ local = item }\"/></Panel></template>",
+      "sourceSha256": "79748635777321d76b7ba3e492df2c395fdd98a359b2bed67c22953514040a3f",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 36,
+            "lineNumber": 1,
+            "column": 36
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 80],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 72],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "scope",
+                "name": "local",
+                "range": [55, 60],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 55
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 60
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "boundary-ownPre",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-pre slot-scope=\"item\"/></Panel></template>",
+      "sourceSha256": "d14c1d2503823d03e650c16b5882c2ceaf4daf8e73c61f3e828d27b86ec73425",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 36,
+            "lineNumber": 1,
+            "column": 36
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 76],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 68],
+            "tag": "Panel",
+            "variables": []
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "boundary-inheritedPre",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-pre><Panel slot-scope=\"item\"/></Panel></Panel></template>",
+      "sourceSha256": "3dd3aced8e1437c3fc16fdd3d811286b536152bbe3093686839417dbbf3604d4",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 49,
+            "lineNumber": 1,
+            "column": 49
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 91],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 83],
+            "tag": "Panel",
+            "variables": []
+          },
+          {
+            "element": [49, 75],
+            "tag": "Panel",
+            "variables": []
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "boundary-scopeTemplate",
+      "source": "<template><Panel v-for=\"item in xs\"><template scope=\"item\"></template></Panel></template>",
+      "sourceSha256": "6933c666c9ed873baabcb1c2d6be6327934f11999c2798297820adc80bb381a6",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 54,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 58
+          }
+        ],
+        "parserErrors": [],
+        "declarations": [
+          {
+            "element": [10, 78],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 70],
+            "tag": "template",
+            "variables": [
+              {
+                "kind": "scope",
+                "name": "item",
+                "range": [53, 57],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 53
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 57
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 53,
+            "end": 57,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "boundary-scopeComponentNegative",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel scope=\"item\"/></Panel></template>",
+      "sourceSha256": "b15d07f86282f80a65a5076841c8df3d68629bd0ee8381bad241ecb4e508a812",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 36,
+            "lineNumber": 1,
+            "column": 36
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 65],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 57],
+            "tag": "Panel",
+            "variables": []
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "boundary-scopeDivNegative",
+      "source": "<template><Panel v-for=\"item in xs\"><div scope=\"item\"></div></Panel></template>",
+      "sourceSha256": "17534e89240a5a508d6a772e55be5125c0d5d165cf86b0f38e59be5e0564e429",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [],
+        "parserErrors": [],
+        "declarations": [
+          {
+            "element": [10, 68],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 60],
+            "tag": "div",
+            "variables": []
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "boundary-parenthesizedLegacyNegative",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel slot-scope=\"(item)\"/></Panel></template>",
+      "sourceSha256": "7711aca37cdc2a4daa29ac86b253bec9b9129b099d197388291c1bcec0322f14",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 36,
+            "lineNumber": 1,
+            "column": 36
+          },
+          {
+            "message": "Unexpected token (",
+            "index": 55,
+            "lineNumber": 1,
+            "column": 55
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 72],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 64],
+            "tag": "Panel",
+            "variables": []
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "boundary-parenthesizedModernNegative",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel #default=\"(item)\"/></Panel></template>",
+      "sourceSha256": "6748dcd08a768c718a6da9e8c87eaaa66e9e3de9e7a9a2133832844b0d5882f9",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "messages": [],
+        "parserErrors": [
+          {
+            "message": "non-void-html-element-start-tag-with-trailing-solidus",
+            "index": 36,
+            "lineNumber": 1,
+            "column": 36
+          },
+          {
+            "message": "Unexpected token (",
+            "index": 53,
+            "lineNumber": 1,
+            "column": 53
+          }
+        ],
+        "declarations": [
+          {
+            "element": [10, 70],
+            "tag": "Panel",
+            "variables": [
+              {
+                "kind": "v-for",
+                "name": "item",
+                "range": [24, 28],
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 28
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "element": [36, 62],
+            "tag": "Panel",
+            "variables": []
+          }
+        ]
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "entity-default-before-for-binding",
+      "source": "<template><Panel v-slot=\"{ item }\"><div v-for=\"({ value = &quot;&amp;&quot;, child: item }, index) in values\" /></Panel></template>",
+      "sourceSha256": "058e9acb8d2766429e613d803e178b5adf369e69f934daf30bda446f8af73299",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 85,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 89
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><Panel v-slot=\"{ item }\"><div v-for=\"({ value = &quot;&amp;&quot;, child: item }, index) in values\" /></Panel></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 84,
+            "end": 88,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "numeric-entity-binding",
+      "source": "<template><div v-for=\"item in items\"><Panel v-slot=\"{ &#105;tem }\" /></div></template>",
+      "sourceSha256": "a50d9f44bcd321fd610264c669475b37844d9f45f2dd92940a7a9f8f22a34363",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 55,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 64
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><div v-for=\"item in items\"><Panel v-slot=\"{ &#105;tem }\" /></div></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 54,
+            "end": 63,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "named-entity-binding",
+      "source": "<template><div v-for=\"ı in items\"><Panel v-slot=\"{ &imath; }\" /></div></template>",
+      "sourceSha256": "dab4ff98b2eddd1d7b0364f1f5e0cbad00558799622a99a73641931a1900249e",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'ı' is already declared in the upper scope.",
+            "line": 1,
+            "column": 52,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 59
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><div v-for=\"ı in items\"><Panel v-slot=\"{ &imath; }\" /></div></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'ı' shadows a variable in an outer scope",
+            "start": 52,
+            "end": 59,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "legacy-entity-default-before-binding",
+      "source": "<template><div v-for=\"item in items\"><Panel slot-scope=\"{ value = &quot;&amp;&quot;, item }\" /></div></template>",
+      "sourceSha256": "5cb9e986da6f63020ad2c5d4d7fdc9f4c73957d74626b4ff855f9a2f3d9c8ae7",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 86,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 90
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><div v-for=\"item in items\"><Panel slot-scope=\"{ value = &quot;&amp;&quot;, item }\" /></div></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 85,
+            "end": 89,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "unicode-before-escaped-binding",
+      "source": "<template>🚀<div v-for=\"item in items\"><Panel v-slot=\"{ \\u0069tem }\" /></div></template>",
+      "sourceSha256": "b7017181600d9992e26340cfd003e1c777a0f8634e2017f372abd00652d8314b",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 57,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 66
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template>🚀<div v-for=\"item in items\"><Panel v-slot=\"{ \\u0069tem }\" /></div></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 58,
+            "end": 67,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "quoted-pre-is-not-a-directive",
+      "source": "<template><div title=\"v-pre\" v-for=\"item in items\"><Panel slot-scope=\"{ item }\" /></div></template>",
+      "sourceSha256": "9355bddd5eb812b603764e948e4b7d949932f789768dd79c61aeed8223bf6b96",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 73,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 77
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><div title=\"v-pre\" v-for=\"item in items\"><Panel slot-scope=\"{ item }\" /></div></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 72,
+            "end": 76,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "own-pre-after-legacy-binding",
+      "source": "<template><div v-for=\"item in items\"><Panel slot-scope=\"{ item }\" v-pre /></div></template>",
+      "sourceSha256": "66ca09e3062f6f82070fe5823f64e5e00763d71bf9bf34f1621187064c6902c3",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "pre-like-attribute-negative",
+      "source": "<template><div v-pretty v-for=\"item in items\"><Panel slot-scope=\"{ item }\" /></div></template>",
+      "sourceSha256": "d7ed4b15ac3e5c3d747a13d463db17b613a6615bc35c0e03b1f1a820e7b8ea04",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 68,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 72
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><div v-pretty v-for=\"item in items\"><Panel slot-scope=\"{ item }\" /></div></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 67,
+            "end": 71,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+[
+  {
+    "id": "MessagesList",
+    "sourceFile": "MessagesList.vue.txt",
+    "project": "n8n",
+    "file": "packages/frontend/@n8n/chat/src/components/MessagesList.vue",
+    "revision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+    "sourceSha256": "cbcaf56133b4794abf618dc5c24c748f15242229e3c1de4ca751e26cce920abd",
+    "sourceUrl": "https://raw.githubusercontent.com/n8n-io/n8n/e882e8a483f433facb47bab9b407d0ec00a81172/packages/frontend/@n8n/chat/src/components/MessagesList.vue",
+    "referenceOptions": ["warn"],
+    "referenceFindings": [
+      {
+        "project": "n8n",
+        "side": "falseNegatives",
+        "sourceReport": "/tmp/vize-ci-qualification/matrix-12/n8n-lint-divergence.json",
+        "column": 33,
+        "endColumn": 40,
+        "endLine": 55,
+        "file": "packages/frontend/@n8n/chat/src/components/MessagesList.vue",
+        "line": 55,
+        "message": "Variable 'message' is already declared in the upper scope.",
+        "ruleId": "vue/no-template-shadow",
+        "severity": "warning",
+        "upstreamRuleId": "vue/no-template-shadow"
+      }
+    ],
+    "expectedNative": {
+      "filename": "Probe.vue",
+      "error_count": 0,
+      "warning_count": 1,
+      "diagnostics": [
+        {
+          "rule_name": "vue/no-template-shadow",
+          "severity": "warning",
+          "message": "Variable 'message' shadows a variable in an outer scope",
+          "start": 1550,
+          "end": 1557,
+          "help": "Rename the variable to avoid shadowing",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "ChatMessageQueue",
+    "sourceFile": "ChatMessageQueue.vue.txt",
+    "project": "n8n",
+    "file": "packages/frontend/editor-ui/src/features/ai/shared/components/ChatMessageQueue.vue",
+    "revision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+    "sourceSha256": "db7f408063ec3c833a7b00f49252f059b33a65d0eb447cc68f5bce2d4118091c",
+    "sourceUrl": "https://raw.githubusercontent.com/n8n-io/n8n/e882e8a483f433facb47bab9b407d0ec00a81172/packages/frontend/editor-ui/src/features/ai/shared/components/ChatMessageQueue.vue",
+    "referenceOptions": ["warn"],
+    "referenceFindings": [
+      {
+        "project": "n8n",
+        "side": "falseNegatives",
+        "sourceReport": "/tmp/vize-ci-qualification/matrix-12/n8n-lint-divergence.json",
+        "column": 34,
+        "endColumn": 39,
+        "endLine": 193,
+        "file": "packages/frontend/editor-ui/src/features/ai/shared/components/ChatMessageQueue.vue",
+        "line": 193,
+        "message": "Variable 'index' is already declared in the upper scope.",
+        "ruleId": "vue/no-template-shadow",
+        "severity": "warning",
+        "upstreamRuleId": "vue/no-template-shadow"
+      }
+    ],
+    "expectedNative": {
+      "filename": "Probe.vue",
+      "error_count": 0,
+      "warning_count": 1,
+      "diagnostics": [
+        {
+          "rule_name": "vue/no-template-shadow",
+          "severity": "warning",
+          "message": "Variable 'index' shadows a variable in an outer scope",
+          "start": 5834,
+          "end": 5839,
+          "help": "Rename the variable to avoid shadowing",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    }
+  }
+]

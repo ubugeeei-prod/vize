@@ -7,8 +7,8 @@ expression: result.diagnostics
         rule_name: "vue/no-template-shadow",
         severity: Warning,
         message: "Variable 'item' shadows a variable in an outer scope",
-        start: 48,
-        end: 77,
+        start: 55,
+        end: 59,
         help: Some(
             "Rename the variable to avoid shadowing",
         ),

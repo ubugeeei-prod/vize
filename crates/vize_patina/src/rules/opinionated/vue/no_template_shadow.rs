@@ -1,17 +1,14 @@
 //! vue/no-template-shadow
 //!
-//! Disallow variable names that shadow Vue component properties.
+//! Disallow template declarations that shadow another template binding.
 //!
-//! When a v-for variable shadows a component property or another v-for variable,
-//! it can lead to confusing behavior.
+//! v-for and modern/legacy scoped-slot declarations use their authored identifier
+//! ranges and lexical template scopes. Script/component exposure is separate.
 //!
 //! ## Examples
 //!
 //! ### Invalid
 //! ```vue
-//! <!-- If 'item' is a component property -->
-//! <div v-for="item in items">{{ item }}</div>
-//!
 //! <!-- Nested v-for with same variable name -->
 //! <div v-for="item in items">
 //!   <div v-for="item in item.children">{{ item }}</div>
@@ -28,8 +25,11 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::visitor::parse_v_for_variables;
-use vize_relief::{DirectiveNode, ElementNode};
+use vize_relief::RootNode;
+
+mod bindings;
+mod frozen;
+mod scopes;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-template-shadow",
@@ -47,35 +47,8 @@ impl Rule for NoTemplateShadow {
         &META
     }
 
-    fn check_directive<'a>(
-        &self,
-        ctx: &mut LintContext<'a>,
-        _element: &ElementNode<'a>,
-        directive: &DirectiveNode<'a>,
-    ) {
-        if directive.name != "for" {
-            return;
-        }
-
-        // Get the v-for variables
-        let Some(ref exp) = directive.exp else {
-            return;
-        };
-
-        let vars = parse_v_for_variables(exp);
-
-        // Check each variable against PARENT scope (not current scope, which includes our own vars)
-        // We use is_parent_v_for_var instead of is_v_for_var to avoid checking against ourselves
-        for var in &vars {
-            let var_name = var.as_str();
-            if ctx.is_parent_v_for_var(var_name) {
-                ctx.warn_with_help(
-                    ctx.t_fmt("vue/no-template-shadow.message", &[("name", var_name)]),
-                    &directive.loc,
-                    ctx.t("vue/no-template-shadow.help"),
-                );
-            }
-        }
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
+        scopes::check(ctx, &root.children);
     }
 }
 

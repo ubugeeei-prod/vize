@@ -43,10 +43,19 @@ pub(crate) struct ForSplit {
 /// `None` when the value does not split — the lowering then keeps it
 /// whole as `Opaque(ForValue)`.
 pub fn split_v_for_value(raw: &str) -> Option<(Option<&str>, &str)> {
+    let (aliases, source) = split_v_for_alias_sources(raw)?;
+    let value = aliases.first().copied().filter(|alias| !alias.is_empty());
+    Some((value, source))
+}
+
+/// All authored alias positions and the iterable, as authenticated sub-slices
+/// of `raw`. Empty tuple positions are retained; nested pattern commas do not
+/// split positions. Surface consumers can select a binding grammar without
+/// rebuilding alias text or searching for decoded identifier names.
+pub fn split_v_for_alias_sources(raw: &str) -> Option<(SmallVec<[&str; 3]>, &str)> {
     let split = split_for(raw)?;
     let aliases = split_aliases(raw.get(..split.alias_end)?)?;
-    let value = aliases.first().copied().filter(|alias| !alias.is_empty());
-    Some((value, raw.get(split.source_start..)?))
+    Some((aliases, raw.get(split.source_start..)?))
 }
 
 /// Find the first viable ` in ` / ` of ` separator: the keyword with
@@ -159,11 +168,26 @@ fn split_top_level(input: &str) -> ForAliases<'_> {
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
-    use super::{split_aliases, split_for};
+    use super::{split_aliases, split_for, split_v_for_alias_sources};
 
     fn split(content: &str) -> (&str, &str) {
         let s = split_for(content).expect("the value splits");
         (&content[..s.alias_end], &content[s.source_start..])
+    }
+
+    #[test]
+    fn alias_sources_preserve_authored_subslices_and_omitted_positions() {
+        let raw = "  ({ item: renamed = call(outer, other) }, , index,) of items";
+        let (aliases, source) = split_v_for_alias_sources(raw).unwrap();
+        assert_eq!(
+            aliases.as_slice(),
+            ["{ item: renamed = call(outer, other) }", "", "index", ""]
+        );
+        assert_eq!(source, "items");
+        for slice in aliases.iter().copied().chain([source]) {
+            let offset = slice.as_ptr() as usize - raw.as_ptr() as usize;
+            assert!(core::ptr::eq(slice, &raw[offset..offset + slice.len()]));
+        }
     }
 
     #[test]
