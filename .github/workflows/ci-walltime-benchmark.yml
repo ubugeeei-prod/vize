@@ -188,10 +188,10 @@ jobs:
           mkdir -p target/ci-walltime
           cargo nextest list --locked --workspace --profile full --message-format json > target/ci-walltime/rust-selected-tests.json
       - name: Serial full workspace including doctests
-        run: node tools/support/compat/github/run-rust-workspace-tests.mjs --runner cargo --output target/ci-walltime/rust-cargo.json
+        run: node tools/support/compat/github/run-rust-workspace-tests.ts --runner cargo --output target/ci-walltime/rust-cargo.json
       - name: Concurrent full workspace including doctests
         if: ${{ !cancelled() }}
-        run: node tools/support/compat/github/run-rust-workspace-tests.mjs --runner nextest --output target/ci-walltime/rust-nextest.json
+        run: node tools/support/compat/github/run-rust-workspace-tests.ts --runner nextest --output target/ci-walltime/rust-nextest.json
       - name: Preserve both workspace timings and complete nextest results
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

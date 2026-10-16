@@ -11,7 +11,7 @@ import {
   readWorkspaceInventory,
   requireFullWorkspaceJobs,
   verifyWorkspaceExecution,
-} from "../../tools/support/compat/github/rust-workspace-inventory.mjs";
+} from "../../tools/support/compat/github/rust-workspace-inventory.ts";
 
 const list = {
   "rust-suites": {

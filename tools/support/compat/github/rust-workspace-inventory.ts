@@ -338,7 +338,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     console.log("Complete same-source ci workspace inventory and execution verified.");
   } else {
     throw new Error(
-      "usage: rust-workspace-inventory.mjs compare TEST_RECEIPT CI_RECEIPT | verify SHA RESULTS_DIRECTORY",
+      "usage: rust-workspace-inventory.ts compare TEST_RECEIPT CI_RECEIPT | verify SHA RESULTS_DIRECTORY",
     );
   }
 }

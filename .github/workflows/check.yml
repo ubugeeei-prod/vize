@@ -412,10 +412,10 @@ jobs:
         with: { tool: cargo-nextest@0.9.146 }
       - name: Run the original test profile for same-source comparison
         if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.compare-rust-test-profile }}
-        run: node tools/support/compat/github/run-rust-workspace-tests.mjs --cargo-profile test --output target/nextest/full/workspace-reference-timing.json
+        run: node tools/support/compat/github/run-rust-workspace-tests.ts --cargo-profile test --output target/nextest/full/workspace-reference-timing.json
       - name: Run and inventory every workspace test and doctest
         if: ${{ !cancelled() }}
-        run: node tools/support/compat/github/run-rust-workspace-tests.mjs --cargo-profile ci
+        run: node tools/support/compat/github/run-rust-workspace-tests.ts --cargo-profile ci
       - name: Preserve full-workspace test results and walltime
         if: ${{ always() }}
         uses: ./.github/actions/upload-rust-full-workspace-results
@@ -440,10 +440,10 @@ jobs:
           path: .artifacts/rust-full-workspace
       - name: Require the requested same-source test and ci inventories
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.compare-rust-test-profile }}
-        run: node tools/support/compat/github/rust-workspace-inventory.mjs compare .artifacts/rust-full-workspace/workspace-inventory-test.json .artifacts/rust-full-workspace/workspace-inventory-ci.json
+        run: node tools/support/compat/github/rust-workspace-inventory.ts compare .artifacts/rust-full-workspace/workspace-inventory-test.json .artifacts/rust-full-workspace/workspace-inventory-ci.json
       - name: Verify complete same-head workspace execution
         env: { SOURCE_SHA: "${{ github.sha }}", NEEDS_JSON: "${{ toJSON(needs) }}" }
-        run: node tools/support/compat/github/rust-workspace-inventory.mjs verify "$SOURCE_SHA" .artifacts/rust-full-workspace
+        run: node tools/support/compat/github/rust-workspace-inventory.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace
   clippy-and-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}

@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 
 const runner = new URL(
-  "../../tools/support/compat/github/run-rust-workspace-tests.mjs",
+  "../../tools/support/compat/github/run-rust-workspace-tests.ts",
   import.meta.url,
 );
 

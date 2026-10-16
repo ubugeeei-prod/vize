@@ -15,7 +15,7 @@ import {
   digest,
   normalizeWorkspaceInventory,
   workspaceFingerprint,
-} from "./rust-workspace-inventory.mjs";
+} from "./rust-workspace-inventory.ts";
 
 const { values } = parseArgs({
   options: {

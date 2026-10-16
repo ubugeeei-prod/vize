@@ -193,7 +193,7 @@ test("queue Rust keeps affected doctests beside archive builds and the different
   const workspaceStep = recipe.runs.steps.find((step) => step.name === "Test Rust workspace");
   assert.ok(workspaceStep);
   assert.equal(workspaceStep.if, "${{ inputs.workspace-already-tested != 'true' }}");
-  assert.equal(workspaceStep.run, "node tools/support/compat/github/run-rust-workspace-tests.mjs");
+  assert.equal(workspaceStep.run, "node tools/support/compat/github/run-rust-workspace-tests.ts");
   const hydration = recipe.runs.steps[0];
   assert.equal(
     hydration.run,

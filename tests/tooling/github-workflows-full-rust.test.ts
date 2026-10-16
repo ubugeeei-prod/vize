@@ -47,12 +47,12 @@ void test("full workspace shares the seeded compiler, linker, target path and ci
   assert.equal(run?.if, "${{ !cancelled() }}");
   assert.equal(
     run?.run,
-    "node tools/support/compat/github/run-rust-workspace-tests.mjs --cargo-profile ci",
+    "node tools/support/compat/github/run-rust-workspace-tests.ts --cargo-profile ci",
   );
   assert.equal(use(workspace, "taiki-e/install-action@")?.with?.tool, "cargo-nextest@0.9.146");
   // Existing benchmark callers retain their original default build profile.
   assert.match(
-    readRepoFile("tools", "support", "compat", "github", "run-rust-workspace-tests.mjs"),
+    readRepoFile("tools", "support", "compat", "github", "run-rust-workspace-tests.ts"),
     /"cargo-profile": \{ type: "string", default: "test" \}/,
   );
 });
@@ -112,7 +112,7 @@ void test("independent native tail cannot hide a missing or failed workspace exe
   assert.equal(verification?.env?.NEEDS_JSON, "${{ toJSON(needs) }}");
   assert.equal(
     verification?.run,
-    'node tools/support/compat/github/rust-workspace-inventory.mjs verify "$SOURCE_SHA" .artifacts/rust-full-workspace',
+    'node tools/support/compat/github/rust-workspace-inventory.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace',
   );
 });
 
@@ -127,7 +127,7 @@ void test("expensive original-profile comparison is opt-in and requested parity 
   );
   assert.equal(
     original?.run,
-    "node tools/support/compat/github/run-rust-workspace-tests.mjs --cargo-profile test --output target/nextest/full/workspace-reference-timing.json",
+    "node tools/support/compat/github/run-rust-workspace-tests.ts --cargo-profile test --output target/nextest/full/workspace-reference-timing.json",
   );
   const compare = report.steps.find(
     (step) => step.name === "Require the requested same-source test and ci inventories",
@@ -138,6 +138,6 @@ void test("expensive original-profile comparison is opt-in and requested parity 
   );
   assert.equal(
     compare?.run,
-    "node tools/support/compat/github/rust-workspace-inventory.mjs compare .artifacts/rust-full-workspace/workspace-inventory-test.json .artifacts/rust-full-workspace/workspace-inventory-ci.json",
+    "node tools/support/compat/github/rust-workspace-inventory.ts compare .artifacts/rust-full-workspace/workspace-inventory-test.json .artifacts/rust-full-workspace/workspace-inventory-ci.json",
   );
 });
