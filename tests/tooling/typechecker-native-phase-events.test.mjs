@@ -18,7 +18,7 @@ function evaluate(value, github, inputs = {}) {
   return runInNewContext(expression, { github, inputs });
 }
 
-test("historical native phase campaigns run only on schedule or explicit immutable source dispatch", () => {
+void test("historical native phase campaigns run only on schedule or explicit immutable source dispatch", () => {
   assert.deepEqual(Object.keys(workflow.on).sort(), ["schedule", "workflow_dispatch"]);
   assert.equal(workflow.on.schedule.length, 1);
   assert.equal(workflow.on.workflow_dispatch.inputs.source_sha.required, true);
@@ -36,7 +36,7 @@ test("historical native phase campaigns run only on schedule or explicit immutab
     );
 });
 
-test("scheduled source identity follows the immutable event and manual source remains explicit", () => {
+void test("scheduled source identity follows the immutable event and manual source remains explicit", () => {
   const main = "1".repeat(40);
   const historical = "2".repeat(40);
   const github = { event_name: "schedule", sha: main, workflow_sha: main };
