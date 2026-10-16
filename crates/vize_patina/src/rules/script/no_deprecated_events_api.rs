@@ -41,7 +41,6 @@
 //! </script>
 //! ```
 
-use super::vue_instance::VueInstance;
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{CallExpression, Expression, Program};
@@ -87,12 +86,7 @@ impl ScriptRule for NoDeprecatedEventsApi {
         {
             return;
         }
-        let instance = VueInstance::new(program, source);
-        let mut visitor = NoDeprecatedEventsApiVisitor {
-            offset,
-            result,
-            instance: &instance,
-        };
+        let mut visitor = NoDeprecatedEventsApiVisitor { offset, result };
         visitor.visit_program(program);
     }
 }
@@ -100,14 +94,11 @@ impl ScriptRule for NoDeprecatedEventsApi {
 struct NoDeprecatedEventsApiVisitor<'result> {
     offset: usize,
     result: &'result mut ScriptLintResult,
-    instance: &'result VueInstance,
 }
 
 impl<'a> Visit<'a> for NoDeprecatedEventsApiVisitor<'_> {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if self.instance.contains(it.span)
-            && let Some((span, method)) = removed_event_callee(&it.callee, self.instance)
-        {
+        if let Some((span, method)) = removed_event_callee(&it.callee) {
             self.push_diagnostic(span, method);
         }
 
@@ -136,31 +127,25 @@ impl NoDeprecatedEventsApiVisitor<'_> {
 }
 
 /// Preserve the provider's property-token span, including computed literal keys.
-fn removed_event_callee(
-    expression: &Expression<'_>,
-    instance: &VueInstance,
-) -> Option<(Span, &'static str)> {
-    // TypeScript wrappers erase at runtime. Preserve warnings on a proven Vue
-    // instance even though the pinned ESLint selector misses wrapped callees.
+fn removed_event_callee(expression: &Expression<'_>) -> Option<(Span, &'static str)> {
+    // TypeScript wrappers erase at runtime. Preserve the historical warning
+    // policy even when the pinned ESLint selector misses wrapped callees.
     let member = match expression {
         Expression::ParenthesizedExpression(wrapper) => {
-            return removed_event_callee(&wrapper.expression, instance);
+            return removed_event_callee(&wrapper.expression);
         }
         Expression::TSAsExpression(wrapper) => {
-            return removed_event_callee(&wrapper.expression, instance);
+            return removed_event_callee(&wrapper.expression);
         }
         Expression::TSSatisfiesExpression(wrapper) => {
-            return removed_event_callee(&wrapper.expression, instance);
+            return removed_event_callee(&wrapper.expression);
         }
         Expression::TSNonNullExpression(wrapper) => {
-            return removed_event_callee(&wrapper.expression, instance);
+            return removed_event_callee(&wrapper.expression);
         }
         Expression::ChainExpression(chain) => chain.expression.as_member_expression()?,
         _ => expression.as_member_expression()?,
     };
-    if !instance.is_this(member.object()) {
-        return None;
-    }
     let (span, property) = member.static_property_info()?;
     let matched = REMOVED_EVENT_METHODS
         .into_iter()
@@ -175,8 +160,7 @@ mod tests {
     fn lint(source: &str) -> ScriptLintResult {
         let rule = NoDeprecatedEventsApi;
         let mut result = ScriptLintResult::default();
-        let source = format!("export default {{ created() {{ {source} }} }}");
-        rule.check(&source, 0, &mut result);
+        rule.check(source, 0, &mut result);
         result
     }
 
@@ -212,9 +196,9 @@ emitter.once('event', handler)
     }
 
     #[test]
-    fn test_valid_foreign_emitter_off() {
+    fn test_invalid_emitter_off() {
         let result = lint("emitter.$off('event', handler)");
-        assert_eq!(result.error_count, 0);
+        assert_eq!(result.error_count, 1);
     }
 
     #[test]
@@ -243,7 +227,7 @@ this.$emit('c')
         let result = lint("this.$on?.('x', h); this?.$off('x', h); this?.$once?.('x', h)");
         assert_eq!(result.error_count, 3);
         let foreign = lint("emitter.$on?.('x', h); this.$root.$off?.('x', h)");
-        assert_eq!(foreign.error_count, 0);
+        assert_eq!(foreign.error_count, 2);
     }
 
     #[test]

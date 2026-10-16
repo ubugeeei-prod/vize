@@ -66,7 +66,6 @@ mod valid_define_emits;
 mod valid_define_options;
 mod valid_define_props;
 mod valid_next_tick;
-mod vue_instance;
 mod vue_router_prefer_named_push;
 mod vue_test_utils_no_html_snapshot;
 

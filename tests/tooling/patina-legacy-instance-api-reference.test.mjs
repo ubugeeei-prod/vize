@@ -72,7 +72,7 @@ await test("legacy instance API packets preserve every pinned original source an
       "vue/no-deprecated-events-api": "error",
     },
   };
-  assert.equal(authored.records.length, 57);
+  assert.equal(authored.records.length, 70);
   assert.equal(sources.length, 147);
   assert.equal(original.records.length, sources.length);
   assert.equal(manifest.sourceCount, sources.length);
@@ -109,17 +109,65 @@ await test("legacy instance API packets preserve every pinned original source an
     );
   }
   const gaps = json("provider-gaps.json");
-  assert.equal(gaps.gaps.length, 5);
+  assert.equal(gaps.gaps.length, 35);
   for (const gap of gaps.gaps) {
     const packet = authored.records.find((row) => row.id === gap.caseId);
     assert.ok(packet, gap.caseId);
     assert.ok(gap.reason.length > 40);
     assert.ok(gap.nativeMessages.length > packet.messages.length);
     for (const finding of gap.nativeMessages) {
-      const property = packet.source.slice(finding.start, finding.end);
-      assert.ok(["$on", "$off", "$once", "$listeners"].includes(property), gap.caseId);
+      const property = Buffer.from(packet.source).subarray(finding.start, finding.end).toString();
+      assert.ok(
+        ["$on", "$off", "$once", "$listeners"].includes(property.replace(/^["'`]|["'`]$/g, "")),
+        gap.caseId,
+      );
     }
   }
+  const native = json("native.json");
+  assert.equal(native.records.length, authored.records.length);
+  for (const packet of native.records) {
+    const source = authored.records.find((row) => row.id === packet.id);
+    assert.ok(source, packet.id);
+    assert.equal(source.sourceSha256, packet.sourceSha256);
+    const gap = gaps.gaps.find((row) => row.caseId === packet.id);
+    if (gap) assert.deepEqual(packet.messages, gap.nativeMessages, packet.id);
+  }
+  const provenance = compressed("provenance.json.gz");
+  assert.equal(provenance.audit.rows.length, 239);
+  assert.equal(provenance.packets.length, 24);
+  assert.equal(
+    hash(fs.readFileSync(path.join(fixture, "originals/sources.json.gz"))),
+    provenance.audit.originalArchiveSha256,
+  );
+  assert.equal(
+    hash(fs.readFileSync(path.join(fixture, "originals/manifest.json"))),
+    provenance.audit.originalManifestSha256,
+  );
+  for (const packet of provenance.packets) {
+    assert.equal(hash(Buffer.from(packet.base64, "base64")), packet.sha256);
+  }
+  for (const provider of Object.values(provenance.audit.providers)) {
+    const packet = provenance.packets.find((row) => row.path === provider.savedPath);
+    assert.ok(packet, provider.savedPath);
+    assert.equal(packet.sha256, provider.sha256);
+  }
+  for (const packet of provenance.audit.matrixPackets) {
+    assert.equal(
+      hash(gunzipSync(fs.readFileSync(path.join(fixture, packet.retainedFixture)))),
+      packet.sha256,
+    );
+  }
+  const classified = {};
+  for (const row of provenance.audit.rows) {
+    const source = sources.find(
+      (source) => source.project === row.project && source.path === row.file,
+    );
+    assert.ok(source, `${row.project}/${row.file}`);
+    assert.equal(source.sha256, row.sourceSha256);
+    for (const id of row.providerEvidenceIds) assert.ok(provenance.audit.providers[id], id);
+    classified[row.classification] = (classified[row.classification] ?? 0) + 1;
+  }
+  assert.deepEqual(classified, provenance.audit.counts);
   for (const row of [...authored.records, ...original.records]) {
     const source =
       row.source ??
@@ -135,7 +183,7 @@ await test("legacy instance API packets preserve every pinned original source an
   }
 });
 
-await test("Vue 3 keeps removed instance events unavailable after TypeScript erasure and optional chaining", () => {
+await test("Vue 3 keeps removed APIs unavailable on public instances and Options-returning factories", () => {
   const requireVue = createRequire(
     process.env.VIZE_LEGACY_API_VUE_MANIFEST ??
       path.join(root, "tools/benchmarks/scripts/package.json"),
@@ -144,9 +192,18 @@ await test("Vue 3 keeps removed instance events unavailable after TypeScript era
     process.env.VIZE_LEGACY_API_SCRIPT_PARSER_MANIFEST ??
       path.join(root, "tools/benchmarks/scripts/package.json"),
   );
-  const { createRenderer, version } = requireVue("vue");
-  const { transpileModule, ModuleKind, ScriptTarget } = requireTypeScript("typescript");
-  assert.match(version, /^3\./);
+  const runtime = json("runtime.json");
+  const { createRenderer, h, version } = requireVue("vue");
+  const requireDom = createRequire(requireVue.resolve("@vue/runtime-dom/package.json"));
+  const runtimePath = path.join(
+    path.dirname(requireDom.resolve("@vue/runtime-core/package.json")),
+    runtime.provider.source.path,
+  );
+  assert.equal(version, runtime.provider.vue);
+  assert.equal(hash(fs.readFileSync(runtimePath)), runtime.provider.source.sha256);
+  const typescript = requireTypeScript("typescript");
+  assert.equal(typescript.version, runtime.provider.typescript);
+  const { transpileModule, ModuleKind, ScriptTarget } = typescript;
   const renderer = createRenderer({
     createComment: (text) => ({ text }),
     insert: (node, parent) => {
@@ -157,14 +214,54 @@ await test("Vue 3 keeps removed instance events unavailable after TypeScript era
     nextSibling: () => null,
   });
   const failures = [];
-  let handled = 0;
-  let emitted = 0;
-  let inspected = false;
+  const receipt = {
+    mountedOptionsFactory: false,
+    relations: [],
+    wrappedFailures: 0,
+    optionalHandlers: 0,
+    emitEvents: 0,
+    foreignHandlers: 0,
+  };
+  function erasedCall(instance, source) {
+    const { outputText } = transpileModule(source, {
+      compilerOptions: { module: ModuleKind.None, target: ScriptTarget.ES2022 },
+    });
+    assert.throws(
+      () => compileFunction(outputText, ["h"]).call(instance, () => receipt.optionalHandlers++),
+      TypeError,
+    );
+    receipt.wrappedFailures++;
+  }
+  const Child = {
+    created() {
+      receipt.relations.push({
+        kind: "child",
+        rootIsSelf: this.$root === this,
+        parentIsRoot: this.$parent === this.$root,
+        rootOn: typeof this.$root.$on,
+        parentOn: typeof this.$parent.$on,
+        rootEmit: typeof this.$root.$emit,
+      });
+      erasedCall(this, '(this.$root.$on as any)("probe", h)');
+      erasedCall(this, '(this.$parent!.$off satisfies Function)("probe", h)');
+      this?.$parent?.$root?.$on?.("probe", () => receipt.optionalHandlers++);
+    },
+    render: () => null,
+  };
+  function MdComponent(options) {
+    return { ...options };
+  }
   const app = renderer.createApp(
-    {
+    new MdComponent({
       emits: ["probe"],
       created() {
-        inspected = true;
+        receipt.mountedOptionsFactory = true;
+        receipt.relations.push({
+          kind: "root",
+          rootIsSelf: this.$root === this,
+          parent: this.$parent,
+          rootOn: typeof this.$root.$on,
+        });
         for (const method of ["$on", "$off", "$once"]) assert.equal(this[method], undefined);
         this.$emit("probe");
         for (const source of [
@@ -172,27 +269,24 @@ await test("Vue 3 keeps removed instance events unavailable after TypeScript era
           '(this.$off satisfies Function)("probe", h)',
           'this.$once!("probe", h)',
           'const vm = this; ((vm.$off as any)!)("probe", h)',
-        ]) {
-          const { outputText } = transpileModule(source, {
-            compilerOptions: { module: ModuleKind.None, target: ScriptTarget.ES2022 },
-          });
-          assert.throws(
-            () => compileFunction(outputText, ["h"]).call(this, () => handled++),
-            TypeError,
-          );
-        }
-        this.$on?.("probe", () => handled++);
-        this?.$once?.("probe", () => handled++);
-        assert.equal(handled, 0, "optional removed calls cannot install event handlers");
+        ])
+          erasedCall(this, source);
+        this.$on?.("probe", () => receipt.optionalHandlers++);
+        this?.$once?.("probe", () => receipt.optionalHandlers++);
       },
-      render: () => null,
-    },
-    { onProbe: () => emitted++ },
+      render: () => h(Child),
+    }),
+    { onProbe: () => receipt.emitEvents++ },
   );
   app.config.warnHandler = (message) => failures.push(message);
   app.mount({});
   app.unmount();
-  assert.equal(inspected, true);
-  assert.equal(emitted, 1, "$emit remains available on the same Vue instance");
+  const external = {
+    $on(_event, handler) {
+      handler();
+    },
+  };
+  external.$on("probe", () => receipt.foreignHandlers++);
+  assert.deepEqual(receipt, runtime.expected);
   assert.deepEqual(failures, []);
 });

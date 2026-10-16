@@ -893,6 +893,84 @@
       "messages": []
     },
     {
+      "id": "public-instance-relations",
+      "source": "<script>export default { mounted() { this.$root.$on(\"x\", h); this.$parent.$off(\"x\", h); this.$root.$parent.$root.$once(\"x\", h); this.$root.$listeners; this.$parent.$listeners; this.$parent.$emit(\"x\") } }</script>",
+      "sourceSha256": "b439cb70255c2b4fa1ffa69b1f528b3895b8f7cc868670b19c3bf79a13330d2b",
+      "messages": []
+    },
+    {
+      "id": "public-relation-alias",
+      "source": "<script>export default { mounted() { const vm = this; vm.$parent.$root.$on(\"x\", h); vm.$root.$listeners } }</script>",
+      "sourceSha256": "5d1526e3bd06f512a1d171e65691c74f1fc479acc7f146ac752fbae5775a9bd8",
+      "messages": []
+    },
+    {
+      "id": "public-relation-optional",
+      "source": "<script>export default { mounted() { this?.$parent?.$root?.$on?.(\"x\", h); this.$root?.$listeners; (this.$parent?.$root).$off?.(\"x\", h) } }</script>",
+      "sourceSha256": "210b9dd11f305afb354cf202e8417da59b5da12efcc78c76ebd07c261e3688d5",
+      "messages": []
+    },
+    {
+      "id": "public-relation-wrapper",
+      "source": "<script lang=\"ts\">export default { mounted() { ((this.$root as any).$on as any)(\"x\", h); (this.$parent!.$once satisfies Function)(\"x\", h); (this.$root as any).$listeners } }</script>",
+      "sourceSha256": "d3acb00a949caa7ab56a8f1aaa1ce96b644788fd14d0e9b086607cced9649963",
+      "messages": []
+    },
+    {
+      "id": "wrapped-instance-receiver",
+      "source": "<script lang=\"ts\">export default { mounted() { (this as any).$on(\"x\", h); this!.$listeners } }</script>",
+      "sourceSha256": "db62907ad4d6796d86bc502d0264e3a0afde19c67ddf4d2c551f34a2fee8a27d",
+      "messages": []
+    },
+    {
+      "id": "computed-public-relations",
+      "source": "<script>export default { mounted() { this[\"$root\"][\"$on\"](\"x\", h); this[`$parent`].$listeners; this[rootName].$on(\"x\", h) } }</script>",
+      "sourceSha256": "0c87778527bab0e75b107030b29496a250abe708b5e3c47f55392b663a01d3b3",
+      "messages": []
+    },
+    {
+      "id": "ordinary-public-name-objects",
+      "source": "<script>export default { mounted() { const foreign = { $root: emitter, $parent: emitter }; foreign.$root.$on(\"x\", h); emitter.$parent.$listeners; this.$refs.child.$on(\"x\", h); this.child.$on(\"x\", h); this.eventBus.$on(\"x\", h) } }</script>",
+      "sourceSha256": "12564e7a25ae9abe897b003a9ec2b63b097aab88bf2192dcafd2b0d20e0dde46",
+      "messages": []
+    },
+    {
+      "id": "outside-public-relations",
+      "source": "<script>const foreign = { mounted() { this.$root.$on(\"x\", h); this.$parent.$listeners } }; export default {}</script>",
+      "sourceSha256": "7defdd40a13aaa1fdd12665212be93a8918322684582659e99bcc8083771dd37",
+      "messages": []
+    },
+    {
+      "id": "public-alias-shadow",
+      "source": "<script>export default { mounted() { const vm = this; (() => { const vm = foreign; vm.$root.$on(\"x\", h); vm.$parent.$listeners })(); vm.$root.$off(\"x\", h) } }</script>",
+      "sourceSha256": "80c86c784b29ec7ab37e62a34e04405e539a9b00cf33af05e7954d1822c51897",
+      "messages": []
+    },
+    {
+      "id": "arbitrary-public-chains",
+      "source": "<script>export default { mounted() { this.$root.foo.$on(\"x\", h); this.foo.$root.$on(\"x\", h); this.$root.$refs.child.$on(\"x\", h) } }</script>",
+      "sourceSha256": "aad2fa141c2f4c1db3628cdb7b3d60ad51e94fea10dce626fbcf02ba71afaaef",
+      "messages": []
+    },
+    {
+      "id": "options-returning-component-factory",
+      "source": "<script>function MdComponent(options) { return { ...options } } export default new MdComponent({ mounted() { this.$on(\"x\", h); return this.$listeners } })</script>",
+      "sourceSha256": "c7f98af9dd6f04fbc0e3d61275a8fefaa4c0f4b4db965a149c1962c6f0238ebf",
+      "messages": []
+    },
+    {
+      "id": "local-vue-event-bus",
+      "source": "<script>import Vue from \"vue\"; const bus = new Vue(); bus.$on(\"x\", h); export default { created() { bus.$off(\"x\", h) } }</script>",
+      "sourceSha256": "3aa525b21cbcdb5226af5fbbe7396b5e60b6ab7e6bacaa87da134aec3ebfdbdf",
+      "messages": []
+    },
+    {
+      "id": "non-vue-event-frontier",
+      "source": "<script>const eventHub = { $on() {} }; eventHub.$on(\"x\", h); export default {}</script>",
+      "sourceSha256": "1da67ca06400b8d421c5554bd412ff29a89957254f015c527c20f9f24f82a4e3",
+      "messages": []
+    },
+    {
       "id": "outside-component",
       "source": "<script>const external = { mounted() { this.$on(\"x\", h); this.$listeners } }</script>",
       "sourceSha256": "772a2dab72a6ed352d5781c8c6001b515e4b219251cf34be9e95a973c1be155f",
