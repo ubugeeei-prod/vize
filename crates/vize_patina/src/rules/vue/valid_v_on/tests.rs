@@ -71,8 +71,8 @@ fn unsupported_modifiers_report_each_exact_range() {
         for (diagnostic, name) in result.diagnostics.iter().zip(["sync", "nativeish"]) {
             assert_eq!(diagnostic.rule_name, "vue/valid-v-on");
             assert_eq!(
-                &source[diagnostic.start as usize..diagnostic.end as usize],
-                name
+                source.get(diagnostic.start as usize..diagnostic.end as usize),
+                Some(name)
             );
             assert!(diagnostic.message.contains(name));
         }

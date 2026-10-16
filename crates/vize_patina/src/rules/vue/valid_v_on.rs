@@ -225,7 +225,11 @@ fn has_integer_prefix(value: &str) -> bool {
     });
     let digits = value.strip_prefix(['+', '-']).unwrap_or(value);
     let len = digits.bytes().take_while(u8::is_ascii_digit).count();
-    len > 0 && digits[..len].parse::<f64>().is_ok_and(f64::is_finite)
+    len > 0
+        && digits
+            .get(..len)
+            .and_then(|prefix| prefix.parse::<f64>().ok())
+            .is_some_and(f64::is_finite)
 }
 
 /// Check if expression is empty
