@@ -29,6 +29,9 @@ Frappe Builder file with byte lengths, SHA-256 hashes and Git blob identities. I
 retains all 91 original divergent diagnostic entries and complete reference packets
 for those files plus ten minimal cases, including CRLF, Unicode, multiline
 expressions, chains, static and bound attributes, and clean inputs.
+The four compressed original Matrix linter reports retain the exact raw producer
+bytes and every field for all 655 ordered file packets, including findings from
+unrelated rules. Their raw byte lengths and SHA-256 identities are checked too.
 
 `tests/tooling/patina-deprecated-span-oracle.test.mjs` replays the pinned official
 provider and compares every packet field. Only the temporary checkout prefix in

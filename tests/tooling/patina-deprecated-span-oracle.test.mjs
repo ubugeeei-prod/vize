@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
+import { gunzipSync } from "node:zlib";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const directory = path.join(root, "crates/vize_patina/tests/fixtures/deprecated-diagnostic-spans");
@@ -139,6 +140,20 @@ if (process.argv.includes("--record")) {
         ["frappe-builder", 1],
       ],
     );
+    let originalFiles = 0;
+    for (const receipt of manifest.originalMatrixCaptures) {
+      const raw = gunzipSync(fs.readFileSync(path.join(directory, receipt.path)));
+      assert.equal(raw.length, receipt.rawBytes);
+      assert.equal(hash(raw), receipt.rawSha256);
+      const report = JSON.parse(raw);
+      assert.equal(report.project, receipt.project);
+      assert.equal(report.parsed.length, receipt.files);
+      // Keep every original producer field and ordered packet, including all
+      // unrelated rule messages. This audit never rewrites a current golden.
+      assert.deepEqual(JSON.parse(report.stdout), report.parsed);
+      originalFiles += report.parsed.length;
+    }
+    assert.equal(originalFiles, 655);
     const actual = await capture();
     assert.deepEqual(actual, JSON.parse(fs.readFileSync(fixturePath, "utf8")));
     for (const example of actual.captures) {

@@ -1177,5 +1177,35 @@
         ]
       }
     }
+  ],
+  "originalMatrixCaptures": [
+    {
+      "project": "zy-player",
+      "path": "original-matrix-zy-player-linter.json.gz",
+      "rawBytes": 854773,
+      "rawSha256": "23904b092f56330421848e60cb37e0f5092e4acd7cedcb6a7bde43923cd14d41",
+      "files": 13
+    },
+    {
+      "project": "frappe-builder",
+      "path": "original-matrix-frappe-builder-linter.json.gz",
+      "rawBytes": 1068843,
+      "rawSha256": "1199f4580d58881d4d80a3f1cd6e782484c0b7d1b501f663d95c2c34da71306d",
+      "files": 159
+    },
+    {
+      "project": "vue-element-admin",
+      "path": "original-matrix-vue-element-admin-linter.json.gz",
+      "rawBytes": 563547,
+      "rawSha256": "cf6ccc4e310d93cec24531321a4596852cbc95ed8778cc1765ffb6c89a37187b",
+      "files": 131
+    },
+    {
+      "project": "habitica",
+      "path": "original-matrix-habitica-linter.json.gz",
+      "rawBytes": 3735050,
+      "rawSha256": "fd0cd57e9ed3c0dc8f42682b1a57e75b6fb9184df690c535793a5ba07d5dcf34",
+      "files": 352
+    }
   ]
 }
