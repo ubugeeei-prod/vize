@@ -1,0 +1,10 @@
+{
+  "files": {
+    "package.json": "{\"type\":\"module\"}\n",
+    "vite.config.ts": "import { settings } from './settings';\nexport default { vize: settings };\n",
+    "settings.ts": "export const settings = {\n  linter: { preset: 'incremental', rules: { 'vue/require-v-for-key': 'warn' } },\n  formatter: { singleQuote: true },\n};\n"
+  },
+  "rules": {
+    "vue/require-v-for-key": "warn"
+  }
+}

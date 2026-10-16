@@ -14,14 +14,17 @@ export function configModuleImportPath(configURL, windows = process.platform ===
   return fileURLToPath(configURL, { windows });
 }
 
-export async function importConfigModule(configPath) {
+export async function importConfigModule(
+  configPath,
+  withoutVite = (configURL) => import(configURL.href),
+) {
   const configURL = pathToFileURL(configPath);
   const require = createRequire(configURL);
   const searchPaths = require.resolve.paths("vite") ?? [];
   const hasVite = searchPaths.some((directory) => existsSync(join(directory, "vite")));
   // A dependency-free config retains its native Node module-loading contract.
   // A present but broken Vite installation, or any config error, is an error.
-  if (!hasVite) return import(configURL.href);
+  if (!hasVite) return withoutVite(configURL);
 
   const { loadConfigFromFile } = await import(pathToFileURL(require.resolve("vite")).href);
   const temporary = await mkdtemp(join(tmpdir(), "vize-config-module-"));
