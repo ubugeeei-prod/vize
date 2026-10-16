@@ -1,4 +1,9 @@
-use std::sync::Mutex;
+#![expect(
+    clippy::disallowed_types,
+    reason = "walk-owned immutable source snapshots share parsed imports across roots"
+)]
+
+use std::sync::{Arc, Mutex};
 
 use vize_atelier_sfc::script::TypeSourceSnapshot;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
@@ -8,14 +13,24 @@ use super::syntax::runtime_prop_shape_member_type;
 
 #[derive(Default)]
 pub(crate) struct RuntimePropResolveCache {
-    // One immutable dependency snapshot per register_paths batch. Root script
-    // text always comes from the current descriptor; later scans start fresh.
-    pub(super) type_sources: TypeSourceSnapshot,
+    // One immutable dependency snapshot per register_paths batch or reachable
+    // walk. Root text comes from the current descriptor; later scans start fresh.
+    pub(super) type_sources: Arc<TypeSourceSnapshot>,
     props: Mutex<FxHashMap<CompactString, Vec<PropDefinition>>>,
     default_names: Mutex<FxHashMap<CompactString, FxHashSet<CompactString>>>,
 }
 
 impl RuntimePropResolveCache {
+    /// Keep source reads consistent within a walk, but resolve each root's
+    /// runtime exports independently: cycle cuts depend on that root.
+    pub(in crate::batch::virtual_project) fn with_shared_type_sources(&self) -> Self {
+        Self {
+            type_sources: self.type_sources.clone(),
+            props: Mutex::default(),
+            default_names: Mutex::default(),
+        }
+    }
+
     pub(super) fn props(
         &self,
         key: &CompactString,
