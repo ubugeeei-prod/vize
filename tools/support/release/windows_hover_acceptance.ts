@@ -164,6 +164,7 @@ async function main() {
     assert.ok(typeof text === "string");
     write(name, text);
   }
+  save("authored-fixture.json", authored);
   const env = { ...process.env };
   delete env.GITHUB_TOKEN;
   delete env.GH_TOKEN;
@@ -304,10 +305,8 @@ async function main() {
       expected
         ? [
             {
-              file: "src/diagnostic-control.ts",
-              diagnostics: [
-                "error:1:14 [TS2322] Type 'number' is not assignable to type 'string'.",
-              ],
+              file: "src/App.vue",
+              diagnostics: ["error:9:7 [TS2322] Type 'number' is not assignable to type 'string'."],
             },
           ]
         : [],
@@ -316,9 +315,14 @@ async function main() {
     assert.equal(report.warningCount, 0);
   };
   check("clean", 0);
-  write("src/diagnostic-control.ts", "export const rejected: string = 42;\n");
+  const app = authored["src/App.vue"];
+  assert.ok(typeof app === "string");
+  const broken = app.replace("</script>", "const rejected: string = 42;\n</script>");
+  assert.notEqual(broken, app);
+  save("diagnostic-control-source.json", { clean: app, broken });
+  write("src/App.vue", broken);
   check("broken", 1);
-  fs.unlinkSync(path.join(project, "src/diagnostic-control.ts"));
+  write("src/App.vue", app);
   check("repaired", 0);
   env.VIZE_SMOKE_LSP_LOG_DIR = path.join(output, "lsp");
   const oracle = fileURLToPath(
