@@ -165,3 +165,27 @@ fn a_bare_hash_is_a_default_slot_and_keeps_the_component_style_warning() {
         vec![]
     );
 }
+
+#[test]
+fn original_gui_for_singbox_source_keeps_its_complete_slot_style_finding() {
+    let source = include_str!(
+        "../../../../../../tests/_fixtures/differential/linter/reference-coverage-8849/AppShell.vue.txt"
+    );
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(VSlotStyle::default()));
+    let result = Linter::with_registry(registry).lint_sfc(source, "AppShell.vue");
+    assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    let target = "#=\"{ Component }\"";
+    let start = source.find(target).unwrap() as u32;
+    assert_eq!(
+        (diagnostic.start, diagnostic.end),
+        (start, start + target.len() as u32)
+    );
+    assert_eq!(diagnostic.severity, Severity::Warning);
+    assert_eq!(diagnostic.rule_name, "vue/v-slot-style");
+    assert_eq!(
+        diagnostic.message.as_str(),
+        "Expected 'v-slot' instead of '#'"
+    );
+}

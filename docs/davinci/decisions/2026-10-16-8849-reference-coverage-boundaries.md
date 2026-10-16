@@ -59,6 +59,14 @@ severity, range, message or runtime restores ordinary scoring. The source
 hash and reference scan are evaluated only after a complete reviewed row
 matches; unrelated findings do not scan the reference packet.
 
+Eligibility is checked independently of received native findings, using the
+same whole-source/runtime/configuration contract and the measured input list.
+Each eligible case must have exactly one complete expected native finding.
+Missing or duplicated expected diagnostics are retained in
+`referenceCoverageExpectations` and make the report unusable, so losing a
+correct Vize warning cannot turn the comparison green. Changed source, runtime,
+revision, preset or options creates no expectation and keeps ordinary scoring.
+
 The native report now retains the complete original Vize result envelope and
 ESLint result objects under `raw`, before normalization and classification.
 Historical packets remain immutable. No rule is disabled, no location is
@@ -72,7 +80,10 @@ source identities, pinned package/visitor hashes, the two missing reference
 findings, the supported `#default` and object-prop positive controls, and valid
 `v-slot`/read-only negative neighbors. It executes the actual Rust matcher and
 actual report runner. Appending a newline to either full source restores the
-original finding to false positives while retaining both raw packets.
+original finding to false positives while retaining both raw packets. Deleting
+either expected row fails enforced report integrity; duplicating it remains
+visible and unusable. With a changed source hash, neither case is eligible,
+including when its native row is absent.
 
 Rust matcher mutations cover every finding identity field, each runtime pin,
 revision, preset, explicit options/severity changes and newly visible reference

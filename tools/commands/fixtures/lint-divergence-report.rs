@@ -155,6 +155,7 @@ fn measure_project(
             "preset": args.preset,
             "runtimeVersions": baseline.runtime_versions,
             "rules": comparable.rules,
+            "files": files,
         }),
     )?;
     let mut artifact = json!({
@@ -411,6 +412,27 @@ fn compare_lint_findings(
     let index = RuleMapIndex::new(rule_map)?;
     let patina = collect_patina_findings(patina_findings, cwd)?;
     let baseline_input = collect_baseline_findings(eslint_results, cwd)?;
+    let reference_expectations =
+        reference_coverage::eligible(project_id, reference_context, |file| {
+            fs::read_to_string(cwd.join(file)).ok()
+        })
+        .into_iter()
+        .map(|case| {
+            let observed = patina
+                .iter()
+                .filter(|finding| finding.to_value() == case["finding"])
+                .count();
+            json!({
+                "case": case["id"], "expectedFinding": case["finding"],
+                "sourceSha256": case["sourceSha256"], "expectedCount": 1,
+                "observedCount": observed, "passed": observed == 1,
+            })
+        })
+        .collect::<Vec<_>>();
+    let reference_integrity_errors = reference_expectations
+        .iter()
+        .filter(|case| case["passed"] != true)
+        .count();
 
     let mut unimplemented = Vec::new();
     let mut intentional_divergences = Vec::new();
@@ -566,6 +588,7 @@ fn compare_lint_findings(
     sort_values(&mut patina_outside_baseline_surface);
 
     let summary = json!({
+        "referenceCoverageIntegrityErrorCount": reference_integrity_errors,
         "patinaFindingCount": comparable_patina.len() + patina_only_rule_findings.len() + patina_outside_baseline_surface.len(),
         "baselineFindingCount": comparable_baseline.len() + unimplemented.len() + intentional_divergences.len(),
         "comparableBaselineCount": comparable_baseline.len(),
@@ -586,6 +609,7 @@ fn compare_lint_findings(
         "falseNegativeRatio": ratio(false_negative_values.len(), comparable_baseline.len()),
     });
     let classified = json!({
+        "referenceCoverageExpectations": reference_expectations,
         "shared": shared,
         "messageDifferences": message_differences,
         "falsePositives": false_positive_values,
@@ -599,6 +623,7 @@ fn compare_lint_findings(
     });
     let hash_input = json!({
         "summary": summary,
+        "referenceCoverageExpectations": classified["referenceCoverageExpectations"],
         "shared": classified["shared"],
         "messageDifferences": classified["messageDifferences"],
         "falsePositives": classified["falsePositives"],
@@ -619,6 +644,7 @@ fn compare_lint_findings(
             "version": rule_map.pointer("/upstream/version").cloned().unwrap_or(Value::Null),
         },
         "summary": summary,
+        "referenceCoverageExpectations": classified["referenceCoverageExpectations"],
         "shared": classified["shared"],
         "messageDifferences": classified["messageDifferences"],
         "falsePositives": classified["falsePositives"],
@@ -1226,6 +1252,10 @@ fn render_markdown(artifact: &Value) -> String {
             summary["patinaOutsideBaselineSurfaceCount"]
         ),
         format!(
+            "Reference coverage integrity errors: {}",
+            summary["referenceCoverageIntegrityErrorCount"]
+        ),
+        format!(
             "Baseline parse errors: {}",
             summary["baselineParseErrorCount"]
         ),
@@ -1655,6 +1685,15 @@ fn rule_map_version(root: &Path) -> Result<String, String> {
 }
 
 fn unusable_lint_reason(artifact: &Value) -> Option<String> {
+    let reference_errors = artifact
+        .pointer("/divergence/summary/referenceCoverageIntegrityErrorCount")
+        .and_then(Value::as_u64)
+        .unwrap_or(0);
+    if reference_errors > 0 {
+        return Some(format!(
+            "expected exactly one native finding for {reference_errors} reviewed reference-coverage case(s)"
+        ));
+    }
     let compared_count = artifact
         .pointer("/files/comparedCount")
         .and_then(Value::as_u64);

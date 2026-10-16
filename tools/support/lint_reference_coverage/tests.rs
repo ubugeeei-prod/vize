@@ -1,4 +1,4 @@
-use super::{CONTRACT, classify};
+use super::{CONTRACT, classify, eligible};
 use serde_json::{Value, json};
 
 fn fixture(index: usize) -> (Value, Value, Value, &'static str) {
@@ -13,6 +13,7 @@ fn fixture(index: usize) -> (Value, Value, Value, &'static str) {
     let context = json!({
         "revision": case["revision"], "preset": case["preset"],
         "runtimeVersions": case["runtimeVersions"],
+        "files": [case["finding"]["file"]],
         "rules": { rule: severity },
     });
     let finding = case["finding"].clone();
@@ -44,6 +45,19 @@ fn exact_source_and_packet_are_required() {
         )
         .unwrap();
         assert_eq!(answer["category"], "reference-coverage-gap");
+        assert_eq!(
+            eligible(case["project"].as_str().unwrap(), &context, |_| Some(
+                source.into()
+            ))
+            .len(),
+            1
+        );
+        assert!(
+            eligible(case["project"].as_str().unwrap(), &context, |_| Some(
+                format!("{source}\n")
+            ))
+            .is_empty()
+        );
         assert_eq!(answer["sourceSha256"], case["sourceSha256"]);
         assert_eq!(answer["options"], json!([]));
         assert!(
@@ -115,6 +129,13 @@ fn changed_options_versions_preset_revision_and_new_reference_coverage_are_score
         ] {
             let mut changed = context.clone();
             *changed.pointer_mut(pointer).unwrap() = value;
+            assert!(
+                eligible(case["project"].as_str().unwrap(), &changed, |_| Some(
+                    source.into()
+                ))
+                .is_empty(),
+                "{pointer}"
+            );
             assert!(
                 classify(
                     case["project"].as_str().unwrap(),

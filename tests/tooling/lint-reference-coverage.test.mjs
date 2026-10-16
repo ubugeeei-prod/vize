@@ -18,7 +18,7 @@ const contract = JSON.parse(fs.readFileSync(path.join(fixtures, "contract.json")
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const requireBench = createRequire(path.join(root, "tools/benchmarks/scripts/package.json"));
 
-test("reviewed coverage preserves complete frozen packets and exact source identities", () => {
+await test("reviewed coverage preserves complete frozen packets and exact source identities", () => {
   assert.equal(contract.cases.length, 2);
   for (const entry of contract.cases) {
     const source = fs.readFileSync(path.join(fixtures, entry.source));
@@ -46,7 +46,7 @@ test("reviewed coverage preserves complete frozen packets and exact source ident
   }
 });
 
-test("pinned reference AST and visitors miss only the two proven coverage cases", async () => {
+await test("pinned reference AST and visitors miss only the two proven coverage cases", async () => {
   const runtime = resolveBaselineRuntime();
   for (const [name, version] of Object.entries(contract.cases[0].runtimeVersions)) {
     assert.equal(requireBench(`${name}/package.json`).version, version, name);
@@ -124,7 +124,7 @@ test("pinned reference AST and visitors miss only the two proven coverage cases"
   );
 });
 
-test("actual Rust coverage matcher rejects changed settings, source, rows and new reference coverage", () => {
+await test("actual Rust coverage matcher rejects changed settings, source, rows and new reference coverage", () => {
   const result = spawnSync(
     "rust-script",
     ["--test", "tools/commands/fixtures/test-lint-reference-coverage.rs"],
@@ -138,7 +138,7 @@ test("actual Rust coverage matcher rejects changed settings, source, rows and ne
   assert.match(result.stdout, /2 passed/);
 });
 
-test("actual report retains complete raw packets and scores a neighboring changed source", () => {
+await test("actual report retains complete raw packets and scores a neighboring changed source", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-reference-coverage-"));
   try {
     for (const entry of contract.cases) {
@@ -168,7 +168,11 @@ test("actual report retains complete raw packets and scores a neighboring change
           ],
         }),
       );
-      const run = () => {
+      const run = (messages = [entry.finding], budgetMode = "record-only", expectedStatus = 0) => {
+        fs.writeFileSync(
+          fake,
+          `#!/usr/bin/env node\nprocess.stdout.write(${JSON.stringify(JSON.stringify([{ file: entry.finding.file, messages }]))});\n`,
+        );
         const result = spawnSync(
           "rust-script",
           [
@@ -183,11 +187,11 @@ test("actual report retains complete raw packets and scores a neighboring change
             "--preset",
             "ecosystem",
             "--budget-mode",
-            "record-only",
+            budgetMode,
           ],
           { cwd: root, encoding: "utf8", timeout: 120000 },
         );
-        assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+        assert.equal(result.status, expectedStatus, `${result.stdout}\n${result.stderr}`);
         return JSON.parse(
           fs.readFileSync(path.join(projectDir, "report", `${entry.project}-lint-divergence.json`)),
         );
@@ -208,11 +212,32 @@ test("actual report retains complete raw packets and scores a neighboring change
       assert.deepEqual(packet.divergence.falsePositives, []);
       assert.equal(packet.budget.maxFalsePositiveCount, 0);
       assert.equal(packet.budget.maxFalseNegativeCount, 0);
+      assert.equal(packet.divergence.summary.referenceCoverageIntegrityErrorCount, 0);
+      assert.equal(packet.divergence.referenceCoverageExpectations.length, 1);
+      assert.equal(packet.divergence.referenceCoverageExpectations[0].observedCount, 1);
+      const missing = run([], "enforce", 1);
+      assert.deepEqual(missing.raw.patinaFindings, []);
+      assert.equal(missing.divergence.referenceCoverageExpectations[0].observedCount, 0);
+      assert.equal(missing.divergence.summary.referenceCoverageIntegrityErrorCount, 1);
+      assert.equal(missing.budget.verdict, "unusable");
+      assert.equal(missing.budget.passed, false);
+      assert.match(missing.budget.unusableReason, /expected exactly one native finding/);
+      const duplicated = run([entry.finding, entry.finding]);
+      assert.equal(duplicated.raw.patinaFindings.length, 2);
+      assert.equal(duplicated.divergence.patinaOutsideBaselineSurface.length, 1);
+      assert.deepEqual(duplicated.divergence.falsePositives, [entry.finding]);
+      assert.equal(duplicated.divergence.referenceCoverageExpectations[0].observedCount, 2);
+      assert.equal(duplicated.budget.verdict, "unusable");
       fs.writeFileSync(sourcePath, source + "\n");
       const changed = run();
       assert.deepEqual(changed.divergence.patinaOutsideBaselineSurface, []);
+      assert.deepEqual(changed.divergence.referenceCoverageExpectations, []);
+      assert.equal(changed.divergence.summary.referenceCoverageIntegrityErrorCount, 0);
       assert.deepEqual(changed.divergence.falsePositives, [entry.finding]);
       assert.deepEqual(changed.raw.patinaFindings, packet.raw.patinaFindings);
+      const changedMissing = run([]);
+      assert.deepEqual(changedMissing.divergence.referenceCoverageExpectations, []);
+      assert.equal(changedMissing.divergence.summary.referenceCoverageIntegrityErrorCount, 0);
       const withoutSource = (entries) =>
         entries.map(({ source: _source, ...retained }) => retained);
       assert.deepEqual(
