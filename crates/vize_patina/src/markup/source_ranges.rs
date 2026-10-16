@@ -107,7 +107,7 @@ impl MarkupElement<'_> {
                     let span = attr_span(doc.source, attr);
                     // The parser drops the `v-pre` that opens a raw subtree;
                     // L2 keeps a nested one as a frozen attribute.
-                    let opening_v_pre = attr.name.text == "v-pre"
+                    let opening_v_pre = super::authored::is_v_pre(attr)
                         && !op.attributes().iter().any(|kept| kept.span == span);
                     if !opening_v_pre {
                         visitor(l2_range(span));
@@ -121,7 +121,7 @@ impl MarkupElement<'_> {
                 ..
             } => {
                 for attr in &element.open.attrs {
-                    if !opens_v_pre || attr.name.text != "v-pre" {
+                    if !opens_v_pre || !super::authored::is_v_pre(attr) {
                         visitor(l2_range(attr_span(doc.source, attr)));
                     }
                 }

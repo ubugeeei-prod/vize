@@ -34,6 +34,31 @@ mod differential_battery {
         }
     }
 
+    #[test]
+    fn v_pre_directive_names_freeze_only_their_own_subtree() {
+        use crate::markup::differential::{TemplateComparison, compare_template};
+        for source in [
+            r#"<div class="a" v-pre:arg.mod="foo" id="b"><span v-if="x" /></div>"#,
+            r#"<div v-pre:arg :title="x">{{ raw }}<span v-for="x in xs" /></div>"#,
+            r#"<div :title="x" v-pre.mod>{{ raw }}<template v-if="x">raw</template></div>"#,
+            r#"<div v-pre:[key].mod><span v-pre:inner.mod="x" v-if="y">{{ raw }}</span></div>"#,
+            r#"<div v-pre><span v-pre:arg.mod="x" v-if="y">{{ raw }}</span></div>"#,
+            r#"<div v-pre.mod><span v-pre>{{ raw }}</span></div><p v-if="ok">{{ live }}</p>"#,
+            r#"<div v-pre:arg.mod="foo" v-pre :title="x">{{ raw }}</div>"#,
+            r#"<div v-pre v-pre:arg.mod="foo" :title="x">{{ raw }}</div>"#,
+            r#"<div v-prex v-preview.mod v-prefix:arg><span v-if="x">{{ live }}</span></div>"#,
+            r#"<div V-PRE v-Pre.mod :v-pre="x" @pre="x"><span v-if="x">{{ live }}</span></div>"#,
+            r#"<!-- <div v-pre.mod> --><div title="v-pre:arg.mod"><span v-if="x">{{ live }}</span></div>"#,
+            "<section>🦀<div\n v-pre:arg.mod='foo'\n :title='x'>{{ raw }}</div><p v-if='ok'/></section>",
+        ] {
+            let compared = compare_template(source);
+            assert!(
+                matches!(compared, Ok(TemplateComparison::Compared(lines)) if lines > 0),
+                "{source}: {compared:?}"
+            );
+        }
+    }
+
     /// The JSX roots the P2-16 projection refuses are named, so the refused
     /// count in the census cannot hide a newly refused construct. The custom
     /// directive module (`v-custom={c}`) is admitted: main projects it. The

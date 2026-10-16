@@ -27,11 +27,14 @@ fn findings<'a>(source: &'a str, result: &'a LintResult) -> Vec<(&'a str, &'a st
         .collect()
 }
 
-/// L2 markup freezes an element only for the exact `v-pre` spelling (#8856),
-/// so a template that gives it an argument or modifier diverges from the
-/// legacy tree. Passing the template as a variable keeps it out of the
-/// markup differential battery until that is fixed.
-fn lint_outside_battery(source: &str) -> LintResult {
+/// Formerly excluded argument/modifier fixtures now require the complete
+/// Relief/L1-L2 hook trace before their unchanged diagnostic assertions.
+fn lint_with_markup_parity(source: &str) -> LintResult {
+    use crate::markup::differential::{TemplateComparison, compare_template};
+    assert!(
+        matches!(compare_template(source), Ok(TemplateComparison::Compared(lines)) if lines > 0),
+        "markup projections diverged for {source}"
+    );
     linter().lint_template(source, "test.vue")
 }
 
@@ -78,14 +81,14 @@ fn ignores_v_pre_text_in_other_attribute_values() {
 #[test]
 fn reports_argument() {
     let source = r#"<div v-pre:aaa></div>"#;
-    let result = lint_outside_battery(source);
+    let result = lint_with_markup_parity(source);
     assert_eq!(findings(source, &result), [(NO_ARGUMENT, "aaa")]);
 }
 
 #[test]
 fn reports_all_modifiers_once() {
     let source = r#"<div v-pre.aaa.bbb></div>"#;
-    let result = lint_outside_battery(source);
+    let result = lint_with_markup_parity(source);
     assert_eq!(findings(source, &result), [(NO_MODIFIER, "aaa.bbb")]);
 }
 
@@ -106,7 +109,7 @@ fn reports_unquoted_value() {
 #[test]
 fn reports_argument_modifier_and_value_together() {
     let source = r#"<div class="a" v-pre:arg.mod='foo' id="b"></div>"#;
-    let result = lint_outside_battery(source);
+    let result = lint_with_markup_parity(source);
     assert_eq!(
         findings(source, &result),
         [
@@ -121,7 +124,7 @@ fn reports_argument_modifier_and_value_together() {
 fn reports_nested_and_sibling_elements() {
     let source =
         "<section>\n  <p v-pre.a>one</p>\n  <p v-pre>two</p>\n  <p v-pre:b>three</p>\n</section>";
-    let result = lint_outside_battery(source);
+    let result = lint_with_markup_parity(source);
     assert_eq!(
         findings(source, &result),
         [(NO_MODIFIER, "a"), (NO_ARGUMENT, "b")]

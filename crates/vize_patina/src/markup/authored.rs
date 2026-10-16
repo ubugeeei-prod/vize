@@ -20,12 +20,7 @@ fn wrap<'a>(
     inherited: bool,
     parent_ns: Namespace,
 ) -> (MarkupElement<'a>, bool, Namespace) {
-    let opens_v_pre = !inherited
-        && element
-            .open
-            .attrs
-            .iter()
-            .any(|attr| attr.name.text == "v-pre");
+    let opens_v_pre = !inherited && element.open.attrs.iter().any(is_v_pre);
     let frozen = inherited || opens_v_pre;
     let ns = if vize_l0::is_svg_tag(element.tag()) {
         Namespace::Svg
@@ -42,6 +37,12 @@ fn wrap<'a>(
         ns,
     });
     (node, frozen, ns)
+}
+
+/// Vue freezes by the directive name, including arguments and modifiers.
+/// Read only the existing L1 attribute token; lookalike names stay ordinary.
+pub(super) fn is_v_pre(attr: &Attribute<'_>) -> bool {
+    SurfaceDirective::parse(attr.name.text).is_some_and(|directive| directive.name == "pre")
 }
 
 fn children_ns(ns: Namespace, tag: &str) -> Namespace {
@@ -125,7 +126,7 @@ pub(super) fn is_directive(attr: &Attribute<'_>) -> bool {
 pub(super) fn consumed(attr: &Attribute<'_>, frozen: bool, opens_v_pre: bool) -> bool {
     // Frozen structural spellings are plain attrs and do not become scopes.
     if frozen {
-        opens_v_pre && attr.name.text == "v-pre"
+        opens_v_pre && is_v_pre(attr)
     } else {
         is_consumed_spelling(attr)
     }
