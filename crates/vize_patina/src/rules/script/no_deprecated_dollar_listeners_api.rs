@@ -12,6 +12,9 @@
 //!
 //! Built-in Vue 3 presets enable this migration rule; Vue 2 presets leave it off.
 //!
+//! Parent #9222 diagnoses script accesses only. The template lines below show
+//! migration examples; template diagnostics remain unqualified in Draft #9251.
+//!
 //! ## Examples
 //!
 //! ### Invalid
