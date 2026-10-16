@@ -34,6 +34,32 @@ mod differential_battery {
         }
     }
 
+    /// Exercise the separate authored-tree view with the same full element,
+    /// attribute, opening-range, binding and directive recorder as the battery.
+    fn authored_trace(
+        document: &crate::markup::MarkupDocument<'_>,
+        source: &str,
+    ) -> Vec<vize_l0::String> {
+        use crate::markup::{MarkupContext, MarkupRule, differential::TraceRecorder};
+        let allocator = vize_l0::Allocator::new();
+        let mut lint = crate::context::LintContext::new(&allocator, source, "raw.vue");
+        let mut context = MarkupContext::new(&mut lint, document);
+        let recorder = TraceRecorder::default();
+        document.walk_authored_tree(
+            &mut |element| {
+                recorder.enter_element(&mut context, &element);
+                element.walk_bindings(&mut |binding| {
+                    recorder.enter_binding(&mut context, &element, &binding);
+                });
+                element.walk_directives(&mut |directive| {
+                    recorder.enter_directive(&mut context, &element, &directive);
+                });
+            },
+            &mut |_| {},
+        );
+        recorder.into_lines()
+    }
+
     #[test]
     fn v_pre_directive_names_freeze_only_their_own_subtree() {
         use crate::markup::differential::{TemplateComparison, compare_template};
@@ -54,7 +80,21 @@ mod differential_battery {
         ] {
             let compared = compare_template(source);
             if !matches!(compared, Ok(TemplateComparison::Compared(lines)) if lines > 0) {
-                failures.push((source, compared));
+                failures.push(format!("semantic {source}: {compared:?}"));
+            }
+            let allocator = vize_l0::Allocator::new();
+            let (root, _) = vize_armature::Parser::new(&allocator, source).parse();
+            let lowered = crate::markup::L2Template::lower(&allocator, source);
+            let markup = lowered.markup();
+            let relief = crate::markup::MarkupDocument::new(&root, crate::ir::TemplateSyntax::Vue);
+            let l2 =
+                crate::markup::MarkupDocument::from_l2(&markup, crate::ir::TemplateSyntax::Vue);
+            let actual = authored_trace(&l2, source);
+            let expected = authored_trace(&relief, source);
+            if actual != expected {
+                failures.push(format!(
+                    "authored {source}: expected={expected:#?} actual={actual:#?}"
+                ));
             }
         }
         assert!(failures.is_empty(), "{failures:#?}");
