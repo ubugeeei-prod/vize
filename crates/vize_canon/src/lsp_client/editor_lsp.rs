@@ -11,7 +11,7 @@
 //! process, and a session that has answered one hover is reused later.
 
 use super::{
-    CorsaProjectClient, diagnostics_lsp::initialize_lsp_client,
+    CorsaProjectClient, diagnostics_lsp::initialize_lsp_client_with_result,
     language_id::for_uri as language_id_for_uri,
 };
 use corsa::runtime::block_on;
@@ -40,6 +40,7 @@ mod file_rename;
 mod implementation;
 mod inlay_hint;
 mod materialized;
+mod native_shutdown;
 mod native_vue;
 mod original_program;
 mod project_configuration;
@@ -69,6 +70,9 @@ pub(super) struct EditorLspSession {
     responder: Option<std::thread::JoinHandle<()>>,
     configured_api: Option<project_configuration::DiagnosingApi>,
     closed: bool,
+    /// Only a full known native image and its actual initialize contract may
+    /// use acknowledged Shutdown followed by EOF instead of an Exit race.
+    shutdown_to_eof: bool,
     /// Last text mirrored into the server, keyed by session document URI.
     documents: FxHashMap<String, String>,
     issued_completions: completion_resolve::IssuedCompletions,
@@ -96,12 +100,16 @@ impl EditorLspSession {
         let stop = Arc::new(AtomicBool::new(false));
         let responder = spawn_responder(client.clone(), stop.clone());
 
-        if let Err(error) = initialize_lsp_client(&client, project_root) {
-            stop.store(true, Ordering::Relaxed);
-            let _ = block_on(client.close());
-            let _ = responder.join();
-            return Err(error);
-        }
+        let initialized = match initialize_lsp_client_with_result(&client, project_root) {
+            Ok(initialized) => initialized,
+            Err(error) => {
+                stop.store(true, Ordering::Relaxed);
+                let _ = block_on(client.close());
+                let _ = responder.join();
+                return Err(error);
+            }
+        };
+        let shutdown_to_eof = native_shutdown::eof_capability(Path::new(executable), &initialized);
         crate::corsa_session_cache::note_typescript_project_init();
 
         Ok(Self {
@@ -111,6 +119,7 @@ impl EditorLspSession {
             responder: Some(responder),
             configured_api: None,
             closed: false,
+            shutdown_to_eof,
             documents: Default::default(),
             issued_completions: Default::default(),
             document_generation: 0,
@@ -269,16 +278,17 @@ impl EditorLspSession {
         .map_err(|error| cstr!("Failed to request editor LSP workspace/willRenameFiles: {error}"))
     }
 
-    /// Complete the standard LSP lifecycle before closing and reaping the
-    /// owned process. The responder remains alive until `shutdown` returns so
-    /// server-initiated requests cannot deadlock the final response.
+    /// Complete the authenticated native or standard foreign LSP lifecycle
+    /// before closing and reaping the owned process. The responder remains alive
+    /// until `shutdown` returns so server-initiated requests cannot deadlock the
+    /// final response.
     fn shutdown(&mut self) -> Result<(), String> {
         if self.closed {
             return Ok(());
         }
 
         let mut first_error = None;
-        if let Err(error) = block_on(self.client.graceful_close()) {
+        if let Err(error) = block_on(native_shutdown::close(&self.client, self.shutdown_to_eof)) {
             first_error = Some(cstr!(
                 "Failed to gracefully close editor LSP process: {error}"
             ));

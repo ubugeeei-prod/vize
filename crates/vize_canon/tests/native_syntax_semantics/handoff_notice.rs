@@ -34,6 +34,11 @@ fn required_semantic_completion_does_not_report_runtime_degradation() {
             Err("unrecognized native stderr or image"),
         ),
         (
+            "error handling method 'exit': EOF\ncontext canceled\n",
+            OBSERVED_NATIVE_SHA256,
+            Err("unrecognized native stderr or image"),
+        ),
+        (
             "Corsa CLI fast path unavailable\n",
             OBSERVED_NATIVE_SHA256,
             Err("unrecognized native stderr or image"),
@@ -76,8 +81,16 @@ fn required_semantic_completion_does_not_report_runtime_degradation() {
         .iter()
         .map(|byte| format!("{byte:02x}"))
         .collect::<String>();
-    let shutdown_observation = observe_shutdown(&stderr, &native_sha256)
-        .unwrap_or_else(|reason| panic!("{reason}: {stderr:?}; image={native_sha256}"));
+    let shutdown_observation = observe_shutdown(&stderr, &native_sha256).unwrap_or_else(|reason| {
+        panic!(
+            "{reason}; complete child packet: {}",
+            serde_json::json!({
+                "native": native, "nativeSha256": native_sha256,
+                "exitCode": output.status.code(),
+                "wholeStdout": stdout, "wholeStderr": stderr,
+            })
+        )
+    });
     retain_packet(
         "semantic-handoff-shutdown-observation",
         &serde_json::json!({
@@ -87,11 +100,11 @@ fn required_semantic_completion_does_not_report_runtime_degradation() {
             "followUp": "https://github.com/ubugeeei-prod/vize/pull/9239",
         }),
     );
-    if shutdown_observation == ShutdownObservation::KnownObservedExitWarnings {
-        eprintln!(
-            "KnownObservedExitWarnings: two native 7.0.2 Exit/EOF warnings remain; clean shutdown is tracked in #9239"
-        );
-    }
+    assert_eq!(
+        shutdown_observation,
+        ShutdownObservation::Clean,
+        "authenticated native shutdown must now be clean; complete stdout={stdout:?}; stderr={stderr:?}"
+    );
 }
 
 #[derive(Debug, PartialEq, Eq)]

@@ -16,6 +16,13 @@ use vize_l0::{String, cstr};
 mod readiness_workers;
 
 pub(super) fn initialize_lsp_client(client: &LspClient, project_root: &Path) -> Result<(), String> {
+    initialize_lsp_client_with_result(client, project_root).map(|_| ())
+}
+
+pub(super) fn initialize_lsp_client_with_result(
+    client: &LspClient,
+    project_root: &Path,
+) -> Result<Value, String> {
     struct InitializeRequest;
 
     impl lsp_types::request::Request for InitializeRequest {
@@ -36,7 +43,7 @@ pub(super) fn initialize_lsp_client(client: &LspClient, project_root: &Path) -> 
         .file_name()
         .and_then(|name| name.to_str())
         .unwrap_or("workspace");
-    block_on(client.request::<InitializeRequest>(initialize_lsp_params(
+    let initialized = block_on(client.request::<InitializeRequest>(initialize_lsp_params(
         project_root,
         root_uri,
         workspace_name,
@@ -45,7 +52,7 @@ pub(super) fn initialize_lsp_client(client: &LspClient, project_root: &Path) -> 
     client
         .notify::<InitializedNotification>(InitializedParams {})
         .map_err(|error| cstr!("Failed to send LSP initialized notification: {error}"))?;
-    Ok(())
+    Ok(initialized)
 }
 
 fn initialize_lsp_params(

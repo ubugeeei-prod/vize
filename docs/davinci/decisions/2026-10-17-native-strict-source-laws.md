@@ -56,15 +56,14 @@ authenticates the native image and initialize response, requires Shutdown's
 null ACK, then closes stdin. Foreign servers retain their protocol behavior.
 That product correction and its shipping dependency remain a separate lane.
 
-The temporary observation category `KnownObservedExitWarnings` accepts exactly
-the two captured lines and only the captured physical Linux x64 image SHA256
+The initial observation category `KnownObservedExitWarnings` classified exactly
+those two captured lines and only the captured physical Linux x64 image SHA256
 `4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4`.
-It emits an explicit observation and preserves raw stderr. Empty stderr is
-`Clean`; every other stderr packet or image/warning combination fails. Seven
-paired controls include foreign-image, missing/extra-row and degradation
-counterexamples. This category must be removed when #9239's combined native
-source proof establishes clean output for this exact two-Batch case. It grants
-no clean-shutdown or editor-session qualification.
+Empty stderr was `Clean`; every other packet or image/warning combination failed.
+The original seven paired controls and raw historical capture remain intact.
+This initial acceptance did not establish clean shutdown or editor lifecycle
+qualification. The required MQ result below supersedes accepting that category
+as the desired runtime outcome.
 
 The observation is from the Batch API child, not the editor process. The LSP
 modifier case calls Maestro's diagnostic adapter directly and has no native
@@ -75,3 +74,44 @@ Final qualification uses ordinary source-head Actions and one coordinated
 Full Tooling campaign after the disjoint repairs combine. This lane does not
 claim the earlier capture qualified its later source or that ordinary PR checks
 replace the full campaign.
+
+## Required MQ exposed a real shutdown race
+
+[Merge-group Check 38930902972](https://github.com/ubugeeei-prod/vize/actions/runs/38930902972),
+source `ea158a06d93acad9940ffb2c112ef56be800676f`, ran the native-enabled typechecker
+cohort in job `117077466284`. Of 2,717 executed tests, 2,716 passed and one failed:
+the exact same two-Batch handoff. The complete stdout contract passed before
+stderr rejection, but the actual native stderr was one Exit/EOF line followed
+by `context canceled`. The physical binary SHA256 was unchanged. The independent
+native Canon job on the same source passed with the prior two EOF lines.
+Neither result justifies retrying until the race happens to disappear.
+
+The [MQ failure archive](../../../tests/_fixtures/differential/typechecker/native-strict-source-laws/mq-38930902972-failure.json.gz)
+retains the exact raw job failure block and JUnit testcase fragment, plus hashes
+of the complete originals in artifact `12058479097`. The child stdout was not
+included in this cohort's failed-test artifact; the archive explicitly records
+that limit, rather than reconstructing it as observed output. The oracle now
+includes the complete child packet in any future unknown-stderr panic.
+
+The correction uses the already published `corsa_lsp = 1.14.0` API. Only a full
+known physical native image **and** the actual whole initialize response select
+Shutdown's null acknowledgement followed by `client.close()` to send EOF. The
+whole initialize contract and Linux x64/Darwin arm64 image identities are taken
+from the independently owned #9239 source `04d8236db4b46126d43825a34ba44009fde86141`.
+No package/vendor migration, stderr normalization, process-observer fallback or
+new lifetime-custody claim is introduced. Wrappers and foreign images retain
+the existing standard Shutdown/Exit behavior. Cleanup still runs on protocol
+failure and preserves the first error.
+
+Four owned protocol controls compare complete request/response/EOF transcripts:
+native null ACK then EOF; foreign null ACK then Exit and EOF; remote Shutdown
+error then EOF with the complete original error retained; and a non-null ACK
+rejected before EOF. Image/initialize controls reject spoofed versions, missing
+files and altered capabilities. The actual MQ stderr is an eighth rejected
+observation control, not another permitted warning variant.
+
+The existing actual two-Batch law now requires `Clean` after complete native
+stdout verification. Even the historically known two EOF rows fail that desired
+outcome. Historical packets and classification controls remain separate evidence.
+The new source still needs actual native Canon and parallel required-cohort
+execution; no old receipt is relabeled as proof of this correction.

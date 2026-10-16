@@ -124,3 +124,39 @@ void test("handoff capture records complete native completion separately from kn
     wholeStderr: "error handling method 'exit': EOF\nerror handling method 'exit': EOF\n",
   });
 });
+
+void test("required MQ failure remains rejected evidence rather than an expanded warning allowance", () => {
+  const bytes = fs.readFileSync(
+    new URL(
+      "../_fixtures/differential/typechecker/native-strict-source-laws/mq-38930902972-failure.json.gz",
+      import.meta.url,
+    ),
+  );
+  assert.equal(
+    createHash("sha256").update(bytes).digest("hex"),
+    "ba858245f40877b19d82c44bab0d0e059292a792c57725da4b5dc053bb31b1a4",
+  );
+  const failure = JSON.parse(gunzipSync(bytes));
+  assert.deepEqual(
+    [failure.runId, failure.jobId, failure.artifactId],
+    [38930902972, 117077466284, 12058479097],
+  );
+  assert.equal(failure.sourceSha, "ea158a06d93acad9940ffb2c112ef56be800676f");
+  assert.equal(failure.prHead, "813db1e1653682612e9af9e4c20fe851a5fa0056");
+  assert.equal(failure.wholeChildStderr, "error handling method 'exit': EOF\ncontext canceled\n");
+  assert.deepEqual(
+    [failure.observedOutcome, failure.desiredOutcome],
+    ["RejectedUnknownStderr", "Clean"],
+  );
+  assert.deepEqual(failure.cohort, { testsRun: 2717, passed: 2716, failed: 1, skipped: 2 });
+  assert.equal(failure.wholeChildStdoutAvailable, false);
+  assert.equal(failure.wholeStdoutContractPassedBeforeStderrRejection, true);
+  assert.deepEqual(Object.keys(failure.files), [
+    "whole-job-failure-block.log",
+    "whole-junit-testcase.xml",
+  ]);
+  for (const entry of Object.values(failure.files)) {
+    assert.equal(Buffer.byteLength(entry.wholeUtf8), entry.bytes);
+    assert.equal(createHash("sha256").update(entry.wholeUtf8).digest("hex"), entry.sha256);
+  }
+});
