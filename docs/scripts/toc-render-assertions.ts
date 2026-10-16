@@ -31,6 +31,9 @@ async function pointerGeometry(control: Locator) {
 
 /** Exercise native pointer targets in the loaded site; never inject layout fixes. */
 export async function verifyTocPointerLayer(page: Page, device: string, output: string) {
+  const pageErrors: string[] = [];
+  const onError = (error: Error) => pageErrors.push(String(error));
+  page.on("pageerror", onError);
   const viewport = page.viewportSize();
   assert(viewport);
   const original = await page.evaluate(() => ({
@@ -157,8 +160,10 @@ export async function verifyTocPointerLayer(page: Page, device: string, output: 
     }
     const screenshot = path.join(directory, `${device}.png`);
     await page.screenshot({ path: screenshot });
-    return { layers, targets, clickedHash, selection, scrolled, screenshot };
+    assert.deepEqual(pageErrors, [], "Native outline interactions produce no runtime errors");
+    return { layers, targets, clickedHash, selection, scrolled, screenshot, pageErrors };
   } finally {
+    page.off("pageerror", onError);
     await page.evaluate((state) => {
       history.replaceState(null, "", state.url);
       getSelection()?.removeAllRanges();

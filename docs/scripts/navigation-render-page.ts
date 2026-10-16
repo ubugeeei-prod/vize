@@ -14,7 +14,6 @@ import {
 import { verifyCommandTabs } from "./command-tab-render-assertions.ts";
 import { verifyTableCodeReadability } from "./table-code-render-assertions.ts";
 import type { MeasureRenderPhase, RenderJob } from "./navigation-render-concurrency.ts";
-import { verifyTocPointerLayer } from "./toc-render-assertions.ts";
 import { usesInstalledCjkFont } from "./japanese-font-usage.ts";
 
 type FontUsage = { familyName: string; glyphCount: number };
@@ -57,7 +56,6 @@ function readPageMetrics() {
 export type RouteReceipt = ReturnType<typeof readPageMetrics> & {
   tableCode: Awaited<ReturnType<typeof verifyTableCodeReadability>>;
   codeContrast: Awaited<ReturnType<typeof verifyThemeReadability>>;
-  tocControls: Awaited<ReturnType<typeof verifyTocPointerLayer>> | null;
   route: string;
   device: string;
   screenshot: string;
@@ -177,10 +175,9 @@ export async function verifyNavigationRenderJob(
   });
   const metrics = await phase("metrics", () => page.evaluate(readPageMetrics));
   const tableCode = await phase("table-code", () => verifyTableCodeReadability(page, route));
-  const tocControls = await phase("navigation-assertions", async () => {
+  await phase("navigation-assertions", async () => {
     await verifyIntroductoryNavigation(page, route);
     await verifySidebarMotion(page, device);
-    return route === "/ja/getting-started" ? verifyTocPointerLayer(page, device, output) : null;
   });
   const codeContrast = await phase("theme-readability", () => verifyThemeReadability(page));
   const { rulePackets, authoredJapanese } = await phase("rule-packets", async () => ({
@@ -328,6 +325,5 @@ export async function verifyNavigationRenderJob(
     authoredJapanese,
     codeContrast,
     ...metrics,
-    tocControls,
   };
 }
