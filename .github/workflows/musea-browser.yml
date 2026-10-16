@@ -51,7 +51,7 @@ jobs:
           cache: true
           run-install: false
       - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
-        with: { toolchain: "1.99.0" }
+        with: { toolchain: "1.99.1" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: native-inline-browser

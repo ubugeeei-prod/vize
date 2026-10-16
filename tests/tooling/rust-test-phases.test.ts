@@ -52,7 +52,8 @@ function fixture() {
   mkdirSync(join(cwd, "tools/support/compat/github"), { recursive: true });
   copyFileSync(join(root, helper), join(cwd, helper));
   writeFileSync(join(cwd, "source"), "fixture\n");
-  git("add", "source");
+  writeFileSync(join(cwd, "rust-toolchain.toml"), '[toolchain]\nchannel = "1.99.1"\n');
+  git("add", "source", "rust-toolchain.toml");
   git("commit", "-qm", "fixture");
   const sha = git("rev-parse", "HEAD");
   const argv = join(cwd, "cargo-argv");
@@ -65,7 +66,7 @@ function fixture() {
 printf '%s\\0' "$@" >> "$FAKE_CARGO_ARGV"
 printf '\\n' >> "$FAKE_CARGO_ARGV"
 case "$*" in
-  -V) printf 'cargo 1.99.0 (phase-test fixture)\\n'; exit 0;;
+  -V) printf 'cargo 1.99.1 (phase-test fixture)\\n'; exit 0;;
   'nextest --version') printf 'cargo-nextest 0.9.146\\n'; exit 0;;
   'nextest archive --workspace --cargo-profile ci --timings --archive-file target/rust-test-archive/tests.tar.zst')
     test ! -f target/cargo-timings/cargo-timing.html || exit 90
@@ -83,7 +84,7 @@ exit "$FAKE_CARGO_EXIT"
 `,
     { mode: 0o755 },
   );
-  writeFileSync(join(bin, "rustc"), "#!/bin/sh\nprintf 'rustc 1.99.0 (phase-test fixture)\\n'\n", {
+  writeFileSync(join(bin, "rustc"), "#!/bin/sh\nprintf 'rustc 1.99.1 (phase-test fixture)\\n'\n", {
     mode: 0o755,
   });
   const env: Record<string, string | undefined> = {

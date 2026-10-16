@@ -16,6 +16,7 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  RUSTUP_TOOLCHAIN: "1.99.0"
 
 jobs:
   instruction-counts:
@@ -34,7 +35,7 @@ jobs:
         with:
           node-version-file: package.json
           run-install: false
-      - name: Install pinned repository Rust
+      - name: Install pinned measurement Rust
         if: env.MEASURE == 'true'
         run: rustup toolchain install 1.99.0 --profile minimal
       - name: Install Callgrind and matching client request headers

@@ -306,3 +306,23 @@ await test("source-owned version admission leaves platform peak equality and con
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /wall baseline not yet recorded/);
 });
+
+await test("paired memory builds preserve the historical compiler across development patch updates", (t) => {
+  const f = sourceJudgeFixture(t);
+  const manifest = path.join(f.arms.base.root, "rust-measurement-toolchain.toml");
+  const original = fs.readFileSync(manifest);
+  // The old arm predates the separate measurement manifest.
+  fs.writeFileSync(path.join(f.arms.base.root, "rust-toolchain.toml"), original);
+  fs.unlinkSync(manifest);
+  f.refresh("base");
+  f.save();
+  const historical = sourceCompare(f);
+  assert.equal(historical.status, 0, historical.stderr);
+  const head = path.join(f.arms.head.root, "rust-measurement-toolchain.toml");
+  fs.writeFileSync(head, original.toString().replace("1.99.0", "1.99.1"));
+  f.refresh("head");
+  f.save();
+  const changed = sourceCompare(f);
+  assert.equal(changed.status, 2, changed.stderr);
+  assert.match(changed.stderr, /foreign source toolchain pin/);
+});

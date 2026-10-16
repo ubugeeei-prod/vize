@@ -71,7 +71,7 @@ jobs:
           run-install: false
 
       - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
-        with: { toolchain: "1.99.0" }
+        with: { toolchain: "1.99.1" }
       - uses: ./.github/actions/setup-rust-script
 
       - name: Install the frozen graph

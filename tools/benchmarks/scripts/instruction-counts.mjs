@@ -1,10 +1,10 @@
 #!/usr/bin/env node
+import { measurementToolchain } from "./measurement-toolchain.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { parseTomlLite } from "../../support/compat/davinci/toml-lite.mjs";
 import { reportOverBudgetHotspots } from "./instruction-hotspots.ts";
 import {
   verifyRepositoryInstructionBudgets,
@@ -71,8 +71,7 @@ function collect(out, registry, formatter) {
   assert.equal(process.env.GITHUB_ACTIONS, "true", "baseline collection requires GitHub Actions");
   assert.ok(!fs.existsSync(out), `refusing to reuse measurement output directory ${out}`);
   fs.mkdirSync(out, { recursive: true });
-  const toolchain = parseTomlLite(fs.readFileSync(path.join(root, "rust-toolchain.toml"), "utf8"))
-    .toolchain.channel;
+  const toolchain = measurementToolchain(root);
   assert.ok(
     /^\d+\.\d+\.\d+$/.test(toolchain),
     "repository Rust toolchain must be an exact version",
