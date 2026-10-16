@@ -59,17 +59,17 @@ impl<const LINT: bool> SurfacePolicy for Vue3Policy<LINT> {
         exact_pre: bool,
         inherited: bool,
     ) -> Option<LintTagFact> {
-        // Modified-only heads retain their existing bounded refusal. A raw
-        // facade match alone does not prove this selected header's admission.
+        // Lexical pre heads may accept modifiers/arguments that default lint
+        // freezing does not. Preserve the mode and refuse that semantic gap.
         Some(if verbatim && !exact_pre {
             LintTagFact::AmbiguousVerbatim
         } else if inherited && tag == "template" {
-            // Inherited template headers retain their existing proof gap;
-            // correcting the facade does not expand this selected admission.
+            // The registered facade may expose a synthetic L2 Template carrier
+            // here. Its category cannot be proved by a literal original header.
             LintTagFact::InheritedTemplate
         } else if tag == "slot" {
             LintTagFact::Slot
-        } else if tag == "template" && structural_template && !exact_pre {
+        } else if tag == "template" && structural_template {
             LintTagFact::Template
         } else if matches!(
             tag,

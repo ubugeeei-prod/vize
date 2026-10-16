@@ -88,12 +88,12 @@ fn walk_elements<'a>(
     }
 }
 
-pub(super) fn kind(element: &Element<'_>, frozen: bool) -> MarkupElementKind {
+pub(super) fn kind(element: &Element<'_>, frozen: bool, opens_v_pre: bool) -> MarkupElementKind {
     let tag = element.tag();
     if tag == "slot" {
         MarkupElementKind::Slot
     } else if tag == "template"
-        && !frozen
+        && (!frozen || opens_v_pre)
         && element.open.attrs.iter().any(|attr| {
             SurfaceDirective::parse(attr.name.text)
                 .is_some_and(|directive| directive.is_structural() || directive.name == "slot")
