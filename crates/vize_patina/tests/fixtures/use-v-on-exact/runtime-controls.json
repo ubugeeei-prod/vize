@@ -1,0 +1,103 @@
+{
+  "browserVersion": "152.0.7977.65",
+  "rows": [
+    {
+      "kind": "noncontiguous-system",
+      "exact": false,
+      "source": "<button @keydown.alt.shift=\"record('base', $event)\" @keydown.alt.ctrl.shift=\"record('specialized', $event)\">Control</button>",
+      "vueVersion": "3.6.0-beta.10",
+      "events": [
+        {
+          "handler": "base",
+          "key": "x",
+          "type": "keydown",
+          "eventClass": "KeyboardEvent",
+          "isTrusted": true,
+          "altKey": true,
+          "ctrlKey": true,
+          "shiftKey": true,
+          "metaKey": false
+        },
+        {
+          "handler": "specialized",
+          "key": "x",
+          "type": "keydown",
+          "eventClass": "KeyboardEvent",
+          "isTrusted": true,
+          "altKey": true,
+          "ctrlKey": true,
+          "shiftKey": true,
+          "metaKey": false
+        }
+      ]
+    },
+    {
+      "kind": "noncontiguous-system",
+      "exact": true,
+      "source": "<button @keydown.alt.shift.exact=\"record('base', $event)\" @keydown.alt.ctrl.shift=\"record('specialized', $event)\">Control</button>",
+      "vueVersion": "3.6.0-beta.10",
+      "events": [
+        {
+          "handler": "specialized",
+          "key": "x",
+          "type": "keydown",
+          "eventClass": "KeyboardEvent",
+          "isTrusted": true,
+          "altKey": true,
+          "ctrlKey": true,
+          "shiftKey": true,
+          "metaKey": false
+        }
+      ]
+    },
+    {
+      "kind": "intersecting-keys",
+      "exact": false,
+      "source": "<button @keydown.up.down=\"record('base', $event)\" @keydown.ctrl.down=\"record('specialized', $event)\">Control</button>",
+      "vueVersion": "3.6.0-beta.10",
+      "events": [
+        {
+          "handler": "base",
+          "key": "ArrowDown",
+          "type": "keydown",
+          "eventClass": "KeyboardEvent",
+          "isTrusted": true,
+          "altKey": false,
+          "ctrlKey": true,
+          "shiftKey": false,
+          "metaKey": false
+        },
+        {
+          "handler": "specialized",
+          "key": "ArrowDown",
+          "type": "keydown",
+          "eventClass": "KeyboardEvent",
+          "isTrusted": true,
+          "altKey": false,
+          "ctrlKey": true,
+          "shiftKey": false,
+          "metaKey": false
+        }
+      ]
+    },
+    {
+      "kind": "intersecting-keys",
+      "exact": true,
+      "source": "<button @keydown.up.down.exact=\"record('base', $event)\" @keydown.ctrl.down=\"record('specialized', $event)\">Control</button>",
+      "vueVersion": "3.6.0-beta.10",
+      "events": [
+        {
+          "handler": "specialized",
+          "key": "ArrowDown",
+          "type": "keydown",
+          "eventClass": "KeyboardEvent",
+          "isTrusted": true,
+          "altKey": false,
+          "ctrlKey": true,
+          "shiftKey": false,
+          "metaKey": false
+        }
+      ]
+    }
+  ]
+}

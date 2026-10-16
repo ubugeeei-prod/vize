@@ -1,0 +1,1960 @@
+{
+  "schema": "vize.patina.use-v-on-exact-oracle-v1",
+  "rule": "vue/use-v-on-exact",
+  "providers": {
+    "eslint": {
+      "version": "10.4.1",
+      "publicEntrypoint": "lib/api.js",
+      "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+      "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+    },
+    "eslint-plugin-vue": {
+      "version": "10.9.2",
+      "publicEntrypoint": "dist/index.js",
+      "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+      "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761",
+      "ruleImplementationSha256": "4c802db144c891091c67a7a512413a538e776a15d971c92dfbe3a940fc6bcab0"
+    },
+    "vue-eslint-parser": {
+      "version": "10.4.1",
+      "publicEntrypoint": "dist/index.cjs",
+      "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+      "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+    },
+    "@typescript-eslint/parser": {
+      "version": "8.65.0",
+      "publicEntrypoint": "dist/index.js",
+      "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+      "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+    }
+  },
+  "cases": [
+    {
+      "id": "exact-component",
+      "filename": "exact-component.vue",
+      "source": "<template><Box @keydown=\"a\" @keydown.ctrl=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "exact-native",
+      "filename": "exact-native.vue",
+      "source": "<template><button @keydown=\"a\" @keydown.ctrl=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@keydown",
+          "start": 18,
+          "end": 26
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@keydown",
+          "start": 18,
+          "end": 26
+        }
+      ]
+    },
+    {
+      "id": "exact-component-native",
+      "filename": "exact-component-native.vue",
+      "source": "<template><Box @keydown.native=\"a\" @keydown.native.ctrl=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@keydown.native",
+          "start": 15,
+          "end": 30
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@keydown.native",
+          "start": 15,
+          "end": 30
+        }
+      ]
+    },
+    {
+      "id": "exact-disjoint-keys",
+      "filename": "exact-disjoint-keys.vue",
+      "source": "<template><button @keydown.enter=\"a\" @keydown.ctrl.esc=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "exact-system-subset",
+      "filename": "exact-system-subset.vue",
+      "source": "<template><button @keydown.ctrl=\"a\" @keydown.ctrl.shift=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@keydown.ctrl",
+          "start": 18,
+          "end": 31
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@keydown.ctrl",
+          "start": 18,
+          "end": 31
+        }
+      ]
+    },
+    {
+      "id": "component-mixed-native",
+      "filename": "component-mixed-native.vue",
+      "source": "<template><Box @keydown.native=\"a\" @keydown.ctrl=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "kebab-component",
+      "filename": "kebab-component.vue",
+      "source": "<template><my-box @click=\"a\" @click.ctrl=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "lowercase-component",
+      "filename": "lowercase-component.vue",
+      "source": "<template><box @click=\"a\" @click.ctrl=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "is-component",
+      "filename": "is-component.vue",
+      "source": "<template><button is=\"MyButton\" @click=\"a\" @click.ctrl=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "bound-is-component",
+      "filename": "bound-is-component.vue",
+      "source": "<template><button :is=\"MyButton\" @click=\"a\" @click.ctrl=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "native-longhand",
+      "filename": "native-longhand.vue",
+      "source": "<template><button v-on:click.stop = \"a\" v-on:click.ctrl=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "v-on:click.stop",
+          "start": 18,
+          "end": 33
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "v-on:click.stop",
+          "start": 18,
+          "end": 33
+        }
+      ]
+    },
+    {
+      "id": "native-no-value",
+      "filename": "native-no-value.vue",
+      "source": "<template><button @click @click.ctrl=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@click",
+          "start": 18,
+          "end": 24
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@click",
+          "start": 18,
+          "end": 24
+        }
+      ]
+    },
+    {
+      "id": "exact",
+      "filename": "exact.vue",
+      "source": "<template><button @click.exact=\"a\" @click.ctrl=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "single-system",
+      "filename": "single-system.vue",
+      "source": "<template><button @click.ctrl=\"a\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "system-subset-reverse",
+      "filename": "system-subset-reverse.vue",
+      "source": "<template><button @keydown.ctrl.shift=\"b\" @keydown.ctrl=\"a\" /></template>",
+      "expected": [
+        {
+          "key": "@keydown.ctrl",
+          "start": 42,
+          "end": 55
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@keydown.ctrl",
+          "start": 42,
+          "end": 55
+        }
+      ]
+    },
+    {
+      "id": "equal-systems",
+      "filename": "equal-systems.vue",
+      "source": "<template><button @keydown.ctrl=\"a\" @keydown.ctrl.stop=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "disjoint-systems",
+      "filename": "disjoint-systems.vue",
+      "source": "<template><button @keydown.ctrl=\"a\" @keydown.shift=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "multi-system-subset",
+      "filename": "multi-system-subset.vue",
+      "source": "<template><button @keydown.ctrl.shift=\"a\" @keydown.alt.ctrl.shift=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@keydown.ctrl.shift",
+          "start": 18,
+          "end": 37
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@keydown.ctrl.shift",
+          "start": 18,
+          "end": 37
+        }
+      ]
+    },
+    {
+      "id": "noncontiguous-system-subset",
+      "filename": "noncontiguous-system-subset.vue",
+      "source": "<template><button @keydown.alt.shift=\"a\" @keydown.alt.ctrl.shift=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@keydown.alt.shift",
+          "start": 18,
+          "end": 36
+        }
+      ],
+      "referenceExpected": [],
+      "correctnessException": {
+        "runtimeControl": "noncontiguous-system",
+        "reason": "Trusted browser KeyboardEvent fires both compiled Vue handlers; .exact removes only the broader handler. The pinned rule misses this overlap."
+      }
+    },
+    {
+      "id": "same-key",
+      "filename": "same-key.vue",
+      "source": "<template><button @keydown.enter=\"a\" @keydown.ctrl.enter=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@keydown.enter",
+          "start": 18,
+          "end": 32
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@keydown.enter",
+          "start": 18,
+          "end": 32
+        }
+      ]
+    },
+    {
+      "id": "missing-key",
+      "filename": "missing-key.vue",
+      "source": "<template><button @keydown=\"a\" @keydown.ctrl.enter=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@keydown",
+          "start": 18,
+          "end": 26
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@keydown",
+          "start": 18,
+          "end": 26
+        }
+      ]
+    },
+    {
+      "id": "multiple-disjoint-keys",
+      "filename": "multiple-disjoint-keys.vue",
+      "source": "<template><button @keydown.up.down=\"a\" @keydown.ctrl.down=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@keydown.up.down",
+          "start": 18,
+          "end": 34
+        }
+      ],
+      "referenceExpected": [],
+      "correctnessException": {
+        "runtimeControl": "intersecting-keys",
+        "reason": "Trusted browser KeyboardEvent fires both compiled Vue handlers; .exact removes only the broader handler. The pinned rule misses this overlap."
+      }
+    },
+    {
+      "id": "key-order",
+      "filename": "key-order.vue",
+      "source": "<template><button @keydown.up.down=\"a\" @keydown.ctrl.down.up=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@keydown.up.down",
+          "start": 18,
+          "end": 34
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@keydown.up.down",
+          "start": 18,
+          "end": 34
+        }
+      ]
+    },
+    {
+      "id": "global-modifiers",
+      "filename": "global-modifiers.vue",
+      "source": "<template><button @click.stop.prevent.capture.self.once.passive=\"a\" @click.ctrl=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@click.stop.prevent.capture.self.once.passive",
+          "start": 18,
+          "end": 63
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@click.stop.prevent.capture.self.once.passive",
+          "start": 18,
+          "end": 63
+        }
+      ]
+    },
+    {
+      "id": "different-events",
+      "filename": "different-events.vue",
+      "source": "<template><button @keydown=\"a\" @keyup.ctrl=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "repeat-conflicts",
+      "filename": "repeat-conflicts.vue",
+      "source": "<template><button @click=\"a\" @click.ctrl=\"b\" @click.shift=\"c\" /></template>",
+      "expected": [
+        {
+          "key": "@click",
+          "start": 18,
+          "end": 24
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@click",
+          "start": 18,
+          "end": 24
+        }
+      ]
+    },
+    {
+      "id": "three-system-levels",
+      "filename": "three-system-levels.vue",
+      "source": "<template><button @click=\"a\" @click.ctrl=\"b\" @click.ctrl.shift=\"c\" /></template>",
+      "expected": [
+        {
+          "key": "@click",
+          "start": 18,
+          "end": 24
+        },
+        {
+          "key": "@click.ctrl",
+          "start": 29,
+          "end": 40
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@click",
+          "start": 18,
+          "end": 24
+        },
+        {
+          "key": "@click.ctrl",
+          "start": 29,
+          "end": 40
+        }
+      ]
+    },
+    {
+      "id": "unicode-multiline",
+      "filename": "unicode-multiline.vue",
+      "source": "<template><button title=\"🪄\"\n @keydown.enter=\"a + 'é'\"\n @keydown.ctrl.enter=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@keydown.enter",
+          "start": 32,
+          "end": 46
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@keydown.enter",
+          "start": 32,
+          "end": 46
+        }
+      ]
+    },
+    {
+      "id": "dynamic-static",
+      "filename": "dynamic-static.vue",
+      "source": "<template><button @[event]=\"a\" @click.ctrl=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "same-dynamic",
+      "filename": "same-dynamic.vue",
+      "source": "<template><button @[event]=\"a\" @[event].ctrl=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@[event]",
+          "start": 18,
+          "end": 26
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@[event]",
+          "start": 18,
+          "end": 26
+        }
+      ]
+    },
+    {
+      "id": "different-dynamic",
+      "filename": "different-dynamic.vue",
+      "source": "<template><button @[first]=\"a\" @[second].ctrl=\"b\" /></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "svg-native",
+      "filename": "svg-native.vue",
+      "source": "<template><svg><text @click=\"a\" @click.ctrl=\"b\" /></svg></template>",
+      "expected": [
+        {
+          "key": "@click",
+          "start": 21,
+          "end": 27
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@click",
+          "start": 21,
+          "end": 27
+        }
+      ]
+    },
+    {
+      "id": "svg-component",
+      "filename": "svg-component.vue",
+      "source": "<template><svg><Box @click=\"a\" @click.ctrl=\"b\" /></svg></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "math-native",
+      "filename": "math-native.vue",
+      "source": "<template><math><mi @click=\"a\" @click.ctrl=\"b\" /></math></template>",
+      "expected": [
+        {
+          "key": "@click",
+          "start": 20,
+          "end": 26
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@click",
+          "start": 20,
+          "end": 26
+        }
+      ]
+    },
+    {
+      "id": "foreign-object-component",
+      "filename": "foreign-object-component.vue",
+      "source": "<template><svg><foreignObject><box @click=\"a\" @click.ctrl=\"b\" /></foreignObject></svg></template>",
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "control-key-vs-meta",
+      "filename": "control-key-vs-meta.vue",
+      "source": "<template><input @keyup.control.prevent=\"a\" @keyup.meta.prevent=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@keyup.control.prevent",
+          "start": 17,
+          "end": 39
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@keyup.control.prevent",
+          "start": 17,
+          "end": 39
+        }
+      ]
+    },
+    {
+      "id": "named-key-vs-meta",
+      "filename": "named-key-vs-meta.vue",
+      "source": "<template><input @keyup.enter=\"a\" @keyup.meta.prevent=\"b\" /></template>",
+      "expected": [
+        {
+          "key": "@keyup.enter",
+          "start": 17,
+          "end": 29
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@keyup.enter",
+          "start": 17,
+          "end": 29
+        }
+      ]
+    },
+    {
+      "id": "bare-svg-name-component",
+      "filename": "bare-svg-name-component.vue",
+      "source": "<template><view @click=\"a\" @click.ctrl=\"b\" /></template>",
+      "referenceExpected": [],
+      "expected": []
+    },
+    {
+      "id": "foreign-object-svg-name-component",
+      "filename": "foreign-object-svg-name-component.vue",
+      "source": "<template><svg><foreignObject><view @click=\"a\" @click.ctrl=\"b\" /></foreignObject></svg></template>",
+      "referenceExpected": [],
+      "expected": []
+    },
+    {
+      "id": "nested-svg-native",
+      "filename": "nested-svg-native.vue",
+      "source": "<template><svg><foreignObject><svg><text @click=\"a\" @click.ctrl=\"b\" /></svg></foreignObject></svg></template>",
+      "referenceExpected": [
+        {
+          "key": "@click",
+          "start": 41,
+          "end": 47
+        }
+      ],
+      "expected": [
+        {
+          "key": "@click",
+          "start": 41,
+          "end": 47
+        }
+      ]
+    },
+    {
+      "id": "bare-math-name-component",
+      "filename": "bare-math-name-component.vue",
+      "source": "<template><mi @click=\"a\" @click.ctrl=\"b\" /></template>",
+      "referenceExpected": [],
+      "expected": []
+    },
+    {
+      "id": "math-html-integration",
+      "filename": "math-html-integration.vue",
+      "source": "<template><math><mtext><button @click=\"a\" @click.ctrl=\"b\" /></mtext></math></template>",
+      "referenceExpected": [
+        {
+          "key": "@click",
+          "start": 31,
+          "end": 37
+        }
+      ],
+      "expected": [
+        {
+          "key": "@click",
+          "start": 31,
+          "end": 37
+        }
+      ]
+    },
+    {
+      "id": "original-reka-ui",
+      "filename": "reka-ui/packages/core/src/Tree/TreeRoot.vue",
+      "source": "<script lang=\"ts\">\nimport type { Direction } from '@/shared/types'\nimport { createContext, getActiveElement, useDirection, useSelectionBehavior, useTypeahead } from '@/shared'\nimport { flatten } from './utils'\n\nexport interface TreeRootProps<T = Record<string, any>, U extends Record<string, any> = Record<string, any>, M extends boolean = false> extends PrimitiveProps {\n  /** The controlled value of the tree. Can be binded with `v-model`. */\n  modelValue?: M extends true ? U[] : U\n  /** The value of the tree when initially rendered. Use when you do not need to control the state of the tree */\n  defaultValue?: M extends true ? U[] : U\n  /** List of items */\n  items?: T[]\n  /** The controlled value of the expanded item. Can be binded with `v-model`. */\n  expanded?: string[]\n  /** The value of the expanded tree when initially rendered. Use when you do not need to control the state of the expanded tree */\n  defaultExpanded?: string[]\n  /** This function is passed the index of each item and should return a unique key for that item */\n  getKey: (val: T) => string\n  /** This function is passed the index of each item and should return a list of children for that item */\n  getChildren?: (val: T) => T[] | undefined\n  /** How multiple selection should behave in the collection. */\n  selectionBehavior?: 'toggle' | 'replace'\n  /** Whether multiple options can be selected or not.  */\n  multiple?: M | boolean\n  /** The reading direction of the listbox when applicable. <br> If omitted, inherits globally from `ConfigProvider` or assumes LTR (left-to-right) reading mode. */\n  dir?: Direction\n  /** When `true`, prevents the user from interacting with tree  */\n  disabled?: boolean\n  /** When `true`, selecting parent will select the descendants. Requires `multiple` to be `true`. */\n  propagateSelect?: boolean\n  /** When `true`, selecting children will update the parent state. Requires `multiple` to be `true`. */\n  bubbleSelect?: boolean\n}\n\nexport type TreeRootEmits<T = Record<string, any>, M extends boolean = false> = {\n  'update:modelValue': [val: M extends true ? T[] : T]\n  'update:expanded': [val: string[]]\n}\n\ninterface TreeRootContext<T = Record<string, any>> {\n  modelValue: Ref<T | T[]>\n  selectedKeys: Ref<string[]>\n  onSelect: (val: T) => void\n  expanded: Ref<string[]>\n  onToggle: (val: T) => void\n  items: Ref<T[]>\n  expandedItems: Ref<T[]>\n  getKey: (val: T) => string\n  getChildren: (val: T) => T[] | undefined\n  multiple: Ref<boolean>\n  disabled: Ref<boolean>\n  dir: Ref<Direction>\n  propagateSelect: Ref<boolean>\n  bubbleSelect: Ref<boolean>\n  isVirtual: Ref<boolean>\n  virtualKeydownHook: EventHook<KeyboardEvent>\n\n  handleMultipleReplace: ReturnType<typeof useSelectionBehavior>['handleMultipleReplace']\n}\n\nexport type FlattenedItem<T> = {\n  _id: string\n  index: number\n  value: T\n  level: number\n  hasChildren: boolean\n  parentItem?: T\n  bind: {\n    value: T\n    level: number\n    [key: string]: any\n  }\n}\n\nexport const [injectTreeRootContext, provideTreeRootContext] = createContext<TreeRootContext<any>>('TreeRoot')\n</script>\n\n<script setup lang=\"ts\" generic=\"T extends Record<string, any>, U extends Record<string, any>, M extends boolean = false\">\nimport type { EventHook } from '@vueuse/core'\nimport type { Ref } from 'vue'\nimport type { PrimitiveProps } from '@/Primitive'\nimport { createEventHook, useVModel } from '@vueuse/core'\nimport { computed, nextTick, ref, toRefs } from 'vue'\nimport { Primitive } from '@/Primitive'\nimport { RovingFocusGroup } from '@/RovingFocus'\nimport { MAP_KEY_TO_FOCUS_INTENT } from '@/RovingFocus/utils'\n\nconst props = withDefaults(defineProps<TreeRootProps<T, U, M>>(), {\n  as: 'ul',\n  selectionBehavior: 'toggle',\n  getChildren: (val: T) => val.children,\n})\nconst emits = defineEmits<TreeRootEmits<U, M>>()\n\ndefineSlots<{\n  default?: (props: {\n    flattenItems: FlattenedItem<T>[]\n    modelValue: M extends true ? U[] : U\n    expanded: typeof expanded.value\n  }) => any\n}>()\n\nconst { items, multiple, disabled, propagateSelect, dir: propDir, bubbleSelect } = toRefs(props)\nconst { handleTypeaheadSearch } = useTypeahead()\nconst dir = useDirection(propDir)\nconst rovingFocusGroupRef = ref<InstanceType<typeof RovingFocusGroup>>()\n\n// Virtualizer\nconst isVirtual = ref(false)\nconst virtualKeydownHook = createEventHook<KeyboardEvent>()\n\nconst modelValue = useVModel(props, 'modelValue', emits, {\n  // @ts-expect-error idk\n  defaultValue: props.defaultValue ?? (multiple.value ? [] : undefined),\n  passive: true,\n  deep: true,\n}) as Ref<U | U[]>\n\nconst expanded = useVModel(props, 'expanded', emits, {\n  // @ts-expect-error idk\n  defaultValue: props.defaultExpanded ?? [],\n  passive: (props.expanded === undefined) as false,\n  deep: true,\n}) as Ref<string[]>\n\nconst { onSelectItem, handleMultipleReplace } = useSelectionBehavior(modelValue, props)\n\nconst selectedKeys = computed(() => {\n  if (multiple.value && Array.isArray(modelValue.value))\n    return modelValue.value.map(i => props.getKey(i as any))\n  else\n    return [props.getKey(modelValue.value as any ?? {})]\n})\n\nfunction flattenItems(items: T[], level: number = 1, parentItem?: T): FlattenedItem<T>[] {\n  return items.reduce((acc: FlattenedItem<T>[], item: T, index: number) => {\n    const key = props.getKey(item)\n    const children = props.getChildren(item)\n    const isExpanded = expanded.value.includes(key)\n\n    const flattenedItem: FlattenedItem<T> = {\n      _id: key,\n      value: item,\n      index,\n      level,\n      parentItem,\n      hasChildren: !!children,\n      bind: {\n        'value': item,\n        level,\n        'aria-setsize': items.length,\n        'aria-posinset': index + 1,\n      },\n    }\n    acc.push(flattenedItem)\n\n    if (children && isExpanded)\n      acc.push(...flattenItems(children, level + 1, item))\n\n    return acc\n  }, [])\n}\n\nconst expandedItems = computed(() => {\n  const items = props.items\n  const expandedKeys = expanded.value.map(i => i)\n  return flattenItems(items ?? [])\n})\n\nfunction handleKeydown(event: KeyboardEvent) {\n  if (isVirtual.value) {\n    virtualKeydownHook.trigger(event)\n  }\n  else {\n    const collections = rovingFocusGroupRef.value?.getItems() ?? []\n    handleTypeaheadSearch(event.key, collections)\n  }\n}\n\nfunction handleKeydownNavigation(event: KeyboardEvent) {\n  if (isVirtual.value)\n    return\n\n  const intent = MAP_KEY_TO_FOCUS_INTENT[event.key]\n  nextTick(() => {\n    handleMultipleReplace(\n      intent,\n      getActiveElement(),\n      rovingFocusGroupRef.value?.getItems!,\n      expandedItems.value.map(i => i.value),\n    )\n  })\n}\n\nfunction handleBubbleSelect(item: FlattenedItem<T>) {\n  if (item.parentItem != null && Array.isArray(modelValue.value) && props.multiple) {\n    const parentItem = expandedItems.value.find((i) => {\n      return item.parentItem != null && props.getKey(i.value) === props.getKey(item.parentItem)\n    })\n\n    if (parentItem != null) {\n      const areAllChilredOfParentSelected = props.getChildren(parentItem.value)?.every(i => modelValue.value.find((v: any) => props.getKey(v) === props.getKey(i)))\n\n      if (areAllChilredOfParentSelected) {\n        modelValue.value = [...modelValue.value, parentItem.value as any]\n      }\n      else {\n        modelValue.value = modelValue.value.filter((v: any) => props.getKey(v) !== props.getKey(parentItem.value))\n      }\n\n      handleBubbleSelect(parentItem)\n    }\n  }\n}\n\nprovideTreeRootContext({\n  modelValue,\n  selectedKeys,\n  onSelect: (val) => {\n    const condition = (baseValue: U) => props.getKey(baseValue as any ?? {}) === props.getKey(val)\n    const exist = props.multiple && Array.isArray(modelValue.value) ? modelValue.value?.findIndex(condition) !== -1 : undefined\n    onSelectItem(val, condition)\n\n    if (props.bubbleSelect && props.multiple && Array.isArray(modelValue.value)) {\n      const item = expandedItems.value.find((i) => {\n        return props.getKey(i.value) === props.getKey(val)\n      })\n      if (item != null) {\n        handleBubbleSelect(item)\n      }\n    }\n\n    if (props.propagateSelect && props.multiple && Array.isArray(modelValue.value)) {\n      const children = flatten<U, any>(props.getChildren(val) ?? [])\n\n      if (exist) {\n        // remove all child\n        modelValue.value = [...modelValue.value]\n          .filter(i => !children.some(child => props.getKey(i as any ?? {}) === props.getKey(child as any)))\n      }\n      else {\n        // select all child\n        modelValue.value = [...modelValue.value, ...children]\n      }\n    }\n  },\n  expanded,\n  onToggle(val) {\n    const children = val ? props.getChildren(val) : undefined\n    if (!children)\n      return\n\n    const key = props.getKey(val) ?? val\n    if (expanded.value.includes(key))\n      expanded.value = expanded.value.filter(val => val !== key)\n    else\n      expanded.value = [...expanded.value, key]\n  },\n  getKey: props.getKey,\n  getChildren: props.getChildren,\n  items,\n  expandedItems,\n  disabled,\n  multiple,\n  dir,\n  propagateSelect,\n  bubbleSelect,\n\n  isVirtual,\n  virtualKeydownHook,\n  handleMultipleReplace,\n})\n</script>\n\n<template>\n  <RovingFocusGroup\n    ref=\"rovingFocusGroupRef\"\n    as-child\n    orientation=\"vertical\"\n    :dir=\"dir\"\n  >\n    <Primitive\n      role=\"tree\"\n      :as=\"as\"\n      :as-child=\"asChild\"\n      :aria-multiselectable=\"multiple ? true : undefined\"\n      @keydown=\"handleKeydown\"\n      @keydown.up.down.shift=\"handleKeydownNavigation\"\n    >\n      <slot\n        :flatten-items=\"expandedItems\"\n        :model-value=\"modelValue as M extends true ? U[] : U\"\n        :expanded=\"expanded\"\n      />\n    </Primitive>\n  </RovingFocusGroup>\n</template>\n",
+      "original": {
+        "project": "reka-ui",
+        "file": "packages/core/src/Tree/TreeRoot.vue",
+        "url": "https://raw.githubusercontent.com/unovue/reka-ui/c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2/packages/core/src/Tree/TreeRoot.vue",
+        "sha256": "cd45b4ad003c59ef0d8a9801741546a0f5cf75013716ef6ddcb65528e3c72a05",
+        "size": 9543,
+        "license": {
+          "file": "reka-ui.LICENSE",
+          "url": "https://raw.githubusercontent.com/unovue/reka-ui/c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2/LICENSE",
+          "sha256": "c023ce9cf3d6f6ba2ad554a0e359f0e1b3ed100a78e2004316532b5d9c272464"
+        }
+      },
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "original-lx-music-desktop",
+      "filename": "lx-music-desktop/src/renderer/views/List/MusicList/components/SearchList.vue",
+      "source": "<template>\n  <teleport to=\"#view\">\n    <div v-show=\"isShow\" ref=\"dom_container\" :class=\"$style.container\">\n      <transition enter-active-class=\"animated-fast zoomIn\" leave-active-class=\"animated zoomOut\" @after-leave=\"handleAnimated\">\n        <div v-show=\"visible\" :class=\"$style.search\">\n          <div :class=\"$style.form\">\n            <input\n              ref=\"dom_input\" v-model.trim=\"text\" class=\"ignore-esc\" :placeholder=\"placeholder\" @input=\"handleDelaySearch\"\n              @keydown.arrow-down.arrow-up.prevent @keyup.arrow-down.prevent.exact=\"handleKeyDown\" @keyup.arrow-up.prevent.exact=\"handleKeyUp\"\n              @keyup.enter=\"handleTemplistClick(selectIndex)\"\n              @keyup.escape.prevent.exact=\"handleKeyEsc\" @keydown.control.prevent=\"handle_key_mod_down\" @keydown.meta.prevent=\"handle_key_mod_down\"\n              @keyup.control.prevent=\"handle_key_mod_up\" @keyup.meta.prevent=\"handle_key_mod_up\" @contextmenu=\"handleContextMenu\"\n            >\n            <button type=\"button\" @click=\"handleHide\">\n              <slot>\n                <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xlink=\"http://www.w3.org/1999/xlink\" height=\"70%\" viewBox=\"0 0 212.982 212.982\" space=\"preserve\">\n                  <use xlink:href=\"#icon-delete\" />\n                </svg>\n              </slot>\n            </button>\n          </div>\n          <div v-if=\"resultList\" ref=\"dom_scrollContainer\" class=\"scroll\" :class=\"$style.list\" :style=\"listStyle\">\n            <ul ref=\"dom_list\">\n              <li v-for=\"(item, index) in resultList\" :key=\"item.songmid\" :class=\"selectIndex === index ? $style.select : null\" @mouseenter=\"selectIndex = index\" @click=\"handleTemplistClick(index)\">\n                <div :class=\"$style.img\" />\n                <div :class=\"$style.text\">\n                  <h3 :class=\"$style.text\">{{ item.name }} - {{ item.singer }}</h3>\n                  <h3 v-if=\"item.meta.albumName\" :class=\"[$style.text, $style.albumName]\">{{ item.meta.albumName }}</h3>\n                </div>\n                <div :class=\"$style.source\">{{ item.source }}</div>\n              </li>\n            </ul>\n          </div>\n        </div>\n      </transition>\n    </div>\n  </teleport>\n</template>\n\n<script>\nimport { debounce } from '@common/utils'\nimport { clipboardReadText } from '@common/utils/electron'\nimport { toRaw } from '@common/utils/vueTools'\n\nexport default {\n  props: {\n    placeholder: {\n      type: String,\n      default: 'Search for something...',\n    },\n    list: {\n      type: Array,\n      default() {\n        return []\n      },\n    },\n    visible: {\n      type: Boolean,\n      default: false,\n    },\n  },\n  emits: ['action'],\n  data() {\n    return {\n      text: '',\n      selectIndex: -1,\n      listStyle: {\n        height: 0,\n        maxHeight: 0,\n        overflow: 'hidden',\n      },\n      maxHeight: 0,\n      resultList: [],\n      isModDown: false,\n      isShow: false,\n    }\n  },\n  watch: {\n    resultList(n) {\n      if (this.selectIndex > -1) this.selectIndex = -1\n      this.$nextTick(() => {\n        const height = this.$refs.dom_list.scrollHeight\n        if (height > this.maxHeight) {\n          this.listStyle.height = this.maxHeight + 'px'\n          this.listStyle.overflow = 'auto'\n        } else {\n          this.listStyle.height = height + 'px'\n          this.listStyle.overflow = 'hidden'\n        }\n      })\n    },\n    list(n) {\n      if (!this.visible) return\n      this.handleDelaySearch()\n    },\n    visible(n) {\n      if (!n) return\n      this.isShow = true\n      this.init()\n    },\n  },\n  created() {\n    this.handleDelaySearch = debounce(() => {\n      this.handleSearch()\n    })\n    if (this.visible) this.isShow = true\n  },\n  mounted() {\n    this.init()\n    // window.key_event.on('key_mod_down', this.handle_key_mod_down)\n    // window.key_event.on('key_mod_up', this.handle_key_mod_up)\n    window.key_event.on('key_mod+f_down', this.handle_key_mod_f_down)\n  },\n  beforeUnmount() {\n    // window.key_event.off('key_mod_down', this.handle_key_mod_down)\n    // window.key_event.off('key_mod_up', this.handle_key_mod_up)\n    window.key_event.off('key_mod+f_down', this.handle_key_mod_f_down)\n  },\n  methods: {\n    init() {\n      if (!this.visible) return\n      this.handleSearch()\n      this.$nextTick(() => {\n        if (!this.listStyle.maxHeight) {\n          this.maxHeight = this.$refs.dom_container.offsetParent.clientHeight - this.$refs.dom_list.offsetTop - 70\n          this.listStyle.maxHeight = this.maxHeight + 'px'\n        }\n        this.$refs.dom_input.focus()\n      })\n    },\n    handleKeyEsc() {\n      if (this.text.length > 0) {\n        this.text = ''\n        this.resultList = []\n      } else {\n        this.handleHide()\n      }\n    },\n    handle_key_mod_down() {\n      console.log('handle_key_mod_down')\n      this.isModDown ||= true\n    },\n    handle_key_mod_up() {\n      this.isModDown &&= false\n    },\n    handle_key_mod_f_down() {\n      if (this.visible) this.$refs.dom_input.focus()\n    },\n    handleAnimated() {\n      if (this.visible) return\n      this.isShow = false\n    },\n    handleTemplistClick(index) {\n      if (index < 0) return\n      const id = this.resultList[index].id\n      this.sendEvent('listClick', {\n        index: this.list.findIndex(m => m.id == id),\n        isPlay: this.isModDown,\n      })\n    },\n    handleHide() {\n      this.sendEvent('hide')\n    },\n    sendEvent(action, data) {\n      this.$emit('action', {\n        action,\n        data,\n      })\n    },\n    handleKeyDown() {\n      if (this.resultList.length) {\n        this.selectIndex = this.selectIndex + 1 < this.resultList.length ? this.selectIndex + 1 : 0\n        this.handleScrollList()\n      } else if (this.selectIndex > -1) {\n        this.selectIndex = -1\n      }\n    },\n    handleKeyUp() {\n      if (this.resultList.length) {\n        this.selectIndex = this.selectIndex - 1 < -1 ? this.resultList.length - 1 : this.selectIndex - 1\n        this.handleScrollList()\n      } else if (this.selectIndex > -1) {\n        this.selectIndex = -1\n      }\n    },\n    handleScrollList() {\n      if (this.selectIndex < 0) return\n      let dom = this.$refs.dom_list.children[this.selectIndex]\n      let offsetTop = dom.offsetTop\n      let scrollTop = this.$refs.dom_scrollContainer.scrollTop\n      let top\n      if (offsetTop < scrollTop) {\n        top = offsetTop\n      } else if (offsetTop + dom.clientHeight > this.$refs.dom_scrollContainer.clientHeight + scrollTop) {\n        top = offsetTop + dom.clientHeight - this.$refs.dom_scrollContainer.clientHeight\n      } else return\n      this.$refs.dom_scrollContainer.scrollTo(0, top)\n    },\n    handleContextMenu() {\n      let str = clipboardReadText()\n      str = str.trim()\n      str = str.replace(/\\t|\\r\\n|\\n|\\r/g, ' ')\n      str = str.replace(/\\s+/g, ' ')\n      let dom_input = this.$refs.dom_input\n      const text = dom_input.value\n      // if (dom_input.selectionStart == dom_input.selectionEnd) {\n      const value = text.substring(0, dom_input.selectionStart) + str + text.substring(dom_input.selectionEnd, text.length)\n      // event.target.value = value\n      this.text = value\n      // } else {\n      //   clipboardWriteText(text.substring(dom_input.selectionStart, dom_input.selectionEnd))\n      // }\n    },\n    async handleSearch() {\n      if (!this.text.length) return this.resultList = []\n      this.resultList = await window.lx.worker.main.searchListMusic(toRaw(this.list), this.text)\n    },\n  },\n}\n</script>\n\n\n<style lang=\"less\" module>\n@import '@renderer/assets/styles/layout.less';\n\n.container {\n  position: absolute;\n  left: 50%;\n  transform: translateX(-50%);\n  top: 20px;\n  width: 45%;\n  height: @height-toolbar * 0.52;\n  z-index: 99;\n}\n\n.search {\n  position: absolute;\n  width: 100%;\n  border-radius: 4px;\n  transition: box-shadow .4s ease, background-color @transition-normal;\n  display: flex;\n  flex-flow: column nowrap;\n  background-color: var(--color-primary-light-600-alpha-100);\n  box-shadow: 0 1px 2px rgba(0,0,0,0.07),\n                0 2px 4px rgba(0,0,0,0.07),\n                0 4px 8px rgba(0,0,0,0.07),\n                0 8px 16px rgba(0,0,0,0.07),\n                0 16px 32px rgba(0,0,0,0.07),\n                0 32px 64px rgba(0,0,0,0.07);\n\n  &.active {\n    .form {\n      input {\n        border-bottom-left-radius: 0;\n\n      }\n      button {\n        border-bottom-right-radius: 0;\n      }\n    }\n  }\n  .form {\n    display: flex;\n    height: @height-toolbar * 0.52;\n    position: relative;\n    input {\n      flex: auto;\n      // border: 1px solid;\n      border-top-left-radius: 4px;\n      border-bottom-left-radius: 4px;\n      background-color: transparent;\n      // border-bottom: 2px solid var(--color-primary);\n      // border-color: var(--color-primary);\n      border: none;\n\n      outline: none;\n      // height: @height-toolbar * .7;\n      padding: 0 5px;\n      overflow: hidden;\n      font-size: 13.5px;\n      line-height: @height-toolbar * 0.52 + 5px;\n      &::placeholder {\n        color: var(--color-button-font);\n        font-size: .98em;\n      }\n    }\n    button {\n      flex: none;\n      border: none;\n      // background-color: @color-search-form-background;\n      background-color: transparent;\n      outline: none;\n      border-top-right-radius: 4px;\n      border-bottom-right-radius: 4px;\n      cursor: pointer;\n      height: 100%;\n      padding: 6px 9px;\n      color: var(--color-button-font);\n      transition: background-color .2s ease;\n      opacity: 0.8;\n\n      &:hover {\n        background-color: var(--color-button-background-hover);\n      }\n      &:active {\n        background-color: var(--color-button-background-active);\n      }\n    }\n  }\n  .list {\n    // background-color: @color-search-form-background;\n    font-size: 13px;\n    transition: .3s ease;\n    height: 0;\n    transition-property: height;\n    position: relative;\n    scroll-behavior: smooth;\n\n    li {\n      position: relative;\n      cursor: pointer;\n      padding: 8px 5px;\n      transition: background-color .2s ease;\n      line-height: 1.3;\n      // overflow: hidden;\n      display: flex;\n      flex-flow: row nowrap;\n\n      &.select {\n        background-color: var(--color-primary-dark-100-alpha-700);\n      }\n      border-radius: 4px;\n      // &:last-child {\n      //   border-bottom-left-radius: 4px;\n      //   border-bottom-right-radius: 4px;\n      // }\n    }\n  }\n}\n\n.img {\n  flex: none;\n}\n.text {\n  flex: auto;\n  .mixin-ellipsis-1();\n}\n.albumName {\n  font-size: 12px;\n  opacity: 0.6;\n  .mixin-ellipsis-1();\n}\n.source {\n  flex: none;\n  font-size: 12px;\n  opacity: 0.5;\n  padding: 0 5px;\n  display: flex;\n  align-items: center;\n  // transform: rotate(45deg);\n  // background-color:\n}\n\n</style>\n",
+      "original": {
+        "project": "lx-music-desktop",
+        "file": "src/renderer/views/List/MusicList/components/SearchList.vue",
+        "url": "https://raw.githubusercontent.com/lyswhut/lx-music-desktop/9c364b482e5621a1d38b50e8610d2fb974457e6e/src/renderer/views/List/MusicList/components/SearchList.vue",
+        "sha256": "072d577bc08eef9ebe72e8dc4ac17e4d932dac4737f67717bc587426051213cd",
+        "size": 10607,
+        "license": {
+          "file": "lx-music-desktop.LICENSE",
+          "url": "https://raw.githubusercontent.com/lyswhut/lx-music-desktop/9c364b482e5621a1d38b50e8610d2fb974457e6e/LICENSE",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        }
+      },
+      "expected": [
+        {
+          "key": "@keydown.arrow-down.arrow-up.prevent",
+          "start": 483,
+          "end": 519
+        },
+        {
+          "key": "@keyup.enter",
+          "start": 626,
+          "end": 638
+        },
+        {
+          "key": "@keydown.control.prevent",
+          "start": 731,
+          "end": 755
+        },
+        {
+          "key": "@keyup.control.prevent",
+          "start": 836,
+          "end": 858
+        }
+      ],
+      "referenceExpected": [
+        {
+          "key": "@keydown.arrow-down.arrow-up.prevent",
+          "start": 483,
+          "end": 519
+        },
+        {
+          "key": "@keyup.enter",
+          "start": 626,
+          "end": 638
+        },
+        {
+          "key": "@keydown.control.prevent",
+          "start": 731,
+          "end": 755
+        },
+        {
+          "key": "@keyup.control.prevent",
+          "start": 836,
+          "end": 858
+        }
+      ]
+    },
+    {
+      "id": "original-vue-termui",
+      "filename": "vue-termui/playground/src/pages/event-modifiers.vue",
+      "source": "<script setup lang=\"ts\">\n// Showcase for event-listener modifiers on components: `@keyDown.*` on a\n// focusable box and `@mouseDown.*` on clickable boxes. Every handler below is\n// filtered/managed declaratively by its modifiers — no `if (key.ctrl && …)`\n// branching in the handler bodies.\nimport { Box, ref, Text } from 'vue-termui'\n\n// Newest-first log of which modified handlers actually fired.\nconst events = ref<string[]>([])\nconst counter = ref(0)\nconst lastKey = ref('—')\n\nfunction log(message: string): void {\n  events.value.unshift(message)\n  if (events.value.length > 8) events.value.pop()\n}\n</script>\n\n<template>\n  <Box flexDirection=\"column\" :gap=\"1\">\n    <Box flexDirection=\"column\" borderStyle=\"rounded\" :padding=\"1\">\n      <Text bold fg=\"#42b883\">Event modifiers</Text>\n      <Text fg=\"#888888\">\n        `@keyDown` / `@mouse*` take Vue-style modifiers. Press Tab to focus the keyboard pad,\n      </Text>\n      <Text fg=\"#888888\">then try the shortcuts. Click the mouse pad with different buttons.</Text>\n    </Box>\n\n    <Box flexDirection=\"row\" :gap=\"1\">\n      <!-- Keyboard: element key events only fire while the box is focused. -->\n      <Box\n        flexDirection=\"column\"\n        :gap=\"1\"\n        :width=\"44\"\n        :padding=\"1\"\n        borderStyle=\"rounded\"\n        borderColor=\"#444444\"\n        focusedBorderColor=\"#42b883\"\n        focusable\n        autofocus\n        @keyDown=\"(e) => (lastKey = e.name)\"\n        @keyDown.enter=\"log('⏎  Enter')\"\n        @keyDown.ctrl.b=\"log('Ctrl+B — system chord')\"\n        @keyDown.ctrl.shift.k=\"log('Ctrl+Shift+K — combined chord')\"\n        @keyDown.up=\"counter++\"\n        @keyDown.down=\"counter--\"\n        @keyDown.x.exact=\"log('x — exact (no modifiers held)')\"\n        @keyDown.ctrl.x=\"log('Ctrl+X')\"\n        @keyDown.j.k=\"log('j or k — either key name')\"\n      >\n        <Text bold>⌨ Keyboard (focus me)</Text>\n        <Text fg=\"#888888\">Enter · Ctrl+B · Ctrl+Shift+K</Text>\n        <Text fg=\"#888888\">↑/↓ counter · j or k · x vs Ctrl+X</Text>\n        <Text fg=\"#42b883\">Last key seen: {{ lastKey }}</Text>\n        <Text fg=\"#42b883\">Counter (↑/↓): {{ counter }}</Text>\n      </Box>\n\n      <!-- Mouse: element mouse events are routed by position, no focus needed. -->\n      <Box\n        flexDirection=\"column\"\n        :gap=\"1\"\n        :flexGrow=\"1\"\n        :padding=\"1\"\n        borderStyle=\"rounded\"\n        borderColor=\"#444444\"\n        @mouseDown.left.exact=\"log('🖱  left click — exact (no modifiers)')\"\n        @mouseDown.right=\"log('🖱  right click')\"\n        @mouseDown.middle=\"log('🖱  middle click')\"\n        @mouseDown.shift=\"log('⇧  shift + click')\"\n      >\n        <Text bold>🖱 Mouse — click anywhere here</Text>\n        <Text fg=\"#888888\">left · right · middle · shift+click</Text>\n\n        <!-- `.stop` keeps this click from bubbling to the outer handlers. -->\n        <Box\n          :padding=\"1\"\n          borderStyle=\"rounded\"\n          borderColor=\"#666666\"\n          @mouseDown.stop=\"log('🛑  inner click — .stop, outer skipped')\"\n        >\n          <Text>Click me — .stop (won't reach the outer box)</Text>\n        </Box>\n      </Box>\n    </Box>\n\n    <Box flexDirection=\"column\" borderStyle=\"rounded\" :padding=\"1\">\n      <Text bold>Recent events</Text>\n      <Text v-if=\"!events.length\" fg=\"#666666\"\n        >(nothing yet — focus the pad or click the mouse)</Text\n      >\n      <Text v-for=\"(entry, i) in events\" :key=\"i\" :fg=\"i === 0 ? '#42b883' : '#aaaaaa'\">\n        {{ entry }}\n      </Text>\n    </Box>\n  </Box>\n</template>\n",
+      "original": {
+        "project": "vue-termui",
+        "file": "playground/src/pages/event-modifiers.vue",
+        "url": "https://raw.githubusercontent.com/vue-terminal/vue-termui/26b9b8e402132ca440d7c80e7e8521e1a90175be/playground/src/pages/event-modifiers.vue",
+        "sha256": "1baff0fda584830ee260a71c920aa0055bfa04af55b148221ea4a4ecead5f25b",
+        "size": 3566,
+        "license": {
+          "file": "vue-termui.LICENSE",
+          "url": "https://raw.githubusercontent.com/vue-terminal/vue-termui/26b9b8e402132ca440d7c80e7e8521e1a90175be/LICENSE",
+          "sha256": "c5495932a81c6c7683447487f0e1a482488bc97c44ae7bf8d556a96794597c89"
+        }
+      },
+      "expected": [],
+      "referenceExpected": []
+    }
+  ],
+  "originalMatrixRows": [
+    {
+      "project": "vue-termui",
+      "kind": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
+      "column": 9,
+      "endColumn": 45,
+      "endLine": 41,
+      "file": "playground/src/pages/event-modifiers.vue",
+      "line": 41,
+      "message": "[vize:vue/use-v-on-exact] @keyDown without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "vue-termui",
+      "kind": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
+      "column": 9,
+      "endColumn": 41,
+      "endLine": 42,
+      "file": "playground/src/pages/event-modifiers.vue",
+      "line": 42,
+      "message": "[vize:vue/use-v-on-exact] @keyDown without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "vue-termui",
+      "kind": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
+      "column": 9,
+      "endColumn": 32,
+      "endLine": 45,
+      "file": "playground/src/pages/event-modifiers.vue",
+      "line": 45,
+      "message": "[vize:vue/use-v-on-exact] @keyDown without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "vue-termui",
+      "kind": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
+      "column": 9,
+      "endColumn": 34,
+      "endLine": 46,
+      "file": "playground/src/pages/event-modifiers.vue",
+      "line": 46,
+      "message": "[vize:vue/use-v-on-exact] @keyDown without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "vue-termui",
+      "kind": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
+      "column": 9,
+      "endColumn": 55,
+      "endLine": 49,
+      "file": "playground/src/pages/event-modifiers.vue",
+      "line": 49,
+      "message": "[vize:vue/use-v-on-exact] @keyDown without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "vue-termui",
+      "kind": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
+      "column": 9,
+      "endColumn": 49,
+      "endLine": 67,
+      "file": "playground/src/pages/event-modifiers.vue",
+      "line": 67,
+      "message": "[vize:vue/use-v-on-exact] @mouseDown without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "vue-termui",
+      "kind": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
+      "column": 9,
+      "endColumn": 51,
+      "endLine": 68,
+      "file": "playground/src/pages/event-modifiers.vue",
+      "line": 68,
+      "message": "[vize:vue/use-v-on-exact] @mouseDown without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "reka-ui",
+      "kind": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-4/reka-ui-lint-divergence.json",
+      "column": 7,
+      "endColumn": 31,
+      "endLine": 287,
+      "file": "packages/core/src/Tree/TreeRoot.vue",
+      "line": 287,
+      "message": "[vize:vue/use-v-on-exact] @keydown without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "lx-music-desktop",
+      "kind": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-5/lx-music-desktop-lint-divergence.json",
+      "column": 15,
+      "endColumn": 62,
+      "endLine": 10,
+      "file": "src/renderer/views/List/MusicList/components/SearchList.vue",
+      "line": 10,
+      "message": "[vize:vue/use-v-on-exact] @keyup without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "lx-music-desktop",
+      "kind": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-5/lx-music-desktop-lint-divergence.json",
+      "column": 58,
+      "endColumn": 104,
+      "endLine": 11,
+      "file": "src/renderer/views/List/MusicList/components/SearchList.vue",
+      "line": 11,
+      "message": "[vize:vue/use-v-on-exact] @keydown without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "lx-music-desktop",
+      "kind": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-5/lx-music-desktop-lint-divergence.json",
+      "column": 15,
+      "endColumn": 57,
+      "endLine": 12,
+      "file": "src/renderer/views/List/MusicList/components/SearchList.vue",
+      "line": 12,
+      "message": "[vize:vue/use-v-on-exact] @keyup without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "lx-music-desktop",
+      "kind": "falseNegatives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-5/lx-music-desktop-lint-divergence.json",
+      "column": 15,
+      "endColumn": 27,
+      "endLine": 10,
+      "file": "src/renderer/views/List/MusicList/components/SearchList.vue",
+      "line": 10,
+      "message": "Consider to use '.exact' modifier.",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning",
+      "upstreamRuleId": "vue/use-v-on-exact"
+    },
+    {
+      "project": "lx-music-desktop",
+      "kind": "falseNegatives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-5/lx-music-desktop-lint-divergence.json",
+      "column": 58,
+      "endColumn": 82,
+      "endLine": 11,
+      "file": "src/renderer/views/List/MusicList/components/SearchList.vue",
+      "line": 11,
+      "message": "Consider to use '.exact' modifier.",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning",
+      "upstreamRuleId": "vue/use-v-on-exact"
+    },
+    {
+      "project": "lx-music-desktop",
+      "kind": "falseNegatives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-5/lx-music-desktop-lint-divergence.json",
+      "column": 15,
+      "endColumn": 37,
+      "endLine": 12,
+      "file": "src/renderer/views/List/MusicList/components/SearchList.vue",
+      "line": 12,
+      "message": "Consider to use '.exact' modifier.",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning",
+      "upstreamRuleId": "vue/use-v-on-exact"
+    }
+  ],
+  "oracleCapture": {
+    "providers": {
+      "eslint": {
+        "version": "10.4.1",
+        "publicEntrypoint": "lib/api.js",
+        "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+        "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+      },
+      "eslint-plugin-vue": {
+        "version": "10.9.2",
+        "publicEntrypoint": "dist/index.js",
+        "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+        "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761",
+        "ruleImplementationSha256": "4c802db144c891091c67a7a512413a538e776a15d971c92dfbe3a940fc6bcab0"
+      },
+      "vue-eslint-parser": {
+        "version": "10.4.1",
+        "publicEntrypoint": "dist/index.cjs",
+        "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+        "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+      },
+      "@typescript-eslint/parser": {
+        "version": "8.65.0",
+        "publicEntrypoint": "dist/index.js",
+        "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+        "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+      }
+    },
+    "configuration": {
+      "rules": {
+        "vue/use-v-on-exact": "warn"
+      },
+      "baselineHelperSha256": "bc06b2cfb1f67076d36b866599d5d7f643d031e344c2be19f39f0793e84c45c7"
+    },
+    "captures": [
+      {
+        "id": "exact-component",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/exact-component.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "exact-native",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/exact-native.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 19,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 27
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button @keydown=\"a\" @keydown.ctrl=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "exact-component-native",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/exact-component-native.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 16,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 31
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><Box @keydown.native=\"a\" @keydown.native.ctrl=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "exact-disjoint-keys",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/exact-disjoint-keys.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "exact-system-subset",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/exact-system-subset.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 19,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 32
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button @keydown.ctrl=\"a\" @keydown.ctrl.shift=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "component-mixed-native",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/component-mixed-native.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "kebab-component",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/kebab-component.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "lowercase-component",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/lowercase-component.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "is-component",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/is-component.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "bound-is-component",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/bound-is-component.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "native-longhand",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/native-longhand.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 19,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 34
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button v-on:click.stop = \"a\" v-on:click.ctrl=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "native-no-value",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/native-no-value.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 19,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 25
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button @click @click.ctrl=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "exact",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/exact.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "single-system",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/single-system.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "system-subset-reverse",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/system-subset-reverse.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 43,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 56
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button @keydown.ctrl.shift=\"b\" @keydown.ctrl=\"a\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "equal-systems",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/equal-systems.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "disjoint-systems",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/disjoint-systems.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "multi-system-subset",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/multi-system-subset.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 19,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 38
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button @keydown.ctrl.shift=\"a\" @keydown.alt.ctrl.shift=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "noncontiguous-system-subset",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/noncontiguous-system-subset.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "same-key",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/same-key.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 19,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 33
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button @keydown.enter=\"a\" @keydown.ctrl.enter=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "missing-key",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/missing-key.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 19,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 27
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button @keydown=\"a\" @keydown.ctrl.enter=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "multiple-disjoint-keys",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/multiple-disjoint-keys.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "key-order",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/key-order.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 19,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 35
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button @keydown.up.down=\"a\" @keydown.ctrl.down.up=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "global-modifiers",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/global-modifiers.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 19,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 64
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button @click.stop.prevent.capture.self.once.passive=\"a\" @click.ctrl=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "different-events",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/different-events.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "repeat-conflicts",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/repeat-conflicts.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 19,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 25
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button @click=\"a\" @click.ctrl=\"b\" @click.shift=\"c\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "three-system-levels",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/three-system-levels.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 19,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 25
+              },
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 30,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 41
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 2,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button @click=\"a\" @click.ctrl=\"b\" @click.ctrl.shift=\"c\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "unicode-multiline",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/unicode-multiline.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 2,
+                "column": 2,
+                "messageId": "considerExact",
+                "endLine": 2,
+                "endColumn": 16
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button title=\"🪄\"\n @keydown.enter=\"a + 'é'\"\n @keydown.ctrl.enter=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "dynamic-static",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/dynamic-static.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "same-dynamic",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/same-dynamic.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 19,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 27
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><button @[event]=\"a\" @[event].ctrl=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "different-dynamic",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/different-dynamic.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "svg-native",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/svg-native.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 22,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 28
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><svg><text @click=\"a\" @click.ctrl=\"b\" /></svg></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "svg-component",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/svg-component.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "math-native",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/math-native.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 21,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 27
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><math><mi @click=\"a\" @click.ctrl=\"b\" /></math></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "foreign-object-component",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/foreign-object-component.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "control-key-vs-meta",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/control-key-vs-meta.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 18,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 40
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><input @keyup.control.prevent=\"a\" @keyup.meta.prevent=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "named-key-vs-meta",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/named-key-vs-meta.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 18,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 30
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><input @keyup.enter=\"a\" @keyup.meta.prevent=\"b\" /></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "bare-svg-name-component",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/bare-svg-name-component.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "foreign-object-svg-name-component",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/foreign-object-svg-name-component.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "nested-svg-native",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/nested-svg-native.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 42,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 48
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><svg><foreignObject><svg><text @click=\"a\" @click.ctrl=\"b\" /></svg></foreignObject></svg></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "bare-math-name-component",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/bare-math-name-component.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "math-html-integration",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/math-html-integration.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 1,
+                "column": 32,
+                "messageId": "considerExact",
+                "endLine": 1,
+                "endColumn": 38
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 1,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template><math><mtext><button @click=\"a\" @click.ctrl=\"b\" /></mtext></math></template>",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "original-reka-ui",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/reka-ui/packages/core/src/Tree/TreeRoot.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "original-lx-music-desktop",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/lx-music-desktop/src/renderer/views/List/MusicList/components/SearchList.vue",
+            "messages": [
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 9,
+                "column": 15,
+                "messageId": "considerExact",
+                "endLine": 9,
+                "endColumn": 51
+              },
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 10,
+                "column": 15,
+                "messageId": "considerExact",
+                "endLine": 10,
+                "endColumn": 27
+              },
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 11,
+                "column": 58,
+                "messageId": "considerExact",
+                "endLine": 11,
+                "endColumn": 82
+              },
+              {
+                "ruleId": "vue/use-v-on-exact",
+                "severity": 1,
+                "message": "Consider to use '.exact' modifier.",
+                "line": 12,
+                "column": 15,
+                "messageId": "considerExact",
+                "endLine": 12,
+                "endColumn": 37
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 4,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n  <teleport to=\"#view\">\n    <div v-show=\"isShow\" ref=\"dom_container\" :class=\"$style.container\">\n      <transition enter-active-class=\"animated-fast zoomIn\" leave-active-class=\"animated zoomOut\" @after-leave=\"handleAnimated\">\n        <div v-show=\"visible\" :class=\"$style.search\">\n          <div :class=\"$style.form\">\n            <input\n              ref=\"dom_input\" v-model.trim=\"text\" class=\"ignore-esc\" :placeholder=\"placeholder\" @input=\"handleDelaySearch\"\n              @keydown.arrow-down.arrow-up.prevent @keyup.arrow-down.prevent.exact=\"handleKeyDown\" @keyup.arrow-up.prevent.exact=\"handleKeyUp\"\n              @keyup.enter=\"handleTemplistClick(selectIndex)\"\n              @keyup.escape.prevent.exact=\"handleKeyEsc\" @keydown.control.prevent=\"handle_key_mod_down\" @keydown.meta.prevent=\"handle_key_mod_down\"\n              @keyup.control.prevent=\"handle_key_mod_up\" @keyup.meta.prevent=\"handle_key_mod_up\" @contextmenu=\"handleContextMenu\"\n            >\n            <button type=\"button\" @click=\"handleHide\">\n              <slot>\n                <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xlink=\"http://www.w3.org/1999/xlink\" height=\"70%\" viewBox=\"0 0 212.982 212.982\" space=\"preserve\">\n                  <use xlink:href=\"#icon-delete\" />\n                </svg>\n              </slot>\n            </button>\n          </div>\n          <div v-if=\"resultList\" ref=\"dom_scrollContainer\" class=\"scroll\" :class=\"$style.list\" :style=\"listStyle\">\n            <ul ref=\"dom_list\">\n              <li v-for=\"(item, index) in resultList\" :key=\"item.songmid\" :class=\"selectIndex === index ? $style.select : null\" @mouseenter=\"selectIndex = index\" @click=\"handleTemplistClick(index)\">\n                <div :class=\"$style.img\" />\n                <div :class=\"$style.text\">\n                  <h3 :class=\"$style.text\">{{ item.name }} - {{ item.singer }}</h3>\n                  <h3 v-if=\"item.meta.albumName\" :class=\"[$style.text, $style.albumName]\">{{ item.meta.albumName }}</h3>\n                </div>\n                <div :class=\"$style.source\">{{ item.source }}</div>\n              </li>\n            </ul>\n          </div>\n        </div>\n      </transition>\n    </div>\n  </teleport>\n</template>\n\n<script>\nimport { debounce } from '@common/utils'\nimport { clipboardReadText } from '@common/utils/electron'\nimport { toRaw } from '@common/utils/vueTools'\n\nexport default {\n  props: {\n    placeholder: {\n      type: String,\n      default: 'Search for something...',\n    },\n    list: {\n      type: Array,\n      default() {\n        return []\n      },\n    },\n    visible: {\n      type: Boolean,\n      default: false,\n    },\n  },\n  emits: ['action'],\n  data() {\n    return {\n      text: '',\n      selectIndex: -1,\n      listStyle: {\n        height: 0,\n        maxHeight: 0,\n        overflow: 'hidden',\n      },\n      maxHeight: 0,\n      resultList: [],\n      isModDown: false,\n      isShow: false,\n    }\n  },\n  watch: {\n    resultList(n) {\n      if (this.selectIndex > -1) this.selectIndex = -1\n      this.$nextTick(() => {\n        const height = this.$refs.dom_list.scrollHeight\n        if (height > this.maxHeight) {\n          this.listStyle.height = this.maxHeight + 'px'\n          this.listStyle.overflow = 'auto'\n        } else {\n          this.listStyle.height = height + 'px'\n          this.listStyle.overflow = 'hidden'\n        }\n      })\n    },\n    list(n) {\n      if (!this.visible) return\n      this.handleDelaySearch()\n    },\n    visible(n) {\n      if (!n) return\n      this.isShow = true\n      this.init()\n    },\n  },\n  created() {\n    this.handleDelaySearch = debounce(() => {\n      this.handleSearch()\n    })\n    if (this.visible) this.isShow = true\n  },\n  mounted() {\n    this.init()\n    // window.key_event.on('key_mod_down', this.handle_key_mod_down)\n    // window.key_event.on('key_mod_up', this.handle_key_mod_up)\n    window.key_event.on('key_mod+f_down', this.handle_key_mod_f_down)\n  },\n  beforeUnmount() {\n    // window.key_event.off('key_mod_down', this.handle_key_mod_down)\n    // window.key_event.off('key_mod_up', this.handle_key_mod_up)\n    window.key_event.off('key_mod+f_down', this.handle_key_mod_f_down)\n  },\n  methods: {\n    init() {\n      if (!this.visible) return\n      this.handleSearch()\n      this.$nextTick(() => {\n        if (!this.listStyle.maxHeight) {\n          this.maxHeight = this.$refs.dom_container.offsetParent.clientHeight - this.$refs.dom_list.offsetTop - 70\n          this.listStyle.maxHeight = this.maxHeight + 'px'\n        }\n        this.$refs.dom_input.focus()\n      })\n    },\n    handleKeyEsc() {\n      if (this.text.length > 0) {\n        this.text = ''\n        this.resultList = []\n      } else {\n        this.handleHide()\n      }\n    },\n    handle_key_mod_down() {\n      console.log('handle_key_mod_down')\n      this.isModDown ||= true\n    },\n    handle_key_mod_up() {\n      this.isModDown &&= false\n    },\n    handle_key_mod_f_down() {\n      if (this.visible) this.$refs.dom_input.focus()\n    },\n    handleAnimated() {\n      if (this.visible) return\n      this.isShow = false\n    },\n    handleTemplistClick(index) {\n      if (index < 0) return\n      const id = this.resultList[index].id\n      this.sendEvent('listClick', {\n        index: this.list.findIndex(m => m.id == id),\n        isPlay: this.isModDown,\n      })\n    },\n    handleHide() {\n      this.sendEvent('hide')\n    },\n    sendEvent(action, data) {\n      this.$emit('action', {\n        action,\n        data,\n      })\n    },\n    handleKeyDown() {\n      if (this.resultList.length) {\n        this.selectIndex = this.selectIndex + 1 < this.resultList.length ? this.selectIndex + 1 : 0\n        this.handleScrollList()\n      } else if (this.selectIndex > -1) {\n        this.selectIndex = -1\n      }\n    },\n    handleKeyUp() {\n      if (this.resultList.length) {\n        this.selectIndex = this.selectIndex - 1 < -1 ? this.resultList.length - 1 : this.selectIndex - 1\n        this.handleScrollList()\n      } else if (this.selectIndex > -1) {\n        this.selectIndex = -1\n      }\n    },\n    handleScrollList() {\n      if (this.selectIndex < 0) return\n      let dom = this.$refs.dom_list.children[this.selectIndex]\n      let offsetTop = dom.offsetTop\n      let scrollTop = this.$refs.dom_scrollContainer.scrollTop\n      let top\n      if (offsetTop < scrollTop) {\n        top = offsetTop\n      } else if (offsetTop + dom.clientHeight > this.$refs.dom_scrollContainer.clientHeight + scrollTop) {\n        top = offsetTop + dom.clientHeight - this.$refs.dom_scrollContainer.clientHeight\n      } else return\n      this.$refs.dom_scrollContainer.scrollTo(0, top)\n    },\n    handleContextMenu() {\n      let str = clipboardReadText()\n      str = str.trim()\n      str = str.replace(/\\t|\\r\\n|\\n|\\r/g, ' ')\n      str = str.replace(/\\s+/g, ' ')\n      let dom_input = this.$refs.dom_input\n      const text = dom_input.value\n      // if (dom_input.selectionStart == dom_input.selectionEnd) {\n      const value = text.substring(0, dom_input.selectionStart) + str + text.substring(dom_input.selectionEnd, text.length)\n      // event.target.value = value\n      this.text = value\n      // } else {\n      //   clipboardWriteText(text.substring(dom_input.selectionStart, dom_input.selectionEnd))\n      // }\n    },\n    async handleSearch() {\n      if (!this.text.length) return this.resultList = []\n      this.resultList = await window.lx.worker.main.searchListMusic(toRaw(this.list), this.text)\n    },\n  },\n}\n</script>\n\n\n<style lang=\"less\" module>\n@import '@renderer/assets/styles/layout.less';\n\n.container {\n  position: absolute;\n  left: 50%;\n  transform: translateX(-50%);\n  top: 20px;\n  width: 45%;\n  height: @height-toolbar * 0.52;\n  z-index: 99;\n}\n\n.search {\n  position: absolute;\n  width: 100%;\n  border-radius: 4px;\n  transition: box-shadow .4s ease, background-color @transition-normal;\n  display: flex;\n  flex-flow: column nowrap;\n  background-color: var(--color-primary-light-600-alpha-100);\n  box-shadow: 0 1px 2px rgba(0,0,0,0.07),\n                0 2px 4px rgba(0,0,0,0.07),\n                0 4px 8px rgba(0,0,0,0.07),\n                0 8px 16px rgba(0,0,0,0.07),\n                0 16px 32px rgba(0,0,0,0.07),\n                0 32px 64px rgba(0,0,0,0.07);\n\n  &.active {\n    .form {\n      input {\n        border-bottom-left-radius: 0;\n\n      }\n      button {\n        border-bottom-right-radius: 0;\n      }\n    }\n  }\n  .form {\n    display: flex;\n    height: @height-toolbar * 0.52;\n    position: relative;\n    input {\n      flex: auto;\n      // border: 1px solid;\n      border-top-left-radius: 4px;\n      border-bottom-left-radius: 4px;\n      background-color: transparent;\n      // border-bottom: 2px solid var(--color-primary);\n      // border-color: var(--color-primary);\n      border: none;\n\n      outline: none;\n      // height: @height-toolbar * .7;\n      padding: 0 5px;\n      overflow: hidden;\n      font-size: 13.5px;\n      line-height: @height-toolbar * 0.52 + 5px;\n      &::placeholder {\n        color: var(--color-button-font);\n        font-size: .98em;\n      }\n    }\n    button {\n      flex: none;\n      border: none;\n      // background-color: @color-search-form-background;\n      background-color: transparent;\n      outline: none;\n      border-top-right-radius: 4px;\n      border-bottom-right-radius: 4px;\n      cursor: pointer;\n      height: 100%;\n      padding: 6px 9px;\n      color: var(--color-button-font);\n      transition: background-color .2s ease;\n      opacity: 0.8;\n\n      &:hover {\n        background-color: var(--color-button-background-hover);\n      }\n      &:active {\n        background-color: var(--color-button-background-active);\n      }\n    }\n  }\n  .list {\n    // background-color: @color-search-form-background;\n    font-size: 13px;\n    transition: .3s ease;\n    height: 0;\n    transition-property: height;\n    position: relative;\n    scroll-behavior: smooth;\n\n    li {\n      position: relative;\n      cursor: pointer;\n      padding: 8px 5px;\n      transition: background-color .2s ease;\n      line-height: 1.3;\n      // overflow: hidden;\n      display: flex;\n      flex-flow: row nowrap;\n\n      &.select {\n        background-color: var(--color-primary-dark-100-alpha-700);\n      }\n      border-radius: 4px;\n      // &:last-child {\n      //   border-bottom-left-radius: 4px;\n      //   border-bottom-right-radius: 4px;\n      // }\n    }\n  }\n}\n\n.img {\n  flex: none;\n}\n.text {\n  flex: auto;\n  .mixin-ellipsis-1();\n}\n.albumName {\n  font-size: 12px;\n  opacity: 0.6;\n  .mixin-ellipsis-1();\n}\n.source {\n  flex: none;\n  font-size: 12px;\n  opacity: 0.5;\n  padding: 0 5px;\n  display: flex;\n  align-items: center;\n  // transform: rotate(45deg);\n  // background-color:\n}\n\n</style>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "original-vue-termui",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/vue-termui/playground/src/pages/event-modifiers.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeProvider": {
+    "version": "3.6.0-beta.10",
+    "globalProductionSha256": "31a3f7aacf7bfff3b683f8fa986c6f0d1ad9fdde503d1e8e7934f0aa0cab11ad"
+  }
+}
