@@ -178,6 +178,7 @@ runs:
         PLANNED_TIMEOUT: ${{ inputs.timeout }}
         PLANNED_BROWSER: ${{ inputs.needs-playwright }}
         VIZE_TEST_WORKTREE_ID: ${{ inputs.worktree-id }}
+        VIZE_APP_CHECK_CAPTURE_DIR: ${{ github.workspace }}/target/app-e2e-logs/check-authority
       run: |
         set -euo pipefail
         mkdir -p target/app-e2e-logs
