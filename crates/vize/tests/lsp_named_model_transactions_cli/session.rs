@@ -26,12 +26,19 @@ impl Session {
             .unwrap()
             .parent()
             .unwrap();
-        let runtime = discover_corsa_in_ancestors(workspace)
-            .expect("named-model editor contracts require the real workspace native runtime");
-        let vue = workspace
-            .join("playground/node_modules/vue")
+        // The stock Content Mapper qualifier must exercise its exact Go build,
+        // not silently rediscover the installed npm backend. Installed-release
+        // replays leave these variables absent and retain workspace discovery.
+        let runtime = selected_runtime(
+            workspace,
+            std::env::var_os("VIZE_TEST_CONTENT_MAPPER_TSGO").map(PathBuf::from),
+        );
+        let vue = std::env::var_os("VIZE_TEST_CONTENT_MAPPER_VUE")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| workspace.join("playground/node_modules/vue"))
             .canonicalize()
-            .expect("named-model editor contracts require the frozen Playground Vue dependency");
+            .expect("editor contracts require the selected frozen Vue dependency");
+        assert!(vue.join("package.json").is_file(), "Vue package manifest");
         let root = workspace.join("target/vize-tests/tests");
         std::fs::create_dir_all(&root).unwrap();
         let project = tempfile::Builder::new()
@@ -233,4 +240,34 @@ impl Session {
         )
         .unwrap();
     }
+}
+
+/// An explicit fixture backend is authoritative, including when it is invalid.
+/// No environment mutation is needed to test the selection boundary.
+fn selected_runtime(workspace: &Path, explicit: Option<PathBuf>) -> PathBuf {
+    let path = explicit.unwrap_or_else(|| {
+        discover_corsa_in_ancestors(workspace)
+            .expect("editor contracts require the real workspace native runtime")
+    });
+    assert!(path.is_file(), "selected editor backend must be a file");
+    path.canonicalize()
+        .expect("selected editor backend identity")
+}
+
+#[test]
+fn explicit_backend_owns_the_fixture_even_without_workspace_discovery() {
+    let root = tempfile::TempDir::new().unwrap();
+    let backend = root.path().join("exact-tsgo");
+    std::fs::write(&backend, b"inert identity fixture").unwrap();
+    assert_eq!(
+        selected_runtime(&root.path().join("no-workspace"), Some(backend.clone())),
+        backend.canonicalize().unwrap(),
+    );
+}
+
+#[test]
+#[should_panic(expected = "selected editor backend must be a file")]
+fn missing_explicit_backend_does_not_fall_back_to_discovery() {
+    let root = tempfile::TempDir::new().unwrap();
+    selected_runtime(root.path(), Some(root.path().join("missing")));
 }

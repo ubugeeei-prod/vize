@@ -190,3 +190,55 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.ok(maestroRun < successLog, "success log must follow the Maestro command");
   assert.ok(successLog < loopEnd, "success log must run inside the same loop");
 });
+
+test("manual event rename qualification preserves the full default and uploads before gating", () => {
+  const workflow = parse(
+    readRepoFile(".github", "workflows", "content-mapper-conformance.yml"),
+  ) as {
+    on: { workflow_dispatch: { inputs: Record<string, { type: string; default: boolean }> } };
+    concurrency: { group: string };
+    jobs: Record<
+      string,
+      {
+        if: string;
+        steps: Array<WorkflowStep & { id?: string; if?: string; "continue-on-error"?: boolean }>;
+      }
+    >;
+  };
+  assert.equal(
+    workflow.concurrency.group,
+    "content-mapper-${{ github.event.pull_request.number || github.ref }}${{ inputs.event-rename-only && '-event-rename' || '' }}",
+    "a focused campaign must not cancel the full conformance campaign",
+  );
+  const input = workflow.on.workflow_dispatch.inputs["event-rename-only"];
+  assert.equal(input.type, "boolean");
+  assert.equal(input.default, false);
+  assert.equal(workflow.jobs["exact-tsgo-project"].if, "${{ !inputs.event-rename-only }}");
+  const focused = workflow.jobs["event-rename"];
+  assert.equal(focused.if, "github.event_name == 'workflow_dispatch' && inputs.event-rename-only");
+  const rust = focused.steps.find((step) => step.name === "Setup Rust");
+  const pinned = /^channel = "([^"]+)"$/mu.exec(readRepoFile("rust-toolchain.toml"))?.[1];
+  assert.ok(pinned);
+  assert.equal(rust?.with?.toolchain, pinned);
+  const transactions = focused.steps.find((step) => step.id === "transactions");
+  assert.ok(transactions);
+  assert.equal(transactions["continue-on-error"], true);
+  assert.equal(transactions.env?.VIZE_TEST_CONTENT_MAPPER_TSGO, "${{ runner.temp }}/tsgo");
+  assert.equal(
+    transactions.env?.VIZE_TEST_CONTENT_MAPPER_VUE,
+    "${{ github.workspace }}/npm/cli/node_modules/vue",
+  );
+  assert.match(transactions.run ?? "", /cargo test --locked --profile ci --no-fail-fast -p vize/u);
+  for (const target of ["lsp_bound_event_casing_cli", "lsp_named_model_transactions_cli"])
+    assert.match(transactions.run ?? "", new RegExp(`--test ${target}\\b`, "u"));
+  const upload = focused.steps.findIndex((step) =>
+    step.uses?.startsWith("actions/upload-artifact@"),
+  );
+  const gate = focused.steps.findIndex((step) => step.env?.TRANSACTIONS_OUTCOME !== undefined);
+  assert.ok(upload > focused.steps.indexOf(transactions));
+  assert.ok(gate > upload);
+  assert.equal(focused.steps[upload].if, "always()");
+  assert.equal(focused.steps[gate].if, "always()");
+  assert.equal(focused.steps[gate].env?.TRANSACTIONS_OUTCOME, "${{ steps.transactions.outcome }}");
+  assert.equal(focused.steps[gate].run?.trim(), 'test "$TRANSACTIONS_OUTCOME" = success');
+});

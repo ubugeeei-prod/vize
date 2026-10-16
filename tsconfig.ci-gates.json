@@ -7,6 +7,7 @@
   "include": [],
   "files": [
     "tools/support/compat/github/require-needs-success.ts",
+    "tools/support/compat/github/release-integration-event.ts",
     "tools/support/compat/github/require-rust-tier.ts",
     "tools/support/compat/github/docs-deployment-entry.ts",
     "tests/tooling/docs-deployment-policy.test.ts",

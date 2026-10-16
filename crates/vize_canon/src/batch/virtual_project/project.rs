@@ -141,7 +141,7 @@ impl VirtualProject {
         Ok(())
     }
 
-    fn register_content_with_prop_cache(
+    pub(super) fn register_content_with_prop_cache(
         &mut self,
         path: &Path,
         content: &str,

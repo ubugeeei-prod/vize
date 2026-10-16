@@ -1,5 +1,16 @@
 file	spelling
 docs/scripts/rules/cross-extra.ts	@save.stop
+docs/scripts/rules/manual-10.ts	@keyup.13
+docs/scripts/rules/manual-10.ts	v-on:keyup.27
+docs/scripts/rules/manual-10.ts	@keyup.13.stop
+docs/scripts/rules/manual-10.ts	@keyup.enter
+docs/scripts/rules/manual-10.ts	@keyup.esc
+docs/scripts/rules/manual-10.ts	@click.sync
+docs/scripts/rules/manual-10.ts	@click.nativeish
+docs/scripts/rules/manual-10.ts	@click.once
+docs/scripts/rules/manual-10.ts	@submit.prevent
+docs/scripts/rules/manual-10.ts	@keyup.page-down
+docs/scripts/rules/manual-10.ts	@keyup.あ
 docs/scripts/rules/manual-2.ts	@keydown.enter
 docs/scripts/rules/manual-2.ts	@keydown.enter
 docs/scripts/rules/manual-9.ts	@click.ctrl

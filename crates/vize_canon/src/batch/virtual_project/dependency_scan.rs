@@ -33,6 +33,7 @@ use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
 use crate::batch::error::CorsaResult;
 
 use super::VirtualProject;
+use super::setup_props::RuntimePropResolveCache;
 
 #[path = "dependency_scan/declaration_sources.rs"]
 mod declaration_sources;
@@ -106,6 +107,12 @@ impl VirtualProject {
         workspace_package_specifiers: &[CompactString],
         mut package_resolver: Option<PackageResolver<'_>>,
     ) -> CorsaResult<()> {
+        // One walk owns one immutable set of imported type facts, just like
+        // register_paths_with_content. Reachable SFCs often share the same
+        // imported props; rebuilding that snapshot per file repeats the entire
+        // imported-type graph. Derived runtime facts remain root-local, and a
+        // later walk always starts fresh.
+        let runtime_prop_resolve_cache = RuntimePropResolveCache::default();
         let aliases = self.dependency_alias_map();
         let mut source_cache = FxHashMap::default();
         let alias_prefixes: Vec<CompactString> = aliases
@@ -300,9 +307,20 @@ impl VirtualProject {
                 // abort the check the user actually asked for, so registration
                 // failure degrades to the pre-#3887 ambient stub for that one
                 // import instead of propagating (#3898).
+                let root_cache = runtime_prop_resolve_cache.with_shared_type_sources();
                 let registered = match overlays.get(&key) {
-                    Some(content) => self.register_path_with_content(&key, content),
-                    None => self.register_path(&key),
+                    Some(content) => {
+                        self.register_content_with_prop_cache(&key, content, Some(&root_cache))
+                    }
+                    None => match vize_carton::profile!(
+                        "canon.file.read",
+                        std::fs::read_to_string(&key)
+                    ) {
+                        Ok(content) => {
+                            self.register_content_with_prop_cache(&key, &content, Some(&root_cache))
+                        }
+                        Err(error) => Err(error.into()),
+                    },
                 };
                 if registered.is_ok() {
                     queue.push(key);
@@ -380,3 +398,7 @@ fn canonical_importer(known: &FxHashMap<PathBuf, PathBuf>, importer: &Path) -> P
 #[cfg(test)]
 #[path = "dependency_scan_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "dependency_scan_tests/shared_type_sources.rs"]
+mod shared_type_sources_tests;
