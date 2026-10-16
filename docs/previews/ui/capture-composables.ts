@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { saveScreenshot } from "./screenshot-file.ts";
+import { createPreviewReadinessWaiter } from "./wait-for-preview.ts";
 import type { Browser, Page } from "playwright";
 import { previewComposableExamples } from "./build-config.ts";
 import { asyncEffectExamples } from "../../../npm/ui/scripts/reference-docs/async-effect-examples.ts";
@@ -251,6 +252,7 @@ export async function captureComposablePreviews(
       reducedMotion: "reduce",
     });
     const diagnostics: string[] = [];
+    const waitForResources = createPreviewReadinessWaiter(page);
     page.on("pageerror", (error) => diagnostics.push(error.message));
     page.on("console", (message) => {
       if (message.type() === "error" || message.type() === "warning")
@@ -265,7 +267,7 @@ export async function captureComposablePreviews(
             origin: new URL(baseUrl).origin,
           });
         const response = await page.goto(`${baseUrl}index.html?composable=${example.name}`, {
-          waitUntil: "networkidle",
+          waitUntil: "domcontentloaded",
         });
         assert.equal(response?.status(), 200, example.name);
         await page.waitForSelector(`html[data-preview-ready="${example.name}"]`);
@@ -278,6 +280,7 @@ export async function captureComposablePreviews(
           "true",
           `${example.name}: hydration preserves complete SSR markup and element identities`,
         );
+        await waitForResources();
         const screenshots = [];
         for (const state of ["initial", "interacted"] as const) {
           const interactions = state === "interacted" ? await exercise(page, example.name) : [];
