@@ -25,10 +25,14 @@
 //! <div>{{ 'this.is.a.string' }}</div>
 //! ```
 
+mod expressions;
+mod origin;
+
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, InterpolationNode};
+use vize_l1::markup::entity::EntityContext;
+use vize_relief::{DirectiveNode, ElementNode, InterpolationNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/this-in-template",
@@ -41,103 +45,6 @@ static META: RuleMeta = RuleMeta {
 /// Disallow `this.` in template expressions.
 pub struct ThisInTemplate;
 
-impl ThisInTemplate {
-    /// Pragmatic scan for a `this.` member access at an identifier boundary.
-    ///
-    /// Returns `true` when the expression references a member access on `this`
-    /// (e.g. `this.foo`). The scan skips string literals so the literal text
-    /// `this.` inside `'this.foo'` is not flagged, and it requires `this` to sit
-    /// on an identifier boundary so substrings like `myThis` or `things` do not
-    /// match.
-    fn has_this_member_access(expr: &str) -> bool {
-        let bytes = expr.as_bytes();
-        let mut i = 0;
-
-        while let Some(&b) = bytes.get(i) {
-            // Skip string literals so `this.` inside a string is never flagged.
-            if b == b'\'' || b == b'"' || b == b'`' {
-                let quote = b;
-                i += 1;
-                while let Some(&c) = bytes.get(i) {
-                    if c == b'\\' {
-                        i += 2; // skip the escaped character
-                        continue;
-                    }
-                    if c == quote {
-                        i += 1;
-                        break;
-                    }
-                    i += 1;
-                }
-                continue;
-            }
-
-            // Identifier start: read the whole identifier so we only test `this`
-            // when it stands on its own boundary (not part of `things`/`myThis`).
-            if is_ident_start(b) {
-                let start = i;
-                i += 1;
-                while bytes.get(i).copied().is_some_and(is_ident_continue) {
-                    i += 1;
-                }
-                let ident = expr.get(start..i).unwrap_or_default();
-
-                if ident == "this" {
-                    // Look past whitespace for a `.` that begins a member access
-                    // whose property is an identifier (e.g. `this.foo`). This
-                    // intentionally ignores bare `this`, `this[...]`, and a
-                    // trailing `this.` with nothing after it.
-                    let mut j = i;
-                    while bytes.get(j).is_some_and(u8::is_ascii_whitespace) {
-                        j += 1;
-                    }
-                    if bytes.get(j) == Some(&b'.') {
-                        let mut k = j + 1;
-                        while bytes.get(k).is_some_and(u8::is_ascii_whitespace) {
-                            k += 1;
-                        }
-                        if bytes.get(k).copied().is_some_and(is_ident_start) {
-                            return true;
-                        }
-                    }
-                }
-                continue;
-            }
-
-            i += 1;
-        }
-
-        false
-    }
-
-    fn check_expression(ctx: &mut LintContext<'_>, exp: &ExpressionNode<'_>) {
-        let content = match exp {
-            ExpressionNode::Simple(s) => s.content,
-            ExpressionNode::Compound(_) => return,
-        };
-
-        if Self::has_this_member_access(content) {
-            ctx.warn_with_help(
-                ctx.t("vue/this-in-template.message"),
-                exp.loc(),
-                ctx.t("vue/this-in-template.help"),
-            );
-        }
-    }
-}
-
-/// Whether `b` may start a JavaScript identifier (ASCII subset).
-#[inline]
-fn is_ident_start(b: u8) -> bool {
-    b.is_ascii_alphabetic() || b == b'_' || b == b'$'
-}
-
-/// Whether `b` may continue a JavaScript identifier (ASCII subset).
-#[inline]
-fn is_ident_continue(b: u8) -> bool {
-    b.is_ascii_alphanumeric() || b == b'_' || b == b'$'
-}
-
 impl Rule for ThisInTemplate {
     fn meta(&self) -> &'static RuleMeta {
         &META
@@ -148,7 +55,7 @@ impl Rule for ThisInTemplate {
         ctx: &mut LintContext<'a>,
         interpolation: &InterpolationNode<'a>,
     ) {
-        Self::check_expression(ctx, &interpolation.content);
+        expressions::check(ctx, &interpolation.content, None, EntityContext::Text);
     }
 
     fn check_directive<'a>(
@@ -158,7 +65,7 @@ impl Rule for ThisInTemplate {
         directive: &DirectiveNode<'a>,
     ) {
         if let Some(exp) = &directive.exp {
-            Self::check_expression(ctx, exp);
+            expressions::check(ctx, exp, Some(directive.name), EntityContext::Attribute);
         }
     }
 }

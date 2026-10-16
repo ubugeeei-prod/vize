@@ -7,6 +7,10 @@ import {
   loadDeprecatedCases,
   validateDeprecatedCases,
 } from "./n8n-cli-config-deprecated-oracle.mjs";
+import {
+  loadVOnModifierCases,
+  validateVOnModifierCases,
+} from "./n8n-cli-config-valid-v-on-oracle.mjs";
 import { expectedBuildIdentity, validateBuildReceipt } from "../../differential/build-receipt.ts";
 import { root, projection, validateProjection } from "./n8n-cli-config-inputs.mjs";
 import { errorPacket } from "./n8n-cli-config-oracle.mjs";
@@ -190,5 +194,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     output: path.join(output, "deprecated-modifiers"),
     fixture: loadDeprecatedCases(),
     validateFixture: validateDeprecatedCases,
+  });
+  await runSemanticAcceptance({
+    output: path.join(output, "valid-v-on-modifiers"),
+    fixture: loadVOnModifierCases(),
+    validateFixture: validateVOnModifierCases,
   });
 }

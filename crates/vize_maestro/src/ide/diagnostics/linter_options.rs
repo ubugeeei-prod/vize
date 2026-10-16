@@ -201,6 +201,9 @@ pub(super) fn apply_rule_options(
     if let Some(style) = options.attribute_hyphenation() {
         linter = linter.with_attribute_hyphenation(attribute_hyphenation_style(style));
     }
+    if let Some(modifiers) = options.valid_v_on_modifiers() {
+        linter = linter.with_valid_v_on_modifiers(modifiers.to_vec());
+    }
     if let Some(allow) = options.valid_v_slot_allow_modifiers() {
         linter = linter.with_valid_v_slot_allow_modifiers(allow);
     }
@@ -352,3 +355,26 @@ pub(super) fn rule_docs_url(rule_name: &str) -> Option<Url> {
 #[cfg(test)]
 #[path = "pinia_availability_tests.rs"]
 mod pinia_availability_tests;
+
+#[cfg(test)]
+mod valid_v_on_options_tests {
+    use super::apply_rule_options;
+    use vize_patina::{Linter, RuleRegistry, rules::vue::ValidVOn};
+
+    #[test]
+    fn lsp_custom_modifiers_reach_the_configured_rule() {
+        let options =
+            serde_json::from_str(r#"{"vue/valid-v-on":{"modifiers":["custom"]}}"#).unwrap();
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(ValidVOn));
+        let linter = apply_rule_options(Linter::with_registry(registry), &options, false);
+        let result = linter.lint_template(
+            r#"<div @click.custom="handler" @click.unknown="handler" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1);
+        assert!(result.diagnostics[0].message.contains("unknown"));
+        let empty = apply_rule_options(Linter::with_registry(RuleRegistry::new()), &options, false);
+        assert!(!empty.registry().has_rule("vue/valid-v-on"));
+    }
+}

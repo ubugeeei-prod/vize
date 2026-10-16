@@ -65,3 +65,11 @@ same guard. These guards cover array and tuple descent only;
 other recursive grammar paths, unsupported stacker targets and hostile-input
 quotas remain separate. The original source is retained in the Program fuzz
 regressions and seeded in all eight explicit source profiles.
+
+Vize adds the direct original-source `parse_v_for_parameters()` goal for Patina
+[#8849](https://github.com/ubugeeei-prod/vize/issues/8849). It reuses the pinned
+lexer and formal-parameter parser while allowing Vue-only omitted tuple alias
+positions. Original AST spans, regex/comment boundaries, complete-input checks,
+and rest-last/trailing-comma errors remain under that parser; ordinary JavaScript
+and `parse_slot_parameters()` explicitly keep elisions disabled. Focused parser
+API tests and public native template-scope controls cover this fork addition.

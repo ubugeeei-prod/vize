@@ -5,7 +5,7 @@ description: Rust 製の高速な Vue.js ツールチェーン。Vue コンポ�
 hero:
   name: Vize
   text: Rust 製の高速な Vue.js ツールチェーン
-  tagline: /viːz/（ヴィーズ）— コードを見通す、賢いツール。Vue コンポーネントのコンパイル、lint、フォーマット、型チェック、プレビューを、すべて Rust で。⚠️ まだ本番利用できる段階ではありません。
+  tagline: /viːz/（ヴィーズ）— コードを見通す、賢いツール。Rust を基盤に、Vue コンポーネントのコンパイル、lint、フォーマット、型チェック、プレビューをまとめて扱えます。⚠️ まだ本番利用できる段階ではありません。
   image:
     src: /logo.svg
     alt: Vize のロゴ
@@ -21,7 +21,7 @@ hero:
       link: https://vizejs.dev/play
 features:
   - title: Vite+ から始める
-    details: 既存のアプリに Vue コンパイラとネイティブの検査タスクを追加します。設定は vite.config.ts ひとつにまとまります。
+    details: 既存のアプリに Vue コンパイラと検査タスクを追加します。ツールの設定は vite.config.ts で共有し、TypeScript の設定には tsconfig.json を使います。
     link: ja/getting-started.md
   - title: 既存ツールから移行する
     details: 何が変わるかを確認し、対応するオプションを移して、変更前後の差分をそのままコピーできます。
@@ -44,7 +44,7 @@ features:
 
 まず[はじめる](./getting-started.md)の手順で導入し、[移行ガイド](./guide/migration.md)に沿って
 Vue コンパイラを置き換えます。CI を切り替える前に、検査結果を見比べてください。
-Vite+ のプロジェクトでは、統合の設定を `vite.config.ts` に書きます。単独の CLI や LSP では `vize.config.ts` も使えます。
+Vite+、CLI、言語サーバーで使う共通設定は `vite.config.ts` に、TypeScript の設定は `tsconfig.json` にまとめます。既存の `vize.config.ts` も引き続き使えます。設定の検索順序と優先順位は[設定ガイド](./guide/configuration.md)を参照してください。
 
 Vize は開発中です。既知の制限は[サポート状況](./stability.md)にまとめています。導入する前に、
 自分のプロジェクトで診断とビルド出力を見比べてください。

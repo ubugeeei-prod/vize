@@ -168,6 +168,7 @@ class LintRuleOptions {
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null
   `vue/v-on-event-hyphenation`: HyphenationStyle? = null
   `vue/attribute-hyphenation`: HyphenationStyle? = null
+  `vue/valid-v-on`: LintRuleOptionTypes.ValidVOnOptions? = null
   `vue/valid-v-slot`: LintRuleOptionTypes.ValidVSlotOptions? = null
   `musea/prefer-design-tokens`: MuseaPreferDesignTokensOptions? = null
 }

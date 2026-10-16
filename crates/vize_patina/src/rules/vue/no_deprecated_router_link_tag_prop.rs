@@ -66,7 +66,7 @@ impl Rule for NoDeprecatedRouterLinkTagProp {
                 PropNode::Attribute(attr) if attr.name == "tag" => {
                     ctx.error_with_help(
                         ctx.t("vue/no-deprecated-router-link-tag-prop.message"),
-                        &attr.loc,
+                        &attr.name_loc,
                         ctx.t("vue/no-deprecated-router-link-tag-prop.help"),
                     );
                 }
@@ -77,9 +77,12 @@ impl Rule for NoDeprecatedRouterLinkTagProp {
                             Some(ExpressionNode::Simple(s)) if s.content == "tag"
                         ) =>
                 {
+                    let Some(ExpressionNode::Simple(argument)) = &dir.arg else {
+                        continue;
+                    };
                     ctx.error_with_help(
                         ctx.t("vue/no-deprecated-router-link-tag-prop.message"),
-                        &dir.loc,
+                        &argument.loc,
                         ctx.t("vue/no-deprecated-router-link-tag-prop.help"),
                     );
                 }

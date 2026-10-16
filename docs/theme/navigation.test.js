@@ -209,7 +209,7 @@ void test("applyNavigationOrder keeps only the current locale and localizes labe
   assert.deepEqual(sections(document), [
     {
       title: "スタート",
-      labels: ["はじめに"],
+      labels: ["はじめる"],
     },
     {
       title: "コードを検査する",

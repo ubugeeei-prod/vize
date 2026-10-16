@@ -8,6 +8,22 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
         r#"<div v-if="ok">a</div><p v-else-if="b">b</p><span v-else>c</span>"#,
     ),
     ("if-root-no-else", r#"<div v-if="ok">a</div>"#),
+    (
+        "if-nested-template-root",
+        r#"<template v-if="outer"><button v-if="inner">a</button><button v-else>b</button></template>"#,
+    ),
+    (
+        "if-nested-template-else",
+        r#"<i v-if="outer">outer</i><template v-else><button v-if="inner">a</button><button v-else>b</button></template>"#,
+    ),
+    (
+        "for-nested-conditional-fragments",
+        r#"<template v-for="n in 2"><template v-if="outer"><button v-if="inner">a</button><button v-else>b</button></template></template>"#,
+    ),
+    (
+        "for-nested-loop-fragments",
+        r#"<template v-for="n in 2"><button v-for="m in 2">{{ n }}:{{ m }}</button></template>"#,
+    ),
     ("if-nested-no-else", r#"<div><p v-if="x">1</p></div>"#),
     (
         "if-padded-condition",

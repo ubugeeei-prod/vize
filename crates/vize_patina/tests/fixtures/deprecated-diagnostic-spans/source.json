@@ -1,0 +1,1211 @@
+{
+  "repository": "PanJiaChen/vue-element-admin",
+  "pin": "6858a9ad67483025f6a9432a926beb9327037be3",
+  "rules": ["vue/no-deprecated-filter", "vue/no-deprecated-router-link-tag-prop"],
+  "originals": [
+    {
+      "path": "src/layout/components/TagsView/index.vue",
+      "sha256": "37119e6a8c501c205db2b2908f4538a5c7ec1c87c61f5e872e4374d2536f3c6f",
+      "gitBlob": "d2a56e70800fa9efb959ed45a26a696041336a48",
+      "bytes": 7718
+    },
+    {
+      "path": "src/views/dashboard/admin/components/TodoList/index.vue",
+      "sha256": "506ff74945cf19498a40cb5b787f0809337c4da1aaec48397e52cfc4473d7e36",
+      "gitBlob": "8000d4146b5b1461533a80a241545dbac13f6dda",
+      "bytes": 3448
+    },
+    {
+      "path": "src/views/dashboard/admin/components/TransactionTable.vue",
+      "sha256": "4f32ac35959e8e062b4bfe535523bb5c003ebb9ff783a10eae5f22db869572f3",
+      "gitBlob": "d07b0edf6b07d2648b05ae1d1c23cfb52fbc831e",
+      "bytes": 1278
+    },
+    {
+      "path": "src/views/example/list.vue",
+      "sha256": "40c1864509b47a630cce689afa44ad8b1cb8ad3f26ed98af94bb2ff93aa712d1",
+      "gitBlob": "7cdc4ac092e5c176f342af176c5712fc3ce1515a",
+      "bytes": 3065
+    },
+    {
+      "path": "src/views/excel/export-excel.vue",
+      "sha256": "3ffc4f6644642da39534e670ba86b9327b60b9da3523c022a57d028aef47dd22",
+      "gitBlob": "b4d7500b49f6065fbe44a9d247738b56baf84694",
+      "bytes": 3459
+    },
+    {
+      "path": "src/views/excel/merge-header.vue",
+      "sha256": "996e48205a739e08f5838ccac06eb14a05df953d4b0037da11daa4f6b5c4def1",
+      "gitBlob": "4be0227d76980a0a459015c15e4738da705d5052",
+      "bytes": 2867
+    },
+    {
+      "path": "src/views/profile/components/UserCard.vue",
+      "sha256": "ee510888c09ffaa81b9555791136ff10ced44d604e0f669258e1488ec005d8d9",
+      "gitBlob": "2476f04a4b6a41bc7e8bd71d7e8aaf2a8f217ab0",
+      "bytes": 2859
+    },
+    {
+      "path": "src/views/tab/components/TabPane.vue",
+      "sha256": "f364a45dd4d6103656a894b8031d7ed6757ce2d019a0113090db86ab896b8312",
+      "gitBlob": "3fb1439e98bb4ee3e6e45914d2eb8db1652c1f84",
+      "bytes": 2471
+    },
+    {
+      "path": "src/views/table/complex-table.vue",
+      "sha256": "d425bc3eab6c0da688b10cf4a55366ac017f284ad8181d0366ec12f0fe47ec22",
+      "gitBlob": "295c5fc49642abeea4e990f6705d8839fe65dc1c",
+      "bytes": 13334
+    },
+    {
+      "path": "src/views/table/drag-table.vue",
+      "sha256": "5a18279a18b3e9be581e5a5ca99ba054f1b6934a6bc9b7880a0293902fbbc559",
+      "gitBlob": "3b5c890a0ebbb9dd062b58c9b41a4bf1dcfbcba4",
+      "bytes": 4186
+    },
+    {
+      "path": "src/views/table/inline-edit-table.vue",
+      "sha256": "1df79a3b4566d84e4ae2a50f34f767e483a8d28cfe3b33adedb5b02122bff163",
+      "gitBlob": "31e0065fc013504c5bc1fc45c17ea333298abd27",
+      "bytes": 3899
+    }
+  ],
+  "matrixRevision": "6858a9ad67483025f6a9432a926beb9327037be3",
+  "originalDivergence": {
+    "falsePositives": [
+      {
+        "column": 9,
+        "endColumn": 19,
+        "endLine": 10,
+        "file": "src/layout/components/TagsView/index.vue",
+        "line": 10,
+        "message": "[vize:vue/no-deprecated-router-link-tag-prop] The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+        "ruleId": "vue/no-deprecated-router-link-tag-prop",
+        "severity": "error"
+      },
+      {
+        "column": 9,
+        "endColumn": 44,
+        "endLine": 26,
+        "file": "src/views/dashboard/admin/components/TodoList/index.vue",
+        "line": 26,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      },
+      {
+        "column": 90,
+        "endColumn": 112,
+        "endLine": 30,
+        "file": "src/views/dashboard/admin/components/TodoList/index.vue",
+        "line": 30,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      },
+      {
+        "column": 9,
+        "endColumn": 49,
+        "endLine": 5,
+        "file": "src/views/dashboard/admin/components/TransactionTable.vue",
+        "line": 5,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      },
+      {
+        "column": 10,
+        "endColumn": 50,
+        "endLine": 10,
+        "file": "src/views/dashboard/admin/components/TransactionTable.vue",
+        "line": 10,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      },
+      {
+        "column": 17,
+        "endColumn": 77,
+        "endLine": 12,
+        "file": "src/views/example/list.vue",
+        "line": 12,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      },
+      {
+        "column": 17,
+        "endColumn": 77,
+        "endLine": 40,
+        "file": "src/views/excel/export-excel.vue",
+        "line": 40,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      },
+      {
+        "column": 17,
+        "endColumn": 77,
+        "endLine": 40,
+        "file": "src/views/excel/merge-header.vue",
+        "line": 40,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      },
+      {
+        "column": 55,
+        "endColumn": 87,
+        "endLine": 16,
+        "file": "src/views/profile/components/UserCard.vue",
+        "line": 16,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      },
+      {
+        "column": 15,
+        "endColumn": 75,
+        "endLine": 17,
+        "file": "src/views/tab/components/TabPane.vue",
+        "line": 17,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      },
+      {
+        "column": 17,
+        "endColumn": 71,
+        "endLine": 45,
+        "file": "src/views/table/complex-table.vue",
+        "line": 45,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      },
+      {
+        "column": 19,
+        "endColumn": 46,
+        "endLine": 51,
+        "file": "src/views/table/complex-table.vue",
+        "line": 51,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      },
+      {
+        "column": 17,
+        "endColumn": 71,
+        "endLine": 13,
+        "file": "src/views/table/drag-table.vue",
+        "line": 13,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      },
+      {
+        "column": 17,
+        "endColumn": 71,
+        "endLine": 12,
+        "file": "src/views/table/inline-edit-table.vue",
+        "line": 12,
+        "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error"
+      }
+    ],
+    "falseNegatives": [
+      {
+        "column": 9,
+        "endColumn": 12,
+        "endLine": 10,
+        "file": "src/layout/components/TagsView/index.vue",
+        "line": 10,
+        "message": "'tag' property on 'router-link' component is deprecated. Use scoped slots instead.",
+        "ruleId": "vue/no-deprecated-router-link-tag-prop",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-router-link-tag-prop"
+      },
+      {
+        "column": 12,
+        "endColumn": 41,
+        "endLine": 26,
+        "file": "src/views/dashboard/admin/components/TodoList/index.vue",
+        "line": 26,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      },
+      {
+        "column": 93,
+        "endColumn": 109,
+        "endLine": 30,
+        "file": "src/views/dashboard/admin/components/TodoList/index.vue",
+        "line": 30,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      },
+      {
+        "column": 12,
+        "endColumn": 46,
+        "endLine": 5,
+        "file": "src/views/dashboard/admin/components/TransactionTable.vue",
+        "line": 5,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      },
+      {
+        "column": 13,
+        "endColumn": 47,
+        "endLine": 10,
+        "file": "src/views/dashboard/admin/components/TransactionTable.vue",
+        "line": 10,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      },
+      {
+        "column": 20,
+        "endColumn": 74,
+        "endLine": 12,
+        "file": "src/views/example/list.vue",
+        "line": 12,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      },
+      {
+        "column": 20,
+        "endColumn": 74,
+        "endLine": 40,
+        "file": "src/views/excel/export-excel.vue",
+        "line": 40,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      },
+      {
+        "column": 20,
+        "endColumn": 74,
+        "endLine": 40,
+        "file": "src/views/excel/merge-header.vue",
+        "line": 40,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      },
+      {
+        "column": 58,
+        "endColumn": 84,
+        "endLine": 16,
+        "file": "src/views/profile/components/UserCard.vue",
+        "line": 16,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      },
+      {
+        "column": 18,
+        "endColumn": 72,
+        "endLine": 17,
+        "file": "src/views/tab/components/TabPane.vue",
+        "line": 17,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      },
+      {
+        "column": 20,
+        "endColumn": 68,
+        "endLine": 45,
+        "file": "src/views/table/complex-table.vue",
+        "line": 45,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      },
+      {
+        "column": 22,
+        "endColumn": 43,
+        "endLine": 51,
+        "file": "src/views/table/complex-table.vue",
+        "line": 51,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      },
+      {
+        "column": 20,
+        "endColumn": 68,
+        "endLine": 13,
+        "file": "src/views/table/drag-table.vue",
+        "line": 13,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      },
+      {
+        "column": 20,
+        "endColumn": 68,
+        "endLine": 12,
+        "file": "src/views/table/inline-edit-table.vue",
+        "line": 12,
+        "message": "Filters are deprecated.",
+        "ruleId": "vue/no-deprecated-filter",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-filter"
+      }
+    ]
+  },
+  "additionalProjects": [
+    {
+      "id": "zy-player",
+      "repository": "Hunlongyu/ZY-Player",
+      "pin": "68fd0d0c6ae79de3d1a7400a85d704f3717e1140",
+      "originals": [
+        {
+          "path": "src/components/Detail.vue",
+          "sha256": "2500be7ddfd090c51001d2b1294be1b93bc79861f57ce758e224371578afd2ce",
+          "gitBlob": "579331634a47ef84665800f86fcf10ff6639e011",
+          "bytes": 17459
+        },
+        {
+          "path": "src/components/Play.vue",
+          "sha256": "72d4915aa7d68c96de93e22e6c8cc1178981512879e66e0b11da6571e150ba51",
+          "gitBlob": "89b21f0f211d8d37d9cf4dd8a692f783c4e2ab33",
+          "bytes": 72593
+        }
+      ],
+      "matrixRevision": "68fd0d0c6ae79de3d1a7400a85d704f3717e1140",
+      "originalDivergence": {
+        "falsePositives": [
+          {
+            "column": 173,
+            "endColumn": 192,
+            "endLine": 64,
+            "file": "src/components/Detail.vue",
+            "line": 64,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 129,
+            "endColumn": 146,
+            "endLine": 195,
+            "file": "src/components/Play.vue",
+            "line": 195,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          }
+        ],
+        "falseNegatives": [
+          {
+            "column": 176,
+            "endColumn": 189,
+            "endLine": 64,
+            "file": "src/components/Detail.vue",
+            "line": 64,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 131,
+            "endColumn": 144,
+            "endLine": 195,
+            "file": "src/components/Play.vue",
+            "line": 195,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          }
+        ]
+      }
+    },
+    {
+      "id": "habitica",
+      "repository": "HabitRPG/habitica",
+      "pin": "19b2ce531c3bb1c3f95a75388b1176b345cbbca2",
+      "originals": [
+        {
+          "path": "website/client/src/components/admin/admin-panel/user-support/avatarAndDrops.vue",
+          "sha256": "e65ebb9aea021118aafc707d28c420d704fa04a76b62245565239bf9b02e6b95",
+          "gitBlob": "b0a27da09eeec19bb02e1c5461a1f040dcb8472e",
+          "bytes": 1762
+        },
+        {
+          "path": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+          "sha256": "bc04db18c7d05778eea0e24ef53faa9ebdb1e0b1a70f16c9c38eb47a6946cfa8",
+          "gitBlob": "4ba42b99ed0dcbbf5589ab08db09cf795b3056f4",
+          "bytes": 10122
+        },
+        {
+          "path": "website/client/src/components/admin/admin-panel/user-support/itemsOwned.vue",
+          "sha256": "38fcac7571082ab3562206e4550d58541d98b1c9b8f6a21f5a0098792d201b02",
+          "gitBlob": "9f9a1b9b4b9b90c6f358a6931e67394c26a55010",
+          "bytes": 9360
+        },
+        {
+          "path": "website/client/src/components/admin/admin-panel/user-support/userHistory.vue",
+          "sha256": "3965d0dcbdcdafeb56ecf3ed3ffec0f1a8ee6677ec4763ad4ac361d82af37569",
+          "gitBlob": "e4928fd90aa5d91f63734857f9945b63d34246fc",
+          "bytes": 6574
+        },
+        {
+          "path": "website/client/src/components/groups/group.vue",
+          "sha256": "d5fde72a19cd016a62df216cc067826174de6d30270f3c6a20a9a33b09415752",
+          "gitBlob": "f00db7d47030c1f06169ffea4ea6dd43814b3279",
+          "bytes": 16126
+        },
+        {
+          "path": "website/client/src/components/groups/publicGuildItem.vue",
+          "sha256": "b8991be27c42144aebb8792b374cd0408b32050c6d236d551026f53d8248f1be",
+          "gitBlob": "2c3d824b4f26d9ae163ab7dabbccffbfed6ac4b4",
+          "bytes": 7320
+        },
+        {
+          "path": "website/client/src/components/groups/questSidebarSection.vue",
+          "sha256": "47968924c93beccc25a46d7ffd20190ed930ac4938c4b07c2117610e8b3700c7",
+          "gitBlob": "d784ed29f53994689106b8ac687524f75a9e96e2",
+          "bytes": 19259
+        },
+        {
+          "path": "website/client/src/components/messages/messageCard.vue",
+          "sha256": "c97bd623ec3981e4e6f0da93ef8b05ff823e52c795fb9fa797cf47f3050cbc50",
+          "gitBlob": "3982be6d072f067576ee58303b1fbb01dffe51af",
+          "bytes": 12593
+        },
+        {
+          "path": "website/client/src/components/shops/balanceInfo.vue",
+          "sha256": "d0dc63a9f2c4a2c9cb4addb2043fd64b18ecd1d37756824cfd86865134a1f055",
+          "gitBlob": "23d6967aac8db921654b9321e1034b8c5366cff6",
+          "bytes": 2171
+        },
+        {
+          "path": "website/client/src/components/static/header.vue",
+          "sha256": "0042449f61893af50a53e61728765cee56b437acfe83378544069c5e9d4799e7",
+          "gitBlob": "e01a067a58d4f5d2c96f3335933ef199331047b4",
+          "bytes": 6877
+        },
+        {
+          "path": "website/client/src/components/ui/purchaseHistoryTable.vue",
+          "sha256": "3f870f32a28ef4c6c2b054cf4677b5a3056cb5cd7d072820c4fa83dc668876a0",
+          "gitBlob": "b212f38c8fa8d9d81b32b0bc2c26e54cd23e42e9",
+          "bytes": 10415
+        },
+        {
+          "path": "website/client/src/components/ui/statsbar.vue",
+          "sha256": "4226abf560658bef6d54b99613e17f9ef13d830601964f809715667196c71637",
+          "gitBlob": "cbf8d8b91b6b2e1f5f009eeed42bf53baa151266",
+          "bytes": 2981
+        },
+        {
+          "path": "website/client/src/components/userMenu/profileStats.vue",
+          "sha256": "c1846f650655b90a45334986a3134c10b6e69c68d6e4c5d43690ce0fc69eed0d",
+          "gitBlob": "c54efdbc4d8d395aecc7c44de9c39a29b2004d62",
+          "bytes": 31537
+        },
+        {
+          "path": "website/client/src/pages/private-messages/pm-conversation-item.vue",
+          "sha256": "11d12b80f27f09dda724780b74c0db00c1016d509671b22a09e9de99991dc5bb",
+          "gitBlob": "909ffede37b803a7f842baca638cc6fa5fbb7c9c",
+          "bytes": 4669
+        }
+      ],
+      "matrixRevision": "19b2ce531c3bb1c3f95a75388b1176b345cbbca2",
+      "originalDivergence": {
+        "falsePositives": [
+          {
+            "column": 30,
+            "endColumn": 68,
+            "endLine": 17,
+            "file": "website/client/src/components/admin/admin-panel/user-support/avatarAndDrops.vue",
+            "line": 17,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 13,
+            "endColumn": 60,
+            "endLine": 36,
+            "file": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+            "line": 36,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 21,
+            "endColumn": 66,
+            "endLine": 43,
+            "file": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+            "line": 43,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 19,
+            "endColumn": 51,
+            "endLine": 52,
+            "file": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+            "line": 52,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 15,
+            "endColumn": 63,
+            "endLine": 64,
+            "file": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+            "line": 64,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 13,
+            "endColumn": 67,
+            "endLine": 76,
+            "file": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+            "line": 76,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 19,
+            "endColumn": 83,
+            "endLine": 90,
+            "file": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+            "line": 90,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 23,
+            "endColumn": 48,
+            "endLine": 77,
+            "file": "website/client/src/components/admin/admin-panel/user-support/itemsOwned.vue",
+            "line": 77,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 20,
+            "endColumn": 51,
+            "endLine": 71,
+            "file": "website/client/src/components/admin/admin-panel/user-support/userHistory.vue",
+            "line": 71,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 20,
+            "endColumn": 51,
+            "endLine": 106,
+            "file": "website/client/src/components/admin/admin-panel/user-support/userHistory.vue",
+            "line": 106,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 20,
+            "endColumn": 51,
+            "endLine": 139,
+            "file": "website/client/src/components/admin/admin-panel/user-support/userHistory.vue",
+            "line": 139,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 40,
+            "endColumn": 73,
+            "endLine": 51,
+            "file": "website/client/src/components/groups/group.vue",
+            "line": 51,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 17,
+            "endColumn": 50,
+            "endLine": 32,
+            "file": "website/client/src/components/groups/publicGuildItem.vue",
+            "line": 32,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 19,
+            "endColumn": 21,
+            "endLine": 138,
+            "file": "website/client/src/components/groups/questSidebarSection.vue",
+            "line": 135,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 24,
+            "endColumn": 21,
+            "endLine": 141,
+            "file": "website/client/src/components/groups/questSidebarSection.vue",
+            "line": 138,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 19,
+            "endColumn": 21,
+            "endLine": 164,
+            "file": "website/client/src/components/groups/questSidebarSection.vue",
+            "line": 160,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 37,
+            "endColumn": 21,
+            "endLine": 202,
+            "file": "website/client/src/components/groups/questSidebarSection.vue",
+            "line": 199,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 24,
+            "endColumn": 21,
+            "endLine": 205,
+            "file": "website/client/src/components/groups/questSidebarSection.vue",
+            "line": 202,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 49,
+            "endColumn": 78,
+            "endLine": 49,
+            "file": "website/client/src/components/messages/messageCard.vue",
+            "line": 49,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 9,
+            "endColumn": 46,
+            "endLine": 17,
+            "file": "website/client/src/components/shops/balanceInfo.vue",
+            "line": 17,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 11,
+            "endColumn": 19,
+            "endLine": 27,
+            "file": "website/client/src/components/static/header.vue",
+            "line": 27,
+            "message": "[vize:vue/no-deprecated-router-link-tag-prop] The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+            "ruleId": "vue/no-deprecated-router-link-tag-prop",
+            "severity": "error"
+          },
+          {
+            "column": 11,
+            "endColumn": 19,
+            "endLine": 37,
+            "file": "website/client/src/components/static/header.vue",
+            "line": 37,
+            "message": "[vize:vue/no-deprecated-router-link-tag-prop] The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+            "ruleId": "vue/no-deprecated-router-link-tag-prop",
+            "severity": "error"
+          },
+          {
+            "column": 11,
+            "endColumn": 19,
+            "endLine": 63,
+            "file": "website/client/src/components/static/header.vue",
+            "line": 63,
+            "message": "[vize:vue/no-deprecated-router-link-tag-prop] The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+            "ruleId": "vue/no-deprecated-router-link-tag-prop",
+            "severity": "error"
+          },
+          {
+            "column": 11,
+            "endColumn": 19,
+            "endLine": 85,
+            "file": "website/client/src/components/static/header.vue",
+            "line": 85,
+            "message": "[vize:vue/no-deprecated-router-link-tag-prop] The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+            "ruleId": "vue/no-deprecated-router-link-tag-prop",
+            "severity": "error"
+          },
+          {
+            "column": 16,
+            "endColumn": 47,
+            "endLine": 64,
+            "file": "website/client/src/components/ui/purchaseHistoryTable.vue",
+            "line": 64,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 16,
+            "endColumn": 47,
+            "endLine": 177,
+            "file": "website/client/src/components/ui/purchaseHistoryTable.vue",
+            "line": 177,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 7,
+            "endColumn": 30,
+            "endLine": 24,
+            "file": "website/client/src/components/ui/statsbar.vue",
+            "line": 24,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 14,
+            "endColumn": 60,
+            "endLine": 35,
+            "file": "website/client/src/components/userMenu/profileStats.vue",
+            "line": 35,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          },
+          {
+            "column": 9,
+            "endColumn": 40,
+            "endLine": 51,
+            "file": "website/client/src/pages/private-messages/pm-conversation-item.vue",
+            "line": 51,
+            "message": "[vize:vue/no-deprecated-filter] Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error"
+          }
+        ],
+        "falseNegatives": [
+          {
+            "column": 33,
+            "endColumn": 65,
+            "endLine": 17,
+            "file": "website/client/src/components/admin/admin-panel/user-support/avatarAndDrops.vue",
+            "line": 17,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 16,
+            "endColumn": 57,
+            "endLine": 36,
+            "file": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+            "line": 36,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 24,
+            "endColumn": 63,
+            "endLine": 43,
+            "file": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+            "line": 43,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 22,
+            "endColumn": 48,
+            "endLine": 52,
+            "file": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+            "line": 52,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 18,
+            "endColumn": 60,
+            "endLine": 64,
+            "file": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+            "line": 64,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 16,
+            "endColumn": 64,
+            "endLine": 76,
+            "file": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+            "line": 76,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 22,
+            "endColumn": 80,
+            "endLine": 90,
+            "file": "website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue",
+            "line": 90,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 26,
+            "endColumn": 45,
+            "endLine": 77,
+            "file": "website/client/src/components/admin/admin-panel/user-support/itemsOwned.vue",
+            "line": 77,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 23,
+            "endColumn": 48,
+            "endLine": 71,
+            "file": "website/client/src/components/admin/admin-panel/user-support/userHistory.vue",
+            "line": 71,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 23,
+            "endColumn": 48,
+            "endLine": 106,
+            "file": "website/client/src/components/admin/admin-panel/user-support/userHistory.vue",
+            "line": 106,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 23,
+            "endColumn": 48,
+            "endLine": 139,
+            "file": "website/client/src/components/admin/admin-panel/user-support/userHistory.vue",
+            "line": 139,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 43,
+            "endColumn": 70,
+            "endLine": 51,
+            "file": "website/client/src/components/groups/group.vue",
+            "line": 51,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 20,
+            "endColumn": 47,
+            "endLine": 32,
+            "file": "website/client/src/components/groups/publicGuildItem.vue",
+            "line": 32,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 22,
+            "endColumn": 82,
+            "endLine": 137,
+            "file": "website/client/src/components/groups/questSidebarSection.vue",
+            "line": 136,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 21,
+            "endColumn": 82,
+            "endLine": 140,
+            "file": "website/client/src/components/groups/questSidebarSection.vue",
+            "line": 139,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 22,
+            "endColumn": 82,
+            "endLine": 163,
+            "file": "website/client/src/components/groups/questSidebarSection.vue",
+            "line": 161,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 21,
+            "endColumn": 82,
+            "endLine": 201,
+            "file": "website/client/src/components/groups/questSidebarSection.vue",
+            "line": 200,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 21,
+            "endColumn": 66,
+            "endLine": 204,
+            "file": "website/client/src/components/groups/questSidebarSection.vue",
+            "line": 203,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 52,
+            "endColumn": 75,
+            "endLine": 49,
+            "file": "website/client/src/components/messages/messageCard.vue",
+            "line": 49,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 12,
+            "endColumn": 43,
+            "endLine": 17,
+            "file": "website/client/src/components/shops/balanceInfo.vue",
+            "line": 17,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 11,
+            "endColumn": 14,
+            "endLine": 27,
+            "file": "website/client/src/components/static/header.vue",
+            "line": 27,
+            "message": "'tag' property on 'router-link' component is deprecated. Use scoped slots instead.",
+            "ruleId": "vue/no-deprecated-router-link-tag-prop",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-router-link-tag-prop"
+          },
+          {
+            "column": 11,
+            "endColumn": 14,
+            "endLine": 37,
+            "file": "website/client/src/components/static/header.vue",
+            "line": 37,
+            "message": "'tag' property on 'router-link' component is deprecated. Use scoped slots instead.",
+            "ruleId": "vue/no-deprecated-router-link-tag-prop",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-router-link-tag-prop"
+          },
+          {
+            "column": 11,
+            "endColumn": 14,
+            "endLine": 63,
+            "file": "website/client/src/components/static/header.vue",
+            "line": 63,
+            "message": "'tag' property on 'router-link' component is deprecated. Use scoped slots instead.",
+            "ruleId": "vue/no-deprecated-router-link-tag-prop",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-router-link-tag-prop"
+          },
+          {
+            "column": 11,
+            "endColumn": 14,
+            "endLine": 85,
+            "file": "website/client/src/components/static/header.vue",
+            "line": 85,
+            "message": "'tag' property on 'router-link' component is deprecated. Use scoped slots instead.",
+            "ruleId": "vue/no-deprecated-router-link-tag-prop",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-router-link-tag-prop"
+          },
+          {
+            "column": 19,
+            "endColumn": 44,
+            "endLine": 64,
+            "file": "website/client/src/components/ui/purchaseHistoryTable.vue",
+            "line": 64,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 19,
+            "endColumn": 44,
+            "endLine": 177,
+            "file": "website/client/src/components/ui/purchaseHistoryTable.vue",
+            "line": 177,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 10,
+            "endColumn": 27,
+            "endLine": 24,
+            "file": "website/client/src/components/ui/statsbar.vue",
+            "line": 24,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 17,
+            "endColumn": 57,
+            "endLine": 35,
+            "file": "website/client/src/components/userMenu/profileStats.vue",
+            "line": 35,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          },
+          {
+            "column": 12,
+            "endColumn": 37,
+            "endLine": 51,
+            "file": "website/client/src/pages/private-messages/pm-conversation-item.vue",
+            "line": 51,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          }
+        ]
+      }
+    },
+    {
+      "id": "frappe-builder",
+      "repository": "frappe/builder",
+      "pin": "ed705f9dddc9a78867fb672c342ee025368ac6a1",
+      "originals": [
+        {
+          "path": "frontend/src/components/PageClientScriptManager.vue",
+          "sha256": "57232c3d65e0bec10dfb08212c75ba4c8bd2e092f118a2c57bdae53f147f8aec",
+          "gitBlob": "d8f2c673f7e88e679b2a1ba434203409cf819d16",
+          "bytes": 12174
+        }
+      ],
+      "matrixRevision": "ed705f9dddc9a78867fb672c342ee025368ac6a1",
+      "originalDivergence": {
+        "falsePositives": [],
+        "falseNegatives": [
+          {
+            "column": 12,
+            "endColumn": 60,
+            "endLine": 117,
+            "file": "frontend/src/components/PageClientScriptManager.vue",
+            "line": 117,
+            "message": "Filters are deprecated.",
+            "ruleId": "vue/no-deprecated-filter",
+            "severity": "error",
+            "upstreamRuleId": "vue/no-deprecated-filter"
+          }
+        ]
+      }
+    }
+  ],
+  "originalMatrixCaptures": [
+    {
+      "project": "zy-player",
+      "path": "original-matrix-zy-player-linter.json.gz",
+      "rawBytes": 854773,
+      "rawSha256": "23904b092f56330421848e60cb37e0f5092e4acd7cedcb6a7bde43923cd14d41",
+      "files": 13
+    },
+    {
+      "project": "frappe-builder",
+      "path": "original-matrix-frappe-builder-linter.json.gz",
+      "rawBytes": 1068843,
+      "rawSha256": "1199f4580d58881d4d80a3f1cd6e782484c0b7d1b501f663d95c2c34da71306d",
+      "files": 159
+    },
+    {
+      "project": "vue-element-admin",
+      "path": "original-matrix-vue-element-admin-linter.json.gz",
+      "rawBytes": 563547,
+      "rawSha256": "cf6ccc4e310d93cec24531321a4596852cbc95ed8778cc1765ffb6c89a37187b",
+      "files": 131
+    },
+    {
+      "project": "habitica",
+      "path": "original-matrix-habitica-linter.json.gz",
+      "rawBytes": 3735050,
+      "rawSha256": "fd0cd57e9ed3c0dc8f42682b1a57e75b6fb9184df690c535793a5ba07d5dcf34",
+      "files": 352
+    }
+  ]
+}

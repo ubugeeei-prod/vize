@@ -1,0 +1,237 @@
+name: Focused real-project LSP qualification
+run-name: LSP ${{ inputs.packet_scope }}${{ inputs.trace_preparation && ' preparation trace' || '' }} @ ${{ github.sha }}
+
+# Replays the complete existing Matrix packet for its four original failures.
+# This is a bounded investigation, not qualification of the full ecosystem.
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact reviewed main SHA (must equal the dispatched ref)
+        required: true
+        type: string
+      packet_scope:
+        description: Complete original packets to replay (residual-two is not four-project qualification)
+        default: original-four
+        type: choice
+        options:
+          - original-four
+          - residual-two
+      trace_preparation:
+        description: Record existing preparation phases (instrumented observation, not paired performance)
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lsp-focused-projects-${{ inputs.source_sha }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  EXPECTED_SOURCE: ${{ inputs.source_sha }}
+  PACKET_SCOPE: ${{ inputs.packet_scope }}
+  VIZE_TRACE_EDITOR_PREPARATION: ${{ inputs.trace_preparation && '1' || '0' }}
+  CAMPAIGN_DIR: real-project-results/lsp-focused
+
+jobs:
+  original-projects:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Freeze the exact source, registry selection, and fixture pins
+        shell: python
+        run: |
+          import hashlib, json, os, pathlib, re, subprocess
+          root = pathlib.Path.cwd()
+          out = root / os.environ['CAMPAIGN_DIR']
+          out.mkdir(parents=True)
+          expected = os.environ['EXPECTED_SOURCE']
+          assert re.fullmatch('[0-9a-f]{40}', expected)
+          assert os.environ['GITHUB_REF'] == 'refs/heads/main'
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          assert git('rev-parse', 'HEAD') == expected == os.environ['GITHUB_SHA']
+          assert os.environ['GITHUB_WORKFLOW_SHA'] == expected
+          pins = {
+              'varlet': '1007097bde3f6c06326e0057ac6a7cf4ab7ff519',
+              'primevue-volt': 'd4374cb7c1267f35eba7cee5d0a266f50ca8ec84',
+              'vue3-antd-admin': '64c03db76710e70b85aedf40a9ca87101946d70d',
+              'misskey': '810faa8e5db4bbf9d6d408a61df148559340ee99',
+          }
+          scopes = {
+              'original-four': list(pins),
+              'residual-two': ['vue3-antd-admin', 'misskey'],
+          }
+          scope = os.environ['PACKET_SCOPE']
+          assert scope in scopes
+          registry_path = root / 'tests/_fixtures/vue-ecosystem-fixtures.json'
+          registry_bytes = registry_path.read_bytes()
+          registry = json.loads(registry_bytes)['projects']
+          projects = []
+          for identifier, revision in pins.items():
+              matches = [(i, p) for i, p in enumerate(registry) if p['id'] == identifier]
+              assert len(matches) == 1, identifier
+              index, project = matches[0]
+              assert project['revision'] == revision
+              assert 'lsp' in project['coverage']
+              assert git('ls-tree', 'HEAD', project['fixturePath']).split()[2] == revision
+              if identifier in scopes[scope]:
+                  projects.append({**project, 'shardIndex': index})
+          assert [project['id'] for project in projects] == scopes[scope]
+          plan = {
+              'sourceRevision': expected, 'sourceTree': git('rev-parse', 'HEAD^{tree}'),
+              'workflowRevision': os.environ['GITHUB_WORKFLOW_SHA'],
+              'registrySha256': hashlib.sha256(registry_bytes).hexdigest(),
+              'shardCount': len(registry), 'projects': projects,
+              'packetScope': scope,
+              'preparationTrace': os.environ['VIZE_TRACE_EDITOR_PREPARATION'] == '1',
+              'sourceBlobs': {path: git('rev-parse', 'HEAD:' + path) for path in [
+                  'crates/vize_canon/src', 'crates/vize_maestro/src',
+                  'tests/tooling/real-project-lsp.test.ts', 'tests/tooling/support',
+              ]},
+              'scope': 'selected complete original Matrix LSP packets only; no full-Matrix or paired-performance claim',
+              'timingPolicy': 'elapsed times include optional trace and raw recording overhead; no matched performance acceptance',
+          }
+          (out / 'plan.json').write_text(json.dumps(plan, indent=2) + '\n')
+          subprocess.run(['git', 'submodule', 'update', '--init', '--depth', '1', '--',
+                          *[p['fixturePath'] for p in projects]], check=True)
+          for project in projects:
+              assert git('-C', project['fixturePath'], 'rev-parse', 'HEAD') == project['revision']
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+          components: clippy,rust-src,rustfmt
+          targets: wasm32-unknown-unknown,wasm32-wasip2
+      - uses: ./.github/actions/setup-rust-script
+      - run: corepack enable
+      - run: vp install --frozen-lockfile --prefer-offline
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          # The existing source CLI producers build this exact default-feature
+          # ci profile in test-scripts; use its normal trusted-main namespace.
+          key: test-scripts
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Prepare the original pinned project dependencies
+        id: dependencies
+        continue-on-error: true
+        shell: python
+        run: |
+          import json, os, pathlib, subprocess, time
+          out = pathlib.Path(os.environ['CAMPAIGN_DIR'])
+          plan = json.loads((out / 'plan.json').read_text())
+          results = []
+          for project in plan['projects']:
+              directory = out / project['id']
+              directory.mkdir()
+              command = ['rust-script', 'tools/commands/fixtures/typecheck-dependency-prepare.rs',
+                         '--output-dir', str(directory), '--shard-count', str(plan['shardCount']),
+                         '--shard-index', str(project['shardIndex']), '--timeout-ms', '600000']
+              started = time.monotonic_ns()
+              with (directory / 'prepare.stdout').open('wb') as stdout, (directory / 'prepare.stderr').open('wb') as stderr:
+                  result = subprocess.run(command, stdout=stdout, stderr=stderr)
+              results.append({'id': project['id'], 'command': command, 'exitStatus': result.returncode,
+                              'durationMs': (time.monotonic_ns() - started) / 1e6})
+              (out / 'dependencies.json').write_text(json.dumps(results, indent=2) + '\n')
+          assert all(r['exitStatus'] == 0 for r in results), 'raw dependency failures retained'
+      - name: Build and receipt one exact-source production server
+        run: |
+          cargo build --profile ci -p vize
+          node tests/differential/build-receipt.ts
+      - name: Replay selected complete original LSP packets serially
+        id: lifecycle
+        # Four unchanged 600s packets, plus custody and process cleanup.
+        timeout-minutes: 45
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          REAL_PROJECT_LSP_TIMEOUT_MS: "600000"
+          VIZE_LSP_BIN: target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+          VIZE_LSP_BUILD_RECIPE: "cargo build --profile ci -p vize"
+        run: |
+          test -x "$CORSA_PATH"
+          node tests/tooling/support/lsp/verify-session-captures.ts snapshot "$CAMPAIGN_DIR/lsp-wire-before.json"
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, shutil, subprocess, sys, time
+          out = pathlib.Path(os.environ['CAMPAIGN_DIR'])
+          plan = json.loads((out / 'plan.json').read_text())
+          provider = pathlib.Path(os.environ['CORSA_PATH']).resolve(strict=True)
+          (out / 'provider.json').write_text(json.dumps({
+              'path': str(provider), 'sha256': hashlib.sha256(provider.read_bytes()).hexdigest(),
+              'lockfileSha256': hashlib.sha256(pathlib.Path('pnpm-lock.yaml').read_bytes()).hexdigest(),
+          }, indent=2) + '\n')
+          results = []
+          for project in plan['projects']:
+              directory = out / project['id']
+              environment = {**os.environ, 'FIXTURE_SHARD_COUNT': str(plan['shardCount']),
+                             'FIXTURE_SHARD_INDEX': str(project['shardIndex']), 'FIXTURE_REPORT_DIR': str(directory)}
+              subprocess.run(['node', 'tests/tooling/support/lsp/verify-session-captures.ts',
+                              'snapshot', str(directory / 'lsp-wire-before.json')], check=True)
+              command = ['node', '--test', '--test-concurrency=1', 'tests/tooling/real-project-lsp.test.ts']
+              started = time.monotonic_ns()
+              with (directory / 'test.stdout').open('wb') as stdout, (directory / 'test.stderr').open('wb') as stderr:
+                  result = subprocess.run(command, env=environment, stdout=stdout, stderr=stderr)
+              duration = (time.monotonic_ns() - started) / 1e6
+              with (directory / 'wire.stdout').open('wb') as stdout, (directory / 'wire.stderr').open('wb') as stderr:
+                  wire = subprocess.run(['node', 'tests/tooling/support/lsp/verify-session-captures.ts',
+                                         'verify', str(directory / 'lsp-wire-before.json'),
+                                         str(directory / 'lsp-wire-integrity.json')], stdout=stdout, stderr=stderr)
+              results.append({'id': project['id'], 'command': command, 'exitStatus': result.returncode,
+                              'wireExitStatus': wire.returncode, 'durationMs': duration})
+              (out / 'sessions.json').write_text(json.dumps(results, indent=2) + '\n')
+              for stream in ['stdout', 'stderr']:
+                  with (directory / ('test.' + stream)).open('rb') as raw:
+                      shutil.copyfileobj(raw, getattr(sys, stream).buffer)
+          assert len(results) == len(plan['projects']) and all(r['exitStatus'] == r['wireExitStatus'] == 0 for r in results), 'all selected raw packet outcomes retained'
+          PY
+      - name: Verify every source-bound raw session
+        if: ${{ always() }}
+        run: node tests/tooling/support/lsp/verify-session-captures.ts verify "$CAMPAIGN_DIR/lsp-wire-before.json" "$CAMPAIGN_DIR/lsp-wire-integrity.json"
+      - name: Refuse missing selected projects, stale binaries, or failed preparation
+        if: ${{ always() }}
+        shell: python
+        run: |
+          import json, os, pathlib, subprocess
+          out = pathlib.Path(os.environ['CAMPAIGN_DIR'])
+          plan = json.loads((out / 'plan.json').read_text())
+          receipt = json.loads(pathlib.Path('target/ci/vize.differential-build.json').read_text())
+          assert receipt['sourceRevision'] == plan['sourceRevision'] == os.environ['EXPECTED_SOURCE']
+          for kind in ['dependencies', 'sessions']:
+              results = json.loads((out / (kind + '.json')).read_text())
+              assert [r['id'] for r in results] == [p['id'] for p in plan['projects']]
+              assert all(r['exitStatus'] == 0 for r in results)
+              if kind == 'sessions':
+                  assert all(r['wireExitStatus'] == 0 for r in results)
+          for project in plan['projects']:
+              report = json.loads((out / project['id'] / 'lsp-lifecycle-summary.json').read_text())
+              assert report['commitSha'] == plan['sourceRevision']
+              assert report['evidence']['vizeBinary']['sha256'] == receipt['binarySha256']
+              assert report['shard'] == {'count': plan['shardCount'], 'index': project['shardIndex']}
+              assert len(report['projects']) == 1 and report['projects'][0]['id'] == project['id']
+              assert report['projects'][0]['revision'] == project['revision']
+              assert report['projects'][0]['status'] == 'ok'
+          subprocess.run(['git', 'diff', '--exit-code', '--ignore-submodules=all', 'HEAD'], check=True)
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: lsp-focused-${{ inputs.packet_scope }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: |
+            real-project-results/lsp-focused/
+            target/ci/vize.differential-build.json
+            target/differential/lsp-sessions/
+          if-no-files-found: error
+          retention-days: 3

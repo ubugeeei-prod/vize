@@ -58,13 +58,21 @@ impl VirtualProject {
         expected_files.extend(preserved_files.iter().cloned());
         let owned_files = self.workspace_cold_owned_files(&expected_files);
         self.validate_workspace_alias_targets(&owned_files)?;
+        let workspace_alias_claims = self.workspace_alias_claims();
         let mut link_claims = expected_files.clone();
+        link_claims.extend(workspace_alias_claims.iter().cloned());
         link_claims.extend(
             self.preserved_workspace_alias_claims(preserved_package_links, &expected_files)?,
         );
         let mut desired_package_links = self.desired_package_links_for_files(&link_claims);
         for (path, target) in preserved_package_links {
-            if self.preserved_package_link_overlaps_files(path, target, &expected_files) {
+            // An owned alias supersedes an external link at that exact leaf,
+            // while its bytes live at the private target. Parent links still
+            // require the overlap/ownership validation below.
+            if self.preserved_package_link_overlaps_files(path, target, &expected_files)
+                || (!target.starts_with(&self.virtual_root)
+                    && workspace_alias_claims.contains(&path.join("package.json")))
+            {
                 continue;
             }
             if desired_package_links.get(path).is_some_and(|current| {
@@ -352,3 +360,7 @@ impl VirtualProject {
             .unwrap_or_else(|| self.project_root.clone())
     }
 }
+
+#[cfg(all(test, unix))]
+#[path = "tests/editor_union_alias_transition.rs"]
+mod alias_transition_tests;

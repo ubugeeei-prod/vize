@@ -76,6 +76,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
             func_kind,
             opening_span,
             Kind::RParen,
+            false,
         );
         (list, rest)
     }
@@ -88,6 +89,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         func_kind: FunctionKind,
         opening_span: Span,
         closing: Kind,
+        allow_elisions: bool,
     ) -> Option<ArenaBox<'a, FormalParameterRest<'a>>> {
         let mut rest: Option<ArenaBox<'a, FormalParameterRest<'a>>> = None;
         let mut first = true;
@@ -137,6 +139,13 @@ impl<'a, C: Config> ParserImpl<'a, C> {
                 break;
             }
 
+            // Only the direct Vue v-for goal permits omitted alias positions.
+            // Leave the comma for the next iteration's normal separator step;
+            // rest-last validation above still applies to every position.
+            if allow_elisions && self.at(Kind::Comma) {
+                continue;
+            }
+
             let span = self.start_span();
             let decorators = self.parse_decorators();
 
@@ -178,9 +187,12 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         rest
     }
 
-    /// A slot value is an original-source arrow parameter list ending at EOF.
-    /// The existing parenthesized grammar selects RParen and remains unchanged.
-    pub(crate) fn parse_slot_parameter_items(&mut self) -> FormalParameters<'a> {
+    /// An original-source template parameter list ending at EOF. Only v-for
+    /// permits elisions; slot and parenthesized JavaScript grammars do not.
+    pub(crate) fn parse_template_parameter_items(
+        &mut self,
+        allow_elisions: bool,
+    ) -> FormalParameters<'a> {
         let span = self.start_span();
         let opening_span = self.cur_token().span();
         if self.is_ts && self.at(Kind::This) {
@@ -196,6 +208,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
             FunctionKind::Expression,
             opening_span,
             Kind::Eof,
+            allow_elisions,
         );
         FormalParameters::new(
             self.end_span(span),

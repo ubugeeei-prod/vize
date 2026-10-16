@@ -40,8 +40,9 @@
 mod common;
 
 use vize_atelier_jsx::{
-    JsxLang, SsrCompileOptions, VaporCompileOptions, VdomCompileOptions, compile_to_ssr,
-    compile_to_vapor, compile_to_vdom,
+    JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, SsrCompileOptions,
+    VaporCompileOptions, VdomCompileOptions, compile_jsx, compile_to_ssr, compile_to_vapor,
+    compile_to_vdom,
 };
 use vize_l0::Allocator;
 
@@ -229,4 +230,162 @@ fn ssr_output_reports_the_gap_instead_of_dropping_the_slots() {
                 .to_string()
         ]
     );
+}
+
+/// Compare complete authored modules and diagnostics. The hyphenated forms are
+/// independently pinned by the existing exact render tests and Babel recording.
+/// Diagnostic source slices also prove the shorter alias retains correct ranges.
+fn assert_camel_alias(source: &str, config: &JsxCompileConfig, errors: usize) {
+    let camel = source.replace("v-slots", "vSlots");
+    assert_ne!(camel, source);
+    let bump = Allocator::new();
+    let expected = compile_jsx(&bump, source, JsxLang::Jsx, config);
+    let actual = compile_jsx(&bump, &camel, JsxLang::Jsx, config);
+    assert_eq!(actual.module_code(), expected.module_code(), "{source}");
+    assert_eq!(
+        expected.diagnostics.iter().filter(|d| d.is_error()).count(),
+        errors,
+        "{source}: {:?}",
+        expected.diagnostics
+    );
+    let diagnostics = |input: &str, output: &vize_atelier_jsx::JsxCompileOutput| {
+        output
+            .diagnostics
+            .iter()
+            .map(|d| {
+                let range = input
+                    .get(d.start as usize..d.end as usize)
+                    .expect("diagnostic must name a valid original source range");
+                (
+                    d.severity,
+                    d.message.to_string(),
+                    range.replace("vSlots", "v-slots"),
+                )
+            })
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        diagnostics(&camel, &actual),
+        diagnostics(source, &expected),
+        "{source}"
+    );
+}
+
+#[test]
+fn camel_slots_forwarding_keeps_whole_modules_and_backend_diagnostics() {
+    for source in [
+        "const A = () => <B v-slots={slots}/>;",
+        "const A = () => <B v-slots={slots}><div>A</div></B>;",
+        "const A = () => <B v-slots:default={slots}/>;",
+        "const A = () => <ul>{items.map(i => <B key={i} v-slots={slots}/>)}</ul>;",
+    ] {
+        for config in [
+            JsxCompileConfig::default(),
+            JsxCompileConfig {
+                compat: JsxCompatMode::Babel,
+                ..Default::default()
+            },
+            JsxCompileConfig {
+                default_mode: JsxOutputMode::Vapor,
+                ..Default::default()
+            },
+            JsxCompileConfig {
+                ssr: true,
+                ..Default::default()
+            },
+        ] {
+            let errors = usize::from(config.ssr || config.default_mode == JsxOutputMode::Vapor);
+            assert_camel_alias(source, &config, errors);
+        }
+    }
+}
+
+#[test]
+fn camel_inline_slots_compile_on_every_backend() {
+    for source in [
+        "const A = () => <B v-slots={{default: () => <i/>, bar: () => <b/>}}/>;",
+        "const A = () => <B v-slots={{bar: () => <b/>}}><div>A</div></B>;",
+    ] {
+        for config in [
+            JsxCompileConfig::default(),
+            JsxCompileConfig {
+                compat: JsxCompatMode::Babel,
+                ..Default::default()
+            },
+            JsxCompileConfig {
+                default_mode: JsxOutputMode::Vapor,
+                ..Default::default()
+            },
+            JsxCompileConfig {
+                ssr: true,
+                ..Default::default()
+            },
+        ] {
+            assert_camel_alias(source, &config, 0);
+        }
+    }
+}
+
+#[test]
+fn camel_slots_values_keep_existing_validation_and_source_ranges() {
+    for source in [
+        "const A = () => <B v-slots/>;",
+        "const A = () => <B v-slots={1}/>;",
+        "const A = () => <B v-slots={() => <i/>}/>;",
+        "const A = () => <div v-slots={{default: () => <i/>}}/>;",
+        "const A = () => <B v-slots={{default: () => <i/>}}><div>A</div></B>;",
+    ] {
+        assert_camel_alias(source, &JsxCompileConfig::default(), 1);
+    }
+}
+
+#[test]
+fn mixed_slots_aliases_are_one_duplicate_builtin() {
+    let expected = vec!["v-slots is given more than once on this element; babel keeps only the last one, so merge them into a single slots object.".to_string()];
+    for source in [
+        "const A = () => <B vSlots={a} v-slots={b}/>;",
+        "const A = () => <B v-slots={a} vSlots={b}/>;",
+        "const A = () => <B vSlots={a} vSlots={b}/>;",
+    ] {
+        let bump = Allocator::new();
+        let output = compile_jsx(&bump, source, JsxLang::Jsx, &JsxCompileConfig::default());
+        assert_eq!(
+            output
+                .diagnostics
+                .iter()
+                .map(|d| d.message.to_string())
+                .collect::<Vec<_>>(),
+            expected,
+            "{source}"
+        );
+        let diagnostic = &output.diagnostics[0];
+        let second = source.split_once("={a} ").expect("second attribute").1;
+        let second = second.strip_suffix("/>;").expect("component end");
+        assert_eq!(
+            source.get(diagnostic.start as usize..diagnostic.end as usize),
+            Some(second)
+        );
+        assert!(diagnostic.is_error());
+    }
+}
+
+#[test]
+fn slots_alias_lookalikes_remain_ordinary_props() {
+    for name in ["vslots", "VSlots", "vSlot", "vSlotsLike", "vSlots_foo"] {
+        let bump = Allocator::new();
+        let source = format!("const A = () => <B {name}={{slots}}/>;");
+        let root = common::lower_one(&bump, &source);
+        let element = common::root_element(&root);
+        assert_eq!(element.props.len(), 1, "{name}");
+        let prop = common::as_directive(&element.props[0]);
+        assert_eq!(prop.name, "bind", "{name}");
+        assert_eq!(
+            common::simple_content(prop.arg.as_ref().expect("prop name")),
+            name
+        );
+        assert_eq!(
+            common::simple_content(prop.exp.as_ref().expect("prop value")),
+            "slots"
+        );
+    }
 }

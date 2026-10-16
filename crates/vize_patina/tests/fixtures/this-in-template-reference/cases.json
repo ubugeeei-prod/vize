@@ -1,0 +1,1611 @@
+{
+  "schema": "vize.this-in-template.reference",
+  "version": 1,
+  "issue": 9224,
+  "providers": {
+    "eslint": {
+      "version": "10.4.1",
+      "manifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a",
+      "entrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2"
+    },
+    "eslint-plugin-vue": {
+      "version": "10.9.2",
+      "manifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761",
+      "entrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017"
+    },
+    "vue-eslint-parser": {
+      "version": "10.4.1",
+      "manifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2",
+      "entrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087"
+    },
+    "@typescript-eslint/parser": {
+      "version": "8.65.0",
+      "manifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a",
+      "entrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966"
+    }
+  },
+  "cases": [
+    {
+      "id": "repeated",
+      "filename": "control.vue",
+      "source": "<template><div>{{ this.a + this.b }}</div></template>",
+      "sourceSha256": "f37c4ea1123849e0d57be721df00bd8aa599808f845f19d34006757a0f0e9844",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 19,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 23,
+              "fix": {
+                "range": [
+                  18,
+                  24
+                ],
+                "text": "a"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 28,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 32,
+              "fix": {
+                "range": [
+                  27,
+                  33
+                ],
+                "text": "b"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 2
+        }
+      ],
+      "expected": [
+        {
+          "start": 18,
+          "end": 22
+        },
+        {
+          "start": 27,
+          "end": 31
+        }
+      ]
+    },
+    {
+      "id": "template-literal",
+      "filename": "control.vue",
+      "source": "<template><div>{{ `height: ${this.shellHeight}` }}</div></template>",
+      "sourceSha256": "7d8d458ea060685df617214452dce122afdff2bb8c77e4d8fc1937ed39c1c6e7",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 30,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 34,
+              "fix": {
+                "range": [
+                  29,
+                  45
+                ],
+                "text": "shellHeight"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 1
+        }
+      ],
+      "expected": [
+        {
+          "start": 29,
+          "end": 33
+        }
+      ]
+    },
+    {
+      "id": "nested-template-literal",
+      "filename": "control.vue",
+      "source": "<template><div>{{ `outer ${`inner ${this.value}`}` }}</div></template>",
+      "sourceSha256": "5f55127e1f1159e0fb3eaa415ea6c17509103ec2b2e919ca1043294b12e80df2",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 37,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 41,
+              "fix": {
+                "range": [
+                  36,
+                  46
+                ],
+                "text": "value"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 1
+        }
+      ],
+      "expected": [
+        {
+          "start": 36,
+          "end": 40
+        }
+      ]
+    },
+    {
+      "id": "computed-optional-parens",
+      "filename": "control.vue",
+      "source": "<template><div>{{ this[\"value\"] + this?.['other'] + (this).third }}</div></template>",
+      "sourceSha256": "f2322858c0f2bc0329cc32420f47cc1eae01e16c0ee9708f825f9b05e8b29fe9",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 19,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 23,
+              "fix": {
+                "range": [
+                  18,
+                  31
+                ],
+                "text": "value"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 35,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 39,
+              "fix": {
+                "range": [
+                  34,
+                  49
+                ],
+                "text": "other"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 54,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 58,
+              "fix": {
+                "range": [
+                  52,
+                  64
+                ],
+                "text": "third"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 3,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3
+        }
+      ],
+      "expected": [
+        {
+          "start": 18,
+          "end": 22
+        },
+        {
+          "start": 34,
+          "end": 38
+        },
+        {
+          "start": 53,
+          "end": 57
+        }
+      ]
+    },
+    {
+      "id": "comments-regex-strings",
+      "filename": "control.vue",
+      "source": "<template><div>{{ /this.fake/.test(label) ? this.real /* this.fake */ : 'this.fake' }}</div></template>",
+      "sourceSha256": "3c4b4e244f462d90b8475f41dded28a4490d0fa3a52d940d2e321469f7343e20",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 45,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 49,
+              "fix": {
+                "range": [
+                  44,
+                  53
+                ],
+                "text": "real"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 1
+        }
+      ],
+      "expected": [
+        {
+          "start": 44,
+          "end": 48
+        }
+      ]
+    },
+    {
+      "id": "multiple-statements",
+      "filename": "control.vue",
+      "source": "<template><button @click=\"this.a++; this.b()\" /></template>",
+      "sourceSha256": "cb39e18abf5bb24c9d1e24c034ae6c77c45fc7fec227a0251c85d10d91f4a428",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 27,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 31,
+              "fix": {
+                "range": [
+                  26,
+                  32
+                ],
+                "text": "a"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 37,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 41,
+              "fix": {
+                "range": [
+                  36,
+                  42
+                ],
+                "text": "b"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 2
+        }
+      ],
+      "expected": [
+        {
+          "start": 26,
+          "end": 30
+        },
+        {
+          "start": 36,
+          "end": 40
+        }
+      ]
+    },
+    {
+      "id": "multiline-handler",
+      "filename": "control.vue",
+      "source": "<template>\n<button @click=\"\n  if (ready) { this.a++; }\n  this.b(); return this.c\n\" />\n</template>",
+      "sourceSha256": "44fce1217a0ea1d67a92e4aa6358b1603d0dc4692630fdd755790233e7b1fd95",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 3,
+              "column": 16,
+              "messageId": "unexpected",
+              "endLine": 3,
+              "endColumn": 20,
+              "fix": {
+                "range": [
+                  43,
+                  49
+                ],
+                "text": "a"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 4,
+              "column": 3,
+              "messageId": "unexpected",
+              "endLine": 4,
+              "endColumn": 7,
+              "fix": {
+                "range": [
+                  57,
+                  63
+                ],
+                "text": "b"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 4,
+              "column": 20,
+              "messageId": "unexpected",
+              "endLine": 4,
+              "endColumn": 24,
+              "fix": {
+                "range": [
+                  74,
+                  80
+                ],
+                "text": "c"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 3,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3
+        }
+      ],
+      "expected": [
+        {
+          "start": 43,
+          "end": 47
+        },
+        {
+          "start": 57,
+          "end": 61
+        },
+        {
+          "start": 74,
+          "end": 78
+        }
+      ]
+    },
+    {
+      "id": "unicode-prefix",
+      "filename": "control.vue",
+      "source": "<template><div>{{ '😀日本語' + this.value + this.other }}</div></template>",
+      "sourceSha256": "caa71db0782dea43240816baf18d2b52276ecdf45cb70bd05ab9230a666f75bd",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 29,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 33,
+              "fix": {
+                "range": [
+                  28,
+                  38
+                ],
+                "text": "value"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 42,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 46,
+              "fix": {
+                "range": [
+                  41,
+                  51
+                ],
+                "text": "other"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 2
+        }
+      ],
+      "expected": [
+        {
+          "start": 36,
+          "end": 40
+        },
+        {
+          "start": 49,
+          "end": 53
+        }
+      ]
+    },
+    {
+      "id": "crlf-handler",
+      "filename": "control.vue",
+      "source": "<template>\r\n<button @click=\"\r\nthis.a();\r\nthis.b()\" />\r\n</template>",
+      "sourceSha256": "69e2a4091f55e0ff7689ea4c9d388183f1acb237c7399c782a33a05f3e6b2978",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 3,
+              "column": 1,
+              "messageId": "unexpected",
+              "endLine": 3,
+              "endColumn": 5,
+              "fix": {
+                "range": [
+                  30,
+                  36
+                ],
+                "text": "a"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 4,
+              "column": 1,
+              "messageId": "unexpected",
+              "endLine": 4,
+              "endColumn": 5,
+              "fix": {
+                "range": [
+                  41,
+                  47
+                ],
+                "text": "b"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 2
+        }
+      ],
+      "expected": [
+        {
+          "start": 30,
+          "end": 34
+        },
+        {
+          "start": 41,
+          "end": 45
+        }
+      ]
+    },
+    {
+      "id": "attribute-entities",
+      "filename": "control.vue",
+      "source": "<template><div :title=\"foo &amp;&amp; this.first + this.second\" /></template>",
+      "sourceSha256": "e7f5af8bc1f1bc24ff197bc8d3361c46e04812578e9a01e488e460a8cf574877",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 39,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 43,
+              "fix": {
+                "range": [
+                  38,
+                  48
+                ],
+                "text": "first"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 52,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 56,
+              "fix": {
+                "range": [
+                  51,
+                  62
+                ],
+                "text": "second"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 2
+        }
+      ],
+      "expected": [
+        {
+          "start": 38,
+          "end": 42
+        },
+        {
+          "start": 51,
+          "end": 55
+        }
+      ]
+    },
+    {
+      "id": "encoded-this",
+      "filename": "control.vue",
+      "source": "<template><div :title=\"th&#105;s.first + this.second\" /></template>",
+      "sourceSha256": "b0c3ac3925680f11a462baf599c7c732a86ca9bb717dddb4fa2e1ebe7c230f1e",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 24,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 33,
+              "fix": {
+                "range": [
+                  23,
+                  38
+                ],
+                "text": "first"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 42,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 46,
+              "fix": {
+                "range": [
+                  41,
+                  52
+                ],
+                "text": "second"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 2
+        }
+      ],
+      "expected": [
+        {
+          "start": 23,
+          "end": 32
+        },
+        {
+          "start": 41,
+          "end": 45
+        }
+      ]
+    },
+    {
+      "id": "interpolation-entities",
+      "filename": "control.vue",
+      "source": "<template><div>{{ foo &amp;&amp; this.first + this.second }}</div></template>",
+      "sourceSha256": "3fd3a5e5ee5fc50f18d062084415adae4c8dcf0b8d7232fbadd5c49740df3952",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 34,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 38,
+              "fix": {
+                "range": [
+                  33,
+                  43
+                ],
+                "text": "first"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 47,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 51,
+              "fix": {
+                "range": [
+                  46,
+                  57
+                ],
+                "text": "second"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 2
+        }
+      ],
+      "expected": [
+        {
+          "start": 33,
+          "end": 37
+        },
+        {
+          "start": 46,
+          "end": 50
+        }
+      ]
+    },
+    {
+      "id": "reserved",
+      "filename": "control.vue",
+      "source": "<template><div>{{ this.class + this['foo-bar'] + this.arguments + this[dynamic] }}</div></template>",
+      "sourceSha256": "d0f675484832ecf8c9d985dff29ae7df0ce9aa9b8c78393b594f16df6b3bc2e0",
+      "reference": [
+        {
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0
+        }
+      ],
+      "expected": []
+    },
+    {
+      "id": "local-for",
+      "filename": "control.vue",
+      "source": "<template><div v-for=\"value in values\">{{ this.value + this.other }}</div></template>",
+      "sourceSha256": "cdae8fc1036d22c1dbe57835eac28ce44e3b57b63b2a0eac1e0d265137c9f9a0",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 56,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 60,
+              "fix": {
+                "range": [
+                  55,
+                  65
+                ],
+                "text": "other"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 1
+        }
+      ],
+      "expected": [
+        {
+          "start": 55,
+          "end": 59
+        }
+      ]
+    },
+    {
+      "id": "local-slot",
+      "filename": "control.vue",
+      "source": "<template><Panel v-slot=\"{ value }\">{{ this.value + this.other }}</Panel></template>",
+      "sourceSha256": "6664d26aebf8936840e1cc4d671af74e9a000d815d77921195f3d0c0160ac28f",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 53,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 57,
+              "fix": {
+                "range": [
+                  52,
+                  62
+                ],
+                "text": "other"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 1
+        }
+      ],
+      "expected": [
+        {
+          "start": 52,
+          "end": 56
+        }
+      ]
+    },
+    {
+      "id": "no-code-markers",
+      "filename": "control.vue",
+      "source": "<template><div>{{ 'this.fake' + `this.fake` + /this.fake/.source }}</div></template>",
+      "sourceSha256": "8c9e41a55f7ed0998e30efce479eb5ea864a890907a2345d82d2b298d9dd1f0a",
+      "reference": [
+        {
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0
+        }
+      ],
+      "expected": []
+    },
+    {
+      "id": "bare-this",
+      "filename": "control.vue",
+      "source": "<template><div>{{ this }}</div></template>",
+      "sourceSha256": "0be1221861323bce269ca22a96982543e308b49f5ff8d6257f7db1f12721ace7",
+      "reference": [
+        {
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0
+        }
+      ],
+      "expected": []
+    },
+    {
+      "id": "sfc-offset",
+      "filename": "control.vue",
+      "source": "<script setup>const prefix = \"日本語\"</script>\n<template>\n<div>{{ this.first + this.second }}</div>\n</template>",
+      "sourceSha256": "325e68dfb355aef7f8453043dbff2c4c007c9b5fd62a6d65cb14335b4865159a",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 3,
+              "column": 9,
+              "messageId": "unexpected",
+              "endLine": 3,
+              "endColumn": 13,
+              "fix": {
+                "range": [
+                  63,
+                  73
+                ],
+                "text": "first"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 3,
+              "column": 22,
+              "messageId": "unexpected",
+              "endLine": 3,
+              "endColumn": 26,
+              "fix": {
+                "range": [
+                  76,
+                  87
+                ],
+                "text": "second"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 2
+        }
+      ],
+      "expected": [
+        {
+          "start": 69,
+          "end": 73
+        },
+        {
+          "start": 82,
+          "end": 86
+        }
+      ]
+    },
+    {
+      "id": "zy-player-original",
+      "filename": "src/components/EditSites.vue",
+      "source": "<template>\n  <div class=\"listpage\" id=\"sites\">\n    <div class=\"listpage-header\" v-show=\"!enableBatchEdit\">\n          <el-switch v-model=\"enableBatchEdit\" active-text=\"批处理分组\">></el-switch>\n          <el-button @click=\"openFilterKeywordsDiag\" icon=\"el-icon-key\">关键词过滤</el-button>\n          <el-button @click=\"addSite\" icon=\"el-icon-document-add\">新增</el-button>\n          <el-button @click=\"exportSites\" icon=\"el-icon-upload2\" title=\"导出全部，自动添加扩展名\">导出</el-button>\n          <el-button @click=\"importSites\" icon=\"el-icon-download\" title=\"支持同时导入多个文件\">导入</el-button>\n          <el-button @click=\"checkAllSite\" icon=\"el-icon-refresh\" :loading=\"checkAllSitesLoading\" title=\"可在后台运行\">检测{{ this.checkAllSitesLoading ? this.checkProgress + '/' + this.sites.length : '' }}</el-button>\n          <el-button @click=\"resetSitesEvent\" icon=\"el-icon-refresh-left\">重置</el-button>\n    </div>\n    <div class=\"listpage-header\" v-show=\"enableBatchEdit\">\n          <el-switch v-model=\"enableBatchEdit\" active-text=\"批处理分组\"></el-switch>\n          <el-input placeholder=\"新组名\" v-model=\"batchGroupName\"></el-input>\n          <el-switch v-model=\"batchIsActive\" active-text=\"启用\"></el-switch>\n          <el-button type=\"primary\" icon=\"el-icon-edit\" @click.stop=\"saveBatchEdit\" title=\"输入框组名为空时仅保存开关状态\">保存分组与开关状态</el-button>\n          <el-button @click=\"removeSelectedSites\" icon=\"el-icon-delete-solid\">删除</el-button>\n    </div>\n    <div class=\"listpage-body\" id=\"sites-body\">\n      <div class=\"show-table\" id=\"sites-table\">\n        <el-table size=\"mini\" fit height=\"100%\" row-key=\"id\"\n          ref=\"editSitesTable\"\n          :data=\"sites\"\n          @select=\"selectionCellClick\"\n          @selection-change=\"handleSelectionChange\"\n          @sort-change=\"handleSortChange\">\n          <el-table-column\n            type=\"selection\"\n            v-if=\"enableBatchEdit\">\n          </el-table-column>\n          <el-table-column\n            prop=\"name\"\n            label=\"资源名\">\n          </el-table-column>\n          <el-table-column\n            prop=\"isActive\"\n            width=\"120\"\n            :filters = \"[{text:'启用', value: true}, {text:'停用', value: false}]\"\n            :filter-method=\"(value, row) => value === row.isActive\"\n            label=\"启用\">\n            <template slot-scope=\"scope\">\n              <el-switch\n                v-model=\"scope.row.isActive\"\n                @click.native.stop='propChangeEvent(scope.row)'>\n              </el-switch>\n            </template>\n          </el-table-column>\n          <el-table-column\n            prop=\"reverseOrder\"\n            width=\"120\"\n            label=\"倒序排列\">\n            <template slot-scope=\"scope\">\n              <el-switch\n                v-model=\"scope.row.reverseOrder\"\n                @click.native.stop='propChangeEvent(scope.row)'>>\n              </el-switch>\n            </template>\n          </el-table-column>\n          <el-table-column\n            prop=\"group\"\n            label=\"分组\"\n            :filters=\"getFilters\"\n            :filter-method=\"(value, row) => value === row.group\"\n            filter-placement=\"bottom-end\">\n          </el-table-column>\n          <el-table-column\n            label=\"状态\"\n            sortable\n            :sort-by=\"['status']\"\n            width=\"120\">\n            <template slot-scope=\"scope\">\n              <span v-if=\"scope.row.status === ' '\">\n                <i class=\"el-icon-loading\"></i>\n                检测中...\n              </span>\n              <span v-else>{{scope.row.status}}</span>\n            </template>\n          </el-table-column>\n          <el-table-column\n            label=\"操作\"\n            header-align=\"center\"\n            align=\"right\"\n            :width=\"sites.every(site => site.status) && !checkAllSitesLoading ? 200 : 150\">\n            <template slot-scope=\"scope\">\n              <el-button size=\"mini\" @click.stop=\"moveToTopEvent(scope.row)\" type=\"text\">置顶</el-button>\n              <el-button size=\"mini\" @click.stop=\"editSite(scope.row)\" type=\"text\">编辑</el-button>\n              <!-- 检测时先强制批量检测一遍，如果不强制直接单个检测时第一次不会显示“检测中” -->\n              <el-button size=\"mini\" v-if=\"sites.every(site => site.status)\" v-show=\"!checkAllSitesLoading\" @click.stop=\"checkSingleSite(scope.row)\" type=\"text\">检测</el-button>\n              <el-button size=\"mini\" @click.stop=\"removeEvent(scope.row)\" type=\"text\">删除</el-button>\n            </template>\n          </el-table-column>\n        </el-table>\n      </div>\n     </div>\n    <!-- 编辑页面 -->\n    <div>\n      <el-dialog :visible.sync=\"editSiteDialogVisible\" v-if='editSiteDialogVisible' :title=\"dialogType==='edit'?'编辑源':'新增源'\" :append-to-body=\"true\" @close=\"closeDialog\">\n        <el-form :model=\"siteInfo\" ref='siteInfo' label-width=\"75px\" label-position=\"left\" :rules=\"rules\">\n          <el-form-item label=\"源站名\" prop='name'>\n            <el-input v-model=\"siteInfo.name\" placeholder=\"请输入源站名\" />\n          </el-form-item>\n          <el-form-item label=\"API接口\" prop='api'>\n            <el-input v-model=\"siteInfo.api\" :autosize=\"{ minRows: 2, maxRows: 4}\" type=\"textarea\" placeholder=\"请输入API接口地址\"/>\n          </el-form-item>\n          <el-form-item label=\"下载接口\" prop='download'>\n            <el-input v-model=\"siteInfo.download\" :autosize=\"{ minRows: 2, maxRows: 4}\" type=\"textarea\" placeholder=\"请输入Download接口地址，可以空着\"/>\n          </el-form-item>\n          <el-form-item label=\"解析接口\" prop='jiexiUrl'>\n            <el-input v-model=\"siteInfo.jiexiUrl\" :autosize=\"{ minRows: 2, maxRows: 4}\" type=\"textarea\" placeholder=\"请输入解析接口地址，默认源自带解析,若要调用应用默认解析接口请输入默认或default\"/>\n          </el-form-item>\n          <el-form-item label=\"分组\" prop='group'>\n            <el-select v-model=\"siteInfo.group\" allow-create filterable default-first-option placeholder=\"请输入分组\">\n              <el-option v-for=\"item in siteGroup\" :key=\"item\" :label=\"item\" :value=\"item\"></el-option>\n            </el-select>\n          </el-form-item>\n          <el-form-item label=\"源站标识\" prop='key'>\n            <el-input v-model=\"siteInfo.key\" placeholder=\"请输入源站标识，如果为空，系统则自动生成\" />\n          </el-form-item>\n        </el-form>\n        <span slot=\"footer\" class=\"dialog-footer\">\n          <el-button @click=\"closeDialog\">取消</el-button>\n          <el-button type=\"primary\" @click=\"addOrEditSite\">保存</el-button>\n        </span>\n      </el-dialog>\n    </div>\n    <!-- 设置过滤关键词页面 -->\n    <div>\n      <el-dialog :visible.sync=\"filterKeywordsDialogVisible\" v-if='filterKeywordsDialogVisible' :title=\"'分类过滤'\" :append-to-body=\"true\" @close=\"closeDialog\">\n        <el-form>\n          <el-switch v-model=\"excludeRootClasses\" active-text=\"开启主分类过滤\">></el-switch>\n          <el-form-item>\n            <el-input v-model=\"rootClassFilterKeywords\" :autosize=\"{ minRows: 3, maxRows: 6}\" type=\"textarea\" placeholder=\"请输入过滤关键词\" />\n          </el-form-item>\n        </el-form>\n        <el-form>\n          <el-switch v-model=\"excludeR18Films\" active-text=\"开启福利分类过滤\">></el-switch>\n          <el-form-item>\n            <el-input v-model=\"r18ClassFilterKeywords\" :autosize=\"{ minRows: 3, maxRows: 6}\" type=\"textarea\" placeholder=\"请输入过滤关键词\" />\n          </el-form-item>\n        </el-form>\n        <span slot=\"footer\" class=\"dialog-footer\">\n          <el-button @click=\"closeDialog\">取消</el-button>\n          <el-button type=\"primary\" @click=\"saveFilterKeywords\">保存</el-button>\n        </span>\n      </el-dialog>\n    </div>\n  </div>\n</template>\n<script>\nimport { mapMutations } from 'vuex'\nimport { sites, setting } from '../lib/dexie'\nimport zy from '../lib/site/tools'\nimport fs from 'fs'\nimport Sortable from 'sortablejs'\nconst remote = require('@electron/remote')\n\nexport default {\n  name: 'editSites',\n  data () {\n    return {\n      show: false,\n      sites: [],\n      dialogType: 'new',\n      editSiteDialogVisible: false,\n      filterKeywordsDialogVisible: false,\n      siteInfo: {\n        key: '',\n        name: '',\n        api: '',\n        download: '',\n        jiexiUrl: '',\n        group: '',\n        isActive: true\n      },\n      excludeRootClasses: true,\n      excludeR18Films: true,\n      rootClassFilterKeywords: [],\n      r18ClassFilterKeywords: [],\n      siteGroup: [],\n      rules: {\n        name: [\n          { required: true, message: '源站名不能为空', trigger: 'blur' }\n        ],\n        api: [\n          { required: true, message: 'API地址不能为空', trigger: 'blur' }\n        ]\n      },\n      enableBatchEdit: false,\n      batchGroupName: '',\n      batchIsActive: true,\n      shiftDown: false,\n      selectionBegin: '',\n      selectionEnd: '',\n      multipleSelection: [],\n      checkAllSitesLoading: false,\n      checkProgress: 0,\n      stopFlag: false,\n      editOldkey: ''\n    }\n  },\n  computed: {\n    setting: {\n      get () {\n        return this.$store.getters.getSetting\n      },\n      set (val) {\n        this.SET_SETTING(val)\n      }\n    },\n    getFilters () {\n      const groups = [...new Set(this.sites.map(site => site.group))]\n      const filters = []\n      groups.forEach(g => {\n        const doc = {\n          text: g,\n          value: g\n        }\n        filters.push(doc)\n      })\n      return filters\n    }\n  },\n  watch: {\n    enableBatchEdit () {\n      if (this.checkAllSitesLoading) {\n        this.$message.info('正在检测, 请勿操作.')\n        this.enableBatchEdit = false\n      }\n      if (this.enableBatchEdit) {\n        if (this.setting.shiftTooltipLimitTimes === undefined) this.setting.shiftTooltipLimitTimes = 5\n        if (this.setting.shiftTooltipLimitTimes) {\n          this.$message.info('多选时支持shift快捷键')\n          this.setting.shiftTooltipLimitTimes--\n          setting.find().then(res => {\n            res.shiftTooltipLimitTimes = this.setting.shiftTooltipLimitTimes\n            setting.update(res)\n          })\n        }\n      }\n    }\n  },\n  methods: {\n    ...mapMutations(['SET_SETTING']),\n    selectionCellClick (selection, row) {\n      if (this.shiftDown && this.selectionBegin !== '' && selection.includes(row)) {\n        this.selectionEnd = row.id\n        const start = this.sites.findIndex(e => e.id === Math.min(this.selectionBegin, this.selectionEnd))\n        const end = this.sites.findIndex(e => e.id === Math.max(this.selectionBegin, this.selectionEnd))\n        const selections = this.sites.slice(start, end + 1)\n        this.$nextTick(() => {\n          selections.forEach(e => this.$refs.editSitesTable.toggleRowSelection(e, true))\n        })\n        this.selectionBegin = this.selectionEnd = ''\n        return\n      }\n      if (selection.includes(row)) {\n        this.selectionBegin = row.id\n      } else {\n        this.selectionBegin = ''\n      }\n    },\n    handleSelectionChange (rows) {\n      this.multipleSelection = rows\n    },\n    handleSortChange (column, prop, order) {\n      if (this.checkAllSitesLoading) {\n        this.$message.info('正在检测, 请勿操作.')\n        return false\n      }\n      this.updateDatabase(this.sites)\n    },\n    saveBatchEdit () {\n      this.multipleSelection.forEach(ele => {\n        if (this.batchGroupName) {\n          ele.group = this.batchGroupName\n        }\n        ele.isActive = this.batchIsActive\n      })\n      this.updateDatabase()\n    },\n    getSites () {\n      sites.all().then(res => {\n        res.forEach(element => {\n          if (element.reverseOrder === null || element.reverseOrder === undefined) {\n            element.reverseOrder = false\n          }\n        })\n        this.sites = res\n      })\n    },\n    getSitesGroup () {\n      const arr = []\n      for (const i of this.sites) {\n        if (arr.indexOf(i.group) < 0) {\n          arr.push(i.group)\n        }\n      }\n      this.siteGroup = arr\n    },\n    openFilterKeywordsDiag () {\n      this.excludeRootClasses = this.setting.excludeRootClasses\n      this.excludeR18Films = this.setting.excludeR18Films\n      this.rootClassFilterKeywords = this.setting.rootClassFilter?.join()\n      this.r18ClassFilterKeywords = this.setting.r18ClassFilter?.join()\n      this.filterKeywordsDialogVisible = true\n    },\n    saveFilterKeywords () {\n      // 移除空格,然后按逗号分开\n      this.setting.rootClassFilter = this.rootClassFilterKeywords?.replace(/\\s/g, '').split(',')\n      this.setting.r18ClassFilter = this.r18ClassFilterKeywords?.replace(/\\s/g, '').split(',')\n      this.setting.classFilter = []\n      this.setting.excludeRootClasses = this.excludeRootClasses\n      if (this.excludeRootClasses) {\n        this.setting.classFilter = this.setting.classFilter.concat(this.setting.rootClassFilter)\n      }\n      this.setting.excludeR18Films = this.excludeR18Films\n      if (this.excludeR18Films) {\n        this.setting.classFilter = this.setting.classFilter.concat(this.setting.r18ClassFilter)\n      }\n      setting.update(this.setting)\n      this.filterKeywordsDialogVisible = false\n    },\n    addSite () {\n      if (this.checkAllSitesLoading) {\n        this.$message.info('正在检测, 请勿操作.')\n        return false\n      }\n      this.getSitesGroup()\n      this.dialogType = 'new'\n      this.editSiteDialogVisible = true\n      this.siteInfo = {\n        key: '',\n        name: '',\n        api: '',\n        download: '',\n        jiexiUrl: '',\n        group: '',\n        isActive: true\n      }\n    },\n    editSite (siteInfo) {\n      if (this.checkAllSitesLoading) {\n        this.$message.info('正在检测, 请勿操作.')\n        return false\n      }\n      this.getSitesGroup()\n      this.dialogType = 'edit'\n      this.editSiteDialogVisible = true\n      this.siteInfo = siteInfo\n      this.editOldkey = siteInfo.key\n    },\n    closeDialog () {\n      this.editSiteDialogVisible = false\n      this.filterKeywordsDialogVisible = false\n      this.getSites()\n    },\n    removeEvent (e) {\n      if (this.checkAllSitesLoading) {\n        this.$message.info('正在检测, 请勿操作.')\n        return false\n      }\n      sites.remove(e.id).then(res => {\n        this.getSites()\n      }).catch(err => {\n        this.$message.warning('删除源失败, 错误信息: ' + err)\n      })\n    },\n    checkSiteKey (e) {\n      if (this.dialogType === 'edit' && this.editOldkey === this.siteInfo.key) {\n        return true\n      } else {\n        for (const i of this.sites) {\n          if (i.key === this.siteInfo.key) {\n            this.$message.warning(`源站标识: ${i.key} 已存在, 请勿重复填写.`)\n            return false\n          }\n        }\n        return true\n      }\n    },\n    addOrEditSite () {\n      if (!this.siteInfo.name || !this.siteInfo.api) {\n        this.$message.error('名称和API接口不能为空。')\n        return false\n      }\n      if (!this.checkSiteKey()) {\n        return false\n      }\n      const randomstring = require('randomstring')\n      const doc = {\n        key: this.dialogType === 'edit' ? this.siteInfo.key : this.siteInfo.key ? this.siteInfo.key : randomstring.generate(6),\n        id: this.dialogType === 'edit' ? this.siteInfo.id : this.sites.length ? this.sites[this.sites.length - 1].id + 1 : 1,\n        name: this.siteInfo.name,\n        api: this.siteInfo.api,\n        download: this.siteInfo.download,\n        jiexiUrl: this.siteInfo.jiexiUrl,\n        group: this.siteInfo.group,\n        isActive: this.siteInfo.isActive\n      }\n      if (this.dialogType === 'edit') sites.remove(this.siteInfo.id)\n      sites.add(doc).then(res => {\n        this.siteInfo = {\n          key: '',\n          name: '',\n          api: '',\n          download: '',\n          jiexiUrl: '',\n          group: ''\n        }\n        this.dialogType === 'edit' ? this.$message.success('修改成功！') : this.$message.success('新增源成功！')\n        this.editSiteDialogVisible = false\n        this.getSites()\n      })\n      this.editOldkey = ''\n    },\n    exportSites () {\n      this.getSites()\n      const arr = [...this.sites]\n      const str = JSON.stringify(arr, null, 2)\n      const options = {\n        filters: [\n          { name: 'JSON file', extensions: ['json'] }\n        ]\n      }\n      remote.dialog.showSaveDialog(options).then(result => {\n        if (!result.canceled) {\n          if (!result.filePath.endsWith('.json')) result.filePath += '.json'\n          fs.writeFileSync(result.filePath, str)\n          this.$message.success('已保存成功')\n        }\n      }).catch(err => {\n        this.$message.error(err)\n      })\n    },\n    importSites () {\n      if (this.checkAllSitesLoading) {\n        this.$message.info('正在检测, 请勿操作.')\n        return false\n      }\n      const options = {\n        filters: [\n          { name: '支持的文件格式', extensions: ['json', 'txt'] }\n        ],\n        properties: ['openFile', 'multiSelections']\n      }\n      remote.dialog.showOpenDialog(options).then(result => {\n        if (!result.canceled) {\n          result.filePaths.forEach(file => {\n            if (file.endsWith('json')) {\n              const str = fs.readFileSync(file)\n              const json = JSON.parse(str)\n              json.forEach(ele => {\n                if (ele.api && this.sites.filter(x => x.key === ele.key).length === 0 && this.sites.filter(x => x.name === ele.name && x.api === ele.api).length === 0) {\n                  // 不含该key 同时也不含名字和url一样的\n                  if (ele.isActive === undefined) {\n                    ele.isActive = true\n                  }\n                  if (ele.group === undefined) {\n                    ele.group = '导入'\n                  }\n                  this.sites.push(ele)\n                }\n              })\n              this.resetId(this.sites)\n              sites.clear().then(sites.bulkAdd(this.sites))\n              this.$message.success('导入成功')\n              this.getSites()\n            }\n            if (file.endsWith('txt')) {\n              try {\n                const txt = fs.readFileSync(file, 'utf8')\n                const json = JSON.parse(txt)\n                json.forEach(ele => {\n                  if (ele.api && this.sites.filter(x => x.key === ele.key).length === 0 && this.sites.filter(x => x.name === ele.name && x.api === ele.api).length === 0) {\n                    // 不含该key 同时也不含名字和url一样的\n                    if (ele.isActive === undefined) {\n                      ele.isActive = true\n                    }\n                    if (ele.group === undefined) {\n                      ele.group = '导入'\n                    }\n                    this.sites.push(ele)\n                  }\n                })\n                this.resetId(this.sites)\n                sites.clear().then(sites.bulkAdd(this.sites))\n                this.$message.success('导入成功')\n                this.getSites()\n              } catch (error) {\n                this.$message.warning('导入失败')\n              }\n            }\n          })\n        }\n      })\n    },\n    resetSitesEvent () {\n      let url = this.setting.sitesDataURL\n      if (!url) {\n        url = 'https://raw.iqiq.io/Hunlongyu/ZY-Player-Resources/main/Sites/20220713.json'\n      }\n      zy.getDefaultSites(url).then(res => {\n        if (res.length > 0) {\n          sites.clear().then(sites.bulkAdd(res))\n          this.$message.success('重置源成功')\n          this.getSites()\n        }\n      }).catch(error => {\n        this.$message.error('导入云端源站失败. ' + error)\n      })\n    },\n    moveToTopEvent (i) {\n      if (this.checkAllSitesLoading) {\n        this.$message.info('正在检测, 请勿操作.')\n        return false\n      }\n      this.sites.sort(function (x, y) { return x.key === i.key ? -1 : y.key === i.key ? 1 : 0 })\n      this.updateDatabase()\n    },\n    syncTableData () {\n      if (this.$refs.editSitesTable.tableData && this.$refs.editSitesTable.tableData.length === this.sites.length) {\n        this.sites = this.$refs.editSitesTable.tableData\n      }\n    },\n    propChangeEvent (row) {\n      sites.remove(row.id)\n      sites.add(row)\n      this.getSites()\n    },\n    resetId (inArray) {\n      let id = 1\n      inArray.forEach(ele => {\n        ele.id = id\n        id += 1\n      })\n    },\n    updateDatabase () {\n      // 因为el-table的数据是单向绑定,我们先同步el-table里的数据和其绑定的数据\n      this.syncTableData()\n      sites.clear().then(res => {\n        let id = 1\n        this.sites.forEach(ele => {\n          ele.id = id\n          id += 1\n        })\n        sites.bulkAdd(this.sites).then(this.getSites())\n      })\n    },\n    removeSelectedSites () {\n      this.multipleSelection.forEach(e => sites.remove(e.id))\n      this.$refs.editSitesTable.clearFilter()\n      this.getSites()\n      this.updateDatabase()\n      this.enableBatchEdit = false\n    },\n    rowDrop () {\n      if (this.checkAllSitesLoading) {\n        this.$message.info('正在检测, 请勿操作.')\n        return false\n      }\n      const tbody = document.getElementById('sites-table').querySelector('.el-table__body-wrapper tbody')\n      const _this = this\n      Sortable.create(tbody, {\n        onEnd ({ newIndex, oldIndex }) {\n          const currRow = _this.sites.splice(oldIndex, 1)[0]\n          _this.sites.splice(newIndex, 0, currRow)\n          _this.updateDatabase()\n        }\n      })\n    },\n    async checkAllSite () {\n      if (this.checkAllSitesLoading) return\n      this.checkAllSitesLoading = true\n      this.stopFlag = false\n      this.checkProgress = 0\n      const uncheckedList = this.sites.filter(e => e.status === undefined || e.status === ' ') // 未检测过的优先\n      const other = this.sites.filter(e => !uncheckedList.includes(e))\n      await Promise.all(uncheckedList.map(site => this.checkSingleSite(site)))\n      await Promise.all(other.map(site => this.checkSingleSite(site))).then(res => {\n        this.checkAllSitesLoading = false\n        this.getSites()\n        if (!this.stopFlag) this.$message.success('视频点播源站批量检测已完成！')\n      })\n    },\n    async checkSingleSite (row) {\n      row.status = ' '\n      if (this.stopFlag) {\n        this.checkProgress += 1\n        return row.status\n      }\n      const flag = await zy.check(row.key)\n      this.checkProgress += 1\n      if (flag) {\n        row.status = '可用'\n      } else {\n        row.status = '失效'\n        row.isActive = false\n      }\n      sites.remove(row.id)\n      sites.add(row)\n      return row.status\n    }\n  },\n  mounted () {\n    this.rowDrop()\n    addEventListener('keydown', code => { if (code.keyCode === 16) this.shiftDown = true })\n    addEventListener('keyup', code => { if (code.keyCode === 16) this.shiftDown = false })\n  },\n  created () {\n    this.getSites()\n  }\n}\n</script>\n",
+      "originalSource": {
+        "project": "zy-player",
+        "file": "src/components/EditSites.vue",
+        "url": "https://raw.githubusercontent.com/Hunlongyu/ZY-Player/68fd0d0c6ae79de3d1a7400a85d704f3717e1140/src/components/EditSites.vue",
+        "sha256": "d83044feaff965ddbdd4ad21bee490c08c53a6ed7ed7826aa90df15de600e4fd",
+        "size": 23011
+      },
+      "sourceSha256": "d83044feaff965ddbdd4ad21bee490c08c53a6ed7ed7826aa90df15de600e4fd",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 9,
+              "column": 119,
+              "messageId": "unexpected",
+              "endLine": 9,
+              "endColumn": 123,
+              "fix": {
+                "range": [
+                  678,
+                  703
+                ],
+                "text": "checkAllSitesLoading"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 9,
+              "column": 147,
+              "messageId": "unexpected",
+              "endLine": 9,
+              "endColumn": 151,
+              "fix": {
+                "range": [
+                  706,
+                  724
+                ],
+                "text": "checkProgress"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 9,
+              "column": 174,
+              "messageId": "unexpected",
+              "endLine": 9,
+              "endColumn": 178,
+              "fix": {
+                "range": [
+                  733,
+                  743
+                ],
+                "text": "sites"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 3,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3
+        }
+      ],
+      "expected": [
+        {
+          "start": 770,
+          "end": 774
+        },
+        {
+          "start": 798,
+          "end": 802
+        },
+        {
+          "start": 825,
+          "end": 829
+        }
+      ]
+    },
+    {
+      "id": "filebrowser-original",
+      "filename": "frontend/src/components/Shell.vue",
+      "source": "<template>\n  <div\n    class=\"shell\"\n    :class=\"{ ['shell--hidden']: !showShell }\"\n    :style=\"{ height: `${this.shellHeight}em`, direction: 'ltr' }\"\n  >\n    <div\n      @pointerdown=\"startDrag()\"\n      @pointerup=\"stopDrag()\"\n      class=\"shell__divider\"\n      :style=\"this.shellDrag ? { background: `${checkTheme()}` } : ''\"\n    ></div>\n    <div @click=\"focus\" class=\"shell__content\" ref=\"scrollable\">\n      <div v-for=\"(c, index) in content\" :key=\"index\" class=\"shell__result\">\n        <div class=\"shell__prompt\">\n          <i class=\"material-icons\">chevron_right</i>\n        </div>\n        <pre class=\"shell__text\">{{ c.text }}</pre>\n      </div>\n\n      <div\n        class=\"shell__result\"\n        :class=\"{ 'shell__result--hidden': !canInput }\"\n      >\n        <div class=\"shell__prompt\">\n          <i class=\"material-icons\">chevron_right</i>\n        </div>\n        <pre\n          tabindex=\"0\"\n          ref=\"input\"\n          class=\"shell__text\"\n          :contenteditable=\"true\"\n          @keydown.prevent.arrow-up=\"historyUp\"\n          @keydown.prevent.arrow-down=\"historyDown\"\n          @keypress.prevent.enter=\"submit\"\n        />\n      </div>\n    </div>\n    <div\n      @pointerup=\"stopDrag()\"\n      class=\"shell__overlay\"\n      v-show=\"this.shellDrag\"\n    ></div>\n  </div>\n</template>\n\n<script>\nimport { mapState, mapActions } from \"pinia\";\nimport { useFileStore } from \"@/stores/file\";\nimport { useLayoutStore } from \"@/stores/layout\";\n\nimport { commands } from \"@/api\";\nimport { throttle } from \"lodash-es\";\nimport { theme } from \"@/utils/constants\";\n\nexport default {\n  name: \"shell\",\n  computed: {\n    ...mapState(useLayoutStore, [\"showShell\"]),\n    ...mapState(useFileStore, [\"isFiles\"]),\n    path: function () {\n      if (this.isFiles) {\n        return this.$route.path;\n      }\n\n      return \"\";\n    },\n  },\n  data: () => ({\n    content: [],\n    history: [],\n    historyPos: 0,\n    canInput: true,\n    shellDrag: false,\n    shellHeight: 25,\n    fontsize: parseFloat(getComputedStyle(document.documentElement).fontSize),\n  }),\n  mounted() {\n    window.addEventListener(\"resize\", this.resize);\n  },\n  beforeUnmount() {\n    window.removeEventListener(\"resize\", this.resize);\n  },\n  methods: {\n    ...mapActions(useLayoutStore, [\"toggleShell\"]),\n    checkTheme() {\n      if (theme == \"dark\") {\n        return \"rgba(255, 255, 255, 0.4)\";\n      }\n      return \"rgba(127, 127, 127, 0.4)\";\n    },\n    startDrag() {\n      document.addEventListener(\"pointermove\", this.handleDrag);\n      this.shellDrag = true;\n    },\n    stopDrag() {\n      document.removeEventListener(\"pointermove\", this.handleDrag);\n      this.shellDrag = false;\n    },\n    handleDrag: throttle(function (event) {\n      const top = window.innerHeight / this.fontsize - 4;\n      const userPos = (window.innerHeight - event.clientY) / this.fontsize;\n      const bottom =\n        2.25 +\n        document.querySelector(\".shell__divider\").offsetHeight / this.fontsize;\n\n      if (userPos <= top && userPos >= bottom) {\n        this.shellHeight = userPos.toFixed(2);\n      }\n    }, 32),\n    resize: throttle(function () {\n      const top = window.innerHeight / this.fontsize - 4;\n      const bottom =\n        2.25 +\n        document.querySelector(\".shell__divider\").offsetHeight / this.fontsize;\n\n      if (this.shellHeight > top) {\n        this.shellHeight = top;\n      } else if (this.shellHeight < bottom) {\n        this.shellHeight = bottom;\n      }\n    }, 32),\n    scroll: function () {\n      this.$refs.scrollable.scrollTop = this.$refs.scrollable.scrollHeight;\n    },\n    focus: function () {\n      this.$refs.input.focus();\n    },\n    historyUp() {\n      if (this.historyPos > 0) {\n        this.$refs.input.innerText = this.history[--this.historyPos];\n        this.focus();\n      }\n    },\n    historyDown() {\n      if (this.historyPos >= 0 && this.historyPos < this.history.length - 1) {\n        this.$refs.input.innerText = this.history[++this.historyPos];\n        this.focus();\n      } else {\n        this.historyPos = this.history.length;\n        this.$refs.input.innerText = \"\";\n      }\n    },\n    submit: function (event) {\n      const cmd = event.target.innerText.trim();\n\n      if (cmd === \"\") {\n        return;\n      }\n\n      if (cmd === \"clear\") {\n        this.content = [];\n        event.target.innerHTML = \"\";\n        return;\n      }\n\n      if (cmd === \"exit\") {\n        event.target.innerHTML = \"\";\n        this.toggleShell();\n        return;\n      }\n\n      this.canInput = false;\n      event.target.innerHTML = \"\";\n\n      const results = {\n        text: `${cmd}\\n\\n`,\n      };\n\n      this.history.push(cmd);\n      this.historyPos = this.history.length;\n      this.content.push(results);\n\n      commands(\n        this.path,\n        cmd,\n        (event) => {\n          results.text += `${event.data}\\n`;\n          this.scroll();\n        },\n        () => {\n          results.text = results.text\n\n            .replace(/\\u001b\\[[0-9;]+m/g, \"\") // Filter ANSI color for now\n            .trimEnd();\n          this.canInput = true;\n          this.$refs.input.focus();\n          this.scroll();\n        }\n      );\n    },\n  },\n};\n</script>\n",
+      "originalSource": {
+        "project": "filebrowser",
+        "file": "frontend/src/components/Shell.vue",
+        "url": "https://raw.githubusercontent.com/filebrowser/filebrowser/833d908884d5c801f30f5c098d7977177eb3a36b/frontend/src/components/Shell.vue",
+        "sha256": "ec0ab88ec218286c69f2861da8c58eae8216180a2a03814b3c82960bcbb45661",
+        "size": 5118
+      },
+      "sourceSha256": "ec0ab88ec218286c69f2861da8c58eae8216180a2a03814b3c82960bcbb45661",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 5,
+              "column": 26,
+              "messageId": "unexpected",
+              "endLine": 5,
+              "endColumn": 30,
+              "fix": {
+                "range": [
+                  108,
+                  124
+                ],
+                "text": "shellHeight"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 11,
+              "column": 15,
+              "messageId": "unexpected",
+              "endLine": 11,
+              "endColumn": 19,
+              "fix": {
+                "range": [
+                  269,
+                  283
+                ],
+                "text": "shellDrag"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 42,
+              "column": 15,
+              "messageId": "unexpected",
+              "endLine": 42,
+              "endColumn": 19,
+              "fix": {
+                "range": [
+                  1243,
+                  1257
+                ],
+                "text": "shellDrag"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 3,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 3
+        }
+      ],
+      "expected": [
+        {
+          "start": 108,
+          "end": 112
+        },
+        {
+          "start": 269,
+          "end": 273
+        },
+        {
+          "start": 1243,
+          "end": 1247
+        }
+      ]
+    },
+    {
+      "id": "douyin-original",
+      "filename": "src/pages/home/components/PlayFeedback.vue",
+      "source": "<template>\n  <transition name=\"fade\">\n    <div class=\"play-feedback\" v-if=\"modelValue\">\n      <div class=\"feedback-header\">\n        <span>&nbsp;</span>\n        <div class=\"title\">播放反馈</div>\n        <dy-back mode=\"dark\" img=\"close\" @click=\"cancel\"></dy-back>\n      </div>\n      <div class=\"content\">\n        <div class=\"notice\">请选择要反馈的问题</div>\n        <div\n          class=\"l-row\"\n          @click=\"\n            falseOther(() => {\n              this.type1 = true\n            })\n          \"\n        >\n          <Check\n            mode=\"red\"\n            :modelValue=\"type1\"\n            @change=\"\n              falseOther(() => {\n                this.type1 = true\n              })\n            \"\n          />\n          <span>网络正常无法播放视频</span>\n        </div>\n        <div\n          class=\"l-row\"\n          @click=\"\n            falseOther(() => {\n              this.type2 = true\n            })\n          \"\n        >\n          <Check\n            mode=\"red\"\n            :modelValue=\"type2\"\n            @change=\"\n              falseOther(() => {\n                this.type2 = true\n              })\n            \"\n          />\n          <span>视频画面正常没声音</span>\n        </div>\n        <div\n          class=\"l-row\"\n          @click=\"\n            falseOther(() => {\n              this.type3 = true\n            })\n          \"\n        >\n          <Check\n            mode=\"red\"\n            :modelValue=\"type3\"\n            @change=\"\n              falseOther(() => {\n                this.type3 = true\n              })\n            \"\n          />\n          <span>播放几秒/中途卡信</span>\n        </div>\n        <div\n          class=\"l-row\"\n          @click=\"\n            falseOther(() => {\n              this.type4 = true\n            })\n          \"\n        >\n          <Check\n            mode=\"red\"\n            :modelValue=\"type4\"\n            @change=\"\n              falseOther(() => {\n                this.type4 = true\n              })\n            \"\n          />\n          <span>画面内容不全</span>\n        </div>\n        <div\n          class=\"l-row\"\n          @click=\"\n            falseOther(() => {\n              this.type5 = true\n            })\n          \"\n        >\n          <Check\n            mode=\"red\"\n            :modelValue=\"type5\"\n            @change=\"\n              falseOther(() => {\n                this.type5 = true\n              })\n            \"\n          />\n          <span>播放过程中闪退回桌面</span>\n        </div>\n        <div\n          class=\"l-row\"\n          @click=\"\n            falseOther(() => {\n              this.type6 = true\n            })\n          \"\n        >\n          <Check\n            mode=\"red\"\n            :modelValue=\"type6\"\n            @change=\"\n              falseOther(() => {\n                this.type6 = true\n              })\n            \"\n          />\n          <span>画面模糊不清晰</span>\n        </div>\n        <div\n          class=\"l-row\"\n          @click=\"\n            falseOther(() => {\n              this.type7 = true\n            })\n          \"\n        >\n          <Check\n            mode=\"red\"\n            :modelValue=\"type7\"\n            @change=\"\n              falseOther(() => {\n                this.type7 = true\n              })\n            \"\n          />\n          <span>视频播放其他问题或建议</span>\n        </div>\n        <div v-if=\"type7\" class=\"other\">\n          <div class=\"textarea-ctn\">\n            <textarea\n              name=\"\"\n              id=\"\"\n              cols=\"30\"\n              rows=\"10\"\n              v-model=\"desc\"\n              placeholder=\"详输入内容\"\n            ></textarea>\n          </div>\n          <div class=\"text-num\">{{ desc.length }}/300</div>\n        </div>\n        <dy-button type=\"primary\" :disabled=\"!disabled\" @click=\"submit\">提交</dy-button>\n      </div>\n    </div>\n  </transition>\n</template>\n<script>\nimport Check from '../../../components/Check'\nimport { _hideLoading, _notice, _showLoading, _sleep } from '@/utils'\n\nexport default {\n  name: 'Test',\n  props: {\n    modelValue: {\n      type: Boolean,\n      default() {\n        return false\n      }\n    }\n  },\n  components: {\n    Check\n  },\n  watch: {\n    modelValue() {\n      this.type1 = false\n      this.type2 = false\n      this.type3 = false\n      this.type4 = false\n      this.type5 = false\n      this.type6 = false\n      this.type7 = false\n      this.desc = ''\n    }\n  },\n  data() {\n    return {\n      type1: false,\n      type2: false,\n      type3: false,\n      type4: false,\n      type5: false,\n      type6: false,\n      type7: false,\n      desc: ''\n    }\n  },\n  computed: {\n    disabled() {\n      if (this.type7 && this.desc) return true\n      return this.type1 || this.type2 || this.type3 || this.type4 || this.type5 || this.type6\n    }\n  },\n  created() {},\n  methods: {\n    falseOther(cb) {\n      this.type1 = false\n      this.type2 = false\n      this.type3 = false\n      this.type4 = false\n      this.type5 = false\n      this.type6 = false\n      this.type7 = false\n      cb()\n    },\n    cancel() {\n      this.$emit('update:modelValue', false)\n    },\n    async submit() {\n      this.cancel()\n      _showLoading()\n      await _sleep(1000)\n      _hideLoading()\n      _notice('感谢你的反馈，我们会尽快答复！')\n    }\n  }\n}\n</script>\n\n<style scoped lang=\"less\">\n@import '../../../assets/less/index';\n\n.play-feedback {\n  max-height: 490rem;\n  overflow: auto;\n  background: #fff;\n  color: black;\n  position: fixed;\n  bottom: 50rem;\n  left: 0;\n  right: 0;\n\n  .feedback-header {\n    position: fixed;\n    left: 0;\n    right: 0;\n    background: white;\n    height: 30rem;\n    padding: 15rem;\n    display: flex;\n    justify-content: space-between;\n    align-items: flex-start;\n    font-weight: bold;\n    font-size: 18rem;\n  }\n\n  .content {\n    padding: 60rem 15rem 15rem 15rem;\n  }\n\n  .notice {\n    font-size: 12rem;\n    color: var(--second-text-color);\n  }\n\n  .l-row {\n    display: flex;\n    align-items: center;\n    min-height: 50rem;\n    font-size: 14rem;\n    border-bottom: 1px solid #f1f1f1;\n\n    .check {\n      width: 20rem;\n      height: 20rem;\n      margin-right: 10rem;\n    }\n  }\n\n  .no-border {\n    border-bottom: none;\n  }\n\n  .other {\n    .textarea-ctn {\n      width: 100%;\n      background: #eae8e8;\n      padding: 15rem;\n      box-sizing: border-box;\n      margin-top: 10rem;\n      border-radius: 2px;\n\n      textarea {\n        font-family: 'Microsoft YaHei UI';\n        outline: none;\n        width: 100%;\n        border: none;\n        background: transparent;\n        color: black;\n\n        &::placeholder {\n          color: var(--second-text-color);\n        }\n      }\n    }\n\n    .text-num {\n      margin-top: 8rem;\n      margin-bottom: 8rem;\n      font-size: 10rem;\n      color: var(--second-text-color);\n      text-align: right;\n    }\n  }\n}\n</style>\n",
+      "originalSource": {
+        "project": "douyin",
+        "file": "src/pages/home/components/PlayFeedback.vue",
+        "url": "https://raw.githubusercontent.com/zyronon/douyin/8cc6172c737dfaf0c914a2b27cdfee4eb2306f2e/src/pages/home/components/PlayFeedback.vue",
+        "sha256": "295494953df9739ba60ab85db0f461be26d01e3f3023fdfe7f411023381ece53",
+        "size": 6812
+      },
+      "sourceSha256": "295494953df9739ba60ab85db0f461be26d01e3f3023fdfe7f411023381ece53",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 15,
+              "column": 15,
+              "messageId": "unexpected",
+              "endLine": 15,
+              "endColumn": 19,
+              "fix": {
+                "range": [
+                  444,
+                  454
+                ],
+                "text": "type1"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 24,
+              "column": 17,
+              "messageId": "unexpected",
+              "endLine": 24,
+              "endColumn": 21,
+              "fix": {
+                "range": [
+                  642,
+                  652
+                ],
+                "text": "type1"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 34,
+              "column": 15,
+              "messageId": "unexpected",
+              "endLine": 34,
+              "endColumn": 19,
+              "fix": {
+                "range": [
+                  854,
+                  864
+                ],
+                "text": "type2"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 43,
+              "column": 17,
+              "messageId": "unexpected",
+              "endLine": 43,
+              "endColumn": 21,
+              "fix": {
+                "range": [
+                  1052,
+                  1062
+                ],
+                "text": "type2"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 53,
+              "column": 15,
+              "messageId": "unexpected",
+              "endLine": 53,
+              "endColumn": 19,
+              "fix": {
+                "range": [
+                  1263,
+                  1273
+                ],
+                "text": "type3"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 62,
+              "column": 17,
+              "messageId": "unexpected",
+              "endLine": 62,
+              "endColumn": 21,
+              "fix": {
+                "range": [
+                  1461,
+                  1471
+                ],
+                "text": "type3"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 72,
+              "column": 15,
+              "messageId": "unexpected",
+              "endLine": 72,
+              "endColumn": 19,
+              "fix": {
+                "range": [
+                  1672,
+                  1682
+                ],
+                "text": "type4"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 81,
+              "column": 17,
+              "messageId": "unexpected",
+              "endLine": 81,
+              "endColumn": 21,
+              "fix": {
+                "range": [
+                  1870,
+                  1880
+                ],
+                "text": "type4"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 91,
+              "column": 15,
+              "messageId": "unexpected",
+              "endLine": 91,
+              "endColumn": 19,
+              "fix": {
+                "range": [
+                  2078,
+                  2088
+                ],
+                "text": "type5"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 100,
+              "column": 17,
+              "messageId": "unexpected",
+              "endLine": 100,
+              "endColumn": 21,
+              "fix": {
+                "range": [
+                  2276,
+                  2286
+                ],
+                "text": "type5"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 110,
+              "column": 15,
+              "messageId": "unexpected",
+              "endLine": 110,
+              "endColumn": 19,
+              "fix": {
+                "range": [
+                  2488,
+                  2498
+                ],
+                "text": "type6"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 119,
+              "column": 17,
+              "messageId": "unexpected",
+              "endLine": 119,
+              "endColumn": 21,
+              "fix": {
+                "range": [
+                  2686,
+                  2696
+                ],
+                "text": "type6"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 129,
+              "column": 15,
+              "messageId": "unexpected",
+              "endLine": 129,
+              "endColumn": 19,
+              "fix": {
+                "range": [
+                  2895,
+                  2905
+                ],
+                "text": "type7"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 138,
+              "column": 17,
+              "messageId": "unexpected",
+              "endLine": 138,
+              "endColumn": 21,
+              "fix": {
+                "range": [
+                  3093,
+                  3103
+                ],
+                "text": "type7"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 14,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 14
+        }
+      ],
+      "expected": [
+        {
+          "start": 470,
+          "end": 474
+        },
+        {
+          "start": 668,
+          "end": 672
+        },
+        {
+          "start": 900,
+          "end": 904
+        },
+        {
+          "start": 1098,
+          "end": 1102
+        },
+        {
+          "start": 1327,
+          "end": 1331
+        },
+        {
+          "start": 1525,
+          "end": 1529
+        },
+        {
+          "start": 1752,
+          "end": 1756
+        },
+        {
+          "start": 1950,
+          "end": 1954
+        },
+        {
+          "start": 2170,
+          "end": 2174
+        },
+        {
+          "start": 2368,
+          "end": 2372
+        },
+        {
+          "start": 2600,
+          "end": 2604
+        },
+        {
+          "start": 2798,
+          "end": 2802
+        },
+        {
+          "start": 3021,
+          "end": 3025
+        },
+        {
+          "start": 3219,
+          "end": 3223
+        }
+      ]
+    },
+    {
+      "id": "for-of",
+      "filename": "control.vue",
+      "source": "<template><div v-for=\"(item, index) of this.items\">{{ item }}</div></template>",
+      "sourceSha256": "2d74994cff8c1d4cdf31ef073e7359275842c334997447c6e4d6c03f608e358d",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 40,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 44,
+              "fix": {
+                "range": [
+                  39,
+                  49
+                ],
+                "text": "items"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 1
+        }
+      ],
+      "expected": [
+        {
+          "start": 39,
+          "end": 43
+        }
+      ]
+    },
+    {
+      "id": "for-in",
+      "filename": "control.vue",
+      "source": "<template><div v-for=\"(item, index) in this.items\">{{ item }}</div></template>",
+      "sourceSha256": "7d6b2a4690958cd5f53ff448966c5fcac9390c1cdbaf09855c9031f57e8e441c",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 40,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 44,
+              "fix": {
+                "range": [
+                  39,
+                  49
+                ],
+                "text": "items"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 1
+        }
+      ],
+      "expected": [
+        {
+          "start": 39,
+          "end": 43
+        }
+      ]
+    },
+    {
+      "id": "for-default",
+      "filename": "control.vue",
+      "source": "<template><div v-for=\"({value = this.initial}, index) of this.items\">{{ value }}</div></template>",
+      "sourceSha256": "f6b5b4b1f4bb681795fe8457d1d6895b4b7ddc4f0eee37265efe3b7bb83ad667",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 33,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 37,
+              "fix": {
+                "range": [
+                  32,
+                  44
+                ],
+                "text": "initial"
+              }
+            },
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 58,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 62,
+              "fix": {
+                "range": [
+                  57,
+                  67
+                ],
+                "text": "items"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 2
+        }
+      ],
+      "expected": [
+        {
+          "start": 32,
+          "end": 36
+        },
+        {
+          "start": 57,
+          "end": 61
+        }
+      ]
+    },
+    {
+      "id": "slot-default",
+      "filename": "control.vue",
+      "source": "<template><Comp v-slot=\"{ value = this.initial }\">{{ value }}</Comp></template>",
+      "sourceSha256": "5aa234695c5d568c3678876690dc876b69ca0a87766884dc4c9799673c0902d4",
+      "reference": [
+        {
+          "messages": [
+            {
+              "ruleId": "vue/this-in-template",
+              "severity": 1,
+              "message": "Unexpected usage of 'this'.",
+              "line": 1,
+              "column": 35,
+              "messageId": "unexpected",
+              "endLine": 1,
+              "endColumn": 39,
+              "fix": {
+                "range": [
+                  34,
+                  46
+                ],
+                "text": "initial"
+              }
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1,
+          "fatalErrorCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 1
+        }
+      ],
+      "expected": [
+        {
+          "start": 34,
+          "end": 38
+        }
+      ]
+    }
+  ]
+}

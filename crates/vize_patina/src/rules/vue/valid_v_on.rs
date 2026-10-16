@@ -94,8 +94,37 @@ impl Rule for ValidVOn {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
+        self.check_on_directive(ctx, directive, &[]);
+    }
+}
+
+impl ValidVOn {
+    /// Custom modifier names supplement the built-in and keyboard modifiers.
+    pub fn with_modifiers(modifiers: Vec<vize_l0::String>) -> impl Rule {
+        ConfiguredValidVOn { modifiers }
+    }
+
+    fn check_on_directive<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        directive: &DirectiveNode<'a>,
+        custom_modifiers: &[vize_l0::String],
+    ) {
         if directive.name != "on" {
             return;
+        }
+
+        for modifier in &directive.modifiers {
+            if !is_valid_modifier(modifier.content, custom_modifiers) {
+                ctx.error_with_help(
+                    ctx.t_fmt(
+                        "vue/valid-v-on.unsupported_modifier",
+                        &[("modifier", modifier.content)],
+                    ),
+                    &modifier.loc,
+                    ctx.t("vue/valid-v-on.modifier_help"),
+                );
+            }
         }
 
         let has_arg = directive.arg.is_some();
@@ -123,9 +152,12 @@ impl Rule for ValidVOn {
         // Event syntax: @click="handler"
         if has_arg {
             if !has_exp {
-                // @click without handler - check if it's an inline listener like @click.prevent
-                let has_modifiers = !directive.modifiers.is_empty();
-                if !has_modifiers {
+                // Only action modifiers provide behavior without a handler.
+                let has_verb = directive
+                    .modifiers
+                    .iter()
+                    .any(|modifier| matches!(modifier.content, "stop" | "prevent"));
+                if !has_verb {
                     ctx.error_with_help(
                         ctx.t("vue/valid-v-on.missing_event"),
                         &directive.loc,
@@ -143,6 +175,61 @@ impl Rule for ValidVOn {
             ctx.t("vue/valid-v-on.help"),
         );
     }
+}
+
+struct ConfiguredValidVOn {
+    modifiers: Vec<vize_l0::String>,
+}
+
+impl Rule for ConfiguredValidVOn {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn check_directive<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        _element: &ElementNode<'a>,
+        directive: &DirectiveNode<'a>,
+    ) {
+        ValidVOn.check_on_directive(ctx, directive, &self.modifiers);
+    }
+}
+
+#[path = "valid_v_on/key_aliases.rs"]
+mod key_aliases;
+
+const VALID_MODIFIERS: &[&str] = &[
+    "stop", "prevent", "capture", "self", "ctrl", "shift", "alt", "meta", "native", "once", "left",
+    "right", "middle", "passive", "esc", "tab", "enter", "space", "up", "down", "delete", "exact",
+];
+
+fn is_valid_modifier(modifier: &str, custom: &[vize_l0::String]) -> bool {
+    VALID_MODIFIERS.contains(&modifier)
+        || modifier.chars().count() == 1
+        || key_aliases::KEY_ALIASES.binary_search(&modifier).is_ok()
+        || custom.iter().any(|name| name == modifier)
+        || has_integer_prefix(modifier)
+}
+
+/// Match Number.isInteger(Number.parseInt(value, 10)), including trailing text,
+/// signs, ECMAScript whitespace, and overflow to Infinity. Numeric deprecation
+/// diagnostics belong to the separate no-deprecated-v-on-number-modifiers rule.
+fn has_integer_prefix(value: &str) -> bool {
+    let value = value.trim_start_matches(|c| {
+        matches!(c,
+            '\u{0009}'..='\u{000d}' | ' ' | '\u{00a0}' | '\u{1680}' |
+            '\u{2000}'..='\u{200a}' | '\u{2028}' | '\u{2029}' | '\u{202f}' |
+            '\u{205f}' | '\u{3000}' | '\u{feff}'
+        )
+    });
+    let digits = value.strip_prefix(['+', '-']).unwrap_or(value);
+    let len = digits.bytes().take_while(u8::is_ascii_digit).count();
+    len > 0
+        && digits
+            .get(..len)
+            .and_then(|prefix| prefix.parse::<f64>().ok())
+            .is_some_and(f64::is_finite)
 }
 
 /// Check if expression is empty
@@ -163,63 +250,5 @@ fn is_keyword_expression(exp: &ExpressionNode) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::ValidVOn;
-    use crate::linter::Linter;
-    use crate::rule::RuleRegistry;
-
-    fn create_linter() -> Linter {
-        let mut registry = RuleRegistry::new();
-        registry.register(Box::new(ValidVOn));
-        Linter::with_registry(registry)
-    }
-
-    #[test]
-    fn test_valid_v_on_click() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div @click="handleClick"></div>"#, "test.vue");
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_v_on_long_form() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div v-on:click="handleClick"></div>"#, "test.vue");
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_v_on_modifier_only() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<form @submit.prevent></form>"#, "test.vue");
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_v_on_no_handler() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div @click></div>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_v_on_keyword_handler() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div @click="for"></div>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_v_on_keyword_object_syntax() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div v-on="class"></div>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_valid_v_on_literal_handler_expression() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div @click="true"></div>"#, "test.vue");
-        assert_eq!(result.error_count, 0);
-    }
-}
+#[path = "valid_v_on/tests.rs"]
+mod tests;

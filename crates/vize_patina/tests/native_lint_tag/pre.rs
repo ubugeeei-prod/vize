@@ -1,5 +1,25 @@
 use super::*;
 
+/// Derive the corrected kinds from the untouched original template bytes,
+/// independently of both the registered L2 facade and native header facts.
+fn assert_original_parser_kinds(source: &str, actual: &[Observation]) {
+    let arena = Allocator::default();
+    let owner = selected(&arena, source);
+    let (root, errors) =
+        vize_armature::Parser::new(&arena, owner.component().block().source()).parse();
+    assert!(errors.is_empty(), "{errors:?}");
+    let document =
+        vize_patina::markup::MarkupDocument::new(&root, vize_patina::ir::TemplateSyntax::Vue);
+    let mut expected = Vec::new();
+    document
+        .walk_elements(&mut |element| expected.push((element.tag().to_owned(), element.kind())));
+    let actual = actual
+        .iter()
+        .map(|item| (item.tag.clone(), item.kind))
+        .collect::<Vec<_>>();
+    assert_eq!(actual, expected, "original parser kinds for {source}");
+}
+
 #[test]
 fn exact_and_inherited_pre_keep_real_registered_output_and_component_exemptions() {
     let source = "<template><section v-pre autofocus><template v-if='ok' autofocus><slot autofocus></slot><Foo autofocus/></template><input :autofocus='ignored' autofocus /></section><input :autofocus='enabled' /></template>";
@@ -13,6 +33,7 @@ fn exact_and_inherited_pre_keep_real_registered_output_and_component_exemptions(
     ));
     for locale in [Locale::En, Locale::Ja, Locale::Zh] {
         let (output, result) = observed(source, locale, &owner);
+        assert_original_parser_kinds(source, &output);
         assert_eq!(
             output
                 .iter()
@@ -20,7 +41,7 @@ fn exact_and_inherited_pre_keep_real_registered_output_and_component_exemptions(
                 .collect::<Vec<_>>(),
             [
                 ("section", MarkupElementKind::Element),
-                ("template", MarkupElementKind::Template),
+                ("template", MarkupElementKind::Element),
                 ("slot", MarkupElementKind::Slot),
                 ("Foo", MarkupElementKind::Component),
                 ("input", MarkupElementKind::Element),
@@ -40,6 +61,7 @@ fn exact_and_inherited_pre_keep_real_registered_output_and_component_exemptions(
             "<template><template {attributes} v-if='ok' autofocus><Foo autofocus/><input :autofocus='opaque' autofocus /></template></template>"
         );
         let (output, result) = parity(&source, Locale::En);
+        assert_original_parser_kinds(&source, &output);
         assert_eq!(output[0].kind, MarkupElementKind::Template);
         assert_eq!(output[1].kind, MarkupElementKind::Component);
         assert_eq!(result.error_count, 0);
@@ -74,6 +96,7 @@ fn modified_pre_refusals_preserve_the_unfiltered_registered_oracle_control() {
         );
         for locale in [Locale::En, Locale::Ja, Locale::Zh] {
             let (output, result) = observed(&source, locale, &owner);
+            assert_original_parser_kinds(&source, &output);
             assert_eq!(
                 output
                     .iter()

@@ -38,6 +38,8 @@
 //! ```
 
 mod assertion_types;
+mod location;
+use location::filter_location;
 mod scan;
 use scan::{
     find_arrow_after_type, is_arrow_at, push_param_type_spans, regex_allowed, skip_regex,
@@ -48,6 +50,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
+use vize_l1::markup::entity::EntityContext;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, InterpolationNode};
 
 static META: RuleMeta = RuleMeta {
@@ -81,10 +84,12 @@ impl Rule for NoDeprecatedFilter {
             return;
         };
 
-        if has_filter_pipe(exp.content) {
+        if let Some(location) = filter_location(exp, ctx.source, EntityContext::Text) {
             ctx.error_with_help(
                 ctx.t("vue/no-deprecated-filter.message"),
-                &interpolation.loc,
+                // Match the filter sequence itself, excluding interpolation
+                // delimiters and surrounding whitespace, as in bound values.
+                &location,
                 ctx.t("vue/no-deprecated-filter.help"),
             );
         }
@@ -111,10 +116,10 @@ impl Rule for NoDeprecatedFilter {
             return;
         };
 
-        if has_filter_pipe(exp.content) {
+        if let Some(location) = filter_location(exp, ctx.source, EntityContext::Attribute) {
             ctx.error_with_help(
                 ctx.t("vue/no-deprecated-filter.message"),
-                &exp.loc,
+                &location,
                 ctx.t("vue/no-deprecated-filter.help"),
             );
         }
@@ -124,6 +129,11 @@ impl Rule for NoDeprecatedFilter {
 /// JSX never had filters: a `|` there is a bitwise OR or a type union.
 fn is_jsx(ctx: &LintContext<'_>) -> bool {
     ctx.filename.ends_with(".jsx") || ctx.filename.ends_with(".tsx")
+}
+
+#[cfg(test)]
+fn has_filter_pipe(expr: &str) -> bool {
+    find_filter_pipe(expr).is_some()
 }
 
 /// Whether `expr` contains a Vue 2 filter pipe (`|` used as a filter operator).
@@ -136,7 +146,7 @@ fn is_jsx(ctx: &LintContext<'_>) -> bool {
 /// union, not a filter. Any remaining single `|` is a filter pipe — Vue 3 has
 /// no bitwise-OR meaning for template expressions that would clash, and
 /// eslint-plugin-vue treats a lone `|` the same way.
-fn has_filter_pipe(expr: &str) -> bool {
+fn find_filter_pipe(expr: &str) -> Option<usize> {
     let mut type_spans = arrow_param_type_spans(expr);
     let mut checked_assertion_types = false;
     let bytes = expr.as_bytes();
@@ -192,7 +202,7 @@ fn has_filter_pipe(expr: &str) -> bool {
                 }
                 // A `|` preceded by `|` (the second half of `||`) was already
                 // consumed above, so any `|` reaching here is a lone pipe.
-                return true;
+                return Some(i);
             }
             _ => {
                 if !c.is_ascii_whitespace() {
@@ -203,7 +213,7 @@ fn has_filter_pipe(expr: &str) -> bool {
         }
     }
 
-    false
+    None
 }
 
 /// Spans of TypeScript annotations in arrow parameters and return types.

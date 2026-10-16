@@ -125,10 +125,40 @@ pub fn attribute_source_offset(source: &str, decoded: u32) -> u32 {
     }
 }
 
+/// Project an AST byte span only when its complete decoded input authenticates
+/// the authored attribute window. Both endpoints use the canonical entity map;
+/// generated or stale expression locations do not become plausible ranges.
+pub fn attribute_source_span(source: &str, decoded: &str, span: Span) -> Option<Span> {
+    decoded.get(span.start as usize..span.end as usize)?;
+    if source == decoded {
+        return Some(span);
+    }
+    let attribute = Attribute::new(source);
+    if attribute.text.as_str() != decoded {
+        return None;
+    }
+    Some(Span::new(
+        attribute.offset(span.start),
+        attribute.offset(span.end),
+    ))
+}
+
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use super::*;
+
+    #[test]
+    fn decoded_ast_ranges_require_the_complete_original_attribute_window() {
+        let authored = "{ value = &quot;&amp;&quot;, &#105;tem }";
+        let decoded = "{ value = \"&\", item }";
+        let start = decoded.find("item").unwrap() as u32;
+        let span = attribute_source_span(authored, decoded, Span::new(start, start + 4)).unwrap();
+        assert_eq!(span.source_text(authored), "&#105;tem");
+        assert!(attribute_source_span(authored, "stale", Span::new(0, 1)).is_none());
+        assert!(attribute_source_span("item", "item", Span::new(0, 5)).is_none());
+        assert!(attribute_source_span("é", "é", Span::new(1, 2)).is_none());
+    }
 
     #[test]
     fn entities_preserve_binding_guard_and_error_offsets() {

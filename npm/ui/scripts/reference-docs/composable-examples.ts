@@ -22,6 +22,16 @@ import { deviceExamples } from "./device-examples.ts";
 
 const stateExamples = [
   {
+    name: "virtual-list",
+    title: "Browse a thousand guides",
+    purpose:
+      "Keep a long, searchable catalogue responsive by rendering only the rows near its visible area.",
+    observe:
+      "Focus the list and use Page Down, Home or End, or activate Last result. The rendered positions move through 1,000 guides while only a few rows exist at once. Search for 099 to see eleven matches, then try missing for the empty state. Searching returns to the first match without moving focus from the input.",
+    context:
+      "The complete example uses local sample data, not a server request. Each row must occupy exactly the declared 40 CSS pixels, including padding and borders. `overscan: 2` keeps two additional rows on either side; the container's 200px height determines the visible area. Bind `containerProps` to the scroll region and `wrapperProps.style` to its inner list, then render `list` rather than the entire source. `scrollTo()` takes a zero-based position in the filtered list. The first seven rows render on the server; measurement and scroll tracking belong to the component scope. Only currently rendered rows are available to browser Find and screen readers. Position and total-count attributes describe them, but do not make the other rows available: use search to narrow the catalogue, and prefer pagination or a complete list when every item must be readable or contain focusable controls.",
+  },
+  {
     name: "use-toggle",
     title: "Show delivery details",
     purpose:

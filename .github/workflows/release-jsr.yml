@@ -119,4 +119,6 @@ jobs:
       - name: Import the published entry points (Deno)
         if: matrix.runtime == 'deno'
         working-directory: ${{ runner.temp }}/consumer
-        run: deno run --allow-all consumer.ts "jsr:@vizejs/vize@${JSR_VERSION#v}"
+        run: |
+          cp "$GITHUB_WORKSPACE/tools/support/release/jsr/consumer-deno.json" deno.json
+          deno run --config deno.json --allow-all consumer.ts "jsr:@vizejs/vize@${JSR_VERSION#v}"

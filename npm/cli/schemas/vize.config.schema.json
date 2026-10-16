@@ -640,6 +640,18 @@
           "type": "string",
           "enum": ["always", "never"]
         },
+        "vue/valid-v-on": {
+          "type": "object",
+          "properties": {
+            "modifiers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/valid-v-slot": {
           "type": "object",
           "properties": {

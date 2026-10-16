@@ -3,18 +3,15 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::FxHashSet;
-use vize_l0::id::NodeId;
 use vize_l1_to_l2::TransformContent;
 use vize_l2::expr::ExprRef;
-use vize_l2::op::{self as l2, Op};
+use vize_l2::op as l2;
 
 use super::spans::{expression_span, quoted_value};
 use super::{Emitter, Flags, Result};
 use crate::codegen::helpers::extract_destructure_params;
-use crate::l4::string_plan::{
-    SsrSegmentSource as Source, SsrStringSegment, SsrStringSegmentKind as Kind,
-};
-use crate::l4::{AdmissionFailure, LegacyReason};
+use crate::l4::LegacyReason;
+use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `process_if`: one `if` / `else if` / `else` block per branch, and an
@@ -68,7 +65,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             let shape = self.scan_region(self.pos)?;
             self.branch_key = self.branch_key_span(fact, index)?;
             let emitted = self.children(Flags {
-                as_fragment: !disable_nested_fragments && shape.legacy_children > 1,
+                as_fragment: !disable_nested_fragments
+                    && shape.needs_branch_fragment(self.segment(self.pos)?.kind),
                 disable_nested_fragments,
                 disable_comments: false,
                 inherit_attrs,
@@ -108,7 +106,6 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// fragment markers, with the body inside the aliases' scope.
     pub(super) fn for_loop(
         &mut self,
-        open: SsrStringSegment<'r, 'a>,
         for_op: &'r l2::ForOp<'a>,
         disable_nested_fragments: bool,
     ) -> Result<()> {
@@ -118,7 +115,6 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let value = alias(&binding.value)?;
         let key = binding.key.as_ref().map(alias).transpose()?;
         let index = binding.index.as_ref().map(alias).transpose()?;
-        let keyed_template = self.keyed_template(open.fact, &for_op.region.ops)?;
 
         self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderList);
@@ -148,8 +144,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let body = self.scan_region(self.pos).and_then(|shape| {
             self.children(Flags {
                 as_fragment: !disable_nested_fragments
-                    && (shape.legacy_children > 1 || keyed_template),
-                disable_nested_fragments: true,
+                    && shape.needs_loop_fragment(self.segment(self.pos)?.kind),
+                // A loop callback starts a new range context. The incoming
+                // suppression only controls this loop's own wrappers.
+                disable_nested_fragments: false,
                 disable_comments: false,
                 inherit_attrs: false,
                 css_vars: false,
@@ -179,19 +177,6 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             Some(span) => self.ctx.push_expression_text(code, span),
             None => self.ctx.push(code),
         }
-    }
-
-    /// A keyed `<template v-for>` whose content is not one plain element
-    /// renders each item as its own fragment.
-    fn keyed_template(&self, fact: u32, ops: &[Op<'_>]) -> Result<bool> {
-        let id = NodeId::from_index(fact).ok_or(AdmissionFailure::Invalid(
-            "string plan fact index is not a node id",
-        ))?;
-        let Some(wrapper) = self.facts.for_wrappers.get(id) else {
-            return Ok(false);
-        };
-        let single_plain_element = matches!(ops, [Op::Element(_)]);
-        Ok(wrapper.key.is_some() && !single_plain_element)
     }
 }
 

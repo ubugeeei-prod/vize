@@ -9,6 +9,12 @@ on:
       - ".github/workflows/jsr-package.yml"
       - ".github/workflows/release-jsr.yml"
   workflow_dispatch:
+    inputs:
+      published-version:
+        description: Optionally verify an existing published JSR version read-only in a fresh Deno cache
+        type: string
+        required: false
+        default: ""
 permissions: { contents: read }
 concurrency:
   group: jsr-package-${{ github.event.pull_request.number || github.ref }}
@@ -21,18 +27,34 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version: "24", package-manager-cache: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", run-install: false }
+      - name: Install frozen tooling dependencies
+        run: vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
         with: { deno-version: "2.9.7" }
       - name: Test package generation
         run: node --test tests/tooling/jsr-package.test.ts tests/tooling/release-jsr-workflow.test.ts
+      - name: Verify scoped dependency age with the actual Deno runtime
+        env:
+          JSR_CONSUMER_PUBLISHED_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.published-version || '' }}
+        run: node tools/support/release/jsr/verify-consumer-age.mjs "$RUNNER_TEMP/jsr-consumer-age"
       - name: Generate the package for the checked-out release
         run: node tools/support/release/jsr/package.ts prepare "$RUNNER_TEMP/jsr-package"
       - name: Check the publication graph and public types
         working-directory: ${{ runner.temp }}/jsr-package
         run: deno publish --dry-run --config jsr.json
       - name: Import the staged entry points under Deno
+        env: { DENO_DIR: "${{ runner.temp }}/staged-jsr-deno" }
         run: |
           cp tools/support/release/jsr/consumer.ts "$RUNNER_TEMP/consumer.ts"
-          deno run --allow-all "$RUNNER_TEMP/consumer.ts" "file://$RUNNER_TEMP/jsr-package/"
+          cp tools/support/release/jsr/consumer-deno.json "$RUNNER_TEMP/consumer-deno.json"
+          deno run --config "$RUNNER_TEMP/consumer-deno.json" --allow-all "$RUNNER_TEMP/consumer.ts" "file://$RUNNER_TEMP/jsr-package/"
+      - name: Preserve actual Deno consumer commands and outcomes
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: jsr-consumer-age-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/jsr-consumer-age/
+          if-no-files-found: warn
+          retention-days: 14

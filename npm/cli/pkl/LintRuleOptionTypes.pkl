@@ -5,6 +5,10 @@ open class ContentDirectivesOptions {
   contentDirectives: Listing<String> = new Listing {}
 }
 
+class ValidVOnOptions {
+  modifiers: Listing<String> = new Listing {}
+}
+
 class ValidVSlotOptions {
   allowModifiers: Boolean = false
 }
