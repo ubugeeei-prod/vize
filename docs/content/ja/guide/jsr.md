@@ -55,8 +55,9 @@ const plugin = vize();
 ```bash
 mkdir vize-jsr-example
 cd vize-jsr-example
-curl -fsSL https://raw.githubusercontent.com/ubugeeei-prod/vize/main/tools/support/release/jsr/consumer-deno.json -o deno.json
-curl -fsSL https://raw.githubusercontent.com/ubugeeei-prod/vize/main/tools/support/release/jsr/consumer.ts -o consumer.ts
+VIZE_JSR_EXAMPLES=https://raw.githubusercontent.com/ubugeeei-prod/vize/1b6f856f4f276b853f649df42943a1fd5ac2798d/tools/support/release/jsr
+curl -fsSL "$VIZE_JSR_EXAMPLES/consumer-deno.json" -o deno.json
+curl -fsSL "$VIZE_JSR_EXAMPLES/consumer.ts" -o consumer.ts
 deno run --config deno.json --allow-all consumer.ts jsr:@vizejs/vize@0.457.0
 ```
 
