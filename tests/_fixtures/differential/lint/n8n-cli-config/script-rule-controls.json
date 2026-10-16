@@ -20,13 +20,14 @@
           "messages": [
             {
               "ruleId": "script/no-deprecated-dollar-listeners-api",
-              "ruleDocsPath": "docs/content/rules/script.md",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
               "severity": 2,
               "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
               "line": 4,
               "column": 27,
               "endLine": 4,
-              "endColumn": 37
+              "endColumn": 37,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
             }
           ],
           "errorCount": 1,
@@ -107,13 +108,14 @@
           "messages": [
             {
               "ruleId": "script/no-deprecated-dollar-scopedslots-api",
-              "ruleDocsPath": "docs/content/rules/script.md",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
               "severity": 2,
               "message": "[vize:script/no-deprecated-dollar-scopedslots-api] `$scopedSlots` was removed in Vue 3",
               "line": 4,
               "column": 27,
               "endLine": 4,
-              "endColumn": 39
+              "endColumn": 39,
+              "help": "Replace $scopedSlots with $slots. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists."
             }
           ],
           "errorCount": 1,
@@ -194,13 +196,14 @@
           "messages": [
             {
               "ruleId": "script/no-use-computed-property-like-method",
-              "ruleDocsPath": "docs/content/rules/script.md",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
               "severity": 2,
               "message": "[vize:script/no-use-computed-property-like-method] 'total' is a computed property and must not be called like a method.",
               "line": 4,
               "column": 30,
               "endLine": 4,
-              "endColumn": 42
+              "endColumn": 42,
+              "help": "A computed property exposes a value, not a function. Read it as this.<name> (drop the call parentheses), or move the logic into a method if you need to invoke it."
             }
           ],
           "errorCount": 1,
@@ -281,13 +284,14 @@
           "messages": [
             {
               "ruleId": "script/require-valid-default-prop",
-              "ruleDocsPath": "docs/content/rules/script.md",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
               "severity": 2,
               "message": "[vize:script/require-valid-default-prop] Type of the default value for 'count' prop must be a number.",
               "line": 3,
               "column": 44,
               "endLine": 3,
-              "endColumn": 51
+              "endColumn": 51,
+              "help": "Make the default a number (use a factory like () => ({}) for Object/Array props)."
             }
           ],
           "errorCount": 1,

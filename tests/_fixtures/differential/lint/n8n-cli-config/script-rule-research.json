@@ -39,13 +39,14 @@
           "messages": [
             {
               "ruleId": "script/no-deprecated-dollar-listeners-api",
-              "ruleDocsPath": "docs/content/rules/script.md",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
               "severity": 2,
               "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
               "line": 4,
               "column": 19,
               "endLine": 4,
-              "endColumn": 29
+              "endColumn": 29,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
             }
           ],
           "errorCount": 1,
@@ -88,13 +89,14 @@
           "messages": [
             {
               "ruleId": "script/no-deprecated-dollar-scopedslots-api",
-              "ruleDocsPath": "docs/content/rules/script.md",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
               "severity": 2,
               "message": "[vize:script/no-deprecated-dollar-scopedslots-api] `$scopedSlots` was removed in Vue 3",
               "line": 4,
               "column": 19,
               "endLine": 4,
-              "endColumn": 31
+              "endColumn": 31,
+              "help": "Replace $scopedSlots with $slots. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists."
             }
           ],
           "errorCount": 1,
@@ -118,13 +120,14 @@
           "messages": [
             {
               "ruleId": "script/no-use-computed-property-like-method",
-              "ruleDocsPath": "docs/content/rules/script.md",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
               "severity": 2,
               "message": "[vize:script/no-use-computed-property-like-method] 'total' is a computed property and must not be called like a method.",
               "line": 4,
               "column": 19,
               "endLine": 4,
-              "endColumn": 26
+              "endColumn": 26,
+              "help": "A computed property exposes a value, not a function. Drop the call parentheses ({{ name }}), or move the logic into a method if you need to invoke it."
             }
           ],
           "errorCount": 1,

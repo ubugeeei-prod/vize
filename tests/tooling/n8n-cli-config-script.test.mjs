@@ -26,6 +26,24 @@ const captures = (fixture) =>
 const check = (fixture, actual = captures(fixture)) =>
   assertSemanticOracles(actual, fixture.oracleCapture, fixture, validateScriptRuleCases);
 
+void test("native docs/help metadata repair preserves every semantic target and provider packet", () => {
+  for (const [fixture, expected] of [
+    [fixtures[0], "a7d8457302dbb0f4ea0070aba000bf5c41129f40428b2711f93941706bd50f31"],
+    [fixtures[1], "79880e6c40670be8420bcc8da4608901f0641674113b39818afd7bd0a48b682c"],
+  ]) {
+    const semantic = structuredClone(fixture);
+    for (const sourceCase of semantic.cases) {
+      for (const packet of sourceCase.cliExpectations) {
+        for (const message of packet.messages) {
+          delete message.ruleDocsPath;
+          delete message.help;
+        }
+      }
+    }
+    assert.equal(sha256(JSON.stringify(semantic)), expected, fixture.schema);
+  }
+});
+
 void test("script replay refuses an existing receipt directory before touching retained evidence", async () => {
   const output = fs.mkdtempSync(path.join(os.tmpdir(), "vize-script-custody-"));
   const sentinel = path.join(output, "failed-packet.json");
