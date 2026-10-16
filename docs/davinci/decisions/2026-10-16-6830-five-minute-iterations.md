@@ -58,6 +58,8 @@ required typechecker observations.
 
 Independent runtime and differential lanes start in parallel. Broad tooling
 test shards no longer sit between source compilation and those product checks.
+Queue lanes and scheduled full qualification share one TypeScript recipe table,
+including corpus scope and production-runtime environment, to prevent drift.
 The whole original-project Oxlint campaign remains in scheduled full JS tests.
 Full historical n8n adoption also remains available nightly and manually.
 The [native feedback decision](./2026-10-16-6830-native-feedback.md) moves the

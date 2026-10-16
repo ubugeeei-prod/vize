@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { rewrite, run } from "../../tools/support/levels/rename-differential-features.ts";
+import { differentialSteps } from "../../tools/support/compat/github/rust-differential-lanes.ts";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 
@@ -161,8 +162,23 @@ test("renamed features retain the same differential dependency wiring", () => {
   assert.match(sfc, /^legacy-dom-differential = \["vize_atelier_dom\/legacy-differential"\]$/m);
   assert.match(core, /^legacy-differential = \[\]$/m);
   assert.match(vapor, /^legacy-differential = \["vize_atelier_core\/legacy-differential"\]$/m);
-  assert.match(recipe, /--features legacy-differential --test davinci_lowering_corpus/u);
-  assert.match(recipe, /--features legacy-dom-differential --test davinci_production_reach/u);
+  assert.match(
+    recipe,
+    /run: node tools\/support\/compat\/github\/rust-differential-lanes\.ts --all/u,
+  );
+  assert.ok(
+    differentialSteps("lowering", ["vize_l1_to_l2"]).some(
+      (step) =>
+        step.args.includes("legacy-differential") && step.args.includes("davinci_lowering_corpus"),
+    ),
+  );
+  assert.ok(
+    differentialSteps("sfc", ["vize_atelier_sfc"]).some(
+      (step) =>
+        step.args.includes("legacy-dom-differential") &&
+        step.args.includes("davinci_production_reach"),
+    ),
+  );
   assert.match(
     read("tests/davinci_test_support/src/corpus.rs"),
     /davinci-differential corpus scope/u,

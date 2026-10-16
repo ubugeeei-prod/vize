@@ -50,7 +50,7 @@ jobs:
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Install product oracle dependencies
-        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './tests...'
+        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './tests...' --filter './npm/ui...'
       - name: Hydrate pinned Element Plus fixture
         if: ${{ matrix.lane == 'program' || matrix.lane == 'sfc-project' || matrix.lane == 'navigation' }}
         run: git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus

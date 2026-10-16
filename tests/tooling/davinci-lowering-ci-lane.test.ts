@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { rustDifferentialLanes } from "../../tools/support/compat/github/rust-differential-lanes.ts";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
@@ -15,6 +16,20 @@ const jsxL2VdomParityCommand =
   "cargo test -p vize_atelier_jsx --features legacy-differential --lib vdom::l2_differential::l2_vdom_admitted_cases_match_relief_codegen -- --exact";
 const patinaMarkupDifferentialCommand =
   'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features legacy-differential --test davinci_markup_differential -- --nocapture';
+
+function containsCommand(command: string): boolean {
+  const expected = command.slice(command.indexOf("cargo ") + 6).split(" ");
+  return rustDifferentialLanes
+    .flatMap((lane) => lane.steps)
+    .some((step) => {
+      let position = 0;
+      for (const argument of step.args) if (argument === expected[position]) position += 1;
+      return (
+        position === expected.length &&
+        !!step.workspaceCorpus === command.startsWith("VIZE_DAVINCI_DIFFERENTIAL_CORPUS=")
+      );
+    });
+}
 
 test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
@@ -52,6 +67,10 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
   assert.doesNotMatch(testReportJob, /- clippy-and-test\b/);
   assert.match(clippyJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
   assert.match(recipe, /run: node tools\/support\/compat\/github\/run-rust-workspace-tests\.mjs/);
+  assert.match(
+    recipe,
+    /run: node tools\/support\/compat\/github\/rust-differential-lanes\.ts --all/,
+  );
   const workspaceRunner = readRepoFile(
     "tools",
     "support",
@@ -65,15 +84,15 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
   );
   assert.match(workspaceRunner, /"test", "--locked", "--workspace", "--doc"/);
   assert.ok(
-    recipe.includes(s1ToL2LoweringCorpusCommand),
+    containsCommand(s1ToL2LoweringCorpusCommand),
     "the feature-gated lowering corpus entry must run explicitly after cargo test --workspace",
   );
   assert.ok(
-    recipe.includes(s1ToL2DomCorpusCommand),
+    containsCommand(s1ToL2DomCorpusCommand),
     "the feature-gated DOM corpus entry must run explicitly after cargo test --workspace",
   );
   assert.ok(
-    recipe.includes(s1ToL2PugCorpusCommand),
+    containsCommand(s1ToL2PugCorpusCommand),
     "the feature-gated pug corpus entry (P4-12c baseline scope) must run in full Check",
   );
   assert.match(
@@ -81,7 +100,7 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
     /^\[\[test\]\]\nname = "davinci_ssr_corpus"\nrequired-features = \["legacy-differential"\]$/m,
   );
   assert.ok(
-    recipe.includes(ssrL4CorpusCommand),
+    containsCommand(ssrL4CorpusCommand),
     "the feature-gated SSR L4 corpus gate must sweep the checkout after cargo test --workspace",
   );
   assert.match(
@@ -89,7 +108,7 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
     /^legacy-differential = \[\]$/m,
   );
   assert.ok(
-    recipe.includes(jsxL2VdomParityCommand),
+    containsCommand(jsxL2VdomParityCommand),
     "the feature-gated JSX L2 VDOM parity entry must run explicitly after cargo test --workspace",
   );
   assert.match(
@@ -97,7 +116,7 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
     /^\[\[test\]\]\nname = "davinci_markup_differential"\nrequired-features = \["legacy-differential"\]$/m,
   );
   assert.ok(
-    recipe.includes(patinaMarkupDifferentialCommand),
+    containsCommand(patinaMarkupDifferentialCommand),
     "the P4-7a markup facade lane must sweep the checkout's own .vue shard after cargo test --workspace",
   );
 });

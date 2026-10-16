@@ -83,9 +83,11 @@ jobs:
             cp target/rust-test-archive/receipt.json "$timing_dir/archive-receipt.json"
           fi
           exit "$phase_exit"
-      - name: List full workspace archive tests
+      - name: List affected source-built tests
         if: ${{ inputs.run-rust }}
-        run: cargo nextest list --archive-file target/rust-test-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile full --message-format json > "$RUNNER_TEMP/rust-test-timings/workspace-tests.json"
+        # This diagnostic inventory reuses the producer's binaries. Each worker
+        # independently verifies and extracts the receipt-bound archive it runs.
+        run: node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo nextest list @packages@ --cargo-profile ci --profile full --message-format json > "$RUNNER_TEMP/rust-test-timings/workspace-tests.json"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ inputs.run-rust }}
         with:

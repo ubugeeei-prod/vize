@@ -1,14 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { differentialSteps } from "../../tools/support/compat/github/rust-differential-lanes.ts";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 // TS-32 (P3-13): the corpus remarks-diff rides the required clippy-and-test
 // job beside the sibling feature-gated L1-to-L2 corpus lanes, and the plan's
 // suite row names exactly the command CI runs.
-const remarksCorpusCommand =
-  "cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_remarks_corpus -- --nocapture";
-
 test("the TS-32 remarks-diff lane is wired and documented", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const clippyJob = workflowJobBody(workflow, "clippy-and-test");
@@ -27,8 +25,16 @@ test("the TS-32 remarks-diff lane is wired and documented", () => {
     /^\[\[test\]\]\nname = "davinci_remarks_corpus"\nrequired-features = \["legacy-differential"\]$/m,
   );
   assert.match(clippyJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
+  assert.match(
+    recipe,
+    /run: node tools\/support\/compat\/github\/rust-differential-lanes\.ts --all/,
+  );
+  const lowering = differentialSteps("lowering", ["vize_l1_to_l2"]);
   assert.ok(
-    recipe.includes(remarksCorpusCommand),
+    lowering.some(
+      (step) =>
+        step.args.includes("davinci_remarks_corpus") && step.args.includes("legacy-differential"),
+    ),
     "the TS-32 remarks corpus must run explicitly after cargo test --workspace",
   );
   assert.match(

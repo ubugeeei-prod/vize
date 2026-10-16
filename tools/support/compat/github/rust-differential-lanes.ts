@@ -3,7 +3,12 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-type Step = { package: string; args: string[]; env?: Record<string, string> };
+type Step = {
+  package: string;
+  args: string[];
+  env?: Record<string, string>;
+  workspaceCorpus?: true;
+};
 type Lane = { name: string; steps: Step[]; navigation?: boolean };
 const test = (pkg: string, args: string[], env?: Record<string, string>): Step => ({
   package: pkg,
@@ -41,8 +46,8 @@ const corpus = (pkg: string, names: string[], features = "legacy-differential"):
     "--nocapture",
   ]);
 
-// These are the same production and feature recipes as the scheduled full
-// workspace action, divided by owning package. Every selected step runs intact.
+// One recipe serves both the affected merge-queue lanes and scheduled full
+// workspace checks. Every selected step runs with its own runtime environment.
 export const rustDifferentialLanes: readonly Lane[] = [
   {
     name: "program",
@@ -88,7 +93,11 @@ export const rustDifferentialLanes: readonly Lane[] = [
   {
     name: "ssr",
     steps: [
-      corpus("vize_atelier_ssr", ["davinci_ssr_corpus", "davinci_ssr_production_cases"]),
+      {
+        ...corpus("vize_atelier_ssr", ["davinci_ssr_corpus"]),
+        workspaceCorpus: true,
+      },
+      corpus("vize_atelier_ssr", ["davinci_ssr_production_cases"]),
       {
         ...corpus("vize_atelier_ssr", ["vue_ssr_render"]),
         env: { VIZE_VUE_RUNTIME_PRODUCTION: "1" },
@@ -112,7 +121,10 @@ export const rustDifferentialLanes: readonly Lane[] = [
   },
   { name: "cli", steps: [corpus("vize", ["check_nuxt_tsconfig_isolation_cli"], "legacy")] },
   { name: "wasm", steps: [test("vize_vitrine", ["--no-default-features", "--features", "wasm"])] },
-  { name: "formatter", steps: [corpus("vize_patina", ["davinci_markup_differential"])] },
+  {
+    name: "formatter",
+    steps: [{ ...corpus("vize_patina", ["davinci_markup_differential"]), workspaceCorpus: true }],
+  },
   {
     name: "vapor",
     steps: [
@@ -141,20 +153,31 @@ export function differentialSteps(lane: string, packages: readonly string[]): St
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  const [lane, planPath] = process.argv.slice(2);
-  const plan = JSON.parse(readFileSync(planPath, "utf8"));
-  if (
-    !Array.isArray(plan.packages) ||
-    plan.packages.some((pkg: unknown) => typeof pkg !== "string")
-  )
-    throw new Error("invalid Rust package selection");
-  const steps = differentialSteps(lane, plan.packages);
+  const args = process.argv.slice(2);
+  let steps: Step[];
+  if (args.length === 1 && args[0] === "--all") {
+    steps = rustDifferentialLanes.flatMap((lane) => lane.steps);
+  } else {
+    if (args.length !== 2) throw new Error("expected --all or a lane and Rust plan path");
+    const [lane, planPath] = args;
+    const plan = JSON.parse(readFileSync(planPath, "utf8"));
+    if (
+      !Array.isArray(plan.packages) ||
+      plan.packages.some((pkg: unknown) => typeof pkg !== "string")
+    )
+      throw new Error("invalid Rust package selection");
+    steps = differentialSteps(lane, plan.packages);
+  }
   if (!steps.length) throw new Error("selected differential lane has no affected package");
   for (const step of steps) {
     const result = spawnSync("cargo", step.args, {
       stdio: "inherit",
       shell: false,
-      env: { ...process.env, VIZE_DAVINCI_DIFFERENTIAL_CORPUS: process.cwd(), ...step.env },
+      env: {
+        ...process.env,
+        ...(step.workspaceCorpus ? { VIZE_DAVINCI_DIFFERENTIAL_CORPUS: process.cwd() } : {}),
+        ...step.env,
+      },
     });
     if (result.error) throw result.error;
     if (result.status !== 0) {

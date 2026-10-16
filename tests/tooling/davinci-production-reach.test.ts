@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { differentialSteps } from "../../tools/support/compat/github/rust-differential-lanes.ts";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
@@ -7,7 +8,7 @@ import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 // its floors live in reach-budgets.toml [reach] for exactly the measured shapes,
 // and the plan record names every shape the Rust gate measures.
 const reachCommand =
-  "cargo test -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture";
+  "test --locked -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture";
 const shapes = ["dom_inline", "dom_module", "ssr", "vapor"];
 
 function reachSection(budgets: string): string {
@@ -39,7 +40,16 @@ test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
   );
 
   assert.match(clippyJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
-  assert.ok(recipe.includes(reachCommand), "the reach gate must run in clippy-and-test");
+  assert.match(
+    recipe,
+    /run: node tools\/support\/compat\/github\/rust-differential-lanes\.ts --all/,
+  );
+  assert.ok(
+    differentialSteps("sfc", ["vize_atelier_sfc"]).some(
+      (step) => step.args.join(" ") === reachCommand,
+    ),
+    "the shared recipe must run the feature-gated reach test",
+  );
   assert.match(
     manifest,
     /^\[\[test\]\]\nname = "davinci_production_reach"\nrequired-features = \["legacy-dom-differential"\]$/mu,

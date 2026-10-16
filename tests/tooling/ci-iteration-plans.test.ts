@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -321,11 +321,94 @@ test("product differential partitions preserve each selected command exactly onc
   assert.ok(differentialMatrix(all).lane.includes("navigation"));
   assert.deepEqual(differentialMatrix(["vize_atelier_ssr"]), { lane: ["ssr"] });
   const commands = differentialSteps("ssr", ["vize_atelier_ssr"]);
-  assert.equal(commands.length, 2);
+  assert.equal(commands.length, 3);
   assert.ok(commands[0].args.includes("davinci_ssr_corpus"));
-  assert.ok(commands[0].args.includes("davinci_ssr_production_cases"));
-  assert.equal(commands[1].env?.VIZE_VUE_RUNTIME_PRODUCTION, "1");
+  assert.ok(commands[1].args.includes("davinci_ssr_production_cases"));
+  assert.equal(commands[2].env?.VIZE_VUE_RUNTIME_PRODUCTION, "1");
   assert.throws(() => differentialSteps("unknown", all), /unknown/);
+});
+
+test("differential commands retain their original corpus and production environments", () => {
+  const cwd = realpathSync(mkdtempSync(join(tmpdir(), "vize-differential-env-")));
+  const entry = fileURLToPath(
+    new URL("../../tools/support/compat/github/rust-differential-lanes.ts", import.meta.url),
+  );
+  try {
+    const bin = join(cwd, "bin");
+    mkdirSync(bin);
+    writeFileSync(
+      join(bin, "cargo"),
+      `#!${process.execPath}\nconst fs = require("node:fs");
+const { VIZE_DAVINCI_DIFFERENTIAL_CORPUS: corpus, VIZE_VUE_RUNTIME_PRODUCTION: production, VIZE_TEST_REQUIRE_TSGO: tsgo } = process.env;
+fs.appendFileSync(process.env.COMMAND_LOG, JSON.stringify({ args: process.argv.slice(2), corpus, production, tsgo }) + "\\n");
+if (process.argv.includes(process.env.FAIL_TARGET)) process.exit(42);
+`,
+      { mode: 0o755 },
+    );
+    const packages = rustDifferentialLanes.flatMap((lane) =>
+      lane.steps.map((step) => step.package),
+    );
+    const plan = join(cwd, "plan.json");
+    const log = join(cwd, "commands.jsonl");
+    writeFileSync(plan, JSON.stringify({ packages }));
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      PATH: `${bin}:${process.env.PATH}`,
+      COMMAND_LOG: log,
+      VIZE_TEST_REQUIRE_TSGO: "1",
+    };
+    delete env.VIZE_DAVINCI_DIFFERENTIAL_CORPUS;
+    delete env.VIZE_VUE_RUNTIME_PRODUCTION;
+    const expectedCalls: unknown[] = [];
+    for (const lane of rustDifferentialLanes.filter((lane) => !lane.navigation)) {
+      writeFileSync(log, "");
+      const result = spawnSync(process.execPath, [entry, lane.name, plan], {
+        cwd,
+        env,
+        encoding: "utf8",
+      });
+      assert.equal(result.status, 0, result.stderr);
+      const calls = readFileSync(log, "utf8")
+        .trim()
+        .split("\n")
+        .map((line) => JSON.parse(line));
+      expectedCalls.push(...calls);
+      assert.equal(calls.length, lane.steps.length, lane.name);
+      for (const call of calls) {
+        const has = (target: string) => call.args.includes(target);
+        const workspace = has("davinci_ssr_corpus") || has("davinci_markup_differential");
+        assert.equal(call.corpus, workspace ? cwd : undefined, call.args.join(" "));
+        const production = [
+          "davinci_vapor_upstream_parity",
+          "vapor_runtime_contracts",
+          "vue_ssr_render",
+        ].some(has);
+        assert.equal(call.production, production ? "1" : undefined, call.args.join(" "));
+        assert.equal(call.tsgo, "1");
+      }
+    }
+    writeFileSync(log, "");
+    const all = spawnSync(process.execPath, [entry, "--all"], { cwd, env, encoding: "utf8" });
+    assert.equal(all.status, 0, all.stderr);
+    assert.deepEqual(
+      readFileSync(log, "utf8")
+        .trim()
+        .split("\n")
+        .map((line) => JSON.parse(line)),
+      expectedCalls,
+      "scheduled and affected recipes execute identical arguments and environment",
+    );
+    writeFileSync(log, "");
+    const failure = spawnSync(process.execPath, [entry, "compiler", plan], {
+      cwd,
+      env: { ...env, FAIL_TARGET: "vize_atelier_jsx" },
+      encoding: "utf8",
+    });
+    assert.equal(failure.status, 42);
+    assert.equal(readFileSync(log, "utf8").trim().split("\n").length, 1);
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
+  }
 });
 
 test("Rust report permits a proven unrelated skip but rejects missing or failed affected work", () => {
