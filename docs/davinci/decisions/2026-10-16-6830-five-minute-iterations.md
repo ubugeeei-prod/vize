@@ -51,10 +51,13 @@ consumers. Full repository checks remain scheduled/manual.
 Cargo's own offline metadata supplies the crate graph. The planner uses the
 runner's existing Cargo to read it without downloading the pinned compilation
 toolchain; actual builds still use the pinned toolchain. Changed crates and
-transitive consumers run Clippy, tests and doctests. Unknown/shared inputs select
-the workspace. Merge candidates retain applicable feature-enabled compiler,
-DOM, SSR, Vapor, JSX and editor differential recipes, runtime witnesses and
-required typechecker observations.
+transitive consumers run Clippy, tests and doctests on every PR. Unknown/shared
+inputs select the workspace; a PR without affected Rust crates still checks
+`vize_relief`. The [mandatory Rust decision](./2026-10-16-6830-required-rust.md)
+requires every merge candidate to run workspace-wide Clippy, tests and doctests,
+including the feature-enabled compiler, DOM, SSR, Vapor, JSX and editor
+differential recipes and required typechecker observations. No Rust lane may
+report success by skipping the entire Rust selection.
 
 Independent runtime and differential lanes start in parallel. Broad tooling
 test shards no longer sit between source compilation and those product checks.

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -56,7 +56,7 @@ const workspace = [
   { name: "@vizejs/fresco", path: "npm/fresco", dependencies: ["@vizejs/fresco-native"] },
 ];
 
-test("PR and queue choose the complete reverse dependency closure on their actual diff", () => {
+test("the pure source selector retains the actual reverse dependency closure in either context", () => {
   for (const event of ["pull_request", "merge_group"]) {
     const plan = planAffectedRust(
       metadata,
@@ -153,7 +153,7 @@ test("actual workspace manifests retain native consumers without duplicate fixtu
   assert.ok(plan.packages.includes("npm/oxlint"));
 });
 
-test("prose and tooling-only changes avoid product builds in the queue", () => {
+test("prose and tooling-only paths do not create affected product dependencies", () => {
   for (const event of ["pull_request", "merge_group"]) {
     assert.deepEqual(planSourceChecks(["docs/content/guide.md"], event), {
       rust: false,
@@ -234,7 +234,7 @@ test("normal PRs defer duplicate heavy qualification and preserve an explicit fu
 test("one source plan joins actual Rust and JS closures without temporary JSON files", () => {
   const plan = planPrChecks({
     paths: ["crates/syntax/src/lib.rs"],
-    eventName: "merge_group",
+    eventName: "pull_request",
     labels: [],
     workspace,
     cargoMetadata: metadata,
@@ -247,71 +247,23 @@ test("one source plan joins actual Rust and JS closures without temporary JSON f
     "vize_vitrine",
   ]);
   assert.deepEqual(JSON.parse(outputs["js-plan"]).groups, ["builders", "ui", "oxlint"]);
-  assert.equal(outputs.heavy, "true");
+  assert.equal(outputs.heavy, "false");
   assert.equal(
     prCheckOutputs(
-      planPrChecks({ paths: ["docs/guide.md"], eventName: "merge_group", labels: [], workspace }),
+      planPrChecks({
+        paths: ["docs/guide.md"],
+        eventName: "merge_group",
+        labels: [],
+        workspace,
+        cargoMetadata: metadata,
+      }),
     ).rust,
-    "false",
+    "true",
   );
   assert.throws(
     () => planPrChecks({ paths: ["Cargo.lock"], eventName: "pull_request", labels: [], workspace }),
     /require Cargo workspace metadata/,
   );
-});
-
-test("the combined CLI plans a real documentation diff without invoking Cargo", () => {
-  const cwd = mkdtempSync(join(tmpdir(), "vize-one-plan-"));
-  const git = (...args: string[]) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
-  try {
-    mkdirSync(join(cwd, "bin"));
-    writeFileSync(join(cwd, "bin/cargo"), "#!/bin/sh\nexit 97\n", { mode: 0o755 });
-    mkdirSync(join(cwd, "npm/native"), { recursive: true });
-    writeFileSync(join(cwd, "npm/native/package.json"), JSON.stringify({ name: "@vizejs/native" }));
-    writeFileSync(join(cwd, "pnpm-workspace.yaml"), 'packages:\n  - "npm/*"\n');
-    writeFileSync(join(cwd, "README.md"), "before\n");
-    git("init", "-q");
-    git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "add", ".");
-    git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "before");
-    const base = git("rev-parse", "HEAD");
-    writeFileSync(join(cwd, "README.md"), "after\n");
-    git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qam", "after");
-    const output = join(cwd, "outputs");
-    const run = spawnSync(
-      process.execPath,
-      [
-        fileURLToPath(
-          new URL("../../tools/support/compat/github/plan-pr-checks.ts", import.meta.url),
-        ),
-        base,
-        git("rev-parse", "HEAD"),
-        "merge_group",
-      ],
-      {
-        cwd,
-        encoding: "utf8",
-        env: {
-          ...process.env,
-          PATH: `${join(cwd, "bin")}:${process.env.PATH}`,
-          PR_LABELS: "[]",
-          GITHUB_OUTPUT: output,
-          GITHUB_STEP_SUMMARY: "",
-        },
-      },
-    );
-    assert.equal(run.status, 0, run.stderr);
-    const outputs = Object.fromEntries(
-      readFileSync(output, "utf8")
-        .trimEnd()
-        .split("\n")
-        .map((line) => [line.slice(0, line.indexOf("=")), line.slice(line.indexOf("=") + 1)]),
-    );
-    assert.equal(outputs.rust, "false");
-    assert.equal(outputs.js, "false");
-    assert.deepEqual(JSON.parse(outputs["native-runtime-matrix"]), { lane: ["none"] });
-  } finally {
-    rmSync(cwd, { recursive: true, force: true });
-  }
 });
 
 test("product differential partitions preserve each selected command exactly once", () => {
@@ -411,8 +363,11 @@ if (process.argv.includes(process.env.FAIL_TARGET)) process.exit(42);
   }
 });
 
-test("Rust report permits a proven unrelated skip but rejects missing or failed affected work", () => {
-  assert.equal(requireRustTier("merge_group", "false", {}).exitCode, 0);
+test("Rust report rejects skipped checks and missing or failed required work", () => {
+  assert.throws(
+    () => requireRustTier("merge_group", "false", {}),
+    /Rust source checks must run for every pull request and merge group/,
+  );
   const results = {
     "merge-rust-source": { result: "success" },
     "merge-rust-differential": { result: "success" },

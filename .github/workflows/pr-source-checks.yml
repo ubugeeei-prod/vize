@@ -57,7 +57,10 @@ jobs:
         run: node tools/support/compat/github/canonical-corpus-selection.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
       - name: Test CI selection when its inputs change
         if: ${{ steps.plan.outputs.tooling == 'true' }}
-        run: node --test tests/tooling/ci-iteration-plans.test.ts
+        run: >-
+          node --test tests/tooling/ci-iteration-plans.test.ts
+          tests/tooling/pr-required-rust.test.ts
+          tests/tooling/rust-test-archive.test.mjs
   canonical-corpus:
     permissions: { contents: read, actions: read, checks: read }
     needs: pr-source-plan
@@ -70,7 +73,9 @@ jobs:
     needs: pr-source-plan
     uses: ./.github/workflows/pr-rust-checks.yml
     with:
-      run-rust: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
+      # Every PR and queue candidate must execute Rust checks. The planner
+      # narrows packages; it cannot disable test or Clippy acceptance.
+      run-rust: true
       rust-plan: ${{ needs.pr-source-plan.outputs.rust-plan }}
   pr-js-packages:
     name: PR JS packages

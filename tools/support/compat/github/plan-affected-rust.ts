@@ -97,8 +97,8 @@ export function planAffectedRust(
   const changed = new Set<string>();
   const reasons = new Set<string>();
   const excludedPaths: string[] = [];
-  // The queue validates the affected closure on its actual merge candidate.
-  // Full workspace execution remains in scheduled/manual Check runs.
+  // This is the actual dependency closure, also used by JS/native selectors.
+  // The combined PR planner separately promotes queue Rust checks to workspace scope.
   let full = paths.length === 0;
   if (full) reasons.add("empty diff");
   for (const path of paths) {

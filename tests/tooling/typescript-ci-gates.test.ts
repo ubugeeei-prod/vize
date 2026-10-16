@@ -113,16 +113,6 @@ void test("real Node directly executes both erasable TypeScript gate entrypoints
       },
     },
     {
-      name: "rust-early-return",
-      script: "require-rust-tier.ts",
-      env: { NEEDS_JSON: "null", GITHUB_EVENT_NAME: "pull_request", RUN_RUST: "false" },
-      expected: {
-        status: 0,
-        stdout: "Rust source plan selects no crates; archive and shards skipped.\n",
-        stderr: "",
-      },
-    },
-    {
       name: "rust-full-pr",
       script: "require-rust-tier.ts",
       env: {
@@ -170,6 +160,34 @@ void test("real Node directly executes both erasable TypeScript gate entrypoints
     assert.equal(result.error, undefined);
     assert.deepEqual(actual, row.expected, row.name);
   }
+});
+
+void test("the Rust CLI rejects disabled or missing plans even when every job reports success", () => {
+  const needs = JSON.stringify({
+    "merge-rust-source": { result: "success" },
+    "merge-rust-differential": { result: "success" },
+    "pr-rust-build": { result: "success" },
+    "pr-rust-shard": { result: "success" },
+  });
+  for (const event of ["pull_request", "merge_group"])
+    for (const plan of ["false", "", "TRUE"]) {
+      const result = spawnSync(
+        process.execPath,
+        [join(root, "tools/support/compat/github/require-rust-tier.ts")],
+        {
+          cwd: root,
+          env: { ...process.env, GITHUB_EVENT_NAME: event, RUN_RUST: plan, NEEDS_JSON: needs },
+          encoding: "utf8",
+          shell: false,
+        },
+      );
+      assert.equal(result.error, undefined);
+      assert.notEqual(result.status, 0, `${event}: ${plan}`);
+      assert.match(
+        result.stderr,
+        /Rust source checks must run for every pull request and merge group/,
+      );
+    }
 });
 
 void test("CI gate project independently enforces strict types and erasable syntax", () => {

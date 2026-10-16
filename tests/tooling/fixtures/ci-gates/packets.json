@@ -193,28 +193,28 @@
     }
   },
   {
-    "name": "rust-pr-false-preserves-early-return",
+    "name": "rust-pr-disabled-plan-refused",
     "mode": "rust",
     "event": "pull_request",
     "runRust": "false",
     "needs": null,
     "expected": {
-      "result": {
-        "exitCode": 0,
-        "message": "Rust source plan selects no crates; archive and shards skipped."
+      "error": {
+        "name": "Error",
+        "message": "Rust source checks must run for every pull request and merge group"
       }
     }
   },
   {
-    "name": "rust-queue-allows-no-rust-inputs",
+    "name": "rust-queue-disabled-plan-refused",
     "mode": "rust",
     "event": "merge_group",
     "runRust": "false",
     "needs": {},
     "expected": {
-      "result": {
-        "exitCode": 0,
-        "message": "Rust source plan selects no crates; archive and shards skipped."
+      "error": {
+        "name": "Error",
+        "message": "Rust source checks must run for every pull request and merge group"
       }
     }
   },
@@ -232,7 +232,12 @@
     "event": "pull_request",
     "runRust": "",
     "needs": {},
-    "expected": { "error": { "name": "Error", "message": "Missing Rust source plan" } }
+    "expected": {
+      "error": {
+        "name": "Error",
+        "message": "Rust source checks must run for every pull request and merge group"
+      }
+    }
   },
   {
     "name": "rust-null-context",

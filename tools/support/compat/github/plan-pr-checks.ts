@@ -7,6 +7,7 @@ import type { CargoMetadata } from "./plan-affected-rust.ts";
 import { planAffectedJs, readJsWorkspace } from "./plan-affected-js.ts";
 import type { JsPackage } from "./plan-affected-js.ts";
 import { planNativeRuntime } from "./plan-native-runtime.ts";
+import { differentialMatrix } from "./rust-differential-lanes.ts";
 import { selectPrTier } from "./select-pr-tier.ts";
 
 type Request = {
@@ -23,22 +24,47 @@ function sourceChecks(paths: readonly string[], eventName: string) {
   return paths.length ? selected : { rust: true, js: true, tooling: true, playground: true };
 }
 
-/** A single diff feeds the pure selectors; Rust's closure feeds both JS and native runtimes. */
+function requiredRustPlan(
+  metadata: CargoMetadata,
+  affected: ReturnType<typeof planAffectedRust> | undefined,
+  eventName: string,
+) {
+  if (eventName === "pull_request" && affected?.packages.length) return affected;
+  const full = planAffectedRust(metadata, [], eventName);
+  if (eventName === "merge_group") {
+    return { ...full, reasons: ["merge queue validates the entire Rust workspace"] };
+  }
+  // Relief's AST, binding and diagnostic tests provide a real compiler baseline
+  // for docs/JS-only PRs, without running higher-level dev-oracle suites.
+  const packages = ["vize_relief"];
+  if (!full.packages.includes(packages[0]))
+    throw new Error("missing required vize_relief baseline");
+  return {
+    ...full,
+    scope: "affected",
+    packages,
+    cargoArgs: packages.flatMap((name) => ["--package", name]),
+    reasons: ["required PR compiler baseline: vize_relief"],
+    differentialMatrix: differentialMatrix(packages),
+  };
+}
+
+/** Actual changed dependencies select JS/native work; Rust checks also enforce the PR/MQ policy. */
 export function planPrChecks({ paths, eventName, labels, workspace, cargoMetadata }: Request) {
   const source = sourceChecks(paths, eventName);
-  if (source.rust && !cargoMetadata)
-    throw new Error("Rust inputs require Cargo workspace metadata");
-  const rust = source.rust ? planAffectedRust(cargoMetadata!, paths, eventName) : undefined;
-  const js = planAffectedJs(workspace, paths, rust);
-  const native = planNativeRuntime(paths, rust);
+  if (!cargoMetadata) throw new Error("Rust checks require Cargo workspace metadata");
+  const affectedRust = source.rust ? planAffectedRust(cargoMetadata, paths, eventName) : undefined;
+  const rust = requiredRustPlan(cargoMetadata, affectedRust, eventName);
+  const js = planAffectedJs(workspace, paths, affectedRust);
+  const native = planNativeRuntime(paths, affectedRust);
   const tier = selectPrTier({ paths, eventName, labels });
   return { source, rust, js, native, tier };
 }
 
 export function prCheckOutputs(plan: ReturnType<typeof planPrChecks>): Record<string, string> {
   return {
-    rust: String(plan.source.rust),
-    "rust-plan": plan.rust ? JSON.stringify(plan.rust) : "",
+    rust: "true",
+    "rust-plan": JSON.stringify(plan.rust),
     js: String(plan.js.groups.length > 0 || plan.js.conformance.fresco || plan.js.conformance.ui),
     "js-plan": JSON.stringify(plan.js),
     tooling: String(plan.source.tooling),
@@ -58,19 +84,18 @@ export function main(argv = process.argv.slice(2)) {
     throw new Error("expected PR_LABELS to contain label names");
   }
   const paths = /^0+$/.test(base) ? [] : changedPaths(base, head);
-  const source = sourceChecks(paths, eventName);
   const plan = planPrChecks({
     paths,
     eventName,
     labels,
     workspace: readJsWorkspace(),
-    cargoMetadata: source.rust ? readCargoMetadata() : undefined,
+    cargoMetadata: readCargoMetadata(),
   });
   const outputs = Object.entries(prCheckOutputs(plan))
     .map(([name, value]) => `${name}=${value}\n`)
     .join("");
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, outputs);
-  const summary = `${paths.length} changed paths; Rust: ${plan.rust?.packages.length ?? 0} crates; JS: ${plan.js.groups.join(", ") || "none"}; native: ${plan.native.matrix.lane.join(", ")}; tier: ${plan.tier}.\n`;
+  const summary = `${paths.length} changed paths; Rust: ${plan.rust.packages.length} crates; JS: ${plan.js.groups.join(", ") || "none"}; native: ${plan.native.matrix.lane.join(", ")}; tier: ${plan.tier}.\n`;
   process.stdout.write(summary);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
 }

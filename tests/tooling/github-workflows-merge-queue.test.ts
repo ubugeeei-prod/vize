@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
+import { requireRustTier } from "../../tools/support/compat/github/require-rust-tier.ts";
+import { canonicalSourceReport } from "../../tools/support/compat/github/canonical-corpus-selection.mjs";
 import { rustDifferentialLanes } from "../../tools/support/compat/github/rust-differential-lanes.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 type Step = {
@@ -18,6 +20,7 @@ type Job = {
   needs?: string[] | string;
   steps?: Step[];
   uses?: string;
+  with?: Record<string, string | boolean>;
   env?: Record<string, string>;
   strategy?: { matrix?: unknown };
 };
@@ -136,6 +139,7 @@ test("queue scope reaches the planner and every selected source lane remains req
 });
 test("queue Rust keeps affected doctests beside archive builds and the differential feature tail", () => {
   assert.equal(source.jobs["pr-rust-source"].uses, "./.github/workflows/pr-rust-checks.yml");
+  assert.equal(source.jobs["pr-rust-source"].with?.["run-rust"], true);
   const build = rust.jobs["pr-rust-build"];
   assert.equal(build.needs, undefined, "Clippy and doctests must start beside the test archive");
   assert.equal(build.if, "${{ inputs.run-rust }}");
@@ -221,6 +225,44 @@ test("both queue reports reject failed, cancelled, skipped and missing actual de
         assert.equal(aggregateNeedsResults({ ...needs(), [lane]: { result } }).exitCode, 1);
       }
       assert.throws(() => aggregateNeedsResults({ ...needs(), [lane]: {} }), /reported no result/);
+    }
+  }
+});
+void test("a failed or disabled Rust tier cannot reach a green required Check report", () => {
+  const success = (
+    job: Job,
+  ): Record<string, { result: string; outputs?: Record<string, string> }> => {
+    assert.ok(Array.isArray(job.needs));
+    return Object.fromEntries(job.needs.map((name) => [name, { result: "success" }]));
+  };
+  for (const event of ["pull_request", "merge_group"]) {
+    const rustNeeds = success(rust.jobs["rust-source-report"]);
+    const propagate = (runRust: string, results: unknown) => {
+      let rustResult = "failure";
+      try {
+        if (requireRustTier(event, runRust, results).exitCode === 0) rustResult = "success";
+      } catch {
+        // A thrown CLI refusal fails its report step in Actions.
+      }
+      const sourceNeeds = success(source.jobs["source-report"]);
+      sourceNeeds["pr-source-plan"].outputs = { "canonical-corpus": "false" };
+      sourceNeeds["canonical-corpus"].result = "skipped";
+      sourceNeeds["wit-contracts"].result = event === "merge_group" ? "success" : "skipped";
+      sourceNeeds["pr-rust-source"].result = rustResult;
+      const sourceResult = canonicalSourceReport(sourceNeeds, event);
+      const topNeeds = success(check.jobs["test-report"]);
+      topNeeds["pr-source-checks"].result = sourceResult.exitCode === 0 ? "success" : "failure";
+      return aggregateNeedsResults(topNeeds).exitCode;
+    };
+    assert.equal(propagate("true", rustNeeds), 0);
+    assert.equal(propagate("false", rustNeeds), 1);
+    assert.equal(propagate("", rustNeeds), 1);
+    for (const job of ["pr-rust-build", "pr-rust-shard"]) {
+      for (const result of ["failure", "cancelled", "skipped"])
+        assert.equal(propagate("true", { ...rustNeeds, [job]: { result } }), 1);
+      const omitted = { ...rustNeeds };
+      delete omitted[job];
+      assert.equal(propagate("true", omitted), 1);
     }
   }
 });
