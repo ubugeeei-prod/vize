@@ -8,7 +8,7 @@ expression: result.diagnostics
         severity: Warning,
         message: "Unexpected usage of 'this.' in a template expression.",
         start: 13,
-        end: 27,
+        end: 17,
         help: Some(
             "Remove the 'this.' prefix; Vue resolves template identifiers against the component instance automatically.",
         ),
