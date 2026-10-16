@@ -80,9 +80,9 @@ jobs:
     name: Reproduce published 0.457.0 HMR failure
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
-    env:
-      PUBLIC_OUTPUT: ${{ runner.temp }}/vize-vapor-hmr-baseline
     steps:
+      - name: Prepare evidence directory
+        run: echo "PUBLIC_OUTPUT=$RUNNER_TEMP/vize-vapor-hmr-baseline" >> "$GITHUB_ENV"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
