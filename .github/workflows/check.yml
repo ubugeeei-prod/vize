@@ -378,6 +378,7 @@ jobs:
       - test-scripts
       - full-source-cli
       - check-js
+      - instruction-counts
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/report-full-js-qualification
@@ -693,6 +694,7 @@ jobs:
       - node-engine-compat
       - check-vize-apps
       - pr-source-checks
+      - instruction-counts
       - level-dependency-direction
       - release-integration-catalog
     permissions:
@@ -703,4 +705,4 @@ jobs:
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
-        run: node tools/support/compat/github/require-needs-success.ts
+        run: node tools/support/compat/github/require-needs-success.ts --check-report

@@ -116,9 +116,27 @@ export function aggregateCheckNeedsResults(needs: unknown, eventName: unknown): 
   return aggregateNeedsResults(needs, skippable);
 }
 
+/** The outer Check report requires measured ceilings in the queue and full qualification. */
+export function aggregateCheckReportResults(needs: unknown, eventName: unknown): GateReport {
+  if (
+    !["pull_request", "merge_group", "schedule", "workflow_dispatch"].includes(eventName as string)
+  ) {
+    throw new Error("Unsupported Check report event");
+  }
+  if (!needs || typeof needs !== "object" || !Object.hasOwn(needs, "instruction-counts")) {
+    throw new Error("Check report needs context is missing instruction-counts");
+  }
+  return aggregateNeedsResults(
+    needs,
+    eventName === "pull_request"
+      ? { "instruction-counts": "queue and full qualification only" }
+      : {},
+  );
+}
+
 function main(): void {
   const args = process.argv.slice(2);
-  if (args.length > 1 || (args.length === 1 && args[0] !== "--check")) {
+  if (args.length > 1 || (args.length === 1 && !["--check", "--check-report"].includes(args[0]))) {
     throw new Error("Unknown report mode");
   }
   const raw = process.env.NEEDS_JSON;
@@ -131,9 +149,11 @@ function main(): void {
   }
   const results: unknown = JSON.parse(raw);
   const { exitCode, message } =
-    args[0] === "--check"
-      ? aggregateCheckNeedsResults(results, process.env.GITHUB_EVENT_NAME)
-      : aggregateNeedsResults(results);
+    args[0] === "--check-report"
+      ? aggregateCheckReportResults(results, process.env.GITHUB_EVENT_NAME)
+      : args[0] === "--check"
+        ? aggregateCheckNeedsResults(results, process.env.GITHUB_EVENT_NAME)
+        : aggregateNeedsResults(results);
   if (exitCode === 0) {
     console.log(message);
     return;

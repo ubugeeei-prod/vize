@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { spawnSync } from "node:child_process";
 import { parse } from "yaml";
 
-import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { aggregateCheckReportResults } from "../../tools/support/compat/github/require-needs-success.ts";
+import { readRepoFile, root } from "./support/github-workflows.ts";
 
 type Job = {
   "continue-on-error"?: boolean;
@@ -26,19 +27,22 @@ const instructionWorkflow = parse(
   readRepoFile(".github", "workflows", "level-instruction-counts.yml"),
 ) as Workflow;
 
-test("instruction ceilings remain advisory in the queue and scheduled qualification", () => {
+test("instruction ceilings are required in the queue and scheduled qualification", () => {
   const caller = workflow.jobs?.["instruction-counts"];
   assert.equal(caller?.uses, "./.github/workflows/level-instruction-counts.yml");
   assert.equal(caller?.["continue-on-error"], undefined);
-  assert.equal(instructionWorkflow.jobs?.["instruction-counts"]?.["continue-on-error"], true);
+  assert.equal(instructionWorkflow.jobs?.["instruction-counts"]?.["continue-on-error"], undefined);
   assert.equal(
     caller?.if,
     "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
   );
-  assert.equal(workflow.jobs?.["test-report"]?.needs?.includes("instruction-counts"), false);
+  for (const name of ["test-report", "full-js-report"])
+    assert.ok(workflow.jobs?.[name]?.needs?.includes("instruction-counts"), name);
   assert.ok(Object.hasOwn(instructionWorkflow.on ?? {}, "workflow_call"));
   const gate = instructionWorkflow.jobs?.["instruction-counts"];
   assert.equal(gate?.if, undefined);
+  for (const step of gate?.steps ?? [])
+    assert.equal(step["continue-on-error"], undefined, step.name);
   assert.equal(
     gate?.env?.MEASURE,
     "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.workflow == 'Level instruction counts' }}",
@@ -61,12 +65,100 @@ test("instruction ceilings remain advisory in the queue and scheduled qualificat
   }
 });
 
-test("required aggregate rejects failed, cancelled and skipped instruction checks", () => {
-  for (const result of ["failure", "cancelled", "skipped"]) {
-    const decision = aggregateNeedsResults({ "instruction-counts": { result } });
-    assert.equal(decision.exitCode, 1);
-    assert.match(decision.message, new RegExp(`instruction-counts: ${result}`));
+test("required outer report rejects absent instructions and permits only the PR skip", () => {
+  for (const event of ["pull_request", "merge_group", "schedule", "workflow_dispatch"]) {
+    assert.throws(
+      () => aggregateCheckReportResults({ "check-js": { result: "success" } }, event),
+      /missing instruction-counts/,
+    );
+    assert.throws(
+      () => aggregateCheckReportResults({ "instruction-counts": {} }, event),
+      /reported no result/,
+    );
+    for (const result of ["success", "failure", "cancelled", "skipped"]) {
+      const decision = aggregateCheckReportResults({ "instruction-counts": { result } }, event);
+      assert.equal(
+        decision.exitCode,
+        result === "success" || (event === "pull_request" && result === "skipped") ? 0 : 1,
+        `${event}: ${result}`,
+      );
+    }
+    // The instruction exception must not permit a missing product check.
+    assert.equal(
+      aggregateCheckReportResults(
+        { "instruction-counts": { result: "success" }, "pr-source-checks": { result: "skipped" } },
+        event,
+      ).exitCode,
+      1,
+    );
   }
+  assert.throws(
+    () => aggregateCheckReportResults({ "instruction-counts": { result: "success" } }, "push"),
+    /Unsupported Check report event/,
+  );
+});
+
+test("the actual required Check report command fails a red or missing instruction producer", () => {
+  const report = workflow.jobs?.["test-report"];
+  const command = report?.steps?.at(-1)?.run;
+  assert.ok(command);
+  const [executable, ...args] = command.trim().split(/\s+/);
+  assert.equal(executable, "node");
+  assert.deepEqual(args, [
+    "tools/support/compat/github/require-needs-success.ts",
+    "--check-report",
+  ]);
+  const run = (event: string, results: Record<string, unknown>) =>
+    spawnSync(process.execPath, args, {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, GITHUB_EVENT_NAME: event, NEEDS_JSON: JSON.stringify(results) },
+    });
+  const green = () =>
+    Object.fromEntries((report?.needs ?? []).map((name) => [name, { result: "success" }]));
+  for (const event of ["pull_request", "merge_group"]) {
+    assert.equal(run(event, green()).status, 0);
+    for (const result of ["failure", "cancelled", "skipped"]) {
+      const observation = run(event, { ...green(), "instruction-counts": { result } });
+      assert.equal(
+        observation.status,
+        event === "pull_request" && result === "skipped" ? 0 : 1,
+        `${event}: ${result}`,
+      );
+    }
+    const missing = green();
+    delete missing["instruction-counts"];
+    const absent = run(event, missing);
+    assert.equal(absent.status, 1);
+    assert.match(absent.stderr, /missing instruction-counts/);
+  }
+});
+
+test("full scheduled and manual aggregate commands reject incomplete instruction measurement", () => {
+  const report = workflow.jobs?.["full-js-report"];
+  const action = parse(
+    readRepoFile(".github", "actions", "report-full-js-qualification", "action.yml"),
+  ) as { runs: { steps: { run?: string; env?: Record<string, string> }[] } };
+  assert.equal(report?.steps?.at(-1)?.uses, "./.github/actions/report-full-js-qualification");
+  assert.deepEqual(report?.steps?.at(-1)?.with, { "needs-json": "${{ toJSON(needs) }}" });
+  const command = action.runs.steps.at(-1)?.run;
+  assert.ok(command);
+  const [executable, ...args] = command.trim().split(/\s+/);
+  assert.equal(executable, "node");
+  assert.deepEqual(args, ["tools/support/compat/github/require-needs-success.ts"]);
+  for (const event of ["schedule", "workflow_dispatch"])
+    for (const result of ["success", "failure", "cancelled", "skipped", undefined]) {
+      const results: Record<string, { result?: string }> = Object.fromEntries(
+        (report?.needs ?? []).map((name) => [name, { result: "success" }]),
+      );
+      results["instruction-counts"] = result ? { result } : {};
+      const observation = spawnSync(process.execPath, args, {
+        cwd: root,
+        encoding: "utf8",
+        env: { ...process.env, GITHUB_EVENT_NAME: event, NEEDS_JSON: JSON.stringify(results) },
+      });
+      assert.equal(observation.status, result === "success" ? 0 : 1, `${event}: ${result}`);
+    }
 });
 
 test("original formatter calibration preserves level enforcement and retains its own full packet", () => {
