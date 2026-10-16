@@ -50,6 +50,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
+use vize_l1::markup::entity::EntityContext;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, InterpolationNode};
 
 static META: RuleMeta = RuleMeta {
@@ -83,7 +84,7 @@ impl Rule for NoDeprecatedFilter {
             return;
         };
 
-        if let Some(location) = filter_location(exp) {
+        if let Some(location) = filter_location(exp, ctx.source, EntityContext::Text) {
             ctx.error_with_help(
                 ctx.t("vue/no-deprecated-filter.message"),
                 // Match the filter sequence itself, excluding interpolation
@@ -115,7 +116,7 @@ impl Rule for NoDeprecatedFilter {
             return;
         };
 
-        if let Some(location) = filter_location(exp) {
+        if let Some(location) = filter_location(exp, ctx.source, EntityContext::Attribute) {
             ctx.error_with_help(
                 ctx.t("vue/no-deprecated-filter.message"),
                 &location,

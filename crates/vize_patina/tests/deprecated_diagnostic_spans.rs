@@ -36,7 +36,7 @@ fn pinned_originals_and_minimal_cases_match_complete_native_packets() {
         .with_locale(Locale::En)
         .with_help_level(HelpLevel::Full);
     let cases = fixture["captures"].as_array().unwrap();
-    assert_eq!(cases.len(), 44);
+    assert_eq!(cases.len(), 49);
     let mut administrative_warnings = 0;
     for case in cases {
         let source = case["source"].as_str().unwrap();
@@ -124,4 +124,39 @@ fn pinned_originals_and_minimal_cases_match_complete_native_packets() {
         );
     }
     assert_eq!(administrative_warnings, 4);
+}
+
+#[test]
+fn excessive_filter_input_nesting_keeps_the_complete_lexical_finding() {
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(NoDeprecatedFilter));
+    let linter = Linter::with_registry(registry)
+        .with_locale(Locale::En)
+        .with_help_level(HelpLevel::Full);
+    for depth in [32, 4096] {
+        for input in ["value", "value as A | B"] {
+            let expression = format!("{}{input}{} | format", "(".repeat(depth), ")".repeat(depth));
+            let source = format!("<div>{{{{ {expression} }}}}</div>");
+            let start = source.find(&expression).unwrap() as u32;
+            let end = start + expression.len() as u32;
+            let diagnostic = LintDiagnostic::error(
+                "vue/no-deprecated-filter",
+                "Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
+                start,
+                end,
+            ).with_help("Replace the filter with a method call or computed property (e.g. {{ capitalize(message) }} instead of {{ message | capitalize }}).");
+            let expected = LintResult {
+                filename: "Deep.vue".into(),
+                diagnostics: vec![diagnostic],
+                error_count: 1,
+                warning_count: 0,
+            };
+            let actual = linter.lint_template(&source, "Deep.vue");
+            assert_eq!(
+                format!("{actual:#?}"),
+                format!("{expected:#?}"),
+                "depth {depth}"
+            );
+        }
+    }
 }

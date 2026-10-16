@@ -27,7 +27,7 @@ directive argument's location.
 original vue-element-admin files, two ZY-Player files, 14 Habitica files and one
 Frappe Builder file with byte lengths, SHA-256 hashes and Git blob identities. It also
 retains all 91 original divergent diagnostic entries and complete reference packets
-for those files plus 16 minimal cases, including CRLF, Unicode, multiline
+for those files plus 21 minimal cases, including CRLF, Unicode, multiline
 expressions, chains, static and bound attributes, and clean inputs.
 The four compressed original Matrix linter reports retain the exact raw producer
 bytes and every field for all 655 ordered file packets, including findings from
@@ -65,3 +65,13 @@ provides this inner-expression span. Six minimal cases distinguish grouping,
 nested grouping, a grouped binary expression, a conditional, a call and member
 access. Habitica's multiline boss-health expressions exercise the same rule on
 unchanged original source. The common expression path stays lexical.
+
+The input-prefix parse and the existing assertion-union parse both use L0's
+`expression_is_safe_to_parse` guard before entering OXC. Guard refusal retains
+one complete lexical filter diagnostic; public-linter controls at 32 and 4,096
+levels, with and without an assertion union, exercise that fallback. Five
+complete official cases cover named/numeric encoded parentheses in text and
+bound attributes, including an encoded leading space. The decoded input AST
+start is projected through the L1 entity decoder back to its full authored
+spelling; it is never added directly to an authored span. A decode mismatch
+retains the lexical range instead of manufacturing an offset.

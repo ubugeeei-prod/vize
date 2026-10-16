@@ -101,6 +101,156 @@
       ]
     },
     {
+      "id": "entity-grouping-0",
+      "filename": "minimal/entity-grouping-0.vue",
+      "source": "<template>{{ &#40;message&#41; | capitalize }}</template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/entity-grouping-0.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 19,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 44
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>{{ &#40;message&#41; | capitalize }}</template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "entity-grouping-1",
+      "filename": "minimal/entity-grouping-1.vue",
+      "source": "<template>{{ &lpar;message&rpar; | capitalize }}</template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/entity-grouping-1.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 20,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 46
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>{{ &lpar;message&rpar; | capitalize }}</template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "entity-grouping-2",
+      "filename": "minimal/entity-grouping-2.vue",
+      "source": "<template><div :id=\"&#40;message&#41; | capitalize\" /></template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/entity-grouping-2.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 26,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 51
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><div :id=\"&#40;message&#41; | capitalize\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "entity-grouping-3",
+      "filename": "minimal/entity-grouping-3.vue",
+      "source": "<template><div :id=\"&lpar;message&rpar; | capitalize\" /></template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/entity-grouping-3.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 27,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 53
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><div :id=\"&lpar;message&rpar; | capitalize\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "entity-grouping-4",
+      "filename": "minimal/entity-grouping-4.vue",
+      "source": "<template><div :id=\"&#32;&#40;message&#41; | capitalize\" /></template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/entity-grouping-4.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 31,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 56
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><div :id=\"&#32;&#40;message&#41; | capitalize\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
       "id": "parenthesized-0",
       "filename": "minimal/parenthesized-0.vue",
       "source": "<template>{{ (a) | f }}</template>",

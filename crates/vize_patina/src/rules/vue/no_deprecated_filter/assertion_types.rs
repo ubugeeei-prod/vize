@@ -6,6 +6,7 @@ use oxc_ast_visit::{Visit, walk::walk_ts_union_type};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::String;
+use vize_l0::expression_guard::expression_is_safe_to_parse;
 
 pub(super) fn extend_union_spans(source: &str, spans: &mut Vec<(usize, usize)>) {
     let has_assertion = source
@@ -22,6 +23,9 @@ pub(super) fn extend_union_spans(source: &str, spans: &mut Vec<(usize, usize)>) 
     wrapped.push('(');
     wrapped.push_str(source);
     wrapped.push_str("\n)");
+    if !expression_is_safe_to_parse(&wrapped) {
+        return;
+    }
     let allocator = Allocator::default();
     let Ok(expression) = Parser::new(&allocator, &wrapped, SourceType::ts()).parse_expression()
     else {
