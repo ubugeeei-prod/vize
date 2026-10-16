@@ -31,13 +31,14 @@ changes no behavior, settings, code examples, other locales or support warnings.
 
 ## Verification and remaining work
 
-The native-rendered source check preserves all 13 complete original code examples
-and all 27 original heading targets across the four changed pages. It verifies the
-Japanese reading destinations and landing configuration distinction. All four
-complete documents survive `collectReviewedTranslations`; navigation labels are
-authored inputs. Existing five-locale configuration and Japanese editorial gates
-remain in place. Desktop/mobile reader checks, exact-head Actions, protected merge
-and actual public deployment complete this slice's delivery.
+All 13 complete code examples remain unchanged. The renamed VS Code heading keeps
+its original target as an alias. Existing five-locale configuration, Japanese
+editorial and navigation checks remain in place; the navigation test follows the
+intended label change. Authored/reviewed documents are retained by
+`collectReviewedTranslations`, and navigation labels are authored inputs. This
+wording repair adds no parallel fixture of the existing pages. Desktop/mobile
+reader checks, Actions, protected merge and actual public deployment complete this
+slice's delivery.
 
 The remainder of #8372 includes the full site inventory, generated descriptions,
 remaining navigation/warnings and their rendered reading paths. This seven-page
