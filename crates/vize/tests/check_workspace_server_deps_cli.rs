@@ -93,7 +93,7 @@ fn workspace_private_dependency_and_its_errors_survive_single_multi_and_auto_ser
     for name in ["A", "B", "C"] {
         write_file(
             root,
-            &format!("app/src/{name}.vue"),
+            vize_carton::cstr!("app/src/{name}.vue").as_str(),
             "<template><div /></template>",
         );
     }
