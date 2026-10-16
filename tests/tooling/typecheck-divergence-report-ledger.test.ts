@@ -10,6 +10,7 @@ import {
   run,
   setup,
   writeJson,
+  sharedVizeDiagnostic,
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
 
 const duplicateListenerDifference = {
@@ -55,6 +56,15 @@ test("typecheck divergence report accepts a reproducing documented difference", 
     ]);
     assert.equal(result.status, 0, result.stderr);
     const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
+    const observations = readJson(
+      path.join(fixture.reportDir, "fixture-typecheck-observations.json"),
+    );
+    assert.equal(observations.schema, "vize.fixtureTypecheckObservations");
+    assert.deepEqual(observations.vize, readJson(fixture.outputPath));
+    assert.equal(
+      createHash("sha256").update(observations.baseline.stdout).digest("hex"),
+      artifact.baseline.stdoutSha256,
+    );
     assert.equal(artifact.divergence.summary.documentedDifferenceCount, 1);
     assert.equal(artifact.divergence.summary.falseNegativeCount, 0);
     assert.equal(
@@ -157,6 +167,34 @@ test("typecheck divergence report rejects stale documented differences in record
       ["clean", "broken", "repaired"],
     );
     assert.equal(failure.comparison.mutationOracle.passed, true);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("typecheck divergence retains raw observations when its numerical budget fails", () => {
+  const fixture = setup({
+    vizeDiagnostics: [sharedVizeDiagnostic, "error:2:1 [TS2339] native-only diagnostic"],
+  });
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stderr, /Typecheck divergence budget breached/);
+    const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
+    assert.equal(artifact.budget.passed, false);
+    const observations = readJson(
+      path.join(fixture.reportDir, "fixture-typecheck-observations.json"),
+    );
+    assert.equal(observations.schema, "vize.fixtureTypecheckObservations");
+    assert.deepEqual(observations.vize, readJson(fixture.outputPath));
+    assert.equal(
+      createHash("sha256").update(observations.baseline.stdout).digest("hex"),
+      artifact.baseline.stdoutSha256,
+    );
+    assert.equal(
+      fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence-failure.json")),
+      false,
+    );
   } finally {
     cleanup(fixture);
   }

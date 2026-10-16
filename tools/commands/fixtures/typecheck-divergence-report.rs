@@ -199,6 +199,39 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
             coverage_baseline.run.duration_ms, coverage_baseline.run.status
         );
     }
+    // Keep original streams for successful and rejected comparisons alike:
+    // hashes bind evidence, but cannot explain provider/configuration drift.
+    let observations = json!({
+        "schema": "vize.fixtureTypecheckObservations",
+        "version": 1,
+        "project": project_id,
+        "evidence": summary["evidence"],
+        "preparation": preparation,
+        "source": vize_run.source,
+        "vize": vize_run.payload,
+        "baseline": {
+            "command": display_command(&args.vue_tsc_bin, &baseline_args),
+            "version": vue_tsc_version,
+            "exitCode": captured_exit_code(&baseline),
+            "runError": baseline.run_error,
+            "stdout": baseline.run.stdout,
+            "stderr": baseline.run.stderr,
+            "config": baseline_config.source,
+            "sourceConfig": source_config,
+        },
+        "coverage": {
+            "command": display_command(&args.vue_tsc_bin, &coverage_args),
+            "exitCode": captured_exit_code(&coverage_baseline),
+            "runError": coverage_baseline.run_error,
+            "stdout": coverage_baseline.run.stdout,
+            "stderr": coverage_baseline.run.stderr,
+        },
+    });
+    let observations_path = args
+        .report_dir
+        .join(format!("{project_id}-typecheck-observations.json"));
+    common::write_json_pretty(&observations_path, &observations)?;
+    println!("Wrote {}", display_relative(root, &observations_path));
     let documented_differences = read_documented_differences(&args.documented_differences)?;
     let expected_documented_differences =
         select_documented_differences(&documented_differences, &project_id, &fixture_root)?;
@@ -309,19 +342,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
                 "stage": "documented-differences",
                 "error": error,
                 "comparison": artifact,
-                "observations": {
-                    "vize": vize_run.payload,
-                    "baseline": {
-                        "stdout": baseline.run.stdout,
-                        "stderr": baseline.run.stderr,
-                        "config": baseline_config.source,
-                        "sourceConfig": source_config,
-                    },
-                    "coverage": {
-                        "stdout": coverage_baseline.run.stdout,
-                        "stderr": coverage_baseline.run.stderr,
-                    },
-                },
+                "observations": observations,
             }),
         )?;
         println!("Wrote {}", display_relative(root, &failure_path));
