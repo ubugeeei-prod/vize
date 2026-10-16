@@ -28,12 +28,16 @@ jobs:
         node: ["22", "24"]
     env:
       PUBLIC_VERSION: ${{ inputs.version || '0.457.0' }}
-      PUBLIC_OUTPUT: ${{ runner.temp }}/public-windows-hover-${{ github.run_id }}-${{ matrix.node }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "${{ matrix.node }}", package-manager-cache: false }
+      - name: Select isolated observation directory
+        shell: pwsh
+        run: |
+          $output = Join-Path $env:RUNNER_TEMP "public-windows-hover-$env:GITHUB_RUN_ID"
+          "PUBLIC_OUTPUT=$output" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
       - name: Verify public package identity rejection controls
         run: node --experimental-strip-types --test tests/tooling/windows-hover-public-identity.test.ts
       - name: Observe installed public CLI and original Windows hover
