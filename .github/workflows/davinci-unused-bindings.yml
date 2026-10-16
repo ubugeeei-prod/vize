@@ -13,7 +13,14 @@ on:
       - "tests/tooling/davinci-unused-setup-bindings.test.ts"
       - "tests/_fixtures/davinci-fpfn/**"
       - ".github/workflows/davinci-unused-bindings.yml"
+      - "tools/support/compat/github/compare-unused-bindings-profiles.mjs"
+      - "tests/tooling/unused-bindings-profiles.test.mjs"
   workflow_dispatch:
+    inputs:
+      compare-profiles:
+        description: Compare the old test profile and ci profile on this exact source, old first
+        type: boolean
+        default: false
 
 concurrency:
   group: davinci-unused-${{ github.event.pull_request.number || github.ref }}
@@ -48,13 +55,27 @@ jobs:
       - name: Hydrate the pinned P0-13 shard
         run: git submodule update --init --depth 1 -- tests/_fixtures/_git/splitpanes tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/cssgridgenerator
       - name: Check independent specs and real rule dispatch
+        if: ${{ !inputs.compare-profiles }}
         env:
           VIZE_DAVINCI_FACT_CORPUS: tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator
         run: |
-          cargo test -p vize_l0 --test fact_demand
-          cargo test -p vize_croquis --test fact_spec
-          cargo test -p vize_patina unused_setup_bindings
+          cargo test --profile ci -p vize_l0 --test fact_demand
+          cargo test --profile ci -p vize_croquis --test fact_spec
+          cargo test --profile ci -p vize_patina unused_setup_bindings
+      - name: Compare the same complete fact specs under both profiles
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.compare-profiles }}
+        env:
+          VIZE_DAVINCI_FACT_CORPUS: tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator
+        run: node tools/support/compat/github/compare-unused-bindings-profiles.mjs
       - name: Build the real CLI
         run: cargo build --profile ci -p vize
       - name: Recall every class-b mutation and reject wrong diagnostic identities
         run: VIZE_BIN="$PWD/target/ci/vize" vp exec node --test tests/tooling/davinci-unused-setup-bindings.test.ts tests/tooling/davinci-fpfn-pilots.test.ts
+      - name: Preserve complete profile comparison output
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.compare-profiles }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: unused-bindings-profiles-${{ github.sha }}
+          path: target/unused-bindings-profiles/
+          if-no-files-found: error
+          retention-days: 14
