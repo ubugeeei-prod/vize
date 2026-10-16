@@ -142,7 +142,10 @@ const producers = producerFiles.map((file) => {
   assert.deepEqual(stdout, Buffer.from(`${JSON.stringify(packet)}\n`));
   return { ...receipt, codeSha256: hash(Buffer.from(packet.code)) };
 });
-assert.deepEqual(producers.map(({ production }) => production).sort(), [false, true]);
+assert.deepEqual(
+  producers.map(({ production }) => production).sort((left, right) => Number(left) - Number(right)),
+  [false, true],
+);
 assert.equal(new Set(producers.map(({ pid }) => pid)).size, 2);
 assert.equal(new Set(producers.map(({ codeSha256 }) => codeSha256)).size, 2);
 writeFileSync(

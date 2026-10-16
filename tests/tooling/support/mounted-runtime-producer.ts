@@ -1,7 +1,6 @@
 // Only this producer loads the bundler and its native addons. It must exit
 // naturally before an observer may import its generated JavaScript.
 import assert from "node:assert/strict";
-import { writeFileSync } from "node:fs";
 import { build } from "vite-plus";
 import { vueVaporRuntimeEntry } from "./vue-vapor-release.mjs";
 
@@ -36,4 +35,9 @@ const chunks = outputs.flatMap((output) => {
   return output.output.filter((item) => item.type === "chunk");
 });
 assert.equal(chunks.length, 1, "Vue runtime must bundle into one self-contained module");
-writeFileSync(1, `${JSON.stringify({ code: chunks[0].code })}\n`);
+await new Promise<void>((resolve, reject) => {
+  process.stdout.write(`${JSON.stringify({ code: chunks[0].code })}\n`, (error) => {
+    if (error) reject(error);
+    else resolve();
+  });
+});

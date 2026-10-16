@@ -108,5 +108,8 @@ fn mounted_runtime_producers_and_observer_exit_naturally() {
         );
     }
     assert_eq!(output.stdout, br#"{"passed":1}"#);
-    assert!(output.stderr.is_empty(), "unexpected teardown stderr:\n{stderr}");
+    assert!(
+        output.stderr.is_empty(),
+        "unexpected teardown stderr:\n{stderr}"
+    );
 }
