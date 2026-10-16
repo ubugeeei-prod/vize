@@ -120,6 +120,23 @@ meet a text metric. The original 9,201 additions ceiling remains enforced in thi
 The NavUser defect and independent runtime checks of the other positive categories must be
 resolved before any separately reviewed baseline regeneration.
 
+The [independent runtime receipt](./fixtures/inspector-qualification-20261016/positive-runtime.json)
+executes every positive rest/metadata fragment with exact Vue 3.6.0-beta.10 and TypeScript
+6.0.3. All six old rest fragments throw `props is not defined`; current and official fragments
+agree on excluded keys and live values after reactive updates. All ten old metadata fragments
+omit the call; current and official recorded metadata agree, including the share-target
+callback with PWA disabled. These use extracted fragments and a recording Nuxt macro stand-in,
+not the full application or Nuxt route transform.
+
+The same receipt executes complete `StatusMedia` modules through real Vue SSR with a
+controlled `StatusAttachment` child. For 0/1/2/5 attachments, current output emits CSS variable
+values 1/1/2/3 and preserves the caller's `color:red`. Old output and the retained official
+report omit that variable. Independently supplying the descriptor's `ssrCssVars` to the
+reference compiler reproduces the current values, showing the original comparator option
+limitation. The `:--` property prefix is intentionally normalized by Vue's server renderer.
+The exact audit runner is retained as `positive-runtime.cjs.txt`; its input report hashes and
+scope limitations are in the receipt. These observations do not authorize a cap update.
+
 ## Baseline proposal awaiting fresh evidence
 
 No numeric change is approved here. After the actual fragment/fallthrough correction,

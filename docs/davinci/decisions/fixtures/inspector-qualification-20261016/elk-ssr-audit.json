@@ -286,9 +286,7 @@
         "removals": -1,
         "unchanged": 1
       },
-      "categories": [
-        "reactive-props-rest-8837"
-      ]
+      "categories": ["reactive-props-rest-8837"]
     },
     {
       "path": "app/components/account/AccountFollowRequestButton.vue",
@@ -315,9 +313,7 @@
         "removals": -1,
         "unchanged": 1
       },
-      "categories": [
-        "reactive-props-rest-8837"
-      ]
+      "categories": ["reactive-props-rest-8837"]
     },
     {
       "path": "app/components/account/AccountHandle.vue",
@@ -1937,9 +1933,7 @@
         "removals": 0,
         "unchanged": 0
       },
-      "categories": [
-        "explicit-attrs-ref-emission"
-      ]
+      "categories": ["explicit-attrs-ref-emission"]
     },
     {
       "path": "app/components/modal/ModalError.vue",
@@ -2236,9 +2230,7 @@
         "removals": 2,
         "unchanged": -2
       },
-      "categories": [
-        "fragment-fallthrough-defect"
-      ]
+      "categories": ["fragment-fallthrough-defect"]
     },
     {
       "path": "app/components/nav/NavUserSkeleton.vue",
@@ -3777,9 +3769,7 @@
         "removals": -1,
         "unchanged": 1
       },
-      "categories": [
-        "reactive-props-rest-8837"
-      ]
+      "categories": ["reactive-props-rest-8837"]
     },
     {
       "path": "app/components/status/StatusActionsMore.vue",
@@ -3806,9 +3796,7 @@
         "removals": -1,
         "unchanged": 1
       },
-      "categories": [
-        "reactive-props-rest-8837"
-      ]
+      "categories": ["reactive-props-rest-8837"]
     },
     {
       "path": "app/components/status/StatusAttachment.vue",
@@ -3889,9 +3877,7 @@
         "removals": 0,
         "unchanged": 0
       },
-      "categories": [
-        "reactive-props-rest-8837"
-      ]
+      "categories": ["reactive-props-rest-8837"]
     },
     {
       "path": "app/components/status/StatusCardSkeleton.vue",
@@ -3972,9 +3958,7 @@
         "removals": 0,
         "unchanged": 0
       },
-      "categories": [
-        "reactive-props-rest-8837"
-      ]
+      "categories": ["reactive-props-rest-8837"]
     },
     {
       "path": "app/components/status/StatusEmbeddedMedia.vue",
@@ -4082,9 +4066,7 @@
         "removals": 0,
         "unchanged": 0
       },
-      "categories": [
-        "ssr-css-vars"
-      ]
+      "categories": ["ssr-css-vars"]
     },
     {
       "path": "app/components/status/StatusNotFound.vue",
@@ -5488,9 +5470,7 @@
         "removals": -16,
         "unchanged": 16
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/@[account]/[status].vue",
@@ -5517,9 +5497,7 @@
         "removals": -6,
         "unchanged": 6
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/@[account]/index/collections.vue",
@@ -5546,9 +5524,7 @@
         "removals": -9,
         "unchanged": 9
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/@[account]/index/followers.vue",
@@ -5575,9 +5551,7 @@
         "removals": -1,
         "unchanged": 1
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/@[account]/index/following.vue",
@@ -5604,9 +5578,7 @@
         "removals": -1,
         "unchanged": 1
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/@[account]/index/index.vue",
@@ -5633,9 +5605,7 @@
         "removals": -1,
         "unchanged": 1
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/@[account]/index/media.vue",
@@ -5662,9 +5632,7 @@
         "removals": -1,
         "unchanged": 1
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/@[account]/index/with_replies.vue",
@@ -5691,9 +5659,7 @@
         "removals": -1,
         "unchanged": 1
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/@[account]/index.vue",
@@ -5720,9 +5686,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/collections/[id].vue",
@@ -5749,9 +5713,7 @@
         "removals": 0,
         "unchanged": 0
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/collections/index.vue",
@@ -5778,9 +5740,7 @@
         "removals": -9,
         "unchanged": 9
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/collections.vue",
@@ -5996,9 +5956,7 @@
         "removals": -9,
         "unchanged": 9
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/list/[list]/index/index.vue",
@@ -6025,9 +5983,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/list/[list]/index.vue",
@@ -6054,9 +6010,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/lists/index.vue",
@@ -6083,9 +6037,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/lists.vue",
@@ -6220,9 +6172,7 @@
         "removals": -9,
         "unchanged": 9
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/[[server]]/tags/[tag].vue",
@@ -6249,9 +6199,7 @@
         "removals": -9,
         "unchanged": 9
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/blocks.vue",
@@ -6278,9 +6226,7 @@
         "removals": -2,
         "unchanged": 2
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/bookmarks.vue",
@@ -6307,9 +6253,7 @@
         "removals": -2,
         "unchanged": 2
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/compose.vue",
@@ -6336,9 +6280,7 @@
         "removals": -2,
         "unchanged": 2
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/conversations.vue",
@@ -6365,9 +6307,7 @@
         "removals": -2,
         "unchanged": 2
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/domain_blocks.vue",
@@ -6394,9 +6334,7 @@
         "removals": -2,
         "unchanged": 2
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/favourites.vue",
@@ -6423,9 +6361,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/hashtags/index.vue",
@@ -6452,9 +6388,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/hashtags.vue",
@@ -6508,9 +6442,7 @@
         "removals": -4,
         "unchanged": 4
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/index.vue",
@@ -6537,9 +6469,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/intent/post.vue",
@@ -6593,9 +6523,7 @@
         "removals": -2,
         "unchanged": 2
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/notifications/[filter].vue",
@@ -6676,9 +6604,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/pinned.vue",
@@ -6705,9 +6631,7 @@
         "removals": -2,
         "unchanged": 2
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/scheduled-posts.vue",
@@ -6734,9 +6658,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/settings/about/index.vue",
@@ -6871,9 +6793,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/settings/notifications/notifications.vue",
@@ -6900,9 +6820,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/settings/notifications/push-notifications.vue",
@@ -6929,9 +6847,7 @@
         "removals": -6,
         "unchanged": 6
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/settings/preferences/index.vue",
@@ -6985,9 +6901,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/settings/profile/featured-tags.vue",
@@ -7014,9 +6928,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/settings/profile/index.vue",
@@ -7043,9 +6955,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/settings/users/index.vue",
@@ -7099,9 +7009,7 @@
         "removals": 0,
         "unchanged": 0
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     },
     {
       "path": "app/pages/share-target.vue",
@@ -7128,9 +7036,7 @@
         "removals": -3,
         "unchanged": 3
       },
-      "categories": [
-        "preserve-page-metadata-7873"
-      ]
+      "categories": ["preserve-page-metadata-7873"]
     }
   ],
   "receipts": [
@@ -7237,5 +7143,11 @@
     "file": "attribute-runtime.json",
     "sha256": "4e69904e8e616cd3812908c7204137111a703b2ff0d23e6f209ee707ad6f8b9a",
     "scope": "Complete extracted SSR render functions with real Vue helpers and explicit fixed inputs; full component script setup not executed."
+  },
+  "positiveRuntime": {
+    "file": "positive-runtime.json",
+    "sha256": "9fcd7dea9af49b127703448bcb5390a6414c6f0b281a3edd0540e8ed16be2d72",
+    "runner": "positive-runtime.cjs.txt",
+    "runnerSha256": "18bdbdd01dd52cb000c988881da36ed654fecdfdedc6e357394ad03be192cbaf"
   }
 }

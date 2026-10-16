@@ -1,0 +1,1045 @@
+{
+  "nodeVersion": "v26.12.0",
+  "vueVersion": "3.6.0-beta.10",
+  "typescriptVersion": "6.0.3",
+  "compilerSfcVersion": "3.6.0-beta.10",
+  "scope": {
+    "rest": "Exact emitted rest declaration and returned props property extracted; unrelated setup statements omitted. Reactive helper and serialization executed with pinned Vue. This is not whole-component setup validation.",
+    "metadata": "Complete emitted definePageMeta call statements executed inside real Vue setup with recording Nuxt macro stand-in. Metadata callback executed where present. Does not validate Nuxt route extraction or whole-app behavior.",
+    "css": "Complete emitted component modules including setup and ssrRender executed via pinned Vue SSR. computed is real Vue autoimport; StatusAttachment is a controlled stub. Additional official compileTemplate runs with descriptor ssrCssVars supplied."
+  },
+  "rest": [
+    {
+      "path": "app/components/account/AccountFollowButton.vue",
+      "observations": {
+        "old": {
+          "error": "ReferenceError: props is not defined"
+        },
+        "current": {
+          "error": null,
+          "keys": [
+            "details",
+            "actions",
+            "isNested",
+            "disableLink",
+            "older",
+            "newer",
+            "hasOlder",
+            "hasNewer",
+            "main",
+            "status",
+            "relationship",
+            "extra"
+          ],
+          "initial": {
+            "details": true,
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-before"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-before"
+          },
+          "after": {
+            "details": true,
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-after"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-after"
+          },
+          "computedBefore": "value-before",
+          "computedAfter": "value-after"
+        },
+        "official": {
+          "error": null,
+          "keys": [
+            "details",
+            "actions",
+            "isNested",
+            "disableLink",
+            "older",
+            "newer",
+            "hasOlder",
+            "hasNewer",
+            "main",
+            "status",
+            "relationship",
+            "extra"
+          ],
+          "initial": {
+            "details": true,
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-before"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-before"
+          },
+          "after": {
+            "details": true,
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-after"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-after"
+          },
+          "computedBefore": "value-before",
+          "computedAfter": "value-after"
+        }
+      }
+    },
+    {
+      "path": "app/components/account/AccountFollowRequestButton.vue",
+      "observations": {
+        "old": {
+          "error": "ReferenceError: props is not defined"
+        },
+        "current": {
+          "error": null,
+          "keys": [
+            "context",
+            "command",
+            "details",
+            "actions",
+            "isNested",
+            "disableLink",
+            "older",
+            "newer",
+            "hasOlder",
+            "hasNewer",
+            "main",
+            "status",
+            "relationship",
+            "extra"
+          ],
+          "initial": {
+            "context": "following",
+            "command": true,
+            "details": true,
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-before"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-before"
+          },
+          "after": {
+            "context": "following",
+            "command": true,
+            "details": true,
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-after"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-after"
+          },
+          "computedBefore": "value-before",
+          "computedAfter": "value-after"
+        },
+        "official": {
+          "error": null,
+          "keys": [
+            "context",
+            "command",
+            "details",
+            "actions",
+            "isNested",
+            "disableLink",
+            "older",
+            "newer",
+            "hasOlder",
+            "hasNewer",
+            "main",
+            "status",
+            "relationship",
+            "extra"
+          ],
+          "initial": {
+            "context": "following",
+            "command": true,
+            "details": true,
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-before"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-before"
+          },
+          "after": {
+            "context": "following",
+            "command": true,
+            "details": true,
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-after"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-after"
+          },
+          "computedBefore": "value-before",
+          "computedAfter": "value-after"
+        }
+      }
+    },
+    {
+      "path": "app/components/status/StatusActions.vue",
+      "observations": {
+        "old": {
+          "error": "ReferenceError: props is not defined"
+        },
+        "current": {
+          "error": null,
+          "keys": [
+            "account",
+            "context",
+            "actions",
+            "isNested",
+            "disableLink",
+            "older",
+            "newer",
+            "hasOlder",
+            "hasNewer",
+            "main",
+            "status",
+            "relationship",
+            "extra"
+          ],
+          "initial": {
+            "account": {
+              "id": "account-before"
+            },
+            "context": "following",
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-before"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-before"
+          },
+          "after": {
+            "account": {
+              "id": "account-before"
+            },
+            "context": "following",
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-after"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-after"
+          },
+          "computedBefore": "value-before",
+          "computedAfter": "value-after"
+        },
+        "official": {
+          "error": null,
+          "keys": [
+            "account",
+            "context",
+            "actions",
+            "isNested",
+            "disableLink",
+            "older",
+            "newer",
+            "hasOlder",
+            "hasNewer",
+            "main",
+            "status",
+            "relationship",
+            "extra"
+          ],
+          "initial": {
+            "account": {
+              "id": "account-before"
+            },
+            "context": "following",
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-before"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-before"
+          },
+          "after": {
+            "account": {
+              "id": "account-before"
+            },
+            "context": "following",
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-after"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-after"
+          },
+          "computedBefore": "value-before",
+          "computedAfter": "value-after"
+        }
+      }
+    },
+    {
+      "path": "app/components/status/StatusActionsMore.vue",
+      "observations": {
+        "old": {
+          "error": "ReferenceError: props is not defined"
+        },
+        "current": {
+          "error": null,
+          "keys": [
+            "account",
+            "context",
+            "command",
+            "actions",
+            "isNested",
+            "disableLink",
+            "older",
+            "newer",
+            "hasOlder",
+            "hasNewer",
+            "main",
+            "status",
+            "relationship",
+            "extra"
+          ],
+          "initial": {
+            "account": {
+              "id": "account-before"
+            },
+            "context": "following",
+            "command": true,
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-before"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-before"
+          },
+          "after": {
+            "account": {
+              "id": "account-before"
+            },
+            "context": "following",
+            "command": true,
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-after"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-after"
+          },
+          "computedBefore": "value-before",
+          "computedAfter": "value-after"
+        },
+        "official": {
+          "error": null,
+          "keys": [
+            "account",
+            "context",
+            "command",
+            "actions",
+            "isNested",
+            "disableLink",
+            "older",
+            "newer",
+            "hasOlder",
+            "hasNewer",
+            "main",
+            "status",
+            "relationship",
+            "extra"
+          ],
+          "initial": {
+            "account": {
+              "id": "account-before"
+            },
+            "context": "following",
+            "command": true,
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-before"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-before"
+          },
+          "after": {
+            "account": {
+              "id": "account-before"
+            },
+            "context": "following",
+            "command": true,
+            "actions": true,
+            "isNested": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-after"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-after"
+          },
+          "computedBefore": "value-before",
+          "computedAfter": "value-after"
+        }
+      }
+    },
+    {
+      "path": "app/components/status/StatusCard.vue",
+      "observations": {
+        "old": {
+          "error": "ReferenceError: props is not defined"
+        },
+        "current": {
+          "error": null,
+          "keys": ["context", "command", "details", "status", "relationship", "extra"],
+          "initial": {
+            "context": "following",
+            "command": true,
+            "details": true,
+            "status": {
+              "id": "status-before"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-before"
+          },
+          "after": {
+            "context": "following",
+            "command": true,
+            "details": true,
+            "status": {
+              "id": "status-after"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-after"
+          },
+          "computedBefore": "value-before",
+          "computedAfter": "value-after"
+        },
+        "official": {
+          "error": null,
+          "keys": ["context", "command", "details", "status", "relationship", "extra"],
+          "initial": {
+            "context": "following",
+            "command": true,
+            "details": true,
+            "status": {
+              "id": "status-before"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-before"
+          },
+          "after": {
+            "context": "following",
+            "command": true,
+            "details": true,
+            "status": {
+              "id": "status-after"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-after"
+          },
+          "computedBefore": "value-before",
+          "computedAfter": "value-after"
+        }
+      }
+    },
+    {
+      "path": "app/components/status/StatusDetails.vue",
+      "observations": {
+        "old": {
+          "error": "ReferenceError: props is not defined"
+        },
+        "current": {
+          "error": null,
+          "keys": [
+            "account",
+            "context",
+            "command",
+            "details",
+            "disableLink",
+            "older",
+            "newer",
+            "hasOlder",
+            "hasNewer",
+            "main",
+            "status",
+            "relationship",
+            "extra"
+          ],
+          "initial": {
+            "account": {
+              "id": "account-before"
+            },
+            "context": "following",
+            "command": true,
+            "details": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-before"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-before"
+          },
+          "after": {
+            "account": {
+              "id": "account-before"
+            },
+            "context": "following",
+            "command": true,
+            "details": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-after"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-after"
+          },
+          "computedBefore": "value-before",
+          "computedAfter": "value-after"
+        },
+        "official": {
+          "error": null,
+          "keys": [
+            "account",
+            "context",
+            "command",
+            "details",
+            "disableLink",
+            "older",
+            "newer",
+            "hasOlder",
+            "hasNewer",
+            "main",
+            "status",
+            "relationship",
+            "extra"
+          ],
+          "initial": {
+            "account": {
+              "id": "account-before"
+            },
+            "context": "following",
+            "command": true,
+            "details": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-before"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-before"
+          },
+          "after": {
+            "account": {
+              "id": "account-before"
+            },
+            "context": "following",
+            "command": true,
+            "details": true,
+            "disableLink": true,
+            "older": true,
+            "newer": true,
+            "hasOlder": true,
+            "hasNewer": true,
+            "main": true,
+            "status": {
+              "id": "status-after"
+            },
+            "relationship": {
+              "following": false
+            },
+            "extra": "value-after"
+          },
+          "computedBefore": "value-before",
+          "computedAfter": "value-after"
+        }
+      }
+    }
+  ],
+  "metadata": [
+    {
+      "path": "app/pages/[[server]]/collections/[id].vue",
+      "observations": {
+        "old": {
+          "calls": 0,
+          "value": null
+        },
+        "current": {
+          "calls": 1,
+          "value": {
+            "name": "collection"
+          }
+        },
+        "official": {
+          "calls": 1,
+          "value": {
+            "name": "collection"
+          }
+        }
+      }
+    },
+    {
+      "path": "app/pages/blocks.vue",
+      "observations": {
+        "old": {
+          "calls": 0,
+          "value": null
+        },
+        "current": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        },
+        "official": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        }
+      }
+    },
+    {
+      "path": "app/pages/bookmarks.vue",
+      "observations": {
+        "old": {
+          "calls": 0,
+          "value": null
+        },
+        "current": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        },
+        "official": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        }
+      }
+    },
+    {
+      "path": "app/pages/compose.vue",
+      "observations": {
+        "old": {
+          "calls": 0,
+          "value": null
+        },
+        "current": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        },
+        "official": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        }
+      }
+    },
+    {
+      "path": "app/pages/conversations.vue",
+      "observations": {
+        "old": {
+          "calls": 0,
+          "value": null
+        },
+        "current": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        },
+        "official": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        }
+      }
+    },
+    {
+      "path": "app/pages/domain_blocks.vue",
+      "observations": {
+        "old": {
+          "calls": 0,
+          "value": null
+        },
+        "current": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        },
+        "official": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        }
+      }
+    },
+    {
+      "path": "app/pages/mutes.vue",
+      "observations": {
+        "old": {
+          "calls": 0,
+          "value": null
+        },
+        "current": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        },
+        "official": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        }
+      }
+    },
+    {
+      "path": "app/pages/pinned.vue",
+      "observations": {
+        "old": {
+          "calls": 0,
+          "value": null
+        },
+        "current": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        },
+        "official": {
+          "calls": 1,
+          "value": {
+            "middleware": "auth"
+          }
+        }
+      }
+    },
+    {
+      "path": "app/pages/settings.vue",
+      "observations": {
+        "old": {
+          "calls": 0,
+          "value": null
+        },
+        "current": {
+          "calls": 1,
+          "value": {
+            "wideLayout": true
+          }
+        },
+        "official": {
+          "calls": 1,
+          "value": {
+            "wideLayout": true
+          }
+        }
+      }
+    },
+    {
+      "path": "app/pages/share-target.vue",
+      "observations": {
+        "old": {
+          "calls": 0,
+          "value": null
+        },
+        "current": {
+          "calls": 1,
+          "value": {
+            "middleware": {
+              "callbackResult": {
+                "navigateTo": "/"
+              }
+            }
+          }
+        },
+        "official": {
+          "calls": 1,
+          "value": {
+            "middleware": {
+              "callbackResult": {
+                "navigateTo": "/"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "css": [
+    {
+      "attachments": 0,
+      "gridColumns": 1,
+      "observations": {
+        "old": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;\"><!--[--><!--]--></div>",
+          "hasCssVar": false
+        },
+        "current": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;--v4a184587:1;\"><!--[--><!--]--></div>",
+          "hasCssVar": true
+        },
+        "official": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;\"><!--[--><!--]--></div>",
+          "hasCssVar": false
+        },
+        "officialWithSsrCssVars": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;--v-gridColumnNumber:1;\"><!--[--><!--]--></div>",
+          "hasCssVar": true
+        }
+      }
+    },
+    {
+      "attachments": 1,
+      "gridColumns": 1,
+      "observations": {
+        "old": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;\"><!--[--><!--[--><i data-attachment=\"0\" w-full h-full></i><!--]--><!--]--></div>",
+          "hasCssVar": false
+        },
+        "current": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;--v4a184587:1;\"><!--[--><!--[--><i data-attachment=\"0\" w-full h-full></i><!--]--><!--]--></div>",
+          "hasCssVar": true
+        },
+        "official": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;\"><!--[--><i data-attachment=\"0\" w-full h-full></i><!--]--></div>",
+          "hasCssVar": false
+        },
+        "officialWithSsrCssVars": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;--v-gridColumnNumber:1;\"><!--[--><i data-attachment=\"0\" w-full h-full></i><!--]--></div>",
+          "hasCssVar": true
+        }
+      }
+    },
+    {
+      "attachments": 2,
+      "gridColumns": 2,
+      "observations": {
+        "old": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;\"><!--[--><!--[--><i data-attachment=\"0\" w-full h-full></i><!--]--><!--[--><i data-attachment=\"1\" w-full h-full></i><!--]--><!--]--></div>",
+          "hasCssVar": false
+        },
+        "current": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;--v4a184587:2;\"><!--[--><!--[--><i data-attachment=\"0\" w-full h-full></i><!--]--><!--[--><i data-attachment=\"1\" w-full h-full></i><!--]--><!--]--></div>",
+          "hasCssVar": true
+        },
+        "official": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;\"><!--[--><i data-attachment=\"0\" w-full h-full></i><i data-attachment=\"1\" w-full h-full></i><!--]--></div>",
+          "hasCssVar": false
+        },
+        "officialWithSsrCssVars": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;--v-gridColumnNumber:2;\"><!--[--><i data-attachment=\"0\" w-full h-full></i><i data-attachment=\"1\" w-full h-full></i><!--]--></div>",
+          "hasCssVar": true
+        }
+      }
+    },
+    {
+      "attachments": 5,
+      "gridColumns": 3,
+      "observations": {
+        "old": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;\"><!--[--><!--[--><i data-attachment=\"0\" w-full h-full></i><!--]--><!--[--><i data-attachment=\"1\" w-full h-full></i><!--]--><!--[--><i data-attachment=\"2\" w-full h-full></i><!--]--><!--[--><i data-attachment=\"3\" w-full h-full></i><!--]--><!--[--><i data-attachment=\"4\" w-full h-full></i><!--]--><!--]--></div>",
+          "hasCssVar": false
+        },
+        "current": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;--v4a184587:3;\"><!--[--><!--[--><i data-attachment=\"0\" w-full h-full></i><!--]--><!--[--><i data-attachment=\"1\" w-full h-full></i><!--]--><!--[--><i data-attachment=\"2\" w-full h-full></i><!--]--><!--[--><i data-attachment=\"3\" w-full h-full></i><!--]--><!--[--><i data-attachment=\"4\" w-full h-full></i><!--]--><!--]--></div>",
+          "hasCssVar": true
+        },
+        "official": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;\"><!--[--><i data-attachment=\"0\" w-full h-full></i><i data-attachment=\"1\" w-full h-full></i><i data-attachment=\"2\" w-full h-full></i><i data-attachment=\"3\" w-full h-full></i><i data-attachment=\"4\" w-full h-full></i><!--]--></div>",
+          "hasCssVar": false
+        },
+        "officialWithSsrCssVars": {
+          "html": "<div class=\"status-media-container\" style=\"color:red;--v-gridColumnNumber:3;\"><!--[--><i data-attachment=\"0\" w-full h-full></i><i data-attachment=\"1\" w-full h-full></i><i data-attachment=\"2\" w-full h-full></i><i data-attachment=\"3\" w-full h-full></i><i data-attachment=\"4\" w-full h-full></i><!--]--></div>",
+          "hasCssVar": true
+        }
+      }
+    }
+  ],
+  "inputs": {
+    "beforeReportSha256": "a7a236445fb10597c8700114989bd1a2602b23896889d79c35a46c05de4c1ab9",
+    "afterReportSha256": "70d8ef313781e6be7899354cfbe75e8ae70fac384faeddaafe44d296c8f3c471"
+  }
+}
