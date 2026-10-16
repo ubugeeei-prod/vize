@@ -88,14 +88,14 @@ The existing `report-test-inventory` Actions action runs this same tool, so its 
 | tests/snapshots                 |         84 |                 120 |           unmeasured |           unmeasured |
 | tests/tooling                   |       1257 |                4709 |           unmeasured |           unmeasured |
 | tests/vize_test_runner          |          3 |                   3 |           unmeasured |           unmeasured |
-| tools/benchmarks                |         24 |                 143 |           unmeasured |           unmeasured |
+| tools/benchmarks                |         24 |                 143 |     395/590 (66.95%) |     666/977 (68.17%) |
 | tools/commands                  |         12 |                  35 |           unmeasured |           unmeasured |
 | tools/support                   |         36 |                 139 |           unmeasured |           unmeasured |
-| vendor/lightningcss             |         13 |                 154 |           unmeasured |           unmeasured |
-| vendor/oxc_formatter            |          6 |                  53 |           unmeasured |           unmeasured |
-| vendor/oxc_parser               |         14 |                  92 |           unmeasured |           unmeasured |
-| vendor/oxlint_html_renderer186  |          1 |                   1 |           unmeasured |           unmeasured |
-| vendor/parcel_sourcemap         |          3 |                  11 |           unmeasured |           unmeasured |
+| vendor/lightningcss             |         13 |                 154 | 50891/60071 (84.72%) | 49733/64992 (76.52%) |
+| vendor/oxc_formatter            |          6 |                  53 | 15340/32583 (47.08%) | 22247/48471 (45.90%) |
+| vendor/oxc_parser               |         14 |                  92 | 11586/13507 (85.78%) | 19304/22752 (84.85%) |
+| vendor/oxlint_html_renderer186  |          1 |                   1 |      16/1697 (0.94%) |      28/2824 (0.99%) |
+| vendor/parcel_sourcemap         |          3 |                  11 |     612/851 (71.92%) |    915/1247 (73.38%) |
 
 ## Priorities from the evidence
 

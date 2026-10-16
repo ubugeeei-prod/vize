@@ -330,9 +330,10 @@ export function attachSourceCoverage(
       throw new Error("Invalid LLVM file summary");
     }
     const normalized = file.filename.replaceAll("\\", "/");
-    const match = /(?:^|\/)((?:crates|davinci)\/[^/]+)\//.exec(normalized);
+    const match = /(?:^|\/)((?:crates|davinci|npm|tests|tools|vendor)\/[^/]+)\//.exec(normalized);
     if (!match) continue;
     const component = match[1];
+    if (!components.has(component) && !/^(?:crates|davinci)\//.test(component)) continue;
     const summary = components.get(component) ?? { component, files: 0, cases: 0 };
     const coverage = summary.coverage ?? {
       lines: { covered: 0, count: 0 },
