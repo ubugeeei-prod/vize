@@ -201,10 +201,11 @@ pub(super) fn build(
     let routes_phase =
         crate::corsa_bridge::preparation_trace::Phase::start("alias_package_routes", 1);
     let mut scanned_package_sources = FxHashSet::default();
+    let mut registered_package_targets = FxHashSet::default();
     loop {
         project.set_package_routes(package_bindings.clone());
         project
-            .register_package_route_targets()
+            .register_package_route_targets_with_visited(&mut registered_package_targets)
             .map_err(bridge_error)?;
         let specifiers = package_specifiers_from_frontier(&project, &mut scanned_package_sources);
         if specifiers.is_empty() {
@@ -239,7 +240,7 @@ pub(super) fn build(
     }
     project.set_package_routes(package_bindings);
     project
-        .register_package_route_targets()
+        .register_package_route_targets_with_visited(&mut registered_package_targets)
         .map_err(bridge_error)?;
     project.finalize_package_routes().map_err(bridge_error)?;
     routes_phase.finish();
@@ -268,3 +269,6 @@ fn bridge_error(error: impl std::fmt::Display) -> CorsaBridgeError {
 
 #[cfg(test)]
 mod jsconfig_tests;
+
+#[cfg(test)]
+mod package_targets_tests;

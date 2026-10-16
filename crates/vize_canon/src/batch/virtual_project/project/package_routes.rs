@@ -225,6 +225,16 @@ impl VirtualProject {
     }
 
     pub(crate) fn register_package_route_targets(&mut self) -> CorsaResult<()> {
+        self.register_package_route_targets_with_visited(&mut FxHashSet::default())
+    }
+
+    /// Reuse target discovery across the fixpoint of one immutable editor
+    /// revision. A later revision starts with a fresh set so disk edits,
+    /// deletions and config changes retain the normal registration semantics.
+    pub(crate) fn register_package_route_targets_with_visited(
+        &mut self,
+        processed: &mut FxHashSet<PathBuf>,
+    ) -> CorsaResult<()> {
         if self.package_routes_need_refresh {
             self.refresh_package_routes();
             self.package_routes_need_refresh = false;
@@ -233,12 +243,11 @@ impl VirtualProject {
         // package. Discover those routes after registering each wave of
         // sources so its own package boundary is available in the virtual
         // project, even when the app only imports the package root.
-        let mut processed = FxHashSet::default();
         loop {
             let mut targets = self
                 .package_route_source_paths()
                 .into_iter()
-                .filter(|path| !processed.contains(path))
+                .filter(|path| !processed.contains(path) || self.find_by_original(path).is_none())
                 .collect::<Vec<_>>();
             if targets.is_empty() {
                 break;
