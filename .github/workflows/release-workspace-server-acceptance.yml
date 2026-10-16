@@ -1,0 +1,42 @@
+name: Released workspace server acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      cut: { description: Official immutable source C, required: true, type: string }
+      head: { description: Frozen published source H, required: true, type: string }
+      tag: { description: Published stable minor tag, required: true, type: string }
+      source_pr: { description: Official source PR, required: true, type: string }
+      release_run: { description: Successful official Release run R, required: true, type: string }
+permissions: { contents: read }
+concurrency:
+  group: released-workspace-servers-${{ inputs.release_run }}
+  cancel-in-progress: false
+jobs:
+  public-workspace:
+    name: Original pnpm workspace with one, two and automatic servers
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      PUBLIC_CUT: ${{ inputs.cut }}
+      PUBLIC_HEAD: ${{ inputs.head }}
+      PUBLIC_TAG: ${{ inputs.tag }}
+      PUBLIC_SOURCE_PR: ${{ inputs.source_pr }}
+      PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
+      PUBLIC_OUTPUT: ${{ runner.temp }}/workspace-server-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.workflow_sha }}", fetch-depth: 0, persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, run-install: false }
+      - name: Authenticate published source containing the workspace resolution fix
+        run: node tools/support/release/workspace_server_acceptance.ts prepare
+      - name: Replay original report and genuine imported-package errors
+        run: node tools/support/release/workspace_server_acceptance.ts run
+      - name: Retain complete public observations including failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: released-workspace-servers-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.PUBLIC_OUTPUT }}
+          if-no-files-found: error
+          retention-days: 30
