@@ -3,6 +3,7 @@
 use std::path::Path;
 
 use oxc_allocator::Allocator;
+use oxc_ast::ast::Program;
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -129,6 +130,31 @@ impl ImportRewriter {
         })
     }
 
+    /// Capture declaration-owned edits while reusing the specifier pass's AST.
+    /// Captured byte ranges refer to the original, pre-import-rewrite source.
+    pub(crate) fn rewrite_declaration_with_capture(
+        &self,
+        source: &str,
+        capture: impl FnOnce(&Program<'_>) -> Vec<std::ops::Range<usize>>,
+    ) -> (RewriteResult, Vec<std::ops::Range<usize>>) {
+        let allocator = Allocator::default();
+        let parsed = Parser::new(&allocator, source, SourceType::d_ts()).parse();
+        let ranges = if parsed.panicked || !parsed.diagnostics.is_empty() {
+            Vec::new()
+        } else {
+            capture(&parsed.program)
+        };
+        let rewritten = self
+            .rewrite_parsed(
+                source,
+                &parsed.program,
+                |path, _| self.rewrite_declaration_specifier(path),
+                false,
+            )
+            .0;
+        (rewritten, ranges)
+    }
+
     pub(super) fn rewrite_with<F>(
         &self,
         source: &str,
@@ -170,12 +196,30 @@ impl ImportRewriter {
         let parser = Parser::new(&allocator, source, source_type);
         let result = parser.parse();
 
-        let mut collector = if capture_stars && !result.panicked && result.diagnostics.is_empty() {
+        self.rewrite_parsed(
+            source,
+            &result.program,
+            rewrite_specifier,
+            capture_stars && !result.panicked && result.diagnostics.is_empty(),
+        )
+    }
+
+    fn rewrite_parsed<F>(
+        &self,
+        source: &str,
+        program: &Program<'_>,
+        rewrite_specifier: F,
+        capture_stars: bool,
+    ) -> (RewriteResult, Vec<EmptyVueStar>)
+    where
+        F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
+    {
+        let mut collector = if capture_stars {
             ModuleSpecifierCollector::with_stars()
         } else {
             ModuleSpecifierCollector::new()
         };
-        collector.visit_program(&result.program);
+        collector.visit_program(program);
 
         let mut rewrites: Vec<(u32, u32, String)> = Vec::new();
         for (start, end, path, mode) in collector.specifiers {
@@ -186,9 +230,7 @@ impl ImportRewriter {
         let stars = collector
             .empty_stars
             .into_iter()
-            .filter_map(|candidate| {
-                EmptyVueStar::capture(source, &result.program.comments, candidate)
-            })
+            .filter_map(|candidate| EmptyVueStar::capture(source, &program.comments, candidate))
             .collect();
 
         rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
