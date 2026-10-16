@@ -202,16 +202,36 @@ pub(super) fn build(
         crate::corsa_bridge::preparation_trace::Phase::start("alias_package_routes", 1);
     let mut scanned_package_sources = FxHashSet::default();
     let mut registered_package_targets = FxHashSet::default();
+    // Trace counts are inventories before each call, not rebuilt-work counters.
     loop {
+        let binding_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "alias_routes_bindings",
+            package_bindings.len(),
+        );
         project.set_package_routes(package_bindings.clone());
+        binding_phase.finish();
+        let target_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "alias_routes_targets",
+            registered_package_targets.len(),
+        );
         project
             .register_package_route_targets_with_visited(&mut registered_package_targets)
             .map_err(bridge_error)?;
+        target_phase.finish();
+        let frontier_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "alias_routes_frontier",
+            scanned_package_sources.len(),
+        );
         let specifiers = package_specifiers_from_frontier(&project, &mut scanned_package_sources);
+        frontier_phase.finish();
         if specifiers.is_empty() {
             break;
         }
         {
+            let walk_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+                "alias_routes_reachable",
+                specifiers.len(),
+            );
             let mut discovery = RouteDiscovery::new(
                 &package_resolution,
                 resolver,
@@ -232,16 +252,32 @@ pub(super) fn build(
                     &mut resolve_package,
                 )
                 .map_err(bridge_error)?;
+            walk_phase.finish();
         }
+        let sort_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "alias_routes_sort",
+            package_bindings.len(),
+        );
         package_bindings.sort_by(|left, right| {
             (&left.importer_path, &left.specifier).cmp(&(&right.importer_path, &right.specifier))
         });
         package_bindings.dedup_by(|left, right| left == right);
+        sort_phase.finish();
     }
+    let binding_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+        "alias_routes_final_bindings",
+        package_bindings.len(),
+    );
     project.set_package_routes(package_bindings);
+    binding_phase.finish();
+    let target_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+        "alias_routes_final_targets",
+        registered_package_targets.len(),
+    );
     project
         .register_package_route_targets_with_visited(&mut registered_package_targets)
         .map_err(bridge_error)?;
+    target_phase.finish();
     project.finalize_package_routes().map_err(bridge_error)?;
     routes_phase.finish();
     route_inputs.sort();

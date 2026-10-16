@@ -367,8 +367,18 @@ impl VirtualProject {
     }
 
     pub(crate) fn finalize_package_routes(&mut self) -> CorsaResult<()> {
+        let shadow_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "alias_routes_shadow_rebuild",
+            self.package_routes.len(),
+        );
         self.rebuild_package_shadows()?;
+        shadow_phase.finish();
+        let imports_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "alias_routes_import_finalize",
+            self.virtual_files.len(),
+        );
         self.finalize_module_imports();
+        imports_phase.finish();
         Ok(())
     }
 }
