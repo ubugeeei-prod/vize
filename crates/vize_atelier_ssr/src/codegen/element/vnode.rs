@@ -592,7 +592,7 @@ impl<'a> SsrCodegenContext<'a> {
             .iter()
             .all(|branch| branch.condition.is_some())
         {
-            out.push_str(" : _createCommentVNode(\"v-if\", true)");
+            out.push_str(" : _createCommentVNode(\"\")");
         }
 
         out

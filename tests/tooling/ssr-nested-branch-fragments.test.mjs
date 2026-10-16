@@ -58,6 +58,22 @@ await test(
       return server.renderToString(app);
     }
 
+    const officialCompileOptions = {
+      filename: "NestedBranch.vue",
+      id: "nested-branch",
+      ssr: true,
+      ssrCssVars: [],
+      isProd: true,
+    };
+    process.stdout.write(
+      `${JSON.stringify({
+        check: "nested branch reference context",
+        nodeEnv: process.env.NODE_ENV ?? null,
+        nodeVersion: process.version,
+        vueVersion: vue.version,
+        officialCompileOptions,
+      })}\n`,
+    );
     const observations = [];
     for (const entry of modules) {
       assert.equal(entry.lane, "s4");
@@ -72,11 +88,7 @@ await test(
           : entry.source;
       const reference = compiler.compileTemplate({
         source: referenceSource,
-        filename: "NestedBranch.vue",
-        id: "nested-branch",
-        ssr: true,
-        ssrCssVars: [],
-        isProd: true,
+        ...officialCompileOptions,
       });
       assert.deepEqual(reference.errors, []);
       // Official template code contains its own import declarations.
@@ -176,8 +188,17 @@ await test(
     writeFileSync(
       destination,
       JSON.stringify({
+        nodeEnv: process.env.NODE_ENV ?? null,
+        nodeVersion: process.version,
         vueVersion: vue.version,
         compilerVersion: compiler.version,
+        officialCompileOptions,
+        vizeOptions: modules.map(({ name, vapor, compilerOptions, experimentalOptions }) => ({
+          name,
+          vapor,
+          compilerOptions,
+          experimentalOptions,
+        })),
         observations,
         publishedObservations,
       }),

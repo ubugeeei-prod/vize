@@ -38,7 +38,13 @@ function without an SSR push callback. Both VNode fallback emitters retain item 
 conditional Fragments and forward template keys directly into a single component or slot
 outlet. The runtime controls force that path with a render-function host, compare complete
 HTML against official Vue, and inspect the actual component and slot-fallback item keys.
-The conditional fallback keeps Vue's `v-if` comment placeholder when no branch matches.
+The conditional fallback retains Vue's empty production comment placeholder when no branch matches.
+The runtime receipt records `NODE_ENV`, the complete official `compileTemplate` options,
+and each Vize compiler/experimental option packet. The fixture archive also retains a
+minimal official control under both environments: with `isProd: true`, the development
+compiler still emits `<!--v-if-->`, while the production compiler emits `<!---->`.
+This change is checked against the production reference and does not claim development
+raw-output equivalence.
 
 The fresh callback context matters inside TransitionGroup. Regular TransitionGroup still
 suppresses its direct loop/item wrappers, while the callback's nested conditions retain

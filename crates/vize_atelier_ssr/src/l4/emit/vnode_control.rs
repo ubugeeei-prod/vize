@@ -84,7 +84,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .iter()
             .all(|branch| branch.condition.is_some())
         {
-            out.push_str(" : _createCommentVNode(\"v-if\", true)");
+            out.push_str(" : _createCommentVNode(\"\")");
         }
         self.close(
             Kind::CloseIf,

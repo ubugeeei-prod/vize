@@ -111,17 +111,19 @@ fn nested_template_conditionals_keep_fragments_and_both_emission_routes() {
     let mut captures = Vec::new();
     for vapor in [false, true] {
         for &(name, source, nested) in CASES {
+            let compiler_options = SsrCompilerOptions {
+                vapor,
+                ..Default::default()
+            };
+            let experimental_options = SsrCompilerExperimentalOptions {
+                source_map: true,
+                source_map_filename: Some("NestedBranch.vue".into()),
+                ..Default::default()
+            };
             let pair = vize_atelier_ssr::differential::compare_ssr_lanes(
                 source,
-                &SsrCompilerOptions {
-                    vapor,
-                    ..Default::default()
-                },
-                &SsrCompilerExperimentalOptions {
-                    source_map: true,
-                    source_map_filename: Some("NestedBranch.vue".into()),
-                    ..Default::default()
-                },
+                &compiler_options,
+                &experimental_options,
             );
             assert_eq!(pair.lane, "s4", "native plan must own {name}");
             assert!(pair.selected.errors.is_empty(), "{name}");
@@ -147,6 +149,13 @@ fn nested_template_conditionals_keep_fragments_and_both_emission_routes() {
                 "source": source,
                 "vapor": vapor,
                 "lane": pair.lane,
+                "compilerOptions": compiler_options,
+                "experimentalOptions": {
+                    "componentName": experimental_options.component_name,
+                    "selfComponent": experimental_options.self_component,
+                    "sourceMap": experimental_options.source_map,
+                    "sourceMapFilename": experimental_options.source_map_filename,
+                },
                 "selected": {
                     "code": pair.selected.result.code,
                     "preamble": pair.selected.result.preamble,
