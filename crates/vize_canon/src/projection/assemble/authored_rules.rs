@@ -6,6 +6,13 @@
 //! VueUse `useVModel(..., { passive: … as false })` overload the ecosystem
 //! silences with an `@ts-expect-error` above `defaultValue:`.
 
+use oxc_ast::ast::{CallExpression, NewExpression};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_call_expression, walk_new_expression},
+};
+use oxc_span::{SourceType, Span};
+use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::FxHashSet;
 
 use super::{AssembledDiagnostic, AuthoredSource};
@@ -29,6 +36,7 @@ pub(super) fn filter<P>(
         return;
     }
     let lines: Vec<&str> = authored.text.lines().collect();
+    let calls = authored_call_lines(authored.text);
     let unused_expect_errors: FxHashSet<usize> = diagnostics
         .iter()
         .filter(|diagnostic| {
@@ -48,7 +56,7 @@ pub(super) fn filter<P>(
             return false;
         }
         !(is_multiline_directive_candidate(authored, diagnostic)
-            && multiline_ts_directive_suppresses(&lines, line, &unused_expect_errors))
+            && multiline_ts_directive_suppresses(&lines, &calls, line, &unused_expect_errors))
     });
 }
 
@@ -91,6 +99,7 @@ pub(super) fn use_vmodel_passive_false_match(
 
 fn multiline_ts_directive_suppresses(
     lines: &[&str],
+    calls: &[(usize, usize)],
     diagnostic_line: usize,
     unused_expect_errors: &FxHashSet<usize>,
 ) -> bool {
@@ -112,14 +121,88 @@ fn multiline_ts_directive_suppresses(
         let Some(call_start) = next_non_empty_line(lines, directive_line + 1) else {
             continue;
         };
-        let Some(call_end) = call_end_line(lines, call_start) else {
-            continue;
-        };
-        if diagnostic_line >= call_start && diagnostic_line <= call_end {
+        if calls.iter().any(|&(start, end)| {
+            start == call_start && diagnostic_line >= start && diagnostic_line <= end
+        }) {
             return !expect_error || !unused_expect_errors.contains(&directive_line);
         }
     }
     false
+}
+
+/// Only real call syntax can extend a directive across lines. Searching text
+/// for parentheses can consume later statements, or parentheses inside an
+/// import specifier, comment, string, or regular expression.
+fn authored_call_lines(source: &str) -> Vec<(usize, usize)> {
+    struct Calls {
+        offset: usize,
+        line_starts: Vec<usize>,
+        lines: Vec<(usize, usize)>,
+    }
+    impl Calls {
+        fn record(&mut self, span: Span) {
+            self.lines.push((
+                self.line_starts
+                    .partition_point(|&start| start <= self.offset + span.start as usize)
+                    .saturating_sub(1),
+                self.line_starts
+                    .partition_point(|&start| {
+                        start <= self.offset + span.end.saturating_sub(1) as usize
+                    })
+                    .saturating_sub(1),
+            ));
+        }
+        fn parse(&mut self, script: &str, source_type: SourceType) {
+            let allocator = oxc_allocator::Allocator::default();
+            let parsed = oxc_parser::Parser::new(&allocator, script, source_type).parse();
+            // Failed parsing must preserve diagnostics rather than invent a
+            // suppression range from incomplete syntax.
+            if !parsed.panicked && parsed.diagnostics.is_empty() {
+                self.visit_program(&parsed.program);
+            }
+        }
+    }
+    impl<'a> Visit<'a> for Calls {
+        fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+            self.record(call.span);
+            walk_call_expression(self, call);
+        }
+        fn visit_new_expression(&mut self, call: &NewExpression<'a>) {
+            self.record(call.span);
+            walk_new_expression(self, call);
+        }
+    }
+    let mut calls = Calls {
+        offset: 0,
+        line_starts: std::iter::once(0)
+            .chain(
+                source
+                    .bytes()
+                    .enumerate()
+                    .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
+            )
+            .collect(),
+        lines: Vec::new(),
+    };
+    if let Ok(descriptor) = parse_sfc(source, SfcParseOptions::default())
+        && (descriptor.script.is_some() || descriptor.script_setup.is_some())
+    {
+        for block in [descriptor.script.as_ref(), descriptor.script_setup.as_ref()]
+            .into_iter()
+            .flatten()
+        {
+            calls.offset = block.loc.start;
+            let source_type = if matches!(block.lang.as_deref(), Some("tsx" | "jsx")) {
+                SourceType::tsx()
+            } else {
+                SourceType::ts()
+            };
+            calls.parse(&block.content, source_type);
+        }
+    } else {
+        calls.parse(source, SourceType::ts());
+    }
+    calls.lines
 }
 
 fn next_non_empty_line(lines: &[&str], start: usize) -> Option<usize> {
