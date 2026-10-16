@@ -51,6 +51,31 @@ publication. Preserve the source branch, source commit, protocol markers and
 release run when resuming. A source that lacks the pinned workflow requires a
 new prepared cut containing that implementation.
 
+### Keep the source branch at its frozen head
+
+The source PR is a receipt, so do not use GitHub's **Update branch**, merge
+`main` into it, rebase it, or regenerate its version commit. Only the separate
+metadata integration PR follows moving `main`. Even a merge that preserves the
+release version changes the source head and breaks the receipt's identity.
+
+If the branch moves, stop automated resume and preserve the changed commit and
+its parents before attempting recovery. Record the original C/H, current PR and
+branch heads, durable `release-pin/<tag>` marker, annotated tag, original Release
+run and operator lease. A matching public tag or successful build does not make
+the changed branch a qualified replacement. The existing
+[source-head guard](../../tools/support/release/pr_pin_lock.rs) and
+[recovery regression](../../tools/support/release/pr_pin_recovery_tests.rs)
+deliberately refuse to rewrite the source during ordinary resume.
+
+Review any proposed restoration as a separate operation: retain a backup ref,
+name the exact expected old head and frozen target, and use an exact lease that
+rejects intervening edits. Afterward, recheck the PR, source branch, durable pin,
+tag and original run before resuming the same source. Preserve the tag, public
+artifacts, receipt markers and original consumer policies throughout recovery.
+Do not start a new version merely to bypass incomplete publication of this one.
+The [unpublished-cut retirement procedure](./2026-10-10-retire-unpublished-pin.md)
+does not apply once a tag, GitHub Release or package version exists.
+
 Resume the same source PR with its protocol:
 
 ```sh
