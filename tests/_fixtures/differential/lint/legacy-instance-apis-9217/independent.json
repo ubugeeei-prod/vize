@@ -685,6 +685,41 @@
       "messages": []
     },
     {
+      "id": "parenthesized-callee",
+      "source": "<script>export default { mounted() { (this.$on)(\"x\", h) } }</script>",
+      "sourceSha256": "c2f6d2b77ae22c7bb8afd1ecd84f06e1faf436a476f64968c14b3d3a20564ac2",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 44,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 47
+        }
+      ]
+    },
+    {
+      "id": "type-cast-callee",
+      "source": "<script lang=\"ts\">export default { mounted() { (this.$on as any)(\"x\", h) } }</script>",
+      "sourceSha256": "4880bfcc8dac54c39159c22d7be24cd9b9cd7222cd8d3d83ead5e2b12e676f82",
+      "messages": []
+    },
+    {
+      "id": "non-null-callee",
+      "source": "<script lang=\"ts\">export default { mounted() { this.$on!(\"x\", h) } }</script>",
+      "sourceSha256": "3ac0f16b4c6749dce1f1f3bbf5a0cba8f48144fdb83b03d1789bf9caeba9bd49",
+      "messages": []
+    },
+    {
+      "id": "satisfies-callee",
+      "source": "<script lang=\"ts\">export default { mounted() { (this.$on satisfies Function)(\"x\", h) } }</script>",
+      "sourceSha256": "e801eb6c5d5d95ae4f03817173cc73989f9fec11a7648f48ebe52a061120bfbb",
+      "messages": []
+    },
+    {
       "id": "outside-component",
       "source": "<script>const external = { mounted() { this.$on(\"x\", h); this.$listeners } }</script>",
       "sourceSha256": "772a2dab72a6ed352d5781c8c6001b515e4b219251cf34be9e95a973c1be155f",

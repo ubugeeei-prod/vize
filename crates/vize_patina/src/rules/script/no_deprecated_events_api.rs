@@ -132,7 +132,7 @@ fn removed_event_callee(
     expression: &Expression<'_>,
     instance: &VueInstance,
 ) -> Option<(Span, &'static str)> {
-    let expression = expression.get_inner_expression();
+    let expression = expression.without_parentheses();
     let member = match expression {
         Expression::ChainExpression(chain) => chain.expression.as_member_expression()?,
         _ => expression.as_member_expression()?,
@@ -219,11 +219,9 @@ this.$emit('c')
     }
 
     #[test]
-    fn test_invalid_wrapped_callee() {
+    fn test_valid_type_cast_callee_is_outside_the_provider_selector() {
         let source = "(this.$on as any)('event', handler)";
         let result = lint(source);
-        assert_eq!(result.error_count, 1);
-        let diagnostic = &result.diagnostics[0];
-        assert_eq!(diagnostic.end - diagnostic.start, 3);
+        assert_eq!(result.error_count, 0);
     }
 }

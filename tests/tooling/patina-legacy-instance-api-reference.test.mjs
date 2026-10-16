@@ -68,7 +68,7 @@ await test("legacy instance API packets preserve every pinned original source an
       "vue/no-deprecated-events-api": "error",
     },
   };
-  assert.equal(authored.records.length, 39);
+  assert.equal(authored.records.length, 43);
   assert.equal(sources.length, 71);
   assert.equal(original.records.length, sources.length);
   assert.equal(manifest.sourceCount, sources.length);

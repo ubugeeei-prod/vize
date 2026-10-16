@@ -37,7 +37,10 @@ pub(super) fn regions(program: &Program<'_>, scoping: &Scoping, source: &str) ->
     let marked_lines = program
         .comments
         .iter()
-        .filter(|comment| comment.span.slice(source).contains("@vue/component"))
+        .filter(|comment| {
+            source[comment.span.start as usize..comment.span.end as usize]
+                .contains("@vue/component")
+        })
         .map(|comment| {
             source[..comment.span.end as usize]
                 .bytes()
