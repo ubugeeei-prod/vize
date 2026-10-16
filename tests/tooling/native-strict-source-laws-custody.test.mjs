@@ -14,7 +14,7 @@ const archive = JSON.parse(gunzipSync(archiveBytes));
 const raw = (name) => archive.files[name].wholeUtf8;
 const packet = (name) => JSON.parse(raw(name));
 
-test("focused native capture retains exact source, compiler, binary and whole packet custody", () => {
+void test("focused native capture retains exact source, compiler, binary and whole packet custody", () => {
   assert.equal(
     createHash("sha256").update(archiveBytes).digest("hex"),
     "f4b1c681d7ba300e8934c5618b10959ac0a2fe06b8dfc7ba448ad329d9c4e984",
@@ -46,7 +46,7 @@ test("focused native capture retains exact source, compiler, binary and whole pa
   );
 });
 
-test("all twelve observed workspace reports match the complete authored receiver inventory", () => {
+void test("all twelve observed workspace reports match the complete authored receiver inventory", () => {
   for (let index = 0; index < 12; index++) {
     const capture = packet(`workspace-cli/${String(index).padStart(2, "0")}.json`);
     const count = index < 6 ? 128 : 3;
@@ -90,7 +90,7 @@ test("all twelve observed workspace reports match the complete authored receiver
   }
 });
 
-test("handoff capture records complete native completion separately from known current Exit warnings", () => {
+void test("handoff capture records complete native completion separately from known current Exit warnings", () => {
   const capture = packet("syntax/semantic-handoff-child.json");
   const native = packet("native-binary.json").path;
   const syntax = ["post-request.d.ts", 1293, 0, 1128, 1, "Declaration or statement expected."];

@@ -72,7 +72,10 @@ fn required_semantic_completion_does_not_report_runtime_degradation() {
     let stdout = String::from_utf8(output.stdout).unwrap();
     let stderr = String::from_utf8(output.stderr).unwrap();
     assert_complete_stdout(&stdout, &native);
-    let native_sha256 = format!("{:x}", Sha256::digest(std::fs::read(&native).unwrap()));
+    let native_sha256 = Sha256::digest(std::fs::read(&native).unwrap())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
     let shutdown_observation = observe_shutdown(&stderr, &native_sha256)
         .unwrap_or_else(|reason| panic!("{reason}: {stderr:?}; image={native_sha256}"));
     retain_packet(
