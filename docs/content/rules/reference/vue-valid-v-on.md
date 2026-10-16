@@ -22,10 +22,10 @@ import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 export default defineConfig({
   lint: {
     vize: {
-      preset: "incremental",
-      rules: {
-        "vue/valid-v-on": "error",
-      },
+      "preset": "incremental",
+      "rules": {
+        "vue/valid-v-on": "error"
+      }
     },
   },
 });

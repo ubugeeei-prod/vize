@@ -259,16 +259,20 @@ pub struct BatteryCensus {
 /// The committed census. Re-pinned deliberately, in both lanes at once.
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
-    rule_fixtures: 869 + 38 + 1 + 1,
+    rule_fixtures: 869 + 38 + 1 + 1 + 5,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
     // `.prop` template, one fix helper call). The kebab-case KeepAlive child
-    // control adds one literal template (#9076).
-    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1,
-    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1,
+    // control adds one literal template (#9076). The v-on modifier regressions
+    // add five literal templates: nativeish without a handler, custom.stop,
+    // Custom, custom without a handler, and custom with a handler (#9203).
+    // Their six additional dynamic-template calls retain the complete modifier
+    // matrices in rule tests; the scanner deliberately records those as skips.
+    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11,
+    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6,
     matrix: 90,
-    template_lines: 6316 + 233 + 5 + 10,
+    template_lines: 6316 + 233 + 5 + 10 + 25,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,
