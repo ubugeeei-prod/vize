@@ -39,7 +39,7 @@ browser checks with its normal OG-image configuration.
 
 ## Composable examples
 
-One hundred twenty-three complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
+One hundred twenty-four complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
 bounded quantities, debounced local search, blur validation, undo/redo, and
 pagination, plus async results, interval/timeout controls, browser storage,
 media queries, document focus, form submission, multistep navigation, bounded
@@ -68,6 +68,11 @@ Their displayed source and compiled preview share the same complete SFC packet,
 with a SHA-256 identity exposed by each iframe. They use public composable
 imports and can be copied into a Vue 3.5+ project. The preview shell's CSS is
 optional presentation; the examples themselves use native controls.
+
+The virtual-list catalogue uses real native scrolling over 1,000 local records,
+with a bounded rendered slice, search/empty states and keyboard jump controls.
+Its checks verify actual row dimensions, native Home/End/PageDown, ARIA positions
+and total counts, and retained input/list focus after filtering and scrolling.
 
 `build-ui-previews.ts` typechecks those SFCs against workspace sources before
 compilation. `prerender-composables.ts` uses the existing Vue/Vite configuration

@@ -1,6 +1,13 @@
 /** Compile-only assertions for the DOM helper composables. */
 
-import type { ComputedRef, Ref, ShallowRef, WritableComputedRef } from "vue";
+import type {
+  ComputedRef,
+  HTMLAttributes,
+  Ref,
+  ShallowRef,
+  StyleValue,
+  WritableComputedRef,
+} from "vue";
 import { ref } from "vue";
 
 import { useAnimate } from "./animate.js";
@@ -34,6 +41,14 @@ const _axis: DragAxis = "both";
 const virtual = useVirtualList([{ id: 1 }] as const, { itemSize: (_index, item) => item.id });
 type _VirtualItemsKeepTheSourceType = Expect<
   Equal<typeof virtual.list, ComputedRef<readonly VirtualListItem<{ readonly id: 1 }>[]>>
+>;
+virtual.containerProps.style satisfies StyleValue;
+virtual.wrapperProps.value satisfies HTMLAttributes;
+type _WrapperDisplayRemainsConstrained = Expect<
+  Equal<typeof virtual.wrapperProps.value.style.display, "block" | "flex">
+>;
+type _ContainerOverflowRemainsConstrained = Expect<
+  Equal<typeof virtual.containerProps.style.overflowY, "auto" | "hidden">
 >;
 // @ts-expect-error item size functions receive typed items.
 useVirtualList(["a"], { itemSize: (_index, item: number) => item });
