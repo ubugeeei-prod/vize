@@ -16,7 +16,7 @@ fn complete_originals_and_controls_preserve_real_listener_conflicts_and_key_rang
     let fixture: serde_json::Value =
         serde_json::from_str(include_str!("fixtures/use-v-on-exact/cases.json")).unwrap();
     let cases = fixture["cases"].as_array().unwrap();
-    assert_eq!(cases.len(), 45);
+    assert_eq!(cases.len(), 48);
     let linter = Linter::with_preset(LintPreset::Incremental)
         .with_enabled_rules(Some(vec!["vue/use-v-on-exact".into()]))
         .with_locale(Locale::En)

@@ -9,8 +9,13 @@ overlap checked by this rule. Three lx-music-desktop diagnostics also covered th
 handler value instead of only the directive key, producing three false-positive
 and three false-negative comparison rows for otherwise matching warnings.
 
+The completed 138-project Matrix added two component false positives in Vuestic
+UI and two disjoint-key false positives in PicList and Solidtime. The dedicated
+fixture covers all six original files, including Escape versus Ctrl/Meta+Enter
+and Enter versus Tab/Shift+Tab.
+
 The dedicated fixture retains the complete original SFCs, immutable source URLs,
-SHA-256 identities, upstream licenses and all fourteen original Matrix rows.
+SHA-256 identities, upstream licenses and all eighteen original Matrix rows.
 Forty-two controls cover component/native listeners, namespace boundaries,
 dynamic arguments, key alternatives, system subsets and UTF-8 diagnostic ranges.
 The independent oracle uses eslint-plugin-vue 10.9.2, ESLint 10.4.1,
@@ -36,7 +41,7 @@ through the official Vue compiler's generated callbacks. These two findings
 remain visible as explicit correctness exceptions to the reference packets;
 neither the shared comparator nor its baseline is changed.
 
-The Rust integration test checks all 45 complete sources using the public SFC
+The Rust integration test checks all 48 complete sources using the public SFC
 linter and verifies diagnostic counts, severity, rule identity, absence of fixes,
 and exact UTF-8 key spans. Run its source build in Actions alongside the normal
 affected-crate checks. The independent packet and runtime replay can be checked

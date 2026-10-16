@@ -122,7 +122,7 @@ async function capture() {
 }
 
 function validate({ raw }) {
-  assert.equal(fixture.cases.length, 45);
+  assert.equal(fixture.cases.length, 48);
   assert.equal(raw.captures.length, fixture.cases.length);
   for (const example of fixture.cases) {
     if (!example.original) continue;
@@ -165,7 +165,7 @@ if (process.argv.includes("--record")) {
   });
 }
 
-test("trusted browser controls and actual Vue compiler preserve correct extra overlap findings", () => {
+await test("trusted browser controls and actual Vue compiler preserve correct extra overlap findings", () => {
   assert.deepEqual(runtimeProvider, fixture.runtimeProvider);
   assert.equal(physical.rows.length, 4);
   for (const row of physical.rows) {

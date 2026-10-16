@@ -703,12 +703,102 @@
       },
       "expected": [],
       "referenceExpected": []
+    },
+    {
+      "id": "original-vuestic-ui",
+      "filename": "vuestic-ui/packages/ui/src/components/va-time-picker/VaTimePicker.vue",
+      "source": "<template>\n  <div\n    class=\"va-time-picker\"\n    :class=\"computedClasses\"\n    :style=\"computedStyles\"\n  >\n    <VaTimePickerColumn\n      v-for=\"(column, idx) in columns\" :key=\"idx\"\n      :ref=\"setItemRef\"\n      :items=\"column.items\"\n      :tabindex=\"disabled ? -1 : 0\"\n      :cell-height=\"cellHeightComputed\"\n      v-model:activeItemIndex=\"column.activeItem.value\"\n      @keydown.right.stop.prevent=\"focusNext()\"\n      @keydown.tab.exact.stop.prevent=\"focusNext()\"\n      @keydown.left.stop.prevent=\"focusPrev()\"\n      @keydown.shift.tab.stop.prevent=\"focusPrev()\"\n      @focus=\"activeColumnIndex = idx\"\n    />\n  </div>\n</template>\n\n<script lang=\"ts\" setup>\nimport { ref, computed, PropType, ComputedRef } from 'vue'\nimport { useTimePicker } from './hooks/useTimePicker'\n\nimport { VaTimePickerColumn } from './components/VaTimePickerColumn'\n\nimport {\n  useComponentPresetProp,\n  useStatefulProps,\n  useStatefulEmits,\n  useStateful,\n  useFormFieldProps,\n  useFormField,\n  useArrayRefs,\n  useNumericProp,\n  makeNumericProp,\n} from '../../composables'\n\ndefineOptions({\n  name: 'VaTimePicker',\n})\n\nconst props = defineProps({\n  ...useStatefulProps,\n  ...useFormFieldProps,\n  ...useComponentPresetProp,\n  modelValue: { type: Date, required: false },\n  ampm: { type: Boolean, default: false },\n  hidePeriodSwitch: { type: Boolean, default: false },\n  periodUpdatesModelValue: { type: Boolean, default: true }, // Update model value when switching period automatically\n  view: { type: String as PropType<'hours' | 'minutes' | 'seconds'>, default: 'minutes' },\n  hoursFilter: { type: Function as PropType<(h: number) => boolean> },\n  minutesFilter: { type: Function as PropType<(h: number) => boolean> },\n  secondsFilter: { type: Function as PropType<(h: number) => boolean> },\n  framed: { type: Boolean, default: false },\n  cellHeight: makeNumericProp({ default: 30 }),\n  visibleCellsCount: makeNumericProp({ default: 7 }),\n})\n\nconst emit = defineEmits([...useStatefulEmits])\n\nconst valueComputed = useStateful(props, emit)\nconst { columns, isPM } = useTimePicker(props, valueComputed)\nconst cellHeightComputed = useNumericProp('cellHeight') as ComputedRef<number>\nconst visibleCellsCountComputed = useNumericProp('visibleCellsCount') as ComputedRef<number>\n\nconst { setItemRef, itemRefs: pickers } = useArrayRefs()\n\nconst activeColumnIndex = ref<number>()\n\nconst focus = (idx = 0): void => {\n  pickers.value[idx]?.focus()\n}\n\nconst blur = (idx?: number): void => {\n  idx ? pickers.value[idx]?.blur() : pickers.value.forEach((el) => el?.blur())\n}\n\nconst { computedClasses: computedFormClasses } = useFormField('va-time-picker', props)\n\nconst focusNext = () => {\n  const nextIndex = (activeColumnIndex?.value || 0) + 1\n\n  activeColumnIndex.value = nextIndex % columns.value.length\n  focus(activeColumnIndex.value)\n}\n\nconst focusPrev = () => {\n  const nextIndex = (activeColumnIndex?.value || 0) - 1 + columns.value.length\n\n  activeColumnIndex.value = nextIndex % columns.value.length\n  focus(activeColumnIndex.value)\n}\n\nconst computedClasses = computed(() => ({\n  ...computedFormClasses.value,\n  'va-time-picker--framed': props.framed,\n}))\n\nconst computedStyles = computed(() => {\n  const gapHeight = (visibleCellsCountComputed.value - 1) / 2 * cellHeightComputed.value\n\n  return {\n    '--va-time-picker-height': `${cellHeightComputed.value * visibleCellsCountComputed.value}px`,\n    '--va-time-picker-cell-height': `${cellHeightComputed.value}px`,\n    '--va-time-picker-column-gap-height': `${gapHeight}px`,\n  }\n})\n\ndefineExpose({\n  focus,\n  blur,\n  focusNext,\n  focusPrev,\n})\n</script>\n\n<style lang=\"scss\">\n@use 'variables';\n\n@mixin after-overlay {\n  position: relative;\n\n  &::after {\n    content: '';\n    position: absolute;\n    height: 100%;\n    width: 100%;\n    z-index: 1;\n  }\n}\n\n.va-time-picker {\n  display: var(--va-time-picker-display);\n  justify-content: center;\n  overflow: hidden;\n  height: var(--va-time-picker-height);\n  font-family: var(--va-font-family);\n\n  &--readonly {\n    @include after-overlay();\n  }\n\n  &--disabled {\n    @include after-overlay();\n\n    opacity: var(--va-time-picker-disabled-opacity);\n  }\n\n  &--framed {\n    position: relative;\n\n    &::before {\n      content: \"\";\n      height: var(--va-time-picker-cell-height);\n      width: 100%;\n      position: absolute;\n      top: 50%;\n      left: 0;\n      transform: translateY(-50%);\n      border-top: 1px solid var(--va-divider);\n      border-bottom: 1px solid var(--va-divider);\n      z-index: 0;\n    }\n  }\n}\n</style>\n",
+      "original": {
+        "url": "https://raw.githubusercontent.com/epicmaxco/vuestic-ui/c5337ed8e7e24ea294221326fe2ca6af8d3b8e1b/packages/ui/src/components/va-time-picker/VaTimePicker.vue",
+        "sha256": "1beb1f45dec5f7cdf2ff2c942030c13513effdccdc9696e66e9843b2493faab6",
+        "bytes": 4487,
+        "license": {
+          "file": "vuestic-ui.LICENSE",
+          "url": "https://raw.githubusercontent.com/epicmaxco/vuestic-ui/c5337ed8e7e24ea294221326fe2ca6af8d3b8e1b/LICENSE.MD",
+          "sha256": "c44258bd026d8749142ac1b2cf0309f0b52655b3181c5ee4bfb6bd89103ab370"
+        }
+      },
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "original-piclist",
+      "filename": "piclist/src/renderer/components/InputBoxDialog.vue",
+      "source": "<template>\n  <Teleport to=\"body\">\n    <Transition\n      name=\"inputbox-fade\"\n      enter-active-class=\"transition-all duration-200 ease-apple\"\n      leave-active-class=\"transition-all duration-200 ease-apple\"\n      enter-from-class=\"opacity-0\"\n      leave-to-class=\"opacity-0\"\n    >\n      <div\n        v-if=\"showInputBoxVisible\"\n        class=\"fixed inset-0 z-1000 flex items-center justify-center overflow-y-auto bg-black/30\"\n        :class=\"{ 'advanced-animation': enableAdvancedAnimation }\"\n      >\n        <Transition name=\"inputbox-scale\">\n          <div\n            v-if=\"showInputBoxVisible\"\n            class=\"fkex-col relative m-auto flex w-full max-w-[30rem] flex-col overflow-hidden rounded-2xl border border-border-secondary bg-bg-tertiary shadow-xl\"\n            @click.stop\n          >\n            <button\n              class=\"absolute top-4 right-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-border bg-surface-elevated text-secondary transition-all duration-fast ease-apple hover:scale-105 hover:border-danger hover:bg-danger hover:text-white focus-visible:focus-ring\"\n              @click=\"handleInputBoxCancel\"\n            >\n              <XIcon :size=\"20\" />\n            </button>\n\n            <div class=\"p-4\">\n              <h3 class=\"mb-4 pr-8 text-lg leading-[1.4] font-semibold text-main\">\n                {{ inputBoxOptions.title || t('pages.inputBox.title') }}\n              </h3>\n\n              <div class=\"relative\">\n                <textarea\n                  v-if=\"inputBoxOptions.multiLine\"\n                  ref=\"textareaRef\"\n                  v-model=\"inputBoxValue\"\n                  :placeholder=\"inputBoxOptions.placeholder\"\n                  class=\"max-h-[20rem] min-h-[6rem] w-full resize-y rounded-sm border border-border bg-bg-tertiary p-4 font-[inherit] text-[0.9375rem] text-main transition-all duration-fast ease-apple outline-none placeholder:text-secondary hover:border-accent focus:border-accent focus:bg-surface\"\n                  rows=\"4\"\n                  @keyup.ctrl.enter=\"handleInputBoxConfirm\"\n                  @keyup.meta.enter=\"handleInputBoxConfirm\"\n                  @keyup.escape=\"handleInputBoxCancel\"\n                />\n                <input\n                  v-else\n                  ref=\"inputRef\"\n                  v-model=\"inputBoxValue\"\n                  :placeholder=\"inputBoxOptions.placeholder\"\n                  class=\"w-full rounded-sm border border-border bg-bg-tertiary p-4 font-[inherit] text-[0.9375rem] text-main transition-all duration-fast ease-apple outline-none placeholder:text-secondary hover:border-accent focus:border-accent focus:bg-surface\"\n                  type=\"text\"\n                  @keyup.enter=\"handleInputBoxConfirm\"\n                  @keyup.escape=\"handleInputBoxCancel\"\n                />\n              </div>\n            </div>\n\n            <div class=\"flex flex-wrap justify-center gap-3 p-2\">\n              <CustomButton type=\"secondary\" :text=\"t('common.cancel')\" @click=\"handleInputBoxCancel\" />\n              <CustomButton\n                type=\"primary\"\n                :disabled=\"!inputBoxValue.trim()\"\n                :text=\"t('common.confirm')\"\n                @click=\"handleInputBoxConfirm\"\n              />\n            </div>\n          </div>\n        </Transition>\n      </div>\n    </Transition>\n  </Teleport>\n</template>\n\n<script lang=\"ts\" setup>\nimport { XIcon } from '@lucide/vue'\nimport { nextTick, onBeforeMount, onBeforeUnmount, reactive, ref, useTemplateRef } from 'vue'\nimport { useI18n } from 'vue-i18n'\n\nimport CustomButton from '@/components/common/CustomButton.vue'\nimport $bus from '@/utils/bus'\nimport { SHOW_INPUT_BOX, SHOW_INPUT_BOX_RESPONSE } from '@/utils/constant'\nimport { getConfig } from '@/utils/dataSender'\n\nconst enableAdvancedAnimation = ref(false)\nconst { t } = useI18n()\nconst inputBoxValue = ref('')\nconst showInputBoxVisible = ref(false)\nconst inputRef = useTemplateRef('inputRef')\nconst textareaRef = useTemplateRef('textareaRef')\nconst inputBoxOptions = reactive({\n  title: '',\n  placeholder: '',\n  multiLine: false,\n})\n\nlet removeInputBoxListenerCallback: () => void = () => {}\n\nfunction handleIpcInputBoxEvent(options: IShowInputBoxOption) {\n  initInputBoxValue(options)\n}\n\nasync function initInputBoxValue(options: IShowInputBoxOption) {\n  inputBoxValue.value = options.value || ''\n  inputBoxOptions.title = options.title || ''\n  inputBoxOptions.placeholder = options.placeholder || ''\n  inputBoxOptions.multiLine = options.multiLine || false\n  showInputBoxVisible.value = true\n\n  await nextTick()\n  if (inputBoxOptions.multiLine) {\n    textareaRef.value?.focus()\n    textareaRef.value?.select()\n  } else {\n    inputRef.value?.focus()\n    inputRef.value?.select()\n  }\n}\n\nfunction handleInputBoxCancel() {\n  // TODO: RPCServer\n  showInputBoxVisible.value = false\n  window.electron.sendToMain(SHOW_INPUT_BOX, '')\n  $bus.emit(SHOW_INPUT_BOX_RESPONSE, '')\n}\n\nfunction handleInputBoxConfirm() {\n  showInputBoxVisible.value = false\n  window.electron.sendToMain(SHOW_INPUT_BOX, inputBoxValue.value)\n  $bus.emit(SHOW_INPUT_BOX_RESPONSE, inputBoxValue.value)\n}\n\nasync function initConf() {\n  const settingConfig = await getConfig<any>('settings')\n  enableAdvancedAnimation.value = settingConfig?.enableAdvancedAnimation || false\n}\n\nonBeforeMount(() => {\n  initConf()\n  removeInputBoxListenerCallback = window.electron.ipcRendererOn(SHOW_INPUT_BOX, handleIpcInputBoxEvent)\n  $bus.on(SHOW_INPUT_BOX, initInputBoxValue)\n})\n\nonBeforeUnmount(() => {\n  removeInputBoxListenerCallback()\n  $bus.off(SHOW_INPUT_BOX)\n})\n</script>\n\n<script lang=\"ts\">\nexport default {\n  name: 'InputBoxDialog',\n}\n</script>\n",
+      "original": {
+        "url": "https://raw.githubusercontent.com/Kuingsmile/PicList/3a26cc882983af899e97b4f492d06355c2a89077/src/renderer/components/InputBoxDialog.vue",
+        "sha256": "24b6e3cb4b01ba3ac032ba100f2de3f8c7f3ef78b8f4d139c631a2b3ade2c555",
+        "bytes": 5668,
+        "license": {
+          "file": "piclist.LICENSE",
+          "url": "https://raw.githubusercontent.com/Kuingsmile/PicList/3a26cc882983af899e97b4f492d06355c2a89077/LICENSE",
+          "sha256": "e0fd688f9f2597479e9c9e7c052886f0018c37460b8e21d706f3fd375d3cbed3"
+        }
+      },
+      "expected": [],
+      "referenceExpected": []
+    },
+    {
+      "id": "original-solidtime",
+      "filename": "solidtime/resources/js/packages/ui/src/TimeTracker/TimeTrackerRangeSelector.vue",
+      "source": "<script setup lang=\"ts\">\nimport Dropdown from '@/packages/ui/src/Input/Dropdown.vue';\nimport { computed, ref } from 'vue';\nimport TimeRangeSelector from '@/packages/ui/src/Input/TimeRangeSelector.vue';\nimport dayjs, { Dayjs } from 'dayjs';\nimport { formatDuration, getDayJsInstance, parseTimeInput } from '@/packages/ui/src/utils/time';\nimport type { TimeEntry } from '@/packages/api/src';\n\nconst currentTimeEntry = defineModel<TimeEntry>('currentTimeEntry', {\n    required: true,\n});\nconst now = defineModel<null | Dayjs>('liveTimer');\n\nwithDefaults(\n    defineProps<{\n        isOnBreak?: boolean;\n    }>(),\n    {\n        isOnBreak: false,\n    }\n);\n\nconst emit = defineEmits<{\n    startLiveTimer: [];\n    stopLiveTimer: [];\n    updateTimer: [];\n    startTimer: [];\n    createTimeEntry: [];\n}>();\n\nconst open = ref(false);\n\nfunction pauseLiveTimerUpdate(event: FocusEvent) {\n    (event.target as HTMLInputElement).select();\n    emit('stopLiveTimer');\n}\n\nfunction onTimeEntryEnterPress() {\n    updateTimerAndStartLiveTimerUpdate();\n    open.value = false;\n    const activeElement = document.activeElement as HTMLElement;\n    activeElement?.blur();\n}\n\nconst currentTime = computed({\n    get() {\n        if (temporaryCustomTimerEntry.value !== '') {\n            return temporaryCustomTimerEntry.value;\n        }\n        if (now.value && currentTimeEntry.value.start) {\n            const startTime = dayjs(currentTimeEntry.value.start);\n            const diff = now.value.diff(startTime, 'seconds');\n            return formatDuration(diff);\n        }\n        return null;\n    },\n    // setter\n    set(newValue) {\n        if (newValue) {\n            temporaryCustomTimerEntry.value = newValue;\n        } else {\n            temporaryCustomTimerEntry.value = '';\n        }\n    },\n});\n\nfunction updateTimerAndStartLiveTimerUpdate() {\n    const seconds = parseTimeInput(temporaryCustomTimerEntry.value);\n\n    if (seconds && seconds > 0) {\n        const newStartDate = dayjs().subtract(seconds, 's');\n        currentTimeEntry.value.start = newStartDate.utc().format();\n        if (currentTimeEntry.value.id !== '') {\n            emit('updateTimer');\n        } else {\n            emit('startTimer');\n        }\n    }\n    now.value = dayjs().utc();\n    temporaryCustomTimerEntry.value = '';\n    emit('startLiveTimer');\n}\n\nconst temporaryCustomTimerEntry = ref<string>('');\n\nasync function updateTimeRange(newStart: string, newEnd: string | null) {\n    // prohibit updates in the future\n    if (getDayJsInstance()(newStart).isBefore(getDayJsInstance()())) {\n        currentTimeEntry.value.start = newStart;\n        currentTimeEntry.value.end = newEnd;\n        if (currentTimeEntry.value.id) {\n            emit('updateTimer');\n        } else if (newEnd !== null) {\n            // If there's no ID but we have both start and end, create a new time entry\n            emit('createTimeEntry');\n        } else {\n            emit('startTimer');\n        }\n    }\n}\n\nconst startTime = computed(() => {\n    if (currentTimeEntry.value.start && currentTimeEntry.value.start !== '') {\n        return currentTimeEntry.value.start;\n    }\n    return dayjs().utc().format();\n});\n\nconst endTime = computed(() => {\n    if (currentTimeEntry.value.end && currentTimeEntry.value.end !== '') {\n        return currentTimeEntry.value.end;\n    }\n    return null;\n});\n\nconst inputField = ref<HTMLInputElement | null>(null);\n\nconst timeRangeSelector = ref<HTMLElement | null>(null);\n\nfunction openModalOnTab(e: FocusEvent) {\n    pauseLiveTimerUpdate(e);\n\n    // check if the source is inside the dropdown\n    const source = e.relatedTarget as HTMLElement;\n    if (source && window.document.body.querySelector<HTMLElement>('#app')?.contains(source)) {\n        open.value = true;\n    }\n}\n\nfunction openModalOnClick(e: MouseEvent) {\n    pauseLiveTimerUpdate(e);\n\n    open.value = true;\n}\n\nfunction focusNextElement(e: KeyboardEvent) {\n    if (open.value) {\n        e.preventDefault();\n        const focusableElement = timeRangeSelector.value?.querySelector<HTMLElement>(\n            'button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])'\n        );\n        focusableElement?.focus();\n    }\n}\n\nfunction closeAndFocusInput() {\n    open.value = false;\n    inputField.value?.focus();\n}\n</script>\n\n<template>\n    <div class=\"relative\">\n        <Dropdown\n            v-model=\"open\"\n            align=\"center\"\n            :auto-focus=\"false\"\n            :close-on-content-click=\"false\"\n            @submit=\"closeAndFocusInput\">\n            <template #trigger>\n                <input\n                    ref=\"inputField\"\n                    v-model=\"currentTime\"\n                    placeholder=\"00:00:00\"\n                    data-testid=\"time_entry_time\"\n                    class=\"w-[110px] lg:w-[120px] h-full py-2.5 rounded-lg text-center px-4 text-base font-semibold placeholder-text-tertiary focus:ring-0 transition\"\n                    :class=\"\n                        isOnBreak\n                            ? 'text-amber-600 dark:text-amber-400 bg-transparent border-none'\n                            : 'text-text-primary bg-card-background border-border-secondary border border-none'\n                    \"\n                    type=\"text\"\n                    @focusin=\"openModalOnTab\"\n                    @click=\"openModalOnClick\"\n                    @keydown.exact.tab=\"focusNextElement\"\n                    @keydown.exact.shift.tab=\"open = false\"\n                    @blur=\"updateTimerAndStartLiveTimerUpdate\"\n                    @keydown.enter=\"onTimeEntryEnterPress\" />\n            </template>\n            <template #content>\n                <div ref=\"timeRangeSelector\">\n                    <TimeRangeSelector\n                        :start=\"startTime\"\n                        :end=\"endTime\"\n                        @changed=\"updateTimeRange\"\n                        @close=\"closeAndFocusInput\">\n                    </TimeRangeSelector>\n                </div>\n            </template>\n        </Dropdown>\n    </div>\n</template>\n\n<style></style>\n",
+      "original": {
+        "url": "https://raw.githubusercontent.com/solidtime-io/solidtime/de13c07855bbaacb1cced918003a0a15b5a48aba/resources/js/packages/ui/src/TimeTracker/TimeTrackerRangeSelector.vue",
+        "sha256": "850e58f7f16a0a845e675ca8dbe796de4a81bf2051fdead214c941c3149585c7",
+        "bytes": 6022,
+        "license": {
+          "file": "solidtime.LICENSE",
+          "url": "https://raw.githubusercontent.com/solidtime-io/solidtime/de13c07855bbaacb1cced918003a0a15b5a48aba/LICENSE.md",
+          "sha256": "fb344f9b3736f9834367752e2924d39bcef2b338186ea247038a26c2563bf84e"
+        }
+      },
+      "expected": [],
+      "referenceExpected": []
     }
   ],
   "originalMatrixRows": [
     {
+      "project": "vuestic-ui",
+      "side": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-11/vuestic-ui-lint-divergence.json",
+      "column": 7,
+      "endColumn": 48,
+      "endLine": 14,
+      "file": "packages/ui/src/components/va-time-picker/VaTimePicker.vue",
+      "line": 14,
+      "message": "[vize:vue/use-v-on-exact] @keydown without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "vuestic-ui",
+      "side": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-11/vuestic-ui-lint-divergence.json",
+      "column": 7,
+      "endColumn": 47,
+      "endLine": 16,
+      "file": "packages/ui/src/components/va-time-picker/VaTimePicker.vue",
+      "line": 16,
+      "message": "[vize:vue/use-v-on-exact] @keydown without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
+      "project": "piclist",
+      "side": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-12/piclist-lint-divergence.json",
+      "column": 19,
+      "endColumn": 55,
+      "endLine": 43,
+      "file": "src/renderer/components/InputBoxDialog.vue",
+      "line": 43,
+      "message": "[vize:vue/use-v-on-exact] @keyup without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
       "project": "vue-termui",
-      "kind": "falsePositives",
+      "side": "falsePositives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
       "column": 9,
       "endColumn": 45,
@@ -721,7 +811,7 @@
     },
     {
       "project": "vue-termui",
-      "kind": "falsePositives",
+      "side": "falsePositives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
       "column": 9,
       "endColumn": 41,
@@ -734,7 +824,7 @@
     },
     {
       "project": "vue-termui",
-      "kind": "falsePositives",
+      "side": "falsePositives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
       "column": 9,
       "endColumn": 32,
@@ -747,7 +837,7 @@
     },
     {
       "project": "vue-termui",
-      "kind": "falsePositives",
+      "side": "falsePositives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
       "column": 9,
       "endColumn": 34,
@@ -760,7 +850,7 @@
     },
     {
       "project": "vue-termui",
-      "kind": "falsePositives",
+      "side": "falsePositives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
       "column": 9,
       "endColumn": 55,
@@ -773,7 +863,7 @@
     },
     {
       "project": "vue-termui",
-      "kind": "falsePositives",
+      "side": "falsePositives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
       "column": 9,
       "endColumn": 49,
@@ -786,7 +876,7 @@
     },
     {
       "project": "vue-termui",
-      "kind": "falsePositives",
+      "side": "falsePositives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-2/vue-termui-lint-divergence.json",
       "column": 9,
       "endColumn": 51,
@@ -798,8 +888,21 @@
       "severity": "warning"
     },
     {
+      "project": "solidtime",
+      "side": "falsePositives",
+      "sourceReport": "/tmp/vize-ci-qualification/matrix-20/solidtime-lint-divergence.json",
+      "column": 21,
+      "endColumn": 59,
+      "endLine": 178,
+      "file": "resources/js/packages/ui/src/TimeTracker/TimeTrackerRangeSelector.vue",
+      "line": 178,
+      "message": "[vize:vue/use-v-on-exact] @keydown without .exact will also fire when system modifiers are pressed",
+      "ruleId": "vue/use-v-on-exact",
+      "severity": "warning"
+    },
+    {
       "project": "reka-ui",
-      "kind": "falsePositives",
+      "side": "falsePositives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-4/reka-ui-lint-divergence.json",
       "column": 7,
       "endColumn": 31,
@@ -812,7 +915,7 @@
     },
     {
       "project": "lx-music-desktop",
-      "kind": "falsePositives",
+      "side": "falsePositives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-5/lx-music-desktop-lint-divergence.json",
       "column": 15,
       "endColumn": 62,
@@ -825,7 +928,7 @@
     },
     {
       "project": "lx-music-desktop",
-      "kind": "falsePositives",
+      "side": "falsePositives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-5/lx-music-desktop-lint-divergence.json",
       "column": 58,
       "endColumn": 104,
@@ -838,7 +941,7 @@
     },
     {
       "project": "lx-music-desktop",
-      "kind": "falsePositives",
+      "side": "falsePositives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-5/lx-music-desktop-lint-divergence.json",
       "column": 15,
       "endColumn": 57,
@@ -851,7 +954,7 @@
     },
     {
       "project": "lx-music-desktop",
-      "kind": "falseNegatives",
+      "side": "falseNegatives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-5/lx-music-desktop-lint-divergence.json",
       "column": 15,
       "endColumn": 27,
@@ -865,7 +968,7 @@
     },
     {
       "project": "lx-music-desktop",
-      "kind": "falseNegatives",
+      "side": "falseNegatives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-5/lx-music-desktop-lint-divergence.json",
       "column": 58,
       "endColumn": 82,
@@ -879,7 +982,7 @@
     },
     {
       "project": "lx-music-desktop",
-      "kind": "falseNegatives",
+      "side": "falseNegatives",
       "sourceReport": "/tmp/vize-ci-qualification/matrix-5/lx-music-desktop-lint-divergence.json",
       "column": 15,
       "endColumn": 37,
@@ -1940,6 +2043,54 @@
         "packets": [
           {
             "filePath": "owned/use-v-on-exact/vue-termui/playground/src/pages/event-modifiers.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "original-vuestic-ui",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/vuestic-ui/packages/ui/src/components/va-time-picker/VaTimePicker.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "original-piclist",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/piclist/src/renderer/components/InputBoxDialog.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "id": "original-solidtime",
+        "packets": [
+          {
+            "filePath": "owned/use-v-on-exact/solidtime/resources/js/packages/ui/src/TimeTracker/TimeTrackerRangeSelector.vue",
             "messages": [],
             "suppressedMessages": [],
             "errorCount": 0,
