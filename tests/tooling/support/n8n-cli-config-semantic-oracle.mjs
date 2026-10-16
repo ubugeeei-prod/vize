@@ -39,9 +39,10 @@ export function validateSemanticCases(fixture = loadSemanticCases()) {
 export async function captureSemanticOracles({
   benchmarkManifest,
   onRecorded = async () => {},
+  fixture = loadSemanticCases(),
+  validateFixture = validateSemanticCases,
 } = {}) {
-  const fixture = loadSemanticCases();
-  validateSemanticCases(fixture);
+  validateFixture(fixture);
   const cases = [];
   for (const sourceCase of fixture.cases) {
     const observations = [];
@@ -50,7 +51,9 @@ export async function captureSemanticOracles({
         benchmarkManifest,
         fixture: oneCaseFixture(sourceCase),
         baseRuleOptions: { ...projection.linter.ruleOptions, ...sourceCase.ruleOptions },
-        filePrefix: "tests/_fixtures/differential/lint/n8n-cli-config/semantic-routing",
+        filePrefix:
+          fixture.oracleFilePrefix ??
+          "tests/_fixtures/differential/lint/n8n-cli-config/semantic-routing",
         officialVueBase: true,
         async onRecorded(packet) {
           await onRecorded({ caseId: sourceCase.id, iteration, packet });
@@ -63,9 +66,13 @@ export async function captureSemanticOracles({
   return cases;
 }
 
-export function assertSemanticOracles(captures, expected = loadSemanticCases().oracleCapture) {
-  const fixture = loadSemanticCases();
-  validateSemanticCases(fixture);
+export function assertSemanticOracles(
+  captures,
+  expected = loadSemanticCases().oracleCapture,
+  fixture = loadSemanticCases(),
+  validateFixture = validateSemanticCases,
+) {
+  validateFixture(fixture);
   assert.equal(captures.length, fixture.cases.length);
   for (const sourceCase of fixture.cases) {
     const actual = captures.find(({ caseId }) => caseId === sourceCase.id);

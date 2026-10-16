@@ -1,0 +1,2798 @@
+{
+  "versions": {
+    "eslint": "10.4.1",
+    "eslint-plugin-vue": "10.9.2",
+    "vue-eslint-parser": "10.4.1",
+    "@typescript-eslint/parser": "8.65.0"
+  },
+  "records": [
+    {
+      "modifier": "13.27",
+      "source": "<template><input @keyup.13.27=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "enter"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.13.27=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "27.13",
+      "source": "<template><input @keyup.27.13=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "escape"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.27.13=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "stop.13.27",
+      "source": "<template><input @keyup.stop.13.27=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 30,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 32,
+              "fix": {
+                "range": [29, 31],
+                "text": "enter"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.stop.13.27=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "0.13",
+      "source": "<template><input @keyup.0.13=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "9.13",
+      "source": "<template><input @keyup.9.13=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "13.0",
+      "source": "<template><input @keyup.13.0=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "enter"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.13.0=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "13suffix",
+      "source": "<template><input @keyup.13suffix=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 33,
+              "fix": {
+                "range": [24, 32],
+                "text": "enter"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.13suffix=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "9suffix.13",
+      "source": "<template><input @keyup.9suffix.13=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "f2.27",
+      "source": "<template><input @keyup.f2.27=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 28,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 30,
+              "fix": {
+                "range": [27, 29],
+                "text": "escape"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.f2.27=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "+13",
+      "source": "<template><input @keyup.+13=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "enter"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.+13=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "-1",
+      "source": "<template><input @keyup.-1=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.-1=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "-0.13",
+      "source": "<template><input @keyup.-0.13=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "0013",
+      "source": "<template><input @keyup.0013=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 29,
+              "fix": {
+                "range": [24, 28],
+                "text": "enter"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.0013=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "0x13.27",
+      "source": "<template><input @keyup.0x13.27=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "1e2.13",
+      "source": "<template><input @keyup.1e2.13=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "999",
+      "source": "<template><input @keyup.999=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.999=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "999.13",
+      "source": "<template><input @keyup.999.13=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.999.13=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "13.999",
+      "source": "<template><input @keyup.13.999=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "enter"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.13.999=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "1",
+      "source": "<template><input @keyup.1=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "2",
+      "source": "<template><input @keyup.2=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "3",
+      "source": "<template><input @keyup.3=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "4",
+      "source": "<template><input @keyup.4=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "5",
+      "source": "<template><input @keyup.5=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "6",
+      "source": "<template><input @keyup.6=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "7",
+      "source": "<template><input @keyup.7=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "8",
+      "source": "<template><input @keyup.8=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "9",
+      "source": "<template><input @keyup.9=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "0",
+      "source": "<template><input @keyup.0=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "10",
+      "source": "<template><input @keyup.10=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.10=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "12",
+      "source": "<template><input @keyup.12=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.12=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "32",
+      "source": "<template><input @keyup.32=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "space"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.32=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "65",
+      "source": "<template><input @keyup.65=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "a"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.65=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "90",
+      "source": "<template><input @keyup.90=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "z"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.90=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "112",
+      "source": "<template><input @keyup.112=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "f1"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.112=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "123",
+      "source": "<template><input @keyup.123=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "f12"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.123=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "144",
+      "source": "<template><input @keyup.144=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "num-lock"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.144=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "145",
+      "source": "<template><input @keyup.145=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "scroll-lock"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.145=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "enter",
+      "source": "<template><input @keyup.enter=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "f2",
+      "source": "<template><input @keyup.f2=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "stop",
+      "source": "<template><input @keyup.stop=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "",
+      "source": "<template><input @keyup.=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "13e2",
+      "source": "<template><input @keyup.13e2=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 29,
+              "fix": {
+                "range": [24, 28],
+                "text": "enter"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.13e2=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "-13suffix",
+      "source": "<template><input @keyup.-13suffix=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 34
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.-13suffix=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "+0.13",
+      "source": "<template><input @keyup.+0.13=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "0b13.27",
+      "source": "<template><input @keyup.0b13.27=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.13",
+      "source": "<template><input @keyup.999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.13=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 335,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 337,
+              "fix": {
+                "range": [334, 336],
+                "text": "enter"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.13=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.13",
+      "source": "<template><input @keyup.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.13=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 125
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.13=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "16",
+      "source": "<template><input @keyup.16=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "shift"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.16=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "17",
+      "source": "<template><input @keyup.17=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "ctrl"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.17=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "18",
+      "source": "<template><input @keyup.18=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "alt"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.18=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "19",
+      "source": "<template><input @keyup.19=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "pause"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.19=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "20",
+      "source": "<template><input @keyup.20=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "caps-lock"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.20=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "33",
+      "source": "<template><input @keyup.33=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "page-up"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.33=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "34",
+      "source": "<template><input @keyup.34=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "page-down"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.34=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "35",
+      "source": "<template><input @keyup.35=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "end"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.35=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "36",
+      "source": "<template><input @keyup.36=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "home"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.36=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "37",
+      "source": "<template><input @keyup.37=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "arrow-left"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.37=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "38",
+      "source": "<template><input @keyup.38=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "arrow-up"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.38=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "39",
+      "source": "<template><input @keyup.39=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "arrow-right"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.39=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "40",
+      "source": "<template><input @keyup.40=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "arrow-down"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.40=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "45",
+      "source": "<template><input @keyup.45=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "insert"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.45=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "46",
+      "source": "<template><input @keyup.46=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "delete"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.46=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "66",
+      "source": "<template><input @keyup.66=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "b"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.66=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "67",
+      "source": "<template><input @keyup.67=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "c"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.67=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "68",
+      "source": "<template><input @keyup.68=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "d"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.68=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "69",
+      "source": "<template><input @keyup.69=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "e"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.69=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "70",
+      "source": "<template><input @keyup.70=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "f"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.70=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "71",
+      "source": "<template><input @keyup.71=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "g"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.71=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "72",
+      "source": "<template><input @keyup.72=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "h"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.72=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "73",
+      "source": "<template><input @keyup.73=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "i"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.73=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "74",
+      "source": "<template><input @keyup.74=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "j"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.74=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "75",
+      "source": "<template><input @keyup.75=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "k"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.75=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "76",
+      "source": "<template><input @keyup.76=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "l"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.76=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "77",
+      "source": "<template><input @keyup.77=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "m"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.77=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "78",
+      "source": "<template><input @keyup.78=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "n"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.78=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "79",
+      "source": "<template><input @keyup.79=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "o"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.79=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "80",
+      "source": "<template><input @keyup.80=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "p"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.80=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "81",
+      "source": "<template><input @keyup.81=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "q"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.81=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "82",
+      "source": "<template><input @keyup.82=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "r"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.82=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "83",
+      "source": "<template><input @keyup.83=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "s"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.83=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "84",
+      "source": "<template><input @keyup.84=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "t"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.84=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "85",
+      "source": "<template><input @keyup.85=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "u"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.85=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "86",
+      "source": "<template><input @keyup.86=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "v"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.86=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "87",
+      "source": "<template><input @keyup.87=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "w"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.87=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "88",
+      "source": "<template><input @keyup.88=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "x"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.88=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "89",
+      "source": "<template><input @keyup.89=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 27,
+              "fix": {
+                "range": [24, 26],
+                "text": "y"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.89=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "113",
+      "source": "<template><input @keyup.113=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "f2"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.113=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "114",
+      "source": "<template><input @keyup.114=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "f3"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.114=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "115",
+      "source": "<template><input @keyup.115=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "f4"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.115=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "116",
+      "source": "<template><input @keyup.116=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "f5"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.116=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "117",
+      "source": "<template><input @keyup.117=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "f6"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.117=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "118",
+      "source": "<template><input @keyup.118=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "f7"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.118=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "119",
+      "source": "<template><input @keyup.119=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "f8"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.119=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "120",
+      "source": "<template><input @keyup.120=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "f9"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.120=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "121",
+      "source": "<template><input @keyup.121=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "f10"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.121=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "modifier": "122",
+      "source": "<template><input @keyup.122=\"submit\" /></template>",
+      "results": [
+        {
+          "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-numeric-key-modifier-parity/Numeric.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": 2,
+              "message": "'KeyboardEvent.keyCode' modifier on 'v-on' directive is deprecated. Using 'KeyboardEvent.key' instead.",
+              "line": 1,
+              "column": 25,
+              "messageId": "numberModifierIsDeprecated",
+              "endLine": 1,
+              "endColumn": 28,
+              "fix": {
+                "range": [24, 27],
+                "text": "f11"
+              }
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 1,
+          "fixableWarningCount": 0,
+          "source": "<template><input @keyup.122=\"submit\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    }
+  ]
+}

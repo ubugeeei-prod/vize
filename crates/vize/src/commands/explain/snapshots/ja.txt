@@ -4068,7 +4068,7 @@ v-on の非推奨な数値 keyCode 修飾子を禁止する
 対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
 重大度: エラー
 カテゴリー: essential
-自動修正: なし
+自動修正: あり
 ドキュメント: docs/content/rules/vue.md
 
 不正な例:

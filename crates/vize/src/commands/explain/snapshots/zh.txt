@@ -4238,7 +4238,7 @@ vue/no-deprecated-v-on-number-modifiers · lint 规则
 适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
 严重级别: 错误
 类别: essential
-自动修复: 不支持
+自动修复: 支持
 文档: docs/content/rules/vue.md
 
 错误示例:

@@ -30,6 +30,25 @@ fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> Sh
     let mut partitioned: Vec<&VirtualFile> = Vec::new();
     let mut shared: Vec<&Path> = Vec::new();
     for file in files {
+        // Match the unsharded program's root membership. Registered dependency
+        // sources outside the project root load through their importer-scoped
+        // package shadows; making their canonical mirror an independent root
+        // loses that package's node_modules lookup chain (#9201).
+        if !project.virtual_file_is_program_member(file) {
+            // An imported external augmentation still affects every root. Its
+            // package context cannot be recreated by sharing the canonical
+            // file, so retain the single program for that coupled graph.
+            if project
+                .original_content_for_virtual(&file.virtual_path)
+                .is_some_and(declares_program_wide_types)
+            {
+                return ShardPlan {
+                    shards: Vec::new(),
+                    owners: FxHashMap::default(),
+                };
+            }
+            continue;
+        }
         // The program-wide check reads the original source: the generated Vue
         // wrapper carries no `declare global` of its own — the shared
         // ImportMeta augmentation lives once per program in the hoisted

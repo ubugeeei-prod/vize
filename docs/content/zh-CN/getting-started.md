@@ -59,7 +59,7 @@ vp run fmt:check
 尚未翻译的指南链接指向英文版。
 
 > [!NOTE]
-> 原生 CLI 和编辑器读取 Vite 配置，以及不创建专用配置的 init，正在为下一个版本准备。在该版本发布前，已发布的原生工具仍需使用现有的专用格式来自定义共享设置。[参考文档](./guide/configuration-reference.md)介绍该格式。
+> Vize 0.457.0 的原生 CLI 支持读取共享 Vite 配置，`init` 也无需创建专用 Vize 配置文件。使用共享配置时，请更新 CLI、Vite 集成和编辑器扩展。[参考文档](./guide/configuration-reference.md)介绍配置查找、优先级和可选的专用格式。
 
 ## 不使用 Vite+ 的场景
 

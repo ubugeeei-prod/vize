@@ -10,7 +10,7 @@ Disallow deprecated numeric `keyCode` modifiers on `v-on`
 
 Default severity: `error`  
 Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
+Automatic fix: Known key codes are replaced with named modifiers; unknown codes have no fix\
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
@@ -34,6 +34,14 @@ export default defineConfig({
 ```sh
 vp run lint
 ```
+
+## Numeric selection and fixes
+
+The first decimal-prefix numeric modifier determines the finding. `@keyup.13.27="submit"` reports
+only `13` and offers `@keyup.enter.27="submit"`; another fix pass can replace `27` with `escape`.
+`@keyup.13suffix="submit"` also becomes `@keyup.enter="submit"`. Values 0–9 are exempt, so
+`@keyup.0.13="submit"` is clean under this rule. Unknown values such as `999` report without a fix.
+The existing Vue 2 and petite-vue exemption remains in effect.
 
 ## Bad
 

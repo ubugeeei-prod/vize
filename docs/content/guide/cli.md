@@ -212,7 +212,7 @@ Key options:
 | `-q, --quiet`       | Show summary only                                  |
 | `--profile`         | Write profile artifacts under `node_modules/.vize` |
 | `--corsa-path`      | Override the Corsa executable path                 |
-| `--servers`         | Reserved Corsa server count; only `1` is supported |
+| `--servers`         | Parallel Corsa CLI servers (`1`–`32`); auto-tuned when omitted |
 | `--declaration`     | Emit `.d.ts` output                                |
 | `--declaration-dir` | Output directory for emitted declarations          |
 

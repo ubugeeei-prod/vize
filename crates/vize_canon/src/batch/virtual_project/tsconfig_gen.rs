@@ -289,7 +289,7 @@ impl VirtualProject {
 
     /// In-project roots, diagnosed scripts, and out-of-root `.d.ts` roots join
     /// `include` (#7217, #5629). An out-of-root script stays out (`TS2451`).
-    fn virtual_file_is_program_member(&self, file: &super::VirtualFile) -> bool {
+    pub(crate) fn virtual_file_is_program_member(&self, file: &super::VirtualFile) -> bool {
         let original = vize_carton::path::canonicalize_non_verbatim(&file.original_path);
         let declaration = crate::batch::declaration_path::is_declaration_file(&original);
         if !declaration && !original.starts_with(&self.project_root) {

@@ -1,10 +1,8 @@
+import { measurementToolchain } from "./measurement-toolchain.mjs";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { isDeepStrictEqual } from "node:util";
-import { parseTomlLite } from "../../support/compat/davinci/toml-lite.mjs";
 
 const FROM = "rustc 1.98.0 (88d9e12ae 2026-08-18)";
 const TO = "rustc 1.99.0 (b940084d7 2026-09-28)";
@@ -77,8 +75,7 @@ export function authenticateInstructionMeasurementSource(report, context) {
 }
 
 export function verifyRepositoryInstructionBudgets(budgets, root) {
-  const toolchain = parseTomlLite(fs.readFileSync(path.join(root, "rust-toolchain.toml"), "utf8"))
-    .toolchain.channel;
+  const toolchain = measurementToolchain(root);
   assert.equal(toolchain, "1.99.0", "instruction source toolchain must be 1.99.0");
   assert.equal(budgets.methodology.rustc, TO, "instruction budget compiler mismatch");
 }

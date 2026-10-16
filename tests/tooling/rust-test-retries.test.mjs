@@ -36,7 +36,8 @@ for (const job of ["merge-rust-source"]) {
       git("config", "user.name", "CI Test");
       git("config", "user.email", "ci@example.invalid");
       writeFileSync(join(cwd, "fixture"), "source\n");
-      git("add", "fixture");
+      writeFileSync(join(cwd, "rust-toolchain.toml"), '[toolchain]\nchannel = "1.99.1"\n');
+      git("add", "fixture", "rust-toolchain.toml");
       git("commit", "-qm", "source identity");
       const producer = { runId: "36308996672", sha: git("rev-parse", "HEAD"), attempt: "1" };
       const directory = join(cwd, "artifacts", name(upload.with.name, producer));
@@ -46,7 +47,7 @@ for (const job of ["merge-rust-source"]) {
       const context = {
         cwd,
         nextestVersion: "cargo-nextest 0.9.146",
-        rustcVersion: "rustc 1.99.0 (fixture)",
+        rustcVersion: "rustc 1.99.1 (fixture)",
         env: {
           VIZE_NUXT_CONFIG_ITERATIONS: "100",
           ...(job === "merge-rust-source"

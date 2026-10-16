@@ -4123,7 +4123,7 @@ tier: exact
 domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
 severity: error
 category: essential
-autofix: no
+autofix: yes
 docs: docs/content/rules/vue.md
 
 invalid:
