@@ -8,7 +8,7 @@ description: Share Vize settings from your existing Vite config and TypeScript p
 Keep Vize settings in `vite.config.ts` and the TypeScript project in `tsconfig.json`. Defaults need no dedicated Vize configuration file.
 
 > [!NOTE]
-> Shared Vite config discovery for the native CLI/editor and init without a dedicated config are being prepared for the next release. Until that release, published native tools still require the existing dedicated format for custom shared settings. The [reference](./configuration-reference.md) documents that format.
+> Vize 0.457.0 supports shared Vite configuration in the native CLI and `init` without a dedicated Vize file. Keep the CLI, Vite integration and editor extension up to date to use the shared configuration workflow. The [reference](./configuration-reference.md) covers discovery, precedence and optional dedicated formats.
 
 ## Vite+ configuration
 
@@ -83,7 +83,7 @@ vp exec vize check
 
 CLI discovery stops at the nearest `package.json`, `tsconfig.json`, or `jsconfig.json`. In a monorepo, run from the target package or use `vize.entries`, and select the editor's workspace folders explicitly.
 
-For the next release, the editor assigns each document to its nearest project root within the selected workspace. A `package.json`, `tsconfig*.json`, `jsconfig.json`, `vite.config.*`, or `vize.config.*` establishes that root. Without a Vite or Vize config there, the fresh-project defaults apply; for example, `package/src/tsconfig.json` selects `package/src` as a separate project. Invalid config retains the editor's historical defaults. An explicit CLI `--config` remains an error if the selected file is missing or invalid.
+The editor assigns each document to its nearest project root within the selected workspace. A `package.json`, `tsconfig*.json`, `jsconfig.json`, `vite.config.*`, or `vize.config.*` establishes that root. Without a Vite or Vize config there, the fresh-project defaults apply; for example, `package/src/tsconfig.json` selects `package/src` as a separate project. Invalid config retains the editor's historical defaults. An explicit CLI `--config` remains an error if the selected file is missing or invalid.
 
 With Vite config, `build`, `lint`, `fmt`, and `check` without an input argument use the selected Vite `root`. A relative `root` resolves from the config directory. Vite-owned `typeChecker` paths and scoped `basePath` resolve from that root; dedicated-config paths retain their config-directory base. Explicit CLI file/glob arguments and `--tsconfig` remain relative to the directory where you run the command.
 

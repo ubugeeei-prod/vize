@@ -17,6 +17,7 @@ jobs:
     timeout-minutes: 45
     env:
       CARGO_TERM_COLOR: never
+      RUSTUP_TOOLCHAIN: "1.99.0"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MEMORY_BASE_SHA: ${{ inputs.base_sha }}
       MEMORY_HEAD_SHA: ${{ inputs.head_sha }}
@@ -50,7 +51,7 @@ jobs:
         with:
           node-version-file: head/package.json
           run-install: false
-      - name: Install exact repository Rust and Callgrind identity provider
+      - name: Install exact measurement Rust and Callgrind identity provider
         run: |
           rustup toolchain install 1.99.0 --profile minimal
           sudo apt-get update -qq

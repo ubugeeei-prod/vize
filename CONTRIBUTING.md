@@ -6,6 +6,8 @@ Thanks for helping make Vize sharper. This project is still moving toward v1 alp
 
 Use the Node.js development runtime from `package.json#devEngines.runtime` and the Rust version from `rust-toolchain.toml`. The workspace declares a minimum supported Rust version (MSRV) of `1.99.0` in `Cargo.toml` (`[workspace.package].rust-version`); contributions must compile under that version.
 
+Instruction and paired-memory measurements use `rust-measurement-toolchain.toml` (Rust 1.99.0), independently of the development patch release. Keep their compiler, inputs, and numeric ceilings unchanged when updating the development toolchain.
+
 Install dependencies from the workspace root:
 
 ```sh

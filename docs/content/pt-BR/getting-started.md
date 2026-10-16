@@ -59,7 +59,7 @@ Aplique correções com `vp run check -- --fix`. Use `vp run` para as tarefas ge
 Os guias que ainda não foram traduzidos abrem em inglês.
 
 > [!NOTE]
-> A descoberta da configuração Vite pela CLI e pelo editor nativos, assim como o init sem arquivo específico, está em preparação para a próxima versão. Até lá, as ferramentas nativas publicadas ainda usam o formato específico existente para opções compartilhadas personalizadas. A [referência](./guide/configuration-reference.md) descreve esse formato.
+> O Vize 0.457.0 oferece configuração Vite compartilhada na CLI nativa e `init` sem arquivo Vize específico. Atualize a CLI, a integração Vite e a extensão do editor para usar esse fluxo. A [referência](./guide/configuration-reference.md) descreve a descoberta, a precedência e os formatos específicos opcionais.
 
 ## Usar o Vize sem Vite+
 

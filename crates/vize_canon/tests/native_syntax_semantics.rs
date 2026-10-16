@@ -16,6 +16,8 @@ use vize_canon::{BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrai
 
 #[path = "native_syntax_semantics/element_plus.rs"]
 mod element_plus;
+#[path = "native_syntax_semantics/handoff_notice.rs"]
+mod handoff_notice;
 #[path = "native_syntax_semantics/transport_refusal.rs"]
 mod transport_refusal;
 use transport_refusal::without_transport;

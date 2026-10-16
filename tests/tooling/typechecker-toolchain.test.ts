@@ -42,8 +42,8 @@ function receipt(identity: ReturnType<typeof typecheckerSourceIdentity>) {
   };
 }
 
-test("both reviewed source pins retain strict compiler identity without runtime credit", (t) => {
-  for (const channel of ["1.98.0", "1.99.0"]) {
+test("reviewed source pins retain strict compiler identity without runtime credit", (t) => {
+  for (const channel of ["1.98.0", "1.99.0", "1.99.1"]) {
     const identity = typecheckerSourceIdentity(source(t, channel));
     const original = receipt(identity);
     assert.equal(identity.toolchain, channel);
@@ -55,11 +55,12 @@ test("both reviewed source pins retain strict compiler identity without runtime 
 });
 
 test("current source rejects old, future, malformed and missing actual compiler stamps", (t) => {
-  const identity = typecheckerSourceIdentity(source(t, "1.99.0"));
+  const identity = typecheckerSourceIdentity(source(t, "1.99.1"));
   for (const compiler of [
     "rustc 1.98.0 synthetic-unit-test",
+    "rustc 1.99.0 synthetic-unit-test",
     "rustc 1.100.0 synthetic-unit-test",
-    "rustc 1.99.0-nightly synthetic-unit-test",
+    "rustc 1.99.1-nightly synthetic-unit-test",
     "rustc 1x99x0 synthetic-unit-test",
     "rustc 1.99.01 synthetic-unit-test",
     undefined,

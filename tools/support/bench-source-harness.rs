@@ -214,6 +214,16 @@ fn source(root: &Path, tree: &BTreeMap<String, GitFile>, file: &str) -> Result<V
     );
     Ok(body)
 }
+// Select only a committed measurement manifest; historical trees used the
+// contributor manifest for the same exact compiler. Each arm authenticates the
+// complete selected Git blob before comparing the unchanged measurement recipe.
+fn measurement_toolchain_file(tree: &BTreeMap<String, GitFile>) -> &'static str {
+    if tree.contains_key("rust-measurement-toolchain.toml") {
+        "rust-measurement-toolchain.toml"
+    } else {
+        "rust-toolchain.toml"
+    }
+}
 fn source_toml(
     root: &Path,
     tree: &BTreeMap<String, GitFile>,
@@ -710,7 +720,7 @@ fn arm(out: &Path, measurement: &Value, name: &str, head_root: &Path) -> Result<
             "duplicate external lock identity"
         );
     }
-    let toolchain = source_toml(&root, &tree, "rust-toolchain.toml")?;
+    let toolchain = source_toml(&root, &tree, measurement_toolchain_file(&tree))?;
     require!(
         toml_at(&toolchain, &["toolchain", "channel"])?.as_str() == Some("1.99.0"),
         "foreign source toolchain pin"
@@ -764,8 +774,15 @@ fn comparable(base: &Arm, head: &Arm) -> Result<(), String> {
         "changed paired build profile"
     );
     require!(
-        source(&base.root, &base.tree, "rust-toolchain.toml")?
-            == source(&head.root, &head.tree, "rust-toolchain.toml")?,
+        source(
+            &base.root,
+            &base.tree,
+            measurement_toolchain_file(&base.tree)
+        )? == source(
+            &head.root,
+            &head.tree,
+            measurement_toolchain_file(&head.tree)
+        )?,
         "changed protocol toolchain"
     );
     for file in [".cargo/config", ".cargo/config.toml"] {

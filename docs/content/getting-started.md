@@ -55,7 +55,7 @@ Apply fixes with `vp run check -- --fix`. Use `vp run` for Vize's generated task
 - [Set up your editor](./guide/vite-plus-editor.md) with shared native settings.
 
 > [!NOTE]
-> Shared Vite config discovery for the native CLI/editor and init without a dedicated config are being prepared for the next release. Until that release, published native tools still require the existing dedicated format for custom shared settings. The [reference](./guide/configuration-reference.md) documents that format.
+> Vize 0.457.0 supports shared Vite configuration in the native CLI and `init` without a dedicated Vize file. Keep the CLI, Vite integration and editor extension up to date to use the shared configuration workflow. The [reference](./guide/configuration-reference.md) covers discovery, precedence and optional dedicated formats.
 
 ## Use Vize without Vite+
 

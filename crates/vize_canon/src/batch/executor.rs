@@ -35,7 +35,10 @@ mod fallback;
 mod option_probe;
 mod session;
 
-use cli::{auto_server_count, check_with_cli, check_with_cli_sharded};
+use cli::{
+    CheckFailure, auto_server_count, check_with_cli, check_with_cli_classified,
+    check_with_cli_sharded,
+};
 use diagnostics::dedup_diagnostics;
 use fallback::{FallbackStep, warn_fallback};
 use session::IncrementalSessionState;
@@ -144,22 +147,25 @@ impl CorsaExecutor {
                 Err(cli_error) => {
                     // Degrade to a single CLI program before the session API:
                     // a shard-specific failure must not cost CLI support.
-                    warn_fallback(FallbackStep::ShardedCliToSingleCli, &cli_error);
+                    if let CheckFailure::Runtime(ref error) = cli_error {
+                        warn_fallback(FallbackStep::ShardedCliToSingleCli, error);
+                    }
                 }
             }
         }
 
         let cli_error = match profile!(
             "canon.corsa.cli",
-            check_with_cli(&self.corsa_path, project, self.checkers())
+            check_with_cli_classified(&self.corsa_path, project, self.checkers())
         ) {
             Ok(result) => return Ok(result),
             Err(cli_error) => {
-                // Fall through to the project-session API. This keeps the batch
-                // runner usable with runtimes whose CLI diagnostics are not
-                // available or not parseable.
-                warn_fallback(FallbackStep::CliToSession, &cli_error);
-                cli_error
+                // Parser abort requires the complete same-config semantic phase;
+                // only an unexpected runtime failure degrades this capability.
+                if let CheckFailure::Runtime(ref error) = cli_error {
+                    warn_fallback(FallbackStep::CliToSession, error);
+                }
+                cli_error.into_error()
             }
         };
 
