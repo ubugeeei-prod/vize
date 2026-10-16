@@ -10,7 +10,7 @@ description: Compartilhe as opções do Vize na configuração Vite e no projeto
 Mantenha as opções do Vize em `vite.config.ts` e o projeto TypeScript em `tsconfig.json`. Os valores padrão dispensam um arquivo de configuração específico do Vize.
 
 > [!NOTE]
-> A descoberta da configuração Vite pela CLI e pelo editor nativos, assim como o init sem arquivo específico, está em preparação para a próxima versão. Até lá, as ferramentas nativas publicadas ainda usam o formato específico existente para opções compartilhadas personalizadas. A [referência](./configuration-reference.md) descreve esse formato.
+> O Vize 0.457.0 oferece configuração Vite compartilhada na CLI nativa e `init` sem arquivo Vize específico. Atualize a CLI, a integração Vite e a extensão do editor para usar esse fluxo. A [referência](./configuration-reference.md) descreve a descoberta, a precedência e os formatos específicos opcionais.
 
 ## Configuração Vite+
 

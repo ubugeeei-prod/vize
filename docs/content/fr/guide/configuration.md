@@ -10,7 +10,7 @@ description: Partagez les réglages Vize depuis votre configuration Vite et votr
 Gardez les réglages Vize dans `vite.config.ts` et le projet TypeScript dans `tsconfig.json`. Les valeurs par défaut ne nécessitent aucun fichier Vize supplémentaire.
 
 > [!NOTE]
-> La découverte de la configuration Vite par la CLI et l'éditeur natifs, ainsi qu'init sans fichier dédié, sont en préparation pour la prochaine version. D'ici là, les outils natifs publiés utilisent encore le format dédié existant pour les réglages partagés personnalisés. La [référence](./configuration-reference.md) décrit ce format.
+> Vize 0.457.0 prend en charge la configuration Vite partagée dans la CLI native et `init` sans fichier Vize dédié. Mettez à jour la CLI, l’intégration Vite et l’extension de l’éditeur pour utiliser ce parcours. La [référence](./configuration-reference.md) décrit la découverte, les priorités et les formats dédiés facultatifs.
 
 ## Configuration Vite+
 

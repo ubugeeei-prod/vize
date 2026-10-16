@@ -10,7 +10,7 @@ description: 既存の Vite 設定と TypeScript プロジェクトで Vize を�
 Vize の設定は `vite.config.ts` に、TypeScript のプロジェクト設定は `tsconfig.json` にまとめます。既定の設定で使う場合、専用の Vize 設定ファイルは不要です。
 
 > [!NOTE]
-> ネイティブ CLI・エディターの Vite 設定の読み込みと、専用設定を作らない init は、次のリリースに向けて準備中です。それまでは、公開済みのネイティブツールで共通設定を変更するには既存の専用形式を使います。[リファレンス](./configuration-reference.md)にその形式をまとめています。
+> Vize 0.457.0 のネイティブ CLI は Vite の共通設定を読み込めます。`init` も専用の Vize 設定ファイルを作らずに導入できます。共通設定を利用する場合は、CLI・Vite 連携・エディター拡張機能を更新してください。設定の検索順序・優先順位と、任意の専用形式は[リファレンス](./configuration-reference.md)を参照してください。
 
 ## Vite+ の設定
 
@@ -89,7 +89,7 @@ vp exec vize check
 
 CLI の設定の検索は、最も近い `package.json`・`tsconfig.json`・`jsconfig.json` のあるディレクトリで止まります。モノリポジトリでは対象パッケージから実行するか `vize.entries` を使い、エディターのワークスペースフォルダーも明示してください。
 
-次回リリースのエディターは、選択したワークスペースの範囲内で、ファイルごとに最も近いプロジェクトのルートを選びます。`package.json`・`tsconfig*.json`・`jsconfig.json`・`vite.config.*`・`vize.config.*` のあるディレクトリがルートになります。そこに Vite・Vize の設定がなければ、新規プロジェクトの既定値を使います。たとえば `package/src/tsconfig.json` があれば、`package/src` を独立したプロジェクトとして扱います。設定を読み込めなければ、従来のエディターの既定値を維持します。CLI で `--config` を明示した場合、指定したファイルがない、または読み込めないときはエラーになります。
+エディターは、選択したワークスペースの範囲内で、ファイルごとに最も近いプロジェクトのルートを選びます。`package.json`・`tsconfig*.json`・`jsconfig.json`・`vite.config.*`・`vize.config.*` のあるディレクトリがルートになります。そこに Vite・Vize の設定がなければ、新規プロジェクトの既定値を使います。たとえば `package/src/tsconfig.json` があれば、`package/src` を独立したプロジェクトとして扱います。設定を読み込めなければ、従来のエディターの既定値を維持します。CLI で `--config` を明示した場合、指定したファイルがない、または読み込めないときはエラーになります。
 
 Vite 設定を使い、入力引数なしで `build`・`lint`・`fmt`・`check` を実行すると、選択した Vite の `root` が対象になります。相対指定の `root` は設定ファイルのディレクトリを基準に解決します。Vite の `typeChecker` 内のパスとスコープの `basePath` はその root を基準にし、専用設定内のパスは従来どおり設定ファイルのディレクトリを基準にします。CLI へ明示するファイル・glob・`--tsconfig` は、コマンドを実行したディレクトリが基準です。
 
