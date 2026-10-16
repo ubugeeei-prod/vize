@@ -20,14 +20,14 @@ The pinned reference is eslint-plugin-vue 10.9.2 with ESLint 10.4.1,
 vue-eslint-parser 10.4.1 and @typescript-eslint/parser 8.65.0. Its filter rule reports `VFilterSequenceExpression.loc`.
 Its router rule reports `VAttribute.key` for static attributes and
 `VDirectiveKey.argument` for bound attributes. The corresponding authored Relief
-locations are `SimpleExpressionNode.loc`, `AttributeNode.name_loc` and the
+locations are the filter input AST within `SimpleExpressionNode.loc`, `AttributeNode.name_loc` and the
 directive argument's location.
 
 `crates/vize_patina/tests/fixtures/deprecated-diagnostic-spans` retains all 11
 original vue-element-admin files, two ZY-Player files, 14 Habitica files and one
 Frappe Builder file with byte lengths, SHA-256 hashes and Git blob identities. It also
 retains all 91 original divergent diagnostic entries and complete reference packets
-for those files plus ten minimal cases, including CRLF, Unicode, multiline
+for those files plus 16 minimal cases, including CRLF, Unicode, multiline
 expressions, chains, static and bound attributes, and clean inputs.
 The four compressed original Matrix linter reports retain the exact raw producer
 bytes and every field for all 655 ordered file packets, including findings from
@@ -57,3 +57,11 @@ Native tests explicitly require a completely clean result for the minimized
 assertion and the full original Frappe file, preserving #7911's type-grammar
 handling. This source-correctness distinction remains visible as a reference
 disagreement; this patch does not disguise it through comparator changes.
+
+Grouped filter inputs need one additional range step: `(value) | format` starts
+at `value`, while `(value).field | format` starts at the member expression's
+opening parenthesis. A cold OXC parse of an already-flagged parenthesized input
+provides this inner-expression span. Six minimal cases distinguish grouping,
+nested grouping, a grouped binary expression, a conditional, a call and member
+access. Habitica's multiline boss-health expressions exercise the same rule on
+unchanged original source. The common expression path stays lexical.

@@ -36,7 +36,7 @@ fn pinned_originals_and_minimal_cases_match_complete_native_packets() {
         .with_locale(Locale::En)
         .with_help_level(HelpLevel::Full);
     let cases = fixture["captures"].as_array().unwrap();
-    assert_eq!(cases.len(), 38);
+    assert_eq!(cases.len(), 44);
     let mut administrative_warnings = 0;
     for case in cases {
         let source = case["source"].as_str().unwrap();

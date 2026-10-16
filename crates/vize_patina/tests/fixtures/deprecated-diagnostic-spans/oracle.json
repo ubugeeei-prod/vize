@@ -101,6 +101,186 @@
       ]
     },
     {
+      "id": "parenthesized-0",
+      "filename": "minimal/parenthesized-0.vue",
+      "source": "<template>{{ (a) | f }}</template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/parenthesized-0.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 15,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 21
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>{{ (a) | f }}</template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "parenthesized-1",
+      "filename": "minimal/parenthesized-1.vue",
+      "source": "<template>{{ ((a)) | f }}</template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/parenthesized-1.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 16,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 23
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>{{ ((a)) | f }}</template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "parenthesized-2",
+      "filename": "minimal/parenthesized-2.vue",
+      "source": "<template>{{ ((a)+b) | f }}</template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/parenthesized-2.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 15,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 25
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>{{ ((a)+b) | f }}</template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "parenthesized-3",
+      "filename": "minimal/parenthesized-3.vue",
+      "source": "<template>{{ (a) ? b : c | f }}</template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/parenthesized-3.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 14,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 29
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>{{ (a) ? b : c | f }}</template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "parenthesized-4",
+      "filename": "minimal/parenthesized-4.vue",
+      "source": "<template>{{ (a)() | f }}</template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/parenthesized-4.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 14,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 23
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>{{ (a)() | f }}</template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "parenthesized-5",
+      "filename": "minimal/parenthesized-5.vue",
+      "source": "<template>{{ (a).b | f }}</template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/parenthesized-5.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 14,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 23
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>{{ (a).b | f }}</template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
       "id": "bound-filter",
       "filename": "minimal/bound-filter.vue",
       "source": "<template><div :id=\"rawId | toId\" /></template>",
