@@ -21,7 +21,16 @@
           "end": 41,
           "help": null,
           "labels": [],
-          "fix": null
+          "fix": {
+            "message": "Replace the numeric keyCode modifier with a named key",
+            "edits": [
+              {
+                "start": 39,
+                "end": 41,
+                "new_text": "enter"
+              }
+            ]
+          }
         }
       ],
       "baselineDiagnostics": [],
@@ -34,7 +43,16 @@
           "end": 41,
           "help": null,
           "labels": [],
-          "fix": null
+          "fix": {
+            "message": "Replace the numeric keyCode modifier with a named key",
+            "edits": [
+              {
+                "start": 39,
+                "end": 41,
+                "new_text": "enter"
+              }
+            ]
+          }
         }
       ],
       "essentialBaselineDiagnostics": [],
@@ -94,7 +112,16 @@
           "end": 45,
           "help": null,
           "labels": [],
-          "fix": null
+          "fix": {
+            "message": "Replace the numeric keyCode modifier with a named key",
+            "edits": [
+              {
+                "start": 43,
+                "end": 45,
+                "new_text": "escape"
+              }
+            ]
+          }
         }
       ],
       "baselineDiagnostics": [
@@ -127,7 +154,16 @@
           "end": 45,
           "help": null,
           "labels": [],
-          "fix": null
+          "fix": {
+            "message": "Replace the numeric keyCode modifier with a named key",
+            "edits": [
+              {
+                "start": 43,
+                "end": 45,
+                "new_text": "escape"
+              }
+            ]
+          }
         }
       ],
       "essentialBaselineDiagnostics": [],
@@ -207,17 +243,16 @@
           "end": 41,
           "help": null,
           "labels": [],
-          "fix": null
-        },
-        {
-          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
-          "severity": "error",
-          "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead",
-          "start": 42,
-          "end": 44,
-          "help": null,
-          "labels": [],
-          "fix": null
+          "fix": {
+            "message": "Replace the numeric keyCode modifier with a named key",
+            "edits": [
+              {
+                "start": 39,
+                "end": 41,
+                "new_text": "enter"
+              }
+            ]
+          }
         }
       ],
       "baselineDiagnostics": [],
@@ -230,17 +265,16 @@
           "end": 41,
           "help": null,
           "labels": [],
-          "fix": null
-        },
-        {
-          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
-          "severity": "error",
-          "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead",
-          "start": 42,
-          "end": 44,
-          "help": null,
-          "labels": [],
-          "fix": null
+          "fix": {
+            "message": "Replace the numeric keyCode modifier with a named key",
+            "edits": [
+              {
+                "start": 39,
+                "end": 41,
+                "new_text": "enter"
+              }
+            ]
+          }
         }
       ],
       "essentialBaselineDiagnostics": [],
@@ -263,25 +297,6 @@
           },
           "source": "vize/lint",
           "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead\n\nHelp: Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13)."
-        },
-        {
-          "range": {
-            "start": {
-              "line": 0,
-              "character": 42
-            },
-            "end": {
-              "line": 0,
-              "character": 44
-            }
-          },
-          "severity": 1,
-          "code": "vue/no-deprecated-v-on-number-modifiers",
-          "codeDescription": {
-            "href": "https://eslint.vuejs.org/rules/no-deprecated-v-on-number-modifiers.html"
-          },
-          "source": "vize/lint",
-          "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead\n\nHelp: Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13)."
         }
       ],
       "baselineLspDiagnostics": []
@@ -364,7 +379,16 @@
           "end": 52,
           "help": null,
           "labels": [],
-          "fix": null
+          "fix": {
+            "message": "Replace the numeric keyCode modifier with a named key",
+            "edits": [
+              {
+                "start": 50,
+                "end": 52,
+                "new_text": "enter"
+              }
+            ]
+          }
         }
       ],
       "baselineDiagnostics": [],
@@ -387,7 +411,16 @@
           "end": 52,
           "help": null,
           "labels": [],
-          "fix": null
+          "fix": {
+            "message": "Replace the numeric keyCode modifier with a named key",
+            "edits": [
+              {
+                "start": 50,
+                "end": 52,
+                "new_text": "enter"
+              }
+            ]
+          }
         }
       ],
       "essentialBaselineDiagnostics": [],
@@ -517,7 +550,16 @@
           "end": 72,
           "help": null,
           "labels": [],
-          "fix": null
+          "fix": {
+            "message": "Replace the numeric keyCode modifier with a named key",
+            "edits": [
+              {
+                "start": 70,
+                "end": 72,
+                "new_text": "escape"
+              }
+            ]
+          }
         }
       ],
       "baselineDiagnostics": [],
@@ -540,7 +582,16 @@
           "end": 72,
           "help": null,
           "labels": [],
-          "fix": null
+          "fix": {
+            "message": "Replace the numeric keyCode modifier with a named key",
+            "edits": [
+              {
+                "start": 70,
+                "end": 72,
+                "new_text": "escape"
+              }
+            ]
+          }
         }
       ],
       "essentialBaselineDiagnostics": [],

@@ -95,8 +95,13 @@ impl Rule for NoDeprecatedVOnNumberModifiers {
             ),
             modifier.loc.span.start,
             modifier.loc.span.end,
-        )
-        .with_help(ctx.t("vue/no-deprecated-v-on-number-modifiers.help"));
+        );
+        if let Some(help) = ctx
+            .help_level()
+            .process(&ctx.t("vue/no-deprecated-v-on-number-modifiers.help"))
+        {
+            diagnostic = diagnostic.with_help(help);
+        }
         if let Some(key) = named_key(key_code) {
             diagnostic = diagnostic.with_fix(Fix::new(
                 "Replace the numeric keyCode modifier with a named key",
@@ -258,7 +263,7 @@ mod tests {
     }
 
     #[test]
-    fn matches_complete_pinned_provider_matrix() {
+    fn qualifies_complete_provider_matrix_and_malformed_control() {
         // Independently captured, unfiltered ESLint results, including fixes.
         // These are isolated-rule findings, not n8n full-configuration acceptance.
         let packet: serde_json::Value = serde_json::from_str(include_str!(
@@ -271,6 +276,17 @@ mod tests {
             let provider = &case["results"][0];
             let expected = provider["messages"].as_array().unwrap();
             let result = linter.lint_sfc(source, "Numeric.vue");
+            if case["modifier"] == "" {
+                // Keep the complete malformed control: Vue rejects a trailing
+                // dot before the numeric rule runs, while the provider is clean.
+                // This is a documented parser boundary, not qualified parity.
+                assert!(expected.is_empty());
+                assert_eq!(result.error_count, 1);
+                assert_eq!(result.diagnostics.len(), 1);
+                assert_eq!(result.diagnostics[0].rule_name, "parser/template");
+                assert!(result.diagnostics[0].fix.is_none());
+                continue;
+            }
             assert_eq!(result.error_count, expected.len(), "{source}");
             assert_eq!(result.diagnostics.len(), expected.len(), "{source}");
             for (actual, expected) in result.diagnostics.iter().zip(expected) {
@@ -326,6 +342,19 @@ mod tests {
         let fix = diagnostic.fix.as_ref().unwrap();
         assert_eq!((fix.edits[0].start, fix.edits[0].end), (start, start + 8));
         assert_eq!(fix.apply(source), source.replace("13suffix", "enter"));
+    }
+
+    #[test]
+    fn keeps_fix_when_help_is_disabled() {
+        let result = create_linter()
+            .with_help_level(crate::HelpLevel::None)
+            .lint_sfc(
+                r#"<template><input @keyup.13="submit" /></template>"#,
+                "Numeric.vue",
+            );
+        assert_eq!(result.error_count, 1);
+        assert!(result.diagnostics[0].help.is_none());
+        assert!(result.diagnostics[0].fix.is_some());
     }
 
     #[test]

@@ -39,7 +39,7 @@ ESLint's messageId and UTF-16 position representation remain provider-specific.
 ## Reproduce the independent provider matrix
 
 The adjacent [probe](numeric-key-modifiers/probe.cjs) runs only this numeric rule against 96
-authored inputs; [provider.json](numeric-key-modifiers/provider.json) retains every complete
+authored inputs (95 rule cases and one malformed parser control); [provider.json](numeric-key-modifiers/provider.json) retains every complete
 `ESLint.lintText` result without filtering messages or fixes. It records ESLint **10.4.1**,
 eslint-plugin-vue **10.9.2**, vue-eslint-parser **10.4.1** and the installed
 @typescript-eslint/parser **8.65.0**; this isolated template probe does not enable the TypeScript
@@ -52,8 +52,11 @@ With those exact dependencies installed in a separate provider directory, regene
 node docs/acceptance/numeric-key-modifiers/probe.cjs /absolute/path/to/provider-directory
 ```
 
-The rule's `matches_complete_pinned_provider_matrix` Rust test consumes every recorded input and
-compares all diagnostic locations and replacement edits against the complete provider result.
+The rule's `qualifies_complete_provider_matrix_and_malformed_control` Rust test consumes every
+recorded input. It compares diagnostic locations and replacement edits for all 95 rule cases.
+The retained malformed `@keyup.="submit"` control explicitly asserts a whole-output boundary:
+ESLint reports nothing, while Vize reports one `parser/template` error with no fix. This input is
+not qualified as matching; no messages are removed from either result to disguise the difference.
 Existing named-key, shorthand/longform, combined modifier and petite-vue tests remain in place.
 GitHub Actions runs the current-source Rust tests; recording provider output alone is not proof
 that a native build passes, and this matrix does not change the status of the broader n8n controls.
