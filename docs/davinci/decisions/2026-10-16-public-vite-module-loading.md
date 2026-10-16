@@ -17,6 +17,13 @@ Vite module resolution remains relative to the selected config, including the
 project's Vite version. A broken installed Vite or an invalid selected config
 fails; neither permits a global loader or another config to be selected.
 
+The nearest present Vite candidate owns the resolution even when its installation
+is incomplete. Authenticate Node's resolved entry against that candidate's real
+path before importing it. This refuses an empty directory, broken metadata or
+dangling link instead of selecting a farther installation. Real package symlinks
+remain valid, and an ordinary hoisted dependency is valid when no nearer candidate
+exists. Node's global search paths do not establish project dependency authority.
+
 The canonical loader accepts a caller-owned fallback when Vite is absent. Its
 native default remains a direct Node import. The public API falls through to
 its existing TypeScript transform or fresh direct import. Dedicated Vize files,

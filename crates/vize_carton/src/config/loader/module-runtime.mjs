@@ -1,10 +1,10 @@
 // Embedded by the native loader. Use the selected project's installed Vite
 // loader when available, without evaluating its default config factory twice.
-import { existsSync } from "node:fs";
+import { lstatSync, realpathSync } from "node:fs";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { createRequire } from "node:module";
+import { createRequire, globalPaths } from "node:module";
 import { tmpdir } from "node:os";
-import { dirname as moduleConfigDirectory, join } from "node:path";
+import { dirname as moduleConfigDirectory, isAbsolute, join, relative, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 // Keep an absolute filesystem specifier in Vite's bundle graph. Converting
@@ -21,12 +21,22 @@ export async function importConfigModule(
   const configURL = pathToFileURL(configPath);
   const require = createRequire(configURL);
   const searchPaths = require.resolve.paths("vite") ?? [];
-  const hasVite = searchPaths.some((directory) => existsSync(join(directory, "vite")));
+  const candidate = searchPaths
+    .filter((directory) => !globalPaths.includes(directory))
+    .map((directory) => join(directory, "vite"))
+    .find((directory) => lstatSync(directory, { throwIfNoEntry: false }) !== undefined);
   // A dependency-free config retains its native Node module-loading contract.
   // A present but broken Vite installation, or any config error, is an error.
-  if (!hasVite) return withoutVite(configURL);
+  if (candidate === undefined) return withoutVite(configURL);
 
-  const { loadConfigFromFile } = await import(pathToFileURL(require.resolve("vite")).href);
+  const viteDirectory = realpathSync(candidate);
+  const viteEntry = realpathSync(require.resolve("vite"));
+  const entryPath = relative(viteDirectory, viteEntry);
+  if (entryPath === ".." || entryPath.startsWith(`..${sep}`) || isAbsolute(entryPath)) {
+    throw new Error(`Resolved loader escapes selected project Vite: ${candidate} -> ${viteEntry}`);
+  }
+
+  const { loadConfigFromFile } = await import(pathToFileURL(viteEntry).href);
   const temporary = await mkdtemp(join(tmpdir(), "vize-config-module-"));
   try {
     const adapter = join(temporary, "config.mjs");

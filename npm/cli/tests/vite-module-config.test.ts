@@ -180,3 +180,17 @@ test("the selected project Vite is authoritative even when the public API has an
     await assert.rejects(loadConfig(root));
   }, false);
 });
+
+test("a present empty nearest Vite cannot select the otherwise legitimate hoisted loader", async () => {
+  await project(async (root) => {
+    const nested = path.join(root, "nested");
+    fs.mkdirSync(path.join(nested, "node_modules/vite"), { recursive: true });
+    for (const [name, source] of Object.entries(original.files)) {
+      fs.writeFileSync(path.join(nested, name), source);
+    }
+    await assert.rejects(loadConfig(nested), /escapes selected project Vite/);
+    for (const [name, source] of Object.entries(original.files)) {
+      assert.equal(fs.readFileSync(path.join(nested, name), "utf8"), source);
+    }
+  });
+});
