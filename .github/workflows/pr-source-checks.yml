@@ -7,6 +7,10 @@ jobs:
     name: Guest contracts
     if: ${{ github.event_name == 'merge_group' }}
     uses: ./.github/workflows/davinci-contracts.yml
+  nuxt-module-qualification:
+    name: Nuxt module qualification
+    if: ${{ github.event_name == 'merge_group' }}
+    uses: ./.github/workflows/nuxt3-module-build.yml
   pr-source-plan:
     name: Plan PR source checks
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -243,11 +247,13 @@ jobs:
     # A superseded run reports nothing: its required check fails in test-report.
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
     # prettier-ignore
-    needs: [pr-source-plan, pr-rust-source, pr-js-packages, pr-native-runtime, pr-playground-test, wit-contracts, canonical-corpus]
-    runs-on: ubuntu-24.04
+    needs: [pr-source-plan, pr-rust-source, pr-js-packages, pr-native-runtime, pr-playground-test, wit-contracts, nuxt-module-qualification, canonical-corpus]
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
       - name: Require every source gate to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
         run: node tools/support/compat/github/canonical-corpus-selection.mjs --check

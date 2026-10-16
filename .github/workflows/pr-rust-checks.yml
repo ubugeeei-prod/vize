@@ -283,7 +283,7 @@ jobs:
     # A superseded run reports nothing: its required check fails in test-report.
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
     needs: [merge-rust-source, merge-rust-differential, pr-rust-build, pr-rust-shard]
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

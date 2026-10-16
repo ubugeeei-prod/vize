@@ -3,6 +3,10 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 import { hostedOrBlacksmithExact, readRepoFile } from "./support/github-workflows.ts";
+import {
+  planAffectedJs,
+  readJsWorkspace,
+} from "../../tools/support/compat/github/plan-affected-js.ts";
 
 const PLATFORM_MATRIX = [
   [hostedOrBlacksmithExact("ubuntu-24.04"), "linux-x64-gnu"],
@@ -26,6 +30,7 @@ type WorkflowJob = {
 
 type WorkflowStep = {
   if?: string;
+  "continue-on-error"?: boolean;
   name?: string;
   run?: string;
   uses?: string;
@@ -80,6 +85,69 @@ test("fresco platform suites run nightly or by explicit dispatch", () => {
   assert.equal(Object.hasOwn(workflow.on, "pull_request"), false);
   assert.deepEqual(workflow.on.schedule, [{ cron: "11 6 * * *" }]);
   assert.equal(Object.hasOwn(workflow.on, "workflow_dispatch"), true);
+});
+
+test("repeated Fresco and storage measurements stay outside ordinary PR and queue checks", () => {
+  const fresco = parse(readRepoFile(".github", "workflows", "fresco-dimension-bench.yml"));
+  assert.deepEqual(Object.keys(fresco.on).sort(), ["schedule", "workflow_dispatch"]);
+  assert.deepEqual(fresco.on.schedule, [{ cron: "37 6 * * *" }]);
+  assert.deepEqual(fresco.jobs.dimensions.strategy.matrix.replica, [1, 2, 3]);
+  assert.equal(
+    workflowStep(fresco.jobs.dimensions, "Compare actual parsing and 1k/10k node layout workloads")
+      .run,
+    "cargo test --locked --profile ci-opt -p vize_fresco --lib paired_parse_and_layout -- --ignored --test-threads=1",
+  );
+  const storage = parse(readRepoFile(".github", "workflows", "string-storage-bench.yml"));
+  assert.deepEqual(Object.keys(storage.on), ["workflow_dispatch"]);
+  for (const sha of ["base_sha", "head_sha"]) {
+    assert.equal(storage.on.workflow_dispatch.inputs[sha].required, true);
+    assert.equal(storage.on.workflow_dispatch.inputs[sha].type, "string");
+  }
+  assert.deepEqual(storage.jobs["bounded-storage"].strategy.matrix.repetition, [1, 2, 3]);
+  const validate = workflowStep(
+    storage.jobs["bounded-storage"],
+    "Validate exact commits and use identical benchmark harness",
+  );
+  assert.match(validate.run ?? "", /\[\[ "\$HEAD_SHA" == "\$DISPATCH_SHA" \]\]/);
+  assert.match(validate.run ?? "", /merge-base --is-ancestor "\$BASE_SHA" "\$HEAD_SHA"/);
+});
+
+test("affected Fresco conformance keeps NAPI compilation, strict lints and consumer checks daily", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "pr-js-checks.yml"));
+  const job = workflow.jobs["pr-js-package-conformance"];
+  const build = workflowStep(job, "Check Fresco native declarations and consumer types");
+  const lint = workflowStep(job, "Lint Fresco NAPI call sites and test corpus");
+  const selected =
+    "${{ inputs.run-js && matrix.surface == 'fresco' && fromJSON(inputs.js-plan).conformance.fresco }}";
+  assert.equal(build.if, selected);
+  assert.equal(lint.if, selected);
+  assert.equal(job["continue-on-error"], undefined);
+  assert.equal(build["continue-on-error"], undefined);
+  assert.equal(lint["continue-on-error"], undefined);
+  assert.equal(
+    build.run,
+    "vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types",
+  );
+  assert.equal(
+    lint.run?.trim(),
+    [
+      "cargo clippy --locked --profile ci -p vize_fresco --features napi --lib -- -D warnings",
+      "cargo clippy --locked --profile ci -p vize_fresco --lib --tests -- -D warnings",
+    ].join("\n"),
+  );
+  assert.equal(workflowUsesStep(job, "dtolnay/rust-toolchain@").with?.components, "clippy");
+  const workspace = readJsWorkspace();
+  assert.equal(
+    planAffectedJs(workspace, ["crates/vize_fresco/src/layout/dimensions.rs"], {
+      packages: ["vize_fresco"],
+      scope: "affected",
+    }).conformance.fresco,
+    true,
+  );
+  assert.equal(
+    planAffectedJs(workspace, ["docs/fresco/performance-policy.md"]).conformance.fresco,
+    false,
+  );
 });
 
 test("fresco JS lane checks, builds, and tests the package on all three platforms", () => {

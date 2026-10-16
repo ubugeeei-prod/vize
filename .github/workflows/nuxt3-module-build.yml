@@ -70,9 +70,8 @@ on:
       - Cargo.toml
       - Cargo.lock
       - .cargo/**
-  merge_group:
-    types: [checks_requested]
-    branches: [main]
+  # Merge candidates call this workflow through the required source report.
+  workflow_call:
   workflow_dispatch:
 
 permissions:
@@ -131,7 +130,12 @@ jobs:
         working-directory: tools/support/compat/nuxt/fixtures/nuxt3-module-build
         run: npm ci --no-audit --no-fund
       - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install Chromium for the PR Nuxt runtime check
+        if: ${{ github.event_name == 'pull_request' }}
+        working-directory: tests
+        run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
       - name: Download Chromium dependencies while building the current CLI
+        if: ${{ github.event_name != 'pull_request' }}
         run: |
           archive_dir=
           cache_config=
@@ -199,23 +203,34 @@ jobs:
           (cd tests && vize-ci-apt-retry vp exec playwright install --with-deps chromium)
       - name: Verify candidate build and SSR routes
         run: vp env exec node tools/support/compat/nuxt/nuxt3-module-build.mjs "$RUNNER_TEMP/nuxt3-module-proof"
+      # Source-bound Nuxt 3 SSR, hydration and navigation remain on every
+      # affected PR. The complete historical and multi-host campaign runs
+      # before merging, and on main/manual qualification.
       - name: Install the unchanged pinned Nuxt 4 dependency cohort
+        if: ${{ github.event_name != 'pull_request' }}
         working-directory: tests/_fixtures/_projects/nuxt-critical-css-build
         run: npm ci --no-audit --no-fund
       - name: Verify original SPA manifest and physical prefetch with the source compiler
+        if: ${{ github.event_name != 'pull_request' }}
         run: vp env exec node tools/support/compat/nuxt/prefetch-manifest-build.mjs "$RUNNER_TEMP/nuxt-prefetch-proof"
       - name: Verify original Nuxt lint configuration with the source linter
+        if: ${{ github.event_name != 'pull_request' }}
         run: vp env exec node tools/support/compat/nuxt/lint-config-build.mjs "$RUNNER_TEMP/nuxt-lint-config-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Verify original Nuxt scoped compiler defaults and whole rendered outputs
+        if: ${{ github.event_name != 'pull_request' }}
         run: vp env exec node tools/support/compat/nuxt/compiler-defaults-build.mjs "$RUNNER_TEMP/nuxt-compiler-defaults-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Install the unchanged reported Vite 8.2.2 dependency cohort
+        if: ${{ github.event_name != 'pull_request' }}
         working-directory: tools/support/compat/nuxt/fixtures/vite-relative-glob
         run: npm ci --no-audit --no-fund
       - name: Verify original relative glob keys and outside-root Vite and Nuxt runtime
+        if: ${{ github.event_name != 'pull_request' }}
         run: vp env exec node tools/support/compat/nuxt/relative-glob-build.mjs "$RUNNER_TEMP/vite-relative-glob-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Capture the current CLI for the JavaScript workspace consumers
+        if: ${{ github.event_name != 'pull_request' }}
         run: vp env exec node tests/differential/build-receipt.ts
       - name: Verify real JavaScript Nuxt and Vite workspace products
+        if: ${{ github.event_name != 'pull_request' }}
         run: vp env exec node tools/support/compat/nuxt/javascript-workspace-build.mjs "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Upload Nuxt 3 build and SSR evidence
         if: always()

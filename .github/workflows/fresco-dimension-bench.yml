@@ -1,24 +1,22 @@
 name: Fresco dimension benchmark
 
 on:
-  pull_request:
-    paths:
-      - "crates/vize_fresco/**"
-      - ".github/workflows/fresco-dimension-bench.yml"
+  schedule:
+    - cron: "37 6 * * *"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: fresco-dimensions-${{ github.event.pull_request.number || github.ref }}
+  group: fresco-dimensions-${{ github.ref }}
   cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  HEAD_SHA: ${{ github.sha }}
 
 jobs:
   dimensions:
@@ -32,18 +30,14 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 0
+          ref: ${{ github.sha }}
           persist-credentials: false
-      - name: Record exact common ancestor
-        env:
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+      - name: Record exact source of both parser implementations
         run: |
           set -euo pipefail
           [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$PR_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
-          echo "BASE_SHA=$(git merge-base "$PR_BASE_SHA" "$HEAD_SHA")" >> "$GITHUB_ENV"
+          echo "BASE_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with:
           toolchain: stable

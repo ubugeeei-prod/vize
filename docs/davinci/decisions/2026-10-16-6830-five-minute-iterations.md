@@ -42,6 +42,13 @@ compatibility from exact event/checkout comparisons. Changed selector and task
 definitions exercise their consumers. A failed comparison fails the plan and
 therefore the aggregate; it never becomes an empty successful selection.
 
+Rust, source and final reports use the existing Blacksmith runner pool. In
+[run 38869052980](https://github.com/ubugeeei-prod/vize/actions/runs/38869052980),
+the two final reports added 42 seconds after the last product job, including
+21 seconds just checking out the same source on standard runners. Keeping
+these serial reports on the faster pool changes no aggregation or evidence
+rule; subsequent Actions timings must establish the improvement.
+
 The fast JS task retains lint, formatting and a zero-warning budget. It does
 not install a Rust script runtime or typecheck every private documentation and
 tooling project. Product package checks follow the workspace reverse dependency

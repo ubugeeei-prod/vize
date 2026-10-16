@@ -20,6 +20,7 @@ import {
   rustDifferentialLanes,
 } from "../../tools/support/compat/github/rust-differential-lanes.ts";
 import { requireRustTier } from "../../tools/support/compat/github/require-rust-tier.ts";
+import { aggregateCheckNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 import { rustCommand } from "../../tools/support/compat/github/run-affected-rust.ts";
 
 const metadata = {
@@ -386,4 +387,29 @@ test("Rust report rejects skipped checks and missing or failed required work", (
     1,
   );
   assert.throws(() => requireRustTier("merge_group", "true", {}), /Missing Rust tier job/);
+});
+
+test("queue product qualifications require actual success and allow their explicit PR skip", () => {
+  const jobs = ["wit-contracts", "nuxt-module-qualification"];
+  const success = () => Object.fromEntries(jobs.map((job) => [job, { result: "success" }]));
+  assert.equal(aggregateCheckNeedsResults(success(), "merge_group").exitCode, 0);
+  for (const job of jobs) {
+    for (const result of ["failure", "cancelled", "skipped", "unknown"]) {
+      const needs = { ...success(), [job]: { result } };
+      assert.equal(aggregateCheckNeedsResults(needs, "merge_group").exitCode, 1);
+      assert.equal(
+        aggregateCheckNeedsResults(needs, "pull_request").exitCode,
+        result === "skipped" ? 0 : 1,
+      );
+    }
+    const missing = success();
+    delete missing[job];
+    for (const event of ["pull_request", "merge_group"]) {
+      assert.throws(() => aggregateCheckNeedsResults(missing, event), /missing/);
+      assert.throws(
+        () => aggregateCheckNeedsResults({ ...success(), [job]: {} }, event),
+        /reported no result/,
+      );
+    }
+  }
 });

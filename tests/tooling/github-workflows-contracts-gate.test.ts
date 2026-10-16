@@ -42,6 +42,7 @@ const prior = [
 const needs = (wit = "success") => ({
   ...Object.fromEntries(prior.map((job) => [job, { result: "success" }])),
   "wit-contracts": { result: wit },
+  "nuxt-module-qualification": { result: "success" },
 });
 
 test("one parallel reusable WIT lane gates merge groups without adding a PR build", () => {
@@ -61,6 +62,7 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
   assert.deepEqual(source.jobs["source-report"].needs, [
     ...prior,
     "wit-contracts",
+    "nuxt-module-qualification",
     "canonical-corpus",
   ]);
   assert.equal(

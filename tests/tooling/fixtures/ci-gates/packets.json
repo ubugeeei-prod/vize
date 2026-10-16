@@ -114,12 +114,13 @@
     "event": "pull_request",
     "needs": {
       "pr-source-plan": { "result": "success" },
-      "wit-contracts": { "result": "skipped" }
+      "wit-contracts": { "result": "skipped" },
+      "nuxt-module-qualification": { "result": "skipped" }
     },
     "expected": {
       "result": {
         "exitCode": 0,
-        "message": "test-report gate: all 2 needed jobs are accounted for. 1 succeeded; 1 skipped on a pull request by design: wit-contracts."
+        "message": "test-report gate: all 3 needed jobs are accounted for. 1 succeeded; 2 skipped on a pull request by design: nuxt-module-qualification, wit-contracts."
       }
     }
   },
@@ -129,12 +130,41 @@
     "event": "merge_group",
     "needs": {
       "pr-source-plan": { "result": "success" },
-      "wit-contracts": { "result": "skipped" }
+      "wit-contracts": { "result": "skipped" },
+      "nuxt-module-qualification": { "result": "success" }
     },
     "expected": {
       "result": {
         "exitCode": 1,
-        "message": "test-report gate: 1 of 2 needed jobs did not succeed.\n  - wit-contracts: skipped\ntest-report is a required status check, so it must not pass while a job it aggregates is red.\nOnly these jobs may skip on a pull request: ."
+        "message": "test-report gate: 1 of 3 needed jobs did not succeed.\n  - wit-contracts: skipped\ntest-report is a required status check, so it must not pass while a job it aggregates is red.\nOnly these jobs may skip on a pull request: ."
+      }
+    }
+  },
+  {
+    "name": "check-queue-nuxt-cannot-skip",
+    "mode": "check",
+    "event": "merge_group",
+    "needs": {
+      "pr-source-plan": { "result": "success" },
+      "wit-contracts": { "result": "success" },
+      "nuxt-module-qualification": { "result": "skipped" }
+    },
+    "expected": {
+      "result": {
+        "exitCode": 1,
+        "message": "test-report gate: 1 of 3 needed jobs did not succeed.\n  - nuxt-module-qualification: skipped\ntest-report is a required status check, so it must not pass while a job it aggregates is red.\nOnly these jobs may skip on a pull request: ."
+      }
+    }
+  },
+  {
+    "name": "check-missing-nuxt",
+    "mode": "check",
+    "event": "merge_group",
+    "needs": { "wit-contracts": { "result": "success" } },
+    "expected": {
+      "error": {
+        "name": "Error",
+        "message": "Check needs context is missing nuxt-module-qualification"
       }
     }
   },

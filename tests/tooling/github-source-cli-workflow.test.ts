@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { canonicalSourceReport } from "../../tools/support/compat/github/canonical-corpus-selection.mjs";
+import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 type Step = {
@@ -9,6 +10,7 @@ type Step = {
   uses?: string;
   run?: string;
   if?: string;
+  env?: Record<string, string>;
   with?: Record<string, string | boolean | number>;
   "continue-on-error"?: boolean;
 };
@@ -21,47 +23,64 @@ type Job = {
   env?: Record<string, string>;
   outputs?: Record<string, string>;
 };
+type Action = { inputs: Record<string, { required?: boolean }>; runs: { steps: Step[] } };
+const full = parse(readRepoFile(".github", "workflows", "check.yml")) as {
+  jobs: Record<string, Job>;
+};
 const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
   jobs: Record<string, Job>;
 };
-const producer = parse(readRepoFile(".github", "workflows", "pr-source-cli.yml")) as {
+const producer = parse(readRepoFile(".github", "workflows", "full-source-cli.yml")) as {
   jobs: Record<string, Job>;
   on: { workflow_call: { outputs: Record<string, { value: string }> } };
 };
 const restoreAction = parse(
   readRepoFile(".github", "actions", "restore-source-cli", "action.yml"),
-) as { runs: { steps: Step[] } };
-const originalNeeds = [
+) as Action;
+const toolingAction = parse(
+  readRepoFile(".github", "actions", "test-full-tooling", "action.yml"),
+) as Action;
+const sourceNeeds = [
   "pr-source-plan",
   "pr-rust-source",
   "pr-js-packages",
-  "pr-tooling-scripts",
+  "pr-native-runtime",
   "pr-playground-test",
   "wit-contracts",
+  "nuxt-module-qualification",
   "canonical-corpus",
 ];
+const fullNeeds = ["full-source-cli", "tooling-plan", "test-scripts"];
+const fullCondition =
+  "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}";
+const alwaysFullCondition =
+  "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}";
 
-void test("only tooling depends on the early CLI producer; original independent DAG edges remain", () => {
-  assert.deepEqual(source.jobs["pr-source-cli"], {
-    needs: "pr-source-plan",
-    uses: "./.github/workflows/pr-source-cli.yml",
-    with: { "run-cli": "${{ needs.pr-source-plan.outputs.tooling == 'true' }}" },
-  });
-  assert.deepEqual(source.jobs["pr-tooling-scripts"].needs, ["pr-source-plan", "pr-source-cli"]);
+void test("scheduled tooling owns the CLI producer without delaying independent PR source lanes", () => {
+  assert.equal(full.jobs["full-source-cli"].uses, "./.github/workflows/full-source-cli.yml");
+  assert.equal(full.jobs["full-source-cli"].if, fullCondition);
+  assert.equal(full.jobs["tooling-plan"].if, fullCondition);
+  assert.equal(full.jobs["test-scripts"].if, alwaysFullCondition);
+  assert.deepEqual(full.jobs["test-scripts"].needs, ["full-source-cli", "tooling-plan"]);
+  assert.equal(source.jobs["pr-source-cli"], undefined);
+  assert.equal(source.jobs["pr-tooling-scripts"], undefined);
   for (const name of [
     "canonical-corpus",
     "pr-rust-source",
     "pr-js-packages",
+    "pr-native-runtime",
     "pr-playground-test",
   ]) {
     assert.equal(source.jobs[name].needs, "pr-source-plan", name);
   }
-  assert.equal(source.jobs["wit-contracts"].needs, undefined);
-  assert.deepEqual(source.jobs["source-report"].needs, [...originalNeeds, "pr-source-cli"]);
+  assert.deepEqual(source.jobs["source-report"].needs, sourceNeeds);
   assert.equal(
     source.jobs["source-report"].if,
     "${{ always() && !contains(needs.*.result, 'cancelled') }}",
   );
+  const required = full.jobs["test-report"].needs;
+  assert.ok(Array.isArray(required) && required.includes("pr-source-checks"));
+  for (const name of fullNeeds) assert.ok(!required.includes(name), name);
 });
 
 void test("one original CLI/oracle build supplies each digest-strict consumer without receipt restamping", () => {
@@ -77,68 +96,114 @@ void test("one original CLI/oracle build supplies each digest-strict consumer wi
     "cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts && cat target/ci/vize.differential-build.json && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle",
   );
   for (const step of [steps[build], steps[pack], steps[upload]]) {
-    assert.equal(step.if, "${{ inputs.run-cli }}");
+    assert.equal(step.if, undefined);
     assert.notEqual(step["continue-on-error"], true);
   }
   const name = "source-cli-${{ github.run_id }}-${{ steps.pack.outputs.producer-attempt }}";
   assert.equal(steps[upload].with?.name, name);
   assert.equal(steps[upload].with?.["if-no-files-found"], "error");
-  assert.equal(
-    producer.on.workflow_call.outputs["receipt-sha256"].value,
-    "${{ jobs.cli.outputs.receipt-sha256 }}",
+  for (const output of ["sha256", "receipt-sha256", "producer-attempt"]) {
+    assert.equal(
+      producer.on.workflow_call.outputs[output].value,
+      `\${{ jobs.cli.outputs.${output} }}`,
+    );
+    assert.equal(producer.jobs.cli.outputs?.[output], `\${{ steps.pack.outputs.${output} }}`);
+  }
+  const consumer = full.jobs["test-scripts"];
+  const worker = consumer.steps?.find(
+    (step) => step.uses === "./.github/actions/test-full-tooling",
   );
-  const consumer = source.jobs["pr-tooling-scripts"];
-  const consumers = consumer.steps ?? [];
+  assert.equal(worker?.with?.producer, "${{ toJSON(needs.full-source-cli.outputs) }}");
+  assert.equal(toolingAction.inputs.producer.required, true);
+  const consumers = toolingAction.runs.steps;
   const restore = consumers.findIndex(
     (step) => step.uses === "./.github/actions/restore-source-cli",
   );
-  const tests = consumers.findIndex((step) => step.name === "Test selected PR tooling scripts");
+  const tests = consumers.findIndex(
+    (step) => step.run === "vp run --workspace-root test:scripts:planned",
+  );
   assert.ok(restore >= 0 && restore < tests);
+  for (const step of [consumers[restore], consumers[tests]]) {
+    assert.equal(step.if, undefined);
+    assert.notEqual(step["continue-on-error"], true);
+  }
+  assert.equal(consumers[tests].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
+  assert.equal(consumers[tests].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
+  assert.equal(consumers[restore].with?.producer, "${{ inputs.producer }}");
+  const [validate, download, install] = restoreAction.runs.steps;
+  assert.equal(validate.env?.SOURCE_CLI_PRODUCER_OUTPUTS, "${{ inputs.producer }}");
+  assert.match(validate.run ?? "", /source-cli-artifact\.ts producer$/);
   assert.equal(
-    restoreAction.runs.steps[1].with?.name,
+    download.with?.name,
     "source-cli-${{ github.run_id }}-${{ steps.producer.outputs.producer-attempt }}",
   );
-  assert.equal(
-    producer.on.workflow_call.outputs["producer-attempt"].value,
-    "${{ jobs.cli.outputs.producer-attempt }}",
-  );
-  assert.equal(
-    producer.jobs.cli.outputs?.["producer-attempt"],
-    "${{ steps.pack.outputs.producer-attempt }}",
-  );
-  assert.equal(consumers[restore].with?.producer, "${{ toJSON(needs.pr-source-cli.outputs) }}");
   assert.equal(restoreAction.inputs.producer.required, true);
-  assert.equal(restoreAction.runs.steps[1].with?.["digest-mismatch"], "error");
-  assert.equal(restoreAction.runs.steps[1].with?.["run-id"], undefined);
-  assert.match(restoreAction.runs.steps[2].run ?? "", /source-cli-artifact\.ts restore/);
+  assert.equal(download.with?.["digest-mismatch"], "error");
+  assert.equal(download.with?.["run-id"], undefined);
+  assert.deepEqual(install.env, {
+    SOURCE_CLI_SHA256: "${{ steps.producer.outputs.sha256 }}",
+    SOURCE_CLI_PRODUCER_ATTEMPT: "${{ steps.producer.outputs.producer-attempt }}",
+    SOURCE_CLI_RECEIPT_SHA256: "${{ steps.producer.outputs.receipt-sha256 }}",
+  });
+  assert.match(
+    install.run ?? "",
+    /source-cli-artifact\.ts restore "\$RUNNER_TEMP\/source-cli\/source-cli.tar.gz" "\$SOURCE_CLI_SHA256" "\$SOURCE_CLI_PRODUCER_ATTEMPT" "\$SOURCE_CLI_RECEIPT_SHA256" && cat target\/ci\/vize.differential-build.json/,
+  );
+  for (const step of restoreAction.runs.steps) assert.notEqual(step["continue-on-error"], true);
   assert.doesNotMatch(
-    consumers.map((step) => step.run ?? "").join("\n"),
+    [...consumers, ...restoreAction.runs.steps].map((step) => step.run ?? "").join("\n"),
     /cargo build --profile ci -p vize|build-receipt\.ts/,
   );
   assert.equal(
     consumer.env?.VIZE_SOURCE_CLI_RECEIPT_SHA256,
-    "${{ needs.pr-source-cli.outputs.receipt-sha256 }}",
+    "${{ needs.full-source-cli.outputs.receipt-sha256 }}",
   );
 });
 
-void test("a missing, cancelled or failed producer remains fatal to the original complete source report", () => {
+void test("the full tooling report fails when its producer, plan or workers do not succeed", () => {
+  const gate = full.jobs["test-scripts-gate"];
+  assert.deepEqual(gate.needs, fullNeeds);
+  assert.equal(gate.if, alwaysFullCondition);
+  const report = gate.steps?.find(
+    (step) => step.uses === "./.github/actions/report-full-js-qualification",
+  );
+  assert.equal(report?.with?.["needs-json"], "${{ toJSON(needs) }}");
+  const reportAction = parse(
+    readRepoFile(".github", "actions", "report-full-js-qualification", "action.yml"),
+  ) as Action;
+  const command = reportAction.runs.steps.find((step) =>
+    step.run?.includes("require-needs-success.ts"),
+  );
+  assert.equal(command?.env?.NEEDS_JSON, "${{ inputs.needs-json }}");
+  assert.notEqual(command?.["continue-on-error"], true);
+  const needs = Object.fromEntries(fullNeeds.map((name) => [name, { result: "success" }]));
+  assert.equal(aggregateNeedsResults(needs).exitCode, 0);
+  for (const name of fullNeeds) {
+    for (const result of ["failure", "cancelled", "skipped"]) {
+      assert.equal(
+        aggregateNeedsResults({ ...needs, [name]: { result } }).exitCode,
+        1,
+        `${name}: ${result}`,
+      );
+    }
+    assert.throws(() => aggregateNeedsResults({ ...needs, [name]: {} }), /reported no result/);
+  }
+});
+
+void test("the source report still requires every independent product check", () => {
   const needs = Object.fromEntries(
-    [...originalNeeds, "pr-source-cli"].map((name) => [name, { result: "success", outputs: {} }]),
+    sourceNeeds.map((name) => [name, { result: "success", outputs: {} }]),
   ) as Record<string, { result: string; outputs: Record<string, string> }>;
   needs["pr-source-plan"].outputs["canonical-corpus"] = "true";
   assert.equal(canonicalSourceReport(needs, "merge_group").exitCode, 0);
-  for (const result of ["failure", "cancelled", "skipped"]) {
-    needs["pr-source-cli"].result = result;
-    assert.equal(canonicalSourceReport(needs, "merge_group").exitCode, 1, result);
-  }
-  needs["pr-source-cli"].result = "";
-  assert.throws(() => canonicalSourceReport(needs, "merge_group"), /reported no result/);
-  needs["pr-source-cli"].result = "success";
-  for (const name of originalNeeds.filter((name) => name !== "pr-source-plan")) {
-    needs[name].result = "failure";
-    const outcome = () => canonicalSourceReport(needs, "merge_group");
-    if (name === "canonical-corpus") assert.throws(outcome);
-    else assert.equal(outcome().exitCode, 1, name);
+  for (const name of sourceNeeds) {
+    for (const result of ["failure", "cancelled", "skipped", ""]) {
+      needs[name].result = result;
+      const outcome = () => canonicalSourceReport(needs, "merge_group");
+      if (name === "canonical-corpus" || name === "pr-source-plan" || result === "")
+        assert.throws(outcome);
+      else assert.equal(outcome().exitCode, 1, `${name}: ${result}`);
+    }
     needs[name].result = "success";
   }
 });

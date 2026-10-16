@@ -1,10 +1,6 @@
 name: String Storage Bench
 
 on:
-  pull_request:
-    paths:
-      - "crates/vize_croquis_cf/**"
-      - ".github/workflows/string-storage-bench.yml"
   workflow_dispatch:
     inputs:
       base_sha:
@@ -20,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: string-storage-${{ github.event.pull_request.number || github.ref }}
+  group: string-storage-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -40,13 +36,13 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ inputs.head_sha || github.event.pull_request.head.sha }}
+          ref: ${{ inputs.head_sha }}
           path: head
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ inputs.base_sha || github.event.pull_request.base.sha }}
+          ref: ${{ inputs.base_sha }}
           path: base
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
@@ -67,10 +63,9 @@ jobs:
           target-path: head/target
       - name: Validate exact commits and use identical benchmark harness
         env:
-          BASE_SHA: ${{ inputs.base_sha || github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ inputs.head_sha || github.event.pull_request.head.sha }}
-          DISPATCH_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ inputs.base_sha }}
+          HEAD_SHA: ${{ inputs.head_sha }}
+          DISPATCH_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
@@ -78,11 +73,6 @@ jobs:
           [[ "$HEAD_SHA" == "$DISPATCH_SHA" ]]
           [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
           [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
-          if [[ "$EVENT_NAME" == "pull_request" ]]; then
-            BASE_SHA=$(git -C head merge-base "$BASE_SHA" "$HEAD_SHA")
-            git -C base fetch origin "$BASE_SHA"
-            git -C base checkout --detach "$BASE_SHA"
-          fi
           git -C head merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
           mkdir -p reports
           printf '%s\n' "$BASE_SHA" > reports/base-sha.txt

@@ -188,7 +188,7 @@ jobs:
         if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
         with: { node-version-file: "package.json", cache: true, run-install: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
+        with: { toolchain: stable, components: clippy }
         if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
@@ -207,6 +207,11 @@ jobs:
       - name: Check Fresco native declarations and consumer types
         if: ${{ inputs.run-js && matrix.surface == 'fresco' && fromJSON(inputs.js-plan).conformance.fresco }}
         run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types
+      - name: Lint Fresco NAPI call sites and test corpus
+        if: ${{ inputs.run-js && matrix.surface == 'fresco' && fromJSON(inputs.js-plan).conformance.fresco }}
+        run: |
+          cargo clippy --locked --profile ci -p vize_fresco --features napi --lib -- -D warnings
+          cargo clippy --locked --profile ci -p vize_fresco --lib --tests -- -D warnings
       - name: Check UI package conformance
         if: ${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
         run: vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check

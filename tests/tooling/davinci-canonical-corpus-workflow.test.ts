@@ -124,6 +124,7 @@ const needs = (required: string, result: string, event = "pull_request") => ({
   "pr-tooling-scripts": { result: "success" },
   "pr-playground-test": { result: "success" },
   "wit-contracts": { result: event === "merge_group" ? "success" : "skipped" },
+  "nuxt-module-qualification": { result: event === "merge_group" ? "success" : "skipped" },
   "canonical-corpus": { result },
 });
 

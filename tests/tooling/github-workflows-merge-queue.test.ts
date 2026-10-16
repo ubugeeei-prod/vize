@@ -84,6 +84,7 @@ test("queue scope reaches the planner and every selected source lane remains req
   assert.deepEqual(source.jobs["source-report"].needs, [
     ...lanes,
     "wit-contracts",
+    "nuxt-module-qualification",
     "canonical-corpus",
   ]);
   assert.equal(
@@ -248,6 +249,8 @@ void test("a failed or disabled Rust tier cannot reach a green required Check re
       sourceNeeds["pr-source-plan"].outputs = { "canonical-corpus": "false" };
       sourceNeeds["canonical-corpus"].result = "skipped";
       sourceNeeds["wit-contracts"].result = event === "merge_group" ? "success" : "skipped";
+      sourceNeeds["nuxt-module-qualification"].result =
+        event === "merge_group" ? "success" : "skipped";
       sourceNeeds["pr-rust-source"].result = rustResult;
       const sourceResult = canonicalSourceReport(sourceNeeds, event);
       const topNeeds = success(check.jobs["test-report"]);

@@ -1,15 +1,6 @@
 name: Compact Collections
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "crates/vize_croquis/src/setup_context.rs"
-      - "crates/vize_croquis/src/scope/**"
-      - "crates/vize_croquis_cf/src/graph/**"
-      - "crates/vize_croquis_cf/src/graph.rs"
-      - "crates/vize_croquis_cf/examples/compact_collections.rs"
-      - ".github/workflows/compact-collections.yml"
   workflow_dispatch:
     inputs:
       base_sha:
@@ -21,7 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: compact-collections-${{ github.event.pull_request.number || github.ref }}
+  group: compact-collections-${{ github.ref }}
   cancel-in-progress: true
 
 env:
