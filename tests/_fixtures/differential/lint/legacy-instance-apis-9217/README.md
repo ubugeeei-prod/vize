@@ -16,7 +16,7 @@ changes budgets or adjusts diagnostic ranges to make findings agree.
 reports. `sources.json.gz` retains those complete upstream source bytes, their
 individual hashes and raw-source URLs. Each project's `*-lint-divergence.json.gz`
 is the complete original Matrix report, including unrelated rules and failures.
-`originals/independent.json.gz` retains every reference diagnostic on those 71
+`originals/independent.json.gz` retains every reference diagnostic on those 147
 sources with only the two rules in this issue enabled. Source provenance and
 upstream licensing remain attached to the repositories linked by the manifest;
 these captures are regression evidence, not vendored production dependencies.
