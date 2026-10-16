@@ -68,6 +68,8 @@ mod differential_battery {
             r#"<div class="a" v-pre:arg.mod="foo" id="b"><span v-if="x" /></div>"#,
             r#"<div v-pre:arg :title="x">{{ raw }}<span v-for="x in xs" /></div>"#,
             r#"<div :title="x" v-pre.mod>{{ raw }}<template v-if="x">raw</template></div>"#,
+            r#"<div v-pre><template v-if="x">{{ raw }}</template></div>"#,
+            r#"<div v-pre.mod><template v-slot:foo v-for="x in xs">raw</template></div>"#,
             r#"<div v-pre:[key].mod><span v-pre:inner.mod="x" v-if="y">{{ raw }}</span></div>"#,
             r#"<div v-pre><span v-pre:arg.mod="x" v-if="y">{{ raw }}</span></div>"#,
             r#"<div v-pre.mod><span v-pre>{{ raw }}</span></div><p v-if="ok">{{ live }}</p>"#,
