@@ -150,3 +150,18 @@ fn a_uniform_shorthand_option_reports_a_bare_v_slot_on_a_component() {
 fn non_slot_directives_are_ignored() {
     assert_eq!(findings(r#"<div v-if="ok" :class="cls"></div>"#), vec![]);
 }
+
+#[test]
+fn a_bare_hash_is_a_default_slot_and_keeps_the_component_style_warning() {
+    // Vue's compiler treats bare # exactly like #default. The reference
+    // vue-eslint-parser instead calls it a normal attribute and misses it.
+    assert_eq!(
+        only_message(r#"<RouterView #="{ Component }"><component :is="Component" /></RouterView>"#),
+        vec!["Expected 'v-slot' instead of '#'".to_string()]
+    );
+    assert_eq!(findings(r#"<RouterView v-slot="{ Component }" />"#), vec![]);
+    assert_eq!(
+        findings(r#"<RouterView><template #="props" /></RouterView>"#),
+        vec![]
+    );
+}
