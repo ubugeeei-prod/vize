@@ -39,6 +39,14 @@ browser checks with its normal OG-image configuration.
 
 ## Composable examples
 
+The Japanese hub labels all maintained demonstrations with reviewed Japanese
+reader tasks. The linked API descriptions and interactive controls remain English.
+The canonical labels live with the example catalogue, so reference regeneration
+retains them. The source test requires an exact label for every demo; post-SSG
+acceptance checks each rendered Japanese label and its destination at desktop and
+mobile widths. Device and permission examples expose host availability; their
+presence does not establish successful device access or granted-permission behavior.
+
 One hundred twenty-five complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
 bounded quantities, debounced local search, blur validation, undo/redo, and
 pagination, plus async results, interval/timeout controls, browser storage,
