@@ -881,6 +881,18 @@
       "messages": []
     },
     {
+      "id": "template-event-object-expression",
+      "source": "<template><button @click=\"{ ...$listeners }\" /></template>",
+      "sourceSha256": "80e9e7ce9a301400846abdd42f7a396795e8c00a26177eab6401dee81441c20c",
+      "messages": []
+    },
+    {
+      "id": "template-event-local-statements",
+      "source": "<template><button @click=\"const $listeners = local; use($listeners)\" /></template>",
+      "sourceSha256": "a11a7eb89f3066463cbd2ce4f9c7ab36e579425e940365e980c1d2ff7defbca1",
+      "messages": []
+    },
+    {
       "id": "outside-component",
       "source": "<script>const external = { mounted() { this.$on(\"x\", h); this.$listeners } }</script>",
       "sourceSha256": "772a2dab72a6ed352d5781c8c6001b515e4b219251cf34be9e95a973c1be155f",

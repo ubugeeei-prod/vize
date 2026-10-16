@@ -62,7 +62,7 @@ fn complete_authored_provider_packets_have_exact_native_rule_and_property_spans(
         "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/independent.json"
     ))
     .unwrap();
-    assert_eq!(corpus.records.len(), 55);
+    assert_eq!(corpus.records.len(), 57);
     let gaps: Gaps = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/provider-gaps.json"
     ))

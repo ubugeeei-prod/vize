@@ -3,7 +3,7 @@
 [Issue #9217](https://github.com/ubugeeei-prod/vize/issues/9217) came from the
 Real Project Matrix at `d2506ca6b5e31252973f05981829c0367cacf26b`.
 
-`independent.json` preserves 55 authored SFC inputs, source SHA-256 hashes and
+`independent.json` preserves 57 authored SFC inputs, source SHA-256 hashes and
 complete diagnostics from ESLint 10.4.1, eslint-plugin-vue 10.9.2,
 vue-eslint-parser 10.4.1 and @typescript-eslint/parser 8.65.0. Rule and shared utility implementation
 hashes identify the provider bytes. The executable provider replay is
@@ -32,7 +32,8 @@ The pinned rule source establishes the behavior:
 - [Listeners API](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/rules/no-deprecated-dollar-listeners-api.js)
   checks this-bound script member properties and unbound template references.
   Template loop, slot and expression-local bindings suppress only their own
-  lexical references; comments, text, literal attributes and `v-pre` do not
+  lexical references. Argumentless `v-on` objects use expression grammar, while
+  named event handlers use statement grammar; comments, text, literal attributes and `v-pre` do not
   create references. The script selector accepts Identifier properties,
   including `this[$listeners]`, but excludes string-literal computed keys.
 - [`isThis`](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/index.js)

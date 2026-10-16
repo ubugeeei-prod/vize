@@ -81,7 +81,9 @@ fn walk(children: &[TemplateChildNode<'_>], source: &str, shadowed: bool, out: &
                             scan(
                                 text(exp, source),
                                 exp.loc().span.start,
-                                dir.name == "on",
+                                // Argumentless v-on binds an expression; only
+                                // named event handlers admit statement lists.
+                                dir.name == "on" && dir.arg.is_some(),
                                 out,
                             );
                         }

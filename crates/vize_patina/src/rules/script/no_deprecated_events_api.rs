@@ -231,10 +231,9 @@ this.$emit('c')
     }
 
     #[test]
-    fn test_invalid_computed_member_not_flagged() {
-        // Dynamic/computed member access (`this['$on']`) has no static property
-        // name resolvable as an identifier, so it is not flagged. The common
-        // migration smell is the static form, which is covered above.
+    fn test_valid_dynamic_member_not_flagged() {
+        // An unknown computed key cannot prove a removed event API. Known
+        // string/template-literal keys are covered by the authored corpus.
         let result = lint("this[methodName]('event', handler)");
         assert_eq!(result.error_count, 0);
     }
