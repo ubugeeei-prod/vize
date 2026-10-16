@@ -1,0 +1,54 @@
+{
+  "vueVersion": "3.6.0-beta.10",
+  "typescriptVersion": "6.0.3",
+  "cases": [
+    {
+      "name": "NavUser",
+      "path": "app/components/nav/NavUser.vue",
+      "observations": {
+        "originalVize": {
+          "html": "<button flex=\"~ row\" gap-x-1 items-center justify-center btn-solid text-sm px-2 py-1 xl:hidden><span aria-hidden=\"true\" block i-ri:login-circle-line class=\"rtl-flip\"></span> action.sign_in</button>",
+          "teleports": null,
+          "ownerAttributePresent": false
+        },
+        "currentVize": {
+          "html": "<button flex=\"~ row\" gap-x-1 items-center justify-center btn-solid text-sm px-2 py-1 xl:hidden data-owner=\"original-attribute-owner\"><span aria-hidden=\"true\" block i-ri:login-circle-line class=\"rtl-flip\"></span> action.sign_in</button>",
+          "teleports": null,
+          "ownerAttributePresent": true
+        },
+        "official": {
+          "html": "<!--[--><button flex=\"~ row\" gap-x-1 items-center justify-center btn-solid text-sm px-2 py-1 xl:hidden><span aria-hidden=\"true\" block i-ri:login-circle-line class=\"rtl-flip\"></span> action.sign_in</button><!--]-->",
+          "teleports": null,
+          "ownerAttributePresent": false
+        }
+      }
+    },
+    {
+      "name": "ModalDialog",
+      "path": "app/components/modal/ModalDialog.vue",
+      "observations": {
+        "originalVize": {
+          "html": "<!--teleport start--><!--teleport end-->",
+          "teleports": {
+            "body": "<!--teleport start anchor--><div ref=\"elDialogRoot\" aria-modal=\"true\" style=\"z-index:100;\" fixed inset-0 of-y-auto scrollbar-hide overscroll-none data-v-d07a39a5><div class=\"dialog-mask backdrop-blur-sm\" absolute inset-0 z-0 bg-transparent opacity-100 backdrop-filter touch-none data-v-d07a39a5></div><div class=\"dialog-mask\" absolute inset-0 z-0 bg-black opacity-48 touch-none h=\"[calc(100%+0.5px)]\" data-v-d07a39a5></div><div class=\"p-safe-area\" absolute inset-0 z-1 pointer-events-none opacity-100 flex data-v-d07a39a5><div flex-1 flex items-center justify-center p-4 data-v-d07a39a5><div ref=\"elDialogMain\" class=\"dialog-main rounded shadow-lg pointer-events-auto isolate bg-base border-base border-1px border-solid w-full max-h-full of-y-auto overscroll-contain touch-pan-y touch-pan-x\" data-owner=\"original-attribute-owner\" data-v-d07a39a5><!--[--><!--]--></div></div></div></div><!--teleport anchor-->"
+          },
+          "ownerAttributePresent": true
+        },
+        "currentVize": {
+          "html": "<!--teleport start--><!--teleport end-->",
+          "teleports": {
+            "body": "<!--teleport start anchor--><div aria-modal=\"true\" style=\"z-index:100;\" fixed inset-0 of-y-auto scrollbar-hide overscroll-none data-v-d07a39a5><div class=\"dialog-mask backdrop-blur-sm\" absolute inset-0 z-0 bg-transparent opacity-100 backdrop-filter touch-none data-v-d07a39a5></div><div class=\"dialog-mask\" absolute inset-0 z-0 bg-black opacity-48 touch-none h=\"[calc(100%+0.5px)]\" data-v-d07a39a5></div><div class=\"p-safe-area\" absolute inset-0 z-1 pointer-events-none opacity-100 flex data-v-d07a39a5><div flex-1 flex items-center justify-center p-4 data-v-d07a39a5><div class=\"dialog-main rounded shadow-lg pointer-events-auto isolate bg-base border-base border-1px border-solid w-full max-h-full of-y-auto overscroll-contain touch-pan-y touch-pan-x\" data-owner=\"original-attribute-owner\" data-v-d07a39a5><!--[--><!--]--></div></div></div></div><!--teleport anchor-->"
+          },
+          "ownerAttributePresent": true
+        },
+        "official": {
+          "html": "<!--teleport start--><!--teleport end-->",
+          "teleports": {
+            "body": "<!--teleport start anchor--><!-- Dialog component --><div aria-modal=\"true\" style=\"z-index:100;\" fixed inset-0 of-y-auto scrollbar-hide overscroll-none data-v-app/components/modal/ModalDialog.vue><!-- The style `scrollbar-hide overscroll-none overflow-y-scroll` and `h=\"[calc(100%+0.5px)]\"` is used to implement scroll locking, --><!-- corresponding to issue: #106, so please don't remove it. --><!-- Mask layer: blur --><div class=\"backdrop-blur-sm dialog-mask\" absolute inset-0 z-0 bg-transparent opacity-100 backdrop-filter touch-none data-v-app/components/modal/ModalDialog.vue></div><!-- Mask layer: dimming --><div class=\"dialog-mask\" absolute inset-0 z-0 bg-black opacity-48 touch-none h=\"[calc(100%+0.5px)]\" data-v-app/components/modal/ModalDialog.vue></div><!-- Dialog container --><div class=\"p-safe-area\" absolute inset-0 z-1 pointer-events-none opacity-100 flex data-v-app/components/modal/ModalDialog.vue><div flex-1 flex items-center justify-center p-4 data-v-app/components/modal/ModalDialog.vue><!-- We use `class` here to make v-bind being able to be override them --><div class=\"dialog-main rounded shadow-lg pointer-events-auto isolate bg-base border-base border-1px border-solid w-full max-h-full of-y-auto overscroll-contain touch-pan-y touch-pan-x\" data-owner=\"original-attribute-owner\" data-v-app/components/modal/ModalDialog.vue><!--[--><!--]--></div></div></div></div><!--teleport anchor-->"
+          },
+          "ownerAttributePresent": true
+        }
+      }
+    }
+  ]
+}

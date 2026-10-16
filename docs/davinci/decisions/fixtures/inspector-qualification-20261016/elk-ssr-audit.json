@@ -1938,7 +1938,7 @@
         "unchanged": 0
       },
       "categories": [
-        "teleport-root-fallthrough"
+        "explicit-attrs-ref-emission"
       ]
     },
     {
@@ -2237,7 +2237,7 @@
         "unchanged": -2
       },
       "categories": [
-        "conditional-root-fallthrough"
+        "fragment-fallthrough-defect"
       ]
     },
     {
@@ -7232,5 +7232,10 @@
     "prettierAvailable": false,
     "compilerSfcCjsSha256": "131cae84341c63aeb3c10dcdc2401a7bfd299adff8ef64bf5fcc1d734fed1cce",
     "subprocessScriptSha256": "0a38bcf37f86c91152ad11781a2f8dfd9e42483d4f35abc387d4eed822c724ac"
+  },
+  "attributeRuntime": {
+    "file": "attribute-runtime.json",
+    "sha256": "4e69904e8e616cd3812908c7204137111a703b2ff0d23e6f209ee707ad6f8b9a",
+    "scope": "Complete extracted SSR render functions with real Vue helpers and explicit fixed inputs; full component script setup not executed."
   }
 }

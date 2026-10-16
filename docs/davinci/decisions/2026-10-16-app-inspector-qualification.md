@@ -61,27 +61,27 @@ and Vize code SHA-256, original/current statistics, and category attribution.
 Paths below are relative to `app/`. Deltas count the existing weighted line-diff output;
 they are not counts of source lines or automatically permitted credits.
 
-| File                                                | Original → current additions | Delta | Observed correction          |
-| --------------------------------------------------- | ---------------------------: | ----: | ---------------------------- |
-| `components/account/AccountFollowButton.vue`        |                      34 → 35 |     1 | reactive-props-rest-8837     |
-| `components/account/AccountFollowRequestButton.vue` |                      39 → 40 |     1 | reactive-props-rest-8837     |
-| `components/modal/ModalDialog.vue`                  |                      27 → 28 |     1 | teleport-root-fallthrough    |
-| `components/nav/NavUser.vue`                        |                      33 → 35 |     2 | conditional-root-fallthrough |
-| `components/status/StatusActions.vue`               |                      78 → 79 |     1 | reactive-props-rest-8837     |
-| `components/status/StatusActionsMore.vue`           |                    118 → 119 |     1 | reactive-props-rest-8837     |
-| `components/status/StatusCard.vue`                  |                    127 → 129 |     2 | reactive-props-rest-8837     |
-| `components/status/StatusDetails.vue`               |                      57 → 59 |     2 | reactive-props-rest-8837     |
-| `components/status/StatusMedia.vue`                 |                      18 → 20 |     2 | ssr-css-vars                 |
-| `pages/[[server]]/collections/[id].vue`             |                      88 → 91 |     3 | preserve-page-metadata-7873  |
-| `pages/blocks.vue`                                  |                      37 → 38 |     1 | preserve-page-metadata-7873  |
-| `pages/bookmarks.vue`                               |                      37 → 38 |     1 | preserve-page-metadata-7873  |
-| `pages/compose.vue`                                 |                      33 → 34 |     1 | preserve-page-metadata-7873  |
-| `pages/conversations.vue`                           |                      37 → 38 |     1 | preserve-page-metadata-7873  |
-| `pages/domain_blocks.vue`                           |                      37 → 38 |     1 | preserve-page-metadata-7873  |
-| `pages/mutes.vue`                                   |                      37 → 38 |     1 | preserve-page-metadata-7873  |
-| `pages/pinned.vue`                                  |                      37 → 38 |     1 | preserve-page-metadata-7873  |
-| `pages/settings.vue`                                |                      54 → 57 |     3 | preserve-page-metadata-7873  |
-| `pages/share-target.vue`                            |                      39 → 42 |     3 | preserve-page-metadata-7873  |
+| File                                                | Original → current additions | Delta | Observed correction         |
+| --------------------------------------------------- | ---------------------------: | ----: | --------------------------- |
+| `components/account/AccountFollowButton.vue`        |                      34 → 35 |     1 | reactive-props-rest-8837    |
+| `components/account/AccountFollowRequestButton.vue` |                      39 → 40 |     1 | reactive-props-rest-8837    |
+| `components/modal/ModalDialog.vue`                  |                      27 → 28 |     1 | teleport-root-fallthrough   |
+| `components/nav/NavUser.vue`                        |                      33 → 35 |     2 | fragment-fallthrough-defect |
+| `components/status/StatusActions.vue`               |                      78 → 79 |     1 | reactive-props-rest-8837    |
+| `components/status/StatusActionsMore.vue`           |                    118 → 119 |     1 | reactive-props-rest-8837    |
+| `components/status/StatusCard.vue`                  |                    127 → 129 |     2 | reactive-props-rest-8837    |
+| `components/status/StatusDetails.vue`               |                      57 → 59 |     2 | reactive-props-rest-8837    |
+| `components/status/StatusMedia.vue`                 |                      18 → 20 |     2 | ssr-css-vars                |
+| `pages/[[server]]/collections/[id].vue`             |                      88 → 91 |     3 | preserve-page-metadata-7873 |
+| `pages/blocks.vue`                                  |                      37 → 38 |     1 | preserve-page-metadata-7873 |
+| `pages/bookmarks.vue`                               |                      37 → 38 |     1 | preserve-page-metadata-7873 |
+| `pages/compose.vue`                                 |                      33 → 34 |     1 | preserve-page-metadata-7873 |
+| `pages/conversations.vue`                           |                      37 → 38 |     1 | preserve-page-metadata-7873 |
+| `pages/domain_blocks.vue`                           |                      37 → 38 |     1 | preserve-page-metadata-7873 |
+| `pages/mutes.vue`                                   |                      37 → 38 |     1 | preserve-page-metadata-7873 |
+| `pages/pinned.vue`                                  |                      37 → 38 |     1 | preserve-page-metadata-7873 |
+| `pages/settings.vue`                                |                      54 → 57 |     3 | preserve-page-metadata-7873 |
+| `pages/share-target.vue`                            |                      39 → 42 |     3 | preserve-page-metadata-7873 |
 
 The six reactive-rest changes preserve the authored rest binding through Vue's real
 `createPropsRestProxy`, corrected by [#8837](https://github.com/ubugeeei-prod/vize/pull/8837)
@@ -99,17 +99,48 @@ The CSS ownership and emission checks are covered by the SSR CSS variable suites
 [#7971](https://github.com/ubugeeei-prod/vize/pull/7971).
 
 `ModalDialog` gains `mergeProps` when its Teleport descendant's authored `v-bind="$attrs"`
-is rendered. `NavUser`'s two conditional native button roots gain `_attrs` merging.
-These are observed behavior changes consistent with their authored attribute ownership;
-this audit does not invent a historical corrective PR identity or claim a new runtime
-execution of these two complete Elk components. Their exact complete code changes remain
-available for the baseline review.
+is rendered. Running its complete extracted SSR render functions with the real pinned Vue
+helpers shows that original, current, and official output all preserve `data-owner` on the
+dialog body; current output also removes the old emitted `ref` attribute. The extra helper
+import is an emission change, not evidence that parent attributes were previously missing.
 
-The +16 difference is therefore not evidence by itself that compiler correctness regressed.
-The added runtime helpers and preserved source cannot be removed merely to meet a text
-metric. The original 9,201 additions ceiling remains enforced in this patch. A separate,
-explicitly reviewed baseline regeneration must assess all complete outputs, preserve the
-old comparison, and tighten the improved bounds rather than add a blanket exception.
+The initial source-only classification of `NavUser` as a desired fallthrough correction was
+**wrong**. Runtime comparison of the complete extracted SSR functions shows current Vize
+adds parent `data-owner` to the signed-out native button, while both original Vize and the
+official compiler omit it; the official output retains fragment anchors. This is a genuine
+remaining fragment/fallthrough discrepancy requiring a minimized product fix. Complete
+three-version rendered HTML and Teleport packets are retained in
+[`attribute-runtime.json`](./fixtures/inspector-qualification-20261016/attribute-runtime.json).
+Only the complete render functions were executed with explicit inputs; this is not a claim
+that the full Elk application or original script setup ran.
+
+The +16 difference therefore mixes corrected constructs, emission changes, and an actual
+remaining defect. Added runtime helpers and preserved source cannot be removed merely to
+meet a text metric. The original 9,201 additions ceiling remains enforced in this patch.
+The NavUser defect and independent runtime checks of the other positive categories must be
+resolved before any separately reviewed baseline regeneration.
+
+## Baseline proposal awaiting fresh evidence
+
+No numeric change is approved here. After the actual fragment/fallthrough correction,
+repeat the current comparison using authenticated source inventory, compiler resolution,
+and actual generated Nuxt provider bytes from the repaired capture path.
+
+For Elk, the candidate must keep exactly the original 259-file inventory. Regenerate the
+additions bound only from independently audited complete corrected outputs; the observed
+9,217 value is **not** approved because it includes the NavUser defect. The current
+258-changed-file and 25,007-removal observations identify bounds that can be tightened if
+the corrected candidate preserves them. Keep three official errors and zero Vize errors
+unless independently explained provider evidence changes that contract. Retain the old
+complete comparison alongside the new one; do not subtract credits from observed metrics.
+
+For VueFes DOM, the observed candidate is 71 files, zero official/Vize errors, 1,753
+additions, and 2,593 removals. Its lower additions bound would tighten the old 2,077 limit;
+the greater removal count and error decline require explicit review against actual generated
+provider receipts and the newly compiled Timetable outputs. The failed run never reached
+VueFes SSR, so **no SSR bound is proposed** until a fresh run records it. Preserve the old
+DOM/SSR packets and all 71 source files. A green parser, ordinary check snapshot, or
+reconstructed alias reference cannot substitute for that qualification.
 
 ## VueFes official error decline
 
