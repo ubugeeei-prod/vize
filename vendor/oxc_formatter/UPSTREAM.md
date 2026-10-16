@@ -62,3 +62,14 @@ attribute-value indentation budget and retains sixteen complete independent
 Oxfmt references, leading/trailing/argument comment and raw-literal controls,
 LF/CRLF cases, three public passes and full CLI check/write streams. This
 special-purpose entry is a local adaptation rather than an upstream backport.
+
+## Comment-free suppression queries
+
+The local `formatter/comments.rs` suppression predicates return `false` directly
+when the complete parsed comment list is empty. Keeping this check inline avoids
+per-node cursor/view-range construction and trailing-comment scans for files
+without comments. Nonempty comment lists retain both original predicates,
+including printed cursors and speculative view limits. Unit controls compare
+both answers with those original predicates at every valid query offset, cursor
+and view limit; public script controls retain whole outputs and fixed points.
+The original formatter instruction probes and ceilings remain unchanged.
