@@ -36,9 +36,9 @@ fn with_legacy<'a>(
     options: SfcParseOptions,
     legacy: impl FnOnce(&'a str, SfcParseOptions) -> Result<SfcDescriptor<'a>, SfcError>,
 ) -> Result<SfcDescriptor<'a>, SfcError> {
-    if let Some((loc, content)) = native::try_parse(source, &options).and_then(|loc| {
-        source.get(loc.start..loc.end).map(|content| (loc, content))
-    }) {
+    if let Some((loc, content)) = native::try_parse(source, &options)
+        .and_then(|loc| source.get(loc.start..loc.end).map(|content| (loc, content)))
+    {
         // The native owner checked these original-source coordinates. Move the
         // caller's filename exactly as the retained parser does; do not copy it.
         return Ok(SfcDescriptor {
