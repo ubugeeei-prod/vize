@@ -35,7 +35,19 @@ pub fn classify_event_handler(source: &str) -> EventHandlerExpression {
     let [Statement::ExpressionStatement(statement)] = parsed.program.body.as_slice() else {
         return EventHandlerExpression::Inline;
     };
-    let parameters = match statement.expression.get_inner_expression() {
+    classify_event_handler_ast(&statement.expression)
+}
+
+/// Reuse only the actual producer-owned complete expression. Classification is
+/// identical to the historical wrapped parse above; source parsing stays there.
+pub(in crate::drawer) fn classify_retained_event_handler(
+    retained: &vize_relief::JsExpression<'_>,
+) -> EventHandlerExpression {
+    classify_event_handler_ast(retained.ast)
+}
+
+fn classify_event_handler_ast(expression: &Expression<'_>) -> EventHandlerExpression {
+    let parameters = match expression.get_inner_expression() {
         Expression::ArrowFunctionExpression(function) => &function.params,
         Expression::FunctionExpression(function) => &function.params,
         Expression::Identifier(identifier) if identifier.name != "undefined" => {

@@ -32,9 +32,14 @@ pub(super) fn lint_with_descriptor<'a>(
 ) -> LintResult {
     let allocator =
         vize_l0::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
+    let mut template_syntax = None;
     let template_ast = descriptor.template.as_ref().map(|template| {
         let parser = TemplateParser::new(&allocator, &template.content);
-        let (root, parse_errors) = profile!("patina.type_aware.template_parse", parser.parse());
+        let (root, parse_errors, syntax) = profile!(
+            "patina.type_aware.template_parse",
+            super::super::script_rules::parse_template_for_script_rules(linter, parser)
+        );
+        template_syntax = syntax;
         let has_fatal_parse_errors = Linter::has_fatal_template_parse_errors(&parse_errors);
         (
             root,
@@ -58,13 +63,20 @@ pub(super) fn lint_with_descriptor<'a>(
         )
     };
     let analysis = profile!("patina.type_aware.croquis", {
-        super::super::engine::analyze_descriptor_for_lint(
+        super::super::engine::analyze_descriptor_for_lint_with_reuse(
             descriptor,
             template_ast
                 .as_ref()
                 .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),
             linter.has_unused_bindings_demand(),
             derived,
+            template_ast.as_ref().and_then(|(root, _, _, fatal)| {
+                (!*fatal).then_some(root).and_then(|root| {
+                    template_syntax.as_ref().and_then(|syntax| {
+                        vize_croquis::drawer::collect_template_semantic_reuse(root, syntax)
+                    })
+                })
+            }),
         )
     });
     let mut result = if let (Some((root, _, parse_errors, has_fatal)), Some(template)) =
@@ -104,6 +116,7 @@ pub(super) fn lint_with_descriptor<'a>(
         template_ast
             .as_ref()
             .and_then(|(root, offset, _, fatal)| (!*fatal).then_some((root, *offset))),
+        template_syntax.as_ref(),
     );
     let script_block = descriptor
         .script_setup

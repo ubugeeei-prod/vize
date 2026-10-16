@@ -32,6 +32,7 @@ mod native_adapter_tests;
 mod pending_text;
 #[cfg(test)]
 mod svg_title_tests;
+mod template_syntax;
 #[cfg(all(test, feature = "legacy"))]
 mod tokenizer_contract_tests;
 #[cfg(all(test, feature = "legacy"))]
@@ -46,6 +47,10 @@ pub use entry::*;
 pub use expression::retain_slot_parameters_in;
 #[doc(hidden)]
 pub use frozen::FrozenElements;
+#[doc(hidden)]
+pub use template_syntax::{
+    TemplateSyntax, TemplateSyntaxFacts, TemplateSyntaxRecord, TemplateSyntaxRole,
+};
 pub use whitespace_context::{
     current_legacy_line_breaks, current_vue2_preserve, current_whitespace_strategy,
     with_vue2_preserve_whitespace, with_whitespace_mode, with_whitespace_strategy,
@@ -117,6 +122,8 @@ pub struct Parser<'a> {
     in_v_pre: bool,
     /// Compiler opt-in custody; backing storage is reserved only for frozen tags.
     frozen_elements: Option<Vec<'a, vize_l0::Span>>,
+    /// Demand-only syntax custody; native owners contain normally dropped diagnostics.
+    template_syntax_facts: Option<template_syntax::TemplateSyntaxCapture<'a>>,
     open_table_count: usize,
     open_p_count: usize,
     open_a_count: usize,
@@ -189,7 +196,7 @@ pub(super) struct CurrentDirective<'a> {
 impl<'a> Parser<'a> {
     /// Parse the source and return the AST
     pub fn parse(self) -> (RootNode<'a>, std::vec::Vec<CompilerError>) {
-        let (root, errors, _) = self.parse_inner();
+        let (root, errors, _, _) = self.parse_inner();
         (root, errors)
     }
 
@@ -199,6 +206,7 @@ impl<'a> Parser<'a> {
         RootNode<'a>,
         std::vec::Vec<CompilerError>,
         FrozenElements<'a>,
+        Option<TemplateSyntaxFacts<'a>>,
     ) {
         // Initialize root node
         let allocator = self.allocator;

@@ -26,12 +26,12 @@ No budgets or reported ranges are adjusted to make the tools agree.
 
 All 70 controls remain categorized in `template-ownership.json`: 53 belong to
 the script parent and all 17 template controls belong to child #9251. The full
-`native.json` expectations and original implementation are preserved by that
-Draft. The parent consumes the explicit `script-native.json` projection; its
+`native.json` expectations are unchanged in that Draft. The parent consumes the explicit `script-native.json` projection; its
 template-owned entries expect no new script diagnostic, without deleting or
 rewriting any full template expectation. The Node replay verifies packet hashes
-and both ownership inventories. This split does not claim the template false
-negatives are resolved.
+and both ownership inventories. The child now uses the complete native inventory
+and actual CLI, with additional boundary packets; exact-source CI and source
+review remain required before it leaves Draft.
 
 The public script regression is
 `crates/vize_patina/tests/legacy_instance_apis.rs`; the provider/provenance/runtime
@@ -62,13 +62,27 @@ factory, missing removed APIs after TypeScript erasure, silent optional calls,
 and the still-working `$emit`. A real foreign emitter control still works,
 which documents the remaining distinction the broad script rule cannot prove.
 
-The child-owned controls retain the intended scriptless/dual-script, loop,
-slot, escaped-identifier, dynamic-argument and handler behavior. The preserved
-walker is unqualified: the child must consume retained expression owners and
-canonical authored ranges, authenticate lexical and legacy slot bindings, and
-cover transformed conditions and guarded traversal. Synthetic expression or
-arrow reparsing is not accepted. The missing boundaries remain visible in
-`template-ownership.md`; none is claimed fixed by this script-only parent.
+The child retains the intended scriptless/dual-script, loop, slot, escaped-name,
+dynamic-argument and handler behavior. Its canonical replacement consumes the
+original retained grammar owners and authored entity ranges, with bounded
+lexical evidence for modern/legacy slots, collection ordering and If conditions.
+`template-boundaries.json` adds 42 whole packets: 27 admitted, five independently
+proved provider blind spots, and ten explicit refusals. `cli70.json` and
+`template-cli.json` preserve all 112 source/config/status/formatter packets.
+The remaining refusal frontier and qualification requirements are recorded in
+`template-authority-plan.md`; no synthetic consumer reparsing is accepted.
+
+Two separate append cohorts preserve positive component values without changing
+those frozen 112 inputs. `template-component-bindings.json` keeps 30 complete
+provider/compiler packets (15 listener controls and 15 scoped-slots research
+controls); `template-component-declaration-bindings.json` keeps 40 more, including
+value declarations, erased types, lexical negatives and full compiler/runtime
+contrasts for bare identifiers versus explicit `this` references. Their native
+and CLI projections retain 15 and 20 listener observations. The latter explicitly
+marks `template-this` as observation-only, not qualified acceptance. The four CLI
+tests therefore retain all 147 whole observations; their native execution is
+still pending exact-source Actions. Scoped-slots behavior is not expanded here.
+
 Five original Element SFCs require JSX script parsing; explicit TypeScript keeps
 its angle-assertion grammar while TSX opts into JSX.
 

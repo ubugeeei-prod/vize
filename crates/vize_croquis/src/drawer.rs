@@ -12,19 +12,27 @@ mod occurrences;
 mod options;
 mod script;
 mod template;
+mod template_references;
+mod template_semantic_reuse;
+pub use template_semantic_reuse::{TemplateSemanticReuse, collect_template_semantic_reuse};
 mod unused;
 pub use template::{dynamic_component_alias, is_dynamic_component_alias};
+pub use template_references::{
+    TemplateReference, TemplateReferenceGap, TemplateReferenceGapKind, TemplateReferenceOwner,
+    TemplateReferences, collect_template_references,
+};
 
 #[cfg(test)]
 mod tests;
 
 pub use core::Drawer;
 pub use helpers::{
-    EventHandlerExpression, IdentifierRef, VForBindingParameters, VForScopeAliases,
-    classify_event_handler, extract_identifier_refs_checked, extract_identifier_refs_oxc,
-    extract_identifier_refs_retained_only, extract_identifier_refs_with_witness,
-    extract_identifiers_checked, extract_identifiers_oxc, extract_inline_callback_params,
-    extract_slot_props, is_builtin_directive, is_component_tag, is_keyword, parse_v_for_expression,
-    parse_v_for_scope_expression, retain_v_for_binding_parameters, strip_js_comments,
+    EventHandlerExpression, IdentifierRef, RetainedIdentifierRef, VForBindingParameters,
+    VForScopeAliases, classify_event_handler, extract_identifier_refs_checked,
+    extract_identifier_refs_oxc, extract_identifier_refs_retained_only,
+    extract_identifier_refs_with_witness, extract_identifiers_checked, extract_identifiers_oxc,
+    extract_inline_callback_params, extract_slot_props, is_builtin_directive, is_component_tag,
+    is_keyword, parse_v_for_expression, parse_v_for_scope_expression,
+    retain_v_for_binding_parameters, retained_binding_declarations, strip_js_comments,
 };
 pub use options::DrawerOptions;

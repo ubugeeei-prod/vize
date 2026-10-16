@@ -3,8 +3,7 @@ pub(in crate::linter::engine) mod facade;
 mod pug;
 
 use super::{
-    SfcTemplateLintInput, TemplateAnalysis, TemplateRuleEnv, analyze_descriptor_for_lint,
-    extract_template_fast, offset_result,
+    SfcTemplateLintInput, TemplateAnalysis, TemplateRuleEnv, extract_template_fast, offset_result,
 };
 use crate::linter::config::{LintResult, Linter};
 use vize_armature::Parser;
@@ -41,6 +40,7 @@ impl Linter {
                 descriptor,
                 &mut result,
                 None,
+                None,
             );
             if super::super::css_rules::has_active_builtin_css_rules(self) {
                 super::super::css_rules::append_builtin_css_diagnostics(
@@ -60,9 +60,15 @@ impl Linter {
         let allocator =
             Allocator::with_capacity((template.content.len() * 4).max(self.initial_capacity));
         let parser = Parser::new(&allocator, &template.content);
-        let (root, parse_errors) = profile!("patina.sfc.descriptor.template_parse", parser.parse());
+        let (root, parse_errors, template_syntax) = profile!(
+            "patina.sfc.descriptor.template_parse",
+            super::super::script_rules::parse_template_for_script_rules(self, parser)
+        );
         let has_fatal_parse_errors = Self::has_fatal_template_parse_errors(&parse_errors);
         let analysis = if !has_fatal_parse_errors && self.has_active_semantic_template_rules() {
+            let reuse = template_syntax.as_ref().and_then(|syntax| {
+                vize_croquis::drawer::collect_template_semantic_reuse(&root, syntax)
+            });
             Some(profile!(
                 "patina.sfc.descriptor.croquis",
                 if descriptor.script_setup.is_some()
@@ -74,13 +80,15 @@ impl Linter {
                         Some(&root),
                         self.has_unused_bindings_demand(),
                         derived,
+                        reuse,
                     )
                 } else {
-                    analyze_descriptor_for_lint(
+                    super::rule_sets::analyze_descriptor_for_lint_with_reuse(
                         descriptor,
                         Some(&root),
                         self.has_unused_bindings_demand(),
                         derived,
+                        reuse,
                     )
                 }
             ))
@@ -113,6 +121,7 @@ impl Linter {
             descriptor,
             &mut result,
             (!has_fatal_parse_errors).then_some((&root, template.loc.start as u32)),
+            template_syntax.as_ref(),
         );
         if super::super::css_rules::has_active_builtin_css_rules(self) {
             super::super::css_rules::append_builtin_css_diagnostics(

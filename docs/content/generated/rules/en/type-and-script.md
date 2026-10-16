@@ -928,7 +928,7 @@ vp run lint
 
 **Bad**
 
-The script reads the removed `$listeners` property. This rule currently diagnoses scripts only; the template line illustrates migration and is not yet enforced (Draft follow-up #9251).
+The script reads the removed `$listeners` property. The template also forwards the removed component-context `$listeners` value; proven setup values and template-local bindings with that name are separate values.
 
 ```vue annotate="remove:4,5,9"
 <script>
@@ -946,7 +946,7 @@ export default {
 
 **Good**
 
-The script uses `$attrs`. Forwarding with `v-bind="$attrs"` illustrates Vue 3 migration; template enforcement is deferred to #9251. Script warnings retain their existing broad receiver/reference coverage.
+The script uses `$attrs`, and `v-bind="$attrs"` forwards Vue 3 attributes and listeners. Script warnings retain their existing broad receiver/reference coverage.
 
 ```vue annotate="add:4,8"
 <script>

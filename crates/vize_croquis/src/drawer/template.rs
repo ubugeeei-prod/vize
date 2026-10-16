@@ -31,6 +31,13 @@ use vize_relief::{ExpressionNode, RootNode, TemplateChildNode};
 impl Drawer {
     /// Draw template AST facts into the croquis.
     pub fn draw_template(&mut self, root: &RootNode<'_>) -> &mut Self {
+        if self
+            .template_semantic_reuse
+            .as_mut()
+            .is_some_and(|reuse| !reuse.authenticate(root))
+        {
+            self.template_semantic_reuse = None;
+        }
         if !self.checks_binding_reads()
             && let Some(capture) = self.occurrence_capture.as_mut()
         {

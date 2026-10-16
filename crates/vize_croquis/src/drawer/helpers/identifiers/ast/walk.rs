@@ -1,5 +1,6 @@
 mod assignment_target;
 pub(super) mod facts;
+pub(in super::super) mod retained;
 mod scopes;
 mod type_reads;
 

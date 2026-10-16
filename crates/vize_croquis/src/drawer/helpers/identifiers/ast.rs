@@ -1,4 +1,4 @@
-mod walk;
+pub(super) mod walk;
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression;

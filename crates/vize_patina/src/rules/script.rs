@@ -61,6 +61,7 @@ mod require_symbol_provide;
 mod require_typed_ref;
 mod return_in_computed_property;
 mod sfc_context;
+mod template_component_bindings;
 mod template_scan;
 mod valid_define_emits;
 mod valid_define_options;
@@ -81,6 +82,7 @@ pub use no_dupe_keys::NoDupeKeysModuleScript;
 pub use props_emits::EmitsModuleScript;
 pub(crate) use props_emits::collect_options_props;
 pub use sfc_context::SfcScriptContext;
+pub use template_component_bindings::TemplateComponentBindings;
 
 /// Metadata for a script-level rule
 pub struct ScriptRuleMeta {
@@ -240,11 +242,12 @@ pub trait ScriptRule: Send + Sync {
 }
 
 /// A configured script rule's independent template capability.
-/// Implementations consume the existing validated tree; no script parse is needed.
+/// Implementations consume only the parser-owned, bounded lexical packet.
 pub trait ScriptTemplateRule {
     fn check_template(
         &self,
-        root: &vize_relief::RootNode<'_>,
+        references: &vize_croquis::drawer::TemplateReferences,
+        component_bindings: &TemplateComponentBindings,
         offset: u32,
         result: &mut ScriptLintResult,
     );

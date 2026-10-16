@@ -16,6 +16,18 @@ pub fn analyze_sfc_descriptor_with_occurrences(
     root: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
+    analyze_sfc_descriptor_with_occurrences_and_template_reuse(descriptor, root, options, None)
+}
+
+/// Preserve the same occurrence relation while reusing demanded original
+/// grammar owners. The reuse packet cannot seed or replace editor witnesses.
+#[doc(hidden)]
+pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse(
+    descriptor: &SfcDescriptor<'_>,
+    root: Option<&RootNode<'_>>,
+    options: SfcCroquisOptions,
+    reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
+) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
     let mut packet = None;
     let mut analysis = analyze_sfc_descriptor_resolved_impl::<true>(
         descriptor,
@@ -30,6 +42,7 @@ pub fn analyze_sfc_descriptor_with_occurrences(
         None,
         DescriptorObservation {
             occurrences: Some(&mut packet),
+            template_semantic_reuse: reuse,
             ..Default::default()
         },
     );

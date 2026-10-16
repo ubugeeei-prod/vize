@@ -58,10 +58,18 @@ impl Drawer {
             // Every named listener runs in a handler scope. Whether its body
             // contains parentheses, semicolons or nested callbacks cannot change
             // that ownership; statement bodies must never become `void (body)`.
-            let shape = profile!(
-                "croquis.template.event.classify",
-                classify_event_handler(content)
-            );
+            let shape = if self
+                .template_semantic_reuse
+                .as_ref()
+                .is_some_and(|reuse| reuse.is_inline_handler(exp))
+            {
+                EventHandlerExpression::Inline
+            } else {
+                profile!(
+                    "croquis.template.event.classify",
+                    classify_event_handler(content)
+                )
+            };
             let has_implicit_event = matches!(shape, EventHandlerExpression::Inline);
             let params = match shape {
                 EventHandlerExpression::Callback { params, .. } => params,

@@ -12,8 +12,8 @@
 //!
 //! Built-in Vue 3 presets enable this migration rule; Vue 2 presets leave it off.
 //!
-//! Parent #9222 diagnoses script accesses only. The template lines below show
-//! migration examples; template diagnostics remain unqualified in Draft #9251.
+//! Template reads use original syntax, authored ranges and proven lexical scopes.
+//! Proven setup values are separate; refusal proves nothing. Script coverage is unchanged.
 //!
 //! ## Examples
 //!
@@ -41,8 +41,6 @@
 //! </script>
 //! <template><Child v-bind="$attrs" /></template>
 //! ```
-
-mod template;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, ScriptTemplateRule};
 use crate::diagnostic::{LintDiagnostic, Severity};
@@ -134,11 +132,19 @@ impl NoDeprecatedDollarListenersApiVisitor<'_> {
 impl ScriptTemplateRule for NoDeprecatedDollarListenersApi {
     fn check_template(
         &self,
-        root: &vize_relief::RootNode<'_>,
+        references: &vize_croquis::drawer::TemplateReferences,
+        component_bindings: &super::TemplateComponentBindings,
         offset: u32,
         result: &mut ScriptLintResult,
     ) {
-        for span in template::references(root) {
+        for reference in references.references() {
+            if reference.name != DOLLAR_LISTENERS
+                || reference.owner != vize_croquis::drawer::TemplateReferenceOwner::ComponentContext
+                || component_bindings.has_authored_value(DOLLAR_LISTENERS)
+            {
+                continue;
+            }
+            let span = reference.span;
             result.add_diagnostic(
                 LintDiagnostic::error(META.name, MESSAGE, offset + span.start, offset + span.end)
                     .with_help(HELP),

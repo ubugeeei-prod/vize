@@ -72,6 +72,27 @@ pub(crate) fn has_active_builtin_script_rules(linter: &Linter) -> bool {
         .is_some()
 }
 
+/// Select original producer roles once, before template parsing. Ordinary
+/// compiles and configurations without a template capability allocate no packet.
+pub(crate) fn parse_template_for_script_rules<'a>(
+    linter: &Linter,
+    parser: vize_armature::Parser<'a>,
+) -> (
+    vize_relief::RootNode<'a>,
+    Vec<vize_relief::errors::CompilerError>,
+    Option<vize_armature::parser::TemplateSyntaxFacts<'a>>,
+) {
+    if active_builtin_script_rule_entries(linter, true)
+        .any(|entry| resolved_rule(linter, entry).template_check().is_some())
+    {
+        let (root, errors, facts) = parser.parse_with_template_syntax_facts();
+        (root, errors, Some(facts))
+    } else {
+        let (root, errors) = parser.parse();
+        (root, errors, None)
+    }
+}
+
 fn active_builtin_script_rule_entries(
     linter: &Linter,
     vapor_component: bool,

@@ -194,6 +194,7 @@ impl<'a> Parser<'a> {
         };
         let mut expr = SimpleExpressionNode::new(expression_content, false, inner_loc);
         self.retain_expression_ast(&mut expr, trimmed_start, trimmed_end);
+        self.record_expression_syntax(&expr, false, true, false);
         let expr_boxed = Box::new_in(expr, &self.allocator);
 
         let interp = InterpolationNode {
