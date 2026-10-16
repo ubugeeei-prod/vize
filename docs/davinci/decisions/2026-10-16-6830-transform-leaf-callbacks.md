@@ -5,10 +5,10 @@ failed the unchanged `stress-interp` instruction ceilings in
 [run 38888282902](https://github.com/ubugeeei-prod/vize/actions/runs/38888282902),
 job `116931293359`:
 
-| Stage | Instructions | Ceiling |
-| --- | ---: | ---: |
-| Core transform | 303,423 | 295,602 |
-| Vapor transform | 303,119 | 295,556 |
+| Stage           | Instructions | Ceiling |
+| --------------- | -----------: | ------: |
+| Core transform  |      303,423 | 295,602 |
+| Vapor transform |      303,119 | 295,556 |
 
 That PR does not modify the core transform implementation. The failure is an
 existing qualification blocker, rather than evidence that its fixture updates
