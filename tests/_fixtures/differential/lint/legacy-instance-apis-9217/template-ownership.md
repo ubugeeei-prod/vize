@@ -4,7 +4,7 @@ The whole implementation and all 70 authored controls from parent source
 `a2c9f545bfe90ea44f70be78d38fc8b18a533a4f` are preserved on
 `fix/patina-template-listeners-retained-ast` before the script-only split.
 The 53 script controls belong to parent PR #9222; all 17 template controls and
-their complete native/provider expectations belong to this child. No fixture,
+their complete native/provider expectations belong to [Draft child #9251](https://github.com/ubugeeei-prod/vize/pull/9251). No fixture,
 source packet, original report or expected diagnostic is erased.
 
 The existing template walker is a preserved implementation under review, not

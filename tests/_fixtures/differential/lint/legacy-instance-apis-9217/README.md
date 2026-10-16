@@ -4,8 +4,11 @@
 Real Project Matrix at `d2506ca6b5e31252973f05981829c0367cacf26b` and remains
 open as the receiver-accuracy acceptance tracker.
 
-This patch fixes exact deprecated property spans, JSX-bearing JavaScript SFC
-parsing and missing unbound template `$listeners` references. The existing broad
+Parent PR #9222 fixes exact deprecated script-property spans and JSX-bearing
+JavaScript SFC parsing. Missing template `$listeners` diagnostics are owned by
+[Draft child #9251](https://github.com/ubugeeei-prod/vize/pull/9251), which is not
+accepted until retained AST, authored coordinates and lexical ownership are
+qualified. The existing broad
 script warning policy is preserved, including unknown receivers, ordinary
 objects, bare script references, registered components and custom factories.
 It does not restrict diagnostics to the pinned provider's receiver/factory
@@ -21,7 +24,16 @@ authored cases where the historical native script policy is broader than the
 provider. A provider omission is not automatically a native false positive.
 No budgets or reported ranges are adjusted to make the tools agree.
 
-The public native regression is
+All 70 controls remain categorized in `template-ownership.json`: 53 belong to
+the script parent and all 17 template controls belong to child #9251. The full
+`native.json` expectations and original implementation are preserved by that
+Draft. The parent consumes the explicit `script-native.json` projection; its
+template-owned entries expect no new script diagnostic, without deleting or
+rewriting any full template expectation. The Node replay verifies packet hashes
+and both ownership inventories. This split does not claim the template false
+negatives are resolved.
+
+The public script regression is
 `crates/vize_patina/tests/legacy_instance_apis.rs`; the provider/provenance/runtime
 replay is `tests/tooling/patina-legacy-instance-api-reference.test.mjs`.
 Native acceptance of all original projects remains the Matrix's responsibility,
@@ -50,11 +62,13 @@ factory, missing removed APIs after TypeScript erasure, silent optional calls,
 and the still-working `$emit`. A real foreign emitter control still works,
 which documents the remaining distinction the broad script rule cannot prove.
 
-Template controls cover scriptless and dual-script SFCs, loops, slots,
-expression-local bindings, escaped identifiers, dynamic arguments, and inline
-handler statements. Argumentless `v-on` objects use expression grammar; named
-event handlers use statement grammar. Comments, text, literal attributes and
-`v-pre` create no template references. Script and template scopes are separate.
+The child-owned controls retain the intended scriptless/dual-script, loop,
+slot, escaped-identifier, dynamic-argument and handler behavior. The preserved
+walker is unqualified: the child must consume retained expression owners and
+canonical authored ranges, authenticate lexical and legacy slot bindings, and
+cover transformed conditions and guarded traversal. Synthetic expression or
+arrow reparsing is not accepted. The missing boundaries remain visible in
+`template-ownership.md`; none is claimed fixed by this script-only parent.
 Five original Element SFCs require JSX script parsing; explicit TypeScript keeps
 its angle-assertion grammar while TSX opts into JSX.
 
