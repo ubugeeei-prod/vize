@@ -28,3 +28,32 @@ The existing real CLI build and both seeded recall tests run afterwards.
 The comparison artifact is `unused-bindings-profiles-<sha>`. A result applies to
 that source and runtime only. This is a single old-first sample with cache warming;
 it does not establish an all-CI speedup. Normal PRs run only the three `ci` commands.
+
+## Observe the units before claiming duplicate builds
+
+The controlled run 38923320909 measured 92.278s for the old three selections and
+61.165s for `ci`, with identical 19 selected passing cases and 102 Cargo summaries.
+It was one old-first warm sample. The following CLI still took 56.24s. Its text
+progress repeated 115 crate/version names from the tests, but retained no Cargo
+unit metadata or fingerprints. Those names cannot identify equivalent units.
+
+Keep the same three tests and CLI build. Their ordinary stdout now includes
+`json-render-diagnostics` records and is retained per command with `tee` and
+pipefail. Raw compiler artifacts preserve package, target/kind, profile/test,
+features, freshness and output paths; build-script records preserve emitted cfgs.
+The collector copies only fingerprint JSON associated with hashes actually
+present in emitted output paths, under the canonical target directory. It never
+copies compiled objects or the whole target. Host/proc-macro, cross-target, test
+and release observations retain their distinct raw identities and paths.
+Rust 1.99.1 pins Cargo revision `5f94df4789f005f9a352888e8355ffc645b7ed0e`.
+Its [unit metadata implementation](https://github.com/rust-lang/cargo/blob/5f94df4789f005f9a352888e8355ffc645b7ed0e/src/compiler/build_runner/compilation_files.rs#L112-L118)
+uses the unit ID for emitted filename/directory suffixes; its fingerprint directory
+uses the corresponding package directory. This internal layout is not a public
+compatibility guarantee: absent or ambiguous matches remain gaps.
+
+Unhashed final executables and missing/ambiguous fingerprints are recorded as
+gaps; matching by crate name is refused. Raw logs and bounded fingerprint JSON
+are uploaded even if Cargo or acceptance checks fail. This adds no Cargo build,
+test selection, job, cache policy or measurement campaign. It enables attribution
+in the next required ordinary run; it does not prove main warm reuse or seed-role
+compatibility.
