@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { integrationEvent } from "../../../tools/support/compat/github/release-integration-event.mjs";
+import {
+  assertPinnedSource,
+  integrationEvent,
+} from "../../../tools/support/compat/github/release-integration-event.ts";
 import { aggregateNeedsResults } from "../../../tools/support/compat/github/require-needs-success.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
@@ -46,8 +49,10 @@ test("integration planning selects its own PR and queue root while ordinary PRs 
   );
   const source = {
     ...pull,
-    head: { ref: "release/v1.2.3" },
-    body: "<!-- vize-release-pin: immutable-v1 -->\n<!-- vize-release-pin-head: abc -->",
+    draft: true,
+    head: { ref: "release/v1.2.3", sha: candidate, repo: { full_name: repository } },
+    base: { ref: "main", repo: { full_name: repository } },
+    body: `<!-- vize-release-pin: immutable-v1 -->\n<!-- vize-release-pin-head: ${candidate} -->\n<!-- vize-release-pin-cut: ${base} -->`,
   };
   assert.equal(
     integrationEvent("pull_request", { ...event, pull_request: source }, repository, candidate),
@@ -139,9 +144,11 @@ test("required Check report consumes the always-running catalog gate without all
   );
   assert.ok(initialCheckout);
   assert.equal(select.id, "candidate");
-  assert.equal(select.run, "node tools/support/compat/github/release-integration-event.mjs");
+  assert.equal(select.run, "node tools/support/compat/github/release-integration-event.ts");
   for (const step of gate.steps.filter(
-    (step: object) => ![initialCheckout, select, snapshot].includes(step),
+    (step: object) =>
+      ![initialCheckout, select, snapshot].includes(step) &&
+      !("uses" in step && String(step.uses).startsWith("actions/setup-node@")),
   )) {
     assert.equal(step.if, "${{ steps.candidate.outputs.integration != '' }}");
   }
@@ -182,4 +189,65 @@ test("integration body snapshots survive qualification refusal without running f
   });
   assert.equal(gate["timeout-minutes"], 10);
   assert.deepEqual(gate.permissions, { contents: "read", "pull-requests": "read" });
+});
+
+test("pinned source detects main merges, changed custody and malformed markers before qualification", () => {
+  const source = {
+    number: 9196,
+    draft: true,
+    merged: false,
+    head: { ref: "release/v0.457.0", sha: candidate, repo: { full_name: repository } },
+    base: { ref: "main", repo: { full_name: repository } },
+    body: `<!-- vize-release-pin: immutable-v1 -->\n<!-- vize-release-pin-head: ${candidate} -->\n<!-- vize-release-pin-cut: ${base} -->`,
+  };
+  assert.doesNotThrow(() => assertPinnedSource(source, repository));
+  for (const changed of [
+    { ...source, head: { ...source.head, sha: "d".repeat(40) } },
+    { ...source, head: { ...source.head, ref: "fix/ordinary" } },
+    { ...source, head: { ...source.head, repo: { full_name: "foreign/repo" } } },
+    { ...source, base: { ...source.base, ref: "davinci" } },
+    { ...source, base: { ...source.base, repo: { full_name: "foreign/repo" } } },
+    { ...source, draft: false },
+    { ...source, merged: true },
+    { ...source, body: source.body.replace("immutable-v1", "immutable-v2") },
+    { ...source, body: source.body.replace(candidate, "short") },
+    { ...source, body: source.body.replace(base, candidate) },
+    { ...source, body: source.body.replace(`<!-- vize-release-pin-head: ${candidate} -->`, "") },
+    { ...source, body: source.body + `\n<!-- vize-release-pin-head: ${candidate} -->` },
+  ]) {
+    assert.throws(() => assertPinnedSource(changed, repository), /Pinned source/);
+  }
+  const drift = { ...source, head: { ...source.head, sha: "d".repeat(40) } };
+  assert.throws(
+    () =>
+      integrationEvent(
+        "pull_request",
+        {
+          ...event,
+          number: source.number,
+          pull_request: drift,
+        },
+        repository,
+        candidate,
+      ),
+    /Pinned source/,
+  );
+  assert.throws(
+    () =>
+      integrationEvent("merge_group", event, repository, candidate, () => ({
+        ...drift,
+        number: event.number,
+      })),
+    /Pinned source/,
+  );
+  assert.doesNotThrow(() =>
+    assertPinnedSource(
+      {
+        ...source,
+        body: "Legacy non-pinned release",
+        draft: false,
+      },
+      repository,
+    ),
+  );
 });
