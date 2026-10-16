@@ -45,7 +45,7 @@ fn complete_authored_provider_packets_have_exact_native_rule_and_property_spans(
         "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/independent.json"
     ))
     .unwrap();
-    assert_eq!(corpus.records.len(), 29);
+    assert_eq!(corpus.records.len(), 39);
     for case in corpus.records {
         let mut expected: Vec<_> = case
             .messages
@@ -59,7 +59,7 @@ fn complete_authored_provider_packets_have_exact_native_rule_and_property_spans(
             })
             .collect();
         expected.sort();
-        for preset in [LintPreset::Essential, LintPreset::Recommended] {
+        for preset in [LintPreset::Essential, LintPreset::HappyPath] {
             let linter = Linter::with_preset(preset)
                 .with_enabled_rules(Some(vec![
                     "script/no-deprecated-dollar-listeners-api".into(),

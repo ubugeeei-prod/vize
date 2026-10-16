@@ -8,8 +8,7 @@
 //! event listeners separately from `$attrs`; in Vue 3 listeners are plain
 //! props prefixed with `on`, so they are merged into `$attrs`. Any code that
 //! still reads the instance property (or the unbound template `$listeners`)
-//! must migrate it for Vue 3
-//! to `$attrs`.
+//! must migrate it to `$attrs` for Vue 3.
 //!
 //! Built-in Vue 3 presets enable this migration rule; Vue 2 presets leave it off.
 //!
@@ -38,7 +37,6 @@ use oxc_ast_visit::{
     walk::{walk_computed_member_expression, walk_static_member_expression},
 };
 use oxc_span::Span;
-use vize_croquis::script_parser::collect_options_object;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-deprecated-dollar-listeners-api",
@@ -81,16 +79,13 @@ impl ScriptRule for NoDeprecatedDollarListenersApi {
         if !(source.contains("$listeners") || source.contains('\\')) {
             return;
         }
-        let Some(options) = collect_options_object(program) else {
-            return;
-        };
-        let instance = VueInstance::new(program);
+        let instance = VueInstance::new(program, source);
         let mut visitor = NoDeprecatedDollarListenersApiVisitor {
             offset,
             result,
             instance: &instance,
         };
-        visitor.visit_object_expression(options);
+        visitor.visit_program(program);
     }
 }
 
@@ -104,7 +99,8 @@ impl<'a> Visit<'a> for NoDeprecatedDollarListenersApiVisitor<'_> {
     fn visit_computed_member_expression(&mut self, it: &ComputedMemberExpression<'a>) {
         // The provider admits an Identifier property even in brackets, while a
         // computed string literal is outside this rule's script selector.
-        if let Expression::Identifier(property) = &it.expression
+        if self.instance.contains(it.span)
+            && let Expression::Identifier(property) = &it.expression
             && property.name.as_str() == DOLLAR_LISTENERS
             && self.instance.is_this(&it.object)
         {
@@ -114,7 +110,10 @@ impl<'a> Visit<'a> for NoDeprecatedDollarListenersApiVisitor<'_> {
     }
 
     fn visit_static_member_expression(&mut self, it: &StaticMemberExpression<'a>) {
-        if it.property.name.as_str() == DOLLAR_LISTENERS && self.instance.is_this(&it.object) {
+        if self.instance.contains(it.span)
+            && it.property.name.as_str() == DOLLAR_LISTENERS
+            && self.instance.is_this(&it.object)
+        {
             self.push_diagnostic(it.property.span);
         }
         walk_static_member_expression(self, it);

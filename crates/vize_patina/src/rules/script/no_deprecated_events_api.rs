@@ -38,7 +38,6 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::Span;
-use vize_croquis::script_parser::collect_options_object;
 use vize_l0::cstr;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -79,16 +78,13 @@ impl ScriptRule for NoDeprecatedEventsApi {
         {
             return;
         }
-        let Some(options) = collect_options_object(program) else {
-            return;
-        };
-        let instance = VueInstance::new(program);
+        let instance = VueInstance::new(program, source);
         let mut visitor = NoDeprecatedEventsApiVisitor {
             offset,
             result,
             instance: &instance,
         };
-        visitor.visit_object_expression(options);
+        visitor.visit_program(program);
     }
 }
 
@@ -100,7 +96,8 @@ struct NoDeprecatedEventsApiVisitor<'result> {
 
 impl<'a> Visit<'a> for NoDeprecatedEventsApiVisitor<'_> {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if !it.optional
+        if self.instance.contains(it.span)
+            && !it.optional
             && let Some((span, method)) = removed_event_callee(&it.callee, self.instance)
         {
             self.push_diagnostic(span, method);

@@ -3,7 +3,7 @@
 [Issue #9217](https://github.com/ubugeeei-prod/vize/issues/9217) came from the
 Real Project Matrix at `d2506ca6b5e31252973f05981829c0367cacf26b`.
 
-`independent.json` preserves 29 authored SFC inputs, source SHA-256 hashes and
+`independent.json` preserves 39 authored SFC inputs, source SHA-256 hashes and
 complete diagnostics from ESLint 10.4.1, eslint-plugin-vue 10.9.2,
 vue-eslint-parser 10.4.1 and @typescript-eslint/parser 8.65.0. Rule implementation
 hashes identify the provider bytes. The executable provider replay is
@@ -37,6 +37,11 @@ The pinned rule source establishes the behavior:
 - [`isThis`](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/index.js)
   accepts only a direct const binding initialized with `this`; mutable bindings,
   alias chains and shadowed names are not proof of the component instance.
+
+Component-region controls also cover non-default registered components,
+`Vue.extend`, `new Vue`, imported factories and explicit `@vue/component`
+markers. Ordinary objects, indirect exported objects and foreign factories do
+not gain component-instance diagnostics merely by sharing method names.
 
 Five affected Element SFCs contain JSX render functions. JavaScript SFC scripts
 must admit JSX without rejecting the whole script and losing its event checks.

@@ -2,26 +2,38 @@
 //! Match eslint-plugin-vue 10.9.2's `isThis`: aliases are direct const bindings,
 //! never mutable variables, chains, parameters, or same-spelled shadowed locals.
 
+mod components;
+
 use oxc_ast::ast::{BindingPattern, Expression, Program, VariableDeclaration};
 use oxc_ast_visit::{Visit, walk::walk_variable_declaration};
 use oxc_semantic::{Scoping, SemanticBuilder};
+use oxc_span::Span;
 use oxc_syntax::symbol::SymbolId;
 use vize_l0::FxHashSet;
 
 pub(super) struct VueInstance {
     scoping: Scoping,
     aliases: FxHashSet<SymbolId>,
+    regions: Vec<Span>,
 }
 
 impl VueInstance {
-    pub(super) fn new(program: &Program<'_>) -> Self {
+    pub(super) fn new(program: &Program<'_>, source: &str) -> Self {
         let semantic = SemanticBuilder::new().build(program).semantic;
         let mut collector = Aliases::default();
         collector.visit_program(program);
+        let regions = components::regions(program, semantic.scoping(), source);
         Self {
+            regions,
             scoping: semantic.into_scoping(),
             aliases: collector.0,
         }
+    }
+
+    pub(super) fn contains(&self, span: Span) -> bool {
+        self.regions
+            .iter()
+            .any(|region| region.start <= span.start && span.end <= region.end)
     }
 
     pub(super) fn is_this(&self, expression: &Expression<'_>) -> bool {
