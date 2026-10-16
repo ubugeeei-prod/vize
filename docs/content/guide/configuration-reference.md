@@ -281,8 +281,11 @@ such as `vize:check:app` for `--tsconfig` or `--corsa-path` overrides.
 { "typeChecker": { "servers": 1 } }
 ```
 
-`typeChecker.servers` is reserved for future Corsa worker pools. The direct project-session runner
-currently supports only `1`; larger values fail fast instead of pretending to tune concurrency.
+`typeChecker.servers` sets the maximum number of parallel Corsa CLI processes (`1`–`32`).
+When omitted, Vize auto-tunes the count to the available CPUs and Vue file count. Set `1` to
+check in a single process. Vize partitions independent import graph components and shares
+ambient declarations; interconnected projects can use fewer processes than requested.
+Workspace package dependencies resolve from the importing package in every mode.
 
 ## Musea Options
 

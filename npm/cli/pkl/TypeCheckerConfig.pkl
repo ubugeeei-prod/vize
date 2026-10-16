@@ -56,7 +56,7 @@ class TypeCheckerConfig {
   /// Path to a .d.ts file that declares template globals.
   globalsFile: String? = null
 
-  /// Reserved Corsa server count. The direct project-session runner currently supports only 1.
+  /// Parallel Corsa CLI server count (1-32). Omit to auto-tune; 1 disables sharding.
   servers: Int? = null
 
   /// Hard bound in milliseconds for each editor Corsa request (default 60000).

@@ -134,7 +134,7 @@ local typeCheckerConfigDef: JsonSchema = new JsonSchema {
     }
     ["servers"] = new JsonSchema {
       type = "integer"
-      description = "Reserved Corsa server count. The direct project-session runner currently supports only 1."
+      description = "Parallel Corsa CLI server count (1-32). Omit to auto-tune; 1 disables sharding."
     }
     ["lspRequestTimeoutMs"] = new JsonSchema { type = "integer"; description = "Hard bound in milliseconds for each editor Corsa request. Defaults to 60000; use a larger value for large cold projects."; minimum = 1 }
   }
