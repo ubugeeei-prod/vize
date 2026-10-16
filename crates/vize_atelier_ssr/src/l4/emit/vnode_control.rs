@@ -57,12 +57,23 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 out.push_str(&condition);
                 out.push_str(") ? ");
             }
+            let shape = self.scan_region(self.pos)?;
+            let fragment = shape.needs_branch_fragment(self.segment(self.pos)?.kind);
             self.branch_key = self.branch_key_span(fact, index)?;
             let expressions = self.vnode_region();
             self.branch_key = None;
             let expressions = expressions?;
             let template = from_template.get(index).copied().unwrap_or(false);
-            out.push_str(&self.vnode_branch(expressions, template));
+            if fragment {
+                self.ctx.use_core_helper(RuntimeHelper::CreateVNode);
+                self.ctx.use_core_helper(RuntimeHelper::Fragment);
+                out.push_str(&cstr!(
+                    "_createVNode(_Fragment, null, {})",
+                    array(&expressions)
+                ));
+            } else {
+                out.push_str(&self.vnode_branch(expressions, template));
+            }
             self.close(
                 Kind::CloseBranch,
                 |source| matches!(source, Source::Branch(open) if core::ptr::eq(*open, branch)),
@@ -73,7 +84,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .iter()
             .all(|branch| branch.condition.is_some())
         {
-            out.push_str(" : _createCommentVNode(\"\")");
+            out.push_str(" : _createCommentVNode(\"v-if\", true)");
         }
         self.close(
             Kind::CloseIf,
@@ -155,8 +166,16 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// The loop body and whether its single child carries a key.
     fn vnode_for_body(&mut self, fact: u32, ops: &'r [l2::Op<'a>]) -> Result<(String, bool)> {
         let wrapper = self.facts.for_wrappers.get(node(fact)?);
-        let Some(wrapper) = wrapper else {
-            let key = match ops {
+        let key = match wrapper {
+            Some(wrapper) => match &wrapper.key {
+                None => None,
+                Some(WrapperKey::Static { value, .. }) => Some(match value {
+                    Some(value) => quoted_js_string(&decode_template_entities(value)),
+                    None => "\"\"".to_compact_string(),
+                }),
+                Some(WrapperKey::Dynamic { source, .. }) => Some(self.text_expr(source)?),
+            },
+            None => match ops {
                 [l2::Op::Element(element)] => {
                     self.item_key(&element.attributes, &element.bindings)?
                 }
@@ -164,36 +183,30 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                     self.item_key(&component.attributes, &component.bindings)?
                 }
                 _ => None,
+            },
+        };
+        let shape = self.scan_region(self.pos)?;
+        if !shape.needs_loop_fragment(self.segment(self.pos)?.kind) {
+            let body = match ops {
+                [l2::Op::Element(element)] => self.vnode_element(element, key.as_deref())?,
+                [l2::Op::Component(component)] => {
+                    self.vnode_component(component, key.as_deref())?
+                }
+                [l2::Op::Slot(slot)] => self.vnode_outlet(slot, key.as_deref())?,
+                _ => return Err(LegacyReason::Structure.into()),
             };
-            let expressions = self.vnode_region()?;
-            return Ok((self.vnode_branch(expressions, false), key.is_some()));
-        };
-        let key = match &wrapper.key {
-            None => None,
-            Some(WrapperKey::Static { value, .. }) => Some(match value {
-                Some(value) => quoted_js_string(&decode_template_entities(value)),
-                None => "\"\"".to_compact_string(),
-            }),
-            Some(WrapperKey::Dynamic { source, .. }) => Some(self.text_expr(source)?),
-        };
-        let Some(key) = key else {
-            let expressions = self.vnode_region()?;
-            return Ok((self.vnode_template(expressions), false));
-        };
-        if let [l2::Op::Element(element)] = ops {
-            return Ok((self.vnode_element(element, Some(&key))?, true));
+            return Ok((body, key.is_some()));
         }
-        let children = self.vnode_region()?;
-        let children = if children.is_empty() {
-            "[]".to_compact_string()
-        } else {
-            array(&children)
+        let children = array(&self.vnode_region()?);
+        let props = match key.as_deref() {
+            Some(key) => cstr!("{{ key: {key} }}"),
+            None => "null".to_compact_string(),
         };
         Ok((
             cstr!(
-                "(_openBlock(), _createBlock(_Fragment, {{ key: {key} }}, {children}, 64 /* STABLE_FRAGMENT */))"
+                "(_openBlock(), _createBlock(_Fragment, {props}, {children}, 64 /* STABLE_FRAGMENT */))"
             ),
-            true,
+            key.is_some(),
         ))
     }
 

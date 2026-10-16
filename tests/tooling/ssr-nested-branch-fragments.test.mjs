@@ -19,7 +19,7 @@ await test(
     assert.equal(vue.version, "3.6.0-beta.10");
     assert.equal(compiler.version, vue.version);
     const modules = JSON.parse(readFileSync(capture, "utf8"));
-    assert.equal(modules.length, 28);
+    assert.equal(modules.length, 40);
 
     function load(preamble, body) {
       const imports = preamble.replace(
@@ -35,11 +35,26 @@ await test(
       )((name) => (name === "vue" ? vue : server));
     }
 
-    async function render(renderFunction, outer, inner) {
+    async function render(renderFunction, outer, inner, itemKeys) {
       const app = vue.createSSRApp(
         { props: ["outer", "inner"], ssrRender: renderFunction },
         { outer, inner, "data-owner": "parent" },
       );
+      app.component("RuntimeChild", {
+        props: ["n"],
+        render() {
+          return vue.h("b", { "data-item": this.n }, String(this.n));
+        },
+      });
+      app.component("RuntimeSlotHost", {
+        render() {
+          // Calling without an SSR push function forces the generated VNode
+          // fallback. Capture the actual item keys before Vue renders them.
+          const children = this.$slots.default?.() ?? [];
+          if (itemKeys) itemKeys.push(...(children[0]?.children ?? []).map((child) => child.key));
+          return vue.h("section", null, children);
+        },
+      });
       return server.renderToString(app);
     }
 
@@ -71,11 +86,20 @@ await test(
       );
       for (const outer of [false, true]) {
         for (const inner of [false, true]) {
-          const officialHtml = await render(official, outer, inner);
+          const officialItemKeys = [];
+          const officialHtml = await render(official, outer, inner, officialItemKeys);
           const lanes = {};
           for (const lane of ["selected", "legacy"]) {
             const output = entry[lane];
-            const html = await render(load(output.preamble, output.code), outer, inner);
+            const itemKeys = [];
+            const html = await render(load(output.preamble, output.code), outer, inner, itemKeys);
+            if (["fallback-keyed-component", "fallback-keyed-slot"].includes(entry.name)) {
+              assert.deepEqual(itemKeys, officialItemKeys, `${entry.name}: actual loop item keys`);
+              assert.deepEqual(
+                itemKeys,
+                entry.name === "fallback-keyed-component" ? [1, 2] : ["1_fb", "2_fb"],
+              );
+            }
             assert.equal(html, officialHtml, `${entry.name}: ${lane}, vapor=${entry.vapor}`);
             const fragment = entry.name === "nested-root" ? outer : !outer;
             if (entry.name.startsWith("nested-") && fragment) {
@@ -97,7 +121,7 @@ await test(
             if (entry.name === "loop-single-element") {
               assert.equal(html, "<!--[--><button>1</button><button>2</button><!--]-->");
             }
-            lanes[lane] = html;
+            lanes[lane] = { html, itemKeys };
           }
           observations.push({
             name: entry.name,
@@ -106,6 +130,7 @@ await test(
             inner,
             referenceSource,
             officialHtml,
+            officialItemKeys,
             lanes,
           });
         }

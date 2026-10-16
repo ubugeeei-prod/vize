@@ -314,12 +314,18 @@ pub(crate) fn rendered_child_count(children: &[TemplateChildNode]) -> usize {
         .sum()
 }
 
-fn loop_needs_fragment(children: &[TemplateChildNode<'_>]) -> bool {
+/// Logical item children after removing retained structural-template carriers.
+pub(crate) fn loop_children<'node, 'a>(
+    children: &'node [TemplateChildNode<'a>],
+) -> &'node [TemplateChildNode<'a>] {
     match children {
         [TemplateChildNode::Element(element)] if element.tag_type == ElementType::Template => {
-            loop_needs_fragment(&element.children)
+            loop_children(&element.children)
         }
-        [TemplateChildNode::Element(_)] => false,
-        _ => true,
+        _ => children,
     }
+}
+
+fn loop_needs_fragment(children: &[TemplateChildNode<'_>]) -> bool {
+    !matches!(loop_children(children), [TemplateChildNode::Element(_)])
 }

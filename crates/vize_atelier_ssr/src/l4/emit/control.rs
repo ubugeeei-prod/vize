@@ -66,7 +66,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.branch_key = self.branch_key_span(fact, index)?;
             let emitted = self.children(Flags {
                 as_fragment: !disable_nested_fragments
-                    && (shape.legacy_children > 1 || self.segment(self.pos)?.kind == Kind::If),
+                    && shape.needs_branch_fragment(self.segment(self.pos)?.kind),
                 disable_nested_fragments,
                 disable_comments: false,
                 inherit_attrs,
@@ -144,11 +144,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let body = self.scan_region(self.pos).and_then(|shape| {
             self.children(Flags {
                 as_fragment: !disable_nested_fragments
-                    && (shape.legacy_children != 1
-                        || !matches!(
-                            self.segment(self.pos)?.kind,
-                            Kind::OpenElement | Kind::Component | Kind::SlotOutlet
-                        )),
+                    && shape.needs_loop_fragment(self.segment(self.pos)?.kind),
                 // A loop callback starts a new range context. The incoming
                 // suppression only controls this loop's own wrappers.
                 disable_nested_fragments: false,

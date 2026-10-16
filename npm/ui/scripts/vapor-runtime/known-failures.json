@@ -12,7 +12,6 @@
   "hydrate": {
     "alert-dialog": "unclassified: AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:",
     "date-range-picker-calendar": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
-    "notification-center-list": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
     "toc": "unclassified: AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:",
     "toc-item": "unclassified: AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:",
     "toc-link": "unclassified: AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:",

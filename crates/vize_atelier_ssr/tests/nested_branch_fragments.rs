@@ -74,6 +74,36 @@ const CASES: &[(&str, &str, bool)] = &[
         r#"<template v-for="n in 2" :key="n"><button v-if="inner">a</button><button v-else>b</button></template>"#,
         false,
     ),
+    (
+        "loop-keyed-component",
+        r#"<template v-for="n in 2" :key="n"><RuntimeChild :n="n" /></template>"#,
+        false,
+    ),
+    (
+        "loop-keyed-slot",
+        r#"<template v-for="n in 2" :key="n"><slot :n="n"><button>fallback</button></slot></template>"#,
+        false,
+    ),
+    (
+        "fallback-keyed-component",
+        r#"<RuntimeSlotHost><template v-for="n in 2" :key="n"><RuntimeChild :n="n" /></template></RuntimeSlotHost>"#,
+        false,
+    ),
+    (
+        "fallback-keyed-slot",
+        r#"<RuntimeSlotHost><template v-for="n in 2" :key="n"><slot :n="n"><button>fallback</button></slot></template></RuntimeSlotHost>"#,
+        false,
+    ),
+    (
+        "fallback-conditional-boundary",
+        r#"<RuntimeSlotHost><template v-for="n in 2"><template v-if="outer"><button v-if="inner">a</button><button v-else>b</button></template></template></RuntimeSlotHost>"#,
+        false,
+    ),
+    (
+        "fallback-nested-loop",
+        r#"<RuntimeSlotHost><template v-for="n in 2"><button v-for="m in 2">{{ n }}:{{ m }}</button></template></RuntimeSlotHost>"#,
+        false,
+    ),
 ];
 
 #[test]

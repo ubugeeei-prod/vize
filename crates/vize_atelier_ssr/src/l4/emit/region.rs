@@ -43,6 +43,22 @@ pub(super) struct RegionShape {
     pub(super) candidates: std::vec::Vec<usize>,
 }
 
+impl RegionShape {
+    /// A singleton nested conditional retains its own conditional branch range.
+    pub(super) fn needs_branch_fragment(&self, first: Kind) -> bool {
+        self.legacy_children > 1 || first == Kind::If
+    }
+
+    /// A single element, component, or slot owns an item; other shapes need a range.
+    pub(super) fn needs_loop_fragment(&self, first: Kind) -> bool {
+        self.legacy_children != 1
+            || !matches!(
+                first,
+                Kind::OpenElement | Kind::Component | Kind::SlotOutlet
+            )
+    }
+}
+
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// Describe the child list starting at `from`, up to its closing segment.
     pub(super) fn scan_region(&self, from: usize) -> Result<RegionShape> {

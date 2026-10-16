@@ -33,6 +33,13 @@ structural-template carriers when classifying the logical item content. The nati
 string-plan route classifies the direct child segments. The old keyed-template/count
 heuristic is unnecessary: keys do not change whether a single element owns an item.
 
+The same logical-root policy also applies when a component invokes the generated slot
+function without an SSR push callback. Both VNode fallback emitters retain item and nested
+conditional Fragments and forward template keys directly into a single component or slot
+outlet. The runtime controls force that path with a render-function host, compare complete
+HTML against official Vue, and inspect the actual component and slot-fallback item keys.
+The conditional fallback keeps Vue's `v-if` comment placeholder when no branch matches.
+
 The fresh callback context matters inside TransitionGroup. Regular TransitionGroup still
 suppresses its direct loop/item wrappers, while the callback's nested conditions retain
 their own ranges. Vize's existing Vapor TransitionGroup policy retains nested ranges;
@@ -46,6 +53,12 @@ The real Vue runtime harness compares all four condition assignments for the new
 cases, including nested loops, single physical roots, keyed bodies, text, empty bodies,
 and TransitionGroup. It also executes the retained public module as a negative control,
 so an implementation that reproduces the old HTML cannot pass by agreeing with itself.
+
+The initial source candidate also made the existing `notification-center-list` Vapor
+hydration fixture pass in the full UI conformance job
+([retained Actions result](https://github.com/ubugeeei-prod/vize/actions/runs/38898214081/job/116963887640)).
+Its obsolete expected-failure entry is removed; the final candidate must keep the entire
+UI conformance job green. Other known failures remain unchanged.
 
 These checks cover emitted SSR behavior. They do not substitute for browser hydration
 or full App qualification. No inspector budget, baseline, or expected error count changes.
