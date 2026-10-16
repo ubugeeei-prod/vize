@@ -31,6 +31,17 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     {
         return;
     }
+    // Independent template capabilities run once, before script prefilters and
+    // the scriptless return. Resolve configured instances, not metadata names.
+    if let Some((root, offset)) = template_ast {
+        for entry in active_builtin_script_rule_entries(linter, true) {
+            if let Some(rule) = resolved_rule(linter, entry).template_check() {
+                let mut lint = ScriptLintResult::default();
+                rule.check_template(root, offset, &mut lint);
+                merge_script_result(linter, result, lint);
+            }
+        }
+    }
     // A template-only SFC has no script callback to carry this native rule.
     // Reuse the validated template AST before script-only byte prefilters; no
     // empty program, extra parse or configured namesake is admitted here.
@@ -91,7 +102,17 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         .map(|(source, _)| {
             let parsed = profile!(
                 "patina.script_rule.parse",
-                Parser::new(&setup_alloc, source, script_source_type()).parse()
+                Parser::new(
+                    &setup_alloc,
+                    source,
+                    sfc_script_source_type(
+                        descriptor
+                            .script_setup
+                            .as_ref()
+                            .and_then(|block| block.lang.as_deref())
+                    )
+                )
+                .parse()
             );
             parsed
         });
@@ -150,7 +171,17 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         .map(|(source, _)| {
             profile!(
                 "patina.script_rule.parse",
-                Parser::new(&script_alloc, source, script_source_type()).parse()
+                Parser::new(
+                    &script_alloc,
+                    source,
+                    sfc_script_source_type(
+                        descriptor
+                            .script
+                            .as_ref()
+                            .and_then(|block| block.lang.as_deref())
+                    )
+                )
+                .parse()
             )
         });
     let emits_module = match (inline_emits_blocks, script_source, script_parsed.as_ref()) {
@@ -271,3 +302,13 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     }
 }
 mod registered_sfc;
+
+// JSX render functions are valid in JavaScript SFC blocks. Keep TypeScript
+// blocks in TS mode so generic arrows and angle-bracket assertions retain
+// their grammar; only an explicit TSX block opts those files into JSX.
+fn sfc_script_source_type(lang: Option<&str>) -> oxc_span::SourceType {
+    script_source_type().with_jsx(matches!(
+        lang,
+        None | Some("js" | "javascript" | "jsx" | "tsx")
+    ))
+}

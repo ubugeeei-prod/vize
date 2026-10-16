@@ -9,7 +9,7 @@
 //! library (such as `mitt` or `tiny-emitter`) or a different pattern. `$emit`
 //! is still supported in Vue 3 and is **not** flagged by this rule.
 //!
-//! This is a Vue 2 -> 3 migration rule and is opt-in.
+//! Built-in Vue 3 presets enable this migration rule; Vue 2 presets leave it off.
 //!
 //! ## Examples
 //!
@@ -18,7 +18,7 @@
 //! this.$on('event', handler)
 //! this.$once('event', handler)
 //! this.$off('event', handler)
-//! emitter.$off('event')
+//! const vm = this; vm.$off('event')
 //! ```
 //!
 //! ### Valid
@@ -32,11 +32,13 @@
 //! emitter.on('event', handler)
 //! ```
 
+use super::vue_instance::VueInstance;
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
-use oxc_span::{GetSpan, Span};
+use oxc_span::Span;
+use vize_croquis::script_parser::collect_options_object;
 use vize_l0::cstr;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -66,23 +68,41 @@ impl ScriptRule for NoDeprecatedEventsApi {
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let mut visitor = NoDeprecatedEventsApiVisitor { offset, result };
-        visitor.visit_program(program);
+        if !(source.contains("$on")
+            || source.contains("$off")
+            || source.contains("$once")
+            || source.contains('\\'))
+        {
+            return;
+        }
+        let Some(options) = collect_options_object(program) else {
+            return;
+        };
+        let instance = VueInstance::new(program);
+        let mut visitor = NoDeprecatedEventsApiVisitor {
+            offset,
+            result,
+            instance: &instance,
+        };
+        visitor.visit_object_expression(options);
     }
 }
 
 struct NoDeprecatedEventsApiVisitor<'result> {
     offset: usize,
     result: &'result mut ScriptLintResult,
+    instance: &'result VueInstance,
 }
 
 impl<'a> Visit<'a> for NoDeprecatedEventsApiVisitor<'_> {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if let Some((span, method)) = removed_event_call(it) {
+        if !it.optional
+            && let Some((span, method)) = removed_event_callee(&it.callee, self.instance)
+        {
             self.push_diagnostic(span, method);
         }
 
@@ -110,34 +130,24 @@ impl NoDeprecatedEventsApiVisitor<'_> {
     }
 }
 
-/// Returns the span and the matched method name when `call`'s callee is a member
-/// access whose static property is one of the removed event methods.
-fn removed_event_call<'a>(call: &'a CallExpression<'a>) -> Option<(Span, &'static str)> {
-    removed_event_callee(&call.callee)
-}
-
-fn removed_event_callee<'a>(expression: &'a Expression<'a>) -> Option<(Span, &'static str)> {
-    match expression {
-        expression if expression.is_member_expression() => {
-            let member = expression.as_member_expression()?;
-            let property = member.static_property_name()?;
-            let matched = REMOVED_EVENT_METHODS
-                .into_iter()
-                .find(|candidate| *candidate == property)?;
-            Some((expression.span(), matched))
-        }
-        // Look through wrappers so `(this.$on)(...)`, `(this.$on as any)(...)`,
-        // and `this.$on!(...)` are still recognized.
-        Expression::ParenthesizedExpression(paren) => removed_event_callee(&paren.expression),
-        Expression::TSAsExpression(ts_as) => removed_event_callee(&ts_as.expression),
-        Expression::TSSatisfiesExpression(ts_satisfies) => {
-            removed_event_callee(&ts_satisfies.expression)
-        }
-        Expression::TSNonNullExpression(ts_non_null) => {
-            removed_event_callee(&ts_non_null.expression)
-        }
-        _ => None,
+/// Preserve the provider's property-token span, including computed literal keys.
+fn removed_event_callee(
+    expression: &Expression<'_>,
+    instance: &VueInstance,
+) -> Option<(Span, &'static str)> {
+    let expression = expression.get_inner_expression();
+    let member = match expression {
+        Expression::ChainExpression(chain) => chain.expression.as_member_expression()?,
+        _ => expression.as_member_expression()?,
+    };
+    if !instance.is_this(member.object()) {
+        return None;
     }
+    let (span, property) = member.static_property_info()?;
+    let matched = REMOVED_EVENT_METHODS
+        .into_iter()
+        .find(|candidate| *candidate == property)?;
+    Some((span, matched))
 }
 
 #[cfg(test)]
@@ -147,7 +157,8 @@ mod tests {
     fn lint(source: &str) -> ScriptLintResult {
         let rule = NoDeprecatedEventsApi;
         let mut result = ScriptLintResult::default();
-        rule.check(source, 0, &mut result);
+        let source = format!("export default {{ created() {{ {source} }} }}");
+        rule.check(&source, 0, &mut result);
         result
     }
 
@@ -183,9 +194,9 @@ emitter.once('event', handler)
     }
 
     #[test]
-    fn test_invalid_emitter_off() {
+    fn test_valid_foreign_emitter_off() {
         let result = lint("emitter.$off('event', handler)");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
@@ -215,6 +226,7 @@ this.$emit('c')
         let source = "(this.$on as any)('event', handler)";
         let result = lint(source);
         assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
+        let diagnostic = &result.diagnostics[0];
+        assert_eq!(diagnostic.end - diagnostic.start, 3);
     }
 }

@@ -1,0 +1,538 @@
+{
+  "schema": 1,
+  "provider": {
+    "eslint": "10.4.1",
+    "plugin": "10.9.2",
+    "parser": "10.4.1",
+    "scriptParser": "8.65.0",
+    "ruleSources": {
+      "no-deprecated-dollar-listeners-api": {
+        "path": "dist/rules/no-deprecated-dollar-listeners-api.js",
+        "sha256": "71af7147d1921393d1ce2173b12c47e1a053ee3b7147d98bd8d805276f07828a"
+      },
+      "no-deprecated-events-api": {
+        "path": "dist/rules/no-deprecated-events-api.js",
+        "sha256": "0917bbed3679ac4157935635e66d8dc87c99b87a12bf2877356cd6417204d235"
+      }
+    }
+  },
+  "records": [
+    {
+      "id": "template-forwarding",
+      "source": "<template><Child v-on=\"$listeners\" /></template>",
+      "sourceSha256": "aa6fb591b99cab77d67d9d96f2eb78afd13a06d2e94b82c6f2eb381252141035",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 24,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 34
+        }
+      ]
+    },
+    {
+      "id": "template-branches",
+      "source": "<template><div v-if=\"ok\" v-on=\"$listeners\"/><svg v-else v-on=\"$listeners\"/></template>",
+      "sourceSha256": "b05d86d0340649a036b88b8f3140d64c1d42699971a3aedb648f23e1f6e8cd0d",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 32,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 42
+        },
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 63,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 73
+        }
+      ]
+    },
+    {
+      "id": "template-empty-script",
+      "source": "<template><Child v-on=\"$listeners\" /></template><script>export default {}</script>",
+      "sourceSha256": "fb2c23c5af6e3684de82db4e8224d4ef4f90b4926c12fd0f751fe9a98ec11d60",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 24,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 34
+        }
+      ]
+    },
+    {
+      "id": "template-dual-script",
+      "source": "<template>{{ $listeners }}</template><script>export default {}</script><script setup>const x=1</script>",
+      "sourceSha256": "3c839bbaba41d5dce567186c65f6e56da9542eb986e1309f5ce73caa46fed83b",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 14,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 24
+        }
+      ]
+    },
+    {
+      "id": "template-nonreferences",
+      "source": "<template><div title=\"$listeners\"><!-- {{ $listeners }} -->$listeners {{ '$listeners' }} {{ obj.$listeners }}<pre v-pre>{{ $listeners }}</pre></div></template>",
+      "sourceSha256": "6c76edfc3d01efa5cc5cc5617a26c05fe74ede1e09086dc98d7c4c026a0f9589",
+      "messages": []
+    },
+    {
+      "id": "template-escaped-identifier",
+      "source": "<template><Child v-on=\"$listen\\u0065rs\" /></template>",
+      "sourceSha256": "45629b3a0f1644d55020c8b50919a11f6d30c23412bd6bebb7e49b9454569229",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 24,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 39
+        }
+      ]
+    },
+    {
+      "id": "template-arrow-binding",
+      "source": "<template>{{ (($listeners) => $listeners)(handlers) }} {{ (() => $listeners)() }}</template>",
+      "sourceSha256": "ad8007402fe3a2e357321620352ba20deafb83d7c25553a6eb1e1362e7b5ae92",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 66,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 76
+        }
+      ]
+    },
+    {
+      "id": "template-loop-binding",
+      "source": "<template><div v-for=\"$listeners in rows\" v-on=\"$listeners\">{{ $listeners }}</div>{{ $listeners }}</template>",
+      "sourceSha256": "8bd0c540003669434bc1b79d984fd3e3111edf88a754415e215ded2fc0556188",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 86,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 96
+        }
+      ]
+    },
+    {
+      "id": "template-loop-source",
+      "source": "<template><div v-for=\"item in $listeners\">{{ item }}</div></template>",
+      "sourceSha256": "8a9ffcc5a83c9b80f4974928045bbed95567a8ae8adfd6181866ace5bc877066",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 31,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 41
+        }
+      ]
+    },
+    {
+      "id": "template-slot-binding",
+      "source": "<template><Child v-slot=\"{ $listeners }\">{{ $listeners }}</Child>{{ $listeners }}</template>",
+      "sourceSha256": "47558f874fa4fc05e342172ce666661131bad8ad2b1c86907a6d11bab62130ba",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 69,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 79
+        }
+      ]
+    },
+    {
+      "id": "template-slot-renamed",
+      "source": "<template><Child v-slot=\"{ $listeners: local }\">{{ $listeners }}{{ local }}</Child></template>",
+      "sourceSha256": "c18168f368f426eaecd45dd97adda890a9e7b3c25b0db138b43a2d2bd33aa629",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 52,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 62
+        }
+      ]
+    },
+    {
+      "id": "template-dynamic-argument",
+      "source": "<template><Child :[$listeners]=\"ok\" /></template>",
+      "sourceSha256": "16f2302c2398158f310eeeae2339fcaa546b84fba04bef1e59d8a7ad343c8547",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 20,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 30
+        }
+      ]
+    },
+    {
+      "id": "template-handler-statements",
+      "source": "<template><button @click=\"use($listeners); use($listeners)\" /></template>",
+      "sourceSha256": "76b50f3e8ba5fe860776d4187731d706a32833c56f3f37ea9834f527e09e4ac6",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 31,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 41
+        },
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 48,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 58
+        }
+      ]
+    },
+    {
+      "id": "component-members",
+      "source": "<script>export default { mounted() { this.$listeners; this.$on('x', h); this.$off('x', h); this.$once('x', h); this.$emit('x') } }</script>",
+      "sourceSha256": "4a162c69c7c456279356c38f7f6644ce55dd4b72f835708e4937027aee315b96",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 43,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 53
+        },
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 60,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 63
+        },
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 78,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 82
+        },
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 97,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 102
+        }
+      ]
+    },
+    {
+      "id": "bootstrap-vue-root-event-hub",
+      "source": "<script>export default { mounted() { this.$root.$on('change', h); this.$once('hook:beforeDestroy', () => this.$root.$off('change', h)) } }</script>",
+      "sourceSha256": "8b69a90cf151a14400005c4e9c70dc07704b93156fcd5efa23ba07f91c9a65b6",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 72,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 77
+        }
+      ]
+    },
+    {
+      "id": "habitica-root-event-hub",
+      "source": "<script>export default { mounted() { this.$root.$on('modal', h); this.$root.$off('modal', h) } }</script>",
+      "sourceSha256": "a04b7810671480cd1fb193e607d30cd37e462f5cdbb580ef1b6c35077b286470",
+      "messages": []
+    },
+    {
+      "id": "modal-event-hub",
+      "source": "<script>export default { mounted() { this.$modal.event.$on('toggle', h); this.$modal.event.$off('toggle', h) } }</script>",
+      "sourceSha256": "d3533d0a59540eb07a2b45dd53c0e279d780b7843e50c40b0c6eb1eaa8c27937",
+      "messages": []
+    },
+    {
+      "id": "foreign-members",
+      "source": "<script>export default { mounted() { ctx.$listeners; emitter.$on('x', h); vm.$off('x'); const $listeners = {}; use($listeners) } }</script>",
+      "sourceSha256": "a3c25094674dbf7ad721dbac5305c13bd4a64093c183adaf84430fed691fc830",
+      "messages": []
+    },
+    {
+      "id": "const-this-alias",
+      "source": "<script>export default { mounted() { const vm = this; vm.$listeners; vm.$on('x', h); vm.$once('x', h) } }</script>",
+      "sourceSha256": "34e985ca4a376bf4bb506697726387b453287ff4bca1aba23b4523e8a389f1a7",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 58,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 68
+        },
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 73,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 76
+        },
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 89,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 94
+        }
+      ]
+    },
+    {
+      "id": "shadowed-this-alias",
+      "source": "<script>export default { mounted() { const vm = this; (() => { const vm = emitter; vm.$listeners; vm.$on('x', h) })(); vm.$off('x', h) } }</script>",
+      "sourceSha256": "860d481e59ea5f4dc5ae6de801748993974c958a772c32a9c430c37c6a521fc5",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 123,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 127
+        }
+      ]
+    },
+    {
+      "id": "mutable-and-indirect-aliases",
+      "source": "<script>export default { mounted() { let vm = this; vm.$on('x', h); const self = this; const indirect=self; indirect.$off('x', h) } }</script>",
+      "sourceSha256": "c427d552114b1ae5d7a68e85fea86dd7e2b73778d10e06ffb6c306e0294a03fc",
+      "messages": []
+    },
+    {
+      "id": "computed-events",
+      "source": "<script>export default { mounted() { this[\"$on\"](\"x\", h); this[`$off`](\"x\", h); this[name](\"x\", h) } }</script>",
+      "sourceSha256": "642495c87bf164b989598a7118c83ec124265e9de9646580b98c85ca077a7bd7",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 43,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 48
+        },
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 64,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 70
+        }
+      ]
+    },
+    {
+      "id": "computed-listeners",
+      "source": "<script>export default { mounted() { this[\"$listeners\"]; this[$listeners]; } }</script>",
+      "sourceSha256": "80ac26e50163140237c91a635eefbd2c3c46cdac549964bd1ddeceae466aed31",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 63,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 73
+        }
+      ]
+    },
+    {
+      "id": "optional-calls",
+      "source": "<script>export default { mounted() { this.$on?.('x', h); this?.$off('x', h); this?.$once?.('x', h); this?.$listeners } }</script>",
+      "sourceSha256": "0d8316e866d3d7f6b85c99c5f3f7cd9d3fd3817b676ee124cb5d43ca2008ec88",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 64,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 68
+        },
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 107,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 117
+        }
+      ]
+    },
+    {
+      "id": "member-values",
+      "source": "<script>export default { mounted() { const on = this.$on; const once = this.$once; this.$listeners } }</script>",
+      "sourceSha256": "814f0ed74780980c807f315e96d7cbfad4d8c31dbfb48675ddd3bd9114eca1ce",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 89,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 99
+        }
+      ]
+    },
+    {
+      "id": "jsx-render",
+      "source": "<script>export default { mounted() { this.$on(\"x\", h) }, render() { return <div/> } }</script>",
+      "sourceSha256": "45e49c5e52e910927d94a65dfbbb73824143d9551e55e77541fb57456783aafc",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 43,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 46
+        }
+      ]
+    },
+    {
+      "id": "typescript-angle-assertion",
+      "source": "<script lang=\"ts\">export default { mounted() { const x = <number>value; this.$on(\"x\", h) } }</script>",
+      "sourceSha256": "c7da5c677346641c2b7e95b06b5b4994641a3770f0e172ddc4813ca01167b415",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 78,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 81
+        }
+      ]
+    },
+    {
+      "id": "tsx-render",
+      "source": "<script lang=\"tsx\">export default { mounted() { this.$on(\"x\", h) }, render() { return <div/> } }</script>",
+      "sourceSha256": "ca58eed578cbad88c27e97ff000e9c9130eb5cdc1b18ec905386975308acc116",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 54,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 57
+        }
+      ]
+    },
+    {
+      "id": "outside-component",
+      "source": "<script>const external = { mounted() { this.$on(\"x\", h); this.$listeners } }</script>",
+      "sourceSha256": "772a2dab72a6ed352d5781c8c6001b515e4b219251cf34be9e95a973c1be155f",
+      "messages": []
+    }
+  ]
+}

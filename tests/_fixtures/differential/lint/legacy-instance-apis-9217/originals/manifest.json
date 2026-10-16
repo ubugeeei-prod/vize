@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "projects": [
+    {
+      "project": "bootstrap-vue",
+      "revision": "9a246f45fc813f161df291fc7d6197febf8afaf4",
+      "repository": "https://github.com/bootstrap-vue/bootstrap-vue",
+      "reportSha256": "a2efe4815ae57acddbce29894a53434f94b7306bec9b40742d004e615df15be5",
+      "paths": [
+        "docs/components/quick-links.vue",
+        "docs/components/toc.vue"
+      ]
+    },
+    {
+      "project": "vue-element-admin",
+      "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
+      "repository": "https://github.com/PanJiaChen/vue-element-admin",
+      "reportSha256": "ed0c22885a13bd8fae44f6ae895db1c6fd42002394398fa15abef5b30b56377a",
+      "paths": [
+        "src/components/DragSelect/index.vue",
+        "src/components/SvgIcon/index.vue"
+      ]
+    },
+    {
+      "project": "element",
+      "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+      "repository": "https://github.com/ElemeFE/element",
+      "reportSha256": "e3da9bf59ae789126cc9c5038a807300c99d0405d601f6e8ece2d99020378248",
+      "paths": [
+        "examples/components/header.vue",
+        "examples/components/side-nav.vue",
+        "examples/components/theme/basic-tokens-preview.vue",
+        "examples/components/theme/loader/index.vue",
+        "examples/components/theme/loader/loading/index.vue",
+        "packages/autocomplete/src/autocomplete-suggestions.vue",
+        "packages/autocomplete/src/autocomplete.vue",
+        "packages/collapse/src/collapse.vue",
+        "packages/date-picker/src/picker.vue",
+        "packages/dropdown/src/dropdown-menu.vue",
+        "packages/dropdown/src/dropdown.vue",
+        "packages/form/src/form-item.vue",
+        "packages/form/src/form.vue",
+        "packages/image/src/main.vue",
+        "packages/input/src/input.vue",
+        "packages/menu/src/menu.vue",
+        "packages/menu/src/submenu.vue",
+        "packages/radio/src/radio-group.vue",
+        "packages/select/src/option-group.vue",
+        "packages/select/src/option.vue",
+        "packages/select/src/select-dropdown.vue",
+        "packages/select/src/select.vue",
+        "packages/statistic/src/main.vue",
+        "packages/tabs/src/tabs.vue",
+        "packages/tree/src/tree-node.vue",
+        "packages/tree/src/tree.vue"
+      ]
+    },
+    {
+      "project": "habitica",
+      "revision": "19b2ce531c3bb1c3f95a75388b1176b345cbbca2",
+      "repository": "https://github.com/HabitRPG/habitica",
+      "reportSha256": "494cbde034fd295aff910ae453de8a232159c8d662fe02b5cbd15826e9d2671f",
+      "paths": [
+        "website/client/src/components/achievements/wonChallenge.vue",
+        "website/client/src/components/challenges/challengeMemberProgressModal.vue",
+        "website/client/src/components/challenges/challengeModal.vue",
+        "website/client/src/components/challenges/reportChallengeModal.vue",
+        "website/client/src/components/chat/reportFlagModal.vue",
+        "website/client/src/components/externalLinkModal.vue",
+        "website/client/src/components/group-plans/taskInformation.vue",
+        "website/client/src/components/groups/group.vue",
+        "website/client/src/components/groups/membersModal.vue",
+        "website/client/src/components/groups/questDetailModal.vue",
+        "website/client/src/components/header/banners/privacy.vue",
+        "website/client/src/components/header/index.vue",
+        "website/client/src/components/header/menu.vue",
+        "website/client/src/components/inventory/stable/hatchedPetDialog.vue",
+        "website/client/src/components/inventory/stable/mountRaisedModal.vue",
+        "website/client/src/components/members/reportMemberModal.vue",
+        "website/client/src/components/messages/messageCard.vue",
+        "website/client/src/components/payments/amazonModal.vue",
+        "website/client/src/components/payments/buyGemsModal.vue",
+        "website/client/src/components/payments/cancelModalConfirm.vue",
+        "website/client/src/components/payments/canceledModal.vue",
+        "website/client/src/components/payments/sendGiftModal.vue",
+        "website/client/src/components/payments/successModal.vue",
+        "website/client/src/components/shops/customizations/index.vue",
+        "website/client/src/components/shops/market/sellModal.vue",
+        "website/client/src/components/shops/purchaseConfirmModal.vue",
+        "website/client/src/components/shops/quests/index.vue",
+        "website/client/src/components/shops/seasonal/index.vue",
+        "website/client/src/components/shops/shopItem.vue",
+        "website/client/src/components/shops/timeTravelers/index.vue",
+        "website/client/src/components/snackbars/notifications.vue",
+        "website/client/src/components/tasks/brokenTaskModal.vue",
+        "website/client/src/components/tasks/column.vue",
+        "website/client/src/components/tasks/deleteTaskConfirmModal.vue",
+        "website/client/src/components/userMenu/profile.vue",
+        "website/client/src/components/userMenu/profileModal.vue",
+        "website/client/src/pages/private-messages/index.vue",
+        "website/client/src/pages/settings/settingRows/classSetting.vue",
+        "website/client/src/pages/user-main.vue"
+      ]
+    },
+    {
+      "project": "vue-js-modal",
+      "revision": "2dcc67984a65ec6ad351f8a2b13bb84582a0800d",
+      "repository": "https://github.com/euvl/vue-js-modal",
+      "reportSha256": "dadad134faad450f3e35bf3f4b5a76e79d6710c14ea4cc41cee5bc04e6082b15",
+      "paths": [
+        "src/components/Modal.vue",
+        "src/components/ModalsContainer.vue"
+      ]
+    }
+  ],
+  "sourceCount": 71
+}
