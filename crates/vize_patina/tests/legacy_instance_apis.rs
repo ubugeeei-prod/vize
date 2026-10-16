@@ -29,7 +29,7 @@ fn byte_offset(source: &str, line: usize, column: usize) -> u32 {
         .map(str::len)
         .sum::<usize>();
     let mut units = 1;
-    for (index, character) in source[start..].char_indices() {
+    for (index, character) in source.get(start..).unwrap().char_indices() {
         if units == column {
             return (start + index) as u32;
         }

@@ -38,11 +38,14 @@ pub(super) fn regions(program: &Program<'_>, scoping: &Scoping, source: &str) ->
         .comments
         .iter()
         .filter(|comment| {
-            source[comment.span.start as usize..comment.span.end as usize]
-                .contains("@vue/component")
+            source
+                .get(comment.span.start as usize..comment.span.end as usize)
+                .is_some_and(|comment| comment.contains("@vue/component"))
         })
         .map(|comment| {
-            source[..comment.span.end as usize]
+            source
+                .get(..comment.span.end as usize)
+                .unwrap_or_default()
                 .bytes()
                 .filter(|byte| *byte == b'\n')
                 .count()
@@ -135,7 +138,10 @@ impl<'a> Visit<'a> for Components<'_> {
     }
     fn visit_object_expression(&mut self, object: &ObjectExpression<'a>) {
         if !self.marked_lines.is_empty() {
-            let preceding_newlines = self.source[..object.span.start as usize]
+            let preceding_newlines = self
+                .source
+                .get(..object.span.start as usize)
+                .unwrap_or_default()
                 .bytes()
                 .filter(|byte| *byte == b'\n')
                 .count();
