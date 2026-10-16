@@ -84,6 +84,7 @@ pub fn emit_dom_source_with_options<'a>(
         &mut observer,
         false,
         false,
+        None,
     )
     .map(|observed| observed.emit)
 }
@@ -105,6 +106,7 @@ pub fn emit_dom_source_sfc_with_options<'a>(
         &mut observer,
         true,
         false,
+        None,
     )
     .map(|observed| observed.emit)
 }

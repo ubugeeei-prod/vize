@@ -40,6 +40,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
         codegen_experimental_options,
         no_slotted,
         &mut NoCapture,
+        None,
     )
 }
 
@@ -58,6 +59,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
     codegen_experimental_options: CodegenExperimentalOptions,
     no_slotted: bool,
     capture: &mut C,
+    mut preflight: Option<&mut dyn vize_l1_to_l2::SurfacePreflight>,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
     let codegen_opts = stage_options::codegen_options(&options, codegen_options.clone());
     let experimental_self_component = codegen_experimental_options.self_component;
@@ -102,6 +104,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
                         no_slotted,
                     },
                     capture,
+                    &mut preflight,
                 )
             )
         {
@@ -133,6 +136,24 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
     // L2 runs before the shipped transform reports malformed slot parameters.
     pipeline_options.strict_slot_params = true;
 
+    // This is the actual compatibility parse entry, not a final emitter
+    // selection: the shared pipeline may still emit L2. A native-checked
+    // invocation retains its result across late refusal without another scan.
+    if let Some(preflight) = preflight
+        && !preflight.check(None)
+    {
+        return (
+            Vec::new(),
+            CodegenResultWithSections {
+                result: CodegenResult {
+                    code: String::default(),
+                    preamble: String::default(),
+                    map: None,
+                },
+                sections: None,
+            },
+        );
+    }
     let (_, errors, result) = super::inner::compile_template_inner_with_sections_captured(
         allocator,
         source,

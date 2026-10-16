@@ -102,3 +102,6 @@ pub use lower::{
     lower_source_block_with_foreign_expressions, lower_style_block, lower_style_block_in,
     lower_with_caps, lower_with_frozen_element_spans,
 };
+
+#[doc(hidden)]
+pub use emit::{SurfacePreflight, emit_dom_source_with_preflight};
