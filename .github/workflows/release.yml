@@ -207,7 +207,7 @@ jobs:
           targets: wasm32-unknown-unknown
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          # Release binaries build from a fresh checkout without reused run state.
+          # Reuse trusted Cargo build caches after pruning outputs from prior runs.
           reuse-target: "true"
           restore-trusted: "true"
           key: release-wasm
@@ -765,7 +765,7 @@ jobs:
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          # Release binaries build from a fresh checkout without reused run state.
+          # Reuse trusted Cargo build caches after pruning outputs from prior runs.
           reuse-target: "true"
           restore-trusted: "true"
           key: release-crates
@@ -803,7 +803,7 @@ jobs:
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: {
-            # Release binaries build from a fresh checkout without reused run state.
+            # Reuse trusted Cargo build caches after pruning outputs from prior runs.
             reuse-target: "true",
             restore-trusted: "true",
             key: release-crates-handoff,

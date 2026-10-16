@@ -38,7 +38,8 @@ test("release and cache warming share every exact-checkout binary recipe", () =>
     for (const step of recipe(action).runs.steps) if (step.run) assert.ok(step.shell);
   }
   assert.deepEqual(seed.permissions, { contents: "read" });
-  assert.equal(seed.concurrency["cancel-in-progress"], true);
+  assert.equal(seed.concurrency.group, "release-build-cache-${{ github.ref }}");
+  assert.equal(seed.concurrency["cancel-in-progress"], false);
   assert.deepEqual(seed.on.push.branches, ["main"]);
   assert.doesNotMatch(
     readRepoFile(".github", "workflows", "release-build-cache.yml"),

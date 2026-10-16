@@ -26,7 +26,8 @@ on:
     - cron: "41 18 * * *"
 concurrency:
   group: release-build-cache-${{ github.ref }}
-  cancel-in-progress: true
+  # Active warmers must finish before their trusted cache snapshots can be committed.
+  cancel-in-progress: false
 permissions: { contents: read }
 env:
   CARGO_INCREMENTAL: 0

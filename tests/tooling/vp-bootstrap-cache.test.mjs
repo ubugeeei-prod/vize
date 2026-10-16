@@ -43,6 +43,41 @@ void test("only a trusted default-branch run saves the bootstrap runtime", () =>
   assert.equal(bootstrapCacheWrite(true, "merge_group", "refs/heads/main", "main"), false);
 });
 
+void test("both cache branches restore only the matching runtime schema and pins", () => {
+  const action = workflow(".github/actions/cache-vp-bootstrap/action.yml");
+  const prefix = bootstrapCachePrefix("Linux", "X64", "24.14.0", "pnpm@12.1.0");
+  const previous = bootstrapCacheKey(
+    "Linux",
+    "X64",
+    "24.14.0",
+    "pnpm@12.1.0",
+    new Date("2026-10-15"),
+  );
+  const incompatible = [
+    "vp-bootstrap-v1-Linux-X64-node-24.14.0",
+    bootstrapCacheKey("Windows", "X64", "24.14.0", "pnpm@12.1.0"),
+    bootstrapCacheKey("Linux", "ARM64", "24.14.0", "pnpm@12.1.0"),
+    bootstrapCacheKey("Linux", "X64", "24.15.0", "pnpm@12.1.0"),
+    bootstrapCacheKey("Linux", "X64", "24.14.0", "pnpm@12.2.0"),
+  ];
+  const caches = action.runs.steps.filter((step) => step.uses?.startsWith("actions/cache"));
+  assert.equal(caches.length, 2);
+  for (const step of caches) {
+    const prefixes = step.with["restore-keys"]
+      .replaceAll("${{ steps.key.outputs.restore }}", prefix)
+      .replaceAll("${{ runner.os }}", "Linux")
+      .replaceAll("${{ runner.arch }}", "X64")
+      .trim()
+      .split("\n");
+    assert.ok(prefixes.some((candidate) => previous.startsWith(candidate)));
+    for (const key of incompatible)
+      assert.ok(
+        prefixes.every((candidate) => !key.startsWith(candidate)),
+        `incompatible cache: ${key}`,
+      );
+  }
+});
+
 void test("pull-request setup-vp restores the bootstrap runtime and does not install it twice", () => {
   const action = workflow(".github/actions/cache-vp-bootstrap/action.yml");
   const paths = action.runs.steps
@@ -53,13 +88,6 @@ void test("pull-request setup-vp restores the bootstrap runtime and does not ins
     "~/.vite-plus/js_runtime\n~/.vite-plus/package_manager\n",
   ]);
   assert.equal(action.runs.steps.filter((step) => step.uses?.includes("setup-vp@")).length, 0);
-  for (const step of action.runs.steps.filter((step) => step.uses?.startsWith("actions/cache"))) {
-    assert.equal(
-      step.with["restore-keys"],
-      "${{ steps.key.outputs.restore }}\nvp-bootstrap-v1-${{ runner.os }}-${{ runner.arch }}-node-\n",
-    );
-  }
-
   for (const file of readdirSync(new URL(".github/workflows", root)).filter((file) =>
     /^pr-.*\.yml$/.test(file),
   )) {

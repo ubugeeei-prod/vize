@@ -65,7 +65,7 @@ export function returnCode(status: number | null, signal: string | null): number
   return status ?? (typeof signalNumber === "number" ? -signalNumber : 1);
 }
 
-export function runCapture(argv: string[], gated = false): Packet {
+export function runCapture(argv: string[], gated = false, timeoutMs = 30_000): Packet {
   const result: Packet = { argv };
   const directory = fs.mkdtempSync(path.join(tmpdir(), "native-fault-text-"));
   const paths = ["stdout", "stderr"].map((name) => path.join(directory, name));
@@ -73,7 +73,7 @@ export function runCapture(argv: string[], gated = false): Packet {
   try {
     const child = spawnSync(argv[0], argv.slice(1), {
       stdio: ["inherit", streams[0], streams[1]],
-      timeout: 30_000,
+      timeout: timeoutMs,
       killSignal: "SIGKILL",
     });
     if (child.error) result.unavailable = errorName(child.error);

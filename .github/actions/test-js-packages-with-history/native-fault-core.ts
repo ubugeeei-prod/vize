@@ -144,15 +144,11 @@ export function diagnoseCore(core: string, receipt: Packet, output: string): voi
   }
   details.producer = identity;
   if (!hasCommand("gdb"))
-    receipt.gdbInstall = runCapture([
-      "sudo",
-      "-n",
-      "apt-get",
-      "install",
-      "-y",
-      "--no-install-recommends",
-      "gdb",
-    ]);
+    receipt.gdbInstall = runCapture(
+      ["sudo", "-n", "apt-get", "install", "-y", "--no-install-recommends", "gdb"],
+      false,
+      120_000,
+    );
   if (hasCommand("gdb")) {
     const result = runCapture(
       [

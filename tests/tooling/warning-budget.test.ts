@@ -82,6 +82,15 @@ test("warning budget counts summaries across stdout and stderr", () => {
   assert.match(result.stderr, /found 13 warnings\./);
 });
 
+test("warning budget preserves summary boundaries between output streams", () => {
+  const result = runWarningBudget(
+    'process.stdout.write("Found 0 errors and 2 warnings"); process.stderr.write("check complete");',
+  );
+
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /found 2 warnings\./);
+});
+
 test("warning budget reports a missing command and invalid usage", () => {
   const missing = spawnSync(process.execPath, [commandPath, "vize-no-such-command"], {
     cwd: repoRoot,

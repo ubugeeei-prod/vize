@@ -33,7 +33,7 @@ function run(): number {
   if (result.status !== 0) return result.status ?? 1;
 
   const output = stripVTControlCharacters(
-    (result.stdout?.toString("utf8") ?? "") + (result.stderr?.toString("utf8") ?? ""),
+    `${result.stdout?.toString("utf8") ?? ""}\n${result.stderr?.toString("utf8") ?? ""}`,
   );
   const warningCount = output.split(/\r?\n/).reduce((count, line) => {
     const start = line.indexOf("Found ");
