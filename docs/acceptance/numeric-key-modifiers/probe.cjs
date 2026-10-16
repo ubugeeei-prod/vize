@@ -117,4 +117,7 @@ const eslint = new ESLint({
     JSON.stringify({ versions, records }, null, 2) + "\n",
   );
   console.log(`Captured ${records.length} complete ESLint results in provider.json`);
-})();
+})().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
