@@ -50,10 +50,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
-use vize_relief::{
-    DirectiveNode, ElementNode, ExpressionNode, InterpolationNode, SimpleExpressionNode,
-    SourceLocation,
-};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, InterpolationNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-filter",
