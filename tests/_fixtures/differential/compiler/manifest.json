@@ -38,6 +38,12 @@
   ],
   "runtimePacks": [
     {
+      "path": "vapor-hmr-9180.manifest.json",
+      "sha256": "37ca6413b669f1ca475a5216f457e17c89942d279436929770f205729978b5ca",
+      "adapter": "compiler-rust-whole-source-runtime-v1",
+      "workflow": ".github/workflows/check.yml"
+    },
+    {
       "path": "first-newline-runtime.manifest.json",
       "sha256": "a4ed88464c4ae0f35879cbc34dc08a5da85ca1f625c523a10ded80fac61bc3cb",
       "adapter": "compiler-cli-whole-sfc-runtime-v1",

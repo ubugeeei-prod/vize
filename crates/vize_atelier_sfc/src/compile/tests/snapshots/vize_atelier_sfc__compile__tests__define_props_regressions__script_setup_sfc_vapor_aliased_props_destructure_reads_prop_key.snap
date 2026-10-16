@@ -2,7 +2,7 @@
 source: crates/vize_atelier_sfc/src/compile/tests/define_props_regressions.rs
 expression: result.code.as_str()
 ---
-import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { defineVaporComponent as _defineVaporComponent } from 'vue'
 import { createDynamicComponent as _createDynamicComponent, template as _template } from 'vue';
 
 const t0 = _template("hi")
@@ -24,15 +24,12 @@ export default /*@__PURE__*/_defineVaporComponent({
     tag: { type: String, required: false, default: "div" }
   },
   render: __vaporRender,
-  setup(__props: any, { emit: __emit, attrs: __attrs, slots: __slots }) {
+  setup(__props: any) {
 
 
 const __returned__ = {  }
 Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
-const __instance = _getCurrentInstance()
-const __ctx = _proxyRefs(__returned__)
-if (__instance) __instance.setupState = __ctx
-return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+return __returned__
 }
 
 })

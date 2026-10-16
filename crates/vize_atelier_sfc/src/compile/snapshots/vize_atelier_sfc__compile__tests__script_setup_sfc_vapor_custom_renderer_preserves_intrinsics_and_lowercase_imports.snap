@@ -2,7 +2,7 @@
 source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
-import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { defineVaporComponent as _defineVaporComponent } from 'vue'
 import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
 
 const t0 = _template("<group></group>", true)
@@ -29,15 +29,12 @@ const visible = true
 export default /*@__PURE__*/_defineVaporComponent({
   __name: 'anonymous',
   render: __vaporRender,
-  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+  setup(__props) {
 
 
 const __returned__ = { visible, Primitive }
 Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
-const __instance = _getCurrentInstance()
-const __ctx = _proxyRefs(__returned__)
-if (__instance) __instance.setupState = __ctx
-return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+return __returned__
 }
 
 })

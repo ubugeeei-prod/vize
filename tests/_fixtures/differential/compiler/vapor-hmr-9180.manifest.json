@@ -1,0 +1,45 @@
+{
+  "schema": "vize.differential.runtime-pack",
+  "version": 1,
+  "product": "compiler",
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/9180",
+  "cases": [
+    {
+      "id": "compiler/vapor-parent-setup-state-hmr-9180",
+      "inputs": {
+        "root": "vapor-hmr-9180",
+        "files": [
+          {
+            "path": "Parent.vue.txt",
+            "sha256": "e945116a268fe32794df4b2bb938cbf85e9a9e5a97735b8aa4468be23960532c"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "3a511028b712e8b4ffa48c29d02092a363235918e338d93baae77a22a126b161"
+          },
+          {
+            "path": "expected.json",
+            "sha256": "01573253f72e7054fac1dc800b439fb7ba9ad99aa8fe99aabf7d81a2eff710c6"
+          },
+          {
+            "path": "historical-report.md",
+            "sha256": "866cf24da2e0d3dc118b2f54a2e7df1d2896816a66979319d376e7ea5cfb67f4"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-hmr-9180/expected.json",
+        "sha256": "01573253f72e7054fac1dc800b439fb7ba9ad99aa8fe99aabf7d81a2eff710c6",
+        "source": "independently authored parent/child HMR expectations plus same-source official Vue VDOM runtime comparison"
+      },
+      "runtime": {
+        "rustTarget": "crates/vize_atelier_sfc/tests/vapor_hmr.rs",
+        "helper": "tests/_fixtures/differential/compiler/vapor-hmr-9180/runtime.ts",
+        "lockedVue": "3.6.0-rc.11",
+        "reportedVue": "3.6.0-rc.10",
+        "reportedVueExecution": "unexecuted",
+        "nativeHandled": 0
+      }
+    }
+  ]
+}

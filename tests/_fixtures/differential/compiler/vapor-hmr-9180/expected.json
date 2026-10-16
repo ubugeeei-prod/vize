@@ -1,0 +1,17 @@
+{
+  "development": [
+    [0, "room-0:first"],
+    [1, "room-1:first"],
+    [1, "room-1:second"],
+    [2, "room-2:second"],
+    [2, "room-2:third"],
+    [3, "room-3:third"]
+  ],
+  "production": [
+    [0, "room-0:first"],
+    [1, "room-1:first"],
+    [2, "room-2:first"],
+    [3, "room-3:first"]
+  ],
+  "finalEvents": [1, 2, 3, "parent-unmounted"]
+}

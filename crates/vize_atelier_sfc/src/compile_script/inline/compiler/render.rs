@@ -22,7 +22,6 @@ pub(super) fn emit_render_return(
     setup_bindings: SetupBindingInputs<'_>,
     is_ts: bool,
     is_vapor: bool,
-    vapor_render_alias: Option<&str>,
     ctx: &ScriptCompileContext,
 ) {
     if !template.render_body.is_empty() {
@@ -100,12 +99,10 @@ pub(super) fn emit_render_return(
             } else {
                 output.extend_from_slice(b"Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
             }
-            output.extend_from_slice(b"const __instance = _getCurrentInstance()\n");
-            output.extend_from_slice(b"const __ctx = _proxyRefs(__returned__)\n");
-            output.extend_from_slice(b"if (__instance) __instance.setupState = __ctx\n");
-            output.extend_from_slice(b"return ");
-            output.extend_from_slice(vapor_render_alias.unwrap_or("render").as_bytes());
-            output.extend_from_slice(b"(__ctx, __props, __emit, __attrs, __slots)\n");
+            // The Vapor runtime owns setupState and invokes the separate render
+            // function. Returning its block here bypasses that state and leaves
+            // child-triggered HMR rerenders without their parent's bindings.
+            output.extend_from_slice(b"return __returned__\n");
         } else if !setup_bindings.is_empty() {
             if !template.render_fn.is_empty() {
                 output.extend_from_slice(b"const __returned__ = { ");

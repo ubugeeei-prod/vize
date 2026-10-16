@@ -16,7 +16,6 @@ pub(super) fn emit_component_definition(
     is_vapor: bool,
     is_async: bool,
     needs_prop_type: bool,
-    needs_vapor_setup_context: bool,
     has_default_export: bool,
     props_emits_buf: &[u8],
     model_props_emits_buf: &[u8],
@@ -118,18 +117,13 @@ pub(super) fn emit_component_definition(
     if has_expose {
         setup_args.push("expose: __expose");
     }
-    if has_emit || needs_vapor_setup_context {
-        if has_emit_binding || needs_vapor_setup_context {
+    if has_emit {
+        if has_emit_binding {
             setup_args.push("emit: __emit");
         } else {
             setup_args.push("emit: $emit");
         }
     }
-    if needs_vapor_setup_context {
-        setup_args.push("attrs: __attrs");
-        setup_args.push("slots: __slots");
-    }
-
     // Add `: any` type annotation to __props when there are typed props in TypeScript mode
     // but NOT when needs_prop_type (defineComponent infers the type from PropType<T>)
     let has_typed_props = is_ts

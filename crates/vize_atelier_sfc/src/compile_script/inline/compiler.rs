@@ -188,23 +188,16 @@ pub(crate) fn compile_script_setup_inline_with_context(
     let needs_merge_models = has_define_model
         && (ctx.macros.define_props.is_some() || ctx.macros.define_emits.is_some());
     let has_define_slots = ctx.macros.define_slots.is_some();
-    let needs_vapor_setup_context = is_vapor && !template.render_fn.is_empty();
-    let vapor_render_alias = needs_vapor_setup_context
+    let vapor_render_alias = (is_vapor && !template.render_fn.is_empty())
         .then(|| build_vapor_render_alias(content, normal_script_content, template.render_fn));
 
     // withAsyncContext import comes first if needed
     let is_async = contains_top_level_await(&setup_code, source_is_ts);
     if is_async {
         if is_vapor {
-            if needs_vapor_setup_context {
-                output.extend_from_slice(
-                    b"import { withAsyncContext as _withAsyncContext, defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'\n",
-                );
-            } else {
-                output.extend_from_slice(
-                    b"import { withAsyncContext as _withAsyncContext, defineVaporComponent as _defineVaporComponent } from 'vue'\n",
-                );
-            }
+            output.extend_from_slice(
+                b"import { withAsyncContext as _withAsyncContext, defineVaporComponent as _defineVaporComponent } from 'vue'\n",
+            );
         } else if is_ts {
             output.extend_from_slice(
                 b"import { withAsyncContext as _withAsyncContext, defineComponent as _defineComponent } from 'vue'\n",
@@ -239,7 +232,6 @@ pub(crate) fn compile_script_setup_inline_with_context(
         has_define_model,
         needs_merge_models,
         has_define_slots,
-        needs_vapor_setup_context,
         vapor_render_alias,
         is_async,
         trace,
