@@ -3,13 +3,14 @@
 [Issue #9217](https://github.com/ubugeeei-prod/vize/issues/9217) came from the
 Real Project Matrix at `d2506ca6b5e31252973f05981829c0367cacf26b`.
 
-`independent.json` preserves 52 authored SFC inputs, source SHA-256 hashes and
+`independent.json` preserves 55 authored SFC inputs, source SHA-256 hashes and
 complete diagnostics from ESLint 10.4.1, eslint-plugin-vue 10.9.2,
 vue-eslint-parser 10.4.1 and @typescript-eslint/parser 8.65.0. Rule and shared utility implementation
 hashes identify the provider bytes. The executable provider replay is
 `tests/tooling/patina-legacy-instance-api-reference.test.mjs`; the native exact
 rule/token check is `crates/vize_patina/tests/legacy_instance_apis.rs`. Neither
-changes budgets or adjusts diagnostic ranges to make findings agree.
+changes budgets or adjusts diagnostic ranges to make findings agree. Native
+expectations explicitly differ in the five bounded cases in `provider-gaps.json`.
 
 `originals/manifest.json` records immutable repository revisions, the complete
 147-file affected source inventory and hashes of 18 original divergence
@@ -37,6 +38,22 @@ The pinned rule source establishes the behavior:
 - [`isThis`](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/index.js)
   accepts only a direct const binding initialized with `this`; mutable bindings,
   alias chains and shadowed names are not proof of the component instance.
+
+The pinned provider misses TypeScript-wrapped event callees and optional calls.
+Patina retains the existing warnings on proven component instances: `as`,
+`satisfies` and non-null wrappers erase at runtime, while an optional call merely
+avoids a crash without registering or removing any Vue 3 event handler. Complete
+unchanged provider packets remain in `independent.json`; `provider-gaps.json`
+records the additional exact native property spans separately. The executable
+Vue 3 runtime control checks those failures, the absent optional subscriptions,
+and the still-working `$emit` on the same mounted component. Wrapped foreign
+receivers and wrapped calls outside component regions remain negative controls.
+
+The old wrapped-callee positive is retained. The removed script positives were
+unproven/foreign `emitter.$off`, `ctx.$listeners` (including setup context),
+unbound `vm.$listeners`, and bare script `$listeners`; none establishes a Vue
+instance. Genuine `this.$listeners` remains positive inside component options,
+and unbound template references are now checked with lexical scopes.
 
 `expanded-audit.json` records the complete 138-project artifact review for these
 rule families, its source identity and the separate scoped-slots follow-up. The
@@ -67,7 +84,8 @@ cargo test -p vize_patina --test legacy_instance_apis
 
 For a separate pinned dependency installation, set
 `VIZE_LEGACY_API_PROVIDER_MANIFEST` and
-`VIZE_LEGACY_API_SCRIPT_PARSER_MANIFEST` to its package manifests. The replay
+`VIZE_LEGACY_API_SCRIPT_PARSER_MANIFEST` to its package manifests;
+`VIZE_LEGACY_API_VUE_MANIFEST` can identify the Vue 3 runtime installation. The replay
 asserts exact versions and implementation hashes; it never silently substitutes
 another provider. Native acceptance of the complete original projects remains
 the Matrix's responsibility, separately from the independent provider replay.

@@ -863,6 +863,24 @@
       ]
     },
     {
+      "id": "wrapped-alias-callee",
+      "source": "<script lang=\"ts\">export default { mounted() { const vm = this; ((vm.$off as any)!)(\"x\", h) } }</script>",
+      "sourceSha256": "046632d76140ec869664edbff47cc443b29a9202f4ad28f3473c279d63bb8063",
+      "messages": []
+    },
+    {
+      "id": "wrapped-foreign-callee",
+      "source": "<script lang=\"ts\">export default { mounted() { (emitter.$on as any)(\"x\", h); (this.$root.$off satisfies Function)(\"x\", h); this.$modal.event.$once!(\"x\", h) } }</script>",
+      "sourceSha256": "0b62fa67ceb711fda7da504128c8945bb1ebfac630e0fa1302e277334c813044",
+      "messages": []
+    },
+    {
+      "id": "wrapped-outside-component",
+      "source": "<script lang=\"ts\">const foreign = { mounted() { (this.$on as any)(\"x\", h) } }</script>",
+      "sourceSha256": "3cd806a0ecc55253f3d0720abfc2bc12e9ad147a00271255301995de50b19903",
+      "messages": []
+    },
+    {
       "id": "outside-component",
       "source": "<script>const external = { mounted() { this.$on(\"x\", h); this.$listeners } }</script>",
       "sourceSha256": "772a2dab72a6ed352d5781c8c6001b515e4b219251cf34be9e95a973c1be155f",

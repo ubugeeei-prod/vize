@@ -1,10 +1,27 @@
-//! Exact provider-token parity for #9217; no range normalization or budget.
+//! Exact #9217 property spans, with explicit bounded provider blind spots.
 use serde::Deserialize;
 use vize_patina::{HelpLevel, LintPreset, Linter};
 
 #[derive(Deserialize)]
 struct Corpus {
     records: Vec<Case>,
+}
+#[derive(Deserialize)]
+struct Gaps {
+    gaps: Vec<Gap>,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Gap {
+    case_id: String,
+    native_messages: Vec<NativeMessage>,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct NativeMessage {
+    rule_id: String,
+    start: u32,
+    end: u32,
 }
 #[derive(Deserialize)]
 struct Case {
@@ -45,7 +62,12 @@ fn complete_authored_provider_packets_have_exact_native_rule_and_property_spans(
         "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/independent.json"
     ))
     .unwrap();
-    assert_eq!(corpus.records.len(), 52);
+    assert_eq!(corpus.records.len(), 55);
+    let gaps: Gaps = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/provider-gaps.json"
+    ))
+    .unwrap();
+    assert_eq!(gaps.gaps.len(), 5);
     for case in corpus.records {
         let mut expected: Vec<_> = case
             .messages
@@ -58,6 +80,13 @@ fn complete_authored_provider_packets_have_exact_native_rule_and_property_spans(
                 )
             })
             .collect();
+        if let Some(gap) = gaps.gaps.iter().find(|gap| gap.case_id == case.id) {
+            expected = gap
+                .native_messages
+                .iter()
+                .map(|message| (message.rule_id.clone(), message.start, message.end))
+                .collect();
+        }
         expected.sort();
         for preset in [LintPreset::Essential, LintPreset::HappyPath] {
             let linter = Linter::with_preset(preset)

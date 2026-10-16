@@ -106,7 +106,6 @@ struct NoDeprecatedEventsApiVisitor<'result> {
 impl<'a> Visit<'a> for NoDeprecatedEventsApiVisitor<'_> {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
         if self.instance.contains(it.span)
-            && !it.optional
             && let Some((span, method)) = removed_event_callee(&it.callee, self.instance)
         {
             self.push_diagnostic(span, method);
@@ -141,8 +140,21 @@ fn removed_event_callee(
     expression: &Expression<'_>,
     instance: &VueInstance,
 ) -> Option<(Span, &'static str)> {
-    let expression = expression.without_parentheses();
+    // TypeScript wrappers erase at runtime. Preserve warnings on a proven Vue
+    // instance even though the pinned ESLint selector misses wrapped callees.
     let member = match expression {
+        Expression::ParenthesizedExpression(wrapper) => {
+            return removed_event_callee(&wrapper.expression, instance);
+        }
+        Expression::TSAsExpression(wrapper) => {
+            return removed_event_callee(&wrapper.expression, instance);
+        }
+        Expression::TSSatisfiesExpression(wrapper) => {
+            return removed_event_callee(&wrapper.expression, instance);
+        }
+        Expression::TSNonNullExpression(wrapper) => {
+            return removed_event_callee(&wrapper.expression, instance);
+        }
         Expression::ChainExpression(chain) => chain.expression.as_member_expression()?,
         _ => expression.as_member_expression()?,
     };
@@ -228,9 +240,23 @@ this.$emit('c')
     }
 
     #[test]
-    fn test_valid_type_cast_callee_is_outside_the_provider_selector() {
-        let source = "(this.$on as any)('event', handler)";
-        let result = lint(source);
-        assert_eq!(result.error_count, 0);
+    fn test_invalid_optional_instance_calls() {
+        let result = lint("this.$on?.('x', h); this?.$off('x', h); this?.$once?.('x', h)");
+        assert_eq!(result.error_count, 3);
+        let foreign = lint("emitter.$on?.('x', h); this.$root.$off?.('x', h)");
+        assert_eq!(foreign.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_wrapped_callee() {
+        for source in [
+            "(this.$on as any)('event', handler)",
+            "(this.$off satisfies Function)('event', handler)",
+            "this.$once!('event', handler)",
+            "((this.$on as any)!)('event', handler)",
+        ] {
+            let result = lint(source);
+            assert_eq!(result.error_count, 1, "{source}");
+        }
     }
 }

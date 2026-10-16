@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "gaps": [
+    {
+      "caseId": "type-cast-callee",
+      "reason": "TypeScript call-callee wrappers erase at runtime; a proven Vue instance still uses the removed API. The pinned selector has no diagnostic.",
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-events-api",
+          "start": 53,
+          "end": 56
+        }
+      ]
+    },
+    {
+      "caseId": "satisfies-callee",
+      "reason": "TypeScript call-callee wrappers erase at runtime; a proven Vue instance still uses the removed API. The pinned selector has no diagnostic.",
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-events-api",
+          "start": 53,
+          "end": 56
+        }
+      ]
+    },
+    {
+      "caseId": "non-null-callee",
+      "reason": "TypeScript call-callee wrappers erase at runtime; a proven Vue instance still uses the removed API. The pinned selector has no diagnostic.",
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-events-api",
+          "start": 52,
+          "end": 55
+        }
+      ]
+    },
+    {
+      "caseId": "wrapped-alias-callee",
+      "reason": "TypeScript call-callee wrappers erase at runtime; a proven Vue instance still uses the removed API. The pinned selector has no diagnostic.",
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-events-api",
+          "start": 69,
+          "end": 73
+        }
+      ]
+    },
+    {
+      "caseId": "optional-calls",
+      "reason": "Optional calls avoid a Vue 3 TypeError but cannot subscribe/unsubscribe removed instance events; retain the migration warning. The pinned provider skips optional calls.",
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-events-api",
+          "start": 42,
+          "end": 45
+        },
+        {
+          "ruleId": "script/no-deprecated-events-api",
+          "start": 63,
+          "end": 67
+        },
+        {
+          "ruleId": "script/no-deprecated-events-api",
+          "start": 83,
+          "end": 88
+        },
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 106,
+          "end": 116
+        }
+      ]
+    }
+  ]
+}

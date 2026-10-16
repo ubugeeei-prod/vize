@@ -71,7 +71,7 @@ await test("legacy instance API packets preserve every pinned original source an
       "vue/no-deprecated-events-api": "error",
     },
   };
-  assert.equal(authored.records.length, 52);
+  assert.equal(authored.records.length, 55);
   assert.equal(sources.length, 147);
   assert.equal(original.records.length, sources.length);
   assert.equal(manifest.sourceCount, sources.length);
@@ -107,6 +107,18 @@ await test("legacy instance API packets preserve every pinned original source an
       id,
     );
   }
+  const gaps = json("provider-gaps.json");
+  assert.equal(gaps.gaps.length, 5);
+  for (const gap of gaps.gaps) {
+    const packet = authored.records.find((row) => row.id === gap.caseId);
+    assert.ok(packet, gap.caseId);
+    assert.ok(gap.reason.length > 40);
+    assert.ok(gap.nativeMessages.length > packet.messages.length);
+    for (const finding of gap.nativeMessages) {
+      const property = packet.source.slice(finding.start, finding.end);
+      assert.ok(["$on", "$off", "$once", "$listeners"].includes(property), gap.caseId);
+    }
+  }
   for (const row of [...authored.records, ...original.records]) {
     const source =
       row.source ??
@@ -120,4 +132,63 @@ await test("legacy instance API packets preserve every pinned original source an
     );
     assert.ok(row.messages.every((message) => message.fatal !== true));
   }
+});
+
+await test("Vue 3 keeps removed instance events unavailable after TypeScript erasure and optional chaining", () => {
+  const requireVue = createRequire(
+    process.env.VIZE_LEGACY_API_VUE_MANIFEST ??
+      path.join(root, "tools/benchmarks/scripts/package.json"),
+  );
+  const requireTypeScript = createRequire(
+    process.env.VIZE_LEGACY_API_SCRIPT_PARSER_MANIFEST ??
+      path.join(root, "tools/benchmarks/scripts/package.json"),
+  );
+  const { createRenderer, version } = requireVue("vue");
+  const { transpileModule, ModuleKind, ScriptTarget } = requireTypeScript("typescript");
+  assert.match(version, /^3\./);
+  const renderer = createRenderer({
+    createComment: (text) => ({ text }),
+    insert: (node, parent) => {
+      parent.child = node;
+    },
+    remove: () => {},
+    parentNode: () => null,
+    nextSibling: () => null,
+  });
+  const failures = [];
+  let handled = 0;
+  let emitted = 0;
+  let inspected = false;
+  const app = renderer.createApp(
+    {
+      emits: ["probe"],
+      created() {
+        inspected = true;
+        for (const method of ["$on", "$off", "$once"]) assert.equal(this[method], undefined);
+        this.$emit("probe");
+        for (const source of [
+          '(this.$on as any)("probe", h)',
+          '(this.$off satisfies Function)("probe", h)',
+          'this.$once!("probe", h)',
+          'const vm = this; ((vm.$off as any)!)("probe", h)',
+        ]) {
+          const { outputText } = transpileModule(source, {
+            compilerOptions: { module: ModuleKind.None, target: ScriptTarget.ES2022 },
+          });
+          assert.throws(() => Function("h", outputText).call(this, () => handled++), TypeError);
+        }
+        this.$on?.("probe", () => handled++);
+        this?.$once?.("probe", () => handled++);
+        assert.equal(handled, 0, "optional removed calls cannot install event handlers");
+      },
+      render: () => null,
+    },
+    { onProbe: () => emitted++ },
+  );
+  app.config.warnHandler = (message) => failures.push(message);
+  app.mount({});
+  app.unmount();
+  assert.equal(inspected, true);
+  assert.equal(emitted, 1, "$emit remains available on the same Vue instance");
+  assert.deepEqual(failures, []);
 });
