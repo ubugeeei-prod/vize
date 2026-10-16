@@ -72,9 +72,9 @@ pub fn parse_v_for_scope_expression(expr: &str) -> Option<VForScopeAliases> {
     aliases
 }
 
-fn parse_first_v_for_candidate<T>(
-    expr: &str,
-    mut parse: impl FnMut(&str, &str) -> Option<T>,
+fn parse_first_v_for_candidate<'a, T>(
+    expr: &'a str,
+    mut parse: impl FnMut(&'a str, &'a str) -> Option<T>,
 ) -> Option<T> {
     let mut previous_char = None;
 
@@ -205,3 +205,6 @@ mod oxc;
 
 #[cfg(test)]
 mod tests;
+
+mod retained;
+pub use retained::{VForBindingParameters, retain_v_for_binding_parameters};

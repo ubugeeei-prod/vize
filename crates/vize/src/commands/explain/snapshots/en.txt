@@ -4498,9 +4498,6 @@ autofix: no
 docs: docs/content/rules/vue.md
 
 invalid:
-  <!-- If 'item' is a component property -->
-  <div v-for="item in items">{{ item }}</div>
-  
   <!-- Nested v-for with same variable name -->
   <div v-for="item in items">
     <div v-for="item in item.children">{{ item }}</div>

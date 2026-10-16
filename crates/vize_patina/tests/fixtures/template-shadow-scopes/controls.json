@@ -2272,12 +2272,341 @@
       }
     },
     {
+      "id": "regex-comma-positive",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(item = /,/, index) in ys\" /></Panel></template>",
+      "sourceSha256": "54533cc16467ce08dbba2391eee2fbe177237546eea639b8457f9952353455fd",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 52,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 56
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(item = /,/, index) in ys\" /></Panel></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 51,
+            "end": 55,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "comment-comma-positive",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(item /*,*/, index) in ys\" /></Panel></template>",
+      "sourceSha256": "92028ebe17d009b1bbf495df9f931dcc4b7e894dfd5aeba220302be3fd2ef0e9",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 52,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 56
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(item /*,*/, index) in ys\" /></Panel></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 51,
+            "end": 55,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "regex-bracket-positive",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(item = /[(]/, index) in ys\" /></Panel></template>",
+      "sourceSha256": "f289d933f64fba7f3845abe19b0d9e0d6d78f2af1bb9e779c5c49f99ed870227",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 52,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 56
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(item = /[(]/, index) in ys\" /></Panel></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 51,
+            "end": 55,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "single-default-call-positive",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"item = fallback() in ys\" /></Panel></template>",
+      "sourceSha256": "6b292c65fdafd995b5fc9f0250513a14f8fcfee538b4c75fc886d5d7306714d3",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 51,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 55
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"item = fallback() in ys\" /></Panel></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 50,
+            "end": 54,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "rest-before-next-alias-negative",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(...item, index) in ys\" /></Panel></template>",
+      "sourceSha256": "52c98001db3af1954f400ad16f38b33fe27bd0c862780d8ca5812770b66844b6",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 55,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 59
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(...item, index) in ys\" /></Panel></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 54,
+            "end": 58,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "rest-before-trailing-comma-negative",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(...item,) in ys\" /></Panel></template>",
+      "sourceSha256": "0f0bb19225b82ab35a0f23467ddb8cbadf6b40b6156bece3cf45a48ffb788364",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 55,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 59
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(...item,) in ys\" /></Panel></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 54,
+            "end": 58,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "rest-final-alias-positive",
+      "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(...item) in ys\" /></Panel></template>",
+      "sourceSha256": "b260af236df08fdbbe8b7edd07caffa8d444c43e517442ff9f7faf52fdaa2026",
+      "referenceOptions": ["warn"],
+      "reference": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-template-shadow",
+            "severity": 1,
+            "message": "Variable 'item' is already declared in the upper scope.",
+            "line": 1,
+            "column": 55,
+            "messageId": "alreadyDeclaredInUpperScope",
+            "endLine": 1,
+            "endColumn": 59
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 1,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><Panel v-for=\"item in xs\"><Panel v-for=\"(...item) in ys\" /></Panel></template>",
+        "usedDeprecatedRules": []
+      },
+      "outsideApprovedScope": false,
+      "expectedNative": {
+        "filename": "Probe.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-template-shadow",
+            "severity": "warning",
+            "message": "Variable 'item' shadows a variable in an outer scope",
+            "start": 54,
+            "end": 58,
+            "help": "Rename the variable to avoid shadowing",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
       "id": "entity-default-before-for-binding",
       "source": "<template><Panel v-slot=\"{ item }\"><div v-for=\"({ value = &quot;&amp;&quot;, child: item }, index) in values\" /></Panel></template>",
       "sourceSha256": "058e9acb8d2766429e613d803e178b5adf369e69f934daf30bda446f8af73299",
       "referenceOptions": ["warn"],
       "reference": {
-        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
         "messages": [
           {
             "ruleId": "vue/no-template-shadow",
@@ -2324,7 +2653,7 @@
       "sourceSha256": "a50d9f44bcd321fd610264c669475b37844d9f45f2dd92940a7a9f8f22a34363",
       "referenceOptions": ["warn"],
       "reference": {
-        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
         "messages": [
           {
             "ruleId": "vue/no-template-shadow",
@@ -2371,7 +2700,7 @@
       "sourceSha256": "dab4ff98b2eddd1d7b0364f1f5e0cbad00558799622a99a73641931a1900249e",
       "referenceOptions": ["warn"],
       "reference": {
-        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
         "messages": [
           {
             "ruleId": "vue/no-template-shadow",
@@ -2418,7 +2747,7 @@
       "sourceSha256": "5cb9e986da6f63020ad2c5d4d7fdc9f4c73957d74626b4ff855f9a2f3d9c8ae7",
       "referenceOptions": ["warn"],
       "reference": {
-        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
         "messages": [
           {
             "ruleId": "vue/no-template-shadow",
@@ -2465,7 +2794,7 @@
       "sourceSha256": "b7017181600d9992e26340cfd003e1c777a0f8634e2017f372abd00652d8314b",
       "referenceOptions": ["warn"],
       "reference": {
-        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
         "messages": [
           {
             "ruleId": "vue/no-template-shadow",
@@ -2512,7 +2841,7 @@
       "sourceSha256": "9355bddd5eb812b603764e948e4b7d949932f789768dd79c61aeed8223bf6b96",
       "referenceOptions": ["warn"],
       "reference": {
-        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
         "messages": [
           {
             "ruleId": "vue/no-template-shadow",
@@ -2559,7 +2888,7 @@
       "sourceSha256": "66ca09e3062f6f82070fe5823f64e5e00763d71bf9bf34f1621187064c6902c3",
       "referenceOptions": ["warn"],
       "reference": {
-        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
         "messages": [],
         "suppressedMessages": [],
         "errorCount": 0,
@@ -2583,7 +2912,7 @@
       "sourceSha256": "d7ed4b15ac3e5c3d747a13d463db17b613a6615bc35c0e03b1f1a820e7b8ea04",
       "referenceOptions": ["warn"],
       "reference": {
-        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/Probe.vue",
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-patina-template-shadow-scopes-8849/Probe.vue",
         "messages": [
           {
             "ruleId": "vue/no-template-shadow",

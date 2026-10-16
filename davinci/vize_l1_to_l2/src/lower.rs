@@ -77,7 +77,7 @@ pub use css::{lower_style_block, lower_style_block_in};
 pub(crate) use expr::simple_identifier;
 pub use forop::{ForName, ForParts};
 pub use structural::{ForWrapper, WrapperAttr, WrapperClass, WrapperKey, WrapperKeys};
-pub use vfor::{split_v_for_alias_sources, split_v_for_value};
+pub use vfor::split_v_for_value;
 // The one-rebuild rule (the same discipline): compound text facts and
 // their opaque display spelling share one construction rule.
 pub use text::{TextPart, TextParts, branch_gap_text, rebuild_source};

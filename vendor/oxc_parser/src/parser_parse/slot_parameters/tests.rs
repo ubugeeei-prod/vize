@@ -140,3 +140,128 @@ fn direct_goal_refuses_invalid_bindings_rest_arrow_this_and_incomplete_raw() {
         assert!(errors.iter().all(|error| !error.to_string().is_empty()), "{source}");
     }
 }
+
+#[test]
+fn v_for_goal_keeps_authored_binding_and_default_spans_across_elisions() {
+    let allocator = Allocator::default();
+    let source = "  , \\u0069tem = /[,()]/ /* , */ , , { child: 別名 = /}/ }, ...rest";
+    let parameters =
+        Parser::new(&allocator, source, SourceType::ts()).parse_v_for_parameters().unwrap();
+    assert_eq!(parameters.items.len(), 2);
+    let first = &parameters.items[0];
+    assert_eq!(declaration(&first.pattern), "item");
+    assert_eq!(first.pattern.span().start, 4);
+    assert_eq!(first.pattern.span().source_text(source), "\\u0069tem");
+    assert_eq!(first.initializer.as_ref().unwrap().span().source_text(source), "/[,()]/");
+    let BindingPattern::ObjectPattern(object) = &parameters.items[1].pattern else {
+        panic!("original object alias");
+    };
+    let BindingPattern::AssignmentPattern(default) = &object.properties[0].value else {
+        panic!("original binding default");
+    };
+    assert_eq!(declaration(&default.left), "別名");
+    assert_eq!(default.left.span().source_text(source), "別名");
+    assert_eq!(default.right.span().source_text(source), "/}/");
+    let rest = &parameters.rest.as_ref().unwrap().rest.argument;
+    assert_eq!(declaration(rest), "rest");
+    assert_eq!(rest.span().source_text(source), "rest");
+}
+
+#[test]
+fn v_for_elisions_use_lexer_boundaries_without_changing_other_goals() {
+    let allocator = Allocator::default();
+    for (source, count) in [
+        ("", 0),
+        (",", 0),
+        (",,", 0),
+        ("item,,index,", 2),
+        (",item,,,index", 2),
+        ("item /*,*/, index", 2),
+        ("item = /,/, index", 2),
+        ("item = /[(]/, index", 2),
+        ("item = `x${a,b}`, index", 2),
+        ("{ item = /}/ }, index", 2),
+        ("[first,,third], index", 2),
+    ] {
+        let parameters = Parser::new(&allocator, source, SourceType::ts())
+            .parse_v_for_parameters()
+            .unwrap_or_else(|errors| panic!("{source}: {errors:?}"));
+        assert_eq!(parameters.items.len(), count, "{source}");
+    }
+    assert!(
+        Parser::new(&allocator, "item,,index", SourceType::ts()).parse_slot_parameters().is_err()
+    );
+    let ordinary = Parser::new(&allocator, "(item,,index) => item", SourceType::ts()).parse();
+    assert!(!ordinary.diagnostics.is_empty());
+}
+
+#[test]
+fn v_for_goal_uses_every_stock_runtime_and_custom_configuration() {
+    let allocator = Allocator::default();
+    let source = ", { value = /,/ }, , ...rest";
+    let expected = format!(
+        "{:?}",
+        Parser::new(&allocator, source, SourceType::ts()).parse_v_for_parameters().unwrap()
+    );
+    let tokens = Parser::new(&allocator, source, SourceType::ts())
+        .with_config(TokensParserConfig)
+        .parse_v_for_parameters()
+        .unwrap();
+    assert_eq!(format!("{tokens:?}"), expected);
+    for tokens in [false, true] {
+        let runtime = Parser::new(&allocator, source, SourceType::ts())
+            .with_config(RuntimeParserConfig::new(tokens))
+            .parse_v_for_parameters()
+            .unwrap();
+        assert_eq!(format!("{runtime:?}"), expected);
+    }
+    let custom = Parser::new(&allocator, source, SourceType::ts())
+        .with_config(CustomConfig)
+        .parse_v_for_parameters()
+        .unwrap();
+    assert_eq!(format!("{custom:?}"), expected);
+}
+
+#[test]
+fn v_for_goal_refuses_rest_followed_by_any_alias_position_and_invalid_input() {
+    let allocator = Allocator::default();
+    for source in [
+        "...rest,",
+        "...rest,,",
+        "...rest, next",
+        "...rest, , next",
+        ",...rest,",
+        "...rest = fallback",
+        "[...rest, next]",
+        "{ ...rest, next }",
+        "value; next",
+        "value => next",
+        "this: Props",
+        "@decorator value",
+        "value /* unfinished",
+    ] {
+        let errors = Parser::new(&allocator, source, SourceType::ts())
+            .parse_v_for_parameters()
+            .expect_err(source);
+        assert!(!errors.is_empty(), "{source}");
+    }
+    assert!(Parser::new(&allocator, ",...rest", SourceType::ts()).parse_v_for_parameters().is_ok());
+}
+
+#[test]
+fn v_for_goal_retains_duplicate_binding_spans_for_consumer_group_validation() {
+    // Like the slot API, this goal returns syntax trees, not semantic early
+    // errors. A consumer can reject the whole group without losing either
+    // duplicate's original spelling or range.
+    let allocator = Allocator::default();
+    let source = "item, , { value: \\u0069tem }";
+    let parameters =
+        Parser::new(&allocator, source, SourceType::ts()).parse_v_for_parameters().unwrap();
+    assert_eq!(declaration(&parameters.items[0].pattern), "item");
+    assert_eq!(parameters.items[0].pattern.span().source_text(source), "item");
+    let BindingPattern::ObjectPattern(object) = &parameters.items[1].pattern else {
+        panic!("original duplicate binding pattern");
+    };
+    assert_eq!(declaration(&object.properties[0].value), "item");
+    assert_eq!(object.properties[0].value.span().source_text(source), "\\u0069tem");
+}

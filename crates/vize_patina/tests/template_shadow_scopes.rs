@@ -33,7 +33,7 @@ fn template_scope_positive_and_negative_controls_keep_complete_native_results() 
     ))
     .unwrap();
     let cases = contract["cases"].as_array().unwrap();
-    assert_eq!(cases.len(), 44);
+    assert_eq!(cases.len(), 51);
     let linter = linter();
     for case in cases {
         let source = case["source"].as_str().unwrap();

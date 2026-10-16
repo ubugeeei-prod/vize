@@ -46,35 +46,19 @@ pub(super) fn for_expression<'a>(
     let ExpressionNode::Simple(node) = expression else {
         return Vec::new();
     };
-    let Some((aliases, _)) = vize_l1_to_l2::lower::split_v_for_alias_sources(node.content) else {
+    let Some(retained) =
+        vize_croquis::drawer::retain_v_for_binding_parameters(allocator, node.content)
+    else {
         return Vec::new();
     };
-    let mut bindings = Vec::new();
-    for alias in aliases {
-        // This is still a slice of the original decoded value. `const` is
-        // accepted by the existing v-for binding grammar, not a JS parameter.
-        let alias = alias.strip_prefix("const ").unwrap_or(alias).trim();
-        if alias.is_empty() {
-            continue;
-        }
-        let offset = (alias.as_ptr() as usize - node.content.as_ptr() as usize) as u32;
-        let retained = retain_slot_parameters_in(allocator, alias);
-        let Some(Ok(parameters)) = retained.as_slot_parameters() else {
-            return Vec::new();
-        };
-        if parameters.items.len() + usize::from(parameters.rest.is_some()) != 1 {
-            return Vec::new();
-        }
-        let Some(mut declarations) =
-            declarations(retained, offset, node.content, &node.loc, source)
-        else {
-            return Vec::new();
-        };
-        bindings.append(&mut declarations);
-    }
-    // A refused or duplicate group contributes no partial declarations. Empty
-    // tuple positions are valid, but `(item, item)` is an argument-name clash.
-    unique(bindings).unwrap_or_default()
+    parameter_declarations(
+        &retained.parameters,
+        retained.offset,
+        node.content,
+        &node.loc,
+        source,
+    )
+    .unwrap_or_default()
 }
 
 pub(super) fn alias<'a>(
@@ -96,6 +80,16 @@ fn declarations(
     source: &str,
 ) -> Option<Vec<Binding>> {
     let parameters = retained.as_slot_parameters()?.ok()?;
+    parameter_declarations(parameters, offset, decoded, loc, source)
+}
+
+fn parameter_declarations(
+    parameters: &FormalParameters<'_>,
+    offset: u32,
+    decoded: &str,
+    loc: &SourceLocation,
+    source: &str,
+) -> Option<Vec<Binding>> {
     let authored = source.get(loc.span.start as usize..loc.span.end as usize)?;
     let mut bindings = Vec::new();
     let mut valid = true;
