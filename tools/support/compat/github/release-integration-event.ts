@@ -26,7 +26,7 @@ export function assertPinnedSource(pull: Pull, repository: string | undefined) {
   // Integration PRs carry pin-source; their separate catalog authenticates custody.
   if (pull.head?.ref?.startsWith("release-integration/")) return;
   const marker = (name: string) => {
-    const rows = body.split("\n").filter((line) => line.startsWith(`<!-- ${name}:`));
+    const rows = body.split(/\r?\n/).filter((line) => line.startsWith(`<!-- ${name}:`));
     const match = rows.length === 1 && /^<!-- [a-z-]+: (\S+) -->$/.exec(rows[0]);
     if (!match) throw new Error(`Pinned source requires one complete ${name} marker`);
     return match[1];

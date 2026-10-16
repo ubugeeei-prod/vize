@@ -201,6 +201,9 @@ test("pinned source detects main merges, changed custody and malformed markers b
     body: `<!-- vize-release-pin: immutable-v1 -->\n<!-- vize-release-pin-head: ${candidate} -->\n<!-- vize-release-pin-cut: ${base} -->`,
   };
   assert.doesNotThrow(() => assertPinnedSource(source, repository));
+  assert.doesNotThrow(() =>
+    assertPinnedSource({ ...source, body: source.body.replaceAll("\n", "\r\n") }, repository),
+  );
   for (const changed of [
     { ...source, head: { ...source.head, sha: "d".repeat(40) } },
     { ...source, head: { ...source.head, ref: "fix/ordinary" } },
