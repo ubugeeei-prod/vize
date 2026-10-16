@@ -111,7 +111,7 @@ function fixture(t, dependencies = { "@parcel/watcher-wasm": "2.6.0", "@isaacs/c
   };
 }
 
-test("normal npm alias and bundled lock shapes retain real archive-member and later byte custody", async (t) => {
+await test("normal npm alias and bundled lock shapes retain real archive-member and later byte custody", async (t) => {
   const f = fixture(t);
   const result = await f.verify();
   const bundled = result.records.find((row) => row.location.endsWith("/node_modules/napi-wasm"));
@@ -133,7 +133,7 @@ test("normal npm alias and bundled lock shapes retain real archive-member and la
   assert.throws(result.assertDependencies, /installed public dependency changed/);
 });
 
-test("direct npm aliases retain the exact target version and registry archive", async (t) => {
+await test("direct npm aliases retain the exact target version and registry archive", async (t) => {
   const f = fixture(t, { "string-width-cjs": "npm:string-width@4.2.3" });
   const result = await f.verify(() => false);
   assert.equal(result.records.length, 1);
@@ -145,7 +145,7 @@ test("direct npm aliases retain the exact target version and registry archive", 
   );
 });
 
-test("unselected transitive bundles keep metadata without pretending to have a separate npm archive", async (t) => {
+await test("unselected transitive bundles keep metadata without pretending to have a separate npm archive", async (t) => {
   const f = fixture(t, { consumer: "1.0.0" });
   f.add("node_modules/consumer", "consumer", "1.0.0");
   const result = await f.verify(() => false);
@@ -164,7 +164,7 @@ test("unselected transitive bundles keep metadata without pretending to have a s
   );
 });
 
-test("selection and direct-dependency guards never bypass bundled archive authentication", async (t) => {
+await test("selection and direct-dependency guards never bypass bundled archive authentication", async (t) => {
   const f = fixture(t, { consumer: "1.0.0" });
   f.add("node_modules/consumer", "consumer", "1.0.0");
   const result = await f.verify((name) => name === "napi-wasm");
@@ -179,7 +179,7 @@ test("selection and direct-dependency guards never bypass bundled archive authen
   );
 });
 
-test("an alias target needs an actual resolving npm declaration rather than an arbitrary name override", async (t) => {
+await test("an alias target needs an actual resolving npm declaration rather than an arbitrary name override", async (t) => {
   const f = fixture(t);
   delete f.packages["node_modules/@isaacs/cliui"].dependencies;
   await assert.rejects(f.verify(), /resolving locked npm alias/);
@@ -196,7 +196,7 @@ test("an alias target needs an actual resolving npm declaration rather than an a
   await assert.rejects(f.verify(), /resolving locked npm alias/);
 });
 
-test("alias version, origin, metadata and integrity checks remain strict", async (t) => {
+await test("alias version, origin, metadata and integrity checks remain strict", async (t) => {
   for (const mutate of [
     (f) => {
       f.packages["node_modules/string-width-cjs"].name = "wrong";
@@ -223,7 +223,7 @@ test("alias version, origin, metadata and integrity checks remain strict", async
   }
 });
 
-test("bundled bytes, extra installed members and missing parent archive membership fail closed", async (t) => {
+await test("bundled bytes, extra installed members and missing parent archive membership fail closed", async (t) => {
   for (const mutate of [
     (f) => {
       fs.writeFileSync(path.join(f.bundle.directory, "index.js"), "tampered\n");
