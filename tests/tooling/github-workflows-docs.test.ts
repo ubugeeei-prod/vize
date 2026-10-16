@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { matchesGlob } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -73,6 +74,10 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
     ".github/workflows/build-docs.yml",
     "docs/**",
     "!docs/davinci/decisions/**",
+    "npm/compose/core/examples/**",
+    "npm/ui/src/**/examples/**",
+    "npm/ui/scripts/generate-reference-docs.ts",
+    "npm/ui/scripts/reference-docs/**",
     "playground/**",
     "examples/vite-musea/**",
   ]);
@@ -94,6 +99,31 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
     assert.ok(upload, `missing ${artifact} artifact upload`);
     assert.match(upload.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
     assert.equal(upload.with?.["if-no-files-found"], "error");
+  }
+});
+
+test("authored reader inputs publish while runtime-only and excluded inputs keep their policy", () => {
+  const events = readWorkflow("build-docs.yml").on as {
+    push: { paths: string[] };
+  };
+  const publishes = (file: string) =>
+    events.push.paths.reduce((included, pattern) => {
+      const excluded = pattern.startsWith("!");
+      return matchesGlob(file, excluded ? pattern.slice(1) : pattern) ? !excluded : included;
+    }, false);
+  for (const [file, expected] of [
+    ["npm/compose/core/examples/virtual-list.vue", true],
+    ["npm/compose/core/examples/tsconfig.json", true],
+    ["npm/ui/src/families/actions/button/examples/button-basic.vue", true],
+    ["npm/ui/scripts/generate-reference-docs.ts", true],
+    ["npm/ui/scripts/reference-docs/composable-examples.ts", true],
+    ["docs/content/getting-started.md", true],
+    ["npm/compose/core/src/virtual-list.ts", false],
+    ["npm/ui/scripts/check-renderers.ts", false],
+    ["docs/davinci/decisions/2026-10-16-8374-virtual-list-catalogue.md", false],
+    ["tests/tooling/github-workflows-docs.test.ts", false],
+  ] as const) {
+    assert.equal(publishes(file), expected, file);
   }
 });
 
