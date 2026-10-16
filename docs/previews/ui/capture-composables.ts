@@ -37,6 +37,7 @@ import { browserPageExamples } from "../../../npm/ui/scripts/reference-docs/brow
 import { exerciseBrowserPageExample } from "./interactions-browser-page.ts";
 import { deviceExamples } from "../../../npm/ui/scripts/reference-docs/device-examples.ts";
 import { exerciseDeviceExample } from "./interactions-device.ts";
+import { exerciseVirtualListExample } from "./interactions-virtual-list.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
   await page.getByRole("button", { name: label, exact: true }).focus();
@@ -44,6 +45,7 @@ async function activate(page: Page, label: string): Promise<void> {
 }
 
 async function exercise(page: Page, name: string): Promise<string[]> {
+  if (name === "virtual-list") return exerciseVirtualListExample(page);
   if (asyncEffectExamples.some((example) => example.name === name))
     return exerciseAsyncExample(page, name);
   if (browserEffectExamples.some((example) => example.name === name))

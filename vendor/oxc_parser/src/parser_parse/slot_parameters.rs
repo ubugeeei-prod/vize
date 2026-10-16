@@ -1,4 +1,4 @@
-//! Direct, original-source slot parameter grammar. No wrapper or retry.
+//! Direct, original-source template parameter goals. No wrapper or retry.
 
 use std::any::Any;
 
@@ -17,13 +17,48 @@ impl<'a, C: ParserConfig> Parser<'a, C> {
     /// retaining original spans, binding defaults, rest and TS annotations.
     /// This goal has an EOF delimiter; it adds no synthetic source or AST.
     pub fn parse_slot_parameters(self) -> Result<FormalParameters<'a>, Diagnostics> {
+        self.parse_template_parameters(false)
+    }
+
+    /// Parse a Vue v-for alias list from its original source, without the
+    /// enclosing tuple parentheses or `in`/`of` iterable. Unlike a slot's
+    /// parameter list, this goal permits omitted alias positions. Elisions
+    /// contribute no items; every retained binding keeps its authored span.
+    /// Rest-last and trailing-comma restrictions remain in force.
+    pub fn parse_v_for_parameters(self) -> Result<FormalParameters<'a>, Diagnostics> {
+        self.parse_template_parameters(true)
+    }
+
+    fn parse_template_parameters(
+        self,
+        allow_elisions: bool,
+    ) -> Result<FormalParameters<'a>, Diagnostics> {
         let config: &dyn Any = &self.config;
         if config.is::<NoTokensParserConfig>() {
-            parse_no_tokens(self.allocator, self.source_text, self.source_type, self.options)
+            parse_no_tokens(
+                self.allocator,
+                self.source_text,
+                self.source_type,
+                self.options,
+                allow_elisions,
+            )
         } else if config.is::<TokensParserConfig>() {
-            parse_tokens(self.allocator, self.source_text, self.source_type, self.options)
+            parse_tokens(
+                self.allocator,
+                self.source_text,
+                self.source_type,
+                self.options,
+                allow_elisions,
+            )
         } else if let Some(&config) = config.downcast_ref::<RuntimeParserConfig>() {
-            parse_runtime(self.allocator, self.source_text, self.source_type, self.options, config)
+            parse_runtime(
+                self.allocator,
+                self.source_text,
+                self.source_type,
+                self.options,
+                config,
+                allow_elisions,
+            )
         } else {
             ParserImpl::<C>::new(
                 self.allocator,
@@ -33,7 +68,7 @@ impl<'a, C: ParserConfig> Parser<'a, C> {
                 self.config,
                 UniquePromise::new(),
             )
-            .parse_slot_parameters()
+            .parse_template_parameters(allow_elisions)
         }
     }
 }
@@ -47,6 +82,7 @@ macro_rules! stock_goal {
             source: &'a str,
             source_type: oxc_span::SourceType,
             options: crate::ParseOptions,
+            allow_elisions: bool,
         ) -> Result<FormalParameters<'a>, Diagnostics> {
             ParserImpl::<$config>::new(
                 allocator,
@@ -56,7 +92,7 @@ macro_rules! stock_goal {
                 $config,
                 UniquePromise::new(),
             )
-            .parse_slot_parameters()
+            .parse_template_parameters(allow_elisions)
         }
     };
 }
@@ -70,6 +106,7 @@ fn parse_runtime<'a>(
     source_type: oxc_span::SourceType,
     options: crate::ParseOptions,
     config: RuntimeParserConfig,
+    allow_elisions: bool,
 ) -> Result<FormalParameters<'a>, Diagnostics> {
     ParserImpl::<RuntimeParserConfig>::new(
         allocator,
@@ -79,13 +116,16 @@ fn parse_runtime<'a>(
         config,
         UniquePromise::new(),
     )
-    .parse_slot_parameters()
+    .parse_template_parameters(allow_elisions)
 }
 
 impl<'a, C: ParserConfig> ParserImpl<'a, C> {
-    fn parse_slot_parameters(mut self) -> Result<FormalParameters<'a>, Diagnostics> {
+    fn parse_template_parameters(
+        mut self,
+        allow_elisions: bool,
+    ) -> Result<FormalParameters<'a>, Diagnostics> {
         self.bump_any();
-        let parameters = self.parse_slot_parameter_items();
+        let parameters = self.parse_template_parameter_items(allow_elisions);
         if self.fatal_error.is_none() && !self.at(Kind::Eof) {
             self.error(diagnostics::unexpected_token(self.cur_token().span()));
         }

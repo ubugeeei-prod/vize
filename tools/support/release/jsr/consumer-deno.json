@@ -1,0 +1,21 @@
+{
+  "nodeModulesDir": "none",
+  "minimumDependencyAge": {
+    "age": "P1D",
+    "exclude": [
+      "jsr:@vizejs/vize",
+      "npm:vize",
+      "npm:@vizejs/native",
+      "npm:@vizejs/vite-plugin",
+      "npm:@vizejs/unplugin",
+      "npm:@vizejs/native-darwin-arm64",
+      "npm:@vizejs/native-darwin-x64",
+      "npm:@vizejs/native-linux-arm64-gnu",
+      "npm:@vizejs/native-linux-arm64-musl",
+      "npm:@vizejs/native-linux-x64-gnu",
+      "npm:@vizejs/native-linux-x64-musl",
+      "npm:@vizejs/native-win32-arm64-msvc",
+      "npm:@vizejs/native-win32-x64-msvc"
+    ]
+  }
+}

@@ -37,27 +37,35 @@ vp run lint
 
 ## 悪い
 
-`this.$listeners` と `ctx.$listeners` のメンバー参照、および引数に直接渡した `$listeners` が、削除された API を使っています。Vue 3 ではリスナーが属性に統合され、この API は削除されました。
+スクリプトが削除済みの `$listeners` を参照しています。現在の診断対象はスクリプトのみです。テンプレート行は移行例で、診断は Draft #9251 の後続対応です。
 
 ```vue
-<script setup lang="ts">
-const handlers = this.$listeners
-const forwarded = ctx.$listeners
-emit('input', $listeners)
+<script>
+export default {
+  mounted() {
+    const vm = this
+    return vm.$listeners
+  }
+}
 </script>
+<template><Child v-on="$listeners" /></template>
 ```
 
 ## 良い
 
-参照を `this.$attrs` と setup コンテキストの `ctx.attrs` に置き換え、削除されたリスナー API の使用をなくします。この例は、それぞれの参照元を使えるコンポーネントの文脈を前提にしています。
+`this.$attrs` に置き換えています。`v-bind="$attrs"` は Vue 3 への移行例で、テンプレート診断は #9251 の後続対応です。スクリプトの受信側・参照に対する既存の広い警告範囲は維持します。
 
 ```vue
-<script setup lang="ts">
-const handlers = this.$attrs
-const forwarded = ctx.attrs
+<script>
+export default {
+  mounted() {
+    return this.$attrs
+  }
+}
 </script>
+<template><Child v-bind="$attrs" /></template>
 ```
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L40) · [全ルール](../all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L54) · [全ルール](../all.md)

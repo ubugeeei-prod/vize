@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "matrixSource": "d2506ca6b5e31252973f05981829c0367cacf26b",
+  "observed": {
+    "script/no-deprecated-events-api": {
+      "falsePositives": 202,
+      "falseNegatives": 43
+    },
+    "script/no-deprecated-dollar-listeners-api": {
+      "falsePositives": 37,
+      "falseNegatives": 59
+    },
+    "script/no-deprecated-dollar-scopedslots-api": {
+      "falsePositives": 8,
+      "falseNegatives": 21
+    }
+  },
+  "ownedCoverage": {
+    "events": "Preserve every historical script warning, including proven Vue-backed and unresolved receiver identities. This patch fixes exact property spans and JSX-bearing component scripts; pinned-provider receiver omissions are recorded as intentional native gaps.",
+    "listeners": "Script-only parent preserves all37 existing script concerns and fixes property spans. All template controls, including spread/Object.assign, are preserved in Draft child9251 and remain unqualified until retained AST/authored ranges/lexical ownership are verified.",
+    "expandedControls": [
+      "foreign-component-constructor",
+      "template-listener-spread",
+      "template-listener-assign"
+    ]
+  },
+  "separateScope": {
+    "rule": "script/no-deprecated-dollar-scopedslots-api",
+    "status": "Not changed by this fix; it still needs its own template capability and this-bound property-token parity."
+  },
+  "acceptanceBoundary": "Complete217 provider packets remain intact. Parent9222 qualifies53 script controls through an explicit70-case script projection; all17 full template expectations belong to Draft9251. Issue9217 retains template and receiver frontiers, with no all-FPs-resolved claim.",
+  "factoryContractControls": [
+    "foreign-registry-component",
+    "foreign-registry-mixin",
+    "nested-registry-receiver",
+    "shadowed-nuxt-factory",
+    "named-vue-factory-alias",
+    "indirect-vue-factory-alias"
+  ],
+  "factoryControlMeaning": "These packets expose pinned-provider factory heuristics; they do not restrict native warning coverage. Source provenance in provenance.json.gz establishes why narrowing was rejected."
+}

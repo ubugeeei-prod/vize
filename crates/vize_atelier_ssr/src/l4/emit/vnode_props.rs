@@ -101,7 +101,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     /// `_renderSlot(_ctx.$slots, name, props[, () => [fallback]])`.
-    pub(super) fn vnode_outlet(&mut self, slot: &'r l2::SlotOp<'a>) -> Result<String> {
+    pub(super) fn vnode_outlet(
+        &mut self,
+        slot: &'r l2::SlotOp<'a>,
+        key: Option<&str>,
+    ) -> Result<String> {
         let open = self.segment(self.pos)?;
         plan_source(&open, SsrStringPayloadKind::SlotName)?;
         self.pos += 1;
@@ -110,6 +114,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.use_core_helper(RuntimeHelper::RenderSlot);
         let name = self.outlet_name(slot)?;
         let props = self.slot_props(attached)?;
+        let props = self.ctx.vnode_loop_key_props(&props, key);
         let mut out = cstr!("_renderSlot(_ctx.$slots, {name}, {props}");
         if !slot.fallback.ops.is_empty() {
             let previous = core::mem::replace(&mut self.ctx.vnode_slot_fallback, true);

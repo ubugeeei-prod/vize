@@ -932,12 +932,16 @@ vp run lint
 
 成员读取和独立参数引用都使用 `$listeners`，Vue 3 在将监听器合并到属性后移除了它。
 
-```vue annotate="remove:2,3,4"
-<script setup lang="ts">
-const handlers = this.$listeners
-const forwarded = ctx.$listeners
-emit('input', $listeners)
+```vue annotate="remove:4,5,9"
+<script>
+export default {
+  mounted() {
+    const vm = this
+    return vm.$listeners
+  }
+}
 </script>
+<template><Child v-on="$listeners" /></template>
 ```
 
 <span id="script-no-deprecated-dollar-listeners-api-good"></span>
@@ -946,16 +950,20 @@ emit('input', $listeners)
 
 读取改为 `this.$attrs` 和 setup 上下文的 `ctx.attrs`，替代已移除的监听器接口；示例中的接收对象必须存在于周围组件上下文。
 
-```vue annotate="add:2,3"
-<script setup lang="ts">
-const handlers = this.$attrs
-const forwarded = ctx.attrs
+```vue annotate="add:4,8"
+<script>
+export default {
+  mounted() {
+    return this.$attrs
+  }
+}
 </script>
+<template><Child v-bind="$attrs" /></template>
 ```
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L40) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L54) · [全部规则](all.md)
 
 ### `script/no-deprecated-dollar-scopedslots-api`
 
@@ -1061,12 +1069,16 @@ vp run lint
 
 `$on`、`$once` 和 `$off` 调用使用了 Vue 3 已移除的实例事件总线方法。
 
-```vue annotate="remove:2,3,4,5"
-<script setup lang="ts">
-this.$on('event', handler)
-this.$once('event', handler)
-this.$off('event', handler)
-emitter.$off('event')
+```vue annotate="remove:4,5,6,7"
+<script>
+export default {
+  mounted() {
+    this.$on('event', handler)
+    const vm = this
+    vm.$once('event', handler)
+    this.$off('event', handler)
+  }
+}
 </script>
 ```
 
@@ -1076,21 +1088,22 @@ emitter.$off('event')
 
 `$emit` 仍然有效，事件总线订阅则移到外部发射器的 `on` 方法。修复区分面向父组件的事件发出与外部事件总线。
 
-```vue annotate="add:2,3,4,5,6,7,8"
-<script setup lang="ts">
-// $emit is still valid in Vue 3
-this.$emit('event', payload)
-
-// Use an external emitter instead
+```vue annotate="add:2,3,6,7"
+<script>
 import mitt from 'mitt'
 const emitter = mitt()
-emitter.on('event', handler)
+export default {
+  mounted() {
+    this.$emit('event', payload)
+    emitter.on('event', handler)
+  }
+}
 </script>
 ```
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L42) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L51) · [全部规则](all.md)
 
 ### `script/no-deprecated-props-default-this`
 

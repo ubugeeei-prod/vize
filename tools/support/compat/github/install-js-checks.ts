@@ -18,7 +18,11 @@ export function jsInstallFilters(group: string): string[] {
   if (!packages.length) throw new Error(`unknown JS check group: ${group}`);
   const root = JSON.parse(readFileSync("package.json", "utf8"));
   if (typeof root.name !== "string") throw new Error("missing root package name");
-  return [...new Set([root.name, "./npm/native...", ...packages.map((pkg) => `${pkg}...`)])];
+  // The UI production-Vue suite resolves its locked runtime from this example.
+  const fixtures = group === "ui" ? ["./npm/builder/vite/example..."] : [];
+  return [
+    ...new Set([root.name, "./npm/native...", ...packages.map((pkg) => `${pkg}...`), ...fixtures]),
+  ];
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

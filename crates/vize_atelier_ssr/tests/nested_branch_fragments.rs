@@ -29,6 +29,81 @@ const CASES: &[(&str, &str, bool)] = &[
         r#"<template v-if="outer"><button v-for="n in 2">{{ n }}</button></template>"#,
         false,
     ),
+    (
+        "loop-conditional-boundary",
+        r#"<template v-for="n in 2"><template v-if="outer"><button v-if="inner">a</button><button v-else>b</button></template></template>"#,
+        false,
+    ),
+    (
+        "loop-single-conditional",
+        r#"<template v-for="n in 2"><button v-if="inner">a</button><button v-else>b</button></template>"#,
+        false,
+    ),
+    (
+        "loop-nested-loop",
+        r#"<template v-for="n in 2"><button v-for="m in 2">{{ n }}:{{ m }}</button></template>"#,
+        false,
+    ),
+    (
+        "loop-single-element",
+        r#"<button v-for="n in 2">{{ n }}</button>"#,
+        false,
+    ),
+    (
+        "loop-single-text",
+        r#"<template v-for="n in 2">text</template>"#,
+        false,
+    ),
+    (
+        "loop-empty",
+        r#"<template v-for="n in 2"></template>"#,
+        false,
+    ),
+    (
+        "transition-group-loop-conditional",
+        r#"<TransitionGroup tag="section"><template v-for="n in 2"><template v-if="outer"><button v-if="inner">a</button><button v-else>b</button></template></template></TransitionGroup>"#,
+        false,
+    ),
+    (
+        "loop-keyed-element",
+        r#"<template v-for="n in 2" :key="n"><button>{{ n }}</button></template>"#,
+        false,
+    ),
+    (
+        "loop-keyed-conditional",
+        r#"<template v-for="n in 2" :key="n"><button v-if="inner">a</button><button v-else>b</button></template>"#,
+        false,
+    ),
+    (
+        "loop-keyed-component",
+        r#"<template v-for="n in 2" :key="n"><RuntimeChild :n="n" /></template>"#,
+        false,
+    ),
+    (
+        "loop-keyed-slot",
+        r#"<template v-for="n in 2" :key="n"><slot :n="n"><button>fallback</button></slot></template>"#,
+        false,
+    ),
+    (
+        "fallback-keyed-component",
+        r#"<RuntimeSlotHost><template v-for="n in 2" :key="n"><RuntimeChild :n="n" /></template></RuntimeSlotHost>"#,
+        false,
+    ),
+    (
+        "fallback-keyed-slot",
+        r#"<RuntimeSlotHost><template v-for="n in 2" :key="n"><slot :n="n"><button>fallback</button></slot></template></RuntimeSlotHost>"#,
+        false,
+    ),
+    (
+        "fallback-conditional-boundary",
+        r#"<RuntimeSlotHost><template v-for="n in 2"><template v-if="outer"><button v-if="inner">a</button><button v-else>b</button></template></template></RuntimeSlotHost>"#,
+        false,
+    ),
+    (
+        "fallback-nested-loop",
+        r#"<RuntimeSlotHost><template v-for="n in 2"><button v-for="m in 2">{{ n }}:{{ m }}</button></template></RuntimeSlotHost>"#,
+        false,
+    ),
 ];
 
 #[test]
@@ -36,17 +111,19 @@ fn nested_template_conditionals_keep_fragments_and_both_emission_routes() {
     let mut captures = Vec::new();
     for vapor in [false, true] {
         for &(name, source, nested) in CASES {
+            let compiler_options = SsrCompilerOptions {
+                vapor,
+                ..Default::default()
+            };
+            let experimental_options = SsrCompilerExperimentalOptions {
+                source_map: true,
+                source_map_filename: Some("NestedBranch.vue".into()),
+                ..Default::default()
+            };
             let pair = vize_atelier_ssr::differential::compare_ssr_lanes(
                 source,
-                &SsrCompilerOptions {
-                    vapor,
-                    ..Default::default()
-                },
-                &SsrCompilerExperimentalOptions {
-                    source_map: true,
-                    source_map_filename: Some("NestedBranch.vue".into()),
-                    ..Default::default()
-                },
+                &compiler_options,
+                &experimental_options,
             );
             assert_eq!(pair.lane, "s4", "native plan must own {name}");
             assert!(pair.selected.errors.is_empty(), "{name}");
@@ -72,6 +149,13 @@ fn nested_template_conditionals_keep_fragments_and_both_emission_routes() {
                 "source": source,
                 "vapor": vapor,
                 "lane": pair.lane,
+                "compilerOptions": compiler_options,
+                "experimentalOptions": {
+                    "componentName": experimental_options.component_name,
+                    "selfComponent": experimental_options.self_component,
+                    "sourceMap": experimental_options.source_map,
+                    "sourceMapFilename": experimental_options.source_map_filename,
+                },
                 "selected": {
                     "code": pair.selected.result.code,
                     "preamble": pair.selected.result.preamble,

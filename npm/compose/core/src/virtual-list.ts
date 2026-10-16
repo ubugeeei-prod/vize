@@ -1,5 +1,5 @@
 import { computed, shallowRef, toValue } from "vue";
-import type { ComputedRef, MaybeRefOrGetter } from "vue";
+import type { ComputedRef, CSSProperties, MaybeRefOrGetter } from "vue";
 
 import { useElementRef } from "./element-ref.ts";
 import type { ElementRefSetter } from "./element-ref.ts";
@@ -60,7 +60,7 @@ export interface VirtualListItem<Item> {
 }
 
 /** Inline style for the scroll container. */
-export interface VirtualContainerStyle {
+export interface VirtualContainerStyle extends CSSProperties {
   /** Vertical overflow. */
   readonly overflowY: "auto" | "hidden";
   /** Horizontal overflow. */
@@ -68,7 +68,7 @@ export interface VirtualContainerStyle {
 }
 
 /** Inline style for the inner wrapper that holds the rendered items. */
-export interface VirtualWrapperStyle {
+export interface VirtualWrapperStyle extends CSSProperties {
   /** Wrapper width. */
   readonly width: string;
   /** Wrapper height. */
