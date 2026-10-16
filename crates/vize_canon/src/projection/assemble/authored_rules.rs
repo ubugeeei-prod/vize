@@ -36,7 +36,11 @@ pub(super) fn filter<P>(
         return;
     }
     let lines: Vec<&str> = authored.text.lines().collect();
-    let calls = authored_call_lines(authored.text);
+    let Some(calls) = authored_call_lines(authored.text) else {
+        // A refused parse supplies no authority to remove any diagnostic,
+        // including one the legacy overload rule would otherwise suppress.
+        return;
+    };
     let unused_expect_errors: FxHashSet<usize> = diagnostics
         .iter()
         .filter(|diagnostic| {
@@ -133,7 +137,7 @@ fn multiline_ts_directive_suppresses(
 /// Only real call syntax can extend a directive across lines. Searching text
 /// for parentheses can consume later statements, or parentheses inside an
 /// import specifier, comment, string, or regular expression.
-fn authored_call_lines(source: &str) -> Vec<(usize, usize)> {
+fn authored_call_lines(source: &str) -> Option<Vec<(usize, usize)>> {
     struct Calls {
         offset: usize,
         line_starts: Vec<usize>,
@@ -152,13 +156,22 @@ fn authored_call_lines(source: &str) -> Vec<(usize, usize)> {
                     .saturating_sub(1),
             ));
         }
-        fn parse(&mut self, script: &str, source_type: SourceType) {
+        fn parse(&mut self, script: &str, source_type: SourceType) -> Option<()> {
+            // Share the admission rule used by the retained expression and
+            // transform parsers before entering OXC's recursive parser or AST
+            // visitor. Stack overflow cannot be recovered after parsing starts.
+            if !vize_l0::expression_guard::expression_is_safe_to_parse(script) {
+                return None;
+            }
             let allocator = oxc_allocator::Allocator::default();
             let parsed = oxc_parser::Parser::new(&allocator, script, source_type).parse();
             // Failed parsing must preserve diagnostics rather than invent a
             // suppression range from incomplete syntax.
             if !parsed.panicked && parsed.diagnostics.is_empty() {
                 self.visit_program(&parsed.program);
+                Some(())
+            } else {
+                None
             }
         }
     }
@@ -197,12 +210,12 @@ fn authored_call_lines(source: &str) -> Vec<(usize, usize)> {
             } else {
                 SourceType::ts()
             };
-            calls.parse(&block.content, source_type);
+            calls.parse(&block.content, source_type)?;
         }
     } else {
-        calls.parse(source, SourceType::ts());
+        calls.parse(source, SourceType::ts())?;
     }
-    calls.lines
+    Some(calls.lines)
 }
 
 fn next_non_empty_line(lines: &[&str], start: usize) -> Option<usize> {

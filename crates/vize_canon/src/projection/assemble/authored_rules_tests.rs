@@ -193,6 +193,52 @@ fn literal_parentheses_do_not_end_a_real_multiline_call_early() {
 }
 
 #[test]
+fn refused_pathological_script_parse_preserves_every_diagnostic() {
+    // The shared guard must refuse this before OXC or the AST visitor sees it.
+    // Merely observing empty call ranges is insufficient: the legacy VueUse
+    // rule must not remove diagnostics after a refused parse either.
+    let script = vize_carton::cstr!(
+        "// @ts-ignore\nconsume(\n  invalidArgument,\n)\nconst nested = {}value{};\n{CONSUMED_EXPECT_ERROR}const independent: number = 'wrong'\n",
+        "(".repeat(60_000),
+        ")".repeat(60_000),
+    );
+    assert!(!vize_l0::expression_guard::expression_is_safe_to_parse(
+        &script
+    ));
+    for source in [
+        script.clone(),
+        vize_carton::cstr!("<script setup lang=\"ts\">\n{script}</script>\n"),
+    ] {
+        let expected = vec![
+            overload(&source, "invalidArgument,"),
+            overload(&source, "passive:"),
+            diagnostic(&source, "'wrong'", Some(2322), "Type mismatch."),
+        ];
+        assert_eq!(super::authored_call_lines(&source), None);
+        let mut diagnostics = expected.clone();
+        filter(&AuthoredSource::vue(&source), &mut diagnostics);
+        assert_eq!(diagnostics, expected);
+    }
+}
+
+#[test]
+fn script_at_shared_nesting_limit_keeps_the_legitimate_multiline_suppression() {
+    let depth = vize_l0::expression_guard::MAX_EXPRESSION_NESTING_DEPTH - 1;
+    let source = vize_carton::cstr!(
+        "// @ts-ignore\nconsume(\n  {}invalidArgument{},\n)\nconst independent: number = 'wrong'\n",
+        "(".repeat(depth),
+        ")".repeat(depth),
+    );
+    assert!(vize_l0::expression_guard::expression_is_safe_to_parse(
+        &source
+    ));
+    let independent = diagnostic(&source, "'wrong'", Some(2322), "Type mismatch.");
+    let mut diagnostics = vec![overload(&source, "invalidArgument"), independent.clone()];
+    filter(&AuthoredSource::vue(&source), &mut diagnostics);
+    assert_eq!(diagnostics, [independent]);
+}
+
+#[test]
 fn template_diagnostics_are_not_multiline_directive_candidates() {
     let source = "<script setup lang=\"ts\">\n</script>\n<template>\n  <!-- @ts-ignore -->\n  <Comp\n    :a=\"x\"\n  />\n</template>\n";
     let mut diagnostics = vec![diagnostic(source, ":a=", Some(2322), "Type mismatch.")];
