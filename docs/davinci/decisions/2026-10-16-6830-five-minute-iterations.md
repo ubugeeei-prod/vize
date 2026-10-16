@@ -60,6 +60,9 @@ Independent runtime and differential lanes start in parallel. Broad tooling
 test shards no longer sit between source compilation and those product checks.
 The whole original-project Oxlint campaign remains in scheduled full JS tests.
 Full historical n8n adoption also remains available nightly and manually.
+The [native feedback decision](./2026-10-16-6830-native-feedback.md) moves the
+16–18 minute historical phase campaign out of PRs while retaining its unique
+native law, feature differential and actual source-built LSP product tests.
 Nuxt and Musea integration checks select the inputs they actually exercise;
 Nuxt's three runtime scenarios run independently. Artifact uploads exclude
 node_modules while keeping candidate/public adapter snapshots and observations.

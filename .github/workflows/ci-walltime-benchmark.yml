@@ -16,6 +16,7 @@ on:
             rust,
             native,
             release-builds,
+            nix,
             n8n-baseline,
             n8n-preparation,
             artifact-payload,
@@ -43,6 +44,14 @@ jobs:
   release-builds:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'release-builds' }}
     uses: ./.github/workflows/release-build-cache.yml
+  nix:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'nix' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}" }
+      - uses: ./.github/actions/check-nix
   owned-worker-fault:
     if: ${{ github.event_name == 'workflow_dispatch' && (inputs.component == 'owned-worker-fault' || inputs.component == 'owned-worker-controls') }}
     uses: ./.github/workflows/owned-worker-fault.yml

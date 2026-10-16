@@ -64,9 +64,6 @@ void test("packing retains the complete original raw eligibility and failed-pack
     upload.with["compression-level"],
     "${{ steps.native-artifact-pack.outcome == 'success' && '0' || '6' }}",
   );
-  assert(
-    workflow.on.pull_request.paths.includes("tools/support/compat/github/native-phase-artifact*"),
-  );
 });
 
 void test("a real failed pack exports all original paths without disguising the failure", (t) => {

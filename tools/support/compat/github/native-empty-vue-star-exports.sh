@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Reuse the existing Canon ci-opt profile, native runtime and sticky target.
 set -euo pipefail
-if [[ "$GITHUB_EVENT_NAME" != pull_request ]]; then exit 0; fi
+if [[ "$GITHUB_EVENT_NAME" != pull_request && "$GITHUB_EVENT_NAME" != schedule ]]; then exit 0; fi
 unset VIZE_TEST_DISABLE_TSGO
 export VIZE_TEST_REQUIRE_TSGO=1
 export VIZE_NATIVE_SYNTAX_CAPTURE_DIR="$RUNNER_TEMP/native-source-recipe-empty-vue-star"

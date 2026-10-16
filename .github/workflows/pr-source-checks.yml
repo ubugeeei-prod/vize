@@ -118,6 +118,12 @@ jobs:
       - name: Install native runtime oracle dependencies
         if: ${{ matrix.lane != 'none' }}
         run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './npm/native...' --filter './npm/ui...' --filter './tests...'
+      - name: Test native typechecker ownership and projection laws
+        if: ${{ matrix.lane == 'canon' }}
+        uses: ./.github/actions/test-native-canon
+      - name: Test actual source LSP feature and project responses
+        if: ${{ matrix.lane == 'lsp' }}
+        uses: ./.github/actions/test-native-lsp
       - name: Test fresh native SSR modules
         if: ${{ matrix.lane == 'ssr' }}
         uses: ./.github/actions/test-native-ssr

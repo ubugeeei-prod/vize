@@ -6,87 +6,28 @@ on:
         description: "Immutable main ancestor; production/dependency/corpus bytes must equal this main driver"
         required: true
         type: string
-  pull_request:
-    types: [opened, synchronize, reopened, edited]
-    # prettier-ignore
-    paths: [".github/workflows/typechecker-native-phases.yml", "tools/benchmarks/scripts/typechecker-native-*", "tools/support/compat/github/native-phase-artifact*", "tools/benchmarks/scripts/type-snapshot-cli-*.mjs",
-      "crates/vize/tests/check_*_cli.rs",
-      "tests/fixtures/typechecker/model-modifier-ranges/**",
-      "crates/vize/tests/lint_unchecked_indexed_access_cli**",
-      "crates/vize_patina/src/linter/corsa_session/paths/**",
-      "tests/_fixtures/differential/linter/unchecked-index-access/**",
-      "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_emit_tests.rs",
-      "docs/davinci/decisions/2026-10-04-typechecker-*.md",
-      "tools/benchmarks/scripts/generate.mjs",
-      "tools/benchmarks/scripts/check-gate-*.mjs",
-      "tools/benchmarks/scripts/typecheck-command.mjs", "tools/benchmarks/scripts/type-snapshot-parser-recovery.ts",
-      "tools/benchmarks/scripts/benchmark-binary.mjs",
-      "tests/_fixtures/differential/typechecker/**",
-      "crates/vize_canon/**",
-      "crates/vize_atelier_jsx/**",
-      "tests/_fixtures/differential/typecheck/jsx-*/**",
-      ".github/actions/check-reference-path/**",
-      ".github/actions/check-batch-generated-config/**",
-      ".github/actions/check-computed-inlay/**",
-      ".github/actions/check-editor-jsconfig/**",
-      ".github/actions/check-package-private-imports/**",
-      ".github/actions/check-component-tag-types/**",
-      ".github/actions/check-project-navigation/**",
-      ".github/actions/setup-rust-sticky-cache/**",
-      ".github/actions/reuse-rust-target/**",
-      "tools/support/compat/github/native-syntax-semantics.sh",
-      "tools/support/compat/github/native-javascript-sfc-membership.sh",
-      "tools/support/compat/github/native-empty-vue-star-exports.*",
-      "tools/support/compat/github/native-lexical-dollar*",
-      "tools/support/compat/github/native-lexical-javascript-source.mjs",
-      "tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs",
-      "tests/tooling/davinci-storage-rust-syntax.ts",
-      "tests/_fixtures/differential/lsp/**",
-      "crates/vize/tests/lsp_*_cli.rs",
-      "crates/vize_maestro/src/ide/hover/component_prop**",
-      "crates/vize_maestro/src/ide/completion**",
-      "crates/vize_maestro/src/ide/inlay_hint/**",
-      "crates/vize_maestro/src/ide/inlay_hint.rs",
-      "crates/vize_croquis/src/**",
-      "crates/vize/tests/support/**",
-      "crates/vize/src/**",
-      "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_defaults_tests.rs",
-      "Cargo.toml",
-      "Cargo.lock",
-      ".cargo/**",
-      "rust-toolchain.toml",
-      "package.json",
-      "pnpm-workspace.yaml",
-      ".npmrc",
-      "patches/**",
-      "vite.config.ts",
-      "tools/config/vite-plus/**",
-      ".gitmodules",
-      "tests/_fixtures/_git/element-plus",
-      "pnpm-lock.yaml"]
+  schedule:
+    - cron: "37 18 * * *"
 permissions: { contents: read }
 concurrency:
-  # Inert edits must not replace a pending run or cancel genuine source evidence.
-  group: ${{ github.event_name == 'pull_request' && github.event.action == 'edited' && !github.event.changes.base && format('typechecker-native-phases-metadata-{0}', github.run_id) || format('typechecker-native-phases-{0}', github.event.pull_request.number || github.run_id) }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ inputs.source_sha || github.sha }}
   cancel-in-progress: true
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.source_sha || github.event.pull_request.head.sha }}
-  DRIVER_SHA: ${{ github.event_name == 'workflow_dispatch' && github.workflow_sha || github.event.pull_request.head.sha }}
+  SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.source_sha || github.sha }}
+  DRIVER_SHA: ${{ github.workflow_sha }}
   CARGO_TARGET_DIR: ${{ github.workspace }}/target
 jobs:
   native-phases:
-    name: ${{ github.event_name == 'pull_request' && github.event.action == 'edited' && !github.event.changes.base && 'Native phase metadata edit ignored' || 'Actual CLI shard native phase evidence' }}
-    if: ${{ github.event_name != 'pull_request' || github.event.action != 'edited' || github.event.changes.base }}
+    name: Actual CLI shard native phase evidence
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ env.DRIVER_SHA }}", fetch-depth: 0, persist-credentials: false }
       - name: Pin immutable driver, source and freshly fetched main baseline
-        env: { BASE_SHA: "${{ github.event.pull_request.base.sha }}" }
         run: |
           set -euo pipefail
           [[ "$DRIVER_SHA" =~ ^[0-9a-f]{40}$ && "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
@@ -94,18 +35,16 @@ jobs:
           git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
           main_head_sha="$(git rev-parse refs/remotes/origin/main)"
           [[ "$(git rev-parse --verify "$SOURCE_SHA^{commit}")" == "$SOURCE_SHA" ]]
-          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
-            [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize && "$GITHUB_REF" == refs/heads/main ]]
-            [[ "$DRIVER_SHA" == "$GITHUB_WORKFLOW_SHA" ]]
-            git merge-base --is-ancestor "$DRIVER_SHA" "$main_head_sha"
-            git merge-base --is-ancestor "$SOURCE_SHA" "$main_head_sha"
-            source_base_sha="$SOURCE_SHA"
+          [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize && "$GITHUB_REF" == refs/heads/main ]]
+          [[ "$DRIVER_SHA" == "$GITHUB_WORKFLOW_SHA" ]]
+          git merge-base --is-ancestor "$DRIVER_SHA" "$main_head_sha"
+          git merge-base --is-ancestor "$SOURCE_SHA" "$main_head_sha"
+          if [[ "$GITHUB_EVENT_NAME" == schedule ]]; then
+            [[ "$SOURCE_SHA" == "$DRIVER_SHA" && "$SOURCE_SHA" == "$GITHUB_SHA" ]]
           else
-            [[ "$GITHUB_EVENT_NAME" == pull_request && "$DRIVER_SHA" == "$SOURCE_SHA" ]]
-            [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-            source_base_sha="$(git merge-base "$main_head_sha" "$SOURCE_SHA")"
-            echo "PR_BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
+            [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]
           fi
+          source_base_sha="$SOURCE_SHA"
           echo "MAIN_SOURCE_SHA=$source_base_sha" >> "$GITHUB_ENV"
           echo "MAIN_HEAD_SHA=$main_head_sha" >> "$GITHUB_ENV"
           echo "NATIVE_PHASE_SOURCE_ROOT=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
@@ -146,7 +85,7 @@ jobs:
           fi
           bash tools/support/compat/github/native-syntax-semantics.sh; bash tools/support/compat/github/native-javascript-sfc-membership.sh; bash tools/support/compat/github/native-empty-vue-star-exports.sh
       - name: Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'schedule'
         env:
           VIZE_TEST_REQUIRE_TSGO: "1"
           VIZE_TEMPLATE_EMIT_CAPTURE: ${{ runner.temp }}/template-dollar-emit
@@ -183,7 +122,7 @@ jobs:
           node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"; cd "$NATIVE_PHASE_SOURCE_ROOT"
           cargo clippy --locked -p vize_canon --example native_phase_projection -- -D warnings
       - name: Qualify original outside-import types with the source CLI and official native oracle
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'schedule'
         env:
           VIZE_TEST_REQUIRE_TSGO: "1"
           VIZE_TYPECHECK_REGRESSION_CAPTURE: ${{ runner.temp }}/outside-import-types
@@ -231,7 +170,7 @@ jobs:
           writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, fixtureSha256: sha256('tests/_fixtures/differential/typechecker/outside-import-types/input.json'), matchedCompleteExpectations: true, nativeProjectRetirement: processReceipt, cases: receipts, editor: { nativeBinary: realpathSync(editor.nativeBinary), nativeSha256: sha256(editor.nativeBinary), completeOutputsAndInputs: editorFiles } }, null, 2) + '\n');
           JS
       - name: Verify the original L1 corpus and referenced JavaScript contracts
-        if: github.event_name == 'pull_request' && github.event.pull_request.number == 8020
+        if: github.event_name == 'schedule'
         run: |
           set -euo pipefail
           cd "$NATIVE_PHASE_SOURCE_ROOT"
@@ -255,7 +194,7 @@ jobs:
             --config 'profile.ci-opt.lto="thin"' \
             --config 'profile.ci-opt.codegen-units=16'
       - name: Verify the original reference-path project through native, batch and actual CLI checks
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'schedule'
         env:
           VIZE_TEST_REQUIRE_TSGO: "1"
           VIZE_REFERENCE_PATH_CAPTURE_DIR: ${{ runner.temp }}/reference-path-module
@@ -268,7 +207,7 @@ jobs:
             "$GITHUB_WORKSPACE/target/ci-opt/examples/native_phase_projection" \
             "$NATIVE_PHASE_OUTPUT"
       - name: Qualify optional callable defaults in the source CLI and editor
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'schedule'
         env:
           VIZE_TEST_REQUIRE_TSGO: "1"
           VIZE_DEFAULT_PROP_CAPTURE: ${{ runner.temp }}/undefined-default-props

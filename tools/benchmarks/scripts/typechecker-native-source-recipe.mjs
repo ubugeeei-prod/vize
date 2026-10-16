@@ -124,6 +124,15 @@ function sourceContext(root, env, event) {
     workflow = sha(env.GITHUB_WORKFLOW_SHA);
   assert.equal(git(root, "rev-parse", "HEAD").trim(), source);
   assert.equal(env.DRIVER_SHA, source);
+  if (env.GITHUB_EVENT_NAME === "schedule") {
+    assert.equal(env.GITHUB_REPOSITORY, REPO);
+    assert.equal(env.GITHUB_REF, "refs/heads/main");
+    assert.equal(env.GITHUB_WORKFLOW_REF, `${REPO}/${WORKFLOW}@refs/heads/main`);
+    assert.equal(workflow, source);
+    assert.equal(env.GITHUB_SHA, source);
+    git(root, "merge-base", "--is-ancestor", source, "refs/remotes/origin/main");
+    return { source, workflow, pr: null };
+  }
   assert.equal(env.GITHUB_EVENT_NAME, "pull_request");
   assert.match(
     env.GITHUB_WORKFLOW_REF ?? "",
@@ -196,7 +205,7 @@ export function selectSourceRecipe({ root, env, event, permission, pin, parse })
     workflow,
     recipe: null,
   };
-  if (!pr.head.ref.startsWith("release/v") && !pr.body?.includes("<!-- vize-release-pin:"))
+  if (!pr || (!pr.head.ref.startsWith("release/v") && !pr.body?.includes("<!-- vize-release-pin:")))
     return ordinary;
   const { cut, old, next, integration } = releaseIdentity(root, env, pr, permission);
   assert.equal(git(root, "rev-list", "--parents", "-n", "1", sha(pin)).trim(), `${pin} ${source}`);
@@ -216,7 +225,10 @@ export function selectSourceRecipe({ root, env, event, permission, pin, parse })
   const steps = parse(bytes).jobs["native-phases"].steps.filter((step) => step.name === STEP);
   assert.equal(steps.length, 1);
   const step = steps[0];
-  assert.equal(step.if, "github.event_name == 'pull_request'");
+  assert.ok(
+    ["github.event_name == 'pull_request'", "github.event_name == 'schedule'"].includes(step.if),
+    "unrecognized native source campaign condition",
+  );
   assert.equal(step.env.VIZE_TEST_REQUIRE_TSGO, "1");
   const declared = declaredSourceRecipe(step.run);
   const executionEnvironment = { ...step.env };

@@ -27,7 +27,21 @@ export function planNativeRuntime(
       ),
     );
   const dom = nativeSetupCaptureRequired(paths);
+  const typechecker =
+    rust?.packages.includes("vize_canon") ||
+    paths.some((path) =>
+      /^(?:crates\/vize_canon\/|\.github\/actions\/test-native-canon\/)/.test(path),
+    );
+  const lsp =
+    rust?.packages.some((pkg) => pkg === "vize" || pkg === "vize_maestro") ||
+    paths.some((path) =>
+      /^(?:crates\/vize(?:_maestro)?\/|tests\/tooling\/(?:lsp-|support\/(?:lsp\/|editor-jsconfig|package-private-imports|project-navigation|typecheck-dependency))|tests\/differential\/|tests\/_fixtures\/differential\/lsp\/|\.github\/actions\/test-native-lsp\/)/.test(
+        path,
+      ),
+    );
   const lanes = [
+    ["canon", typechecker],
+    ["lsp", lsp],
     ["ssr", nativeSsrCaptureRequired(paths) || nativeScopedCaptureRequired(paths)],
     [
       "scoped-css",

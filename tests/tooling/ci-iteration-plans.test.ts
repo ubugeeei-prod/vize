@@ -179,17 +179,49 @@ test("affected native captures keep source-built runtime proofs independent of t
   assert.ok(
     planNativeRuntime(["davinci/vize_l4/src/targets/vapor.rs"]).matrix.lane.includes("vapor"),
   );
-  assert.equal(planNativeRuntime(["Cargo.lock"]).matrix.lane.length, 6);
+  assert.equal(planNativeRuntime(["Cargo.lock"]).matrix.lane.length, 8);
   assert.equal(
     planNativeRuntime(["davinci/vize_l0_derive/src/lib.rs"], { packages: ["vize_l4"] }).matrix.lane
       .length,
-    6,
+    8,
   );
   assert.ok(
     planNativeRuntime(["davinci/vize_l4/tests/fixtures/selected-template-dom-vue-3.5.35.json"], {
       packages: ["vize_l4"],
     }).matrix.lane.includes("selected-template"),
   );
+});
+
+test("native typechecker and actual LSP checks follow their source and oracle inputs", () => {
+  for (const path of [
+    "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source.rs",
+    ".github/actions/test-native-canon/action.yml",
+  ])
+    assert.ok(planNativeRuntime([path]).matrix.lane.includes("canon"), path);
+  assert.ok(
+    planNativeRuntime(["crates/vize_croquis/src/lib.rs"], {
+      packages: ["vize_canon"],
+    }).matrix.lane.includes("canon"),
+  );
+  assert.ok(
+    planNativeRuntime(["crates/vize_canon/src/lib.rs"], {
+      packages: ["vize_maestro", "vize"],
+    }).matrix.lane.includes("lsp"),
+  );
+  for (const path of [
+    "crates/vize_maestro/src/lib.rs",
+    "tests/tooling/lsp-editor-jsconfig.test.ts",
+    "tests/tooling/support/package-private-imports.ts",
+    "tests/tooling/support/typecheck-dependency.ts",
+    "tests/tooling/support/lsp/launch.ts",
+    "tests/differential/build-receipt.ts",
+    "tests/_fixtures/differential/lsp/editor-jsconfig/input.txt",
+    ".github/actions/test-native-lsp/action.yml",
+  ])
+    assert.ok(planNativeRuntime([path]).matrix.lane.includes("lsp"), path);
+  assert.deepEqual(planNativeRuntime(["tests/tooling/check-docs-format.test.ts"]).matrix, {
+    lane: ["none"],
+  });
 });
 
 test("normal PRs defer duplicate heavy qualification and preserve an explicit full-ci escape hatch", () => {

@@ -131,6 +131,37 @@ await test("manual identical main uses separate source and records the complete 
   });
 });
 
+await test("scheduled evidence binds one protected main checkout to the immutable event", () => {
+  fixture((f) => {
+    const options = manual(f);
+    options.sourceRoot = f.root;
+    options.env.GITHUB_EVENT_NAME = "schedule";
+    options.env.GITHUB_SHA = f.base;
+    const receipt = captureSourceCustody(options);
+    assert.equal(receipt.event, "schedule");
+    assert.equal(receipt.source.sha, f.base);
+    assert.equal(receipt.source.root, receipt.driver.root);
+    assert.equal(receipt.productionMatchesBaseline, true);
+    assert.equal(receipt.workflow.trust, "exact protected-main workflow and ancestry");
+    for (const [field, value] of [
+      ["GITHUB_SHA", "0".repeat(40)],
+      ["GITHUB_WORKFLOW_SHA", "0".repeat(40)],
+      ["GITHUB_REF", "refs/heads/feature"],
+      ["GITHUB_REPOSITORY", "someone/vize"],
+    ]) {
+      assert.throws(
+        () =>
+          captureSourceCustody({
+            ...options,
+            env: { ...options.env, [field]: value },
+          }),
+        undefined,
+        field,
+      );
+    }
+  });
+});
+
 await test("manual permits precisely reviewed infrastructure while preserving neutral bridges", () => {
   fixture((f) => {
     const paths = [...INFRASTRUCTURE_PATHS].filter((path) => !BRIDGES.includes(path));

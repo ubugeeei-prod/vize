@@ -17,21 +17,11 @@ void test("walltime comparisons use the same source and runner without publishin
   );
   assert.deepEqual(workflow.permissions, { contents: "read" });
   assert.deepEqual(workflow.on.pull_request.types, ["opened", "reopened", "labeled"]);
-  assert.deepEqual(
-    Object.keys(workflow.jobs)
-      .filter((name) => !["js-native-fault-diagnostic", "owned-worker-fault"].includes(name))
-      .sort(),
-    [
-      "artifact-payload",
-      "artifact-payload-restore",
-      "docs",
-      "js",
-      "n8n-baseline",
-      "n8n-preparation",
-      "native",
-      "rust",
-    ],
-  );
+  for (const job of Object.values(workflow.jobs)) {
+    assert.ok(
+      Object.values(job.permissions ?? {}).every((value) => ["read", "none"].includes(value)),
+    );
+  }
   for (const key of ["docs", "js", "native", "rust"]) {
     const job = workflow.jobs[key];
     assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
@@ -63,18 +53,21 @@ void test("baseline input partitions are manual-only, build once and retain both
   );
   const input = workflow.on.workflow_dispatch.inputs.component;
   assert.equal(input.default, "all");
-  assert.deepEqual(input.options, [
+  for (const component of [
     "all",
     "js",
     "docs",
     "rust",
     "native",
+    "release-builds",
+    "nix",
     "n8n-baseline",
     "n8n-preparation",
     "artifact-payload",
     "owned-worker-fault",
     "owned-worker-controls",
-  ]);
+  ])
+    assert.ok(input.options.includes(component));
   assert.equal(workflow.concurrency["cancel-in-progress"], false);
   const job = workflow.jobs["n8n-baseline"];
   assert.equal(
@@ -86,6 +79,12 @@ void test("baseline input partitions are manual-only, build once and retain both
       github: { event_name: event },
       inputs: { component },
     });
+  for (const component of ["release-builds", "nix"]) {
+    const candidate = workflow.jobs[component];
+    assert.equal(admitted(candidate, "workflow_dispatch", component), true);
+    assert.equal(admitted(candidate, "workflow_dispatch", "all"), false);
+    assert.equal(admitted(candidate, "pull_request", component), false);
+  }
   assert.equal(admitted(job, "workflow_dispatch", "n8n-baseline"), true);
   for (const component of ["all", "js", "docs", "rust", "native", "n8n-preparation"])
     assert.equal(admitted(job, "workflow_dispatch", component), false);

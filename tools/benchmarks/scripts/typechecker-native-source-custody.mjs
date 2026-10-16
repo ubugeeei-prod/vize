@@ -171,7 +171,10 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
   driverRoot = realpathSync(driverRoot);
   sourceRoot = realpathSync(sourceRoot);
   const event = env.GITHUB_EVENT_NAME;
-  assert(["pull_request", "workflow_dispatch"].includes(event), "unsupported source event");
+  assert(
+    ["pull_request", "workflow_dispatch", "schedule"].includes(event),
+    "unsupported source event",
+  );
   const driverSha = commit(env.DRIVER_SHA ?? env.SOURCE_SHA, driverRoot);
   const sourceSha = commit(env.SOURCE_SHA, driverRoot);
   const mainHeadSha = commit(env.MAIN_HEAD_SHA, driverRoot);
@@ -186,10 +189,17 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
     assert.equal(git(["diff", "--name-only", "HEAD"], root).trim(), "", "dirty tracked source");
   }
   const manual = event === "workflow_dispatch";
+  const protectedMain = manual || event === "schedule";
   let baselineSha;
   let prBaseSha = null;
-  if (manual) {
-    assert.notEqual(sourceRoot, driverRoot, "manual source must have a separate checkout");
+  if (protectedMain) {
+    if (manual)
+      assert.notEqual(sourceRoot, driverRoot, "manual source must have a separate checkout");
+    else {
+      assert.equal(sourceRoot, driverRoot, "scheduled source must use the exact main checkout");
+      assert.equal(sourceSha, driverSha, "scheduled source/driver mismatch");
+      assert.equal(env.GITHUB_SHA, sourceSha, "scheduled event/source mismatch");
+    }
     assert.equal(env.GITHUB_REPOSITORY, "ubugeeei-prod/vize");
     assert.equal(env.GITHUB_REF, "refs/heads/main", "manual driver must run on protected main");
     assert.equal(
@@ -211,7 +221,8 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
   assert.equal(env.MAIN_SOURCE_SHA, baselineSha, "source baseline mismatch");
   const driverDelta = changes(sourceSha, driverSha, driverRoot);
   const sourceDelta = changes(baselineSha, sourceSha, driverRoot);
-  if (manual) assert(infrastructureOnly(driverDelta), "manual driver differs in production inputs");
+  if (protectedMain)
+    assert(infrastructureOnly(driverDelta), "manual driver differs in production inputs");
   const bridgeFiles = {};
   for (const file of BRIDGE_FILES) {
     const source = join(sourceRoot, file);
@@ -219,7 +230,7 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
     assert(lstatSync(source).isFile() && lstatSync(driver).isFile(), "bridge input is not regular");
     const sourceHash = sha256(readFileSync(source));
     const driverHash = sha256(readFileSync(driver));
-    if (manual)
+    if (protectedMain)
       assert.equal(sourceHash, driverHash, "driver/source dependency or corpus drift: " + file);
     bridgeFiles[file] = { sourceSha256: sourceHash, driverSha256: driverHash };
   }
@@ -246,7 +257,7 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
       ref: env.GITHUB_WORKFLOW_REF ?? null,
       sha: env.GITHUB_WORKFLOW_SHA ?? null,
       driverFileSha256: sha256(readFileSync(join(driverRoot, WORKFLOW))),
-      trust: manual
+      trust: protectedMain
         ? "exact protected-main workflow and ancestry"
         : "existing exact PR-head driver",
     },
@@ -259,9 +270,9 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
     source: { root: sourceRoot, sha: sourceSha, tree: tree(sourceSha, sourceRoot) },
     main: { sha: mainHeadSha, tree: tree(mainHeadSha, driverRoot) },
     baseline: { sha: baselineSha, tree: tree(baselineSha, driverRoot), prBaseSha },
-    productionMatchesBaseline: infrastructureOnly(manual ? driverDelta : sourceDelta),
-    changedPaths: (manual ? driverDelta : sourceDelta).map((entry) => entry.path),
-    changedEntries: manual ? driverDelta : sourceDelta,
+    productionMatchesBaseline: infrastructureOnly(protectedMain ? driverDelta : sourceDelta),
+    changedPaths: (protectedMain ? driverDelta : sourceDelta).map((entry) => entry.path),
+    changedEntries: protectedMain ? driverDelta : sourceDelta,
     bridgeFiles,
     sourceDependencyLink,
     nativeProfile: manual ? "pprof-untimed-duplicate-corpus" : "none",

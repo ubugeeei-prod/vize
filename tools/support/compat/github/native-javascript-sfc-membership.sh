@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Execute the admitted project-membership and ownership laws on the original native recipe.
 set -euo pipefail
-if [[ "$GITHUB_EVENT_NAME" != pull_request ]]; then exit 0; fi
+if [[ "$GITHUB_EVENT_NAME" != pull_request && "$GITHUB_EVENT_NAME" != schedule ]]; then exit 0; fi
 unset VIZE_TEST_DISABLE_TSGO
 export VIZE_TEST_REQUIRE_TSGO=1
 export VIZE_UNKNOWN_COMPAT_CAPTURE="$RUNNER_TEMP/native-source-recipe-javascript-sfc"

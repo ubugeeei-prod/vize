@@ -97,6 +97,35 @@ await test("ordinary source retains the complete authored thirteen-target succes
   });
 });
 
+await test("scheduled main selects current source only after exact event and workflow identity", () => {
+  fixture((f) => {
+    git(f.root, "update-ref", "refs/remotes/origin/main", f.source);
+    const env = {
+      ...f.env,
+      GITHUB_EVENT_NAME: "schedule",
+      GITHUB_REF: "refs/heads/main",
+      GITHUB_SHA: f.source,
+      GITHUB_WORKFLOW_REF: `ubugeeei-prod/vize/${WORKFLOW}@refs/heads/main`,
+    };
+    const selected = selectSourceRecipe({ ...f, env, event: {} });
+    assert.equal(selected.mode, "current-inline");
+    assert.equal(selected.source, f.source);
+    assert.equal(selected.recipe, null);
+    for (const [field, value] of [
+      ["GITHUB_SHA", f.cut],
+      ["GITHUB_WORKFLOW_SHA", f.cut],
+      ["GITHUB_REF", "refs/heads/feature"],
+      ["GITHUB_REPOSITORY", "someone/vize"],
+      ["GITHUB_WORKFLOW_REF", `ubugeeei-prod/vize/${WORKFLOW}@refs/heads/feature`],
+    ])
+      assert.throws(
+        () => selectSourceRecipe({ ...f, env: { ...env, [field]: value }, event: {} }),
+        undefined,
+        field,
+      );
+  });
+});
+
 await test("outside-checkout helper bytes must match immutable workflow SHA before current inline selection", () => {
   fixture((f) => {
     const helperNames = [

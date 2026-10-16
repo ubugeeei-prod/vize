@@ -116,6 +116,8 @@ test("queue scope reaches the planner and every selected source lane remains req
   assert.equal(nativeRuntime.needs, "pr-source-plan");
   assert.equal(nativeRuntime.if, undefined, "unaffected runtime inputs still report success");
   for (const [lane, action] of [
+    ["canon", "test-native-canon"],
+    ["lsp", "test-native-lsp"],
     ["ssr", "test-native-ssr"],
     ["scoped-css", "test-native-scoped-css"],
     ["setup", "test-native-js-setup"],
