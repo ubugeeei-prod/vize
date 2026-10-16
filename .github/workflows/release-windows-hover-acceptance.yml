@@ -1,0 +1,49 @@
+name: Released Windows hover acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact public stable minor version
+        default: "0.457.0"
+        required: true
+        type: string
+  pull_request:
+    paths:
+      - .github/workflows/release-windows-hover-acceptance.yml
+      - tools/support/release/windows_hover_acceptance.ts
+      - tests/tooling/windows-hover-public-identity.test.ts
+      - tools/support/compat/npm/smoke-release-lsp-session.ts
+permissions: { contents: read }
+concurrency:
+  group: public-windows-hover-${{ github.ref }}-${{ inputs.version || '0.457.0' }}
+  cancel-in-progress: true
+jobs:
+  public-windows:
+    name: Public npm Windows CLI (Node ${{ matrix.node }})
+    runs-on: blacksmith-32vcpu-windows-2025
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22", "24"]
+    env:
+      PUBLIC_VERSION: ${{ inputs.version || '0.457.0' }}
+      PUBLIC_OUTPUT: ${{ runner.temp }}/public-windows-hover-${{ github.run_id }}-${{ matrix.node }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "${{ matrix.node }}", package-manager-cache: false }
+      - name: Verify public package identity rejection controls
+        run: node --experimental-strip-types --test tests/tooling/windows-hover-public-identity.test.ts
+      - name: Observe installed public CLI and original Windows hover
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
+        run: node --experimental-strip-types tools/support/release/windows_hover_acceptance.ts
+      - name: Retain complete public observations including failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: public-windows-hover-${{ matrix.node }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.PUBLIC_OUTPUT }}
+          if-no-files-found: error
+          retention-days: 30
