@@ -37,6 +37,7 @@ fn pinned_originals_and_minimal_cases_match_complete_native_packets() {
         .with_help_level(HelpLevel::Full);
     let cases = fixture["captures"].as_array().unwrap();
     assert_eq!(cases.len(), 38);
+    let mut administrative_warnings = 0;
     for case in cases {
         let source = case["source"].as_str().unwrap();
         let filename = case["filename"].as_str().unwrap();
@@ -66,11 +67,22 @@ fn pinned_originals_and_minimal_cases_match_complete_native_packets() {
             );
             continue;
         }
+        let mut file_administrative_warnings = 0;
         let diagnostics = packet["messages"]
             .as_array()
             .unwrap()
             .iter()
-            .map(|message| {
+            .filter_map(|message| {
+                if message["ruleId"].is_null() {
+                    // ESLint's host-level unused-disable check is not either
+                    // selected Vue rule. Its complete messages and fixes stay
+                    // in ORACLE and are replayed by the Node provider test.
+                    assert_eq!(message["message"], "Unused eslint-disable directive (no problems were reported from 'no-alert').");
+                    assert_eq!(message["severity"], 1);
+                    assert!(message["fix"].is_object());
+                    file_administrative_warnings += 1;
+                    return None;
+                }
                 let rule = message["ruleId"].as_str().unwrap();
                 let (rule, text, help) = match rule {
                     "vue/no-deprecated-filter" => (
@@ -85,21 +97,23 @@ fn pinned_originals_and_minimal_cases_match_complete_native_packets() {
                     ),
                     _ => panic!("unexpected provider rule: {rule}"),
                 };
-                LintDiagnostic::error(
+                Some(LintDiagnostic::error(
                     rule,
                     text,
                     byte_offset(source, &message["line"], &message["column"]),
                     byte_offset(source, &message["endLine"], &message["endColumn"]),
                 )
-                .with_help(help)
+                .with_help(help))
             })
             .collect();
         let expected = LintResult {
             filename: filename.into(),
             diagnostics,
             error_count: packet["errorCount"].as_u64().unwrap() as usize,
-            warning_count: packet["warningCount"].as_u64().unwrap() as usize,
+            warning_count: packet["warningCount"].as_u64().unwrap() as usize
+                - file_administrative_warnings,
         };
+        administrative_warnings += file_administrative_warnings;
         let actual = linter.lint_sfc(source, filename);
         // Compare every public native field, including help, labels and fixes.
         assert_eq!(
@@ -109,4 +123,5 @@ fn pinned_originals_and_minimal_cases_match_complete_native_packets() {
             case["id"]
         );
     }
+    assert_eq!(administrative_warnings, 4);
 }

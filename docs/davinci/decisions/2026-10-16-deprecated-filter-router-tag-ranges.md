@@ -41,6 +41,13 @@ diagnostic field, help, labels, fixes and counts. It translates the provider's
 UTF-16 columns to native byte offsets. Existing expression classification and
 dialect tests remain applicable.
 
+Four official packets also contain ESLint's host-level "Unused eslint-disable
+directive" warning for `no-alert`. The complete warnings, including their fixes,
+remain in the official oracle and its replay assertion. The native adapter
+identifies exactly these four administrative warnings separately: they have no
+rule ID and are outside the two selected Vue rules. Every selected-rule range,
+message and native field remains asserted.
+
 The Frappe Builder finding is a different case. Its
 `activeScript.script_type as 'JavaScript' | 'CSS'` binding is a TypeScript
 assertion union. The pinned Vue parser splits the union as a filter when using
