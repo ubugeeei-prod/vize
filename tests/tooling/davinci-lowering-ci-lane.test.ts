@@ -80,9 +80,12 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
   );
   assert.match(
     workspaceRunner,
-    /"nextest",\s*"run",\s*"--locked",\s*"--workspace",\s*"--profile",\s*"full"/,
+    /"nextest",\s*"run",\s*"--locked",\s*"--workspace",\s*"--cargo-profile",\s*cargoProfile,\s*"--profile",\s*"full"/,
   );
-  assert.match(workspaceRunner, /"test", "--locked", "--workspace", "--doc"/);
+  assert.match(
+    workspaceRunner,
+    /"test",\s*"--locked",\s*"--workspace",\s*\.\.\.profile,\s*"--doc"/,
+  );
   assert.ok(
     containsCommand(s1ToL2LoweringCorpusCommand),
     "the feature-gated lowering corpus entry must run explicitly after cargo test --workspace",

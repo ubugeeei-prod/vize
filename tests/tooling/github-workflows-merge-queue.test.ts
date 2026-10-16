@@ -183,7 +183,11 @@ test("queue Rust keeps affected doctests beside archive builds and the different
   );
   const manual = check.jobs["clippy-and-test"].steps?.find((step) => step.name === "Test");
   assert.equal(manual?.uses, actionPath);
-  assert.equal(manual?.with?.["workspace-already-tested"], undefined);
+  assert.equal(manual?.with?.["workspace-already-tested"], "true");
+  assert.deepEqual(check.jobs["full-rust-report"].needs, [
+    "full-rust-workspace",
+    "clippy-and-test",
+  ]);
   assert.equal(recipe.inputs["workspace-already-tested"].default, "false");
   assert.equal(recipe.runs.using, "composite");
   const workspaceStep = recipe.runs.steps.find((step) => step.name === "Test Rust workspace");
