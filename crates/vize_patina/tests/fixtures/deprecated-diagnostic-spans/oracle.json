@@ -1,0 +1,691 @@
+{
+  "providers": {
+    "eslint": "10.4.1",
+    "eslint-plugin-vue": "10.9.2",
+    "vue-eslint-parser": "10.4.1"
+  },
+  "rules": {
+    "vue/no-deprecated-filter": "error",
+    "vue/no-deprecated-router-link-tag-prop": "error"
+  },
+  "captures": [
+    {
+      "id": "interpolation",
+      "filename": "minimal/interpolation.vue",
+      "source": "<template><div>{{ message | capitalize }}</div></template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/interpolation.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 19,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 39
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><div>{{ message | capitalize }}</div></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "multiline-unicode",
+      "filename": "minimal/multiline-unicode.vue",
+      "source": "<!-- 雪😀 -->\r\n<template>\r\n  <div>{{\r\n    message | capitalize\r\n  }}</div>\r\n</template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/multiline-unicode.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 4,
+              "column": 5,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 4,
+              "endColumn": 25
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<!-- 雪😀 -->\r\n<template>\r\n  <div>{{\r\n    message | capitalize\r\n  }}</div>\r\n</template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "chained",
+      "filename": "minimal/chained.vue",
+      "source": "<template>{{ a | b | c }}</template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/chained.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 14,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 23
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>{{ a | b | c }}</template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "bound-filter",
+      "filename": "minimal/bound-filter.vue",
+      "source": "<template><div :id=\"rawId | toId\" /></template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/bound-filter.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 1,
+              "column": 21,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 1,
+              "endColumn": 33
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><div :id=\"rawId | toId\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "static-tag",
+      "filename": "minimal/static-tag.vue",
+      "source": "<template><router-link tag=\"button\" /></template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/static-tag.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-router-link-tag-prop",
+              "severity": 2,
+              "message": "'tag' property on 'router-link' component is deprecated. Use scoped slots instead.",
+              "line": 1,
+              "column": 24,
+              "messageId": "deprecated",
+              "endLine": 1,
+              "endColumn": 27
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><router-link tag=\"button\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "bound-tag",
+      "filename": "minimal/bound-tag.vue",
+      "source": "<template><RouterLink :tag=\"element\" /></template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/bound-tag.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-router-link-tag-prop",
+              "severity": 2,
+              "message": "'tag' property on 'RouterLink' component is deprecated. Use scoped slots instead.",
+              "line": 1,
+              "column": 24,
+              "messageId": "deprecated",
+              "endLine": 1,
+              "endColumn": 27
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><RouterLink :tag=\"element\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "long-bound-tag",
+      "filename": "minimal/long-bound-tag.vue",
+      "source": "<template><router-link v-bind:tag.prop=\"element\" /></template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/long-bound-tag.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-router-link-tag-prop",
+              "severity": 2,
+              "message": "'tag' property on 'router-link' component is deprecated. Use scoped slots instead.",
+              "line": 1,
+              "column": 31,
+              "messageId": "deprecated",
+              "endLine": 1,
+              "endColumn": 34
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template><router-link v-bind:tag.prop=\"element\" /></template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "multiline-tag",
+      "filename": "minimal/multiline-tag.vue",
+      "source": "<!-- 雪😀 -->\r\n<template>\r\n<RouterLink\r\n  tag=\"button\"\r\n/>\r\n</template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/multiline-tag.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-router-link-tag-prop",
+              "severity": 2,
+              "message": "'tag' property on 'RouterLink' component is deprecated. Use scoped slots instead.",
+              "line": 4,
+              "column": 3,
+              "messageId": "deprecated",
+              "endLine": 4,
+              "endColumn": 6
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<!-- 雪😀 -->\r\n<template>\r\n<RouterLink\r\n  tag=\"button\"\r\n/>\r\n</template>",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "clean",
+      "filename": "minimal/clean.vue",
+      "source": "<template><div>{{ a || b }}</div><router-link to=\"/\" /></template>",
+      "packets": [
+        {
+          "filePath": "owned/minimal/clean.vue",
+          "messages": [],
+          "suppressedMessages": [],
+          "errorCount": 0,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "src/layout/components/TagsView/index.vue",
+      "filename": "src/layout/components/TagsView/index.vue",
+      "source": "<template>\n  <div id=\"tags-view-container\" class=\"tags-view-container\">\n    <scroll-pane ref=\"scrollPane\" class=\"tags-view-wrapper\" @scroll=\"handleScroll\">\n      <router-link\n        v-for=\"tag in visitedViews\"\n        ref=\"tag\"\n        :key=\"tag.path\"\n        :class=\"isActive(tag)?'active':''\"\n        :to=\"{ path: tag.path, query: tag.query, fullPath: tag.fullPath }\"\n        tag=\"span\"\n        class=\"tags-view-item\"\n        @click.middle.native=\"!isAffix(tag)?closeSelectedTag(tag):''\"\n        @contextmenu.prevent.native=\"openMenu(tag,$event)\"\n      >\n        {{ tag.title }}\n        <span v-if=\"!isAffix(tag)\" class=\"el-icon-close\" @click.prevent.stop=\"closeSelectedTag(tag)\" />\n      </router-link>\n    </scroll-pane>\n    <ul v-show=\"visible\" :style=\"{left:left+'px',top:top+'px'}\" class=\"contextmenu\">\n      <li @click=\"refreshSelectedTag(selectedTag)\">Refresh</li>\n      <li v-if=\"!isAffix(selectedTag)\" @click=\"closeSelectedTag(selectedTag)\">Close</li>\n      <li @click=\"closeOthersTags\">Close Others</li>\n      <li @click=\"closeAllTags(selectedTag)\">Close All</li>\n    </ul>\n  </div>\n</template>\n\n<script>\nimport ScrollPane from './ScrollPane'\nimport path from 'path'\n\nexport default {\n  components: { ScrollPane },\n  data() {\n    return {\n      visible: false,\n      top: 0,\n      left: 0,\n      selectedTag: {},\n      affixTags: []\n    }\n  },\n  computed: {\n    visitedViews() {\n      return this.$store.state.tagsView.visitedViews\n    },\n    routes() {\n      return this.$store.state.permission.routes\n    }\n  },\n  watch: {\n    $route() {\n      this.addTags()\n      this.moveToCurrentTag()\n    },\n    visible(value) {\n      if (value) {\n        document.body.addEventListener('click', this.closeMenu)\n      } else {\n        document.body.removeEventListener('click', this.closeMenu)\n      }\n    }\n  },\n  mounted() {\n    this.initTags()\n    this.addTags()\n  },\n  methods: {\n    isActive(route) {\n      return route.path === this.$route.path\n    },\n    isAffix(tag) {\n      return tag.meta && tag.meta.affix\n    },\n    filterAffixTags(routes, basePath = '/') {\n      let tags = []\n      routes.forEach(route => {\n        if (route.meta && route.meta.affix) {\n          const tagPath = path.resolve(basePath, route.path)\n          tags.push({\n            fullPath: tagPath,\n            path: tagPath,\n            name: route.name,\n            meta: { ...route.meta }\n          })\n        }\n        if (route.children) {\n          const tempTags = this.filterAffixTags(route.children, route.path)\n          if (tempTags.length >= 1) {\n            tags = [...tags, ...tempTags]\n          }\n        }\n      })\n      return tags\n    },\n    initTags() {\n      const affixTags = this.affixTags = this.filterAffixTags(this.routes)\n      for (const tag of affixTags) {\n        // Must have tag name\n        if (tag.name) {\n          this.$store.dispatch('tagsView/addVisitedView', tag)\n        }\n      }\n    },\n    addTags() {\n      const { name } = this.$route\n      if (name) {\n        this.$store.dispatch('tagsView/addView', this.$route)\n      }\n      return false\n    },\n    moveToCurrentTag() {\n      const tags = this.$refs.tag\n      this.$nextTick(() => {\n        for (const tag of tags) {\n          if (tag.to.path === this.$route.path) {\n            this.$refs.scrollPane.moveToTarget(tag)\n            // when query is different then update\n            if (tag.to.fullPath !== this.$route.fullPath) {\n              this.$store.dispatch('tagsView/updateVisitedView', this.$route)\n            }\n            break\n          }\n        }\n      })\n    },\n    refreshSelectedTag(view) {\n      this.$store.dispatch('tagsView/delCachedView', view).then(() => {\n        const { fullPath } = view\n        this.$nextTick(() => {\n          this.$router.replace({\n            path: '/redirect' + fullPath\n          })\n        })\n      })\n    },\n    closeSelectedTag(view) {\n      this.$store.dispatch('tagsView/delView', view).then(({ visitedViews }) => {\n        if (this.isActive(view)) {\n          this.toLastView(visitedViews, view)\n        }\n      })\n    },\n    closeOthersTags() {\n      this.$router.push(this.selectedTag)\n      this.$store.dispatch('tagsView/delOthersViews', this.selectedTag).then(() => {\n        this.moveToCurrentTag()\n      })\n    },\n    closeAllTags(view) {\n      this.$store.dispatch('tagsView/delAllViews').then(({ visitedViews }) => {\n        if (this.affixTags.some(tag => tag.path === view.path)) {\n          return\n        }\n        this.toLastView(visitedViews, view)\n      })\n    },\n    toLastView(visitedViews, view) {\n      const latestView = visitedViews.slice(-1)[0]\n      if (latestView) {\n        this.$router.push(latestView.fullPath)\n      } else {\n        // now the default is to redirect to the home page if there is no tags-view,\n        // you can adjust it according to your needs.\n        if (view.name === 'Dashboard') {\n          // to reload home page\n          this.$router.replace({ path: '/redirect' + view.fullPath })\n        } else {\n          this.$router.push('/')\n        }\n      }\n    },\n    openMenu(tag, e) {\n      const menuMinWidth = 105\n      const offsetLeft = this.$el.getBoundingClientRect().left // container margin left\n      const offsetWidth = this.$el.offsetWidth // container width\n      const maxLeft = offsetWidth - menuMinWidth // left boundary\n      const left = e.clientX - offsetLeft + 15 // 15: margin right\n\n      if (left > maxLeft) {\n        this.left = maxLeft\n      } else {\n        this.left = left\n      }\n\n      this.top = e.clientY\n      this.visible = true\n      this.selectedTag = tag\n    },\n    closeMenu() {\n      this.visible = false\n    },\n    handleScroll() {\n      this.closeMenu()\n    }\n  }\n}\n</script>\n\n<style lang=\"scss\" scoped>\n.tags-view-container {\n  height: 34px;\n  width: 100%;\n  background: #fff;\n  border-bottom: 1px solid #d8dce5;\n  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .12), 0 0 3px 0 rgba(0, 0, 0, .04);\n  .tags-view-wrapper {\n    .tags-view-item {\n      display: inline-block;\n      position: relative;\n      cursor: pointer;\n      height: 26px;\n      line-height: 26px;\n      border: 1px solid #d8dce5;\n      color: #495060;\n      background: #fff;\n      padding: 0 8px;\n      font-size: 12px;\n      margin-left: 5px;\n      margin-top: 4px;\n      &:first-of-type {\n        margin-left: 15px;\n      }\n      &:last-of-type {\n        margin-right: 15px;\n      }\n      &.active {\n        background-color: #42b983;\n        color: #fff;\n        border-color: #42b983;\n        &::before {\n          content: '';\n          background: #fff;\n          display: inline-block;\n          width: 8px;\n          height: 8px;\n          border-radius: 50%;\n          position: relative;\n          margin-right: 2px;\n        }\n      }\n    }\n  }\n  .contextmenu {\n    margin: 0;\n    background: #fff;\n    z-index: 3000;\n    position: absolute;\n    list-style-type: none;\n    padding: 5px 0;\n    border-radius: 4px;\n    font-size: 12px;\n    font-weight: 400;\n    color: #333;\n    box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, .3);\n    li {\n      margin: 0;\n      padding: 7px 16px;\n      cursor: pointer;\n      &:hover {\n        background: #eee;\n      }\n    }\n  }\n}\n</style>\n\n<style lang=\"scss\">\n//reset element css of el-icon-close\n.tags-view-wrapper {\n  .tags-view-item {\n    .el-icon-close {\n      width: 16px;\n      height: 16px;\n      vertical-align: 2px;\n      border-radius: 50%;\n      text-align: center;\n      transition: all .3s cubic-bezier(.645, .045, .355, 1);\n      transform-origin: 100% 50%;\n      &:before {\n        transform: scale(.6);\n        display: inline-block;\n        vertical-align: -3px;\n      }\n      &:hover {\n        background-color: #b4bccc;\n        color: #fff;\n      }\n    }\n  }\n}\n</style>\n",
+      "packets": [
+        {
+          "filePath": "owned/src/layout/components/TagsView/index.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-router-link-tag-prop",
+              "severity": 2,
+              "message": "'tag' property on 'router-link' component is deprecated. Use scoped slots instead.",
+              "line": 10,
+              "column": 9,
+              "messageId": "deprecated",
+              "endLine": 10,
+              "endColumn": 12
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>\n  <div id=\"tags-view-container\" class=\"tags-view-container\">\n    <scroll-pane ref=\"scrollPane\" class=\"tags-view-wrapper\" @scroll=\"handleScroll\">\n      <router-link\n        v-for=\"tag in visitedViews\"\n        ref=\"tag\"\n        :key=\"tag.path\"\n        :class=\"isActive(tag)?'active':''\"\n        :to=\"{ path: tag.path, query: tag.query, fullPath: tag.fullPath }\"\n        tag=\"span\"\n        class=\"tags-view-item\"\n        @click.middle.native=\"!isAffix(tag)?closeSelectedTag(tag):''\"\n        @contextmenu.prevent.native=\"openMenu(tag,$event)\"\n      >\n        {{ tag.title }}\n        <span v-if=\"!isAffix(tag)\" class=\"el-icon-close\" @click.prevent.stop=\"closeSelectedTag(tag)\" />\n      </router-link>\n    </scroll-pane>\n    <ul v-show=\"visible\" :style=\"{left:left+'px',top:top+'px'}\" class=\"contextmenu\">\n      <li @click=\"refreshSelectedTag(selectedTag)\">Refresh</li>\n      <li v-if=\"!isAffix(selectedTag)\" @click=\"closeSelectedTag(selectedTag)\">Close</li>\n      <li @click=\"closeOthersTags\">Close Others</li>\n      <li @click=\"closeAllTags(selectedTag)\">Close All</li>\n    </ul>\n  </div>\n</template>\n\n<script>\nimport ScrollPane from './ScrollPane'\nimport path from 'path'\n\nexport default {\n  components: { ScrollPane },\n  data() {\n    return {\n      visible: false,\n      top: 0,\n      left: 0,\n      selectedTag: {},\n      affixTags: []\n    }\n  },\n  computed: {\n    visitedViews() {\n      return this.$store.state.tagsView.visitedViews\n    },\n    routes() {\n      return this.$store.state.permission.routes\n    }\n  },\n  watch: {\n    $route() {\n      this.addTags()\n      this.moveToCurrentTag()\n    },\n    visible(value) {\n      if (value) {\n        document.body.addEventListener('click', this.closeMenu)\n      } else {\n        document.body.removeEventListener('click', this.closeMenu)\n      }\n    }\n  },\n  mounted() {\n    this.initTags()\n    this.addTags()\n  },\n  methods: {\n    isActive(route) {\n      return route.path === this.$route.path\n    },\n    isAffix(tag) {\n      return tag.meta && tag.meta.affix\n    },\n    filterAffixTags(routes, basePath = '/') {\n      let tags = []\n      routes.forEach(route => {\n        if (route.meta && route.meta.affix) {\n          const tagPath = path.resolve(basePath, route.path)\n          tags.push({\n            fullPath: tagPath,\n            path: tagPath,\n            name: route.name,\n            meta: { ...route.meta }\n          })\n        }\n        if (route.children) {\n          const tempTags = this.filterAffixTags(route.children, route.path)\n          if (tempTags.length >= 1) {\n            tags = [...tags, ...tempTags]\n          }\n        }\n      })\n      return tags\n    },\n    initTags() {\n      const affixTags = this.affixTags = this.filterAffixTags(this.routes)\n      for (const tag of affixTags) {\n        // Must have tag name\n        if (tag.name) {\n          this.$store.dispatch('tagsView/addVisitedView', tag)\n        }\n      }\n    },\n    addTags() {\n      const { name } = this.$route\n      if (name) {\n        this.$store.dispatch('tagsView/addView', this.$route)\n      }\n      return false\n    },\n    moveToCurrentTag() {\n      const tags = this.$refs.tag\n      this.$nextTick(() => {\n        for (const tag of tags) {\n          if (tag.to.path === this.$route.path) {\n            this.$refs.scrollPane.moveToTarget(tag)\n            // when query is different then update\n            if (tag.to.fullPath !== this.$route.fullPath) {\n              this.$store.dispatch('tagsView/updateVisitedView', this.$route)\n            }\n            break\n          }\n        }\n      })\n    },\n    refreshSelectedTag(view) {\n      this.$store.dispatch('tagsView/delCachedView', view).then(() => {\n        const { fullPath } = view\n        this.$nextTick(() => {\n          this.$router.replace({\n            path: '/redirect' + fullPath\n          })\n        })\n      })\n    },\n    closeSelectedTag(view) {\n      this.$store.dispatch('tagsView/delView', view).then(({ visitedViews }) => {\n        if (this.isActive(view)) {\n          this.toLastView(visitedViews, view)\n        }\n      })\n    },\n    closeOthersTags() {\n      this.$router.push(this.selectedTag)\n      this.$store.dispatch('tagsView/delOthersViews', this.selectedTag).then(() => {\n        this.moveToCurrentTag()\n      })\n    },\n    closeAllTags(view) {\n      this.$store.dispatch('tagsView/delAllViews').then(({ visitedViews }) => {\n        if (this.affixTags.some(tag => tag.path === view.path)) {\n          return\n        }\n        this.toLastView(visitedViews, view)\n      })\n    },\n    toLastView(visitedViews, view) {\n      const latestView = visitedViews.slice(-1)[0]\n      if (latestView) {\n        this.$router.push(latestView.fullPath)\n      } else {\n        // now the default is to redirect to the home page if there is no tags-view,\n        // you can adjust it according to your needs.\n        if (view.name === 'Dashboard') {\n          // to reload home page\n          this.$router.replace({ path: '/redirect' + view.fullPath })\n        } else {\n          this.$router.push('/')\n        }\n      }\n    },\n    openMenu(tag, e) {\n      const menuMinWidth = 105\n      const offsetLeft = this.$el.getBoundingClientRect().left // container margin left\n      const offsetWidth = this.$el.offsetWidth // container width\n      const maxLeft = offsetWidth - menuMinWidth // left boundary\n      const left = e.clientX - offsetLeft + 15 // 15: margin right\n\n      if (left > maxLeft) {\n        this.left = maxLeft\n      } else {\n        this.left = left\n      }\n\n      this.top = e.clientY\n      this.visible = true\n      this.selectedTag = tag\n    },\n    closeMenu() {\n      this.visible = false\n    },\n    handleScroll() {\n      this.closeMenu()\n    }\n  }\n}\n</script>\n\n<style lang=\"scss\" scoped>\n.tags-view-container {\n  height: 34px;\n  width: 100%;\n  background: #fff;\n  border-bottom: 1px solid #d8dce5;\n  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .12), 0 0 3px 0 rgba(0, 0, 0, .04);\n  .tags-view-wrapper {\n    .tags-view-item {\n      display: inline-block;\n      position: relative;\n      cursor: pointer;\n      height: 26px;\n      line-height: 26px;\n      border: 1px solid #d8dce5;\n      color: #495060;\n      background: #fff;\n      padding: 0 8px;\n      font-size: 12px;\n      margin-left: 5px;\n      margin-top: 4px;\n      &:first-of-type {\n        margin-left: 15px;\n      }\n      &:last-of-type {\n        margin-right: 15px;\n      }\n      &.active {\n        background-color: #42b983;\n        color: #fff;\n        border-color: #42b983;\n        &::before {\n          content: '';\n          background: #fff;\n          display: inline-block;\n          width: 8px;\n          height: 8px;\n          border-radius: 50%;\n          position: relative;\n          margin-right: 2px;\n        }\n      }\n    }\n  }\n  .contextmenu {\n    margin: 0;\n    background: #fff;\n    z-index: 3000;\n    position: absolute;\n    list-style-type: none;\n    padding: 5px 0;\n    border-radius: 4px;\n    font-size: 12px;\n    font-weight: 400;\n    color: #333;\n    box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, .3);\n    li {\n      margin: 0;\n      padding: 7px 16px;\n      cursor: pointer;\n      &:hover {\n        background: #eee;\n      }\n    }\n  }\n}\n</style>\n\n<style lang=\"scss\">\n//reset element css of el-icon-close\n.tags-view-wrapper {\n  .tags-view-item {\n    .el-icon-close {\n      width: 16px;\n      height: 16px;\n      vertical-align: 2px;\n      border-radius: 50%;\n      text-align: center;\n      transition: all .3s cubic-bezier(.645, .045, .355, 1);\n      transform-origin: 100% 50%;\n      &:before {\n        transform: scale(.6);\n        display: inline-block;\n        vertical-align: -3px;\n      }\n      &:hover {\n        background-color: #b4bccc;\n        color: #fff;\n      }\n    }\n  }\n}\n</style>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "src/views/dashboard/admin/components/TodoList/index.vue",
+      "filename": "src/views/dashboard/admin/components/TodoList/index.vue",
+      "source": "<template>\n  <section class=\"todoapp\">\n    <!-- header -->\n    <header class=\"header\">\n      <input class=\"new-todo\" autocomplete=\"off\" placeholder=\"Todo List\" @keyup.enter=\"addTodo\">\n    </header>\n    <!-- main section -->\n    <section v-show=\"todos.length\" class=\"main\">\n      <input id=\"toggle-all\" :checked=\"allChecked\" class=\"toggle-all\" type=\"checkbox\" @change=\"toggleAll({ done: !allChecked })\">\n      <label for=\"toggle-all\" />\n      <ul class=\"todo-list\">\n        <todo\n          v-for=\"(todo, index) in filteredTodos\"\n          :key=\"index\"\n          :todo=\"todo\"\n          @toggleTodo=\"toggleTodo\"\n          @editTodo=\"editTodo\"\n          @deleteTodo=\"deleteTodo\"\n        />\n      </ul>\n    </section>\n    <!-- footer -->\n    <footer v-show=\"todos.length\" class=\"footer\">\n      <span class=\"todo-count\">\n        <strong>{{ remaining }}</strong>\n        {{ remaining | pluralize('item') }} left\n      </span>\n      <ul class=\"filters\">\n        <li v-for=\"(val, key) in filters\" :key=\"key\">\n          <a :class=\"{ selected: visibility === key }\" @click.prevent=\"visibility = key\">{{ key | capitalize }}</a>\n        </li>\n      </ul>\n      <!-- <button class=\"clear-completed\" v-show=\"todos.length > remaining\" @click=\"clearCompleted\">\n        Clear completed\n      </button> -->\n    </footer>\n  </section>\n</template>\n\n<script>\nimport Todo from './Todo.vue'\n\nconst STORAGE_KEY = 'todos'\nconst filters = {\n  all: todos => todos,\n  active: todos => todos.filter(todo => !todo.done),\n  completed: todos => todos.filter(todo => todo.done)\n}\nconst defalutList = [\n  { text: 'star this repository', done: false },\n  { text: 'fork this repository', done: false },\n  { text: 'follow author', done: false },\n  { text: 'vue-element-admin', done: true },\n  { text: 'vue', done: true },\n  { text: 'element-ui', done: true },\n  { text: 'axios', done: true },\n  { text: 'webpack', done: true }\n]\nexport default {\n  components: { Todo },\n  filters: {\n    pluralize: (n, w) => n === 1 ? w : w + 's',\n    capitalize: s => s.charAt(0).toUpperCase() + s.slice(1)\n  },\n  data() {\n    return {\n      visibility: 'all',\n      filters,\n      // todos: JSON.parse(window.localStorage.getItem(STORAGE_KEY)) || defalutList\n      todos: defalutList\n    }\n  },\n  computed: {\n    allChecked() {\n      return this.todos.every(todo => todo.done)\n    },\n    filteredTodos() {\n      return filters[this.visibility](this.todos)\n    },\n    remaining() {\n      return this.todos.filter(todo => !todo.done).length\n    }\n  },\n  methods: {\n    setLocalStorage() {\n      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(this.todos))\n    },\n    addTodo(e) {\n      const text = e.target.value\n      if (text.trim()) {\n        this.todos.push({\n          text,\n          done: false\n        })\n        this.setLocalStorage()\n      }\n      e.target.value = ''\n    },\n    toggleTodo(val) {\n      val.done = !val.done\n      this.setLocalStorage()\n    },\n    deleteTodo(todo) {\n      this.todos.splice(this.todos.indexOf(todo), 1)\n      this.setLocalStorage()\n    },\n    editTodo({ todo, value }) {\n      todo.text = value\n      this.setLocalStorage()\n    },\n    clearCompleted() {\n      this.todos = this.todos.filter(todo => !todo.done)\n      this.setLocalStorage()\n    },\n    toggleAll({ done }) {\n      this.todos.forEach(todo => {\n        todo.done = done\n        this.setLocalStorage()\n      })\n    }\n  }\n}\n</script>\n\n<style lang=\"scss\">\n  @import './index.scss';\n</style>\n",
+      "packets": [
+        {
+          "filePath": "owned/src/views/dashboard/admin/components/TodoList/index.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 26,
+              "column": 12,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 26,
+              "endColumn": 41
+            },
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 30,
+              "column": 93,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 30,
+              "endColumn": 109
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 2,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>\n  <section class=\"todoapp\">\n    <!-- header -->\n    <header class=\"header\">\n      <input class=\"new-todo\" autocomplete=\"off\" placeholder=\"Todo List\" @keyup.enter=\"addTodo\">\n    </header>\n    <!-- main section -->\n    <section v-show=\"todos.length\" class=\"main\">\n      <input id=\"toggle-all\" :checked=\"allChecked\" class=\"toggle-all\" type=\"checkbox\" @change=\"toggleAll({ done: !allChecked })\">\n      <label for=\"toggle-all\" />\n      <ul class=\"todo-list\">\n        <todo\n          v-for=\"(todo, index) in filteredTodos\"\n          :key=\"index\"\n          :todo=\"todo\"\n          @toggleTodo=\"toggleTodo\"\n          @editTodo=\"editTodo\"\n          @deleteTodo=\"deleteTodo\"\n        />\n      </ul>\n    </section>\n    <!-- footer -->\n    <footer v-show=\"todos.length\" class=\"footer\">\n      <span class=\"todo-count\">\n        <strong>{{ remaining }}</strong>\n        {{ remaining | pluralize('item') }} left\n      </span>\n      <ul class=\"filters\">\n        <li v-for=\"(val, key) in filters\" :key=\"key\">\n          <a :class=\"{ selected: visibility === key }\" @click.prevent=\"visibility = key\">{{ key | capitalize }}</a>\n        </li>\n      </ul>\n      <!-- <button class=\"clear-completed\" v-show=\"todos.length > remaining\" @click=\"clearCompleted\">\n        Clear completed\n      </button> -->\n    </footer>\n  </section>\n</template>\n\n<script>\nimport Todo from './Todo.vue'\n\nconst STORAGE_KEY = 'todos'\nconst filters = {\n  all: todos => todos,\n  active: todos => todos.filter(todo => !todo.done),\n  completed: todos => todos.filter(todo => todo.done)\n}\nconst defalutList = [\n  { text: 'star this repository', done: false },\n  { text: 'fork this repository', done: false },\n  { text: 'follow author', done: false },\n  { text: 'vue-element-admin', done: true },\n  { text: 'vue', done: true },\n  { text: 'element-ui', done: true },\n  { text: 'axios', done: true },\n  { text: 'webpack', done: true }\n]\nexport default {\n  components: { Todo },\n  filters: {\n    pluralize: (n, w) => n === 1 ? w : w + 's',\n    capitalize: s => s.charAt(0).toUpperCase() + s.slice(1)\n  },\n  data() {\n    return {\n      visibility: 'all',\n      filters,\n      // todos: JSON.parse(window.localStorage.getItem(STORAGE_KEY)) || defalutList\n      todos: defalutList\n    }\n  },\n  computed: {\n    allChecked() {\n      return this.todos.every(todo => todo.done)\n    },\n    filteredTodos() {\n      return filters[this.visibility](this.todos)\n    },\n    remaining() {\n      return this.todos.filter(todo => !todo.done).length\n    }\n  },\n  methods: {\n    setLocalStorage() {\n      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(this.todos))\n    },\n    addTodo(e) {\n      const text = e.target.value\n      if (text.trim()) {\n        this.todos.push({\n          text,\n          done: false\n        })\n        this.setLocalStorage()\n      }\n      e.target.value = ''\n    },\n    toggleTodo(val) {\n      val.done = !val.done\n      this.setLocalStorage()\n    },\n    deleteTodo(todo) {\n      this.todos.splice(this.todos.indexOf(todo), 1)\n      this.setLocalStorage()\n    },\n    editTodo({ todo, value }) {\n      todo.text = value\n      this.setLocalStorage()\n    },\n    clearCompleted() {\n      this.todos = this.todos.filter(todo => !todo.done)\n      this.setLocalStorage()\n    },\n    toggleAll({ done }) {\n      this.todos.forEach(todo => {\n        todo.done = done\n        this.setLocalStorage()\n      })\n    }\n  }\n}\n</script>\n\n<style lang=\"scss\">\n  @import './index.scss';\n</style>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "src/views/dashboard/admin/components/TransactionTable.vue",
+      "filename": "src/views/dashboard/admin/components/TransactionTable.vue",
+      "source": "<template>\n  <el-table :data=\"list\" style=\"width: 100%;padding-top: 15px;\">\n    <el-table-column label=\"Order_No\" min-width=\"200\">\n      <template slot-scope=\"scope\">\n        {{ scope.row.order_no | orderNoFilter }}\n      </template>\n    </el-table-column>\n    <el-table-column label=\"Price\" width=\"195\" align=\"center\">\n      <template slot-scope=\"scope\">\n        ¥{{ scope.row.price | toThousandFilter }}\n      </template>\n    </el-table-column>\n    <el-table-column label=\"Status\" width=\"100\" align=\"center\">\n      <template slot-scope=\"{row}\">\n        <el-tag :type=\"row.status | statusFilter\">\n          {{ row.status }}\n        </el-tag>\n      </template>\n    </el-table-column>\n  </el-table>\n</template>\n\n<script>\nimport { transactionList } from '@/api/remote-search'\n\nexport default {\n  filters: {\n    statusFilter(status) {\n      const statusMap = {\n        success: 'success',\n        pending: 'danger'\n      }\n      return statusMap[status]\n    },\n    orderNoFilter(str) {\n      return str.substring(0, 30)\n    }\n  },\n  data() {\n    return {\n      list: null\n    }\n  },\n  created() {\n    this.fetchData()\n  },\n  methods: {\n    fetchData() {\n      transactionList().then(response => {\n        this.list = response.data.items.slice(0, 8)\n      })\n    }\n  }\n}\n</script>\n",
+      "packets": [
+        {
+          "filePath": "owned/src/views/dashboard/admin/components/TransactionTable.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 5,
+              "column": 12,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 5,
+              "endColumn": 46
+            },
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 10,
+              "column": 13,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 10,
+              "endColumn": 47
+            },
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 15,
+              "column": 24,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 15,
+              "endColumn": 49
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 3,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>\n  <el-table :data=\"list\" style=\"width: 100%;padding-top: 15px;\">\n    <el-table-column label=\"Order_No\" min-width=\"200\">\n      <template slot-scope=\"scope\">\n        {{ scope.row.order_no | orderNoFilter }}\n      </template>\n    </el-table-column>\n    <el-table-column label=\"Price\" width=\"195\" align=\"center\">\n      <template slot-scope=\"scope\">\n        ¥{{ scope.row.price | toThousandFilter }}\n      </template>\n    </el-table-column>\n    <el-table-column label=\"Status\" width=\"100\" align=\"center\">\n      <template slot-scope=\"{row}\">\n        <el-tag :type=\"row.status | statusFilter\">\n          {{ row.status }}\n        </el-tag>\n      </template>\n    </el-table-column>\n  </el-table>\n</template>\n\n<script>\nimport { transactionList } from '@/api/remote-search'\n\nexport default {\n  filters: {\n    statusFilter(status) {\n      const statusMap = {\n        success: 'success',\n        pending: 'danger'\n      }\n      return statusMap[status]\n    },\n    orderNoFilter(str) {\n      return str.substring(0, 30)\n    }\n  },\n  data() {\n    return {\n      list: null\n    }\n  },\n  created() {\n    this.fetchData()\n  },\n  methods: {\n    fetchData() {\n      transactionList().then(response => {\n        this.list = response.data.items.slice(0, 8)\n      })\n    }\n  }\n}\n</script>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "src/views/example/list.vue",
+      "filename": "src/views/example/list.vue",
+      "source": "<template>\n  <div class=\"app-container\">\n    <el-table v-loading=\"listLoading\" :data=\"list\" border fit highlight-current-row style=\"width: 100%\">\n      <el-table-column align=\"center\" label=\"ID\" width=\"80\">\n        <template slot-scope=\"scope\">\n          <span>{{ scope.row.id }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"180px\" align=\"center\" label=\"Date\">\n        <template slot-scope=\"scope\">\n          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"120px\" align=\"center\" label=\"Author\">\n        <template slot-scope=\"scope\">\n          <span>{{ scope.row.author }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"100px\" label=\"Importance\">\n        <template slot-scope=\"scope\">\n          <svg-icon v-for=\"n in +scope.row.importance\" :key=\"n\" icon-class=\"star\" class=\"meta-item__icon\" />\n        </template>\n      </el-table-column>\n\n      <el-table-column class-name=\"status-col\" label=\"Status\" width=\"110\">\n        <template slot-scope=\"{row}\">\n          <el-tag :type=\"row.status | statusFilter\">\n            {{ row.status }}\n          </el-tag>\n        </template>\n      </el-table-column>\n\n      <el-table-column min-width=\"300px\" label=\"Title\">\n        <template slot-scope=\"{row}\">\n          <router-link :to=\"'/example/edit/'+row.id\" class=\"link-type\">\n            <span>{{ row.title }}</span>\n          </router-link>\n        </template>\n      </el-table-column>\n\n      <el-table-column align=\"center\" label=\"Actions\" width=\"120\">\n        <template slot-scope=\"scope\">\n          <router-link :to=\"'/example/edit/'+scope.row.id\">\n            <el-button type=\"primary\" size=\"small\" icon=\"el-icon-edit\">\n              Edit\n            </el-button>\n          </router-link>\n        </template>\n      </el-table-column>\n    </el-table>\n\n    <pagination v-show=\"total>0\" :total=\"total\" :page.sync=\"listQuery.page\" :limit.sync=\"listQuery.limit\" @pagination=\"getList\" />\n  </div>\n</template>\n\n<script>\nimport { fetchList } from '@/api/article'\nimport Pagination from '@/components/Pagination' // Secondary package based on el-pagination\n\nexport default {\n  name: 'ArticleList',\n  components: { Pagination },\n  filters: {\n    statusFilter(status) {\n      const statusMap = {\n        published: 'success',\n        draft: 'info',\n        deleted: 'danger'\n      }\n      return statusMap[status]\n    }\n  },\n  data() {\n    return {\n      list: null,\n      total: 0,\n      listLoading: true,\n      listQuery: {\n        page: 1,\n        limit: 20\n      }\n    }\n  },\n  created() {\n    this.getList()\n  },\n  methods: {\n    getList() {\n      this.listLoading = true\n      fetchList(this.listQuery).then(response => {\n        this.list = response.data.items\n        this.total = response.data.total\n        this.listLoading = false\n      })\n    }\n  }\n}\n</script>\n\n<style scoped>\n.edit-input {\n  padding-right: 100px;\n}\n.cancel-btn {\n  position: absolute;\n  right: 15px;\n  top: 10px;\n}\n</style>\n",
+      "packets": [
+        {
+          "filePath": "owned/src/views/example/list.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 12,
+              "column": 20,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 12,
+              "endColumn": 74
+            },
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 30,
+              "column": 26,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 30,
+              "endColumn": 51
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 2,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>\n  <div class=\"app-container\">\n    <el-table v-loading=\"listLoading\" :data=\"list\" border fit highlight-current-row style=\"width: 100%\">\n      <el-table-column align=\"center\" label=\"ID\" width=\"80\">\n        <template slot-scope=\"scope\">\n          <span>{{ scope.row.id }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"180px\" align=\"center\" label=\"Date\">\n        <template slot-scope=\"scope\">\n          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"120px\" align=\"center\" label=\"Author\">\n        <template slot-scope=\"scope\">\n          <span>{{ scope.row.author }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"100px\" label=\"Importance\">\n        <template slot-scope=\"scope\">\n          <svg-icon v-for=\"n in +scope.row.importance\" :key=\"n\" icon-class=\"star\" class=\"meta-item__icon\" />\n        </template>\n      </el-table-column>\n\n      <el-table-column class-name=\"status-col\" label=\"Status\" width=\"110\">\n        <template slot-scope=\"{row}\">\n          <el-tag :type=\"row.status | statusFilter\">\n            {{ row.status }}\n          </el-tag>\n        </template>\n      </el-table-column>\n\n      <el-table-column min-width=\"300px\" label=\"Title\">\n        <template slot-scope=\"{row}\">\n          <router-link :to=\"'/example/edit/'+row.id\" class=\"link-type\">\n            <span>{{ row.title }}</span>\n          </router-link>\n        </template>\n      </el-table-column>\n\n      <el-table-column align=\"center\" label=\"Actions\" width=\"120\">\n        <template slot-scope=\"scope\">\n          <router-link :to=\"'/example/edit/'+scope.row.id\">\n            <el-button type=\"primary\" size=\"small\" icon=\"el-icon-edit\">\n              Edit\n            </el-button>\n          </router-link>\n        </template>\n      </el-table-column>\n    </el-table>\n\n    <pagination v-show=\"total>0\" :total=\"total\" :page.sync=\"listQuery.page\" :limit.sync=\"listQuery.limit\" @pagination=\"getList\" />\n  </div>\n</template>\n\n<script>\nimport { fetchList } from '@/api/article'\nimport Pagination from '@/components/Pagination' // Secondary package based on el-pagination\n\nexport default {\n  name: 'ArticleList',\n  components: { Pagination },\n  filters: {\n    statusFilter(status) {\n      const statusMap = {\n        published: 'success',\n        draft: 'info',\n        deleted: 'danger'\n      }\n      return statusMap[status]\n    }\n  },\n  data() {\n    return {\n      list: null,\n      total: 0,\n      listLoading: true,\n      listQuery: {\n        page: 1,\n        limit: 20\n      }\n    }\n  },\n  created() {\n    this.getList()\n  },\n  methods: {\n    getList() {\n      this.listLoading = true\n      fetchList(this.listQuery).then(response => {\n        this.list = response.data.items\n        this.total = response.data.total\n        this.listLoading = false\n      })\n    }\n  }\n}\n</script>\n\n<style scoped>\n.edit-input {\n  padding-right: 100px;\n}\n.cancel-btn {\n  position: absolute;\n  right: 15px;\n  top: 10px;\n}\n</style>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "src/views/excel/export-excel.vue",
+      "filename": "src/views/excel/export-excel.vue",
+      "source": "<template>\n  <div class=\"app-container\">\n\n    <div>\n      <FilenameOption v-model=\"filename\" />\n      <AutoWidthOption v-model=\"autoWidth\" />\n      <BookTypeOption v-model=\"bookType\" />\n      <el-button :loading=\"downloadLoading\" style=\"margin:0 0 20px 20px;\" type=\"primary\" icon=\"el-icon-document\" @click=\"handleDownload\">\n        Export Excel\n      </el-button>\n      <a href=\"https://panjiachen.github.io/vue-element-admin-site/feature/component/excel.html\" target=\"_blank\" style=\"margin-left:15px;\">\n        <el-tag type=\"info\">Documentation</el-tag>\n      </a>\n    </div>\n\n    <el-table v-loading=\"listLoading\" :data=\"list\" element-loading-text=\"Loading...\" border fit highlight-current-row>\n      <el-table-column align=\"center\" label=\"Id\" width=\"95\">\n        <template slot-scope=\"scope\">\n          {{ scope.$index }}\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Title\">\n        <template slot-scope=\"scope\">\n          {{ scope.row.title }}\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Author\" width=\"110\" align=\"center\">\n        <template slot-scope=\"scope\">\n          <el-tag>{{ scope.row.author }}</el-tag>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Readings\" width=\"115\" align=\"center\">\n        <template slot-scope=\"scope\">\n          {{ scope.row.pageviews }}\n        </template>\n      </el-table-column>\n      <el-table-column align=\"center\" label=\"Date\" width=\"220\">\n        <template slot-scope=\"scope\">\n          <i class=\"el-icon-time\" />\n          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n        </template>\n      </el-table-column>\n    </el-table>\n  </div>\n</template>\n\n<script>\nimport { fetchList } from '@/api/article'\nimport { parseTime } from '@/utils'\n// options components\nimport FilenameOption from './components/FilenameOption'\nimport AutoWidthOption from './components/AutoWidthOption'\nimport BookTypeOption from './components/BookTypeOption'\n\nexport default {\n  name: 'ExportExcel',\n  components: { FilenameOption, AutoWidthOption, BookTypeOption },\n  data() {\n    return {\n      list: null,\n      listLoading: true,\n      downloadLoading: false,\n      filename: '',\n      autoWidth: true,\n      bookType: 'xlsx'\n    }\n  },\n  created() {\n    this.fetchData()\n  },\n  methods: {\n    fetchData() {\n      this.listLoading = true\n      fetchList().then(response => {\n        this.list = response.data.items\n        this.listLoading = false\n      })\n    },\n    handleDownload() {\n      this.downloadLoading = true\n      import('@/vendor/Export2Excel').then(excel => {\n        const tHeader = ['Id', 'Title', 'Author', 'Readings', 'Date']\n        const filterVal = ['id', 'title', 'author', 'pageviews', 'display_time']\n        const list = this.list\n        const data = this.formatJson(filterVal, list)\n        excel.export_json_to_excel({\n          header: tHeader,\n          data,\n          filename: this.filename,\n          autoWidth: this.autoWidth,\n          bookType: this.bookType\n        })\n        this.downloadLoading = false\n      })\n    },\n    formatJson(filterVal, jsonData) {\n      return jsonData.map(v => filterVal.map(j => {\n        if (j === 'timestamp') {\n          return parseTime(v[j])\n        } else {\n          return v[j]\n        }\n      }))\n    }\n  }\n}\n</script>\n\n<style>\n.radio-label {\n  font-size: 14px;\n  color: #606266;\n  line-height: 40px;\n  padding: 0 12px 0 30px;\n}\n</style>\n",
+      "packets": [
+        {
+          "filePath": "owned/src/views/excel/export-excel.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 40,
+              "column": 20,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 40,
+              "endColumn": 74
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>\n  <div class=\"app-container\">\n\n    <div>\n      <FilenameOption v-model=\"filename\" />\n      <AutoWidthOption v-model=\"autoWidth\" />\n      <BookTypeOption v-model=\"bookType\" />\n      <el-button :loading=\"downloadLoading\" style=\"margin:0 0 20px 20px;\" type=\"primary\" icon=\"el-icon-document\" @click=\"handleDownload\">\n        Export Excel\n      </el-button>\n      <a href=\"https://panjiachen.github.io/vue-element-admin-site/feature/component/excel.html\" target=\"_blank\" style=\"margin-left:15px;\">\n        <el-tag type=\"info\">Documentation</el-tag>\n      </a>\n    </div>\n\n    <el-table v-loading=\"listLoading\" :data=\"list\" element-loading-text=\"Loading...\" border fit highlight-current-row>\n      <el-table-column align=\"center\" label=\"Id\" width=\"95\">\n        <template slot-scope=\"scope\">\n          {{ scope.$index }}\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Title\">\n        <template slot-scope=\"scope\">\n          {{ scope.row.title }}\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Author\" width=\"110\" align=\"center\">\n        <template slot-scope=\"scope\">\n          <el-tag>{{ scope.row.author }}</el-tag>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Readings\" width=\"115\" align=\"center\">\n        <template slot-scope=\"scope\">\n          {{ scope.row.pageviews }}\n        </template>\n      </el-table-column>\n      <el-table-column align=\"center\" label=\"Date\" width=\"220\">\n        <template slot-scope=\"scope\">\n          <i class=\"el-icon-time\" />\n          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n        </template>\n      </el-table-column>\n    </el-table>\n  </div>\n</template>\n\n<script>\nimport { fetchList } from '@/api/article'\nimport { parseTime } from '@/utils'\n// options components\nimport FilenameOption from './components/FilenameOption'\nimport AutoWidthOption from './components/AutoWidthOption'\nimport BookTypeOption from './components/BookTypeOption'\n\nexport default {\n  name: 'ExportExcel',\n  components: { FilenameOption, AutoWidthOption, BookTypeOption },\n  data() {\n    return {\n      list: null,\n      listLoading: true,\n      downloadLoading: false,\n      filename: '',\n      autoWidth: true,\n      bookType: 'xlsx'\n    }\n  },\n  created() {\n    this.fetchData()\n  },\n  methods: {\n    fetchData() {\n      this.listLoading = true\n      fetchList().then(response => {\n        this.list = response.data.items\n        this.listLoading = false\n      })\n    },\n    handleDownload() {\n      this.downloadLoading = true\n      import('@/vendor/Export2Excel').then(excel => {\n        const tHeader = ['Id', 'Title', 'Author', 'Readings', 'Date']\n        const filterVal = ['id', 'title', 'author', 'pageviews', 'display_time']\n        const list = this.list\n        const data = this.formatJson(filterVal, list)\n        excel.export_json_to_excel({\n          header: tHeader,\n          data,\n          filename: this.filename,\n          autoWidth: this.autoWidth,\n          bookType: this.bookType\n        })\n        this.downloadLoading = false\n      })\n    },\n    formatJson(filterVal, jsonData) {\n      return jsonData.map(v => filterVal.map(j => {\n        if (j === 'timestamp') {\n          return parseTime(v[j])\n        } else {\n          return v[j]\n        }\n      }))\n    }\n  }\n}\n</script>\n\n<style>\n.radio-label {\n  font-size: 14px;\n  color: #606266;\n  line-height: 40px;\n  padding: 0 12px 0 30px;\n}\n</style>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "src/views/excel/merge-header.vue",
+      "filename": "src/views/excel/merge-header.vue",
+      "source": "<template>\n  <div class=\"app-container\">\n\n    <el-button :loading=\"downloadLoading\" style=\"margin-bottom:20px\" type=\"primary\" icon=\"el-icon-document\" @click=\"handleDownload\">Export</el-button>\n\n    <el-table\n      ref=\"multipleTable\"\n      v-loading=\"listLoading\"\n      :data=\"list\"\n      element-loading-text=\"Loading\"\n      border\n      fit\n      highlight-current-row\n    >\n      <el-table-column align=\"center\" label=\"Id\" width=\"95\">\n        <template slot-scope=\"scope\">\n          {{ scope.$index }}\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Main Information\" align=\"center\">\n        <el-table-column label=\"Title\">\n          <template slot-scope=\"scope\">\n            {{ scope.row.title }}\n          </template>\n        </el-table-column>\n        <el-table-column label=\"Author\" width=\"110\" align=\"center\">\n          <template slot-scope=\"scope\">\n            <el-tag>{{ scope.row.author }}</el-tag>\n          </template>\n        </el-table-column>\n        <el-table-column label=\"Readings\" width=\"115\" align=\"center\">\n          <template slot-scope=\"scope\">\n            {{ scope.row.pageviews }}\n          </template>\n        </el-table-column>\n      </el-table-column>\n      <el-table-column align=\"center\" label=\"Date\" width=\"220\">\n        <template slot-scope=\"scope\">\n          <i class=\"el-icon-time\" />\n          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n        </template>\n      </el-table-column>\n    </el-table>\n\n  </div>\n</template>\n\n<script>\nimport { fetchList } from '@/api/article'\nimport { parseTime } from '@/utils'\n\nexport default {\n  name: 'MergeHeader',\n  data() {\n    return {\n      list: null,\n      listLoading: true,\n      downloadLoading: false\n    }\n  },\n  created() {\n    this.fetchData()\n  },\n  methods: {\n    fetchData() {\n      this.listLoading = true\n      fetchList(this.listQuery).then(response => {\n        this.list = response.data.items\n        this.listLoading = false\n      })\n    },\n    handleDownload() {\n      this.downloadLoading = true\n      import('@/vendor/Export2Excel').then(excel => {\n        const multiHeader = [['Id', 'Main Information', '', '', 'Date']]\n        const header = ['', 'Title', 'Author', 'Readings', '']\n        const filterVal = ['id', 'title', 'author', 'pageviews', 'display_time']\n        const list = this.list\n        const data = this.formatJson(filterVal, list)\n        const merges = ['A1:A2', 'B1:D1', 'E1:E2']\n        excel.export_json_to_excel({\n          multiHeader,\n          header,\n          merges,\n          data\n        })\n        this.downloadLoading = false\n      })\n    },\n    formatJson(filterVal, jsonData) {\n      return jsonData.map(v => filterVal.map(j => {\n        if (j === 'timestamp') {\n          return parseTime(v[j])\n        } else {\n          return v[j]\n        }\n      }))\n    }\n  }\n}\n</script>\n",
+      "packets": [
+        {
+          "filePath": "owned/src/views/excel/merge-header.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 40,
+              "column": 20,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 40,
+              "endColumn": 74
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>\n  <div class=\"app-container\">\n\n    <el-button :loading=\"downloadLoading\" style=\"margin-bottom:20px\" type=\"primary\" icon=\"el-icon-document\" @click=\"handleDownload\">Export</el-button>\n\n    <el-table\n      ref=\"multipleTable\"\n      v-loading=\"listLoading\"\n      :data=\"list\"\n      element-loading-text=\"Loading\"\n      border\n      fit\n      highlight-current-row\n    >\n      <el-table-column align=\"center\" label=\"Id\" width=\"95\">\n        <template slot-scope=\"scope\">\n          {{ scope.$index }}\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Main Information\" align=\"center\">\n        <el-table-column label=\"Title\">\n          <template slot-scope=\"scope\">\n            {{ scope.row.title }}\n          </template>\n        </el-table-column>\n        <el-table-column label=\"Author\" width=\"110\" align=\"center\">\n          <template slot-scope=\"scope\">\n            <el-tag>{{ scope.row.author }}</el-tag>\n          </template>\n        </el-table-column>\n        <el-table-column label=\"Readings\" width=\"115\" align=\"center\">\n          <template slot-scope=\"scope\">\n            {{ scope.row.pageviews }}\n          </template>\n        </el-table-column>\n      </el-table-column>\n      <el-table-column align=\"center\" label=\"Date\" width=\"220\">\n        <template slot-scope=\"scope\">\n          <i class=\"el-icon-time\" />\n          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n        </template>\n      </el-table-column>\n    </el-table>\n\n  </div>\n</template>\n\n<script>\nimport { fetchList } from '@/api/article'\nimport { parseTime } from '@/utils'\n\nexport default {\n  name: 'MergeHeader',\n  data() {\n    return {\n      list: null,\n      listLoading: true,\n      downloadLoading: false\n    }\n  },\n  created() {\n    this.fetchData()\n  },\n  methods: {\n    fetchData() {\n      this.listLoading = true\n      fetchList(this.listQuery).then(response => {\n        this.list = response.data.items\n        this.listLoading = false\n      })\n    },\n    handleDownload() {\n      this.downloadLoading = true\n      import('@/vendor/Export2Excel').then(excel => {\n        const multiHeader = [['Id', 'Main Information', '', '', 'Date']]\n        const header = ['', 'Title', 'Author', 'Readings', '']\n        const filterVal = ['id', 'title', 'author', 'pageviews', 'display_time']\n        const list = this.list\n        const data = this.formatJson(filterVal, list)\n        const merges = ['A1:A2', 'B1:D1', 'E1:E2']\n        excel.export_json_to_excel({\n          multiHeader,\n          header,\n          merges,\n          data\n        })\n        this.downloadLoading = false\n      })\n    },\n    formatJson(filterVal, jsonData) {\n      return jsonData.map(v => filterVal.map(j => {\n        if (j === 'timestamp') {\n          return parseTime(v[j])\n        } else {\n          return v[j]\n        }\n      }))\n    }\n  }\n}\n</script>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "src/views/profile/components/UserCard.vue",
+      "filename": "src/views/profile/components/UserCard.vue",
+      "source": "<template>\n  <el-card style=\"margin-bottom:20px;\">\n    <div slot=\"header\" class=\"clearfix\">\n      <span>About me</span>\n    </div>\n\n    <div class=\"user-profile\">\n      <div class=\"box-center\">\n        <pan-thumb :image=\"user.avatar\" :height=\"'100px'\" :width=\"'100px'\" :hoverable=\"false\">\n          <div>Hello</div>\n          {{ user.role }}\n        </pan-thumb>\n      </div>\n      <div class=\"box-center\">\n        <div class=\"user-name text-center\">{{ user.name }}</div>\n        <div class=\"user-role text-center text-muted\">{{ user.role | uppercaseFirst }}</div>\n      </div>\n    </div>\n\n    <div class=\"user-bio\">\n      <div class=\"user-education user-bio-section\">\n        <div class=\"user-bio-section-header\"><svg-icon icon-class=\"education\" /><span>Education</span></div>\n        <div class=\"user-bio-section-body\">\n          <div class=\"text-muted\">\n            JS in Computer Science from the University of Technology\n          </div>\n        </div>\n      </div>\n\n      <div class=\"user-skills user-bio-section\">\n        <div class=\"user-bio-section-header\"><svg-icon icon-class=\"skill\" /><span>Skills</span></div>\n        <div class=\"user-bio-section-body\">\n          <div class=\"progress-item\">\n            <span>Vue</span>\n            <el-progress :percentage=\"70\" />\n          </div>\n          <div class=\"progress-item\">\n            <span>JavaScript</span>\n            <el-progress :percentage=\"18\" />\n          </div>\n          <div class=\"progress-item\">\n            <span>Css</span>\n            <el-progress :percentage=\"12\" />\n          </div>\n          <div class=\"progress-item\">\n            <span>ESLint</span>\n            <el-progress :percentage=\"100\" status=\"success\" />\n          </div>\n        </div>\n      </div>\n    </div>\n  </el-card>\n</template>\n\n<script>\nimport PanThumb from '@/components/PanThumb'\n\nexport default {\n  components: { PanThumb },\n  props: {\n    user: {\n      type: Object,\n      default: () => {\n        return {\n          name: '',\n          email: '',\n          avatar: '',\n          role: ''\n        }\n      }\n    }\n  }\n}\n</script>\n\n<style lang=\"scss\" scoped>\n.box-center {\n  margin: 0 auto;\n  display: table;\n}\n\n.text-muted {\n  color: #777;\n}\n\n.user-profile {\n  .user-name {\n    font-weight: bold;\n  }\n\n  .box-center {\n    padding-top: 10px;\n  }\n\n  .user-role {\n    padding-top: 10px;\n    font-weight: 400;\n    font-size: 14px;\n  }\n\n  .box-social {\n    padding-top: 30px;\n\n    .el-table {\n      border-top: 1px solid #dfe6ec;\n    }\n  }\n\n  .user-follow {\n    padding-top: 20px;\n  }\n}\n\n.user-bio {\n  margin-top: 20px;\n  color: #606266;\n\n  span {\n    padding-left: 4px;\n  }\n\n  .user-bio-section {\n    font-size: 14px;\n    padding: 15px 0;\n\n    .user-bio-section-header {\n      border-bottom: 1px solid #dfe6ec;\n      padding-bottom: 10px;\n      margin-bottom: 10px;\n      font-weight: bold;\n    }\n  }\n}\n</style>\n",
+      "packets": [
+        {
+          "filePath": "owned/src/views/profile/components/UserCard.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 16,
+              "column": 58,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 16,
+              "endColumn": 84
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 1,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>\n  <el-card style=\"margin-bottom:20px;\">\n    <div slot=\"header\" class=\"clearfix\">\n      <span>About me</span>\n    </div>\n\n    <div class=\"user-profile\">\n      <div class=\"box-center\">\n        <pan-thumb :image=\"user.avatar\" :height=\"'100px'\" :width=\"'100px'\" :hoverable=\"false\">\n          <div>Hello</div>\n          {{ user.role }}\n        </pan-thumb>\n      </div>\n      <div class=\"box-center\">\n        <div class=\"user-name text-center\">{{ user.name }}</div>\n        <div class=\"user-role text-center text-muted\">{{ user.role | uppercaseFirst }}</div>\n      </div>\n    </div>\n\n    <div class=\"user-bio\">\n      <div class=\"user-education user-bio-section\">\n        <div class=\"user-bio-section-header\"><svg-icon icon-class=\"education\" /><span>Education</span></div>\n        <div class=\"user-bio-section-body\">\n          <div class=\"text-muted\">\n            JS in Computer Science from the University of Technology\n          </div>\n        </div>\n      </div>\n\n      <div class=\"user-skills user-bio-section\">\n        <div class=\"user-bio-section-header\"><svg-icon icon-class=\"skill\" /><span>Skills</span></div>\n        <div class=\"user-bio-section-body\">\n          <div class=\"progress-item\">\n            <span>Vue</span>\n            <el-progress :percentage=\"70\" />\n          </div>\n          <div class=\"progress-item\">\n            <span>JavaScript</span>\n            <el-progress :percentage=\"18\" />\n          </div>\n          <div class=\"progress-item\">\n            <span>Css</span>\n            <el-progress :percentage=\"12\" />\n          </div>\n          <div class=\"progress-item\">\n            <span>ESLint</span>\n            <el-progress :percentage=\"100\" status=\"success\" />\n          </div>\n        </div>\n      </div>\n    </div>\n  </el-card>\n</template>\n\n<script>\nimport PanThumb from '@/components/PanThumb'\n\nexport default {\n  components: { PanThumb },\n  props: {\n    user: {\n      type: Object,\n      default: () => {\n        return {\n          name: '',\n          email: '',\n          avatar: '',\n          role: ''\n        }\n      }\n    }\n  }\n}\n</script>\n\n<style lang=\"scss\" scoped>\n.box-center {\n  margin: 0 auto;\n  display: table;\n}\n\n.text-muted {\n  color: #777;\n}\n\n.user-profile {\n  .user-name {\n    font-weight: bold;\n  }\n\n  .box-center {\n    padding-top: 10px;\n  }\n\n  .user-role {\n    padding-top: 10px;\n    font-weight: 400;\n    font-size: 14px;\n  }\n\n  .box-social {\n    padding-top: 30px;\n\n    .el-table {\n      border-top: 1px solid #dfe6ec;\n    }\n  }\n\n  .user-follow {\n    padding-top: 20px;\n  }\n}\n\n.user-bio {\n  margin-top: 20px;\n  color: #606266;\n\n  span {\n    padding-left: 4px;\n  }\n\n  .user-bio-section {\n    font-size: 14px;\n    padding: 15px 0;\n\n    .user-bio-section-header {\n      border-bottom: 1px solid #dfe6ec;\n      padding-bottom: 10px;\n      margin-bottom: 10px;\n      font-weight: bold;\n    }\n  }\n}\n</style>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "src/views/tab/components/TabPane.vue",
+      "filename": "src/views/tab/components/TabPane.vue",
+      "source": "<template>\n  <el-table :data=\"list\" border fit highlight-current-row style=\"width: 100%\">\n    <el-table-column\n      v-loading=\"loading\"\n      align=\"center\"\n      label=\"ID\"\n      width=\"65\"\n      element-loading-text=\"请给我点时间！\"\n    >\n      <template slot-scope=\"scope\">\n        <span>{{ scope.row.id }}</span>\n      </template>\n    </el-table-column>\n\n    <el-table-column width=\"180px\" align=\"center\" label=\"Date\">\n      <template slot-scope=\"scope\">\n        <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n      </template>\n    </el-table-column>\n\n    <el-table-column min-width=\"300px\" label=\"Title\">\n      <template slot-scope=\"{row}\">\n        <span>{{ row.title }}</span>\n        <el-tag>{{ row.type }}</el-tag>\n      </template>\n    </el-table-column>\n\n    <el-table-column width=\"110px\" align=\"center\" label=\"Author\">\n      <template slot-scope=\"scope\">\n        <span>{{ scope.row.author }}</span>\n      </template>\n    </el-table-column>\n\n    <el-table-column width=\"120px\" label=\"Importance\">\n      <template slot-scope=\"scope\">\n        <svg-icon v-for=\"n in +scope.row.importance\" :key=\"n\" icon-class=\"star\" />\n      </template>\n    </el-table-column>\n\n    <el-table-column align=\"center\" label=\"Readings\" width=\"95\">\n      <template slot-scope=\"scope\">\n        <span>{{ scope.row.pageviews }}</span>\n      </template>\n    </el-table-column>\n\n    <el-table-column class-name=\"status-col\" label=\"Status\" width=\"110\">\n      <template slot-scope=\"{row}\">\n        <el-tag :type=\"row.status | statusFilter\">\n          {{ row.status }}\n        </el-tag>\n      </template>\n    </el-table-column>\n  </el-table>\n</template>\n\n<script>\nimport { fetchList } from '@/api/article'\n\nexport default {\n  filters: {\n    statusFilter(status) {\n      const statusMap = {\n        published: 'success',\n        draft: 'info',\n        deleted: 'danger'\n      }\n      return statusMap[status]\n    }\n  },\n  props: {\n    type: {\n      type: String,\n      default: 'CN'\n    }\n  },\n  data() {\n    return {\n      list: null,\n      listQuery: {\n        page: 1,\n        limit: 5,\n        type: this.type,\n        sort: '+id'\n      },\n      loading: false\n    }\n  },\n  created() {\n    this.getList()\n  },\n  methods: {\n    getList() {\n      this.loading = true\n      this.$emit('create') // for test\n      fetchList(this.listQuery).then(response => {\n        this.list = response.data.items\n        this.loading = false\n      })\n    }\n  }\n}\n</script>\n\n",
+      "packets": [
+        {
+          "filePath": "owned/src/views/tab/components/TabPane.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 17,
+              "column": 18,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 17,
+              "endColumn": 72
+            },
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 48,
+              "column": 24,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 48,
+              "endColumn": 49
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 2,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>\n  <el-table :data=\"list\" border fit highlight-current-row style=\"width: 100%\">\n    <el-table-column\n      v-loading=\"loading\"\n      align=\"center\"\n      label=\"ID\"\n      width=\"65\"\n      element-loading-text=\"请给我点时间！\"\n    >\n      <template slot-scope=\"scope\">\n        <span>{{ scope.row.id }}</span>\n      </template>\n    </el-table-column>\n\n    <el-table-column width=\"180px\" align=\"center\" label=\"Date\">\n      <template slot-scope=\"scope\">\n        <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n      </template>\n    </el-table-column>\n\n    <el-table-column min-width=\"300px\" label=\"Title\">\n      <template slot-scope=\"{row}\">\n        <span>{{ row.title }}</span>\n        <el-tag>{{ row.type }}</el-tag>\n      </template>\n    </el-table-column>\n\n    <el-table-column width=\"110px\" align=\"center\" label=\"Author\">\n      <template slot-scope=\"scope\">\n        <span>{{ scope.row.author }}</span>\n      </template>\n    </el-table-column>\n\n    <el-table-column width=\"120px\" label=\"Importance\">\n      <template slot-scope=\"scope\">\n        <svg-icon v-for=\"n in +scope.row.importance\" :key=\"n\" icon-class=\"star\" />\n      </template>\n    </el-table-column>\n\n    <el-table-column align=\"center\" label=\"Readings\" width=\"95\">\n      <template slot-scope=\"scope\">\n        <span>{{ scope.row.pageviews }}</span>\n      </template>\n    </el-table-column>\n\n    <el-table-column class-name=\"status-col\" label=\"Status\" width=\"110\">\n      <template slot-scope=\"{row}\">\n        <el-tag :type=\"row.status | statusFilter\">\n          {{ row.status }}\n        </el-tag>\n      </template>\n    </el-table-column>\n  </el-table>\n</template>\n\n<script>\nimport { fetchList } from '@/api/article'\n\nexport default {\n  filters: {\n    statusFilter(status) {\n      const statusMap = {\n        published: 'success',\n        draft: 'info',\n        deleted: 'danger'\n      }\n      return statusMap[status]\n    }\n  },\n  props: {\n    type: {\n      type: String,\n      default: 'CN'\n    }\n  },\n  data() {\n    return {\n      list: null,\n      listQuery: {\n        page: 1,\n        limit: 5,\n        type: this.type,\n        sort: '+id'\n      },\n      loading: false\n    }\n  },\n  created() {\n    this.getList()\n  },\n  methods: {\n    getList() {\n      this.loading = true\n      this.$emit('create') // for test\n      fetchList(this.listQuery).then(response => {\n        this.list = response.data.items\n        this.loading = false\n      })\n    }\n  }\n}\n</script>\n\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "src/views/table/complex-table.vue",
+      "filename": "src/views/table/complex-table.vue",
+      "source": "<template>\n  <div class=\"app-container\">\n    <div class=\"filter-container\">\n      <el-input v-model=\"listQuery.title\" placeholder=\"Title\" style=\"width: 200px;\" class=\"filter-item\" @keyup.enter.native=\"handleFilter\" />\n      <el-select v-model=\"listQuery.importance\" placeholder=\"Imp\" clearable style=\"width: 90px\" class=\"filter-item\">\n        <el-option v-for=\"item in importanceOptions\" :key=\"item\" :label=\"item\" :value=\"item\" />\n      </el-select>\n      <el-select v-model=\"listQuery.type\" placeholder=\"Type\" clearable class=\"filter-item\" style=\"width: 130px\">\n        <el-option v-for=\"item in calendarTypeOptions\" :key=\"item.key\" :label=\"item.display_name+'('+item.key+')'\" :value=\"item.key\" />\n      </el-select>\n      <el-select v-model=\"listQuery.sort\" style=\"width: 140px\" class=\"filter-item\" @change=\"handleFilter\">\n        <el-option v-for=\"item in sortOptions\" :key=\"item.key\" :label=\"item.label\" :value=\"item.key\" />\n      </el-select>\n      <el-button v-waves class=\"filter-item\" type=\"primary\" icon=\"el-icon-search\" @click=\"handleFilter\">\n        Search\n      </el-button>\n      <el-button class=\"filter-item\" style=\"margin-left: 10px;\" type=\"primary\" icon=\"el-icon-edit\" @click=\"handleCreate\">\n        Add\n      </el-button>\n      <el-button v-waves :loading=\"downloadLoading\" class=\"filter-item\" type=\"primary\" icon=\"el-icon-download\" @click=\"handleDownload\">\n        Export\n      </el-button>\n      <el-checkbox v-model=\"showReviewer\" class=\"filter-item\" style=\"margin-left:15px;\" @change=\"tableKey=tableKey+1\">\n        reviewer\n      </el-checkbox>\n    </div>\n\n    <el-table\n      :key=\"tableKey\"\n      v-loading=\"listLoading\"\n      :data=\"list\"\n      border\n      fit\n      highlight-current-row\n      style=\"width: 100%;\"\n      @sort-change=\"sortChange\"\n    >\n      <el-table-column label=\"ID\" prop=\"id\" sortable=\"custom\" align=\"center\" width=\"80\" :class-name=\"getSortClass('id')\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.id }}</span>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Date\" width=\"150px\" align=\"center\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Title\" min-width=\"150px\">\n        <template slot-scope=\"{row}\">\n          <span class=\"link-type\" @click=\"handleUpdate(row)\">{{ row.title }}</span>\n          <el-tag>{{ row.type | typeFilter }}</el-tag>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Author\" width=\"110px\" align=\"center\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.author }}</span>\n        </template>\n      </el-table-column>\n      <el-table-column v-if=\"showReviewer\" label=\"Reviewer\" width=\"110px\" align=\"center\">\n        <template slot-scope=\"{row}\">\n          <span style=\"color:red;\">{{ row.reviewer }}</span>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Imp\" width=\"80px\">\n        <template slot-scope=\"{row}\">\n          <svg-icon v-for=\"n in + row.importance\" :key=\"n\" icon-class=\"star\" class=\"meta-item__icon\" />\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Readings\" align=\"center\" width=\"95\">\n        <template slot-scope=\"{row}\">\n          <span v-if=\"row.pageviews\" class=\"link-type\" @click=\"handleFetchPv(row.pageviews)\">{{ row.pageviews }}</span>\n          <span v-else>0</span>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Status\" class-name=\"status-col\" width=\"100\">\n        <template slot-scope=\"{row}\">\n          <el-tag :type=\"row.status | statusFilter\">\n            {{ row.status }}\n          </el-tag>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Actions\" align=\"center\" width=\"230\" class-name=\"small-padding fixed-width\">\n        <template slot-scope=\"{row,$index}\">\n          <el-button type=\"primary\" size=\"mini\" @click=\"handleUpdate(row)\">\n            Edit\n          </el-button>\n          <el-button v-if=\"row.status!='published'\" size=\"mini\" type=\"success\" @click=\"handleModifyStatus(row,'published')\">\n            Publish\n          </el-button>\n          <el-button v-if=\"row.status!='draft'\" size=\"mini\" @click=\"handleModifyStatus(row,'draft')\">\n            Draft\n          </el-button>\n          <el-button v-if=\"row.status!='deleted'\" size=\"mini\" type=\"danger\" @click=\"handleDelete(row,$index)\">\n            Delete\n          </el-button>\n        </template>\n      </el-table-column>\n    </el-table>\n\n    <pagination v-show=\"total>0\" :total=\"total\" :page.sync=\"listQuery.page\" :limit.sync=\"listQuery.limit\" @pagination=\"getList\" />\n\n    <el-dialog :title=\"textMap[dialogStatus]\" :visible.sync=\"dialogFormVisible\">\n      <el-form ref=\"dataForm\" :rules=\"rules\" :model=\"temp\" label-position=\"left\" label-width=\"70px\" style=\"width: 400px; margin-left:50px;\">\n        <el-form-item label=\"Type\" prop=\"type\">\n          <el-select v-model=\"temp.type\" class=\"filter-item\" placeholder=\"Please select\">\n            <el-option v-for=\"item in calendarTypeOptions\" :key=\"item.key\" :label=\"item.display_name\" :value=\"item.key\" />\n          </el-select>\n        </el-form-item>\n        <el-form-item label=\"Date\" prop=\"timestamp\">\n          <el-date-picker v-model=\"temp.timestamp\" type=\"datetime\" placeholder=\"Please pick a date\" />\n        </el-form-item>\n        <el-form-item label=\"Title\" prop=\"title\">\n          <el-input v-model=\"temp.title\" />\n        </el-form-item>\n        <el-form-item label=\"Status\">\n          <el-select v-model=\"temp.status\" class=\"filter-item\" placeholder=\"Please select\">\n            <el-option v-for=\"item in statusOptions\" :key=\"item\" :label=\"item\" :value=\"item\" />\n          </el-select>\n        </el-form-item>\n        <el-form-item label=\"Imp\">\n          <el-rate v-model=\"temp.importance\" :colors=\"['#99A9BF', '#F7BA2A', '#FF9900']\" :max=\"3\" style=\"margin-top:8px;\" />\n        </el-form-item>\n        <el-form-item label=\"Remark\">\n          <el-input v-model=\"temp.remark\" :autosize=\"{ minRows: 2, maxRows: 4}\" type=\"textarea\" placeholder=\"Please input\" />\n        </el-form-item>\n      </el-form>\n      <div slot=\"footer\" class=\"dialog-footer\">\n        <el-button @click=\"dialogFormVisible = false\">\n          Cancel\n        </el-button>\n        <el-button type=\"primary\" @click=\"dialogStatus==='create'?createData():updateData()\">\n          Confirm\n        </el-button>\n      </div>\n    </el-dialog>\n\n    <el-dialog :visible.sync=\"dialogPvVisible\" title=\"Reading statistics\">\n      <el-table :data=\"pvData\" border fit highlight-current-row style=\"width: 100%\">\n        <el-table-column prop=\"key\" label=\"Channel\" />\n        <el-table-column prop=\"pv\" label=\"Pv\" />\n      </el-table>\n      <span slot=\"footer\" class=\"dialog-footer\">\n        <el-button type=\"primary\" @click=\"dialogPvVisible = false\">Confirm</el-button>\n      </span>\n    </el-dialog>\n  </div>\n</template>\n\n<script>\nimport { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'\nimport waves from '@/directive/waves' // waves directive\nimport { parseTime } from '@/utils'\nimport Pagination from '@/components/Pagination' // secondary package based on el-pagination\n\nconst calendarTypeOptions = [\n  { key: 'CN', display_name: 'China' },\n  { key: 'US', display_name: 'USA' },\n  { key: 'JP', display_name: 'Japan' },\n  { key: 'EU', display_name: 'Eurozone' }\n]\n\n// arr to obj, such as { CN : \"China\", US : \"USA\" }\nconst calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {\n  acc[cur.key] = cur.display_name\n  return acc\n}, {})\n\nexport default {\n  name: 'ComplexTable',\n  components: { Pagination },\n  directives: { waves },\n  filters: {\n    statusFilter(status) {\n      const statusMap = {\n        published: 'success',\n        draft: 'info',\n        deleted: 'danger'\n      }\n      return statusMap[status]\n    },\n    typeFilter(type) {\n      return calendarTypeKeyValue[type]\n    }\n  },\n  data() {\n    return {\n      tableKey: 0,\n      list: null,\n      total: 0,\n      listLoading: true,\n      listQuery: {\n        page: 1,\n        limit: 20,\n        importance: undefined,\n        title: undefined,\n        type: undefined,\n        sort: '+id'\n      },\n      importanceOptions: [1, 2, 3],\n      calendarTypeOptions,\n      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],\n      statusOptions: ['published', 'draft', 'deleted'],\n      showReviewer: false,\n      temp: {\n        id: undefined,\n        importance: 1,\n        remark: '',\n        timestamp: new Date(),\n        title: '',\n        type: '',\n        status: 'published'\n      },\n      dialogFormVisible: false,\n      dialogStatus: '',\n      textMap: {\n        update: 'Edit',\n        create: 'Create'\n      },\n      dialogPvVisible: false,\n      pvData: [],\n      rules: {\n        type: [{ required: true, message: 'type is required', trigger: 'change' }],\n        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],\n        title: [{ required: true, message: 'title is required', trigger: 'blur' }]\n      },\n      downloadLoading: false\n    }\n  },\n  created() {\n    this.getList()\n  },\n  methods: {\n    getList() {\n      this.listLoading = true\n      fetchList(this.listQuery).then(response => {\n        this.list = response.data.items\n        this.total = response.data.total\n\n        // Just to simulate the time of the request\n        setTimeout(() => {\n          this.listLoading = false\n        }, 1.5 * 1000)\n      })\n    },\n    handleFilter() {\n      this.listQuery.page = 1\n      this.getList()\n    },\n    handleModifyStatus(row, status) {\n      this.$message({\n        message: '操作Success',\n        type: 'success'\n      })\n      row.status = status\n    },\n    sortChange(data) {\n      const { prop, order } = data\n      if (prop === 'id') {\n        this.sortByID(order)\n      }\n    },\n    sortByID(order) {\n      if (order === 'ascending') {\n        this.listQuery.sort = '+id'\n      } else {\n        this.listQuery.sort = '-id'\n      }\n      this.handleFilter()\n    },\n    resetTemp() {\n      this.temp = {\n        id: undefined,\n        importance: 1,\n        remark: '',\n        timestamp: new Date(),\n        title: '',\n        status: 'published',\n        type: ''\n      }\n    },\n    handleCreate() {\n      this.resetTemp()\n      this.dialogStatus = 'create'\n      this.dialogFormVisible = true\n      this.$nextTick(() => {\n        this.$refs['dataForm'].clearValidate()\n      })\n    },\n    createData() {\n      this.$refs['dataForm'].validate((valid) => {\n        if (valid) {\n          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id\n          this.temp.author = 'vue-element-admin'\n          createArticle(this.temp).then(() => {\n            this.list.unshift(this.temp)\n            this.dialogFormVisible = false\n            this.$notify({\n              title: 'Success',\n              message: 'Created Successfully',\n              type: 'success',\n              duration: 2000\n            })\n          })\n        }\n      })\n    },\n    handleUpdate(row) {\n      this.temp = Object.assign({}, row) // copy obj\n      this.temp.timestamp = new Date(this.temp.timestamp)\n      this.dialogStatus = 'update'\n      this.dialogFormVisible = true\n      this.$nextTick(() => {\n        this.$refs['dataForm'].clearValidate()\n      })\n    },\n    updateData() {\n      this.$refs['dataForm'].validate((valid) => {\n        if (valid) {\n          const tempData = Object.assign({}, this.temp)\n          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464\n          updateArticle(tempData).then(() => {\n            const index = this.list.findIndex(v => v.id === this.temp.id)\n            this.list.splice(index, 1, this.temp)\n            this.dialogFormVisible = false\n            this.$notify({\n              title: 'Success',\n              message: 'Update Successfully',\n              type: 'success',\n              duration: 2000\n            })\n          })\n        }\n      })\n    },\n    handleDelete(row, index) {\n      this.$notify({\n        title: 'Success',\n        message: 'Delete Successfully',\n        type: 'success',\n        duration: 2000\n      })\n      this.list.splice(index, 1)\n    },\n    handleFetchPv(pv) {\n      fetchPv(pv).then(response => {\n        this.pvData = response.data.pvData\n        this.dialogPvVisible = true\n      })\n    },\n    handleDownload() {\n      this.downloadLoading = true\n      import('@/vendor/Export2Excel').then(excel => {\n        const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']\n        const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']\n        const data = this.formatJson(filterVal)\n        excel.export_json_to_excel({\n          header: tHeader,\n          data,\n          filename: 'table-list'\n        })\n        this.downloadLoading = false\n      })\n    },\n    formatJson(filterVal) {\n      return this.list.map(v => filterVal.map(j => {\n        if (j === 'timestamp') {\n          return parseTime(v[j])\n        } else {\n          return v[j]\n        }\n      }))\n    },\n    getSortClass: function(key) {\n      const sort = this.listQuery.sort\n      return sort === `+${key}` ? 'ascending' : 'descending'\n    }\n  }\n}\n</script>\n",
+      "packets": [
+        {
+          "filePath": "owned/src/views/table/complex-table.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 45,
+              "column": 20,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 45,
+              "endColumn": 68
+            },
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 51,
+              "column": 22,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 51,
+              "endColumn": 43
+            },
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 77,
+              "column": 26,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 77,
+              "endColumn": 51
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 3,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>\n  <div class=\"app-container\">\n    <div class=\"filter-container\">\n      <el-input v-model=\"listQuery.title\" placeholder=\"Title\" style=\"width: 200px;\" class=\"filter-item\" @keyup.enter.native=\"handleFilter\" />\n      <el-select v-model=\"listQuery.importance\" placeholder=\"Imp\" clearable style=\"width: 90px\" class=\"filter-item\">\n        <el-option v-for=\"item in importanceOptions\" :key=\"item\" :label=\"item\" :value=\"item\" />\n      </el-select>\n      <el-select v-model=\"listQuery.type\" placeholder=\"Type\" clearable class=\"filter-item\" style=\"width: 130px\">\n        <el-option v-for=\"item in calendarTypeOptions\" :key=\"item.key\" :label=\"item.display_name+'('+item.key+')'\" :value=\"item.key\" />\n      </el-select>\n      <el-select v-model=\"listQuery.sort\" style=\"width: 140px\" class=\"filter-item\" @change=\"handleFilter\">\n        <el-option v-for=\"item in sortOptions\" :key=\"item.key\" :label=\"item.label\" :value=\"item.key\" />\n      </el-select>\n      <el-button v-waves class=\"filter-item\" type=\"primary\" icon=\"el-icon-search\" @click=\"handleFilter\">\n        Search\n      </el-button>\n      <el-button class=\"filter-item\" style=\"margin-left: 10px;\" type=\"primary\" icon=\"el-icon-edit\" @click=\"handleCreate\">\n        Add\n      </el-button>\n      <el-button v-waves :loading=\"downloadLoading\" class=\"filter-item\" type=\"primary\" icon=\"el-icon-download\" @click=\"handleDownload\">\n        Export\n      </el-button>\n      <el-checkbox v-model=\"showReviewer\" class=\"filter-item\" style=\"margin-left:15px;\" @change=\"tableKey=tableKey+1\">\n        reviewer\n      </el-checkbox>\n    </div>\n\n    <el-table\n      :key=\"tableKey\"\n      v-loading=\"listLoading\"\n      :data=\"list\"\n      border\n      fit\n      highlight-current-row\n      style=\"width: 100%;\"\n      @sort-change=\"sortChange\"\n    >\n      <el-table-column label=\"ID\" prop=\"id\" sortable=\"custom\" align=\"center\" width=\"80\" :class-name=\"getSortClass('id')\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.id }}</span>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Date\" width=\"150px\" align=\"center\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Title\" min-width=\"150px\">\n        <template slot-scope=\"{row}\">\n          <span class=\"link-type\" @click=\"handleUpdate(row)\">{{ row.title }}</span>\n          <el-tag>{{ row.type | typeFilter }}</el-tag>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Author\" width=\"110px\" align=\"center\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.author }}</span>\n        </template>\n      </el-table-column>\n      <el-table-column v-if=\"showReviewer\" label=\"Reviewer\" width=\"110px\" align=\"center\">\n        <template slot-scope=\"{row}\">\n          <span style=\"color:red;\">{{ row.reviewer }}</span>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Imp\" width=\"80px\">\n        <template slot-scope=\"{row}\">\n          <svg-icon v-for=\"n in + row.importance\" :key=\"n\" icon-class=\"star\" class=\"meta-item__icon\" />\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Readings\" align=\"center\" width=\"95\">\n        <template slot-scope=\"{row}\">\n          <span v-if=\"row.pageviews\" class=\"link-type\" @click=\"handleFetchPv(row.pageviews)\">{{ row.pageviews }}</span>\n          <span v-else>0</span>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Status\" class-name=\"status-col\" width=\"100\">\n        <template slot-scope=\"{row}\">\n          <el-tag :type=\"row.status | statusFilter\">\n            {{ row.status }}\n          </el-tag>\n        </template>\n      </el-table-column>\n      <el-table-column label=\"Actions\" align=\"center\" width=\"230\" class-name=\"small-padding fixed-width\">\n        <template slot-scope=\"{row,$index}\">\n          <el-button type=\"primary\" size=\"mini\" @click=\"handleUpdate(row)\">\n            Edit\n          </el-button>\n          <el-button v-if=\"row.status!='published'\" size=\"mini\" type=\"success\" @click=\"handleModifyStatus(row,'published')\">\n            Publish\n          </el-button>\n          <el-button v-if=\"row.status!='draft'\" size=\"mini\" @click=\"handleModifyStatus(row,'draft')\">\n            Draft\n          </el-button>\n          <el-button v-if=\"row.status!='deleted'\" size=\"mini\" type=\"danger\" @click=\"handleDelete(row,$index)\">\n            Delete\n          </el-button>\n        </template>\n      </el-table-column>\n    </el-table>\n\n    <pagination v-show=\"total>0\" :total=\"total\" :page.sync=\"listQuery.page\" :limit.sync=\"listQuery.limit\" @pagination=\"getList\" />\n\n    <el-dialog :title=\"textMap[dialogStatus]\" :visible.sync=\"dialogFormVisible\">\n      <el-form ref=\"dataForm\" :rules=\"rules\" :model=\"temp\" label-position=\"left\" label-width=\"70px\" style=\"width: 400px; margin-left:50px;\">\n        <el-form-item label=\"Type\" prop=\"type\">\n          <el-select v-model=\"temp.type\" class=\"filter-item\" placeholder=\"Please select\">\n            <el-option v-for=\"item in calendarTypeOptions\" :key=\"item.key\" :label=\"item.display_name\" :value=\"item.key\" />\n          </el-select>\n        </el-form-item>\n        <el-form-item label=\"Date\" prop=\"timestamp\">\n          <el-date-picker v-model=\"temp.timestamp\" type=\"datetime\" placeholder=\"Please pick a date\" />\n        </el-form-item>\n        <el-form-item label=\"Title\" prop=\"title\">\n          <el-input v-model=\"temp.title\" />\n        </el-form-item>\n        <el-form-item label=\"Status\">\n          <el-select v-model=\"temp.status\" class=\"filter-item\" placeholder=\"Please select\">\n            <el-option v-for=\"item in statusOptions\" :key=\"item\" :label=\"item\" :value=\"item\" />\n          </el-select>\n        </el-form-item>\n        <el-form-item label=\"Imp\">\n          <el-rate v-model=\"temp.importance\" :colors=\"['#99A9BF', '#F7BA2A', '#FF9900']\" :max=\"3\" style=\"margin-top:8px;\" />\n        </el-form-item>\n        <el-form-item label=\"Remark\">\n          <el-input v-model=\"temp.remark\" :autosize=\"{ minRows: 2, maxRows: 4}\" type=\"textarea\" placeholder=\"Please input\" />\n        </el-form-item>\n      </el-form>\n      <div slot=\"footer\" class=\"dialog-footer\">\n        <el-button @click=\"dialogFormVisible = false\">\n          Cancel\n        </el-button>\n        <el-button type=\"primary\" @click=\"dialogStatus==='create'?createData():updateData()\">\n          Confirm\n        </el-button>\n      </div>\n    </el-dialog>\n\n    <el-dialog :visible.sync=\"dialogPvVisible\" title=\"Reading statistics\">\n      <el-table :data=\"pvData\" border fit highlight-current-row style=\"width: 100%\">\n        <el-table-column prop=\"key\" label=\"Channel\" />\n        <el-table-column prop=\"pv\" label=\"Pv\" />\n      </el-table>\n      <span slot=\"footer\" class=\"dialog-footer\">\n        <el-button type=\"primary\" @click=\"dialogPvVisible = false\">Confirm</el-button>\n      </span>\n    </el-dialog>\n  </div>\n</template>\n\n<script>\nimport { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'\nimport waves from '@/directive/waves' // waves directive\nimport { parseTime } from '@/utils'\nimport Pagination from '@/components/Pagination' // secondary package based on el-pagination\n\nconst calendarTypeOptions = [\n  { key: 'CN', display_name: 'China' },\n  { key: 'US', display_name: 'USA' },\n  { key: 'JP', display_name: 'Japan' },\n  { key: 'EU', display_name: 'Eurozone' }\n]\n\n// arr to obj, such as { CN : \"China\", US : \"USA\" }\nconst calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {\n  acc[cur.key] = cur.display_name\n  return acc\n}, {})\n\nexport default {\n  name: 'ComplexTable',\n  components: { Pagination },\n  directives: { waves },\n  filters: {\n    statusFilter(status) {\n      const statusMap = {\n        published: 'success',\n        draft: 'info',\n        deleted: 'danger'\n      }\n      return statusMap[status]\n    },\n    typeFilter(type) {\n      return calendarTypeKeyValue[type]\n    }\n  },\n  data() {\n    return {\n      tableKey: 0,\n      list: null,\n      total: 0,\n      listLoading: true,\n      listQuery: {\n        page: 1,\n        limit: 20,\n        importance: undefined,\n        title: undefined,\n        type: undefined,\n        sort: '+id'\n      },\n      importanceOptions: [1, 2, 3],\n      calendarTypeOptions,\n      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],\n      statusOptions: ['published', 'draft', 'deleted'],\n      showReviewer: false,\n      temp: {\n        id: undefined,\n        importance: 1,\n        remark: '',\n        timestamp: new Date(),\n        title: '',\n        type: '',\n        status: 'published'\n      },\n      dialogFormVisible: false,\n      dialogStatus: '',\n      textMap: {\n        update: 'Edit',\n        create: 'Create'\n      },\n      dialogPvVisible: false,\n      pvData: [],\n      rules: {\n        type: [{ required: true, message: 'type is required', trigger: 'change' }],\n        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],\n        title: [{ required: true, message: 'title is required', trigger: 'blur' }]\n      },\n      downloadLoading: false\n    }\n  },\n  created() {\n    this.getList()\n  },\n  methods: {\n    getList() {\n      this.listLoading = true\n      fetchList(this.listQuery).then(response => {\n        this.list = response.data.items\n        this.total = response.data.total\n\n        // Just to simulate the time of the request\n        setTimeout(() => {\n          this.listLoading = false\n        }, 1.5 * 1000)\n      })\n    },\n    handleFilter() {\n      this.listQuery.page = 1\n      this.getList()\n    },\n    handleModifyStatus(row, status) {\n      this.$message({\n        message: '操作Success',\n        type: 'success'\n      })\n      row.status = status\n    },\n    sortChange(data) {\n      const { prop, order } = data\n      if (prop === 'id') {\n        this.sortByID(order)\n      }\n    },\n    sortByID(order) {\n      if (order === 'ascending') {\n        this.listQuery.sort = '+id'\n      } else {\n        this.listQuery.sort = '-id'\n      }\n      this.handleFilter()\n    },\n    resetTemp() {\n      this.temp = {\n        id: undefined,\n        importance: 1,\n        remark: '',\n        timestamp: new Date(),\n        title: '',\n        status: 'published',\n        type: ''\n      }\n    },\n    handleCreate() {\n      this.resetTemp()\n      this.dialogStatus = 'create'\n      this.dialogFormVisible = true\n      this.$nextTick(() => {\n        this.$refs['dataForm'].clearValidate()\n      })\n    },\n    createData() {\n      this.$refs['dataForm'].validate((valid) => {\n        if (valid) {\n          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id\n          this.temp.author = 'vue-element-admin'\n          createArticle(this.temp).then(() => {\n            this.list.unshift(this.temp)\n            this.dialogFormVisible = false\n            this.$notify({\n              title: 'Success',\n              message: 'Created Successfully',\n              type: 'success',\n              duration: 2000\n            })\n          })\n        }\n      })\n    },\n    handleUpdate(row) {\n      this.temp = Object.assign({}, row) // copy obj\n      this.temp.timestamp = new Date(this.temp.timestamp)\n      this.dialogStatus = 'update'\n      this.dialogFormVisible = true\n      this.$nextTick(() => {\n        this.$refs['dataForm'].clearValidate()\n      })\n    },\n    updateData() {\n      this.$refs['dataForm'].validate((valid) => {\n        if (valid) {\n          const tempData = Object.assign({}, this.temp)\n          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464\n          updateArticle(tempData).then(() => {\n            const index = this.list.findIndex(v => v.id === this.temp.id)\n            this.list.splice(index, 1, this.temp)\n            this.dialogFormVisible = false\n            this.$notify({\n              title: 'Success',\n              message: 'Update Successfully',\n              type: 'success',\n              duration: 2000\n            })\n          })\n        }\n      })\n    },\n    handleDelete(row, index) {\n      this.$notify({\n        title: 'Success',\n        message: 'Delete Successfully',\n        type: 'success',\n        duration: 2000\n      })\n      this.list.splice(index, 1)\n    },\n    handleFetchPv(pv) {\n      fetchPv(pv).then(response => {\n        this.pvData = response.data.pvData\n        this.dialogPvVisible = true\n      })\n    },\n    handleDownload() {\n      this.downloadLoading = true\n      import('@/vendor/Export2Excel').then(excel => {\n        const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']\n        const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']\n        const data = this.formatJson(filterVal)\n        excel.export_json_to_excel({\n          header: tHeader,\n          data,\n          filename: 'table-list'\n        })\n        this.downloadLoading = false\n      })\n    },\n    formatJson(filterVal) {\n      return this.list.map(v => filterVal.map(j => {\n        if (j === 'timestamp') {\n          return parseTime(v[j])\n        } else {\n          return v[j]\n        }\n      }))\n    },\n    getSortClass: function(key) {\n      const sort = this.listQuery.sort\n      return sort === `+${key}` ? 'ascending' : 'descending'\n    }\n  }\n}\n</script>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "src/views/table/drag-table.vue",
+      "filename": "src/views/table/drag-table.vue",
+      "source": "<template>\n  <div class=\"app-container\">\n    <!-- Note that row-key is necessary to get a correct row order. -->\n    <el-table ref=\"dragTable\" v-loading=\"listLoading\" :data=\"list\" row-key=\"id\" border fit highlight-current-row style=\"width: 100%\">\n      <el-table-column align=\"center\" label=\"ID\" width=\"65\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.id }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"180px\" align=\"center\" label=\"Date\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column min-width=\"300px\" label=\"Title\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.title }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"110px\" align=\"center\" label=\"Author\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.author }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"100px\" label=\"Importance\">\n        <template slot-scope=\"{row}\">\n          <svg-icon v-for=\"n in + row.importance\" :key=\"n\" icon-class=\"star\" class=\"icon-star\" />\n        </template>\n      </el-table-column>\n\n      <el-table-column align=\"center\" label=\"Readings\" width=\"95\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.pageviews }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column class-name=\"status-col\" label=\"Status\" width=\"110\">\n        <template slot-scope=\"{row}\">\n          <el-tag :type=\"row.status | statusFilter\">\n            {{ row.status }}\n          </el-tag>\n        </template>\n      </el-table-column>\n\n      <el-table-column align=\"center\" label=\"Drag\" width=\"80\">\n        <template slot-scope=\"{}\">\n          <svg-icon class=\"drag-handler\" icon-class=\"drag\" />\n        </template>\n      </el-table-column>\n    </el-table>\n    <div class=\"show-d\">\n      <el-tag>The default order :</el-tag> {{ oldList }}\n    </div>\n    <div class=\"show-d\">\n      <el-tag>The after dragging order :</el-tag> {{ newList }}\n    </div>\n  </div>\n</template>\n\n<script>\nimport { fetchList } from '@/api/article'\nimport Sortable from 'sortablejs'\n\nexport default {\n  name: 'DragTable',\n  filters: {\n    statusFilter(status) {\n      const statusMap = {\n        published: 'success',\n        draft: 'info',\n        deleted: 'danger'\n      }\n      return statusMap[status]\n    }\n  },\n  data() {\n    return {\n      list: null,\n      total: null,\n      listLoading: true,\n      listQuery: {\n        page: 1,\n        limit: 10\n      },\n      sortable: null,\n      oldList: [],\n      newList: []\n    }\n  },\n  created() {\n    this.getList()\n  },\n  methods: {\n    async getList() {\n      this.listLoading = true\n      const { data } = await fetchList(this.listQuery)\n      this.list = data.items\n      this.total = data.total\n      this.listLoading = false\n      this.oldList = this.list.map(v => v.id)\n      this.newList = this.oldList.slice()\n      this.$nextTick(() => {\n        this.setSort()\n      })\n    },\n    setSort() {\n      const el = this.$refs.dragTable.$el.querySelectorAll('.el-table__body-wrapper > table > tbody')[0]\n      this.sortable = Sortable.create(el, {\n        ghostClass: 'sortable-ghost', // Class name for the drop placeholder,\n        setData: function(dataTransfer) {\n          // to avoid Firefox bug\n          // Detail see : https://github.com/RubaXa/Sortable/issues/1012\n          dataTransfer.setData('Text', '')\n        },\n        onEnd: evt => {\n          const targetRow = this.list.splice(evt.oldIndex, 1)[0]\n          this.list.splice(evt.newIndex, 0, targetRow)\n\n          // for show the changes, you can delete in you code\n          const tempIndex = this.newList.splice(evt.oldIndex, 1)[0]\n          this.newList.splice(evt.newIndex, 0, tempIndex)\n        }\n      })\n    }\n  }\n}\n</script>\n\n<style>\n.sortable-ghost{\n  opacity: .8;\n  color: #fff!important;\n  background: #42b983!important;\n}\n</style>\n\n<style scoped>\n.icon-star{\n  margin-right:2px;\n}\n.drag-handler{\n  width: 20px;\n  height: 20px;\n  cursor: pointer;\n}\n.show-d{\n  margin-top: 15px;\n}\n</style>\n",
+      "packets": [
+        {
+          "filePath": "owned/src/views/table/drag-table.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 13,
+              "column": 20,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 13,
+              "endColumn": 68
+            },
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 43,
+              "column": 26,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 43,
+              "endColumn": 51
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 2,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>\n  <div class=\"app-container\">\n    <!-- Note that row-key is necessary to get a correct row order. -->\n    <el-table ref=\"dragTable\" v-loading=\"listLoading\" :data=\"list\" row-key=\"id\" border fit highlight-current-row style=\"width: 100%\">\n      <el-table-column align=\"center\" label=\"ID\" width=\"65\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.id }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"180px\" align=\"center\" label=\"Date\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column min-width=\"300px\" label=\"Title\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.title }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"110px\" align=\"center\" label=\"Author\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.author }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"100px\" label=\"Importance\">\n        <template slot-scope=\"{row}\">\n          <svg-icon v-for=\"n in + row.importance\" :key=\"n\" icon-class=\"star\" class=\"icon-star\" />\n        </template>\n      </el-table-column>\n\n      <el-table-column align=\"center\" label=\"Readings\" width=\"95\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.pageviews }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column class-name=\"status-col\" label=\"Status\" width=\"110\">\n        <template slot-scope=\"{row}\">\n          <el-tag :type=\"row.status | statusFilter\">\n            {{ row.status }}\n          </el-tag>\n        </template>\n      </el-table-column>\n\n      <el-table-column align=\"center\" label=\"Drag\" width=\"80\">\n        <template slot-scope=\"{}\">\n          <svg-icon class=\"drag-handler\" icon-class=\"drag\" />\n        </template>\n      </el-table-column>\n    </el-table>\n    <div class=\"show-d\">\n      <el-tag>The default order :</el-tag> {{ oldList }}\n    </div>\n    <div class=\"show-d\">\n      <el-tag>The after dragging order :</el-tag> {{ newList }}\n    </div>\n  </div>\n</template>\n\n<script>\nimport { fetchList } from '@/api/article'\nimport Sortable from 'sortablejs'\n\nexport default {\n  name: 'DragTable',\n  filters: {\n    statusFilter(status) {\n      const statusMap = {\n        published: 'success',\n        draft: 'info',\n        deleted: 'danger'\n      }\n      return statusMap[status]\n    }\n  },\n  data() {\n    return {\n      list: null,\n      total: null,\n      listLoading: true,\n      listQuery: {\n        page: 1,\n        limit: 10\n      },\n      sortable: null,\n      oldList: [],\n      newList: []\n    }\n  },\n  created() {\n    this.getList()\n  },\n  methods: {\n    async getList() {\n      this.listLoading = true\n      const { data } = await fetchList(this.listQuery)\n      this.list = data.items\n      this.total = data.total\n      this.listLoading = false\n      this.oldList = this.list.map(v => v.id)\n      this.newList = this.oldList.slice()\n      this.$nextTick(() => {\n        this.setSort()\n      })\n    },\n    setSort() {\n      const el = this.$refs.dragTable.$el.querySelectorAll('.el-table__body-wrapper > table > tbody')[0]\n      this.sortable = Sortable.create(el, {\n        ghostClass: 'sortable-ghost', // Class name for the drop placeholder,\n        setData: function(dataTransfer) {\n          // to avoid Firefox bug\n          // Detail see : https://github.com/RubaXa/Sortable/issues/1012\n          dataTransfer.setData('Text', '')\n        },\n        onEnd: evt => {\n          const targetRow = this.list.splice(evt.oldIndex, 1)[0]\n          this.list.splice(evt.newIndex, 0, targetRow)\n\n          // for show the changes, you can delete in you code\n          const tempIndex = this.newList.splice(evt.oldIndex, 1)[0]\n          this.newList.splice(evt.newIndex, 0, tempIndex)\n        }\n      })\n    }\n  }\n}\n</script>\n\n<style>\n.sortable-ghost{\n  opacity: .8;\n  color: #fff!important;\n  background: #42b983!important;\n}\n</style>\n\n<style scoped>\n.icon-star{\n  margin-right:2px;\n}\n.drag-handler{\n  width: 20px;\n  height: 20px;\n  cursor: pointer;\n}\n.show-d{\n  margin-top: 15px;\n}\n</style>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    },
+    {
+      "id": "src/views/table/inline-edit-table.vue",
+      "filename": "src/views/table/inline-edit-table.vue",
+      "source": "<template>\n  <div class=\"app-container\">\n    <el-table v-loading=\"listLoading\" :data=\"list\" border fit highlight-current-row style=\"width: 100%\">\n      <el-table-column align=\"center\" label=\"ID\" width=\"80\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.id }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"180px\" align=\"center\" label=\"Date\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"120px\" align=\"center\" label=\"Author\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.author }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"100px\" label=\"Importance\">\n        <template slot-scope=\"{row}\">\n          <svg-icon v-for=\"n in + row.importance\" :key=\"n\" icon-class=\"star\" class=\"meta-item__icon\" />\n        </template>\n      </el-table-column>\n\n      <el-table-column class-name=\"status-col\" label=\"Status\" width=\"110\">\n        <template slot-scope=\"{row}\">\n          <el-tag :type=\"row.status | statusFilter\">\n            {{ row.status }}\n          </el-tag>\n        </template>\n      </el-table-column>\n\n      <el-table-column min-width=\"300px\" label=\"Title\">\n        <template slot-scope=\"{row}\">\n          <template v-if=\"row.edit\">\n            <el-input v-model=\"row.title\" class=\"edit-input\" size=\"small\" />\n            <el-button\n              class=\"cancel-btn\"\n              size=\"small\"\n              icon=\"el-icon-refresh\"\n              type=\"warning\"\n              @click=\"cancelEdit(row)\"\n            >\n              cancel\n            </el-button>\n          </template>\n          <span v-else>{{ row.title }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column align=\"center\" label=\"Actions\" width=\"120\">\n        <template slot-scope=\"{row}\">\n          <el-button\n            v-if=\"row.edit\"\n            type=\"success\"\n            size=\"small\"\n            icon=\"el-icon-circle-check-outline\"\n            @click=\"confirmEdit(row)\"\n          >\n            Ok\n          </el-button>\n          <el-button\n            v-else\n            type=\"primary\"\n            size=\"small\"\n            icon=\"el-icon-edit\"\n            @click=\"row.edit=!row.edit\"\n          >\n            Edit\n          </el-button>\n        </template>\n      </el-table-column>\n    </el-table>\n  </div>\n</template>\n\n<script>\nimport { fetchList } from '@/api/article'\n\nexport default {\n  name: 'InlineEditTable',\n  filters: {\n    statusFilter(status) {\n      const statusMap = {\n        published: 'success',\n        draft: 'info',\n        deleted: 'danger'\n      }\n      return statusMap[status]\n    }\n  },\n  data() {\n    return {\n      list: null,\n      listLoading: true,\n      listQuery: {\n        page: 1,\n        limit: 10\n      }\n    }\n  },\n  created() {\n    this.getList()\n  },\n  methods: {\n    async getList() {\n      this.listLoading = true\n      const { data } = await fetchList(this.listQuery)\n      const items = data.items\n      this.list = items.map(v => {\n        this.$set(v, 'edit', false) // https://vuejs.org/v2/guide/reactivity.html\n        v.originalTitle = v.title //  will be used when user click the cancel botton\n        return v\n      })\n      this.listLoading = false\n    },\n    cancelEdit(row) {\n      row.title = row.originalTitle\n      row.edit = false\n      this.$message({\n        message: 'The title has been restored to the original value',\n        type: 'warning'\n      })\n    },\n    confirmEdit(row) {\n      row.edit = false\n      row.originalTitle = row.title\n      this.$message({\n        message: 'The title has been edited',\n        type: 'success'\n      })\n    }\n  }\n}\n</script>\n\n<style scoped>\n.edit-input {\n  padding-right: 100px;\n}\n.cancel-btn {\n  position: absolute;\n  right: 15px;\n  top: 10px;\n}\n</style>\n",
+      "packets": [
+        {
+          "filePath": "owned/src/views/table/inline-edit-table.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 12,
+              "column": 20,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 12,
+              "endColumn": 68
+            },
+            {
+              "ruleId": "vue/no-deprecated-filter",
+              "severity": 2,
+              "message": "Filters are deprecated.",
+              "line": 30,
+              "column": 26,
+              "messageId": "noDeprecatedFilter",
+              "endLine": 30,
+              "endColumn": 51
+            }
+          ],
+          "suppressedMessages": [],
+          "errorCount": 2,
+          "fatalErrorCount": 0,
+          "warningCount": 0,
+          "fixableErrorCount": 0,
+          "fixableWarningCount": 0,
+          "source": "<template>\n  <div class=\"app-container\">\n    <el-table v-loading=\"listLoading\" :data=\"list\" border fit highlight-current-row style=\"width: 100%\">\n      <el-table-column align=\"center\" label=\"ID\" width=\"80\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.id }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"180px\" align=\"center\" label=\"Date\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"120px\" align=\"center\" label=\"Author\">\n        <template slot-scope=\"{row}\">\n          <span>{{ row.author }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column width=\"100px\" label=\"Importance\">\n        <template slot-scope=\"{row}\">\n          <svg-icon v-for=\"n in + row.importance\" :key=\"n\" icon-class=\"star\" class=\"meta-item__icon\" />\n        </template>\n      </el-table-column>\n\n      <el-table-column class-name=\"status-col\" label=\"Status\" width=\"110\">\n        <template slot-scope=\"{row}\">\n          <el-tag :type=\"row.status | statusFilter\">\n            {{ row.status }}\n          </el-tag>\n        </template>\n      </el-table-column>\n\n      <el-table-column min-width=\"300px\" label=\"Title\">\n        <template slot-scope=\"{row}\">\n          <template v-if=\"row.edit\">\n            <el-input v-model=\"row.title\" class=\"edit-input\" size=\"small\" />\n            <el-button\n              class=\"cancel-btn\"\n              size=\"small\"\n              icon=\"el-icon-refresh\"\n              type=\"warning\"\n              @click=\"cancelEdit(row)\"\n            >\n              cancel\n            </el-button>\n          </template>\n          <span v-else>{{ row.title }}</span>\n        </template>\n      </el-table-column>\n\n      <el-table-column align=\"center\" label=\"Actions\" width=\"120\">\n        <template slot-scope=\"{row}\">\n          <el-button\n            v-if=\"row.edit\"\n            type=\"success\"\n            size=\"small\"\n            icon=\"el-icon-circle-check-outline\"\n            @click=\"confirmEdit(row)\"\n          >\n            Ok\n          </el-button>\n          <el-button\n            v-else\n            type=\"primary\"\n            size=\"small\"\n            icon=\"el-icon-edit\"\n            @click=\"row.edit=!row.edit\"\n          >\n            Edit\n          </el-button>\n        </template>\n      </el-table-column>\n    </el-table>\n  </div>\n</template>\n\n<script>\nimport { fetchList } from '@/api/article'\n\nexport default {\n  name: 'InlineEditTable',\n  filters: {\n    statusFilter(status) {\n      const statusMap = {\n        published: 'success',\n        draft: 'info',\n        deleted: 'danger'\n      }\n      return statusMap[status]\n    }\n  },\n  data() {\n    return {\n      list: null,\n      listLoading: true,\n      listQuery: {\n        page: 1,\n        limit: 10\n      }\n    }\n  },\n  created() {\n    this.getList()\n  },\n  methods: {\n    async getList() {\n      this.listLoading = true\n      const { data } = await fetchList(this.listQuery)\n      const items = data.items\n      this.list = items.map(v => {\n        this.$set(v, 'edit', false) // https://vuejs.org/v2/guide/reactivity.html\n        v.originalTitle = v.title //  will be used when user click the cancel botton\n        return v\n      })\n      this.listLoading = false\n    },\n    cancelEdit(row) {\n      row.title = row.originalTitle\n      row.edit = false\n      this.$message({\n        message: 'The title has been restored to the original value',\n        type: 'warning'\n      })\n    },\n    confirmEdit(row) {\n      row.edit = false\n      row.originalTitle = row.title\n      this.$message({\n        message: 'The title has been edited',\n        type: 'success'\n      })\n    }\n  }\n}\n</script>\n\n<style scoped>\n.edit-input {\n  padding-right: 100px;\n}\n.cancel-btn {\n  position: absolute;\n  right: 15px;\n  top: 10px;\n}\n</style>\n",
+          "usedDeprecatedRules": []
+        }
+      ]
+    }
+  ]
+}

@@ -84,7 +84,9 @@ impl Rule for NoDeprecatedFilter {
         if has_filter_pipe(exp.content) {
             ctx.error_with_help(
                 ctx.t("vue/no-deprecated-filter.message"),
-                &interpolation.loc,
+                // Match the filter sequence itself, excluding interpolation
+                // delimiters and surrounding whitespace, as in bound values.
+                &exp.loc,
                 ctx.t("vue/no-deprecated-filter.help"),
             );
         }
