@@ -34,7 +34,10 @@ await test("legacy instance API packets preserve every pinned original source an
   }
   const scriptParser = requireScriptParser("@typescript-eslint/parser");
   assert.equal(scriptParser.version, authored.provider.scriptParser);
-  for (const rule of Object.values(authored.provider.ruleSources)) {
+  for (const rule of [
+    ...Object.values(authored.provider.ruleSources),
+    authored.provider.utilitySource,
+  ]) {
     const directory = path.dirname(requireProvider.resolve("eslint-plugin-vue/package.json"));
     assert.equal(hash(fs.readFileSync(path.join(directory, rule.path))), rule.sha256);
   }
@@ -68,10 +71,15 @@ await test("legacy instance API packets preserve every pinned original source an
       "vue/no-deprecated-events-api": "error",
     },
   };
-  assert.equal(authored.records.length, 43);
-  assert.equal(sources.length, 71);
+  assert.equal(authored.records.length, 52);
+  assert.equal(sources.length, 147);
   assert.equal(original.records.length, sources.length);
   assert.equal(manifest.sourceCount, sources.length);
+  assert.equal(manifest.projects.length, 18);
+  const audit = json("expanded-audit.json");
+  const counts = Object.fromEntries(
+    Object.keys(audit.observed).map((rule) => [rule, { falsePositives: 0, falseNegatives: 0 }]),
+  );
   for (const project of manifest.projects) {
     const bytes = gunzipSync(
       fs.readFileSync(
@@ -82,9 +90,21 @@ await test("legacy instance API packets preserve every pinned original source an
     const report = JSON.parse(bytes);
     assert.equal(report.revision, project.revision);
     assert.equal(report.project, project.project);
+    for (const side of ["falsePositives", "falseNegatives"]) {
+      for (const row of report.divergence[side]) {
+        if (counts[row.ruleId]) counts[row.ruleId][side]++;
+      }
+    }
     assert.deepEqual(
       sources.filter((row) => row.project === project.project).map((row) => row.path),
       project.paths,
+    );
+  }
+  assert.deepEqual(counts, audit.observed);
+  for (const id of [...audit.ownedCoverage.expandedControls, ...audit.factoryContractControls]) {
+    assert.ok(
+      authored.records.some((row) => row.id === id),
+      id,
     );
   }
   for (const row of [...authored.records, ...original.records]) {

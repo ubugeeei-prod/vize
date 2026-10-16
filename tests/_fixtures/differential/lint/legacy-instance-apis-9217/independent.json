@@ -5,6 +5,10 @@
     "plugin": "10.9.2",
     "parser": "10.4.1",
     "scriptParser": "8.65.0",
+    "utilitySource": {
+      "path": "dist/utils/index.js",
+      "sha256": "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925"
+    },
     "ruleSources": {
       "no-deprecated-dollar-listeners-api": {
         "path": "dist/rules/no-deprecated-dollar-listeners-api.js",
@@ -718,6 +722,145 @@
       "source": "<script lang=\"ts\">export default { mounted() { (this.$on satisfies Function)(\"x\", h) } }</script>",
       "sourceSha256": "e801eb6c5d5d95ae4f03817173cc73989f9fec11a7648f48ebe52a061120bfbb",
       "messages": []
+    },
+    {
+      "id": "foreign-registry-component",
+      "source": "<script>registry.component(\"Child\", { created() { this.$once(\"x\", h); this.$listeners } }); export default {}</script>",
+      "sourceSha256": "96f4e36ac4a879f9a85ee5bd31e0ec8ebc4835d0e1f33d0d01eb1aa6c6c674e7",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 56,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 61
+        },
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 76,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 86
+        }
+      ]
+    },
+    {
+      "id": "foreign-registry-mixin",
+      "source": "<script>registry.mixin({ created() { this.$on(\"x\", h); this.$listeners } }); export default {}</script>",
+      "sourceSha256": "ccc9f29d046d6a60a230a96f24bd138091a55873591d046c7ad568369f1a650d",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 43,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 46
+        },
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 61,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 71
+        }
+      ]
+    },
+    {
+      "id": "nested-registry-receiver",
+      "source": "<script>factory.registry.component(\"Child\", { created() { this.$on(\"x\", h); this.$listeners } }); export default {}</script>",
+      "sourceSha256": "2f41782299b67e97a0c5e09d7a7bcb00c98cefe11737a0d50eaafb6e9d845e2a",
+      "messages": []
+    },
+    {
+      "id": "shadowed-nuxt-factory",
+      "source": "<script>function defineNuxtComponent(options) { return options }; defineNuxtComponent({ created() { this.$on(\"x\", h); this.$listeners } }); export default {}</script>",
+      "sourceSha256": "1e698d2428357f9e898a18cb4662398546e2dfb85df32687d58c133619b79414",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-events-api",
+          "severity": 2,
+          "message": "The Events api `$on`, `$off` `$once` is deprecated. Using external library instead, for example mitt.",
+          "line": 1,
+          "column": 106,
+          "messageId": "noDeprecatedEventsApi",
+          "endLine": 1,
+          "endColumn": 109
+        },
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 124,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 134
+        }
+      ]
+    },
+    {
+      "id": "named-vue-factory-alias",
+      "source": "<script>import { defineComponent as makeComponent } from \"vue\"; makeComponent({ created() { this.$on(\"x\", h); this.$listeners } }); export default {}</script>",
+      "sourceSha256": "4c6eaeed4e87728975e9d1d8a645d566c0798f971b57eb75c44bc2972ecc1934",
+      "messages": []
+    },
+    {
+      "id": "indirect-vue-factory-alias",
+      "source": "<script>const makeComponent = defineComponent; makeComponent({ created() { this.$on(\"x\", h); this.$listeners } }); export default {}</script>",
+      "sourceSha256": "85fab7596374f21185b03d553c1cb16163085f445e22295abb4e14f5114ad4df",
+      "messages": []
+    },
+    {
+      "id": "foreign-component-constructor",
+      "source": "<script>export default new MdComponent({ created() { this.$on(\"x\", h); return this.$listeners } })</script>",
+      "sourceSha256": "0abdb5c757de18501c0aaf2d9c3dfc9d76040fbf3117611f6fb8438b2fa9a6c4",
+      "messages": []
+    },
+    {
+      "id": "template-listener-spread",
+      "source": "<template><Child v-on=\"{ ...$listeners, input: onInput }\" /></template>",
+      "sourceSha256": "538ce1904f0ebc2c3bf225b43839b357e56684cdc29757a4ea35296a953610b4",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 29,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 39
+        }
+      ]
+    },
+    {
+      "id": "template-listener-assign",
+      "source": "<template><Child v-on=\"Object.assign({}, $listeners, { input: onInput })\" /></template>",
+      "sourceSha256": "3ba8b8605c459379645cab96f1af02cfd93bfd1062155729a7a02cfe9aadad46",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 42,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 52
+        }
+      ]
     },
     {
       "id": "outside-component",

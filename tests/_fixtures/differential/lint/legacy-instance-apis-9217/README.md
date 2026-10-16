@@ -3,16 +3,16 @@
 [Issue #9217](https://github.com/ubugeeei-prod/vize/issues/9217) came from the
 Real Project Matrix at `d2506ca6b5e31252973f05981829c0367cacf26b`.
 
-`independent.json` preserves 43 authored SFC inputs, source SHA-256 hashes and
+`independent.json` preserves 52 authored SFC inputs, source SHA-256 hashes and
 complete diagnostics from ESLint 10.4.1, eslint-plugin-vue 10.9.2,
-vue-eslint-parser 10.4.1 and @typescript-eslint/parser 8.65.0. Rule implementation
+vue-eslint-parser 10.4.1 and @typescript-eslint/parser 8.65.0. Rule and shared utility implementation
 hashes identify the provider bytes. The executable provider replay is
 `tests/tooling/patina-legacy-instance-api-reference.test.mjs`; the native exact
 rule/token check is `crates/vize_patina/tests/legacy_instance_apis.rs`. Neither
 changes budgets or adjusts diagnostic ranges to make findings agree.
 
 `originals/manifest.json` records immutable repository revisions, the complete
-71-file affected source inventory and hashes of five original divergence
+147-file affected source inventory and hashes of 18 original divergence
 reports. `sources.json.gz` retains those complete upstream source bytes, their
 individual hashes and raw-source URLs. Each project's `*-lint-divergence.json.gz`
 is the complete original Matrix report, including unrelated rules and failures.
@@ -38,10 +38,21 @@ The pinned rule source establishes the behavior:
   accepts only a direct const binding initialized with `this`; mutable bindings,
   alias chains and shadowed names are not proof of the component instance.
 
+`expanded-audit.json` records the complete 138-project artifact review for these
+rule families, its source identity and the separate scoped-slots follow-up. The
+replay recomputes its counts from the complete retained project reports.
+
 Component-region controls also cover non-default registered components,
 `Vue.extend`, `new Vue`, imported factories and explicit `@vue/component`
-markers. Ordinary objects, indirect exported objects and foreign factories do
-not gain component-instance diagnostics merely by sharing method names.
+markers. Ordinary objects, indirect exported objects, unrelated constructors,
+foreign imported `defineComponent` and foreign `.extend` calls stay outside the
+provider's component regions.
+
+Some factory boundaries deliberately follow the provider's syntactic contract:
+any identifier receiver's `.component` or `.mixin` call is admitted;
+`defineNuxtComponent` is admitted even when lexically shadowed; a named import
+aliased to `makeComponent` is not admitted. Explicit positive and negative
+packets preserve those decisions instead of guessing factory provenance.
 
 Five affected Element SFCs contain JSX render functions. JavaScript SFC scripts
 must admit JSX without rejecting the whole script and losing its event checks.

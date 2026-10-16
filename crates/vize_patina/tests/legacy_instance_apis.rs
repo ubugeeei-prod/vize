@@ -45,7 +45,7 @@ fn complete_authored_provider_packets_have_exact_native_rule_and_property_spans(
         "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/independent.json"
     ))
     .unwrap();
-    assert_eq!(corpus.records.len(), 43);
+    assert_eq!(corpus.records.len(), 52);
     for case in corpus.records {
         let mut expected: Vec<_> = case
             .messages

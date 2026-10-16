@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "matrixSource": "d2506ca6b5e31252973f05981829c0367cacf26b",
+  "observed": {
+    "script/no-deprecated-events-api": { "falsePositives": 202, "falseNegatives": 43 },
+    "script/no-deprecated-dollar-listeners-api": { "falsePositives": 37, "falseNegatives": 59 },
+    "script/no-deprecated-dollar-scopedslots-api": { "falsePositives": 8, "falseNegatives": 21 }
+  },
+  "ownedCoverage": {
+    "events": "Foreign event-hub receivers, own-member property ranges and JSX-bearing component scripts match the existing tested constructs.",
+    "listeners": "23 paired member-range discrepancies, 14 foreign MdComponent-constructor findings and 36 template references; spread and Object.assign expressions use the same unresolved-reference producer.",
+    "expandedControls": [
+      "foreign-component-constructor",
+      "template-listener-spread",
+      "template-listener-assign"
+    ]
+  },
+  "factoryContractControls": [
+    "foreign-registry-component",
+    "foreign-registry-mixin",
+    "nested-registry-receiver",
+    "shadowed-nuxt-factory",
+    "named-vue-factory-alias",
+    "indirect-vue-factory-alias"
+  ],
+  "separateScope": {
+    "rule": "script/no-deprecated-dollar-scopedslots-api",
+    "status": "Not changed by this fix; it still needs its own template capability and this-bound property-token parity."
+  },
+  "acceptanceBoundary": "The independent replay validates all 147 retained original sources. Native authored controls validate the producers; a fresh Matrix run remains required for whole-project native acceptance."
+}
