@@ -66,6 +66,7 @@ test("all shipping platforms retain target and ABI guards on accelerated runners
     const steps = recipe(name).runs.steps;
     const toolchain = steps.find(({ uses }) => uses?.startsWith("dtolnay/rust-toolchain@"));
     assert.equal(toolchain?.with?.targets, "${{ inputs.target }}");
+    assert.equal(toolchain?.with?.toolchain, "${{ steps.rust-toolchain.outputs.channel }}");
     const sdk = steps.find(({ uses }) => uses?.startsWith("ilammy/msvc-dev-cmd@"));
     assert.match(String(sdk?.with?.arch), /amd64_arm64/);
     assert.match(

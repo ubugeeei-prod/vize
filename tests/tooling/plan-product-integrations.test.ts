@@ -4,11 +4,13 @@ import { mkdtempSync, mkdirSync, renameSync, rmSync, writeFileSync } from "node:
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import {
   planProductIntegrations,
   productIntegrationPlanForEvent,
 } from "../../tools/support/compat/github/plan-product-integrations.ts";
+import { readRepoFile } from "./support/github-workflows.ts";
 
 test("docs and unrelated tooling do not rebuild browser integrations", () => {
   assert.deepEqual(
@@ -62,6 +64,25 @@ test("Musea browser observation helpers keep their actual consumer selected", ()
     { nuxt: false, "musea-native": false, "musea-browser": true },
   );
   assert.equal(planProductIntegrations(["tools/support/command-runtime.ts"])["musea-native"], true);
+});
+
+test("Musea native CLI builds install their transitive rule generator runner", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "musea-browser.yml")) as {
+    jobs: Record<string, { steps?: Array<{ uses?: string; run?: string }> }>;
+  };
+  const native = workflow.jobs["musea-native-inline"].steps!;
+  const runner = native.findIndex((step) => step.uses === "./.github/actions/setup-rust-script");
+  const cliBuild = native.findIndex((step) => step.run?.includes("--filter './npm/cli' build"));
+  assert.ok(runner >= 0 && cliBuild > runner);
+  for (const [name, job] of Object.entries(workflow.jobs)) {
+    if (name === "musea-native-inline") continue;
+    assert.ok(!job.steps?.some((step) => step.uses === "./.github/actions/setup-rust-script"));
+  }
+  assert.deepEqual(planProductIntegrations([".github/actions/setup-rust-script/action.yml"]), {
+    nuxt: false,
+    "musea-native": true,
+    "musea-browser": false,
+  });
 });
 
 test("shared dependency and planner changes exercise every integration", () => {

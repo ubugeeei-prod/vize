@@ -25,10 +25,20 @@ runs:
       uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
       with:
         arch: ${{ startsWith(inputs.target, 'aarch64-') && 'amd64_arm64' || 'amd64' }}
+    - name: Read the repository Rust toolchain
+      id: rust-toolchain
+      shell: bash
+      run: |
+        node --input-type=module <<'JS' >> "$GITHUB_OUTPUT"
+        import { readFileSync } from "node:fs";
+        const channel = /^channel = "([^"]+)"$/m.exec(readFileSync("rust-toolchain.toml", "utf8"))?.[1];
+        if (!channel) throw new Error("Missing repository Rust toolchain channel");
+        console.log(`channel=${channel}`);
+        JS
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
       with:
-        toolchain: stable
+        toolchain: ${{ steps.rust-toolchain.outputs.channel }}
         targets: ${{ inputs.target }}
     - uses: ./.github/actions/setup-rust-script
       if: runner.os == 'Linux' && endsWith(inputs.target, '-musl')
