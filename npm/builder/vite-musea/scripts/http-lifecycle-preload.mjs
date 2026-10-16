@@ -8,7 +8,7 @@ if (directory) {
   const record = (event, details = {}) =>
     appendFileSync(file, `${JSON.stringify({ event, pid: process.pid, threadId, ...details })}\n`);
   record("started", { node: process.version, executable: process.execPath });
-  const original = process.dlopen;
+  const original = process.dlopen.bind(process);
   process.dlopen = function (module, filename, ...options) {
     record("dlopen:start", {
       filename,

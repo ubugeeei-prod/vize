@@ -70,8 +70,7 @@ for (const [name, source] of [
     writeFileSync(path.join(directory, "authored.test.ts"), source);
     const filename = path.join(project, "src", `.http-lifecycle-${name}-${trial}.test.ts`);
     const transformed = instrument(source);
-    writeFileSync(filename, transformed);
-    writeFileSync(path.join(directory, "observed.test.ts"), transformed);
+    writeFileSync(filename, transformed, { flag: "wx" });
     const args = ["--import", preload, tsx, "--test", "--test-reporter=tap", filename];
     const env = {
       ...process.env,
@@ -82,6 +81,7 @@ for (const [name, source] of [
     delete env.NODE_TEST_CONTEXT;
     let result;
     try {
+      writeFileSync(path.join(directory, "observed.test.ts"), transformed);
       result = spawnSync(process.execPath, args, {
         cwd: project,
         env,
