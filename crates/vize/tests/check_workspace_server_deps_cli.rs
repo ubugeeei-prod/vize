@@ -79,7 +79,8 @@ fn check_workspace_server_deps(vue_files: usize) {
         return;
     };
     let case = tempfile::tempdir().unwrap();
-    let root = case.path();
+    let root = case.path().canonicalize().unwrap();
+    let root = root.as_path();
     write_file(root, "package.json", r#"{"private":true}"#);
     write_file(
         root,
@@ -130,31 +131,58 @@ fn check_workspace_server_deps(vue_files: usize) {
     std::os::windows::fs::symlink_dir(root.join("lib"), root.join("app/node_modules/lib")).unwrap();
 
     let app = root.join("app");
-    for servers in [Some("1"), Some("2"), None] {
-        let result = run_check(&app, &corsa, servers);
-        assert_eq!(result["errorCount"], 0, "servers={servers:?}: {result}");
-        assert_eq!(
-            result["fileCount"],
-            vue_files + 2,
-            "servers={servers:?}: {result}"
-        );
+    for broken in [false, true] {
+        if broken {
+            // Imported dependencies must retain their real semantic errors.
+            write_file(
+                root,
+                "lib/src/index.ts",
+                "import { createThing } from 'private-dep'\nexport const thing: number = createThing()\n",
+            );
+        }
+        let expected = expected_report(root, vue_files, broken);
+        for servers in [Some("1"), Some("2"), None] {
+            assert_eq!(
+                run_check(&app, &corsa, servers),
+                expected,
+                "complete report: broken={broken}, servers={servers:?}"
+            );
+        }
     }
+}
 
-    // Preserve real semantic errors in the imported dependency; fixing the
-    // false positive must not silently drop the external file's diagnostics.
-    write_file(
-        root,
-        "lib/src/index.ts",
-        "import { createThing } from 'private-dep'\nexport const thing: number = createThing()\n",
-    );
-    let expected = run_check(&app, &corsa, Some("1"));
-    assert_eq!(expected["errorCount"], 1, "{expected}");
-    assert!(expected.to_string().contains("TS2322"), "{expected}");
-    for servers in [Some("2"), None] {
-        assert_eq!(
-            run_check(&app, &corsa, servers),
-            expected,
-            "servers={servers:?}"
-        );
-    }
+// The fixture authors every input and owns the entire report, including empty
+// diagnostic receivers. Server agreement alone could agree on the same omission.
+fn expected_report(root: &Path, vue_files: usize, broken: bool) -> serde_json::Value {
+    let mut source_files: Vec<_> = (0..vue_files)
+        .map(|index| vize_l0::cstr!("src/{index}.vue"))
+        .collect();
+    source_files.push("src/main.ts".into());
+    source_files.sort();
+    let mut files = vec![serde_json::json!({
+        "file": root.join("lib/src/index.ts"),
+        "diagnostics": if broken {
+            vec!["error:2:14 [TS2322] Type 'string' is not assignable to type 'number'."]
+        } else { vec![] },
+    })];
+    files.extend(source_files.iter().map(|file| {
+        serde_json::json!({
+            "file": file.as_str(), "diagnostics": [],
+        })
+    }));
+    // The CLI sorts by displayed path, including the absolute external receiver.
+    files.sort_by(|left, right| left["file"].as_str().cmp(&right["file"].as_str()));
+    let program_files: Vec<_> = source_files.iter().map(|file| file.as_str()).collect();
+    serde_json::json!({
+        "files": files,
+        "programs": [{
+            "root": ".", "tsconfig": "tsconfig.json", "files": program_files,
+            "compilerOptions": {
+                "strict": true, "module": "ESNext", "moduleResolution": "Bundler",
+                "target": "ES2022", "skipLibCheck": true, "noEmit": true,
+            },
+        }],
+        "errorCount": usize::from(broken), "warningCount": 0,
+        "fileCount": vue_files + 2,
+    })
 }
