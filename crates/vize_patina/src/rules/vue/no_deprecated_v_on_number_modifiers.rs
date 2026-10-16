@@ -126,14 +126,16 @@ fn decimal_key_code(name: &str) -> Option<f64> {
         )
     });
     let sign_len = usize::from(name.starts_with(['+', '-']));
-    let digits = name.as_bytes()[sign_len..]
+    let digits = name
+        .as_bytes()
+        .get(sign_len..)?
         .iter()
         .take_while(|byte| byte.is_ascii_digit())
         .count();
     if digits == 0 {
         return None;
     }
-    let value = name[..sign_len + digits].parse::<f64>().ok()?;
+    let value = name.get(..sign_len + digits)?.parse::<f64>().ok()?;
     value.is_finite().then_some(value)
 }
 
@@ -148,10 +150,10 @@ fn named_key(key_code: f64) -> Option<&'static str> {
         "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12",
     ];
     if (65.0..=90.0).contains(&key_code) {
-        return Some(LETTERS[key_code as usize - 65]);
+        return LETTERS.get(key_code as usize - 65).copied();
     }
     if (112.0..=123.0).contains(&key_code) {
-        return Some(FUNCTION_KEYS[key_code as usize - 112]);
+        return FUNCTION_KEYS.get(key_code as usize - 112).copied();
     }
     Some(match key_code {
         13.0 => "enter",
