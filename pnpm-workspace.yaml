@@ -43,6 +43,7 @@ minimumReleaseAgeExclude:
   - "vue@3.6.0-rc.11"
 
 patchedDependencies:
+  "@ox-content/vite-plugin@2.88.0": "patches/@ox-content__vite-plugin@2.88.0.patch"
   "@nuxt/devtools@3.4.1": "patches/@nuxt__devtools@3.4.1.patch"
   "braces@3.0.3": "patches/braces@3.0.3.patch"
   "node-forge@1.4.0": "patches/node-forge@1.4.0.patch"

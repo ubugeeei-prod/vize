@@ -1,0 +1,115 @@
+name: n8n script rule CLI controls
+run-name: n8n script rule CLI controls @ ${{ github.sha }}
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n8n-script-rule-controls-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  SCRIPT_CONTROL_OUTPUT: target/n8n-script-rule-controls/${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  producer:
+    # Reuse the existing same-run custody protocol. One CLI build, no 1369-SFC
+    # replay, full-tooling matrix or second source producer in the consumer.
+    uses: ./.github/workflows/full-source-cli.yml
+
+  controls:
+    name: Whole51 authored script controls and retained research
+    needs: producer
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Preserve the exact consumer source identity
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+          git diff --exit-code HEAD --
+          mkdir -p "$RUNNER_TEMP/n8n-script-rule-workflow"
+          git rev-parse HEAD > "$RUNNER_TEMP/n8n-script-rule-workflow/source-sha.txt"
+          git rev-parse 'HEAD^{tree}' > "$RUNNER_TEMP/n8n-script-rule-workflow/source-tree.txt"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      # The existing restore contract authenticates the producer toolchain and
+      # linker as well as source/tree/binary/receipt, without rebuilding here.
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - name: Install the pinned independent providers
+        id: install
+        run: |
+          set -o pipefail
+          vp install --frozen-lockfile --prefer-offline 2>&1 | tee "$RUNNER_TEMP/n8n-script-rule-workflow/install.log"
+      - uses: ./.github/actions/restore-source-cli
+        id: restore
+        with:
+          producer: ${{ toJSON(needs.producer.outputs) }}
+      - name: Preserve the original producer and consumer custody
+        run: |
+          cp target/ci/vize.differential-build.json "$RUNNER_TEMP/n8n-script-rule-workflow/producer-build.json"
+          cp target/ci/vize.source-build.json "$RUNNER_TEMP/n8n-script-rule-workflow/producer-transport.json"
+          cp target/ci/vize.source-use.json "$RUNNER_TEMP/n8n-script-rule-workflow/consumer-use.json"
+      - name: Pack the source public config export
+        id: pack
+        working-directory: npm/cli
+        run: |
+          set -o pipefail
+          vp pack 2>&1 | tee "$RUNNER_TEMP/n8n-script-rule-workflow/pack.log"
+      - name: Verify whole packet and independent coordinate contracts
+        id: contracts
+        run: |
+          set -o pipefail
+          vp node --test tests/tooling/n8n-cli-config-script.test.mjs 2>&1 | tee "$RUNNER_TEMP/n8n-script-rule-workflow/contracts.log"
+      - name: Capture every control and research input before rejecting disagreement
+        id: controls
+        env:
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+        run: |
+          set -o pipefail
+          vp node tests/tooling/support/n8n-cli-config-script-rules-acceptance.mjs "$SCRIPT_CONTROL_OUTPUT" 2>&1 | tee "$RUNNER_TEMP/n8n-script-rule-workflow/controls.log"
+      - name: Preserve workflow outcomes and failures without a second build
+        if: ${{ always() }}
+        env:
+          INSTALL_OUTCOME: ${{ steps.install.outcome }}
+          RESTORE_OUTCOME: ${{ steps.restore.outcome }}
+          PACK_OUTCOME: ${{ steps.pack.outcome }}
+          CONTRACT_OUTCOME: ${{ steps.contracts.outcome }}
+          CONTROL_OUTCOME: ${{ steps.controls.outcome }}
+        run: |
+          mkdir -p "$SCRIPT_CONTROL_OUTPUT/workflow"
+          if [[ -d "$RUNNER_TEMP/n8n-script-rule-workflow" ]]; then
+            cp -a "$RUNNER_TEMP/n8n-script-rule-workflow/." "$SCRIPT_CONTROL_OUTPUT/workflow/"
+          fi
+          printf '{"install":"%s","restore":"%s","pack":"%s","contracts":"%s","controls":"%s"}\n' \
+            "$INSTALL_OUTCOME" "$RESTORE_OUTCOME" "$PACK_OUTCOME" "$CONTRACT_OUTCOME" "$CONTROL_OUTCOME" \
+            > "$SCRIPT_CONTROL_OUTPUT/workflow/step-outcomes.json"
+      - name: Upload every whole provider, native process and research failure packet
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: n8n-script-rule-controls-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.SCRIPT_CONTROL_OUTPUT }}
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

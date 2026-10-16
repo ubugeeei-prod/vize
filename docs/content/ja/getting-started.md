@@ -55,6 +55,7 @@ vp run fmt:check
 - [コンポーネントを探す](./guide/ui/index.md)。使い方と API を確認できます。
 - [Musea でコンポーネントをプレビューする](./guide/musea.md)。
 - [エディターを設定する](./guide/vite-plus-editor.md)。CLI とエディターで共通の設定を利用できます。
+- [JSR から JavaScript API を使う](./guide/jsr.md)。Node・Deno・Bun で利用できます。
 
 > [!NOTE]
 > Vize 0.457.0 のネイティブ CLI は Vite の共通設定を読み込めます。`init` も専用の Vize 設定ファイルを作らずに導入できます。共通設定を利用する場合は、CLI・Vite 連携・エディター拡張機能を更新してください。設定の検索順序・優先順位と、任意の専用形式は[リファレンス](./guide/configuration-reference.md)を参照してください。

@@ -32,11 +32,11 @@ merging. The official command performs these steps:
    association intact throughout recovery.
 3. Dispatch Release for the frozen source. It builds and smokes the packages
    and editor assets, validates the publish catalog, and runs preflight.
-   Full Check, Fuzz replay, Miri, Real Project Matrix and Docs build must all
-   succeed at the frozen head. The pinned protocol disables parent evidence
-   reuse; required source PR checks also remain mandatory.
-4. After required source checks, all five full source gates, every build and
-   full preflight succeed, the release operator admits the generated metadata
+   Required exact-source Check jobs remain mandatory. Fuzz replay, Miri,
+   Real Project Matrix and Docs build keep their own schedules; they are not
+   additional release waits under the current qualification contract.
+4. After required source checks, every release build and preflight succeed,
+   the release operator admits the generated metadata
    PR to the protected merge queue after its own checks pass. The command
    authenticates the actual signed delivery, exact generated metadata, author
    permission, required protected workflows and identical publish catalog.
@@ -50,6 +50,31 @@ ordinary protected merge; the official pinned runner owns source tagging and
 publication. Preserve the source branch, source commit, protocol markers and
 release run when resuming. A source that lacks the pinned workflow requires a
 new prepared cut containing that implementation.
+
+### Keep the source branch at its frozen head
+
+The source PR is a receipt, so do not use GitHub's **Update branch**, merge
+`main` into it, rebase it, or regenerate its version commit. Only the separate
+metadata integration PR follows moving `main`. Even a merge that preserves the
+release version changes the source head and breaks the receipt's identity.
+
+If the branch moves, stop automated resume and preserve the changed commit and
+its parents before attempting recovery. Record the original C/H, current PR and
+branch heads, durable `release-pin/<tag>` marker, annotated tag, original Release
+run and operator lease. A matching public tag or successful build does not make
+the changed branch a qualified replacement. The existing
+[source-head guard](../../tools/support/release/pr_pin_lock.rs) and
+[recovery regression](../../tools/support/release/pr_pin_recovery_tests.rs)
+deliberately refuse to rewrite the source during ordinary resume.
+
+Review any proposed restoration as a separate operation: retain a backup ref,
+name the exact expected old head and frozen target, and use an exact lease that
+rejects intervening edits. Afterward, recheck the PR, source branch, durable pin,
+tag and original run before resuming the same source. Preserve the tag, public
+artifacts, receipt markers and original consumer policies throughout recovery.
+Do not start a new version merely to bypass incomplete publication of this one.
+The [unpublished-cut retirement procedure](./2026-10-10-retire-unpublished-pin.md)
+does not apply once a tag, GitHub Release or package version exists.
 
 Resume the same source PR with its protocol:
 
@@ -117,13 +142,13 @@ The command performs the whole release:
 5. Publish the artifacts already built by that Release run. Wait until all
    publication jobs succeed and the GitHub Release is publicly available.
 
-Release preflight requires successful Check, Fuzz replay, Miri, Real Project
-Matrix, and Docs build evidence. Main pushes run the fast Check lane. Preflight
-dispatches full Check, Miri, and Docs build at the exact release tag SHA and
-verifies Check's `test-scripts` job; fast push and PR runs cannot stand in for
-them. For a version-only release commit, Fuzz replay and Real Project Matrix
-may reuse their parent's evidence. The Benchmark workflow remains available on
-demand, but is not dispatched or waited on by release preflight.
+Release qualification follows the
+[2026-10-15 scope decision](../davinci/decisions/2026-10-15-release-qualification-scope.md):
+the release's own builds, preflight and required Check jobs must pass. Check
+still includes its required tooling, JavaScript package and semver checks.
+Fuzz replay, Miri, Real Project Matrix, Docs build and Benchmark retain their
+independent schedules and manual entry points; release does not dispatch or
+wait for them. This replaces the earlier five-workflow qualification contract.
 
 Your original worktree stays untouched. Only the command's generated release
 branch can be refreshed, using a lease to reject concurrent edits. Another

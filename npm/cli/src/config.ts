@@ -12,6 +12,7 @@ import type {
   GlobalTypeDeclaration,
 } from "./types/index.js";
 import { loadPklConfigJson } from "./config/pkl.js";
+import { importConfigModule } from "./config/module-runtime.mjs";
 import {
   VITE_CONFIG_FILE_NAMES,
   isViteConfigFile,
@@ -152,6 +153,15 @@ async function loadConfigFile(
   }
 
   const ext = path.extname(absolutePath);
+
+  if (isViteConfigFile(absolutePath)) {
+    // A project's installed Vite owns its module graph. Without Vite, retain
+    // the existing TypeScript transform and fresh native import below.
+    const module = await importConfigModule(absolutePath, () => null);
+    if (module !== null) {
+      return resolveFileExport((module.default ?? module) as UserConfigExport, absolutePath, env);
+    }
+  }
 
   if (ext === ".pkl") {
     return loadPklConfig(absolutePath);

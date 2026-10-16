@@ -108,6 +108,14 @@ vp run lint
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
+**ハンドラーが重なる条件**
+
+ネイティブ要素の同じイベントを処理するリスナーを比較します。独自コンポーネントのイベントは、両方に `.native` が付いている場合だけ対象です。イベント名が異なる場合や、キーフィルターに共通するキーがない場合は競合しません。
+
+システム修飾子は、押している必要があるキーを指定します。`@keydown.alt.shift` は Ctrl+Alt+Shift でも動くため、`@keydown.alt.ctrl.shift` と重なる場合は広い方に `.exact` を追加します。`.exact` は指定したシステムキーを許可し、それ以外の Ctrl、Shift、Alt、Meta を拒否します。
+
+複数のキーボード修飾子は選択肢です。`@keydown.up.down` は上・下のどちらでも動き、Ctrl+下では `@keydown.ctrl.down` と重なります。診断範囲は `.exact` が必要なディレクティブのキーで、ハンドラー式は含みません。
+
 **設定（Vite+）**
 
 ```ts
@@ -163,7 +171,7 @@ vp run lint
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs#L28) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs#L31) · [全ルール](all.md)
 
 ### `vue/v-bind-style`
 

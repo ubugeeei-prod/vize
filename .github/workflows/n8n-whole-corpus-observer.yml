@@ -1,0 +1,115 @@
+name: n8n whole corpus observer
+run-name: n8n whole corpus observer @ ${{ github.sha }}
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n8n-whole-corpus-observer-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  RUSTUP_TOOLCHAIN: "1.99.1"
+  OBSERVER_OUTPUT: target/n8n-whole-corpus-observer/${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  observe:
+    name: Licensed 1369 SFC and 51 rule observations
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify the immutable producer and observer checkout
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+          git diff --exit-code HEAD --
+          mkdir -p "$RUNNER_TEMP/n8n-whole-corpus-workflow"
+          git rev-parse HEAD > "$RUNNER_TEMP/n8n-whole-corpus-workflow/source-sha.txt"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # stable
+        with:
+          toolchain: "1.99.1"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      # Keep the standard cache trust policy; a branch dispatch may build cold.
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: n8n-authored-editor
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install pinned producer dependencies once
+        id: install
+        run: |
+          set -o pipefail
+          vp install --frozen-lockfile --prefer-offline 2>&1 | tee "$RUNNER_TEMP/n8n-whole-corpus-workflow/install.log"
+      - name: Hydrate the licensed read-only n8n source fixture
+        id: hydrate
+        run: |
+          set -o pipefail
+          git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n 2>&1 | tee "$RUNNER_TEMP/n8n-whole-corpus-workflow/hydrate.log"
+          git submodule status -- tests/_fixtures/_git/n8n > "$RUNNER_TEMP/n8n-whole-corpus-workflow/fixture-status.txt"
+      - name: Build and authenticate the exact producer once
+        id: build
+        run: |
+          set -o pipefail
+          rustc -Vv > "$RUNNER_TEMP/n8n-whole-corpus-workflow/rustc.txt"
+          cargo -V > "$RUNNER_TEMP/n8n-whole-corpus-workflow/cargo.txt"
+          vp node --version > "$RUNNER_TEMP/n8n-whole-corpus-workflow/node.txt"
+          sha256sum Cargo.lock pnpm-lock.yaml tools/benchmarks/scripts/package.json > "$RUNNER_TEMP/n8n-whole-corpus-workflow/dependency-inputs.sha256"
+          cargo build --profile ci -p vize 2>&1 | tee "$RUNNER_TEMP/n8n-whole-corpus-workflow/build.log"
+          vp node tests/differential/build-receipt.ts
+          cp target/ci/vize.differential-build.json "$RUNNER_TEMP/n8n-whole-corpus-workflow/producer-build.json"
+      - name: Pack the producer public CLI config export
+        id: pack
+        working-directory: npm/cli
+        run: |
+          set -o pipefail
+          vp pack 2>&1 | tee "$RUNNER_TEMP/n8n-whole-corpus-workflow/pack.log"
+      - name: Observe every licensed original in baseline and scoped modes
+        id: observe
+        run: |
+          set -o pipefail
+          vp node tests/tooling/support/n8n-whole-corpus-observer.mjs "$GITHUB_WORKSPACE" "$OBSERVER_OUTPUT" 2>&1 | tee "$RUNNER_TEMP/n8n-whole-corpus-workflow/observer.log"
+      - name: Retain workflow identity and failures alongside complete observations
+        if: ${{ always() }}
+        env:
+          INSTALL_OUTCOME: ${{ steps.install.outcome }}
+          HYDRATE_OUTCOME: ${{ steps.hydrate.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          PACK_OUTCOME: ${{ steps.pack.outcome }}
+          OBSERVE_OUTCOME: ${{ steps.observe.outcome }}
+        run: |
+          mkdir -p "$OBSERVER_OUTPUT/workflow"
+          if [[ -d "$RUNNER_TEMP/n8n-whole-corpus-workflow" ]]; then
+            cp -a "$RUNNER_TEMP/n8n-whole-corpus-workflow/." "$OBSERVER_OUTPUT/workflow/"
+          fi
+          printf '{"install":"%s","hydrate":"%s","build":"%s","pack":"%s","observe":"%s"}\n' \
+            "$INSTALL_OUTCOME" "$HYDRATE_OUTCOME" "$BUILD_OUTCOME" "$PACK_OUTCOME" "$OBSERVE_OUTCOME" \
+            > "$OBSERVER_OUTPUT/workflow/step-outcomes.json"
+      - name: Upload complete licensed inputs, provider packets and raw failures before gating
+        id: artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: n8n-whole-corpus-observer-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.OBSERVER_OUTPUT }}
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+      - name: Require canonical parity after all research packets are uploaded
+        if: ${{ !cancelled() && steps.observe.outcome == 'success' && steps.artifacts.outcome == 'success' }}
+        run: vp node tests/tooling/support/n8n-whole-corpus-observer.mjs --require-parity "$OBSERVER_OUTPUT"

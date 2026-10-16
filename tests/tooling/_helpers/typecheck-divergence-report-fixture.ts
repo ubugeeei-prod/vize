@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -289,6 +290,68 @@ export function cleanup(fixture: ReturnType<typeof setup>) {
 
 export function readJson(pathname: string) {
   return JSON.parse(fs.readFileSync(pathname, "utf8"));
+}
+
+/** Record-only preserves the whole observation even when its budget is unusable or breached. */
+export function assertRecordOnlyObservations(
+  fixture: ReturnType<typeof setup>,
+  artifact: any,
+  expected: { baselineOutput: string; baselineFiles: string[] },
+) {
+  const observations = readJson(
+    path.join(fixture.reportDir, "fixture-typecheck-observations.json"),
+  );
+  const payloadBytes = fs.readFileSync(fixture.outputPath);
+  assert.deepEqual(artifact.enforcement, { budgetMode: "record-only" });
+  assert.deepEqual(observations, {
+    schema: "vize.fixtureTypecheckObservations",
+    version: 1,
+    project: "fixture",
+    evidence: readJson(path.join(fixture.reportDir, "summary.json")).evidence,
+    preparation: artifact.preparation,
+    source: {
+      payloadSha256: sha256(payloadBytes),
+      fileCount: readJson(fixture.outputPath).parsed.fileCount,
+    },
+    vize: readJson(fixture.outputPath),
+    baseline: {
+      command: artifact.baseline.command,
+      version: "3.3.4",
+      exitCode: 2,
+      runError: null,
+      stdout: expected.baselineOutput,
+      stderr: "",
+      config: fs.readFileSync(
+        path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"),
+        "utf8",
+      ),
+      sourceConfig: fs.readFileSync(path.join(fixture.fixtureRoot, "tsconfig.json"), "utf8"),
+    },
+    coverage: {
+      command: artifact.baseline.coverageCommand,
+      exitCode: 0,
+      runError: null,
+      stdout: expected.baselineFiles
+        .map((file) => `${path.join(fixture.fixtureRoot, file)}\n`)
+        .join(""),
+      stderr: "",
+    },
+  });
+  assert.deepEqual(artifact.evidence, observations.evidence);
+  assert.deepEqual(artifact.source, observations.source);
+  assert.equal(
+    artifact.preparation.payloadSha256,
+    sha256(fs.readFileSync(path.join(fixture.reportDir, "fixture-typecheck-dependencies.json"))),
+  );
+  for (const [raw, hash] of [
+    [observations.baseline.stdout, artifact.baseline.stdoutSha256],
+    [observations.baseline.stderr, artifact.baseline.stderrSha256],
+    [observations.coverage.stdout, artifact.baseline.coverageStdoutSha256],
+    [observations.coverage.stderr, artifact.baseline.coverageStderrSha256],
+    [observations.baseline.config, artifact.baseline.configSha256],
+    [observations.baseline.sourceConfig, artifact.baseline.sourceConfigSha256],
+  ])
+    assert.equal(sha256(raw), hash);
 }
 
 export function updateVizeOutput(

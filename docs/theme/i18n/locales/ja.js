@@ -24,6 +24,7 @@
       "/guide/testing": "テストとフィードバック",
       "/guide/doctor": "Doctor",
       "/guide/cli": "CLI",
+      "/guide/jsr": "JSR から API を使う",
       "/guide/lib-pull": "ソース配布",
       "/guide/auto-imports": "自動インポート",
       "/guide/ui": "UI リファレンス",

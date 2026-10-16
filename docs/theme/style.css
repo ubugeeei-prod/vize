@@ -37,6 +37,11 @@ body {
   z-index: 1;
 }
 
+/* The fixed outline sits above the main content's transparent padding. */
+body:not(.entry-page) .toc {
+  z-index: 2;
+}
+
 body:not(.entry-page) .layout,
 body:not(.entry-page) .main {
   background: transparent !important;

@@ -5,12 +5,16 @@ on:
   push:
     branches:
       - main
-    # Publish authored site changes immediately. Code-only pushes use the
-    # nightly build, and releases dispatch an exact-SHA build.
+    # Publish authored pages, copyable examples and their generators immediately.
+    # Other code-only pushes use nightly builds or exact-SHA release dispatches.
     paths:
       - ".github/workflows/build-docs.yml"
       - "docs/**"
       - "!docs/davinci/decisions/**"
+      - "npm/compose/core/examples/**"
+      - "npm/ui/src/**/examples/**"
+      - "npm/ui/scripts/generate-reference-docs.ts"
+      - "npm/ui/scripts/reference-docs/**"
       - "playground/**"
       - "examples/vite-musea/**"
   schedule:

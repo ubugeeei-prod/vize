@@ -61,18 +61,7 @@ pub mod types;
 pub mod vite_plugin;
 
 /// Backward-compatible SFC parser module.
-pub mod parse {
-    use crate::types::{SfcDescriptor, SfcError, SfcParseOptions};
-
-    /// Parse a Vue SFC into a zero-copy descriptor.
-    #[inline]
-    pub fn parse_sfc<'a>(
-        source: &'a str,
-        options: SfcParseOptions,
-    ) -> Result<SfcDescriptor<'a>, SfcError> {
-        vize_croquis::sfc::parse_sfc(source, options)
-    }
-}
+pub mod parse;
 
 // Re-exports for public API
 pub use bundler::{

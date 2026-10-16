@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import {
+  access,
   mkdtemp,
   mkdir,
   copyFile,
@@ -213,4 +214,84 @@ await test("Vite 7's real esbuild loader bundles the original module rather than
   } finally {
     await rm(dependencies, { recursive: true, force: true });
   }
+});
+
+await test("nearest present Vite owns loading while legitimate symlinks and hoisting retain one evaluation", async () => {
+  for (const installation of ["empty", "broken", "dangling", "symlink", "hoisted"]) {
+    await project(async (directory) => {
+      const nested = join(directory, "nested");
+      await mkdir(join(nested, "node_modules"), { recursive: true });
+      await writeFile(join(nested, "package.json"), '{"type":"module"}');
+      const candidate = join(nested, "node_modules/vite");
+      if (installation === "symlink") await symlink(vitePackage, candidate, "junction");
+      else if (installation === "dangling")
+        await symlink(join(directory, "absent-vite"), candidate, "junction");
+      else if (installation !== "hoisted") {
+        await mkdir(candidate);
+        if (installation === "broken") await writeFile(join(candidate, "package.json"), "{broken");
+      }
+      const counter = join(nested, "evaluations.json");
+      const selected = join(nested, "vite.config.ts");
+      const authored = `import {existsSync,readFileSync,writeFileSync} from 'node:fs';
+        const counter=${JSON.stringify(counter)};
+        const counts=existsSync(counter)?JSON.parse(readFileSync(counter,'utf8')):{module:0,source:0};
+        counts.module++; writeFileSync(counter,JSON.stringify(counts));
+        const wrapper=()=>{throw new Error('Vite+ wrapper executed');};
+        wrapper[Symbol.for('@vizejs/vite-plugin/vite-plus/source')]=(env)=>{
+          const counts=JSON.parse(readFileSync(counter,'utf8'));counts.source++;
+          writeFileSync(counter,JSON.stringify(counts));
+          if(env.command!=='serve'||env.mode!=='development')throw new Error('environment changed');
+          return {vize:{formatter:{printWidth:91}}};
+        };export default wrapper;`;
+      await writeFile(selected, authored);
+      if (["empty", "broken", "dangling"].includes(installation)) {
+        await assert.rejects(importConfigModule(selected));
+        await assert.rejects(access(counter));
+      } else {
+        const loaded = await importConfigModule(selected);
+        assert.deepEqual(await resolveViteConfigExport(loaded.default), {
+          typeChecker: { jsxTypecheck: true },
+          formatter: { printWidth: 91 },
+        });
+        assert.deepEqual(JSON.parse(await readFile(counter, "utf8")), { module: 1, source: 1 });
+      }
+      assert.equal(await readFile(selected, "utf8"), authored);
+    });
+  }
+});
+
+await test("global Vite search paths cannot replace a dependency-free project's native loading", async () => {
+  await project(async (directory) => {
+    const global = join(directory, "global");
+    await mkdir(join(global, "vite"), { recursive: true });
+    await writeFile(
+      join(global, "vite/package.json"),
+      '{"name":"vite","type":"module","exports":"./index.mjs"}',
+    );
+    await writeFile(
+      join(global, "vite/index.mjs"),
+      "export function loadConfigFromFile(){throw new Error('global Vite executed');}",
+    );
+    const selected = join(directory, "vite.config.mjs");
+    const authored = "export default {vize:{formatter:{printWidth:92}}};";
+    await writeFile(selected, authored);
+    const loader = new URL(
+      "../../crates/vize_carton/src/config/loader/module-runtime.mjs",
+      import.meta.url,
+    );
+    const script = `import {importConfigModule} from ${JSON.stringify(loader.href)};
+      const loaded=await importConfigModule(process.argv[1]);process.stdout.write(JSON.stringify(loaded.default));`;
+    const output = await execute(
+      process.execPath,
+      ["--input-type=module", "-e", script, selected],
+      {
+        cwd: directory,
+        env: { ...process.env, NODE_PATH: global },
+        timeout: 10_000,
+      },
+    );
+    assert.equal(output.stderr, "");
+    assert.deepEqual(JSON.parse(output.stdout), { vize: { formatter: { printWidth: 92 } } });
+    assert.equal(await readFile(selected, "utf8"), authored);
+  }, false);
 });

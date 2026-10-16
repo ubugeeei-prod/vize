@@ -24,6 +24,7 @@
       "/guide/testing": "测试与反馈",
       "/guide/doctor": "Doctor",
       "/guide/cli": "CLI",
+      "/guide/jsr": "通过 JSR 使用 JavaScript API",
       "/guide/lib-pull": "源码分发",
       "/guide/auto-imports": "自动导入",
       "/guide/ui": "UI 参考",

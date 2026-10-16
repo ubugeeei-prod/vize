@@ -1,12 +1,13 @@
 /** Verify generated documentation routes and their real preview assets. */
 import assert from "node:assert/strict";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync, mkdirSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import type { AddressInfo } from "node:net";
 
+import { verifyTocPointerLayer } from "../../scripts/toc-render-assertions.ts";
 import { resolvePuppeteerExecutablePath } from "../../browser-path.js";
 import { captureComposablePreviews } from "./capture-composables.ts";
 import { previewComposableExamples } from "./build-config.ts";
@@ -59,6 +60,11 @@ const server = createServer((request, response) => {
 await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
 const { chromium } = require("playwright") as typeof import("playwright");
 const browser = await chromium.launch({ executablePath: resolvePuppeteerExecutablePath() });
+const tocOutput = path.join(path.resolve(values.output), "toc-pointer");
+const tocReceipts: {
+  width: number;
+  controls: Awaited<ReturnType<typeof verifyTocPointerLayer>>;
+}[] = [];
 try {
   const base =
     values.site?.replace(/\/$/, "") ?? `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -72,6 +78,7 @@ try {
       for (const route of [
         "/guide/ui/",
         "/ja/guide/ui/",
+        "/ja/getting-started/",
         "/guide/ui/button/",
         "/guide/ui/dialog/",
         "/guide/ui-styles/",
@@ -89,6 +96,15 @@ try {
         const response = await page.goto(`${base}${route}`, { waitUntil: "domcontentloaded" });
         assert.equal(response!.status(), 200, route);
         assert.ok(await page.locator("h1").first().textContent(), `${route}: heading`);
+        if (route === "/ja/getting-started/")
+          tocReceipts.push({
+            width,
+            controls: await verifyTocPointerLayer(
+              page,
+              width === 390 ? "mobile" : "desktop",
+              tocOutput,
+            ),
+          });
         const example = previewComposableExamples.find(
           (item) => route === `/guide/composables/${item.name}/`,
         );
@@ -167,9 +183,14 @@ try {
     path.resolve(values.output),
   );
   process.stdout.write(
-    `Verified ${10 + previewComposableExamples.length} generated component/composable documentation routes at desktop/mobile widths and ${checkedLinks.size} local links\n`,
+    `Verified ${11 + previewComposableExamples.length} generated component/composable documentation routes at desktop/mobile widths and ${checkedLinks.size} local links\n`,
   );
 } finally {
+  mkdirSync(tocOutput, { recursive: true });
+  writeFileSync(
+    path.join(tocOutput, "receipt.json"),
+    JSON.stringify({ completed: tocReceipts.length === 2, controls: tocReceipts }, null, 2) + "\n",
+  );
   await browser.close();
   await new Promise<void>((resolve, reject) =>
     server.close((error) => (error ? reject(error) : resolve())),
