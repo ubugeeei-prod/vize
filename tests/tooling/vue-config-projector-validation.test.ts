@@ -129,6 +129,17 @@ test("canonical namespaces refuse unknown roots, entries, native fields and mism
   assert.throws(() => vueConfigOptions({ vue: { entries: sparse } }), TypeError);
 });
 
+test("Corsa server counts use the CLI range in canonical config validation", () => {
+  for (const servers of [1, 2, 32]) {
+    assert.deepEqual(vueConfigOptions({ vue: { typeChecker: { servers } } }), {
+      typeChecker: { servers },
+    });
+  }
+  for (const servers of [0, -1, 33, 1.5]) {
+    assert.throws(() => vueConfigOptions({ vue: { typeChecker: { servers } } }), TypeError);
+  }
+});
+
 test("all documented canonical native sections accept their original field values and own scopes", async () => {
   const vue = {
     version: "3",

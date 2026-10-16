@@ -57,7 +57,7 @@ class TypeCheckerConfig {
   globalsFile: String? = null
 
   /// Parallel Corsa CLI server count (1-32). Omit to auto-tune; 1 disables sharding.
-  servers: Int? = null
+  servers: Int(isBetween(1, 32))? = null
 
   /// Hard bound in milliseconds for each editor Corsa request (default 60000).
   lspRequestTimeoutMs: Int? = null

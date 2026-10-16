@@ -737,7 +737,9 @@
         },
         "servers": {
           "description": "Parallel Corsa CLI server count (1-32). Omit to auto-tune; 1 disables sharding.",
-          "type": "integer"
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
         },
         "lspRequestTimeoutMs": {
           "description": "Hard bound in milliseconds for each editor Corsa request. Defaults to 60000; use a larger value for large cold projects.",
