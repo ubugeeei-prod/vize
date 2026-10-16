@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
 import { gunzipSync } from "node:zlib";
+import { compileFunction } from "node:vm";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const fixture = path.join(root, "tests/_fixtures/differential/lint/legacy-instance-apis-9217");
@@ -175,7 +176,10 @@ await test("Vue 3 keeps removed instance events unavailable after TypeScript era
           const { outputText } = transpileModule(source, {
             compilerOptions: { module: ModuleKind.None, target: ScriptTarget.ES2022 },
           });
-          assert.throws(() => Function("h", outputText).call(this, () => handled++), TypeError);
+          assert.throws(
+            () => compileFunction(outputText, ["h"]).call(this, () => handled++),
+            TypeError,
+          );
         }
         this.$on?.("probe", () => handled++);
         this?.$once?.("probe", () => handled++);
