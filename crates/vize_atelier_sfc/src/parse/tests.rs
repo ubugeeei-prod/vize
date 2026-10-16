@@ -143,21 +143,30 @@ fn native_projection_borrows_original_bytes_after_the_reused_arena_is_overwritte
 
 #[test]
 fn common_unsupported_envelopes_do_not_acquire_a_native_arena() {
-    vize_l0::pool::clear();
-    assert_eq!(vize_l0::pool::idle(), 0);
     for source in [
         "<script setup>const value=1;</script><template>{{value}}</template>",
         "<template><p/></template><style scoped>.p{color:red}</style>",
         "<template lang=html><p/></template>",
     ] {
+        vize_l0::pool::clear();
         let calls = Cell::new(0);
-        let _ = with_legacy(source, SfcParseOptions::default(), |source, options| {
+        let actual = with_legacy(source, SfcParseOptions::default(), |source, options| {
+            // Observe the rejected native attempt before the retained parser:
+            // its style CSS-variable extraction legitimately acquires an arena.
+            assert_eq!(vize_l0::pool::idle(), 0);
+            assert_eq!(vize_l0::pool::checked_out(), 0);
             calls.set(calls.get() + 1);
             vize_croquis::sfc::parse_sfc(source, options)
         });
         assert_eq!(calls.get(), 1);
-        assert_eq!(vize_l0::pool::idle(), 0);
-        assert_eq!(vize_l0::pool::checked_out(), 0);
+        assert_eq!(
+            serde_json::to_value(actual).unwrap(),
+            serde_json::to_value(vize_croquis::sfc::parse_sfc(
+                source,
+                SfcParseOptions::default()
+            ))
+            .unwrap()
+        );
     }
 }
 

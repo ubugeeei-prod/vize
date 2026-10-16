@@ -16,7 +16,9 @@
 //! maps, diagnostics and public descriptor mutability remain their existing
 //! contracts. This does not establish whole-product native-only acceptance.
 
-use crate::types::{SfcDescriptor, SfcError, SfcParseOptions};
+use std::borrow::Cow;
+
+use crate::types::{SfcDescriptor, SfcError, SfcParseOptions, SfcTemplateBlock};
 
 mod native;
 
@@ -34,8 +36,22 @@ fn with_legacy<'a>(
     options: SfcParseOptions,
     legacy: impl FnOnce(&'a str, SfcParseOptions) -> Result<SfcDescriptor<'a>, SfcError>,
 ) -> Result<SfcDescriptor<'a>, SfcError> {
-    if let Some(descriptor) = native::try_parse(source, &options) {
-        return Ok(descriptor);
+    if let Some(loc) = native::try_parse(source, &options) {
+        // The native owner checked these original-source coordinates. Move the
+        // caller's filename exactly as the retained parser does; do not copy it.
+        let content = &source[loc.start..loc.end];
+        return Ok(SfcDescriptor {
+            filename: Cow::Owned(options.filename.into()),
+            source: Cow::Borrowed(source),
+            template: Some(SfcTemplateBlock {
+                content: Cow::Borrowed(content),
+                loc,
+                lang: None,
+                src: None,
+                attrs: Default::default(),
+            }),
+            ..Default::default()
+        });
     }
     legacy(source, options)
 }

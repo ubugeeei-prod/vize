@@ -1,6 +1,5 @@
 //! Project only geometry admitted by the canonical original Vue descriptor.
 
-use std::borrow::Cow;
 use vize_l0::{
     config::{VueDialect, VueVersion},
     pool,
@@ -10,12 +9,9 @@ use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
 };
 
-use crate::types::{BlockLocation, PadOption, SfcDescriptor, SfcParseOptions, SfcTemplateBlock};
+use crate::types::{BlockLocation, PadOption, SfcParseOptions};
 
-pub(super) fn try_parse<'s>(
-    source: &'s str,
-    options: &SfcParseOptions,
-) -> Option<SfcDescriptor<'s>> {
+pub(super) fn try_parse(source: &str, options: &SfcParseOptions) -> Option<BlockLocation> {
     // Rejection only: avoid observing ordinary script/style inputs twice. The
     // original descriptor below remains the sole authority for admission.
     let envelope = source.trim_ascii();
@@ -62,25 +58,14 @@ pub(super) fn try_parse<'s>(
     let end_column = content
         .rfind('\n')
         .map_or(start_column + content.len(), |at| content.len() - at);
-    Some(SfcDescriptor {
-        filename: Cow::Owned(options.filename.as_str().into()),
-        source: Cow::Borrowed(source),
-        template: Some(SfcTemplateBlock {
-            content: Cow::Borrowed(content),
-            loc: BlockLocation {
-                start,
-                end,
-                tag_start: block.open_tag.start as usize,
-                tag_end: block.close_tag?.end as usize,
-                start_line,
-                start_column,
-                end_line,
-                end_column,
-            },
-            lang: None,
-            src: None,
-            attrs: Default::default(),
-        }),
-        ..Default::default()
+    Some(BlockLocation {
+        start,
+        end,
+        tag_start: block.open_tag.start as usize,
+        tag_end: block.close_tag?.end as usize,
+        start_line,
+        start_column,
+        end_line,
+        end_column,
     })
 }
