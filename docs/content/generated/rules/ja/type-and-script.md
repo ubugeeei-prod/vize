@@ -928,7 +928,7 @@ vp run lint
 
 **悪い**
 
-コンポーネントの別名とテンプレートの未束縛参照が `$listeners` を使っています。Vue 3 ではリスナーが属性に統合され、この API は削除されました。
+スクリプトが削除済みの `$listeners` を参照しています。現在の診断対象はスクリプトのみです。テンプレート行は移行例で、診断は Draft #9251 の後続対応です。
 
 ```vue annotate="remove:4,5,9"
 <script>
@@ -946,7 +946,7 @@ export default {
 
 **良い**
 
-`this.$attrs` と `v-bind="$attrs"` に置き換え、属性と on 接頭辞のリスナープロパティを転送します。テンプレートのローカル変数や別オブジェクトの同名プロパティは対象外です。
+`this.$attrs` に置き換えています。`v-bind="$attrs"` は Vue 3 への移行例で、テンプレート診断は #9251 の後続対応です。スクリプトの受信側・参照に対する既存の広い警告範囲は維持します。
 
 ```vue annotate="add:4,8"
 <script>
@@ -1101,7 +1101,7 @@ export default {
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L52) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L51) · [全ルール](all.md)
 
 ### `script/no-deprecated-props-default-this`
 

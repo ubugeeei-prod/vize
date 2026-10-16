@@ -928,7 +928,7 @@ vp run lint
 
 **Bad**
 
-The component instance alias and the unbound template reference use `$listeners`, which Vue 3 removed after merging listeners into attributes.
+The script reads the removed `$listeners` property. This rule currently diagnoses scripts only; the template line illustrates migration and is not yet enforced (Draft follow-up #9251).
 
 ```vue annotate="remove:4,5,9"
 <script>
@@ -946,7 +946,7 @@ export default {
 
 **Good**
 
-The component reads `$attrs`, and `v-bind="$attrs"` forwards attributes and on-prefixed listener props. Local template bindings and unrelated receivers are outside this rule.
+The script uses `$attrs`. Forwarding with `v-bind="$attrs"` illustrates Vue 3 migration; template enforcement is deferred to #9251. Script warnings retain their existing broad receiver/reference coverage.
 
 ```vue annotate="add:4,8"
 <script>
@@ -1101,7 +1101,7 @@ export default {
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L52) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L51) · [All rules](all.md)
 
 ### `script/no-deprecated-props-default-this`
 
