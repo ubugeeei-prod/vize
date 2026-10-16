@@ -17,7 +17,7 @@
   },
   "ownedCoverage": {
     "events": "Preserve every historical script warning, including proven Vue-backed and unresolved receiver identities. This patch fixes exact property spans and JSX-bearing component scripts; pinned-provider receiver omissions are recorded as intentional native gaps.",
-    "listeners": "Preserve all37 existing script migration concerns (23 plain Options and14 MdComponent-returned Options); add missing template references, including v-on spread/Object.assign, with exact lexical scopes and spans.",
+    "listeners": "Script-only parent preserves all37 existing script concerns and fixes property spans. All template controls, including spread/Object.assign, are preserved in Draft child9251 and remain unqualified until retained AST/authored ranges/lexical ownership are verified.",
     "expandedControls": [
       "foreign-component-constructor",
       "template-listener-spread",
@@ -28,7 +28,7 @@
     "rule": "script/no-deprecated-dollar-scopedslots-api",
     "status": "Not changed by this fix; it still needs its own template capability and this-bound property-token parity."
   },
-  "acceptanceBoundary": "The complete217 provider packets are replayed independently from70 authored native contracts. Issue9217 retains the proven tiny-emitter and unresolved receiver frontier; there is no all-FPs-resolved claim.",
+  "acceptanceBoundary": "Complete217 provider packets remain intact. Parent9222 qualifies53 script controls through an explicit70-case script projection; all17 full template expectations belong to Draft9251. Issue9217 retains template and receiver frontiers, with no all-FPs-resolved claim.",
   "factoryContractControls": [
     "foreign-registry-component",
     "foreign-registry-mixin",

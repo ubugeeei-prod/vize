@@ -132,6 +132,29 @@ await test("legacy instance API packets preserve every pinned original source an
     const gap = gaps.gaps.find((row) => row.caseId === packet.id);
     if (gap) assert.deepEqual(packet.messages, gap.nativeMessages, packet.id);
   }
+  const ownership = json("template-ownership.json");
+  assert.equal(ownership.childPr, 9251);
+  assert.equal(ownership.cases.length, 70);
+  assert.equal(ownership.cases.filter((row) => row.owner === "script-parent").length, 53);
+  assert.equal(ownership.cases.filter((row) => row.owner === "template-child").length, 17);
+  for (const [file, sha256] of Object.entries(ownership.packetSha256)) {
+    assert.equal(hash(fs.readFileSync(path.join(fixture, file))), sha256);
+  }
+  const script = json("script-native.json");
+  assert.equal(script.records.length, native.records.length);
+  for (const packet of native.records) {
+    const owner = ownership.cases.find((row) => row.id === packet.id);
+    const projection = script.records.find((row) => row.id === packet.id);
+    assert.ok(owner, packet.id);
+    assert.ok(projection, packet.id);
+    assert.equal(owner.sourceSha256, packet.sourceSha256);
+    assert.equal(projection.sourceSha256, packet.sourceSha256);
+    assert.deepEqual(
+      projection.messages,
+      owner.owner === "script-parent" ? packet.messages : [],
+      packet.id,
+    );
+  }
   const provenance = compressed("provenance.json.gz");
   assert.equal(provenance.audit.rows.length, 239);
   assert.equal(provenance.packets.length, 24);

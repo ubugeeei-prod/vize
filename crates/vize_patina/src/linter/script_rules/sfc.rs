@@ -31,17 +31,6 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     {
         return;
     }
-    // Independent template capabilities run once, before script prefilters and
-    // the scriptless return. Resolve configured instances, not metadata names.
-    if let Some((root, offset)) = template_ast {
-        for entry in active_builtin_script_rule_entries(linter, true) {
-            if let Some(rule) = resolved_rule(linter, entry).template_check() {
-                let mut lint = ScriptLintResult::default();
-                rule.check_template(root, offset, &mut lint);
-                merge_script_result(linter, result, lint);
-            }
-        }
-    }
     // A template-only SFC has no script callback to carry this native rule.
     // Reuse the validated template AST before script-only byte prefilters; no
     // empty program, extra parse or configured namesake is admitted here.

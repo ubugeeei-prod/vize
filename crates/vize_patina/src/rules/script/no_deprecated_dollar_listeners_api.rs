@@ -39,9 +39,7 @@
 //! <template><Child v-bind="$attrs" /></template>
 //! ```
 
-mod template;
-
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, ScriptTemplateRule};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{IdentifierReference, Program, StaticMemberExpression};
 use oxc_ast_visit::{
@@ -74,10 +72,6 @@ impl ScriptRule for NoDeprecatedDollarListenersApi {
     #[inline]
     fn uses_ast(&self) -> bool {
         true
-    }
-
-    fn template_check(&self) -> Option<&dyn ScriptTemplateRule> {
-        Some(self)
     }
 
     #[inline]
@@ -125,22 +119,6 @@ impl NoDeprecatedDollarListenersApiVisitor<'_> {
         let end = self.offset as u32 + span.end;
         self.result
             .add_diagnostic(LintDiagnostic::error(META.name, MESSAGE, start, end).with_help(HELP));
-    }
-}
-
-impl ScriptTemplateRule for NoDeprecatedDollarListenersApi {
-    fn check_template(
-        &self,
-        root: &vize_relief::RootNode<'_>,
-        offset: u32,
-        result: &mut ScriptLintResult,
-    ) {
-        for span in template::references(root) {
-            result.add_diagnostic(
-                LintDiagnostic::error(META.name, MESSAGE, offset + span.start, offset + span.end)
-                    .with_help(HELP),
-            );
-        }
     }
 }
 

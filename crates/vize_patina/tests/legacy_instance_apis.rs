@@ -1,4 +1,5 @@
-//! Exact #9217 property spans, with explicit bounded provider blind spots.
+//! Script-only #9217 spans and historical warnings. Draft #9251 owns all 17
+//! preserved template controls; complete expectations remain in native.json.
 use serde::Deserialize;
 use serde_json::{Value, json};
 use vize_patina::{HelpLevel, LintPreset, Linter};
@@ -31,14 +32,14 @@ fn diagnostic_key(message: &Value) -> (u64, u64, String) {
 }
 
 #[test]
-fn authored_controls_preserve_script_warnings_and_exact_template_property_spans() {
+fn script_projection_preserves_warnings_and_exact_property_spans() {
     let corpus: Corpus = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/independent.json"
     ))
     .unwrap();
     assert_eq!(corpus.records.len(), 70);
     let native: NativeCorpus = serde_json::from_str(include_str!(
-        "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/native.json"
+        "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/script-native.json"
     ))
     .unwrap();
     assert_eq!(native.records.len(), corpus.records.len());

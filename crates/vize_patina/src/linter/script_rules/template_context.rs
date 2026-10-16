@@ -10,11 +10,9 @@ pub(super) fn descriptor_needs_template_ast(
     descriptor: &SfcDescriptor<'_>,
     filename: &str,
 ) -> bool {
-    active_builtin_script_rule_entries(linter, true)
-        .any(|entry| resolved_rule(linter, entry).template_check().is_some())
-        || (descriptor.script.is_none()
-            && descriptor.script_setup.is_none()
-            && has_scriptless_attrs_inheritance(linter, filename))
+    (descriptor.script.is_none()
+        && descriptor.script_setup.is_none()
+        && has_scriptless_attrs_inheritance(linter, filename))
         || descriptor.script.as_ref().is_some_and(|block| {
             block_has_active_template_ast_rule(linter, block.content.as_ref(), filename, true)
         })

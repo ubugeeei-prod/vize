@@ -226,28 +226,11 @@ pub trait ScriptRule: Send + Sync {
         false
     }
 
-    /// An independent template check, run once per validated SFC template even
-    /// when the file has no script. This is separate from cross-block checks.
-    fn template_check(&self) -> Option<&dyn ScriptTemplateRule> {
-        None
-    }
-
     /// Whether this rule runs against `<script setup>` blocks (defaults to `true`).
     #[inline]
     fn runs_on_script_setup(&self) -> bool {
         true
     }
-}
-
-/// A configured script rule's independent template capability.
-/// Implementations consume the existing validated tree; no script parse is needed.
-pub trait ScriptTemplateRule {
-    fn check_template(
-        &self,
-        root: &vize_relief::RootNode<'_>,
-        offset: u32,
-        result: &mut ScriptLintResult,
-    );
 }
 
 /// Linter for script blocks
