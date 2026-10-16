@@ -1,175 +1,31 @@
-name: Musea accessibility and capture
+name: Musea HTTP lifecycle diagnosis
 on:
-  pull_request: {}
-  merge_group:
-    types: [checks_requested]
-  schedule:
-    - cron: "43 3 * * *"
   workflow_dispatch:
-
 permissions:
   contents: read
-
-concurrency:
-  group: musea-browser-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  plan:
-    name: Select affected Musea integrations
-    runs-on: ubuntu-24.04
-    timeout-minutes: 3
-    outputs:
-      native: ${{ steps.plan.outputs.musea-native }}
-      browser: ${{ steps.plan.outputs.musea-browser }}
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: package.json, package-manager-cache: false }
-      - name: Select changed product inputs
-        id: plan
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
-        run: |
-          if [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && ! "$BASE_SHA" =~ ^0+$ ]]; then
-            git fetch --no-tags --depth=1 origin "$BASE_SHA"
-          fi
-          node tools/support/compat/github/plan-product-integrations.ts "$GITHUB_EVENT_NAME" "$BASE_SHA" "$GITHUB_SHA"
-
-  musea-native-inline:
-    name: Musea native inline Art contracts
-    needs: plan
-    if: ${{ needs.plan.outputs.native == 'true' }}
+  http-lifecycle:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 25
+    timeout-minutes: 12
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
         with:
           node-version-file: package.json
           cache: true
           run-install: false
-      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
-        with: { toolchain: "1.99.1" }
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: native-inline-browser
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: ./.github/actions/setup-rust-script
-      - name: Install source-native browser dependencies
-        run: vp install --filter './npm/native...' --filter './npm/builder/vite...' --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
-      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
-      - uses: ./.github/actions/setup-ubuntu-archive
-      - name: Install Chromium and its system dependencies
-        run: vize-ci-apt-retry vp exec --filter './npm/builder/vite-musea' -- playwright install --with-deps chromium
-      - name: Build the exact source native binding and gallery
-        run: |
-          vp run --filter './npm/native' build:ci
-          vp run --filter './npm/cli' build
-          vp run --filter './npm/builder/vite' build
-          vp run --filter './npm/builder/vite-musea' build
-      - name: Verify actual native inline component rendering and globals
-        working-directory: npm/builder/vite-musea
-        env:
-          VIZE_MUSEA_NATIVE_BROWSER_TESTS: "1"
-        run: |
-          vp exec tsx --test src/art-component.test.ts src/inline-art.browser.test.ts src/vrt-api.browser.test.ts src/vrt-report.browser.test.ts src/vrt/report-identity.test.ts src/usage-component.browser.test.ts src/compact-props.test.ts src/api-routes/handler-palette-compact.test.ts src/compact-props.browser.test.ts src/cli/serve.test.ts src/cli/service/input.test.ts src/cli/service/reports.test.ts src/hosted-vrt-service.browser.test.ts src/hosted-vrt-lifecycle.browser.test.ts src/literal-variant-keys.browser.test.ts src/literal-variant-keys.test.ts src/hosted-vrt-literal.browser.test.ts src/hosted-vrt-reconnect.browser.test.ts src/packed-gallery-base.browser.test.ts src/unsupported-props.browser.test.ts gallery/utils/supportedProps.test.ts
-          vp exec tsx --test src/inline-art-static.browser.test.ts
-          vp exec tsx --test src/variant-bindings-native.browser.test.ts src/variant-bindings-http.test.ts
-          vp exec tsx --test src/variant-navigation-owner.test.ts src/variant-navigation-probe.browser.test.ts src/variant-navigation-owner.browser.test.ts
-      - name: Verify hosted CLI capture and snapshot identities with the exact source packages
-        working-directory: npm/builder/vite-musea
-        env:
-          VIZE_MUSEA_BROWSER_TESTS: "1"
-        run: |
-          vp exec tsx --test gallery/components/hosted-vrt.browser.test.ts
-          vp exec tsx --test gallery/components/snapshot-identities.browser.test.ts
-      - name: Retain native inline Art browser observations
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: musea-native-inline-${{ github.sha }}
-          path: |
-            artifacts/musea-native-inline/**
-            artifacts/musea-native-static/**
-            artifacts/musea-native-bindings/**
-            artifacts/musea-native-vrt-api/**
-            artifacts/musea-native-vrt-reports/**
-            artifacts/musea-native-hosted-vrt/**
-            artifacts/musea-native-hosted-vrt-lifecycle/**
-            artifacts/musea-native-hosted-vrt-reconnect/**
-            artifacts/musea-native-literal-variants/**
-            artifacts/musea-native-packed-gallery-base/**
-            !artifacts/**/node_modules/**
-          if-no-files-found: warn
-          retention-days: 14
-          include-hidden-files: true
-      - name: Retain hosted CLI captures and snapshot identities
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: musea-hosted-cli-${{ github.sha }}
-          path: |
-            artifacts/musea-hosted-vrt/**/*.png
-            artifacts/musea-hosted-vrt/*.json
-            artifacts/musea-snapshot-identities/**/*.png
-            artifacts/musea-snapshot-identities/**/*.json
-          if-no-files-found: error
-          retention-days: 7
-          include-hidden-files: false
-  musea-browser:
-    name: Musea real Chromium contracts
-    needs: plan
-    if: ${{ needs.plan.outputs.browser == 'true' }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: package.json
-          cache: true
-          run-install: false
-      - name: Install Musea test dependencies
+      - name: Install only the Musea dependency closure
         run: vp install --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
-      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
-      - uses: ./.github/actions/setup-ubuntu-archive
-      - name: Install Chromium and its system dependencies
-        run: |
-          # Browser dependency resolution needs package indices, not desktop metadata.
-          sudo tee /etc/apt/apt.conf.d/81-vize-musea-package-indexes >/dev/null <<'APT'
-          Acquire::Languages "none";
-          Acquire::IndexTargets::deb::DEP-11::DefaultEnabled "false";
-          Acquire::IndexTargets::deb::CNF::DefaultEnabled "false";
-          APT
-          vize-ci-apt-retry vp exec --filter './npm/builder/vite-musea' -- playwright install --with-deps chromium
-      - name: Verify real accessibility and deterministic screenshots
-        working-directory: npm/builder/vite-musea
-        env:
-          VIZE_MUSEA_BROWSER_TESTS: "1"
-        run: |
-          vp exec tsx --test src/a11y/browser-contracts.test.ts src/a11y/node-report.test.ts gallery/components/code-display.browser.test.ts gallery/components/global-toolbar.browser.test.ts gallery/components/public-browser-observation.browser.test.ts gallery/components/hosted-tests.browser.test.ts gallery/components/snapshot-collisions.browser.test.ts
-      - name: Retain gallery browser observations and screenshots
+      - name: Compare baseline and isolated HTTP contracts on the same Linux worker
+        run: vp exec node npm/builder/vite-musea/scripts/http-lifecycle-probe.mjs 163c349e00cc49d117da0a24b2d5acf26aa3c9b1 artifacts/musea-http-lifecycle
+      - name: Retain all phases, native provider identities and original test output
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: musea-code-display-${{ github.sha }}
-          path: |
-            artifacts/musea-code/*.png
-            artifacts/musea-code/observations.json
-            artifacts/musea-globals/*.png
-            artifacts/musea-globals/observations.json
-            artifacts/musea-hosted/*.png
-            artifacts/musea-hosted/observations.json
-            artifacts/musea-snapshot-collisions/*.png
-            artifacts/musea-snapshot-collisions/*.json
+          name: musea-http-lifecycle-${{ github.sha }}
+          path: artifacts/musea-http-lifecycle
           if-no-files-found: error
-          retention-days: 7
-          include-hidden-files: false
+          retention-days: 14
