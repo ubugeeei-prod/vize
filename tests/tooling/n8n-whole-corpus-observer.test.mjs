@@ -14,7 +14,7 @@ import {
   assertQualifiedSummary,
 } from "./support/n8n-whole-corpus-core.mjs";
 
-test("all51 aliases retain three options, registered-only casing and literal six scopes", () => {
+await test("all51 aliases retain three options, registered-only casing and literal six scopes", () => {
   const editor = oracleLayers("packages/frontend/editor-ui", "scoped");
   assert.equal(Object.keys(editor.layers[0].rules).length, 51);
   assert.deepEqual(editor.layers[0].rules["vue/attribute-hyphenation"], ["warn", "always"]);
@@ -40,7 +40,7 @@ test("all51 aliases retain three options, registered-only casing and literal six
   assert.equal(oracleLayers("packages/frontend/editor-ui", "baseline").layers.length, 1);
 });
 
-test("whole packet sidecar preserves suppressions, fix metadata and every unknown field", () => {
+await test("whole packet sidecar preserves suppressions, fix metadata and every unknown field", () => {
   const raw = [
     {
       filePath: "/owned/work/Input.vue",
@@ -57,7 +57,7 @@ test("whole packet sidecar preserves suppressions, fix metadata and every unknow
   assert.equal(raw[0].filePath, "/owned/work/Input.vue");
 });
 
-test("completeness refuses missing clean inputs, duplicates, hidden findings and fatal errors", () => {
+await test("completeness refuses missing clean inputs, duplicates, hidden findings and fatal errors", () => {
   const clean = {
     filePath: "Clean.vue",
     messages: [],
@@ -77,7 +77,7 @@ test("completeness refuses missing clean inputs, duplicates, hidden findings and
   );
 });
 
-test("comparison retains full physical ranges, severities, unknown identities and multiplicity", () => {
+await test("comparison retains full physical ranges, severities, unknown identities and multiplicity", () => {
   const finding = {
     file: "owned/Input.vue",
     rule: "vue/valid-v-on",
@@ -113,7 +113,7 @@ test("comparison retains full physical ranges, severities, unknown identities an
   assert.equal(semanticFindings(raw, "eslint", "owned", () => "owned")[0].rule, "foreign/rule");
 });
 
-test("native scalar and Vue ESLint UTF16 coordinates map LF-based locations to original bytes", () => {
+await test("native scalar and Vue ESLint UTF16 coordinates map LF-based locations to original bytes", () => {
   const source = "😀x\r\nβy\nx\ry\u2028z";
   assert.equal(physicalOffset(source, 1, 2, "native"), 4);
   assert.equal(physicalOffset(source, 1, 3, "eslint"), 4);
@@ -128,7 +128,7 @@ test("native scalar and Vue ESLint UTF16 coordinates map LF-based locations to o
   assert.equal(physicalOffset(source, undefined, undefined, "eslint"), null);
 });
 
-test("whole repeated pinned template/script packets independently establish Vue coordinate units", () => {
+await test("whole repeated pinned template/script packets independently establish Vue coordinate units", () => {
   const fixture = JSON.parse(
     fs.readFileSync(
       new URL("../_fixtures/differential/lint/n8n-whole-corpus-coordinates.json", import.meta.url),
@@ -179,7 +179,7 @@ test("whole repeated pinned template/script packets independently establish Vue 
   assert.equal(messages, 40, "complete foreign findings remain in every repeated provider packet");
 });
 
-test("gate refuses stale schemas, incomplete observations and hidden comparison differences", () => {
+await test("gate refuses stale schemas, incomplete observations and hidden comparison differences", () => {
   const summary = {
     schema: "vize.n8n.whole-corpus-observer",
     version: 1,

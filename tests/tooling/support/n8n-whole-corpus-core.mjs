@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { projection, scopedConfig } from "./n8n-cli-config-inputs.mjs";
 
+const compareBytes = (left, right) => Buffer.compare(Buffer.from(left), Buffer.from(right));
+
 export function oracleRules(config) {
   const rules = {};
   for (const [rule, severity] of Object.entries(config.linter.rules)) {
@@ -57,8 +59,8 @@ export function recordCorpusPackets(rawPackets, workspace) {
 export function assertCompletePackets(packets, expectedFiles, provider) {
   const field = provider === "eslint" ? "filePath" : "file";
   assert.deepEqual(
-    packets.map((packet) => packet[field]).sort(),
-    [...expectedFiles].sort(),
+    packets.map((packet) => packet[field]).sort(compareBytes),
+    [...expectedFiles].sort(compareBytes),
     `${provider}: every original, clean and scriptless file exactly once`,
   );
   for (const packet of packets) {
