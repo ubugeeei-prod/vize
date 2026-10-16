@@ -98,7 +98,9 @@ test("only the present audited real-TSGO cases leave the PR default filter", () 
   assert.ok(canon.includes('assert_eq!(pack.diagnostic_contract.required_tier, "T1")'));
 
   const merge = workflow.jobs["merge-rust-source"].steps;
-  assert.ok(merge.some((step) => step.name === "Run Rust workspace doctests"));
+  assert.ok(
+    workflow.jobs["pr-rust-build"].steps.some((step) => step.name === "Run affected Rust doctests"),
+  );
   const full = (
     parseToml(readRepoFile(".config", "nextest.toml")) as {
       profile: { full: Record<string, unknown> };
@@ -166,9 +168,9 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
       mkdirSync(join(cwd, "tools/support/compat/github"), { recursive: true });
       copyFileSync(
         fileURLToPath(
-          new URL("../../tools/support/compat/github/run-affected-rust.mjs", import.meta.url),
+          new URL("../../tools/support/compat/github/run-affected-rust.ts", import.meta.url),
         ),
-        join(cwd, "tools/support/compat/github/run-affected-rust.mjs"),
+        join(cwd, "tools/support/compat/github/run-affected-rust.ts"),
       );
       delete environment.VIZE_TEST_DISABLE_TSGO;
       delete environment.VIZE_TEST_REQUIRE_TSGO;

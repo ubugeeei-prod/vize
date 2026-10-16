@@ -19,7 +19,7 @@ import {
 import { captureNativeWalk } from "./canonical-corpus-native-walk.mjs";
 import { commandOutput, runChain, runChainsSync } from "./canonical-corpus-batch.ts";
 import { needsNativeWalk } from "./canonical-corpus-logical-walk.mjs";
-import { rustCachePolicy } from "../../../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
+import { rustCachePolicy } from "../../../../.github/actions/setup-rust-sticky-cache/cache-policy.ts";
 
 export { corpusRoot } from "./canonical-corpus-inventory.mjs";
 export const artifactRoot = "real-project-davinci-dom-corpus";

@@ -1,0 +1,23 @@
+name: Publish prebuilt release package
+description: Publish a package-specific candidate artifact with npm Trusted Publishing
+inputs:
+  artifact:
+    description: Candidate artifact from this workflow run
+    required: true
+  package-path:
+    description: Package directory in the checked-out release source
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      with: { node-version-file: package.json, run-install: false }
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: ${{ inputs.artifact }}
+        path: ${{ inputs.package-path }}
+    - name: Publish with provenance
+      shell: bash
+      env:
+        RELEASE_PACKAGE_PATH: ${{ inputs.package-path }}
+      run: node tools/support/release/publish_npm_package/main.ts "$RELEASE_PACKAGE_PATH" --provenance

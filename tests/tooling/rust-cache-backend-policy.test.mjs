@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
-import { rustCachePolicy } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
+import { rustCachePolicy } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.ts";
 import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
 
 await test("a separate benchmark target follows its own lock and falls back to the root toolchain", () => {

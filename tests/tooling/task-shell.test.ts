@@ -117,8 +117,17 @@ test("repository JS check enforces the v1 alpha warning budget", () => {
 
   assert.match(
     command,
-    /'rust-script' 'tools\/commands\/ci\/check-warning-budget\.rs' '--' '\.\/node_modules\/\.bin\/vp' 'check'/,
+    /'node' 'tools\/commands\/ci\/check-warning-budget\.ts' '--' '\.\/node_modules\/\.bin\/vp' 'check'/,
   );
+});
+
+test("iteration JS checks keep the warning budget without repository verification projects", () => {
+  const iteration = (checkTasks["check:iteration"] as { command: string }).command;
+  const full = (checkTasks["check:repo"] as { command: string }).command;
+
+  assert.equal(iteration, full.split(" && ")[0]);
+  assert.doesNotMatch(iteration, /check-project|rust-script/);
+  assert.match(full, /check-project\.ts tsconfig\.public-vapor\.json/);
 });
 
 test("normalizing a macOS C.UTF-8 environment updates child-process locale variables", () => {

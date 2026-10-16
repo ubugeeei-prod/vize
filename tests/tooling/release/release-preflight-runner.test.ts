@@ -136,28 +136,32 @@ test("target-only mode verifies the hydrated main ref, HEAD, and the peeled remo
     ].join("\n"),
   );
   const run = (overrides: Record<string, string> = {}) =>
-    spawnSync("rust-script", ["tools/commands/ci/github/release-preflight.rs", "--target-only"], {
-      cwd: repoRoot,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
-        GITHUB_REF_TYPE: "tag",
-        GITHUB_REF_NAME: `v${version}`,
-        GITHUB_SHA: sha,
-        TEST_HEAD_SHA: sha,
-        TEST_RELEASE_SHA: sha,
-        TEST_MAIN_SHA: sha,
-        TEST_MAIN_FIRST_PARENT_HISTORY: [sha, "b".repeat(40)].join("\n"),
-        TEST_MAIN_CARGO_TOML: `[workspace.package]\nversion = "${version}"\n`,
-        TEST_TAG: `v${version}`,
-        TEST_TAG_OBJECT: "c".repeat(40),
-        TEST_TAG_SHA: sha,
-        TEST_BASE_SHA: "b".repeat(40),
-        TEST_PACKAGE_MANIFESTS_FILE: manifestsFile,
-        ...overrides,
+    spawnSync(
+      process.execPath,
+      ["tools/support/compat/github/release-preflight.ts", "--target-only"],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+          GITHUB_REF_TYPE: "tag",
+          GITHUB_REF_NAME: `v${version}`,
+          GITHUB_SHA: sha,
+          TEST_HEAD_SHA: sha,
+          TEST_RELEASE_SHA: sha,
+          TEST_MAIN_SHA: sha,
+          TEST_MAIN_FIRST_PARENT_HISTORY: [sha, "b".repeat(40)].join("\n"),
+          TEST_MAIN_CARGO_TOML: `[workspace.package]\nversion = "${version}"\n`,
+          TEST_TAG: `v${version}`,
+          TEST_TAG_OBJECT: "c".repeat(40),
+          TEST_TAG_SHA: sha,
+          TEST_BASE_SHA: "b".repeat(40),
+          TEST_PACKAGE_MANIFESTS_FILE: manifestsFile,
+          ...overrides,
+        },
       },
-    });
+    );
 
   const outcome = (result: ReturnType<typeof run>) => [result.status, result.stderr];
 
@@ -250,8 +254,8 @@ test("verify-only mode accepts flat job evidence returned by pagination", () => 
   try {
     const fixture = createReleasePreflightVerifyOnlyFixture(tempDir);
     const result = spawnSync(
-      "rust-script",
-      ["tools/commands/ci/github/release-preflight.rs", "--verify-only"],
+      process.execPath,
+      ["tools/support/compat/github/release-preflight.ts", "--verify-only"],
       {
         cwd: repoRoot,
         encoding: "utf8",
@@ -286,8 +290,8 @@ test("verify-only mode does not consult candidate SemVer jobs", () => {
         },
       });
       const result = spawnSync(
-        "rust-script",
-        ["tools/commands/ci/github/release-preflight.rs", "--verify-only"],
+        process.execPath,
+        ["tools/support/compat/github/release-preflight.ts", "--verify-only"],
         {
           cwd: repoRoot,
           encoding: "utf8",
@@ -319,8 +323,8 @@ test("verify-only mode does not block on an optional failed Benchmark", () => {
       },
     });
     const result = spawnSync(
-      "rust-script",
-      ["tools/commands/ci/github/release-preflight.rs", "--verify-only"],
+      process.execPath,
+      ["tools/support/compat/github/release-preflight.ts", "--verify-only"],
       {
         cwd: repoRoot,
         encoding: "utf8",
@@ -356,8 +360,8 @@ test("verify-only mode ignores a cancelled Real Project Matrix", () => {
       },
     });
     const result = spawnSync(
-      "rust-script",
-      ["tools/commands/ci/github/release-preflight.rs", "--verify-only"],
+      process.execPath,
+      ["tools/support/compat/github/release-preflight.ts", "--verify-only"],
       {
         cwd: repoRoot,
         encoding: "utf8",
@@ -406,19 +410,23 @@ test("bootstrap mode does not wait on an in-progress Check", () => {
         };
       },
     });
-    const result = spawnSync("rust-script", ["tools/commands/ci/github/release-preflight.rs"], {
-      cwd: repoRoot,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        PATH: `${fixture.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
-        ...fixture.env,
-        TEST_JOBS_REQUEST_LOG: jobsRequestLog,
-        TEST_REJECT_RUNS_AFTER_JOB_REQUEST: "1",
-        TEST_RUNS_REQUEST_LOG: runsRequestLog,
+    const result = spawnSync(
+      process.execPath,
+      ["tools/support/compat/github/release-preflight.ts"],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          PATH: `${fixture.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+          ...fixture.env,
+          TEST_JOBS_REQUEST_LOG: jobsRequestLog,
+          TEST_REJECT_RUNS_AFTER_JOB_REQUEST: "1",
+          TEST_RUNS_REQUEST_LOG: runsRequestLog,
+        },
+        timeout: 10_000,
       },
-      timeout: 10_000,
-    });
+    );
 
     assert.ifError(result.error);
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
@@ -442,8 +450,8 @@ test("verify-only mode ignores seeded matrix typecheck drift", () => {
       },
     });
     const result = spawnSync(
-      "rust-script",
-      ["tools/commands/ci/github/release-preflight.rs", "--verify-only"],
+      process.execPath,
+      ["tools/support/compat/github/release-preflight.ts", "--verify-only"],
       {
         cwd: repoRoot,
         encoding: "utf8",

@@ -195,6 +195,7 @@ function value(expression, inputs, outputs, inner = false) {
   if (expr === "runner.environment") return inputs.runner;
   if (expr === "runner.os") return inputs.os;
   if (expr === "runner.arch") return inputs.arch;
+  if (expr === "github.action_path") return actionDir;
   throw new Error(`Unsupported fixture expression: ${expr}`);
 }
 
@@ -222,6 +223,7 @@ export function executeCacheAction(
     "secondary-key": context.secondaryRole ?? "",
     "secondary-cache-key-suffix": context.secondarySuffix ?? "",
     "secondary-target-path": context.secondaryPath ?? "",
+    "restore-trusted": String(context.restoreTrusted === true),
     runner: context.runnerEnvironment,
     os: context.runnerOs,
     arch: context.runnerArch,
@@ -255,7 +257,8 @@ export function executeCacheAction(
   const posts = [];
   for (const step of steps) {
     if (step.if && !value(step.if, inputs, outputs)) continue;
-    if (step.run) {
+    const githubScript = step.uses?.startsWith("actions/github-script@");
+    if (step.run || githubScript) {
       const file = join(cwd, `output-${step.id}.txt`);
       writeFileSync(file, "");
       const stepEnv = Object.fromEntries(
@@ -264,7 +267,11 @@ export function executeCacheAction(
           String(value(expr, inputs, outputs)),
         ]),
       );
-      const result = execute("bash", ["-e", "-c", step.run], cwd, {
+      const program = githubScript ? process.execPath : "bash";
+      const args = githubScript
+        ? ["--input-type=commonjs", "--eval", `void (async () => {\n${step.with.script}\n})()`]
+        : ["-e", "-c", step.run];
+      const result = execute(program, args, cwd, {
         ...env,
         ...stepEnv,
         GITHUB_OUTPUT: file,

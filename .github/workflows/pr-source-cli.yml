@@ -44,7 +44,6 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: ${{ inputs.run-cli }}
         with:
-          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
           key: test-scripts
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Build vize CLI and SFC oracle with original receipts

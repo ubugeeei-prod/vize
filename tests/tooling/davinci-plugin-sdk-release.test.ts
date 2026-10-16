@@ -73,15 +73,13 @@ test("SDK publication uses the built artifact and waits for native, smoke, and r
   );
   assert.equal(publish.environment, "npm");
   assert.deepEqual(publish.permissions, { contents: "read", "id-token": "write" });
-  const download = publish.steps.find((step) =>
-    step.uses?.startsWith("actions/download-artifact@"),
+  const shared = publish.steps.find(
+    (step) => step.uses === "./.github/actions/publish-release-package",
   );
-  assert.deepEqual(download.with, { name: "release-package-plugin-sdk", path: packagePath });
-  assert.ok(
-    publish.steps.some((step) =>
-      step.run?.includes(`publish_npm_package/main.ts ${packagePath} --provenance`),
-    ),
-  );
+  assert.deepEqual(shared.with, {
+    artifact: "release-package-plugin-sdk",
+    "package-path": packagePath,
+  });
   assert.ok(workflow.jobs["create-github-release"].needs.includes("release-npm-plugin-sdk"));
   const bootstrap = parse(readRepoFile(".github/workflows/release-npm-bootstrap.yml"));
   const standalone = bootstrap.jobs.handoff.steps.find((step) =>

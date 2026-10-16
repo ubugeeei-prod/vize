@@ -109,7 +109,7 @@ void test("real Node directly executes both erasable TypeScript gate entrypoints
         status: 1,
         stdout: "",
         stderr:
-          "NEEDS_JSON is required: pass ${{ toJSON(needs) }} to tools/support/compat/github/require-needs-success.mjs\n",
+          "NEEDS_JSON is required: pass ${{ toJSON(needs) }} to tools/support/compat/github/require-needs-success.ts\n",
       },
     },
     {

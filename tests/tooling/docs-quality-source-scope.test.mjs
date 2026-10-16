@@ -11,7 +11,7 @@ import {
   isDocsQualityToolingInput,
   planSourceChecks,
 } from "../../tools/support/compat/github/plan-source-checks.ts";
-import { planAffectedRust } from "../../tools/support/compat/github/plan-affected-rust.mjs";
+import { planAffectedRust } from "../../tools/support/compat/github/plan-affected-rust.ts";
 import {
   localImportInputs,
   planToolingTests,
@@ -47,7 +47,7 @@ void test("the exact authored More ledger retains Docs tooling without product s
   assert.ok(tooling.tests.includes("tests/tooling/docs-quality-source-scope.test.mjs"));
 });
 
-void test("the actual reader remains Node-only and its original Docs rendering consumer stays mandatory", () => {
+void test("the actual reader remains Node-only and Docs checks do not build the product source CLI", () => {
   const reader = "docs/scripts/more-guides-coverage.ts";
   const closure = localImportInputs(reader);
   assert.equal(closure.complete, true);
@@ -66,9 +66,9 @@ void test("the actual reader remains Node-only and its original Docs rendering c
   assert.doesNotMatch(rendering, /verify-more-guides-render/);
   assert.doesNotMatch(rendering, /verify-navigation-render/);
   assert.doesNotMatch(rendering, /verify-og-images/);
-  assert.match(
+  assert.doesNotMatch(
     readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),
-    /run-cli: "\$\{\{ needs\.pr-source-plan\.outputs\.tooling == 'true' \}\}"/,
+    /pr-source-cli|test:scripts:pr/,
   );
 });
 
@@ -178,17 +178,9 @@ void test("mixed product, workflow, native and shared contracts retain their act
   }
 });
 
-void test("merge groups retain every source suite and every workspace crate for the exact known ledger", () => {
-  assert.deepEqual(planSourceChecks([quality], "merge_group"), {
-    rust: true,
-    js: true,
-    tooling: true,
-    playground: true,
-  });
-  assert.deepEqual(
-    planAffectedRust(fixture(), [quality], "merge_group").packages,
-    planAffectedRust(fixture(), ["Cargo.lock"]).packages,
-  );
+void test("merge groups keep the exact known Docs ledger outside product source validation", () => {
+  assert.deepEqual(planSourceChecks([quality], "merge_group"), planSourceChecks([quality]));
+  assert.deepEqual(planAffectedRust(fixture(), [quality], "merge_group").packages, []);
 });
 
 void test("actual renamed and deleted quality paths remain visible rather than narrowing a new unknown contract", () => {

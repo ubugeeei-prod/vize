@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { rustCachePolicy } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
+import { rustCachePolicy } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.ts";
 import { cacheFixture } from "./support/rust-cache-fixture.mjs";
 
 type Plan = Record<string, string>;

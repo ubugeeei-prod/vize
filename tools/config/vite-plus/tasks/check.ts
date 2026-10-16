@@ -17,6 +17,7 @@ import {
   rustTool,
   runTask,
   runTasks,
+  shellQuote,
   task,
   vscodeExtensionPackageBin,
 } from "../task-helpers.ts";
@@ -39,8 +40,17 @@ const rustClippyCommand = [
   rustTool("ci/check-workspace-lints", "--check"),
   rustTool("ci/check-skeleton-todos", "--check"),
 ].join(" && ");
+const iterationRepoCheckCommand = [
+  "node",
+  "tools/commands/ci/check-warning-budget.ts",
+  "--",
+  localVp,
+  "check",
+]
+  .map(shellQuote)
+  .join(" ");
 const strictRepoCheckCommand = [
-  rustTool("ci/check-warning-budget", "--", localVp, "check"),
+  iterationRepoCheckCommand,
   "node tools/support/typescript/check-project.ts",
   "node tools/support/typescript/check-project.ts tsconfig.public-vapor.json",
   "node tools/support/typescript/check-project.ts tsconfig.benchmark-reports.json",
@@ -86,6 +96,7 @@ export const checkTasks = defineTasks({
   "check:ci:vize-apps": noCacheTask(ciVizeAppCheckCommand),
   // v1 alpha release branches keep a zero-warning budget for repo-wide JS/TS checks.
   "check:repo": noCacheTask(strictRepoCheckCommand),
+  "check:iteration": noCacheTask(iterationRepoCheckCommand),
   "source:lengths": noCacheTask(rustTool("ci/source-file-lengths")),
   // Every package that exposes a `check` task takes part, including the oxlint
   // example. Its `lint` script is the one that intentionally exits non-zero, and

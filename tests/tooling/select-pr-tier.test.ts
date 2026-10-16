@@ -15,7 +15,7 @@ test("the merge queue always runs the heavy lanes", () => {
   assert.throws(() => selectPrTier({ eventName: "push", paths: [], labels: [] }));
 });
 
-test("a PR runs them when its change can break them, or when it asks", () => {
+test("a PR runs affected checks and explicitly requests duplicate heavy qualification", () => {
   for (const path of [
     "crates/vize_canon/src/lib.rs",
     "crates/vize_patina/src/linter/engine/rule_sets.rs",
@@ -32,8 +32,8 @@ test("a PR runs them when its change can break them, or when it asks", () => {
     "tests/davinci_test_support/src/corpus.rs",
     "tests/_fixtures/differential/lint/n8n-cli-config/cases.json",
   ]) {
-    assert.equal(pr([path]), "heavy", path);
-    assert.equal(pr(["docs/content/guide/index.md", path]), "heavy", path);
+    assert.equal(pr([path]), "fast", path);
+    assert.equal(pr(["docs/content/guide/index.md", path]), "fast", path);
   }
   assert.equal(pr([]), "heavy");
   assert.equal(pr(["docs/content/guide/index.md"], ["full-ci"]), "heavy");
@@ -63,25 +63,19 @@ test("the three heavy lanes follow the tier and the report still checks every la
     >;
   };
   const plan = source.jobs["pr-source-plan"];
-  const tier = plan.steps?.find((step) => step.id === "tier");
+  const tier = plan.steps?.find((step) => step.id === "plan");
   assert.equal(
     tier?.run,
-    'node tools/support/compat/github/select-pr-tier.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"',
+    'node tools/support/compat/github/plan-pr-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"',
   );
   assert.equal(tier?.env?.PR_LABELS, "${{ toJSON(github.event.pull_request.labels.*.name) }}");
-  assert.equal(plan.outputs?.heavy, "${{ steps.tier.outputs.heavy }}");
+  assert.equal(plan.outputs?.heavy, "${{ steps.plan.outputs.heavy }}");
   assert.equal(
     plan.outputs?.["canonical-corpus"],
-    "${{ steps.tier.outputs.heavy == 'true' && steps.canonical-corpus-plan.outputs.canonical-corpus || 'false' }}",
+    "${{ steps.plan.outputs.heavy == 'true' && steps.canonical-corpus-plan.outputs.canonical-corpus || 'false' }}",
   );
-  assert.equal(
-    plan.outputs?.playground,
-    "${{ steps.tier.outputs.heavy == 'true' && steps.plan.outputs.playground || 'false' }}",
-  );
-  assert.equal(
-    source.jobs["pr-js-packages"].with?.["run-original-project"],
-    "${{ needs.pr-source-plan.outputs.heavy == 'true' }}",
-  );
+  assert.equal(plan.outputs?.playground, "${{ steps.plan.outputs.playground }}");
+  assert.equal(source.jobs["pr-js-packages"].with?.["run-original-project"], false);
   const js = parse(readRepoFile(".github", "workflows", "pr-js-checks.yml")) as {
     on: { workflow_call: { inputs: Record<string, { required: boolean; type: string }> } };
     jobs: Record<string, Job>;

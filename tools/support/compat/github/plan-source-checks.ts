@@ -34,7 +34,19 @@ export function isSharedRustInput(path: string) {
     (path.startsWith("docs/davinci/plan/") &&
       path !== "docs/davinci/plan/completion-2026-10-03.md" &&
       !isCensusToolingInput(path)) ||
-    path === "npm/cli/schemas/vize.config.schema.json"
+    path === "npm/cli/schemas/vize.config.schema.json" ||
+    path.startsWith("npm/cli/pkl/") ||
+    path.startsWith("examples/html-conformance/") ||
+    path.startsWith("examples/volt-target/")
+  );
+}
+
+// Build/runtime tools outside these metadata and release directories can be
+// read by Rust tests or invoked by package builds, so they remain fail-closed.
+export function isToolingOnlyInput(path: string) {
+  if (path.startsWith("tools/support/release/public_acceptance/")) return false;
+  return /^(?:tests\/tooling\/|tools\/(?:commands\/(?:ci|release)\/|support\/(?:ci|release|compat\/github)\/|moon\/cmd\/release\/)|\.github\/workflows\/release[^/]*\.yml$)/.test(
+    path,
   );
 }
 
@@ -44,9 +56,6 @@ export function planSourceChecks(
 ) {
   if (!["pull_request", "merge_group"].includes(eventName as string)) {
     throw new Error("expected pull_request or merge_group source planning context");
-  }
-  if (eventName === "merge_group") {
-    return { rust: true, js: true, tooling: true, playground: true };
   }
   // A new source directory must be validated until its dependencies are known.
   // Compiler changes can affect the native JS binding and its package tests.
@@ -69,19 +78,23 @@ export function planSourceChecks(
       /(^|\/)(README|AGENTS)\.md$/.test(path)
     )
       continue;
-    if (
-      /^(tests\/tooling\/|tools\/support\/release\/|tools\/commands\/release\/|tools\/moon\/cmd\/release\/|tools\/support\/compat\/github\/|\.github\/workflows\/release[^/]*\.yml$)/.test(
-        path,
-      )
-    ) {
+    if (isToolingOnlyInput(path)) {
       result.tooling = true;
+      continue;
+    }
+    if (/^tests\/(?:_fixtures|fixtures|_helpers)\//.test(path)) {
+      result.rust = result.js = result.playground = true;
       continue;
     }
     if (path.startsWith("tests/expected/") || path.startsWith("tests/davinci_test_support/")) {
       result.rust = true;
       continue;
     }
-    if (/^(crates\/|davinci\/|\.cargo\/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(path)) {
+    if (
+      /^(crates\/|davinci\/|vendor\/|\.cargo\/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(
+        path,
+      )
+    ) {
       result.rust = true;
       result.js = true;
       if (

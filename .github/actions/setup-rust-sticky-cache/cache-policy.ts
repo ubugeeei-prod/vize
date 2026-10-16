@@ -24,14 +24,34 @@ const readOnlyEvents = new Set(["pull_request", "merge_group"]);
 const restoreOnlyTargetRoles = new Set(["coverage-source", "clippy-test"]);
 const fullSha = /^[0-9a-f]{40}$/;
 const token = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
-const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+const object = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
 
-function requireToken(value, label) {
-  if (!token.test(value ?? "")) throw new Error(`Invalid ${label}`);
+export interface RustCacheContext {
+  eventName?: string;
+  event?: unknown;
+  ref?: string;
+  repository?: string;
+  sourceSha?: string;
+  checkoutSha?: string;
+  runnerEnvironment?: string;
+  runnerOs?: string;
+  runnerArch?: string;
+  role?: string;
+  suffix?: string;
+  targetPath?: string;
+  secondaryRole?: string;
+  secondarySuffix?: string;
+  secondaryPath?: string;
+  restoreTrusted?: boolean;
+}
+
+function requireToken(value: unknown, label: string): string {
+  if (typeof value !== "string" || !token.test(value)) throw new Error(`Invalid ${label}`);
   return value;
 }
 
-function targetPath(value, workspace) {
+function targetPath(value: string, workspace: string) {
   if (typeof value !== "string" || /[\r\n\0]/.test(value)) throw new Error("Invalid target path");
   const path = resolve(workspace, value);
   if (!path.startsWith(`${resolve(workspace)}${sep}`))
@@ -39,7 +59,7 @@ function targetPath(value, workspace) {
   return path;
 }
 
-function fingerprint(cwd, fallback = cwd) {
+function fingerprint(cwd: string, fallback = cwd) {
   const hash = createHash("sha256");
   for (const file of ["Cargo.lock", "rust-toolchain.toml"]) {
     const root = existsSync(resolve(cwd, file)) ? cwd : fallback;
@@ -52,9 +72,12 @@ function fingerprint(cwd, fallback = cwd) {
   return hash.digest("hex");
 }
 
-export function rustCachePolicy(context, { cwd = sourceRoot, workspace = cwd } = {}) {
+export function rustCachePolicy(
+  context: RustCacheContext,
+  { cwd = sourceRoot, workspace = cwd }: { cwd?: string; workspace?: string } = {},
+): Record<string, string> {
   const { eventName, event, ref, repository, sourceSha, checkoutSha, runnerEnvironment } = context;
-  if (!knownEvents.has(eventName) || !object(event) || !object(event.repository)) {
+  if (!eventName || !knownEvents.has(eventName) || !object(event) || !object(event.repository)) {
     throw new Error("Missing or unknown cache event");
   }
   const branch = event.repository.default_branch;
@@ -68,7 +91,7 @@ export function rustCachePolicy(context, { cwd = sourceRoot, workspace = cwd } =
     !/^refs\/(heads|tags|pull)\/[^\s\0]+$/.test(ref) ||
     !fullSha.test(sourceSha ?? "") ||
     !fullSha.test(checkoutSha ?? "") ||
-    !["github-hosted", "self-hosted"].includes(runnerEnvironment)
+    !["github-hosted", "self-hosted"].includes(runnerEnvironment ?? "")
   )
     throw new Error("Malformed cache event metadata");
   if (eventName === "push" && (event.ref !== ref || typeof event.deleted !== "boolean")) {
@@ -89,11 +112,18 @@ export function rustCachePolicy(context, { cwd = sourceRoot, workspace = cwd } =
     ref === `refs/heads/${branch}` &&
     sourceSha === checkoutSha &&
     event.deleted !== true;
-  const readOnly = !trusted && readOnlyEvents.has(eventName);
+  // A validated release workflow may reuse the default-branch build cache.
+  // This opt-in never grants a write or creates a candidate-specific disk.
+  const releaseRestore =
+    context.restoreTrusted === true &&
+    eventName === "workflow_dispatch" &&
+    role.startsWith("release-") &&
+    sourceSha === checkoutSha;
+  const readOnly = !trusted && (readOnlyEvents.has(eventName) || releaseRestore);
   const sticky = (trusted || readOnly) && runnerEnvironment === "self-hosted";
   const base = `rust-cache-v1-${repository}-${runnerOs}-${runnerArch}-${suffix}-${fingerprint(cwd)}`;
   const target = `${base}-${role}-target-`;
-  const output = {
+  const output: Record<string, string> = {
     trusted: String(trusted),
     sticky: String(sticky),
     // Only the trusted default-branch checkout may write a stable disk.
@@ -142,10 +172,10 @@ export function rustCachePolicy(context, { cwd = sourceRoot, workspace = cwd } =
 }
 
 export function rustCacheMountState(
-  paths,
+  paths: { target?: string; secondary?: string },
   {
     home = homedir(),
-    probe = (path) =>
+    probe = (path: string) =>
       spawnSync("mountpoint", ["-q", path], { stdio: "ignore", shell: false }).status === 0,
   } = {},
 ) {
@@ -155,20 +185,22 @@ export function rustCacheMountState(
       ["git", resolve(home, ".cargo/git")],
       ["target", paths.target],
       ["secondary", paths.secondary],
-    ].map(([key, path]) => [key, String(Boolean(path) && probe(path))]),
+    ].map(([key, path]) => [key, String(Boolean(path) && probe(path as string))]),
   );
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+export function runCachePolicy(mode?: string) {
   const env = process.env;
-  const emit = (plan) =>
+  const outputFile = env.GITHUB_OUTPUT;
+  if (!outputFile) throw new Error("GITHUB_OUTPUT is unset");
+  const emit = (plan: Record<string, string>) =>
     appendFileSync(
-      env.GITHUB_OUTPUT,
+      outputFile,
       Object.entries(plan)
         .map(([key, value]) => `${key}=${value}\n`)
         .join(""),
     );
-  if (process.argv[2] === "--mounted") {
+  if (mode === "--mounted") {
     emit(
       rustCacheMountState({
         target: env.VIZE_CACHE_TARGET_PATH,
@@ -176,11 +208,11 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       }),
     );
   } else {
-    if (process.argv[2]) throw new Error("Unknown cache policy mode");
+    if (mode) throw new Error("Unknown cache policy mode");
     const cwd = env.VIZE_CACHE_SOURCE_ROOT ?? sourceRoot;
     const context = {
       eventName: env.GITHUB_EVENT_NAME,
-      event: JSON.parse(readFileSync(env.GITHUB_EVENT_PATH, "utf8")),
+      event: JSON.parse(readFileSync(env.GITHUB_EVENT_PATH ?? "", "utf8")),
       ref: env.GITHUB_REF,
       repository: env.GITHUB_REPOSITORY,
       sourceSha: env.GITHUB_SHA,
@@ -194,6 +226,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       secondaryRole: env.VIZE_CACHE_SECONDARY_ROLE,
       secondarySuffix: env.VIZE_CACHE_SECONDARY_SUFFIX,
       secondaryPath: env.VIZE_CACHE_SECONDARY_PATH,
+      restoreTrusted: env.VIZE_CACHE_RESTORE_TRUSTED === "true",
     };
     const plan = rustCachePolicy(context, { cwd, workspace: env.GITHUB_WORKSPACE ?? cwd });
     emit(plan);
@@ -202,3 +235,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     );
   }
 }
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url))
+  runCachePolicy(process.argv[2]);

@@ -14,20 +14,16 @@ jobs:
     timeout-minutes: 5
     outputs:
       comparison-base: ${{ steps.comparison.outputs.base }}
-      # The heavy lanes always run in the merge queue. A PR also runs them when
-      # its change can break them or it carries the `full-ci` label.
-      heavy: ${{ steps.tier.outputs.heavy }}
-      canonical-corpus: ${{ steps.tier.outputs.heavy == 'true' && steps.canonical-corpus-plan.outputs.canonical-corpus || 'false' }}
+      # Canonical/browser qualification runs in the merge queue; PRs can opt
+      # into the duplicate qualification with the `full-ci` label.
+      heavy: ${{ steps.plan.outputs.heavy }}
+      canonical-corpus: ${{ steps.plan.outputs.heavy == 'true' && steps.canonical-corpus-plan.outputs.canonical-corpus || 'false' }}
       rust: ${{ steps.plan.outputs.rust }}
-      rust-plan: ${{ steps.rust-plan.outputs.rust-plan }}
+      rust-plan: ${{ steps.plan.outputs.rust-plan }}
       js: ${{ steps.plan.outputs.js }}
-      tooling: ${{ steps.tooling-plan.outputs.tooling }}
-      tooling-matrix: ${{ steps.tooling-plan.outputs.tooling-matrix }}
-      native-vapor-capture: ${{ steps.tooling-plan.outputs.native-vapor-capture }}
-      native-setup-capture: ${{ steps.tooling-plan.outputs.native-setup-capture }}
-      native-ssr-capture: ${{ steps.tooling-plan.outputs.native-ssr-capture }}
-      native-attribute-values-7502-capture: ${{ steps.tooling-plan.outputs.native-attribute-values-7502-capture }}
-      playground: ${{ steps.tier.outputs.heavy == 'true' && steps.plan.outputs.playground || 'false' }}
+      js-plan: ${{ steps.plan.outputs.js-plan }}
+      native-runtime-matrix: ${{ steps.plan.outputs.native-runtime-matrix }}
+      playground: ${{ steps.plan.outputs.playground }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -42,23 +38,12 @@ jobs:
           if [[ ! "$comparison_base" =~ ^0+$ ]]; then
             git fetch --no-tags origin "$comparison_base"
           fi
-      - name: Check Davinci source inventories
-        uses: ./.github/actions/check-level-inventories
-      - name: Check ordinary Rust module layout
-        run: node --test tests/tooling/davinci-module-layout.test.ts
-      - name: Check retired tooling languages
-        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
-        run: node --test tests/tooling/retired-tooling-languages.test.ts
       - name: Plan source checks
         id: plan
-        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
-        run: node tools/support/compat/github/plan-source-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
-      - name: Select the PR tier
-        id: tier
         env:
           BASE_SHA: ${{ steps.comparison.outputs.base }}
           PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
-        run: node tools/support/compat/github/select-pr-tier.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
+        run: node tools/support/compat/github/plan-pr-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
       - name: Report legacy fix differential inputs
         if: ${{ github.event_name == 'pull_request' }}
         continue-on-error: true
@@ -70,20 +55,9 @@ jobs:
         id: canonical-corpus-plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
         run: node tools/support/compat/github/canonical-corpus-selection.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        if: ${{ steps.plan.outputs.rust == 'true' }}
-        with: { toolchain: "1.99.0" }
-      - name: Plan affected Rust crates
-        id: rust-plan
-        if: ${{ steps.plan.outputs.rust == 'true' }}
-        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
-        run: node tools/support/compat/github/plan-affected-rust.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$RUNNER_TEMP/rust-plan.json"
-      - name: Plan tooling test inputs
-        id: tooling-plan
-        env:
-          BASE_SHA: ${{ steps.comparison.outputs.base }}
-          TOOLING_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
-        run: node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json" --github-output
+      - name: Test CI selection when its inputs change
+        if: ${{ steps.plan.outputs.tooling == 'true' }}
+        run: node --test tests/tooling/ci-iteration-plans.test.ts
   canonical-corpus:
     permissions: { contents: read, actions: read, checks: read }
     needs: pr-source-plan
@@ -105,123 +79,63 @@ jobs:
     uses: ./.github/workflows/pr-js-checks.yml
     with:
       run-js: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-      run-original-project: ${{ needs.pr-source-plan.outputs.heavy == 'true' }}
-  pr-source-cli:
+      run-original-project: false
+      js-plan: ${{ needs.pr-source-plan.outputs.js-plan }}
+  pr-native-runtime:
+    name: Native runtime (${{ matrix.lane }})
     needs: pr-source-plan
-    uses: ./.github/workflows/pr-source-cli.yml
-    with: { run-cli: "${{ needs.pr-source-plan.outputs.tooling == 'true' }}" }
-  pr-tooling-scripts:
-    name: PR tooling scripts (${{ matrix.index }}/${{ matrix.total }})
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
-    needs: [pr-source-plan, pr-source-cli]
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.pr-source-plan.outputs.tooling-matrix) }}
+      matrix: ${{ fromJSON(needs.pr-source-plan.outputs.native-runtime-matrix) }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 35
+    timeout-minutes: 15
     env:
-      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       CARGO_BUILD_JOBS: "12"
-      VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.pr-source-cli.outputs.receipt-sha256 }}
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
       - name: Explain unrelated skip
-        if: ${{ needs.pr-source-plan.outputs.tooling != 'true' }}
-        run: echo 'Tooling scripts skipped because this PR changes no release scripts, tooling tests, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
+        if: ${{ matrix.lane == 'none' }}
+        run: echo 'No native runtime inputs changed.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        with: { fetch-depth: 0 }
+        if: ${{ matrix.lane != 'none' }}
+        with: { fetch-depth: "${{ matrix.lane == 'attributes' && '0' || '1' }}" }
       - uses: ./.github/actions/cache-vp-bootstrap
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ matrix.lane != 'none' }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ matrix.lane != 'none' }}
         with: { node-version-file: "package.json", cache: true, run-install: false }
-      - uses: ./.github/actions/setup-moonbit
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with:
-          toolchain: "1.99.0"
-          components: clippy,rust-src,rustfmt
-          targets: wasm32-unknown-unknown,wasm32-wasip2
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ matrix.lane != 'none' }}
+        with: { toolchain: "1.99.0" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ matrix.lane != 'none' }}
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ matrix.lane != 'none' }}
         with:
-          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
-          key: test-scripts
+          key: nextest-ci
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: ./.github/actions/setup-rust-script
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-      - name: Regenerate tooling plan
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        env:
-          BASE_SHA: ${{ needs.pr-source-plan.outputs.comparison-base }}
-          TOOLING_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
-        run: |
-          if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags origin "$BASE_SHA"; fi
-          node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json"
-      - name: Install fixture and JS dependencies
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline
-      - name: Prepare checksum-pinned Pkl and upstream lint dependencies
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        env:
-          VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
-          VIZE_TOOLING_TEST_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
-          VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
-        uses: ./.github/actions/install-formatter-css-browser
-      - name: Test fresh native SSR modules in the merge queue
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true')) }}
+      - name: Install native runtime oracle dependencies
+        if: ${{ matrix.lane != 'none' }}
+        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './npm/native...' --filter './npm/ui...' --filter './tests...'
+      - name: Test fresh native SSR modules
+        if: ${{ matrix.lane == 'ssr' }}
         uses: ./.github/actions/test-native-ssr
-      - name: Restore and install source-built vize CLI
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        uses: ./.github/actions/restore-source-cli
-        with: { producer: "${{ toJSON(needs.pr-source-cli.outputs) }}" }
-      - name: Verify current-source native scoped CSS and real Vue DOM
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true')) }}
+      - name: Verify native scoped CSS in real Vue
+        if: ${{ matrix.lane == 'scoped-css' }}
         uses: ./.github/actions/test-native-scoped-css
-      - name: Prepare the pinned plugin isolation runtime
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
-      - name: Test source-bound native JS setup modules and runtime
-        if: ${{ !cancelled() && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-setup-capture == 'true')) }}
+      - name: Test native setup modules and runtime
+        if: ${{ matrix.lane == 'setup' }}
         uses: ./.github/actions/test-native-js-setup
-      - name: Capture original native Vapor modules and runtime
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-vapor-capture == 'true')) }}
+      - name: Test native Vapor modules and runtime
+        if: ${{ matrix.lane == 'vapor' }}
         uses: ./.github/actions/test-native-vapor
-      - name: Capture original attribute values across native targets
-        if: ${{ !cancelled() && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-attribute-values-7502-capture == 'true')) }}
+      - name: Test native attribute values across targets
+        if: ${{ matrix.lane == 'attributes' }}
         uses: ./.github/actions/test-native-attribute-values-7502
-      - name: Test selected PR tooling scripts
-        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
-        env:
-          SOURCE_LENGTH_BASE_REF: ${{ needs.pr-source-plan.outputs.comparison-base }}
-          VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
-          VIZE_TOOLING_TEST_TIER: "pr"
-          VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
-        run: vp run --workspace-root test:scripts:pr
       - name: Execute original selected-template DOM modules
-        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
+        if: ${{ matrix.lane == 'selected-template' }}
         uses: ./.github/actions/test-native-selected-template
-      - name: Join original historical Vue interpolation Docs to pinned whole goldens
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
-        uses: ./.github/actions/test-native-historical-sfc-documents
-        with:
-          comparison-base: ${{ needs.pr-source-plan.outputs.comparison-base }}
-      - name: Test tooling scripts
-        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
-        env:
-          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
-          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
-          VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
-          VIZE_TOOLING_TEST_TIER: "merge"
-          VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
-        run: vp run --workspace-root test:scripts:planned
-      - uses: ./.github/actions/upload-formatter-api-corpus-evidence
-        if: ${{ !cancelled() && needs.pr-source-plan.outputs.tooling == 'true' }}
-        with: { shard: "${{ matrix.index }}" }
   pr-playground-test:
     name: PR playground browser tests
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -246,7 +160,6 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         with:
-          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
           key: build-js-packages
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
@@ -318,7 +231,7 @@ jobs:
     # A superseded run reports nothing: its required check fails in test-report.
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
     # prettier-ignore
-    needs: [pr-source-plan, pr-rust-source, pr-js-packages, pr-tooling-scripts, pr-playground-test, wit-contracts, canonical-corpus, pr-source-cli]
+    needs: [pr-source-plan, pr-rust-source, pr-js-packages, pr-native-runtime, pr-playground-test, wit-contracts, canonical-corpus]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

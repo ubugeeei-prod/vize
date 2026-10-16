@@ -1,0 +1,79 @@
+name: Release build cache
+# Populate trusted default-branch caches ahead of a release. This never tags,
+# promotes, or publishes; dispatch also validates these exact build recipes.
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches: [main]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - ".cargo/**"
+      - "crates/**"
+      - "davinci/**"
+      - "npm/native/**"
+      - "npm/fresco-native/**"
+      - ".github/actions/build-release-*/**"
+      - ".github/actions/setup-rust-sticky-cache/**"
+      - ".github/actions/reuse-rust-target/**"
+      - ".github/workflows/release-build-cache.yml"
+      - "tools/support/github/release-platforms.ts"
+      - "tools/support/github/build-napi-package.ts"
+      - "tools/support/github/clean-node-binaries.ts"
+  schedule:
+    - cron: "41 18 * * *"
+concurrency:
+  group: release-build-cache-${{ github.ref }}
+  cancel-in-progress: true
+permissions: { contents: read }
+env:
+  CARGO_INCREMENTAL: 0
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      cli: ${{ steps.plan.outputs.cli_matrix }}
+      native: ${{ steps.plan.outputs.native_matrix }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - id: plan
+        # Platform coverage is independent of the current workspace version.
+        run: node tools/support/github/release-platforms.ts github-output v0.0.0
+  cli:
+    name: Cache CLI - ${{ matrix.settings.target }}
+    needs: plan
+    runs-on: ${{ matrix.settings.host }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        settings: ${{ fromJSON(needs.plan.outputs.cli) }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/build-release-cli
+        with:
+          target: ${{ matrix.settings.target }}
+          archive: ${{ matrix.settings.archive }}
+          upload-artifacts: "false"
+  native:
+    name: Cache native - ${{ matrix.settings.target }}
+    needs: plan
+    runs-on: ${{ matrix.settings.host }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        settings: ${{ fromJSON(needs.plan.outputs.native) }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/build-release-native
+        with:
+          target: ${{ matrix.settings.target }}
+          cross-compile: ${{ matrix.settings.cross_compile }}
+          upload-artifacts: "false"

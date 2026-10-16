@@ -10,7 +10,7 @@ import { sourceFixture } from "../support/release-public-acceptance-fixtures.ts"
 const legacy =
   "run: node tools/support/release/publish_npm_package_dirs/main.ts npm/native/npm --provenance";
 const concurrent =
-  'run: node tools/support/release/publish_npm_package_dirs/main.ts npm/native/npm --concurrency 4 --provenance --receipt "$RUNNER_TEMP/native-platform-publish.json"';
+  'run: node tools/support/release/publish_npm_package_dirs/main.ts npm/native/npm --concurrency 8 --provenance --receipt "$RUNNER_TEMP/native-platform-publish.json"';
 
 type Fixture = ReturnType<typeof sourceFixture>;
 
@@ -45,7 +45,7 @@ test("legacy native source invocation keeps the original complete plan unchanged
   ]);
 });
 
-test("the exact current four-child invocation derives the same authored native targets", (t) => {
+test("the exact current eight-child invocation derives the same authored native targets", (t) => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const actual = workflow
     .split("\n")
@@ -72,10 +72,10 @@ test("the exact current four-child invocation derives the same authored native t
 test("native source commands refuse every unreviewed flag, path, shell suffix and duplicate", (t) => {
   const source = sourceFixture(t);
   const hostile = [
-    concurrent.replace("--concurrency 4", "--concurrency 0"),
-    concurrent.replace("--concurrency 4", "--concurrency 3"),
-    concurrent.replace("--concurrency 4", "--concurrency 5"),
-    concurrent.replace("--concurrency 4", "--concurrency 4oops"),
+    concurrent.replace("--concurrency 8", "--concurrency 0"),
+    concurrent.replace("--concurrency 8", "--concurrency 3"),
+    concurrent.replace("--concurrency 8", "--concurrency 5"),
+    concurrent.replace("--concurrency 8", "--concurrency 8oops"),
     concurrent.replace("--provenance ", ""),
     concurrent.replace("npm/native/npm", "npm/other/npm"),
     concurrent.replace("native-platform-publish.json", "other.json"),
@@ -89,7 +89,7 @@ test("native source commands refuse every unreviewed flag, path, shell suffix an
     concurrent + " && true",
     concurrent + "; true",
     legacy + " --ignore-failure",
-    legacy + " --concurrency 4",
+    legacy + " --concurrency 8",
     "# " + concurrent,
     legacy + "\n      - " + concurrent,
     concurrent + "\n      - " + concurrent,

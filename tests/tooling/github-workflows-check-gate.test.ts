@@ -7,11 +7,11 @@ import { sourceInventoryLanes } from "../../tools/support/compat/davinci/source-
 import { readRepoFile, root } from "./support/github-workflows.ts";
 const CORE = ["fmt-rust", "check-js", "security-audit", "node-engine-compat", "check-vize-apps"];
 const PR_JOBS = [
+  "iteration-plan",
   ...CORE,
   "pr-source-checks",
   "level-dependency-direction",
   "release-integration-catalog",
-  "release-gates",
 ];
 const FULL_SUITE_JOBS = [
   "nix-flake",
@@ -30,6 +30,7 @@ const FULL_SUITE_JOBS = [
 type Job = {
   if?: string;
   needs?: string[] | string;
+  outputs?: Record<string, string>;
   steps?: Array<{
     name?: string;
     if?: string;
@@ -66,7 +67,7 @@ test("obsolete main validation is cancelled when the branch advances", () => {
     }
   }
 });
-test("source gates cover PRs and merge groups while full JS qualification also runs on main", () => {
+test("source gates cover iteration events while full qualification runs on schedule or dispatch", () => {
   assert.ok(workflow.on?.pull_request);
   assert.deepEqual(workflow.on?.merge_group, {
     types: ["checks_requested"],
@@ -87,10 +88,8 @@ test("source gates cover PRs and merge groups while full JS qualification also r
     assert.equal(
       workflow.jobs?.[job]?.if,
       job === "test-scripts"
-        ? "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}"
-        : ["build-js-packages", "test-js-packages"].includes(job)
-          ? "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}"
-          : "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+        ? "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+        : "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
     );
   }
   assert.equal(
@@ -110,11 +109,11 @@ test("source gates cover PRs and merge groups while full JS qualification also r
   const checkSteps = workflow.jobs?.["check-js"]?.steps ?? [];
   assert.equal(
     checkSteps.find((step) => step.name === "Check fast JS/TS")?.if,
-    "${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main') }}",
+    "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push' }}",
   );
   assert.equal(
     checkSteps.find((step) => step.name === "Check JS/TS")?.if,
-    "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}",
+    "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
   );
   const inventory = checkSteps.find((step) => step.name === "Check Davinci source inventories");
   assert.ok(inventory);
@@ -157,21 +156,14 @@ test("source gates cover PRs and merge groups while full JS qualification also r
   assert.equal(ledgerUpload?.with?.["if-no-files-found"], "error");
   assert.equal(ledgerUpload?.with?.["retention-days"], 14);
   assert.equal(ledgerUpload?.if, "${{ always() }}");
-  assert.match(commands("check-js"), /vp run --workspace-root check:repo/);
+  assert.match(commands("check-js"), /vp run --workspace-root check:iteration/);
   assert.match(commands("check-js"), /vp run --workspace-root check:ci/);
-  const appSteps = workflow.jobs?.["check-vize-apps"]?.steps ?? [];
-  const referenceDocs = appSteps.findIndex(
-    (step) => step.name === "Check generated reference docs",
-  );
-  assert.equal(
-    appSteps[referenceDocs]?.run,
-    "vp node --test tests/tooling/lib-reference-docs.test.ts",
-  );
-  assert.ok(
-    referenceDocs < appSteps.findIndex((step) => step.name === "Build vize CLI"),
-    "generated reference docs must be checked before the Rust build",
-  );
-  assert.match(commands("check-vize-apps"), /cargo build --profile ci -p vize/);
+  const appAction = parse(readRepoFile(".github", "actions", "check-vize-apps", "action.yml")) as {
+    runs: { using: string; steps: NonNullable<Job["steps"]> };
+  };
+  assert.equal(appAction.runs.using, "composite");
+  const appSteps = appAction.runs.steps;
+  assert.ok(appSteps.some((step) => /cargo build --profile ci -p vize/.test(step.run ?? "")));
   const configExports = appSteps.findIndex((step) => step.run?.includes("(cd npm/cli && vp pack)"));
   assert.ok(
     configExports >= 0 &&
@@ -198,45 +190,65 @@ test("source gates cover PRs and merge groups while full JS qualification also r
   assert.match(commands("playground-test"), /test:browser/);
   assert.deepEqual(workflow.jobs?.["playground-test"]?.needs, ["build-js-packages"]);
 });
-test("report fails closed when any PR check fails or skips", () => {
-  assert.equal(aggregateNeedsResults(needs()).exitCode, 0);
-  for (const result of ["failure", "cancelled", "skipped"] as const) {
-    const decision = aggregateNeedsResults(needs({ "check-js": result }));
-    assert.equal(decision.exitCode, 1);
-    assert.match(decision.message, new RegExp(`check-js: ${result}`));
-    const sourceDecision = aggregateNeedsResults(needs({ "pr-source-checks": result }));
-    assert.equal(sourceDecision.exitCode, 1);
-    assert.match(sourceDecision.message, new RegExp(`pr-source-checks: ${result}`));
-    const dependencyDecision = aggregateNeedsResults(
-      needs({ "level-dependency-direction": result }),
+test("input selection gates work inside required jobs and keeps the planner dependency", () => {
+  const planner = workflow.jobs?.["iteration-plan"];
+  assert.ok(planner);
+  assert.equal(planner.steps?.at(-1)?.run, "node tools/support/compat/github/plan-check-inputs.ts");
+  assert.ok(planner.steps?.some((step) => step.uses?.startsWith("actions/setup-node@")));
+  for (const [jobName, output, command] of [
+    ["security-audit", "dependencies", "node tools/commands/ci/npm-audit-retry.ts"],
+    ["node-engine-compat", "engines", "node --test tests/tooling/node-engine-matrix.test.ts"],
+    ["check-vize-apps", "apps", "./.github/actions/check-vize-apps"],
+  ]) {
+    assert.equal(planner.outputs?.[output], `\${{ steps.plan.outputs.${output} }}`);
+    const job = workflow.jobs?.[jobName];
+    assert.ok(job);
+    assert.equal(job.if, undefined, `${jobName} must always report its selected-input result`);
+    assert.equal(job.needs, "iteration-plan", `${jobName} requires a successful planner`);
+    const check = job.steps?.find((step) => (step.run ?? step.uses ?? "").startsWith(command));
+    assert.ok(check, `${jobName} must keep its product check`);
+    assert.equal(check.if, `\${{ needs.iteration-plan.outputs.${output} == 'true' }}`);
+    assert.ok(
+      job.steps?.some(
+        (step) => step.if === `\${{ needs.iteration-plan.outputs.${output} != 'true' }}`,
+      ),
+      `${jobName} must report unchanged inputs`,
     );
-    assert.equal(dependencyDecision.exitCode, 1);
-    assert.match(dependencyDecision.message, new RegExp(`level-dependency-direction: ${result}`));
   }
-  const missingResult = needs();
-  missingResult["level-dependency-direction"] = {} as { result: string };
-  assert.throws(
-    () => aggregateNeedsResults(missingResult),
-    /level-dependency-direction reported no result/,
-  );
+});
+test("report fails closed when any required check or its planner fails or skips", () => {
+  assert.equal(aggregateNeedsResults(needs()).exitCode, 0);
+  for (const job of PR_JOBS) {
+    for (const result of ["failure", "cancelled", "skipped", "unknown"]) {
+      const decision = aggregateNeedsResults(needs({ [job]: result }));
+      assert.equal(decision.exitCode, 1);
+      assert.ok(decision.message.includes(`${job}: ${result}`));
+    }
+    assert.throws(() => aggregateNeedsResults({ ...needs(), [job]: {} }), /reported no result/);
+  }
   assert.throws(() => aggregateNeedsResults({}), /needs context is empty/);
 });
-test("report command exits nonzero for a failed dependency", () => {
+test("report CLI propagates required check and planner failures", () => {
   const script = "tools/support/compat/github/require-needs-success.ts";
-  const result = spawnSync(process.execPath, [script], {
-    cwd: root,
-    encoding: "utf8",
-    env: { ...process.env, NEEDS_JSON: JSON.stringify(needs({ "check-vize-apps": "failure" })) },
-  });
-  assert.equal(result.status, 1);
-  assert.match(result.stderr, /check-vize-apps: failure/);
+  const run = (results: Record<string, string>) =>
+    spawnSync(process.execPath, [script], {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, NEEDS_JSON: JSON.stringify(needs(results)) },
+    });
+  assert.equal(run({}).status, 0);
+  for (const job of ["iteration-plan", "check-vize-apps"]) {
+    const command = run({ [job]: "failure" });
+    assert.equal(command.status, 1);
+    assert.ok(command.stderr.includes(`${job}: failure`));
+  }
 });
 test("full JS qualification retains independent native builds and strictly gates all full events", () => {
   const full = workflow.jobs?.["full-js-report"];
   assert.ok(full);
   assert.equal(
     full.if,
-    "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}",
+    "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
   );
   const fullJobs = [
     "test-js-packages",

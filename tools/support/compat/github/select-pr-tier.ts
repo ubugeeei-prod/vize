@@ -1,13 +1,5 @@
-/**
- * Decides whether a PR run also executes the heavy lanes that the merge queue
- * always executes: the canonical corpus observers, the Oxlint original project
- * qualification and the playground browser tests.
- *
- * Nothing reaches main without the queue running every lane on the actual
- * merge candidate, so skipping a lane on the PR removes a duplicate, not a
- * guarantee. A lane that fails only in the queue ejects its candidate and makes
- * every later candidate rebuild, so the automatic choice errs towards heavy.
- */
+/** PRs run affected product checks; the queue retains canonical/browser coverage.
+ * Full qualification can be requested explicitly with the `full-ci` label. */
 import { appendFileSync } from "node:fs";
 
 import { changedPaths } from "./plan-source-checks.ts";
@@ -21,21 +13,6 @@ export interface TierRequest {
   labels: readonly string[];
 }
 
-// Changes most likely to break a heavy lane: every compiler, checker and
-// linter source, the native and Oxlint packages, the playground, the build
-// graph, and the workflows and tooling those lanes run.
-const heavyInputs = [
-  /^(?:crates|davinci|vendor)\//,
-  /^npm\/(?:oxlint|native|builder|cli)\//,
-  /^playground\//,
-  /^(?:Cargo\.(?:toml|lock)|rust-toolchain\.toml|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml)$/,
-  /^\.cargo\//,
-  /^\.github\/(?:workflows|actions)\//,
-  /^tools\/support\/compat\/github\//,
-  /^tools\/config\//,
-  /^tests\/(?:davinci_test_support|_fixtures)\//,
-];
-
 export function selectPrTier({ eventName, paths, labels }: TierRequest): Tier {
   if (eventName === "merge_group") return "heavy";
   if (eventName !== "pull_request") throw new Error("expected a PR or merge-group context");
@@ -44,7 +21,7 @@ export function selectPrTier({ eventName, paths, labels }: TierRequest): Tier {
   if (labels.includes("hotfix")) return "fast";
   // An unknown diff is never a reason to skip.
   if (paths.length === 0) return "heavy";
-  return paths.some((path) => heavyInputs.some((pattern) => pattern.test(path))) ? "heavy" : "fast";
+  return "fast";
 }
 
 if (process.argv[1]?.endsWith("/select-pr-tier.ts")) {

@@ -1,0 +1,36 @@
+name: Check Vize applications
+description: Build the current-source CLI and verify the affected product applications
+runs:
+  using: composite
+  steps:
+    - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      with:
+        node-version-file: "package.json"
+        cache: true
+        run-install: false
+    - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+      with: { toolchain: stable }
+    - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      with: { wild-version: "0.9.0" }
+    - uses: ./.github/actions/setup-rust-sticky-cache
+      with: { key: check-vize-apps, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+    - name: Install JS dependencies
+      shell: bash
+      run: vp install --frozen-lockfile --prefer-offline
+    - name: Build vize CLI
+      shell: bash
+      run: (cd npm/cli && vp pack) && cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts
+    - name: Install vize CLI
+      shell: bash
+      run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
+    # Use this commit-built CLI without waiting for npm or building a second binary.
+    - name: Lint authored source with the opinionated preset
+      shell: bash
+      run: vp node tools/commands/ci/opinionated-source-lint.mjs
+    - name: Test gallery Markdown renderer
+      working-directory: npm/builder/vite-musea
+      shell: bash
+      run: vp exec tsx --test gallery/components/MarkdownContent.test.ts
+    - name: Check Vize app fixtures
+      shell: bash
+      run: vp run --workspace-root check:ci:vize-apps

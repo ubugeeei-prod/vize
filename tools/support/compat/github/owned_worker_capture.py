@@ -16,7 +16,7 @@ import time
 from owned_worker_identity import PACKAGE, file_identity, prepare_profile, providers, same_birth, select, state
 
 FILES = ["owned_worker_capture.py", "owned_worker_identity.py", "owned_worker_gdb.py", "owned_worker_probe.mjs", "owned_worker_runner.py", "owned_worker_supervisor.py"]
-SOURCE_CENSUS = ["native-fault-evidence.py", "native_fault_core.py"]
+SOURCE_CENSUS = ["native-fault-evidence.ts", "native-fault-core.ts", "native-fault-support.ts"]
 LIVE_LAWS = "owned_worker_live_laws.py"
 OLD_HEAD = "f2b31f4a8f1b677629c29c1be4f4ebfb68fc800e"
 OLD_SOURCE = "52c78c8865237e8503a592f13029231b55da0537"

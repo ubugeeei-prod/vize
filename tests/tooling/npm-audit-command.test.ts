@@ -3,13 +3,19 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { test } from "node:test";
+import { after, test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const scriptPath = path.join(root, "tools", "commands", "ci", "npm-audit.rs");
+const scriptPath = path.join(root, "tools", "commands", "ci", "npm-audit-retry.ts");
+const temporaryDirectories: string[] = [];
+
+after(() => {
+  for (const directory of temporaryDirectories)
+    fs.rmSync(directory, { recursive: true, force: true });
+});
 
 test("npm audit command retries transient transport failures", () => {
   const fixture = createFixture("eventual-success");
@@ -42,8 +48,53 @@ test("npm audit command preserves the final failure status", () => {
   assert.equal(readArgs(fixture.argsFile).length, 3);
 });
 
+test("npm audit command clamps zero attempts to one", () => {
+  const fixture = createFixture("always-fail");
+  const result = runAuditCommand(fixture.binDir, {
+    TEST_AUDIT_MODE: "always-fail",
+    TEST_AUDIT_STATUS: "7",
+    TEST_COUNTER_FILE: fixture.counterFile,
+    TEST_ARGS_FILE: fixture.argsFile,
+    VIZE_NPM_AUDIT_ATTEMPTS: "0",
+  });
+
+  assert.equal(result.status, 7, result.stderr);
+  assert.equal(readArgs(fixture.argsFile).length, 1);
+  assert.doesNotMatch(result.stderr, /retrying/);
+});
+
+test("npm audit command uses defaults for invalid attempt counts", () => {
+  const fixture = createFixture("always-fail");
+  const result = runAuditCommand(fixture.binDir, {
+    TEST_AUDIT_MODE: "always-fail",
+    TEST_COUNTER_FILE: fixture.counterFile,
+    TEST_ARGS_FILE: fixture.argsFile,
+    VIZE_NPM_AUDIT_ATTEMPTS: "-1",
+  });
+
+  assert.equal(result.status, 1, result.stderr);
+  assert.equal(readArgs(fixture.argsFile).length, 3);
+});
+
+test(
+  "npm audit command retries a signalled child and fails closed",
+  { skip: process.platform === "win32" },
+  () => {
+    const fixture = createFixture("signal");
+    const result = runAuditCommand(fixture.binDir, {
+      TEST_AUDIT_MODE: "signal",
+      TEST_COUNTER_FILE: fixture.counterFile,
+      TEST_ARGS_FILE: fixture.argsFile,
+    });
+
+    assert.equal(result.status, 1, result.stderr);
+    assert.equal(readArgs(fixture.argsFile).length, 3);
+  },
+);
+
 function createFixture(mode: string): { argsFile: string; binDir: string; counterFile: string } {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), `vize-npm-audit-${mode}-`));
+  temporaryDirectories.push(tmpDir);
   const binDir = path.join(tmpDir, "bin");
   const counterFile = path.join(tmpDir, "count");
   const argsFile = path.join(tmpDir, "args.jsonl");
@@ -58,6 +109,7 @@ const argsFile = process.env.TEST_ARGS_FILE;
 const count = fs.existsSync(countFile) ? Number(fs.readFileSync(countFile, "utf8")) : 0;
 fs.writeFileSync(countFile, String(count + 1));
 fs.appendFileSync(argsFile, JSON.stringify(process.argv.slice(2)) + "\\n");
+if (process.env.TEST_AUDIT_MODE === "signal") process.kill(process.pid, "SIGTERM");
 if (process.env.TEST_AUDIT_MODE === "eventual-success" && count > 0) {
   process.exit(0);
 }
@@ -71,7 +123,7 @@ function runAuditCommand(
   binDir: string,
   env: Record<string, string>,
 ): ReturnType<typeof spawnSync> {
-  return spawnSync("rust-script", [scriptPath], {
+  return spawnSync(process.execPath, [scriptPath], {
     cwd: root,
     encoding: "utf8",
     env: {

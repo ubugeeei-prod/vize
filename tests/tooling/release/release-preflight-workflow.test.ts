@@ -52,14 +52,14 @@ test("reusable release preflight verifies evidence and crate plans without regis
   assert.ok(verifyCheckout);
   assert.equal(verifyCheckout.with?.["fetch-depth"], 0);
   assert.equal(verifyCheckout.with?.["persist-credentials"], false);
-  const nodeSetup = verify.steps?.find((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
+  const nodeSetup = verify.steps?.find((step) => step.uses?.startsWith("actions/setup-node@"));
   assert.ok(nodeSetup);
   assert.deepEqual(nodeSetup.with, {
     "node-version-file": "package.json",
-    "run-install": false,
+    "package-manager-cache": false,
   });
   const verification = verify.steps?.find((step) => step.run != null);
-  assert.equal(verification?.run, "node tools/support/compat/github/release-preflight.mjs");
+  assert.equal(verification?.run, "node tools/support/compat/github/release-preflight.ts");
   assert.equal(verification?.env?.GITHUB_TOKEN, "${{ github.token }}");
 
   const crateValidation = workflow.jobs?.["validate-crates"];
@@ -75,11 +75,10 @@ test("reusable release preflight verifies evidence and crate plans without regis
   );
   assert.ok(crateCheckout);
   assert.equal(crateCheckout.with?.["persist-credentials"], false);
-  const wildLinker = crateValidation.steps?.find((step) =>
-    step.uses?.startsWith("wild-linker/action@"),
+  assert.equal(
+    crateValidation.steps?.some((step) => step.uses?.startsWith("wild-linker/action@")),
+    false,
   );
-  assert.ok(wildLinker);
-  assert.equal(wildLinker.with?.["wild-version"], "0.9.0");
   assert.ok(
     crateValidation.steps?.some(
       (step) => step.run === "node tools/support/release/publish_crates/main.ts --dry-run",

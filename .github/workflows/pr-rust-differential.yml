@@ -5,6 +5,9 @@ on:
       run-rust:
         type: boolean
         required: true
+      rust-plan:
+        type: string
+        required: true
 permissions: { contents: read }
 env:
   CARGO_TERM_COLOR: always
@@ -12,15 +15,19 @@ env:
 
 jobs:
   differential:
-    name: Rust feature corpora and fixture coverage
+    name: Rust product differential (${{ matrix.lane }})
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.rust-plan).differentialMatrix }}
     if: ${{ github.event_name == 'merge_group' && inputs.run-rust }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 45
+    timeout-minutes: 15
     env:
       CARGO_BUILD_JOBS: "12"
       RUST_TEST_THREADS: "4"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
       VIZE_TEST_REQUIRE_TSGO: "1"
+      RUST_PLAN_JSON: ${{ inputs.rust-plan }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
@@ -35,22 +42,37 @@ jobs:
         with:
           node-version-file: "package.json"
           cache: true
-          run-install: true
+          run-install: false
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
           key: clippy-test
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: ./.github/actions/setup-rust-script
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
-      - name: Test merge queue differential corpora
-        if: ${{ github.event_name == 'merge_group' && inputs.run-rust }}
-        uses: ./.github/actions/test-rust-workspace-differential
-        with:
-          workspace-already-tested: "true"
-      - uses: ./.github/actions/retain-sfc-runtime
+      - name: Install product oracle dependencies
+        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './tests...'
+      - name: Hydrate pinned Element Plus fixture
+        if: ${{ matrix.lane == 'program' || matrix.lane == 'sfc-project' || matrix.lane == 'navigation' }}
+        run: git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus
+      - name: Materialize affected Rust plan
+        run: node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
+      - name: Run affected feature and production corpora
+        if: ${{ matrix.lane != 'navigation' && matrix.lane != 'none' }}
+        env: { DIFFERENTIAL_LANE: "${{ matrix.lane }}" }
+        run: node tools/support/compat/github/rust-differential-lanes.ts "$DIFFERENTIAL_LANE" "$RUNNER_TEMP/rust-plan.json"
+      - name: Test native Program and Vue navigation responses
+        if: ${{ matrix.lane == 'navigation' }}
+        uses: ./.github/actions/test-native-navigation
+      - name: Retain complete SFC runtime child outcomes
         if: ${{ always() }}
-      - name: Check fixture coverage
-        if: ${{ inputs.run-rust }}
-        run: rust-script tools/commands/ci/github/write-coverage-summary.rs
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vapor-sfc-runtime-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.lane }}
+          path: |
+            target/nextest/*/vapor-sfc/
+            target/nextest/*/ssr-nested-dynamic-arguments/
+            target/nextest/*/ssr-v-pre-boundaries/
+            target/nextest/*/ssr-component-camel-boundaries/
+            target/nextest/*/ssr-literal-slot-boundaries/
+          if-no-files-found: ignore
+          retention-days: 14

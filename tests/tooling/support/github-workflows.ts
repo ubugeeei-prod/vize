@@ -77,7 +77,7 @@ export function assertReleasePlatformCommandsUseRefEnv(
     assert.match(job, /RELEASE_REF_NAME:\s*\$\{\{\s*inputs\.tag_name\s*\}\}/, jobName);
     assert.match(
       job,
-      /release-platforms\.rs (?:github-output|apply-cadence) "\$RELEASE_REF_NAME"/,
+      /release-platforms\.ts (?:github-output|apply-cadence) "\$RELEASE_REF_NAME"/,
       jobName,
     );
   }

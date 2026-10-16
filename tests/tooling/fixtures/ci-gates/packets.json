@@ -175,7 +175,7 @@
     }
   },
   {
-    "name": "rust-queue-full-only",
+    "name": "rust-queue-requires-parallel-doctests",
     "mode": "rust",
     "event": "merge_group",
     "runRust": "true",
@@ -187,8 +187,8 @@
     },
     "expected": {
       "result": {
-        "exitCode": 0,
-        "message": "test-report gate: all 3 needed jobs are accounted for. 3 succeeded; 0 skipped on a pull request by design."
+        "exitCode": 1,
+        "message": "test-report gate: 1 of 4 needed jobs did not succeed.\n  - pr-rust-build: skipped\ntest-report is a required status check, so it must not pass while a job it aggregates is red.\nOnly these jobs may skip on a pull request: ."
       }
     }
   },
@@ -206,13 +206,16 @@
     }
   },
   {
-    "name": "rust-queue-refuses-false",
+    "name": "rust-queue-allows-no-rust-inputs",
     "mode": "rust",
     "event": "merge_group",
     "runRust": "false",
     "needs": {},
     "expected": {
-      "error": { "name": "Error", "message": "Merge queue must select the complete Rust workspace" }
+      "result": {
+        "exitCode": 0,
+        "message": "Rust source plan selects no crates; archive and shards skipped."
+      }
     }
   },
   {

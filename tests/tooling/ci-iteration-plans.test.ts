@@ -1,0 +1,314 @@
+import assert from "node:assert/strict";
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+import { planPrChecks, prCheckOutputs } from "../../tools/support/compat/github/plan-pr-checks.ts";
+import {
+  planAffectedJs,
+  readJsWorkspace,
+} from "../../tools/support/compat/github/plan-affected-js.ts";
+import { planAffectedRust } from "../../tools/support/compat/github/plan-affected-rust.ts";
+import { planSourceChecks } from "../../tools/support/compat/github/plan-source-checks.ts";
+import { planNativeRuntime } from "../../tools/support/compat/github/plan-native-runtime.ts";
+import { selectPrTier } from "../../tools/support/compat/github/select-pr-tier.ts";
+import {
+  differentialMatrix,
+  differentialSteps,
+  rustDifferentialLanes,
+} from "../../tools/support/compat/github/rust-differential-lanes.ts";
+import { requireRustTier } from "../../tools/support/compat/github/require-rust-tier.ts";
+import { rustCommand } from "../../tools/support/compat/github/run-affected-rust.ts";
+
+const metadata = {
+  workspace_root: "/repo",
+  workspace_members: ["syntax", "vize_vitrine", "leaf", "vize_atelier_ssr"],
+  packages: [
+    {
+      id: "syntax",
+      name: "syntax",
+      manifest_path: "/repo/crates/syntax/Cargo.toml",
+      dependencies: [],
+    },
+    {
+      id: "vize_vitrine",
+      name: "vize_vitrine",
+      manifest_path: "/repo/crates/vize_vitrine/Cargo.toml",
+      dependencies: [{ path: "/repo/crates/syntax" }],
+    },
+    { id: "leaf", name: "leaf", manifest_path: "/repo/crates/leaf/Cargo.toml", dependencies: [] },
+    {
+      id: "vize_atelier_ssr",
+      name: "vize_atelier_ssr",
+      manifest_path: "/repo/crates/vize_atelier_ssr/Cargo.toml",
+      dependencies: [{ path: "/repo/crates/syntax", kind: "dev" }],
+    },
+  ],
+};
+const workspace = [
+  { name: "@vizejs/native", path: "npm/native", dependencies: [] },
+  { name: "@vizejs/fresco-native", path: "npm/fresco-native", dependencies: [] },
+  { name: "@vizejs/cli", path: "npm/cli", dependencies: ["@vizejs/native"] },
+  { name: "@vizejs/ui", path: "npm/ui", dependencies: ["@vizejs/native"] },
+  { name: "@vizejs/oxlint", path: "npm/oxlint", dependencies: ["@vizejs/native"] },
+  { name: "@vizejs/fresco", path: "npm/fresco", dependencies: ["@vizejs/fresco-native"] },
+];
+
+test("PR and queue choose the complete reverse dependency closure on their actual diff", () => {
+  for (const event of ["pull_request", "merge_group"]) {
+    const plan = planAffectedRust(
+      metadata,
+      ["crates/syntax/src/lib.rs", "npm/cli/src/index.ts"],
+      event,
+    );
+    assert.deepEqual(plan.packages, ["syntax", "vize_atelier_ssr", "vize_vitrine"]);
+    assert.deepEqual(plan.differentialMatrix, { lane: ["ssr", "wasm"] });
+    assert.deepEqual(rustCommand(plan, ["cargo", "test", "@packages@", "--doc"]), [
+      "cargo",
+      "test",
+      "--package",
+      "syntax",
+      "--package",
+      "vize_atelier_ssr",
+      "--package",
+      "vize_vitrine",
+      "--doc",
+    ]);
+  }
+});
+
+test("shared, deleted and unknown inputs still select every Rust package", () => {
+  for (const path of [
+    "Cargo.lock",
+    "crates/deleted/src/lib.rs",
+    "tests/_fixtures/source.vue",
+    ".cargo/config.toml",
+    "new-runtime/lib.rs",
+  ]) {
+    assert.equal(planAffectedRust(metadata, [path], "merge_group").scope, "workspace", path);
+  }
+  assert.equal(planAffectedRust(metadata, [], "merge_group").scope, "workspace");
+  const fixture = "tests/_fixtures/differential/lint/prop-declarations-448/cases.json";
+  assert.equal(planSourceChecks([fixture], "merge_group").rust, true);
+  assert.deepEqual(
+    planAffectedJs(
+      [...workspace, { name: "@vize/tests", path: "tests", dependencies: [] }],
+      [fixture],
+    ).groups,
+    ["builders", "ui", "oxlint"],
+  );
+  for (const tool of [
+    "tools/support/github/build-vitrine-wasm.ts",
+    "tools/support/tasks/build-vitrine-wasm.ts",
+    "tools/support/command-runtime.ts",
+    "tools/commands/davinci/incremental-equivalence/scripts/input.ts",
+    "tools/support/release/public_acceptance/gallery.ts",
+  ]) {
+    assert.equal(planSourceChecks([tool], "merge_group").playground, true, tool);
+    assert.equal(planAffectedRust(metadata, [tool]).scope, "workspace", tool);
+    assert.equal(planAffectedJs(workspace, [tool]).scope, "workspace", tool);
+  }
+  for (const input of [
+    "npm/cli/pkl/Vize.pkl",
+    "examples/html-conformance/src/App.vue",
+    "examples/volt-target/src/lib.ts",
+  ]) {
+    assert.equal(planSourceChecks([input], "merge_group").rust, true, input);
+    assert.equal(
+      planAffectedRust(metadata, ["crates/leaf/src/lib.rs", input]).scope,
+      "workspace",
+      input,
+    );
+  }
+});
+
+test("Rust source affects JS only through a source-built native package", () => {
+  const leaf = planAffectedRust(metadata, ["crates/leaf/src/lib.rs"]);
+  assert.deepEqual(planAffectedJs(workspace, ["crates/leaf/src/lib.rs"], leaf).groups, []);
+  const compiler = planAffectedRust(metadata, ["crates/syntax/src/lib.rs"]);
+  const selected = planAffectedJs(workspace, ["crates/syntax/src/lib.rs"], compiler);
+  assert.deepEqual(selected.groups, ["builders", "ui", "oxlint"]);
+  assert.equal(selected.conformance.fresco, false);
+  assert.equal(selected.conformance.ui, true);
+});
+
+test("JS workspace edges include transitive consumers and exclude unrelated groups", () => {
+  const plan = planAffectedJs(workspace, ["npm/fresco-native/index.d.ts"]);
+  assert.deepEqual(plan.packages, ["npm/fresco", "npm/fresco-native"]);
+  assert.deepEqual(plan.groups, ["ui"]);
+  assert.deepEqual(plan.conformance, { fresco: true, ui: false });
+  assert.deepEqual(planAffectedJs(workspace, ["npm/oxlint/src/index.ts"]).groups, ["oxlint"]);
+  assert.equal(planAffectedJs(workspace, ["npm/deleted/index.ts"]).scope, "workspace");
+  assert.equal(planAffectedJs(workspace, ["pnpm-lock.yaml"]).scope, "workspace");
+});
+
+test("actual workspace manifests retain native consumers without duplicate fixture packages", () => {
+  const packages = readJsWorkspace();
+  assert.equal(new Set(packages.map((pkg) => pkg.name)).size, packages.length);
+  const plan = planAffectedJs(packages, ["npm/native/index.js"]);
+  assert.ok(plan.packages.includes("npm/builder/vite"));
+  assert.ok(plan.packages.includes("npm/framework/nuxt"));
+  assert.ok(plan.packages.includes("npm/oxlint"));
+});
+
+test("prose and tooling-only changes avoid product builds in the queue", () => {
+  for (const event of ["pull_request", "merge_group"]) {
+    assert.deepEqual(planSourceChecks(["docs/content/guide.md"], event), {
+      rust: false,
+      js: false,
+      tooling: false,
+      playground: false,
+    });
+    const tooling = planSourceChecks(["tools/support/release/preflight.ts"], event);
+    assert.equal(tooling.rust, false);
+    assert.equal(tooling.js, false);
+  }
+  assert.deepEqual(planAffectedJs(workspace, ["docs/content/guide.md"]).matrix, {
+    group: ["none"],
+  });
+  assert.deepEqual(planNativeRuntime(["docs/content/guide.md"]), {
+    run: false,
+    matrix: { lane: ["none"] },
+  });
+});
+
+test("affected native captures keep source-built runtime proofs independent of tooling suites", () => {
+  assert.ok(planNativeRuntime(["davinci/vize_l4/src/targets/ssr.rs"]).matrix.lane.includes("ssr"));
+  assert.ok(
+    planNativeRuntime(["davinci/vize_l4/src/targets/vapor.rs"]).matrix.lane.includes("vapor"),
+  );
+  assert.equal(planNativeRuntime(["Cargo.lock"]).matrix.lane.length, 6);
+  assert.equal(
+    planNativeRuntime(["davinci/vize_l0_derive/src/lib.rs"], { packages: ["vize_l4"] }).matrix.lane
+      .length,
+    6,
+  );
+  assert.ok(
+    planNativeRuntime(["davinci/vize_l4/tests/fixtures/selected-template-dom-vue-3.5.35.json"], {
+      packages: ["vize_l4"],
+    }).matrix.lane.includes("selected-template"),
+  );
+});
+
+test("normal PRs defer duplicate heavy qualification and preserve an explicit full-ci escape hatch", () => {
+  const paths = ["crates/vize_atelier_sfc/src/lib.rs"];
+  assert.equal(selectPrTier({ eventName: "pull_request", paths, labels: [] }), "fast");
+  assert.equal(selectPrTier({ eventName: "pull_request", paths, labels: ["full-ci"] }), "heavy");
+  assert.equal(selectPrTier({ eventName: "merge_group", paths, labels: [] }), "heavy");
+});
+
+test("one source plan joins actual Rust and JS closures without temporary JSON files", () => {
+  const plan = planPrChecks({
+    paths: ["crates/syntax/src/lib.rs"],
+    eventName: "merge_group",
+    labels: [],
+    workspace,
+    cargoMetadata: metadata,
+  });
+  const outputs = prCheckOutputs(plan);
+  assert.equal(outputs.rust, "true");
+  assert.deepEqual(JSON.parse(outputs["rust-plan"]).packages, [
+    "syntax",
+    "vize_atelier_ssr",
+    "vize_vitrine",
+  ]);
+  assert.deepEqual(JSON.parse(outputs["js-plan"]).groups, ["builders", "ui", "oxlint"]);
+  assert.equal(outputs.heavy, "true");
+  assert.equal(
+    prCheckOutputs(
+      planPrChecks({ paths: ["docs/guide.md"], eventName: "merge_group", labels: [], workspace }),
+    ).rust,
+    "false",
+  );
+  assert.throws(
+    () => planPrChecks({ paths: ["Cargo.lock"], eventName: "pull_request", labels: [], workspace }),
+    /require Cargo workspace metadata/,
+  );
+});
+
+test("the combined CLI plans a real documentation diff without invoking Cargo", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "vize-one-plan-"));
+  const git = (...args: string[]) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+  try {
+    mkdirSync(join(cwd, "bin"));
+    writeFileSync(join(cwd, "bin/cargo"), "#!/bin/sh\nexit 97\n", { mode: 0o755 });
+    mkdirSync(join(cwd, "npm/native"), { recursive: true });
+    writeFileSync(join(cwd, "npm/native/package.json"), JSON.stringify({ name: "@vizejs/native" }));
+    writeFileSync(join(cwd, "pnpm-workspace.yaml"), 'packages:\n  - "npm/*"\n');
+    writeFileSync(join(cwd, "README.md"), "before\n");
+    git("init", "-q");
+    git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "add", ".");
+    git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "before");
+    const base = git("rev-parse", "HEAD");
+    writeFileSync(join(cwd, "README.md"), "after\n");
+    git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qam", "after");
+    const output = join(cwd, "outputs");
+    const run = spawnSync(
+      process.execPath,
+      [
+        fileURLToPath(
+          new URL("../../tools/support/compat/github/plan-pr-checks.ts", import.meta.url),
+        ),
+        base,
+        git("rev-parse", "HEAD"),
+        "merge_group",
+      ],
+      {
+        cwd,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          PATH: `${join(cwd, "bin")}:${process.env.PATH}`,
+          PR_LABELS: "[]",
+          GITHUB_OUTPUT: output,
+          GITHUB_STEP_SUMMARY: "",
+        },
+      },
+    );
+    assert.equal(run.status, 0, run.stderr);
+    const outputs = Object.fromEntries(
+      readFileSync(output, "utf8")
+        .trimEnd()
+        .split("\n")
+        .map((line) => [line.slice(0, line.indexOf("=")), line.slice(line.indexOf("=") + 1)]),
+    );
+    assert.equal(outputs.rust, "false");
+    assert.equal(outputs.js, "false");
+    assert.deepEqual(JSON.parse(outputs["native-runtime-matrix"]), { lane: ["none"] });
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
+  }
+});
+
+test("product differential partitions preserve each selected command exactly once", () => {
+  const all = [
+    ...new Set(rustDifferentialLanes.flatMap((lane) => lane.steps.map((step) => step.package))),
+  ];
+  assert.ok(differentialMatrix(all).lane.includes("navigation"));
+  assert.deepEqual(differentialMatrix(["vize_atelier_ssr"]), { lane: ["ssr"] });
+  const commands = differentialSteps("ssr", ["vize_atelier_ssr"]);
+  assert.equal(commands.length, 2);
+  assert.ok(commands[0].args.includes("davinci_ssr_corpus"));
+  assert.ok(commands[0].args.includes("davinci_ssr_production_cases"));
+  assert.equal(commands[1].env?.VIZE_VUE_RUNTIME_PRODUCTION, "1");
+  assert.throws(() => differentialSteps("unknown", all), /unknown/);
+});
+
+test("Rust report permits a proven unrelated skip but rejects missing or failed affected work", () => {
+  assert.equal(requireRustTier("merge_group", "false", {}).exitCode, 0);
+  const results = {
+    "merge-rust-source": { result: "success" },
+    "merge-rust-differential": { result: "success" },
+    "pr-rust-build": { result: "success" },
+    "pr-rust-shard": { result: "success" },
+  };
+  assert.equal(requireRustTier("merge_group", "true", results).exitCode, 0);
+  assert.equal(
+    requireRustTier("merge_group", "true", { ...results, "pr-rust-shard": { result: "skipped" } })
+      .exitCode,
+    1,
+  );
+  assert.throws(() => requireRustTier("merge_group", "true", {}), /Missing Rust tier job/);
+});

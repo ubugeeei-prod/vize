@@ -41,7 +41,7 @@ interface PublishOutput {
  * instead of silently falling back to a different publish mode.
  */
 function parseConcurrency(value: string): number | null {
-  return ["1", "2", "3", "4"].includes(value) ? Number(value) : null;
+  return /^[1-8]$/.test(value) ? Number(value) : null;
 }
 
 /**
@@ -88,7 +88,7 @@ function receiptObject(entries: [string, JsonValue][]): JsonObject {
 }
 
 const USAGE =
-  "Usage: node tools/support/release/publish_npm_package_dirs/main.ts <dir> [--concurrency 1..4] [--receipt path] [--provenance] [--ignore-failure] [--retries N] [--delay N]\n";
+  "Usage: node tools/support/release/publish_npm_package_dirs/main.ts <dir> [--concurrency 1..8] [--receipt path] [--provenance] [--ignore-failure] [--retries N] [--delay N]\n";
 
 /**
  * Main entry point for publishing generated npm package directories.
@@ -112,7 +112,7 @@ export async function publishNpmPackageDirs(args: readonly string[]): Promise<nu
     if (arg === "--concurrency") {
       const parsed = parseConcurrency(index + 1 < args.length ? args[index + 1] : "");
       if (parsed === null) {
-        writeStderr("--concurrency requires an integer from 1 to 4\n");
+        writeStderr("--concurrency requires an integer from 1 to 8\n");
         return 1;
       }
       concurrency = parsed;

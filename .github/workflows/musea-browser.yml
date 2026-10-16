@@ -1,18 +1,10 @@
 name: Musea accessibility and capture
 on:
-  pull_request:
-    paths:
-      [
-        "npm/builder/vite-musea/**",
-        "tests/_fixtures/differential/musea/**",
-        "tests/tooling/fixtures/musea/**",
-        "examples/vite-musea/src/**",
-        "examples/vite-musea/musea.preview.ts",
-        "examples/vite-musea/src/components/MuseaButton.vue",
-        ".github/workflows/musea-browser.yml",
-      ]
+  pull_request: {}
   merge_group:
     types: [checks_requested]
+  schedule:
+    - cron: "43 3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -23,8 +15,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  plan:
+    name: Select affected Musea integrations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    outputs:
+      native: ${{ steps.plan.outputs.musea-native }}
+      browser: ${{ steps.plan.outputs.musea-browser }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Select changed product inputs
+        id: plan
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+        run: |
+          if [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          fi
+          node tools/support/compat/github/plan-product-integrations.ts "$GITHUB_EVENT_NAME" "$BASE_SHA" "$GITHUB_SHA"
+
   musea-native-inline:
     name: Musea native inline Art contracts
+    needs: plan
+    if: ${{ needs.plan.outputs.native == 'true' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     steps:
@@ -34,15 +50,12 @@ jobs:
           node-version-file: package.json
           cache: true
           run-install: false
-      - uses: ./.github/actions/setup-moonbit
       - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
         with: { toolchain: "1.99.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          cache-key-prefix: musea-native-inline-
           key: native-inline-browser
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: ./.github/actions/setup-rust-script
       - name: Install source-native browser dependencies
         run: vp install --filter './npm/native...' --filter './npm/builder/vite...' --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -90,6 +103,7 @@ jobs:
             artifacts/musea-native-hosted-vrt-reconnect/**
             artifacts/musea-native-literal-variants/**
             artifacts/musea-native-packed-gallery-base/**
+            !artifacts/**/node_modules/**
           if-no-files-found: warn
           retention-days: 14
           include-hidden-files: true
@@ -108,6 +122,8 @@ jobs:
           include-hidden-files: false
   musea-browser:
     name: Musea real Chromium contracts
+    needs: plan
+    if: ${{ needs.plan.outputs.browser == 'true' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:

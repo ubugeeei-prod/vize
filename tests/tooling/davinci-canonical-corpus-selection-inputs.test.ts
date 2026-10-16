@@ -146,7 +146,7 @@ await test("every script, import and literal fixture read of the canonical jobs 
     "tools/support/compat/github/release-preflight-github.mjs",
     "tools/support/compat/davinci/lib/corpus-baseline-contract.mjs",
     "tools/support/common.rs",
-    ".github/actions/setup-rust-sticky-cache/cache-policy.mjs",
+    ".github/actions/setup-rust-sticky-cache/cache-policy.ts",
   ])
     assert(scripts.has(expected), `${expected} left the derived script closure`);
   assert(literals.has("tests/_fixtures/vue-ecosystem-fixtures.json"));

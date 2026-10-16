@@ -111,7 +111,10 @@ void test("Rust tier gate rejects failed, cancelled, absent, and skipped require
   assert.equal(requireRustTier("pull_request", "true", needs).exitCode, 0);
   for (const [event, jobs] of [
     ["pull_request", ["pr-rust-build", "pr-rust-shard"]],
-    ["merge_group", ["merge-rust-source", "merge-rust-differential", "pr-rust-shard"]],
+    [
+      "merge_group",
+      ["merge-rust-source", "merge-rust-differential", "pr-rust-build", "pr-rust-shard"],
+    ],
   ])
     for (const job of jobs) {
       for (const result of ["failure", "cancelled", "skipped", "unknown"]) {
@@ -129,9 +132,7 @@ void test("Rust tier gate rejects failed, cancelled, absent, and skipped require
     1,
   );
   assert.equal(requireRustTier("pull_request", "false", needs).exitCode, 0);
-  assert.throws(() => requireRustTier("merge_group", "false", needs), {
-    message: "Merge queue must select the complete Rust workspace",
-  });
+  assert.equal(requireRustTier("merge_group", "false", needs).exitCode, 0);
   assert.throws(() => requireRustTier("pull_request", "", needs), {
     message: "Missing Rust source plan",
   });

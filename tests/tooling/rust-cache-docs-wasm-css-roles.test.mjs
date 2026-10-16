@@ -42,7 +42,6 @@ function document() {
             {
               uses: cache,
               with: {
-                "cache-key-prefix": "css-vendor-",
                 key,
                 "cache-key-suffix": "${{ runner.os }}-${{ runner.arch }}",
               },
@@ -117,9 +116,6 @@ void test("CSS complete inputs refuse delegation, redirects and unreviewed dynam
     },
     (step) => {
       step.with.key = "engines-${{ matrix.profile || 'docs-wasm' }}";
-    },
-    (step) => {
-      step.with["cache-key-prefix"] = "docs-";
     },
     (step) => {
       step.with["cache-key-suffix"] = "other-target";

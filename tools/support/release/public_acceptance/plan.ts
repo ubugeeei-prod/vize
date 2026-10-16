@@ -84,6 +84,39 @@ const PUBLISH_NPM_PACKAGE_DIRS =
   /tools\/support\/release\/publish_npm_package_dirs\/main\.ts\s|tools\/moon\/cmd\/publish_npm_package_dirs\s/;
 const CRATE_PUBLISHER = "tools/support/release/publish_crates/main.ts";
 
+const PUBLISH_PACKAGE_ACTION = "./.github/actions/publish-release-package";
+
+function sharedPublicationPaths(workflow: string, read: (path: string) => string): string[] {
+  const lines = workflow.split("\n");
+  const calls = lines.flatMap((line, index) =>
+    !line.trimStart().startsWith("#") && line.includes(PUBLISH_PACKAGE_ACTION) ? [index] : [],
+  );
+  if (calls.length === 0) return [];
+  const action = read(`${PUBLISH_PACKAGE_ACTION.slice(2)}/action.yml`);
+  // Source acceptance recognizes this explicit three-step recipe only. Extra
+  // commands, dynamic inputs, or shell suffixes require a reviewed reader update.
+  const recipe = String.raw`^runs:\n  using: composite\n  steps:\n    - uses: voidzero-dev/setup-vp@[0-9a-f]{40}(?: #[^\n]*)?\n      with: \{ node-version-file: package\.json, run-install: false \}\n    - uses: actions/download-artifact@[0-9a-f]{40}(?: #[^\n]*)?\n      with:\n        name: \$\{\{ inputs.artifact \}\}\n        path: \$\{\{ inputs.package-path \}\}\n    - name: Publish with provenance\n      shell: bash\n      env:\n        RELEASE_PACKAGE_PATH: \$\{\{ inputs.package-path \}\}\n      run: node tools/support/release/publish_npm_package/main\.ts "\$RELEASE_PACKAGE_PATH" --provenance\n?$`;
+  requireValue(
+    new RegExp(recipe).test(action.slice(action.indexOf("\nruns:") + 1)),
+    "unsupported shared npm publish recipe",
+  );
+  return calls.map((index) => {
+    const invocation = lines.slice(index, index + 4).join("\n");
+    const match =
+      /^      - uses: \.\/\.github\/actions\/publish-release-package\n        with:\n          artifact: release-package-[a-z0-9-]+\n          package-path: (npm\/[a-zA-Z0-9_/-]+)$/.exec(
+        invocation,
+      );
+    const after =
+      lines.slice(index + 4).find((line) => line.trim() && !line.trimStart().startsWith("#")) ?? "";
+    requireValue(
+      match && (!after.trim() || /^ {0,6}\S/.test(after)),
+      "unsupported shared npm publish invocation",
+    );
+    requireValue(!match[1].split("/").includes(".."), "unsafe npm publication path");
+    return match[1];
+  });
+}
+
 /** Copy exact H source bytes without following working-tree symlinks or replacements. */
 export function readRawBlob(root: string, head: string, path: string): Buffer {
   requireHead(root, head);
@@ -124,13 +157,16 @@ export function derivePublicationPlan(root: string, head: string): PublicationPl
     .split("\n")
     .filter((line) => !line.trimStart().startsWith("#") && PUBLISH_NPM_PACKAGE.test(line));
   const paths = unique(
-    commands.map((line) => {
-      const match = new RegExp(
-        `^\\s*(?:-\\s+)?run: ${PUBLISH_NPM_PACKAGE_COMMAND} (npm\\/[a-zA-Z0-9_/-]+) --provenance\\s*$`,
-      ).exec(line);
-      requireValue(match, "unsupported npm publish command in H release workflow");
-      return match[1];
-    }),
+    [
+      ...commands.map((line) => {
+        const match = new RegExp(
+          `^\\s*(?:-\\s+)?run: ${PUBLISH_NPM_PACKAGE_COMMAND} (npm\\/[a-zA-Z0-9_/-]+) --provenance\\s*$`,
+        ).exec(line);
+        requireValue(match, "unsupported npm publish command in H release workflow");
+        return match[1];
+      }),
+      ...sharedPublicationPaths(workflow, read),
+    ],
     "npm publication paths",
   );
   const npm = paths.map((path) => {
@@ -177,7 +213,7 @@ export function derivePublicationPlan(root: string, head: string): PublicationPl
   requireValue(nativeCommands.length === 1, "one native target publication required");
   requireValue(
     new RegExp(
-      `^\\s*(?:-\\s+)?run: ${PUBLISH_NPM_PACKAGE_DIRS_COMMAND} npm\\/native\\/npm (?:--provenance|--concurrency 4 --provenance --receipt "\\$RUNNER_TEMP\\/native-platform-publish\\.json")\\s*$`,
+      `^\\s*(?:-\\s+)?run: ${PUBLISH_NPM_PACKAGE_DIRS_COMMAND} npm\\/native\\/npm (?:--provenance|--concurrency [48] --provenance --receipt "\\$RUNNER_TEMP\\/native-platform-publish\\.json")\\s*$`,
     ).test(nativeCommands[0]),
     "unsupported native target publication command in H release workflow",
   );

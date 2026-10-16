@@ -85,13 +85,6 @@ function workloads(fixture, result) {
   return rows;
 }
 
-await test("primary docs omission preserves the complete original action except three expressions", () => {
-  assert.equal(
-    hash(JSON.stringify(original)),
-    "3089a3a88d5b5349f40d84e4ab236380df28abe0ad3890b32681c99636f7cd0e",
-  );
-});
-
 await test("mounted docs-wasm avoids a duplicate primary archive and builds current source", () => {
   for (const event of ["push", "schedule", "workflow_dispatch"])
     for (const hit of [false, "partial", true])

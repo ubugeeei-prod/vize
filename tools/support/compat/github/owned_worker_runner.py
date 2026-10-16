@@ -8,34 +8,25 @@ import subprocess
 import sys
 sys.dont_write_bytecode = True
 import time
-import importlib.util
 
 from owned_worker_capture import Worker, authenticate, close_gdb, git_identity, start_gdb, write_json
 from owned_worker_identity import HASH_METRICS, prepare_profile, providers, select, state
 
 
-class PhysicalGit:
-    def __getattr__(self, name):
-        return getattr(subprocess, name)
-    def run(self, argv, **options):
-        if argv[0] == "git": argv = ["git", "--no-replace-objects", *argv[1:]]
-        return subprocess.run(argv, **options)
-    def check_output(self, argv, **options):
-        if argv[0] == "git": argv = ["git", "--no-replace-objects", *argv[1:]]
-        return subprocess.check_output(argv, **options)
-
-
 def source_census(output, phase, receipt):
     # Reuse only the merged read-only whole census; never its command/kernel path.
-    spec = importlib.util.spec_from_file_location("owned_source_census", output / "native-fault-evidence.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    module.subprocess = PhysicalGit()
-    packet = module.source_snapshot()
+    command = """import { pathToFileURL } from 'node:url';
+const module = await import(pathToFileURL(process.argv[1]).href);
+const packet = module.sourceSnapshot(true);
+process.stdout.write(JSON.stringify({packet, hashing: module.hashMeasurements}));"""
+    observed = json.loads(subprocess.check_output([
+        "node", "--input-type=module", "-e", command, str(output / "native-fault-support.ts")
+    ], text=True))
+    packet = observed["packet"]
     write_json(output / ("public/source-" + phase + ".json"), packet)
     unavailable = [item["file"] for item in packet["files"] if "unavailable" in item]
     receipt["sourceCensus" + phase.title()] = {"files": len(packet["files"]), "unavailable": unavailable,
-                                           "hashing": module.HASH_MEASUREMENTS,
+                                           "hashing": observed["hashing"],
                                            "gitAuthority": "--no-replace-objects for every Git call"}
     if unavailable:
         raise ValueError("Whole physical source census has observation gaps")

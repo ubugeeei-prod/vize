@@ -171,7 +171,7 @@ await test("edits before the step, foreign roots and shared secondary targets st
   }
 });
 
-await test("release binaries keep rebuilding workspace crates from a fresh checkout", () => {
+await test("release binaries reuse verified Cargo caches without accepting cached run outputs", () => {
   const release = parse(
     readFileSync(new URL("../../.github/workflows/release.yml", import.meta.url), "utf8"),
   ) as {
@@ -181,7 +181,7 @@ await test("release binaries keep rebuilding workspace crates from a fresh check
     (job.steps ?? []).filter(({ uses }) => uses === "./.github/actions/setup-rust-sticky-cache"),
   );
   assert.ok(mounts.length > 0);
-  for (const mount of mounts) assert.equal(mount.with?.["reuse-target"], "false", mount.with?.key);
+  for (const mount of mounts) assert.equal(mount.with?.["reuse-target"], "true", mount.with?.key);
 });
 
 await test("a reused target keeps only Cargo's build cache", () => {

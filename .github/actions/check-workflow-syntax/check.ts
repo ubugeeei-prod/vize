@@ -5,11 +5,18 @@ import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const binary = process.argv[2];
+const binary = process.env.ACTIONLINT_BINARY ?? process.argv[2];
 assert.ok(binary, "a verified official actionlint binary is required");
 const output = path.join(root, "target/workflow-syntax");
 mkdirSync(output, { recursive: true });
-const revision = (field) => {
+type Diagnostic = {
+  filepath: string;
+  line: number;
+  column: number;
+  kind: string;
+  message: string;
+};
+const revision = (field: string) => {
   const result = spawnSync("git", ["rev-parse", field], { encoding: "utf8", timeout: 10_000 });
   assert.equal(result.status, 0, "actual checked-out source identity is required");
   const value = result.stdout.trim();
@@ -19,18 +26,11 @@ const revision = (field) => {
 const source = { head: revision("HEAD"), tree: revision("HEAD^{tree}") };
 if (process.env.GITHUB_ACTIONS === "true")
   assert.equal(source.head, process.env.GITHUB_SHA, "workflow source must match this event");
-const expectedConfig = `self-hosted-runner:
-  labels:
-    - blacksmith-12vcpu-macos-15
-    - blacksmith-32vcpu-ubuntu-2404
-    - blacksmith-32vcpu-windows-2025
-`;
-assert.equal(readFileSync(".github/actionlint.yaml", "utf8"), expectedConfig);
 
 // Released actionlint 1.7.12 predates GitHub's documented concurrency.queue.
 // Accept only that precise unsupported-key diagnostic after checking the real
 // literal value and its cancellation siblings. All other diagnostics are fatal.
-function supportedQueue(error) {
+function supportedQueue(error: Diagnostic) {
   if (
     error.kind !== "syntax-check" ||
     error.message !==
@@ -48,7 +48,7 @@ function supportedQueue(error) {
   while (parent >= 0) {
     const previous = lines[parent];
     if (previous.trim() && !previous.trimStart().startsWith("#")) {
-      if (/^ */.exec(previous)[0].length < indent) break;
+      if (previous.length - previous.trimStart().length < indent) break;
     }
     parent--;
   }
@@ -59,7 +59,7 @@ function supportedQueue(error) {
     if (
       candidate.trim() &&
       !candidate.trimStart().startsWith("#") &&
-      /^ */.exec(candidate)[0].length < indent
+      candidate.length - candidate.trimStart().length < indent
     )
       break;
     end++;
@@ -74,15 +74,15 @@ function supportedQueue(error) {
   return true;
 }
 
-function check(files, packet) {
+function check(files: string[], packet: string): Diagnostic[] {
   const result = spawnSync(
     binary,
     ["-shellcheck=", "-pyflakes=", "-format", "{{json .}}", ...files],
     { cwd: root, encoding: "utf8", timeout: 30_000, maxBuffer: 16 * 1024 * 1024 },
   );
   assert.ok(!result.error && !result.signal, "workflow checker did not finish normally");
-  assert.ok([0, 1].includes(result.status), "workflow checker failed to execute");
-  const errors = JSON.parse(result.stdout || "[]");
+  assert.ok(result.status === 0 || result.status === 1, "workflow checker failed to execute");
+  const errors: Diagnostic[] = JSON.parse(result.stdout || "[]");
   assert.ok(Array.isArray(errors), "whole workflow diagnostics are required");
   const compatible = errors.filter(supportedQueue);
   const refused = errors.filter((error) => !compatible.includes(error));
@@ -106,7 +106,7 @@ jobs:
     steps:
       - run: "true"
 `;
-const controls = [
+const controls: Array<[string, string, boolean]> = [
   [
     "valid-step-context",
     base.replace(
@@ -164,7 +164,8 @@ const controls = [
 ];
 const controlDirectory = path.join(output, "controls");
 mkdirSync(controlDirectory, { recursive: true });
-for (const [name, source, mustRefuse] of controls) {
+const activeControls = process.env.WORKFLOW_VALIDATOR_CONTROLS === "true" ? controls : [];
+for (const [name, source, mustRefuse] of activeControls) {
   const relative = `target/workflow-syntax/controls/${name}.yml`;
   writeFileSync(relative, source);
   const errors = check([relative], name);
@@ -176,7 +177,7 @@ const files = readdirSync(".github/workflows")
   .sort()
   .map((name) => `.github/workflows/${name}`);
 assert.ok(files.length, "the whole actual workflow inventory is required");
-const hash = (file) => createHash("sha256").update(readFileSync(file)).digest("hex");
+const hash = (file: string) => createHash("sha256").update(readFileSync(file)).digest("hex");
 const before = Object.fromEntries(files.map((file) => [file, hash(file)]));
 const refused = check(files, "actual-workflows");
 assert.deepEqual(Object.fromEntries(files.map((file) => [file, hash(file)])), before);
@@ -189,7 +190,7 @@ writeFileSync(
       node: process.version,
       checkerBinarySha256: hash(binary),
       files: before,
-      controls: controls.length,
+      controls: activeControls.length,
     },
     null,
     2,
@@ -199,5 +200,5 @@ for (const error of refused)
   process.stderr.write(`${error.filepath}:${error.line}:${error.column}: ${error.message}\n`);
 assert.equal(refused.length, 0, "workflow syntax/context errors refuse qualification");
 process.stdout.write(
-  `Qualified ${files.length} whole workflows and ${controls.length} actual checker controls.\n`,
+  `Qualified ${files.length} whole workflows and ${activeControls.length} checker controls.\n`,
 );

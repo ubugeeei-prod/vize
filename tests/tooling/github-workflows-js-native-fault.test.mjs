@@ -1,114 +1,126 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { spawn, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
+import {
+  privateGuest,
+  runCapture,
+  sha256File,
+} from "../../.github/actions/test-js-packages-with-history/native-fault-support.ts";
+import {
+  corePid,
+  producer,
+} from "../../.github/actions/test-js-packages-with-history/native-fault-core.ts";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
-const helper = join(root, ".github/actions/test-js-packages-with-history/native-fault-evidence.py");
-const importHelper = `import importlib.util, sys
-from pathlib import Path
-sys.path.insert(0,str(Path(sys.argv[1]).parent))
-spec = importlib.util.spec_from_file_location("fault", sys.argv[1])
-fault = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(fault)
+const helper = join(root, ".github/actions/test-js-packages-with-history/native-fault-evidence.ts");
+const importHelper = `const fault = await import(${JSON.stringify(pathToFileURL(helper).href)});
+const unavailable = () => { const error = new Error("typed observation gap"); error.name = "PermissionError"; throw error; };
+fault.observers.privateGuest = () => ({ privateFirecrackerGuest: false });
+fault.observers.sourceSnapshot = unavailable;
 `;
+const environment = (fixture, id = "123") => ({
+  ...process.env,
+  GITHUB_ACTIONS: "true",
+  GITHUB_RUN_ID: id,
+  GITHUB_RUN_ATTEMPT: "1",
+  GITHUB_JOB: "law",
+  RUNNER_TEMP: fixture,
+  VIZE_FAULT_NONCE: "space and 'quote'\nnewline",
+});
+const receiptAt = (fixture, id = "123") =>
+  JSON.parse(
+    readFileSync(join(fixture, `js-native-fault-evidence-${id}-1-law/outcome.json`), "utf8"),
+  );
 
 void test("only authenticated private Firecracker guests permit kernel changes", () => {
-  const source =
-    importHelper +
-    `
-from unittest.mock import patch
-for vm, container, vendor, allowed in [
-    ((0,"kvm"),(1,"none"),"Firecracker",True),
-    ((0,"kvm"),(0,"docker"),"Firecracker",False),
-    ((0,"kvm"),(1,"none"),"QEMU",False),
-    ((1,"none"),(1,"none"),"Firecracker",False),
-    ((None,""),(1,"none"),"Firecracker",False),
-    ((0,"kvm"),(None,""),"Firecracker",False)]:
-    def run(argv):
-        value = vm if argv[-1] == "--vm" else container
-        return {"status": value[0], "stdout": value[1]}
-    with patch.object(fault,"run_capture",run), patch.object(fault,"read_text",lambda path: vendor):
-        assert fault.private_guest()["privateFirecrackerGuest"] is allowed
-print("all six actual guest authority cases passed")
-`;
-  const result = spawnSync("python3", ["-c", source, helper], { encoding: "utf8" });
-  assert.equal(result.status, 0, result.stderr);
+  for (const [vm, container, vendor, allowed] of [
+    [[0, "kvm"], [1, "none"], "Firecracker", true],
+    [[0, "kvm"], [0, "docker"], "Firecracker", false],
+    [[0, "kvm"], [1, "none"], "QEMU", false],
+    [[1, "none"], [1, "none"], "Firecracker", false],
+    [[null, ""], [1, "none"], "Firecracker", false],
+    [[0, "kvm"], [null, ""], "Firecracker", false],
+  ]) {
+    const capture = (argv) => {
+      const [status, stdout] = argv.at(-1) === "--vm" ? vm : container;
+      return { status, stdout };
+    };
+    assert.equal(privateGuest(capture, () => vendor).privateFirecrackerGuest, allowed);
+  }
 });
 
 for (const outcome of ["0", "7", "SIGTERM", "SIGKILL"]) {
   void test(`observer preserves one original argv/environment/output/cwd and ${outcome}`, () => {
     const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-"));
     try {
-      const child = join(fixture, "original.py");
+      const child = join(fixture, "original.mjs");
       const calls = join(fixture, "calls.jsonl");
       writeFileSync(
         child,
-        `import json,os,signal,sys
-with open(sys.argv[1],"a") as stream:
-    stream.write(json.dumps({"argv":sys.argv[1:],"cwd":os.getcwd(),"env":dict(os.environ)})+"\\n")
-print("original stdout",flush=True)
-print("original stderr",file=sys.stderr,flush=True)
-result=sys.argv[2]
-if result.startswith("SIG"):
-    os.kill(os.getpid(),getattr(signal,result))
-sys.exit(int(result))
+        `import fs from "node:fs";
+fs.appendFileSync(process.argv[2], JSON.stringify({ argv: process.argv.slice(2), cwd: process.cwd(), env: process.env }) + "\\n");
+fs.writeSync(1, "original stdout\\n"); fs.writeSync(2, "original stderr\\n");
+const result = process.argv[3];
+if (result.startsWith("SIG")) process.kill(process.pid, result);
+else process.exit(Number(result));
 `,
       );
-      const env = {
-        ...process.env,
-        GITHUB_ACTIONS: "true",
-        GITHUB_RUN_ID: "123",
-        GITHUB_RUN_ATTEMPT: "1",
-        GITHUB_JOB: "law",
-        RUNNER_TEMP: fixture,
-        VIZE_FAULT_NONCE: "space and 'quote'\nnewline",
-      };
+      const env = environment(fixture);
       const source =
         importHelper +
-        `
-fault.sys.platform="linux"
-fault.private_guest=lambda: {"privateFirecrackerGuest":False}
-def forbidden(argv):
-    raise AssertionError("unknown guest must not run sysctl/gdb: "+str(argv))
-fault.run_capture=forbidden
-sys.exit(fault.main(["--",sys.executable]+sys.argv[2:]))
-`;
+        'process.exitCode = await fault.main(["--", process.execPath, ...process.argv.slice(1)], "linux");';
       const result = spawnSync(
-        "python3",
-        ["-c", source, helper, child, calls, outcome, "quoted argument with ' space\nnewline"],
+        process.execPath,
+        [
+          "--input-type=module",
+          "-e",
+          source,
+          child,
+          calls,
+          outcome,
+          "quoted argument with ' space\nnewline",
+        ],
         { cwd: fixture, env, encoding: "utf8" },
       );
       const records = readFileSync(calls, "utf8").trim().split("\n").map(JSON.parse);
       assert.equal(records.length, 1);
       assert.deepEqual(records[0].argv, [calls, outcome, "quoted argument with ' space\nnewline"]);
       assert.equal(records[0].cwd, realpathSync(fixture));
-      const baselineEnv = spawnSync(
-        "python3",
-        ["-c", "import json,os;print(json.dumps(dict(os.environ)))"],
-        { env, encoding: "utf8" },
-      );
-      assert.equal(baselineEnv.status, 0);
-      assert.deepEqual(records[0].env, JSON.parse(baselineEnv.stdout));
+      const baseline = spawnSync(process.execPath, ["-p", "JSON.stringify(process.env)"], {
+        env,
+        encoding: "utf8",
+      });
+      assert.equal(baseline.status, 0);
+      assert.deepEqual(records[0].env, JSON.parse(baseline.stdout));
       assert.equal(result.stdout, "original stdout\n");
       assert.equal(result.stderr, "original stderr\n");
       if (outcome.startsWith("SIG")) assert.equal(result.signal, outcome);
       else assert.equal(result.status, Number(outcome));
-      const receipt = JSON.parse(
-        readFileSync(join(fixture, "js-native-fault-evidence-123-1-law/outcome.json"), "utf8"),
-      );
+      const receipt = receiptAt(fixture);
       assert.equal(receipt.coreCapture, "unavailable");
       assert.deepEqual(receipt.cores, []);
       assert.equal(receipt.command.length, 5);
       assert.equal("coreSetup" in receipt, false);
       assert.equal("coreRestore" in receipt, false);
-      assert.equal(typeof receipt.observationGaps["source-before"], "string");
-      assert.equal(typeof receipt.observationGaps["source-after"], "string");
+      assert.equal(receipt.observationGaps["source-before"], "PermissionError");
+      assert.equal(receipt.observationGaps["source-after"], "PermissionError");
+      assert.equal(receipt.helpers.length, 3);
     } finally {
       rmSync(fixture, { recursive: true, force: true });
     }
@@ -120,27 +132,14 @@ void test("diagnostic collection failures retain an original command failure", (
   try {
     const source =
       importHelper +
-      `
-fault.sys.platform="linux"
-fault.private_guest=lambda: {"privateFirecrackerGuest":False}
-fault.observe_descendants=lambda *args: (_ for _ in ()).throw(PermissionError("typed observation gap"))
-sys.exit(fault.main(["--",sys.executable,"-c","import time;time.sleep(.3);raise SystemExit(9)"]))
-`;
-    const result = spawnSync("python3", ["-c", source, helper], {
-      env: {
-        ...process.env,
-        GITHUB_ACTIONS: "true",
-        GITHUB_RUN_ID: "124",
-        GITHUB_RUN_ATTEMPT: "1",
-        GITHUB_JOB: "law",
-        RUNNER_TEMP: fixture,
-      },
+      `fault.observers.observeDescendants = unavailable;
+process.exitCode = await fault.main(["--", process.execPath, "-e", "setTimeout(() => process.exit(9), 300)"], "linux");`;
+    const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
+      env: environment(fixture, "124"),
       encoding: "utf8",
     });
     assert.equal(result.status, 9, result.stderr);
-    const receipt = JSON.parse(
-      readFileSync(join(fixture, "js-native-fault-evidence-124-1-law/outcome.json"), "utf8"),
-    );
+    const receipt = receiptAt(fixture, "124");
     assert.equal(receipt.observationGaps["process-maps"], "PermissionError");
     assert.equal(receipt.commandReturnCode, 9);
   } finally {
@@ -148,6 +147,175 @@ sys.exit(fault.main(["--",sys.executable,"-c","import time;time.sleep(.3);raise 
   }
 });
 
+void test(
+  "observer forwards termination to the unchanged command and records the signal",
+  { skip: process.platform === "win32", timeout: 5000 },
+  async () => {
+    const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-signal-"));
+    try {
+      const source =
+        importHelper +
+        `process.exitCode = await fault.main(["--", process.execPath, "-e", "console.log('ready'); setInterval(() => {}, 1000)"], "linux");`;
+      const child = spawn(process.execPath, ["--input-type=module", "-e", source], {
+        env: environment(fixture),
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+      const result = new Promise((resolve, reject) => {
+        child.once("error", reject);
+        child.once("exit", (code, signal) => resolve({ code, signal }));
+      });
+      child.stdout.once("data", () => child.kill("SIGTERM"));
+      assert.deepEqual(await result, { code: null, signal: "SIGTERM" });
+      const receipt = receiptAt(fixture);
+      assert.equal(receipt.forwardedSignal, 15);
+      assert.equal(receipt.commandReturnCode, -15);
+    } finally {
+      rmSync(fixture, { recursive: true, force: true });
+    }
+  },
+);
+
+void test("public gdb text excludes startup arguments and retains bounded stream authority", () => {
+  const prefix = "Core was generated by argument-secret\nVIZE_NATIVE_FAULT_BEGIN\n";
+  const suffix = "\nVIZE_NATIVE_FAULT_END\n";
+  const text = `${prefix}${"f".repeat(300000)}${suffix}`;
+  const program = `process.stdout.write(${JSON.stringify(prefix)} + 'f'.repeat(300000) + ${JSON.stringify(suffix)}); process.stderr.write('private argument-secret');`;
+  const result = runCapture([process.execPath, "-e", program], true);
+  assert.doesNotMatch(result.stdout + result.stderr, /argument-secret/);
+  assert.equal(result.stdout.length, 262144);
+  assert.equal(result.stderr, "");
+  assert.equal(result.stdoutAuthority.sha256, createHash("sha256").update(text).digest("hex"));
+  assert.equal(result.stdoutAuthority.truncated, true);
+});
+
+void test("real core process PID and retained start ticks bind the exact physical ELF; unknowns refuse", () => {
+  const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-core-"));
+  try {
+    const output = join(fixture, "evidence");
+    const packets = join(output, "processes");
+    mkdirSync(packets, { recursive: true });
+    const header = Buffer.alloc(64);
+    Buffer.from([0x7f, 0x45, 0x4c, 0x46, 2, 1]).copy(header);
+    header.writeUInt16LE(4, 16);
+    header.writeUInt16LE(62, 18);
+    header.writeBigUInt64LE(64n, 32);
+    header.writeUInt16LE(56, 54);
+    header.writeUInt16LE(1, 56);
+    const status = Buffer.alloc(40);
+    status.writeInt32LE(999, 32);
+    const info = Buffer.alloc(136);
+    info.writeInt32LE(123, 24);
+    const note = (kind, body) => {
+      const prefix = Buffer.alloc(20);
+      prefix.writeUInt32LE(5);
+      prefix.writeUInt32LE(body.length, 4);
+      prefix.writeUInt32LE(kind, 8);
+      Buffer.from("CORE\0").copy(prefix, 12);
+      return Buffer.concat([prefix, body]);
+    };
+    const notes = Buffer.concat([note(1, status), note(3, info)]);
+    const program = Buffer.alloc(56);
+    program.writeUInt32LE(4);
+    program.writeBigUInt64LE(120n, 8);
+    program.writeBigUInt64LE(BigInt(notes.length), 32);
+    const core = join(fixture, "core.123");
+    writeFileSync(core, Buffer.concat([header, program, notes]));
+    assert.equal(corePid(core), 123);
+    const executable = join(fixture, "actual-node");
+    const elf = Buffer.from(header);
+    elf.writeUInt16LE(2, 16);
+    writeFileSync(executable, elf);
+    const identity = {
+      path: executable,
+      mappedInode: statSync(executable).ino,
+      bytes: 64,
+      sha256: createHash("sha256").update(elf).digest("hex"),
+    };
+    const packet = { pid: 123, startTicks: "456", executable, providers: [identity] };
+    const first = join(packets, "123-0.json");
+    writeFileSync(first, JSON.stringify(packet));
+    const result = producer(core, output, sha256File);
+    assert.equal(result.path, executable);
+    assert.equal(result.startTicks, "456");
+    const second = join(packets, "123-1.json");
+    writeFileSync(second, JSON.stringify({ ...packet, startTicks: "789" }));
+    assert.throws(() => producer(core, output));
+    rmSync(second);
+    writeFileSync(executable, Buffer.concat([elf.subarray(0, -1), Buffer.from("changed")]));
+    assert.throws(() => producer(core, output));
+    writeFileSync(executable, elf);
+    rmSync(first);
+    assert.throws(() => producer(core, output));
+    const renamed = join(fixture, "core.999");
+    renameSync(core, renamed);
+    assert.throws(() => producer(renamed, output));
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+for (const gap of ["source", "guest", "gdb"]) {
+  void test(`${gap} collection failures execute the original command once and preserve failure`, () => {
+    const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-once-"));
+    try {
+      let setup = "";
+      if (gap === "guest") setup = "fault.observers.privateGuest = unavailable;";
+      if (gap === "gdb") {
+        setup = "fault.observers.diagnoseCore = unavailable;";
+        const cores = join(fixture, "js-native-fault-cores-125-1-law");
+        mkdirSync(cores);
+        writeFileSync(join(cores, "core.1"), "typed control");
+      }
+      const program =
+        'const fs = require("node:fs"); fs.appendFileSync("calls", "once"); process.exit(11);';
+      const source =
+        importHelper +
+        setup +
+        `process.exitCode = await fault.main(["--", process.execPath, "-e", ${JSON.stringify(program)}], "linux");`;
+      const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
+        cwd: fixture,
+        env: environment(fixture, "125"),
+        encoding: "utf8",
+      });
+      assert.equal(result.status, 11, result.stderr);
+      assert.equal(readFileSync(join(fixture, "calls"), "utf8"), "once");
+      const receipt = receiptAt(fixture, "125");
+      assert.equal(receipt.commandReturnCode, 11);
+      assert.equal(receipt.coreCapture, "unavailable");
+      assert.equal(
+        receipt.observationGaps[
+          gap === "source" ? "source-before" : gap === "gdb" ? "core-core.1" : gap
+        ],
+        "PermissionError",
+      );
+      if (gap === "source")
+        assert.equal(receipt.observationGaps["source-after"], "PermissionError");
+      assert.equal(typeof receipt.observerFileHash.bytes, "number");
+      assert.equal(typeof receipt.observerFileHash.seconds, "number");
+    } finally {
+      rmSync(fixture, { recursive: true, force: true });
+    }
+  });
+}
+
+void test("observation setup refusal executes the original command once with its status", () => {
+  const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-refusal-"));
+  try {
+    mkdirSync(join(fixture, "js-native-fault-evidence-123-1-law"));
+    const source =
+      importHelper +
+      'process.exitCode = await fault.main(["--", process.execPath, "-e", "require(\'node:fs\').appendFileSync(\'calls\', \'once\'); process.exit(17)"], "linux");';
+    const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
+      cwd: fixture,
+      env: environment(fixture),
+      encoding: "utf8",
+    });
+    assert.equal(result.status, 17, result.stderr);
+    assert.equal(readFileSync(join(fixture, "calls"), "utf8"), "once");
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
 void test("only an explicit label observes the frozen original failure; mandatory gates stay mandatory", () => {
   const workflow = parse(
     readFileSync(join(root, ".github/workflows/ci-walltime-benchmark.yml"), "utf8"),
@@ -173,7 +341,7 @@ void test("only an explicit label observes the frozen original failure; mandator
   const commands = job.steps.map((step) => step.run ?? "").join("\n");
   assert.equal((commands.match(/-- vp run --workspace-root test:js/g) ?? []).length, 1);
   assert.match(commands, /670e62ad66b6ff29b441e887bc7f62abb641c106/);
-  assert.match(commands, /cp \.github\/actions.*native-fault-evidence\.py/);
+  assert.match(commands, /cp \.github\/actions.*native-fault-evidence\.ts/);
   assert.doesNotMatch(commands, /continue-on-error|retry|DISABLE_TSGO|test-name-pattern/);
   const upload = job.steps.at(-1);
   assert.equal(upload.if, "${{ always() }}");
@@ -184,7 +352,7 @@ void test("only an explicit label observes the frozen original failure; mandator
   assert.equal(action.runs.steps[0].if, "${{ success() && job.status == 'success' }}");
   assert.equal(
     action.runs.steps[0].run,
-    "python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root test:js",
+    "node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root test:js",
   );
   assert.equal(action.runs.steps[1].run, "node npm/oxlint/scripts/check-project-transport.mjs");
   assert.equal(
@@ -197,116 +365,3 @@ void test("only an explicit label observes the frozen original failure; mandator
     "${{ runner.temp }}/js-native-fault-evidence-*/**/*.json",
   );
 });
-
-void test("public gdb text excludes startup arguments and retains bounded stream authority", () => {
-  const source =
-    importHelper +
-    `
-import hashlib,json
-text="Core was generated by argument-secret\\nVIZE_NATIVE_FAULT_BEGIN\\n"+"f"*300000+"\\nVIZE_NATIVE_FAULT_END\\n"
-program="import sys;sys.stdout.write("+repr(text[:text.index("f"*300000)])+"+'f'*300000+"+repr(text[text.index("f"*300000)+300000:])+");sys.stderr.write('private argument-secret')"
-result=fault.run_capture([sys.executable,"-c",program],gated=True)
-assert "argument-secret" not in result["stdout"]+result["stderr"]
-assert len(result["stdout"]) == 262144
-assert result["stderr"] == ""
-assert result["stdoutAuthority"]["sha256"] == hashlib.sha256(text.encode()).hexdigest()
-assert result["stdoutAuthority"]["truncated"] is True
-print("bounded diagnostic selection passed")
-`;
-  const result = spawnSync("python3", ["-c", source, helper], { encoding: "utf8" });
-  assert.equal(result.status, 0, result.stderr);
-});
-
-void test("real core process PID and retained start ticks bind the exact physical ELF; unknowns refuse", () => {
-  const source =
-    importHelper +
-    `
-import hashlib,json,struct,tempfile
-from native_fault_core import core_pid,producer
-with tempfile.TemporaryDirectory() as directory:
-    root=Path(directory);output=root/"evidence";packets=output/"processes";packets.mkdir(parents=True)
-    header=bytearray(64);header[:6]=b"\\x7fELF\\x02\\x01";struct.pack_into("<HH",header,16,4,62)
-    struct.pack_into("<Q",header,32,64);struct.pack_into("<HH",header,54,56,1)
-    status=bytearray(40);struct.pack_into("<i",status,32,999)
-    info=bytearray(136);struct.pack_into("<i",info,24,123)
-    note=lambda kind,body: struct.pack("<III",5,len(body),kind)+b"CORE\\0\\0\\0\\0"+body
-    notes=note(1,status)+note(3,info)
-    program=bytearray(56);struct.pack_into("<I",program,0,4);struct.pack_into("<Q",program,8,120);struct.pack_into("<Q",program,32,len(notes))
-    core=root/"core.123";core.write_bytes(header+program+notes)
-    assert core_pid(core)==123 # Faulting thread 999 is not the producing process PID.
-    executable=root/"actual-node";elf=bytearray(header);struct.pack_into("<H",elf,16,2);executable.write_bytes(elf)
-    identity={"path":str(executable),"mappedInode":executable.stat().st_ino,"bytes":64,"sha256":hashlib.sha256(elf).hexdigest()}
-    packet={"pid":123,"startTicks":"456","executable":str(executable),"providers":[identity]}
-    first=packets/"123-0.json";first.write_text(json.dumps(packet))
-    result=producer(core,output,fault.sha256_file)
-    assert result["path"]==str(executable) and result["startTicks"]=="456"
-    def refused():
-        try: producer(core,output,fault.sha256_file)
-        except ValueError: return
-        raise AssertionError("Unqualified producer accepted")
-    second=packets/"123-1.json";second.write_text(json.dumps(dict(packet,startTicks="789")));refused();second.unlink()
-    executable.write_bytes(bytes(elf[:-1])+b"changed");refused()
-    executable.write_bytes(elf);first.unlink();refused()
-    core.rename(root/"core.999")
-    try: producer(root/"core.999",output,fault.sha256_file)
-    except ValueError: pass
-    else: raise AssertionError("Wrong filename PID accepted")
-print("whole actual core identity controls passed")
-`;
-  const result = spawnSync("python3", ["-c", source, helper], { encoding: "utf8" });
-  assert.equal(result.status, 0, result.stderr);
-});
-
-for (const gap of ["source", "guest", "gdb"]) {
-  void test(`${gap} collection failures execute the original command once and preserve failure`, () => {
-    const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-once-"));
-    try {
-      const source =
-        importHelper +
-        `
-import os
-fault.sys.platform="linux"
-fault.private_guest=lambda: {"privateFirecrackerGuest":False}
-def unavailable(*args): raise PermissionError("typed ${gap} gap")
-if "${gap}"=="source": fault.source_snapshot=unavailable
-if "${gap}"=="guest": fault.private_guest=unavailable
-if "${gap}"=="gdb":
-    fault.diagnose_core=unavailable
-    cores=Path(os.environ["RUNNER_TEMP"])/"js-native-fault-cores-125-1-law";cores.mkdir();(cores/"core.1").write_bytes(b"typed control")
-program="from pathlib import Path;p=Path('calls');p.write_text((p.read_text() if p.exists() else '')+'once');raise SystemExit(11)"
-sys.exit(fault.main(["--",sys.executable,"-c",program]))
-`;
-      const result = spawnSync("python3", ["-c", source, helper], {
-        cwd: fixture,
-        env: {
-          ...process.env,
-          GITHUB_ACTIONS: "true",
-          GITHUB_RUN_ID: "125",
-          GITHUB_RUN_ATTEMPT: "1",
-          GITHUB_JOB: "law",
-          RUNNER_TEMP: fixture,
-        },
-        encoding: "utf8",
-      });
-      assert.equal(result.status, 11, result.stderr);
-      assert.equal(readFileSync(join(fixture, "calls"), "utf8"), "once");
-      const receipt = JSON.parse(
-        readFileSync(join(fixture, "js-native-fault-evidence-125-1-law/outcome.json"), "utf8"),
-      );
-      assert.equal(receipt.commandReturnCode, 11);
-      assert.equal(receipt.coreCapture, "unavailable");
-      assert.equal(
-        receipt.observationGaps[
-          gap === "source" ? "source-before" : gap === "gdb" ? "core-core.1" : gap
-        ],
-        "PermissionError",
-      );
-      if (gap === "source")
-        assert.equal(receipt.observationGaps["source-after"], "PermissionError");
-      assert.equal(typeof receipt.observerFileHash.bytes, "number");
-      assert.equal(typeof receipt.observerFileHash.seconds, "number");
-    } finally {
-      rmSync(fixture, { recursive: true, force: true });
-    }
-  });
-}

@@ -1,0 +1,303 @@
+{
+  "observedAt": "2026-10-16T05:03:08.568Z",
+  "sourceSha": "b4be3b70977b80a689c8e5ada62d05283e86b868",
+  "method": {
+    "provider": "GitHub Actions REST API run and attempt-1 jobs endpoints; every jobs page included",
+    "selection": "Latest three passing PR and main Check runs; latest three noncancelled queue and Release runs at collection time",
+    "workflowWallSeconds": "First-attempt creation to latest executed job completion; skipped jobs excluded",
+    "runnerMinutes": "Sum of executed job elapsed seconds divided by 60; not billed vCPU time",
+    "comparison": "Record attempt 1 before and after. Retry start times must not be subtracted from earlier successful job timestamps.",
+    "command": "node tools/commands/ci/workflow-timings.ts --attempt 1 --output /tmp/vize-ci-timings.json RUN_ID..."
+  },
+  "requiredChecks": {
+    "ruleset": 11865194,
+    "contexts": ["check-js", "check-vize-apps", "fmt-rust", "test-report"],
+    "strict": false
+  },
+  "mergeQueue": {
+    "ruleset": 24013395,
+    "strategy": "ALLGREEN",
+    "maxBuilds": 4,
+    "maxMerges": 5,
+    "responseTimeoutMinutes": 60
+  },
+  "runs": [
+    {
+      "group": "check-main",
+      "runId": 38808071557,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38808071557/attempts/1",
+      "sha": "b4be3b70977b80a689c8e5ada62d05283e86b868",
+      "conclusion": "success",
+      "attempt": 1,
+      "createdAt": "2026-10-15T21:12:25Z",
+      "workflowWallSeconds": 889,
+      "requiredReadySeconds": 171,
+      "runnerMinutes": 114.1,
+      "executedJobs": 29,
+      "longestJob": {
+        "name": "test-js-packages",
+        "seconds": 859,
+        "step": {
+          "name": "Test JS packages",
+          "conclusion": "success",
+          "wall_s": 810
+        }
+      }
+    },
+    {
+      "group": "check-main",
+      "runId": 38804896492,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38804896492/attempts/1",
+      "sha": "014bd42cacdf3d026fb75162cfa80dce76d78315",
+      "conclusion": "success",
+      "attempt": 1,
+      "createdAt": "2026-10-15T20:48:20Z",
+      "workflowWallSeconds": 874,
+      "requiredReadySeconds": 186,
+      "runnerMinutes": 111,
+      "executedJobs": 29,
+      "longestJob": {
+        "name": "test-js-packages",
+        "seconds": 846,
+        "step": {
+          "name": "Test JS packages",
+          "conclusion": "success",
+          "wall_s": 803
+        }
+      }
+    },
+    {
+      "group": "check-main",
+      "runId": 38763159037,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38763159037/attempts/1",
+      "sha": "bc00f8939f5d04f529a95383fd2b3f1fcbaa8f06",
+      "conclusion": "success",
+      "attempt": 1,
+      "createdAt": "2026-10-15T15:45:40Z",
+      "workflowWallSeconds": 783,
+      "requiredReadySeconds": 114,
+      "runnerMinutes": 86.6,
+      "executedJobs": 29,
+      "longestJob": {
+        "name": "test-js-packages",
+        "seconds": 754,
+        "step": {
+          "name": "Test JS packages",
+          "conclusion": "success",
+          "wall_s": 720
+        }
+      }
+    },
+    {
+      "group": "check-pr",
+      "runId": 38805236717,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38805236717/attempts/1",
+      "sha": "2c8a83c6858e8e46424ce578b5cfa7a0b1dbeafb",
+      "conclusion": "success",
+      "attempt": 1,
+      "createdAt": "2026-10-15T20:50:52Z",
+      "workflowWallSeconds": 771,
+      "requiredReadySeconds": 745,
+      "runnerMinutes": 126.8,
+      "executedJobs": 48,
+      "longestJob": {
+        "name": "PR source checks / PR JS packages / PR Oxlint original project qualification",
+        "seconds": 591,
+        "step": {
+          "name": "Qualify original project checks with both real Oxlint hosts",
+          "conclusion": "success",
+          "wall_s": 476
+        }
+      }
+    },
+    {
+      "group": "check-pr",
+      "runId": 38805184162,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38805184162/attempts/1",
+      "sha": "03882089eff75664abe99ba71868e33739496b01",
+      "conclusion": "success",
+      "attempt": 1,
+      "createdAt": "2026-10-15T20:50:29Z",
+      "workflowWallSeconds": 723,
+      "requiredReadySeconds": 698,
+      "runnerMinutes": 129.9,
+      "executedJobs": 48,
+      "longestJob": {
+        "name": "PR source checks / PR JS packages / PR Oxlint original project qualification",
+        "seconds": 576,
+        "step": {
+          "name": "Qualify original project checks with both real Oxlint hosts",
+          "conclusion": "success",
+          "wall_s": 458
+        }
+      }
+    },
+    {
+      "group": "check-pr",
+      "runId": 38804888129,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38804888129/attempts/1",
+      "sha": "e0b4a6ef8efe98f398fc87fa928872c123155d27",
+      "conclusion": "success",
+      "attempt": 1,
+      "createdAt": "2026-10-15T20:48:16Z",
+      "workflowWallSeconds": 752,
+      "requiredReadySeconds": 729,
+      "runnerMinutes": 108.4,
+      "executedJobs": 48,
+      "longestJob": {
+        "name": "PR source checks / PR JS packages / PR Oxlint original project qualification",
+        "seconds": 607,
+        "step": {
+          "name": "Qualify original project checks with both real Oxlint hosts",
+          "conclusion": "success",
+          "wall_s": 489
+        }
+      }
+    },
+    {
+      "group": "check-queue",
+      "runId": 38768670635,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38768670635/attempts/1",
+      "sha": "6563be2087ed0a6a0427dbd1cd59f4523677fa7e",
+      "conclusion": "failure",
+      "attempt": 1,
+      "createdAt": "2026-10-15T16:24:03Z",
+      "workflowWallSeconds": 1049,
+      "requiredReadySeconds": 1049,
+      "runnerMinutes": 224.6,
+      "executedJobs": 62,
+      "longestJob": {
+        "name": "PR source checks / PR Rust Clippy, tests, and fixtures / Required Rust differential corpora / Rust feature corpora and fixture coverage",
+        "seconds": 728,
+        "step": {
+          "name": "Test merge queue differential corpora",
+          "conclusion": "success",
+          "wall_s": 679
+        }
+      }
+    },
+    {
+      "group": "check-queue",
+      "runId": 38765887357,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38765887357/attempts/1",
+      "sha": "130db865ec91a90378e9e3b65065c4cbc131021b",
+      "conclusion": "failure",
+      "attempt": 1,
+      "createdAt": "2026-10-15T16:04:30Z",
+      "workflowWallSeconds": 941,
+      "requiredReadySeconds": 941,
+      "runnerMinutes": 203.1,
+      "executedJobs": 62,
+      "longestJob": {
+        "name": "PR source checks / PR Rust Clippy, tests, and fixtures / Required Rust differential corpora / Rust feature corpora and fixture coverage",
+        "seconds": 774,
+        "step": {
+          "name": "Test merge queue differential corpora",
+          "conclusion": "success",
+          "wall_s": 726
+        }
+      }
+    },
+    {
+      "group": "check-queue",
+      "runId": 38763199463,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38763199463/attempts/1",
+      "sha": "c57d687af11325fed5d93050cee5ca5ad91b65b8",
+      "conclusion": "failure",
+      "attempt": 1,
+      "createdAt": "2026-10-15T15:45:56Z",
+      "workflowWallSeconds": 907,
+      "requiredReadySeconds": 907,
+      "runnerMinutes": 226.3,
+      "executedJobs": 62,
+      "longestJob": {
+        "name": "PR source checks / PR Rust Clippy, tests, and fixtures / Required Rust differential corpora / Rust feature corpora and fixture coverage",
+        "seconds": 729,
+        "step": {
+          "name": "Test merge queue differential corpora",
+          "conclusion": "success",
+          "wall_s": 674
+        }
+      }
+    },
+    {
+      "group": "release",
+      "runId": 38805261385,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38805261385/attempts/1",
+      "sha": "03882089eff75664abe99ba71868e33739496b01",
+      "conclusion": "failure",
+      "attempt": 1,
+      "createdAt": "2026-10-15T20:51:03Z",
+      "workflowWallSeconds": 2755,
+      "runnerMinutes": 232.6,
+      "executedJobs": 54,
+      "longestJob": {
+        "name": "Build Native - aarch64-pc-windows-msvc",
+        "seconds": 1037,
+        "step": {
+          "name": "Build vize-native",
+          "conclusion": "success",
+          "wall_s": 693
+        }
+      }
+    },
+    {
+      "group": "release",
+      "runId": 38798022260,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38798022260/attempts/1",
+      "sha": "20c5eec17206bc3056ee353f69ad68f77bcc544c",
+      "conclusion": "failure",
+      "attempt": 1,
+      "createdAt": "2026-10-15T19:57:12Z",
+      "workflowWallSeconds": 2416,
+      "runnerMinutes": 190.8,
+      "executedJobs": 26,
+      "longestJob": {
+        "name": "Build Native - x86_64-pc-windows-msvc",
+        "seconds": 1374,
+        "step": {
+          "name": "Build vize-native",
+          "conclusion": "success",
+          "wall_s": 1098
+        }
+      }
+    },
+    {
+      "group": "release",
+      "runId": 38791695153,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38791695153/attempts/1",
+      "sha": "733a60fccba56191a409824e57438c45f5968c81",
+      "conclusion": "failure",
+      "attempt": 1,
+      "createdAt": "2026-10-15T19:10:21Z",
+      "workflowWallSeconds": 2444,
+      "runnerMinutes": 178,
+      "executedJobs": 26,
+      "longestJob": {
+        "name": "Build Native - x86_64-pc-windows-msvc",
+        "seconds": 1402,
+        "step": {
+          "name": "Build vize-native",
+          "conclusion": "success",
+          "wall_s": 1137
+        }
+      }
+    }
+  ],
+  "artifactExamples": [
+    {
+      "workflow": "Nuxt scoped style build",
+      "runId": 38805236801,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38805236801",
+      "artifactBytes": 934147616,
+      "uploadSeconds": 73
+    },
+    {
+      "workflow": "Musea accessibility and capture",
+      "runId": 38805236596,
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/38805236596",
+      "artifactBytes": 455771557,
+      "uploadSeconds": 36
+    }
+  ]
+}

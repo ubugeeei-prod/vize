@@ -22,6 +22,7 @@ const check = parse(readRepoFile(".github/workflows/check.yml")) as Workflow;
 const source = parse(readRepoFile(".github/workflows/pr-source-checks.yml")) as Workflow;
 const contracts = parse(readRepoFile(".github/workflows/davinci-contracts.yml")) as Workflow;
 const topPrior = [
+  "iteration-plan",
   "fmt-rust",
   "check-js",
   "security-audit",
@@ -30,13 +31,12 @@ const topPrior = [
   "pr-source-checks",
   "level-dependency-direction",
   "release-integration-catalog",
-  "release-gates",
 ];
 const prior = [
   "pr-source-plan",
   "pr-rust-source",
   "pr-js-packages",
-  "pr-tooling-scripts",
+  "pr-native-runtime",
   "pr-playground-test",
 ];
 const needs = (wit = "success") => ({
@@ -62,7 +62,6 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
     ...prior,
     "wit-contracts",
     "canonical-corpus",
-    "pr-source-cli",
   ]);
   assert.equal(
     source.jobs["source-report"].if,

@@ -1,78 +1,18 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { buildComment } from "../../tools/benchmarks/scripts/comment-test-report.mjs";
-import { readRepoFile, root, workflowJobBody } from "./support/github-workflows.ts";
+import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-test("PR CI jobs cap runtime with explicit timeouts", () => {
-  const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
-  const benchmarkWorkflow = readRepoFile(".github", "workflows", "benchmark.yml");
-  const e2eWorkflow = readRepoFile(".github", "workflows", "e2e.yml");
-  const toolBenchmarkWorkflow = readRepoFile(".github", "workflows", "tool-benchmark.yml");
-
-  for (const [jobName, minutes] of [
-    ["nix-flake", 60],
-    ["fmt-rust", 10],
-    ["check-js", 15],
-    ["security-audit", 20],
-    ["semver-checks", 25],
-    ["node-engine-compat", 20],
-    ["check-vize-apps", 20],
-    ["vue-parity", 30],
-    ["test-scripts", 30],
-    ["editor-extensions", 15],
-    ["editor-host-smoke", 30],
-    ["build-js-packages", 30],
-    ["test-js-packages", 45],
-    ["clippy-and-test", 45],
-    ["coverage", 30],
-    ["source-coverage", 50],
-    ["branch-coverage", 45],
-    ["playground-test", 30],
-    ["test-report", 5],
-    ["test-report-comment", 5],
-  ] as const) {
-    assert.match(
-      workflowJobBody(checkWorkflow, jobName),
-      new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
-    );
-  }
-
-  for (const [jobName, minutes] of [
-    ["app-readiness-plan", 10],
-    ["app-readiness-producer", 40],
-    ["app-readiness", 5],
-  ] as const) {
-    assert.match(
-      workflowJobBody(e2eWorkflow, jobName),
-      new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
-    );
-  }
-
-  for (const [jobName, minutes] of [
-    ["pr-benchmark", 30],
-    ["pr-benchmark-budget", 5],
-    ["pr-benchmark-comment", 5],
-  ] as const) {
-    assert.match(
-      workflowJobBody(benchmarkWorkflow, jobName),
-      new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
-    );
-  }
-
-  for (const [jobName, minutes] of [
-    ["tool-benchmark", 75],
-    ["tool-benchmark-comment", 5],
-    ["tool-benchmark-commit", 5],
-  ] as const) {
-    assert.match(
-      workflowJobBody(toolBenchmarkWorkflow, jobName),
-      new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
+test("Check jobs bound runner time explicitly", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as {
+    jobs: Record<string, { "runs-on"?: string; "timeout-minutes"?: number }>;
+  };
+  for (const [jobName, job] of Object.entries(workflow.jobs)) {
+    if (!job["runs-on"]) continue;
+    assert.ok(
+      Number.isInteger(job["timeout-minutes"]) && (job["timeout-minutes"] ?? 0) > 0,
+      `${jobName} must set a finite timeout`,
     );
   }
 });
@@ -96,10 +36,9 @@ test("SemVer checks run on exact-SHA release dispatches", () => {
   assert.match(script, /BASELINE_REV="\$\(git rev-parse HEAD\^1\)"/);
 });
 
-test("check workflow gates PRs and merge groups, and comments on PRs", () => {
+test("check workflow gates PRs and merge groups without report dependencies", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const reportJob = workflowJobBody(workflow, "test-report");
-  const commentJob = workflowJobBody(workflow, "test-report-comment");
 
   assert.match(
     reportJob,
@@ -110,6 +49,7 @@ test("check workflow gates PRs and merge groups, and comments on PRs", () => {
   assert.doesNotMatch(reportJob, /pull-requests:\s*write/);
 
   for (const jobName of [
+    "iteration-plan",
     "fmt-rust",
     "check-js",
     "security-audit",
@@ -119,38 +59,11 @@ test("check workflow gates PRs and merge groups, and comments on PRs", () => {
     assert.match(reportJob, new RegExp(`- ${jobName}\\b`));
   }
 
-  assert.match(reportJob, /uses:\s*\.\/\.github\/actions\/report-test-inventory/);
-  const inventoryAction = readRepoFile(".github", "actions", "report-test-inventory", "action.yml");
-  assert.match(
-    inventoryAction,
-    /node tools\/benchmarks\/scripts\/test-inventory\.ts --json test-inventory\.json --markdown "\$GITHUB_STEP_SUMMARY"/,
-  );
-  assert.match(inventoryAction, /name:\s*test-inventory/);
-
-  assert.match(
-    commentJob,
-    /if:\s*\$\{\{\s*!cancelled\(\) && github\.event_name == 'pull_request' && github\.event\.pull_request\.head\.repo\.full_name == github\.repository\s*\}\}/,
-  );
-  assert.match(commentJob, /needs:\n\s+- test-report\b/);
-  assert.match(commentJob, /actions:\s*read/);
-  assert.match(commentJob, /contents:\s*read/);
-  assert.match(commentJob, /issues:\s*write/);
-  assert.match(commentJob, /pull-requests:\s*write/);
-  assert.match(commentJob, /ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
-  assert.match(commentJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v8\.0\.1/);
-  assert.match(commentJob, /name:\s*test-inventory/);
-  assert.match(
-    commentJob,
-    /TEST_REPORT_COMMENT_KEY:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
-  );
-  assert.match(
-    commentJob,
-    /TEST_REPORT_HEAD_SHA:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
-  );
-  assert.match(
-    commentJob,
-    /node tools\/benchmarks\/scripts\/comment-test-report\.mjs --inventory test-inventory\.json --summary "\$GITHUB_STEP_SUMMARY"/,
-  );
+  assert.match(reportJob, /NEEDS_JSON:\s*"\$\{\{ toJSON\(needs\) \}\}"/);
+  assert.match(reportJob, /node tools\/support\/compat\/github\/require-needs-success\.ts/);
+  assert.match(reportJob, /uses: actions\/setup-node@/);
+  assert.match(reportJob, /node-version-file: package\.json/);
+  assert.doesNotMatch(reportJob, /vp install|npm install|pnpm install|report-test-inventory/);
 });
 
 test("check workflow runs the editor extension host smoke against a real vize server", () => {
@@ -168,74 +81,6 @@ test("check workflow runs the editor extension host smoke against a real vize se
   assert.match(smokeAction, /cargo build --profile ci -p vize/);
   assert.match(smokeAction, /VIZE_SERVER_PATH:[^\n]*target\/ci\/vize/);
   assert.match(smokeAction, /xvfb-run -a vp run [^\n]*test:vscode-extension:host-real/);
-});
-
-test("test inventory script counts JS, Rust, e2e, VRT, and fixture cases", () => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-test-inventory-"));
-  const inventoryPath = path.join(tempDir, "inventory.json");
-  const inventoryScript = "tools/benchmarks/scripts/test-inventory.ts";
-  const inventoryArgs = [inventoryScript, "--json", inventoryPath];
-
-  try {
-    execFileSync(process.execPath, inventoryArgs, { cwd: root, stdio: "pipe" });
-
-    const inventory = JSON.parse(fs.readFileSync(inventoryPath, "utf8")) as {
-      totalCases: number;
-      totalFiles: number;
-      areas: Array<{ area: string; files: number; cases: number }>;
-      groups: Array<{ area: string; file: string; count: number }>;
-    };
-
-    assert.ok(inventory.totalCases > 1_000);
-    assert.ok(inventory.totalFiles > 100);
-
-    for (const areaName of ["JS / TS", "Rust", "E2E", "VRT", "Compiler Fixtures"]) {
-      const area = inventory.areas.find((candidate) => candidate.area === areaName);
-      assert.ok(area, `missing ${areaName} inventory area`);
-      assert.ok(area.cases > 0, `${areaName} should have cases`);
-    }
-
-    assert.ok(
-      inventory.groups.some((group) => group.file === "tests/tooling/github-workflows.test.ts"),
-    );
-    assert.ok(inventory.groups.some((group) => group.file === "tests/fixtures/vdom/element.pkl"));
-    assert.ok(
-      inventory.groups.some((group) => group.file === "playground/e2e/vrt/cross-file-ui.spec.ts"),
-    );
-  } finally {
-    fs.rmSync(tempDir, { recursive: true, force: true });
-  }
-});
-
-test("PR test report keeps the test file inventory collapsed with a short toggle", () => {
-  const report = buildComment({
-    jobs: [
-      {
-        name: "check-js",
-        conclusion: "success",
-        started_at: "2026-05-15T00:00:00Z",
-        completed_at: "2026-05-15T00:01:00Z",
-        html_url: "https://github.com/ubugeeei-prod/vize/actions/runs/1/job/1",
-        steps: [],
-      },
-    ],
-    workflowName: "Check",
-    runUrl: "https://github.com/ubugeeei-prod/vize/actions/runs/1",
-    runId: "1",
-    runAttempt: "1",
-    sha: "0123456789abcdef",
-    inventory: {
-      totalCases: 2,
-      totalFiles: 1,
-      areas: [{ area: "JS / TS", files: 1, cases: 2 }],
-      groups: [{ area: "JS / TS", file: "tests/tooling/github-workflows.test.ts", count: 2 }],
-    },
-  });
-
-  assert.match(report, /Total tracked cases: \*\*2\*\* across \*\*1\*\* files\./);
-  assert.match(report, /<details>\n<summary>Files<\/summary>/);
-  assert.doesNotMatch(report, /<details open>\n<summary>Test files/);
-  assert.doesNotMatch(report, /<summary>Test files \(/);
 });
 
 test("check workflow blocks on Rust source and branch coverage budgets", () => {
@@ -289,7 +134,7 @@ test("check workflow builds local native bindings before JS checks", () => {
   const buildJob = workflowJobBody(workflow, "build-js-packages");
   const playgroundJob = workflowJobBody(workflow, "playground-test");
   assert.match(checkJsJob, /vp run --workspace-root check:ci/);
-  assert.match(checkJsJob, /vp run --workspace-root check:repo/);
+  assert.match(checkJsJob, /vp run --workspace-root check:iteration/);
   assert.doesNotMatch(checkJsJob, /cargo build/);
   assert.match(checkJsJob, /setup-js-check-runtime/);
   assert.doesNotMatch(checkJsJob, /build:packages/);

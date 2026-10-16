@@ -25,11 +25,11 @@ const jsChecksPath = "./.github/workflows/pr-js-checks.yml";
 const jsChecks = parse(readFileSync(join(root, jsChecksPath), "utf8"));
 const selectedJs = "${{ needs.pr-source-plan.outputs.js == 'true' }}";
 const inputJs = "${{ inputs.run-js }}";
-const selectedHeavy = "${{ needs.pr-source-plan.outputs.heavy == 'true' }}";
+const selectedGroup = "${{ (inputs.run-js && matrix.group != 'none') }}";
 const boolean = { required: true, type: "boolean" };
 const evidenceJs = "${{ !cancelled() && inputs.run-js }}";
 const groupCommand =
-  'python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"';
+  'node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"';
 const historyActionPath = "./.github/actions/test-js-packages-with-history";
 const history = parse(readFileSync(join(root, historyActionPath, "action.yml"), "utf8"));
 
@@ -54,30 +54,45 @@ void test("PR and merge queue preserve package tests, native declaration, type a
     if: "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
     needs: "pr-source-plan",
     uses: jsChecksPath,
-    with: { "run-js": selectedJs, "run-original-project": selectedHeavy },
+    with: {
+      "run-js": selectedJs,
+      "run-original-project": false,
+      "js-plan": "${{ needs.pr-source-plan.outputs.js-plan }}",
+    },
   });
-  assert.deepEqual(jsChecks.on, {
-    workflow_call: { inputs: { "run-js": boolean, "run-original-project": boolean } },
-  });
+  assert.deepEqual(jsChecks.on.workflow_call.inputs["run-js"], boolean);
+  assert.deepEqual(jsChecks.on.workflow_call.inputs["run-original-project"], boolean);
+  const jsPlanInput = jsChecks.on.workflow_call.inputs["js-plan"];
+  assert.equal(jsPlanInput.type, "string");
+  assert.equal(
+    jsChecks.jobs["pr-js-package-tests"].strategy.matrix,
+    "${{ fromJSON(inputs.js-plan).matrix }}",
+  );
   assert.deepEqual(Object.keys(jsChecks.jobs), [
     "pr-js-package-tests",
     "pr-oxlint-project-qualification",
     "pr-js-package-conformance",
   ]);
   for (const [name, job] of Object.entries(jsChecks.jobs)) {
-    // The caller guards the event and each costly step the plan; the Oxlint
-    // project qualification also follows the PR tier (the queue always runs it).
+    // Every costly step is selected by the input plan. Original-project
+    // qualification is available explicitly and runs in full scheduled Check.
     const tier = name === "pr-oxlint-project-qualification";
     assert.equal(job.if, tier ? "${{ inputs.run-original-project }}" : undefined, name);
     assert.equal(job.needs, undefined, name);
-    assert.equal(job.steps[0].if, "${{ !inputs.run-js }}", name);
+    const skip =
+      name === "pr-js-package-tests"
+        ? "${{ !(inputs.run-js && matrix.group != 'none') }}"
+        : name === "pr-js-package-conformance"
+          ? "${{ !(inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}"
+          : "${{ !inputs.run-js }}";
+    assert.equal(job.steps[0].if, skip, name);
     assert.match(job.steps[0].run, /skipped because this PR changes no package/, name);
     for (const step of job.steps.slice(1)) assert.ok(step.if, `${name}: ${step.name ?? step.uses}`);
   }
   const testStep = jsChecks.jobs["pr-js-package-tests"].steps.find(
     (step) => step.name === "Test JS package group",
   );
-  assert.equal(testStep.if, inputJs);
+  assert.equal(testStep.if, selectedGroup);
   assert.equal(testStep.run, groupCommand);
   assert.deepEqual(testStep.env, { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" });
   const names = [
@@ -93,13 +108,20 @@ void test("PR and merge queue preserve package tests, native declaration, type a
   );
   assert.deepEqual(
     steps.map((step) => step.if),
-    [inputJs, inputJs],
+    [
+      "${{ inputs.run-js && matrix.surface == 'fresco' && fromJSON(inputs.js-plan).conformance.fresco }}",
+      "${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}",
+    ],
   );
+  assert.deepEqual(jsChecks.jobs["pr-js-package-conformance"].strategy.matrix.surface, [
+    "fresco",
+    "ui",
+  ]);
   assert.ok(workflow.jobs["source-report"].needs.includes("pr-js-packages"));
   for (const result of ["failure", "cancelled", "skipped"]) {
     assert.equal(aggregateNeedsResults({ "pr-js-packages": { result } }).exitCode, 1);
   }
-  const groups = jsChecks.jobs["pr-js-package-tests"].strategy.matrix.group;
+  const groups = JSON.parse(jsPlanInput.default).matrix.group;
   const fixture = mkdtempSync(join(tmpdir(), "vize-js-tier-"));
   try {
     const cli = recordingCli(fixture);
@@ -144,7 +166,7 @@ void test("PR and merge queue preserve package tests, native declaration, type a
 });
 
 void test("public native evidence remains reachable after prior build or package test failure", () => {
-  // The full main-branch suite keeps the original composite unchanged.
+  // Scheduled and manual qualification retain the complete package history.
   assert.equal(history.runs.using, "composite");
   assert.equal(history.runs.steps.length, 7);
   const [execute, qualification, upload, style, oxlint, cleanup, fault] = history.runs.steps;
@@ -152,7 +174,7 @@ void test("public native evidence remains reachable after prior build or package
   assert.equal(execute.shell, "bash");
   assert.equal(
     execute.run,
-    "python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root test:js",
+    "node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root test:js",
   );
   assert.equal(execute["continue-on-error"], undefined);
   assert.equal(qualification.if, "${{ success() && job.status == 'success' }}");
@@ -214,7 +236,7 @@ void test("public native evidence remains reachable after prior build or package
   for (const original of [upload, style, oxlint, fault]) {
     const step = groupStep(original.name.replace("bridge locations", "package locations"));
     assert.ok(step, original.name);
-    assert.equal(step.if, evidenceJs);
+    assert.equal(step.if, "${{ !cancelled() && (inputs.run-js && matrix.group != 'none') }}");
     assert.equal(step.uses, original.uses);
     assert.equal(step["continue-on-error"], undefined);
     assert.deepEqual(step.with, {

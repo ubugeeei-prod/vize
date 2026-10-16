@@ -26,14 +26,14 @@ const instructionWorkflow = parse(
   readRepoFile(".github", "workflows", "level-instruction-counts.yml"),
 ) as Workflow;
 
-test("instruction ceilings run on the merge queue without blocking publication", () => {
+test("instruction ceilings remain advisory in the queue and scheduled qualification", () => {
   const caller = workflow.jobs?.["instruction-counts"];
   assert.equal(caller?.uses, "./.github/workflows/level-instruction-counts.yml");
   assert.equal(caller?.["continue-on-error"], undefined);
   assert.equal(instructionWorkflow.jobs?.["instruction-counts"]?.["continue-on-error"], true);
   assert.equal(
     caller?.if,
-    "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
+    "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
   );
   assert.equal(workflow.jobs?.["test-report"]?.needs?.includes("instruction-counts"), false);
   assert.ok(Object.hasOwn(instructionWorkflow.on ?? {}, "workflow_call"));
@@ -41,7 +41,7 @@ test("instruction ceilings run on the merge queue without blocking publication",
   assert.equal(gate?.if, undefined);
   assert.equal(
     gate?.env?.MEASURE,
-    "${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' || github.workflow == 'Level instruction counts' }}",
+    "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.workflow == 'Level instruction counts' }}",
   );
   assert.equal(instructionWorkflow.name, "Level instruction counts");
   const verify = gate?.steps?.find(
@@ -67,53 +67,6 @@ test("required aggregate rejects failed, cancelled and skipped instruction check
     assert.equal(decision.exitCode, 1);
     assert.match(decision.message, new RegExp(`instruction-counts: ${result}`));
   }
-});
-
-test("required report keeps inventory and final dependency verification in the same job", () => {
-  const report = workflow.jobs?.["test-report"];
-  assert.equal(report?.steps?.[1]?.uses, "./.github/actions/report-test-inventory");
-  assert.equal(
-    report?.steps?.at(-1)?.run,
-    "node tools/support/compat/github/require-needs-success.ts",
-  );
-  const action = parse(
-    readRepoFile(".github", "actions", "report-test-inventory", "action.yml"),
-  ) as { runs: { using: string; steps: NonNullable<Job["steps"]> } };
-  assert.equal(action.runs.using, "composite");
-  const names = [
-    "Setup Vite+ and Node.js",
-    "Install report dependencies",
-    "Collect test inventory",
-    "Upload test inventory",
-  ];
-  const positions = names.map((name) => action.runs.steps.findIndex((step) => step.name === name));
-  for (const [index, position] of positions.entries()) {
-    assert.notEqual(position, -1, names[index]);
-    if (index > 0) {
-      assert.ok(position > positions[index - 1], `${names[index]} must follow ${names[index - 1]}`);
-    }
-    const step = action.runs.steps[position];
-    assert.equal(step.if, undefined, `${names[index]} must run unconditionally`);
-    assert.ok(
-      step["continue-on-error"] === undefined || step["continue-on-error"] === false,
-      `${names[index]} must propagate failures`,
-    );
-  }
-  const [setup, install, collect, upload] = positions.map(
-    (position) => action.runs.steps[position],
-  );
-  assert.equal(setup.uses, "voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa");
-  assert.deepEqual(setup.with, {
-    "node-version-file": "package.json",
-    cache: true,
-    "run-install": false,
-  });
-  assert.equal(
-    install.run,
-    "vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts",
-  );
-  assert.match(collect.run ?? "", /test-inventory\.ts --json test-inventory\.json/);
-  assert.match(upload.uses ?? "", /^actions\/upload-artifact@/);
 });
 
 test("original formatter calibration preserves level enforcement and retains its own full packet", () => {

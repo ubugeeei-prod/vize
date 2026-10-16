@@ -62,7 +62,7 @@ void test("the project config projection embedded by Rust runs all consuming sou
   });
 });
 
-void test("merge groups run every source suite regardless of the changed paths", () => {
+void test("merge groups use the same product input selection on their merge candidate", () => {
   for (const paths of [
     [],
     ["docs/guide/example.md"],
@@ -75,12 +75,10 @@ void test("merge groups run every source suite regardless of the changed paths",
     ["npm/ui/src/index.ts"],
     ["davinci/vize_l1/src/lib.rs"],
   ]) {
-    assert.deepEqual(planSourceChecks(paths, "merge_group"), {
-      rust: true,
-      js: true,
-      tooling: true,
-      playground: true,
-    });
+    assert.deepEqual(
+      planSourceChecks(paths, "merge_group"),
+      planSourceChecks(paths, "pull_request"),
+    );
   }
   assert.deepEqual(planSourceChecks(["README.md"], "pull_request"), {
     rust: false,
@@ -96,7 +94,7 @@ void test("unknown planning contexts fail rather than selecting a partial suite"
   }
 });
 
-void test("the CLI applies merge-group scope to a real docs-only comparison", () => {
+void test("the CLI preserves a docs-only skip in both comparison contexts", () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-queue-plan-"));
   const git = (...args: string[]) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
   const script = fileURLToPath(
@@ -116,9 +114,9 @@ void test("the CLI applies merge-group scope to a real docs-only comparison", ()
     const head = git("rev-parse", "HEAD");
     for (const [context, expected] of [
       [[], false],
-      [["merge_group"], true],
+      [["merge_group"], false],
     ] as const) {
-      const output = join(cwd, `output-${String(expected)}`);
+      const output = join(cwd, `output-${context[0] ?? "pull_request"}`);
       const run = spawnSync(process.execPath, [script, base, head, ...context], {
         cwd,
         encoding: "utf8",
@@ -187,12 +185,7 @@ void test("corpus test-support manifests, sources and laws require Rust validati
       { rust: true, js: false, tooling: false, playground: false },
       path,
     );
-    assert.deepEqual(planSourceChecks([path], "merge_group"), {
-      rust: true,
-      js: true,
-      tooling: true,
-      playground: true,
-    });
+    assert.deepEqual(planSourceChecks([path], "merge_group"), planSourceChecks([path]));
   }
 });
 

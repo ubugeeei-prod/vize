@@ -12,15 +12,20 @@ runs:
   steps:
     - name: Resolve the Vite+ bootstrap cache key
       id: key
-      shell: bash
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
       env:
+        VIZE_BOOTSTRAP_ACTION_PATH: ${{ github.action_path }}
         RUNNER_OS: ${{ runner.os }}
         RUNNER_ARCH: ${{ runner.arch }}
         EVENT_NAME: ${{ github.event_name }}
         REF: ${{ github.ref }}
         DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         SAVE_REQUESTED: ${{ inputs.save }}
-      run: node "$GITHUB_ACTION_PATH/cache-key.mjs"
+      with:
+        script: |
+          const script = require('node:url').pathToFileURL(`${process.env.VIZE_BOOTSTRAP_ACTION_PATH}/cache-key.ts`);
+          const { cacheBootstrapRuntime } = await import(script.href);
+          cacheBootstrapRuntime();
     # setup-vp forces VP_HOME=~/.vite-plus. These are the directories its
     # installer skips when the exact Node LTS and pinned pnpm are already there.
     - name: Save the Vite+ bootstrap runtime from a trusted default branch
@@ -31,6 +36,9 @@ runs:
           ~/.vite-plus/js_runtime
           ~/.vite-plus/package_manager
         key: ${{ steps.key.outputs.key }}
+        restore-keys: |
+          ${{ steps.key.outputs.restore }}
+          vp-bootstrap-v1-${{ runner.os }}-${{ runner.arch }}-node-
     - name: Restore the Vite+ bootstrap runtime
       if: ${{ steps.key.outputs.key != '' && steps.key.outputs.save != 'true' }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -39,3 +47,6 @@ runs:
           ~/.vite-plus/js_runtime
           ~/.vite-plus/package_manager
         key: ${{ steps.key.outputs.key }}
+        restore-keys: |
+          ${{ steps.key.outputs.restore }}
+          vp-bootstrap-v1-${{ runner.os }}-${{ runner.arch }}-node-

@@ -22,8 +22,8 @@ function formatNames(names: string[]): string {
 /**
  * Decides whether the `test-report` aggregator may report success.
  *
- * `test-report` runs with `if: always()` so that it still collects the test
- * inventory when a dependency fails. Without this check its own steps succeed
+ * `test-report` runs with `if: always()` so that it reports failed dependencies.
+ * Without this check its own steps succeed
  * and the required status check reports success while any of the jobs it
  * aggregates is red, which makes the whole check suite advisory.
  *
@@ -118,7 +118,7 @@ function main(): void {
   const raw = process.env.NEEDS_JSON;
   if (!raw) {
     console.error(
-      "NEEDS_JSON is required: pass ${{ toJSON(needs) }} to tools/support/compat/github/require-needs-success.mjs",
+      "NEEDS_JSON is required: pass ${{ toJSON(needs) }} to tools/support/compat/github/require-needs-success.ts",
     );
     process.exitCode = 1;
     return;

@@ -107,8 +107,10 @@ export async function waitForRegistryVisibility(
   delaySeconds: number,
 ): Promise<number> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const versionVisible = await npmVersionIsVisible(info.name, info.version, attempt);
-    const tagVisible = await npmTagPointsToVersion(info.name, info.tag, info.version, attempt);
+    const [versionVisible, tagVisible] = await Promise.all([
+      npmVersionIsVisible(info.name, info.version, attempt),
+      npmTagPointsToVersion(info.name, info.tag, info.version, attempt),
+    ]);
     if (versionVisible && tagVisible) {
       println(`${info.name}@${info.version} is visible in npm with dist-tag ${info.tag}.`);
       return 0;

@@ -8,14 +8,12 @@ export function requireRustTier(event: unknown, runRust: unknown, needs: unknown
     throw new Error("Unexpected Rust tier event");
   if (typeof runRust !== "string" || !["true", "false"].includes(runRust))
     throw new Error("Missing Rust source plan");
-  if (event === "merge_group" && runRust !== "true")
-    throw new Error("Merge queue must select the complete Rust workspace");
   const required =
-    event === "merge_group"
-      ? ["merge-rust-source", "merge-rust-differential", "pr-rust-shard"]
-      : runRust === "true"
-        ? ["pr-rust-build", "pr-rust-shard"]
-        : [];
+    runRust === "false"
+      ? []
+      : event === "merge_group"
+        ? ["merge-rust-source", "merge-rust-differential", "pr-rust-build", "pr-rust-shard"]
+        : ["pr-rust-build", "pr-rust-shard"];
   if (required.length === 0) {
     return {
       exitCode: 0,

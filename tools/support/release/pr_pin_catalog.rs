@@ -1,6 +1,6 @@
 use super::super::pr_github as github;
 use super::metadata::{paths, text};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::{
     collections::BTreeMap,
     env, fs,
@@ -16,7 +16,7 @@ const PUBLICATION_AUTHORITIES: [(&str, &str); 4] = [
         ".github/workflows/release.yml",
     ),
     (
-        "tools/commands/ci/github/release-platforms.rs",
+        "tools/support/github/release-platforms.ts",
         "tools/commands/ci/github/release-platforms.rs",
     ),
     (
@@ -190,10 +190,21 @@ pub(super) fn catalog(revision: &str, version: &str, root: &Path) -> Result<Valu
                 json!({"path":path,"manifest":text(revision,path,root)?,"publication":descriptor}),
             );
         }
-        let publication_authorities = PUBLICATION_AUTHORITIES
+        let mut publication_authorities = PUBLICATION_AUTHORITIES
             .into_iter()
             .map(|paths| authority(revision, &files, paths, root))
             .collect::<Result<BTreeMap<_, _>, String>>()?;
+        // Extracted recipes remain part of source custody; older cuts predate
+        // these files and keep the inline release.yml authority above.
+        for path in [
+            ".github/actions/build-release-cli/action.yml",
+            ".github/actions/build-release-native/action.yml",
+            ".github/actions/publish-release-package/action.yml",
+        ] {
+            if files.iter().any(|file| file == path) {
+                publication_authorities.insert(path, text(revision, path, root)?);
+            }
+        }
         let crate_publisher = authority(revision, &files, CRATE_PUBLISHER, root)?.1;
         Ok(
             json!({"npm":npm,"editors":editors,"crates":crates,"cratePublisher":crate_publisher,"nativeCatalog": native_catalog(&text(revision,"pnpm-workspace.yaml",root)?,version),"publicationAuthorities":publication_authorities}),

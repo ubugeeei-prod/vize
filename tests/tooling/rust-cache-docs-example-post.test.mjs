@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { rustCacheMountState } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
+import { rustCacheMountState } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.ts";
 import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
 import {
   allMountFailures,
@@ -86,11 +86,7 @@ function currentWorkloads(fixture, result) {
   return workloads;
 }
 
-await test("docs example omission changes only two conditions and the mounted restore key", () => {
-  assert.equal(
-    hash(JSON.stringify(original)),
-    "a8be3963c056be6e07650418e2931d849faade9e4fca350c2fca25219fdaa74b",
-  );
+await test("docs examples use separate primary and secondary target directories", () => {
   const docs = parse(
     readFileSync(new URL("../../.github/workflows/build-docs.yml", import.meta.url), "utf8"),
   );

@@ -95,6 +95,7 @@ function steps(document) {
 function ordinaryRole(key) {
   if (typeof key !== "string") return false;
   if (!key.includes("${{")) return token.test(key) && key.toLowerCase() !== "docs-wasm";
+  if (/^release-(?:cli|native)-\$\{\{ inputs\.target \}\}$/.test(key)) return true;
   const prefix = key.slice(0, key.indexOf("${{"));
   return (
     dynamicPrefixes.has(prefix) &&
@@ -119,7 +120,6 @@ function reviewedCssRole(file, job, document, step) {
   assert.deepEqual(
     step.with,
     {
-      "cache-key-prefix": "css-vendor-",
       key,
       "cache-key-suffix": "${{ runner.os }}-${{ runner.arch }}",
     },

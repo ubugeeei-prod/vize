@@ -15,6 +15,7 @@ on:
             docs,
             rust,
             native,
+            release-builds,
             n8n-baseline,
             n8n-preparation,
             artifact-payload,
@@ -39,6 +40,9 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   CARGO_TERM_COLOR: always
 jobs:
+  release-builds:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'release-builds' }}
+    uses: ./.github/workflows/release-build-cache.yml
   owned-worker-fault:
     if: ${{ github.event_name == 'workflow_dispatch' && (inputs.component == 'owned-worker-fault' || inputs.component == 'owned-worker-controls') }}
     uses: ./.github/workflows/owned-worker-fault.yml
@@ -257,21 +261,27 @@ jobs:
       - name: Retain diagnostic orchestration before checking out the failed source
         run: |
           mkdir -p "$RUNNER_TEMP/js-native-fault-evidence-orchestration"
-          cp .github/actions/test-js-packages-with-history/native-fault-evidence.py "$RUNNER_TEMP/native-fault-evidence.py"
-          cp .github/actions/test-js-packages-with-history/native_fault_core.py "$RUNNER_TEMP/native_fault_core.py"
-          python3 - <<'PYTHON'
-          import hashlib, json, os, subprocess
-          from pathlib import Path
-          helper = Path(os.environ["RUNNER_TEMP"]) / "native-fault-evidence.py"
-          receipt = {"orchestration": subprocess.check_output(["git", "rev-parse", "HEAD", "HEAD^{tree}"], text=True).splitlines(),
-                     "helpers": [{"file": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
-                                 for path in [helper, helper.with_name("native_fault_core.py")]],
-                     "reportedFailureHead": "17bb01881b3e9721c273048d4698a1fb887c6a2e",
-                     "physicalFailedSource": "a16d50297208eb4635c824449bdbb345c462351d",
-                     "physicalFailedTree": "670e62ad66b6ff29b441e887bc7f62abb641c106",
-                     "originalRun": 38150949243, "originalFailedJob": 114504704179}
-          (helper.parent / "js-native-fault-evidence-orchestration/identity.json").write_text(json.dumps(receipt, indent=2) + "\n")
-          PYTHON
+          cp .github/actions/test-js-packages-with-history/native-fault-evidence.ts "$RUNNER_TEMP/native-fault-evidence.ts"
+          cp .github/actions/test-js-packages-with-history/native-fault-core.ts "$RUNNER_TEMP/native-fault-core.ts"
+          cp .github/actions/test-js-packages-with-history/native-fault-support.ts "$RUNNER_TEMP/native-fault-support.ts"
+          node --input-type=module <<'NODE'
+          import { execFileSync } from 'node:child_process';
+          import { createHash } from 'node:crypto';
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import path from 'node:path';
+          const directory = process.env.RUNNER_TEMP;
+          const receipt = {
+            orchestration: execFileSync('git', ['rev-parse', 'HEAD', 'HEAD^{tree}'], { encoding: 'utf8' }).trim().split('\n'),
+            helpers: ['native-fault-evidence.ts', 'native-fault-core.ts', 'native-fault-support.ts'].map(file => ({
+              file, sha256: createHash('sha256').update(readFileSync(path.join(directory, file))).digest('hex'),
+            })),
+            reportedFailureHead: '17bb01881b3e9721c273048d4698a1fb887c6a2e',
+            physicalFailedSource: 'a16d50297208eb4635c824449bdbb345c462351d',
+            physicalFailedTree: '670e62ad66b6ff29b441e887bc7f62abb641c106',
+            originalRun: 38150949243, originalFailedJob: 114504704179,
+          };
+          writeFileSync(path.join(directory, 'js-native-fault-evidence-orchestration/identity.json'), `${JSON.stringify(receipt, null, 2)}\n`);
+          NODE
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: a16d50297208eb4635c824449bdbb345c462351d
@@ -283,7 +293,7 @@ jobs:
           test -z "$(git status --porcelain --untracked-files=no)"
       - uses: ./.github/actions/setup-js-package-tests
       - name: Observe the original mandatory JS command once
-        run: python3 "$RUNNER_TEMP/native-fault-evidence.py" -- vp run --workspace-root test:js
+        run: node "$RUNNER_TEMP/native-fault-evidence.ts" -- vp run --workspace-root test:js
       - name: Preserve bounded diagnostics and original native build receipts
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

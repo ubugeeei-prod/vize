@@ -190,37 +190,14 @@ test("untrusted source checks cannot write trusted sticky disks", () => {
   const action = parse(
     readRepoFile(".github", "actions", "setup-rust-sticky-cache", "action.yml"),
   ) as {
-    inputs?: Record<string, { default?: string }>;
     runs?: { steps?: Array<{ if?: string; uses?: string; with?: Record<string, string> }> };
   };
-  assert.equal(action.inputs?.["cache-key-prefix"]?.default, "");
-  const prefix =
-    "${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}";
-  for (const [job, body] of [
-    ...SOURCE_PR_JOBS.filter(
-      (name) => !["pr-source-plan", "pr-rust-source", "pr-js-packages"].includes(name),
-    ).map((name) => [name, sourceWorkflow.jobs?.[name]] as const),
-    ...Object.entries(jsWorkflow.jobs),
-  ]) {
-    const cacheStep = body?.steps?.find(
-      (step) => step.uses === "./.github/actions/setup-rust-sticky-cache",
-    );
-    assert.equal(cacheStep?.with?.["cache-key-prefix"], prefix, `${job} must isolate its cache`);
-  }
-  for (const job of ["merge-rust-source", "pr-rust-build"]) {
-    const cacheStep = rustWorkflow.jobs?.[job]?.steps?.find(
-      (step) => step.uses === "./.github/actions/setup-rust-sticky-cache",
-    );
-    assert.ok(
-      cacheStep?.with?.["cache-key-prefix"]?.includes("pr-{0}-"),
-      `${job} must isolate its cache`,
-    );
-  }
   const mounts = action.runs?.steps?.filter((step) =>
     step.uses?.startsWith("useblacksmith/stickydisk@"),
   );
   assert.equal(mounts?.length, 4, "registry, git, primary, and secondary disks need isolation");
   for (const mount of mounts ?? []) {
+    assert.equal(mount.with?.commit, "${{ steps.cache-policy.outputs.sticky-commit }}");
     assert.ok(
       mount.with?.key?.startsWith("${{ steps.cache-policy.outputs.sticky-") &&
         mount.if?.includes("steps.cache-policy.outputs.sticky == 'true'"),

@@ -26,12 +26,13 @@ test("check workflow runs JS package unit tests and production dependency audit"
   );
   assert.match(
     jsAction,
-    /run: python3 \.github\/actions\/test-js-packages-with-history\/native-fault-evidence\.py -- vp run --workspace-root test:js/,
+    /run: node \.github\/actions\/test-js-packages-with-history\/native-fault-evidence\.ts -- vp run --workspace-root test:js/,
   );
   assert.match(jsPackageJob, /uses: \.\/\.github\/actions\/setup-js-package-tests/);
   const jsSetup = readRepoFile(".github", "actions", "setup-js-package-tests", "action.yml");
   assert.match(jsSetup, /key:\s*test-js-packages/);
-  assert.match(auditJob, /setup-rust-script[\s\S]*rust-script tools\/commands\/ci\/npm-audit\.rs/);
+  assert.match(auditJob, /node tools\/commands\/ci\/npm-audit-retry\.ts/);
+  assert.doesNotMatch(auditJob, /setup-rust-script|rust-script/);
   assert.match(auditJob, /tool:\s*cargo-audit/);
   assert.match(auditJob, /cargo audit --deny warnings/);
   assert.doesNotMatch(auditJob, /continue-on-error:\s*true/);

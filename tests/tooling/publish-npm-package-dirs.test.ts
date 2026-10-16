@@ -20,7 +20,7 @@ test("platform publisher limits concurrency and records every result in package 
       [
         fixture.baseDir,
         "--concurrency",
-        "4",
+        "8",
         "--receipt",
         fixture.receiptPath,
         "--provenance",
@@ -33,13 +33,13 @@ test("platform publisher limits concurrency and records every result in package 
     );
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
     const events = fixture.events();
-    assert.equal(maxActivePublishers(events), 4);
+    assert.equal(maxActivePublishers(events), 8);
     assert.equal(events.length, 16);
     for (const event of events)
       assert.deepEqual(event.args, ["--provenance", "--retries", "2", "--delay", "1"]);
     const receipt = fixture.receipt();
     assert.equal(receipt.schema_version, 1);
-    assert.equal(receipt.concurrency, 4);
+    assert.equal(receipt.concurrency, 8);
     assert.equal(receipt.package_count, 8);
     assert.equal(receipt.exit_code, 0);
     assert.ok(receipt.walltime_ms > 0);
@@ -122,13 +122,13 @@ test("a failed publisher preserves child diagnostics and waits for all launched 
 });
 
 test("platform concurrency rejects invalid or missing values before starting a publisher", () => {
-  for (const value of ["0", "-1", "1.5", "abc", "2oops", "5", "9", "", undefined]) {
+  for (const value of ["0", "-1", "1.5", "abc", "2oops", "9", "", undefined]) {
     const fixture = controlledPublishFixture(1);
     try {
       const args = [fixture.baseDir, "--concurrency", ...(value === undefined ? [] : [value])];
       const result = runReleaseCommand("publish_npm_package_dirs", args, { env: fixture.env });
       assert.notEqual(result.status, 0);
-      assert.match(result.stderr, /--concurrency requires an integer from 1 to 4/);
+      assert.match(result.stderr, /--concurrency requires an integer from 1 to 8/);
       assert.equal(
         fs.existsSync(path.join(path.dirname(fixture.receiptPath), "events.jsonl")),
         false,
@@ -289,7 +289,7 @@ test("release platform packages use bounded concurrency before the native wrappe
   );
   assert.match(
     source,
-    /node tools\/support\/release\/publish_npm_package_dirs\/main\.ts npm\/native\/npm --concurrency 4 --provenance/,
+    /node tools\/support\/release\/publish_npm_package_dirs\/main\.ts npm\/native\/npm --concurrency 8 --provenance/,
   );
   assert.match(source, /--receipt "\$RUNNER_TEMP\/native-platform-publish\.json"/);
   assert.match(

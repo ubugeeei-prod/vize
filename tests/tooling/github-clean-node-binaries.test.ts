@@ -8,17 +8,17 @@ import { test } from "node:test";
 import { repoRoot } from "./_helpers/moonbit.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-const commandPath = "tools/commands/ci/github/clean-node-binaries.rs";
+const commandPath = "tools/support/github/clean-node-binaries.ts";
 
 function runCleanNodeBinaries(args: readonly string[]) {
-  return spawnSync("rust-script", [path.join(repoRoot, commandPath), ...args], {
+  return spawnSync(process.execPath, [path.join(repoRoot, commandPath), ...args], {
     cwd: repoRoot,
     encoding: "utf8",
   });
 }
 
 test("github/clean-node-binaries removes only top-level .node files", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "rust-clean-node-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "node-clean-node-"));
   const firstDir = path.join(tempDir, "first");
   const secondDir = path.join(tempDir, "second");
   const nestedDir = path.join(firstDir, "nested");
@@ -43,16 +43,16 @@ test("github/clean-node-binaries removes only top-level .node files", () => {
   }
 });
 
-test("release workflow cleans native binaries with Rust Script", () => {
+test("release recipes clean native binaries with Node type stripping", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   assert.match(
-    workflowJobBody(workflow, "build-native-all"),
-    /run: rust-script tools\/commands\/ci\/github\/clean-node-binaries\.rs npm\/native npm\/fresco-native$/m,
+    readRepoFile(".github", "actions", "build-release-native", "action.yml"),
+    /run: node tools\/support\/github\/clean-node-binaries\.ts npm\/native npm\/fresco-native$/m,
   );
   for (const jobName of ["smoke-release-packages", "release-npm-fresco-native"]) {
     assert.match(
       workflowJobBody(workflow, jobName),
-      /rust-script tools\/commands\/ci\/github\/clean-node-binaries\.rs npm\/fresco-native$/m,
+      /node tools\/support\/github\/clean-node-binaries\.ts npm\/fresco-native$/m,
     );
   }
   assert.doesNotMatch(workflow, /tools\/moon\/cmd\/github\/clean_node_binaries/);

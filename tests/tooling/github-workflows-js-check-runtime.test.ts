@@ -4,11 +4,12 @@ import { parse } from "yaml";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-test("JS check runtime action installs the native build prerequisites", () => {
+test("JS check runtime reserves native prerequisites for full qualification", () => {
   const checkJsJob = workflowJobBody(readRepoFile(".github", "workflows", "check.yml"), "check-js");
   const action = readRepoFile(".github", "actions", "setup-js-check-runtime", "action.yml");
+  const runtime = parse(action);
   const actionSteps =
-    (parse(action) as { runs?: { steps?: Array<{ uses?: string }> } }).runs?.steps ?? [];
+    (runtime as { runs?: { steps?: Array<{ uses?: string; if?: string }> } }).runs?.steps ?? [];
   const actionUses = actionSteps.map((step) => step.uses).filter((uses) => uses != null);
 
   assert.match(
@@ -20,6 +21,8 @@ test("JS check runtime action installs the native build prerequisites", () => {
   assert.match(action, /wild-linker\/action/);
   assert.ok(actionUses.includes("./.github/actions/setup-rust-script"));
   assert.match(action, /key:\s*check-js/);
+  assert.equal(runtime.inputs.full.default, "false");
+  for (const step of actionSteps.slice(1)) assert.equal(step.if, "inputs.full == 'true'");
 });
 
 test("workflow context validation belongs to the unconditional required JS gate", () => {

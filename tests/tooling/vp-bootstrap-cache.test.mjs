@@ -1,44 +1,43 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
 import {
   bootstrapCacheKey,
-  bootstrapCacheSave,
+  bootstrapCachePrefix,
   bootstrapCacheWrite,
-  latestLtsVersion,
-} from "../../.github/actions/cache-vp-bootstrap/cache-key.mjs";
+} from "../../.github/actions/cache-vp-bootstrap/cache-key.ts";
 
 const root = new URL("../../", import.meta.url);
 const workflow = (path) => parse(readFileSync(new URL(path, root), "utf8"));
 
-void test("the bootstrap key is the highest Node.js LTS release for this runner", () => {
-  const version = latestLtsVersion([
-    { version: "v25.0.0", lts: false },
-    { version: "v24.9.0", lts: "Krypton" },
-    { version: "v24.14.0", lts: "Krypton" },
-    { version: "v22.22.0", lts: "Jod" },
-    { version: "v24.15.0-rc.1", lts: "Krypton" },
-    { version: "not-a-version", lts: "Krypton" },
-  ]);
-  assert.equal(version, "24.14.0");
-  assert.equal(
-    bootstrapCacheKey("Linux", "X64", version),
-    "vp-bootstrap-v1-Linux-X64-node-24.14.0",
+void test("bootstrap caches rotate daily with compatible pinned-runtime fallback", () => {
+  const version = "24.14.0";
+  const manager = "pnpm@12.1.0";
+  const date = new Date("2026-10-16T09:00:00Z");
+  const prefix = bootstrapCachePrefix("Linux", "X64", version, manager);
+  assert.equal(bootstrapCacheKey("Linux", "X64", version, manager, date), `${prefix}2026-10-16`);
+  assert.ok(
+    bootstrapCacheKey("Linux", "X64", version, manager, new Date("2026-10-17")).startsWith(prefix),
   );
-  assert.throws(() => bootstrapCacheKey("Linux\n", "X64", version), /runner identity/);
-  assert.throws(() => latestLtsVersion([{ version: "v25.0.0", lts: false }]), /no LTS/);
+  for (const [os, arch, node, pnpm] of [
+    ["Windows", "X64", version, manager],
+    ["Linux", "ARM64", version, manager],
+    ["Linux", "X64", "24.15.0", manager],
+    ["Linux", "X64", version, "pnpm@12.2.0"],
+  ])
+    assert.notEqual(bootstrapCachePrefix(os, arch, node, pnpm), prefix);
+  assert.throws(() => bootstrapCacheKey("Linux\n", "X64", version, manager), /runner identity/);
+  assert.throws(() => bootstrapCacheKey("Linux", "X64", "lts", manager), /pinned Node/);
+  assert.throws(() => bootstrapCacheKey("Linux", "X64", version, "pnpm@latest"), /pinned pnpm/);
 });
 
 void test("only a trusted default-branch run saves the bootstrap runtime", () => {
-  assert.equal(bootstrapCacheSave("push", "refs/heads/main", "main"), true);
-  assert.equal(bootstrapCacheSave("schedule", "refs/heads/main", "main"), true);
-  assert.equal(bootstrapCacheSave("workflow_dispatch", "refs/heads/main", "main"), true);
-  assert.equal(bootstrapCacheSave("push", "refs/heads/davinci", "main"), false);
-  assert.equal(bootstrapCacheSave("pull_request", "refs/pull/1/merge", "main"), false);
-  assert.equal(bootstrapCacheSave("merge_group", "refs/heads/main", "main"), false);
-  assert.equal(bootstrapCacheSave("push", "refs/heads/main", "main\n"), false);
   assert.equal(bootstrapCacheWrite(true, "push", "refs/heads/main", "main"), true);
+  assert.equal(bootstrapCacheWrite(true, "schedule", "refs/heads/main", "main"), true);
+  assert.equal(bootstrapCacheWrite(true, "workflow_dispatch", "refs/heads/main", "main"), true);
+  assert.equal(bootstrapCacheWrite(true, "push", "refs/heads/davinci", "main"), false);
+  assert.equal(bootstrapCacheWrite(true, "push", "refs/heads/main", "main\n"), false);
   assert.equal(bootstrapCacheWrite(false, "push", "refs/heads/main", "main"), false);
   assert.equal(bootstrapCacheWrite(true, "pull_request", "refs/pull/1/merge", "main"), false);
   assert.equal(bootstrapCacheWrite(true, "merge_group", "refs/heads/main", "main"), false);
@@ -54,26 +53,29 @@ void test("pull-request setup-vp restores the bootstrap runtime and does not ins
     "~/.vite-plus/js_runtime\n~/.vite-plus/package_manager\n",
   ]);
   assert.equal(action.runs.steps.filter((step) => step.uses?.includes("setup-vp@")).length, 0);
+  for (const step of action.runs.steps.filter((step) => step.uses?.startsWith("actions/cache"))) {
+    assert.equal(
+      step.with["restore-keys"],
+      "${{ steps.key.outputs.restore }}\nvp-bootstrap-v1-${{ runner.os }}-${{ runner.arch }}-node-\n",
+    );
+  }
 
-  const jobs = [
-    ["pr-rust-checks.yml", "merge-rust-source"],
-    ["pr-rust-checks.yml", "pr-rust-shard"],
-    ["pr-rust-checks.yml", "rust-source-report"],
-    ["pr-rust-differential.yml", "differential"],
-    ["pr-js-checks.yml", "pr-js-package-tests"],
-    ["pr-js-checks.yml", "pr-oxlint-project-qualification"],
-    ["pr-js-checks.yml", "pr-js-package-conformance"],
-    ["pr-source-checks.yml", "pr-tooling-scripts"],
-    ["pr-source-checks.yml", "pr-playground-test"],
-    ["pr-source-cli.yml", "cli"],
-  ];
-  for (const [file, name] of jobs) {
-    const steps = workflow(`.github/workflows/${file}`).jobs[name].steps;
-    const setup = steps.findIndex((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
-    const cache = steps.findIndex((step) => step.uses === "./.github/actions/cache-vp-bootstrap");
-    assert.ok(setup > 0 && cache === setup - 1, `${file} ${name}`);
-    assert.equal(steps[cache].if, steps[setup].if);
-    assert.equal(steps[cache].with, undefined);
+  for (const file of readdirSync(new URL(".github/workflows", root)).filter((file) =>
+    /^pr-.*\.yml$/.test(file),
+  )) {
+    for (const [name, job] of Object.entries(workflow(`.github/workflows/${file}`).jobs)) {
+      const steps = job.steps ?? [];
+      for (const [index, step] of steps.entries()) {
+        if (step.uses !== "./.github/actions/cache-vp-bootstrap") continue;
+        assert.equal(
+          steps[index + 1]?.uses?.startsWith("voidzero-dev/setup-vp@"),
+          true,
+          `${file} ${name}`,
+        );
+        assert.equal(step.if, steps[index + 1].if);
+        assert.equal(step.with, undefined);
+      }
+    }
   }
 
   const seed = workflow(".github/workflows/rust-pr-target-seed.yml");

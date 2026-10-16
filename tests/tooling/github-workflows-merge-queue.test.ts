@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
+import { rustDifferentialLanes } from "../../tools/support/compat/github/rust-differential-lanes.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 type Step = {
   name?: string;
@@ -16,7 +17,14 @@ type Step = {
   with?: Record<string, string>;
   "continue-on-error"?: boolean;
 };
-type Job = { if?: string; needs?: string[] | string; steps?: Step[]; uses?: string };
+type Job = {
+  if?: string;
+  needs?: string[] | string;
+  steps?: Step[];
+  uses?: string;
+  env?: Record<string, string>;
+  strategy?: { matrix?: unknown };
+};
 const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
   jobs: Record<string, Job>;
 };
@@ -43,7 +51,7 @@ const lanes = [
   "pr-source-plan",
   "pr-rust-source",
   "pr-js-packages",
-  "pr-tooling-scripts",
+  "pr-native-runtime",
   "pr-playground-test",
 ];
 const tailCommands = [
@@ -69,16 +77,15 @@ const commands = (job: Job) =>
     .flatMap((step) => (step.uses === jsHistoryPath ? jsHistory.runs.steps : [step]))
     .map((step) => step.run ?? "")
     .join("\n");
-test("queue scope reaches the planner and every full source lane remains required", () => {
+test("queue scope reaches the planner and every selected source lane remains required", () => {
   assert.equal(
     source.jobs["pr-source-plan"].steps?.find((step) => step.name === "Plan source checks")?.run,
-    'node tools/support/compat/github/plan-source-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"',
+    'node tools/support/compat/github/plan-pr-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"',
   );
   assert.deepEqual(source.jobs["source-report"].needs, [
     ...lanes,
     "wit-contracts",
     "canonical-corpus",
-    "pr-source-cli",
   ]);
   assert.equal(
     source.jobs["source-report"].if,
@@ -87,6 +94,7 @@ test("queue scope reaches the planner and every full source lane remains require
   assert.match(commands(source.jobs["source-report"]), /canonical-corpus-selection\.mjs/);
   assert.ok(check.jobs["test-report"].needs?.includes("pr-source-checks"));
   for (const required of [
+    "iteration-plan",
     "fmt-rust",
     "check-js",
     "security-audit",
@@ -104,16 +112,22 @@ test("queue scope reaches the planner and every full source lane remains require
   assert.equal(jsHistory.runs.using, "composite");
   assert.equal(jsHistory.runs.steps[0].if, "${{ success() && job.status == 'success' }}");
   assert.ok(check.jobs["test-js-packages"].steps?.some((step) => step.uses === jsHistoryPath));
-  assert.match(commands(source.jobs["pr-tooling-scripts"]), /vp run --workspace-root test:scripts/);
-  const cli = parse(readRepoFile(".github", "workflows", "pr-source-cli.yml")) as {
-    jobs: Record<string, Job>;
-  };
-  assert.match(commands(cli.jobs.cli), /cargo build --profile ci -p vize/);
-  assert.ok(
-    source.jobs["pr-tooling-scripts"].steps?.some(
-      (step) => step.uses === "./.github/actions/restore-source-cli",
-    ),
-  );
+  const nativeRuntime = source.jobs["pr-native-runtime"];
+  assert.equal(nativeRuntime.needs, "pr-source-plan");
+  assert.equal(nativeRuntime.if, undefined, "unaffected runtime inputs still report success");
+  for (const [lane, action] of [
+    ["ssr", "test-native-ssr"],
+    ["scoped-css", "test-native-scoped-css"],
+    ["setup", "test-native-js-setup"],
+    ["vapor", "test-native-vapor"],
+    ["attributes", "test-native-attribute-values-7502"],
+    ["selected-template", "test-native-selected-template"],
+  ]) {
+    const step = nativeRuntime.steps?.find((step) => step.uses === `./.github/actions/${action}`);
+    assert.ok(step, lane);
+    assert.equal(step.if, `\${{ matrix.lane == '${lane}' }}`);
+    assert.notEqual(step["continue-on-error"], true);
+  }
   assert.match(commands(source.jobs["pr-playground-test"]), /test:browser/);
   assert.match(commands(source.jobs["pr-playground-test"]), /test:vrt/);
   const vrtFailure = source.jobs["pr-playground-test"].steps?.find(
@@ -122,26 +136,48 @@ test("queue scope reaches the planner and every full source lane remains require
   assert.match(vrtFailure?.if ?? "", /steps\.vrt\.outcome == 'failure'/);
   assert.equal(vrtFailure?.run, "exit 1");
 });
-test("queue Rust retains full doctests and the unchanged feature tail beside required workspace shards", () => {
+test("queue Rust keeps affected doctests beside archive builds and the differential feature tail", () => {
   assert.equal(source.jobs["pr-rust-source"].uses, "./.github/workflows/pr-rust-checks.yml");
-  const steps = rust.jobs["merge-rust-source"].steps ?? [];
-  const pkl = steps.findIndex((step) => step.name === "Install Pkl CLI");
-  const workspace = steps.findIndex((step) =>
-    /cargo test --workspace --profile ci --doc(?:;|$)/m.test(step.run ?? ""),
+  const build = rust.jobs["pr-rust-build"];
+  assert.equal(build.needs, undefined, "Clippy and doctests must start beside the test archive");
+  assert.equal(build.if, "${{ inputs.run-rust }}");
+  assert.match(commands(build), /run-affected-rust\.ts[^\n]*cargo clippy @packages@/);
+  assert.match(
+    commands(build),
+    /run-affected-rust\.ts[^\n]*cargo test @packages@ --profile ci --doc/,
   );
-  const sibling = differential.jobs["differential"].steps ?? [];
-  const tail = sibling.findIndex((step) => step.uses === actionPath);
-  const coverage = sibling.findIndex((step) => step.name === "Check fixture coverage");
-  assert.ok(pkl >= 0 && pkl < workspace && tail >= 0 && tail < coverage);
-  assert.equal(steps[workspace].env?.VIZE_TEST_REQUIRE_TSGO, "1");
+  const buildSteps = build.steps ?? [];
+  const runtime = buildSteps.findIndex(
+    (step) => step.name === "Select Clippy and doctest runtime envelope",
+  );
+  assert.ok(
+    runtime >= 0 &&
+      runtime < buildSteps.findIndex((step) => step.name === "Clippy affected crates"),
+  );
+  assert.match(buildSteps[runtime].run ?? "", /merge_group\) printf 'VIZE_TEST_REQUIRE_TSGO=1/);
+  assert.ok(rust.jobs["rust-source-report"].needs?.includes("pr-rust-build"));
+  const differentialJob = differential.jobs["differential"];
+  const sibling = differentialJob.steps ?? [];
+  const selected = sibling.find(
+    (step) => step.name === "Run affected feature and production corpora",
+  );
+  assert.equal(
+    differentialJob.strategy?.matrix,
+    "${{ fromJSON(inputs.rust-plan).differentialMatrix }}",
+  );
+  assert.equal(differentialJob.if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
+  assert.equal(differentialJob.env?.VIZE_TEST_REQUIRE_TSGO, "1");
+  assert.equal(selected?.if, "${{ matrix.lane != 'navigation' && matrix.lane != 'none' }}");
+  assert.equal(
+    selected?.run,
+    'node tools/support/compat/github/rust-differential-lanes.ts "$DIFFERENTIAL_LANE" "$RUNNER_TEMP/rust-plan.json"',
+  );
+  assert.notEqual(selected?.["continue-on-error"], true);
   assert.equal(rust.jobs["merge-rust-differential"].needs, undefined);
   assert.equal(
     rust.jobs["merge-rust-differential"].uses,
     "./.github/workflows/pr-rust-differential.yml",
   );
-  assert.equal(sibling[tail].if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
-  assert.equal(sibling[tail].with?.["workspace-already-tested"], "true");
-  assert.notEqual(sibling[tail]["continue-on-error"], true);
   const manual = check.jobs["clippy-and-test"].steps?.find((step) => step.name === "Test");
   assert.equal(manual?.uses, actionPath);
   assert.equal(manual?.with?.["workspace-already-tested"], undefined);
@@ -161,6 +197,18 @@ test("queue Rust retains full doctests and the unchanged feature tail beside req
   for (const step of recipe.runs.steps.slice(1)) {
     assert.equal(step.env?.VIZE_TEST_REQUIRE_TSGO, "1");
     assert.notEqual(step["continue-on-error"], true);
+  }
+  // Batched --test flags may combine processes, but every prior feature target
+  // must remain selected once with its package, feature set and test arguments.
+  const partitioned = rustDifferentialLanes.flatMap((lane) => lane.steps);
+  for (const command of tailCommands) {
+    const expected = command.slice(command.indexOf("cargo ") + 6).split(" ");
+    const matches = partitioned.filter((step) => {
+      let position = 0;
+      for (const argument of step.args) if (argument === expected[position]) position += 1;
+      return position === expected.length;
+    });
+    assert.equal(matches.length, 1, command);
   }
 });
 test("both queue reports reject failed, cancelled, skipped and missing actual dependencies", () => {

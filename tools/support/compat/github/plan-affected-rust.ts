@@ -2,22 +2,35 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
+import { differentialMatrix } from "./rust-differential-lanes.ts";
 
 import {
   changedPaths,
   isCensusToolingInput,
   isDocsQualityToolingInput,
   isSharedRustInput,
+  isToolingOnlyInput,
 } from "./plan-source-checks.ts";
 
 const packageName = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 const contexts = new Set(["pull_request", "merge_group"]);
 
-function compareStrings(left, right) {
+export type CargoMetadata = {
+  workspace_root: string;
+  workspace_members: string[];
+  packages: {
+    id: string;
+    name: string;
+    manifest_path: string;
+    dependencies: { path?: string; kind?: string | null }[];
+  }[];
+};
+
+function compareStrings(left: string, right: string) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function repositoryPath(root, absolutePath) {
+function repositoryPath(root: string, absolutePath: string) {
   if (!isAbsolute(absolutePath)) throw new Error("Cargo metadata paths must be absolute");
   const path = relative(root, absolutePath).split(sep).join("/");
   if (path === ".." || path.startsWith("../") || isAbsolute(path)) {
@@ -26,7 +39,7 @@ function repositoryPath(root, absolutePath) {
   return path;
 }
 
-export function workspaceGraph(metadata) {
+export function workspaceGraph(metadata: CargoMetadata) {
   if (!Array.isArray(metadata?.packages) || !Array.isArray(metadata.workspace_members)) {
     throw new Error("invalid Cargo workspace metadata");
   }
@@ -35,9 +48,9 @@ export function workspaceGraph(metadata) {
   if (!members.size || packages.length !== members.size) {
     throw new Error("Cargo metadata does not contain every workspace member");
   }
-  const names = new Set();
-  const roots = new Map();
-  const reverse = new Map();
+  const names = new Set<string>();
+  const roots = new Map<string, { name: string; path: string }>();
+  const reverse = new Map<string, Set<string>>();
   for (const pkg of packages) {
     if (!packageName.test(pkg.name) || names.has(pkg.name) || !Array.isArray(pkg.dependencies)) {
       throw new Error("invalid or ambiguous workspace package");
@@ -56,13 +69,13 @@ export function workspaceGraph(metadata) {
       if (!dependency.path) continue;
       if (!isAbsolute(dependency.path)) throw new Error("invalid Cargo dependency path");
       const target = roots.get(resolve(dependency.path));
-      if (target) reverse.get(target.name).add(pkg.name);
+      if (target) reverse.get(target.name)!.add(pkg.name);
     }
   }
   return { names: [...names].sort(compareStrings), roots: [...roots.values()], reverse };
 }
 
-function validChangedPath(path) {
+function validChangedPath(path: unknown): path is string {
   return (
     typeof path === "string" &&
     path.length > 0 &&
@@ -73,16 +86,21 @@ function validChangedPath(path) {
   );
 }
 
-export function planAffectedRust(metadata, paths, eventName = "pull_request") {
+export function planAffectedRust(
+  metadata: CargoMetadata,
+  paths: readonly string[],
+  eventName = "pull_request",
+) {
   if (!contexts.has(eventName)) throw new Error("invalid affected Rust planning context");
   if (!Array.isArray(paths)) throw new Error("changed paths must be an array");
   const graph = workspaceGraph(metadata);
-  const changed = new Set();
-  const reasons = new Set();
-  const excludedPaths = [];
-  let full = eventName === "merge_group" || paths.length === 0;
-  if (full)
-    reasons.add(eventName === "merge_group" ? "merge queue validates every crate" : "empty diff");
+  const changed = new Set<string>();
+  const reasons = new Set<string>();
+  const excludedPaths: string[] = [];
+  // The queue validates the affected closure on its actual merge candidate.
+  // Full workspace execution remains in scheduled/manual Check runs.
+  let full = paths.length === 0;
+  if (full) reasons.add("empty diff");
   for (const path of paths) {
     if (!validChangedPath(path)) {
       full = true;
@@ -102,6 +120,9 @@ export function planAffectedRust(metadata, paths, eventName = "pull_request") {
       changed.add(owner.name);
       continue;
     }
+    // Mixed PRs do not turn an affected crate into a workspace rebuild merely
+    // because they also adjust a package wrapper or a tooling unit test.
+    if (/^(?:npm\/|playground\/|examples\/)/.test(path) || isToolingOnlyInput(path)) continue;
     // Zed has its own [workspace] and is checked by the editor lane.
     if (path.startsWith("editors/zed/")) {
       excludedPaths.push(path);
@@ -117,7 +138,7 @@ export function planAffectedRust(metadata, paths, eventName = "pull_request") {
   const affected = new Set(changed);
   const pending = [...changed];
   for (let index = 0; index < pending.length; index++) {
-    for (const consumer of graph.reverse.get(pending[index])) {
+    for (const consumer of graph.reverse.get(pending[index])!) {
       if (!affected.has(consumer)) {
         affected.add(consumer);
         pending.push(consumer);
@@ -133,16 +154,24 @@ export function planAffectedRust(metadata, paths, eventName = "pull_request") {
     changedPackages: [...changed].sort(compareStrings),
     reasons: [...reasons].sort(compareStrings),
     excludedPaths: excludedPaths.sort(compareStrings),
+    differentialMatrix: differentialMatrix(packages),
   };
 }
 
-export function readCargoMetadata(cwd = process.cwd()) {
+export function readCargoMetadata(cwd = process.cwd()): CargoMetadata {
   return JSON.parse(
-    execFileSync("cargo", ["metadata", "--no-deps", "--format-version", "1", "--locked"], {
-      cwd,
-      encoding: "utf8",
-      maxBuffer: 32 * 1024 * 1024,
-    }),
+    execFileSync(
+      "cargo",
+      ["metadata", "--no-deps", "--format-version", "1", "--locked", "--offline"],
+      {
+        cwd,
+        // Metadata needs no code generation or registry access. Use the runner's
+        // installed Cargo instead of downloading the repository's build toolchain.
+        env: { ...process.env, RUSTUP_TOOLCHAIN: process.env.RUSTUP_TOOLCHAIN || "stable" },
+        encoding: "utf8",
+        maxBuffer: 32 * 1024 * 1024,
+      },
+    ),
   );
 }
 

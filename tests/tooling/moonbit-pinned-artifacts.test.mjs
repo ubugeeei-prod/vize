@@ -116,7 +116,12 @@ void test("Nix uses the authenticated tracked core and the existing same-byte co
     new URL("../../.github/workflows/check.yml", import.meta.url),
     "utf8",
   );
-  assert.match(workflow, /- name: Check flake\n\s+run: nix flake check(?:\n|$)/u);
+  assert.match(workflow, /uses: \.\/\.github\/actions\/check-nix(?:\n|$)/u);
+  const nixAction = fs.readFileSync(
+    new URL("../../.github/actions/check-nix/action.yml", import.meta.url),
+    "utf8",
+  );
+  assert.match(nixAction, /- name: Check flake\n\s+shell: bash\n\s+run: nix flake check(?:\n|$)/u);
 });
 
 void test("transport changes exactly two Unix expressions and the two complete Windows download/extract sites", () => {

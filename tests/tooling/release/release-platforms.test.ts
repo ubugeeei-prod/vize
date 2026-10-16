@@ -7,10 +7,10 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const toolPath = path.join(root, "tools", "commands", "ci", "github", "release-platforms.rs");
+const toolPath = path.join(root, "tools", "support", "github", "release-platforms.ts");
 
 function releasePlatformPlan(refName: string) {
-  const result = spawnSync("rust-script", [toolPath, "print", refName], {
+  const result = spawnSync(process.execPath, [toolPath, "print", refName], {
     cwd: root,
     encoding: "utf8",
   });
@@ -19,10 +19,14 @@ function releasePlatformPlan(refName: string) {
 }
 
 function applyReleasePlatformCadence(refName: string, packageJsonPath: string) {
-  const result = spawnSync("rust-script", [toolPath, "apply-cadence", refName, packageJsonPath], {
-    cwd: root,
-    encoding: "utf8",
-  });
+  const result = spawnSync(
+    process.execPath,
+    [toolPath, "apply-cadence", refName, packageJsonPath],
+    {
+      cwd: root,
+      encoding: "utf8",
+    },
+  );
   assert.equal(result.status, 0, result.stderr);
   return { changed: result.stdout.startsWith("Applied "), skippedTargets: [] };
 }
@@ -57,8 +61,8 @@ test("release platform plan builds GNU native packages on the Debian bookworm fl
   const plan = releasePlatformPlan("v1.201.0");
   const hosts = new Map(plan.nativeMatrix.map(({ host, target }) => [target, host]));
 
-  assert.equal(hosts.get("x86_64-unknown-linux-gnu"), "ubuntu-22.04");
-  assert.equal(hosts.get("aarch64-unknown-linux-gnu"), "ubuntu-22.04-arm");
+  assert.equal(hosts.get("x86_64-unknown-linux-gnu"), "blacksmith-32vcpu-ubuntu-2204");
+  assert.equal(hosts.get("aarch64-unknown-linux-gnu"), "blacksmith-32vcpu-ubuntu-2204-arm");
 });
 
 test("release platform cadence preserves native manifest entries when all platforms are included", () => {

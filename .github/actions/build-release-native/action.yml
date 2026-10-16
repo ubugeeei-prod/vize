@@ -1,0 +1,98 @@
+name: Build release native bindings
+description: Shared exact-checkout native bindings recipe for release and trusted cache warming
+inputs:
+  target: { required: true, description: Rust target triple }
+  cross-compile: { required: false, default: "false", description: Use cargo-zigbuild }
+  authorized-release:
+    {
+      required: false,
+      default: "false",
+      description: Candidate authorization already passed in the caller,
+    }
+  upload-artifacts:
+    { required: false, default: "true", description: Upload artifacts from this checkout }
+runs:
+  using: composite
+  steps:
+    - name: Enable long paths (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: git config --system core.longpaths true
+    - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      with: { node-version-file: "package.json", cache: true, run-install: false }
+    - name: Install dependencies
+      shell: bash
+      run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...'
+    - name: Select the Windows target SDK
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+      with:
+        arch: ${{ startsWith(inputs.target, 'aarch64-') && 'amd64_arm64' || 'amd64' }}
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+      with:
+        toolchain: stable
+        targets: ${{ inputs.target }}
+    - name: Setup Wild linker (Linux)
+      if: runner.os == 'Linux'
+      uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      with:
+        wild-version: "0.9.0"
+    - name: Mount Rust sticky disks (Linux)
+      if: runner.os == 'Linux'
+      uses: ./.github/actions/setup-rust-sticky-cache
+      with:
+        # Reuse only Cargo outputs whose recorded source blobs still match.
+        reuse-target: "true"
+        restore-trusted: ${{ inputs.authorized-release }}
+        key: release-native-${{ inputs.target }}
+        cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+    - name: Cache Rust (non-Linux)
+      if: runner.os != 'Linux'
+      uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      with:
+        shared-key: release-native-${{ inputs.target }}
+        cache-workspace-crates: "true"
+        save-if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || inputs.authorized-release == 'true' }}
+    - uses: ./.github/actions/setup-rust-script
+      if: runner.os == 'Linux' && endsWith(inputs.target, '-gnu')
+    - name: Tune Windows release profile
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
+        echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
+    - name: Setup Zig
+      if: inputs.cross-compile == 'true'
+      uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
+    - name: Clean native build outputs
+      shell: bash
+      run: node tools/support/github/clean-node-binaries.ts npm/native npm/fresco-native
+    - name: Build vize-native
+      shell: bash
+      run: node tools/support/github/build-napi-package.ts npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ inputs.target }} ${{ inputs.cross-compile == 'true' && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ inputs.target }}" == *-gnu ]]; then rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/native/*.linux-*-gnu.node; fi
+    - name: Collect vize-native artifact
+      shell: bash
+      run: node tools/support/github/collect-native-artifacts.ts npm/native .artifacts/vize-native vize-native
+    - name: Upload vize-native artifact
+      if: inputs.upload-artifacts == 'true'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: bindings-${{ inputs.target }}
+        path: .artifacts/vize-native/*.node
+        if-no-files-found: error
+        compression-level: 0
+    - name: Build fresco-native
+      shell: bash
+      run: node tools/support/github/build-napi-package.ts npm/fresco-native ../../crates/vize_fresco/Cargo.toml vize_fresco ${{ inputs.target }} ${{ inputs.cross-compile == 'true' && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ inputs.target }}" == *-gnu ]]; then rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/fresco-native/*.linux-*-gnu.node; fi
+    - name: Collect fresco-native artifact
+      shell: bash
+      run: node tools/support/github/collect-native-artifacts.ts npm/fresco-native .artifacts/fresco-native fresco-native
+    - name: Upload fresco-native artifact
+      if: inputs.upload-artifacts == 'true'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: fresco-bindings-${{ inputs.target }}
+        path: .artifacts/fresco-native/*.node
+        if-no-files-found: error
+        compression-level: 0

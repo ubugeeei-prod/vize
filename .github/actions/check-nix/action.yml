@@ -1,0 +1,37 @@
+name: Check Nix flake
+description: Qualify the locked flake and refresh a bounded store cache with current build dependencies
+
+runs:
+  using: composite
+  steps:
+    - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31
+      with:
+        extra_nix_config: |
+          keep-derivations = true
+          keep-outputs = true
+    - name: Cache Nix store
+      id: nix-cache
+      uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7
+      with:
+        # Refresh successful source builds instead of freezing the first store
+        # forever under an immutable flake.lock-only key. Restore one archive.
+        primary-key: nix-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock', 'flake.nix', 'default.nix', 'tools/nix/**/*.nix', 'Cargo.lock', 'rust-toolchain.toml', '.moonbit-version') }}-${{ github.sha }}
+        restore-prefixes-first-match: |
+          nix-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock', 'flake.nix', 'default.nix', 'tools/nix/**/*.nix', 'Cargo.lock', 'rust-toolchain.toml', '.moonbit-version') }}-
+          nix-v2-${{ runner.os }}-${{ runner.arch }}-
+          nix-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock') }}
+        save: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+        gc-max-store-size-linux: 8G
+    - name: Check flake
+      shell: bash
+      run: nix flake check
+    - name: Keep current build dependencies through cache GC
+      if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.nix-cache.outputs.hit-primary-key != 'true' }}
+      shell: bash
+      # These outputs already passed flake check. Roots protect compiled Cargo
+      # dependencies and shell tools; GC can discard older unrooted versions.
+      run: |
+        nix build --no-update-lock-file --out-link "$RUNNER_TEMP/vize-nix-cache-root" \
+          .#packages.x86_64-linux.vize \
+          .#packages.x86_64-linux.vize.cargoArtifacts \
+          .#checks.x86_64-linux.shell

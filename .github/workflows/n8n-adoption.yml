@@ -1,60 +1,10 @@
 name: n8n adoption fixture
 
 on:
-  pull_request:
-    paths:
-      - .github/workflows/n8n-adoption.yml
-      - .gitmodules
-      - tests/_fixtures/_git/n8n
-      - tests/_fixtures/n8n-adoption.json
-      - tests/_fixtures/n8n-cli-adoption.json
-      - tests/_fixtures/vue-ecosystem-fixtures.json
-      - tests/tooling/n8n-adoption-fixture.test.mjs
-      - tests/tooling/n8n-cli-config-contract.test.mjs
-      - tests/tooling/n8n-cli-config-failure-custody.test.mjs
-      - tests/tooling/support/n8n-cli-config-*.mjs
-      - tests/tooling/support/n8n-slot-options-acceptance.ts
-      - tests/tooling/support/n8n-slot-parameters-acceptance.ts
-      - tests/tooling/support/n8n-lint-parity.ts
-      - tools/benchmarks/scripts/package.json
-      - tests/tooling/patina-slot-dynamic-modifiers-oracle.test.ts
-      - tests/tooling/patina-slot-parameter-bindings-oracle.test.ts
-      - tests/_fixtures/differential/lint/n8n-cli-config/**
-      - tests/_fixtures/differential/lint/slot-dynamic-modifiers-8142/**
-      - tests/_fixtures/differential/lint/slot-parameter-bindings-8142/**
-      - tests/_fixtures/differential/compiler/legacy-slot-binding-handoff-8142/**
-      - tests/_fixtures/differential/compiler/slot-parameter-entities-8142/**
-      - tests/tooling/support/slot-parameter-entity-runtime.mjs
-      - tests/_fixtures/differential/compiler/slot-default-setup-bindings-8142/**
-      - tests/tooling/support/slot-default-setup-bindings-runtime*.mjs
-      - tests/tooling/support/n8n-compiler-*.mjs
-      - tests/tooling/support/n8n-default-slot-loop*.mjs
-      - tests/_fixtures/differential/compiler/n8n-*/**
-      - tools/support/compat/n8n-official-compiler-custody.mjs
-      - crates/vize_atelier_sfc/**
-      - crates/vize_atelier_core/**
-      - crates/vize_atelier_dom/**
-      - davinci/vize_l1_to_l2/**
-      - tests/tooling/n8n-authored-editor.test.ts
-      - tests/tooling/support/n8n-authored-editor.ts
-      - tests/_fixtures/differential/lsp/n8n-authored-editor/**
-      - crates/vize_maestro/**
-      - crates/vize_canon/**
-      - crates/vize_corsa/**
-      - crates/vize/src/commands/lint*
-      - crates/vize/src/commands/lint/**
-      - crates/vize_carton/src/config/**
-      - crates/vize_patina/**
-      - crates/vize_armature/**
-      - crates/vize_croquis/**
-      - crates/vize_relief/**
-      - davinci/vize_l1/src/markup/lex/native/dynamic_arg*
-      - vendor/oxc_parser/**
-      - npm/cli/**
-      - npm/oxlint/**
-  merge_group:
-    types: [checks_requested]
-    branches: [main]
+  # Historical before/after source builds and the complete adoption corpus are
+  # a nightly campaign. Current compiler and editor regressions stay in Check.
+  schedule:
+    - cron: "17 4 * * *"
   workflow_dispatch:
 
 permissions:

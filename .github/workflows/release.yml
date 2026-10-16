@@ -84,15 +84,13 @@ jobs:
       native_matrix: ${{ steps.platforms.outputs.native_matrix }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-script
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Select release platforms
         id: platforms
         env:
           RELEASE_REF_NAME: ${{ inputs.tag_name }}
-        run: rust-script tools/commands/ci/github/release-platforms.rs github-output "$RELEASE_REF_NAME"
+        run: node tools/support/github/release-platforms.ts github-output "$RELEASE_REF_NAME"
   build-cli:
     name: Build CLI - ${{ matrix.settings.target }}
     needs: plan-release-platforms
@@ -104,79 +102,12 @@ jobs:
         settings: ${{ fromJSON(needs.plan-release-platforms.outputs.cli_matrix) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Enable long paths (Windows)
-        if: runner.os == 'Windows'
-        run: git config --system core.longpaths true
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+      - uses: ./.github/actions/build-release-cli
         with:
-          toolchain: stable
-          targets: ${{ matrix.settings.target }}
-      - name: Install Rust target
-        run: rustup target add ${{ matrix.settings.target }}
-      - uses: ./.github/actions/setup-rust-script
-      - name: Setup Wild linker (Linux)
-        if: runner.os == 'Linux' && !endsWith(matrix.settings.target, '-musl')
-        uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
-      - name: Stabilize Ubuntu package archive (Linux ARM64)
-        if: matrix.settings.target == 'aarch64-unknown-linux-gnu'
-        uses: ./.github/actions/setup-ubuntu-archive
-      - name: Install cross-compilation tools (Linux ARM64)
-        if: matrix.settings.target == 'aarch64-unknown-linux-gnu'
-        run: vize-ci-apt-retry node tools/support/github/install-cross-compile-tools.ts
-      - name: Setup Zig (Linux musl CLI)
-        if: endsWith(matrix.settings.target, '-musl')
-        uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
-      - name: Configure Zig linker (Linux musl CLI)
-        if: endsWith(matrix.settings.target, '-musl')
-        run: rust-script tools/commands/ci/github/configure-zig-musl-linkers.rs
-      - name: Mount Rust sticky disks (Linux)
-        if: runner.os == 'Linux'
-        uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          # Release binaries build from a fresh checkout without reused run state.
-          reuse-target: "false"
-          key: release-cli-${{ matrix.settings.target }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Cache Rust (non-Linux)
-        if: runner.os != 'Linux'
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
-        with:
-          shared-key: release-cli-${{ matrix.settings.target }}
-          cache-workspace-crates: "true"
-          save-if: "false"
-      - name: Tune Windows release profile
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
-          echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
-      - name: Build CLI
-        shell: bash
-        env:
-          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
-        run: cargo build --release -p vize --target ${{ matrix.settings.target }}
-      - name: Create archive (Unix)
-        if: runner.os != 'Windows'
-        shell: bash
-        run: if [[ "${{ matrix.settings.target }}" == *-musl ]]; then rust-script tools/commands/ci/github/verify-musl-cli-binary.rs "${{ matrix.settings.target }}"; fi; node tools/support/github/create-cli-archive.ts ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize
-      - name: Create archive (Windows)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: node tools/support/github/create-cli-archive.ts ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize.exe
-      - name: Upload artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          {
-            name: "cli-${{ matrix.settings.target }}",
-            path: "${{ matrix.settings.archive }}",
-            if-no-files-found: error,
-            compression-level: 0,
-          }
+          target: ${{ matrix.settings.target }}
+          archive: ${{ matrix.settings.archive }}
+          authorized-release: "true"
+
   build-editor-extensions:
     if: inputs.release_pr != ''
     needs: candidate
@@ -195,7 +126,8 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           {
-            reuse-target: "false",
+            reuse-target: "true",
+            restore-trusted: "true",
             key: release-tools,
             cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}",
           }
@@ -276,7 +208,8 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           # Release binaries build from a fresh checkout without reused run state.
-          reuse-target: "false"
+          reuse-target: "true"
+          restore-trusted: "true"
           key: release-wasm
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
@@ -318,79 +251,12 @@ jobs:
         settings: ${{ fromJSON(needs.plan-release-platforms.outputs.native_matrix) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Enable long paths (Windows)
-        if: runner.os == 'Windows'
-        run: git config --system core.longpaths true
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", cache: true, run-install: false }
-      - name: Install dependencies
-        run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...'
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+      - uses: ./.github/actions/build-release-native
         with:
-          toolchain: stable
-          targets: ${{ matrix.settings.target }}
-      - name: Install Rust target
-        run: rustup target add ${{ matrix.settings.target }}
-      - name: Setup Wild linker (Linux)
-        if: runner.os == 'Linux'
-        uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
-      - name: Mount Rust sticky disks (Linux)
-        if: runner.os == 'Linux'
-        uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          # Release binaries build from a fresh checkout without reused run state.
-          reuse-target: "false"
-          key: release-native-${{ matrix.settings.target }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Cache Rust (non-Linux)
-        if: runner.os != 'Linux'
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
-        with:
-          shared-key: release-native-${{ matrix.settings.target }}
-          cache-workspace-crates: "true"
-          save-if: "false"
-      - uses: ./.github/actions/setup-rust-script
-      - name: Tune Windows release profile
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
-          echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
-      - name: Setup Zig
-        if: matrix.settings.cross_compile
-        uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
-      - name: Clean native build outputs
-        shell: bash
-        run: rust-script tools/commands/ci/github/clean-node-binaries.rs npm/native npm/fresco-native
-      - name: Build vize-native
-        shell: bash
-        run: node tools/support/github/build-napi-package.ts npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/native/*.linux-*-gnu.node; fi
-      - name: Collect vize-native artifact
-        shell: bash
-        run: node tools/support/github/collect-native-artifacts.ts npm/native .artifacts/vize-native vize-native
-      - name: Upload vize-native artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: bindings-${{ matrix.settings.target }}
-          path: .artifacts/vize-native/*.node
-          if-no-files-found: error
-          compression-level: 0
-      - name: Build fresco-native
-        shell: bash
-        run: node tools/support/github/build-napi-package.ts npm/fresco-native ../../crates/vize_fresco/Cargo.toml vize_fresco ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} && if [[ "$RUNNER_OS" == Linux && "${{ matrix.settings.target }}" == *-gnu ]]; then rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/fresco-native/*.linux-*-gnu.node; fi
-      - name: Collect fresco-native artifact
-        shell: bash
-        run: node tools/support/github/collect-native-artifacts.ts npm/fresco-native .artifacts/fresco-native fresco-native
-      - name: Upload fresco-native artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: fresco-bindings-${{ matrix.settings.target }}
-          path: .artifacts/fresco-native/*.node
-          if-no-files-found: error
-          compression-level: 0
+          target: ${{ matrix.settings.target }}
+          cross-compile: ${{ matrix.settings.cross_compile }}
+          authorized-release: "true"
+
   smoke-release-packages:
     name: Smoke release npm package installs
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -461,7 +327,7 @@ jobs:
       - name: Apply slow platform release cadence
         env:
           RELEASE_REF_NAME: ${{ inputs.tag_name }}
-        run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "$RELEASE_REF_NAME" npm/native/package.json npm/oxlint/package.json
+        run: node tools/support/github/release-platforms.ts apply-cadence "$RELEASE_REF_NAME" npm/native/package.json npm/oxlint/package.json
       - name: Prepare native package tarballs
         working-directory: npm/native
         run: |
@@ -470,7 +336,7 @@ jobs:
           vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
       - name: Prepare Fresco native package tarball
         run: |
-          rust-script tools/commands/ci/github/clean-node-binaries.rs npm/fresco-native
+          node tools/support/github/clean-node-binaries.ts npm/fresco-native
           node tools/support/github/collect-native-artifacts.ts npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install release package tarballs
         run: |
@@ -550,7 +416,7 @@ jobs:
       - name: Apply slow platform release cadence
         env:
           RELEASE_REF_NAME: ${{ inputs.tag_name }}
-        run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "$RELEASE_REF_NAME" npm/native/package.json
+        run: node tools/support/github/release-platforms.ts apply-cadence "$RELEASE_REF_NAME" npm/native/package.json
       - name: Create npm platform directories
         working-directory: npm/native
         run: vp exec napi create-npm-dirs
@@ -565,7 +431,7 @@ jobs:
       - name: Smoke install native package tarballs
         run: rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks npm/native npm/native/npm/*
       - name: Publish platform packages
-        run: node tools/support/release/publish_npm_package_dirs/main.ts npm/native/npm --concurrency 4 --provenance --receipt "$RUNNER_TEMP/native-platform-publish.json"
+        run: node tools/support/release/publish_npm_package_dirs/main.ts npm/native/npm --concurrency 8 --provenance --receipt "$RUNNER_TEMP/native-platform-publish.json"
       - name: Publish
         run: node tools/support/release/publish_npm_package/main.ts npm/native --provenance
       - name: Upload native platform publish receipt
@@ -598,7 +464,7 @@ jobs:
           pattern: fresco-bindings-*
           path: npm/fresco-native/artifacts
       - name: Clean bundled native binaries
-        run: rust-script tools/commands/ci/github/clean-node-binaries.rs npm/fresco-native
+        run: node tools/support/github/clean-node-binaries.ts npm/fresco-native
       - name: Stage bundled native binaries
         run: node tools/support/github/collect-native-artifacts.ts npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install Fresco native package tarball
@@ -649,17 +515,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-script
-      - name: Download prebuilt packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-vite-plugin-vize, path: npm/builder/vite }
-      - name: Publish @vizejs/vite-plugin
-        run: node tools/support/release/publish_npm_package/main.ts npm/builder/vite --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-vite-plugin-vize
+          package-path: npm/builder/vite
   release-npm-oxlint-plugin:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-24.04
@@ -691,7 +550,7 @@ jobs:
       - name: Apply slow platform release cadence
         env:
           RELEASE_REF_NAME: ${{ inputs.tag_name }}
-        run: rust-script tools/commands/ci/github/release-platforms.rs apply-cadence "$RELEASE_REF_NAME" npm/oxlint/package.json
+        run: node tools/support/github/release-platforms.ts apply-cadence "$RELEASE_REF_NAME" npm/oxlint/package.json
       - name: Publish oxlint-plugin-vize
         run: node tools/support/release/publish_npm_package/main.ts npm/oxlint --provenance
 
@@ -705,13 +564,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download prebuilt package
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-marquette, path: npm/marquette }
-      - name: Publish @vizejs/marquette
-        run: node tools/support/release/publish_npm_package/main.ts npm/marquette --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-marquette
+          package-path: npm/marquette
 
   release-npm-composable:
     name: Release @vizejs/composable to npm
@@ -723,13 +579,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download prebuilt package
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-composable, path: npm/compose/core }
-      - name: Publish @vizejs/composable
-        run: node tools/support/release/publish_npm_package/main.ts npm/compose/core --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-composable
+          package-path: npm/compose/core
 
   release-npm-ui:
     name: Release @vizejs/ui to npm
@@ -741,13 +594,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download prebuilt package
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-ui, path: npm/ui }
-      - name: Publish @vizejs/ui
-        run: node tools/support/release/publish_npm_package/main.ts npm/ui --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-ui
+          package-path: npm/ui
 
   release-npm-plugin-sdk:
     name: Release @vizejs/plugin-sdk to npm
@@ -759,13 +609,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download prebuilt package
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-plugin-sdk, path: npm/plugin-sdk }
-      - name: Publish @vizejs/plugin-sdk
-        run: node tools/support/release/publish_npm_package/main.ts npm/plugin-sdk --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-plugin-sdk
+          package-path: npm/plugin-sdk
 
   release-npm-unplugin:
     name: Release @vizejs/unplugin to npm
@@ -777,13 +624,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download prebuilt packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-unplugin-vize, path: npm/builder/unplugin }
-      - name: Publish @vizejs/unplugin
-        run: node tools/support/release/publish_npm_package/main.ts npm/builder/unplugin --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-unplugin-vize
+          package-path: npm/builder/unplugin
 
   release-npm-fresco:
     name: Release @vizejs/fresco to npm
@@ -796,13 +640,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download prebuilt packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-fresco, path: npm/fresco }
-      - name: Publish @vizejs/fresco
-        run: node tools/support/release/publish_npm_package/main.ts npm/fresco --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-fresco
+          package-path: npm/fresco
 
   release-npm-musea-mcp-server:
     name: Release @vizejs/musea-mcp-server to npm
@@ -814,13 +655,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download prebuilt packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-musea-mcp-server, path: npm/mcp-musea }
-      - name: Publish @vizejs/musea-mcp-server
-        run: node tools/support/release/publish_npm_package/main.ts npm/mcp-musea --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-musea-mcp-server
+          package-path: npm/mcp-musea
 
   release-npm-vite-plugin-musea:
     name: Release @vizejs/vite-plugin-musea to npm
@@ -832,13 +670,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download prebuilt packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-vite-plugin-musea, path: npm/builder/vite-musea }
-      - name: Publish @vizejs/vite-plugin-musea
-        run: node tools/support/release/publish_npm_package/main.ts npm/builder/vite-musea --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-vite-plugin-musea
+          package-path: npm/builder/vite-musea
 
   release-npm-rspack-plugin:
     name: Release @vizejs/rspack-plugin to npm
@@ -850,13 +685,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download prebuilt packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-rspack-vize-plugin, path: npm/builder/rspack }
-      - name: Publish @vizejs/rspack-plugin
-        run: node tools/support/release/publish_npm_package/main.ts npm/builder/rspack --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-rspack-vize-plugin
+          package-path: npm/builder/rspack
 
   release-npm-musea-nuxt:
     name: Release @vizejs/musea-nuxt to npm
@@ -868,13 +700,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download prebuilt packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-musea-nuxt, path: npm/framework/musea-nuxt }
-      - name: Publish @vizejs/musea-nuxt
-        run: node tools/support/release/publish_npm_package/main.ts npm/framework/musea-nuxt --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-musea-nuxt
+          package-path: npm/framework/musea-nuxt
 
   # Build and publish @vizejs/nuxt-lint-config (using Trusted Publishing / OIDC)
   release-npm-nuxt-lint-config:
@@ -887,13 +716,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download prebuilt packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-nuxt-lint-config, path: npm/framework/nuxt-lint-config }
-      - name: Publish @vizejs/nuxt-lint-config
-        run: node tools/support/release/publish_npm_package/main.ts npm/framework/nuxt-lint-config --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-nuxt-lint-config
+          package-path: npm/framework/nuxt-lint-config
 
   # Build and publish @vizejs/nuxt (using Trusted Publishing / OIDC)
   release-npm-nuxt:
@@ -917,13 +743,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", run-install: false }
-      - name: Download prebuilt packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: release-package-nuxt, path: npm/framework/nuxt }
-      - name: Publish @vizejs/nuxt
-        run: node tools/support/release/publish_npm_package/main.ts npm/framework/nuxt --provenance
+      - uses: ./.github/actions/publish-release-package
+        with:
+          artifact: release-package-nuxt
+          package-path: npm/framework/nuxt
 
   # Publish crates to crates.io (using Trusted Publishing)
   release-crates:
@@ -943,7 +766,8 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           # Release binaries build from a fresh checkout without reused run state.
-          reuse-target: "false"
+          reuse-target: "true"
+          restore-trusted: "true"
           key: release-crates
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Get crates.io token via Trusted Publishing
@@ -980,7 +804,8 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: {
             # Release binaries build from a fresh checkout without reused run state.
-            reuse-target: "false",
+            reuse-target: "true",
+            restore-trusted: "true",
             key: release-crates-handoff,
             cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}-${{ inputs.crate_set }}",
           }

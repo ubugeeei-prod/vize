@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { planSourceChecks } from "../../tools/support/compat/github/plan-source-checks.ts";
-import { planAffectedRust } from "../../tools/support/compat/github/plan-affected-rust.mjs";
+import { planAffectedRust } from "../../tools/support/compat/github/plan-affected-rust.ts";
 import { fixture } from "./_helpers/rust-workspace-fixture.mjs";
 
 void test("known census renderers and owned reports retain tooling without product source lanes", () => {
@@ -25,12 +25,7 @@ void test("known census renderers and owned reports retain tooling without produ
       path,
     );
   }
-  assert.deepEqual(planSourceChecks(paths, "merge_group"), {
-    rust: true,
-    js: true,
-    tooling: true,
-    playground: true,
-  });
+  assert.deepEqual(planSourceChecks(paths, "merge_group"), planSourceChecks(paths));
 });
 
 void test("mixed census changes retain every native, workflow and shared configuration lane", () => {
@@ -133,11 +128,11 @@ void test("mixed census and Rust changes preserve every transitive actual consum
   );
 });
 
-void test("census exemptions never narrow merge groups, workflow changes or unknown contracts", () => {
+void test("census stays metadata-only in queue while workflow changes and unknown contracts remain broad", () => {
   const metadata = fixture();
   const all = planAffectedRust(metadata, ["Cargo.lock"]);
   const census = "docs/davinci/plan/croquis-consumption/vize_l1.md";
-  assert.deepEqual(planAffectedRust(metadata, [census], "merge_group").packages, all.packages);
+  assert.deepEqual(planAffectedRust(metadata, [census], "merge_group").packages, []);
   for (const path of [
     ".github/workflows/pr-source-checks.yml",
     ".github/actions/test-native-js-setup/action.yml",

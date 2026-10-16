@@ -1,0 +1,98 @@
+name: Build release CLI
+description: Shared exact-checkout CLI recipe for release and trusted cache warming
+inputs:
+  target: { required: true, description: Rust target triple }
+  archive: { required: true, description: CLI archive name }
+  authorized-release:
+    {
+      required: false,
+      default: "false",
+      description: Candidate authorization already passed in the caller,
+    }
+  upload-artifacts:
+    { required: false, default: "true", description: Upload artifacts from this checkout }
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      with: { node-version-file: "package.json", package-manager-cache: false }
+    - name: Enable long paths (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: git config --system core.longpaths true
+    - name: Select the Windows target SDK
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+      with:
+        arch: ${{ startsWith(inputs.target, 'aarch64-') && 'amd64_arm64' || 'amd64' }}
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+      with:
+        toolchain: stable
+        targets: ${{ inputs.target }}
+    - uses: ./.github/actions/setup-rust-script
+      if: runner.os == 'Linux' && endsWith(inputs.target, '-musl')
+    - name: Setup Wild linker (Linux)
+      if: runner.os == 'Linux' && !endsWith(inputs.target, '-musl')
+      uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      with:
+        wild-version: "0.9.0"
+    - name: Stabilize Ubuntu package archive (Linux ARM64)
+      if: inputs.target == 'aarch64-unknown-linux-gnu'
+      uses: ./.github/actions/setup-ubuntu-archive
+    - name: Install cross-compilation tools (Linux ARM64)
+      if: inputs.target == 'aarch64-unknown-linux-gnu'
+      shell: bash
+      run: vize-ci-apt-retry node tools/support/github/install-cross-compile-tools.ts
+    - name: Setup Zig (Linux musl CLI)
+      if: endsWith(inputs.target, '-musl')
+      uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
+    - name: Configure Zig linker (Linux musl CLI)
+      if: endsWith(inputs.target, '-musl')
+      shell: bash
+      run: rust-script tools/commands/ci/github/configure-zig-musl-linkers.rs
+    - name: Mount Rust sticky disks (Linux)
+      if: runner.os == 'Linux'
+      uses: ./.github/actions/setup-rust-sticky-cache
+      with:
+        # Reuse only Cargo outputs whose recorded source blobs still match.
+        reuse-target: "true"
+        restore-trusted: ${{ inputs.authorized-release }}
+        key: release-cli-${{ inputs.target }}
+        cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+    - name: Cache Rust (non-Linux)
+      if: runner.os != 'Linux'
+      uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      with:
+        shared-key: release-cli-${{ inputs.target }}
+        cache-workspace-crates: "true"
+        save-if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || inputs.authorized-release == 'true' }}
+    - name: Tune Windows release profile
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
+        echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
+    - name: Build CLI
+      shell: bash
+      env:
+        CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+      run: cargo build --release -p vize --target ${{ inputs.target }}
+    - name: Create archive (Unix)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: if [[ "${{ inputs.target }}" == *-musl ]]; then rust-script tools/commands/ci/github/verify-musl-cli-binary.rs "${{ inputs.target }}"; fi; node tools/support/github/create-cli-archive.ts ${{ inputs.target }} ${{ inputs.archive }} vize
+    - name: Create archive (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: node tools/support/github/create-cli-archive.ts ${{ inputs.target }} ${{ inputs.archive }} vize.exe
+    - name: Upload artifact
+      if: inputs.upload-artifacts == 'true'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        {
+          name: "cli-${{ inputs.target }}",
+          path: "${{ inputs.archive }}",
+          if-no-files-found: error,
+          compression-level: 0,
+        }

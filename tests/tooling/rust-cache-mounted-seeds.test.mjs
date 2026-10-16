@@ -4,7 +4,7 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { rustCachePolicy } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
+import { rustCachePolicy } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.ts";
 import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
 import { allMountFailures, assertNoCandidateCommit } from "./support/rust-cache-candidates.ts";
 

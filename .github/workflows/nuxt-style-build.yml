@@ -7,6 +7,8 @@ on:
   merge_group:
     types: [checks_requested]
     branches: [main]
+  schedule:
+    - cron: "29 3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -20,10 +22,52 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  plan:
+    name: Select affected Nuxt integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    outputs:
+      nuxt: ${{ steps.plan.outputs.nuxt }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Select changed product inputs
+        id: plan
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
+        run: |
+          if [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          fi
+          node tools/support/compat/github/plan-product-integrations.ts "$GITHUB_EVENT_NAME" "$BASE_SHA" "$GITHUB_SHA"
+
   nuxt-style-build:
-    name: Nuxt 4 scoped CSS build and SSR
+    name: Nuxt 4 ${{ matrix.case }}
+    needs: plan
+    if: ${{ needs.plan.outputs.nuxt == 'true' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - case: scoped CSS
+            fixture: tests/_fixtures/_projects/nuxt-scoped-style-build
+            script: style-build.mjs
+            proof: nuxt-style-proof
+            browser: false
+          - case: critical CSS
+            fixture: tests/_fixtures/_projects/nuxt-critical-css-build
+            script: critical-css-build.mjs
+            proof: nuxt-critical-css-proof
+            browser: true
+          - case: dev SSR styles
+            fixture: tests/_fixtures/_projects/nuxt-dev-ssr-style
+            script: dev-ssr-style.mjs
+            proof: nuxt-dev-style-proof
+            browser: true
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -31,40 +75,62 @@ jobs:
           node-version-file: package.json
           cache: true
           run-install: false
-      - name: Install workspace tooling
-        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install adapter and browser test dependencies
+        run: vp install --filter './npm/builder/vite...' --filter './npm/framework/nuxt...' --filter './tests' --frozen-lockfile --prefer-offline
       - name: Build the candidate JavaScript adapter
         working-directory: npm/builder/vite
         run: vp pack
       - name: Build the candidate Nuxt integration
         working-directory: npm/framework/nuxt
         run: vp pack
+      - name: Cache pinned fixture package downloads
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: ~/.npm
+          key: nuxt-fixture-npm-${{ runner.os }}-${{ hashFiles(format('{0}/package-lock.json', matrix.fixture)) }}
+          restore-keys: nuxt-fixture-npm-${{ runner.os }}-
       - name: Install the exact published Nuxt reproduction
-        working-directory: tests/_fixtures/_projects/nuxt-scoped-style-build
-        run: npm ci --no-audit --no-fund
-      - name: Verify released failure and candidate build and scoped SSR CSS
-        run: vp exec node tools/support/compat/nuxt/style-build.mjs "$RUNNER_TEMP/nuxt-style-proof"
-      - name: Install the exact critical CSS reproduction
-        working-directory: tests/_fixtures/_projects/nuxt-critical-css-build
-        run: npm ci --no-audit --no-fund
+        working-directory: ${{ matrix.fixture }}
+        run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Cache Chromium
+        if: ${{ matrix.browser }}
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - uses: ./.github/actions/setup-ubuntu-archive
+        if: ${{ matrix.browser }}
       - name: Install Chromium
+        if: ${{ matrix.browser }}
         working-directory: tests
         run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
-      - name: Verify stock, released failure, and candidate critical CSS without JavaScript
-        run: vp exec node tools/support/compat/nuxt/critical-css-build.mjs "$RUNNER_TEMP/nuxt-critical-css-proof"
-      - name: Install the pinned Nuxt dev SSR regression
-        working-directory: tests/_fixtures/_projects/nuxt-dev-ssr-style
-        run: npm ci --no-audit --no-fund
-      - name: Verify first dev SSR styles, stylesheet transport, and hydration stability
-        run: vp exec node tools/support/compat/nuxt/dev-ssr-style.mjs "$RUNNER_TEMP/nuxt-dev-style-proof"
+      - name: Verify stock, released failure, and candidate behavior
+        env:
+          REGRESSION_SCRIPT: ${{ matrix.script }}
+          PROOF: ${{ matrix.proof }}
+        run: node "tools/support/compat/nuxt/$REGRESSION_SCRIPT" "$RUNNER_TEMP/$PROOF"
+      - name: Retain the exact compared JavaScript adapters
+        if: ${{ always() }}
+        env:
+          FIXTURE: ${{ matrix.fixture }}
+          PROOF: ${{ matrix.proof }}
+        run: |
+          adapters="$RUNNER_TEMP/$PROOF/compared-adapters"
+          mkdir -p "$adapters/candidate" "$adapters/published"
+          for adapter in vite-plugin nuxt; do
+            published="$FIXTURE/node_modules/@vizejs/$adapter/dist"
+            if [[ -d "$published" ]]; then cp -R "$published" "$adapters/published/$adapter"; fi
+          done
+          if [[ -d npm/builder/vite/dist ]]; then cp -R npm/builder/vite/dist "$adapters/candidate/vite-plugin"; fi
+          if [[ -d npm/framework/nuxt/dist ]]; then cp -R npm/framework/nuxt/dist "$adapters/candidate/nuxt"; fi
       - name: Upload build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: nuxt-style-proof-${{ github.sha }}
+          name: ${{ matrix.proof }}-${{ github.sha }}
+          # The proof workspaces link their complete npm installation. Retain
+          # observations, fixtures and compared adapters without re-uploading it.
           path: |
-            ${{ runner.temp }}/nuxt-style-proof
-            ${{ runner.temp }}/nuxt-critical-css-proof
-            ${{ runner.temp }}/nuxt-dev-style-proof
+            ${{ runner.temp }}/${{ matrix.proof }}
+            !${{ runner.temp }}/${{ matrix.proof }}/**/node_modules/**
           if-no-files-found: ignore

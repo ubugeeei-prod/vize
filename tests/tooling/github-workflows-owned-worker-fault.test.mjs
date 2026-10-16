@@ -59,7 +59,7 @@ void test("worker ptrace is explicit manual-only and every original gate stays u
   const original = parse(read(".github/actions/test-js-packages-with-history/action.yml"));
   assert.equal(
     original.runs.steps[0].run,
-    "python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root test:js",
+    "node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root test:js",
   );
   const debuggerSource = read("tools/support/compat/github/owned_worker_gdb.py");
   for (const command of [

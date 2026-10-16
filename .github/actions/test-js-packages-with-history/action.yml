@@ -7,7 +7,7 @@ runs:
     - name: Test JS packages
       if: ${{ success() && job.status == 'success' }}
       shell: bash
-      run: python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root test:js
+      run: node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root test:js
     - name: Qualify original project checks with both real Oxlint hosts
       id: original-project-qualification
       if: ${{ success() && job.status == 'success' }}

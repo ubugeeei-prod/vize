@@ -2,10 +2,6 @@ name: Setup Rust sticky cache
 description: Cache Rust builds on stable sticky disks that only trusted runs commit
 
 inputs:
-  cache-key-prefix:
-    description: Compatibility input; event policy selects the backend instead
-    required: false
-    default: ""
   key:
     description: Stable cache namespace for this job
     required: true
@@ -32,14 +28,19 @@ inputs:
     description: Prune non-Cargo run outputs and restore recorded source mtimes so Cargo reuses unchanged crates
     required: false
     default: "true"
+  restore-trusted:
+    description: Allow a validated workflow_dispatch release job to read the default-branch sticky cache. Never enables writes.
+    required: false
+    default: "false"
 
 runs:
   using: composite
   steps:
     - name: Select the Rust cache backend
       id: cache-policy
-      shell: bash
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
       env:
+        VIZE_CACHE_ACTION_PATH: ${{ github.action_path }}
         VIZE_CACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
         VIZE_CACHE_RUNNER_OS: ${{ runner.os }}
         VIZE_CACHE_RUNNER_ARCH: ${{ runner.arch }}
@@ -49,7 +50,12 @@ runs:
         VIZE_CACHE_SECONDARY_ROLE: ${{ inputs.secondary-key }}
         VIZE_CACHE_SECONDARY_SUFFIX: ${{ inputs.secondary-cache-key-suffix }}
         VIZE_CACHE_SECONDARY_PATH: ${{ inputs.secondary-target-path }}
-      run: node "$GITHUB_ACTION_PATH/cache-policy.mjs"
+        VIZE_CACHE_RESTORE_TRUSTED: ${{ inputs.restore-trusted }}
+      with:
+        script: |
+          const script = require('node:url').pathToFileURL(`${process.env.VIZE_CACHE_ACTION_PATH}/cache-policy.ts`);
+          const { runCachePolicy } = await import(script.href);
+          runCachePolicy();
 
     - name: Mount Cargo registry sticky disk
       if: ${{ steps.cache-policy.outputs.sticky == 'true' }}
@@ -86,11 +92,16 @@ runs:
     - name: Check which trusted sticky paths were actually mounted
       id: cache-mounts
       if: ${{ steps.cache-policy.outputs.sticky == 'true' }}
-      shell: bash
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
       env:
+        VIZE_CACHE_ACTION_PATH: ${{ github.action_path }}
         VIZE_CACHE_TARGET_PATH: ${{ steps.cache-policy.outputs.target-path }}
         VIZE_CACHE_SECONDARY_PATH: ${{ steps.cache-policy.outputs.secondary-path }}
-      run: node "$GITHUB_ACTION_PATH/cache-policy.mjs" --mounted
+      with:
+        script: |
+          const script = require('node:url').pathToFileURL(`${process.env.VIZE_CACHE_ACTION_PATH}/cache-policy.ts`);
+          const { runCachePolicy } = await import(script.href);
+          runCachePolicy('--mounted');
 
     # Trusted sticky clones are already mounted. Lookup-only never extracts a
     # second cache into them. Mounted targets commit through the sticky provider;

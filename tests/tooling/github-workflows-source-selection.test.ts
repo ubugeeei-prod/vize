@@ -10,6 +10,7 @@ type Step = {
   uses?: string;
   env?: Record<string, string>;
   with?: Record<string, string | boolean>;
+  "continue-on-error"?: boolean;
 };
 type Job = {
   permissions?: Record<string, string>;
@@ -27,163 +28,91 @@ const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) a
   jobs: Record<string, Job>;
 };
 
-test("source planning installs the declared Node runtime before TypeScript imports", () => {
+test("source planning uses Node and offline metadata before selecting affected products", () => {
   const plan = source.jobs["pr-source-plan"];
   const steps = plan.steps ?? [];
   const setup = steps.findIndex((step) => step.uses?.startsWith("actions/setup-node@"));
   const sourcePlan = steps.findIndex((step) => step.name === "Plan source checks");
-  const tooling = steps.findIndex((step) => step.name === "Plan tooling test inputs");
-  const metadata = steps.findIndex((step) => step.name === "Plan affected Rust crates");
-  const toolchain = steps.findIndex((step) => step.uses?.startsWith("dtolnay/rust-toolchain@"));
-  assert.ok(setup >= 0 && setup < sourcePlan && sourcePlan < tooling);
+  assert.ok(setup >= 0 && setup < sourcePlan);
   assert.equal(steps[setup].with?.["node-version-file"], "package.json");
   assert.equal(steps[setup].with?.["package-manager-cache"], false);
   assert.equal(steps[setup].with?.cache, undefined);
   assert.ok(steps.every((step) => !step.uses?.includes("setup-vp@")));
+  assert.ok(steps.every((step) => !step.uses?.includes("rust-toolchain@")));
   assert.ok(steps.every((step) => !/\b(?:vp|pnpm|npm)\b/.test(step.run ?? "")));
-  assert.ok(sourcePlan < toolchain && toolchain < metadata);
-  for (const step of [steps[toolchain], steps[metadata]]) {
-    assert.equal(step.if, "${{ steps.plan.outputs.rust == 'true' }}");
-  }
-  assert.equal(steps[toolchain].with?.toolchain, "1.99.0");
-  assert.equal(plan.outputs?.tooling, "${{ steps.tooling-plan.outputs.tooling }}");
-  assert.equal(
-    plan.outputs?.["tooling-matrix"],
-    "${{ steps.tooling-plan.outputs.tooling-matrix }}",
-  );
-  assert.equal(
-    steps[tooling].env?.TOOLING_TIER,
-    "${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}",
-  );
-  assert.match(steps[tooling].run ?? "", /--github-output/);
+  assert.equal(steps.filter((step) => step.run?.includes("plan-pr-checks.ts")).length, 1);
+  assert.match(steps[sourcePlan].run ?? "", /plan-pr-checks\.ts/);
+  assert.ok(steps.every((step) => !step.run?.includes("rust-plan.json")));
   assert.equal(plan.outputs?.["comparison-base"], "${{ steps.comparison.outputs.base }}");
-  for (const index of [sourcePlan, tooling, metadata]) {
-    assert.equal(steps[index].env?.BASE_SHA, "${{ steps.comparison.outputs.base }}");
-  }
+  assert.equal(steps[sourcePlan].env?.BASE_SHA, "${{ steps.comparison.outputs.base }}");
   assert.equal(
     source.jobs["pr-rust-source"].with?.["rust-plan"],
     "${{ needs.pr-source-plan.outputs.rust-plan }}",
   );
+  assert.equal(
+    source.jobs["pr-js-packages"].with?.["js-plan"],
+    "${{ needs.pr-source-plan.outputs.js-plan }}",
+  );
+  const ciSelection = steps.find(
+    (step) => step.name === "Test CI selection when its inputs change",
+  );
+  assert.equal(ciSelection?.if, "${{ steps.plan.outputs.tooling == 'true' }}");
+  assert.equal(ciSelection?.run, "node --test tests/tooling/ci-iteration-plans.test.ts");
 });
 
-test("every isolated tooling runner regenerates its tier and retains the full merge receipt path", () => {
-  const job = source.jobs["pr-tooling-scripts"];
+test("affected native runtime proofs execute independently of the scheduled tooling campaign", () => {
+  const plan = source.jobs["pr-source-plan"];
+  assert.equal(
+    plan.outputs?.["native-runtime-matrix"],
+    "${{ steps.plan.outputs.native-runtime-matrix }}",
+  );
+  assert.equal(source.jobs["pr-tooling-scripts"], undefined);
+  const job = source.jobs["pr-native-runtime"];
+  assert.equal(job.needs, "pr-source-plan");
   assert.equal(job.strategy?.["fail-fast"], false);
   assert.equal(
     job.strategy?.matrix,
-    "${{ fromJSON(needs.pr-source-plan.outputs.tooling-matrix) }}",
+    "${{ fromJSON(needs.pr-source-plan.outputs.native-runtime-matrix) }}",
   );
   const steps = job.steps ?? [];
-  const regenerate = steps.findIndex((step) => step.name === "Regenerate tooling plan");
-  const dependencies = steps.findIndex(
-    (step) => step.name === "Install fixture and JS dependencies",
-  );
-  const pkl = steps.findIndex(
-    (step) => step.name === "Prepare checksum-pinned Pkl and upstream lint dependencies",
-  );
-  const build = steps.findIndex(
-    (step) => step.name === "Restore and install source-built vize CLI",
-  );
-  const selected = steps.findIndex((step) => step.name === "Test selected PR tooling scripts");
-  const full = steps.findIndex((step) => step.name === "Test tooling scripts");
-  assert.ok(regenerate >= 0 && regenerate < build && build < selected && selected < full);
-  assert.ok(regenerate < dependencies && dependencies < pkl && pkl < build);
-  assert.equal(steps[pkl].if, "${{ needs.pr-source-plan.outputs.tooling == 'true' }}");
-  assert.equal(steps[pkl].uses, "./.github/actions/install-formatter-css-browser");
-  const preparation = parse(
-    readRepoFile(".github", "actions", "install-formatter-css-browser", "action.yml"),
-  ) as { runs: { steps: Step[] } };
-  assert.equal(preparation.runs.steps[0].if, "env.VIZE_TOOLING_TEST_PLAN != ''");
-  assert.equal(
-    preparation.runs.steps[0].run,
-    "node tools/support/compat/github/prepare-pkl-schema.mjs && node tools/support/compat/github/prepare-vue-benchmarks.mjs",
-  );
-  assert.equal(steps[pkl].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
-  assert.equal(
-    steps[pkl].env?.VIZE_TOOLING_TEST_TIER,
-    "${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}",
-  );
-  assert.equal(
-    steps[pkl].env?.VIZE_TOOLING_TEST_SHARD,
-    "${{ format('{0}/{1}', matrix.index, matrix.total) }}",
-  );
-  for (const step of [steps[selected]]) {
-    assert.equal(
-      step.if,
-      "${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}",
-    );
+  for (const [lane, action] of [
+    ["ssr", "test-native-ssr"],
+    ["scoped-css", "test-native-scoped-css"],
+    ["setup", "test-native-js-setup"],
+    ["vapor", "test-native-vapor"],
+    ["attributes", "test-native-attribute-values-7502"],
+    ["selected-template", "test-native-selected-template"],
+  ]) {
+    const callers = steps.filter((step) => step.uses === `./.github/actions/${action}`);
+    assert.equal(callers.length, 1, lane);
+    assert.equal(callers[0].if, `\${{ matrix.lane == '${lane}' }}`);
+    assert.notEqual(callers[0]["continue-on-error"], true, lane);
   }
-  assert.equal(steps[regenerate].if, "${{ needs.pr-source-plan.outputs.tooling == 'true' }}");
+  const install = steps.find((step) => step.name === "Install native runtime oracle dependencies");
+  assert.equal(install?.if, "${{ matrix.lane != 'none' }}");
+  assert.match(install?.run ?? "", /vp-install\.ts.*npm\/native.*tests/);
+  const skip = steps.find((step) => step.name === "Explain unrelated skip");
+  assert.equal(skip?.if, "${{ matrix.lane == 'none' }}");
+  const report = source.jobs["source-report"];
+  assert.equal(report.if, "${{ always() && !contains(needs.*.result, 'cancelled') }}");
+  assert.ok(report.needs?.includes("pr-native-runtime"));
   assert.equal(
-    steps[regenerate].env?.TOOLING_TIER,
-    "${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}",
-  );
-  assert.equal(
-    steps[regenerate].env?.BASE_SHA,
-    "${{ needs.pr-source-plan.outputs.comparison-base }}",
-  );
-  assert.equal(
-    (steps[regenerate].run ?? "").split("\n")[0],
-    'if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags origin "$BASE_SHA"; fi',
-  );
-  assert.match(
-    steps[regenerate].run ?? "",
-    /--tier "\$TOOLING_TIER" --output "\$RUNNER_TEMP\/tooling-plan\.json"/,
-  );
-  assert.equal(steps[selected].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
-  assert.equal(steps[selected].env?.VIZE_TOOLING_TEST_TIER, "pr");
-  assert.equal(
-    steps[selected].env?.VIZE_TOOLING_TEST_SHARD,
-    "${{ format('{0}/{1}', matrix.index, matrix.total) }}",
-  );
-  assert.equal(
-    steps[selected].env?.SOURCE_LENGTH_BASE_REF,
-    "${{ needs.pr-source-plan.outputs.comparison-base }}",
-  );
-  assert.equal(steps[selected].run, "vp run --workspace-root test:scripts:pr");
-  assert.equal(
-    steps[full].if,
-    "${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}",
-  );
-  assert.equal(steps[full].run, "vp run --workspace-root test:scripts:planned");
-  assert.equal(steps[full].env?.SOURCE_LENGTH_BASE_REF, undefined);
-  assert.equal(steps[full].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
-  assert.equal(steps[full].env?.VIZE_TOOLING_TEST_TIER, "merge");
-  assert.equal(
-    steps[full].env?.VIZE_TOOLING_TEST_SHARD,
-    "${{ format('{0}/{1}', matrix.index, matrix.total) }}",
-  );
-  assert.equal(steps[full].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
-  assert.equal(steps[full].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
-  assert.equal(
-    source.jobs["source-report"].if,
-    "${{ always() && !contains(needs.*.result, 'cancelled') }}",
-  );
-  assert.ok(source.jobs["source-report"].needs?.includes("pr-tooling-scripts"));
-  assert.equal(
-    source.jobs["source-report"].steps?.at(-1)?.run,
+    report.steps?.at(-1)?.run,
     "node tools/support/compat/github/canonical-corpus-selection.mjs --check",
-  );
-  assert.equal(steps[build].uses, "./.github/actions/restore-source-cli");
-  assert.deepEqual(steps[build].with, {
-    producer: "${{ toJSON(needs.pr-source-cli.outputs) }}",
-  });
-  const restore = parse(readRepoFile(".github", "actions", "restore-source-cli", "action.yml")) as {
-    runs: { steps: Step[] };
-  };
-  const restoreCommand = restore.runs.steps.at(-1)?.run ?? "";
-  assert.match(restoreCommand, /source-cli-artifact\.ts restore/);
-  assert.doesNotMatch(restoreCommand, /build-receipt\.ts/);
-  const producer = parse(readRepoFile(".github", "workflows", "pr-source-cli.yml")) as {
-    jobs: Record<string, Job>;
-  };
-  assert.match(
-    producer.jobs.cli.steps?.map((step) => step.run ?? "").join("\n") ?? "",
-    /cargo build --profile ci -p vize && vp exec node tests\/differential\/build-receipt\.ts/,
   );
 });
 
-test("PR browser validation retains tests while every VRT outcome is deferred to merge", () => {
+test("opted-in PR and merge browser qualification retain tests and enforce merge VRT outcomes", () => {
+  const plan = source.jobs["pr-source-plan"];
+  assert.equal(plan.outputs?.heavy, "${{ steps.plan.outputs.heavy }}");
+  assert.equal(plan.outputs?.playground, "${{ steps.plan.outputs.playground }}");
+  assert.equal(
+    plan.outputs?.["canonical-corpus"],
+    "${{ steps.plan.outputs.heavy == 'true' && steps.canonical-corpus-plan.outputs.canonical-corpus || 'false' }}",
+  );
+  const tier = plan.steps?.find((step) => step.name === "Plan source checks");
+  assert.equal(tier?.env?.PR_LABELS, "${{ toJSON(github.event.pull_request.labels.*.name) }}");
+  assert.match(tier?.run ?? "", /plan-pr-checks\.ts/);
   const steps = source.jobs["pr-playground-test"].steps ?? [];
   const browser = steps.find((step) => step.name === "Run playground tests");
   assert.equal(browser?.if, "${{ env.RUN_PLAYGROUND == 'true' }}");
@@ -286,7 +215,15 @@ test("merge Rust timing receipts remain available after workspace failure", () =
   assert.equal(summary?.if, "${{ !cancelled() && inputs.run-rust }}");
   assert.equal(upload?.if, "${{ !cancelled() && inputs.run-rust }}");
   assert.equal(summary?.env?.BUILD_OUTCOME, "${{ steps.rust-test-build.outcome }}");
-  assert.equal(summary?.env?.RUN_OUTCOME, "${{ steps.rust-test-run.outcome }}");
+  assert.equal(summary?.env?.RUN_OUTCOME, "skipped");
+  assert.equal(summary?.env?.RUN_COMMAND, "parallel Clippy and doctest job");
+  const doctests = rust.jobs["pr-rust-build"].steps?.find(
+    (step) => step.name === "Run affected Rust doctests",
+  );
+  assert.match(
+    doctests?.run ?? "",
+    /run-affected-rust\.ts.*cargo test @packages@ --profile ci --doc/,
+  );
   assert.equal(upload?.with?.["if-no-files-found"], "error");
   assert.equal(summary?.run, "node tools/support/compat/github/rust-test-timings.mjs");
 });

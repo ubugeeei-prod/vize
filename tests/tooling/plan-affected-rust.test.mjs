@@ -17,8 +17,8 @@ import { changedPaths } from "../../tools/support/compat/github/plan-source-chec
 import {
   planAffectedRust,
   readCargoMetadata,
-} from "../../tools/support/compat/github/plan-affected-rust.mjs";
-import { rustCommand } from "../../tools/support/compat/github/run-affected-rust.mjs";
+} from "../../tools/support/compat/github/plan-affected-rust.ts";
+import { rustCommand } from "../../tools/support/compat/github/run-affected-rust.ts";
 
 import { fixture } from "./_helpers/rust-workspace-fixture.mjs";
 
@@ -88,10 +88,7 @@ void test("global inputs, shared corpora, deleted crates and unknown paths valid
     assert.ok(plan.reasons.length, path);
   }
   assert.deepEqual(planAffectedRust(fixture(), []).packages, expected);
-  assert.deepEqual(
-    planAffectedRust(fixture(), ["docs/guide.md"], "merge_group").packages,
-    expected,
-  );
+  assert.deepEqual(planAffectedRust(fixture(), ["docs/guide.md"], "merge_group").packages, []);
 });
 
 void test("documentation is empty while the independent Zed workspace is explicitly recorded", () => {
@@ -214,10 +211,7 @@ void test("real Cargo metadata supplies the current workspace aliases and revers
 
 void test("runner preserves literal arguments and the child process failure status", () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-rust-runner-"));
-  const script = new URL(
-    "../../tools/support/compat/github/run-affected-rust.mjs",
-    import.meta.url,
-  );
+  const script = new URL("../../tools/support/compat/github/run-affected-rust.ts", import.meta.url);
   try {
     const output = join(cwd, "args.json");
     const planPath = join(cwd, "plan.json");
@@ -269,7 +263,7 @@ void test("runner preserves literal arguments and the child process failure stat
 void test("CLI writes the same JSON plan to disk and Actions outputs and rejects bad identity", () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-rust-plan-"));
   const script = new URL(
-    "../../tools/support/compat/github/plan-affected-rust.mjs",
+    "../../tools/support/compat/github/plan-affected-rust.ts",
     import.meta.url,
   );
   try {

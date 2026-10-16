@@ -7,6 +7,10 @@ on:
     inputs:
       run-js: { required: true, type: boolean }
       run-original-project: { required: true, type: boolean }
+      js-plan:
+        type: string
+        required: false
+        default: '{"matrix":{"group":["builders","ui","oxlint"]},"conformance":{"fresco":true,"ui":true}}'
 permissions: { contents: read }
 env:
   CARGO_TERM_COLOR: always
@@ -18,7 +22,7 @@ jobs:
       fail-fast: false
       # Groups partition `testedPackages`; see
       # tools/config/vite-plus/tested-package-groups.ts.
-      matrix: { group: [builders, ui, oxlint] }
+      matrix: ${{ fromJSON(inputs.js-plan).matrix }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
@@ -26,36 +30,36 @@ jobs:
       CARGO_BUILD_JOBS: "12"
     steps:
       - name: Explain documentation-only skip
-        if: ${{ !inputs.run-js }}
+        if: ${{ !(inputs.run-js && matrix.group != 'none') }}
         run: echo 'JS package checks skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && matrix.group != 'none') }}
       - uses: ./.github/actions/cache-vp-bootstrap
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && matrix.group != 'none') }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && matrix.group != 'none') }}
         with: { node-version-file: "package.json", cache: true, run-install: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && matrix.group != 'none') }}
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && matrix.group != 'none') }}
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && matrix.group != 'none') }}
         with:
-          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
           key: test-js-packages
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
-        if: ${{ inputs.run-js }}
-        run: vp install --frozen-lockfile --prefer-offline
-      - name: Test JS package group
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && matrix.group != 'none') }}
         env: { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" }
-        run: python3 .github/actions/test-js-packages-with-history/native-fault-evidence.py -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"
+        run: node tools/support/compat/github/install-js-checks.ts "$VIZE_JS_PACKAGE_GROUP"
+      - name: Test JS package group
+        if: ${{ (inputs.run-js && matrix.group != 'none') }}
+        env: { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" }
+        run: node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"
       - name: Preserve public native formatter evidence
-        if: ${{ !cancelled() && inputs.run-js }}
+        if: ${{ !cancelled() && (inputs.run-js && matrix.group != 'none') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
@@ -63,7 +67,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve original template style fix observations
-        if: ${{ !cancelled() && inputs.run-js }}
+        if: ${{ !cancelled() && (inputs.run-js && matrix.group != 'none') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
@@ -71,7 +75,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve original Oxlint package locations
-        if: ${{ !cancelled() && inputs.run-js }}
+        if: ${{ !cancelled() && (inputs.run-js && matrix.group != 'none') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
@@ -84,7 +88,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
       - name: Preserve bounded JS native fault diagnostics
-        if: ${{ !cancelled() && inputs.run-js }}
+        if: ${{ !cancelled() && (inputs.run-js && matrix.group != 'none') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: js-native-fault-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
@@ -119,12 +123,11 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: ${{ inputs.run-js }}
         with:
-          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
           key: test-js-packages
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
         if: ${{ inputs.run-js }}
-        run: vp install --frozen-lockfile --prefer-offline
+        run: node tools/support/compat/github/install-js-checks.ts original-project
       # The qualification reads the source addon receipt from this job's own
       # debug build and the bundles that the oxlint package test packs.
       - name: Build the source addon and Oxlint bundles
@@ -164,7 +167,10 @@ jobs:
           VIZE_OXLINT_STAGING_DIRECTORY: ${{ steps.original-project-qualification.outputs.staging-directory }}
         run: node npm/oxlint/scripts/project-native-staging.ts --cleanup
   pr-js-package-conformance:
-    name: PR Fresco and UI package conformance
+    name: PR package conformance (${{ matrix.surface }})
+    strategy:
+      fail-fast: false
+      matrix: { surface: [fresco, ui] }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
@@ -172,35 +178,35 @@ jobs:
       CARGO_BUILD_JOBS: "12"
     steps:
       - name: Explain documentation-only skip
-        if: ${{ !inputs.run-js }}
+        if: ${{ !(inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
         run: echo 'Fresco and UI conformance skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
       - uses: ./.github/actions/cache-vp-bootstrap
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
         with: { node-version-file: "package.json", cache: true, run-install: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
         with: { wild-version: "0.9.0" }
       # check.yml's trusted `build-js-packages` job runs the same Fresco,
       # native `build:ci` and UI checks and writes this role on main.
       - uses: ./.github/actions/setup-rust-sticky-cache
-        if: ${{ inputs.run-js }}
+        if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
         with:
-          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
           key: build-js-packages
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
-        if: ${{ inputs.run-js }}
-        run: vp install --frozen-lockfile --prefer-offline
+        if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
+        env: { CONFORMANCE_GROUP: "${{ matrix.surface }}-conformance" }
+        run: node tools/support/compat/github/install-js-checks.ts "$CONFORMANCE_GROUP"
       - name: Check Fresco native declarations and consumer types
-        if: ${{ inputs.run-js }}
+        if: ${{ inputs.run-js && matrix.surface == 'fresco' && fromJSON(inputs.js-plan).conformance.fresco }}
         run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types
       - name: Check UI package conformance
-        if: ${{ inputs.run-js }}
+        if: ${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
         run: vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check

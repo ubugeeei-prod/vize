@@ -42,8 +42,14 @@ function publicationJobNames(jobs: Record<string, ReleaseJob>): string[] {
     .sort();
 }
 
+const sharedPublisher = "./.github/actions/publish-release-package";
+const sharedRecipe = () =>
+  parse(readRepoFile(".github", "actions", "publish-release-package", "action.yml"));
+
 function setupVpSteps(job: ReleaseJob): NonNullable<ReleaseJob["steps"]> {
-  return (job.steps ?? []).filter((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
+  return (job.steps ?? [])
+    .flatMap((step) => (step.uses === sharedPublisher ? sharedRecipe().runs.steps : [step]))
+    .filter((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
 }
 
 test("every publication edge waits for credential-free release preflight", () => {
@@ -138,6 +144,7 @@ test("release workflow publishes npm packages through Trusted Publishing only", 
     "release-npm-marquette",
     "release-npm-composable",
     "release-npm-ui",
+    "release-npm-plugin-sdk",
   ];
 
   for (const jobName of npmPublishJobs) {
@@ -146,7 +153,10 @@ test("release workflow publishes npm packages through Trusted Publishing only", 
     assert.doesNotMatch(job, /runs-on:\s*blacksmith-/);
     assert.match(job, /environment:\s*npm/);
     assert.match(job, /id-token:\s*write/);
-    assert.match(job, /--provenance/);
+    const commands = job.includes(sharedPublisher)
+      ? JSON.stringify(sharedRecipe().runs.steps)
+      : job;
+    assert.match(commands, /--provenance/);
     assert.doesNotMatch(job, /NODE_AUTH_TOKEN|_authToken/);
   }
 });
@@ -173,7 +183,7 @@ test("release workflow publishes npm packages from package-specific artifacts", 
     "release-package-composable",
     "release-package-ui",
   ]) {
-    assert.match(workflow, new RegExp(`name:\\s*${artifactName}`));
+    assert.match(workflow, new RegExp(`(?:name|artifact):\\s*${artifactName}`));
   }
 
   const downloadTargets = [
@@ -200,17 +210,22 @@ test("release workflow publishes npm packages from package-specific artifacts", 
     ["release-npm-marquette", "release-package-marquette", "npm/marquette"],
     ["release-npm-composable", "release-package-composable", "npm/compose/core"],
     ["release-npm-ui", "release-package-ui", "npm/ui"],
+    ["release-npm-plugin-sdk", "release-package-plugin-sdk", "npm/plugin-sdk"],
   ] as const;
 
+  const jobs = (parse(workflow) as { jobs: Record<string, ReleaseJob> }).jobs;
   for (const [jobName, artifactName, downloadPath] of downloadTargets) {
-    const jobStart = workflow.indexOf(`\n  ${jobName}:\n`);
-    assert.notEqual(jobStart, -1, `missing job ${jobName}`);
-    const remaining = workflow.slice(jobStart + 1);
-    const nextJobMatch = /\n  [a-z0-9-]+:\n/g.exec(remaining.slice(1));
-    const jobBody = remaining.slice(0, nextJobMatch ? nextJobMatch.index + 1 : undefined);
-
-    assert.match(jobBody, new RegExp(`name:\\s*${artifactName}`));
-    assert.match(jobBody, new RegExp(`path:\\s*${downloadPath.replace("/", "\\/")}`));
+    const shared = jobs[jobName].steps?.find((step) => step.uses === sharedPublisher);
+    const download = jobs[jobName].steps?.find((step) =>
+      step.uses?.startsWith("actions/download-artifact@"),
+    );
+    assert.deepEqual(
+      shared?.with ?? download?.with,
+      shared
+        ? { artifact: artifactName, "package-path": downloadPath }
+        : { name: artifactName, path: downloadPath },
+      jobName,
+    );
   }
 });
 

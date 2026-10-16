@@ -9,8 +9,6 @@
   ],
   "retiring": {
     "py": [
-      ".github/actions/test-js-packages-with-history/native-fault-evidence.py",
-      ".github/actions/test-js-packages-with-history/native_fault_core.py",
       "tests/_fixtures/differential/lsp/event-rename/4075/named-model/author_contracts.py",
       "tests/editor-conformance/drivers/pty-bridge.py",
 

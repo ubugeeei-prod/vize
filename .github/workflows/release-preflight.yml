@@ -32,10 +32,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: "package.json"
-          run-install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
 
       - name: Verify release identity, metadata, required gates, and release blockers
         env:
@@ -44,7 +42,7 @@ jobs:
           RELEASE_PR_NUMBER: ${{ inputs.release_pr }}
           RELEASE_TAG_NAME: ${{ inputs.tag_name }}
           RELEASE_PINNED: ${{ inputs.pinned }}
-        run: node tools/support/compat/github/release-preflight.mjs
+        run: node tools/support/compat/github/release-preflight.ts
 
   validate-crates:
     name: Validate crates.io publish plan
@@ -57,16 +55,12 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", cache: false, run-install: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
-
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
 
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:

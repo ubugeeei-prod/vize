@@ -1,24 +1,31 @@
 name: Setup JS Check Runtime
-description: Install the MoonBit and Rust tools required by the JS check job
+description: Validate workflows using the Actions Node.js runtime without compiling orchestration tools
+
+inputs:
+  full:
+    description: Install native and compatibility tooling for scheduled or manual qualification
+    required: false
+    default: "false"
 
 runs:
   using: composite
   steps:
     - uses: ./.github/actions/check-workflow-syntax
+      with:
+        controls: ${{ inputs.full }}
     - uses: ./.github/actions/setup-moonbit
-      if: ${{ github.event_name != 'pull_request' }}
+      if: inputs.full == 'true'
     - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+      if: inputs.full == 'true'
       with: { toolchain: stable }
     - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-      if: ${{ github.event_name != 'pull_request' }}
+      if: inputs.full == 'true'
       with:
         wild-version: "0.9.0"
     - uses: ./.github/actions/setup-rust-sticky-cache
+      if: inputs.full == 'true'
       with:
         key: check-js
         cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-    - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
-      with:
-        path: ~/.cargo/bin/rust-script
-        key: rust-script-0.34.0-${{ runner.os }}-${{ runner.arch }}
     - uses: ./.github/actions/setup-rust-script
+      if: inputs.full == 'true'

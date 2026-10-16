@@ -3,7 +3,9 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-export function rustCommand(plan, command) {
+type RustPlan = { schemaVersion: number; scope: string; packages: string[]; cargoArgs: string[] };
+
+export function rustCommand(plan: RustPlan, command: readonly string[]) {
   if (
     plan?.schemaVersion !== 1 ||
     !["affected", "workspace"].includes(plan.scope) ||

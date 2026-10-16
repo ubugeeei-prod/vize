@@ -79,9 +79,7 @@ test("Rust sticky mounts require the backend policy before every provider call",
     "the optional secondary mount must keep both guards",
   );
 
-  const policy = steps.findIndex(
-    (step) => step.run === 'node "$GITHUB_ACTION_PATH/cache-policy.mjs"',
-  );
+  const policy = steps.findIndex((step) => step.name === "Select the Rust cache backend");
   assert.ok(policy >= 0 && steps.indexOf(mounts[0]) > policy, "policy must precede mounts");
 });
 

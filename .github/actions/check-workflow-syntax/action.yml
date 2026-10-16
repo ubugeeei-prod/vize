@@ -1,5 +1,10 @@
 name: Validate workflow syntax and contexts
-description: Run the pinned official workflow checker with actual refusal controls
+description: Run the checksum-pinned workflow checker on the complete workflow inventory
+inputs:
+  controls:
+    description: Also exercise the checker's refusal controls during scheduled qualification
+    required: false
+    default: "false"
 runs:
   using: composite
   steps:
@@ -19,21 +24,19 @@ runs:
         "$directory/actionlint" --version
         printf 'binary=%s\n' "$directory/actionlint" >> "$GITHUB_OUTPUT"
 
-    - name: Qualify complete workflow syntax with actual refusal controls
+    - name: Check complete workflow syntax
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
       env:
         ACTIONLINT_BINARY: ${{ steps.install.outputs.binary }}
         WORKFLOW_VALIDATOR_ACTION_PATH: ${{ github.action_path }}
+        WORKFLOW_VALIDATOR_CONTROLS: ${{ inputs.controls }}
       with:
         script: |
-          const { execFileSync } = require('node:child_process');
-          execFileSync(process.execPath, [
-            `${process.env.WORKFLOW_VALIDATOR_ACTION_PATH}/check.mjs`,
-            process.env.ACTIONLINT_BINARY,
-          ], { cwd: process.env.GITHUB_WORKSPACE, stdio: 'inherit' });
+          const script = require('node:url').pathToFileURL(`${process.env.WORKFLOW_VALIDATOR_ACTION_PATH}/check.ts`);
+          await import(script.href);
 
-    - name: Preserve whole workflow validation and refusal packets
-      if: ${{ !cancelled() }}
+    - name: Preserve workflow diagnostics on failure
+      if: ${{ failure() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: workflow-syntax-${{ github.sha }}-${{ github.run_attempt }}

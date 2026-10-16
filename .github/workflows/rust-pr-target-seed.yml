@@ -7,6 +7,23 @@ name: Seed PR Rust target
 on:
   push:
     branches: [main]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - ".cargo/**"
+      - "crates/**"
+      - "davinci/**"
+      - "vendor/**"
+      - "tools/benchmarks/crates/**"
+      - "tests/davinci_test_support/**"
+      - "tests/vize_test_runner/**"
+      - ".github/actions/setup-rust-sticky-cache/**"
+      - ".github/actions/reuse-rust-target/**"
+      - ".github/actions/cache-vp-bootstrap/**"
+      - ".github/workflows/rust-pr-target-seed.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
   schedule:
     # Daily 02:41 UTC, ahead of the full Check run.
     - cron: "41 2 * * *"
@@ -23,7 +40,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     env:
-      CARGO_BUILD_JOBS: "12"
+      CARGO_BUILD_JOBS: "24"
       VIZE_TEST_DISABLE_TSGO: "1"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
     steps:
@@ -42,11 +59,11 @@ jobs:
           key: nextest-ci
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Plan every PR Rust crate
-        run: node tools/support/compat/github/plan-affected-rust.mjs "$GITHUB_SHA" "$GITHUB_SHA" merge_group "$RUNNER_TEMP/rust-plan.json"
+        run: node tools/support/compat/github/plan-affected-rust.ts "$GITHUB_SHA" "$GITHUB_SHA" merge_group "$RUNNER_TEMP/rust-plan.json"
       - name: Clippy every PR Rust crate
-        run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports
+        run: node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports
       - name: Build every PR Rust test binary
-        run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --no-run
+        run: node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --no-run
       - name: Build the merge-queue workspace producer
         # The queue runs these two builds over the whole workspace.
         run: |
@@ -66,7 +83,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     env:
-      CARGO_BUILD_JOBS: "12"
+      CARGO_BUILD_JOBS: "24"
       RUST_TEST_THREADS: "4"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
       VIZE_TEST_REQUIRE_TSGO: "1"

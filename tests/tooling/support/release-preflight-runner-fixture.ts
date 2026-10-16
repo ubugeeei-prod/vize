@@ -3,6 +3,7 @@ import { Buffer } from "node:buffer";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { crc32 } from "node:zlib";
 
 import { workspaceVersionFromCargoToml } from "../../../tools/support/compat/github/release-preflight-core.mjs";
@@ -80,11 +81,24 @@ export function createReleasePreflightVerifyOnlyFixture(
 
   writeFlatJobEvidenceGitCommand(binDir);
   writeFlatJobEvidenceCurlCommand(binDir);
+  const fetchMock = path.join(tempDir, "release-api-mock.ts");
+  fs.writeFileSync(
+    fetchMock,
+    [
+      "globalThis.fetch = async (input) => {",
+      "  const url = new URL(String(input));",
+      "  if (url.hostname === 'api.github.test' && url.pathname.endsWith('/issues')) return Response.json([]);",
+      "  throw new Error(`Unexpected preflight network request: ${url}`);",
+      "};",
+    ].join("\n"),
+  );
 
   return {
     binDir,
     tag,
     env: {
+      NODE_OPTIONS:
+        `${process.env.NODE_OPTIONS ?? ""} --import=${pathToFileURL(fetchMock).href}`.trim(),
       GITHUB_API_URL: "https://api.github.test",
       GITHUB_REPOSITORY: "owner/repository",
       GITHUB_REF_NAME: tag,

@@ -1,335 +1,131 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
+import {
+  cliReleasePlatforms,
+  nativeReleasePlatforms,
+} from "../../tools/support/github/release-platforms.ts";
+import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+type Step = {
+  name?: string;
+  uses?: string;
+  run?: string;
+  if?: string;
+  with?: Record<string, unknown>;
+  shell?: string;
+};
+const release = parse(readRepoFile(".github", "workflows", "release.yml"));
+const seed = parse(readRepoFile(".github", "workflows", "release-build-cache.yml"));
+const recipe = (name: string): { runs: { steps: Step[] } } =>
+  parse(readRepoFile(".github", "actions", name, "action.yml"));
 
-test("release workflow explicitly installs matrix Rust targets", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-
-  for (const jobName of ["build-cli", "build-native-all"]) {
-    const job = workflowJobBody(workflow, jobName);
-    const setupRust = job.indexOf("name: Setup Rust");
-    const installTarget = job.indexOf("name: Install Rust target");
-    const cacheRust = job.indexOf("name: Cache Rust");
-
-    assert.notEqual(setupRust, -1, `${jobName} is missing Setup Rust`);
-    assert.notEqual(installTarget, -1, `${jobName} is missing Install Rust target`);
-    assert.notEqual(cacheRust, -1, `${jobName} is missing Cache Rust`);
-    assert.ok(
-      setupRust < installTarget && installTarget < cacheRust,
-      `${jobName} must install the matrix Rust target before caching/building`,
-    );
-    assert.match(
-      job,
-      /run:\s*rustup target add \$\{\{\s*matrix\.settings\.target\s*\}\}/,
-      `${jobName} must install the matrix Rust target explicitly`,
-    );
-  }
-});
-
-test("release workflow plans slow platform cadence before building", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const planJob = workflowJobBody(workflow, "plan-release-platforms");
-  const buildCliJob = workflowJobBody(workflow, "build-cli");
-  const buildNativeJob = workflowJobBody(workflow, "build-native-all");
-
-  assert.match(planJob, /release-platforms\.rs github-output/);
-  assert.match(buildCliJob, /needs:\s*plan-release-platforms/);
-  assert.match(
-    buildCliJob,
-    /settings:\s*\$\{\{\s*fromJSON\(needs\.plan-release-platforms\.outputs\.cli_matrix\)\s*\}\}/,
-  );
-  assert.match(buildNativeJob, /needs:\s*plan-release-platforms/);
-  assert.match(
-    buildNativeJob,
-    /settings:\s*\$\{\{\s*fromJSON\(needs\.plan-release-platforms\.outputs\.native_matrix\)\s*\}\}/,
-  );
-  assert.match(workflow, /release-platforms\.rs apply-cadence/);
-});
-
-test("release workflow jobs cap runtime with explicit timeouts", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-
-  for (const [jobName, minutes] of [
-    ["plan-release-platforms", 5],
-    ["build-cli", 90],
-    ["build-editor-extensions", 30],
-    ["release-vscode-extension", 30],
-    ["build-release-packages", 45],
-    ["build-wasm-package", 30],
-    ["build-native-all", 90],
-    ["smoke-release-packages", 30],
-    ["release-npm-native", 60],
-    ["release-npm-fresco-native", 20],
-    ["release-npm-wasm", 30],
-    ["release-npm-vite-plugin", 15],
-    ["release-npm-oxlint-plugin", 15],
-    ["release-npm-unplugin", 15],
-    ["release-npm-fresco", 15],
-    ["release-npm-musea-mcp-server", 15],
-    ["release-npm-vite-plugin-musea", 15],
-    ["release-npm-rspack-plugin", 15],
-    ["release-npm-musea-nuxt", 15],
-    ["release-npm-nuxt-lint-config", 15],
-    ["release-npm-nuxt", 15],
-    ["release-crates", 30],
-    ["create-github-release", 20],
-    ["release-npm-cli", 15],
-  ] as const) {
-    assert.match(
-      workflowJobBody(workflow, jobName),
-      new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
-      `${jobName} should have a ${minutes} minute timeout`,
-    );
-  }
-});
-
-test("release workflow smoke installs npm tarballs before publishing", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const smokeJob = workflowJobBody(workflow, "smoke-release-packages");
-
-  assert.match(
-    smokeJob,
-    /needs:\s*\[plan-release-platforms, build-release-packages, build-native-all\]/,
-  );
-  assert.match(smokeJob, /name:\s*Smoke release npm package installs/);
-  assert.match(smokeJob, /name:\s*Apply slow platform release cadence/);
-  assert.match(smokeJob, /name:\s*Prepare native package tarballs/);
-  assert.match(smokeJob, /name:\s*Prepare Fresco native package tarball/);
-  assert.match(smokeJob, /smoke-release-install\.rs --prepare-manifests --runtime-checks/);
-
-  for (const packageDir of [
-    "npm/native",
-    "npm/fresco-native",
-    "npm/cli",
-    "npm/builder/vite",
-    "npm/oxlint",
-    "npm/builder/unplugin",
-    "npm/fresco",
-    "npm/mcp-musea",
-    "npm/builder/vite-musea",
-    "npm/builder/rspack",
-    "npm/framework/musea-nuxt",
-    "npm/framework/nuxt-lint-config",
-    "npm/framework/nuxt",
+test("release and cache warming share every exact-checkout binary recipe", () => {
+  for (const [releaseJob, seedJob, action] of [
+    ["build-cli", "cli", "build-release-cli"],
+    ["build-native-all", "native", "build-release-native"],
   ]) {
-    assert.match(smokeJob, new RegExp(packageDir.replaceAll("/", "\\/")));
+    const released = release.jobs[releaseJob];
+    assert.equal(released.needs, "plan-release-platforms");
+    const releaseStep = released.steps.find(
+      (step: Step) => step.uses === `./.github/actions/${action}`,
+    );
+    const seedStep = seed.jobs[seedJob].steps.find((step: Step) => step.uses === releaseStep.uses);
+    assert.equal(releaseStep.with["authorized-release"], "true");
+    assert.equal(seedStep.with["authorized-release"], undefined);
+    assert.equal(seedStep.with["upload-artifacts"], "false");
+    assert.equal(releaseStep.with.target, seedStep.with.target);
+    for (const step of recipe(action).runs.steps) if (step.run) assert.ok(step.shell);
   }
+  assert.deepEqual(seed.permissions, { contents: "read" });
+  assert.equal(seed.concurrency["cancel-in-progress"], true);
+  assert.deepEqual(seed.on.push.branches, ["main"]);
+  assert.doesNotMatch(
+    readRepoFile(".github", "workflows", "release-build-cache.yml"),
+    /id-token:|environment:|secrets\./,
+  );
+});
 
-  for (const jobName of [
-    "release-npm-cli",
-    "release-npm-vite-plugin",
-    "release-npm-oxlint-plugin",
-    "release-npm-unplugin",
-    "release-npm-fresco",
-    "release-npm-musea-mcp-server",
-    "release-npm-vite-plugin-musea",
-    "release-npm-rspack-plugin",
-    "release-npm-musea-nuxt",
-    "release-npm-nuxt-lint-config",
-    "release-npm-nuxt",
-  ]) {
-    assert.match(workflowJobBody(workflow, jobName), /smoke-release-packages/);
+test("all shipping platforms retain target and ABI guards on accelerated runners", () => {
+  const expected = [
+    "aarch64-apple-darwin",
+    "x86_64-apple-darwin",
+    "aarch64-pc-windows-msvc",
+    "x86_64-pc-windows-msvc",
+    "aarch64-unknown-linux-gnu",
+    "x86_64-unknown-linux-gnu",
+    "aarch64-unknown-linux-musl",
+    "x86_64-unknown-linux-musl",
+  ].sort();
+  assert.deepEqual(cliReleasePlatforms.map(({ target }) => target).sort(), expected);
+  assert.deepEqual(nativeReleasePlatforms.map(({ target }) => target).sort(), expected);
+  for (const platform of nativeReleasePlatforms.filter(({ target }) => target.endsWith("-gnu"))) {
+    assert.match(platform.host, /^blacksmith-32vcpu-ubuntu-2204(?:-arm)?$/);
   }
+  for (const name of ["build-release-cli", "build-release-native"]) {
+    const steps = recipe(name).runs.steps;
+    const toolchain = steps.find(({ uses }) => uses?.startsWith("dtolnay/rust-toolchain@"));
+    assert.equal(toolchain?.with?.targets, "${{ inputs.target }}");
+    const sdk = steps.find(({ uses }) => uses?.startsWith("ilammy/msvc-dev-cmd@"));
+    assert.match(String(sdk?.with?.arch), /amd64_arm64/);
+    assert.match(
+      steps.find(({ name }) => name === "Tune Windows release profile")?.run ?? "",
+      /CARGO_PROFILE_RELEASE_LTO=thin/,
+    );
+  }
+  const native = readRepoFile(".github", "actions", "build-release-native", "action.yml");
+  assert.equal((native.match(/verify-glibc-symbols\.rs --max 2\.36/g) ?? []).length, 2);
+  const cli = readRepoFile(".github", "actions", "build-release-cli", "action.yml");
+  assert.match(cli, /verify-musl-cli-binary\.rs/);
+  assert.match(cli, /configure-zig-musl-linkers\.rs/);
+});
 
-  for (const [jobName, smokeStep, publishStep] of [
-    [
-      "release-npm-native",
-      "name: Smoke install native package tarballs",
-      "name: Publish platform packages",
-    ],
-    [
-      "release-npm-fresco-native",
-      "name: Smoke install Fresco native package tarball",
-      "name: Publish",
-    ],
-    ["release-npm-wasm", "name: Smoke install WASM package tarball", "name: Publish @vizejs/wasm"],
-  ] as const) {
-    const job = workflowJobBody(workflow, jobName);
-    const smokeIndex = job.indexOf(smokeStep);
-    const publishIndex = job.indexOf(publishStep);
-    assert.notEqual(smokeIndex, -1, `${jobName} is missing ${smokeStep}`);
-    assert.notEqual(publishIndex, -1, `${jobName} is missing ${publishStep}`);
-    assert.ok(smokeIndex < publishIndex, `${jobName} must smoke install before publishing`);
-    if (jobName === "release-npm-native") {
-      assert.match(job, /smoke-release-install\.rs --prepare-manifests --runtime-checks/);
+test("every produced native artifact is guarded against missing output", () => {
+  for (const name of ["build-release-cli", "build-release-native"]) {
+    const uploads = recipe(name).runs.steps.filter(({ uses }) =>
+      uses?.startsWith("actions/upload-artifact@"),
+    );
+    assert.equal(uploads.length, name === "build-release-cli" ? 1 : 2);
+    for (const step of uploads) {
+      assert.equal(step.if, "inputs.upload-artifacts == 'true'");
+      assert.equal(step.with?.["if-no-files-found"], "error");
+      assert.equal(step.with?.["compression-level"], 0);
     }
   }
 });
 
-test("release workflow builds native targets on MoonBit-supported runners", () => {
-  const releasePlatforms = readRepoFile(
-    "tools",
-    "commands",
-    "ci",
-    "github",
-    "release-platforms.rs",
-  );
-  assert.doesNotMatch(
-    releasePlatforms,
-    /host:\s*"macos-15-intel"[\s\S]*target:\s*"x86_64-apple-darwin"/,
-    "MoonBit native scripts cannot run on macOS Intel runners",
-  );
-
-  for (const [host, target] of [
-    [hostedOrBlacksmith("macos-15"), "x86_64-apple-darwin"],
-    [hostedOrBlacksmith("macos-15"), "aarch64-apple-darwin"],
-    [hostedOrBlacksmith("ubuntu-22.04"), "x86_64-unknown-linux-gnu"],
-    [hostedOrBlacksmith("ubuntu-24.04"), "x86_64-unknown-linux-musl"],
-    [hostedOrBlacksmith("ubuntu-22.04-arm"), "aarch64-unknown-linux-gnu"],
-    [hostedOrBlacksmith("ubuntu-24.04"), "aarch64-unknown-linux-musl"],
-    [hostedOrBlacksmith("windows-2025"), "x86_64-pc-windows-msvc"],
-    ["windows-11-arm", "aarch64-pc-windows-msvc"],
-  ] as const) {
-    assert.match(releasePlatforms, new RegExp(`host:\\s*"${host}"[\\s\\S]*target:\\s*"${target}"`));
+test("publication keeps installed-package smoke and exact promotion barriers", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const smoke = workflowJobBody(workflow, "smoke-release-packages");
+  assert.match(smoke, /smoke-release-install\.rs --prepare-manifests --runtime-checks/);
+  assert.deepEqual(release.jobs["smoke-release-packages"].needs, [
+    "plan-release-platforms",
+    "build-release-packages",
+    "build-native-all",
+  ]);
+  for (const job of Object.values(release.jobs) as Array<{
+    name?: string;
+    needs?: string | string[];
+    steps?: Step[];
+  }>) {
+    if (
+      !job.steps?.some(
+        ({ run, uses }) =>
+          run?.includes("publish_npm_package/main.ts") ||
+          uses === "./.github/actions/publish-release-package",
+      )
+    )
+      continue;
+    assert.ok(job.needs?.includes("release-preflight"), job.name);
   }
-});
-
-test("release workflow keeps the Windows ARM64 CLI cross build on a compatible hosted runner", () => {
-  const releasePlatforms = readRepoFile(
-    "tools",
-    "commands",
-    "ci",
-    "github",
-    "release-platforms.rs",
-  );
-
-  assert.match(
-    releasePlatforms,
-    /host:\s*"windows-2025",\n\s*target:\s*"aarch64-pc-windows-msvc"/,
-    "Blacksmith Windows x64 images expose x64 MSVC SDK libs after setup-moonbit, which breaks ARM64 linking",
-  );
-  assert.doesNotMatch(
-    releasePlatforms,
-    /host:\s*"blacksmith-\d+vcpu-windows-2025",\n\s*target:\s*"aarch64-pc-windows-msvc"/,
-  );
-});
-
-test("release workflow bundles fresco-native binaries into the root package instead of publishing platform packages", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const frescoJobStart = workflow.indexOf("\n  release-npm-fresco-native:\n");
-  const nextJobStart = workflow.indexOf("\n  # Build and publish WASM package", frescoJobStart);
-  const frescoJob = workflow.slice(frescoJobStart, nextJobStart);
-
-  assert.match(
-    frescoJob,
-    /Clean bundled native binaries[\s\S]*rust-script tools\/commands\/ci\/github\/clean-node-binaries\.rs npm\/fresco-native/,
-  );
-  assert.match(
-    frescoJob,
-    /Stage bundled native binaries[\s\S]*node tools\/support\/github\/collect-native-artifacts\.ts /,
-  );
-  assert.doesNotMatch(frescoJob, /napi create-npm-dirs/);
-  assert.doesNotMatch(frescoJob, /tools\/moon\/cmd\/publish_npm_package_dirs/);
-});
-
-test("cargo config forces the bundled Rust linker for Windows MSVC targets", () => {
-  const cargoConfig = readRepoFile(".cargo", "config.toml");
-
-  assert.match(cargoConfig, /\[target\.x86_64-pc-windows-msvc\]\s*linker = "rust-lld"/);
-  assert.match(cargoConfig, /\[target\.aarch64-pc-windows-msvc\]\s*linker = "rust-lld"/);
-});
-
-test("release workflow tunes Windows production Rust builds for cold runners", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const profileSteps = [...workflow.matchAll(/- name: Tune Windows release profile/g)];
-
-  assert.equal(profileSteps.length, 2);
-  assert.match(
-    workflow,
-    /Tune Windows release profile[\s\S]*if: runner\.os == 'Windows'[\s\S]*CARGO_PROFILE_RELEASE_LTO=thin/,
-  );
-  assert.match(
-    workflow,
-    /Tune Windows release profile[\s\S]*CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16/,
-  );
-  assert.match(
-    workflow,
-    /Tune Windows release profile[\s\S]*Build CLI[\s\S]*cargo build --release -p vize --target \$\{\{ matrix\.settings\.target \}\}/,
-  );
-  assert.match(
-    workflow,
-    /Tune Windows release profile[\s\S]*Build vize-native[\s\S]*node tools\/support\/github\/build-napi-package\.ts /,
-  );
-});
-
-test("release workflow inspects musl CLI binaries while archiving", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const buildCliJob = workflowJobBody(workflow, "build-cli");
-  const verifier = readRepoFile("tools", "commands", "ci", "github", "verify-musl-cli-binary.rs");
-
-  const buildIndex = buildCliJob.indexOf("name: Build CLI");
-  const archiveIndex = buildCliJob.indexOf("name: Create archive (Unix)");
-
-  assert.notEqual(buildIndex, -1);
-  assert.notEqual(archiveIndex, -1);
-  assert.ok(buildIndex < archiveIndex, "the musl binary check must inspect the built CLI binary");
-  assert.match(
-    buildCliJob,
-    /Create archive \(Unix\)[\s\S]*if \[\[ "\$\{\{ matrix\.settings\.target \}\}" == \*-musl \]\]; then rust-script tools\/commands\/ci\/github\/verify-musl-cli-binary\.rs/,
-  );
-  assert.match(
-    buildCliJob,
-    /verify-musl-cli-binary\.rs[\s\S]*tools\/support\/github\/create-cli-archive\.ts/,
-  );
-  assert.match(verifier, /command_output\("readelf", &\["-l", binary_text\]\)/);
-  assert.match(verifier, /Requesting program interpreter/);
-  assert.match(verifier, /command_output\("strings", &\[binary_text\]\)/);
-  assert.match(verifier, /GLIBC_/);
-});
-
-test("release workflow runs GitHub helper scripts with the native target on every runner", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-
-  assert.doesNotMatch(workflow, /MOON_HELPER_TARGET/);
-  assert.match(
-    workflow,
-    /Install cross-compilation tools \(Linux ARM64\)[\s\S]*node tools\/support\/github\/install-cross-compile-tools\.ts/,
-  );
-  assert.match(
-    workflow,
-    /Create archive \(Windows\)[\s\S]*node tools\/support\/github\/create-cli-archive\.ts \$\{\{ matrix\.settings\.target \}\} \$\{\{ matrix\.settings\.archive \}\} vize\.exe/,
-  );
-  assert.match(
-    workflow,
-    /Build vize-native[\s\S]*node tools\/support\/github\/build-napi-package\.ts npm\/native/,
-  );
-});
-
-test("release workflow configures Zig linkers for Linux musl CLI archives", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const buildCliJob = workflowJobBody(workflow, "build-cli");
-  const releasePlatforms = readRepoFile(
-    "tools",
-    "commands",
-    "ci",
-    "github",
-    "release-platforms.rs",
-  );
-  const zigLinkerCommand = readRepoFile(
-    "tools",
-    "commands",
-    "ci",
-    "github",
-    "configure-zig-musl-linkers.rs",
-  );
-
-  for (const [target, archive] of [
-    ["x86_64-unknown-linux-musl", "vize-x86_64-unknown-linux-musl.tar.gz"],
-    ["aarch64-unknown-linux-musl", "vize-aarch64-unknown-linux-musl.tar.gz"],
-  ] as const) {
-    assert.match(releasePlatforms, new RegExp(`target:\\s*"${target}"`));
-    assert.match(releasePlatforms, new RegExp(`archive:\\s*"${archive}"`));
+  for (const jobName of ["release-npm-native", "release-npm-fresco-native", "release-npm-wasm"]) {
+    const steps = release.jobs[jobName].steps as Step[];
+    const smokeIndex = steps.findIndex(({ run }) => run?.includes("smoke-release-install.rs"));
+    const publishIndex = steps.findIndex(({ run }) => run?.includes("publish_npm_package"));
+    assert.ok(smokeIndex >= 0 && publishIndex > smokeIndex, jobName);
   }
-
-  assert.match(buildCliJob, /name:\s*Setup Zig \(Linux musl CLI\)/);
-  assert.match(buildCliJob, /if:\s*endsWith\(matrix\.settings\.target, '-musl'\)/);
-  assert.match(
-    buildCliJob,
-    /Setup Wild linker \(Linux\)[\s\S]*if:\s*runner\.os == 'Linux' && !endsWith\(matrix\.settings\.target, '-musl'\)/,
-  );
-  assert.match(buildCliJob, /configure-zig-musl-linkers\.rs/);
-  assert.match(zigLinkerCommand, /CARGO_TARGET_\{rust_target\}_LINKER=rust-lld/);
-  assert.match(zigLinkerCommand, /X86_64_UNKNOWN_LINUX_MUSL/);
-  assert.match(zigLinkerCommand, /AARCH64_UNKNOWN_LINUX_MUSL/);
+  const fresco = workflowJobBody(workflow, "release-npm-fresco-native");
+  assert.match(fresco, /clean-node-binaries\.ts npm\/fresco-native/);
+  assert.match(fresco, /collect-native-artifacts\.ts/);
+  assert.doesNotMatch(fresco, /napi create-npm-dirs/);
 });

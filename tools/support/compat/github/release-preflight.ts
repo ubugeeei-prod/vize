@@ -1,0 +1,469 @@
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import {
+  bootstrapRequiredWorkflowRuns,
+  createReleaseGateDispatchPlans,
+  releaseGateRunQualifiers,
+} from "./release-preflight-bootstrap.mjs";
+import {
+  assertReleaseCommitIsOnMainFirstParent,
+  assertReleaseMetadata,
+  assertReleaseVersionStillOwnsMain,
+  findReleaseBlockers,
+  isVersionMetadataOnlyRelease,
+  remoteTagCommit,
+  workspaceVersionFromCargoToml,
+} from "./release-preflight-core.mjs";
+import {
+  assertRequiredWorkflowJobs,
+  requiredReleaseWorkflows,
+  selectRequiredWorkflowRuns,
+  workflowRequiresJobEvidence,
+} from "./release-preflight-evidence.mjs";
+import { githubApiPages, githubApiRequest } from "./release-preflight-github.mjs";
+import { downloadArtifactEntries } from "./release-preflight-artifact-entries.mjs";
+import { currentMatrixArtifacts } from "./release-preflight-matrix-selection.mjs";
+import { assertRealProjectMatrixReleaseArtifacts } from "./release-preflight-matrix-evidence.mjs";
+import { releaseTypecheckParityEnforced } from "./release-preflight-typecheck-evidence.mjs";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
+const releasePackageRoots = ["editors", "npm"];
+
+function runGit(args: string[], acceptedExitCodes: number[] = [0], cwd: string = root) {
+  const result = spawnSync("git", args, {
+    cwd,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    timeout: 30_000,
+  });
+  if (result.error?.code === "ETIMEDOUT") {
+    throw new Error(`git ${args.join(" ")} timed out after 30000ms`);
+  }
+  if (result.error != null) throw result.error;
+  if (!acceptedExitCodes.includes(result.status ?? -1)) {
+    const detail = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+    throw new Error(
+      [`git ${args.join(" ")} failed with exit ${result.status}`, detail]
+        .filter(Boolean)
+        .join("\n"),
+    );
+  }
+  return result;
+}
+
+export function pinnedCandidatePublishError({
+  head,
+  sha,
+  eventSha,
+  tag,
+  version,
+  retired,
+  parent,
+  mainSha,
+  mainHistory,
+  mainVersion,
+  parentVersion,
+  remoteTag,
+}: {
+  head: string;
+  sha: string;
+  eventSha?: string;
+  tag: string;
+  version: string;
+  retired: boolean;
+  parent: string;
+  mainSha: string;
+  mainHistory: string[];
+  mainVersion: string;
+  parentVersion: string;
+  remoteTag: boolean;
+}) {
+  if (
+    head !== sha ||
+    (eventSha != null && eventSha !== "" && eventSha !== sha) ||
+    `v${version}` !== tag
+  ) {
+    return "The pinned workflow checkout/tag must be the exact immutable H.";
+  }
+  if (retired) {
+    return [
+      "This cut has a retirement archive; never resume/requalify it.",
+      "Prepare a new official minor cut after the authenticated reservation completes.",
+    ].join(" ");
+  }
+  if (!mainHistory.includes(parent)) {
+    return `Release parent ${parent} is not on the first-parent history of current origin/main ${mainSha}`;
+  }
+  if (mainVersion !== parentVersion) {
+    return "Another release owns main; the pinned candidate cannot publish.";
+  }
+  if (remoteTag) {
+    return "A candidate cannot requalify after its immutable tag exists; resume its original R.";
+  }
+  return null;
+}
+
+function verifyPinnedCandidate(tag: string, sha: string, version: string, env: NodeJS.ProcessEnv) {
+  const parent = releaseParentSha(sha);
+  const mainSha = runGit(["rev-parse", "refs/remotes/origin/main"]).stdout.trim();
+  const error = pinnedCandidatePublishError({
+    head: runGit(["rev-parse", "HEAD"]).stdout.trim(),
+    sha,
+    eventSha: env.GITHUB_SHA,
+    tag,
+    version,
+    retired:
+      runGit([
+        "ls-remote",
+        "--refs",
+        "origin",
+        `refs/heads/release-retired/${tag}`,
+      ]).stdout.trim() !== "",
+    parent,
+    mainSha,
+    mainHistory: runGit(["rev-list", "--first-parent", "refs/remotes/origin/main"])
+      .stdout.trim()
+      .split(/\r?\n/),
+    mainVersion: workspaceVersionFromCargoToml(
+      runGit(["show", "refs/remotes/origin/main:Cargo.toml"]).stdout,
+    ),
+    parentVersion: workspaceVersionFromCargoToml(runGit(["show", `${parent}:Cargo.toml`]).stdout),
+    remoteTag:
+      runGit([
+        "ls-remote",
+        "--tags",
+        "origin",
+        `refs/tags/${tag}`,
+        `refs/tags/${tag}^{}`,
+      ]).stdout.trim() !== "",
+  });
+  if (error != null) throw new Error(error);
+  console.log(
+    `Immutable source ${sha} is authorized; moving main does not substitute source or artifacts.`,
+  );
+}
+
+function verifyGitReleaseTarget(
+  tag: string,
+  sha: string,
+  version: string,
+  env: NodeJS.ProcessEnv = process.env,
+) {
+  if (env.RELEASE_PR_NUMBER != null && env.RELEASE_PR_NUMBER !== "") {
+    verifyPinnedCandidate(tag, sha, version, env);
+    return;
+  }
+  const head = runGit(["rev-parse", "HEAD"]).stdout.trim();
+  if (head !== sha) {
+    throw new Error(`Checked out HEAD ${head} does not match release event SHA ${sha}`);
+  }
+  // The reusable workflow checks out the tag with fetch-depth: 0, which also
+  // hydrates origin/main. A second fetch here only repeats the large repository
+  // negotiation and can exceed the command timeout before any gate is checked.
+  const mainSha = runGit(["rev-parse", "refs/remotes/origin/main"]).stdout.trim();
+  // The local release guard requires an exact main tip before creating the
+  // immutable tag. Once the tag exists, later main commits must not invalidate
+  // long-running exact-SHA gates for that release. Requiring the first-parent
+  // chain rejects commits that only entered main through a merge's side parent.
+  const mainFirstParentHistory = runGit(["rev-list", "--first-parent", "refs/remotes/origin/main"])
+    .stdout.trim()
+    .split(/\r?\n/);
+  assertReleaseCommitIsOnMainFirstParent(sha, mainSha, mainFirstParentHistory.includes(sha));
+  // ...and the one kind of drift that does invalidate this release: another
+  // release taking over the version line. See assertReleaseVersionStillOwnsMain.
+  assertReleaseVersionStillOwnsMain({
+    tag,
+    sha,
+    mainSha,
+    releaseVersion: version,
+    mainVersion: workspaceVersionFromCargoToml(
+      runGit(["show", "refs/remotes/origin/main:Cargo.toml"]).stdout,
+    ),
+  });
+
+  const remoteTag = runGit([
+    "ls-remote",
+    "--exit-code",
+    "--tags",
+    "origin",
+    `refs/tags/${tag}`,
+    `refs/tags/${tag}^{}`,
+  ]).stdout;
+  const target = remoteTagCommit(remoteTag, tag);
+  if (target !== sha) {
+    const targetDescription = typeof target === "string" ? target : "nothing";
+    throw new Error(`Remote tag ${tag} points to ${targetDescription}, expected ${sha}`);
+  }
+}
+
+function releaseParentSha(sha: string) {
+  const revision = runGit(["rev-list", "--parents", "-n", "1", sha]).stdout.trim().split(/\s+/);
+  if (revision.length !== 2 || revision[0] !== sha) {
+    throw new Error(
+      `Release commit ${sha} must have exactly one parent for release evidence reuse`,
+    );
+  }
+  const baseSha = revision[1];
+  const ancestry = runGit(["merge-base", "--is-ancestor", baseSha, sha], [0, 1]);
+  if (ancestry.status !== 0) {
+    throw new Error(`Release parent ${baseSha} is not an ancestor of release commit ${sha}`);
+  }
+  return baseSha;
+}
+
+export function readPackageManifests() {
+  const manifestPaths = runGit(["ls-files", "-z", "--", ...releasePackageRoots])
+    .stdout.split("\0")
+    .filter((relativePath) => relativePath.endsWith("/package.json"));
+  const manifests: { path: string; content: string }[] = [];
+  for (const relativePath of manifestPaths) {
+    const content = fs.readFileSync(path.join(root, relativePath), "utf8");
+    let packageJson;
+    try {
+      packageJson = JSON.parse(content);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to parse tracked package manifest ${relativePath}: ${detail}`, {
+        cause: error,
+      });
+    }
+    if (packageJson.private === true) continue;
+    manifests.push({ path: relativePath, content });
+  }
+  return manifests.sort((left, right) => left.path.localeCompare(right.path));
+}
+
+export function releaseDispatchRef(env: NodeJS.ProcessEnv, tag: string) {
+  const candidate = env.RELEASE_PR_NUMBER != null && env.RELEASE_PR_NUMBER !== "";
+  if (!candidate) return tag;
+  const branch = env.GITHUB_REF_NAME ?? "";
+  if (branch !== `release/${tag}`) {
+    throw new Error("Release dispatch must use its candidate branch");
+  }
+  return branch;
+}
+
+export function verifyReleaseTarget(env: NodeJS.ProcessEnv = process.env) {
+  const candidate = env.RELEASE_PR_NUMBER != null && env.RELEASE_PR_NUMBER !== "";
+  const tag = (candidate ? env.RELEASE_TAG_NAME : env.GITHUB_REF_NAME) ?? "";
+  const sha = env.GITHUB_SHA ?? "";
+  if (!candidate && env.GITHUB_REF_TYPE !== "tag") {
+    throw new Error(
+      `Release preflight requires a tag event, got ${env.GITHUB_REF_TYPE ?? "unknown"}`,
+    );
+  }
+  const version = assertReleaseMetadata({
+    tag,
+    sha,
+    cargoToml: fs.readFileSync(path.join(root, "Cargo.toml"), "utf8"),
+    packageManifests: readPackageManifests(),
+  });
+  verifyGitReleaseTarget(tag, sha, version, env);
+  const baseSha = releaseParentSha(sha);
+  return {
+    tag,
+    sha,
+    version,
+    baseSha,
+    versionOnly: releaseChangesVersionMetadataOnly(baseSha, sha),
+  };
+}
+
+/**
+ * Gates that prove the *code* may reuse the parent's evidence when the release
+ * commit only rewrote version metadata. `Native Smoke` must never be added: it
+ * installs what the tag builds, so its subject really is the release commit.
+ */
+const parentEvidenceReusableWorkflows = ["Fuzz", "Real Project Matrix"];
+
+/**
+ * A diff this cannot compute — a shallow clone, an unhydrated parent — answers
+ * "no", which costs a full gate dispatch rather than skipping one. The reuse is
+ * an optimization, so every uncertain case has to fall back to proving it.
+ */
+function releaseChangesVersionMetadataOnly(baseSha: string, sha: string) {
+  let result;
+  try {
+    result = runGit(["diff", "--name-only", `${baseSha}..${sha}`], [0]);
+  } catch {
+    return false;
+  }
+  const changed = result.stdout
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  return isVersionMetadataOnlyRelease(changed);
+}
+
+export function releaseEvidenceShas({
+  sha,
+  baseSha,
+  versionOnly,
+}: {
+  sha: string;
+  baseSha: string;
+  versionOnly: boolean;
+}) {
+  if (!versionOnly) return new Map();
+  return new Map(parentEvidenceReusableWorkflows.map((name) => [name, [sha, baseSha]]));
+}
+
+export async function verifyReleasePreflight(
+  env: NodeJS.ProcessEnv = process.env,
+  { bootstrap = true } = {},
+) {
+  const { tag, sha, version, baseSha, versionOnly } = verifyReleaseTarget(env);
+  const repository = env.GITHUB_REPOSITORY ?? "";
+  const token = env.GITHUB_TOKEN ?? "";
+  const apiUrl = env.GITHUB_API_URL ?? "https://api.github.com";
+  if (repository === "" || token === "") {
+    throw new Error("GITHUB_REPOSITORY and GITHUB_TOKEN are required");
+  }
+
+  const evidenceShas = releaseEvidenceShas({ sha, baseSha, versionOnly });
+  if (versionOnly) {
+    console.log(
+      `Release ${tag} changed version metadata only; accepting ${baseSha} evidence for ${parentEvidenceReusableWorkflows.join(", ")}.`,
+    );
+  }
+  const evidenceSourceShas = versionOnly ? [sha, baseSha] : [sha];
+  const listRuns = async () => {
+    const pages = await Promise.all(
+      evidenceSourceShas.map((headSha) =>
+        githubApiPages({
+          apiUrl,
+          repository,
+          token,
+          resource: "actions/runs",
+          collection: "workflow_runs",
+          query: { head_sha: headSha },
+        }),
+      ),
+    );
+    return pages.flat();
+  };
+  const dispatchPlans = createReleaseGateDispatchPlans({
+    ref: releaseDispatchRef(env, tag),
+    headSha: sha,
+    baseSha,
+  });
+  let selectedRuns;
+  if (requiredReleaseWorkflows.length === 0) {
+    selectedRuns = new Map();
+  } else if (bootstrap) {
+    let previousWaitState = "";
+    selectedRuns = await bootstrapRequiredWorkflowRuns({
+      sha,
+      dispatchPlans,
+      listRuns,
+      evidenceShas,
+      dispatchWorkflow: async (plan) => {
+        console.log(`Dispatching ${plan.workflowName} on ${plan.ref} for ${sha}.`);
+        await githubApiRequest({
+          apiUrl,
+          repository,
+          token,
+          resource: `actions/workflows/${encodeURIComponent(plan.workflowId)}/dispatches`,
+          method: "POST",
+          body: { ref: plan.ref, inputs: plan.inputs },
+        });
+      },
+      onWait: ({ missing, pending }) => {
+        const state = JSON.stringify({ missing, pending });
+        if (state === previousWaitState) return;
+        previousWaitState = state;
+        console.log(
+          `Waiting for exact-SHA release gates (missing: ${missing.join(", ") || "none"}; pending: ${pending.join(", ") || "none"}).`,
+        );
+      },
+    });
+  } else {
+    selectedRuns = selectRequiredWorkflowRuns(
+      await listRuns(),
+      sha,
+      requiredReleaseWorkflows,
+      releaseGateRunQualifiers(dispatchPlans, evidenceShas),
+      evidenceShas,
+    );
+  }
+
+  let currentMatrixJobs;
+  const [issues] = await Promise.all([
+    githubApiPages({
+      apiUrl,
+      repository,
+      token,
+      resource: "issues",
+      collection: null,
+      query: { state: "open" },
+    }),
+    ...[...selectedRuns]
+      .filter(([workflowName]) => workflowRequiresJobEvidence(workflowName))
+      .map(async ([workflowName, run]) => {
+        const jobs = await githubApiPages({
+          apiUrl,
+          repository,
+          token,
+          resource: `actions/runs/${run.id}/jobs`,
+          collection: "jobs",
+        });
+        assertRequiredWorkflowJobs(workflowName, jobs);
+        if (workflowName === "Real Project Matrix") currentMatrixJobs = jobs;
+      }),
+  ]);
+  const blockers = findReleaseBlockers(issues, tag);
+  if (blockers.length > 0) {
+    throw new Error(
+      `Release-blocking issues remain open:\n${blockers
+        .map((issue) => `- #${issue.number} ${issue.title}`)
+        .join("\n")}`,
+    );
+  }
+  const realProjectMatrixRun = selectedRuns.get("Real Project Matrix");
+  if (realProjectMatrixRun != null) {
+    const artifacts = await currentMatrixArtifacts({
+      run: realProjectMatrixRun,
+      currentJobs: currentMatrixJobs,
+      api: { apiUrl, repository, token },
+    });
+    await assertRealProjectMatrixReleaseArtifacts({
+      run: realProjectMatrixRun,
+      artifacts,
+      enforceParity: releaseTypecheckParityEnforced,
+      requireTypecheckArtifacts: releaseTypecheckParityEnforced,
+      readArtifactEntries: async (artifact) => downloadArtifactEntries({ artifact, token }),
+    });
+  }
+  verifyGitReleaseTarget(tag, sha, version, env);
+  console.log(`Release preflight passed for ${tag} (${sha}) at workspace version ${version}.`);
+  console.log(`Required workflows: ${requiredReleaseWorkflows.join(", ")}`);
+}
+
+export function parseReleasePreflightMode(args: string[]) {
+  if (args.length === 0) return "bootstrap";
+  if (args.length === 1 && args[0] === "--verify-only") return "verify-only";
+  if (args.length === 1 && args[0] === "--target-only") return "target-only";
+  throw new Error(
+    "Usage: node tools/support/compat/github/release-preflight.ts [--verify-only|--target-only]",
+  );
+}
+
+const entrypoint = process.argv[1]
+  ? fileURLToPath(import.meta.url) === path.resolve(process.argv[1])
+  : false;
+export function runReleasePreflightCli() {
+  const command = Promise.resolve().then(() => {
+    const mode = parseReleasePreflightMode(process.argv.slice(2));
+    if (mode === "target-only") return verifyReleaseTarget();
+    return verifyReleasePreflight(process.env, { bootstrap: mode === "bootstrap" });
+  });
+  command.catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+}
+
+if (entrypoint) runReleasePreflightCli();
