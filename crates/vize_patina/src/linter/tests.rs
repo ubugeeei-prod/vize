@@ -50,4 +50,5 @@ mod script_template_ast;
 mod severity_overrides;
 mod sfc;
 mod typed_prop_defaults;
+mod vue_script_suppressions;
 mod v_for_unused_vars;
