@@ -243,16 +243,24 @@ impl VirtualProject {
         // package. Discover those routes after registering each wave of
         // sources so its own package boundary is available in the virtual
         // project, even when the app only imports the package root.
+        // Registration can successfully decline a target (for example, a
+        // source deleted after route resolution). Attempt it once per call;
+        // a later discovery wave may retry an absent, previously visited file.
+        let mut attempted = FxHashSet::default();
         loop {
             let mut targets = self
                 .package_route_source_paths()
                 .into_iter()
-                .filter(|path| !processed.contains(path) || self.find_by_original(path).is_none())
+                .filter(|path| {
+                    !attempted.contains(path)
+                        && (!processed.contains(path) || self.find_by_original(path).is_none())
+                })
                 .collect::<Vec<_>>();
             if targets.is_empty() {
                 break;
             }
             targets.sort();
+            attempted.extend(targets.iter().cloned());
             self.register_paths(&targets)?;
             self.reconcile_package_routes_for_importers(&targets);
             processed.extend(targets);

@@ -9,6 +9,78 @@ const ROOT: &str = "<script setup lang=\"ts\">import Leaf from 'leaf-widget'; de
 const LEAF: &str = "<script setup lang=\"ts\">defineProps<{ leafLabel: string }>()</script><template><div>{{ leafLabel }}</div></template>";
 
 #[test]
+fn missing_package_target_terminates_and_a_later_wave_registers_its_recreated_source() {
+    // Keep the regression bounded independently of the implementation's loop:
+    // registration silently skips missing files, rather than returning Err.
+    let (finished, result) = std::sync::mpsc::channel();
+    let worker = std::thread::spawn(move || {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().canonicalize().unwrap();
+        let host = root.join("App.vue");
+        let package = root.join("node_modules/leaf-widget");
+        let missing = package.join("Leaf.vue");
+        let manifest = package.join("package.json");
+        write(&host, HOST);
+        write(
+            &manifest,
+            r#"{"name":"leaf-widget","exports":"./Leaf.vue"}"#,
+        );
+        let mut project = crate::batch::virtual_project::VirtualProject::new(&root).unwrap();
+        project.register_path(&host).unwrap();
+        project.set_package_routes([crate::PackageRouteBinding {
+            importer_path: host.clone(),
+            specifier: "leaf-widget".into(),
+            occurrence_mode: crate::PackageResolutionMode::Import,
+            context: Default::default(),
+            route: Some(crate::PackageRoute {
+                source_paths: vec![missing.clone()],
+                dependency_paths: Vec::new(),
+                source_targets: vec![crate::PackageRouteSource {
+                    target_path: missing.clone(),
+                    source_path: missing.clone(),
+                    native_probe_path: missing.with_extension("d.vue.ts"),
+                }],
+                package_root: package.clone(),
+                package_link_root: package,
+                manifest_path: manifest.clone(),
+                package_name: Some("leaf-widget".into()),
+                workspace_source: false,
+                nested_routes: Vec::new(),
+            }),
+            invalidation_paths: vec![manifest, missing.clone()],
+        }]);
+        let mut processed = Default::default();
+        project
+            .register_package_route_targets_with_visited(&mut processed)
+            .unwrap();
+        assert!(project.find_by_original(&missing).is_none());
+        assert!(processed.contains(&missing));
+
+        write(&missing, LEAF);
+        project
+            .register_package_route_targets_with_visited(&mut processed)
+            .unwrap();
+        let code = &project.find_by_original(&missing).unwrap().content;
+        assert!(
+            code.contains("const leafLabel = props[\"leafLabel\"]"),
+            "{code}"
+        );
+        // A successful target is still reused by subsequent discovery waves.
+        project
+            .register_package_route_targets_with_visited(&mut processed)
+            .unwrap();
+        project.finalize_package_routes().unwrap();
+        let work = project.materialize_incremental_delta().unwrap();
+        assert_eq!(work.source_nodes_rebuilt, 2, "{work:?}");
+        finished.send(()).unwrap();
+    });
+    result
+        .recv_timeout(std::time::Duration::from_secs(5))
+        .expect("missing package targets must not be retried forever");
+    worker.join().unwrap();
+}
+
+#[test]
 fn editor_package_fixpoint_generates_each_target_once_and_keeps_fresh_revisions() {
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path().canonicalize().unwrap();
