@@ -2491,19 +2491,13 @@
       "expectedNative": {
         "filename": "Probe.vue",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "vue/no-template-shadow",
-            "severity": "warning",
-            "message": "Variable 'item' shadows a variable in an outer scope",
-            "start": 54,
-            "end": 58,
-            "help": "Rename the variable to avoid shadowing",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "referenceBoundary": {
+        "category": "invalid-rest-group-accepted-by-reference-typescript-parser",
+        "nativeContract": "Refuse the complete invalid parameter goal; do not invent partial declarations.",
+        "foreignPacketPreserved": true
       }
     },
     {
@@ -2538,19 +2532,13 @@
       "expectedNative": {
         "filename": "Probe.vue",
         "error_count": 0,
-        "warning_count": 1,
-        "diagnostics": [
-          {
-            "rule_name": "vue/no-template-shadow",
-            "severity": "warning",
-            "message": "Variable 'item' shadows a variable in an outer scope",
-            "start": 54,
-            "end": 58,
-            "help": "Rename the variable to avoid shadowing",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "referenceBoundary": {
+        "category": "invalid-rest-group-accepted-by-reference-typescript-parser",
+        "nativeContract": "Refuse the complete invalid parameter goal; do not invent partial declarations.",
+        "foreignPacketPreserved": true
       }
     },
     {

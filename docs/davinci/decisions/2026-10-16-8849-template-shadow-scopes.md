@@ -65,3 +65,11 @@ the older Matrix schema did not contain full raw foreign envelopes, so the audit
 also retains fresh full pinned ESLint results for every original file. Neither
 comparison normalization, diagnostic suppression, rule defaults nor Matrix budgets
 change. The #8849 qualification umbrella remains open.
+
+Two invalid-rest neighbor controls have an explicit reference parser boundary:
+the pinned Matrix TypeScript parser returns a binding and a shadow warning for
+`(...item, index)` and `(...item,)`, whereas the ordinary parameter grammar rejects
+both groups. Their complete foreign packets stay intact; native expectations are
+independently zero, preserving the prior refusal rather than fabricating partial
+bindings to match the reference. The direct OXC API tests assert those syntax
+refusals, and valid final-rest bindings keep their native warning.
