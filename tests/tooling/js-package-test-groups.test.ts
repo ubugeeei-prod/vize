@@ -223,6 +223,17 @@ await test("UI's actual production Vue consumer has its locked fixture in the fi
   const fixture = path.relative(root, path.dirname(fixtureManifest)).split(path.sep).join("/");
   const fixtureFilter = `./${fixture}...`;
   assert.equal(fixtureFilter, "./npm/builder/vite/example...");
+  const installerPlan = planAffectedJs(readJsWorkspace(root), [
+    "tools/support/compat/github/install-js-checks.ts",
+  ]);
+  const groups = testedPackageGroups.map(({ name }) => name);
+  assert.deepEqual(installerPlan.groups, groups);
+  assert.deepEqual(installerPlan.matrix.group, groups);
+  assert.equal(installerPlan.scope, "affected", "shared runtime work is not a full workspace plan");
+  assert.equal(installerPlan.native, false, "the installer does not change native product inputs");
+  for (const { packages } of testedPackageGroups) {
+    for (const pkg of packages) assert.ok(installerPlan.packages.includes(pkg.slice(2)), pkg);
+  }
   const ui = manifests.get("./npm/ui");
   assert.ok(ui?.scripts?.test?.includes("vp test run --config vite.production-vue.config.ts"));
   assert.match(source, /assert\.equal\(manifest\.version, "3\.5\.42"\)/u);
