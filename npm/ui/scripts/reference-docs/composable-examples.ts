@@ -22,6 +22,16 @@ import { deviceExamples } from "./device-examples.ts";
 
 const stateExamples = [
   {
+    name: "async-resource",
+    title: "Request a delivery quote with cancellation",
+    purpose:
+      "Let a shopper change delivery service or cancel a quote request while keeping the last successful price visible.",
+    observe:
+      "Start Standard, then immediately Express. The slow Standard loader is aborted and only Express appears. Cancel request stops a pending producer without adding a response. Unavailable area shows a failure while retaining the last quote; choose a service to recover. Reset quote aborts pending work and clears the result.",
+    context:
+      "This is delayed local sample data, not a server integration: Standard takes 800 ms and the other choices take 300 ms. The producer listens to the real `AbortSignal`, clears its timer on abort and removes its listener when it settles. In an application pass that signal to `fetch`. `keepData` and `cancelPrevious` default to true. `execute()` resolves to a success, error, cancelled or superseded result; a loader rejection does not reject that promise. The response/cancellation counters and last execution label are example-owned history, so reset does not clear them. Call inside setup: no loader runs during SSR, and disposing the component scope aborts active work through the same signal. The package remains experimental.",
+  },
+  {
     name: "virtual-list",
     title: "Browse a thousand guides",
     purpose:
