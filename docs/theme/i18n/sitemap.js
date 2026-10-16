@@ -175,12 +175,14 @@
       pathsByLocale: {
         en: [
           ...projectSetupPaths,
+          "/guide/jsr",
           "/guide/vue-configuration",
           "/guide/vite-scoped-compiler",
           "/guide/experimentals",
         ],
         ja: [
           ...projectSetupPaths,
+          "/guide/jsr",
           "/guide/vue-configuration",
           "/guide/vite-scoped-compiler",
           "/guide/experimentals",
