@@ -8,7 +8,7 @@
   locales.ja = {
     labels: {
       "/": "概要",
-      "/getting-started": "はじめに",
+      "/getting-started": "はじめる",
       "/stability": "安定性",
       "/credits": "クレジット",
       "/contributing": "貢献する",

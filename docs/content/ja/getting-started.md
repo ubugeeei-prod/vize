@@ -54,7 +54,7 @@ vp run fmt:check
 - [lint の指摘を理解する](./rules/all.md)。Vue の問題例と修正例を掲載しています。
 - [コンポーネントを探す](./guide/ui/index.md)。使い方と API を確認できます。
 - [Musea でコンポーネントをプレビューする](./guide/musea.md)。
-- [エディターを設定する（英語）](../guide/vite-plus-editor.md)。共通のネイティブ設定を利用できます。
+- [エディターを設定する](./guide/vite-plus-editor.md)。CLI とエディターで共通の設定を利用できます。
 
 > [!NOTE]
 > Vize 0.457.0 のネイティブ CLI は Vite の共通設定を読み込めます。`init` も専用の Vize 設定ファイルを作らずに導入できます。共通設定を利用する場合は、CLI・Vite 連携・エディター拡張機能を更新してください。設定の検索順序・優先順位と、任意の専用形式は[リファレンス](./guide/configuration-reference.md)を参照してください。
@@ -63,4 +63,4 @@ vp run fmt:check
 
 [単独 CLI](./guide/cli.md)では `vize lint`・`vize fmt`・`vize check` を実行できます。対象パッケージのルートから実行し、TypeScript のプロジェクト設定は `tsconfig.json` に残します。ネイティブコマンドも `vite.config.*` のトップレベルの `vize` 設定を共有できます。検索規則と現在の範囲は [CLI の設定](./guide/configuration.md#standalone-cli)を参照してください。
 
-対話形式の設定は `vpx vize init --dry-run` で変更予定を確認し、`vpx vize init` で機能を選びます。[プロジェクト設定（英語）](../guide/init.md)に検出規則と編集できない条件をまとめています。init は既存のプロジェクト設定と既定値を使い、専用の Vize 設定ファイルは作成しません。
+対話形式で導入する場合は、`vpx vize init --dry-run` で変更予定を確認し、`vpx vize init` で機能を選びます。[プロジェクトの初期設定](./guide/init.md)に、プロジェクトの検出方法と、設定を自動編集できない場合の対応をまとめています。init は既存のプロジェクト設定と既定値を使い、専用の Vize 設定ファイルは作成しません。

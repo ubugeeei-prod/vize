@@ -37,7 +37,9 @@ Vize 拡張機能は `vize lsp` を起動します。lint、型チェック、�
 ステータスバーの Vize をクリックすると `Vize: Show Status` が開きます。
 プロファイルの変更、サーバー実行ファイルの選択、再起動、設定、ログの確認をまとめて行えます。
 
-### 推奨される開始点
+<span id="推奨される開始点"></span>
+
+### lint だけを有効にして試す
 
 ```json
 {
@@ -59,7 +61,7 @@ Vize 拡張機能は `vize lsp` を起動します。lint、型チェック、�
 | `vize.serverPath`            | 使用する `vize` 実行ファイルのパスを指定する |
 | `vize.lint.enable`           | lint 診断を有効にする                        |
 | `vize.typecheck.enable`      | 型情報を使う診断とバックエンド機能を有効にする |
-| `vize.editor.enable`         | エディター支援バンドルを有効にする           |
+| `vize.editor.enable`         | ホバーや補完などのエディター機能をまとめて有効にする |
 | `vize.completion.enable`     | 補完を有効にする                             |
 | `vize.formatting.enable`     | ファイルのフォーマットを有効にする           |
 | `vize.definition.enable`     | 定義への移動を有効にする                     |
