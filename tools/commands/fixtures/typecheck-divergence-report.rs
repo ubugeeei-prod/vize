@@ -85,6 +85,7 @@ fn run() -> Result<(), String> {
 fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<Value, String> {
     validate_performance(project)?;
     let project_id = project_string(project, "id")?;
+    quarantine_previous_typecheck_artifacts(&args.report_dir, &project_id)?;
     let fixture_root = root.join(project_string(project, "fixturePath")?);
     let summary = read_and_validate_summary(root, &args.report_dir, project)?;
     let vize_run = read_and_validate_vize_run(root, &args.report_dir, project, &summary)?;
@@ -359,6 +360,83 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
     println!("Wrote {}", display_relative(root, &json_path));
     println!("Wrote {}", display_relative(root, &markdown_path));
     Ok(artifact)
+}
+
+/// Reusing a report directory must not leave an earlier accepted comparison at
+/// the live path when this attempt fails. Preserve only this collector's owned
+/// files, under names that cannot be mistaken for current matrix reports.
+fn quarantine_previous_typecheck_artifacts(
+    report_dir: &Path,
+    project_id: &str,
+) -> Result<(), String> {
+    let mut previous = Vec::new();
+    let mut previous_evidence = Value::Null;
+    for (suffix, archived_name) in [
+        ("typecheck-divergence.json", "comparison.json"),
+        ("typecheck-divergence.md", "comparison.md"),
+        ("typecheck-observations.json", "observations.json"),
+        ("typecheck-divergence-failure.json", "failure.json"),
+    ] {
+        let filename = format!("{project_id}-{suffix}");
+        let path = report_dir.join(&filename);
+        match fs::symlink_metadata(&path) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(error) => return Err(format!("Cannot inspect {}: {error}", path.display())),
+            Ok(metadata) if !metadata.file_type().is_file() => {
+                return Err(format!(
+                    "Owned typecheck report is not a regular file: {}",
+                    path.display()
+                ));
+            }
+            Ok(_) => {}
+        }
+        let bytes = fs::read(&path)
+            .map_err(|error| format!("Cannot retain {}: {error}", path.display()))?;
+        if let Ok(value) = serde_json::from_slice::<Value>(&bytes)
+            && let Some(evidence) = value
+                .get("evidence")
+                .or_else(|| value.pointer("/comparison/evidence"))
+        {
+            previous_evidence = evidence.clone();
+        }
+        previous.push((
+            path,
+            archived_name,
+            json!({
+                "originalName": filename,
+                "archivedName": archived_name,
+                "sizeBytes": bytes.len(),
+                "sha256": format!("{:x}", Sha256::digest(&bytes)),
+            }),
+        ));
+    }
+    if previous.is_empty() {
+        return Ok(());
+    }
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|error| format!("Cannot timestamp prior typecheck reports: {error}"))?
+        .as_nanos();
+    let directory = report_dir
+        .join("previous-typecheck-comparisons")
+        .join(project_id)
+        .join(format!("{}-{nanos}", std::process::id()));
+    fs::create_dir_all(&directory)
+        .map_err(|error| format!("Cannot create {}: {error}", directory.display()))?;
+    let receipt = json!({
+        "schema": "vize.fixtureTypecheckPreviousAttempt",
+        "version": 1,
+        "project": project_id,
+        "previousEvidence": previous_evidence,
+        "nextSourceCommit": env::var("GITHUB_SHA").ok(),
+        "files": previous.iter().map(|(_, _, receipt)| receipt.clone()).collect::<Vec<_>>(),
+    });
+    common::write_json_pretty(directory.join("manifest.json"), &receipt)?;
+    for (path, archived_name, _) in previous {
+        fs::rename(&path, directory.join(archived_name))
+            .map_err(|error| format!("Cannot quarantine {}: {error}", path.display()))?;
+    }
+    Ok(())
 }
 
 struct BaselineConfig {

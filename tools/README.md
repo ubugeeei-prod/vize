@@ -39,3 +39,9 @@ Its `<project>-typecheck-divergence-failure.json` contains the rejected comparis
 observations, and mutation controls under a distinct failure schema; no normal comparison
 artifact is published for that run. Observation and failure packets are diagnostic evidence
 and do not establish project acceptance.
+
+Reusing a report directory archives only this collector's previous comparison JSON/Markdown,
+observation packet, and failure packet under `previous-typecheck-comparisons/<project>/`.
+Each attempt has a manifest with original names, content hashes, and source provenance.
+The live normal comparison paths therefore describe only the current accepted attempt;
+previous evidence and other projects' reports remain available.

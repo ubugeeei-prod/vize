@@ -11,6 +11,7 @@ import {
   setup,
   writeJson,
   sharedVizeDiagnostic,
+  commitSha,
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
 
 const duplicateListenerDifference = {
@@ -195,6 +196,61 @@ test("typecheck divergence retains raw observations when its numerical budget fa
       fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence-failure.json")),
       false,
     );
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("same-directory successful, stale, and repaired attempts preserve prior evidence", () => {
+  const fixture = setup();
+  try {
+    const acceptedPath = path.join(fixture.reportDir, "fixture-typecheck-divergence.json");
+    const markdownPath = path.join(fixture.reportDir, "fixture-typecheck-divergence.md");
+    const observationsPath = path.join(fixture.reportDir, "fixture-typecheck-observations.json");
+    const failurePath = path.join(fixture.reportDir, "fixture-typecheck-divergence-failure.json");
+    const unrelated = path.join(fixture.reportDir, "other-project-typecheck-divergence.json");
+    fs.writeFileSync(unrelated, "unrelated evidence");
+    assert.equal(run(fixture).status, 0);
+    const accepted = fs.readFileSync(acceptedPath);
+    const markdown = fs.readFileSync(markdownPath);
+    const observations = fs.readFileSync(observationsPath);
+    const stale = run(fixture, {}, [
+      "--documented-differences",
+      writeDocumentedDifferences(fixture),
+    ]);
+    assert.equal(stale.status, 1, stale.stderr);
+    assert.match(stale.stderr, /Documented typecheck difference ledger is stale/);
+    assert.equal(fs.existsSync(acceptedPath), false);
+    assert.equal(fs.existsSync(markdownPath), false);
+    assert.equal(fs.existsSync(failurePath), true);
+    const history = path.join(fixture.reportDir, "previous-typecheck-comparisons", "fixture");
+    const first = path.join(history, fs.readdirSync(history)[0]);
+    assert.deepEqual(fs.readFileSync(path.join(first, "comparison.json")), accepted);
+    assert.deepEqual(fs.readFileSync(path.join(first, "comparison.md")), markdown);
+    assert.deepEqual(fs.readFileSync(path.join(first, "observations.json")), observations);
+    const receipt = readJson(path.join(first, "manifest.json"));
+    assert.equal(receipt.schema, "vize.fixtureTypecheckPreviousAttempt");
+    assert.equal(receipt.previousEvidence.commitSha, commitSha);
+    for (const file of receipt.files) {
+      const bytes = fs.readFileSync(path.join(first, file.archivedName));
+      assert.equal(file.sha256, createHash("sha256").update(bytes).digest("hex"));
+      assert.equal(file.sizeBytes, bytes.byteLength);
+    }
+    const rejected = fs.readFileSync(failurePath);
+    const repaired = run(fixture, {}, [
+      "--documented-differences",
+      writeDocumentedDifferences(fixture, []),
+    ]);
+    assert.equal(repaired.status, 0, repaired.stderr);
+    assert.equal(fs.existsSync(acceptedPath), true);
+    assert.equal(fs.existsSync(markdownPath), true);
+    assert.equal(fs.existsSync(failurePath), false);
+    const second = path.join(
+      history,
+      fs.readdirSync(history).find((name) => path.join(history, name) !== first)!,
+    );
+    assert.deepEqual(fs.readFileSync(path.join(second, "failure.json")), rejected);
+    assert.equal(fs.readFileSync(unrelated, "utf8"), "unrelated evidence");
   } finally {
     cleanup(fixture);
   }
