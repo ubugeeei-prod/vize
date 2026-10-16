@@ -38,15 +38,18 @@ fn original_reporter_full_sfc_has_no_filter_findings() {
 
 #[test]
 fn outer_runtime_filter_keeps_complete_authored_range_and_finding() {
-    for expression in [
-        "(value as A | B) | format",
-        "(value satisfies A | B) | format",
-        "(item: A | B) => (item as A | B) | format",
+    for (expression, input_start) in [
+        ("(value as A | B) | format", 1),
+        ("(value satisfies A | B) | format", 1),
+        ("(item: A | B) => (item as A | B) | format", 0),
     ] {
         let source = format!("<!-- 雪😀 -->\r\n<div :id=\"{expression}\" />\r\n");
         let start = source.find(expression).unwrap() as u32;
         let end = start + expression.len() as u32;
-        let finding = LintDiagnostic::error(RULE, MESSAGE, start, end).with_help(HELP);
+        // Optional input grouping is outside the reference filter AST range;
+        // the arrow expression itself still starts at its parameter list.
+        let finding =
+            LintDiagnostic::error(RULE, MESSAGE, start + input_start, end).with_help(HELP);
         assert_result(
             linter(None).lint_template(&source, "Filter.vue"),
             "Filter.vue",
