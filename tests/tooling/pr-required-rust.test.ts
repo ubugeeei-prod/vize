@@ -9,7 +9,7 @@ import type { CargoMetadata } from "../../tools/support/compat/github/plan-affec
 import { planPrChecks, prCheckOutputs } from "../../tools/support/compat/github/plan-pr-checks.ts";
 
 function metadata(root = "/repo"): CargoMetadata {
-  const names = ["syntax", "leaf", "vize_relief", "vize_vitrine", "vize_l4"];
+  const names = ["vize_armature", "vize_curator", "vize_relief", "vize_vitrine", "vize_l4"];
   return {
     workspace_root: root,
     workspace_members: names,
@@ -18,7 +18,7 @@ function metadata(root = "/repo"): CargoMetadata {
       name,
       manifest_path: `${root}/crates/${name}/Cargo.toml`,
       dependencies: ["vize_vitrine", "vize_l4"].includes(name)
-        ? [{ path: `${root}/crates/syntax` }]
+        ? [{ path: `${root}/crates/vize_armature` }]
         : [],
     })),
   };
@@ -44,6 +44,10 @@ test("every docs, tooling and JS-only PR gets the real Relief compiler baseline"
     assert.equal(outputs.rust, "true", path);
     assert.deepEqual(selected.rust.packages, ["vize_relief"], path);
     assert.deepEqual(selected.rust.cargoArgs, ["--package", "vize_relief"]);
+    assert.deepEqual(
+      selected.rust.testMatrix.include.map((entry) => entry.cohort),
+      ["compiler"],
+    );
     assert.deepEqual(selected.rust.changedPackages, []);
     assert.deepEqual(selected.native.matrix, { lane: ["none"] });
     assert.deepEqual(selected.js.groups, path.startsWith("npm/") ? ["oxlint"] : []);
@@ -51,9 +55,13 @@ test("every docs, tooling and JS-only PR gets the real Relief compiler baseline"
 });
 
 test("Rust PRs validate their actual reverse dependency closure without replacing it with baseline", () => {
-  assert.deepEqual(plan(["crates/leaf/src/lib.rs"]).rust.packages, ["leaf"]);
-  const compiler = plan(["crates/syntax/src/lib.rs"]);
-  assert.deepEqual(compiler.rust.packages, ["syntax", "vize_l4", "vize_vitrine"]);
+  assert.deepEqual(plan(["crates/vize_curator/src/lib.rs"]).rust.packages, ["vize_curator"]);
+  const compiler = plan(["crates/vize_armature/src/lib.rs"]);
+  assert.deepEqual(compiler.rust.packages, ["vize_armature", "vize_l4", "vize_vitrine"]);
+  assert.deepEqual(
+    compiler.rust.testMatrix.include.map((entry) => entry.cohort),
+    ["compiler", "cli-and-integrations"],
+  );
   assert.deepEqual(compiler.js.groups, ["builders", "ui", "oxlint"]);
   assert.equal(compiler.native.matrix.lane.length, 8);
 });
@@ -70,8 +78,8 @@ test("every merge candidate checks all Rust packages without widening actual JS/
   for (const path of [
     "docs/guide.md",
     "npm/oxlint/src/index.ts",
-    "crates/leaf/src/lib.rs",
-    "crates/syntax/src/lib.rs",
+    "crates/vize_curator/src/lib.rs",
+    "crates/vize_armature/src/lib.rs",
   ]) {
     const pr = plan([path]);
     const merge = plan([path], "merge_group");

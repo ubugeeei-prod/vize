@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readRustWorkerSelection } from "../../tools/support/compat/github/select-rust-workers.mjs";
 import { PendingRustWorkerMetadata } from "../../tools/support/compat/github/rust-worker-selection.mjs";
-import { context, fixture } from "./_helpers/rust-worker-selection-fixture.mjs";
+import { context, fixture, latestWorker } from "./_helpers/rust-worker-selection-fixture.mjs";
 
-function staleStep(value, shard = 1, step = 1, status = "in_progress") {
-  const latest = value.jobs.find((job) => job.id === 200 + shard);
+function staleStep(value, cohort = "compiler", step = 1, status = "in_progress") {
+  const latest = latestWorker(value, cohort);
   Object.assign(latest.steps[step], {
     status,
     conclusion: null,
@@ -59,19 +59,19 @@ await test("a completed-success worker's stale step is freshly observed, never m
     [1, "pending"],
     [3, "pending"],
   ]) {
-    const pending = staleStep(fixture(), 1, step, status);
+    const pending = staleStep(fixture(), "compiler", step, status);
     const api = transport([pending, fixture()]);
     const result = await readRustWorkerSelection(context, api.options);
     assert.deepEqual(api.waits, [2000]);
-    assert.equal(pending.jobs[4].steps[step].status, status);
-    assert.equal(pending.jobs[4].steps[step].completed_at, null);
+    assert.equal(latestWorker(pending).steps[step].status, status);
+    assert.equal(latestWorker(pending).steps[step].completed_at, null);
     assert.deepEqual(
       result.workers.map((worker) => worker.latestJobId),
-      [201, 202, 203, 204],
+      [201, 202, 203, 204, 205],
     );
     assert.deepEqual(
       result.workers.map((worker) => worker.artifactId),
-      [2001, 1002, 1003, 1004],
+      [2001, 1002, 1003, 1004, 1005],
     );
     assert.equal(api.calls.filter((url) => url.includes("/jobs?")).length, 2);
   }
@@ -128,20 +128,20 @@ await test("missing, foreign or duplicate artifact and malformed worker identiti
     },
     (value) => value.artifacts.push(structuredClone(value.artifacts[0])),
     (value) => {
-      value.jobs[7].head_sha = "b".repeat(40);
+      latestWorker(value, "cli-and-integrations").head_sha = "b".repeat(40);
     },
-    (value) => value.jobs.push(structuredClone(value.jobs[7])),
+    (value) => value.jobs.push(structuredClone(latestWorker(value, "cli-and-integrations"))),
     (value) => {
-      value.jobs[4].steps[1].number = 1;
-    },
-    (value) => {
-      value.jobs[4].steps[1].conclusion = "failure";
+      latestWorker(value).steps[1].number = 1;
     },
     (value) => {
-      value.jobs[4].steps[1].started_at = "2026-10-04T03:00:00Z";
+      latestWorker(value).steps[1].conclusion = "failure";
     },
     (value) => {
-      value.jobs[4].steps[1].status = "unknown";
+      latestWorker(value).steps[1].started_at = "2026-10-04T03:00:00Z";
+    },
+    (value) => {
+      latestWorker(value).steps[1].status = "unknown";
     },
   ]) {
     const value = staleStep(fixture());
@@ -157,13 +157,13 @@ await test("missing, foreign or duplicate artifact and malformed worker identiti
 
 await test("pending required steps cannot borrow older green artifacts or incomplete worker jobs", async () => {
   for (const mutate of [
-    (value) => staleStep(value, 2),
+    (value) => staleStep(value, "typechecker"),
     (value) => {
-      value.jobs[4].status = "in_progress";
-      value.jobs[4].conclusion = null;
+      latestWorker(value).status = "in_progress";
+      latestWorker(value).conclusion = null;
     },
     (value) => {
-      value.jobs[4].steps[1].started_at = null;
+      latestWorker(value).steps[1].started_at = null;
     },
   ]) {
     const value = staleStep(fixture());
@@ -193,7 +193,7 @@ await test("run, source, repository, latest job or artifact changes during retry
       });
     },
     (value) => {
-      value.jobs[4].id = 901;
+      latestWorker(value).id = 901;
     },
     (value) => {
       value.artifacts[0].digest = `sha256:${"b".repeat(64)}`;
@@ -215,7 +215,7 @@ await test("a pending read's post-inventory run identity and eventual full times
   await assert.rejects(readRustWorkerSelection(context, api.options), /Workflow attempt changed/);
   assert.deepEqual(api.waits, []);
   const invalid = fixture();
-  invalid.jobs[4].steps[1].completed_at = null;
+  latestWorker(invalid).steps[1].completed_at = null;
   const next = transport([staleStep(fixture()), invalid]);
   await assert.rejects(readRustWorkerSelection(context, next.options), /UTC timestamp/);
   assert.deepEqual(next.waits, [2000]);

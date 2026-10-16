@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { runRustWorkerSelection } from "../../tools/support/compat/github/select-rust-workers.mjs";
-import { context, fixture } from "./_helpers/rust-worker-selection-fixture.mjs";
+import { context, fixture, latestWorker } from "./_helpers/rust-worker-selection-fixture.mjs";
 
 // Synthetic metadata and directories exercise output ownership only. They grant
 // no actual Rust, archive, corpus, or repaired failed-only execution credit.
@@ -60,7 +60,7 @@ void test("a valid selection write followed by metadata refusal leaves no old pu
   const result = await value.run("select");
   assert.deepEqual(JSON.parse(fs.readFileSync(value.receipt, "utf8")), result);
   value.seed();
-  value.value.jobs[4].conclusion = "failure";
+  latestWorker(value.value).conclusion = "failure";
   await assert.rejects(value.run("select"), /Latest worker.*did not succeed/);
   value.absent();
   assert.equal(fs.existsSync(value.receipt), false);
@@ -84,8 +84,27 @@ void test("verification keeps its input receipt but clears old public outputs be
   }
   await value.run("verify");
   value.seed();
-  value.value.jobs[4].conclusion = "failure";
+  latestWorker(value.value).conclusion = "failure";
   await assert.rejects(value.run("verify"), /Latest worker.*did not succeed/);
   value.absent();
   assert.deepEqual(JSON.parse(fs.readFileSync(value.receipt, "utf8")), selection);
+});
+
+void test("legacy and changed named selection packets cannot authorize downloaded artifacts", async (t) => {
+  const value = setup(t);
+  const selection = await value.run("select");
+  for (const worker of selection.workers)
+    fs.mkdirSync(path.join(value.artifacts, worker.artifactName), { recursive: true });
+  for (const change of [
+    { version: 1 },
+    { workers: selection.workers.slice(1) },
+    { workers: [{ ...selection.workers[0], cohort: 1 }, ...selection.workers.slice(1)] },
+    { workers: [{ ...selection.workers[0], cohort: "unknown" }, ...selection.workers.slice(1)] },
+    { workers: [selection.workers[0], ...selection.workers.slice(0, -1)] },
+  ]) {
+    fs.writeFileSync(value.receipt, JSON.stringify({ ...selection, ...change }));
+    value.seed();
+    await assert.rejects(value.run("verify"), /Rust workers changed after download/);
+    value.absent();
+  }
 });

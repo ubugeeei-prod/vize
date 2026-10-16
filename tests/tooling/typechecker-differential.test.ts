@@ -4,6 +4,10 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import {
+  RUST_TEST_COHORT_IDS,
+  type RustTestCohortId,
+} from "../../tools/support/compat/github/rust-test-cohorts.ts";
 import { sha256 } from "../differential/harness.mjs";
 import { summarizeNativeAcceptance } from "../differential/acceptance-rates.mjs";
 import {
@@ -210,7 +214,7 @@ test("complete legacy-only observations stay in the denominator with zero native
   });
 });
 
-test("four-worker reconciliation rejects missing workers, stale sources and duplicate execution", (t) => {
+test("named-worker reconciliation rejects missing workers, stale sources and duplicate execution", (t) => {
   const directory = fs.mkdtempSync(path.join(tmpdir(), "vize-typechecker-accounting-"));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   const artifacts = path.join(directory, "artifacts");
@@ -234,8 +238,8 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
     capture,
   );
   for (const item of assignment) item.archiveReceiptSha256 = sha256(actualReceipt);
-  const write = (shard: number, captures: Capture[]) => {
-    const destination = path.join(artifacts, `rust-test-shard-${shard}-123-1`);
+  const write = (cohort: RustTestCohortId, captures: Capture[]) => {
+    const destination = path.join(artifacts, `rust-test-cohort-${cohort}-123-1`);
     fs.mkdirSync(path.join(destination, "typechecker-fixtures"), { recursive: true });
     const tests = captures.map((item) => item.test);
     const xml = Buffer.from(tests.map((name) => junit(name)).join("\n"));
@@ -244,8 +248,8 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
       path.join(destination, "typechecker-fixtures/worker.json"),
       JSON.stringify({
         schema: "vize.typechecker-worker-observations",
-        version: 1,
-        shard,
+        version: 2,
+        cohort,
         sourceRevision: sha,
         sourceTree: tree,
         manifestSha256: loaded.manifestSha256,
@@ -258,30 +262,30 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
   };
   const run = () =>
     aggregateTypecheckerWorkers({ repoRoot: root, artifactRoot: artifacts, outputDir });
-  write(1, assignment);
-  write(2, []);
-  write(3, []);
-  assert.throws(run, /four complete worker artifacts/);
-  write(4, []);
+  for (const cohort of RUST_TEST_COHORT_IDS)
+    if (cohort !== "cli-and-integrations")
+      write(cohort, cohort === "typechecker" ? assignment : []);
+  assert.throws(run, /all named worker artifacts/);
+  write("cli-and-integrations", []);
   assert.equal(run().report.summary.legacyMatches, 32);
   const absent = () => {
     for (const name of ["report.json", "acceptance.json"]) {
       assert.equal(fs.existsSync(path.join(outputDir, name)), false);
     }
   };
-  const packet = (shard: number) =>
-    path.join(artifacts, `rust-test-shard-${shard}-123-1/typechecker-fixtures/worker.json`);
-  const first = fs.readFileSync(packet(1));
+  const packet = (cohort: RustTestCohortId) =>
+    path.join(artifacts, `rust-test-cohort-${cohort}-123-1/typechecker-fixtures/worker.json`);
+  const first = fs.readFileSync(packet("typechecker"));
   const swap = () => {
-    const left = path.dirname(path.dirname(packet(1)));
-    const right = path.dirname(path.dirname(packet(2)));
+    const left = path.dirname(path.dirname(packet("typechecker")));
+    const right = path.dirname(path.dirname(packet("compiler")));
     const temporary = path.join(artifacts, "swapping-workers");
     fs.renameSync(left, temporary);
     fs.renameSync(right, left);
     fs.renameSync(temporary, right);
   };
   swap();
-  assert.throws(run, /worker packet must match its artifact shard/);
+  assert.throws(run, /worker packet must match its artifact cohort/);
   absent();
   swap();
   run();
@@ -309,18 +313,53 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
     target[key] = key === "requireTsgo" ? null : "f".repeat(key.startsWith("source") ? 40 : 64);
     if (scope === "receipt")
       changed.receiptBase64 = Buffer.from(JSON.stringify(target)).toString("base64");
-    fs.writeFileSync(packet(1), JSON.stringify(changed));
+    fs.writeFileSync(packet("typechecker"), JSON.stringify(changed));
     assert.throws(run, key);
     absent();
-    fs.writeFileSync(packet(1), first);
+    fs.writeFileSync(packet("typechecker"), first);
   }
-  write(4, [assignment[0]]);
+  for (const change of [
+    { version: 1 },
+    { cohort: 1 },
+    { cohort: "unknown" },
+    { cohort: undefined, shard: 1 },
+  ]) {
+    run();
+    fs.writeFileSync(
+      packet("typechecker"),
+      JSON.stringify({ ...JSON.parse(first.toString()), ...change }),
+    );
+    assert.throws(run, /version 2|artifact cohort/);
+    absent();
+    fs.writeFileSync(packet("typechecker"), first);
+  }
+  const compilerDirectory = path.dirname(path.dirname(packet("compiler")));
+  for (const name of ["rust-test-shard-1-123-1", "rust-test-cohort-unknown-123-1"]) {
+    const invalidDirectory = path.join(artifacts, name);
+    fs.renameSync(compilerDirectory, invalidDirectory);
+    assert.throws(run, /official named Rust worker artifact directory/);
+    absent();
+    fs.renameSync(invalidDirectory, compilerDirectory);
+  }
+  const duplicateDirectory = path.join(artifacts, "rust-test-cohort-typechecker-123-2");
+  fs.renameSync(compilerDirectory, duplicateDirectory);
+  const duplicatePacket = path.join(duplicateDirectory, "typechecker-fixtures/worker.json");
+  const compilerPacket = fs.readFileSync(duplicatePacket);
+  fs.writeFileSync(
+    duplicatePacket,
+    JSON.stringify({ ...JSON.parse(compilerPacket.toString()), cohort: "typechecker" }),
+  );
+  assert.throws(run, /every named Rust cohort must appear exactly once/);
+  absent();
+  fs.writeFileSync(duplicatePacket, compilerPacket);
+  fs.renameSync(duplicateDirectory, compilerDirectory);
+  write("cli-and-integrations", [assignment[0]]);
   assert.throws(run, /duplicate captured test body/);
-  write(4, []);
-  const fourth = packet(4);
-  const stale = JSON.parse(fs.readFileSync(fourth, "utf8"));
+  write("cli-and-integrations", []);
+  const last = packet("cli-and-integrations");
+  const stale = JSON.parse(fs.readFileSync(last, "utf8"));
   stale.sourceRevision = "0".repeat(40);
-  fs.writeFileSync(fourth, JSON.stringify(stale));
+  fs.writeFileSync(last, JSON.stringify(stale));
   assert.throws(run);
   absent();
 });

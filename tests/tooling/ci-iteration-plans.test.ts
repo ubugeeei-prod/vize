@@ -24,26 +24,31 @@ import { rustCommand } from "../../tools/support/compat/github/run-affected-rust
 
 const metadata = {
   workspace_root: "/repo",
-  workspace_members: ["syntax", "vize_vitrine", "leaf", "vize_atelier_ssr"],
+  workspace_members: ["vize_armature", "vize_vitrine", "vize_curator", "vize_atelier_ssr"],
   packages: [
     {
-      id: "syntax",
-      name: "syntax",
-      manifest_path: "/repo/crates/syntax/Cargo.toml",
+      id: "vize_armature",
+      name: "vize_armature",
+      manifest_path: "/repo/crates/vize_armature/Cargo.toml",
       dependencies: [],
     },
     {
       id: "vize_vitrine",
       name: "vize_vitrine",
       manifest_path: "/repo/crates/vize_vitrine/Cargo.toml",
-      dependencies: [{ path: "/repo/crates/syntax" }],
+      dependencies: [{ path: "/repo/crates/vize_armature" }],
     },
-    { id: "leaf", name: "leaf", manifest_path: "/repo/crates/leaf/Cargo.toml", dependencies: [] },
+    {
+      id: "vize_curator",
+      name: "vize_curator",
+      manifest_path: "/repo/crates/vize_curator/Cargo.toml",
+      dependencies: [],
+    },
     {
       id: "vize_atelier_ssr",
       name: "vize_atelier_ssr",
       manifest_path: "/repo/crates/vize_atelier_ssr/Cargo.toml",
-      dependencies: [{ path: "/repo/crates/syntax", kind: "dev" }],
+      dependencies: [{ path: "/repo/crates/vize_armature", kind: "dev" }],
     },
   ],
 };
@@ -60,16 +65,16 @@ test("the pure source selector retains the actual reverse dependency closure in 
   for (const event of ["pull_request", "merge_group"]) {
     const plan = planAffectedRust(
       metadata,
-      ["crates/syntax/src/lib.rs", "npm/cli/src/index.ts"],
+      ["crates/vize_armature/src/lib.rs", "npm/cli/src/index.ts"],
       event,
     );
-    assert.deepEqual(plan.packages, ["syntax", "vize_atelier_ssr", "vize_vitrine"]);
+    assert.deepEqual(plan.packages, ["vize_armature", "vize_atelier_ssr", "vize_vitrine"]);
     assert.deepEqual(plan.differentialMatrix, { lane: ["ssr", "wasm"] });
     assert.deepEqual(rustCommand(plan, ["cargo", "test", "@packages@", "--doc"]), [
       "cargo",
       "test",
       "--package",
-      "syntax",
+      "vize_armature",
       "--package",
       "vize_atelier_ssr",
       "--package",
@@ -117,7 +122,7 @@ test("shared, deleted and unknown inputs still select every Rust package", () =>
   ]) {
     assert.equal(planSourceChecks([input], "merge_group").rust, true, input);
     assert.equal(
-      planAffectedRust(metadata, ["crates/leaf/src/lib.rs", input]).scope,
+      planAffectedRust(metadata, ["crates/vize_curator/src/lib.rs", input]).scope,
       "workspace",
       input,
     );
@@ -125,10 +130,10 @@ test("shared, deleted and unknown inputs still select every Rust package", () =>
 });
 
 test("Rust source affects JS only through a source-built native package", () => {
-  const leaf = planAffectedRust(metadata, ["crates/leaf/src/lib.rs"]);
-  assert.deepEqual(planAffectedJs(workspace, ["crates/leaf/src/lib.rs"], leaf).groups, []);
-  const compiler = planAffectedRust(metadata, ["crates/syntax/src/lib.rs"]);
-  const selected = planAffectedJs(workspace, ["crates/syntax/src/lib.rs"], compiler);
+  const leaf = planAffectedRust(metadata, ["crates/vize_curator/src/lib.rs"]);
+  assert.deepEqual(planAffectedJs(workspace, ["crates/vize_curator/src/lib.rs"], leaf).groups, []);
+  const compiler = planAffectedRust(metadata, ["crates/vize_armature/src/lib.rs"]);
+  const selected = planAffectedJs(workspace, ["crates/vize_armature/src/lib.rs"], compiler);
   assert.deepEqual(selected.groups, ["builders", "ui", "oxlint"]);
   assert.equal(selected.conformance.fresco, false);
   assert.equal(selected.conformance.ui, true);
@@ -233,7 +238,7 @@ test("normal PRs defer duplicate heavy qualification and preserve an explicit fu
 
 test("one source plan joins actual Rust and JS closures without temporary JSON files", () => {
   const plan = planPrChecks({
-    paths: ["crates/syntax/src/lib.rs"],
+    paths: ["crates/vize_armature/src/lib.rs"],
     eventName: "pull_request",
     labels: [],
     workspace,
@@ -242,7 +247,7 @@ test("one source plan joins actual Rust and JS closures without temporary JSON f
   const outputs = prCheckOutputs(plan);
   assert.equal(outputs.rust, "true");
   assert.deepEqual(JSON.parse(outputs["rust-plan"]).packages, [
-    "syntax",
+    "vize_armature",
     "vize_atelier_ssr",
     "vize_vitrine",
   ]);

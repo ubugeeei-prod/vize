@@ -6,8 +6,10 @@ import { verifyRustWorkerDirectories } from "../../tools/support/compat/github/r
 import {
   artifact,
   context,
+  cohorts,
   fixture,
   job,
+  latestWorker,
   select,
   time,
 } from "./_helpers/rust-worker-selection-fixture.mjs";
@@ -17,9 +19,14 @@ void test("failed-only rerun binds latest outcomes to original unchanged executi
   value.jobs[0].conclusion = "cancelled";
   value.artifacts = value.artifacts.filter((item) => item.id !== 1001);
   const result = select(value);
+  assert.equal(result.version, 2);
+  assert.deepEqual(
+    result.workers.map((worker) => worker.cohort),
+    [...cohorts],
+  );
   assert.deepEqual(
     result.workers.map((worker) => [
-      worker.shard,
+      worker.cohort,
       worker.latestJobId,
       worker.latestReportedAttempt,
       worker.executionJobId,
@@ -28,40 +35,41 @@ void test("failed-only rerun binds latest outcomes to original unchanged executi
       worker.artifactName,
     ]),
     [
-      [1, 201, 2, 201, 2, 2001, "rust-test-shard-1-123-2"],
-      [2, 202, 2, 102, 1, 1002, "rust-test-shard-2-123-1"],
-      [3, 203, 2, 103, 1, 1003, "rust-test-shard-3-123-1"],
-      [4, 204, 2, 104, 1, 1004, "rust-test-shard-4-123-1"],
+      ["compiler", 201, 2, 201, 2, 2001, "rust-test-cohort-compiler-123-2"],
+      ["typechecker", 202, 2, 102, 1, 1002, "rust-test-cohort-typechecker-123-1"],
+      ["language-server", 203, 2, 103, 1, 1003, "rust-test-cohort-language-server-123-1"],
+      ["lint-and-format", 204, 2, 104, 1, 1004, "rust-test-cohort-lint-and-format-123-1"],
+      ["cli-and-integrations", 205, 2, 105, 1, 1005, "rust-test-cohort-cli-and-integrations-123-1"],
     ],
   );
   assert(result.workers.every((worker) => /^[a-f0-9]{64}$/.test(worker.executionSha256)));
 });
 
-void test("sparse genuine jobs and full reruns retain four complete workers", () => {
+void test("sparse genuine jobs and full reruns retain every named worker", () => {
   const sparse = fixture();
   sparse.jobs = sparse.jobs.filter((worker) => worker.id < 202);
   assert.deepEqual(
     select(sparse).workers.map((worker) => worker.executionAttempt),
-    [2, 1, 1, 1],
+    [2, 1, 1, 1, 1],
   );
   const full = fixture();
-  full.jobs = [...full.jobs.slice(0, 4), ...[1, 2, 3, 4].map((shard) => job(shard, 2))];
-  full.artifacts.push(...[2, 3, 4].map((shard) => artifact(shard, 2)));
+  full.jobs = [...full.jobs.slice(0, cohorts.length), ...cohorts.map((cohort) => job(cohort, 2))];
+  full.artifacts.push(...cohorts.slice(1).map((cohort) => artifact(cohort, 2)));
   assert.deepEqual(
     select(full).workers.map((worker) => worker.artifactId),
-    [2001, 2002, 2003, 2004],
+    [2001, 2002, 2003, 2004, 2005],
   );
 });
 
 void test("a latest failure or incomplete outcome cannot fall back to an old successful artifact", () => {
   for (const conclusion of ["failure", "cancelled", "timed_out", "skipped", "neutral", null]) {
     const value = fixture();
-    value.jobs[4].conclusion = conclusion;
+    latestWorker(value).conclusion = conclusion;
     assert.throws(() => select(value), /Latest worker.*did not succeed/);
   }
   for (const status of ["queued", "in_progress", "waiting"]) {
     const value = fixture();
-    value.jobs[4].status = status;
+    latestWorker(value).status = status;
     assert.throws(() => select(value), /Latest worker.*is incomplete/);
   }
 });
@@ -85,45 +93,51 @@ void test("carried reuse requires exact original times, all steps, outcome and r
     },
   ]) {
     const value = fixture();
-    change(value.jobs[5]);
-    assert.throws(() => select(value), /Expected exactly one artifact: rust-test-shard-2-123-2/);
+    change(latestWorker(value, "typechecker"));
+    assert.throws(
+      () => select(value),
+      /Expected exactly one artifact: rust-test-cohort-typechecker-123-2/,
+    );
   }
   const failedOriginal = fixture();
   failedOriginal.jobs[1].conclusion = "failure";
   assert.throws(
     () => select(failedOriginal),
-    /Expected exactly one artifact: rust-test-shard-2-123-2/,
+    /Expected exactly one artifact: rust-test-cohort-typechecker-123-2/,
   );
 });
 
 void test("new successful execution without its own artifact cannot fall back", () => {
   const value = fixture();
   value.artifacts = value.artifacts.filter((item) => item.id !== 2001);
-  assert.throws(() => select(value), /Expected exactly one artifact: rust-test-shard-1-123-2/);
+  assert.throws(
+    () => select(value),
+    /Expected exactly one artifact: rust-test-cohort-compiler-123-2/,
+  );
 });
 
-void test("missing, duplicated, future and foreign workers cannot manufacture four workers", () => {
+void test("missing, duplicated, future and foreign workers cannot manufacture a complete cohort set", () => {
   for (const change of [
     (value) => {
-      value.jobs = value.jobs.filter((worker) => !worker.name.endsWith("(4/4)"));
+      value.jobs = value.jobs.filter((worker) => !worker.name.endsWith("(CLI and integrations)"));
     },
     (value) => {
-      value.jobs.push(structuredClone(value.jobs[4]));
+      value.jobs.push(structuredClone(latestWorker(value)));
     },
     (value) => {
-      value.jobs.push({ ...value.jobs[4], id: 999 });
+      value.jobs.push({ ...latestWorker(value), id: 999 });
     },
     (value) => {
-      value.jobs[4].run_attempt = 3;
+      latestWorker(value).run_attempt = 3;
     },
     (value) => {
-      value.jobs[4].head_sha = "b".repeat(40);
+      latestWorker(value).head_sha = "b".repeat(40);
     },
     (value) => {
-      value.jobs[4].run_id += 1;
+      latestWorker(value).run_id += 1;
     },
     (value) => {
-      value.jobs[4].name = value.jobs[4].name.replace("(1/4)", "(5/4)");
+      latestWorker(value).name = latestWorker(value).name.replace("(Compiler)", "(Unknown)");
     },
   ])
     assert.throws(() => {
@@ -131,6 +145,15 @@ void test("missing, duplicated, future and foreign workers cannot manufacture fo
       change(value);
       select(value);
     });
+});
+
+void test("only registry display names can identify named cohort executions", () => {
+  for (const name of ["1/4", "1", "compiler", "Compiler ", "Unknown"]) {
+    const value = fixture();
+    const worker = latestWorker(value);
+    worker.name = worker.name.replace("(Compiler)", `(${name})`);
+    assert.throws(() => select(value), /Unexpected Rust worker name/);
+  }
 });
 
 void test("successful worker steps must execute archive, complete tests, capture and upload in order", () => {
@@ -156,7 +179,7 @@ void test("successful worker steps must execute archive, complete tests, capture
   ])
     assert.throws(() => {
       const value = fixture();
-      change(value.jobs[4]);
+      change(latestWorker(value));
       select(value);
     });
 });
@@ -235,7 +258,7 @@ void test("workflow identity cannot drift across source, attempt, run, caller or
     });
 });
 
-void test("downloaded artifacts must be exactly the four selected directories", () => {
+void test("downloaded artifacts must be exactly the selected named directories", () => {
   const result = select(fixture());
   const entries = result.workers.map((worker) => ({
     name: worker.artifactName,
@@ -249,6 +272,14 @@ void test("downloaded artifacts must be exactly the four selected directories", 
     entries.map((entry, index) => ({ ...entry, isDirectory: () => index !== 0 })),
   ])
     assert.throws(() => verifyRustWorkerDirectories(result, wrong));
+  for (const change of [
+    { version: 1 },
+    { workers: result.workers.slice(1) },
+    { workers: [result.workers[0], ...result.workers.slice(0, -1)] },
+    { workers: [{ ...result.workers[0], cohort: 1 }, ...result.workers.slice(1)] },
+    { workers: [{ ...result.workers[0], cohort: "unknown" }, ...result.workers.slice(1)] },
+  ])
+    assert.throws(() => verifyRustWorkerDirectories({ ...result, ...change }, entries));
 });
 
 function transport(value, { jobTail = [], artifactTail = [], afterRun } = {}) {
@@ -289,7 +320,7 @@ void test("official all-attempt job and artifact inventories are fully paginated
   const result = await readRustWorkerSelection(context, api.options);
   assert.deepEqual(
     result.workers.map((worker) => worker.artifactId),
-    [2001, 1002, 1003, 1004],
+    [2001, 1002, 1003, 1004, 1005],
   );
   assert(api.calls.some((url) => url.includes("/jobs?") && url.includes("page=2")));
   assert(api.calls.some((url) => url.includes("/artifacts?") && url.includes("page=2")));
@@ -301,7 +332,7 @@ void test("a failed latest worker on a later API page cannot hide behind first-p
   value.jobs.push(
     ...Array.from({ length: 100 - value.jobs.length }, () => ({ name: "unrelated" })),
   );
-  const api = transport(value, { jobTail: [{ ...job(2, 2), conclusion: "failure" }] });
+  const api = transport(value, { jobTail: [{ ...job("typechecker", 2), conclusion: "failure" }] });
   await assert.rejects(
     readRustWorkerSelection(context, api.options),
     /Latest worker.*did not succeed/,

@@ -6,6 +6,11 @@ import { fileURLToPath } from "node:url";
 import { sha256 } from "./harness.mjs";
 import { summarizeNativeAcceptance } from "./acceptance-rates.mjs";
 import {
+  RUST_TEST_COHORT_IDS,
+  isRustTestCohort,
+  type RustTestCohortId,
+} from "../../tools/support/compat/github/rust-test-cohorts.ts";
+import {
   TYPECHECKER_TESTS,
   loadTypecheckerManifest,
   readCapture,
@@ -33,7 +38,7 @@ type Receipt = {
 type Worker = {
   schema: string;
   version: number;
-  shard: number;
+  cohort: RustTestCohortId;
   sourceRevision: string;
   sourceTree: string;
   manifestSha256: string;
@@ -112,8 +117,8 @@ function validateWorker(
   expected: SourceIdentity,
 ) {
   assert.equal(worker.schema, "vize.typechecker-worker-observations");
-  assert.equal(worker.version, 1);
-  assert(Number.isInteger(worker.shard) && worker.shard >= 1 && worker.shard <= 4);
+  assert.equal(worker.version, 2, "named Rust worker observations version 2 is required");
+  assert(isRustTestCohort(worker.cohort), "unknown or missing Rust test cohort");
   assert.equal(worker.sourceRevision, expected.sha);
   assert.equal(worker.sourceTree, expected.tree);
   assert.equal(worker.manifestSha256, loaded.manifestSha256);
@@ -139,14 +144,15 @@ export function verifyTypecheckerWorker({
   evidenceDir,
   receiptPath,
   junitPath,
-  shard,
+  cohort,
 }: {
   repoRoot: string;
   evidenceDir: string;
   receiptPath: string;
   junitPath: string;
-  shard: number;
+  cohort: string;
 }) {
+  assert(isRustTestCohort(cohort), "unknown or missing Rust test cohort");
   const loaded = loadTypecheckerManifest(
     path.join(repoRoot, "tests/_fixtures/differential/typechecker/manifest.json"),
   );
@@ -176,8 +182,8 @@ export function verifyTypecheckerWorker({
   }
   const worker: Worker = {
     schema: "vize.typechecker-worker-observations",
-    version: 1,
-    shard,
+    version: 2,
+    cohort,
     sourceRevision: expected.sha,
     sourceTree: expected.tree,
     manifestSha256: loaded.manifestSha256,
@@ -211,17 +217,16 @@ export function aggregateTypecheckerWorkers({
     .readdirSync(artifactRoot)
     .sort()
     .map((directory) => {
-      const identity = /^rust-test-shard-([1-4])-[1-9]\d*-[1-9]\d*$/.exec(directory);
-      assert(identity, "an official Rust worker artifact directory is required");
+      const identity = /^rust-test-cohort-([a-z-]+)-[1-9]\d*-[1-9]\d*$/.exec(directory);
+      assert(
+        identity && isRustTestCohort(identity[1]),
+        "an official named Rust worker artifact directory is required",
+      );
       const root = path.join(artifactRoot, directory);
       const worker: Worker = JSON.parse(
         fs.readFileSync(path.join(root, "typechecker-fixtures/worker.json"), "utf8"),
       );
-      assert.equal(
-        worker.shard,
-        Number(identity[1]),
-        "worker packet must match its artifact shard",
-      );
+      assert.equal(worker.cohort, identity[1], "worker packet must match its artifact cohort");
       return validateWorker(
         loaded,
         worker,
@@ -229,8 +234,16 @@ export function aggregateTypecheckerWorkers({
         expected,
       );
     });
-  assert.equal(workers.length, 4, "all four complete worker artifacts are required");
-  assert.deepEqual(new Set(workers.map((worker) => worker.shard)), new Set([1, 2, 3, 4]));
+  assert.equal(
+    workers.length,
+    RUST_TEST_COHORT_IDS.length,
+    "all named worker artifacts are required",
+  );
+  assert.deepEqual(
+    new Set(workers.map((worker) => worker.cohort)),
+    new Set(RUST_TEST_COHORT_IDS),
+    "every named Rust cohort must appear exactly once",
+  );
   assert.equal(
     new Set(workers.map((worker) => worker.receiptBase64)).size,
     1,
@@ -266,11 +279,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       evidenceDir: path.resolve(args[0]),
       receiptPath: path.resolve(args[1]),
       junitPath: path.resolve(args[2]),
-      shard: Number(args[3]),
+      cohort: args[3],
     });
     console.log(
       JSON.stringify({
-        shard: worker.shard,
+        cohort: worker.cohort,
         executedBodies: worker.tests.length,
         projects: worker.captures.reduce((n, capture) => n + capture.cases.length, 0),
       }),
@@ -284,7 +297,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     console.log(JSON.stringify(result.report.summary));
   } else {
     throw new Error(
-      "usage: typechecker-shards.ts worker CAPTURES RECEIPT JUNIT SHARD | aggregate ARTIFACTS OUTPUT",
+      "usage: typechecker-shards.ts worker CAPTURES RECEIPT JUNIT COHORT | aggregate ARTIFACTS OUTPUT",
     );
   }
 }

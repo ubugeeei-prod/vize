@@ -1,12 +1,16 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { RUST_TEST_COHORTS, RUST_TEST_COHORT_IDS } from "./rust-test-cohorts.ts";
 
 const workerPrefix = "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (";
+const workerNames = new Map(
+  RUST_TEST_COHORTS.map(({ id, name }) => [`${workerPrefix}${name})`, id]),
+);
 const requiredSteps = [
   "Verify Rust archive identity",
-  "Run Rust test shard without rebuilding",
+  "Run Rust test cohort without rebuilding",
   "Verify actual typechecker fixture observations",
-  "Upload Rust shard results",
+  "Upload Rust cohort results",
 ];
 
 export class PendingRustWorkerMetadata extends Error {
@@ -20,7 +24,7 @@ export function rustWorkerSnapshotIdentity(selection, artifacts, repositoryId) {
   return {
     repositoryId,
     workers: selection.workers.map((worker) => ({
-      shard: worker.shard,
+      cohort: worker.cohort,
       latestJobId: worker.latestJobId,
       latestReportedAttempt: worker.latestReportedAttempt,
       artifact: artifacts.find((artifact) => artifact.id === worker.artifactId),
@@ -106,7 +110,7 @@ function requireCompletedWorker(job, pending = null) {
     assert(from >= start && to >= from && to <= end, `${name} is outside the worker execution`);
     previous = step.number;
   }
-  return job.steps.find((step) => step.name === "Upload Rust shard results");
+  return job.steps.find((step) => step.name === "Upload Rust cohort results");
 }
 
 export function selectRustWorkers(
@@ -131,12 +135,12 @@ export function selectRustWorkers(
     Array.isArray(jobs) && Array.isArray(artifacts),
     "Missing official job/artifact inventory",
   );
-  const groups = [[], [], [], []];
+  const groups = new Map(RUST_TEST_COHORT_IDS.map((cohort) => [cohort, []]));
   const jobIds = new Set();
   for (const job of jobs) {
     if (typeof job.name !== "string" || !job.name.startsWith(workerPrefix)) continue;
-    const match = /^([1-4])\/4\)$/.exec(job.name.slice(workerPrefix.length));
-    assert(match, `Unexpected Rust worker name: ${job.name}`);
+    const cohort = workerNames.get(job.name);
+    assert(cohort, `Unexpected Rust worker name: ${job.name}`);
     positiveInteger(job.id, "Worker job ID");
     assert(!jobIds.has(job.id), "Duplicate worker job ID");
     jobIds.add(job.id);
@@ -144,7 +148,7 @@ export function selectRustWorkers(
     assert.equal(job.head_sha, sha, "Foreign worker source");
     positiveInteger(job.run_attempt, "Worker attempt");
     assert(job.run_attempt <= attempt, "Future worker attempt");
-    const group = groups[Number(match[1]) - 1];
+    const group = groups.get(cohort);
     assert(
       !group.some((other) => other.run_attempt === job.run_attempt),
       "Duplicate worker attempt",
@@ -152,16 +156,16 @@ export function selectRustWorkers(
     group.push(job);
   }
   const pending = allowPendingMetadata ? new Map() : null;
-  const workers = groups.map((group, index) => {
-    const shard = index + 1;
-    assert(group.length > 0, `Missing Rust worker ${shard}`);
+  const workers = RUST_TEST_COHORT_IDS.map((cohort) => {
+    const group = groups.get(cohort);
+    assert(group.length > 0, `Missing Rust worker ${cohort}`);
     group.sort((left, right) => right.run_attempt - left.run_attempt);
     const latest = group[0];
     requireCompletedWorker(latest, pending); // Never fall back behind a failed/incomplete latest outcome.
     const signature = execution(latest);
     const original = group.filter((job) => execution(job) === signature).at(-1);
     const upload = requireCompletedWorker(original, pending);
-    const name = `rust-test-shard-${shard}-${runId}-${original.run_attempt}`;
+    const name = `rust-test-cohort-${cohort}-${runId}-${original.run_attempt}`;
     const matches = artifacts.filter((artifact) => artifact.name === name);
     assert.equal(matches.length, 1, `Expected exactly one artifact: ${name}`);
     const artifact = matches[0];
@@ -197,7 +201,7 @@ export function selectRustWorkers(
       "Artifact was not created during the original successful upload",
     );
     return {
-      shard,
+      cohort,
       latestJobId: latest.id,
       latestReportedAttempt: latest.run_attempt,
       executionJobId: original.id,
@@ -213,12 +217,12 @@ export function selectRustWorkers(
   });
   assert.equal(
     new Set(workers.map((worker) => worker.artifactId)).size,
-    4,
+    RUST_TEST_COHORT_IDS.length,
     "Duplicate Rust artifact ID",
   );
   const selection = {
     schema: "vize.rust-worker-selection",
-    version: 1,
+    version: 2,
     runId,
     attempt,
     sourceSha: sha,
@@ -237,6 +241,13 @@ export function selectRustWorkers(
 }
 
 export function verifyRustWorkerDirectories(selection, entries) {
+  assert.equal(selection.schema, "vize.rust-worker-selection");
+  assert.equal(selection.version, 2, "named Rust worker selection version 2 is required");
+  assert.deepEqual(
+    selection.workers.map((worker) => worker.cohort),
+    [...RUST_TEST_COHORT_IDS],
+    "Rust worker selection must contain every named cohort exactly once",
+  );
   assert.deepEqual(
     entries
       .map((entry) => {
@@ -245,6 +256,6 @@ export function verifyRustWorkerDirectories(selection, entries) {
       })
       .sort(),
     selection.workers.map((worker) => worker.artifactName).sort(),
-    "Downloaded Rust artifact inventory differs from the four selected workers",
+    "Downloaded Rust artifact inventory differs from the selected named workers",
   );
 }

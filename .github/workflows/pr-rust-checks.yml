@@ -173,25 +173,25 @@ jobs:
       - name: Run affected Rust doctests
         run: node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --doc
 
-  # PR shards build the same affected test binaries from the warm read-only
+  # Named cohorts build the same affected test binaries from the warm read-only
   # `nextest-ci` clone and start beside Clippy, instead of moving a multi-GB
   # archive. The merge queue keeps its archive: its receipts bind the evidence.
   pr-rust-shard:
-    name: Rust tests (${{ matrix.shard }}/4)
+    name: Rust tests (${{ matrix.name }})
     if: ${{ always() && !cancelled() && inputs.run-rust && (github.event_name == 'pull_request' || github.event_name == 'merge_group' && needs.merge-rust-source.result == 'success') }}
     needs: [merge-rust-source]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     strategy:
       fail-fast: false
-      matrix:
-        shard: [1, 2, 3, 4]
+      matrix: ${{ fromJSON(inputs.rust-plan).testMatrix }}
     env:
       CARGO_BUILD_JOBS: "12"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
       RUST_TEST_THREADS: "4"
       NEXTEST_PROFILE: ${{ github.event_name == 'merge_group' && 'full' || 'pr' }}
-      SHARD: ${{ matrix.shard }}
+      COHORT: ${{ matrix.cohort }}
+      NEXTEST_FILTER: ${{ matrix.filter }}
       RUST_PLAN_JSON: ${{ inputs.rust-plan }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -241,38 +241,38 @@ jobs:
         run: |
           mkdir -p target/nextest/full/typechecker-fixtures
           printf 'VIZE_TEST_FIX_HISTORY_CAPTURE_DIR=%s\nVIZE_TEST_FIX_HISTORY_ARCHIVE_RECEIPT=%s\n' "$GITHUB_WORKSPACE/target/nextest/full/typechecker-fixtures" "$GITHUB_WORKSPACE/.artifacts/rust-test-archive/receipt.json" >> "$GITHUB_ENV"
-      - name: Build and run the affected Rust test shard
+      - name: Build and run the affected Rust test cohort
         if: ${{ github.event_name == 'pull_request' }}
-        # The same affected packages, Cargo profile, nextest profile and hash
-        # partition as the former archive; empty partitions remain valid.
+        # Preserve affected package feature unification; the shared cohort
+        # registry partitions test binaries by their actual product surface.
         run: |
           node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
           phase_started=$SECONDS
-          if node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo nextest run @packages@ --cargo-profile ci --profile "$NEXTEST_PROFILE" --partition "hash:$SHARD/4" --no-tests=pass; then phase_exit=0; else phase_exit=$?; fi
+          if node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo nextest run @packages@ --cargo-profile ci --profile "$NEXTEST_PROFILE" -E "$NEXTEST_FILTER" --no-tests=pass; then phase_exit=0; else phase_exit=$?; fi
           mkdir -p "target/nextest/$NEXTEST_PROFILE"
-          printf '{"phase":"workspace-shard","shard":%s,"elapsed_seconds":%d,"exit_code":%d}\n' "$SHARD" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
+          printf '{"phase":"workspace-cohort","cohort":"%s","elapsed_seconds":%d,"exit_code":%d}\n' "$COHORT" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
           exit "$phase_exit"
-      - name: Run Rust test shard without rebuilding
+      - name: Run Rust test cohort without rebuilding
         if: ${{ github.event_name == 'merge_group' }}
         # Baked env! paths still occur in tests. Extract to the original workspace
         # (checked by the receipt), preserving target/ci and CARGO_BIN_EXE paths.
-        # Empty partitions are valid for packages with fewer than four tests.
+        # A selected package can have no tests in an enabled feature profile.
         run: |
           # Cargo creates this baked CARGO_TARGET_TMPDIR even when it is empty.
           # Archive transfer preserves files, so restore the directory here.
           mkdir -p target/tmp
           phase_started=$SECONDS
-          if cargo nextest run --archive-file .artifacts/rust-test-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile "$NEXTEST_PROFILE" --partition "hash:$SHARD/4" --no-tests=pass; then phase_exit=0; else phase_exit=$?; fi
-          printf '{"phase":"workspace-shard","shard":%s,"elapsed_seconds":%d,"exit_code":%d}\n' "$SHARD" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
+          if cargo nextest run --archive-file .artifacts/rust-test-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile "$NEXTEST_PROFILE" -E "$NEXTEST_FILTER" --no-tests=pass; then phase_exit=0; else phase_exit=$?; fi
+          printf '{"phase":"workspace-cohort","cohort":"%s","elapsed_seconds":%d,"exit_code":%d}\n' "$COHORT" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
           exit "$phase_exit"
       - name: Verify actual typechecker fixture observations
         if: ${{ !cancelled() && github.event_name == 'merge_group' && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}
-        run: vp node tests/differential/typechecker-shards.ts worker target/nextest/full/typechecker-fixtures .artifacts/rust-test-archive/receipt.json target/nextest/full/junit.xml "$SHARD"
-      - name: Upload Rust shard results
+        run: vp node tests/differential/typechecker-shards.ts worker target/nextest/full/typechecker-fixtures .artifacts/rust-test-archive/receipt.json target/nextest/full/junit.xml "$COHORT"
+      - name: Upload Rust cohort results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: rust-test-shard-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: rust-test-cohort-${{ matrix.cohort }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/nextest/${{ env.NEXTEST_PROFILE }}/
           if-no-files-found: error
           retention-days: 7
@@ -302,7 +302,7 @@ jobs:
         if: ${{ github.event_name == 'merge_group' && inputs.run-rust && needs.pr-rust-shard.result == 'success' && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}
         env: { GH_TOKEN: "${{ github.token }}" }
         run: node tools/support/compat/github/select-rust-workers.mjs select target/differential/typechecker/worker-selection.json
-      - name: Download the four current full Rust workers
+      - name: Download every current Rust test cohort
         if: ${{ github.event_name == 'merge_group' && inputs.run-rust && needs.pr-rust-shard.result == 'success' && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:

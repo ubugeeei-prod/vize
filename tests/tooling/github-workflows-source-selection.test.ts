@@ -59,7 +59,7 @@ test("source planning uses Node and offline metadata before selecting affected p
   assert.equal(ciSelection?.if, "${{ steps.plan.outputs.tooling == 'true' }}");
   assert.equal(
     ciSelection?.run,
-    "node --test tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-archive.test.mjs",
+    "node --test tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-test-archive.test.mjs",
   );
 });
 
@@ -130,20 +130,19 @@ test("opted-in PR and merge browser qualification retain tests and enforce merge
   }
 });
 
-test("the Rust report waits for the builder and all four independently executing shards", () => {
+test("the Rust report waits for the builder and every named test cohort", () => {
   const shard = rust.jobs["pr-rust-shard"];
   // PR shards build in place beside the lanes; only the merge queue waits for its archive.
   assert.deepEqual(shard.needs, ["merge-rust-source"]);
   assert.equal(shard.strategy?.["fail-fast"], false);
-  assert.deepEqual(
-    typeof shard.strategy?.matrix === "object" ? shard.strategy.matrix.shard : undefined,
-    [1, 2, 3, 4],
-  );
+  assert.equal(shard.name, "Rust tests (${{ matrix.name }})");
+  assert.equal(shard.strategy?.matrix, "${{ fromJSON(inputs.rust-plan).testMatrix }}");
   const steps = shard.steps ?? [];
   const verify = steps.findIndex((step) => step.name === "Verify Rust archive identity");
-  const run = steps.findIndex((step) => step.name === "Run Rust test shard without rebuilding");
+  const run = steps.findIndex((step) => step.name === "Run Rust test cohort without rebuilding");
   assert.ok(verify >= 0 && verify < run);
-  assert.match(steps[run].run ?? "", /--partition "hash:\$SHARD\/4"/);
+  assert.match(steps[run].run ?? "", /-E "\$NEXTEST_FILTER"/);
+  assert.doesNotMatch(steps[run].run ?? "", /--partition/);
   assert.deepEqual(rust.jobs["rust-source-report"].needs, [
     "merge-rust-source",
     "merge-rust-differential",
@@ -173,7 +172,7 @@ test("the Rust report waits for the builder and all four independently executing
     (step) => step.name === "Select latest source-bound Rust workers",
   );
   const download = reportSteps.findIndex(
-    (step) => step.name === "Download the four current full Rust workers",
+    (step) => step.name === "Download every current Rust test cohort",
   );
   const reconcile = reportSteps.findIndex(
     (step) => step.name === "Require all registered typechecker observations",

@@ -122,10 +122,10 @@ const plan = {
 };
 
 for (const [event, profile, stepName] of [
-  ["merge_group", "full", "Run Rust test shard without rebuilding"],
-  ["pull_request", "pr", "Build and run the affected Rust test shard"],
+  ["merge_group", "full", "Run Rust test cohort without rebuilding"],
+  ["pull_request", "pr", "Build and run the affected Rust test cohort"],
 ] as const) {
-  test(`${profile} shard shell keeps its partition with the exclusive runtime flag`, () => {
+  test(`${profile} cohort shell keeps its semantic filter with the exclusive runtime flag`, () => {
     const cwd = mkdtempSync(join(tmpdir(), "vize-shard-prepare-"));
     try {
       const bin = join(cwd, "bin");
@@ -157,7 +157,8 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
         GITHUB_WORKSPACE: cwd,
         GITHUB_ENV: join(cwd, "github-env"),
         GITHUB_EVENT_NAME: event,
-        SHARD: "2",
+        COHORT: "compiler",
+        NEXTEST_FILTER: "package(=vize_armature) | package(=vize_l1)",
         NEXTEST_PROFILE: profile,
         VIZE_NUXT_CONFIG_ITERATIONS: "100",
         ARGV: argv,
@@ -191,7 +192,7 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
         },
       );
       assert.equal(result.status, 0, result.stderr);
-      const partition = ["--profile", profile, "--partition", "hash:2/4", "--no-tests=pass"];
+      const filter = ["--profile", profile, "-E", environment.NEXTEST_FILTER, "--no-tests=pass"];
       if (event === "merge_group") {
         assert.equal(readFileSync(join(cwd, "target/tmp/observation"), "utf8"), "writable");
         assert.deepEqual(JSON.parse(readFileSync(argv, "utf8")), [
@@ -204,7 +205,7 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
           "--extract-overwrite",
           "--workspace-remap",
           cwd,
-          ...partition,
+          ...filter,
         ]);
       } else {
         // The same affected packages and Cargo profile the archive was built from.
@@ -214,13 +215,13 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
           ...plan.cargoArgs,
           "--cargo-profile",
           "ci",
-          ...partition,
+          ...filter,
         ]);
       }
       assert.equal(
         (
           JSON.parse(readFileSync(join(cwd, `target/nextest/${profile}/timing.json`), "utf8")) as {
-            shard: number;
+            cohort: string;
             exit_code: number;
           }
         ).exit_code,

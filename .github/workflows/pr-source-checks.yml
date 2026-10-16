@@ -60,6 +60,7 @@ jobs:
         run: >-
           node --test tests/tooling/ci-iteration-plans.test.ts
           tests/tooling/pr-required-rust.test.ts
+          tests/tooling/rust-test-cohorts.test.ts
           tests/tooling/rust-test-archive.test.mjs
   canonical-corpus:
     permissions: { contents: read, actions: read, checks: read }
