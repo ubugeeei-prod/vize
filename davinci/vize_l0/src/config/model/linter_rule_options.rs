@@ -22,6 +22,7 @@ mod props_destructuring;
 mod restrictions;
 mod sfc_element_order;
 mod strict_boolean;
+mod valid_v_on;
 mod valid_v_slot;
 
 pub use casing::{
@@ -158,6 +159,8 @@ pub struct ConfigLintRuleOptions {
     /// Options for `vue/attribute-hyphenation`.
     #[serde(rename = "vue/attribute-hyphenation")]
     attribute_hyphenation: Option<HyphenationStyle>,
+    #[serde(rename = "vue/valid-v-on", skip_serializing_if = "Option::is_none")]
+    valid_v_on: Option<valid_v_on::ValidVOnOptions>,
     #[serde(rename = "vue/valid-v-slot", skip_serializing_if = "Option::is_none")]
     valid_v_slot: Option<valid_v_slot::ValidVSlotOptions>,
     /// Options for `musea/prefer-design-tokens`.
@@ -200,6 +203,7 @@ impl ConfigLintRuleOptions {
             && self.html_self_closing.is_none()
             && self.v_on_event_hyphenation.is_none()
             && self.attribute_hyphenation.is_none()
+            && self.valid_v_on.is_none()
             && self.valid_v_slot.is_none()
             && self.musea_prefer_design_tokens.is_none()
             && self.require_component_registration.is_none()

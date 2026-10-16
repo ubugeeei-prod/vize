@@ -22,6 +22,17 @@ use crate::rules::vue::{
 use vize_l0::String;
 
 impl Linter {
+    /// Configure custom event modifiers without enabling an unselected rule.
+    pub fn with_valid_v_on_modifiers(mut self, modifiers: Vec<String>) -> Self {
+        if self.registry.has_rule("vue/valid-v-on") {
+            self.registry
+                .replace(Box::new(crate::rules::vue::ValidVOn::with_modifiers(
+                    modifiers,
+                )));
+        }
+        self
+    }
+
     /// Configure slot modifiers without enabling an unselected rule.
     pub fn with_valid_v_slot_allow_modifiers(mut self, allow_modifiers: bool) -> Self {
         if self.registry.has_rule("vue/valid-v-slot") {

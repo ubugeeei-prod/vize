@@ -139,6 +139,9 @@ impl ResolvedLinterRuleGroups {
                 if let Some(style) = rule_options.attribute_hyphenation() {
                     linter = linter.with_attribute_hyphenation(attribute_hyphenation_style(style));
                 }
+                if let Some(modifiers) = rule_options.valid_v_on_modifiers() {
+                    linter = linter.with_valid_v_on_modifiers(modifiers.to_vec());
+                }
                 if let Some(allow) = rule_options.valid_v_slot_allow_modifiers() {
                     linter = linter.with_valid_v_slot_allow_modifiers(allow);
                 }

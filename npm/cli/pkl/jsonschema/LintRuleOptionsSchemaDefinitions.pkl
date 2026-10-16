@@ -50,6 +50,16 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     ["vue/html-self-closing"] = ConfigArtifactDefinitions.htmlSelfClosingOptionsDef
     ["vue/v-on-event-hyphenation"] = ConfigArtifactDefinitions.hyphenationStyleDef
     ["vue/attribute-hyphenation"] = ConfigArtifactDefinitions.hyphenationStyleDef
+    ["vue/valid-v-on"] = new JsonSchema {
+      type = "object"
+      properties {
+        ["modifiers"] = new JsonSchema {
+          type = "array"
+          items = new JsonSchema { type = "string" }
+        }
+      }
+      additionalProperties = false
+    }
     ["vue/valid-v-slot"] = new JsonSchema {
       type = "object"
       properties {

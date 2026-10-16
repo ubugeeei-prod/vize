@@ -35,6 +35,8 @@
   "vue/valid-v-bind.missing_expression": "v-bindには式が必要です",
   "vue/valid-v-bind.unsupported_modifier": "v-bindではこの修飾子を使用できません",
   "vue/valid-v-bind.help": "v-bindディレクティブに式を追加してください",
+  "vue/valid-v-on.unsupported_modifier": "v-on は修飾子 '{modifier}' をサポートしていません",
+  "vue/valid-v-on.modifier_help": "組み込みイベント修飾子、キーの別名、または設定した独自の修飾子を使用してください。",
   "vue/valid-v-on.description": "有効なv-onディレクティブを強制する",
   "vue/valid-v-on.missing_event": "v-onにはイベント名が必要です",
   "vue/valid-v-on.invalid_handler": "v-onハンドラーにはJavaScriptキーワードを使用できません",
