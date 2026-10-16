@@ -87,15 +87,26 @@ runs:
       shell: bash
       env:
         CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
-      run: cargo build --release -p vize --target ${{ inputs.target }}
+        RELEASE_TARGET: ${{ inputs.target }}
+      run: cargo build --release -p vize --target "$RELEASE_TARGET"
     - name: Create archive (Unix)
       if: runner.os != 'Windows'
       shell: bash
-      run: if [[ "${{ inputs.target }}" == *-musl ]]; then rust-script tools/commands/ci/github/verify-musl-cli-binary.rs "${{ inputs.target }}"; fi; node tools/support/github/create-cli-archive.ts ${{ inputs.target }} ${{ inputs.archive }} vize
+      env:
+        RELEASE_TARGET: ${{ inputs.target }}
+        RELEASE_ARCHIVE: ${{ inputs.archive }}
+      run: |
+        if [[ "$RELEASE_TARGET" == *-musl ]]; then
+          rust-script tools/commands/ci/github/verify-musl-cli-binary.rs "$RELEASE_TARGET"
+        fi
+        node tools/support/github/create-cli-archive.ts "$RELEASE_TARGET" "$RELEASE_ARCHIVE" vize
     - name: Create archive (Windows)
       if: runner.os == 'Windows'
       shell: bash
-      run: node tools/support/github/create-cli-archive.ts ${{ inputs.target }} ${{ inputs.archive }} vize.exe
+      env:
+        RELEASE_TARGET: ${{ inputs.target }}
+        RELEASE_ARCHIVE: ${{ inputs.archive }}
+      run: node tools/support/github/create-cli-archive.ts "$RELEASE_TARGET" "$RELEASE_ARCHIVE" vize.exe
     - name: Upload artifact
       if: inputs.upload-artifacts == 'true'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

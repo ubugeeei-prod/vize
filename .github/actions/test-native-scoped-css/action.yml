@@ -11,6 +11,8 @@ runs:
         key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
     - name: Install Chromium for scoped CSS behavior
       uses: ./.github/actions/install-playwright-browsers
+      with:
+        workspace: ./tests
     - name: Capture scoped modules from the current Rust source and mount real Vue
       shell: bash
       env:

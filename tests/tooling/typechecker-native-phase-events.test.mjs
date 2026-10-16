@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { matchesGlob } from "node:path";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
@@ -14,6 +15,54 @@ const job = workflow.jobs["native-phases"];
 const evidenceName = "Actual CLI shard native phase evidence";
 const sourceSha = "1".repeat(40);
 const baseSha = "2".repeat(40);
+
+void test("native phase triggers follow consumed actions and preserve product/build inputs", () => {
+  const selected = (file) => workflow.on.pull_request.paths.some((glob) => matchesGlob(file, glob));
+  for (const file of [
+    ".github/actions/check-nix/action.yml",
+    ".github/actions/check-vize-apps/action.yml",
+    ".github/actions/check-workflow-syntax/check.ts",
+    "docs/content/guide.md",
+  ])
+    assert.equal(selected(file), false, file);
+  for (const action of [
+    "check-reference-path",
+    "check-batch-generated-config",
+    "check-computed-inlay",
+    "check-editor-jsconfig",
+    "check-package-private-imports",
+    "check-component-tag-types",
+    "check-project-navigation",
+    "setup-rust-sticky-cache",
+    "reuse-rust-target",
+  ])
+    assert.equal(selected(`.github/actions/${action}/run.sh`), true, action);
+  for (const file of [
+    "tools/support/compat/github/native-syntax-semantics.sh",
+    "tools/support/compat/github/native-javascript-sfc-membership.sh",
+    "tools/support/compat/github/native-empty-vue-star-exports.mjs",
+    "tools/support/compat/github/native-lexical-dollar-receipt.mjs",
+    "tools/support/compat/github/native-lexical-javascript-source.mjs",
+    "tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs",
+    "crates/vize_canon/src/lib.rs",
+    "crates/vize_croquis/src/lib.rs",
+    "crates/vize_maestro/src/ide/completion.rs",
+    "crates/vize/tests/check_reference_path_cli.rs",
+    "tests/_fixtures/differential/typechecker/outside-import-types/input.json",
+    ".cargo/config.toml",
+    "rust-toolchain.toml",
+    "Cargo.toml",
+    "Cargo.lock",
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "patches/example.patch",
+    "tools/config/vite-plus/tasks/check.ts",
+    ".gitmodules",
+    "tests/_fixtures/_git/element-plus",
+  ])
+    assert.equal(selected(file), true, file);
+});
 
 // Official edited-event shape, pinned in the decision record: changes.base is
 // separate from changes.body/title and carries both ref.from and sha.from.

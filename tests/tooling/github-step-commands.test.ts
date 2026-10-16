@@ -73,7 +73,7 @@ test("github/create-site-structure assembles the Pages output tree", () => {
   }
 });
 
-test("github/install-playwright-browsers uses the playground-local Playwright CLI", () => {
+test("github/install-playwright-browsers resolves Playwright from its installed owner", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "github-playwright-install-"));
   const binDir = path.join(tempDir, "bin");
   const argsPath = path.join(tempDir, "vp-args.txt");
@@ -91,27 +91,30 @@ test("github/install-playwright-browsers uses the playground-local Playwright CL
       ].join("\n"),
     );
 
-    const result = runToolCommand("tools/support/github/install-playwright-browsers.ts", [], {
-      cwd: tempDir,
-      env: {
-        PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
-      },
-    });
+    for (const workspace of ["", "./tests"]) {
+      const result = runToolCommand("tools/support/github/install-playwright-browsers.ts", [], {
+        cwd: tempDir,
+        env: {
+          PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+          PLAYWRIGHT_WORKSPACE: workspace,
+        },
+      });
 
-    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    assert.equal(
-      fs.readFileSync(argsPath, "utf8"),
-      [
-        "exec",
-        "--filter",
-        "./playground",
-        "--",
-        "playwright",
-        "install",
-        "chromium",
-        "--with-deps",
-      ].join("\n"),
-    );
+      assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+      assert.equal(
+        fs.readFileSync(argsPath, "utf8"),
+        [
+          "exec",
+          "--filter",
+          workspace || "./playground",
+          "--",
+          "playwright",
+          "install",
+          "chromium",
+          "--with-deps",
+        ].join("\n"),
+      );
+    }
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }

@@ -1,12 +1,11 @@
 /**
- * Installs the Chromium browser used by the playground browser test jobs.
+ * Installs Chromium using the lockfile version owned by a selected workspace.
  *
  * Usage: node tools/support/github/install-playwright-browsers.ts
  *
- * The installer runs through the `./playground` workspace package, which owns
- * the browser tests. After `vp install`, that package has a local `playwright`
- * binary that `vp exec --filter` resolves deterministically, and the browser
- * version stays aligned with the lockfile without parsing it here.
+ * PLAYWRIGHT_WORKSPACE defaults to `./playground`; scoped CSS uses `./tests`,
+ * where its runtime oracle imports Playwright. The selected workspace must be
+ * installed before calling this helper.
  */
 import { isEntrypoint, runCommand, runEntrypoint } from "../command-runtime.ts";
 
@@ -14,7 +13,7 @@ export function main(): number {
   return runCommand("vp", [
     "exec",
     "--filter",
-    "./playground",
+    process.env.PLAYWRIGHT_WORKSPACE || "./playground",
     "--",
     "playwright",
     "install",
