@@ -292,6 +292,7 @@ impl CorsaProjectClient {
         };
         self.editor_lsp = None;
         self.editor_lsp_documents_dirty = true;
+        self.publish_closed_native_owners(&result);
         result
     }
 
@@ -309,6 +310,7 @@ impl CorsaProjectClient {
         };
         self.editor_lsp = None;
         self.editor_lsp_documents_dirty = true;
+        self.publish_closed_native_owners(&result);
         result
     }
 }

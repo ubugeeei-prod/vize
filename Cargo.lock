@@ -695,101 +695,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f8f80099a98041a3d1622845c271458a2d73e688351bf3cb999266764b81d48"
 
 [[package]]
-name = "corsa"
-version = "1.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d581851ddaa32172c3e87cb394446cae00814fc069fd6204bb5336b8a1db3f66"
-dependencies = [
- "base64",
- "corsa_client",
- "corsa_core",
- "corsa_jsonrpc",
- "corsa_lsp",
- "corsa_orchestrator",
- "corsa_runtime",
- "lsp-types 0.97.0",
- "serde_json",
-]
-
-[[package]]
-name = "corsa_client"
-version = "1.14.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6802ed0ecfaa0b996876aa53aa4a60b632672615e36875730448a32c337c60a6"
-dependencies = [
- "base64",
- "corsa_core",
- "corsa_jsonrpc",
- "corsa_runtime",
- "log",
- "lsp-types 0.97.0",
- "parking_lot",
- "phf 0.14.0",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "corsa_core"
-version = "1.14.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4eeeb06c2dd6362c03dd2af55c3f321ab126aa82552a2149a2400d83f8b25f5c"
-dependencies = [
- "base64",
- "compact_str",
- "memchr",
- "rustc-hash",
- "serde",
- "serde_json",
- "smallvec",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "corsa_jsonrpc"
-version = "1.14.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bccf76530df29150679711819ab037359ac4a73c5e659bbc5f36de9c385e72a"
-dependencies = [
- "corsa_core",
- "corsa_runtime",
- "log",
- "parking_lot",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "corsa_lsp"
-version = "1.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5223d92bf4e87bee6e4aae2c85948894fb7a92618fc5264d7f8ce7c599212f8"
-dependencies = [
- "corsa_core",
- "corsa_jsonrpc",
- "corsa_runtime",
- "lsp-types 0.97.0",
- "parking_lot",
- "serde",
-]
-
-[[package]]
-name = "corsa_orchestrator"
-version = "1.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "870bf975c5e7bce2be4df321cec1aa8a51193a0e09e560a023d9989215f686af"
-dependencies = [
- "corsa_client",
- "corsa_core",
- "corsa_lsp",
- "corsa_runtime",
- "log",
- "parking_lot",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "corsa_runtime"
 version = "1.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4525,8 +4430,6 @@ name = "vize"
 version = "0.457.0"
 dependencies = [
  "clap",
- "corsa",
- "corsa_lsp",
  "davinci_test_support",
  "dirs",
  "futures",
@@ -4560,6 +4463,8 @@ dependencies = [
  "vize_atelier_vapor",
  "vize_canon",
  "vize_carton",
+ "vize_corsa",
+ "vize_corsa_lsp",
  "vize_croquis",
  "vize_croquis_cf",
  "vize_curator",
@@ -4793,8 +4698,6 @@ dependencies = [
 name = "vize_canon"
 version = "0.457.0"
 dependencies = [
- "corsa",
- "corsa_lsp",
  "criterion",
  "dashmap 6.2.1",
  "dirs",
@@ -4824,6 +4727,8 @@ dependencies = [
  "vize_atelier_jsx",
  "vize_atelier_sfc",
  "vize_carton",
+ "vize_corsa",
+ "vize_corsa_lsp",
  "vize_croquis",
  "vize_l0",
  "vize_l1",
@@ -4849,6 +4754,91 @@ dependencies = [
  "tempfile",
  "vize_l0",
  "which",
+]
+
+[[package]]
+name = "vize_corsa"
+version = "0.457.0"
+dependencies = [
+ "base64",
+ "corsa_runtime",
+ "lsp-types 0.97.0",
+ "serde_json",
+ "tempfile",
+ "vize_corsa_client",
+ "vize_corsa_core",
+ "vize_corsa_jsonrpc",
+ "vize_corsa_lsp",
+ "vize_corsa_orchestrator",
+]
+
+[[package]]
+name = "vize_corsa_client"
+version = "0.457.0"
+dependencies = [
+ "base64",
+ "corsa_runtime",
+ "log",
+ "lsp-types 0.97.0",
+ "parking_lot",
+ "phf 0.14.0",
+ "serde",
+ "serde_json",
+ "vize_corsa_core",
+ "vize_corsa_jsonrpc",
+]
+
+[[package]]
+name = "vize_corsa_core"
+version = "0.457.0"
+dependencies = [
+ "base64",
+ "compact_str",
+ "memchr",
+ "rustc-hash",
+ "serde",
+ "serde_json",
+ "smallvec",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "vize_corsa_jsonrpc"
+version = "0.457.0"
+dependencies = [
+ "corsa_runtime",
+ "log",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "vize_corsa_core",
+]
+
+[[package]]
+name = "vize_corsa_lsp"
+version = "0.457.0"
+dependencies = [
+ "corsa_runtime",
+ "lsp-types 0.97.0",
+ "parking_lot",
+ "serde",
+ "vize_corsa_core",
+ "vize_corsa_jsonrpc",
+]
+
+[[package]]
+name = "vize_corsa_orchestrator"
+version = "0.457.0"
+dependencies = [
+ "corsa_runtime",
+ "log",
+ "lsp-types 0.97.0",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "vize_corsa_client",
+ "vize_corsa_core",
+ "vize_corsa_lsp",
 ]
 
 [[package]]
@@ -5397,7 +5387,6 @@ dependencies = [
 name = "vize_patina"
 version = "0.457.0"
 dependencies = [
- "corsa",
  "criterion",
  "cssparser",
  "davinci_harness",
@@ -5420,6 +5409,7 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_canon",
  "vize_carton",
+ "vize_corsa",
  "vize_croquis",
  "vize_glyph",
  "vize_l0",

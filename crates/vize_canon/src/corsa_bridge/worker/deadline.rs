@@ -31,7 +31,7 @@ impl Ord for Deadline {
     }
 }
 
-pub(super) fn wake_at(at: Instant) -> Result<oneshot::Receiver<()>, WorkerError> {
+pub(crate) fn wake_at(at: Instant) -> Result<oneshot::Receiver<()>, WorkerError> {
     static SENDER: OnceLock<Option<mpsc::Sender<Deadline>>> = OnceLock::new();
     let sender = SENDER.get_or_init(|| {
         let (sender, receiver) = mpsc::channel();

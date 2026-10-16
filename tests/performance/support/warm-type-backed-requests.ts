@@ -9,12 +9,15 @@ import { decodeFrames } from "../../differential/lsp-wire.ts";
 import {
   awaitRetired,
   nativeIdentities,
+  observeReaped,
   type ProcessIdentity,
 } from "./warm-type-backed-processes.ts";
 import { controls } from "./warm-type-backed-controls.ts";
 import { assertQueryFrames } from "./warm-type-backed-query-frames.ts";
 import { startup } from "./warm-type-backed-startup.ts";
 import { QueryRecorder } from "./warm-type-backed-measure.ts";
+import { assertUnchangedNonCargoLocks } from "./warm-type-backed-source-pair.ts";
+import { qualifyCorsaGraph } from "./warm-type-backed-corsa-graph.ts";
 import {
   assertOriginalFrames,
   assertTypedPackets,
@@ -39,6 +42,7 @@ export async function runSide(
   output: string,
   published?: PublishedSessionBinding & { binary: string },
   coldStart = false,
+  requireReaped = false,
 ) {
   const binary = published?.binary ?? path.join(repoRoot, "target/ci/vize");
   const captureRoot =
@@ -52,6 +56,7 @@ export async function runSide(
   let recorder: QueryRecorder | undefined;
   let processId: number | null = null;
   let retirement: unknown;
+  let nativeReaping: Awaited<ReturnType<typeof observeReaped>> | undefined;
   const natives = new Map<string, ProcessIdentity>();
   const failures: string[] = [];
   let initialization: unknown;
@@ -134,6 +139,37 @@ export async function runSide(
     } catch (error) {
       remember(error);
     }
+    if (requireReaped) {
+      try {
+        const recovery = (changedInputs as Array<Record<string, unknown>> | undefined)?.find(
+          (entry) => entry.name === "recovered-native-epoch",
+        );
+        assert.ok(
+          recovery && Array.isArray(recovery.processes),
+          "the candidate needs its retained recovered-provider witness",
+        );
+        const identities = recovery.processes as Array<ProcessIdentity & { parent: number }>;
+        for (const identity of identities) {
+          assert.equal(
+            identity.parent,
+            session?.processId,
+            "the final provider is a direct Vize child",
+          );
+          assert.ok(
+            natives.has(`${identity.pid}:${identity.birth_ticks}`),
+            "the owned provider image was physically witnessed",
+          );
+        }
+        nativeReaping = await observeReaped(identities);
+        assert.equal(
+          nativeReaping.reaped,
+          true,
+          "the candidate must reap its final recovered native provider; same-birth zombies are failures",
+        );
+      } catch (error) {
+        remember(error);
+      }
+    }
     const created = fs.readdirSync(captureRoot).filter((name) => !previous.includes(name));
     if (created.length) {
       try {
@@ -206,6 +242,7 @@ export async function runSide(
     },
     observedNativeIdentities: [...natives.values()],
     retirement,
+    ...(requireReaped ? { nativeReaping } : {}),
   };
 }
 
@@ -219,6 +256,16 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   );
   const afterRoot = sourceBinding.afterRoot ?? driverRoot;
   const releaseCut = sourceBinding.authority === "root-frozen-release-cut";
+  const sourcePair = sourceBinding.authority === "immutable-source-pair-qualification";
+  if (sourcePair) {
+    assertUnchangedNonCargoLocks(sourceIdentity(beforeRoot).locks, sourceIdentity(afterRoot).locks);
+    qualifyCorsaGraph(
+      fs.readFileSync(path.join(beforeRoot, "Cargo.toml"), "utf8"),
+      fs.readFileSync(path.join(afterRoot, "Cargo.toml"), "utf8"),
+      fs.readFileSync(path.join(beforeRoot, "Cargo.lock"), "utf8"),
+      fs.readFileSync(path.join(afterRoot, "Cargo.lock"), "utf8"),
+    );
+  }
   assert.deepEqual(sourceIdentity(driverRoot), sourceBinding.driverSource);
   assert.equal(sourceIdentity(beforeRoot).revision, sourceBinding.baseline);
   assert.equal(sourceIdentity(afterRoot).revision, sourceBinding.head);
@@ -242,7 +289,15 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   const workspace = path.join(outputRoot, "workspace");
   fs.mkdirSync(outputRoot, { recursive: true });
   const run = (root: string, side: string) =>
-    runSide(root, workspace, runtime, path.join(outputRoot, side), undefined, true);
+    runSide(
+      root,
+      workspace,
+      runtime,
+      path.join(outputRoot, side),
+      undefined,
+      true,
+      side === "after",
+    );
   const before = await run(beforeRoot, "before");
   fs.writeFileSync(path.join(outputRoot, "before.json"), `${JSON.stringify(before, null, 2)}\n`);
   const after = await run(afterRoot, "after");
@@ -254,9 +309,10 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
     runtime,
     before,
     after,
-    protocol: releaseCut
-      ? "original400+134; same worker/workspace/runtime/attested shipping build; exact per-source locks; four immediate cold requests+one hover during actual native collection; completed initial types+10s idle; retained prime; all5x4 warm requests"
-      : "original400+134; same worker/workspace/locks/runtime/attested shipping build; four immediate cold requests+one hover during actual native collection; completed initial types+10s idle; retained prime; all5x4 warm requests",
+    protocol:
+      releaseCut || sourcePair
+        ? "original400+134; same worker/workspace/runtime/attested shipping build; exact per-source locks; four immediate cold requests+one hover during actual native collection; completed initial types+10s idle; retained prime; all5x4 warm requests"
+        : "original400+134; same worker/workspace/locks/runtime/attested shipping build; four immediate cold requests+one hover during actual native collection; completed initial types+10s idle; retained prime; all5x4 warm requests",
     timingScope:
       "request wall time; inclusive sampled Linux Maestro/native-descendant CPU; observational, no numeric ceiling or Program count",
     pendingDelivery:
@@ -268,7 +324,8 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   assert.deepEqual(before.inputs.source, after.inputs.source);
   assert.equal(before.inputs.sourceSha256, after.inputs.sourceSha256);
   if (!releaseCut) {
-    assert.deepEqual(before.source.locks, after.source.locks);
+    if (sourcePair) assertUnchangedNonCargoLocks(before.source.locks, after.source.locks);
+    else assert.deepEqual(before.source.locks, after.source.locks);
     assert.deepEqual(before.initialization, after.initialization);
   } else {
     const expected = structuredClone(before.initialization);
@@ -324,6 +381,7 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
     path.join(outputRoot, "qualified.json"),
     `${JSON.stringify(
       {
+        ...(sourcePair ? { authority: sourceBinding.authority, scope: sourceBinding.scope } : {}),
         before: before.source,
         after: after.source,
         wholePacketsEqual: true,

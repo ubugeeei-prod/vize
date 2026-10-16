@@ -3,6 +3,8 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { finiteCut } from "./warm-type-backed-cut.ts";
+import { assertUnchangedNonCargoLocks, sourcePair } from "./warm-type-backed-source-pair.ts";
+import { qualifyCorsaGraph } from "./warm-type-backed-corsa-graph.ts";
 import {
   driverRoot,
   git,
@@ -24,10 +26,12 @@ if (process.argv[2] === "prepare") {
   fs.mkdirSync(output);
   fs.writeFileSync(
     path.join(output, "prepare-inputs.json"),
-    `${JSON.stringify({ driver, inputs: Object.fromEntries(["ORIGINAL_CONTROL_SHA", "ORIGINAL_AFTER_SHA", "ORIGINAL_AFTER_TREE", "ORIGINAL_MANIFEST_SHA256"].map((key) => [key, process.env[key] ?? ""])) }, null, 2)}\n`,
+    `${JSON.stringify({ driver, inputs: Object.fromEntries(["SOURCE_SHA", "SOURCE_BASE_SHA", "ORIGINAL_CONTROL_SHA", "ORIGINAL_AFTER_SHA", "ORIGINAL_AFTER_TREE", "ORIGINAL_MANIFEST_SHA256"].map((key) => [key, process.env[key] ?? ""])) }, null, 2)}\n`,
   );
   let cut: ReturnType<typeof finiteCut>;
+  let pair: ReturnType<typeof sourcePair>;
   try {
+    pair = sourcePair(process.env, driver.revision, (args) => git(driverRoot, args));
     cut = finiteCut(output);
   } catch (error) {
     fs.writeFileSync(
@@ -45,11 +49,11 @@ if (process.argv[2] === "prepare") {
       "the loaded workflow must match",
     );
   }
-  const head = cut?.after ?? process.env.HEAD_SHA!;
-  const base = cut?.control ?? process.env.BASE_SHA!;
+  const head = cut?.after ?? pair?.head ?? process.env.HEAD_SHA!;
+  const base = cut?.control ?? pair?.base ?? process.env.BASE_SHA!;
   for (const sha of [head, base]) assert.match(sha, /^[a-f0-9]{40}$/u);
   if (!cut) assert.equal(driver.revision, head);
-  const baseline = cut?.control ?? git(driverRoot, ["merge-base", base, head]);
+  const baseline = cut?.control ?? pair?.base ?? git(driverRoot, ["merge-base", base, head]);
   const afterRoot = cut ? path.join(process.env.RUNNER_TEMP!, "warm-after") : driverRoot;
   const production = git(driverRoot, [
     "diff",
@@ -114,6 +118,19 @@ if (process.argv[2] === "prepare") {
     ])
       fs.copyFileSync(path.join(root, file), path.join(directory, file));
   }
+  if (pair) {
+    assertUnchangedNonCargoLocks(sourceIdentity(before).locks, sourceIdentity(afterRoot).locks);
+    const graph = qualifyCorsaGraph(
+      fs.readFileSync(path.join(before, "Cargo.toml"), "utf8"),
+      fs.readFileSync(path.join(afterRoot, "Cargo.toml"), "utf8"),
+      fs.readFileSync(path.join(before, "Cargo.lock"), "utf8"),
+      fs.readFileSync(path.join(afterRoot, "Cargo.lock"), "utf8"),
+    );
+    fs.writeFileSync(
+      path.join(output, "source-pair-cargo-graph.json"),
+      `${JSON.stringify(graph, null, 2)}\n`,
+    );
+  }
   fs.writeFileSync(
     path.join(output, "workflow-source.json"),
     JSON.stringify(
@@ -126,9 +143,11 @@ if (process.argv[2] === "prepare") {
         driverSource: driver,
         authority: cut
           ? "root-frozen-release-cut"
-          : harnessOnly
-            ? "harness-only-qualification"
-            : "owned-source-pr",
+          : pair
+            ? pair.authority
+            : harnessOnly
+              ? "harness-only-qualification"
+              : "owned-source-pr",
         finiteCut: cut,
         originals: inputAuthority(),
         runner: {
@@ -160,16 +179,19 @@ if (process.argv[2] === "prepare") {
         ),
         scope: cut
           ? "Literal published v0.433 and root-frozen release cut; complete changed Git-entry manifest, independent driver, identical fresh ci builds, original400 and one recorded runtime"
-          : harnessOnly
-            ? "Same production source; closed reviewed harness-only delta and unchanged original inputs/locks. Qualification only, no performance or source-effect gain."
-            : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack, shared editor reference-options, document-batch transfer, streamed workspace-symbol producer, event navigation/rename ownership or exact authenticated path-host move delta or exact authenticated timing-observer host move delta or complete authenticated default-migration slice; one worker, identical release recipe, original400 inputs and current locked runtime",
+          : pair
+            ? "Immutable ancestor/head source qualification only; six named Corsa registry-to-owned package identities with complete source locks and metadata, unchanged external graph/runtime/toolchain, identical shipping release recipe and original400 protocol. No release-cut, published-artifact or source-effect attribution credit."
+            : harnessOnly
+              ? "Same production source; closed reviewed harness-only delta and unchanged original inputs/locks. Qualification only, no performance or source-effect gain."
+              : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack, shared editor reference-options, document-batch transfer, streamed workspace-symbol producer, event navigation/rename ownership or exact authenticated path-host move delta or exact authenticated timing-observer host move delta or complete authenticated default-migration slice; one worker, identical release recipe, original400 inputs and current locked runtime",
       },
       null,
       2,
     ) + "\n",
   );
-  if (!cut) assert.deepEqual(sourceIdentity(before).locks, sourceIdentity(afterRoot).locks);
-  else fs.writeFileSync(path.join(output, "changed-tree-manifest.json"), cut.manifestBytes);
+  if (!cut && !pair)
+    assert.deepEqual(sourceIdentity(before).locks, sourceIdentity(afterRoot).locks);
+  if (cut) fs.writeFileSync(path.join(output, "changed-tree-manifest.json"), cut.manifestBytes);
 } else {
   throw new Error("usage: warm-type-backed-workflow.ts prepare");
 }

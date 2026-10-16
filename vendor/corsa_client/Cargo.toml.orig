@@ -1,0 +1,28 @@
+[package]
+name = "corsa_client"
+version = "1.14.2"
+edition = "2024"
+description = "Typed stdio API client bindings for Corsa"
+publish = ["crates-io"]
+documentation.workspace = true
+homepage.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "corsa_client"
+path = "src/lib.rs"
+
+[dependencies]
+base64 = "0.23"
+log = { workspace = true }
+lsp-types = "0.97"
+parking_lot = "0.12"
+phf = { workspace = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+corsa_core = { version = "1.14.2", path = "../corsa_core" }
+corsa_jsonrpc = { version = "1.14.2", path = "../corsa_jsonrpc" }
+corsa_runtime = { version = "1.14.2", path = "../corsa_runtime" }

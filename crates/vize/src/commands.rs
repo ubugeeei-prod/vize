@@ -26,4 +26,5 @@ pub mod profile_export;
 pub mod ready;
 pub mod reduce;
 pub mod repro;
+pub(crate) mod source_files;
 pub mod upgrade;

@@ -25,7 +25,7 @@ mod canon_document;
 mod capabilities;
 mod replay;
 pub(super) use bootstrap::{
-    ProjectSessionSpawnError, api_mode_for_executable, spawn_project_session,
+    ProjectSessionSpawnError, api_mode_for_executable, spawn_project_session_with_control,
 };
 #[cfg(test)]
 use bootstrap::{classify_project_session_error, should_retry_json_rpc};

@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 use vize_l0::String as CartonString;
 use vize_l0::append;
 
-use crate::commands::fmt::collect_files;
+use crate::commands::source_files::collect_files;
 use csf::extract_csf;
 use emit::emit_art;
 

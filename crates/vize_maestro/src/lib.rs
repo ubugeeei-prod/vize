@@ -138,7 +138,7 @@ pub async fn serve() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let stdin = runtime::threaded_reader("vize-lsp-stdin", std::io::stdin())?;
     let stdout = runtime::threaded_writer("vize-lsp-stdout", std::io::stdout())?;
 
-    serve_transport(stdin, stdout).await;
+    serve_transport(stdin, stdout).await?;
 
     Ok(())
 }
@@ -173,7 +173,7 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
     let read = runtime::threaded_reader("vize-lsp-tcp-read", stream.try_clone()?)?;
     let write = runtime::threaded_writer("vize-lsp-tcp-write", stream)?;
 
-    serve_transport(read, write).await;
+    serve_transport(read, write).await?;
 
     Ok(())
 }
@@ -183,12 +183,14 @@ pub fn serve_tcp_blocking(port: u16) -> Result<(), Box<dyn std::error::Error + S
     runtime::block_on(serve_tcp(port))
 }
 
-async fn serve_transport<I, O>(read: I, write: O)
+async fn serve_transport<I, O>(read: I, write: O) -> std::io::Result<()>
 where
     I: futures::io::AsyncRead + Unpin,
     O: futures::io::AsyncWrite,
 {
     let (service, socket) = server::build_lsp_service();
+    #[cfg(feature = "native")]
+    let native_finalizer = service.inner().native_transport_finalizer();
     #[cfg(feature = "experimental-source-navigation")]
     let _module_termination = service.inner().module_link_transport_lease();
     #[cfg(feature = "experimental-source-navigation")]
@@ -203,4 +205,10 @@ where
         Either::Left(_) => {}
         Either::Right(_) => tracing::info!("LSP exit notification handled; stopping transport"),
     }
+    #[cfg(feature = "native")]
+    native_finalizer.await.map_err(|reason| {
+        tracing::error!(error = %reason, "native owners did not close when LSP transport ended");
+        std::io::Error::other(reason.as_str())
+    })?;
+    Ok(())
 }

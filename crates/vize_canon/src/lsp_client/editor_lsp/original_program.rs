@@ -33,6 +33,14 @@ pub(in crate::lsp_client) struct OriginalDiagnosingSession {
     project_opened: bool,
 }
 
+impl OriginalDiagnosingSession {
+    pub(in crate::lsp_client) fn retirement_owners(
+        &self,
+    ) -> crate::lsp_client::retirement::CloseOwners {
+        self.editor.retirement_owners("authored-editor")
+    }
+}
+
 impl CorsaProjectClient {
     pub(crate) fn original_program_diagnostics(
         &mut self,
@@ -125,10 +133,11 @@ impl CorsaProjectClient {
         if self.original_diagnosing_session.is_none() {
             self.original_diagnosing_session = Some(OriginalDiagnosingSession {
                 key,
-                editor: EditorLspSession::spawn(
+                editor: EditorLspSession::spawn_with_control(
                     self.executable.as_str(),
                     &self.cwd,
                     &self.project_root,
+                    self.startup_control.clone(),
                 )
                 .map_err(backend)?,
                 project_opened: false,
@@ -145,9 +154,12 @@ impl CorsaProjectClient {
     pub(in crate::lsp_client) fn retire_original_diagnosing_session(
         &mut self,
     ) -> Result<(), String> {
-        self.original_diagnosing_session
+        let result = self
+            .original_diagnosing_session
             .take()
-            .map_or(Ok(()), |mut owner| owner.editor.shutdown())
+            .map_or(Ok(()), |mut owner| owner.editor.shutdown());
+        self.publish_closed_native_owners(&result);
+        result
     }
 }
 

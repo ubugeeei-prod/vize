@@ -1,18 +1,22 @@
-pub(super) const FORMAT_EXTENSIONS: &[&str] = &[
+pub(in crate::commands) const FORMAT_EXTENSIONS: &[&str] = &[
     "vue", "js", "mjs", "cjs", "ts", "mts", "cts", "jsx", "tsx", "json", "jsonc", "yaml", "yml",
     "md", "markdown",
 ];
 
-pub(super) const FORMAT_EXTENSIONS_DISPLAY: &str = ".vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown";
+#[cfg(any(feature = "glyph", test))]
+pub(in crate::commands) const FORMAT_EXTENSIONS_DISPLAY: &str = ".vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown";
 
-pub(super) const FORMAT_PATTERN_HELP: &str = "Vue/JS/TS/JSON/JSONC globs; YAML/Markdown formatting is not implemented\n\n[default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.json ./**/*.jsonc]";
+#[cfg(feature = "glyph")]
+pub(in crate::commands) const FORMAT_PATTERN_HELP: &str = "Vue/JS/TS/JSON/JSONC globs; YAML/Markdown formatting is not implemented\n\n[default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.json ./**/*.jsonc]";
 
-pub(super) fn is_unimplemented_document_extension(extension: &str) -> bool {
+#[cfg(any(feature = "glyph", test))]
+pub(in crate::commands) fn is_unimplemented_document_extension(extension: &str) -> bool {
     matches!(extension, "yaml" | "yml" | "md" | "markdown")
 }
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
-pub(super) fn default_fmt_patterns() -> Vec<std::string::String> {
+#[cfg(any(feature = "glyph", test))]
+pub(in crate::commands) fn default_fmt_patterns() -> Vec<std::string::String> {
     FORMAT_EXTENSIONS
         .iter()
         .filter(|extension| !is_unimplemented_document_extension(extension))
@@ -21,7 +25,7 @@ pub(super) fn default_fmt_patterns() -> Vec<std::string::String> {
 }
 
 #[inline]
-pub(super) fn is_format_extension(extension: &str) -> bool {
+pub(in crate::commands) fn is_format_extension(extension: &str) -> bool {
     FORMAT_EXTENSIONS.contains(&extension)
 }
 

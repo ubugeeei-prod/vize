@@ -37,7 +37,7 @@ use std::thread;
 use std::time::Duration;
 
 mod async_reply;
-mod deadline;
+pub(crate) mod deadline;
 pub(crate) mod retirement;
 
 /// A unit of work executed on the worker thread against the owned state.

@@ -1,0 +1,55 @@
+{
+  "files": [
+    {
+      "file": "Comp0.vue",
+      "diagnostics": [
+        "error:1:59 [TS1260] Keywords cannot contain escape characters."
+      ]
+    },
+    {
+      "file": "Comp1.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "Comp2.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "Comp3.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "shared.ts",
+      "diagnostics": [
+        "error:1:21 [TS2304] Cannot find name 'LeafGlobal'."
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "lib": [
+          "ESNext",
+          "DOM"
+        ],
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext"
+      },
+      "files": [
+        "Comp0.vue",
+        "Comp1.vue",
+        "Comp2.vue",
+        "Comp3.vue",
+        "shared.ts"
+      ]
+    }
+  ],
+  "errorCount": 2,
+  "warningCount": 0,
+  "fileCount": 5
+}

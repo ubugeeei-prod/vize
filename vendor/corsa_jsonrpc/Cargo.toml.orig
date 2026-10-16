@@ -1,0 +1,24 @@
+[package]
+name = "corsa_jsonrpc"
+version = "1.14.2"
+edition = "2024"
+description = "JSON-RPC framing and thread-backed transport helpers for corsa"
+publish = ["crates-io"]
+documentation.workspace = true
+homepage.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "corsa_jsonrpc"
+path = "src/lib.rs"
+
+[dependencies]
+log = { workspace = true }
+parking_lot = "0.12"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+corsa_core = { version = "1.14.2", path = "../corsa_core" }
+corsa_runtime = { version = "1.14.2", path = "../corsa_runtime" }

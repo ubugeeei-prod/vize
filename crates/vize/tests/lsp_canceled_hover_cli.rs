@@ -290,6 +290,29 @@ fn abandoned_real_native_hover_preserves_original_markdown_and_current_revision(
                 lsp.wait_for_exit().success(),
                 "exit must finish with stdin still open"
             );
+            let exits = std::fs::read_to_string(project.gate().join("native.exits")).unwrap();
+            assert!(!exits.is_empty());
+            for exit in exits.lines() {
+                assert_eq!(
+                    serde_json::from_str::<Value>(exit).unwrap(),
+                    json!({"code":0,"signal":null}),
+                    "the proxy must reap each real native child cleanly"
+                );
+            }
+            for name in [
+                "shutdown-response.bin",
+                "translated-exit.bin",
+                "native.exits",
+            ] {
+                let bytes = std::fs::read(project.gate().join(name)).unwrap();
+                assert!(
+                    !bytes.is_empty(),
+                    "missing actual proxy lifecycle evidence: {name}"
+                );
+                if let Some(capture) = lsp.trace_dir() {
+                    std::fs::write(capture.join(name), bytes).unwrap();
+                }
+            }
             // Exit joins both readers: compare every retained whole publication,
             // including messages consumed while matching semantic responses.
             for publication in lsp.published_diagnostics() {

@@ -87,6 +87,12 @@ impl ProjectContext {
         Some(state)
     }
 
+    /// Finalization captures a published owner after closing context admission.
+    /// Ordinary lookups must continue to hide this same retired state.
+    pub(super) fn initialized_state_for_exit(&self) -> Option<Arc<ServerState>> {
+        self.state.get().cloned()
+    }
+
     pub(super) fn initialized_state(&self) -> Option<Arc<ServerState>> {
         (!self.retired.load(Ordering::Acquire))
             .then(|| self.state.get().cloned())
@@ -104,6 +110,24 @@ impl ProjectContext {
                 .project_contexts
                 .retired
                 .store(true, Ordering::Release);
+        }
+    }
+
+    pub(super) fn mark_retired_for_exit(&self) {
+        self.retired.store(true, Ordering::Release);
+        if let Some(state) = self.state.get() {
+            state.freeze_corsa_owner_for_exit();
+        }
+        self.mark_retired();
+    }
+
+    /// The registry lock still makes this owner visible to finalization.
+    /// Transfer native custody before detaching it; unrelated retirement can
+    /// continue after unlocking without opening an untracked-owner window.
+    pub(super) fn transfer_native_before_detach(&self) {
+        self.mark_retired();
+        if let Some(state) = self.state.get() {
+            state.retire_corsa_configuration();
         }
     }
 
@@ -158,3 +182,6 @@ impl Drop for ProjectContext {
         }
     }
 }
+
+#[cfg(test)]
+mod exit_tests;

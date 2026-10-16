@@ -9,8 +9,17 @@ use std::{
 use super::{CorsaProjectClient, VirtualProject};
 use vize_l0::cstr;
 
+#[path = "semantic_completion_receipt.rs"]
+pub(in crate::batch::executor) mod semantic_completion;
+
+#[path = "../tests/native_semantic_completion.rs"]
+mod native_semantic_completion;
+
 pub(super) fn begin(client: &CorsaProjectClient) {
-    client.begin_batch_test_receipt(std::env::var_os("VIZE_NESTED_BATCH_CAPTURE_DIR").is_some());
+    client.begin_batch_test_receipt(
+        std::env::var_os("VIZE_NESTED_BATCH_CAPTURE_DIR").is_some()
+            || semantic_completion::enabled(),
+    );
 }
 
 pub(super) fn capture(
@@ -19,6 +28,7 @@ pub(super) fn capture(
     uris: &[vize_l0::String],
     raw: &impl std::fmt::Debug,
 ) {
+    semantic_completion::capture(client, project, uris, raw);
     let Some(dir) = std::env::var_os("VIZE_NESTED_BATCH_CAPTURE_DIR").map(PathBuf::from) else {
         return;
     };

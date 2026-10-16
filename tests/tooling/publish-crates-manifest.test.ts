@@ -40,6 +40,16 @@ test("crate manifests resolve vendor forks, Davinci levels, then legacy crates",
     fs.writeFileSync("davinci/vize_l0/Cargo.toml", "");
     assert.equal(crateManifestPath("vize_oxc_parser"), "vendor/oxc_parser/Cargo.toml");
     assert.equal(crateManifestPath("vize_lightningcss"), "vendor/lightningcss/Cargo.toml");
+    for (const name of [
+      "corsa_core",
+      "corsa_jsonrpc",
+      "corsa_client",
+      "corsa_lsp",
+      "corsa_orchestrator",
+      "corsa",
+    ]) {
+      assert.equal(crateManifestPath(`vize_${name}`), `vendor/${name}/Cargo.toml`);
+    }
     assert.equal(crateManifestPath("vize_l0"), "davinci/vize_l0/Cargo.toml");
     assert.equal(crateManifestPath("vize_canon"), "crates/vize_canon/Cargo.toml");
     assert.equal(crateManifestPath("toString"), "crates/toString/Cargo.toml");

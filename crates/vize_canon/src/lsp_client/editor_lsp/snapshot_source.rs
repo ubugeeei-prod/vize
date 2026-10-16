@@ -14,6 +14,7 @@ use serde_json::json;
 use std::path::Path;
 use vize_l0::{FxHashMap, String};
 
+mod project_identity;
 mod protocol;
 #[cfg(test)]
 mod tests;
@@ -130,6 +131,11 @@ impl<'client> SnapshotSourceOwner<'client> {
         &self.snapshot.handle
     }
 
+    /// Complete typed project metadata captured in this native snapshot.
+    pub fn projects(&self) -> &[ProjectResponse] {
+        &self.snapshot.projects
+    }
+
     /// Admit exactly one configured project, with byte-exact config identity.
     pub fn project(
         &self,
@@ -144,6 +150,34 @@ impl<'client> SnapshotSourceOwner<'client> {
         if config.to_str() != Some(descriptor.config_file_name.as_str()) {
             return Ok(Err(SourceTextRefusal::ProjectIdentity));
         }
+        self.load_project(descriptor)
+    }
+
+    /// Select one project from a multi-project snapshot using the complete
+    /// current SDK descriptor returned by the diagnosing native attachment.
+    /// The expected descriptor supplies comparison evidence only: requests use
+    /// the matching descriptor borrowed from this owner's immutable snapshot.
+    /// Duplicate config paths or project handles refuse the entire selection.
+    pub fn project_matching(
+        &self,
+        config: &Path,
+        expected: &ProjectResponse,
+    ) -> Result<Result<SnapshotSourceProject<'_>, SourceTextRefusal>, CorsaError> {
+        if self.released {
+            return Ok(Err(SourceTextRefusal::ReleasedSnapshot));
+        }
+        let Some(descriptor) =
+            project_identity::matching_project(&self.snapshot.projects, config, expected)
+        else {
+            return Ok(Err(SourceTextRefusal::ProjectIdentity));
+        };
+        self.load_project(descriptor)
+    }
+
+    fn load_project<'owner>(
+        &'owner self,
+        descriptor: &'owner ProjectResponse,
+    ) -> Result<Result<SnapshotSourceProject<'owner>, SourceTextRefusal>, CorsaError> {
         let value = block_on(self.client.raw_json_request(
             "getSourceFileNames",
             json!({"snapshot":self.snapshot.handle,"project":descriptor.id}),

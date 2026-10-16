@@ -3,10 +3,14 @@ use super::{Arc, ServerState, Url, registry};
 use std::{cell::RefCell, sync::mpsc, time::Duration};
 use tower_lsp::lsp_types::{FileChangeType, FileEvent};
 
+#[cfg(target_os = "linux")]
+mod native_detach_tests;
+
 #[derive(Clone, Copy, PartialEq)]
 enum Phase {
     BeforeContexts,
     BeforeRoutes,
+    AfterContextRemoval,
 }
 
 type Hook = (Phase, Box<dyn FnOnce()>);
@@ -38,6 +42,10 @@ pub(super) fn before_contexts_lock() {
 
 pub(super) fn before_route_changes() {
     arrive(Phase::BeforeRoutes);
+}
+
+pub(super) fn after_context_removal() {
+    arrive(Phase::AfterContextRemoval);
 }
 
 fn pause_at(phase: Phase) -> (mpsc::Receiver<()>, mpsc::Sender<()>, impl FnOnce()) {

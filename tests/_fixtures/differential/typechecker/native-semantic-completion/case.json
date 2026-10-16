@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "id": "native-semantic-completion",
+  "sourceRepairRevision": "7a782477742608f5fa98646448c53321974f6d44",
+  "sourceRecord": "actual original record271 leaf-parity-escaped-import-keyword base d55b8238f89bab4418a1a961bd8db1c84911cb42; composed artifact 15e51ec040f83cd03639b2f593c5cbf48055e890",
+  "inputFiles": [
+    {
+      "file": "Comp0.vue",
+      "fixture": "inputs/Comp0.vue.txt",
+      "bytes": 148,
+      "sha256": "7be241354a3a2711a36aa8179d7eb5c244b3c6de033637105a8e6b1ab987a3c7"
+    },
+    {
+      "file": "Comp1.vue",
+      "fixture": "inputs/Comp1.vue.txt",
+      "bytes": 123,
+      "sha256": "c26a6a6ad0205f9d81d89d183fb3f2fb269adee684d7f77797199d0bc351aed6"
+    },
+    {
+      "file": "Comp2.vue",
+      "fixture": "inputs/Comp2.vue.txt",
+      "bytes": 123,
+      "sha256": "c26a6a6ad0205f9d81d89d183fb3f2fb269adee684d7f77797199d0bc351aed6"
+    },
+    {
+      "file": "Comp3.vue",
+      "fixture": "inputs/Comp3.vue.txt",
+      "bytes": 123,
+      "sha256": "c26a6a6ad0205f9d81d89d183fb3f2fb269adee684d7f77797199d0bc351aed6"
+    },
+    {
+      "file": "node_modules/leaf-types/index.d.ts",
+      "fixture": "inputs/node_modules/leaf-types/index.d.ts.txt",
+      "bytes": 55,
+      "sha256": "488799aee462ec3835c7f3ec8990f4fcacedc4e23ed67e3ffce41c5d8631b0c9"
+    },
+    {
+      "file": "node_modules/leaf-types/package.json",
+      "fixture": "inputs/node_modules/leaf-types/package.json.txt",
+      "bytes": 60,
+      "sha256": "4c4912f0f41028ddcf0411d44b1e666fef7a75ff83cffb3390775ac776561f00"
+    },
+    {
+      "file": "shared.ts",
+      "fixture": "inputs/shared.ts.txt",
+      "bytes": 35,
+      "sha256": "9d25c15c215b9c054320525af40ac18c0579e63d1b9d69ca9e0b9bec3bdcfc1a"
+    },
+    {
+      "file": "tsconfig.json",
+      "fixture": "inputs/tsconfig.json.txt",
+      "bytes": 177,
+      "sha256": "0365b71721cff6e83c1ec517601a8234df71f6dfba7cc0e67a5763a16a1b6f30"
+    }
+  ],
+  "reportedFiles": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"],
+  "expectedDiagnostics": [
+    {
+      "file": "Comp0.vue",
+      "line": 0,
+      "column": 58,
+      "code": 1260,
+      "severity": 1,
+      "message": "Keywords cannot contain escape characters.",
+      "blockType": "ScriptSetup"
+    },
+    {
+      "file": "shared.ts",
+      "line": 0,
+      "column": 20,
+      "code": 2304,
+      "severity": 1,
+      "message": "Cannot find name 'LeafGlobal'.",
+      "blockType": null
+    }
+  ],
+  "cliArgv": [
+    "check",
+    "--no-config",
+    "--quiet",
+    "--format",
+    "json",
+    "--tsconfig",
+    "tsconfig.json",
+    "--corsa-path",
+    "<authenticated-native>",
+    "--servers",
+    "1"
+  ],
+  "expectedExit": 1,
+  "expectedStderr": [],
+  "originalOutputs": {
+    "original.stdout.json": {
+      "bytes": 1010,
+      "sha256": "ae6ce301b3fc356ff80e5489c7add52d5a8515a87693872dc66bc9c78f9fa6ba"
+    },
+    "original.stderr.bin": {
+      "bytes": 194,
+      "sha256": "b0d0fc96d6f715fec696b677c0733bec36e3a91d2f1c5b990d8d56c31834d121"
+    },
+    "original-command.json": {
+      "bytes": 933,
+      "sha256": "785ca61dd1a31c8ad616a8e89cdf00f2fff09a2d6d07c8e0c50b4405f441dd60"
+    },
+    "original-provenance.json": {
+      "bytes": 4189,
+      "sha256": "35ddc74d34b01b758537b927fde009d8d700b8c97e6066ed54805fbac9f3d1c2"
+    }
+  },
+  "provider": "actual source CLI; diagnosing LSP-owner API attachment; original tuple/goldens fixed"
+}

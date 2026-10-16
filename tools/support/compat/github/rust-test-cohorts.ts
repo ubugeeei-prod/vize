@@ -48,7 +48,16 @@ const definitions: Record<RustTestCohortId, Definition> = {
   },
   typechecker: {
     name: "Type checker",
-    packages: ["vize_canon", "vize_croquis_cf"],
+    packages: [
+      "vize_canon",
+      "vize_croquis_cf",
+      "vize_corsa_core",
+      "vize_corsa_jsonrpc",
+      "vize_corsa_client",
+      "vize_corsa_lsp",
+      "vize_corsa_orchestrator",
+      "vize_corsa",
+    ],
     cliPrefixes: ["check_", "typecheck_"],
   },
   "language-server": {

@@ -5,17 +5,30 @@ use corsa::{api::UpdateSnapshotParams, runtime::block_on};
 use std::path::Path;
 use vize_l0::{String, cstr};
 
+#[cfg(test)]
+mod batch_source_receipt;
 mod shared_transport;
 pub(in crate::lsp_client) use shared_transport::try_shared_editor_project;
 
 impl EditorLspSession {
+    #[cfg(test)]
     pub(super) fn spawn_with_config(
         executable: &str,
         cwd: &Path,
         project_root: &Path,
         config: Option<&Path>,
     ) -> Result<Self, String> {
-        Self::spawn_configured(executable, cwd, project_root, config, false)
+        Self::spawn_configured(executable, cwd, project_root, config, false, None)
+    }
+
+    pub(super) fn spawn_with_config_controlled(
+        executable: &str,
+        cwd: &Path,
+        project_root: &Path,
+        config: Option<&Path>,
+        control: Option<crate::lsp_client::startup_control::StartupControl>,
+    ) -> Result<Self, String> {
+        Self::spawn_configured(executable, cwd, project_root, config, false, control)
     }
 
     pub(super) fn spawn_with_startup_configuration(
@@ -23,8 +36,9 @@ impl EditorLspSession {
         cwd: &Path,
         project_root: &Path,
         config: &Path,
+        control: Option<crate::lsp_client::startup_control::StartupControl>,
     ) -> Result<Self, String> {
-        Self::spawn_configured(executable, cwd, project_root, Some(config), true)
+        Self::spawn_configured(executable, cwd, project_root, Some(config), true, control)
     }
 
     fn spawn_configured(
@@ -33,17 +47,25 @@ impl EditorLspSession {
         project_root: &Path,
         config: Option<&Path>,
         apply_startup_configuration: bool,
+        control: Option<crate::lsp_client::startup_control::StartupControl>,
     ) -> Result<Self, String> {
         if let Some(config) = config {
             validate_config_path(config)?;
         }
-        let mut session = Self::spawn(executable, cwd, project_root)?;
+        let mut session = Self::spawn_initializing(executable, cwd, project_root, control)?;
         if let Some(config) = config
             && let Err(error) = session.open_explicit_project(config, apply_startup_configuration)
         {
+            crate::lsp_client::retirement::ownership_error(
+                &session.client.process_ownership(),
+                error.as_str(),
+            );
             // Startup errors use the same owner-before-attachment cleanup.
             let _ = session.shutdown();
             return Err(error);
+        }
+        if !apply_startup_configuration {
+            session.finish_startup()?;
         }
         Ok(session)
     }

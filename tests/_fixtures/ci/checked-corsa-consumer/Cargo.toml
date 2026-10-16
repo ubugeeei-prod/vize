@@ -1,0 +1,20 @@
+[package]
+name = "checked-corsa-consumer"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[features]
+default = []
+distributed = ["corsa/experimental-distributed", "corsa_orchestrator/experimental-distributed"]
+
+# The acceptance harness inserts the current workspace version and provider.
+[dependencies]
+corsa_core = { package = "vize_corsa_core", version = "*" }
+corsa_jsonrpc = { package = "vize_corsa_jsonrpc", version = "*" }
+corsa_client = { package = "vize_corsa_client", version = "*" }
+corsa_lsp = { package = "vize_corsa_lsp", version = "*" }
+corsa_orchestrator = { package = "vize_corsa_orchestrator", version = "*" }
+corsa = { package = "vize_corsa", version = "*" }

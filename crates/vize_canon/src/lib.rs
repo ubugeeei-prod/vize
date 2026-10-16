@@ -133,8 +133,8 @@ pub use corsa_bridge::{
     LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,
     LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent,
     LspParameterInformation, LspParameterLabel, LspPosition, LspRange, LspSignatureHelp,
-    LspSignatureInformation, NativeVueCheck, NativeVueError, OriginalProgramCheck,
-    OriginalProgramError, VIRTUAL_URI_SCHEME,
+    LspSignatureInformation, NativeRetirementOutcome, NativeVueCheck, NativeVueError,
+    OriginalProgramCheck, OriginalProgramError, VIRTUAL_URI_SCHEME,
 };
 
 // Re-export batch type checker

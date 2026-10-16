@@ -11,6 +11,7 @@ use crate::corsa_client::CorsaProjectClient;
 pub(super) fn build_client(
     config: &CorsaBridgeConfig,
     shared_editor_transport: bool,
+    control: crate::lsp_client::startup_control::StartupControl,
 ) -> Result<CorsaProjectClient, CorsaBridgeError> {
     let corsa_path = config
         .corsa_path
@@ -28,20 +29,11 @@ pub(super) fn build_client(
     // `vize check`. The isolated scratch session — which synthesizes a
     // tsconfig and `*.vue` stubs — remains the fallback for rootless or
     // tsconfig-less usage.
-    let workspace_root = working_dir
-        .as_deref()
-        .map(std::path::Path::new)
-        .filter(|dir| dir.join("tsconfig.json").is_file() || dir.join("jsconfig.json").is_file());
-
-    match workspace_root {
-        Some(dir) if shared_editor_transport => {
-            CorsaProjectClient::new_for_editor_workspace(corsa_path.as_deref(), dir)
-        }
-        Some(dir) => CorsaProjectClient::new_for_workspace(corsa_path.as_deref(), dir),
-        None if shared_editor_transport => {
-            CorsaProjectClient::new_for_editor(corsa_path.as_deref(), working_dir.as_deref())
-        }
-        None => CorsaProjectClient::new(corsa_path.as_deref(), working_dir.as_deref()),
-    }
+    CorsaProjectClient::new_for_bridge(
+        corsa_path.as_deref(),
+        working_dir.as_deref(),
+        shared_editor_transport,
+        control,
+    )
     .map_err(CorsaBridgeError::SpawnFailed)
 }

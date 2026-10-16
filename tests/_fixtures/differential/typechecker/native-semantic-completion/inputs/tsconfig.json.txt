@@ -1,0 +1,1 @@
+{"compilerOptions":{"strict":true,"module":"ESNext","moduleResolution":"Bundler","target":"ESNext","lib":["ESNext","DOM"],"skipLibCheck":true},"include":["*.vue","*.ts","*.js"]}

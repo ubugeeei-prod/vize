@@ -7,7 +7,7 @@ use vize_l0::String;
 use super::{
     CorsaProjectClient,
     lifecycle_setup::workspace_config_path,
-    session::{ProjectSessionSpawnError, spawn_project_session},
+    session::{ProjectSessionSpawnError, spawn_project_session_with_control},
 };
 
 impl CorsaProjectClient {
@@ -72,10 +72,11 @@ impl CorsaProjectClient {
             self.cwd = project_root.clone();
             self.replace_project_transport(&config_path, &project_root)?;
         } else {
-            let (session, capabilities) = match spawn_project_session(
+            let (session, capabilities) = match spawn_project_session_with_control(
                 self.executable.as_str(),
                 &project_root,
                 &config_path,
+                self.startup_control.as_ref(),
             ) {
                 Ok((session, capabilities)) => (Some(session), capabilities),
                 Err(ProjectSessionSpawnError::Unavailable(reason)) => {

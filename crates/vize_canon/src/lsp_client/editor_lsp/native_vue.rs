@@ -44,7 +44,8 @@ impl CorsaProjectClient {
         }
         let filesystem =
             Arc::new(filesystem::ProjectionFileSystem::new(projected, text).map_err(backend)?);
-        let session = block_on(ProjectSession::spawn(
+        let (client, _startup) = crate::lsp_client::startup_control::spawn_api(
+            self.startup_control.as_ref(),
             ApiSpawnConfig::new(self.executable.as_str())
                 .with_cwd(&self.cwd)
                 .with_mode(
@@ -57,12 +58,23 @@ impl CorsaProjectClient {
                     },
                 )
                 .with_filesystem(filesystem),
+        )
+        .map_err(backend)?;
+        let api_owner = client.process_ownership();
+        let session = block_on(ProjectSession::open(
+            client,
             config
                 .to_str()
                 .ok_or(NativeVueError::UnconfiguredProjection)?,
             Some(super::super::session::uri_document_identifier(uri)),
         ))
-        .map_err(|error| backend(cstr!("cannot open native SFC configured project: {error}")))?;
+        .map_err(|error| {
+            crate::lsp_client::retirement::ownership_error(
+                &api_owner,
+                cstr!("cannot open native SFC configured project: {error}").as_str(),
+            );
+            backend(cstr!("cannot open native SFC configured project: {error}"))
+        })?;
         let result = (|| {
             let effective = block_on(session.client().parse_config_file(
                 super::super::session::uri_document_identifier(&crate::file_uri::path_to_file_uri(
@@ -82,9 +94,13 @@ impl CorsaProjectClient {
                 return Err(NativeVueError::UnconfiguredProjection);
             }
             let project = session.project().clone();
-            let mut editor =
-                EditorLspSession::spawn(self.executable.as_str(), &self.cwd, &self.project_root)
-                    .map_err(backend)?;
+            let mut editor = EditorLspSession::spawn_with_control(
+                self.executable.as_str(),
+                &self.cwd,
+                &self.project_root,
+                self.startup_control.clone(),
+            )
+            .map_err(backend)?;
             let report = (|| {
                 editor.mirror(uri, text).map_err(backend)?;
                 let configuration = |editor: &mut EditorLspSession| {

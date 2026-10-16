@@ -201,6 +201,24 @@ export class LspSession {
     });
   }
 
+  /** End the real transport without a kill fallback; lifetime gates judge the original exit. */
+  async finishInput(
+    mode: "exit" | "eof",
+    timeoutMs = 5000,
+  ): Promise<{
+    exitCode: number | null;
+    signal: NodeJS.Signals | null;
+  }> {
+    const exited = this.waitForExit(timeoutMs);
+    if (mode === "exit") this.notify("exit", undefined);
+    else this.process.stdin.end();
+    assert.ok(
+      await exited,
+      `vize lsp did not finish ${mode} within ${timeoutMs}ms\n${this.stderr}`,
+    );
+    return { exitCode: this.process.exitCode, signal: this.process.signalCode };
+  }
+
   async shutdown(): Promise<void> {
     if (this.process.killed) {
       return;

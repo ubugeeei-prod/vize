@@ -224,6 +224,17 @@ impl LspProcess {
         self.capture.as_ref().map(Capture::root)
     }
 
+    pub fn process_id(&self) -> u32 {
+        self.child.as_ref().expect("LSP child is unavailable").id()
+    }
+
+    pub fn stderr_bytes(&self) -> Vec<u8> {
+        self.stderr
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .clone()
+    }
+
     fn trace(&self, direction: &str, message: &Value) {
         if let Some(capture) = &self.capture {
             capture.record(direction, message);

@@ -109,6 +109,26 @@ test("affected selection starts only cohorts that contain selected packages", ()
   assert.deepEqual(selected("vize", "vize_relief"), RUST_TEST_COHORT_IDS);
 });
 
+test("each checked Corsa provider selects all of its test binaries in the required typechecker cohort", () => {
+  const metadata = workspaceMetadata();
+  for (const name of [
+    "vize_corsa_core",
+    "vize_corsa_jsonrpc",
+    "vize_corsa_client",
+    "vize_corsa_lsp",
+    "vize_corsa_orchestrator",
+    "vize_corsa",
+  ]) {
+    assert.deepEqual(
+      rustTestMatrix(metadata, [name]).include.map((entry) => entry.cohort),
+      ["typechecker"],
+    );
+    for (const binary of [name, "api_async", "lsp_stdio", "future_native_regression"]) {
+      assert.deepEqual(owners(name, binary), ["typechecker"], `${name}::${binary}`);
+    }
+  }
+});
+
 test("unknown packages and empty selections fail closed, even outside the affected set", () => {
   const metadata = workspaceMetadata();
   const unknown = {

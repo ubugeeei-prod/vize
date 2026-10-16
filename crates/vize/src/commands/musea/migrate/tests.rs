@@ -1,9 +1,46 @@
 use std::path::{Path, PathBuf};
 
 use super::{
-    component_tag_from_path, derive_component_path, is_default_ignored_story_path, is_story_file,
-    output_path, story_basename,
+    collect_story_files, component_tag_from_path, derive_component_path,
+    is_default_ignored_story_path, is_story_file, output_path, story_basename,
 };
+
+#[test]
+fn story_collection_is_available_without_formatter_features() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path();
+    let stories = [
+        "src/Button.stories.tsx",
+        "src/Card.stories.ts",
+        "src/Link.stories.jsx",
+        "src/Panel.stories.js",
+    ];
+    for relative in stories.into_iter().chain([
+        "src/Component.vue",
+        "src/plain.ts",
+        "src/unsupported.stories.vue",
+        "apps/web/node_modules/pkg/Hidden.stories.tsx",
+        "dist/Hidden.stories.tsx",
+        ".nuxt/Hidden.stories.tsx",
+        ".output/Hidden.stories.tsx",
+        "storybook-static/Hidden.stories.tsx",
+        ".git/worktrees/cache/Hidden.stories.tsx",
+    ]) {
+        let path = root.join(relative);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, "export default {};").unwrap();
+    }
+    let patterns = [
+        root.join("**/*").to_string_lossy().into_owned(),
+        root.join("src/Button.stories.tsx")
+            .to_string_lossy()
+            .into_owned(),
+    ];
+    let actual = collect_story_files(&patterns);
+    let expected = stories.map(|relative| root.join(relative));
+
+    assert_eq!(actual, expected);
+}
 
 #[test]
 fn is_story_file_matches_only_story_extensions() {

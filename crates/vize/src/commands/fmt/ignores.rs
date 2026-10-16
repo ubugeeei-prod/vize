@@ -1,4 +1,6 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
+#[cfg(any(feature = "glyph", test))]
+use std::path::PathBuf;
 
 use super::files::FmtPattern;
 use crate::config;
@@ -9,7 +11,11 @@ pub(crate) struct FmtIgnoreSet {
 }
 
 impl FmtIgnoreSet {
-    pub(super) fn new(ignores: &[config::ConfigEntryIgnore], config_dir: &Path) -> Option<Self> {
+    #[cfg(any(feature = "glyph", test))]
+    pub(in crate::commands) fn new(
+        ignores: &[config::ConfigEntryIgnore],
+        config_dir: &Path,
+    ) -> Option<Self> {
         let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
         let patterns = ignores
             .iter()
@@ -22,7 +28,7 @@ impl FmtIgnoreSet {
         })
     }
 
-    pub(super) fn is_ignored(&self, path: &Path) -> bool {
+    pub(in crate::commands) fn is_ignored(&self, path: &Path) -> bool {
         self.project.as_ref().map_or_else(
             || self.patterns.iter().any(|pattern| pattern.matches(path)),
             |project| project.is_ignored(path),
@@ -30,7 +36,8 @@ impl FmtIgnoreSet {
     }
 }
 
-pub(super) fn load_fmt_ignore_set(
+#[cfg(feature = "glyph")]
+pub(in crate::commands) fn load_fmt_ignore_set(
     snapshot: &config::LoadedFormatterSnapshot,
 ) -> Option<FmtIgnoreSet> {
     if snapshot.ignores.is_empty() {
@@ -55,6 +62,7 @@ pub(super) fn load_fmt_ignore_set(
     }
 }
 
+#[cfg(any(feature = "glyph", test))]
 fn expand_entry_ignore_patterns(
     ignore: &config::ConfigEntryIgnore,
     config_dir: &Path,
@@ -66,6 +74,7 @@ fn expand_entry_ignore_patterns(
     vec![resolved, deep_pattern]
 }
 
+#[cfg(any(feature = "glyph", test))]
 fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: &Path) -> PathBuf {
     let pattern = Path::new(ignore.pattern.as_str());
     if pattern.is_absolute() {
@@ -84,6 +93,7 @@ fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: 
     }
 }
 
+#[cfg(any(feature = "glyph", test))]
 fn nested_node_modules_ignore(pattern: &Path) -> Option<PathBuf> {
     let pattern_text = pattern.to_string_lossy().replace('\\', "/");
     let suffix = "node_modules/**";

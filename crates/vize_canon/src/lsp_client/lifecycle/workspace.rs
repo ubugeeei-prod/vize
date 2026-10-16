@@ -11,20 +11,22 @@ impl CorsaProjectClient {
         corsa_path: Option<&str>,
         workspace_root: &Path,
     ) -> Result<Self, String> {
-        Self::new_workspace_with_transport(corsa_path, workspace_root, false)
+        Self::new_workspace_with_transport(corsa_path, workspace_root, false, None)
     }
 
+    #[cfg(test)]
     pub(crate) fn new_for_editor_workspace(
         corsa_path: Option<&str>,
         workspace_root: &Path,
     ) -> Result<Self, String> {
-        Self::new_workspace_with_transport(corsa_path, workspace_root, true)
+        Self::new_workspace_with_transport(corsa_path, workspace_root, true, None)
     }
 
-    fn new_workspace_with_transport(
+    pub(super) fn new_workspace_with_transport(
         corsa_path: Option<&str>,
         workspace_root: &Path,
         shared_editor_transport: bool,
+        startup_control: Option<crate::lsp_client::startup_control::StartupControl>,
     ) -> Result<Self, String> {
         let workspace_root = workspace_root
             .canonicalize()
@@ -32,23 +34,15 @@ impl CorsaProjectClient {
         let working_dir = workspace_root.to_string_lossy();
         let executable = resolve_corsa_executable(corsa_path, Some(working_dir.as_ref()))?;
 
-        if shared_editor_transport {
-            Self::spawn_initialized_client_with_transport(
-                executable.as_str(),
-                workspace_root.clone(),
-                Some(workspace_root),
-                None,
-                None,
-                true,
-            )
-        } else {
-            Self::spawn_initialized_client(
-                executable.as_str(),
-                workspace_root.clone(),
-                Some(workspace_root),
-                None,
-            )
-        }
+        Self::spawn_initialized_client_controlled(
+            executable.as_str(),
+            workspace_root.clone(),
+            Some(workspace_root),
+            None,
+            None,
+            shared_editor_transport,
+            startup_control,
+        )
     }
 
     /// Use the generated configuration while retaining the complete workspace.

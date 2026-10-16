@@ -1,0 +1,1 @@
+<script setup lang="ts">import { value } from './shared'; i\u006dport 'leaf-types'; const n = value;</script><template><div>{{ n }}</div></template>

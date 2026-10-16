@@ -29,20 +29,39 @@ mod workspace;
 impl CorsaProjectClient {
     /// Start a Corsa project session rooted at an isolated scratch workspace.
     pub fn new(corsa_path: Option<&str>, working_dir: Option<&str>) -> Result<Self, String> {
-        Self::new_with_transport(corsa_path, working_dir, false)
+        Self::new_with_transport(corsa_path, working_dir, false, None)
     }
 
-    pub(crate) fn new_for_editor(
+    pub(crate) fn new_for_bridge(
         corsa_path: Option<&str>,
         working_dir: Option<&str>,
+        shared_editor_transport: bool,
+        control: super::startup_control::StartupControl,
     ) -> Result<Self, String> {
-        Self::new_with_transport(corsa_path, working_dir, true)
+        let workspace = working_dir.map(std::path::Path::new).filter(|dir| {
+            dir.join("tsconfig.json").is_file() || dir.join("jsconfig.json").is_file()
+        });
+        match workspace {
+            Some(root) => Self::new_workspace_with_transport(
+                corsa_path,
+                root,
+                shared_editor_transport,
+                Some(control),
+            ),
+            None => Self::new_with_transport(
+                corsa_path,
+                working_dir,
+                shared_editor_transport,
+                Some(control),
+            ),
+        }
     }
 
     fn new_with_transport(
         corsa_path: Option<&str>,
         working_dir: Option<&str>,
         shared_editor_transport: bool,
+        startup_control: Option<super::startup_control::StartupControl>,
     ) -> Result<Self, String> {
         let executable = resolve_corsa_executable(corsa_path, working_dir)?;
 
@@ -70,24 +89,30 @@ impl CorsaProjectClient {
 
         let temp_root = temp_dir_path.canonicalize().ok();
         let temp_dir = Some(temp_dir_path.clone());
-        if shared_editor_transport {
-            Self::spawn_initialized_client_with_transport(
-                executable.as_str(),
-                temp_dir_path,
-                temp_root,
-                temp_dir,
-                None,
-                true,
-            )
-        } else {
-            Self::spawn_initialized_client(executable.as_str(), temp_dir_path, temp_root, temp_dir)
-        }
+        Self::spawn_initialized_client_controlled(
+            executable.as_str(),
+            temp_dir_path,
+            temp_root,
+            temp_dir,
+            None,
+            shared_editor_transport,
+            startup_control,
+        )
     }
 
     /// Shutdown the project session.
     pub fn shutdown(&mut self) -> Result<(), String> {
+        let mut errors = self.shutdown_errors();
+        match errors.len() {
+            0 => Ok(()),
+            1 => Err(errors.remove(0)),
+            _ => Err(cstr!("Native session shutdown errors: {errors:?}")),
+        }
+    }
+
+    pub(crate) fn shutdown_errors(&mut self) -> Vec<String> {
         if self.closed {
-            return Ok(());
+            return Vec::new();
         }
 
         let authored_result = self.retire_original_diagnosing_session();
@@ -97,7 +122,10 @@ impl CorsaProjectClient {
         self.diagnostics.clear();
         self.overlay_versions.clear();
         self.closed = true;
-        authored_result.and(project_result).and(editor_result)
+        [authored_result, project_result, editor_result]
+            .into_iter()
+            .filter_map(Result::err)
+            .collect()
     }
 
     /// Reap the API owner before another project transport can be spawned.
@@ -108,10 +136,18 @@ impl CorsaProjectClient {
         if self.project_session_attached_to_editor {
             return self.retire_shared_editor_transport(false);
         }
-        self.session.take().map_or(Ok(()), |session| {
+        let result = self.session.take().map_or(Ok(()), |session| {
             block_on(session.close())
                 .map_err(|error| cstr!("Failed to close Corsa project session: {error}"))
-        })
+        });
+        self.publish_closed_native_owners(&result);
+        result
+    }
+
+    pub(in crate::lsp_client) fn publish_closed_native_owners(&self, result: &Result<(), String>) {
+        if let Some(control) = &self.startup_control {
+            control.publish_completed(result.as_ref().err().map(|error| error.as_str()));
+        }
     }
 
     /// Open a virtual document.

@@ -111,14 +111,14 @@ fn should_walk_with_gitignore(pattern: &str) -> bool {
             .any(|component| component == Component::ParentDir)
 }
 
-pub(super) struct FmtPattern {
+pub(in crate::commands) struct FmtPattern {
     pattern: Pattern,
     cwd: PathBuf,
     absolute: bool,
 }
 
 impl FmtPattern {
-    pub(super) fn new(pattern: &str, cwd: &Path) -> Option<Self> {
+    pub(in crate::commands) fn new(pattern: &str, cwd: &Path) -> Option<Self> {
         let normalized = normalize_fmt_pattern(pattern);
         let absolute = Path::new(&normalized).is_absolute();
         Pattern::new(&normalized).ok().map(|pattern| Self {
@@ -128,7 +128,7 @@ impl FmtPattern {
         })
     }
 
-    pub(super) fn matches(&self, path: &Path) -> bool {
+    pub(in crate::commands) fn matches(&self, path: &Path) -> bool {
         let candidate = if self.absolute {
             let relative = path.strip_prefix(".").unwrap_or(path);
             let absolute = if relative.is_absolute() {

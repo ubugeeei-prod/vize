@@ -23,8 +23,10 @@ mod lifecycle_setup;
 mod materialized_refresh;
 pub(crate) mod paths;
 mod queries;
+pub(crate) mod retirement;
 mod session;
 mod session_paths;
+pub(crate) mod startup_control;
 pub use editor_lsp::snapshot_source;
 mod utils;
 mod virtual_overlay;
@@ -38,6 +40,7 @@ mod tests;
 
 /// Thin adapter over `corsa`'s project-session APIs.
 pub struct CorsaProjectClient {
+    startup_control: Option<startup_control::StartupControl>,
     executable: String,
     cwd: PathBuf,
     /// Optional custom project-session transport. Standard tsgo builds expose
@@ -82,6 +85,7 @@ pub struct CorsaProjectClient {
 impl CorsaProjectClient {
     fn empty_for_test(project_root: PathBuf) -> Self {
         Self {
+            startup_control: None,
             executable: String::new(""),
             cwd: project_root.clone(),
             session: None,

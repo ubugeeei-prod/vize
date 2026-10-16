@@ -1,0 +1,31 @@
+{
+  "id": "271-leaf-parity-escaped-import-keyword-1-server-parity-base",
+  "side": "base",
+  "corpus": "leaf-parity-escaped-import-keyword",
+  "mode": "1-server",
+  "phase": "parity",
+  "profiling": false,
+  "ms": 179.7621780000045,
+  "status": 1,
+  "signal": null,
+  "command": [
+    "/home/runner/_work/vize/vize/type-snapshot-cli-bench.json.samples/work/pinned-binaries/vize-ec8abd8cd054fc11",
+    "check",
+    "--no-config",
+    "--quiet",
+    "--format",
+    "json",
+    "--tsconfig",
+    "tsconfig.json",
+    "--corsa-path",
+    "/home/runner/_work/vize/vize/head/node_modules/.pnpm/@typescript+typescript-linux-x64@7.0.2/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+    "--servers",
+    "1"
+  ],
+  "cwd": "/home/runner/_work/vize/vize/type-snapshot-cli-bench.json.samples/work/leaf-parity-escaped-import-keyword",
+  "environment": {
+    "RAYON_NUM_THREADS": "1",
+    "GOMAXPROCS": null,
+    "VIZE_BENCH": "1"
+  }
+}

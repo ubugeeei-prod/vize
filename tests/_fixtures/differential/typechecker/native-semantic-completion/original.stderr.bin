@@ -1,0 +1,2 @@
+[33mwarning:[0m corsa: Corsa CLI fast path unavailable; degraded to the slower project-session API (check failure). Type checking continues on a slower path.
+error handling method 'exit': EOF

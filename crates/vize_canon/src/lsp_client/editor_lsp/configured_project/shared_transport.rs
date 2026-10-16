@@ -23,11 +23,12 @@ pub(in crate::lsp_client) fn try_shared_editor_project(
     cwd: &Path,
     root: &Path,
     config: &Path,
+    control: Option<&crate::lsp_client::startup_control::StartupControl>,
 ) -> Option<SharedProject> {
     if !supports_shared_editor_project(executable, config) {
         return None;
     }
-    match spawn_shared_editor_project(executable, cwd, root, config) {
+    match spawn_shared_editor_project(executable, cwd, root, config, control) {
         Ok(project) => Some(project),
         Err(error) => {
             tracing::debug!(
@@ -47,9 +48,15 @@ fn spawn_shared_editor_project(
     cwd: &Path,
     root: &Path,
     config: &Path,
+    control: Option<&crate::lsp_client::startup_control::StartupControl>,
 ) -> Result<SharedProject, String> {
-    let mut editor =
-        EditorLspSession::spawn_with_startup_configuration(executable, cwd, root, config)?;
+    let mut editor = EditorLspSession::spawn_with_startup_configuration(
+        executable,
+        cwd,
+        root,
+        config,
+        control.cloned(),
+    )?;
     let result = (|| {
         let api = editor
             .configured_api
@@ -61,13 +68,33 @@ fn spawn_shared_editor_project(
             None,
         ))
         .map_err(|error| cstr!("Cannot open attached editor project: {error}"))?;
-        let capabilities = block_on(session.describe_capabilities())
-            .unwrap_or_else(|_| Arc::new(CapabilitiesResponse::default()));
+        let capabilities = match block_on(session.describe_capabilities()) {
+            Ok(capabilities) => capabilities,
+            Err(error) => {
+                crate::lsp_client::retirement::ownership_error(
+                    &editor.client.process_ownership(),
+                    cstr!("attached native capabilities: {error}").as_str(),
+                );
+                if let Some(control) = control
+                    && let Err(closed) = control.check_admission()
+                {
+                    return Err(cstr!("{closed}; attached native capabilities: {error}"));
+                }
+                Arc::new(CapabilitiesResponse::default())
+            }
+        };
         Ok((session, capabilities))
     })();
     match result {
-        Ok((session, capabilities)) => Ok((session, capabilities, editor)),
+        Ok((session, capabilities)) => {
+            editor.finish_startup()?;
+            Ok((session, capabilities, editor))
+        }
         Err(error) => {
+            crate::lsp_client::retirement::ownership_error(
+                &editor.client.process_ownership(),
+                error.as_str(),
+            );
             if let Err(cleanup) = editor.shutdown() {
                 tracing::warn!(
                     error = cleanup.as_str(),
@@ -103,11 +130,12 @@ impl CorsaProjectClient {
             }
         }
         if self.editor_lsp.is_none() {
-            self.editor_lsp = Some(EditorLspSession::spawn_with_config(
+            self.editor_lsp = Some(EditorLspSession::spawn_with_config_controlled(
                 self.executable.as_str(),
                 &self.cwd,
                 &root,
                 self.explicit_project_config.as_deref(),
+                self.startup_control.clone(),
             )?);
         }
         self.editor_lsp_documents_dirty = true;
@@ -120,8 +148,13 @@ impl CorsaProjectClient {
         root: &Path,
     ) -> Result<(), String> {
         if self.shared_editor_transport
-            && let Some((session, capabilities, editor)) =
-                try_shared_editor_project(self.executable.as_str(), &self.cwd, root, config)
+            && let Some((session, capabilities, editor)) = try_shared_editor_project(
+                self.executable.as_str(),
+                &self.cwd,
+                root,
+                config,
+                self.startup_control.as_ref(),
+            )
         {
             self.session = Some(session);
             self.capabilities = capabilities;
@@ -129,10 +162,11 @@ impl CorsaProjectClient {
             self.project_session_attached_to_editor = true;
             return Ok(());
         }
-        match crate::lsp_client::session::spawn_project_session(
+        match crate::lsp_client::session::spawn_project_session_with_control(
             self.executable.as_str(),
             &self.cwd,
             config,
+            self.startup_control.as_ref(),
         ) {
             Ok((session, capabilities)) => {
                 self.session = Some(session);
@@ -183,6 +217,13 @@ impl CorsaProjectClient {
         drop(session);
         self.project_session_attached_to_editor = false;
         self.editor_lsp_documents_dirty = true;
-        snapshot_result.and(editor_result)
+        let result = match (snapshot_result, editor_result) {
+            (Ok(()), result) | (result, Ok(())) => result,
+            (Err(snapshot), Err(editor)) => {
+                Err(cstr!("{snapshot}; editor owner shutdown: {editor}"))
+            }
+        };
+        self.publish_closed_native_owners(&result);
+        result
     }
 }

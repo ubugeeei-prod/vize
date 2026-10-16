@@ -3,6 +3,40 @@ description: Exercise editor features, authored config and project navigation wi
 runs:
   using: composite
   steps:
+    - name: Test same-source CLI completion and observable transport failures
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_SEMANTIC_COMPLETION_CAPTURE_DIR: ${{ runner.temp }}/native-cli-completion
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize --test check_canon_native_completion_cli -- --nocapture --test-threads=1
+    - name: Test concurrent native rename sessions and terminal ownership
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        NEXTEST_PROFILE: pr
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize_maestro --lib corsa_session_tests -- --nocapture --test-threads=1
+    - name: Require held-startup abort acknowledgment and physical reaping
+      shell: bash
+      env:
+        VIZE_INLAY_HINT_CAPTURE: ${{ runner.temp }}/native-lsp/held-startup
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize --test lsp_corsa_responsiveness_cli -- --nocapture --test-threads=1
+    - name: Require atomic context detach and final owner transfer
+      shell: bash
+      env:
+        VIZE_NATIVE_CONTEXT_TRANSFER_CAPTURE_DIR: ${{ runner.temp }}/native-lsp/context-transfer
+      run: |
+        set -euo pipefail
+        cargo test --locked --profile ci -p vize_maestro --lib native_detach_tests -- --nocapture --test-threads=1 | tee "$RUNNER_TEMP/native-context-transfer-test.log"
+        grep -F "test result: ok. 4 passed" "$RUNNER_TEMP/native-context-transfer-test.log"
     - name: Build the same-source CLI and record its identity
       shell: bash
       run: |
@@ -11,6 +45,17 @@ runs:
     - name: Install the original Vue provider once
       shell: bash
       run: npm install --prefix "$RUNNER_TEMP/native-lsp-provider" --ignore-scripts --no-package-lock --no-audit --no-fund vue@3.5.43
+    - name: Require native owner reaping before stdio server exit
+      shell: bash
+      env:
+        VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+        VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_EDITOR_CONFIG_VUE_ROOT: ${{ runner.temp }}/native-lsp-provider/node_modules/vue
+        VIZE_NATIVE_RETIREMENT_CAPTURE_DIR: ${{ runner.temp }}/native-lsp/owner-retirement
+      run: |
+        unset VIZE_TEST_DISABLE_TSGO
+        node --test --test-concurrency=1 tests/tooling/lsp-native-owner-retirement.test.ts
     - name: Require complete source LSP feature and project responses
       shell: bash
       env:
@@ -36,8 +81,8 @@ runs:
           tests/tooling/lsp-project-navigation-8013.test.ts \
           tests/tooling/lsp-workspace-semantic.test.ts \
           tests/tooling/lsp-file-rename-workspace.test.ts
-    - name: Preserve source identity and LSP responses on failure
-      if: ${{ failure() }}
+    - name: Preserve source identity, LSP responses and terminal receipts
+      if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: native-lsp-${{ github.run_id }}-${{ github.run_attempt }}
@@ -45,5 +90,7 @@ runs:
           target/ci/vize.differential-build.json
           target/differential/lsp-sessions
           ${{ runner.temp }}/native-lsp
+          ${{ runner.temp }}/native-cli-completion
+          target/nextest/pr/native-proxy-termination
         if-no-files-found: ignore
         retention-days: 7

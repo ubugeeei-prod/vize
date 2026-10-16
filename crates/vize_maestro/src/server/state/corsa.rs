@@ -106,7 +106,15 @@ impl ServerState {
         });
         // Keep a cancelled startup's worker/session owner. Until it drains,
         // later callers refuse rather than creating a second backend process.
-        *self.corsa_bridge.write() = Some(Arc::clone(&bridge));
+        {
+            let mut slot = self.corsa_bridge.write();
+            // Final shutdown freezes the owner before taking this same slot.
+            // Never publish a new pending child behind its captured owner set.
+            if self.project_context_retired() || self.corsa_finalizing.load(Ordering::Acquire) {
+                return None;
+            }
+            *slot = Some(Arc::clone(&bridge));
+        }
 
         // The bridge's worker-owned async reply yields while its synchronous
         // handshake drains, and enforces the configured deadline (#8012).
@@ -223,22 +231,36 @@ impl ServerState {
     /// works.
     pub fn retire_corsa_bridge(&self, failed: &Arc<CorsaBridge>) {
         let mut slot = self.corsa_bridge.write();
+        // A failed in-flight request must not drop the finalizer's pending
+        // owner between freezing the project and taking its cached bridge.
+        if self.project_context_retired() || self.corsa_finalizing.load(Ordering::Acquire) {
+            return;
+        }
         if slot
             .as_ref()
             .is_some_and(|current| Arc::ptr_eq(current, failed))
         {
             let _change = self.corsa_environment_change();
-            *slot = None;
+            if let Some(retired) = slot.take() {
+                self.corsa_retired.retain_and_close(retired);
+            }
             tracing::warn!(
                 "corsa bridge retired after a backend failure; a fresh session will be spawned on demand"
             );
         }
     }
 
-    /// Configuration owns the cached process. Retire without waiting for IPC;
-    /// worker keepalive lets an abandoned old session finish on its own lane.
+    /// Transfer process custody without waiting for IPC. The retired ledger
+    /// starts cleanup on a separate lane and final shutdown joins its result.
     pub(super) fn retire_corsa_configuration(&self) {
-        *self.corsa_bridge.write() = None;
+        {
+            let mut slot = self.corsa_bridge.write();
+            if !self.corsa_finalizing.load(Ordering::Acquire)
+                && let Some(retired) = slot.take()
+            {
+                self.corsa_retired.retain_and_close(retired);
+            }
+        }
         self.corsa_init_failed.store(false, Ordering::SeqCst);
         *self.corsa_init_failure_reason.write() = None;
         self.typecheck_unavailable_notified
@@ -247,11 +269,17 @@ impl ServerState {
 
     fn discard_corsa_startup(&self, pending: &Arc<CorsaBridge>) {
         let mut slot = self.corsa_bridge.write();
+        // Final shutdown owns the retained pending bridge until it queues and
+        // acknowledges actual client closure, including unfinished startup.
+        if self.project_context_retired() || self.corsa_finalizing.load(Ordering::Acquire) {
+            return;
+        }
         if slot
             .as_ref()
             .is_some_and(|current| Arc::ptr_eq(current, pending))
+            && let Some(retired) = slot.take()
         {
-            *slot = None;
+            self.corsa_retired.retain_and_close(retired);
         }
     }
 }

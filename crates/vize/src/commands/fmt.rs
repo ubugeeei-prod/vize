@@ -11,6 +11,7 @@ use vize_glyph::{Allocator, FormatOptions, FormatResult, VueVersion};
 use vize_l0::{cstr, profile, profiler::global_profiler};
 
 use super::atomic_write::atomic_write;
+use super::source_files::{files, ignores, patterns};
 use crate::{config, profile_support};
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
@@ -19,13 +20,10 @@ use vize_curator::profile::{
 mod data;
 mod entries;
 mod file_support;
-mod files;
 mod format_source;
-mod ignores;
 mod options;
+use files::collect_files;
 use format_source::format_file_source;
-mod patterns;
-pub(crate) use files::collect_files;
 use ignores::load_fmt_ignore_set;
 use options::build_format_options;
 use patterns::{FORMAT_EXTENSIONS_DISPLAY, FORMAT_PATTERN_HELP};

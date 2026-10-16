@@ -167,6 +167,8 @@ async function measure() {
     runtime,
     path.join(output, "public"),
     launch,
+    false,
+    true,
   );
   const packet = {
     sourceBinding: binding,
@@ -189,7 +191,7 @@ async function measure() {
     timingScope:
       "public release-profile observations only; no ratio against ci-profile source measurements or general10x claim",
     limits:
-      "phase markers do not prove complete native diagnostics; process lives nonrunning may include unreaped zombies; startup/config/peak/RSS and every failed outcome remain retained",
+      "phase markers do not prove complete native diagnostics; nonrunning control observations retain zombies, while the final recovered direct provider must be absent or have a different birth identity after Vize exits; startup/config/peak/RSS and every failed outcome remain retained",
   };
   save("public.json", packet);
   assert.deepEqual(

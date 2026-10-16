@@ -1,0 +1,117 @@
+{
+  "capabilities": {
+    "_vs_onAutoInsertProvider": {
+      "_vs_triggerCharacters": [
+        ">"
+      ]
+    },
+    "_vs_referencesProvider": true,
+    "callHierarchyProvider": true,
+    "codeActionProvider": {
+      "codeActionKinds": [
+        "quickfix",
+        "source.organizeImports",
+        "source.removeUnusedImports",
+        "source.sortImports",
+        "source.fixAll"
+      ]
+    },
+    "codeLensProvider": {
+      "resolveProvider": true
+    },
+    "completionProvider": {
+      "completionItem": {
+        "labelDetailsSupport": true
+      },
+      "resolveProvider": true,
+      "triggerCharacters": [
+        ".",
+        "\"",
+        "'",
+        "`",
+        "/",
+        "@",
+        "<",
+        "#",
+        " ",
+        "*"
+      ]
+    },
+    "definitionProvider": true,
+    "diagnosticProvider": {
+      "identifier": "typescript",
+      "interFileDependencies": true,
+      "workspaceDiagnostics": false
+    },
+    "documentFormattingProvider": true,
+    "documentHighlightProvider": true,
+    "documentOnTypeFormattingProvider": {
+      "firstTriggerCharacter": "{",
+      "moreTriggerCharacter": [
+        "}",
+        ";",
+        "\n"
+      ]
+    },
+    "documentRangeFormattingProvider": true,
+    "documentSymbolProvider": true,
+    "experimental": {
+      "customMultiDocumentHighlightProvider": true,
+      "customSourceDefinitionProvider": true
+    },
+    "foldingRangeProvider": true,
+    "hoverProvider": true,
+    "implementationProvider": true,
+    "inlayHintProvider": true,
+    "linkedEditingRangeProvider": true,
+    "positionEncoding": "utf-16",
+    "referencesProvider": true,
+    "renameProvider": {
+      "prepareProvider": true
+    },
+    "selectionRangeProvider": true,
+    "semanticTokensProvider": {
+      "full": true,
+      "legend": {
+        "tokenModifiers": [],
+        "tokenTypes": []
+      },
+      "range": true
+    },
+    "signatureHelpProvider": {
+      "retriggerCharacters": [
+        ")"
+      ],
+      "triggerCharacters": [
+        "(",
+        ",",
+        "<"
+      ]
+    },
+    "textDocumentSync": {
+      "change": 2,
+      "openClose": true,
+      "save": true
+    },
+    "typeDefinitionProvider": true,
+    "workspace": {
+      "fileOperations": {
+        "willRename": {
+          "filters": [
+            {
+              "pattern": {
+                "glob": "**/*.{ts,tsx,js,jsx,cts,cjs,mts,mjs,json}"
+              },
+              "scheme": "file"
+            }
+          ]
+        }
+      }
+    },
+    "workspaceSymbolProvider": true
+  },
+  "serverInfo": {
+    "name": "typescript-go",
+    "version": "7.0.2"
+  }
+}

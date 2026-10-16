@@ -38,6 +38,10 @@ pub struct CorsaBridge {
     worker: BoundedWorker<Option<CorsaProjectClient>>,
     /// Whether the bridge is initialized
     initialized: Arc<AtomicBool>,
+    /// Final server termination permanently closes startup admission.
+    finalizing: Arc<AtomicBool>,
+    startup_control: crate::lsp_client::startup_control::StartupControl,
+    retirement: Arc<std::sync::Mutex<retirement::RetirementState>>,
     /// Whether the reusable editor LSP session may have read stale disk state.
     disk_project_state_dirty: AtomicBool,
     /// Profiler for performance tracking
@@ -52,6 +56,10 @@ pub struct CorsaBridge {
     /// Editor owners can attach their project API to their own LSP process.
     shared_editor_transport: bool,
 }
+
+mod retirement;
+mod shutdown;
+pub use retirement::NativeRetirementOutcome;
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 impl CorsaBridge {
@@ -89,6 +97,9 @@ impl CorsaBridge {
             ),
             config,
             initialized: Arc::new(AtomicBool::new(false)),
+            finalizing: Arc::new(AtomicBool::new(false)),
+            startup_control: Default::default(),
+            retirement: Default::default(),
             disk_project_state_dirty: AtomicBool::new(false),
             profiler,
             cache_stats: CacheStats::new(),
@@ -102,6 +113,9 @@ impl CorsaBridge {
     /// handshake is synchronous IPC: a backend that accepts stdio and never
     /// answers otherwise blocks until `corsa`'s own 30s backstop gives up.
     pub async fn spawn(&self) -> Result<(), CorsaBridgeError> {
+        if self.finalizing.load(Ordering::Acquire) {
+            return Err(CorsaBridgeError::ProcessTerminated);
+        }
         let _timer = self.profiler.timer("corsa_spawn");
 
         if self.initialized.load(Ordering::SeqCst) {
@@ -111,12 +125,23 @@ impl CorsaBridge {
         let config = self.config.clone();
         let shared_editor_transport = self.shared_editor_transport;
         let initialized = Arc::clone(&self.initialized);
+        let finalizing = Arc::clone(&self.finalizing);
+        let startup_control = self.startup_control.clone();
         self.submit_async(move |slot| {
+            // Admission is checked again on the owner lane: final cleanup may
+            // have queued while this startup still awaited an entered request.
+            if finalizing.load(Ordering::Acquire) {
+                return Err(CorsaBridgeError::ProcessTerminated);
+            }
             if slot.is_some() {
                 initialized.store(true, Ordering::SeqCst);
                 return Ok(());
             }
-            *slot = Some(build_client(&config, shared_editor_transport)?);
+            *slot = Some(build_client(
+                &config,
+                shared_editor_transport,
+                startup_control,
+            )?);
             // The worker owns completion even if the awaiting caller cancels.
             initialized.store(true, Ordering::SeqCst);
             Ok(())
@@ -256,6 +281,18 @@ impl CorsaBridge {
         R: Send + 'static,
     {
         let deadline = Duration::from_millis(self.config.timeout_ms.max(1));
+        self.submit_ready_with_bound(deadline, f).await
+    }
+
+    async fn submit_ready_with_bound<R, F>(
+        &self,
+        deadline: Duration,
+        f: F,
+    ) -> Result<R, CorsaBridgeError>
+    where
+        F: FnOnce(&mut Option<CorsaProjectClient>) -> Result<R, CorsaBridgeError> + Send + 'static,
+        R: Send + 'static,
+    {
         match self.worker.submit_ready_async(deadline, f).await {
             Ok(result) => result,
             Err(WorkerError::TimedOut) => {

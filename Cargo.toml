@@ -2,6 +2,12 @@
 resolver = "3"
 exclude = ["vendor/oxc_parser_compat"]
 members = [
+  "vendor/corsa_core",
+  "vendor/corsa_jsonrpc",
+  "vendor/corsa_client",
+  "vendor/corsa_lsp",
+  "vendor/corsa_orchestrator",
+  "vendor/corsa",
   "vendor/parcel_sourcemap",
   "vendor/lightningcss",
   "vendor/oxc_parser",
@@ -236,10 +242,14 @@ similar = "=2.7.0"
 insta = { version = "=1.49.0", features = ["toml"] }
 criterion = "=0.8.2"
 
-# Published corsa crates
-corsa = { package = "corsa", version = "=1.14.0" }
-corsa_lsp = { package = "corsa_lsp", version = "=1.14.0" }
-corsa_runtime = { package = "corsa_runtime", version = "=1.14.0" }
+# Checked Corsa dependencies; aliases preserve the existing Rust module names.
+corsa_core = { package = "vize_corsa_core", version = "=0.457.0", path = "vendor/corsa_core" }
+corsa_jsonrpc = { package = "vize_corsa_jsonrpc", version = "=0.457.0", path = "vendor/corsa_jsonrpc" }
+corsa_client = { package = "vize_corsa_client", version = "=0.457.0", path = "vendor/corsa_client" }
+corsa_lsp = { package = "vize_corsa_lsp", version = "=0.457.0", path = "vendor/corsa_lsp" }
+corsa_orchestrator = { package = "vize_corsa_orchestrator", version = "=0.457.0", path = "vendor/corsa_orchestrator" }
+corsa = { package = "vize_corsa", version = "=0.457.0", path = "vendor/corsa" }
+corsa_runtime = { package = "corsa_runtime", version = "=1.14.2" }
 
 # Shared lint contract. A member opts in with `[lints] workspace = true` once it
 # is clean; `tools/commands/ci/check-workspace-lints.rs` tracks who is left.

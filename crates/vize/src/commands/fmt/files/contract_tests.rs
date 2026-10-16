@@ -1,5 +1,5 @@
 use super::{FmtPattern, collect_files};
-use crate::commands::fmt::ignores::FmtIgnoreSet;
+use crate::commands::source_files::ignores::FmtIgnoreSet;
 use std::{
     fs,
     path::{Path, PathBuf},

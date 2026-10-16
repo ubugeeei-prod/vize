@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 export type ProcessIdentity = { pid: number; birth_ticks: number };
+type CurrentIdentity = { birth_ticks: number; state: string } | null;
 type Snapshot = { processes: ProcessIdentity[] };
 
 function currentIdentity(pid: number): { birth_ticks: number; state: string } | null {
@@ -52,6 +53,43 @@ export async function awaitRetired(identities: ProcessIdentity[]) {
       `observed native process lives remain: ${JSON.stringify(observed)}`,
     );
     await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+}
+
+/** A nonrunning zombie still occupies the original child identity until wait/reaping completes. */
+export function isReaped(identity: ProcessIdentity, current: CurrentIdentity): boolean {
+  return current === null || current.birth_ticks !== identity.birth_ticks;
+}
+
+/** Retain every observation, including a complete negative result at the existing five-second bound. */
+export async function observeReaped(
+  identities: ProcessIdentity[],
+  observer = {
+    current: currentIdentity,
+    now: Date.now,
+    pause: () => new Promise<void>((resolve) => setTimeout(resolve, 25)),
+  },
+) {
+  assert.ok(identities.length > 0, "the final recovered provider must supply an actual identity");
+  const started = observer.now();
+  const probes = [];
+  while (true) {
+    const observed = identities.map((identity) => {
+      try {
+        return { ...identity, current: observer.current(identity.pid) };
+      } catch (error) {
+        return { ...identity, readError: error instanceof Error ? error.stack : String(error) };
+      }
+    });
+    const elapsedMs = observer.now() - started;
+    probes.push({ elapsedMs, observed });
+    const readFailed = observed.some((entry) => entry.readError !== undefined);
+    const reaped =
+      !readFailed &&
+      observed.every((entry) => entry.current !== undefined && isReaped(entry, entry.current));
+    if (reaped || readFailed || elapsedMs >= 5_000)
+      return { criterion: "absent-or-different-birth", timeoutMs: 5_000, reaped, probes };
+    await observer.pause();
   }
 }
 

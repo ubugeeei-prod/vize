@@ -60,6 +60,18 @@ mod tests {
             super::super::proxy::TRACE_STDIO_PROXY,
         )
         .expect("stdio trace proxy");
+        for (name, body) in [
+            (
+                "native-proxy-lifecycle.pl",
+                include_str!("../../../../../../tests/fixtures/native-proxy-lifecycle.pl"),
+            ),
+            (
+                "native-proxy-initialize.json",
+                include_str!("../../../../../../tests/fixtures/native-proxy-initialize.json"),
+            ),
+        ] {
+            fs::write(root.path().join(name), body).expect("native proxy capability fixture");
+        }
         let wrapper = root.path().join("traced-tsgo");
         link_session_wrapper(&wrapper).expect("link session wrapper");
         let mut dynamic_file = OpenOptions::new()

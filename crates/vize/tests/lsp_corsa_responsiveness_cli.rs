@@ -3,6 +3,8 @@
 
 #[path = "support/lsp_process.rs"]
 mod lsp_process;
+#[path = "lsp_corsa_responsiveness_cli/retirement.rs"]
+mod retirement;
 
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
@@ -111,6 +113,7 @@ fn start_hover(root: &Path, id: Value) -> (LspProcess, Value) {
         }),
     ));
     await_backend(root);
+    retirement::capture(root, &lsp);
     (lsp, uri)
 }
 
@@ -206,6 +209,7 @@ fn held_type_startup_preserves_syntax_cancel_and_shutdown_wire_contracts() {
         lsp.wait_for_exit().success(),
         "exit must terminate while stdin remains open"
     );
+    retirement::assert_reaped(root.path(), &lsp);
 }
 
 #[test]
@@ -248,6 +252,7 @@ fn queued_typed_request_cancels_by_numeric_id_while_original_hover_is_held() {
     );
     lsp.send(json!({"jsonrpc":"2.0","method":"exit"}));
     assert!(lsp.wait_for_exit().success());
+    retirement::assert_reaped(root.path(), &lsp);
 }
 
 #[test]
@@ -263,6 +268,7 @@ fn shutdown_with_uncancelled_original_hover_exits_with_stdin_still_open() {
     );
     lsp.send(json!({"jsonrpc":"2.0","method":"exit"}));
     assert!(lsp.wait_for_exit().success());
+    retirement::assert_reaped(root.path(), &lsp);
 }
 
 #[test]
@@ -320,4 +326,5 @@ fn direct_exit_terminates_with_uncancelled_native_work_and_open_stdin() {
     let (mut lsp, _uri) = start_hover(root.path(), json!(41));
     lsp.send(json!({"jsonrpc":"2.0","method":"exit"}));
     assert!(lsp.wait_for_exit().success());
+    retirement::assert_reaped(root.path(), &lsp);
 }

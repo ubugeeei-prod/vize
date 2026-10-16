@@ -3,6 +3,24 @@ description: Require native snapshot ownership, projection ranges and syntax/sem
 runs:
   using: composite
   steps:
+    - name: Verify checked source and package consumer census
+      shell: bash
+      env:
+        CARGO_TARGET_DIR: ${{ github.workspace }}/target
+      run: |
+        set -euo pipefail
+        python3 tools/support/compat/github/checked-corsa-source.py
+        python3 tools/support/compat/github/checked-corsa-package-consumer-test.py
+        python3 tools/support/compat/github/checked-corsa-public-consumer-test.py
+        cargo fetch --locked
+    - name: Test poisoned actual owned process lock and exact reaping
+      shell: bash
+      env:
+        VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source
+      run: |
+        set -euo pipefail
+        cargo test --locked --profile ci -p vize_corsa_core --lib process::guard::tests::poisoned_owned_process_lock_still_kills_waits_and_reaps_with_explicit_poison_error -- --exact --nocapture --test-threads=1 | tee "$RUNNER_TEMP/native-owned-process-poison-test.log"
+        grep -F "test result: ok. 1 passed" "$RUNNER_TEMP/native-owned-process-poison-test.log"
     - name: Test complete native snapshot text and owner refusals
       shell: bash
       env:
@@ -11,6 +29,32 @@ runs:
       run: |
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::tests::native::actual_native_snapshot_retains_complete_stdlib_and_overlay_text_with_owner_refusals -- --ignored --exact --nocapture
+    - name: Test admitted actual spawn failure and sealed custody handoff
+      shell: bash
+      env:
+        VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source
+      run: |
+        set -euo pipefail
+        cargo test --locked --profile ci -p vize_canon --lib lsp_client::startup_control::tests::setup_drop -- --nocapture --test-threads=1 | tee "$RUNNER_TEMP/native-setup-drop-test.log"
+        grep -F "test result: ok. 2 passed" "$RUNNER_TEMP/native-setup-drop-test.log"
+    - name: Test ordinary recovery custody publication with and without logging
+      shell: bash
+      env:
+        VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source
+      run: |
+        set -euo pipefail
+        cargo test --locked --profile ci -p vize_canon --lib lsp_client::startup_control::tests::recovery_publication -- --nocapture --test-threads=1 | tee "$RUNNER_TEMP/native-recovery-publication-test.log"
+        grep -F "test result: ok. 2 passed" "$RUNNER_TEMP/native-recovery-publication-test.log"
+    - name: Test actual failed native constructor Drop custody
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize_canon --lib lsp_client::startup_control::tests::failed_native_project_open_drop_preserves_exact_nonowning_terminal_custody -- --ignored --exact --nocapture --test-threads=1 | tee "$RUNNER_TEMP/native-failed-project-open-test.log"
+        grep -F "test result: ok. 1 passed" "$RUNNER_TEMP/native-failed-project-open-test.log"
     - name: Test legacy projection anchors and complete diagnostic ranges
       shell: bash
       env:
@@ -32,6 +76,24 @@ runs:
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize_canon --test native_syntax_semantics -- --nocapture --test-threads=1
+    - name: Test frozen semantic completion and the same native snapshot owner
+      shell: bash
+      env:
+        VIZE_TEST_REQUIRE_TSGO: "1"
+        VIZE_SEMANTIC_COMPLETION_CAPTURE_DIR: ${{ runner.temp }}/native-semantic-completion
+      run: |
+        set -euo pipefail
+        unset VIZE_TEST_DISABLE_TSGO
+        cargo test --locked --profile ci -p vize_canon --lib batch::executor::session::native_test_receipt::native_semantic_completion::native_semantic_completion_keeps_frozen_full_vector_and_actual_terminal_owner -- --exact --nocapture --test-threads=1 | tee "$RUNNER_TEMP/native-semantic-completion-test.log"
+        grep -F "test result: ok. 1 passed" "$RUNNER_TEMP/native-semantic-completion-test.log"
+    - name: Verify complete checked source and independent package consumers
+      shell: bash
+      env:
+        CARGO_TARGET_DIR: ${{ github.workspace }}/target
+      run: |
+        set -euo pipefail
+        export SOURCE_SHA="$(git rev-parse HEAD)"
+        python3 tools/support/compat/github/checked-corsa-package-consumer.py --output "$RUNNER_TEMP/checked-corsa-package-consumer"
     - name: Preserve actual native inputs and responses
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -39,6 +101,15 @@ runs:
         name: native-canon-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
           ${{ runner.temp }}/native-snapshot-source
+          ${{ runner.temp }}/native-setup-drop-test.log
+          ${{ runner.temp }}/native-owned-process-poison-test.log
+          ${{ runner.temp }}/native-failed-project-open-test.log
+          ${{ runner.temp }}/native-recovery-publication-test.log
           ${{ runner.temp }}/native-syntax-semantics
+          ${{ runner.temp }}/native-semantic-completion
+          ${{ runner.temp }}/checked-corsa-package-consumer/*.json
+          ${{ runner.temp }}/checked-corsa-package-consumer/*.stdout
+          ${{ runner.temp }}/checked-corsa-package-consumer/*.stderr
+          ${{ runner.temp }}/checked-corsa-package-consumer/package-target/package/*.crate
         if-no-files-found: ignore
         retention-days: 7

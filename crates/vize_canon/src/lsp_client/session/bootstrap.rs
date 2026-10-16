@@ -4,34 +4,49 @@ use std::{path::Path, sync::Arc};
 
 use corsa::{
     CorsaError,
-    api::{ApiMode, ApiSpawnConfig, CapabilitiesResponse, ProjectSession},
+    api::{ApiClient, ApiMode, ApiSpawnConfig, CapabilitiesResponse, ProjectSession},
     runtime::block_on,
 };
 use vize_carton::corsa_api_mode::uses_async_json_rpc_api;
 use vize_l0::{String, cstr};
 
-pub(in crate::lsp_client) fn spawn_project_session(
+pub(in crate::lsp_client) fn spawn_project_session_with_control(
     executable: &str,
     cwd: &Path,
     config_path: &Path,
+    control: Option<&crate::lsp_client::startup_control::StartupControl>,
 ) -> Result<(ProjectSession, Arc<CapabilitiesResponse>), ProjectSessionSpawnError> {
+    if let Some(control) = control {
+        control
+            .check_admission()
+            .map_err(ProjectSessionSpawnError::Failed)?;
+    }
     let config_path_wire = crate::file_uri::path_to_typescript_name(config_path);
     let mode = api_mode_for_executable(executable);
-    let session = match block_on(spawn_project_session_with_mode(
+    let (session, registration) = match spawn_project_session_with_mode(
         executable,
         cwd,
         config_path_wire.as_ref(),
         mode,
-    )) {
-        Ok(session) => note_project_init(session),
+        control,
+    ) {
+        Ok((session, registration)) => (note_project_init(session), registration),
         Err(error) if should_retry_json_rpc(mode, &error) => {
-            match block_on(spawn_project_session_with_mode(
+            if let Some(control) = control
+                && let Err(closed) = control.check_admission()
+            {
+                return Err(ProjectSessionSpawnError::Failed(cstr!(
+                    "{closed}; refused native fallback after: {error}"
+                )));
+            }
+            match spawn_project_session_with_mode(
                 executable,
                 cwd,
                 config_path_wire.as_ref(),
                 ApiMode::AsyncJsonRpcStdio,
-            )) {
-                Ok(session) => note_project_init(session),
+                control,
+            ) {
+                Ok((session, registration)) => (note_project_init(session), registration),
                 Err(fallback) => {
                     return Err(classify_project_session_error(
                         fallback,
@@ -43,14 +58,42 @@ pub(in crate::lsp_client) fn spawn_project_session(
             }
         }
         Err(error) => {
+            if let Some(control) = control
+                && let Err(closed) = control.check_admission()
+            {
+                return Err(ProjectSessionSpawnError::Failed(cstr!(
+                    "{closed}; native startup: {error}"
+                )));
+            }
             return Err(classify_project_session_error(
                 error,
                 Some(cstr!("project {config_path_wire}")),
             ));
         }
     };
-    let capabilities = block_on(session.describe_capabilities())
-        .unwrap_or_else(|_| Arc::new(CapabilitiesResponse::default()));
+    let capabilities = match block_on(session.describe_capabilities()) {
+        Ok(capabilities) => capabilities,
+        Err(error) => {
+            crate::lsp_client::retirement::ownership_error(
+                &session.client().process_ownership(),
+                cstr!("native capabilities: {error}").as_str(),
+            );
+            if let Some(control) = control
+                && let Err(closed) = control.check_admission()
+            {
+                return Err(ProjectSessionSpawnError::Failed(cstr!(
+                    "{closed}; native capabilities: {error}"
+                )));
+            }
+            Arc::new(CapabilitiesResponse::default())
+        }
+    };
+    if let Some(control) = control {
+        control
+            .check_admission()
+            .map_err(ProjectSessionSpawnError::Failed)?;
+    }
+    drop(registration);
     Ok((session, capabilities))
 }
 
@@ -79,20 +122,40 @@ pub(super) fn classify_project_session_error(
     }
 }
 
-async fn spawn_project_session_with_mode(
+fn spawn_project_session_with_mode(
     executable: &str,
     cwd: &Path,
     config_path: &str,
     mode: ApiMode,
-) -> Result<ProjectSession, CorsaError> {
-    ProjectSession::spawn(
-        ApiSpawnConfig::new(executable)
-            .with_mode(mode)
-            .with_cwd(cwd),
-        config_path,
-        None,
-    )
-    .await
+    control: Option<&crate::lsp_client::startup_control::StartupControl>,
+) -> Result<
+    (
+        ProjectSession,
+        Option<crate::lsp_client::startup_control::Registration>,
+    ),
+    CorsaError,
+> {
+    let config = ApiSpawnConfig::new(executable)
+        .with_mode(mode)
+        .with_cwd(cwd);
+    let (client, registration) = match control {
+        Some(control) => {
+            let (client, registration) = control
+                .spawn_api(config)
+                .map_err(|error| CorsaError::Protocol(error.as_str().into()))?;
+            (client, Some(registration))
+        }
+        None => (block_on(ApiClient::spawn(config))?, None),
+    };
+    let owner = client.process_ownership();
+    let session = block_on(ProjectSession::open(client, config_path, None)).map_err(|error| {
+        crate::lsp_client::retirement::ownership_error(
+            &owner,
+            cstr!("native project open failed: {error}").as_str(),
+        );
+        error
+    })?;
+    Ok((session, registration))
 }
 
 pub(super) fn should_retry_json_rpc(mode: ApiMode, error: &CorsaError) -> bool {

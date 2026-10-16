@@ -11,6 +11,12 @@ import {
 } from "../command_runtime.ts";
 
 const VENDOR_DIRECTORIES: Readonly<Record<string, string>> = {
+  vize_corsa_core: "corsa_core",
+  vize_corsa_jsonrpc: "corsa_jsonrpc",
+  vize_corsa_client: "corsa_client",
+  vize_corsa_lsp: "corsa_lsp",
+  vize_corsa_orchestrator: "corsa_orchestrator",
+  vize_corsa: "corsa",
   vize_oxc_parser: "oxc_parser",
   vize_parcel_sourcemap: "parcel_sourcemap",
   vize_lightningcss: "lightningcss",

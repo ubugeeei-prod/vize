@@ -109,6 +109,9 @@ impl ServerState {
         };
         let context = {
             let mut contexts = self.project_contexts.contexts.lock();
+            if self.project_contexts.shutting_down.load(Ordering::Acquire) {
+                return None;
+            }
             if !contexts.contains_key(&root) && self.is_primary_boundary(&root) {
                 return None;
             }
@@ -141,6 +144,7 @@ impl ServerState {
     fn new_project_state(self: &Arc<Self>, root: &Path) -> Arc<ServerState> {
         let mut state = ServerState::new();
         state.documents = self.documents.clone();
+        state.corsa_retired = self.corsa_retired.clone();
         *state.project_contexts.owner.write() = Some(Arc::downgrade(self));
         state.record_client_capabilities(&self.project_contexts.client_capabilities.read());
         state.set_workspace_root(root.to_path_buf());
@@ -211,14 +215,36 @@ impl ServerState {
         self.project_contexts.contexts.lock().retain(|root, state| {
             let retained = roots.iter().any(|folder| root.starts_with(folder));
             if !retained {
-                state.mark_retired();
+                state.transfer_native_before_detach();
                 retired.push(state.clone());
             }
             retained
         });
+        #[cfg(test)]
+        lock_order_tests::after_context_removal();
         for previous in retired {
             previous.retire();
         }
+    }
+
+    /// Freeze discovery before final shutdown snapshots the cached owners.
+    /// Close every context before reading its raw published state. A startup
+    /// that was already admitted must be captured; a later initializer observes
+    /// retirement before it can return its state to a native request.
+    pub(super) fn freeze_project_contexts_for_exit(&self) -> Vec<Arc<ServerState>> {
+        self.freeze_corsa_owner_for_exit();
+        self.project_contexts
+            .shutting_down
+            .store(true, Ordering::Release);
+        self.project_contexts.retired.store(true, Ordering::Release);
+        let contexts = self.project_contexts.contexts.lock();
+        for context in contexts.values() {
+            context.mark_retired_for_exit();
+        }
+        contexts
+            .values()
+            .filter_map(|context| context.initialized_state_for_exit())
+            .collect()
     }
 
     pub(crate) fn retire_project_contexts(&self) {
@@ -226,7 +252,15 @@ impl ServerState {
             .shutting_down
             .store(true, Ordering::Release);
         self.retire_project_owner();
-        let contexts = std::mem::take(&mut *self.project_contexts.contexts.lock());
+        let contexts = {
+            let mut contexts = self.project_contexts.contexts.lock();
+            for context in contexts.values() {
+                context.transfer_native_before_detach();
+            }
+            std::mem::take(&mut *contexts)
+        };
+        #[cfg(test)]
+        lock_order_tests::after_context_removal();
         for context in contexts.into_values() {
             context.retire();
         }

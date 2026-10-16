@@ -1,7 +1,9 @@
 use super::{
     CorsaProjectClient,
     lifecycle_setup::{workspace_config_path, write_materialized_project_tsconfig},
-    session::{ProjectSessionSpawnError, materialize_session_document, spawn_project_session},
+    session::{
+        ProjectSessionSpawnError, materialize_session_document, spawn_project_session_with_control,
+    },
     session_paths::build_materialized_session_document_uri,
 };
 use crate::file_uri::file_uri_to_path;
@@ -31,15 +33,6 @@ pub(super) fn resolve_corsa_executable(
 }
 
 impl CorsaProjectClient {
-    pub(super) fn spawn_initialized_client(
-        executable: &str,
-        cwd: PathBuf,
-        root_path: Option<PathBuf>,
-        temp_dir: Option<PathBuf>,
-    ) -> Result<Self, String> {
-        Self::spawn_initialized_client_with_config(executable, cwd, root_path, temp_dir, None)
-    }
-
     pub(super) fn spawn_initialized_client_with_config(
         executable: &str,
         cwd: PathBuf,
@@ -65,6 +58,29 @@ impl CorsaProjectClient {
         config_path: Option<&Path>,
         shared_editor_transport: bool,
     ) -> Result<Self, String> {
+        Self::spawn_initialized_client_controlled(
+            executable,
+            cwd,
+            root_path,
+            temp_dir,
+            config_path,
+            shared_editor_transport,
+            None,
+        )
+    }
+
+    pub(super) fn spawn_initialized_client_controlled(
+        executable: &str,
+        cwd: PathBuf,
+        root_path: Option<PathBuf>,
+        temp_dir: Option<PathBuf>,
+        config_path: Option<&Path>,
+        shared_editor_transport: bool,
+        startup_control: Option<super::startup_control::StartupControl>,
+    ) -> Result<Self, String> {
+        if let Some(control) = &startup_control {
+            control.check_admission()?;
+        }
         let project_root = root_path.as_deref().unwrap_or(&cwd);
         let explicit_project_config = config_path.map(Path::to_path_buf);
         let config_path = selected_workspace_config(project_root, config_path);
@@ -75,6 +91,7 @@ impl CorsaProjectClient {
                     &cwd,
                     project_root,
                     &config_path,
+                    startup_control.as_ref(),
                 )
             })
             .flatten();
@@ -82,22 +99,27 @@ impl CorsaProjectClient {
             if let Some((session, capabilities, editor)) = shared {
                 (Some(session), capabilities, Some(editor))
             } else {
-                let (session, capabilities) =
-                    match spawn_project_session(executable, &cwd, &config_path) {
-                        Ok((session, capabilities)) => (Some(session), capabilities),
-                        Err(ProjectSessionSpawnError::Unavailable(reason)) => {
-                            tracing::debug!(
-                                reason = reason.as_str(),
-                                "using standard tsgo editor-only session"
-                            );
-                            (None, Arc::new(Default::default()))
-                        }
-                        Err(ProjectSessionSpawnError::Failed(error)) => return Err(error),
-                    };
+                let (session, capabilities) = match spawn_project_session_with_control(
+                    executable,
+                    &cwd,
+                    &config_path,
+                    startup_control.as_ref(),
+                ) {
+                    Ok((session, capabilities)) => (Some(session), capabilities),
+                    Err(ProjectSessionSpawnError::Unavailable(reason)) => {
+                        tracing::debug!(
+                            reason = reason.as_str(),
+                            "using standard tsgo editor-only session"
+                        );
+                        (None, Arc::new(Default::default()))
+                    }
+                    Err(ProjectSessionSpawnError::Failed(error)) => return Err(error),
+                };
                 (session, capabilities, None)
             };
         let project_session_attached_to_editor = editor_lsp.is_some();
         Ok(Self {
+            startup_control,
             executable: executable.into(),
             cwd: cwd.clone(),
             session,

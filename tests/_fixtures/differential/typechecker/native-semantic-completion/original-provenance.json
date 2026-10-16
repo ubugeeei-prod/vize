@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "kind": "vize-check-type-source-snapshot-paired",
+  "generatedAt": "2026-10-11T13:38:53.494Z",
+  "baseSha": "d55b8238f89bab4418a1a961bd8db1c84911cb42",
+  "headSha": "15e51ec040f83cd03639b2f593c5cbf48055e890",
+  "build": {
+    "profile": "ci-opt",
+    "inherits": "release",
+    "lto": "thin",
+    "codegenUnits": 16,
+    "strip": "symbols",
+    "incremental": false
+  },
+  "runner": {
+    "label": "blacksmith-32vcpu-ubuntu-2404",
+    "cpuCount": 32,
+    "availableParallelism": 32,
+    "cpuModel": "AMD EPYC",
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v24.14.0"
+  },
+  "provenance": {
+    "runId": "38143653116",
+    "runAttempt": "1",
+    "repository": "ubugeeei-prod/vize",
+    "rustflags": "",
+    "scripts": {
+      "type-snapshot-cli-paired.mjs": "4c098042e2287cafd363be889cb4bc0150cdc2011dd2c1955928e17062223640",
+      "type-snapshot-cli-protocol.mjs": "60dfeeeccb3d3a9bf98a7ae4947d7f5cd041751cb506f1ad87d6f893e1c795a1",
+      "type-snapshot-cli-corpus.mjs": "7d32655b382fe822cb04928fb4d64f81ab4c9179afdbb3bf9362ac18d34ec0aa",
+      "type-snapshot-cli-leaf-corpus.mjs": "910957c9fdc61e8b480ed23a5521c074599dbc578eed0dba40c7e763a760b54c",
+      "type-snapshot-cli-leaf-parity.mjs": "1413c7ff52db725bc31bf9e7d46823e0116ae41ce7d4b4c1cabaa491dc27cdf7",
+      "type-snapshot-cli-runner.mjs": "80075c47e1f0253561e60a33a8c0d8031547a5ebe07ef2af86700588e32f2292",
+      "generate.mjs": "a3672c0952d1b545ed6f4d8bf1da2275ac38cdd6008d044001cc41b6e9109393",
+      "check-gate-env.mjs": "97f70607f64d708c18a730943eba72b00a92824f950a787234b0712c59fa7d00",
+      "check-gate-plants.mjs": "dd692bfa916c5bb728c1480268fb47b20696f1f920a39f7edf5d3fa29e4c7885",
+      "typecheck-command.mjs": "baac9132a216baebe1db3ff04c6f2122ed659b49d57cbf0cab695b54e8fd1836",
+      "benchmark-binary.mjs": "c953db1b7c57df876b13efc21d3d6333a51ccba186a86ab616c9a83a5d8cbc52"
+    }
+  },
+  "protocol": {
+    "fileCount": 500,
+    "additionalDefaultCorpusVueFiles": 501,
+    "warmups": 2,
+    "pairs": 9,
+    "cold": "first vize check process per side/mode/corpus; filesystem caches are not evicted",
+    "steady": "fresh CLI and native TypeScript processes; filesystem caches may be warm; no persistent checker session",
+    "rotation": "base/head then head/base, alternating within each row",
+    "gates": "all minimal plants and full timed corpus plus plant, on every side and thread mode before warmups",
+    "profile": "separate --profile-json runs after all unprofiled timing pairs, excluded from timings"
+  },
+  "binaries": {
+    "base": {
+      "source": "/home/runner/_work/vize/vize/base/target/ci-opt/vize",
+      "measuredPath": "/home/runner/_work/vize/vize/type-snapshot-cli-bench.json.samples/work/pinned-binaries/vize-ec8abd8cd054fc11",
+      "sha256": "ec8abd8cd054fc110c15111b4e9ae45cc7a6abc874be69de272734ea91d61eee",
+      "pinned": true
+    },
+    "head": {
+      "source": "/home/runner/_work/vize/vize/head/target/ci-opt/vize",
+      "measuredPath": "/home/runner/_work/vize/vize/type-snapshot-cli-bench.json.samples/work/pinned-binaries/vize-970d278498856c07",
+      "sha256": "970d278498856c07a7b259f003a93c86578453e3ae334cb513300f3148a2e062",
+      "pinned": true
+    },
+    "typescript": {
+      "source": "/home/runner/_work/vize/vize/head/node_modules/.pnpm/@typescript+typescript-linux-x64@7.0.2/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+      "measuredPath": "/home/runner/_work/vize/vize/head/node_modules/.pnpm/@typescript+typescript-linux-x64@7.0.2/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+      "sha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+      "pinned": false
+    }
+  },
+  "dependencies": {
+    "vueVersion": "3.6.0-beta.10",
+    "vuePackageDir": "/home/runner/_work/vize/vize/head/node_modules/.pnpm/vue@3.6.0-beta.10_typescript@6.0.3/node_modules/vue",
+    "runtimePackageVersion": "7.0.2",
+    "headLockSha256": "12e66667fc82ac9a5b72d1e9ab2aa59f7c1466ea8be689f17a67678bf31a0915",
+    "cargoLockSha256": {
+      "base": "ff89684d784eef5066edb7596fae1aaeac2331295d62891531d25a2c70f74c8b",
+      "head": "ff89684d784eef5066edb7596fae1aaeac2331295d62891531d25a2c70f74c8b"
+    }
+  }
+}

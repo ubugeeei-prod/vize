@@ -10,7 +10,8 @@ import {
 } from "../../differential/build-receipt.ts";
 import { driverRoot, git, sha256, sourceIdentity } from "./warm-type-backed-source.ts";
 import {
-  assertChangedDependenciesBuilt,
+  assertChangedPackageArtifactsBuilt,
+  changedDependencyPackages,
   changedSourceDependencies,
 } from "./warm-type-backed-dependency-custody.ts";
 
@@ -57,6 +58,15 @@ function cargo(name: string, args: string[], command = "cargo") {
 // Finite cuts clean the complete selected profile. The owned-source and harness-only
 // routes rebuild Canon, its Maestro/CLI consumers and changed qualified dependencies.
 const changedDependencies = changedSourceDependencies(binding.production);
+const metadata = JSON.parse(cargo("metadata", ["metadata", "--locked", "--format-version=1"]));
+const changedPackages = changedDependencyPackages(changedDependencies, metadata, root);
+const dependencyDirectory = path.join(output, `${side}-dependency-manifests`);
+fs.mkdirSync(dependencyDirectory);
+for (const entry of changedPackages)
+  fs.copyFileSync(
+    entry.manifest_path,
+    path.join(dependencyDirectory, `${entry.target}.Cargo.toml`),
+  );
 const clean =
   binding.authority === "root-frozen-release-cut"
     ? ["clean", "--profile", profile, "--locked"]
@@ -71,7 +81,7 @@ const clean =
         "vize_maestro",
         "-p",
         "vize",
-        ...changedDependencies.flatMap((name) => ["-p", name]),
+        ...changedPackages.flatMap((entry) => ["-p", entry.id]),
       ];
 const toolchain = {
   cargo: cargo("toolchain-cargo", ["--version"]),
@@ -94,6 +104,23 @@ const messages = cargo("cargo", build)
 const finished = messages.filter((entry) => entry.reason === "build-finished");
 assert.equal(finished.length, 1);
 assert.equal(finished[0].success, true);
+const compilerArtifacts = messages.filter(
+  (entry) => entry.reason === "compiler-artifact" && entry.profile.test === false,
+);
+assertChangedPackageArtifactsBuilt(changedPackages, compilerArtifacts);
+const changedArtifacts = changedPackages.flatMap((dependency) => {
+  const artifacts = compilerArtifacts.filter(
+    (entry) =>
+      entry.package_id === dependency.id &&
+      entry.target.name === dependency.target &&
+      entry.target.kind.includes("lib"),
+  );
+  return artifacts.map((artifact) => ({
+    ...artifact,
+    manifestSha256: sha256(fs.readFileSync(dependency.manifest_path)),
+    sourceSha256: sha256(fs.readFileSync(dependency.sourcePath)),
+  }));
+});
 const localArtifacts = messages
   .filter((entry) => entry.reason === "compiler-artifact" && entry.profile.test === false)
   .filter((entry) => entry.manifest_path.startsWith(`${root}${path.sep}`))
@@ -109,7 +136,6 @@ const localArtifacts = messages
     };
   });
 assert.ok(localArtifacts.length >= 4);
-assertChangedDependenciesBuilt(changedDependencies, localArtifacts);
 const required = [
   { name: "vize_canon", kind: "lib", file: "lib.rs", features: ["native"] },
   { name: "vize_maestro", kind: "lib", file: "lib.rs", features: ["default", "glyph", "native"] },
@@ -191,5 +217,5 @@ assert.deepEqual(
 fs.copyFileSync(receiptPath, path.join(output, `${side}-build.json`));
 fs.writeFileSync(
   path.join(output, `${side}-cargo-custody.json`),
-  `${JSON.stringify({ side, source: sourceIdentity(root), toolchain, profile, target, clean, build, artifacts, localArtifacts, binary, binarySha256, cliVersion: receipt.cliVersion, launchBinary, changedDependencies, dependencyArtifacts: binding.authority === "root-frozen-release-cut" ? "The complete selected profile is cleaned identically on both sides; every linked local compiler artifact is attested fresh. Other profile/toolchain artifacts are not attested by this receipt." : "Other unchanged dependencies reuse the existing Cargo target cache; the four required Canon/Maestro/CLI and any changed qualified dependency artifacts are attested fresh." }, null, 2)}\n`,
+  `${JSON.stringify({ side, source: sourceIdentity(root), toolchain, profile, target, clean, build, artifacts, localArtifacts, binary, binarySha256, cliVersion: receipt.cliVersion, launchBinary, changedDependencies, changedPackages, changedArtifacts, dependencyArtifacts: binding.authority === "root-frozen-release-cut" ? "The complete selected profile is cleaned identically on both sides; every linked local compiler artifact is attested fresh. Other profile/toolchain artifacts are not attested by this receipt." : "Other unchanged dependencies reuse the existing Cargo target cache; the four required Canon/Maestro/CLI and any changed qualified dependency artifacts are attested fresh." }, null, 2)}\n`,
 );

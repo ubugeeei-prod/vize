@@ -54,6 +54,7 @@ impl ServerState {
                 .any(|path| path.parent() == Some(physical_path(&root).as_path()))
         {
             self.project_contexts.retired.store(true, Ordering::Release);
+            self.retire_corsa_configuration();
             primary_retired = true;
             if !affected.contains(&root) {
                 affected.push(root);
@@ -62,11 +63,13 @@ impl ServerState {
         for root in &affected {
             let replacement = Arc::new(registry::ProjectContext::new(root.clone()));
             if let Some(previous) = contexts.insert(root.clone(), replacement) {
-                previous.mark_retired();
+                previous.transfer_native_before_detach();
                 retired.push(previous);
             }
         }
         drop(contexts);
+        #[cfg(test)]
+        super::lock_order_tests::after_context_removal();
         let affected_documents = self
             .documents
             .iter()
