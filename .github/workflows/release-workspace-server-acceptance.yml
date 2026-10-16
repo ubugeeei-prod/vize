@@ -22,8 +22,11 @@ jobs:
       PUBLIC_TAG: ${{ inputs.tag }}
       PUBLIC_SOURCE_PR: ${{ inputs.source_pr }}
       PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
-      PUBLIC_OUTPUT: ${{ runner.temp }}/workspace-server-evidence-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
+      - name: Select isolated observation directory
+        shell: bash
+        run: |
+          printf 'PUBLIC_OUTPUT=%s/workspace-server-evidence-%s-%s\n' "$RUNNER_TEMP" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ github.workflow_sha }}", fetch-depth: 0, persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
