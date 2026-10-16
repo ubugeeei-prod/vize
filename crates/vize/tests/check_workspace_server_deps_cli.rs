@@ -44,6 +44,17 @@ fn run_check(app: &Path, corsa: &str, servers: Option<&str>) -> serde_json::Valu
 
 #[test]
 fn workspace_private_dependency_and_its_errors_survive_single_multi_and_auto_servers() {
+    check_workspace_server_deps(3);
+}
+
+#[test]
+fn workspace_private_dependency_and_its_errors_survive_automatic_sharding_threshold() {
+    // Automatic sharding starts at 128 Vue files on a multi-core runner. The
+    // minimal three-SFC case only exercises the small-project auto fallback.
+    check_workspace_server_deps(128);
+}
+
+fn check_workspace_server_deps(vue_files: usize) {
     let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .and_then(Path::parent)
@@ -90,7 +101,7 @@ fn workspace_private_dependency_and_its_errors_survive_single_multi_and_auto_ser
         "app/src/main.ts",
         "import { thing } from 'lib'\nexport default thing\n",
     );
-    for name in ["A", "B", "C"] {
+    for name in 0..vue_files {
         write_file(
             root,
             vize_carton::cstr!("app/src/{name}.vue").as_str(),
@@ -107,7 +118,11 @@ fn workspace_private_dependency_and_its_errors_survive_single_multi_and_auto_ser
     for servers in [Some("1"), Some("2"), None] {
         let result = run_check(&app, &corsa, servers);
         assert_eq!(result["errorCount"], 0, "servers={servers:?}: {result}");
-        assert_eq!(result["fileCount"], 5, "servers={servers:?}: {result}");
+        assert_eq!(
+            result["fileCount"],
+            vue_files + 2,
+            "servers={servers:?}: {result}"
+        );
     }
 
     // Preserve real semantic errors in the imported dependency; fixing the
