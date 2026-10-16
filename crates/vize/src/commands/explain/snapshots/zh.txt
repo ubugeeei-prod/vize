@@ -5530,7 +5530,7 @@ vue/use-v-on-exact · lint 规则
   <button @click="handleClick">Click</button>
 
 帮助:
-  @click在按下Ctrl/Shift/Alt/Meta时也会触发。添加.exact使其仅在没有系统修饰键时触发
+  按下额外的系统修饰键时，多个处理函数可能同时触发。添加.exact仅允许声明的修饰键，并拒绝额外的Ctrl/Shift/Alt/Meta
 === vue/v-bind-style
 vue/v-bind-style · lint 规则
 强制v-bind指令风格

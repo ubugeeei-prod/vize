@@ -22,10 +22,10 @@ import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 export default defineConfig({
   lint: {
     vize: {
-      preset: "incremental",
-      rules: {
-        "vue/use-v-on-exact": "warn",
-      },
+      "preset": "incremental",
+      "rules": {
+        "vue/use-v-on-exact": "warn"
+      }
     },
   },
 });
@@ -41,7 +41,9 @@ The plain click handler can also run on Ctrl-click, overlapping the separate `.c
 
 ```vue
 <template>
-  <button type="button" @click="handleClick" @click.ctrl="handleCtrlClick">Save</button>
+  <button type="button" @click="handleClick" @click.ctrl="handleCtrlClick">
+    Save
+  </button>
 </template>
 ```
 
@@ -51,7 +53,13 @@ The plain click handler can also run on Ctrl-click, overlapping the separate `.c
 
 ```vue
 <template>
-  <button type="button" @click.exact="handleClick" @click.ctrl="handleCtrlClick">Save</button>
+  <button
+    type="button"
+    @click.exact="handleClick"
+    @click.ctrl="handleCtrlClick"
+  >
+    Save
+  </button>
 </template>
 ```
 

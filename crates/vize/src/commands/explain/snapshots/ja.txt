@@ -5249,7 +5249,7 @@ vue/use-v-on-exact · lint ルール
   <button @click="handleClick">Click</button>
 
 ヒント:
-  @clickはCtrl/Shift/Alt/Metaが押されている時も発火します。.exactを追加してシステム修飾子なしの場合のみ発火するようにしてください
+  システム修飾キーの追加で複数のハンドラーが重複して発火することがあります。.exactを追加すると、宣言した修飾キーのみを許可し、追加のCtrl/Shift/Alt/Metaを拒否します
 === vue/v-bind-style
 vue/v-bind-style · lint ルール
 v-bindディレクティブのスタイルを強制する
