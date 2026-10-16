@@ -32,7 +32,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l1::markup::entity::EntityContext;
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, InterpolationNode};
+use vize_relief::{DirectiveNode, ElementNode, InterpolationNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/this-in-template",

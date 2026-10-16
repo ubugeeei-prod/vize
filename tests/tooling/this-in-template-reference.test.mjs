@@ -24,7 +24,7 @@ function offset(source, line, column) {
   );
 }
 
-test("this-in-template references replay the pinned rule on complete authored sources", async () => {
+void test("this-in-template references replay the pinned rule on complete authored sources", async () => {
   const runtime = resolveBaselineRuntime();
   assert.equal(runtime.version, "10.9.2");
   for (const [name, identity] of Object.entries(corpus.providers)) {
@@ -72,7 +72,7 @@ test("this-in-template references replay the pinned rule on complete authored so
   }
 });
 
-test("the original Matrix findings and complete packet identities stay distinct from corrected references", () => {
+void test("the original Matrix findings and complete packet identities stay distinct from corrected references", () => {
   const original = JSON.parse(fs.readFileSync(path.join(directory, "original-matrix.json")));
   assert.equal(original.fullPackets.length, 6);
   assert(

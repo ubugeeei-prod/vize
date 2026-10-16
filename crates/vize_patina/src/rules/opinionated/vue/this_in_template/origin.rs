@@ -2,7 +2,7 @@
 
 use crate::ir::ByteRange;
 use oxc_span::Span;
-use vize_l0::String;
+use vize_l0::{Span as SourceSpan, String};
 use vize_l1::markup::entity::{EntityContext, decode_one};
 
 pub(super) struct Origin {
@@ -14,7 +14,7 @@ impl Origin {
     pub(super) fn new(
         source: &str,
         content: &str,
-        span: Span,
+        span: SourceSpan,
         context: EntityContext,
     ) -> Option<Self> {
         let authored = source.get(span.start as usize..span.end as usize)?;
