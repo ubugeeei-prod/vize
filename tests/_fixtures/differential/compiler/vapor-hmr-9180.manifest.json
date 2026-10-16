@@ -14,6 +14,10 @@
             "sha256": "e945116a268fe32794df4b2bb938cbf85e9a9e5a97735b8aa4468be23960532c"
           },
           {
+            "path": "ProductionParent.vue.txt",
+            "sha256": "59e478c02d5a1b3118dc4b479c02a95be0c1df9ad466f6578686cfac089f7d45"
+          },
+          {
             "path": "Child.vue.txt",
             "sha256": "3a511028b712e8b4ffa48c29d02092a363235918e338d93baae77a22a126b161"
           },

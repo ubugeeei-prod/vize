@@ -1,0 +1,18 @@
+<script setup>
+import { computed, onUnmounted, ref } from 'vue';
+import Child from './Child.vue';
+import { record } from './fixture';
+
+const count = ref(0);
+const labels = ref(['room-0']);
+const inRoom = computed(() => count.value >= 0);
+const label = computed(() => labels.value[labels.value.length - 1]);
+onUnmounted(() => record('parent-unmounted'));
+</script>
+
+<template>
+  <section v-if="inRoom">
+    <button id="increment" @click="count++; labels.push('room-' + count); record(count)">{{ count }}</button>
+    <Child :label="label" />
+  </section>
+</template>

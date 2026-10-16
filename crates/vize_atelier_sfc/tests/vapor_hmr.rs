@@ -19,6 +19,9 @@ use vize_atelier_sfc::{
 
 const PARENT: &str =
     include_str!("../../../tests/_fixtures/differential/compiler/vapor-hmr-9180/Parent.vue.txt");
+const PRODUCTION_PARENT: &str = include_str!(
+    "../../../tests/_fixtures/differential/compiler/vapor-hmr-9180/ProductionParent.vue.txt"
+);
 const CHILD: &str =
     include_str!("../../../tests/_fixtures/differential/compiler/vapor-hmr-9180/Child.vue.txt");
 
@@ -50,13 +53,18 @@ fn compile(source: &str, production: bool) -> String {
 }
 
 fn trace(vapor: bool, production: bool, keep_alive: bool) -> Value {
+    let source = if production {
+        PRODUCTION_PARENT
+    } else {
+        PARENT
+    };
     let parent = if keep_alive {
-        PARENT.replace(
+        source.replace(
             "<Child :label=\"label\" />",
             "<KeepAlive><component :is=\"Child\" :label=\"label\" /></KeepAlive>",
         )
     } else {
-        PARENT.to_owned()
+        source.to_owned()
     };
     let module = |source: &str| {
         if vapor {

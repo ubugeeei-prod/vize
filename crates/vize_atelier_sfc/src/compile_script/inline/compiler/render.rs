@@ -16,12 +16,15 @@ pub(super) struct SetupBindingInputs<'a> {
 }
 
 /// Emit the render function return statement or setup binding return.
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_render_return(
     output: &mut vize_carton::Vec<u8>,
     template: &TemplateParts<'_>,
     setup_bindings: SetupBindingInputs<'_>,
     is_ts: bool,
     is_vapor: bool,
+    is_prod: bool,
+    vapor_render_alias: Option<&str>,
     ctx: &ScriptCompileContext,
 ) {
     if !template.render_body.is_empty() {
@@ -99,10 +102,20 @@ pub(super) fn emit_render_return(
             } else {
                 output.extend_from_slice(b"Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
             }
-            // The Vapor runtime owns setupState and invokes the separate render
-            // function. Returning its block here bypasses that state and leaves
-            // child-triggered HMR rerenders without their parent's bindings.
-            output.extend_from_slice(b"return __returned__\n");
+            if is_prod {
+                // Production does not proxy returned setup bindings. Preserve
+                // ref unwrapping and writes for the separate Vapor render.
+                output.extend_from_slice(b"const __instance = _getCurrentInstance()\n");
+                output.extend_from_slice(b"const __ctx = _proxyRefs(__returned__)\n");
+                output.extend_from_slice(b"if (__instance) __instance.setupState = __ctx\n");
+                output.extend_from_slice(b"return ");
+                output.extend_from_slice(vapor_render_alias.unwrap_or("render").as_bytes());
+                output.extend_from_slice(b"(__ctx, __props, __emit, __attrs, __slots)\n");
+            } else {
+                // Development owns the setup-state proxy and render scope so
+                // child-triggered HMR can rerender with the parent's bindings.
+                output.extend_from_slice(b"return __returned__\n");
+            }
         } else if !setup_bindings.is_empty() {
             if !template.render_fn.is_empty() {
                 output.extend_from_slice(b"const __returned__ = { ");

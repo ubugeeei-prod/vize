@@ -48,6 +48,7 @@ pub(super) fn compile_script_setup_inline_body(
     has_define_model: bool,
     needs_merge_models: bool,
     has_define_slots: bool,
+    needs_vapor_setup_context: bool,
     vapor_render_alias: Option<String>,
     is_async: bool,
     trace: Option<&mut SetupTrace>,
@@ -80,6 +81,7 @@ pub(super) fn compile_script_setup_inline_body(
         has_define_slots,
         has_css_vars,
         has_css_modules,
+        needs_vapor_setup_context,
         vapor_render_alias.as_deref(),
         is_vapor,
         is_ts,
@@ -165,6 +167,7 @@ pub(super) fn compile_script_setup_inline_body(
         is_vapor,
         is_async,
         needs_prop_type,
+        needs_vapor_setup_context,
         preamble.has_default_export,
         &props_emits_buf,
         &model_props_emits_buf,
@@ -214,6 +217,8 @@ pub(super) fn compile_script_setup_inline_body(
         },
         is_ts,
         is_vapor,
+        is_prod,
+        vapor_render_alias.as_deref(),
         &ctx,
     );
 

@@ -16,10 +16,19 @@ rewrite the older rc.9 runtime fixtures or claim execution of the rc.10 app.
 Vapor's public `getCurrentInstance()` intentionally does not expose its instance.
 Returning an already rendered block from setup therefore leaves `setupState`
 unset, even though the component has a separate render function. Child HMR calls
-that render again and fails. Return the setup bindings instead, allowing Vue to
-initialize its own setup-state proxy and render scope. Remove the obsolete
-instance helpers and setup-context arguments from both sync and async output.
-Keep the collision-safe render alias and template-ref setter behavior.
+that render again and fails. In development, return the setup bindings instead,
+allowing Vue to initialize its own setup-state proxy and render scope. Remove
+the obsolete instance helpers and setup-context arguments from synchronous and
+asynchronous development output. Keep the collision-safe render alias and
+template-ref setter behavior.
+
+Production needs a different setup contract. Although the adapter requests
+`InlineTemplate`, the current Vapor compiler still extracts a separate render
+function. Vue's production runtime passes returned bindings to that function
+without applying `proxyRefs`; only its development path constructs that proxy.
+Preserve the original production helper imports, setup-context arguments,
+`proxyRefs`, and direct render call byte for byte. The existing `is_prod` flag
+selects this behavior; runtime version detection is unnecessary.
 
 The focused Rust target compiles Vapor modules from the checked-out Vize source
 and runs Vue's real `__VUE_HMR_RUNTIME__.reload` API under Happy DOM, not a
@@ -27,8 +36,12 @@ Chromium/dev-server replay. The independent oracle is
 the official rc.11 VDOM compiler under the same runtime. Both direct child and
 KeepAlive/dynamic-child cases verify initial DOM, two child script edits,
 retained parent state, reactive text/props after each edit, complete observed
-DOM/namespaces, event delivery, removed old child nodes, and unmount. Production
-inline-template controls exercise the same inputs without HMR. Runtime errors,
+DOM/namespaces, event delivery, removed old child nodes, and unmount. The separate
+`ProductionParent.vue.txt` control exercises direct template writes (`count++`
+and `labels.push`) under the production adapter and runtime, including child
+prop updates and unmount. These writes require the setup proxy; lexical script
+closures and display-string conversion alone would not detect its absence.
+Runtime errors,
 warnings, missing phases, and failed subprocesses fail the test.
 
 Before the source fix, the development case on
@@ -37,15 +50,20 @@ Before the source fix, the development case on
 passed. The source fix makes both cases pass. The runtime pack is legacy compiler
 regression coverage and adds no whole-product native coverage claim.
 
-The existing 21 SFC Vapor unit tests also pass after updating only the 11
-snapshots whose setup contract changes. The separate `vapor_runtime_contracts`
-template-ref group locally has the same three passes and four production-inline
-failures on both the untouched base and this patch. Those tests load rc.9;
-the failing loop cases render proxy internals as list entries. In contrast,
-all seven cases passed in the unchanged hosted workspace's
-[merge-queue run](https://github.com/ubugeeei-prod/vize/actions/runs/38872907951).
-The local/hosted difference remains unexplained; these tests stay unchanged.
-Final Actions validation must establish the patched hosted result.
+The first implementation at `c458f66896df702f67c14fbe176257728c00aa22` also
+returned raw bindings in production, which was a real regression. Existing
+hosted production/template-ref tests detected it. An earlier local baseline
+attempt reused a Cargo target across worktrees without recompiling, so it did
+not establish which source produced the executed binary. Its claim that these
+failures predated the patch is withdrawn. The unchanged base's
+[merge-queue run](https://github.com/ubugeeei-prod/vize/actions/runs/38872907951)
+passed all seven template-ref cases.
+
+The added production control fails on the first implementation with
+`_ctx.labels.push is not a function` under the supported rc.11 runtime. It passes
+after preserving the original production setup path. The existing rc.9 runtime
+aliases and production/template-ref assertions remain unchanged; final Actions
+validation must also pass them.
 
 ## Remaining acceptance
 

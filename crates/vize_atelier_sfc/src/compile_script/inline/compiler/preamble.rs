@@ -29,6 +29,7 @@ pub(super) fn emit_preamble(
     has_define_slots: bool,
     has_css_vars: bool,
     has_css_modules: bool,
+    needs_vapor_setup_context: bool,
     vapor_render_alias: Option<&str>,
     is_vapor: bool,
     is_ts: bool,
@@ -95,9 +96,15 @@ pub(super) fn emit_preamble(
 
     // Component helper import (skip if already emitted with withAsyncContext)
     if is_vapor && !is_async {
-        output.extend_from_slice(
-            b"import { defineVaporComponent as _defineVaporComponent } from 'vue'\n",
-        );
+        if needs_vapor_setup_context {
+            output.extend_from_slice(
+                b"import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'\n",
+            );
+        } else {
+            output.extend_from_slice(
+                b"import { defineVaporComponent as _defineVaporComponent } from 'vue'\n",
+            );
+        }
     } else if is_ts && !is_async && (!has_css_vars || is_vapor) {
         output.extend_from_slice(b"import { defineComponent as _defineComponent } from 'vue'\n");
     }
