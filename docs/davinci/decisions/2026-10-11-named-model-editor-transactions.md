@@ -205,3 +205,25 @@ field or an unsolicited upstream write. Neither change is made in this slice.
 Real CLI/LSP parent/child, multiline, nested, orphan and parent-only repair packets
 must prove exact ownership and one unused report before #6258 can close. The event
 rename bridge and its qualifier confer no directive-protocol completion credit.
+
+## Frame-boundary EOF observation
+
+The exact pinned-backend [focused run 38935788479](https://github.com/ubugeeei-prod/vize/actions/runs/38935788479)
+at signed main `072d9d52dda13ee2fc67017cf832de76be365e62` passed both targets.
+Its immutable artifact `12061561315` has ZIP SHA256
+`a2d0c93b95e8d0e216ca0a67261325307c989a7b8e2df4bbc28ab47427ecc4f2`.
+Independent whole-packet audit matched all 32 contexts, 660 bound cursor triples,
+224 named-model cursors, actual disk transactions and repairs. Each decoded trace
+also retained a `stdoutError` EOF record after its shutdown reply and exit
+notification. Therefore the existing strict transport audit failed for all 32;
+semantic success does not confer transport-clean or overall acceptance credit.
+
+The shared test decoder previously returned the same EOF error before a new frame
+and inside unfinished headers. Distinguish no-byte frame-boundary EOF as `None`,
+while truncated headers/delimiters/bodies and malformed complete frames remain
+errors. The reader then closes its response channel; a missing required response
+still fails the caller. Exhaustive nonempty truncations, truncated second frames,
+multiple complete messages and malformed-frame controls protect this boundary.
+Do not filter or reinterpret the old artifact. Exact new-source Actions and fresh
+whole process captures must qualify the corrected observer before claiming strict
+transport success. Native provider stderr/lifetime observations are separate.

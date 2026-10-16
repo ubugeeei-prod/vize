@@ -120,7 +120,7 @@ impl LspProcess {
             let mut reader = std::io::BufReader::new(stdout);
             loop {
                 match read_message(&mut reader) {
-                    Ok(message) => {
+                    Ok(Some(message)) => {
                         evidence.record("response", &message);
                         if let Some(capture) = &capture {
                             capture.record("response", &message);
@@ -133,6 +133,9 @@ impl LspProcess {
                         }
                         let _ = messages_tx.send(Ok(message));
                     }
+                    // Closing the response channel still fails any pending wait;
+                    // EOF before a required reply cannot become a passing session.
+                    Ok(None) => break,
                     Err(error) => {
                         if let Some(capture) = &capture {
                             capture.error("stdoutError", &error);
