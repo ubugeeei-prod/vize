@@ -3,13 +3,19 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { parse } from "yaml";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { parse, parseAllDocuments } from "yaml";
 
 import { runPackageScriptDirectly, runTask } from "../../tools/config/vite-plus/task-helpers.ts";
 import type { PackagePath } from "../../tools/config/vite-plus/task-helpers.ts";
 import { testedPackages } from "../../tools/config/vite-plus/task-inputs.ts";
 import { testedPackageGroups } from "../../tools/config/vite-plus/tested-package-groups.ts";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
+import { jsInstallFilters } from "../../tools/support/compat/github/install-js-checks.ts";
+import {
+  planAffectedJs,
+  readJsWorkspace,
+} from "../../tools/support/compat/github/plan-affected-js.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 type Manifest = {
@@ -25,9 +31,11 @@ type Step = {
   id?: string;
   run?: string;
   uses?: string;
+  if?: string;
+  env?: Record<string, string>;
   with?: Record<string, unknown>;
 };
-type Job = { strategy?: { matrix?: { group?: string[] } }; steps?: Step[] };
+type Job = { strategy?: { matrix?: string }; steps?: Step[] };
 
 const jsChecks = parse(readRepoFile(".github", "workflows", "pr-js-checks.yml")) as {
   jobs: Record<string, Job>;
@@ -152,12 +160,20 @@ void test("group tasks keep the full set's preparation, wrapper, order and concu
   );
 });
 
-void test("PR CI runs every group once and the qualification and conformance jobs separately", () => {
-  const groups = jsChecks.jobs["pr-js-package-tests"]?.strategy?.matrix?.group;
+void test("PR CI runs each affected group once and keeps qualification and conformance separate", () => {
+  const packages = jsChecks.jobs["pr-js-package-tests"];
+  assert.equal(packages.strategy?.matrix, "${{ fromJSON(inputs.js-plan).matrix }}");
+  const full = planAffectedJs(readJsWorkspace(root), ["pnpm-lock.yaml"]);
   assert.deepEqual(
-    groups,
+    full.matrix.group,
     testedPackageGroups.map(({ name }) => name),
   );
+  const runs = (packages.steps ?? []).filter((step) =>
+    step.run?.includes('vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"'),
+  );
+  assert.equal(runs.length, 1);
+  assert.equal(runs[0].env?.VIZE_JS_PACKAGE_GROUP, "${{ matrix.group }}");
+  assert.equal(runs[0].if, "${{ (inputs.run-js && matrix.group != 'none') }}");
   const cacheKey = (job: Job | undefined) =>
     job?.steps?.find((step) => step.uses === "./.github/actions/setup-rust-sticky-cache")?.with
       ?.key;
@@ -165,7 +181,15 @@ void test("PR CI runs every group once and the qualification and conformance job
   assert.equal(cacheKey(jsChecks.jobs["pr-js-package-tests"]), "test-js-packages");
   assert.equal(cacheKey(jsChecks.jobs["pr-oxlint-project-qualification"]), "test-js-packages");
   assert.equal(cacheKey(jsChecks.jobs["pr-js-package-conformance"]), "build-js-packages");
-  assert.equal(cacheKey(check.jobs["test-js-packages"]), undefined, "uses its setup action");
+  assert.ok(
+    check.jobs["test-js-packages"].steps?.some(
+      (step) => step.uses === "./.github/actions/setup-js-package-tests",
+    ),
+  );
+  const setup = parse(
+    readRepoFile(".github", "actions", "setup-js-package-tests", "action.yml"),
+  ) as { runs: Job };
+  assert.equal(cacheKey(setup.runs), "test-js-packages");
   assert.equal(cacheKey(check.jobs["build-js-packages"]), "build-js-packages");
 
   const qualification = jsChecks.jobs["pr-oxlint-project-qualification"]?.steps ?? [];
@@ -186,4 +210,64 @@ void test("PR CI runs every group once and the qualification and conformance job
   assert.ok(conformance.includes("vp run --filter './npm/native' build:ci"));
   for (const run of conformance.split(" && ").filter((part) => part.startsWith("vp run --filter")))
     assert.ok(trusted.includes(run), `the trusted build-js-packages job also runs ${run}`);
+});
+
+await test("UI's actual production Vue consumer has its locked fixture in the filtered install only", () => {
+  const configPath = path.join(root, "npm/ui/vite.production-vue.config.ts");
+  const source = fs.readFileSync(configPath, "utf8");
+  const selected = source.match(
+    /const example = fileURLToPath\(new URL\("([^"]+)", import\.meta\.url\)\)/u,
+  );
+  assert.ok(selected, "the real production configuration selects an example package");
+  const fixtureManifest = fileURLToPath(new URL(selected[1], pathToFileURL(configPath)));
+  const fixture = path.relative(root, path.dirname(fixtureManifest)).split(path.sep).join("/");
+  const fixtureFilter = `./${fixture}...`;
+  assert.equal(fixtureFilter, "./npm/builder/vite/example...");
+  const ui = manifests.get("./npm/ui");
+  assert.ok(ui?.scripts?.test?.includes("vp test run --config vite.production-vue.config.ts"));
+  assert.match(source, /assert\.equal\(manifest\.version, "3\.5\.42"\)/u);
+  assert.match(source, /assert\.equal\(compiler\.version, "3\.5\.42"\)/u);
+
+  const owner = JSON.parse(fs.readFileSync(fixtureManifest, "utf8")) as Manifest;
+  assert.equal(owner.dependencies?.vue, "catalog:vue-production");
+  const workspace = parse(readRepoFile("pnpm-workspace.yaml")) as {
+    catalogs: { "vue-production": { vue: string } };
+  };
+  type ProjectLock = {
+    catalogs: { "vue-production": { vue: { specifier: string; version: string } } };
+    importers: Record<string, { dependencies: { vue: { specifier: string; version: string } } }>;
+  };
+  const projectLocks = parseAllDocuments(readRepoFile("pnpm-lock.yaml"))
+    .map((document) => {
+      assert.deepEqual(document.errors, []);
+      return document.toJS() as ProjectLock;
+    })
+    .filter((document) => Object.hasOwn(document.importers, fixture));
+  assert.equal(projectLocks.length, 1, "exactly one lock document owns the production fixture");
+  const lock = projectLocks[0];
+  assert.equal(workspace.catalogs["vue-production"].vue, "3.5.42");
+  assert.deepEqual(lock.catalogs["vue-production"].vue, { specifier: "3.5.42", version: "3.5.42" });
+  assert.equal(lock.importers[fixture].dependencies.vue.specifier, "catalog:vue-production");
+  assert.match(lock.importers[fixture].dependencies.vue.version, /^3\.5\.42(?:\(|$)/u);
+
+  const packageName = (JSON.parse(readRepoFile("package.json")) as Manifest).name;
+  for (const { name, packages, prebuilt } of testedPackageGroups) {
+    const baseline = [
+      packageName,
+      "./npm/native...",
+      ...[...packages, ...prebuilt].map((pkg) => `${pkg}...`),
+    ];
+    assert.deepEqual(
+      jsInstallFilters(name),
+      [...new Set([...baseline, ...(name === "ui" ? [fixtureFilter] : [])])],
+      name,
+    );
+  }
+  for (const [group, pkg] of [
+    ["ui-conformance", "./npm/ui"],
+    ["fresco-conformance", "./npm/fresco-native"],
+    ["original-project", "./npm/oxlint"],
+  ]) {
+    assert.deepEqual(jsInstallFilters(group), [packageName, "./npm/native...", `${pkg}...`], group);
+  }
 });
