@@ -13,7 +13,7 @@ on:
       - "tests/tooling/davinci-unused-setup-bindings.test.ts"
       - "tests/_fixtures/davinci-fpfn/**"
       - ".github/workflows/davinci-unused-bindings.yml"
-      - "tools/support/compat/github/compare-unused-bindings-profiles.mjs"
+      - "tools/support/compat/github/compare-unused-bindings-profiles.ts"
       - "tests/tooling/unused-bindings-profiles.test.mjs"
   workflow_dispatch:
     inputs:
@@ -66,7 +66,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.compare-profiles }}
         env:
           VIZE_DAVINCI_FACT_CORPUS: tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator
-        run: node tools/support/compat/github/compare-unused-bindings-profiles.mjs
+        run: node tools/support/compat/github/compare-unused-bindings-profiles.ts
       - name: Build the real CLI
         run: cargo build --profile ci -p vize
       - name: Recall every class-b mutation and reject wrong diagnostic identities

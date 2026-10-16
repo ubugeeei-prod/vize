@@ -5,7 +5,7 @@ import { parse } from "yaml";
 import {
   compareResults,
   testResults,
-} from "../../tools/support/compat/github/compare-unused-bindings-profiles.mjs";
+} from "../../tools/support/compat/github/compare-unused-bindings-profiles.ts";
 
 const detectorNames = [
   "a_producer_reading_outside_its_depends_is_refused_too",
@@ -71,7 +71,7 @@ await test("the controlled comparison is manual-only and retains the real seeded
   );
   assert.equal(workflow.on.workflow_dispatch.inputs["compare-profiles"].default, false);
   const steps = workflow.jobs["unused-bindings"].steps;
-  const compare = steps.find((step) => step.run?.includes("compare-unused-bindings-profiles.mjs"));
+  const compare = steps.find((step) => step.run?.includes("compare-unused-bindings-profiles.ts"));
   assert.equal(
     compare.if,
     "${{ github.event_name == 'workflow_dispatch' && inputs.compare-profiles }}",
