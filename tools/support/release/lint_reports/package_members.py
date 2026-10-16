@@ -27,6 +27,23 @@ with tarfile.open(archive, "r:gz") as package:
         assert target.read_bytes() == data, f"installed package differs: {relative}"
         records.append({"path": relative, "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()})
 assert records
-actual = {str(file.relative_to(root)) for file in root.rglob("*") if file.is_file() and "node_modules" not in file.relative_to(root).parts}
+# npm archives may own bundled node_modules members. Keep unrelated installed
+# dependencies outside this package's archive scope, but include every physical
+# file under a bundled package root so injected bundle files cannot disappear.
+bundles = set()
+for name in seen:
+    parts = PurePosixPath(name).parts
+    if "node_modules" in parts:
+        index = parts.index("node_modules") + 1
+        count = 2 if parts[index].startswith("@") else 1
+        bundles.add(PurePosixPath(*parts[:index + count]))
+actual = set()
+for file in root.rglob("*"):
+    if not file.is_file():
+        continue
+    relative = file.relative_to(root)
+    if "node_modules" not in relative.parts or any(relative.is_relative_to(bundle) for bundle in bundles):
+        assert not file.is_symlink(), "installed package links refused"
+        actual.add(str(relative))
 assert actual == seen, "extra installed package members refused"
 print(json.dumps(records, sort_keys=True))
