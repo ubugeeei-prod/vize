@@ -38,6 +38,10 @@ import { exerciseBrowserPageExample } from "./interactions-browser-page.ts";
 import { deviceExamples } from "../../../npm/ui/scripts/reference-docs/device-examples.ts";
 import { exerciseDeviceExample } from "./interactions-device.ts";
 import { exerciseVirtualListExample } from "./interactions-virtual-list.ts";
+import {
+  exerciseAsyncResourceExample,
+  verifyAsyncResourceUnmount,
+} from "./interactions-async-resource.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
   await page.getByRole("button", { name: label, exact: true }).focus();
@@ -45,6 +49,7 @@ async function activate(page: Page, label: string): Promise<void> {
 }
 
 async function exercise(page: Page, name: string): Promise<string[]> {
+  if (name === "async-resource") return exerciseAsyncResourceExample(page);
   if (name === "virtual-list") return exerciseVirtualListExample(page);
   if (asyncEffectExamples.some((example) => example.name === name))
     return exerciseAsyncExample(page, name);
@@ -293,12 +298,16 @@ export async function captureComposablePreviews(
             interactions,
           });
         }
+        const scopeDisposalChecks =
+          example.name === "async-resource" ? await verifyAsyncResourceUnmount(page) : undefined;
+        assert.deepEqual(diagnostics, [], `${example.name}: diagnostics after scope disposal`);
         receipts.push({
           name: example.name,
           sourceSha256: example.sourceSha256,
           width,
           screenshots,
           browserDiagnostics: [...diagnostics],
+          scopeDisposalChecks,
         });
       }
     } finally {
