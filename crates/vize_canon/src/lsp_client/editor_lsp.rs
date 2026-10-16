@@ -11,7 +11,7 @@
 //! process, and a session that has answered one hover is reused later.
 
 use super::{
-    CorsaProjectClient, diagnostics_lsp::initialize_lsp_client_with_result,
+    CorsaProjectClient, diagnostics_lsp::initialize_lsp_client,
     language_id::for_uri as language_id_for_uri,
 };
 use corsa::runtime::block_on;
@@ -100,7 +100,7 @@ impl EditorLspSession {
         let stop = Arc::new(AtomicBool::new(false));
         let responder = spawn_responder(client.clone(), stop.clone());
 
-        let initialized = match initialize_lsp_client_with_result(&client, project_root) {
+        let initialized = match initialize_lsp_client(&client, project_root) {
             Ok(initialized) => initialized,
             Err(error) => {
                 stop.store(true, Ordering::Relaxed);

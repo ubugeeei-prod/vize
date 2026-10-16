@@ -15,11 +15,7 @@ use vize_l0::{String, cstr};
 
 mod readiness_workers;
 
-pub(super) fn initialize_lsp_client(client: &LspClient, project_root: &Path) -> Result<(), String> {
-    initialize_lsp_client_with_result(client, project_root).map(|_| ())
-}
-
-pub(super) fn initialize_lsp_client_with_result(
+pub(super) fn initialize_lsp_client(
     client: &LspClient,
     project_root: &Path,
 ) -> Result<Value, String> {
