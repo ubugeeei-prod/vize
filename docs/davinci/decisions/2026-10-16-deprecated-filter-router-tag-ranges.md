@@ -6,6 +6,8 @@ The enforced Real Project Matrix found 14 location-only false-positive / false-n
 pairs in `PanJiaChen/vue-element-admin` at fixture pin
 `6858a9ad67483025f6a9432a926beb9327037be3`: 13 filter interpolations and one
 `router-link` tag attribute. Bound filter values already used the expression range.
+The same range defect also produces two pairs in ZY-Player and 29 in Habitica
+(25 filter interpolations and four router tag attributes).
 
 For `{{ message | capitalize }}`, `vue/no-deprecated-filter` now reports
 `message | capitalize`, excluding the braces and surrounding whitespace. For
@@ -14,17 +16,18 @@ the attribute name `tag`. For `:tag="element"` and `v-bind:tag.prop="element"`,
 it reports the argument `tag`, excluding the directive prefix, modifiers and value.
 These are product diagnostic ranges; the divergence comparator and budgets do not change.
 
-The pinned reference is eslint-plugin-vue 10.9.2 with ESLint 10.4.1 and
-vue-eslint-parser 10.4.1. Its filter rule reports `VFilterSequenceExpression.loc`.
+The pinned reference is eslint-plugin-vue 10.9.2 with ESLint 10.4.1,
+vue-eslint-parser 10.4.1 and @typescript-eslint/parser 8.65.0. Its filter rule reports `VFilterSequenceExpression.loc`.
 Its router rule reports `VAttribute.key` for static attributes and
 `VDirectiveKey.argument` for bound attributes. The corresponding authored Relief
 locations are `SimpleExpressionNode.loc`, `AttributeNode.name_loc` and the
 directive argument's location.
 
 `crates/vize_patina/tests/fixtures/deprecated-diagnostic-spans` retains all 11
-original files with byte lengths, SHA-256 hashes and Git blob identities. It also
-retains all 28 original divergent diagnostic entries and complete reference packets
-for those files plus nine minimal cases, including CRLF, Unicode, multiline
+original vue-element-admin files, two ZY-Player files, 14 Habitica files and one
+Frappe Builder file with byte lengths, SHA-256 hashes and Git blob identities. It also
+retains all 91 original divergent diagnostic entries and complete reference packets
+for those files plus ten minimal cases, including CRLF, Unicode, multiline
 expressions, chains, static and bound attributes, and clean inputs.
 
 `tests/tooling/patina-deprecated-span-oracle.test.mjs` replays the pinned official
@@ -34,3 +37,13 @@ the complete native result against those reference ranges, including every nativ
 diagnostic field, help, labels, fixes and counts. It translates the provider's
 UTF-16 columns to native byte offsets. Existing expression classification and
 dialect tests remain applicable.
+
+The Frappe Builder finding is a different case. Its
+`activeScript.script_type as 'JavaScript' | 'CSS'` binding is a TypeScript
+assertion union. The pinned Vue parser splits the union as a filter when using
+the TypeScript parser; the same minimal input without that expression parser
+produces no filter diagnostic. Both complete official packets are retained.
+Native tests explicitly require a completely clean result for the minimized
+assertion and the full original Frappe file, preserving #7911's type-grammar
+handling. This source-correctness distinction remains visible as a reference
+disagreement; this patch does not disguise it through comparator changes.

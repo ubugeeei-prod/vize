@@ -36,23 +36,50 @@ fn pinned_originals_and_minimal_cases_match_complete_native_packets() {
         .with_locale(Locale::En)
         .with_help_level(HelpLevel::Full);
     let cases = fixture["captures"].as_array().unwrap();
-    assert_eq!(cases.len(), 20);
+    assert_eq!(cases.len(), 38);
     for case in cases {
         let source = case["source"].as_str().unwrap();
         let filename = case["filename"].as_str().unwrap();
         let packet = &case["packets"][0];
+        if matches!(
+            case["id"].as_str().unwrap(),
+            "typescript-assertion"
+                | "frappe-builder/frontend/src/components/PageClientScriptManager.vue"
+        ) {
+            // vue-eslint-parser splits the type union before the TS parser.
+            // Keep #7911's native correctness: this pipe is in type grammar.
+            assert!(source.contains("activeScript.script_type as 'JavaScript' | 'CSS'"));
+            assert_eq!(packet["errorCount"], 1);
+            assert_eq!(packet["messages"][0]["ruleId"], "vue/no-deprecated-filter");
+            let actual = linter.lint_sfc(source, filename);
+            let expected = LintResult {
+                filename: filename.into(),
+                diagnostics: vec![],
+                error_count: 0,
+                warning_count: 0,
+            };
+            assert_eq!(
+                format!("{actual:#?}"),
+                format!("{expected:#?}"),
+                "{}",
+                case["id"]
+            );
+            continue;
+        }
         let diagnostics = packet["messages"]
             .as_array()
             .unwrap()
             .iter()
             .map(|message| {
                 let rule = message["ruleId"].as_str().unwrap();
-                let (text, help) = match rule {
+                let (rule, text, help) = match rule {
                     "vue/no-deprecated-filter" => (
+                        "vue/no-deprecated-filter",
                         "Filters were removed in Vue 3; replace the '|' filter with a method call or computed property",
                         "Replace the filter with a method call or computed property (e.g. {{ capitalize(message) }} instead of {{ message | capitalize }}).",
                     ),
                     "vue/no-deprecated-router-link-tag-prop" => (
+                        "vue/no-deprecated-router-link-tag-prop",
                         "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
                         "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
                     ),
