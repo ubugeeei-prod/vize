@@ -184,6 +184,15 @@ fn multiline_call_directive_preserves_a_following_independent_diagnostic() {
 }
 
 #[test]
+fn literal_parentheses_do_not_end_a_real_multiline_call_early() {
+    let source = "// @ts-ignore\nconsume(\n  ')', // )\n  invalidArgument,\n)\nconst independent: number = 'wrong'\n";
+    let independent = diagnostic(source, "'wrong'", Some(2322), "Type mismatch.");
+    let mut diagnostics = vec![overload(source, "invalidArgument,"), independent.clone()];
+    filter(&AuthoredSource::vue(source), &mut diagnostics);
+    assert_eq!(diagnostics, [independent]);
+}
+
+#[test]
 fn template_diagnostics_are_not_multiline_directive_candidates() {
     let source = "<script setup lang=\"ts\">\n</script>\n<template>\n  <!-- @ts-ignore -->\n  <Comp\n    :a=\"x\"\n  />\n</template>\n";
     let mut diagnostics = vec![diagnostic(source, ":a=", Some(2322), "Type mismatch.")];
