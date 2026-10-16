@@ -15,15 +15,28 @@
 //! ## Examples
 //!
 //! ### Invalid
-//! ```ts
-//! const handlers = this.$listeners
-//! const vm = this; const forwarded = vm.$listeners
+//! ```vue
+//! <script>
+//! export default {
+//!   mounted() {
+//!     const vm = this
+//!     return vm.$listeners
+//!   }
+//! }
+//! </script>
+//! <template><Child v-on="$listeners" /></template>
 //! ```
 //!
 //! ### Valid
-//! ```ts
-//! const handlers = this.$attrs
-//! const forwarded = ctx.attrs
+//! ```vue
+//! <script>
+//! export default {
+//!   mounted() {
+//!     return this.$attrs
+//!   }
+//! }
+//! </script>
+//! <template><Child v-bind="$attrs" /></template>
 //! ```
 
 mod template;

@@ -931,12 +931,16 @@ vp run lint
 
 As leituras de membros e a referência direta no argumento usam `$listeners`, que o Vue 3 removeu após incorporar os ouvintes aos atributos.
 
-```vue annotate="remove:2,3,4"
-<script setup lang="ts">
-const handlers = this.$listeners
-const forwarded = ctx.$listeners
-emit('input', $listeners)
+```vue annotate="remove:4,5,9"
+<script>
+export default {
+  mounted() {
+    const vm = this
+    return vm.$listeners
+  }
+}
 </script>
+<template><Child v-on="$listeners" /></template>
 ```
 
 <span id="script-no-deprecated-dollar-listeners-api-good"></span>
@@ -945,16 +949,20 @@ emit('input', $listeners)
 
 As leituras passam a usar `this.$attrs` e `ctx.attrs` do contexto de setup. Essas formas substituem a API de ouvintes removida; os objetos receptores ilustrados precisam existir no contexto do componente ao redor.
 
-```vue annotate="add:2,3"
-<script setup lang="ts">
-const handlers = this.$attrs
-const forwarded = ctx.attrs
+```vue annotate="add:4,8"
+<script>
+export default {
+  mounted() {
+    return this.$attrs
+  }
+}
 </script>
+<template><Child v-bind="$attrs" /></template>
 ```
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L40) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L54) · [Todas as regras](all.md)
 
 ### `script/no-deprecated-dollar-scopedslots-api`
 
@@ -1060,12 +1068,16 @@ vp run lint
 
 As chamadas de `$on`, `$once` e `$off` usam os métodos de barramento de eventos da instância removidos no Vue 3.
 
-```vue annotate="remove:2,3,4,5"
-<script setup lang="ts">
-this.$on('event', handler)
-this.$once('event', handler)
-this.$off('event', handler)
-emitter.$off('event')
+```vue annotate="remove:4,5,6,7"
+<script>
+export default {
+  mounted() {
+    this.$on('event', handler)
+    const vm = this
+    vm.$once('event', handler)
+    this.$off('event', handler)
+  }
+}
 </script>
 ```
 
@@ -1075,21 +1087,22 @@ emitter.$off('event')
 
 `$emit` continua válido, enquanto a assinatura no barramento de eventos passa para o método `on` do emissor externo. A correção separa a emissão direcionada ao pai de um barramento de eventos externo.
 
-```vue annotate="add:2,3,4,5,6,7,8"
-<script setup lang="ts">
-// $emit is still valid in Vue 3
-this.$emit('event', payload)
-
-// Use an external emitter instead
+```vue annotate="add:2,3,6,7"
+<script>
 import mitt from 'mitt'
 const emitter = mitt()
-emitter.on('event', handler)
+export default {
+  mounted() {
+    this.$emit('event', payload)
+    emitter.on('event', handler)
+  }
+}
 </script>
 ```
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L42) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L52) · [Todas as regras](all.md)
 
 ### `script/no-deprecated-props-default-this`
 

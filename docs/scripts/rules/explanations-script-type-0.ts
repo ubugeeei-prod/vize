@@ -135,9 +135,9 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "script/no-deprecated-dollar-listeners-api",
-    "The member reads and the bare argument reference all use `$listeners`, which Vue 3 removed after merging listeners into attributes.",
-    "The reads move to `this.$attrs` and setup-context `ctx.attrs`. These replace the removed listener surface; the illustrated receivers must exist in the surrounding component context.",
-    "`this.$listeners` と `ctx.$listeners` のメンバー参照、および引数に直接渡した `$listeners` が、削除された API を使っています。Vue 3 ではリスナーが属性に統合され、この API は削除されました。",
-    "参照を `this.$attrs` と setup コンテキストの `ctx.attrs` に置き換え、削除されたリスナー API の使用をなくします。この例は、それぞれの参照元を使えるコンポーネントの文脈を前提にしています。",
+    "The component instance alias and the unbound template reference use `$listeners`, which Vue 3 removed after merging listeners into attributes.",
+    "The component reads `$attrs`, and `v-bind=\"$attrs\"` forwards attributes and on-prefixed listener props. Local template bindings and unrelated receivers are outside this rule.",
+    "コンポーネントの別名とテンプレートの未束縛参照が `$listeners` を使っています。Vue 3 ではリスナーが属性に統合され、この API は削除されました。",
+    "`this.$attrs` と `v-bind=\"$attrs\"` に置き換え、属性と on 接頭辞のリスナープロパティを転送します。テンプレートのローカル変数や別オブジェクトの同名プロパティは対象外です。",
   ],
 ];

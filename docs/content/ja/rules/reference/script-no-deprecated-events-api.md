@@ -40,11 +40,15 @@ vp run lint
 `$on`、`$once`、`$off` の呼び出しが、Vue 3 で削除されたインスタンスのイベントバスメソッドを使っています。
 
 ```vue
-<script setup lang="ts">
-this.$on('event', handler)
-this.$once('event', handler)
-this.$off('event', handler)
-emitter.$off('event')
+<script>
+export default {
+  mounted() {
+    this.$on('event', handler)
+    const vm = this
+    vm.$once('event', handler)
+    this.$off('event', handler)
+  }
+}
 </script>
 ```
 
@@ -53,17 +57,18 @@ emitter.$off('event')
 有効な `$emit` は維持し、イベントバスへの購読は外部 emitter の `on` に移します。親へのイベント送信と外部イベントバスを別々の API で表します。
 
 ```vue
-<script setup lang="ts">
-// $emit is still valid in Vue 3
-this.$emit('event', payload)
-
-// Use an external emitter instead
+<script>
 import mitt from 'mitt'
 const emitter = mitt()
-emitter.on('event', handler)
+export default {
+  mounted() {
+    this.$emit('event', payload)
+    emitter.on('event', handler)
+  }
+}
 </script>
 ```
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L42) · [全ルール](../all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L52) · [全ルール](../all.md)

@@ -14,22 +14,31 @@
 //! ## Examples
 //!
 //! ### Invalid
-//! ```ts
-//! this.$on('event', handler)
-//! this.$once('event', handler)
-//! this.$off('event', handler)
-//! const vm = this; vm.$off('event')
+//! ```vue
+//! <script>
+//! export default {
+//!   mounted() {
+//!     this.$on('event', handler)
+//!     const vm = this
+//!     vm.$once('event', handler)
+//!     this.$off('event', handler)
+//!   }
+//! }
+//! </script>
 //! ```
 //!
 //! ### Valid
-//! ```ts
-//! // $emit is still valid in Vue 3
-//! this.$emit('event', payload)
-//!
-//! // Use an external emitter instead
+//! ```vue
+//! <script>
 //! import mitt from 'mitt'
 //! const emitter = mitt()
-//! emitter.on('event', handler)
+//! export default {
+//!   mounted() {
+//!     this.$emit('event', payload)
+//!     emitter.on('event', handler)
+//!   }
+//! }
+//! </script>
 //! ```
 
 use super::vue_instance::VueInstance;

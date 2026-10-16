@@ -928,32 +928,40 @@ vp run lint
 
 **Bad**
 
-The member reads and the bare argument reference all use `$listeners`, which Vue 3 removed after merging listeners into attributes.
+The component instance alias and the unbound template reference use `$listeners`, which Vue 3 removed after merging listeners into attributes.
 
-```vue annotate="remove:2,3,4"
-<script setup lang="ts">
-const handlers = this.$listeners
-const forwarded = ctx.$listeners
-emit('input', $listeners)
+```vue annotate="remove:4,5,9"
+<script>
+export default {
+  mounted() {
+    const vm = this
+    return vm.$listeners
+  }
+}
 </script>
+<template><Child v-on="$listeners" /></template>
 ```
 
 <span id="script-no-deprecated-dollar-listeners-api-good"></span>
 
 **Good**
 
-The reads move to `this.$attrs` and setup-context `ctx.attrs`. These replace the removed listener surface; the illustrated receivers must exist in the surrounding component context.
+The component reads `$attrs`, and `v-bind="$attrs"` forwards attributes and on-prefixed listener props. Local template bindings and unrelated receivers are outside this rule.
 
-```vue annotate="add:2,3"
-<script setup lang="ts">
-const handlers = this.$attrs
-const forwarded = ctx.attrs
+```vue annotate="add:4,8"
+<script>
+export default {
+  mounted() {
+    return this.$attrs
+  }
+}
 </script>
+<template><Child v-bind="$attrs" /></template>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L40) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L54) · [All rules](all.md)
 
 ### `script/no-deprecated-dollar-scopedslots-api`
 
@@ -1059,12 +1067,16 @@ vp run lint
 
 The `$on`, `$once`, and `$off` calls use the instance event-bus methods removed in Vue 3.
 
-```vue annotate="remove:2,3,4,5"
-<script setup lang="ts">
-this.$on('event', handler)
-this.$once('event', handler)
-this.$off('event', handler)
-emitter.$off('event')
+```vue annotate="remove:4,5,6,7"
+<script>
+export default {
+  mounted() {
+    this.$on('event', handler)
+    const vm = this
+    vm.$once('event', handler)
+    this.$off('event', handler)
+  }
+}
 </script>
 ```
 
@@ -1074,21 +1086,22 @@ emitter.$off('event')
 
 `$emit` remains valid, while event-bus subscription moves to the external emitter’s `on` method. The repair separates parent-directed emission from an external event bus.
 
-```vue annotate="add:2,3,4,5,6,7,8"
-<script setup lang="ts">
-// $emit is still valid in Vue 3
-this.$emit('event', payload)
-
-// Use an external emitter instead
+```vue annotate="add:2,3,6,7"
+<script>
 import mitt from 'mitt'
 const emitter = mitt()
-emitter.on('event', handler)
+export default {
+  mounted() {
+    this.$emit('event', payload)
+    emitter.on('event', handler)
+  }
+}
 </script>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L42) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L52) · [All rules](all.md)
 
 ### `script/no-deprecated-props-default-this`
 
