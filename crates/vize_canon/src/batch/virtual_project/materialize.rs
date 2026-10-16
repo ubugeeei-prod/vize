@@ -59,12 +59,16 @@ impl VirtualProject {
         let owned_files = self.workspace_cold_owned_files(&expected_files);
         self.validate_workspace_alias_targets(&owned_files)?;
         let mut link_claims = expected_files.clone();
+        link_claims.extend(self.workspace_alias_claims());
         link_claims.extend(
             self.preserved_workspace_alias_claims(preserved_package_links, &expected_files)?,
         );
         let mut desired_package_links = self.desired_package_links_for_files(&link_claims);
         for (path, target) in preserved_package_links {
-            if self.preserved_package_link_overlaps_files(path, target, &expected_files) {
+            // Owned aliases claim their link path even though their bytes live
+            // at the private target. A previous ordinary external link must
+            // yield to that claim just as it yields to newly owned files.
+            if self.preserved_package_link_overlaps_files(path, target, &link_claims) {
                 continue;
             }
             if desired_package_links.get(path).is_some_and(|current| {
@@ -352,3 +356,7 @@ impl VirtualProject {
             .unwrap_or_else(|| self.project_root.clone())
     }
 }
+
+#[cfg(all(test, unix))]
+#[path = "tests/editor_union_alias_transition.rs"]
+mod alias_transition_tests;
