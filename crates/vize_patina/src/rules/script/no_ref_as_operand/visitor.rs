@@ -7,7 +7,7 @@ use super::{
 };
 use oxc_ast::ast::{
     AssignmentExpression, BinaryExpression, BlockStatement, CatchClause, Class,
-    ComputedMemberExpression, ConditionalExpression, DoWhileStatement, ForInStatement,
+    ComputedMemberExpression, ConditionalExpression, DoWhileStatement, Expression, ForInStatement,
     ForOfStatement, ForStatement, ForStatementLeft, Function, FunctionBody, IfStatement,
     LogicalExpression, Program, Statement, StaticBlock, StaticMemberExpression, SwitchStatement,
     TemplateLiteral, UnaryExpression, UpdateExpression, WhileStatement,
@@ -178,6 +178,7 @@ impl<'a> Visit<'a> for RefOperandVisitor<'_> {
         if it
             .static_property_name()
             .is_some_and(|name| !matches!(name.as_ref(), "value" | "effect"))
+            || matches!(&it.expression, Expression::NumericLiteral(_))
         {
             self.check_operand(&it.object);
         }
