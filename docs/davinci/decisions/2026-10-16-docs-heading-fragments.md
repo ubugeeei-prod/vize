@@ -17,7 +17,8 @@ original spelling. Decoding errors are contained. The provider's existing CSS
 selector fallback remains guarded, preserving escaped selectors without allowing
 malformed or missing fragments to throw. Only the two lookups inside the owned
 anchor handler are replaced. Exact pinned markers, boundaries, call counts and a
-helper-name collision check fail the build when that integration contract drifts.
+helper-name collision check inside the generated core fail the build when that
+integration contract drifts. Ordinary documentation mentions are allowed.
 Bare SSG output bypasses the repair because it contains no generated runtime.
 
 `check:heading-links` participates in the existing docs build. It verifies the

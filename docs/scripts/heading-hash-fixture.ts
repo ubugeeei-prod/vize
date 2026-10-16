@@ -135,6 +135,11 @@ export async function buildHeadingHashFixture(output: string) {
   const input = `untouched-prefix${start}<script>${originalCore.source}</script>${end}untouched-suffix`;
   assert(repair(input).startsWith("untouched-prefix"));
   assert(repair(input).endsWith("untouched-suffix"));
+  const outsideMention = input.replace(
+    "untouched-prefix",
+    "ordinary oxContentHashTarget paragraph",
+  );
+  assert(repair(outsideMention).startsWith("ordinary oxContentHashTarget paragraph"));
   for (const malformed of [
     input.replace(start, ""),
     input + start,
@@ -145,7 +150,10 @@ export async function buildHeadingHashFixture(output: string) {
       "const scrollToHash = () => {",
       "const scrollToHash = () => {\ndocument.querySelector(hash);",
     ),
-    input + "oxContentHashTarget",
+    input.replace(
+      "const scrollToHash = () => {",
+      "const oxContentHashTarget = () => null;\nconst scrollToHash = () => {",
+    ),
   ])
     assert.throws(() => repair(malformed), /Vize docs:/);
   const after = await compile("after");
@@ -157,7 +165,13 @@ export async function buildHeadingHashFixture(output: string) {
   const bare = await compile("bare", false, true);
   const bareHtml = fs.readFileSync(path.join(bare, "index.html"), "utf8");
   assert(!bareHtml.includes("ox-content-core-"), "bare output must not acquire a runtime");
-  fs.appendFileSync(path.join(root, "content/index.md"), "\noxContentHashTarget\n");
+  fs.appendFileSync(
+    path.join(root, "content/index.md"),
+    "\nOrdinary oxContentHashTarget paragraph.\n",
+  );
+  const mentioned = await compile("ordinary-mention");
+  assert.deepEqual(verifyCoreAsset(mentioned, true), repairedCore);
+  fs.appendFileSync(path.join(root, "content/index.md"), "\n<!-- ox-content:scripts:start -->\n");
   await assert.rejects(compile("refused"), /Vize docs:/);
   return {
     before,
