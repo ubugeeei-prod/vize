@@ -216,6 +216,7 @@ async function main() {
   const nativeRequire = createRequire(nativeManifest);
   const platformName = `@vizejs/native-win32-${process.arch}-msvc`;
   const binding = fs.realpathSync(nativeRequire.resolve(platformName));
+  assert.equal(path.extname(binding), ".node", "actual native provider binary required");
   const platformRoot = path.dirname(binding);
   const lock = object(JSON.parse(fs.readFileSync(path.join(project, "package-lock.json"), "utf8")));
   const locked = object(lock.packages);
@@ -267,6 +268,12 @@ async function main() {
   );
   const corsa = path.join(path.dirname(corsaManifest), "lib/tsc.exe");
   assert.ok(fs.existsSync(corsa));
+  const corsaVersion = object(JSON.parse(fs.readFileSync(corsaManifest, "utf8"))).version;
+  const cliPackage = object(JSON.parse(fs.readFileSync(cliManifest, "utf8")));
+  assert.equal(
+    corsaVersion,
+    object(cliPackage.optionalDependencies)[`@typescript/typescript-win32-${process.arch}`],
+  );
   const identity = {
     version,
     source: head,
@@ -276,7 +283,7 @@ async function main() {
     arch: process.arch,
     cli: { path: cli, sha256: sha256(cli) },
     native: { path: binding, sha256: sha256(binding) },
-    corsa: { path: corsa, sha256: sha256(corsa) },
+    corsa: { path: corsa, version: corsaVersion, sha256: sha256(corsa) },
   };
   save("installed-identity.json", identity);
   assert.ok(
@@ -305,7 +312,7 @@ async function main() {
       expected
         ? [
             {
-              file: "src/App.vue",
+              file: path.join("src", "App.vue"),
               diagnostics: ["error:9:7 [TS2322] Type 'number' is not assignable to type 'string'."],
             },
           ]
