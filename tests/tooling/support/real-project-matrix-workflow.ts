@@ -16,6 +16,7 @@ export type WorkflowStep = {
 };
 
 export type WorkflowJob = {
+  outputs?: Record<string, string>;
   if?: string;
   needs?: string | string[];
   uses?: string;
@@ -27,7 +28,7 @@ export type WorkflowJob = {
   strategy?: {
     "fail-fast"?: boolean;
     "max-parallel"?: number;
-    matrix?: { shard?: number[]; observer?: string[] };
+    matrix?: string | { shard?: number[]; observer?: string[] };
   };
   "timeout-minutes"?: number;
 };

@@ -1,11 +1,15 @@
-import { releaseSha } from "./release-preflight.ts";
+import { realProjectJobNamesAtRevision } from "../../../tools/support/compat/github/real-project-matrix-plan.ts";
+import { matrixSourceFixture } from "./real-project-matrix-source.ts";
 
 /** Failed-only retry: copied jobs have new API IDs but retain their real timestamps. */
-export function retriedMatrixEvidence() {
+export function retriedMatrixEvidence(template: "legacy" | "named" = "legacy") {
+  const source = matrixSourceFixture();
+  const headSha = template === "legacy" ? source.legacySha : source.namedSha;
+  const names = realProjectJobNamesAtRevision(headSha, source.repoRoot);
   const run = {
     id: 900,
     run_attempt: 2,
-    head_sha: releaseSha,
+    head_sha: headSha,
     head_branch: "release/v0.435.1",
     path: ".github/workflows/real-project-matrix.yml",
     status: "completed",
@@ -16,7 +20,7 @@ export function retriedMatrixEvidence() {
   };
   const previousJobs = Array.from({ length: 22 }, (_, shard) => ({
     id: 1_000 + shard,
-    name: `real projects (${shard}/22)`,
+    name: names[shard],
     run_id: run.id,
     run_attempt: 1,
     head_sha: run.head_sha,
@@ -45,5 +49,5 @@ export function retriedMatrixEvidence() {
     id: 3_019,
     created_at: "2026-10-08T00:10:10Z",
   });
-  return { run, previousJobs, currentJobs, artifacts };
+  return { run, previousJobs, currentJobs, artifacts, repoRoot: source.repoRoot };
 }

@@ -1,5 +1,6 @@
 use chrono::{DateTime, FixedOffset};
 use serde_json::{Value, json};
+use std::{path::Path, process::Command};
 
 use crate::matrix_evidence::REQUIRED_REAL_PROJECT_MATRIX_SHARD_COUNT;
 
@@ -8,8 +9,27 @@ pub struct MatrixArtifactSelection {
     pub provenance: Vec<Value>,
 }
 
+pub fn matrix_job_names(run: &Value, root: &Path) -> Result<Vec<String>, String> {
+    let output = Command::new("node")
+        .arg(crate::repo_root()?.join("tools/support/compat/github/real-project-matrix-plan.ts"))
+        .args(["job-names", "--revision", text(run, "head_sha")?, "--root"])
+        .arg(root)
+        .output()
+        .map_err(|error| format!("Cannot read Real Project Matrix source names: {error}"))?;
+    if !output.status.success() {
+        return Err(String::from_utf8_lossy(&output.stderr).trim().to_string());
+    }
+    let names: Vec<String> =
+        serde_json::from_slice(&output.stdout).map_err(|error| error.to_string())?;
+    if names.len() != REQUIRED_REAL_PROJECT_MATRIX_SHARD_COUNT {
+        return Err("Real Project Matrix source names omit fixture partitions".into());
+    }
+    Ok(names)
+}
+
 pub fn select_current_matrix_artifacts<F>(
     run: &Value,
+    root: &Path,
     artifacts: &[Value],
     current_jobs: &[Value],
     mut read_previous_jobs: F,
@@ -33,6 +53,7 @@ where
     {
         return Err("Real Project Matrix selection requires a successful selected run".into());
     }
+    let job_names = matrix_job_names(run, root)?;
     let mut history = Vec::new();
     for previous in 1..attempt {
         history.push((previous, read_previous_jobs(previous)?));
@@ -44,9 +65,8 @@ where
     };
     for shard in 0..REQUIRED_REAL_PROJECT_MATRIX_SHARD_COUNT {
         let name = format!("real-project-matrix-{shard}");
-        let job_name =
-            format!("real projects ({shard}/{REQUIRED_REAL_PROJECT_MATRIX_SHARD_COUNT})");
-        let current = exactly_one_job(current_jobs, &job_name)?;
+        let job_name = &job_names[shard];
+        let current = exactly_one_job(current_jobs, job_name)?;
         assert_job(run, current, attempt)?;
         if text(current, "conclusion")? != "success" {
             return Err(format!("{name} current producing job is not successful"));
@@ -55,7 +75,7 @@ where
         for (snapshot, jobs) in &history {
             for job in jobs
                 .iter()
-                .filter(|job| job.get("name").and_then(Value::as_str) == Some(&job_name))
+                .filter(|job| job.get("name").and_then(Value::as_str) == Some(job_name.as_str()))
             {
                 // Skipped jobs produced no archive. Every completed execution is
                 // retained, including failures that uploaded partial reports.

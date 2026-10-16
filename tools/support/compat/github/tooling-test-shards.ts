@@ -184,8 +184,24 @@ export function toolingShards(plan: ToolingShardPlan) {
 }
 
 export function toolingShardMatrix(plan: ToolingShardPlan) {
-  const total = toolingShards(plan).length;
-  return { include: Array.from({ length: total }, (_, index) => ({ index: index + 1, total })) };
+  const shards = toolingShards(plan);
+  return {
+    include: shards.map(({ files }, index) => {
+      // Name the worker after its costliest actual file. Display labels never
+      // participate in packing or in the numeric coordinates used by workers.
+      const primary = files.toSorted(
+        (left, right) =>
+          estimateToolingTestMs(plan.tier, right) - estimateToolingTestMs(plan.tier, left),
+      )[0];
+      const name = primary
+        ? primary.replace(/^tests\/tooling\//, "").replace(/\.test\.(?:ts|mjs)$/, "") +
+          (files.length > 1 ? ` + ${files.length - 1} files` : "")
+        : plan.leadSteps?.length
+          ? "runtime captures"
+          : "no selected test files";
+      return { index: index + 1, total: shards.length, name };
+    }),
+  };
 }
 
 export function selectToolingShard(plan: ToolingShardPlan, shard: unknown = "") {

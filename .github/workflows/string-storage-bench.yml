@@ -25,6 +25,7 @@ concurrency:
 
 jobs:
   bounded-storage:
+    name: String storage (measurement ${{ matrix.repetition }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     strategy:

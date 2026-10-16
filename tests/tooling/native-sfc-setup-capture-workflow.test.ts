@@ -1,11 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
-import {
-  nativeSetupCaptureRequired,
-  toolingChecksRequired,
-} from "../../tools/support/compat/github/native-setup-capture.mjs";
-import { toolingShardMatrix } from "../../tools/support/compat/github/tooling-test-shards.ts";
+import { nativeSetupCaptureRequired } from "../../tools/support/compat/github/native-setup-capture.mjs";
+import { planNativeRuntime } from "../../tools/support/compat/github/plan-native-runtime.ts";
+import { assertNativeRuntimeHook } from "./support/native-runtime-workflow.ts";
 
 test("actual native setup inputs qualify affected source capture while prose stays fast", () => {
   for (const path of [
@@ -24,8 +22,10 @@ test("actual native setup inputs qualify affected source capture while prose sta
     "tests/tooling/support/native-sfc-setup-reference.ts",
     ".github/actions/test-native-js-setup/action.yml",
     "vendor/oxc_parser/src/lexer/string.rs",
-  ])
+  ]) {
     assert(nativeSetupCaptureRequired([path]), path);
+    assert(planNativeRuntime([path]).matrix.lane.includes("setup"), path);
+  }
   for (const path of [
     "docs/davinci/plan/completion-2026-10-03.md",
     "docs/davinci/decisions/2026-09-27-level-restructure.md",
@@ -38,30 +38,18 @@ test("actual native setup inputs qualify affected source capture while prose sta
   assert.equal(nativeSetupCaptureRequired([]), false);
 });
 
-test("a capture-only source change retains an actual first worker with an empty ordinary selector", () => {
-  const plan = { tier: "pr" as const, tests: [] };
-  assert(toolingChecksRequired(plan, ["davinci/vize_l2/src/lang/js/file/setup.rs"]));
-  assert.deepEqual(toolingShardMatrix(plan), { include: [{ index: 1, total: 1 }] });
-  assert.equal(toolingChecksRequired(plan, ["docs/davinci/plan/completion-2026-10-03.md"]), false);
-  assert(toolingChecksRequired({ tier: "pr", tests: ["tests/tooling/example.test.ts"] }, []));
+test("a capture-only source change selects setup independently of ordinary tooling suites", () => {
+  const plan = planNativeRuntime(["davinci/vize_l2/src/lang/js/file/setup.rs"]);
+  assert(plan.run);
+  assert(plan.matrix.lane.includes("setup"));
+  assert.deepEqual(planNativeRuntime(["docs/davinci/plan/completion-2026-10-03.md"]), {
+    run: false,
+    matrix: { lane: ["none"] },
+  });
 });
 
-test("the existing first-shard hook keeps unconditional protected capture and exact source artifacts", () => {
-  const workflow = fs.readFileSync(
-    new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
-    "utf8",
-  );
-  const step = workflow
-    .split("- name: Test source-bound native JS setup modules and runtime")[1]
-    ?.split("- name:")[0];
-  assert(step);
-  assert.match(step, /matrix\.index == 1/);
-  assert.match(step, /github\.event_name == 'merge_group' \|\|/);
-  assert.match(
-    step,
-    /github\.event_name == 'pull_request' && needs\.pr-source-plan\.outputs\.native-setup-capture == 'true'/,
-  );
-  assert.match(step, /uses: \.\/\.github\/actions\/test-native-js-setup/);
+test("the required setup lane keeps complete capture and exact source artifacts", () => {
+  assertNativeRuntimeHook("setup", "test-native-js-setup");
   const action = fs.readFileSync(
     new URL("../../.github/actions/test-native-js-setup/action.yml", import.meta.url),
     "utf8",
@@ -73,5 +61,5 @@ test("the existing first-shard hook keeps unconditional protected capture and ex
   assert.match(action, /native-sfc-ordinary-empty-reference\.test\.ts/);
   assert.match(action, /native-js-setup-\$\{\{ github\.sha \}\}-\$\{\{ github\.run_attempt \}\}/);
   assert.match(action, /if-no-files-found: error/);
-  assert.doesNotMatch(step, /continue-on-error|hashFiles|existsSync/);
+  assert.doesNotMatch(action, /continue-on-error|hashFiles|existsSync/);
 });

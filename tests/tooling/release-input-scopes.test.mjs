@@ -22,6 +22,7 @@ const deliveredInitContracts = [
 ];
 const installedReportedContracts = ["tests/tooling/release/release-public-vapor.test.ts"];
 const stablePatchContracts = ["tests/tooling/release/release-stable-operator.test.ts"];
+const sharedPublisherContracts = ["tests/tooling/release/release-public-shared-publisher.test.ts"];
 
 const installedHttpsContracts = [
   "tests/tooling/release/release-public-quick-tunnel.test.ts",
@@ -35,87 +36,55 @@ const installedHttpsContracts = [
 ];
 
 void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
-  assert.equal(installedHttpsContracts.length, 8);
-  assert.equal(new Set(installedHttpsContracts).size, 8);
-  assert.ok(installedHttpsContracts.every((file) => unscoped.includes(file)));
-  assert.ok(installedReportedContracts.every((file) => unscoped.includes(file)));
-  assert.equal(stablePatchContracts.length, 1);
-  assert.ok(stablePatchContracts.every((file) => unscoped.includes(file)));
-  assert.equal(
-    releaseFiles.length,
-    38 +
-      3 +
-      1 +
-      installedHttpsContracts.length +
-      installedReportedContracts.length +
-      stablePatchContracts.length,
-  );
-  assert.equal(
-    releaseFiles.filter((file) => file !== configFreeInitContract).length,
-    41 +
-      installedHttpsContracts.length +
-      installedReportedContracts.length +
-      stablePatchContracts.length,
-  );
-  assert.equal(
-    releaseFiles.filter(
-      (file) => file !== configFreeInitContract && !deliveredInitContracts.includes(file),
-    ).length,
-    38 +
-      installedHttpsContracts.length +
-      installedReportedContracts.length +
-      stablePatchContracts.length,
-  );
-  assert.equal(scoped.length, 32);
-  const historicalUnscoped = unscoped.filter(
-    (file) =>
-      file !== configFreeInitContract &&
-      !deliveredInitContracts.includes(file) &&
-      !installedHttpsContracts.includes(file) &&
-      !installedReportedContracts.includes(file) &&
-      !stablePatchContracts.includes(file),
-  );
-  assert.deepEqual(historicalUnscoped, [
+  const historicalUnscoped = [
     "tests/tooling/release/release-guest-locks.test.ts",
     "tests/tooling/release/release-integration-catalog.test.ts",
     "tests/tooling/release/release-preflight-full-js.test.ts",
     "tests/tooling/release/release-public-native-invocation.test.ts",
     "tests/tooling/release/release-smoke-init-fresh.test.ts",
     "tests/tooling/release/release-smoke-init-typecheck.test.ts",
-  ]);
-  const deliveredUnscoped = unscoped.filter(
-    (file) =>
-      file !== configFreeInitContract &&
-      !installedHttpsContracts.includes(file) &&
-      !installedReportedContracts.includes(file) &&
-      !stablePatchContracts.includes(file),
-  );
-  assert.deepEqual(deliveredUnscoped, [
-    "tests/tooling/release/release-guest-locks.test.ts",
-    "tests/tooling/release/release-integration-catalog.test.ts",
-    "tests/tooling/release/release-preflight-full-js.test.ts",
-    "tests/tooling/release/release-public-native-invocation.test.ts",
-    "tests/tooling/release/release-smoke-init-child-outcome.test.ts",
-    "tests/tooling/release/release-smoke-init-fresh.test.ts",
-    "tests/tooling/release/release-smoke-init-js-manager-plans.test.ts",
-    "tests/tooling/release/release-smoke-init-typecheck.test.ts",
-    "tests/tooling/release/release-smoke-init-yarn-checkjs.test.ts",
-  ]);
+  ];
+  const expectedUnscoped = [
+    ...historicalUnscoped,
+    ...deliveredInitContracts,
+    configFreeInitContract,
+    ...installedHttpsContracts,
+    ...installedReportedContracts,
+    ...stablePatchContracts,
+    ...sharedPublisherContracts,
+  ].sort();
+  const inventory = [...scoped, ...expectedUnscoped].sort();
+  assert.equal(new Set(inventory).size, inventory.length, "contracts belong to exactly one scope");
+  assert.deepEqual(unscoped, expectedUnscoped, "unreviewed contracts retain broad inputs");
   assert.deepEqual(
-    unscoped,
-    [
-      ...deliveredUnscoped,
-      configFreeInitContract,
-      ...installedHttpsContracts,
-      ...installedReportedContracts,
-      ...stablePatchContracts,
-    ].sort(),
+    releaseFiles,
+    inventory,
+    "every release contract has an explicit inventory entry",
   );
-  for (const file of scoped) {
+  for (const file of [...scoped, ...sharedPublisherContracts]) {
     assert.ok(releaseFiles.includes(file), `${file} must exist`);
     assert.equal(localImportInputs(file).complete, true, `${file} import closure`);
   }
   assert.deepEqual(selected("davinci/vize_l1/src/parser.rs"), unscoped);
+});
+
+void test("shared publisher authority and fixtures keep their complete release contract", () => {
+  const [contract] = sharedPublisherContracts;
+  const imports = localImportInputs(contract);
+  assert.equal(imports.complete, true);
+  for (const input of [
+    "tools/support/release/public_acceptance/plan.ts",
+    "tests/tooling/support/release-public-acceptance-fixtures.ts",
+    "tests/tooling/support/github-workflows.ts",
+  ]) {
+    assert.ok(imports.files.includes(input), `${contract}: ${input}`);
+  }
+  for (const input of [
+    ".github/actions/publish-release-package/action.yml",
+    "tests/tooling/support/release-public-acceptance-fixtures.ts",
+  ]) {
+    assert.ok(selected(input).includes(contract), input);
+  }
 });
 
 void test("installed VRT observer inputs select both complete audited contracts", () => {

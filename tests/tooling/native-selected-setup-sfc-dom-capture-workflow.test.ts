@@ -1,11 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
-import {
-  nativeSetupCaptureRequired,
-  toolingChecksRequired,
-} from "../../tools/support/compat/github/native-setup-capture.mjs";
-import { toolingShardMatrix } from "../../tools/support/compat/github/tooling-test-shards.ts";
+import { parse } from "yaml";
+import { nativeSetupCaptureRequired } from "../../tools/support/compat/github/native-setup-capture.mjs";
+import { planNativeRuntime } from "../../tools/support/compat/github/plan-native-runtime.ts";
+import { planPrChecks, prCheckOutputs } from "../../tools/support/compat/github/plan-pr-checks.ts";
 
 test("actual selected setup consumers require source-built whole-module runtime acceptance", () => {
   for (const path of [
@@ -89,8 +88,7 @@ test("actual selected setup consumers require source-built whole-module runtime 
   assert.doesNotMatch(action, /continue-on-error|hashFiles|existsSync|--test-name-pattern/);
 });
 
-test("individual For resolver, DOM collector and writer changes keep mandatory first-worker capture", () => {
-  const plan = { tier: "pr" as const, tests: [] };
+test("individual For resolver, DOM collector and writer changes keep mandatory affected runtime capture", () => {
   for (const path of [
     "davinci/vize_l2/src/resolution.rs",
     "davinci/vize_l2/src/resolution/walk/for_head.rs",
@@ -112,8 +110,9 @@ test("individual For resolver, DOM collector and writer changes keep mandatory f
     "davinci/vize_l4/src/expr/vue.rs",
   ]) {
     assert(nativeSetupCaptureRequired([path]), path);
-    assert(toolingChecksRequired(plan, [path]), path);
-    assert.deepEqual(toolingShardMatrix(plan), { include: [{ index: 1, total: 1 }] });
+    const plan = planNativeRuntime([path]);
+    assert(plan.run, path);
+    assert(plan.matrix.lane.includes("setup"), path);
   }
   for (const path of [
     "davinci/vize_l2/src/resolution_unrelated.rs",
@@ -127,27 +126,80 @@ test("individual For resolver, DOM collector and writer changes keep mandatory f
     "docs/davinci/decisions/2026-10-04-original-for-primitive-dom-proposal.md",
   ]) {
     assert.equal(nativeSetupCaptureRequired([path]), false, path);
-    assert.equal(toolingChecksRequired(plan, [path]), false, path);
   }
-  const planner = fs.readFileSync(
-    new URL("../../tools/support/compat/github/plan-tooling-tests.mjs", import.meta.url),
-    "utf8",
+});
+
+test("the PR planner requires the setup lane and its chained selected-SFC capture without full-ci", () => {
+  // The baseline crate cannot select native captures: this oracle change must
+  // reach the setup lane through the actual affected-runtime planner.
+  const cargoMetadata = {
+    workspace_root: "/repo",
+    workspace_members: ["vize_relief"],
+    packages: [
+      {
+        id: "vize_relief",
+        name: "vize_relief",
+        manifest_path: "/repo/crates/vize_relief/Cargo.toml",
+        dependencies: [],
+      },
+    ],
+  };
+  for (const eventName of ["pull_request", "merge_group"]) {
+    const plan = planPrChecks({
+      paths: ["tests/tooling/native-original-for-value-sfc-dom-reference.test.ts"],
+      eventName,
+      labels: [],
+      workspace: [],
+      cargoMetadata,
+    });
+    const outputs = prCheckOutputs(plan);
+    assert(plan.native.run, eventName);
+    assert.deepEqual(JSON.parse(outputs["native-runtime-matrix"]), {
+      lane: ["setup", "selected-template"],
+    });
+    if (eventName === "pull_request") assert.equal(outputs.heavy, "false");
+  }
+  const workflow = parse(
+    fs.readFileSync(
+      new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
+      "utf8",
+    ),
   );
-  assert(planner.includes("native-setup-capture=${nativeSetupCaptureRequired(paths)}"));
-  const workflow = fs.readFileSync(
-    new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
-    "utf8",
+  const planner = workflow.jobs["pr-source-plan"];
+  assert.equal(
+    planner.outputs["native-runtime-matrix"],
+    "${{ steps.plan.outputs.native-runtime-matrix }}",
   );
-  const step = workflow
-    .split("- name: Test source-bound native JS setup modules and runtime")[1]
-    ?.split("- name:")[0];
-  assert(step);
-  assert.match(step, /matrix\.index == 1/);
-  assert.match(step, /native-setup-capture == 'true'/);
-  assert.match(step, /uses: \.\/\.github\/actions\/test-native-js-setup/);
-  const enclosingAction = fs.readFileSync(
-    new URL("../../.github/actions/test-native-js-setup/action.yml", import.meta.url),
-    "utf8",
+  const planStep = planner.steps.find((step: { id?: string }) => step.id === "plan");
+  assert.equal(
+    planStep.run,
+    'node tools/support/compat/github/plan-pr-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"',
   );
-  assert.match(enclosingAction, /uses: \.\/\.github\/actions\/test-native-selected-sfc-dom/);
+  const runtime = workflow.jobs["pr-native-runtime"];
+  assert.equal(runtime.needs, "pr-source-plan");
+  assert.equal(runtime.if, undefined);
+  assert.equal(runtime["continue-on-error"], undefined);
+  assert.equal(
+    runtime.strategy.matrix,
+    "${{ fromJSON(needs.pr-source-plan.outputs.native-runtime-matrix) }}",
+  );
+  const hooks = runtime.steps.filter(
+    (step: { uses?: string }) => step.uses === "./.github/actions/test-native-js-setup",
+  );
+  assert.equal(hooks.length, 1);
+  assert.equal(hooks[0].if, "${{ matrix.lane == 'setup' }}");
+  assert.equal(hooks[0]["continue-on-error"], undefined);
+  assert(workflow.jobs["source-report"].needs.includes("pr-native-runtime"));
+  const enclosingAction = parse(
+    fs.readFileSync(
+      new URL("../../.github/actions/test-native-js-setup/action.yml", import.meta.url),
+      "utf8",
+    ),
+  );
+  const captures = enclosingAction.runs.steps.filter(
+    (step: { uses?: string }) => step.uses === "./.github/actions/test-native-selected-sfc-dom",
+  );
+  assert.equal(captures.length, 1);
+  assert.equal(captures[0].if, undefined);
+  assert.equal(captures[0]["continue-on-error"], undefined);
 });

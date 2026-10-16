@@ -258,6 +258,7 @@ jobs:
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/full-tooling-plan.yml
   test-scripts:
+    name: Tooling (${{ matrix.name }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }} # Preserve native evidence when the producer fails.
     timeout-minutes: 30

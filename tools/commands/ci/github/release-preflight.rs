@@ -14,10 +14,13 @@
 
 #[path = "../../../support/common.rs"]
 mod common;
+#[path = "../../../support/release/preflight_job_evidence.rs"]
+mod job_evidence;
 #[path = "../../../support/release/preflight_matrix_evidence.rs"]
 mod matrix_evidence;
 #[path = "../../../support/release/preflight_matrix_selection.rs"]
 mod matrix_selection;
+use job_evidence::*;
 #[cfg(test)]
 #[path = "../../../support/release/preflight_matrix_selection_tests.rs"]
 mod matrix_selection_tests;
@@ -206,7 +209,7 @@ fn verify_release_preflight(bootstrap: bool) -> Result<(), String> {
             &format!("actions/runs/{run_id}/jobs"),
             None,
         )?;
-        assert_required_workflow_jobs(workflow_name, &jobs)?;
+        assert_required_workflow_jobs(workflow_name, &jobs, run)?;
         if *workflow_name == matrix_evidence::REAL_PROJECT_MATRIX_WORKFLOW_NAME {
             current_matrix_jobs = Some(jobs);
         }
@@ -225,6 +228,7 @@ fn verify_release_preflight(bootstrap: bool) -> Result<(), String> {
         )?;
         let selection = matrix_selection::select_current_matrix_artifacts(
             run,
+            &repo_root()?,
             &artifacts,
             current_matrix_jobs
                 .as_deref()
@@ -672,7 +676,7 @@ fn collect_required_workflow_failure_details(
             FAILURE_DETAIL_GITHUB_TIMEOUTS,
         )
         .ok()
-        .and_then(|jobs| summarize_required_workflow_job_failures(workflow_name, &jobs));
+        .and_then(|jobs| summarize_required_workflow_job_failures(workflow_name, &jobs, run));
         if let Some(detail) = detail {
             details.insert((*workflow_name).to_string(), detail);
         }
@@ -702,7 +706,7 @@ fn required_workflow_has_terminal_failed_job(
         FAILURE_DETAIL_GITHUB_TIMEOUTS,
     )
     .ok()
-    .is_some_and(|jobs| required_jobs_contain_terminal_failure(workflow_name, &jobs))
+    .is_some_and(|jobs| required_jobs_contain_terminal_failure(workflow_name, &jobs, run))
 }
 
 fn latest_required_workflow_run<'a>(
@@ -840,151 +844,6 @@ fn workflow_requires_job_evidence(workflow_name: &str) -> bool {
         workflow_name,
         "Check" | "Benchmark" | "Fuzz" | "Real Project Matrix"
     )
-}
-
-fn required_workflow_job_names(workflow_name: &str) -> Vec<String> {
-    match workflow_name {
-        "Check" => [
-            "test-scripts",
-            "test-js-packages",
-            "build-js-packages",
-            "full-js-report",
-        ]
-        .into_iter()
-        .map(str::to_string)
-        .chain(
-            REQUIRED_SEMVER_CRATES
-                .iter()
-                .map(|crate_name| format!("cargo-semver-checks ({crate_name})")),
-        )
-        .collect(),
-        "Benchmark" => vec!["pr-benchmark-budget".to_string()],
-        "Fuzz" => vec![
-            "Fuzz sfc_parse".to_string(),
-            "Fuzz template_lexer".to_string(),
-            "Fuzz js_ts_expression".to_string(),
-            "Fuzz css_parse".to_string(),
-            "Fuzz template_compile".to_string(),
-        ],
-        "Real Project Matrix" => (0..matrix_evidence::REQUIRED_REAL_PROJECT_MATRIX_SHARD_COUNT)
-            .map(|shard| {
-                format!(
-                    "real projects ({shard}/{})",
-                    matrix_evidence::REQUIRED_REAL_PROJECT_MATRIX_SHARD_COUNT
-                )
-            })
-            .collect(),
-        _ => Vec::new(),
-    }
-}
-
-fn assert_required_workflow_jobs(
-    workflow_name: &str,
-    jobs_response: &[Value],
-) -> Result<(), String> {
-    let job_names = required_workflow_job_names(workflow_name);
-    let mut jobs = flatten_collection(jobs_response, "jobs");
-    if jobs.is_empty() && jobs_response.iter().all(Value::is_object) {
-        jobs.extend(jobs_response);
-    }
-    for name in job_names {
-        let matching = jobs
-            .iter()
-            .filter(|job| job.get("name").and_then(Value::as_str) == Some(name.as_str()))
-            .collect::<Vec<_>>();
-        if matching.len() != 1 {
-            return Err(format!(
-                "{workflow_name} must contain exactly one successful {name} job; found {}",
-                matching.len()
-            ));
-        }
-        let job = matching[0];
-        if job.get("status").and_then(Value::as_str) != Some("completed")
-            || job.get("conclusion").and_then(Value::as_str) != Some("success")
-        {
-            return Err(format!(
-                "{workflow_name} required job {} is {}/{}",
-                name,
-                job.get("status")
-                    .and_then(Value::as_str)
-                    .unwrap_or("unknown"),
-                job.get("conclusion")
-                    .and_then(Value::as_str)
-                    .unwrap_or("no conclusion")
-            ));
-        }
-    }
-    Ok(())
-}
-
-fn summarize_required_workflow_job_failures(
-    workflow_name: &str,
-    jobs_response: &[Value],
-) -> Option<String> {
-    let job_names = required_workflow_job_names(workflow_name);
-    if job_names.is_empty() {
-        return None;
-    }
-    let mut jobs = flatten_collection(jobs_response, "jobs");
-    if jobs.is_empty() && jobs_response.iter().all(Value::is_object) {
-        jobs.extend(jobs_response);
-    }
-    let mut failures = Vec::new();
-    for name in job_names {
-        let matching = jobs
-            .iter()
-            .filter(|job| job.get("name").and_then(Value::as_str) == Some(name.as_str()))
-            .collect::<Vec<_>>();
-        match matching.as_slice() {
-            [] => failures.push(format!("{name}=missing")),
-            [job] => {
-                let status = job
-                    .get("status")
-                    .and_then(Value::as_str)
-                    .unwrap_or("unknown");
-                let conclusion = job
-                    .get("conclusion")
-                    .and_then(Value::as_str)
-                    .unwrap_or("no conclusion");
-                if status != "completed" || conclusion != "success" {
-                    failures.push(format!("{name}={status}/{conclusion}"));
-                }
-            }
-            _ => failures.push(format!("{name}=duplicate({})", matching.len())),
-        }
-    }
-    if failures.is_empty() {
-        return None;
-    }
-    const MAX_REPORTED_JOBS: usize = 8;
-    let omitted = failures.len().saturating_sub(MAX_REPORTED_JOBS);
-    let mut reported = failures
-        .into_iter()
-        .take(MAX_REPORTED_JOBS)
-        .collect::<Vec<_>>();
-    if omitted > 0 {
-        reported.push(format!("and {omitted} more"));
-    }
-    Some(format!("required jobs: {}", reported.join(", ")))
-}
-
-fn required_jobs_contain_terminal_failure(workflow_name: &str, jobs_response: &[Value]) -> bool {
-    let job_names = required_workflow_job_names(workflow_name);
-    if job_names.is_empty() {
-        return false;
-    }
-    let mut jobs = flatten_collection(jobs_response, "jobs");
-    if jobs.is_empty() && jobs_response.iter().all(Value::is_object) {
-        jobs.extend(jobs_response);
-    }
-    job_names.into_iter().any(|name| {
-        jobs.iter()
-            .filter(|job| job.get("name").and_then(Value::as_str) == Some(name.as_str()))
-            .any(|job| {
-                job.get("status").and_then(Value::as_str) == Some("completed")
-                    && job.get("conclusion").and_then(Value::as_str) != Some("success")
-            })
-    })
 }
 
 fn find_release_blockers(issues: &[Value], tag: Option<&str>) -> Result<Vec<Value>, String> {

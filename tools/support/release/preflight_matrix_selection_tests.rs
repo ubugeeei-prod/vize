@@ -1,5 +1,8 @@
-use super::matrix_selection::{MatrixArtifactSelection, select_current_matrix_artifacts};
+use super::matrix_selection::{
+    MatrixArtifactSelection, matrix_job_names, select_current_matrix_artifacts,
+};
 use serde_json::{Value, json};
+use std::process::Command;
 
 struct Retry {
     run: Value,
@@ -9,16 +12,24 @@ struct Retry {
 }
 
 fn retry() -> Retry {
+    let output = Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .current_dir(super::repo_root().unwrap())
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    let sha = String::from_utf8(output.stdout).unwrap().trim().to_string();
     let run = json!({
-        "id": 900, "run_attempt": 2, "head_sha": "a".repeat(40),
+        "id": 900, "run_attempt": 2, "head_sha": sha,
         "head_branch": "release/v0.435.1", "path": ".github/workflows/real-project-matrix.yml",
         "status": "completed", "conclusion": "success",
         "created_at": "2026-10-08T00:00:00Z", "run_started_at": "2026-10-08T00:10:00Z",
         "updated_at": "2026-10-08T00:20:00Z"
     });
+    let names = matrix_job_names(&run, &super::repo_root().unwrap()).unwrap();
     let previous = (0..22).map(|shard| json!({
-        "id": 1_000 + shard, "name": format!("real projects ({shard}/22)"),
-        "run_id": 900, "run_attempt": 1, "head_sha": "a".repeat(40), "status": "completed",
+        "id": 1_000 + shard, "name": names[shard],
+        "run_id": 900, "run_attempt": 1, "head_sha": sha, "status": "completed",
         "conclusion": if shard == 19 { "failure" } else { "success" },
         "started_at": "2026-10-08T00:00:01Z",
         "completed_at": if shard == 19 { "2026-10-08T00:00:20Z" } else { "2026-10-08T00:00:10Z" }
@@ -42,7 +53,7 @@ fn retry() -> Retry {
         "id": if shard == 19 { 9_999 } else { 3_000 + shard },
         "name": format!("real-project-matrix-{shard}"), "expired": false,
         "created_at": if shard == 19 { "2026-10-08T00:00:15Z" } else { "2026-10-08T00:00:05Z" },
-        "workflow_run": { "id": 900, "head_sha": "a".repeat(40), "head_branch": "release/v0.435.1" }
+        "workflow_run": { "id": 900, "head_sha": sha, "head_branch": "release/v0.435.1" }
     })).collect::<Vec<_>>();
     let mut successful = artifacts[19].clone();
     successful["id"] = json!(3_019);
@@ -59,6 +70,7 @@ fn retry() -> Retry {
 fn select(fixture: &Retry) -> Result<MatrixArtifactSelection, String> {
     select_current_matrix_artifacts(
         &fixture.run,
+        &super::repo_root().unwrap(),
         &fixture.artifacts,
         &fixture.current,
         |attempt| {

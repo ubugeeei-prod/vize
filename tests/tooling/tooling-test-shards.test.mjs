@@ -146,6 +146,20 @@ void test("real merge shards retain every discovered test, including all deferre
   const input = { ...planToolingTests(["Cargo.toml"], { tier: "merge" }), leadSteps: allLeadSteps };
   const shards = toolingShardMatrix(input).include;
   assert.ok(shards.length > 4 && shards.length <= MAX_TOOLING_SHARDS);
+  assert.equal(new Set(shards.map(({ name }) => name)).size, shards.length);
+  for (const { name, index, total } of shards) {
+    const selected = selectToolingShard(input, `${index}/${total}`);
+    if (selected.length === 0) {
+      assert.equal(name, "runtime captures");
+    } else {
+      assert.ok(
+        selected.some((file) =>
+          name.startsWith(file.replace(/^tests\/tooling\//, "").replace(/\.test\.(?:ts|mjs)$/, "")),
+        ),
+        `worker label must identify one of its actual test files: ${name}`,
+      );
+    }
+  }
   const selected = shards.flatMap(({ index, total }) =>
     toolingTestCommand(input, files, `${index}/${total}`).slice(2),
   );

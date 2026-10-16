@@ -12,12 +12,16 @@ import {
   toolingShardMatrix,
 } from "../../tools/support/compat/github/tooling-test-shards.ts";
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
+import {
+  assertRequiredWorkflowJobs,
+  requiredWorkflowJobNames,
+} from "../../tools/support/compat/github/release-preflight-evidence.mjs";
 
 const root = new URL("../../", import.meta.url);
 const read = (file) => readFileSync(new URL(file, root), "utf8");
 const yaml = (file) => parse(read(file));
 const fullCondition =
-  "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}";
+  "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}";
 const alwaysFullCondition = fullCondition
   .replace("${{ ", "${{ always() && (")
   .replace(" }}", ") }}");
@@ -50,7 +54,7 @@ void test("the planned matrix partitions the complete inventory and refuses any 
   const total = include.length;
   assert.ok(total > 1 && total <= MAX_TOOLING_SHARDS);
   assert.deepEqual(
-    include,
+    include.map(({ index, total }) => ({ index, total })),
     Array.from({ length: total }, (_, index) => ({ index: index + 1, total })),
   );
   const union = include.flatMap(({ index }) =>
@@ -63,10 +67,23 @@ void test("the planned matrix partitions the complete inventory and refuses any 
 
 void test("release evidence keeps exactly one test-scripts job that requires every planned worker", () => {
   const jobs = yaml(".github/workflows/check.yml").jobs;
-  // Release preflight accepts exactly one successful job with this display name.
-  assert.match(
-    read("tools/commands/ci/github/release-preflight.rs"),
-    /"Check" => \[\s*"test-scripts",/,
+  const completed = (name) => ({ name, status: "completed", conclusion: "success" });
+  const workerNames = toolingShardMatrix(planToolingTests([], { tier: "merge" })).include.map(
+    ({ name }) => `Tooling (${name})`,
+  );
+  const evidence = [...requiredWorkflowJobNames("Check"), ...workerNames].map(completed);
+  assert.doesNotThrow(() => assertRequiredWorkflowJobs("Check", evidence));
+  assert.throws(
+    () =>
+      assertRequiredWorkflowJobs(
+        "Check",
+        evidence.filter(({ name }) => name !== "test-scripts"),
+      ),
+    /exactly one successful test-scripts job; found 0/,
+  );
+  assert.throws(
+    () => assertRequiredWorkflowJobs("Check", [...evidence, completed("test-scripts")]),
+    /exactly one successful test-scripts job; found 2/,
   );
   const named = Object.entries(jobs).filter(
     ([id, job]) => (job.name ?? id) === "test-scripts" && job.strategy === undefined,
@@ -80,6 +97,7 @@ void test("release evidence keeps exactly one test-scripts job that requires eve
     undefined,
     "matrix workers report per-shard names",
   );
+  assert.equal(jobs["test-scripts"].name, "Tooling (${{ matrix.name }})");
   const gate = jobs["test-scripts-gate"];
   assert.equal(gate.if, alwaysFullCondition);
   assert.equal(gate["timeout-minutes"], 5);

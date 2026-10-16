@@ -410,7 +410,7 @@ export async function verifyReleasePreflight(
           resource: `actions/runs/${run.id}/jobs`,
           collection: "jobs",
         });
-        assertRequiredWorkflowJobs(workflowName, jobs);
+        assertRequiredWorkflowJobs(workflowName, jobs, run);
         if (workflowName === "Real Project Matrix") currentMatrixJobs = jobs;
       }),
   ]);

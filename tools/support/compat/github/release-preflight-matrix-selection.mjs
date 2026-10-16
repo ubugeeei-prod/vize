@@ -1,5 +1,6 @@
 import { githubApiPages } from "./release-preflight-github.mjs";
 import { requiredRealProjectMatrixShardCount } from "./release-preflight-matrix-evidence.mjs";
+import { realProjectJobNamesAtRevision } from "./real-project-matrix-plan.ts";
 
 export async function currentMatrixArtifacts({ run, currentJobs, api }) {
   const artifacts = await githubApiPages({
@@ -27,6 +28,7 @@ export async function selectCurrentMatrixArtifacts({
   artifacts,
   currentJobs,
   readPreviousJobs,
+  repoRoot,
 }) {
   const attempt = positiveInteger(run, "run_attempt");
   positiveInteger(run, "id");
@@ -40,6 +42,7 @@ export async function selectCurrentMatrixArtifacts({
   ) {
     throw new Error("Real Project Matrix selection requires a successful selected run");
   }
+  const jobNames = realProjectJobNamesAtRevision(run.head_sha, repoRoot);
   const history = [];
   for (let previous = 1; previous < attempt; previous++) {
     history.push([previous, await readPreviousJobs(previous)]);
@@ -48,7 +51,7 @@ export async function selectCurrentMatrixArtifacts({
   const selected = { artifacts: [], provenance: [] };
   for (let shard = 0; shard < requiredRealProjectMatrixShardCount; shard++) {
     const name = `real-project-matrix-${shard}`;
-    const jobName = `real projects (${shard}/${requiredRealProjectMatrixShardCount})`;
+    const jobName = jobNames[shard];
     const current = exactlyOneJob(currentJobs, jobName);
     assertJob(run, current, attempt);
     if (text(current, "conclusion") !== "success") {

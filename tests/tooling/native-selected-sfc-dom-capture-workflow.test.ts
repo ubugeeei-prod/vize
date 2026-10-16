@@ -1,11 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
-import {
-  nativeSetupCaptureRequired,
-  toolingChecksRequired,
-} from "../../tools/support/compat/github/native-setup-capture.mjs";
-import { toolingShardMatrix } from "../../tools/support/compat/github/tooling-test-shards.ts";
+import { nativeSetupCaptureRequired } from "../../tools/support/compat/github/native-setup-capture.mjs";
+import { planNativeRuntime } from "../../tools/support/compat/github/plan-native-runtime.ts";
+import { assertNativeRuntimeHook } from "./support/native-runtime-workflow.ts";
 
 const read = (path: string) => fs.readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 
@@ -28,8 +26,10 @@ test("only actual selected SFC product and acceptance inputs add the source capt
     "crates/vize_atelier_sfc/tests/fixtures/native-selected-static-class-vue-3.5.35.json",
     "tests/tooling/native-selected-static-class-reference.test.ts",
     "tests/tooling/support/native-static-class-primary.ts",
-  ])
+  ]) {
     assert(nativeSetupCaptureRequired([path]), path);
+    assert(planNativeRuntime([path]).matrix.lane.includes("setup"), path);
+  }
   for (const path of [
     "docs/davinci/decisions/2026-10-04-native-selected-sfc-dom.md",
     "crates/vize_atelier_sfc/src/native_selected_unrelated.rs",
@@ -39,25 +39,10 @@ test("only actual selected SFC product and acceptance inputs add the source capt
     ".github/actions/other-native-selected/action.yml",
   ])
     assert.equal(nativeSetupCaptureRequired([path]), false, path);
-  const plan = { tier: "pr" as const, tests: [] };
-  assert(toolingChecksRequired(plan, ["crates/vize_atelier_sfc/src/native_selected.rs"]));
-  assert.deepEqual(toolingShardMatrix(plan), { include: [{ index: 1, total: 1 }] });
 });
 
-test("the bounded first-worker hook captures whole selected SFCs before selected tooling runs", () => {
-  const workflow = read(".github/workflows/pr-source-checks.yml");
-  assert(workflow.trimEnd().split("\n").length <= 500);
-  const build = workflow.indexOf("- name: Restore and install source-built vize CLI");
-  const prep = workflow.indexOf("- name: Prepare the pinned plugin isolation runtime");
-  const hook = workflow.indexOf("- name: Test source-bound native JS setup modules and runtime");
-  const tooling = workflow.indexOf("- name: Test selected PR tooling scripts");
-  assert(build >= 0 && build < prep && prep < hook && hook < tooling);
-  const step = workflow.slice(hook).split("- name:")[1];
-  assert.match(step, /matrix\.index == 1/);
-  assert.match(step, /github\.event_name == 'merge_group' \|\|/);
-  assert.match(step, /native-setup-capture == 'true'/);
-  assert.match(step, /uses: \.\/\.github\/actions\/test-native-js-setup/);
-  assert.doesNotMatch(step, /continue-on-error|hashFiles|existsSync/);
+test("the required setup lane captures whole selected SFCs after native setup modules", () => {
+  assertNativeRuntimeHook("setup", "test-native-js-setup");
   const setup = read(".github/actions/test-native-js-setup/action.yml");
   const upload = setup.indexOf("- name: Upload native JS setup module and runtime captures");
   const selected = setup.indexOf(

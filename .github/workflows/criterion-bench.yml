@@ -214,7 +214,7 @@ jobs:
             --threshold "$DIALECT_GUARD_THRESHOLD_PERCENT"
   production-pairs:
     if: ${{ inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only }}
-    name: production-pairs (${{ matrix.repetition }})
+    name: Production pairs (measurement ${{ matrix.repetition }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     permissions:
@@ -318,6 +318,7 @@ jobs:
           retention-days: 30
   sfc-parse-replay:
     if: ${{ inputs.historical_sfc_parse && !inputs.level_memory_only }}
+    name: SFC parse replay (measurement ${{ matrix.repetition }})
     strategy:
       fail-fast: false
       matrix: { repetition: [1, 2, 3] }

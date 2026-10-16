@@ -12,6 +12,7 @@ import {
 } from "../../../tools/support/compat/github/release-preflight-evidence.mjs";
 import { requiredRealProjectMatrixShardCount } from "../../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
 import { readRepoFile } from "../support/github-workflows.ts";
+import { matrixSourceFixture } from "../support/real-project-matrix-source.ts";
 import {
   releaseSha,
   successfulReleaseJob,
@@ -185,17 +186,25 @@ test("matrix-sensitive release gates require every successful job", () => {
     /Native host smoke \(linux-x64-gnu\)/,
   );
 
+  const source = matrixSourceFixture();
+  const assertMatrixJobs = (jobs: ReturnType<typeof successfulReleaseJob>[]) =>
+    assertRequiredWorkflowJobs(
+      "Real Project Matrix",
+      jobs,
+      { head_sha: source.legacySha },
+      source.repoRoot,
+    );
   const realProjectJobs = Array.from({ length: requiredRealProjectMatrixShardCount }, (_, shard) =>
     successfulReleaseJob(`real projects (${shard}/${requiredRealProjectMatrixShardCount})`),
   );
-  assert.doesNotThrow(() => assertRequiredWorkflowJobs("Real Project Matrix", realProjectJobs));
+  assert.doesNotThrow(() => assertMatrixJobs(realProjectJobs));
   assert.throws(
-    () => assertRequiredWorkflowJobs("Real Project Matrix", realProjectJobs.slice(1)),
+    () => assertMatrixJobs(realProjectJobs.slice(1)),
     new RegExp(`real projects \\(0\\/${requiredRealProjectMatrixShardCount}\\)`),
   );
   assert.throws(
     () =>
-      assertRequiredWorkflowJobs("Real Project Matrix", [
+      assertMatrixJobs([
         ...realProjectJobs,
         successfulReleaseJob(`real projects (0/${requiredRealProjectMatrixShardCount})`),
       ]),
@@ -203,7 +212,7 @@ test("matrix-sensitive release gates require every successful job", () => {
   );
   assert.throws(
     () =>
-      assertRequiredWorkflowJobs("Real Project Matrix", [
+      assertMatrixJobs([
         { ...realProjectJobs[0], conclusion: "failure" },
         ...realProjectJobs.slice(1),
       ]),

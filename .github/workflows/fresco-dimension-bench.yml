@@ -22,7 +22,7 @@ env:
 
 jobs:
   dimensions:
-    name: Fresco dimension parity and layout (${{ matrix.replica }})
+    name: Fresco dimension parity and layout (measurement ${{ matrix.replica }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     strategy:

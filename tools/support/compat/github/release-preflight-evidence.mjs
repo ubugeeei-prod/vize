@@ -1,4 +1,4 @@
-import { requiredRealProjectMatrixShardCount } from "./release-preflight-matrix-evidence.mjs";
+import { realProjectJobNamesAtRevision } from "./real-project-matrix-plan.ts";
 
 /**
  * Check is the release gate. Fuzz, Miri, Real Project Matrix, and Docs build
@@ -108,16 +108,12 @@ const requiredJobNames = new Map([
       ),
     ],
   ],
-  [
-    "Real Project Matrix",
-    Array.from(
-      { length: requiredRealProjectMatrixShardCount },
-      (_, shard) => `real projects (${shard}/${requiredRealProjectMatrixShardCount})`,
-    ),
-  ],
 ]);
 
-export function requiredWorkflowJobNames(workflowName) {
+export function requiredWorkflowJobNames(workflowName, run, repoRoot) {
+  if (workflowName === "Real Project Matrix") {
+    return realProjectJobNamesAtRevision(run?.head_sha, repoRoot);
+  }
   return requiredJobNames.get(workflowName) ?? [];
 }
 
@@ -211,12 +207,12 @@ function formatJobFailureSummary(summary) {
 }
 
 export function workflowRequiresJobEvidence(workflowName) {
-  return requiredJobNames.has(workflowName);
+  return workflowName === "Real Project Matrix" || requiredJobNames.has(workflowName);
 }
 
-export function summarizeRequiredWorkflowJobFailures(workflowName, jobs) {
+export function summarizeRequiredWorkflowJobFailures(workflowName, jobs, run, repoRoot) {
   const failures = [];
-  for (const jobName of requiredJobNames.get(workflowName) ?? []) {
+  for (const jobName of requiredWorkflowJobNames(workflowName, run, repoRoot)) {
     const matching = jobs.filter((job) => job.name === jobName);
     if (matching.length === 0) {
       failures.push(`${jobName}=missing`);
@@ -239,8 +235,8 @@ export function summarizeRequiredWorkflowJobFailures(workflowName, jobs) {
   return `required jobs: ${reported.join(", ")}`;
 }
 
-export function assertRequiredWorkflowJobs(workflowName, jobs) {
-  for (const jobName of requiredJobNames.get(workflowName) ?? []) {
+export function assertRequiredWorkflowJobs(workflowName, jobs, run, repoRoot) {
+  for (const jobName of requiredWorkflowJobNames(workflowName, run, repoRoot)) {
     const matching = jobs.filter((job) => job.name === jobName);
     if (matching.length !== 1) {
       throw new Error(

@@ -18,6 +18,19 @@ const prefix =
 test("passive native LSP capture retains the complete original Matrix workflow", () => {
   const original = parse(originalBytes);
   const current = parse(read("../../.github/workflows/real-project-matrix.yml"));
+  // Descriptive labels preserve the numeric fixture, cache and artifact routing.
+  const matrixJob = current.jobs["real-project-matrix"];
+  assert.equal(matrixJob.name, "real projects (${{ matrix.name }})");
+  assert.equal(matrixJob.needs, "plan-projects");
+  assert.equal(matrixJob.strategy.matrix, "${{ fromJSON(needs.plan-projects.outputs.matrix) }}");
+  assert.equal(
+    current.jobs["plan-projects"].outputs.matrix,
+    "${{ steps.projects.outputs.matrix }}",
+  );
+  delete current.jobs["plan-projects"];
+  delete matrixJob.needs;
+  matrixJob.name = original.jobs["real-project-matrix"].name;
+  matrixJob.strategy.matrix = original.jobs["real-project-matrix"].strategy.matrix;
   const steps = current.jobs["real-project-matrix"].steps;
   const oldSteps = original.jobs["real-project-matrix"].steps;
   const lsp = steps.find((step) => step.id === "lsp");
@@ -75,7 +88,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     checks: "read",
   });
   corpus.permissions = original.jobs["davinci-dom-corpus"].permissions;
-  // The release-gated title is the only other change: it names the exact
+  // The release-gated title also names the exact
   // release dispatch beside the original enforced and observational titles.
   assert.match(
     original["run-name"],

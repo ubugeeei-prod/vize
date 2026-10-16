@@ -12,11 +12,6 @@ import {
 test("real-project workflow schedules every balanced fixture shard", () => {
   const workflow = readRealProjectMatrixWorkflow();
   const job = workflow.jobs?.["real-project-matrix"];
-  const expectedShards = Array.from(
-    { length: requiredRealProjectMatrixShardCount },
-    (_, shard) => shard,
-  );
-
   assert.ok(job);
   assert.deepEqual(workflow.permissions, { contents: "read", issues: "read" });
   assert.equal(workflow.on?.schedule?.[0]?.cron, "37 5 * * 0");
@@ -85,13 +80,17 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   });
   assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   assert.equal(job["timeout-minutes"], 120);
-  assert.equal(
-    job.name,
-    `real projects (\${{ matrix.shard }}/${requiredRealProjectMatrixShardCount})`,
-  );
+  assert.equal(job.name, "real projects (${{ matrix.name }})");
+  assert.equal(job.needs, "plan-projects");
   assert.equal(job.strategy?.["fail-fast"], false);
   assert.equal(job.strategy?.["max-parallel"], 6);
-  assert.deepEqual(job.strategy?.matrix?.shard, expectedShards);
+  assert.equal(job.strategy?.matrix, "${{ fromJSON(needs.plan-projects.outputs.matrix) }}");
+  const planner = workflow.jobs?.["plan-projects"];
+  assert.equal(planner?.outputs?.matrix, "${{ steps.projects.outputs.matrix }}");
+  assert.equal(
+    findStep(planner?.steps ?? [], "Name every project in its fixture partition").run,
+    "node tools/support/compat/github/real-project-matrix-plan.ts matrix",
+  );
   assert.deepEqual(job.env, {
     FIXTURE_SHARD_COUNT: String(requiredRealProjectMatrixShardCount),
     FIXTURE_SHARD_INDEX: "${{ matrix.shard }}",

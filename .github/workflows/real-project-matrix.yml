@@ -89,8 +89,24 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  plan-projects:
+    name: select ecosystem projects
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 3
+    outputs:
+      matrix: ${{ steps.projects.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false, ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Name every project in its fixture partition
+        id: projects
+        run: node tools/support/compat/github/real-project-matrix-plan.ts matrix
+
   real-project-matrix:
-    name: real projects (${{ matrix.shard }}/22)
+    name: real projects (${{ matrix.name }})
+    needs: plan-projects
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
     strategy:
@@ -98,8 +114,7 @@ jobs:
       # The hosted release fallback must fit the documented Free plan floor:
       # 20 concurrent standard hosted jobs, so 22 shards can take two waves.
       max-parallel: 6
-      matrix:
-        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+      matrix: ${{ fromJSON(needs.plan-projects.outputs.matrix) }}
     env:
       FIXTURE_SHARD_COUNT: "22"
       FIXTURE_SHARD_INDEX: ${{ matrix.shard }}

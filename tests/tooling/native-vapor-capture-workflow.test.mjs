@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { nativeVaporCaptureRequired } from "../../tools/support/compat/github/native-vapor-capture.mjs";
-import { toolingShardMatrix } from "../../tools/support/compat/github/tooling-test-shards.ts";
+import { planNativeRuntime } from "../../tools/support/compat/github/plan-native-runtime.ts";
+import { assertNativeRuntimeHook } from "./support/native-runtime-workflow.ts";
 
 await test("original native Vapor source qualifies a fresh affected-PR capture without prose admissions", () => {
   for (const path of [
@@ -33,8 +34,10 @@ await test("original native Vapor source qualifies a fresh affected-PR capture w
     ".github/actions/test-native-vapor/action.yml",
     ".github/workflows/check.yml",
     ".github/workflows/pr-source-checks.yml",
-  ])
+  ]) {
     assert.equal(nativeVaporCaptureRequired([path]), true, path);
+    assert(planNativeRuntime([path]).matrix.lane.includes("vapor"), path);
+  }
   for (const path of [
     "README.md",
     "docs/davinci/decisions/2026-09-27-level-restructure.md",
@@ -47,32 +50,11 @@ await test("original native Vapor source qualifies a fresh affected-PR capture w
   ])
     assert.equal(nativeVaporCaptureRequired([path]), false, path);
   assert.equal(nativeVaporCaptureRequired([]), false);
-  assert.deepEqual(toolingShardMatrix({ tier: "pr", tests: [] }), {
-    include: [{ index: 1, total: 1 }],
-  });
 });
 
-await test("the existing first-shard hook preserves full protected capture and mandatory whole-source payloads", () => {
+await test("the required Vapor lane preserves mandatory whole-source payloads", () => {
   const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
-  const workflow = read(".github/workflows/pr-source-checks.yml");
-  const step = workflow
-    .split("- name: Capture original native Vapor modules and runtime")[1]
-    ?.split("- name:")[0];
-  assert.ok(step);
-  assert.match(step, /matrix\.index == 1/);
-  assert.match(step, /github\.event_name == 'merge_group' \|\|/);
-  assert.match(
-    step,
-    /github\.event_name == 'pull_request' && needs\.pr-source-plan\.outputs\.native-vapor-capture == 'true'/,
-  );
-  assert.match(step, /uses: \.\/\.github\/actions\/test-native-vapor/);
-  assert.doesNotMatch(step, /continue-on-error|hashFiles|existsSync/);
-  const planner = read("tools/support/compat/github/plan-tooling-tests.mjs");
-  assert.match(
-    planner,
-    /tooling=\$\{[^}]*toolingChecksRequired\(plan, paths\)[^}]*\|\| nativeVaporCaptureRequired\(capturePaths\)/,
-  );
-  assert.match(planner, /native-vapor-capture=\$\{nativeVaporCaptureRequired\(capturePaths\)\}/);
+  assertNativeRuntimeHook("vapor", "test-native-vapor");
   const action = read(".github/actions/test-native-vapor/action.yml");
   for (const path of [
     "native-vapor-modules.json",

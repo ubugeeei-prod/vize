@@ -10,7 +10,7 @@ on:
 
 jobs:
   replay:
-    name: sfc-parse-replay (${{ inputs.repetition }})
+    name: SFC parse replay (measurement ${{ inputs.repetition }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     permissions:

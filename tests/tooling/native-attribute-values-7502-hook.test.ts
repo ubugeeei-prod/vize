@@ -76,7 +76,7 @@ test("genuine value producers, consumers, writers and capture dependencies quali
   assert.equal(nativeAttributeValues7502CaptureRequired([]), false);
   assert.equal(nativeAttributeValues7502CaptureRequired(["README.md", "Cargo.lock"]), true);
   assert.deepEqual(toolingShardMatrix({ tier: "pr", tests: [] }), {
-    include: [{ index: 1, total: 1 }],
+    include: [{ index: 1, total: 1, name: "no selected test files" }],
   });
 });
 

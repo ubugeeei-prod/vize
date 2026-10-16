@@ -54,8 +54,9 @@ export function defaultTypecheckProjects() {
 
 export function shardEntries(
   shard: number,
-  options: { typecheckProject?: string | null } = {},
+  options: { typecheckProject?: string | null; commitSha?: string } = {},
 ): Record<string, string> {
+  const commitSha = options.commitSha ?? releaseSha;
   const projectId =
     options.typecheckProject === undefined ? `fixture-${shard}` : options.typecheckProject;
   const entries: Record<string, string> = {
@@ -63,19 +64,19 @@ export function shardEntries(
     "summary.json": json({
       schema: "vize.fixtureToolMatrixReport",
       version: 3,
-      evidence: { commitSha: releaseSha },
+      evidence: { commitSha },
       command: { shardIndex: shard, shardCount: requiredRealProjectMatrixShardCount },
     }),
     "surface-verdict.json": json(
       createRealProjectSurfaceVerdict(releaseGatedSurfaceResults(), {
-        GITHUB_SHA: releaseSha,
+        GITHUB_SHA: commitSha,
         FIXTURE_SHARD_INDEX: String(shard),
       }),
     ),
     "lint-divergence-summary.json": json({
       schema: "vize.fixtureLintDivergenceIndex",
       version: 1,
-      evidence: { commitSha: releaseSha },
+      evidence: { commitSha },
       projectCount: 1,
       projects: [{ project: "fixture" }],
       budget: {
@@ -96,7 +97,7 @@ export function shardEntries(
     version: 2,
     project: projectId,
     revision: "b".repeat(40),
-    evidence: { commitSha: releaseSha },
+    evidence: { commitSha },
     packageManager: { name: "pnpm", version: "10.0.0" },
     lockfile: { path: "pnpm-lock.yaml", sizeBytes: 18, sha256: "1".repeat(64) },
     install: {
@@ -115,7 +116,7 @@ export function shardEntries(
     version: 7,
     project: projectId,
     revision: "b".repeat(40),
-    evidence: { commitSha: releaseSha },
+    evidence: { commitSha },
     enforcement: { budgetMode: "enforce" },
     preparation: {
       schema: "vize.fixtureTypecheckPreparationEvidence",

@@ -51,7 +51,7 @@ test("selected archives still require complete reports and the actual successful
         readIds.push(artifact.id);
         assert.notEqual(artifact.id, 9_999, "partial failed archive must remain historical");
         const shard = Number(artifact.name.split("-").pop());
-        const entries = shardEntries(shard);
+        const entries = shardEntries(shard, { commitSha: fixture.run.head_sha });
         if (omitVerdict && shard === 19) delete entries["surface-verdict.json"];
         return entries;
       },
@@ -62,6 +62,19 @@ test("selected archives still require complete reports and the actual successful
     selected.artifacts.map((artifact: { id: number }) => artifact.id),
   );
   await assert.rejects(() => validate(true), /surface-verdict\.json/);
+});
+
+test("named source keeps artifact custody and refuses numeric aliases from another source", async () => {
+  const fixture = retriedMatrixEvidence("named");
+  const selected = await select(fixture);
+  assert.equal(selected.artifacts[19].id, 3_019);
+  assert.equal(selected.provenance[0].carriedForward, true);
+  assert.match(selected.provenance[0].producingJob.name, /vue-vben-admin, pinia/);
+  fixture.currentJobs[0].name = "real projects (0/22)";
+  await assert.rejects(() => select(fixture), /exactly one current job; found 0/);
+  const old = retriedMatrixEvidence();
+  old.currentJobs[0].name = retriedMatrixEvidence("named").currentJobs[0].name;
+  await assert.rejects(() => select(old), /real projects \(0\/22\).*found 0/);
 });
 
 test("selection refuses ambiguous or absent evidence from the current successful execution", async () => {

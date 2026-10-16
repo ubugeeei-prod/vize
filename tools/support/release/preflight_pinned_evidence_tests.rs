@@ -1,27 +1,25 @@
 use super::*;
 
 #[test]
-fn release_dispatch_requires_only_the_full_check() {
+fn release_dispatch_does_not_repeat_the_completed_check() {
     let target = target();
     let plans =
         create_release_gate_dispatch_plans("release/v0.435.1", &target.sha, &target.base_sha)
             .unwrap();
-    assert_eq!(plans.len(), 1);
-    assert_eq!(plans[0].workflow_name, "Check");
-    assert_eq!(
-        plans[0].expected_run_name,
-        format!("Check full @ {}", target.sha)
-    );
-    let runs = green_runs(&target, false);
+    assert!(REQUIRED_RELEASE_WORKFLOWS.is_empty());
+    assert!(plans.is_empty());
     let selected = select_required_workflow_runs(
-        &runs,
+        &[],
         &target.sha,
         &release_evidence_shas(&target, true),
         &plans,
         None,
     )
     .unwrap();
-    assert_eq!(selected["Check"]["head_sha"], target.sha);
+    assert!(selected.is_empty());
+    assert!(create_release_gate_dispatch_plans("", &target.sha, &target.base_sha).is_err());
+    assert!(create_release_gate_dispatch_plans("release/test", "HEAD", &target.base_sha).is_err());
+    assert!(create_release_gate_dispatch_plans("release/test", &target.sha, &target.sha).is_err());
 }
 
 fn target() -> ReleaseTarget {
@@ -34,80 +32,83 @@ fn target() -> ReleaseTarget {
     }
 }
 
-fn green_runs(target: &ReleaseTarget, parent_corpus: bool) -> Vec<Value> {
-    create_release_gate_dispatch_plans("release/v0.435.1", &target.sha, &target.base_sha)
-        .unwrap()
-        .iter()
-        .enumerate()
-        .map(|(index, plan)| {
-            let sha = if parent_corpus
-                && PARENT_EVIDENCE_REUSABLE_WORKFLOWS.contains(&plan.workflow_name)
-            {
-                &target.base_sha
-            } else {
-                &target.sha
-            };
-            let prefix = plan.expected_run_name.rsplit_once(" @ ").unwrap().0;
-            json!({
-                "id": index + 1,
-                "path": format!(".github/workflows/{}", plan.workflow_id),
-                "display_title": format!("{prefix} @ {sha}"),
-                "head_sha": sha,
-                "head_branch": "release/v0.435.1",
-                "event": "workflow_dispatch",
-                "status": "completed",
-                "conclusion": "success",
-                "created_at": "2026-10-08T00:00:00Z"
-            })
-        })
-        .collect()
+fn explicit_check_plan(target: &ReleaseTarget) -> DispatchPlan {
+    DispatchPlan {
+        workflow_name: "Check",
+        workflow_id: "check.yml",
+        ref_name: "release/v0.435.1".into(),
+        inputs: json!({ "tier": "full", "base_sha": target.base_sha }),
+        expected_run_name: format!("Check full @ {}", target.sha),
+        accepts_scheduled_evidence: false,
+    }
+}
+
+fn green_run(target: &ReleaseTarget, plan: &DispatchPlan) -> Value {
+    json!({
+        "id": 1,
+        "path": format!(".github/workflows/{}", plan.workflow_id),
+        "display_title": plan.expected_run_name,
+        "head_sha": target.sha,
+        "head_branch": plan.ref_name,
+        "event": "workflow_dispatch",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-10-08T00:00:00Z"
+    })
 }
 
 #[test]
-fn pinned_cut_selects_check_at_the_release_head() {
+fn explicit_check_inspection_selects_only_the_pinned_source_and_workflow() {
     let target = target();
-    let plans =
-        create_release_gate_dispatch_plans("release/v0.435.1", &target.sha, &target.base_sha)
-            .unwrap();
-    let runs = green_runs(&target, false);
-    let selected = select_required_workflow_runs(
-        &runs,
-        &target.sha,
-        &release_evidence_shas(&target, true),
-        &plans,
-        None,
-    )
-    .unwrap();
-    assert_eq!(selected.len(), REQUIRED_RELEASE_WORKFLOWS.len());
-    assert_eq!(selected["Check"]["head_sha"], target.sha);
+    let plan = explicit_check_plan(&target);
+    let mut runs = vec![green_run(&target, &plan)];
+    for (field, value) in [
+        ("head_sha", target.base_sha.as_str()),
+        ("path", ".github/workflows/other.yml"),
+        ("event", "pull_request"),
+        ("display_title", "Check fast"),
+    ] {
+        let mut wrong = runs[0].clone();
+        wrong[field] = json!(value);
+        wrong["id"] = json!(999);
+        wrong["created_at"] = json!("2026-10-08T00:01:00Z");
+        runs.push(wrong);
+    }
+    let accepted =
+        accepted_evidence_shas(&release_evidence_shas(&target, true), "Check", &target.sha);
+    let selected = latest_required_workflow_run(&runs, &accepted, "Check", Some(&plan))
+        .unwrap()
+        .unwrap();
+    assert_eq!(selected["id"], 1);
+    assert_eq!(selected["head_sha"], target.sha);
 }
 
 #[test]
-fn newer_red_check_fails_the_release_gate() {
+fn explicit_check_inspection_rejects_newer_red_job_evidence() {
     let target = target();
-    let plans =
-        create_release_gate_dispatch_plans("release/v0.435.1", &target.sha, &target.base_sha)
-            .unwrap();
-    let mut runs = green_runs(&target, false);
-    let mut failed = runs
-        .iter()
-        .find(|run| run["path"] == ".github/workflows/check.yml")
-        .unwrap()
-        .clone();
+    let plan = explicit_check_plan(&target);
+    let mut runs = vec![green_run(&target, &plan)];
+    let mut failed = runs[0].clone();
     failed["conclusion"] = json!("failure");
     failed["created_at"] = json!("2026-10-08T00:01:00Z");
     failed["id"] = json!(999);
     runs.push(failed);
-    let error = select_required_workflow_runs(
-        &runs,
-        &target.sha,
-        &release_evidence_shas(&target, true),
-        &plans,
-        None,
-    )
-    .unwrap_err();
+    let current = latest_required_workflow_run(&runs, &[target.sha], "Check", Some(&plan))
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        current["id"], 999,
+        "older green must not hide newer red evidence"
+    );
+    let jobs = vec![json!({
+        "name": "test-scripts", "status": current["status"], "conclusion": current["conclusion"]
+    })];
+    assert!(required_jobs_contain_terminal_failure(
+        "Check", &jobs, current
+    ));
+    let error = assert_required_workflow_jobs("Check", &jobs, current).unwrap_err();
     assert!(
-        error.split("Check: completed/failure").nth(1).is_some(),
+        error.contains("test-scripts is completed/failure"),
         "{error}"
     );
 }
