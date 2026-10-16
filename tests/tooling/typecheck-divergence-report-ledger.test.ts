@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -56,6 +57,10 @@ test("typecheck divergence report accepts a reproducing documented difference", 
     const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
     assert.equal(artifact.divergence.summary.documentedDifferenceCount, 1);
     assert.equal(artifact.divergence.summary.falseNegativeCount, 0);
+    assert.equal(
+      fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence-failure.json")),
+      false,
+    );
   } finally {
     cleanup(fixture);
   }
@@ -82,6 +87,31 @@ test("typecheck divergence report rejects a stale documented difference", () => 
       fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
       false,
     );
+    const failure = readJson(
+      path.join(fixture.reportDir, "fixture-typecheck-divergence-failure.json"),
+    );
+    assert.equal(failure.schema, "vize.fixtureTypecheckDivergenceFailure");
+    assert.equal(failure.version, 1);
+    assert.equal(failure.stage, "documented-differences");
+    assert.match(failure.error, /Documented typecheck difference ledger is stale for fixture/);
+    assert.deepEqual(failure.observations.vize, readJson(fixture.outputPath));
+    assert.equal(
+      createHash("sha256").update(failure.observations.baseline.stdout).digest("hex"),
+      failure.comparison.baseline.stdoutSha256,
+    );
+    assert.equal(
+      createHash("sha256").update(failure.observations.coverage.stdout).digest("hex"),
+      failure.comparison.baseline.coverageStdoutSha256,
+    );
+    assert.equal(
+      createHash("sha256").update(failure.observations.baseline.config).digest("hex"),
+      failure.comparison.baseline.configSha256,
+    );
+    assert.deepEqual(
+      failure.comparison.mutationOracle.states.map((state: { name: string }) => state.name),
+      ["clean", "broken", "repaired"],
+    );
+    assert.equal(failure.comparison.mutationOracle.passed, true);
   } finally {
     cleanup(fixture);
   }
@@ -102,6 +132,31 @@ test("typecheck divergence report rejects stale documented differences in record
       fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
       false,
     );
+    const failure = readJson(
+      path.join(fixture.reportDir, "fixture-typecheck-divergence-failure.json"),
+    );
+    assert.equal(failure.schema, "vize.fixtureTypecheckDivergenceFailure");
+    assert.equal(failure.version, 1);
+    assert.equal(failure.stage, "documented-differences");
+    assert.match(failure.error, /Documented typecheck difference ledger is stale for fixture/);
+    assert.deepEqual(failure.observations.vize, readJson(fixture.outputPath));
+    assert.equal(
+      createHash("sha256").update(failure.observations.baseline.stdout).digest("hex"),
+      failure.comparison.baseline.stdoutSha256,
+    );
+    assert.equal(
+      createHash("sha256").update(failure.observations.coverage.stdout).digest("hex"),
+      failure.comparison.baseline.coverageStdoutSha256,
+    );
+    assert.equal(
+      createHash("sha256").update(failure.observations.baseline.config).digest("hex"),
+      failure.comparison.baseline.configSha256,
+    );
+    assert.deepEqual(
+      failure.comparison.mutationOracle.states.map((state: { name: string }) => state.name),
+      ["clean", "broken", "repaired"],
+    );
+    assert.equal(failure.comparison.mutationOracle.passed, true);
   } finally {
     cleanup(fixture);
   }

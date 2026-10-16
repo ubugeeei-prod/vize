@@ -245,12 +245,13 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         vue_tsc_bin: &args.vue_tsc_bin,
         documented_differences: &documented_differences,
     })?;
-    reject_stale_documented_differences(
+    let ledger_error = reject_stale_documented_differences(
         &project_id,
         &expected_documented_differences,
         &divergence,
         &mutation_oracle,
-    )?;
+    )
+    .err();
     let budget = evaluate_budget(
         performance,
         &divergence,
@@ -293,6 +294,39 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         "budget": budget,
         "divergence": divergence,
     });
+    if let Some(error) = ledger_error {
+        // A stale waiver must still fail in every budget mode. Retain the
+        // complete observations under a distinct failure schema, rather than
+        // losing the real-project run or publishing an accepted comparison.
+        let failure_path = args
+            .report_dir
+            .join(format!("{project_id}-typecheck-divergence-failure.json"));
+        common::write_json_pretty(
+            &failure_path,
+            &json!({
+                "schema": "vize.fixtureTypecheckDivergenceFailure",
+                "version": 1,
+                "stage": "documented-differences",
+                "error": error,
+                "comparison": artifact,
+                "observations": {
+                    "vize": vize_run.payload,
+                    "baseline": {
+                        "stdout": baseline.run.stdout,
+                        "stderr": baseline.run.stderr,
+                        "config": baseline_config.source,
+                        "sourceConfig": source_config,
+                    },
+                    "coverage": {
+                        "stdout": coverage_baseline.run.stdout,
+                        "stderr": coverage_baseline.run.stderr,
+                    },
+                },
+            }),
+        )?;
+        println!("Wrote {}", display_relative(root, &failure_path));
+        return Err(error);
+    }
     let json_path = args
         .report_dir
         .join(format!("{project_id}-typecheck-divergence.json"));
