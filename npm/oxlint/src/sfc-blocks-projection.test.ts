@@ -115,6 +115,34 @@ void test("fixture evidence refuses dependency symlinks and parent traversal", (
   }
 });
 
+void test("hidden authored configs retain whole bytes in visible regular artifact entries", () => {
+  const root = createExternalFixtureDir();
+  try {
+    const files = [".oxlintrc.json", ".disabled.json", "input.vue"];
+    const contents = [
+      '{"rules":{"no-debugger":"error"}}\r\n',
+      '{"rules":{}}\n',
+      "<template>😀</template>\r\n",
+    ];
+    for (const [index, file] of files.entries())
+      fs.writeFileSync(path.join(root, file), contents[index]!);
+    const output = path.join(root, "artifact");
+    const records = captureFixtureInputs(root, files, output);
+    assert.deepEqual(
+      records.map((row) => row.filename),
+      files,
+    );
+    for (const row of records) {
+      assert.ok(!row.archiveFilename.startsWith("."));
+      const archive = path.join(output, row.archiveFilename);
+      assert.ok(fs.lstatSync(archive).isFile());
+      assert.deepEqual(fs.readFileSync(archive), fs.readFileSync(path.join(root, row.filename)));
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 void test("byte geometry is projected once into complete UTF-16 content geometry", () => {
   assert.deepEqual(projectSfcBlocks(source, descriptor), [
     {

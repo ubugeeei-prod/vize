@@ -286,3 +286,99 @@ for (const entry of originalPacket.cases) {
     );
   });
 }
+
+void test("parseSfc retains the complete descriptor and all content/tag byte geometry", () => {
+  const source =
+    '<script setup></script>\r\n<template><template v-if="ok"/><input/></template><style scoped module="classes">.x{}</style><docs>note</docs><script>const a=1;</script>';
+  const expected = {
+    filename: "anonymous.vue",
+    source:
+      '<script setup></script>\r\n<template><template v-if="ok"/><input/></template><style scoped module="classes">.x{}</style><docs>note</docs><script>const a=1;</script>',
+    scriptSetup: {
+      content: "",
+      loc: {
+        start: 14,
+        end: 14,
+        tagStart: 0,
+        tagEnd: 23,
+        startLine: 1,
+        startColumn: 15,
+        endLine: 1,
+        endColumn: 15,
+      },
+      lang: null,
+      setup: true,
+    },
+    template: {
+      content: '<template v-if="ok"/><input/>',
+      loc: {
+        start: 35,
+        end: 64,
+        tagStart: 25,
+        tagEnd: 75,
+        startLine: 2,
+        startColumn: 11,
+        endLine: 2,
+        endColumn: 40,
+      },
+      lang: null,
+    },
+    styles: [
+      {
+        content: ".x{}",
+        loc: {
+          start: 106,
+          end: 110,
+          tagStart: 75,
+          tagEnd: 118,
+          startLine: 2,
+          startColumn: 82,
+          endLine: 2,
+          endColumn: 86,
+        },
+        lang: null,
+        scoped: true,
+        module: "classes",
+      },
+    ],
+    customBlocks: [
+      {
+        content: "note",
+        loc: {
+          start: 124,
+          end: 128,
+          tagStart: 118,
+          tagEnd: 135,
+          startLine: 2,
+          startColumn: 100,
+          endLine: 2,
+          endColumn: 104,
+        },
+        type: "docs",
+      },
+    ],
+    script: {
+      content: "const a=1;",
+      loc: {
+        start: 143,
+        end: 153,
+        tagStart: 135,
+        tagEnd: 162,
+        startLine: 2,
+        startColumn: 119,
+        endLine: 2,
+        endColumn: 129,
+      },
+      lang: null,
+      setup: false,
+    },
+  };
+  assert.deepEqual(loadBinding().parseSfc(source), expected);
+});
+
+void test("parseSfc preserves the dedicated InvalidSfc code and complete parser reason", () => {
+  assert.throws(() => loadBinding().parseSfc("<template><input/>"), {
+    code: "InvalidSfc",
+    message: "Malformed <template> block: the closing tag is missing.",
+  });
+});

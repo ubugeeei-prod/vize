@@ -36,13 +36,14 @@ export function createExternalFixtureDir(): string {
 /** Archive only declared physical inputs; never follow dependency symlinks. */
 export function captureFixtureInputs(root: string, files: string[], output: string) {
   fs.mkdirSync(output, { recursive: true });
-  return files.map((filename) => {
+  return files.map((filename, index) => {
     assert.equal(path.basename(filename), filename);
     const file = path.join(root, filename);
     assert.ok(fs.lstatSync(file).isFile(), `fixture input must be a regular file: ${file}`);
     const bytes = fs.readFileSync(file);
-    fs.writeFileSync(path.join(output, filename), bytes, { flag: "wx" });
-    return { filename, bytes: bytes.length, sha256: sha256(bytes) };
+    const archiveFilename = `${index}-${filename}`;
+    fs.writeFileSync(path.join(output, archiveFilename), bytes, { flag: "wx" });
+    return { filename, archiveFilename, bytes: bytes.length, sha256: sha256(bytes) };
   });
 }
 
