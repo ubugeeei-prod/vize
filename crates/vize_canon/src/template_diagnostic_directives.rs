@@ -4,7 +4,7 @@ use std::ops::Range;
 use vize_atelier_core::{ParserOptions, parser::parse_with_options};
 use vize_atelier_sfc::{SfcParseOptions, SfcTemplateBlock, parse_sfc};
 use vize_carton::Allocator;
-use vize_relief::TemplateChildNode;
+use vize_relief::{RootNode, TemplateChildNode};
 
 /// Vue's unused expect-error diagnostic uses TypeScript's directive code.
 pub const UNUSED_EXPECT_ERROR_CODE: u32 = 2578;
@@ -62,8 +62,15 @@ impl TemplateDiagnosticDirectives {
                 ..ParserOptions::default()
             },
         );
+        Self::for_root(&root, template.loc.start)
+    }
+
+    /// Reuse an already parsed, comment-retaining template root. The policy
+    /// walk is shared with `for_template`; callers must not reparse or invent
+    /// another comment grammar to decide which authored node owns an expect.
+    pub(crate) fn for_root(root: &RootNode<'_>, base: usize) -> Self {
         let mut result = Self::default();
-        result.visit(&root.children, template.loc.start);
+        result.visit(&root.children, base);
         result
     }
 

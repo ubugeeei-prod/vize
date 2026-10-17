@@ -15,6 +15,7 @@ use super::context::{ComponentPropsContext, ScopeGenContext, ScopeGenerationOpti
 use super::explicit_generics::ExplicitGenerics;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
 pub(super) use super::node::generate_scope_node;
+use super::root_owner_packets::RootOwnerPackets;
 use super::slot_outlet_props::{SlotOutletChecks, generate_scope_slot_outlet_checks};
 use super::vif_guard::common_vif_guard_prefix_outside_v_for_scope;
 
@@ -27,6 +28,27 @@ pub(crate) fn generate_scope_closures(
     template_offset: u32,
     options: ScopeGenerationOptions<'_, '_>,
 ) {
+    emit_scope_closures(
+        ts,
+        mappings,
+        semantic_links,
+        summary,
+        template_binding_access,
+        template_offset,
+        (options, true),
+    );
+}
+
+pub(super) fn emit_scope_closures(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    semantic_links: &mut Vec<VizeSemanticLink>,
+    summary: &Croquis,
+    template_binding_access: &TemplateBindingAccess,
+    template_offset: u32,
+    options: (ScopeGenerationOptions<'_, '_>, bool),
+) {
+    let (options, pack_root_owners) = options;
     let check_options = options.check_options;
     let virtual_ts_options = options.virtual_ts_options;
     let check_tables = TemplateValueCheckTables::collect(summary, &options);
@@ -198,8 +220,32 @@ pub(crate) fn generate_scope_closures(
             .map(|(index, usage)| (*index, usage))
             .collect::<Vec<_>>()
     });
+    let mut root_packets = if pack_root_owners {
+        usages
+            .as_ref()
+            .map_or_else(RootOwnerPackets::default, |usages| {
+                RootOwnerPackets::collect(&props_ctx, usages)
+            })
+    } else {
+        RootOwnerPackets::default()
+    };
     if let Some(usages) = &usages {
-        emit_event_references(ts, mappings, &props_ctx, usages);
+        if root_packets.is_empty() {
+            emit_event_references(ts, mappings, &props_ctx, usages);
+        } else {
+            for &usage in usages {
+                if let Some(packet) = root_packets.get_mut(usage.0) {
+                    emit_event_references(
+                        &mut packet.text,
+                        &mut packet.mappings,
+                        &props_ctx,
+                        &[usage],
+                    );
+                } else {
+                    emit_event_references(ts, mappings, &props_ctx, &[usage]);
+                }
+            }
+        }
     }
     for scope in summary.scopes.iter() {
         let scope_id = scope.id.as_u32();
@@ -251,10 +297,13 @@ pub(crate) fn generate_scope_closures(
             generate_scope_slot_outlet_checks(ts, mappings, scope_id, &ctx, "  ");
             continue;
         }
-        profile!(
-            "canon.virtual_ts.scope_node",
-            generate_scope_node(ts, mappings, &ctx, scope, "  ")
-        );
+        profile!("canon.virtual_ts.scope_node", {
+            if let Some(packet) = root_packets.for_scope(scope) {
+                generate_scope_node(&mut packet.text, &mut packet.mappings, &ctx, scope, "  ")
+            } else {
+                generate_scope_node(ts, mappings, &ctx, scope, "  ")
+            }
+        });
     }
 
     if check_options.check_template_bindings {
@@ -272,7 +321,14 @@ pub(crate) fn generate_scope_closures(
     if let Some(usages) = &usages {
         profile!(
             "canon.virtual_ts.component_props",
-            generate_component_props(ts, mappings, semantic_links, &props_ctx, usages)
+            generate_component_props(
+                ts,
+                mappings,
+                semantic_links,
+                &props_ctx,
+                usages,
+                &mut root_packets
+            )
         );
     }
     let mut record = Vec::new();

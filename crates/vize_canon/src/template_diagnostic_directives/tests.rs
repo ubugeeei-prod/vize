@@ -100,3 +100,38 @@ fn a_node_directive_owns_its_generic_argument_comment_in_either_order() {
     assert_eq!(plan.directives().len(), 0);
     assert!(!plan.suppresses(source.find("boolean").unwrap()));
 }
+
+#[test]
+fn borrowed_root_preserves_the_complete_canonical_policy_with_offsets() {
+    for newline in ["\n", "\r\n"] {
+        for comments in [
+            "<!-- @vue-expect-error -->",
+            "<!-- @vue-expect-error --><!-- @vue-ignore -->",
+            "<!-- @vue-expect-error --><!-- @vue-skip -->",
+            "<!-- @vue-expect-error --><!-- @vue-generic {string} -->",
+            "<!-- prose @vue-expect-error -->",
+        ] {
+            let source = vize_carton::cstr!(
+                "<script setup>const prefix = '😀';</script>{newline}<template>日本{newline}{comments}<Comp id=\"bad\">{{{{ child }}}}</Comp><!-- @vue-expect-error --></template>"
+            );
+            let descriptor = parse_sfc(&source, SfcParseOptions::default()).unwrap();
+            let template = descriptor.template.as_ref().unwrap();
+            let allocator = Allocator::new();
+            let (root, errors) = parse_with_options(
+                &allocator,
+                &template.content,
+                ParserOptions {
+                    comments: true,
+                    ..Default::default()
+                },
+            );
+            assert!(errors.is_empty(), "{errors:?}");
+            let original = TemplateDiagnosticDirectives::for_template(template);
+            let borrowed = TemplateDiagnosticDirectives::for_root(&root, template.loc.start);
+            assert_eq!(
+                vize_carton::cstr!("{original:?}"),
+                vize_carton::cstr!("{borrowed:?}")
+            );
+        }
+    }
+}
