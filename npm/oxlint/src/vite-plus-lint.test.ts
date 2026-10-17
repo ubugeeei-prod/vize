@@ -160,7 +160,7 @@ void test("createVizeLintConfig keeps essential narrower than happy-path", () =>
   assert.deepEqual(config.settings, { vize: { preset: "essential", rules: config.rules } });
   assert.equal(config.rules["vize/script/valid-define-props"], "error");
   assert.equal(config.rules["vize/script/no-import-compiler-macros"], "error");
-  assert.equal(config.rules["vize/script/no-duplicate-attr-inheritance"], undefined);
+  assert.equal(config.rules["vize/script/no-duplicate-attr-inheritance"], "warn");
   assert.equal(config.rules["vize/script/no-unused-emit-declarations"], undefined);
 });
 

@@ -68,13 +68,13 @@ import Child from './Child.vue'
     const commentPath = path.join(workspaceDir, "Comment.vue");
     fs.writeFileSync(commentPath, commentSource, "utf8");
 
-    const styleSource = `<template><div :class="$style."></div></template>
+    const styleSource = `<template><div data-note="🌱" :class="$style."></div></template>
 <style module>
 .box {}
 .row {}
 </style>
 `;
-    const stylePath = path.join(workspaceDir, "StyleMod.vue");
+    const stylePath = path.join(workspaceDir, "Style 模块.vue");
     fs.writeFileSync(stylePath, styleSource, "utf8");
 
     const authoringSource = `<script setup lang="ts">
@@ -153,7 +153,10 @@ const count = ref(0)
     openDocument(eventPrefixUri, eventPrefixSource);
     openDocument(multilineEventUri, multilineEventSource);
 
-    await session.waitForNotification("textDocument/publishDiagnostics");
+    await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => !isDiagnosticsForUri(params, styleUri),
+    );
 
     await t.test("component prop completion tracks unsaved child edits and repair", async () => {
       const offset = parentSource.indexOf("<Child ") + "<Child ".length;
@@ -265,23 +268,78 @@ const count = ref(0)
     });
 
     await t.test("completion of $style. surfaces <style module> class names only", async () => {
-      const offset = styleSource.indexOf("$style.") + "$style.".length;
-      const response = (await session.request("textDocument/completion", {
-        textDocument: { uri: styleUri },
-        position: offsetToPosition(styleSource, offset),
-      })) as
-        | Array<{ label: string; kind?: number }>
-        | { items?: Array<{ label: string; kind?: number }> }
-        | null;
+      const requestItems = async (text: string, names: string[]) => {
+        const offset = text.indexOf("$style.") + "$style.".length;
+        const position = offsetToPosition(text, offset);
+        assert.deepEqual(position, { line: 0, character: 45 });
+        const response = await session.request("textDocument/completion", {
+          textDocument: { uri: styleUri },
+          position,
+        });
+        // The whole authored items have no textEdit or generated-source range.
+        assert.deepEqual(
+          response,
+          names.length
+            ? names.map((name) => ({
+                label: name,
+                kind: 5,
+                detail: "CSS module class",
+                documentation: {
+                  kind: "markdown",
+                  value: `\`${name}\` from \`<style module>\`.`,
+                },
+                sortText: `0${name}`,
+              }))
+            : null,
+        );
+        assert.equal(fs.readFileSync(stylePath, "utf8"), styleSource);
+      };
+      const waitForStyle = (version: number) =>
+        session.waitForNotification(
+          "textDocument/publishDiagnostics",
+          (params) => isDiagnosticsForUri(params, styleUri) && params.version === version,
+        );
+      const changeStyle = async (text: string, version: number) => {
+        session.notify("textDocument/didChange", {
+          textDocument: { uri: styleUri, version },
+          contentChanges: [{ text }],
+        });
+        await waitForStyle(version);
+      };
+      await waitForStyle(1);
+      await requestItems(styleSource, ["box", "row"]);
 
-      const labels = completionLabels(response);
-      assert.deepEqual(labels.slice().sort(), ["box", "row"]);
+      const template = styleSource.slice(0, styleSource.indexOf("\n"));
+      const changed = `${template}
+<style module>
+/* .commentOnly {} */
+.active:global(.loaded) { content: ".valueOnly"; background: url("./asset.png"); }
+:global(.external) .root {}
+[data-kind=".attributeOnly"] .updated {}
+:global .globalOnly, :local(.after) {}
+._local {} .root {}
+</style>
+<style>.plainOnly {}</style>
+<style module="theme">.themeOnly {}</style>
+`;
+      await changeStyle(changed, 2);
+      await requestItems(changed, ["_local", "active", "after", "root", "updated"]);
+      await changeStyle(styleSource, 3);
+      await requestItems(styleSource, ["box", "row"]);
 
-      const items = Array.isArray(response) ? response : (response?.items ?? []);
-      assert.equal(items.length, 2, JSON.stringify(items));
-      // CompletionItemKind.Field === 5 in the LSP spec.
-      for (const item of items) {
-        assert.equal(item.kind, 5, JSON.stringify(item));
+      fs.writeFileSync(path.join(workspaceDir, "foreign.css"), ".externalOnly {}\n");
+      const unsupported = [
+        "<style module>:global(.globalOnly) {}</style>",
+        "<style module>.root) {}</style>",
+        "<style>.plainOnly {}</style>",
+        '<style module="theme">.themeOnly {}</style>',
+        '<style module src="./foreign.css"></style>',
+        '<style module lang="scss">.scssOnly {}</style>',
+      ];
+      for (const [index, style] of unsupported.entries()) {
+        const text = `${template}\n${style}\n`;
+        await changeStyle(text, index + 4);
+        await requestItems(text, []);
       }
     });
 

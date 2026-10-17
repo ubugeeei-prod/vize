@@ -1,0 +1,14 @@
+name: Hydrate the exact pinned fixture
+description: Fetch the source gitlink directly into a private submodule checkout
+inputs:
+  fixture:
+    description: Source-tree fixture gitlink
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Hydrate the original pinned source tree
+      shell: bash
+      env:
+        FIXTURE_PATH: ${{ inputs.fixture }}
+      run: node "$GITHUB_ACTION_PATH/hydrate-pinned-fixture.ts" "$GITHUB_WORKSPACE" "$FIXTURE_PATH"

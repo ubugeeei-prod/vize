@@ -303,6 +303,7 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::NoDeprecatedRouterLinkTagProp));
         crate::rules::vue::register_valid_directives(&mut registry);
         registry.register(Box::new(crate::rules::vue::UseVOnExact));
+        registry.register(Box::new(crate::rules::vue::NoNonComponentKeepAliveChild));
 
         // Security Rules
         registry.register(Box::new(crate::rules::vue::NoVHtml));

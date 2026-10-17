@@ -2391,14 +2391,19 @@ name = "oxc_ecmascript"
 version = "0.142.0"
 source = "git+https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1fa9f0412d06ec6908b58cd395b826cf7f"
 dependencies = [
+ "cow-utils",
  "dragonbox_ecma",
  "itoa",
  "num-bigint",
  "num-traits",
+ "oxc_allocator",
  "oxc_ast",
+ "oxc_compat",
  "oxc_data_structures",
+ "oxc_regular_expression",
  "oxc_span",
  "oxc_syntax",
+ "smallvec",
 ]
 
 [[package]]
@@ -4952,6 +4957,7 @@ dependencies = [
  "oxc_ast",
  "oxc_ast_visit",
  "oxc_diagnostics",
+ "oxc_ecmascript",
  "oxc_semantic",
  "oxc_span",
  "oxc_syntax",

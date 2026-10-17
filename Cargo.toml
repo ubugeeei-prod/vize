@@ -103,6 +103,9 @@ oxc_span = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", r
 oxc_allocator = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
 oxc_syntax = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
 oxc_diagnostics = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+oxc_ecmascript = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f", features = [
+  "constant_evaluation",
+] }
 oxc_sourcemap = "=8.1.2"
 oxc_semantic = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
 oxc_transformer = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
