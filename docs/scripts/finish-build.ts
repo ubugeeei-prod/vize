@@ -1,14 +1,19 @@
-// After `vp build`, OG generation and the UI docs check each read the built
-// site independently, so run them together. OG rewrites each page atomically,
-// and the build fails if either step fails.
+// After `vp build`, each phase reads the built site independently. Launch their
+// Node entrypoints directly: concurrent package-manager commands can race while
+// reinstalling dependencies. OG rewrites pages atomically; every phase must pass.
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
 
 export const finishSteps = ["generate:og-images", "check:ui-docs", "check:heading-links"] as const;
+const finishEntrypoints = {
+  "generate:og-images": "./scripts/generate-og-images.ts",
+  "check:ui-docs": "./previews/ui/check-site.ts",
+  "check:heading-links": "./scripts/check-heading-hash.ts",
+} as const;
 
-function run(script: string): Promise<number> {
+function run(script: (typeof finishSteps)[number]): Promise<number> {
   return new Promise((resolve, reject) => {
-    const child = spawn("pnpm", ["run", "--silent", script], {
+    const child = spawn(process.execPath, [finishEntrypoints[script]], {
       cwd: import.meta.dirname + "/..",
       stdio: ["ignore", "pipe", "pipe"],
     });
