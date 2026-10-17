@@ -295,10 +295,9 @@ impl FormatOptions {
     /// Create options with Prettier defaults
     #[inline]
     pub fn prettier_compat() -> Self {
-        Self {
-            print_width: 80,
-            ..Default::default()
-        }
+        let mut options = Self::default();
+        FormatPreset::Prettier.apply(&mut options);
+        options
     }
 
     /// Convert to `oxc_formatter::JsFormatOptions`

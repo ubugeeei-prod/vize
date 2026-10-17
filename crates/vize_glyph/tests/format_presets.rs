@@ -74,6 +74,28 @@ const id = "a";
         source
     );
 
+    let compatibility = FormatOptions::prettier_compat();
+    let formatted = format_sfc(source, &compatibility).expect("format").code;
+    assert_eq!(formatted.as_str(), source);
+    assert_eq!(
+        format_sfc(&formatted, &compatibility).expect("format").code,
+        formatted
+    );
+    assert_eq!(
+        format_sfc(source, &FormatOptions::default())
+            .expect("format")
+            .code
+            .as_str(),
+        r#"<script setup lang="ts">
+const id = "a";
+</script>
+
+<template>
+  <div :id="id" class="a">{{ id }}</div>
+</template>
+"#
+    );
+
     FormatPreset::Vize.apply(&mut options);
     let defaults = FormatOptions::default();
     assert_eq!(options.print_width, defaults.print_width);
@@ -211,6 +233,29 @@ fn default_options_serialize_as_the_published_reference() {
     .expect("reference");
     let defaults = serde_json::to_value(FormatOptions::default()).expect("serialize");
     assert_eq!(defaults, reference["formatOptions"]);
+
+    let mut compatibility = reference["formatOptions"].clone();
+    compatibility["printWidth"] = serde_json::json!(80);
+    for key in [
+        "sortAttributes",
+        "sortBlocks",
+        "normalizeDirectiveShorthands",
+    ] {
+        compatibility[key] = serde_json::json!(false);
+    }
+    for key in [
+        "normalizeCssQuotes",
+        "normalizeInlineStyles",
+        "normalizeVForParens",
+        "selfCloseVoidElements",
+        "reindentPreprocessorStyles",
+    ] {
+        compatibility[key] = serde_json::json!(true);
+    }
+    assert_eq!(
+        serde_json::to_value(FormatOptions::prettier_compat()).expect("serialize"),
+        compatibility
+    );
 
     let mut options = FormatOptions::default();
     FormatPreset::Prettier.apply(&mut options);
