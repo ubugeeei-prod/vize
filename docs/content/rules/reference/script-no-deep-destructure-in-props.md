@@ -9,7 +9,7 @@ Disallow deeply nested destructuring in defineProps
 [Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
-Presets: _none_  
+Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -37,7 +37,7 @@ vp run lint
 
 ## Bad
 
-This sole inline `<script setup>` has a top-level compiler macro binding that destructures `name` through `user`, exceeding the default depth of one. Arrays nested inside object bindings also increase depth. This opt-in warning enforces a depth policy: it does not read the compiler's `propsDestructure` setting, and `withDefaults` can compile despite the warning.
+This sole inline `<script setup>` has a top-level compiler macro binding that destructures `name` through `user`, exceeding the default depth of one. Arrays nested inside object bindings also increase depth. Opinionated and Nuxt enable this depth-policy warning; other presets require explicit opt-in: it does not read the compiler's `propsDestructure` setting, and `withDefaults` can compile despite the warning.
 
 ```vue
 <script setup lang="ts">

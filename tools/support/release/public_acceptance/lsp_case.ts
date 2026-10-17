@@ -131,37 +131,34 @@ export function assertWholeCase(
       assert.deepEqual(observation.query, query);
       assert.deepEqual(observation.referencesReply, referencesReply);
       assert.deepEqual(observation.renameReply, renameReply);
-      assert.equal(observation.definitionContracted, index >= 8);
-      if (index >= 8)
-        assert.ok(
-          definitions.some((expected) => {
-            try {
-              assert.deepEqual(observation.definitionReply, expected);
-              return true;
-            } catch {
-              return false;
-            }
-          }),
-          "whole contracted definition response",
-        );
+      assert.equal(observation.definitionContracted, true);
+      assert.ok(
+        definitions.some((expected) => {
+          try {
+            assert.deepEqual(observation.definitionReply, expected);
+            return true;
+          } catch {
+            return false;
+          }
+        }),
+        "whole contracted definition response",
+      );
       return {
         query,
         referencesReply,
         renameReply,
-        definitionContracted: index >= 8,
-        allowedWholeDefinitionResponses: index >= 8 ? definitions : null,
+        definitionContracted: true,
+        allowedWholeDefinitionResponses: definitions,
       };
     });
-    assert.equal(packet.declarationOriginDefinitionContract, null);
+    assert.equal(packet.allDefinitionOriginsContracted, true);
   }
   assert.deepEqual(packet.expected, {
     queries: wanted,
     selectedApplicationQueryIndex: 0,
     version2: installed(2),
     independentVersion3: installed(3),
-    ...(model
-      ? { allDefinitionOriginsContracted: true }
-      : { declarationOriginDefinitionsObservedOnly: 8 }),
+    allDefinitionOriginsContracted: true,
     allowedWholeDiagnosticPublications: allowed,
   });
   return actual.observations;

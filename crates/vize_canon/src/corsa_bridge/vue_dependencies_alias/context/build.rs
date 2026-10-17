@@ -6,6 +6,7 @@ use vize_carton::{FxHashMap, FxHashSet};
 
 use super::AliasContext;
 use super::routes::{RouteDiscovery, package_specifiers_from_frontier};
+use crate::batch::ModuleSpecifierFactsCache;
 use crate::batch::virtual_project::VirtualProject;
 use crate::batch::virtual_project::dependency_scan::resolve_dependency;
 use crate::corsa_bridge::types::CorsaBridgeError;
@@ -23,6 +24,34 @@ pub(super) fn build(
     resolver: &mut crate::PackageRouteResolver,
     options: crate::corsa_bridge::vue_document::CorsaVueVirtualDocumentOptions,
     environment: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>,
+) -> Result<AliasContext, CorsaBridgeError> {
+    // Syntax facts belong to this preparation only: later edits, overlays and
+    // configuration changes always start with a new owner.
+    build_with_import_facts(
+        source_path,
+        content,
+        overlays,
+        revision,
+        resolver,
+        options,
+        environment,
+        &mut ModuleSpecifierFactsCache::default(),
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "explicit preparation inputs plus build-local syntax facts"
+)]
+fn build_with_import_facts(
+    source_path: &Path,
+    content: &str,
+    overlays: &FxHashMap<PathBuf, &str>,
+    revision: SourceRevision<'_>,
+    resolver: &mut crate::PackageRouteResolver,
+    options: crate::corsa_bridge::vue_document::CorsaVueVirtualDocumentOptions,
+    environment: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>,
+    facts: &mut ModuleSpecifierFactsCache,
 ) -> Result<AliasContext, CorsaBridgeError> {
     // A caller may reach the same file through a logical symlink spelling
     // (`/var` vs `/private/var` on macOS). Package routes already use physical
@@ -160,8 +189,7 @@ pub(super) fn build(
     } else {
         oxc_span::SourceType::ts()
     };
-    let host_specifiers = crate::batch::ImportRewriter::new()
-        .collect_all_specifier_occurrences(&virtual_file.content, source_type);
+    let host_specifiers = facts.collect_occurrences(&virtual_file.content, source_type);
     {
         let mut discovery = RouteDiscovery::new(
             &package_resolution,
@@ -189,10 +217,11 @@ pub(super) fn build(
         specifiers.sort();
         specifiers.dedup();
         project
-            .register_reachable_dependencies_with_package_resolver(
+            .register_reachable_dependencies_with_import_facts(
                 overlays,
                 &specifiers,
                 &mut resolve_package,
+                facts,
             )
             .map_err(bridge_error)?;
     }
@@ -222,7 +251,8 @@ pub(super) fn build(
             "alias_routes_frontier",
             scanned_package_sources.len(),
         );
-        let specifiers = package_specifiers_from_frontier(&project, &mut scanned_package_sources);
+        let specifiers =
+            package_specifiers_from_frontier(&project, &mut scanned_package_sources, facts);
         frontier_phase.finish();
         if specifiers.is_empty() {
             break;
@@ -246,10 +276,11 @@ pub(super) fn build(
                     discovery.resolve(importer, specifier, mode)
                 };
             project
-                .register_reachable_dependencies_with_package_resolver(
+                .register_reachable_dependencies_with_import_facts(
                     overlays,
                     &specifiers,
                     &mut resolve_package,
+                    facts,
                 )
                 .map_err(bridge_error)?;
             walk_phase.finish();
@@ -278,7 +309,11 @@ pub(super) fn build(
         .register_package_route_targets_with_visited(&mut registered_package_targets)
         .map_err(bridge_error)?;
     target_phase.finish();
-    project.finalize_package_routes().map_err(bridge_error)?;
+    project
+        .finalize_package_routes_with_imports(|project| {
+            project.finalize_editor_imports_with_import_facts(facts);
+        })
+        .map_err(bridge_error)?;
     routes_phase.finish();
     route_inputs.sort();
     route_inputs.dedup();
@@ -308,3 +343,6 @@ mod jsconfig_tests;
 
 #[cfg(test)]
 mod package_targets_tests;
+
+#[cfg(test)]
+mod import_facts_tests;

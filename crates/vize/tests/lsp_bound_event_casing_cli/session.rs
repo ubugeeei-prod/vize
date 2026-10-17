@@ -235,7 +235,7 @@ impl Session {
             "cliBinary":env!("CARGO_BIN_EXE_vize"),"requireTsgo":std::env::var("VIZE_TEST_REQUIRE_TSGO").ok(),
             "disableTsgo":std::env::var("VIZE_TEST_DISABLE_TSGO").ok(),"oracle":oracle,"expected":expected,"actual":actual,
             "tsconfig":TSCONFIG,"vizeConfig":std::fs::read_to_string(self.project.path().join("vize.config.json")).unwrap(),
-            "rawTraceDir":self.lsp.trace_dir(),"declarationOriginDefinitionContract":null});
+            "rawTraceDir":self.lsp.trace_dir(),"allDefinitionOriginsContracted":true});
         std::fs::write(
             root.join(self.project.path().file_name().unwrap())
                 .with_extension("json"),

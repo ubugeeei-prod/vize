@@ -9,7 +9,7 @@ Disallow using `v-else-if` or `v-else` on the same element as `v-for`
 [Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
-Presets: `nuxt`, `opinionated`  
+Presets: `ecosystem`, `happy-path`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -37,7 +37,7 @@ vp run lint
 
 ## Bad
 
-The else branch and v-for iteration are attached to the same paragraph.
+The else branch and v-for iteration are attached to the same paragraph. Vue accepts this syntax; the warning recommends separating the two control-flow responsibilities. HappyPath and Ecosystem now include it alongside Opinionated and Nuxt.
 
 ```vue
 <template>

@@ -1,0 +1,179 @@
+{
+  "schema": "vize.lint.preset-warning-source-successor",
+  "version": 1,
+  "parent": "883b800148b0faca3f4590d0b029f86e494a0b5e",
+  "scope": "Only four preset defaults and their exact registration, metadata and module documentation. No rule algorithm, parse, historical oracle, performance or native acceptance authority. The new Rust test module and one exact successful-CLI JUnit output override are included; test selection and runtime policies stay unchanged.",
+  "sources": [
+    {
+      "path": "crates/vize_patina/src/rule/happy_path.rs",
+      "before": {
+        "bytes": 7992,
+        "sha256": "05d2d336d26695c1e8ae1734cc1da484e08228009ac6e206d746691d0f0a31e4"
+      },
+      "after": {
+        "bytes": 8068,
+        "sha256": "742fbe9f2d727e487e64057c3d115cbf40ea84048a38062067883ceef4e42d49"
+      },
+      "hunks": [
+        {
+          "before": "        registry.register(Box::new(crate::rules::vue::NoUseVIfWithVFor));\n        registry.register(Box::new(crate::rules::vue::NoUnusedVars::default()));\n",
+          "after": "        registry.register(Box::new(crate::rules::vue::NoUseVIfWithVFor));\n        registry.register(Box::new(crate::rules::vue::NoUseVElseWithVFor));\n        registry.register(Box::new(crate::rules::vue::NoUnusedVars::default()));\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_patina/src/rules/opinionated/vue.rs",
+      "before": {
+        "bytes": 5290,
+        "sha256": "3f4a827cbde79733e95bf13d0480bb06410aacdaa6c75a13618707d6347503b8"
+      },
+      "after": {
+        "bytes": 5218,
+        "sha256": "c0b856b1eb6d08b6a6fdc282f6ba1342336751904bf8bbf7e470674d8dd03fa8"
+      },
+      "hunks": [
+        {
+          "before": "    registry.register(Box::new(NoArrayIndexKey));\n    registry.register(Box::new(crate::rules::vue::NoUseVElseWithVFor));\n}\n",
+          "after": "    registry.register(Box::new(NoArrayIndexKey));\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/registry.rs",
+      "before": {
+        "bytes": 4739,
+        "sha256": "ee91ee75e01da3b82938b8a82e649f3f1cb8896a5d308c0319b6c8f55d138e2d"
+      },
+      "after": {
+        "bytes": 4818,
+        "sha256": "f20c6289e2b95e1b45c854a048a4212572dd71511e9d0ad293e5cf190aef75ea"
+      },
+      "hunks": [
+        {
+          "before": "const OPINIONATED_SCRIPT_PRESETS: &[&str] = &[\"opinionated\"];\nconst ECOSYSTEM_SCRIPT_PRESETS: &[&str] = &[\"ecosystem\"];\n",
+          "after": "const OPINIONATED_SCRIPT_PRESETS: &[&str] = &[\"opinionated\"];\nconst OPINIONATED_AND_NUXT_SCRIPT_PRESETS: &[&str] = &[\"opinionated\", \"nuxt\"];\nconst ECOSYSTEM_SCRIPT_PRESETS: &[&str] = &[\"ecosystem\"];\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+      "before": {
+        "bytes": 21950,
+        "sha256": "6fbf101805a099e078a301a67323f6674c12fbf4aadd3ab4f41bd56fd344f58a"
+      },
+      "after": {
+        "bytes": 22001,
+        "sha256": "d38d4f6c43a56e5a66e7c2d1679ba9c1a96470b588898d19829485df5673ad7f"
+      },
+      "hunks": [
+        {
+          "before": "    BuiltinScriptRuleEntry, ECOSYSTEM_SCRIPT_PRESETS, ESSENTIAL_SCRIPT_PRESETS,\n    HAPPY_PATH_SCRIPT_PRESETS, NUXT_SCRIPT_PRESETS, OPINIONATED_ONLY_SCRIPT_PRESETS,\n    OPINIONATED_SCRIPT_PRESETS, OPT_IN_SCRIPT_PRESETS,\n};\n",
+          "after": "    BuiltinScriptRuleEntry, ECOSYSTEM_SCRIPT_PRESETS, ESSENTIAL_SCRIPT_PRESETS,\n    HAPPY_PATH_SCRIPT_PRESETS, NUXT_SCRIPT_PRESETS, OPINIONATED_AND_NUXT_SCRIPT_PRESETS,\n    OPINIONATED_ONLY_SCRIPT_PRESETS, OPINIONATED_SCRIPT_PRESETS, OPT_IN_SCRIPT_PRESETS,\n};\n"
+        },
+        {
+          "before": "    BuiltinScriptRuleEntry { rule_name: RULE_NO_WITH_DEFAULTS, profile_name: \"patina.script_rule.no_with_defaults\", category: \"Script\", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoWithDefaults },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, profile_name: \"patina.script_rule.no_deep_destructure_in_props\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NO_DEEP_DESTRUCTURE_IN_PROPS_RULE },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_INTERNAL_IMPORTS, profile_name: \"patina.script_rule.no_internal_imports\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoInternalImports },\n",
+          "after": "    BuiltinScriptRuleEntry { rule_name: RULE_NO_WITH_DEFAULTS, profile_name: \"patina.script_rule.no_with_defaults\", category: \"Script\", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoWithDefaults },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, profile_name: \"patina.script_rule.no_deep_destructure_in_props\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &NO_DEEP_DESTRUCTURE_IN_PROPS_RULE },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_INTERNAL_IMPORTS, profile_name: \"patina.script_rule.no_internal_imports\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoInternalImports },\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
+      "before": {
+        "bytes": 9635,
+        "sha256": "e3125601808dd6d4d0c7221c8330c9b0e02471a38b4c1819c77d7ca1389fc450"
+      },
+      "after": {
+        "bytes": 9641,
+        "sha256": "00690dca91797ee2a6b2e6ebbbf867cf703df8fb2f5aed52ef348fc9c0eab608"
+      },
+      "hunks": [
+        {
+          "before": "//! Checks top-level compiler-owned bindings in a sole inline `<script setup>`.\n//! Both object and array patterns contribute nesting depth. This remains an\n//! opt-in depth policy, not a compiler-error check: compiler-disabled reactive\n//! destructuring and `withDefaults` can compile while still receiving a warning.\n",
+          "after": "//! Checks top-level compiler-owned bindings in a sole inline `<script setup>`.\n//! Both object and array patterns contribute nesting depth. This remains a\n//! strict-preset depth policy, not a compiler-error check: compiler-disabled reactive\n//! destructuring and `withDefaults` can compile while still receiving a warning.\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_patina/src/preset.rs",
+      "before": {
+        "bytes": 5137,
+        "sha256": "c1c09e9ce5f0a6480efb305142d48f2d2e28f81422560869a9bb9306bf076ef1"
+      },
+      "after": {
+        "bytes": 5177,
+        "sha256": "18e5c7c0d31c07d2f5425c1ed6f6844c494bbccd1aed7d0d90d56afec8b12868"
+      },
+      "hunks": [
+        {
+          "before": "#[cfg(test)]\nmod default_migration_tests;\n",
+          "after": "#[cfg(test)]\nmod default_warning_tests;\n#[cfg(test)]\nmod default_migration_tests;\n"
+        }
+      ]
+    },
+    {
+      "path": ".config/nextest.toml",
+      "before": {
+        "bytes": 4911,
+        "sha256": "e8deab6de8f7fdf00d5d5f0d7a00fc0df7eacfd7ba5c48da771b181dfafb530c"
+      },
+      "after": {
+        "bytes": 5213,
+        "sha256": "d7aca4d0556a5ab2a4ef81c16d022883aaf2e17ddc48de3235e9cbe028596e86"
+      },
+      "hunks": [
+        {
+          "before": "nextest-version = \"0.9.146\"\n\n",
+          "after": "nextest-version = \"0.9.146\"\n\n# Retain the 38 exact default/off/repair/alias CLI packets without changing selection.\n[[profile.default.overrides]]\nfilter = 'package(=vize) & binary(=lint_preset_scope_cli) & test(=six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_packets)'\njunit.store-success-output = true\n\n"
+        }
+      ]
+    }
+  ],
+  "membership": {
+    "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "before": {
+      "bytes": 29779,
+      "sha256": "a70ad175f24e83f2dfaa2a09fef2fcbc9e61ac73bec06996bc4b224370886c5e"
+    },
+    "after": {
+      "bytes": 29937,
+      "sha256": "9e8be0ca9b87d0c6739bd453ae1a528d21047e5b0f0ab2c8fb4cce0c048b2917"
+    }
+  },
+  "preservedCorpora": [
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/cases.json",
+      "bytes": 80365,
+      "sha256": "d522ae6c3fc8a04403c43661c7d66584188a2168b1e01947093044f4239de8c8"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/props-deep-destructure-8090/original-neighbors.json",
+      "bytes": 76190,
+      "sha256": "ffc6df355e15eb06d128dc593652c508eeced0b78bc9bb423ac7a1199affa22f"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-export-default-8090/cases.json",
+      "bytes": 38718,
+      "sha256": "d4d9d15024a4df328fd7b32fca416fbf6d92a99952824e6b4405b74a6854ffcb"
+    },
+    {
+      "path": "tests/_fixtures/differential/lint/setup-export-default-8090/default-route-controls.json",
+      "bytes": 118712,
+      "sha256": "ef170231466cc8053a3dd7ee0a7b0742261ac4c74cc39032941085c8a031bfab"
+    }
+  ],
+  "cases": {
+    "path": "tests/_fixtures/lint-preset-default-warnings/cases.json",
+    "bytes": 3392,
+    "sha256": "731aa0c0dbeb7b6bf9f046dbc8d58b36fb00b89eb7317e9b89ffc8521c7959d7"
+  },
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "unchangedRule": {
+    "path": "crates/vize_patina/src/rules/vue/no_use_v_else_with_v_for.rs",
+    "bytes": 4100,
+    "sha256": "ecf746b5da839d6d87378756d797450d2aa66e1269f3097dd4bfff820107d9a5"
+  }
+}

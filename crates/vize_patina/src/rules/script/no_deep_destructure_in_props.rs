@@ -3,8 +3,8 @@
 //! Disallow deeply nested destructuring in defineProps.
 //!
 //! Checks top-level compiler-owned bindings in a sole inline `<script setup>`.
-//! Both object and array patterns contribute nesting depth. This remains an
-//! opt-in depth policy, not a compiler-error check: compiler-disabled reactive
+//! Both object and array patterns contribute nesting depth. This remains a
+//! strict-preset depth policy, not a compiler-error check: compiler-disabled reactive
 //! destructuring and `withDefaults` can compile while still receiving a warning.
 //! Ordinary scripts and unavailable/local/foreign macro ownership are ignored.
 //!

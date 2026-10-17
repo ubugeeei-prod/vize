@@ -705,7 +705,7 @@ Proibir desestruturação profundamente aninhada em defineProps
 [Incorreto](#script-no-deep-destructure-in-props-bad) · [Correto](#script-no-deep-destructure-in-props-good)
 
 Severidade padrão: `warning`  
-Predefinições: _none_  
+Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.

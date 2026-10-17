@@ -157,9 +157,9 @@ export const vue1Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "vue/no-use-v-else-with-v-for",
-    "The else branch and v-for iteration are attached to the same paragraph.",
+    "The else branch and v-for iteration are attached to the same paragraph. Vue accepts this syntax; the warning recommends separating the two control-flow responsibilities. HappyPath and Ecosystem now include it alongside Opinionated and Nuxt.",
     "A separate template owns v-else, and its child paragraph owns v-for.",
-    "同じ p に v-else と v-for を指定しています。",
+    "同じ p に v-else と v-for を指定しています。Vue が受け付ける構文ですが、警告は二つの制御フローを分けることを勧めます。Opinionated と Nuxt に加え、HappyPath と Ecosystem でも既定で有効です。",
     "template に v-else を分け、その子の p に v-for を指定します。",
   ],
   [

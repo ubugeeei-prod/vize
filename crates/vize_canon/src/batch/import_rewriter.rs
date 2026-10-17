@@ -19,6 +19,10 @@ mod policy;
 mod collect;
 use collect::{ModuleSpecifierCollector, collect_specifier_occurrences};
 
+#[path = "import_rewriter_facts.rs"]
+mod facts;
+pub(crate) use facts::ModuleSpecifierFactsCache;
+
 #[path = "import_rewriter_empty_vue_stars.rs"]
 mod empty_vue_stars;
 #[cfg(test)]
@@ -168,6 +172,23 @@ impl ImportRewriter {
             .0
     }
 
+    pub(super) fn rewrite_with_cached<F>(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        rewrite_specifier: F,
+        cache: &mut ModuleSpecifierFactsCache,
+    ) -> RewriteResult
+    where
+        F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
+    {
+        self.rewrite_occurrences(
+            source,
+            cache.span_occurrences(source, source_type),
+            rewrite_specifier,
+        )
+    }
+
     /// Retain authentic original bare-star edges during this same initial parse.
     #[cfg(test)]
     pub(super) fn rewrite_with_captured_stars<F>(
@@ -221,18 +242,33 @@ impl ImportRewriter {
         };
         collector.visit_program(program);
 
-        let mut rewrites: Vec<(u32, u32, String)> = Vec::new();
-        for (start, end, path, mode) in collector.specifiers {
-            if let Some(rewrite) = rewrite_specifier(&path, mode) {
-                rewrites.push((start, end, rewrite));
-            }
-        }
         let stars = collector
             .empty_stars
             .into_iter()
             .filter_map(|candidate| EmptyVueStar::capture(source, &program.comments, candidate))
             .collect();
 
+        (
+            self.rewrite_occurrences(source, &collector.specifiers, rewrite_specifier),
+            stars,
+        )
+    }
+
+    fn rewrite_occurrences<F>(
+        &self,
+        source: &str,
+        occurrences: &[(u32, u32, String, crate::PackageResolutionMode)],
+        rewrite_specifier: F,
+    ) -> RewriteResult
+    where
+        F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
+    {
+        let mut rewrites: Vec<(u32, u32, String)> = Vec::new();
+        for (start, end, path, mode) in occurrences {
+            if let Some(rewrite) = rewrite_specifier(path, *mode) {
+                rewrites.push((*start, *end, rewrite));
+            }
+        }
         rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
         let mut output = source.to_compact_string();
@@ -252,13 +288,10 @@ impl ImportRewriter {
 
         adjustments.reverse();
 
-        (
-            RewriteResult {
-                code: output,
-                source_map: ImportSourceMap::new(adjustments),
-            },
-            stars,
-        )
+        RewriteResult {
+            code: output,
+            source_map: ImportSourceMap::new(adjustments),
+        }
     }
 
     /// Relative SFC dependencies of `source`, always spelled with the `.vue`

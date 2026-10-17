@@ -281,11 +281,25 @@ jobs:
         # registry partitions test binaries by their actual product surface.
         run: |
           node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
+          evidence="$RUNNER_TEMP/rust-build-evidence"
+          node tools/support/compat/github/rust-build-evidence.ts before "$evidence"
+          set -o pipefail
           phase_started=$SECONDS
-          if node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo nextest run @packages@ --cargo-profile ci --profile "$NEXTEST_PROFILE" -E "$NEXTEST_FILTER" --no-tests=pass; then phase_exit=0; else phase_exit=$?; fi
+          if node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo nextest run @packages@ --cargo-profile ci --timings --cargo-message-format=json-render-diagnostics --profile "$NEXTEST_PROFILE" -E "$NEXTEST_FILTER" --no-tests=pass | tee "$evidence/cargo.jsonl"; then phase_exit=0; else phase_exit=$?; fi
           mkdir -p "target/nextest/$NEXTEST_PROFILE"
           printf '{"phase":"workspace-cohort","cohort":"%s","elapsed_seconds":%d,"exit_code":%d}\n' "$COHORT" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
           exit "$phase_exit"
+      - name: Preserve actual PR Rust build units and fresh timing HTML
+        if: ${{ always() && github.event_name == 'pull_request' }}
+        run: node tools/support/compat/github/rust-build-evidence.ts collect "$RUNNER_TEMP/rust-build-evidence"
+      - name: Upload PR Rust build evidence
+        if: ${{ always() && github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-build-evidence-${{ matrix.cohort }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: ${{ runner.temp }}/rust-build-evidence/
+          if-no-files-found: error
+          retention-days: 7
       - name: Run Rust test cohort without rebuilding
         if: ${{ github.event_name == 'merge_group' }}
         # Baked env! paths still occur in tests. Extract to the original workspace

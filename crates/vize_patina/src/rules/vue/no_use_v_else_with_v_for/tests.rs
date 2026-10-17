@@ -106,12 +106,12 @@ fn accepts_each_control_flow_shape_when_it_is_not_mixed() {
 }
 
 #[test]
-fn strict_presets_enable_it_and_others_accept_the_exact_name() {
-    assert!(!RuleRegistry::default().has_rule(RULE));
-    assert!(!RuleRegistry::with_happy_path().has_rule(RULE));
+fn broad_presets_enable_it_and_incremental_accepts_the_exact_name() {
+    assert!(RuleRegistry::default().has_rule(RULE));
+    assert!(RuleRegistry::with_happy_path().has_rule(RULE));
     assert!(!RuleRegistry::with_essential().has_rule(RULE));
     assert!(RuleRegistry::with_opinionated().has_rule(RULE));
-    assert!(!RuleRegistry::with_ecosystem().has_rule(RULE));
+    assert!(RuleRegistry::with_ecosystem().has_rule(RULE));
     assert!(RuleRegistry::with_nuxt().has_rule(RULE));
     assert!(RuleRegistry::with_opt_in_rules().has_rule(RULE));
 

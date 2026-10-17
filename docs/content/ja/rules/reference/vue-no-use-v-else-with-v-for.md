@@ -9,7 +9,7 @@ title: "vue/no-use-v-else-with-v-for"
 [悪い例](#悪い) · [良い例](#良い)
 
 既定の重大度: `warning`  
-プリセット: `nuxt`, `opinionated`  
+プリセット: `ecosystem`, `happy-path`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-同じ p に v-else と v-for を指定しています。
+同じ p に v-else と v-for を指定しています。Vue が受け付ける構文ですが、警告は二つの制御フローを分けることを勧めます。Opinionated と Nuxt に加え、HappyPath と Ecosystem でも既定で有効です。
 
 ```vue
 <template>

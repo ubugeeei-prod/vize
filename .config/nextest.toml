@@ -1,6 +1,11 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Retain the 38 exact default/off/repair/alias CLI packets without changing selection.
+[[profile.default.overrides]]
+filter = 'package(=vize) & binary(=lint_preset_scope_cli) & test(=six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_packets)'
+junit.store-success-output = true
+
 # Retain all 147 original/boundary/component CLI observation packets and the isolated whole-output
 # semantic/observed-cost comparison. Runtime, selection and retry policies stay fixed.
 [[profile.default.overrides]]
