@@ -198,7 +198,7 @@ pub(super) fn find_or_dispatch(
     let cut = github::parent(head, root)?;
     budget.check()?;
     operator.verify()?;
-    let qualified = pr_ci::qualify_check(repository, branch, head, &cut, Some(budget), root);
+    let qualification = pr_ci::start_check(repository, branch, head, &cut, Some(budget), root);
     budget.check()?;
     operator.verify()?;
     let pr = github::api(repository, &format!("pulls/{number}"), root)?;
@@ -237,30 +237,39 @@ pub(super) fn find_or_dispatch(
     if github::tag_target(tag, root)?.is_some() {
         return Ok(None);
     }
-    qualified?;
+    let qualification_deadline = qualification?;
     // Another observer may have discovered a valid R while source CI ran.
     if let Some(id) = find_run(repository, head, &title, root)? {
         return Ok(Some(id));
     }
     budget.check()?;
     operator.verify()?;
+    let mut arguments = [
+        "workflow",
+        "run",
+        "release.yml",
+        "--repo",
+        repository,
+        "--ref",
+        branch,
+        "--field",
+        &format!("tag_name={tag}"),
+        "--field",
+        &format!("release_pr={number}"),
+        "--field",
+        &format!("expected_sha={head}"),
+    ]
+    .map(str::to_owned)
+    .to_vec();
+    if let Some(deadline) = qualification_deadline {
+        arguments.extend([
+            "--field".into(),
+            format!("qualification_deadline={deadline}"),
+        ]);
+    }
     github::output(
         "gh",
-        &[
-            "workflow",
-            "run",
-            "release.yml",
-            "--repo",
-            repository,
-            "--ref",
-            branch,
-            "--field",
-            &format!("tag_name={tag}"),
-            "--field",
-            &format!("release_pr={number}"),
-            "--field",
-            &format!("expected_sha={head}"),
-        ],
+        &arguments.iter().map(String::as_str).collect::<Vec<_>>(),
         root,
     )?;
     for _ in 0..30 {

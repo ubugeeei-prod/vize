@@ -6,6 +6,7 @@ on:
       release_pr: { type: string, required: false, default: "" }
       tag_name: { type: string, required: false, default: "" }
       pinned: { type: boolean, required: false, default: false }
+      qualification_deadline: { type: string, required: true }
 
 permissions:
   actions: read
@@ -17,7 +18,26 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  wait-check:
+    name: Wait for existing exact-source Check
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 345
+    permissions: { actions: read, contents: read }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 2, persist-credentials: false, ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Authenticate and wait for the already started qualification
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          QUALIFICATION_DEADLINE: ${{ inputs.qualification_deadline }}
+        run: |
+          node tools/support/release/qualify_check/main.ts --wait-existing \
+            "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME" "$GITHUB_SHA" \
+            "$(git rev-parse HEAD^)" "$QUALIFICATION_DEADLINE"
   verify:
+    needs: wait-check
     name: Verify release safety contract
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
