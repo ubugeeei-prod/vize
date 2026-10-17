@@ -52,6 +52,8 @@
     "tools/support/release/command_runtime.ts",
     "tools/support/release/editor_extension_info.ts",
     "tools/support/release/ordered_json.ts",
+    "tools/support/release/retirement_qualification.ts",
+    "tests/tooling/release/retirement-qualification.test.ts",
     "tools/support/release/prepare_npm_publish_manifest/main.ts",
     "tools/support/release/publish_crates/config.ts",
     "tools/support/release/publish_crates/main.ts",
