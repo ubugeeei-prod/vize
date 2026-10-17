@@ -11,6 +11,8 @@ use super::{MaestroServer, ServerState};
 use crate::ide::FileRenameService;
 
 #[cfg(feature = "native")]
+pub(super) mod config_watchers;
+#[cfg(feature = "native")]
 mod dependents;
 #[cfg(feature = "native")]
 mod project_operations;
@@ -43,11 +45,27 @@ pub(super) fn record_watcher_support(state: &ServerState, capabilities: &ClientC
 }
 
 pub(super) async fn initialized(server: &MaestroServer) {
+    #[cfg(feature = "native")]
+    if let Some(watchers) = &server.configuration_watchers {
+        watchers.start(server.client.clone());
+        server.queue_configuration_watches();
+    }
     register_typecheck_dependency_watcher(server).await;
     server
         .client
         .log_message(MessageType::INFO, "vize_maestro LSP server initialized")
         .await;
+}
+
+#[cfg(feature = "native")]
+impl MaestroServer {
+    /// Enqueue even an unchanged set so a failed registration can retry at the
+    /// next normal operation. The controller never awaits a client ACK here.
+    pub(super) fn queue_configuration_watches(&self) {
+        if let Some(watchers) = &self.configuration_watchers {
+            watchers.update(self.state.configuration_watch_paths());
+        }
+    }
 }
 async fn register_typecheck_dependency_watcher(server: &MaestroServer) {
     #[cfg(feature = "native")]
@@ -215,9 +233,10 @@ async fn publish_versioned_dependents(
     server: &MaestroServer,
     dependents: Vec<(tower_lsp::lsp_types::Url, i32)>,
 ) {
+    let mut admission = server.configuration_admission.clone();
     for (dependent, version) in dependents {
         server
-            .for_document(&dependent)
+            .for_document_in_operation(&dependent, &mut admission)
             .await
             .publish_diagnostics_if_version(&dependent, version)
             .await;

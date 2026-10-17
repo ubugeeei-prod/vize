@@ -63,7 +63,6 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     )
     .with_explicit_tsconfig(args.tsconfig.as_deref());
     let effective_tsconfig = project.tsconfig().map(Path::to_path_buf);
-    super::input_scope::validate_selected_tsconfig(args, effective_tsconfig.as_deref());
     let effective_corsa_path = args.corsa_path.as_ref().map(PathBuf::from).or_else(|| {
         config
             .type_checker
@@ -84,6 +83,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
     let (invocation_project_root, invocation_tsconfig_path) =
         resolve_invocation_program(effective_tsconfig.as_deref(), default_root);
+    super::input_scope::validate_selected_tsconfig(args, invocation_tsconfig_path.as_deref());
     let nuxt_project_root = resolve_nuxt_project_root(
         effective_tsconfig.as_deref(),
         &cwd,

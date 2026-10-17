@@ -22,7 +22,10 @@ pub(super) fn resolve_corsa_executable(
     };
 
     match vize_carton::corsa_resolver::resolve_corsa_executable(request) {
-        Ok(path) => Ok(path.to_string_lossy().into()),
+        Ok(path) => {
+            tracing::info!(executable = %path.display(), "resolved native TypeScript runtime");
+            Ok(path.to_string_lossy().into())
+        }
         // Preserve the historical lenient fallback: spawning a bare `corsa`
         // still lets `PATH` changes made after resolution take effect.
         Err(CorsaResolveError::NotFound) => Ok("corsa".into()),

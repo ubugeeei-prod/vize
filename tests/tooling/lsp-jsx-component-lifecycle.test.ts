@@ -98,6 +98,15 @@ defineProps<{ count: string }>()
     });
     await waitForClean(session, consumerUri, 1);
     session.notify("textDocument/didClose", { textDocument: { uri: counterUri } });
+    const closed = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) =>
+        isDiagnosticsForUri(params, counterUri) &&
+        !("version" in params) &&
+        params.diagnostics.length === 0,
+      10_000,
+    );
+    assert.deepEqual(closed, { uri: counterUri, diagnostics: [] });
 
     const renameEdit = (await session.request("workspace/willRenameFiles", {
       files: [{ oldUri: counterUri, newUri: renamedUri }],

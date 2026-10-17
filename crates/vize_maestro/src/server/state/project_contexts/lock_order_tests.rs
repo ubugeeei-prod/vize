@@ -5,8 +5,9 @@ use tower_lsp::lsp_types::{FileChangeType, FileEvent};
 
 #[derive(Clone, Copy, PartialEq)]
 enum Phase {
-    BeforeContexts,
-    BeforeRoutes,
+    Contexts,
+    Routes,
+    ConfigInstall,
 }
 
 type Hook = (Phase, Box<dyn FnOnce()>);
@@ -33,11 +34,19 @@ fn arrive(phase: Phase) {
 }
 
 pub(super) fn before_contexts_lock() {
-    arrive(Phase::BeforeContexts);
+    arrive(Phase::Contexts);
 }
 
 pub(super) fn before_route_changes() {
-    arrive(Phase::BeforeRoutes);
+    arrive(Phase::Routes);
+}
+
+pub(super) fn before_config_install() {
+    arrive(Phase::ConfigInstall);
+}
+
+pub(super) fn at_config_install(action: impl FnOnce() + 'static) {
+    HOOK.with(|slot| *slot.borrow_mut() = Some((Phase::ConfigInstall, Box::new(action))));
 }
 
 fn pause_at(phase: Phase) -> (mpsc::Receiver<()>, mpsc::Sender<()>, impl FnOnce()) {
@@ -91,7 +100,7 @@ fn marker_corpus() -> serde_json::Value {
 fn cached_route_releases_its_shard_before_waiting_for_contexts() {
     let (_root, state, uri, expected) = fixture();
     let contexts = state.project_contexts.contexts.lock();
-    let (entered, resume, install) = pause_at(Phase::BeforeContexts);
+    let (entered, resume, install) = pause_at(Phase::Contexts);
     let worker_state = state.clone();
     let worker_uri = uri.clone();
     let worker = std::thread::spawn(move || {
@@ -119,7 +128,7 @@ fn config_watcher_releases_contexts_before_waiting_for_a_route_shard() {
     let route = state.project_contexts.routes.get(&uri).unwrap();
     let generation = state.project_routing_generation();
     let marker = Url::from_file_path(root.path().join("vite.config.mjs")).unwrap();
-    let (entered, resume, install) = pause_at(Phase::BeforeRoutes);
+    let (entered, resume, install) = pause_at(Phase::Routes);
     let worker_state = state.clone();
     let worker = std::thread::spawn(move || {
         install();
@@ -253,3 +262,6 @@ fn registered_workspaces_named_after_generated_directories_observe_their_own_con
         assert!(state.project_routing_generation() > generation);
     }
 }
+
+#[path = "config_reload_admission_tests.rs"]
+mod config_reload_admission_tests;

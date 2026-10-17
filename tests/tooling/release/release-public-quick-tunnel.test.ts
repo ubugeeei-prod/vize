@@ -407,7 +407,8 @@ void test("workflow keeps original VRT eligibility and makes setup a separate pr
   );
   assert.match(
     observerStep,
-    /node vrt_observer\.ts "\$PUBLIC_VERSION" "\$PUBLIC_OUTPUT\/vrt\.json" > "\$PUBLIC_OUTPUT\/vrt\.log" 2>&1/u,
+    /node vrt_observer\.ts "\$PUBLIC_VERSION" "\$PUBLIC_OUTPUT\/vrt\.json" 3>&2 > "\$PUBLIC_OUTPUT\/vrt\.log" 2>&1/u,
   );
-  assert.match(observerStep, /exit "\$\{vrt_status:-0\}"/u);
+  assert.match(observerStep, /if \[ "\$vrt_status" -eq 0 \]; then exit 1; fi/u);
+  assert.match(observerStep, /exit "\$vrt_status"/u);
 });

@@ -73,3 +73,23 @@ test("Maestro path and source IO compose without admitting extra source IO", () 
   ])
     assert.match(withoutHostRuntimeReferences(actual + "\n" + extra, file), forbidden, extra);
 });
+
+test("editor admission regression hosts retain exact real canonicalizer boundaries", () => {
+  for (const file of [
+    "crates/vize_canon/src/corsa_bridge/vue_document/build/native_union_tests.rs",
+    "crates/vize_maestro/src/server/native_requests/tests.rs",
+    "crates/vize_maestro/src/server/project_contexts/operation_admission_tests.rs",
+  ]) {
+    const actual = read(file);
+    const pathReference = /\bvize_carton::path\b/u;
+    assert.doesNotMatch(withoutPathHostReferences(actual, file), pathReference, file);
+    for (const extra of [
+      "vize_carton::path::canonicalize_non_verbatim(path);",
+      "vize_carton::path::normalize_windows_verbatim_path(path);",
+      "use vize_carton::path::*;",
+    ]) {
+      assert.match(withoutPathHostReferences(`${actual}\n${extra}`, file), pathReference);
+    }
+    assert.match(withoutPathHostReferences(actual, `${file}.other`), pathReference);
+  }
+});

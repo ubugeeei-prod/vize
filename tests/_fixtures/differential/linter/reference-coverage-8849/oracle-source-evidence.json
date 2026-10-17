@@ -1,0 +1,46 @@
+{
+  "schema": "vize.referenceVisitorEvidence",
+  "version": 1,
+  "compilerVersion": "3.6.0-beta.10",
+  "sources": [
+    {
+      "package": "eslint-plugin-vue",
+      "version": "10.9.2",
+      "path": "dist/rules/v-slot-style.js",
+      "sha256": "77c92649c9e16a0fe6228525524a7651ce8f811e64cb2eeebf3b7bcfd50f3866",
+      "tarball": "https://registry.npmjs.org/eslint-plugin-vue/-/eslint-plugin-vue-10.9.2.tgz"
+    },
+    {
+      "package": "eslint-plugin-vue",
+      "version": "10.9.2",
+      "path": "dist/rules/no-mutating-props.js",
+      "sha256": "7f483d73e71e14ab8a9a057cd258d1bf7d83c053bf2d6bf46ba609f74cb50991",
+      "tarball": "https://registry.npmjs.org/eslint-plugin-vue/-/eslint-plugin-vue-10.9.2.tgz"
+    },
+    {
+      "package": "vue-eslint-parser",
+      "version": "10.4.1",
+      "path": "dist/index.cjs",
+      "sha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+      "tarball": "https://registry.npmjs.org/vue-eslint-parser/-/vue-eslint-parser-10.4.1.tgz"
+    }
+  ],
+  "assertions": {
+    "slotStyleVisitor": "VAttribute[directive=true][key.name.name=slot]",
+    "bareHashReferenceAST": {
+      "directive": false,
+      "keyType": "VIdentifier",
+      "name": "#"
+    },
+    "bareHashVueAST": {
+      "type": 7,
+      "name": "slot",
+      "argument": null
+    },
+    "mutatingPropsVisitors": [
+      "defineScriptSetupVisitor.onDefinePropsEnter",
+      "defineVueVisitor.onVueObjectEnter"
+    ],
+    "mutatingPropsClassDecoratorVisitor": null
+  }
+}

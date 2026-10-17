@@ -104,6 +104,7 @@ pub use topology::BatchTopologyMetrics;
 mod included_sources;
 mod tsconfig_gen;
 pub use tsconfig_gen::{
+    CompilerConfigurationAttempt, CompilerConfigurationSnapshot, ConfigurationObservations,
     TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind,
     snapshot_tsconfig_compiler_options, snapshot_tsconfig_vue_target,
 };
@@ -179,6 +180,13 @@ pub struct VirtualProject {
 
     /// Explicit tsconfig path, if one was provided by the caller.
     tsconfig_path: Option<PathBuf>,
+
+    /// Immutable compiler authority supplied only by an admitted editor owner.
+    #[expect(
+        clippy::disallowed_types,
+        reason = "immutable snapshots are shared by editor owners"
+    )]
+    compiler_configuration: Option<std::sync::Arc<CompilerConfigurationSnapshot>>,
 
     /// Whether the effective tsconfig asks TypeScript to report unused symbols.
     preserve_unused_diagnostics: bool,

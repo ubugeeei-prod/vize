@@ -13,11 +13,14 @@ pub use formatter::{
     try_load_formatter_snapshot,
 };
 mod discovery;
+mod failure_identity;
+pub use failure_identity::ConfigLoadFailureIdentity;
 #[cfg(test)]
 mod experimental_tests;
 #[cfg(test)]
 mod extends_tests;
 mod js;
+mod js_observation;
 mod jsx;
 mod language_server;
 #[cfg(test)]
@@ -35,6 +38,9 @@ mod vapor;
 
 use std::path::{Path, PathBuf};
 
+/// Borrowed for one checked load; the callback may retain caller-owned observations.
+type BeforeConfigRead<'a> = Option<&'a mut (dyn FnMut(&[PathBuf]) + 'a)>;
+
 use checked::load_raw_config_checked;
 use discovery::{CONFIG_FILE_NAMES, resolve_dir_path, resolve_file_path, search_directories};
 use parse::{parse_raw_config_file, try_parse_raw_candidate};
@@ -45,7 +51,9 @@ use super::{
 };
 pub use compiler_keys::*;
 pub use library::{LoadedLibConfig, load_lib_config_with_source};
-pub use lsp_snapshot::{LoadedLspConfig, load_lsp_config_snapshot};
+pub use lsp_snapshot::{
+    LoadedLspConfig, load_lsp_config_snapshot, load_lsp_config_snapshot_observed,
+};
 pub use {jsx::load_compiler_jsx_compat, vapor::load_compiler_vapor};
 pub use {language_server::*, lint_features::*};
 

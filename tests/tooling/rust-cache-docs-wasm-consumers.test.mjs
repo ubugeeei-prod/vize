@@ -63,6 +63,29 @@ void test("actual complete consumers retain the sole WASM producer and separate 
   assert(result.napi.length >= 2);
 });
 
+void test("retired readiness inputs cannot return or hide unrelated producer changes", (t) => {
+  for (const [before, after, refusal] of [
+    [
+      "  - '.github/actions/app-e2e-row/**'\n",
+      "  - '.github/actions/app-e2e-row/**'\n  - '.github/actions/setup-moonbit/**'\n",
+      /retired MoonBit readiness input remains/,
+    ],
+    [
+      "  - '.github/actions/setup-rust-sticky-cache/**'\n",
+      "  - '.github/actions/unreviewed-cache/**'\n",
+      /app-readiness-plan: reviewed matrix producer changed/,
+    ],
+  ]) {
+    const directory = fixture(t);
+    edit(directory, ".github/workflows/e2e.yml", (value) => {
+      const changes = value.jobs["app-readiness-plan"].steps.find((step) => step.id === "changes");
+      assert.equal(changes.with.filters.split(before).length, 2);
+      changes.with.filters = changes.with.filters.replace(before, after);
+    });
+    assert.throws(() => verifyDocsWasmConsumers(directory), refusal);
+  }
+});
+
 void test("ordinary literal roles and reviewed non-Docs dynamic prefixes remain eligible", (t) => {
   for (const [uses, key] of [
     [cache, "new-ordinary-role"],

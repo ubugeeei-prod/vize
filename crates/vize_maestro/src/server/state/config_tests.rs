@@ -122,6 +122,7 @@ fn patterned_template_opt_in_is_reloaded_by_both_config_loaders() {
 #[test]
 fn language_server_legacy_vue2_reaches_logged_lsp_feature_payload() {
     let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join("tsconfig.vize.json"), "{}").unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         r#"export default { vue: {

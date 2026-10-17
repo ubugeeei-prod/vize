@@ -6,12 +6,14 @@ on:
       - ".github/workflows/release-public-acceptance-contracts.yml"
       - "tools/support/release/public_acceptance/**"
       - "tests/tooling/release-public-a11y.test.ts"
+      - "tests/tooling/release-public-vrt-diagnostics.test.ts"
       - "tests/tooling/release-public-corsa-provider.test.ts"
       - "tests/tooling/release-public-lsp-lifecycle.test.ts"
       - "tests/tooling/release/release-public-*.test.ts"
       - "tests/_fixtures/release/public-corsa-resolver.json"
       - "tests/_fixtures/release/public-lsp-clean-eof.json"
       - "tests/_fixtures/release/public-lsp-boundary-eof.json"
+      - "tests/tooling/fixtures/release/vrt-log-barrier/**"
 permissions: { contents: read }
 concurrency:
   group: public-acceptance-contracts-${{ github.event.pull_request.number }}
@@ -33,6 +35,10 @@ jobs:
           node --test tests/tooling/release-public-corsa-provider.test.ts
           tests/tooling/release-public-lsp-lifecycle.test.ts
           tests/tooling/release-public-a11y.test.ts
+          tests/tooling/release-public-vrt-diagnostics.test.ts
           tests/tooling/release/release-public-acceptance.test.ts
+          tests/tooling/release/release-public-vrt-log-barrier.test.ts
+          tests/tooling/release/release-public-vrt-upload-refusal.test.ts
           tests/tooling/release/release-public-quick-tunnel.test.ts
+          tests/tooling/release/release-public-gallery-readiness.test.ts
           tests/tooling/release/release-public-vrt-tunnel-inputs.test.ts

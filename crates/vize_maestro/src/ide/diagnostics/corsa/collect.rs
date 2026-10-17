@@ -87,6 +87,9 @@ impl DiagnosticService {
                     // list would make a timed-out pass indistinguishable from a
                     // clean file, which is the silence #3376 is about.
                     return CorsaDiagnostics::Unavailable(match error {
+                        CorsaBridgeError::Configuration(message) => {
+                            vec![project_configuration_error(&message)]
+                        }
                         CorsaBridgeError::Timeout => vec![typecheck_timed_out_hint()],
                         _ => vec![],
                     });
@@ -289,6 +292,17 @@ impl DiagnosticService {
     }
 }
 
+fn project_configuration_error(message: &str) -> Diagnostic {
+    Diagnostic {
+        range: Range::default(),
+        severity: Some(DiagnosticSeverity::ERROR),
+        code: Some(NumberOrString::String("configuration-error".to_string())),
+        source: Some(sources::TYPE_CHECKER.to_string()),
+        message: vize_l0::cstr!("Configuration error: {message}").into(),
+        ..Default::default()
+    }
+}
+
 /// Diagnostic published when a Corsa request outran the bridge's hard bound.
 ///
 /// The bound is enforced by the bridge worker thread, because the request is
@@ -342,5 +356,23 @@ mod tests {
             classify(&bridge, error),
             CollectFailure::Request(CorsaBridgeError::ResponseError { .. })
         ));
+    }
+
+    #[test]
+    fn local_configuration_failure_is_visible_without_retiring_the_backend() {
+        let bridge = Arc::new(CorsaBridge::new());
+        let message = "cannot resolve tsconfig extends \"./base.json\" from /app/tsconfig.json";
+        assert!(matches!(
+            classify(&bridge, CorsaBridgeError::Configuration(message.into())),
+            CollectFailure::Request(CorsaBridgeError::Configuration(_))
+        ));
+        assert_eq!(
+            serde_json::to_value(super::project_configuration_error(message)).unwrap(),
+            serde_json::json!({
+                "range":{"start":{"line":0,"character":0},"end":{"line":0,"character":0}},
+                "severity":1,"code":"configuration-error","source":"vize/types",
+                "message":"Configuration error: cannot resolve tsconfig extends \"./base.json\" from /app/tsconfig.json"
+            })
+        );
     }
 }

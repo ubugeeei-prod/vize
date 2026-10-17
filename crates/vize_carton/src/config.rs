@@ -2,7 +2,6 @@
 
 #[expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods,
     reason = "host config evaluation retains its existing std error and process strings"
 )]
 mod loader;
@@ -10,7 +9,7 @@ mod loader;
 pub mod matcher;
 mod project;
 pub use loader::{
-    LoadedConfig, LoadedConfigEntryFiles, LoadedConfigEntryIgnores,
+    ConfigLoadFailureIdentity, LoadedConfig, LoadedConfigEntryFiles, LoadedConfigEntryIgnores,
     LoadedConfigExperimentalVueFlags, LoadedConfigWithFeatures, LoadedFormatterSnapshot,
     LoadedLibConfig, LoadedLintExecutionConfig, LoadedLspConfig, LoadedProjectConfig,
     load_compiler_custom_elements, load_compiler_host_compiler, load_compiler_jsx_compat,
@@ -26,10 +25,10 @@ pub use loader::{
     load_config_with_features_and_source, load_config_with_formatter_options_and_source,
     load_config_with_source, load_language_server_unstable_flags, load_lib_config_with_source,
     load_linter_config, load_linter_execution_with_source, load_linter_rule_options,
-    load_lsp_config_snapshot, load_project_config_with_source, try_load_formatter_snapshot,
-    try_load_linter_execution_with_project, try_load_linter_execution_with_source,
-    try_load_project_config_from_root, try_load_project_config_with_source,
-    validate_explicit_config_path,
+    load_lsp_config_snapshot, load_lsp_config_snapshot_observed, load_project_config_with_source,
+    try_load_formatter_snapshot, try_load_linter_execution_with_project,
+    try_load_linter_execution_with_source, try_load_project_config_from_root,
+    try_load_project_config_with_source, validate_explicit_config_path,
 };
 pub use project::ProjectModel;
 pub use vize_l0::config::*;

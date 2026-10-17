@@ -74,13 +74,25 @@ impl CorsaBridge {
         config: CorsaBridgeConfig,
         package_route_resolver: crate::PackageRouteResolver,
     ) -> Self {
+        Self::with_compiler_configuration(config, package_route_resolver, None)
+    }
+
+    /// Bind an admitted editor owner's immutable compiler authority. Direct
+    /// callers passing `None` keep strict, live TypeScript config loading.
+    pub fn with_compiler_configuration(
+        config: CorsaBridgeConfig,
+        package_route_resolver: crate::PackageRouteResolver,
+        compiler_configuration: Option<Arc<crate::CompilerConfigurationSnapshot>>,
+    ) -> Self {
         let profiler = if config.enable_profiling {
             Profiler::enabled()
         } else {
             Profiler::new()
         };
 
-        let editor_session = Arc::new(super::EditorMirrorSession::new());
+        let editor_session = Arc::new(super::EditorMirrorSession::with_compiler_configuration(
+            compiler_configuration,
+        ));
         Self {
             worker: BoundedWorker::new_with_keepalive(
                 "vize-corsa-bridge",

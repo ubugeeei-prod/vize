@@ -122,11 +122,18 @@ impl Session {
     ) -> TestResult {
         let expected = json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics",
             "params":{"uri":uri,"version":version,"diagnostics":diagnostics}});
-        // This target disables prompt lint feedback. Initial [] is withheld,
-        // and didChange's versioned [] can only follow the awaited native
-        // collection. Match the whole final result and retain all earlier
-        // publications in the unchanged shared transport's terminal evidence.
+        // This target disables prompt lint feedback. Initial [] is withheld;
+        // the versioned native result may include actual authored errors.
+        // Match the whole final result and retain all earlier publications in
+        // the unchanged shared transport's terminal evidence.
         let response = self.process.recv_matching(|m| m == &expected);
+        check(response, expected)
+    }
+
+    pub(super) fn closed_publication(&mut self, uri: &str) -> TestResult {
+        let expected = json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics",
+            "params":{"uri":uri,"diagnostics":[]}});
+        let response = self.process.recv_matching(|message| message == &expected);
         check(response, expected)
     }
 

@@ -5,13 +5,14 @@
 //! auto-discovery: malformed configs warn, while an unavailable PKL runtime can
 //! continue to the next lower-priority config format.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::config::ConfigDocument;
 
 use super::{
+    BeforeConfigRead,
     discovery::{CONFIG_MIGRATION, is_retired_config},
-    js::parse_js_config,
+    js::parse_js_config_observed,
     pkl,
 };
 
@@ -19,12 +20,35 @@ use super::{
 pub(super) fn parse_raw_config_file(
     path: &Path,
 ) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    parse_raw_config_file_with_dependencies(path, &mut Vec::new(), &mut true)
+}
+
+pub(super) fn parse_raw_config_file_with_dependencies(
+    path: &Path,
+    dependencies: &mut Vec<PathBuf>,
+    complete: &mut bool,
+) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    parse_raw_config_file_observed(path, dependencies, complete, &mut None)
+}
+
+pub(super) fn parse_raw_config_file_observed(
+    path: &Path,
+    dependencies: &mut Vec<PathBuf>,
+    complete: &mut bool,
+    before_read: &mut BeforeConfigRead<'_>,
+) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    if let Some(observe) = before_read.as_deref_mut() {
+        observe(&[path.to_path_buf()]);
+    }
+    dependencies.push(path.to_path_buf());
     if is_retired_config(path) {
         return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, CONFIG_MIGRATION).into());
     }
     let mut config = match path.extension().and_then(|ext| ext.to_str()) {
         Some("pkl") => pkl::parse_pkl_config(path)?,
-        Some("ts" | "js" | "mjs" | "cjs" | "mts" | "cts") => parse_js_config(path)?,
+        Some("ts" | "js" | "mjs" | "cjs" | "mts" | "cts") => {
+            parse_js_config_observed(path, dependencies, complete, before_read)?
+        }
         Some("json") => {
             let content = std::fs::read_to_string(path)?;
             document_from_json(content.as_bytes(), path)?

@@ -155,10 +155,13 @@ impl AliasContext {
                     &union.query_paths,
                     union.requires_arbitrary_extensions,
                 )
-                .map_err(|error| {
-                    super::super::super::types::CorsaBridgeError::CommunicationError(
+                .map_err(|error| match error {
+                    crate::CorsaError::Configuration(message) => {
+                        super::super::super::types::CorsaBridgeError::Configuration(message)
+                    }
+                    error => super::super::super::types::CorsaBridgeError::CommunicationError(
                         vize_carton::cstr!("Failed to materialize Canon project union: {error}"),
-                    )
+                    ),
                 })?;
             materialized_changes = current.diff(&previous);
             source_catalog =

@@ -37,8 +37,8 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   assert.match(nvimConfig, /cmd = \{ "vize", "lsp" \}/);
   assert.match(nvimConfig, /filetypes = \{ "vue", "art-vue" \}/);
   assert.match(nvimConfig, /init_options = vim\.empty_dict\(\)/);
-  assert.match(nvimConfig, /lint = \{\s*lint = true,\s*\}/);
-  assert.match(nvimConfig, /off = \{\}/);
+  assert.match(nvimConfig, /lint = exclusive_profile\(true\)/);
+  assert.match(nvimConfig, /off = exclusive_profile\(false\)/);
   assert.match(nvimConfig, /editor = true/);
   assert.match(nvimConfig, /ecosystem = true/);
   assert.match(nvimConfig, /lint = true/);
@@ -48,8 +48,8 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   assert.match(vimConfig, /'cmd': \['vize', 'lsp'\]/);
   assert.match(vimConfig, /'allowlist': \['vue', 'art-vue'\]/);
   assert.match(vimConfig, /'initialization_options': \{\}/);
-  assert.match(vimConfig, /'lint': \{'lint': v:true\}/);
-  assert.match(vimConfig, /'off': \{\}/);
+  assert.match(vimConfig, /'lint': s:exclusive_profile\(v:true\)/);
+  assert.match(vimConfig, /'off': s:exclusive_profile\(v:false\)/);
   assert.match(vimConfig, /'editor': v:true/);
   assert.match(vimConfig, /'ecosystem': v:true/);
   assert.match(vimConfig, /'lint': v:true/);
@@ -66,8 +66,8 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   assert.match(emacsConfig, /defcustom vize-eglot-command '\("vize" "lsp"\)/);
   assert.match(emacsConfig, /defcustom vize-eglot-profile nil/);
   assert.match(emacsConfig, /vue-mode vue-ts-mode web-mode vize-vue-mode vize-art-vue-mode/);
-  assert.match(emacsConfig, /\(lint \. \(:lint t\)\)/);
-  assert.match(emacsConfig, /\(off \. nil\)/);
+  assert.match(emacsConfig, /\(lint \. ,\(vize--exclusive-profile t\)\)/);
+  assert.match(emacsConfig, /\(off \. ,\(vize--exclusive-profile nil\)\)/);
   assert.match(emacsConfig, /recommended \. \(:editor t :ecosystem t :lint t :typecheck t\)/);
 
   const zedManifest = fs.readFileSync(path.join(root, "editors/zed/extension.toml"), "utf-8");

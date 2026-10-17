@@ -74,9 +74,20 @@ impl ContextFingerprint {
         context: &AliasContext,
         facts: Option<&mut ModuleSpecifierFactsCache>,
     ) {
-        let mut paths = vec![context.project_root.join("tsconfig.json")];
+        let mut paths = Vec::new();
         if let Some(mirror) = context.mirror.as_ref() {
-            paths.extend(mirror.governing_config_paths());
+            // The immutable compiler epoch belongs to this editor session.
+            // Its physical dependencies remain watched by the owner, while
+            // source/import/package inputs retain their live content stamps.
+            if !mirror.has_admitted_compiler_configuration() {
+                paths.push(context.project_root.join("tsconfig.json"));
+            }
+            paths.extend(
+                mirror
+                    .governing_config_paths()
+                    .into_iter()
+                    .filter(|path| !mirror.is_admitted_compiler_input(path)),
+            );
             // The materialized closure intentionally keeps content digests:
             // same-mtime, same-length edits must invalidate an editor session.
             paths.extend(mirror.registered_original_paths_sorted());
@@ -84,8 +95,17 @@ impl ContextFingerprint {
                 Some(facts) => mirror.editor_resolution_inputs_with_import_facts(facts),
                 None => mirror.editor_resolution_inputs(),
             });
+            paths.extend(
+                context
+                    .route_inputs
+                    .iter()
+                    .filter(|path| !mirror.is_admitted_compiler_input(path))
+                    .cloned(),
+            );
+        } else {
+            paths.push(context.project_root.join("tsconfig.json"));
+            paths.extend(context.route_inputs.iter().cloned());
         }
-        paths.extend(context.route_inputs.iter().cloned());
         paths.sort();
         paths.dedup();
         self.stamps = paths

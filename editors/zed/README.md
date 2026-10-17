@@ -40,15 +40,43 @@ The examples below deliberately select editor-level overrides.
 
 ## Lint Only
 
+This explicit profile also disables formatting and cross-file analysis when the project enables them.
+Code actions are disabled too. Leaving initialization options empty inherits project settings.
+
 ```json
 {
   "lsp": {
     "vize": {
       "initialization_options": {
+        "enabled": true,
+        "nativeLinkedEditing": false,
+        "diagnostics": false,
         "lint": true,
         "typecheck": false,
         "editor": false,
-        "ecosystem": false
+        "ecosystem": false,
+        "optionsApi": false,
+        "legacyVue2": false,
+        "completion": false,
+        "signatureHelp": false,
+        "hover": false,
+        "definition": false,
+        "references": false,
+        "documentSymbols": false,
+        "workspaceSymbols": false,
+        "codeActions": false,
+        "rename": false,
+        "formatting": false,
+        "codeLens": false,
+        "semanticTokens": false,
+        "documentLinks": false,
+        "foldingRanges": false,
+        "inlayHints": false,
+        "fileRename": false,
+        "autoInsert": false,
+        "corsa": false,
+        "tsgo": false,
+        "crossFile": false
       }
     }
   }

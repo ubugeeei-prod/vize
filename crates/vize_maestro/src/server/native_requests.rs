@@ -7,6 +7,41 @@ use tower_lsp::jsonrpc::Result;
 
 use super::MaestroServer;
 
+impl super::project_contexts::DocumentServer<'_> {
+    /// Preserve native transaction/cancellation ordering, then refuse the whole
+    /// reply if authored coordinates became stale during admission or native work.
+    async fn authored_request<T>(&self, request: impl Future<Output = Result<T>>) -> Result<T> {
+        self.authored_response(request.await)
+    }
+
+    /// Only completed answers pass this boundary. A local probe returning no
+    /// answer must retain the native transaction's existing ordering.
+    pub(super) fn authored_response<T>(&self, result: Result<T>) -> Result<T> {
+        #[cfg(feature = "native")]
+        if !self.authored_revision_is_current() {
+            return Err(Error::content_modified());
+        }
+        result
+    }
+
+    pub(super) async fn native_request<T>(
+        &self,
+        request: impl Future<Output = Result<T>>,
+    ) -> Result<T> {
+        self.authored_request(MaestroServer::native_request(self, request))
+            .await
+    }
+
+    pub(super) async fn workspace_native_request<T, F, Fut>(&self, request: F) -> Result<T>
+    where
+        F: Fn() -> Fut,
+        Fut: Future<Output = Result<T>>,
+    {
+        self.authored_request(MaestroServer::workspace_native_request(self, request))
+            .await
+    }
+}
+
 impl MaestroServer {
     /// Source-local answers never touch the backend or borrow its transaction.
     /// Retain the same source/config freshness boundary around their sync work.

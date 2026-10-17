@@ -60,7 +60,7 @@ export function uiHub(locale: string, linkPrefix: string): string {
     ja ? "## 最初のコンポーネント" : "## Add your first component",
     "```bash\nvp install @vizejs/ui\n```",
     ja
-      ? "[Vite+ 連携 (英語)](/guide/vite-plus/)で Vue のコンパイルを設定したプロジェクトに、次の SFC を追加します。"
+      ? "[Vite+ 連携](/ja/guide/vite-plus/)で Vue のコンパイルを設定したプロジェクトに、次の SFC を追加します。"
       : "Add this SFC to a project with Vue compilation configured through the [Vite+ integration](../vite-plus.md).",
     example,
     ja

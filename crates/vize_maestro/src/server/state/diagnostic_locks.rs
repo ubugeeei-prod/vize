@@ -57,6 +57,7 @@ impl DiagnosticDocument {
     /// Retain one complete payload in the existing per-document lock entry.
     /// No synchronous guard survives transport backpressure. A cancelled
     /// sender removes only its own claim; a newer source world's claim wins.
+    /// Explicit saves and configuration refreshes still publish identical answers.
     pub(crate) fn claim(
         self: &Arc<Self>,
         state: &ServerState,
@@ -64,7 +65,7 @@ impl DiagnosticDocument {
         version: i32,
         stamp: CorsaRequestStamp,
         diagnostics: &[Diagnostic],
-        explicit_save: bool,
+        explicit_refresh: bool,
     ) -> Result<Option<DiagnosticPublicationGuard>, DiagnosticSourceChanged> {
         let mut slot = self.publication.lock();
         // A newer world may have claimed this slot since the caller's early
@@ -72,7 +73,7 @@ impl DiagnosticDocument {
         if !stamp.is_current(state) || state.documents.version(uri) != Some(version) {
             return Err(DiagnosticSourceChanged);
         }
-        if !explicit_save
+        if !explicit_refresh
             && slot.as_ref().is_some_and(|publication| {
                 publication.version == version
                     && publication.stamp == stamp

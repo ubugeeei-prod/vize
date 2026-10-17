@@ -35,6 +35,7 @@ impl VirtualProject {
             project_root,
             virtual_root,
             tsconfig_path: None,
+            compiler_configuration: None,
             preserve_unused_diagnostics: false,
             source_policy: Default::default(),
             alias_rewrite_policy: Default::default(),

@@ -14,6 +14,8 @@ impl MaestroServer {
             self.state.refresh_project_routes();
             affected
         };
+        #[cfg(feature = "native")]
+        self.queue_configuration_watches();
         for uri in affected {
             let Some(version) = self.state.documents.version(&uri) else {
                 continue;

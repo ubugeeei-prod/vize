@@ -189,6 +189,10 @@ where
     O: futures::io::AsyncWrite,
 {
     let (service, socket) = server::build_lsp_service();
+    // Declared before the transport: cancellation is safe only after its future
+    // and response dispatcher have been dropped, not merely on LSP shutdown.
+    #[cfg(feature = "native")]
+    let _configuration_termination = service.inner().configuration_watch_transport_lease();
     #[cfg(feature = "experimental-source-navigation")]
     let _module_termination = service.inner().module_link_transport_lease();
     #[cfg(feature = "experimental-source-navigation")]

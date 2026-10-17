@@ -28,15 +28,21 @@ pub use prepare::CorsaVueWorkspaceRequest;
 pub(crate) use model::CorsaProjectEnvironment;
 
 impl CorsaBridge {
+    /// Forget retired source membership without waiting for backend IPC.
+    /// The next project synchronization computes its real removed-source delta.
+    pub fn forget_cached_vue_virtual_documents(&self, source_paths: &[PathBuf]) {
+        super::vue_dependencies_alias::AliasContext::forget_cached_sources(
+            &self.editor_session,
+            source_paths,
+        );
+    }
+
     /// Remove virtual TypeScript overlays derived from deleted Vue SFCs.
     pub async fn forget_vue_virtual_documents(
         &self,
         source_paths: &[PathBuf],
     ) -> Result<(), CorsaBridgeError> {
-        super::vue_dependencies_alias::AliasContext::forget_cached_sources(
-            &self.editor_session,
-            source_paths,
-        );
+        self.forget_cached_vue_virtual_documents(source_paths);
         let source_paths = source_paths.to_vec();
         self.with_client(move |client| {
             client

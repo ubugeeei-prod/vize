@@ -150,3 +150,42 @@ fn a_uniform_shorthand_option_reports_a_bare_v_slot_on_a_component() {
 fn non_slot_directives_are_ignored() {
     assert_eq!(findings(r#"<div v-if="ok" :class="cls"></div>"#), vec![]);
 }
+
+#[test]
+fn a_bare_hash_is_a_default_slot_and_keeps_the_component_style_warning() {
+    // Vue's compiler treats bare # exactly like #default. The reference
+    // vue-eslint-parser instead calls it a normal attribute and misses it.
+    assert_eq!(
+        only_message(r#"<RouterView #="{ Component }"><component :is="Component" /></RouterView>"#),
+        vec!["Expected 'v-slot' instead of '#'".to_string()]
+    );
+    assert_eq!(findings(r#"<RouterView v-slot="{ Component }" />"#), vec![]);
+    assert_eq!(
+        findings(r#"<RouterView><template #="props" /></RouterView>"#),
+        vec![]
+    );
+}
+
+#[test]
+fn original_gui_for_singbox_source_keeps_its_complete_slot_style_finding() {
+    let source = include_str!(
+        "../../../../../../tests/_fixtures/differential/linter/reference-coverage-8849/AppShell.vue.txt"
+    );
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(VSlotStyle::default()));
+    let result = Linter::with_registry(registry).lint_sfc(source, "AppShell.vue");
+    assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    let target = "#=\"{ Component }\"";
+    let start = source.find(target).unwrap() as u32;
+    assert_eq!(
+        (diagnostic.start, diagnostic.end),
+        (start, start + target.len() as u32)
+    );
+    assert_eq!(diagnostic.severity, Severity::Warning);
+    assert_eq!(diagnostic.rule_name, "vue/v-slot-style");
+    assert_eq!(
+        diagnostic.message.as_str(),
+        "Expected 'v-slot' instead of '#'"
+    );
+}

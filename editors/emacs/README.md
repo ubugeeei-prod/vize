@@ -14,9 +14,10 @@ Set `vize-eglot-profile` or pass a named profile to override project features.
 
 Profiles:
 
-- `lint`: enables Vize lint diagnostics only.
+- `lint`: enables lint diagnostics; disables type checking, editor features,
+  ecosystem helpers, formatting, and cross-file analysis, including project-enabled features.
 - `recommended`: enables lint, typecheck, editor, and ecosystem features.
-- `off`: starts Vize with no features enabled.
+- `off`: starts Vize with every feature explicitly disabled, including project-enabled features.
 
 The package registers `vize-vue-mode`, `vize-art-vue-mode`, and common Vue major modes with
 `eglot-server-programs`. Eglot starts `("vize" "lsp")` and passes `:initializationOptions` for

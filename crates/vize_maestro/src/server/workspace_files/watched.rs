@@ -24,32 +24,65 @@ pub(super) async fn did_change_watched_files(
         return;
     }
     #[cfg(feature = "native")]
-    let reconfigured = server.state.observe_project_config_events(&params.changes);
+    let reconfigured = server
+        .state
+        .observe_project_config_events_async(params.changes.clone())
+        .await;
+    #[cfg(feature = "native")]
+    server.queue_configuration_watches();
+    #[cfg(feature = "native")]
+    for error in &reconfigured.errors {
+        server
+            .client
+            .show_message(error.typ, error.message.clone())
+            .await;
+    }
+    #[cfg(feature = "native")]
+    let operation = server.with_configuration_admission(&reconfigured.checked_roots);
+    #[cfg(feature = "native")]
+    let server = &operation;
     #[cfg(all(feature = "native", feature = "experimental-source-navigation"))]
     if server.state.project_context_retired()
         && let Some(navigation) = &server.navigation
     {
         navigation.retire();
     }
+    #[cfg(feature = "native")]
+    let accepted = DidChangeWatchedFilesParams {
+        changes: reconfigured.accepted_file_events(&server.state, &params.changes),
+    };
+    #[cfg(feature = "native")]
+    did_change_in_context(server, &accepted).await;
+    #[cfg(not(feature = "native"))]
     did_change_in_context(server, params).await;
     #[cfg(feature = "native")]
     for state in server.state.cached_project_states() {
         let project = server.with_project_state(state);
-        did_change_in_context(&project, params).await;
+        let accepted = DidChangeWatchedFilesParams {
+            changes: reconfigured.accepted_file_events(&project.state, &params.changes),
+        };
+        did_change_in_context(&project, &accepted).await;
     }
     #[cfg(feature = "native")]
-    for (uri, version) in reconfigured {
-        let project = server.for_document(&uri).await;
+    for (uri, version) in reconfigured.documents {
+        let project = server.for_document_admitted(&uri).await;
         if project.state.documents.version(&uri) == Some(version)
             && let Some(source) = project.state.documents.text(&uri)
         {
             project.state.update_virtual_docs(&uri, &source);
         }
-        project.publish_diagnostics_if_version(&uri, version).await;
+        project
+            .publish_configuration_diagnostics_if_version(&uri, version)
+            .await;
     }
 }
 
 async fn did_change_in_context(server: &MaestroServer, params: &DidChangeWatchedFilesParams) {
+    // A rejected configuration event can leave one owner with no accepted
+    // changes even when the original notification was nonempty.
+    if params.changes.is_empty() {
+        return;
+    }
     #[cfg(feature = "experimental-source-navigation")]
     server
         .state

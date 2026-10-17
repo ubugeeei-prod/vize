@@ -1,4 +1,6 @@
 //! Existing JSX opt-in remains separate from the new bare read route.
+use serde_json::json;
+
 use super::{fixture::Fixture, reads, runtime_enabled};
 
 #[test]
@@ -23,7 +25,7 @@ fn jsx_and_tsx_keep_whole_enabled_reads_and_disabled_public_gates() {
                         .refuse_writes(&name, (0, 20, 24), "caféNext")
                         .unwrap();
                 }
-                fixture.reopen_both(&name, language, 1).unwrap();
+                fixture.reopen_both(&name, language, 1, json!([])).unwrap();
                 reads::identity(&mut fixture, &name, (0, 20, 24), (1, 24, 28), enabled).unwrap();
                 fixture.assert_disks().unwrap();
                 fixture.finish().unwrap();

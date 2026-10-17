@@ -157,16 +157,37 @@ pub(super) fn widened_scope_note(
     )
 }
 
-/// An explicitly selected project must exist before input collection.
+/// Validate authored TypeScript dependencies through Canon's compiler-options resolver.
+/// Config-less invocations do not call this helper and retain their defaults.
+pub(super) fn validate_tsconfig_chain(path: &Path) -> Result<(), String> {
+    if !path.is_file() {
+        return Err(cstr!(
+            "TypeScript config file not found: `{}`; no files were checked.",
+            path.display()
+        ));
+    }
+    let root = path.parent().unwrap_or_else(|| Path::new("."));
+    let checked = || {
+        let mut project = vize_canon::VirtualProject::new(root)?;
+        project.set_tsconfig_path(Some(path.to_path_buf()));
+        project.checked_config_chain_paths()
+    };
+    checked().map(|_| ()).map_err(|error| {
+        cstr!(
+            "Failed to resolve TypeScript configuration `{}`: {error}",
+            path.display()
+        )
+    })
+}
+
+/// A selected or discovered project must be valid before input collection.
 pub(super) fn validate_selected_tsconfig(args: &CheckArgs, tsconfig_path: Option<&Path>) {
     if let Some(path) = tsconfig_path
-        && !path.is_file()
+        && let Err(error) = validate_tsconfig_chain(path)
     {
         emit_empty_json(args);
-        eprintln!(
-            "Error: TypeScript config file not found: `{}`; no files were checked.",
-            path.display()
-        );
+        let style = super::text_style::TextStyle::stderr();
+        eprintln!("{} {error}", style.red("Error:"));
         std::process::exit(UNRESOLVED_SCOPE_EXIT_CODE);
     }
 }
@@ -215,4 +236,5 @@ fn is_strict_ancestor(ancestor: &Path, path: &Path) -> bool {
 }
 
 #[cfg(test)]
+#[path = "input_scope_tests.rs"]
 mod tests;

@@ -29,6 +29,8 @@ pub enum CorsaBridgeError {
     SpawnFailed(String),
     /// Failed to communicate with Corsa.
     CommunicationError(String),
+    /// Authored project configuration prevented local project preparation.
+    Configuration(String),
     /// Corsa returned an error response.
     ResponseError { code: i64, message: String },
     /// Request timed out
@@ -44,6 +46,7 @@ impl std::fmt::Display for CorsaBridgeError {
         match self {
             Self::SpawnFailed(msg) => write!(f, "Failed to spawn Corsa: {}", msg),
             Self::CommunicationError(msg) => write!(f, "Communication error: {}", msg),
+            Self::Configuration(msg) => write!(f, "Configuration error: {}", msg),
             Self::ResponseError { code, message } => {
                 write!(f, "corsa error [{}]: {}", code, message)
             }
@@ -55,6 +58,15 @@ impl std::fmt::Display for CorsaBridgeError {
 }
 
 impl std::error::Error for CorsaBridgeError {}
+
+impl From<crate::CorsaError> for CorsaBridgeError {
+    fn from(error: crate::CorsaError) -> Self {
+        match error {
+            crate::CorsaError::Configuration(message) => Self::Configuration(message),
+            error => Self::CommunicationError(vize_carton::cstr!("{error}")),
+        }
+    }
+}
 
 /// LSP diagnostic from Corsa.
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -222,7 +222,12 @@ fn run_worker(
             let sync_job = { pending.lock().take_sync() };
             if let Some((uri, version)) = sync_job {
                 crate::runtime::block_on(async {
+                    let phase = vize_canon::corsa_bridge::EditorPreparationPhase::start(
+                        "initial_sync_configuration_admission",
+                        1,
+                    );
                     let project = worker.for_document(&uri).await;
+                    phase.finish();
                     project
                         .publish_initial_sync_diagnostics(&uri, version)
                         .await;
@@ -255,7 +260,12 @@ fn run_worker(
                 job.version
             );
             crate::runtime::block_on(async {
+                let phase = vize_canon::corsa_bridge::EditorPreparationPhase::start(
+                    "initial_type_configuration_admission",
+                    1,
+                );
                 let project = worker.for_document(&uri).await;
+                phase.finish();
                 project
                     .publish_diagnostics_if_version(&uri, job.version)
                     .await;

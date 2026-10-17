@@ -46,7 +46,7 @@ pub(super) fn generate_vue_document_with_options(
             .as_ref()
             .map(|resolver| resolver as crate::batch::import_rewriter_alias::AliasSpecifierResolver<'_>),
     )
-    .map_err(|error| CorsaBridgeError::CommunicationError(cstr!("{error}")))?;
+    .map_err(CorsaBridgeError::from)?;
     let virtual_path = alias_context
         .and_then(|context| context.mirror_virtual_path(source_path))
         .unwrap_or_else(|| {

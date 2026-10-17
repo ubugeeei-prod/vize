@@ -1,8 +1,10 @@
 //! Filesystem identity for self-invalidating package-route caches.
 
 use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
 
 use vize_carton::FxHashMap;
+use vize_l0::hash::StableHasher128;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct InputStamp {
@@ -10,7 +12,7 @@ pub(crate) struct InputStamp {
     modified: Option<std::time::SystemTime>,
     len: Option<u64>,
     kind: Option<InputKind>,
-    content_digest: Option<u64>,
+    content_digest: Option<[u8; 16]>,
     symlink_target: Option<PathBuf>,
     source_content: bool,
 }
@@ -21,6 +23,15 @@ enum InputKind {
     Directory,
     Symlink,
     Other,
+}
+
+/// Local counters for one opt-in validation; never shared across calls.
+#[derive(Default)]
+pub(crate) struct InputStampReadStats {
+    pub(crate) reads: usize,
+    pub(crate) bytes: u64,
+    pub(crate) read_time: Duration,
+    pub(crate) digest_time: Duration,
 }
 
 #[derive(Default)]
@@ -70,12 +81,20 @@ impl InputStamp {
 
     /// Keep the bytes registered in the semantic project as the authority.
     /// Re-reading disk here could acknowledge an edit the project never saw.
-    #[cfg(any(feature = "native", test))]
     pub(crate) fn capture_source(path: impl Into<PathBuf>, content: &[u8]) -> Self {
         Self::capture_input(path.into(), Some(content), true)
     }
 
     fn capture_input(path: PathBuf, content: Option<&[u8]>, source_content: bool) -> Self {
+        Self::capture_input_observed(path, content, source_content, None)
+    }
+
+    fn capture_input_observed(
+        path: PathBuf,
+        content: Option<&[u8]>,
+        source_content: bool,
+        stats: Option<&mut InputStampReadStats>,
+    ) -> Self {
         let metadata = std::fs::symlink_metadata(&path).ok();
         let modified = metadata
             .as_ref()
@@ -101,7 +120,7 @@ impl InputStamp {
             ((matches!(kind, Some(InputKind::File))
                 && !super::graph_inputs::is_large_lockfile(&path))
                 || (source_content && matches!(kind, Some(InputKind::Symlink))))
-            .then(|| std::fs::read(&path).ok().map(|content| digest(&content)))
+            .then(|| read_digest(&path, stats))
             .flatten()
         });
         let symlink_target = matches!(kind, Some(InputKind::Symlink))
@@ -118,8 +137,28 @@ impl InputStamp {
         }
     }
 
+    pub(crate) fn path(&self) -> &Path {
+        &self.path
+    }
+
     pub(crate) fn is_current(&self) -> bool {
         *self == Self::capture_input(self.path.clone(), None, self.source_content)
+    }
+
+    #[cfg(feature = "native")]
+    pub(crate) fn observation_identity(&self) -> (&Path, bool) {
+        (&self.path, self.source_content)
+    }
+
+    #[cfg(feature = "native")]
+    pub(crate) fn is_current_observed(&self, stats: &mut InputStampReadStats) -> bool {
+        *self
+            == Self::capture_input_observed(
+                self.path.clone(),
+                None,
+                self.source_content,
+                Some(stats),
+            )
     }
 
     pub(crate) fn is_current_with_cache(&self, cache: &mut InputStampCache) -> bool {
@@ -162,11 +201,28 @@ pub(crate) fn canonicalize_changed_path(path: &Path) -> PathBuf {
     vize_carton::path::normalize_windows_verbatim_path(path.to_path_buf())
 }
 
-fn digest(content: &[u8]) -> u64 {
-    use std::hash::{Hash, Hasher};
-    let mut hasher = std::hash::DefaultHasher::new();
-    content.hash(&mut hasher);
-    hasher.finish()
+fn read_digest(path: &Path, stats: Option<&mut InputStampReadStats>) -> Option<[u8; 16]> {
+    let Some(stats) = stats else {
+        return std::fs::read(path).ok().map(|content| digest(&content));
+    };
+    let started = Instant::now();
+    let content = std::fs::read(path);
+    stats.read_time += started.elapsed();
+    stats.reads += 1;
+    let content = content.ok()?;
+    stats.bytes += content.len() as u64;
+    let started = Instant::now();
+    let result = digest(&content);
+    stats.digest_time += started.elapsed();
+    Some(result)
+}
+
+// Private in-memory change detection, never a persisted/public artifact key.
+// Feed every byte through the existing non-cryptographic 128-bit content hasher.
+fn digest(content: &[u8]) -> [u8; 16] {
+    let mut hasher = StableHasher128::new();
+    hasher.update(content);
+    hasher.digest()
 }
 
 pub(super) fn stamp_paths(paths: &[PathBuf]) -> Vec<InputStamp> {
@@ -230,6 +286,36 @@ mod tests {
         assert!(!stamp.is_current());
         assert!(!stamp.is_current_with_cache(&mut cache));
         assert_eq!(cache.captures(), 1);
+    }
+
+    #[test]
+    fn same_size_and_mtime_edits_still_change_full_content_stamps() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("config.json");
+        let mut content = vec![b' '; 8193];
+        std::fs::write(&path, &content).unwrap();
+        let physical = InputStamp::capture(&path);
+        let source = InputStamp::capture_source(&path, &content);
+        let original = std::fs::metadata(&path).unwrap();
+        assert!(physical.is_current());
+        assert!(source.is_current());
+
+        // Preserve metadata and the complete prefix; only the final byte changes.
+        *content.last_mut().unwrap() = b'!';
+        std::fs::write(&path, &content).unwrap();
+        std::fs::File::options()
+            .write(true)
+            .open(&path)
+            .unwrap()
+            .set_times(std::fs::FileTimes::new().set_modified(original.modified().unwrap()))
+            .unwrap();
+        let modified = std::fs::metadata(&path).unwrap();
+        assert_eq!(modified.len(), original.len());
+        assert_eq!(modified.modified().unwrap(), original.modified().unwrap());
+        assert!(!physical.is_current());
+        assert!(!source.is_current());
+        assert!(InputStamp::capture(&path).is_current());
+        assert!(InputStamp::capture_source(&path, &content).is_current());
     }
 
     #[cfg(unix)]

@@ -63,7 +63,13 @@ impl ServerState {
             return;
         }
 
-        let Some(descriptor) = self.sfc_descriptor(uri, content) else {
+        #[cfg(feature = "native")]
+        let descriptor_phase =
+            vize_canon::corsa_bridge::EditorPreparationPhase::start("foreground_sfc_descriptor", 1);
+        let descriptor = self.sfc_descriptor(uri, content);
+        #[cfg(feature = "native")]
+        descriptor_phase.finish();
+        let Some(descriptor) = descriptor else {
             self.remove_virtual_docs(uri);
             return;
         };
@@ -72,6 +78,12 @@ impl ServerState {
         let features = config.features;
         let authored_domain = !config.legacy_vue2
             && crate::virtual_code::PhysicalOccurrences::supports_sfc_descriptor(&descriptor);
+        // Include the existing generator lock wait in this foreground boundary.
+        #[cfg(feature = "native")]
+        let generation_phase = vize_canon::corsa_bridge::EditorPreparationPhase::start(
+            "foreground_sfc_virtual_generation",
+            1,
+        );
         let (mut virtual_docs, facts) =
             if revision.is_some() && authored_domain && (features.references || features.code_lens)
             {
@@ -84,6 +96,8 @@ impl ServerState {
                     None,
                 )
             };
+        #[cfg(feature = "native")]
+        generation_phase.finish();
         add_inline_art_template_virtual_docs(&mut virtual_docs, &descriptor, base_uri);
         super::art_template_context::attach(&mut virtual_docs);
         self.virtual_docs_cache

@@ -1,0 +1,98 @@
+name: Lint reference coverage contracts
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/lint-reference-coverage-contracts.yml"
+      - ".github/workflows/real-project-matrix.yml"
+      - "tools/commands/fixtures/lint-divergence-report.*"
+      - "tools/support/fixtures/lint_reference_coverage.ts"
+      - "tools/support/fixtures/lint_divergence/**"
+      - "tools/support/compat/fixtures/lint-divergence*"
+      - "tests/_fixtures/differential/linter/reference-coverage-8849/**"
+      - "tests/_fixtures/differential/lint/**"
+      - "tests/_fixtures/patina-eslint-vue-rule-map.json"
+      - "tests/_fixtures/patina-lint-documented-divergences.json"
+      - "tests/_fixtures/vue-ecosystem-fixtures.json"
+      - "tests/tooling/lint-reference-*.test.*"
+      - "tests/tooling/lint-divergence*.test.*"
+      - "tests/tooling/lint-baseline-script-language.test.mjs"
+      - "tests/tooling/support/lint-report-parity*"
+      - "tests/tooling/_helpers/lint-report-*"
+      - "tests/tooling/real-project-matrix-workflow.test.ts"
+      - "tools/benchmarks/scripts/package.json"
+      - "pnpm-lock.yaml"
+permissions: { contents: read }
+concurrency:
+  group: lint-reference-coverage-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  contracts:
+    name: Actual lint report parity and reference coverage
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.1" }
+      - uses: ./.github/actions/setup-rust-script
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: |
+            ~/.cache/rust-script
+            ~/.cargo/registry
+          key: lint-report-reference-${{ runner.os }}-${{ runner.arch }}-1.99.1-49545646-7421901d
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - name: Install the unchanged pinned reference providers
+        run: vp install --frozen-lockfile --prefer-offline --ignore-scripts
+      - name: Fetch only the two immutable report references
+        run: >-
+          git fetch --no-tags --depth=1 origin
+          49545646fde08ade1000c4a33b38c9dd1ac4fb99
+          7421901d05ac2e252636dd8ee426e8783255378d
+      - name: Require strict TypeScript for the actual report and classifier
+        run: >-
+          node_modules/@typescript/typescript-linux-x64/lib/tsc
+          --ignoreConfig --noEmit --strict --target ES2022
+          --module NodeNext --moduleResolution NodeNext --types node
+          --skipLibCheck --allowImportingTsExtensions
+          tools/commands/fixtures/lint-divergence-report.ts
+          tools/support/fixtures/lint_reference_coverage.ts
+          tests/tooling/lint-reference-classifier.test.ts
+          tests/tooling/lint-reference-coverage-workflow.test.ts
+          tests/tooling/_helpers/lint-report-rust-parity.ts
+          tests/tooling/support/lint-report-parity.ts
+      - name: Require actual frozen Rust and TypeScript subprocess parity
+        env:
+          VIZE_LINT_REPORT_PARITY_DIR: ${{ runner.temp }}/lint-report-parity
+        run: env -u GITHUB_SHA node --test tests/tooling/support/lint-report-parity.ts
+      - name: Require complete pinned packets, visitors and actual report integrity
+        # pull_request GITHUB_SHA names the synthetic merge; report evidence must
+        # resolve the actual authored checkout above through git rev-parse HEAD.
+        run: >-
+          env -u GITHUB_SHA node --test
+          tests/tooling/lint-reference-classifier.test.ts
+          tests/tooling/lint-reference-coverage-workflow.test.ts
+          tests/tooling/lint-reference-coverage.test.mjs
+          tests/tooling/lint-baseline-script-language.test.mjs
+          tests/tooling/lint-divergence-processor.test.mjs
+          tests/tooling/lint-divergence-raw-errors.test.mjs
+          tests/tooling/lint-divergence-surface-classes.test.ts
+          tests/tooling/lint-divergence-pug-surface.test.ts
+          tests/tooling/lint-divergence-zero-vue-runner.test.ts
+          tests/tooling/lint-divergence-report-runner.test.ts
+          tests/tooling/lint-divergence-report.test.ts
+          tests/tooling/real-project-matrix-workflow.test.ts
+      - name: Retain every real process and whole report comparison
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lint-report-parity-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/lint-report-parity
+          if-no-files-found: error

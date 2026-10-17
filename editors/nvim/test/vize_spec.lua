@@ -16,8 +16,27 @@ if vim.env.VIZE_TEST_ART_VUE_NATIVE_PARSER == "1" then
     vim.treesitter.language.get_lang("art-vue") == "art-vue",
     "preserves a loaded parser under the Art Vue language name"
   )
+  io.stdout:write("VIZE_HEADLESS_NATIVE_PARSER_PASSED\n")
   return
 end
+
+-- A required assertion must fail the same headless Lua carrier used by CI.
+-- Ex-command `+luafile ... +qa` logs Lua errors but can still exit successfully.
+local control_path = vim.fn.tempname() .. ".lua"
+local control_args = { vim.v.progpath, "--headless", "-u", "NONE", "--noplugin", "-l", control_path }
+vim.fn.writefile({ 'io.stdout:write("VIZE_HEADLESS_CONTROL_PASSED\\n")' }, control_path)
+local success_control = vim.system(control_args, { text = true }):wait(10000)
+vim.fn.writefile({ 'assert(false, "VIZE_HEADLESS_CONTROL_FAILED")' }, control_path)
+local failure_control = vim.system(control_args, { text = true }):wait(10000)
+vim.fn.delete(control_path)
+assert(
+  success_control.code == 0 and success_control.stdout:find("VIZE_HEADLESS_CONTROL_PASSED", 1, true),
+  "headless Lua success executes and exits zero"
+)
+assert(
+  failure_control.code == 1 and failure_control.stderr:find("VIZE_HEADLESS_CONTROL_FAILED", 1, true),
+  "headless Lua assertion executes and exits one"
+)
 
 local config = require("vize.config")
 
@@ -55,12 +74,61 @@ assert_eq(recommended.init_options, {
   typecheck = true,
 }, "recommended profile")
 
-assert_eq(config.profile("lint"), { lint = true }, "lint profile")
-assert_eq(config.profile("off"), {}, "off profile")
+local off_profile = {
+  enabled = false,
+  nativeLinkedEditing = false,
+  diagnostics = false,
+  lint = false,
+  typecheck = false,
+  editor = false,
+  ecosystem = false,
+  optionsApi = false,
+  legacyVue2 = false,
+  completion = false,
+  signatureHelp = false,
+  hover = false,
+  definition = false,
+  references = false,
+  documentSymbols = false,
+  workspaceSymbols = false,
+  codeActions = false,
+  rename = false,
+  formatting = false,
+  codeLens = false,
+  semanticTokens = false,
+  documentLinks = false,
+  foldingRanges = false,
+  inlayHints = false,
+  fileRename = false,
+  autoInsert = false,
+  corsa = false,
+  tsgo = false,
+  crossFile = false,
+}
+local lint_profile_expected = vim.deepcopy(off_profile)
+lint_profile_expected.enabled = true
+lint_profile_expected.lint = true
+assert_eq(config.profile("lint"), lint_profile_expected, "complete lint-only profile")
+assert_eq(config.profile("off"), off_profile, "complete off profile")
 
 local lint_profile = config.profile("lint")
 lint_profile.lint = false
-assert_eq(config.profile("lint"), { lint = true }, "profile returns copy")
+assert_eq(config.profile("lint"), lint_profile_expected, "profile returns copy")
+
+local project = {}
+for key, _ in pairs(off_profile) do
+  project[key] = true
+end
+for _, name in ipairs({ "off", "lint" }) do
+  local wire = vim.json.decode(vim.json.encode(config.profile(name)))
+  local expected = name == "off" and off_profile or lint_profile_expected
+  assert_eq(vim.tbl_extend("force", project, wire), expected, "explicit profile beats all-on project")
+end
+assert_eq(vim.tbl_extend("force", project, defaults.init_options), project, "default inherits project")
+local partial = config.normalize({ init_options = { hover = false } }).init_options
+local partial_expected = vim.deepcopy(project)
+partial_expected.hover = false
+assert_eq(vim.tbl_extend("force", project, partial), partial_expected, "partial override keeps other features")
 
 local default_copy = config.default_config()
 default_copy.cmd[1] = "changed"
@@ -177,9 +245,9 @@ vim.lsp.enable = function(name)
 end
 
 local autostart_config = require("vize").setup({ profile = "lint" })
-assert_eq(autostart_config.init_options, { lint = true }, "setup returns lint profile")
+assert_eq(autostart_config.init_options, lint_profile_expected, "setup returns lint profile")
 assert_eq(enable_calls, { "vize" }, "setup autostarts vize")
-assert_eq(vim.lsp.config.vize.init_options, { lint = true }, "setup registers normalized init options")
+assert_eq(vim.lsp.config.vize.init_options, lint_profile_expected, "setup registers normalized init options")
 
 require("vize").setup({ autostart = false, profile = "off" })
 assert_eq(enable_calls, { "vize" }, "autostart false does not enable vize")
@@ -229,3 +297,15 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 vim.cmd("edit " .. vim.fn.fnameescape(vim.fn.tempname() .. ".art.vue"))
 assert(vim.bo.syntax == "custom-art", "preserves an explicit Art Vue syntax override")
+
+if vim.env.VIZE_PROFILE_PACKET then
+  vim.fn.writefile({ vim.json.encode({
+    defaults = defaults.init_options,
+    partial = partial,
+    recommended = recommended.init_options,
+    lint = config.profile("lint"),
+    off = config.profile("off"),
+  }) }, vim.env.VIZE_PROFILE_PACKET)
+end
+
+io.stdout:write("VIZE_HEADLESS_NORMAL_PASSED\n")

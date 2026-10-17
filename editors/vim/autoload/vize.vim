@@ -1,6 +1,48 @@
+let s:feature_keys = [
+      \ 'enabled',
+      \ 'nativeLinkedEditing',
+      \ 'diagnostics',
+      \ 'lint',
+      \ 'typecheck',
+      \ 'editor',
+      \ 'ecosystem',
+      \ 'optionsApi',
+      \ 'legacyVue2',
+      \ 'completion',
+      \ 'signatureHelp',
+      \ 'hover',
+      \ 'definition',
+      \ 'references',
+      \ 'documentSymbols',
+      \ 'workspaceSymbols',
+      \ 'codeActions',
+      \ 'rename',
+      \ 'formatting',
+      \ 'codeLens',
+      \ 'semanticTokens',
+      \ 'documentLinks',
+      \ 'foldingRanges',
+      \ 'inlayHints',
+      \ 'fileRename',
+      \ 'autoInsert',
+      \ 'corsa',
+      \ 'tsgo',
+      \ 'crossFile',
+      \ ]
+
+function! s:exclusive_profile(lint_only) abort
+  let l:options = {}
+  for l:key in s:feature_keys
+    let l:options[l:key] = v:false
+  endfor
+  let l:options.enabled = a:lint_only
+  let l:options.lint = a:lint_only
+  return l:options
+endfunction
+
 let s:profiles = {
-      \ 'lint': {'lint': v:true},
-      \ 'off': {},
+      \ 'lint': s:exclusive_profile(v:true),
+      \ 'off': s:exclusive_profile(v:false),
       \ 'recommended': {
       \   'editor': v:true,
       \   'ecosystem': v:true,

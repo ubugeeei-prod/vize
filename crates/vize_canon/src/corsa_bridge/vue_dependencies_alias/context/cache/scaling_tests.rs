@@ -134,6 +134,57 @@ fn distinct_hosts_keep_bounded_contexts_and_linear_member_source_facts() {
 }
 
 #[test]
+fn admitted_compiler_inputs_preserve_live_union_members_after_dependency_deletion() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    let config = root.join("tsconfig.json");
+    let base = root.join("base.json");
+    std::fs::write(&config, r#"{"extends":"./base.json","include":["*.vue"]}"#).unwrap();
+    std::fs::write(&base, r#"{"compilerOptions":{"strictNullChecks":true}}"#).unwrap();
+    let snapshot = std::sync::Arc::new(
+        crate::CompilerConfigurationSnapshot::capture(&root, Some(&config)).unwrap(),
+    );
+    let session = EditorMirrorSession::with_compiler_configuration(Some(snapshot));
+    let hosts = [root.join("A.vue"), root.join("B.vue")];
+    for source in &hosts {
+        std::fs::write(source, VUE).unwrap();
+    }
+    let mut overlays: FxHashMap<_, _> = hosts.iter().map(|path| (path.clone(), VUE)).collect();
+    let first = open(&session, &hosts[0], VUE, &overlays);
+    let mirror_root = first.mirror.as_ref().unwrap().virtual_root().to_path_buf();
+    open(&session, &hosts[1], VUE, &overlays);
+    std::fs::remove_file(&base).unwrap();
+    for path in &hosts {
+        let retained = open(&session, path, VUE, &overlays);
+        mapped_token(&retained, path, VUE);
+        assert!(
+            retained
+                .mirror
+                .as_ref()
+                .unwrap()
+                .governing_config_paths()
+                .contains(&base)
+        );
+    }
+    assert_eq!(session.cache().project_members[&mirror_root].len(), 2);
+    let changed = VUE.replace("token = 41", "token = 42");
+    overlays.insert(hosts[0].clone(), &changed);
+    let rebuilt = open(&session, &hosts[0], &changed, &overlays);
+    mapped_token(&rebuilt, &hosts[0], &changed);
+    assert!(
+        rebuilt
+            .editor_vue_document(&hosts[0])
+            .unwrap()
+            .1
+            .code
+            .contains("token = 42")
+    );
+    assert_eq!(std::fs::read_to_string(&hosts[0]).unwrap(), VUE);
+    open(&session, &hosts[1], VUE, &overlays);
+    assert_eq!(session.cache().project_members[&mirror_root].len(), 2);
+}
+
+#[test]
 fn epoch_changes_rebuild_exact_live_sources_and_close_rename_remove_old_artifacts() {
     let root = tempfile::tempdir().unwrap();
     let root_path = root.path().canonicalize().unwrap();

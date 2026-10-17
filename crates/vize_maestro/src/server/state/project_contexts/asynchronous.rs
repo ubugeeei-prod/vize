@@ -18,6 +18,11 @@ impl ServerState {
             .as_ref()
             .and_then(Weak::upgrade);
         let root = owner.as_ref().unwrap_or(self);
+        if let Ok(path) = uri.to_file_path()
+            && let Some(boundary) = root.document_context_root(&path)
+        {
+            root.await_project_config_reload(&boundary).await;
+        }
         loop {
             if root.project_routing_shutting_down() {
                 return None;
@@ -56,6 +61,15 @@ impl ServerState {
             .unwrap_or_else(|| self.clone());
         if root.project_routing_shutting_down() {
             return root;
+        }
+        let boundary = root
+            .project_contexts
+            .boundary
+            .read()
+            .clone()
+            .or_else(|| root.get_workspace_root());
+        if let Some(boundary) = boundary {
+            root.await_project_config_reload(&boundary).await;
         }
         loop {
             let boundary = root

@@ -140,7 +140,9 @@ fn historical_original_bare_read_vectors_refuse_writes_and_reopen_unchanged_disk
                 .unwrap();
             // Closing the dirty buffer discards its overlay; reopening reads
             // the untouched original disk with the same client version.
-            fixture.reopen_both(file, "typescript", 1).unwrap();
+            fixture
+                .reopen_both(file, "typescript", 1, json!([]))
+                .unwrap();
             reads::identity(&mut fixture, file, declaration, usage, true).unwrap();
             fixture
                 .refuse_writes(file, declaration, replacement)
@@ -164,12 +166,26 @@ fn javascript_utf16_identity_excludes_same_named_shadows_strings_and_comments() 
         let mut fixture = Fixture::new(&sources, false).unwrap();
         fixture.prove_native_diagnostics().unwrap();
         fixture.open_both(sources[0].0, &sources[0].1, "javascript", 1);
+        let uri = fixture.uri(sources[0].0);
+        let native_diagnostics = json!([{
+            "range":reads::range((2,23,27)),"severity":1,"code":7006,"source":"ts",
+            "message":"Parameter 'café' implicitly has an 'any' type."
+        }]);
+        let native_report = json!({"kind":"full","items":native_diagnostics});
+        let native_result = fixture
+            .native
+            .request("textDocument/diagnostic", &uri, json!({}))
+            .unwrap();
+        check(native_result.clone(), native_report.clone()).unwrap();
+        // Keep the whole independently checked native vector. Vize owns only
+        // the diagnostic source label; UTF-16 ranges and content stay exact.
+        let mut vize_diagnostics = native_result["items"].clone();
+        vize_diagnostics[0]["source"] = json!("vize/types");
         reads::identity(&mut fixture, sources[0].0, (0, 20, 24), (1, 22, 26), true).unwrap();
         reads::identity(&mut fixture, sources[0].0, (2, 23, 27), (2, 38, 42), true).unwrap();
         fixture
             .refuse_writes(sources[0].0, (0, 20, 24), "caféNext")
             .unwrap();
-        let uri = fixture.uri(sources[0].0);
         for position in [
             json!({"line":0,"character":3}),
             json!({"line":99,"character":0}),
@@ -188,7 +204,17 @@ fn javascript_utf16_identity_excludes_same_named_shadows_strings_and_comments() 
                 );
             }
         }
-        fixture.reopen_both(sources[0].0, "javascript", 1).unwrap();
+        fixture
+            .reopen_both(sources[0].0, "javascript", 1, vize_diagnostics)
+            .unwrap();
+        check(
+            fixture
+                .native
+                .request("textDocument/diagnostic", &uri, json!({}))
+                .unwrap(),
+            native_report,
+        )
+        .unwrap();
         reads::identity(&mut fixture, sources[0].0, (0, 20, 24), (1, 22, 26), true).unwrap();
         fixture.assert_disks().unwrap();
         fixture.finish().unwrap();

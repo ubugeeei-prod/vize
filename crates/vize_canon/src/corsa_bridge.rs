@@ -66,6 +66,8 @@ pub use diagnosing_configuration::{DiagnosingConfiguration, DiagnosingSnapshot};
 pub(crate) use editor_session::EditorMirrorSession;
 pub use native_vue::{NativeVueCheck, NativeVueError};
 pub use original_program::{OriginalProgramCheck, OriginalProgramError};
+#[doc(hidden)]
+pub use preparation_trace::Phase as EditorPreparationPhase;
 pub use script_document::{
     CorsaScriptVirtualDocument, CorsaScriptVirtualDocumentRequest, CorsaScriptVirtualProject,
 };

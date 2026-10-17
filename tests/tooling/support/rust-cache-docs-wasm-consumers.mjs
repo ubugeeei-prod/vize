@@ -156,12 +156,24 @@ function verifyRecipes(root, docs, e2e) {
   );
   for (const [file, expected] of Object.entries(producerHashes))
     assert.equal(hash(read(root, file)), expected, `${file}: reviewed command producer changed`);
+  // Restore only the retired path for comparison with the unchanged reviewed seal.
+  const readiness = structuredClone(e2e.jobs["app-readiness-plan"]);
+  const changes = readiness.steps.find((step) => step.id === "changes");
+  const filters = changes?.with?.filters;
+  assert.equal(typeof filters, "string", "literal readiness inputs required");
+  assert.equal(filters.includes("setup-moonbit"), false, "retired MoonBit readiness input remains");
+  const anchor = "  - '.github/actions/app-e2e-row/**'\n";
+  assert.equal(filters.split(anchor).length, 2, "reviewed readiness input anchor changed");
+  changes.with.filters = filters.replace(
+    anchor,
+    anchor + "  - '.github/actions/setup-moonbit/**'\n",
+  );
   for (const [job, expected] of [
     ["app-readiness-plan", "6eedaa2dfd736d68bd260d4cd52e180676ebcf61b770a929e708babc4e6e480c"],
     ["app-e2e-plan", "554e3df0e2b4638c138ac1c0f40ede1cade07152872b1705e3269b5ef2826595"],
   ])
     assert.equal(
-      hash(JSON.stringify(e2e.jobs[job])),
+      hash(JSON.stringify(job === "app-readiness-plan" ? readiness : e2e.jobs[job])),
       expected,
       `${job}: reviewed matrix producer changed`,
     );

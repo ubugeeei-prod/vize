@@ -1,7 +1,12 @@
 mod alias_rewrite_policy;
 mod base_url;
+pub(super) mod compiler_inputs;
 pub(super) mod compiler_options;
 mod compiler_options_snapshot;
+mod compiler_snapshot;
+pub use compiler_snapshot::{
+    CompilerConfigurationAttempt, CompilerConfigurationSnapshot, ConfigurationObservations,
+};
 mod config_anchor;
 pub use compiler_options_snapshot::snapshot_tsconfig_compiler_options;
 mod control_alias;

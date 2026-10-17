@@ -57,6 +57,9 @@ mod retire_ledger;
 mod retire_lifecycle_tests;
 #[path = "pr_pin_retire_log_storage.rs"]
 mod retire_log_storage;
+#[cfg(test)]
+#[path = "pr_pin_retire_prequalification_archive_tests.rs"]
+mod retire_prequalification_archive_tests;
 #[path = "pr_pin_retire_release.rs"]
 mod retire_release;
 #[path = "pr_pin_retire_source.rs"]
@@ -64,7 +67,7 @@ mod retire_source;
 #[cfg(test)]
 #[path = "pr_pin_retire_tests.rs"]
 mod retire_tests;
-pub use retire::{retire, validate_preparation_target};
+pub use retire::{retire, retire_before_release, validate_preparation_target};
 #[cfg(test)]
 #[path = "pr_pin_recovery_tests.rs"]
 mod recovery_tests;

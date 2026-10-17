@@ -35,11 +35,11 @@ test("emacs vize.el maps each profile to its initialization options", () => {
   // The profiles are defined in a single alist constant.
   assert.match(el, /\(defconst\s+vize--profiles\b/);
 
-  // lint => (:lint t)
-  assert.match(el, /\(lint\s*\.\s*\(:lint\s+t\)\)/);
+  // Lint and off explicitly select complete exclusion profiles.
+  assert.match(el, /\(lint\s*\.\s*,\(vize--exclusive-profile\s+t\)\)/);
 
-  // off => nil
-  assert.match(el, /\(off\s*\.\s*nil\)/);
+  // Eglot must receive JSON false, not a missing initialization override.
+  assert.match(el, /\(off\s*\.\s*,\(vize--exclusive-profile\s+nil\)\)/);
 
   // recommended => (:editor t :ecosystem t :lint t :typecheck t)
   assert.match(

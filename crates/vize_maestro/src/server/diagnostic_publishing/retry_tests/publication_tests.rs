@@ -260,3 +260,54 @@ fn explicit_saves_keep_each_complete_notification_at_the_same_source_and_version
         Some(1)
     );
 }
+
+#[test]
+fn explicit_configuration_refresh_republishes_retained_answer_without_disabling_coalescing() {
+    let mut fixture = fixture(false);
+    let expected = notification(&fixture, &current(&fixture));
+    let server = fixture.service.inner();
+    let stamp = server.state.corsa_request_stamp();
+    assert_eq!(
+        diagnostics(drain(
+            &mut fixture.socket,
+            server.publish_diagnostics_if_version(&fixture.app, 1)
+        )),
+        vec![expected.clone()],
+    );
+    assert_eq!(
+        diagnostics(drain(
+            &mut fixture.socket,
+            server.publish_diagnostics_if_version(&fixture.app, 1)
+        )),
+        Vec::<Value>::new(),
+        "ordinary retries still coalesce the same complete answer",
+    );
+    assert_eq!(
+        diagnostics(drain(
+            &mut fixture.socket,
+            server.publish_configuration_diagnostics_if_version(&fixture.app, 1)
+        )),
+        vec![expected],
+        "an explicit config event receives the complete retained versioned notification",
+    );
+    assert!(
+        stamp.is_current(&server.state),
+        "publication does not change native ownership"
+    );
+    assert_eq!(
+        diagnostics(drain(
+            &mut fixture.socket,
+            server.publish_configuration_diagnostics_if_version(&fixture.app, 0)
+        )),
+        Vec::<Value>::new(),
+        "a configuration refresh cannot publish a superseded source version",
+    );
+    assert_eq!(
+        diagnostics(drain(
+            &mut fixture.socket,
+            server.publish_diagnostics_if_version(&fixture.app, 1)
+        )),
+        Vec::<Value>::new(),
+        "the explicit notification does not disable later background coalescing",
+    );
+}

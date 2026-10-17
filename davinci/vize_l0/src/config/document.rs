@@ -19,14 +19,29 @@ use super::model::{
 /// declaration-order rules without another parse or serialization roundtrip.
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(transparent)]
-pub struct ConfigDocument(RawVizeConfig, #[serde(skip)] Vec<crate::String>);
+pub struct ConfigDocument(
+    RawVizeConfig,
+    #[serde(skip)] Vec<crate::String>,
+    #[serde(skip)] Option<serde_json::Value>,
+);
 
 impl ConfigDocument {
+    /// Complete evaluated canonical payload, solely for editor authority identity.
+    /// Native deserialization without an evaluated payload keeps this absent.
+    pub fn evaluated_policy(&self) -> Option<&serde_json::Value> {
+        self.2.as_ref()
+    }
+
+    /// Retain the payload already validated by the host, without another parse.
+    pub fn set_evaluated_policy(&mut self, value: serde_json::Value) {
+        self.2 = Some(value);
+    }
+
     /// Defaults for projects without dedicated Vize configuration.
     ///
     /// Keep `Default` unchanged for existing dedicated configuration files.
     pub fn project_defaults() -> Self {
-        Self(RawVizeConfig::project_defaults(), Vec::new())
+        Self(RawVizeConfig::project_defaults(), Vec::new(), None)
     }
 
     /// Files read by the host while evaluating this snapshot.

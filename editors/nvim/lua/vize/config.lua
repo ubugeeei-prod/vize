@@ -1,10 +1,50 @@
 local M = {}
 
+local feature_keys = {
+  "enabled",
+  "nativeLinkedEditing",
+  "diagnostics",
+  "lint",
+  "typecheck",
+  "editor",
+  "ecosystem",
+  "optionsApi",
+  "legacyVue2",
+  "completion",
+  "signatureHelp",
+  "hover",
+  "definition",
+  "references",
+  "documentSymbols",
+  "workspaceSymbols",
+  "codeActions",
+  "rename",
+  "formatting",
+  "codeLens",
+  "semanticTokens",
+  "documentLinks",
+  "foldingRanges",
+  "inlayHints",
+  "fileRename",
+  "autoInsert",
+  "corsa",
+  "tsgo",
+  "crossFile",
+}
+
+local function exclusive_profile(lint_only)
+  local options = {}
+  for _, key in ipairs(feature_keys) do
+    options[key] = false
+  end
+  options.enabled = lint_only
+  options.lint = lint_only
+  return options
+end
+
 local profiles = {
-  lint = {
-    lint = true,
-  },
-  off = {},
+  lint = exclusive_profile(true),
+  off = exclusive_profile(false),
   recommended = {
     editor = true,
     ecosystem = true,

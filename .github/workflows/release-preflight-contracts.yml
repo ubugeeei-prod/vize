@@ -4,6 +4,7 @@ on:
     paths:
       - ".github/workflows/release-preflight*.yml"
       - ".github/workflows/release.yml"
+      - ".github/workflows/release-operator.yml"
       - ".github/release-notes/drop-in-scope.md"
       - "tests/tooling/drop-in-claim-scope.test.ts"
       - ".github/workflows/check.yml"
@@ -75,3 +76,8 @@ jobs:
         run: |
           rust-script --test tools/commands/ci/github/release-preflight.rs
           node --test tests/tooling/release/release-preflight-full-js.test.ts tests/tooling/release/legacy-check-qualification.test.ts
+      - name: Require immutable retirement source and qualification custody
+        run: >-
+          node --test
+          tests/tooling/release/release-pr.test.ts
+          tests/tooling/release/retirement-qualification.test.ts

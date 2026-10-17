@@ -144,6 +144,8 @@ fn tsconfig_files_inside_source_folders_select_the_nearest_owner() {
 fn vite_source_root_honors_host_projected_checker_paths() {
     let (fixture, state, a, _b) = fixture();
     let package = fixture.path().join("packages/a");
+    std::fs::create_dir(package.join("config")).unwrap();
+    std::fs::write(package.join("config/tsconfig.app.json"), "{}").unwrap();
     std::fs::write(
         package.join("vite.config.mjs"),
         "export default {root:'src',vue:{typeChecker:{tsconfig:'../config/tsconfig.app.json'}}};",

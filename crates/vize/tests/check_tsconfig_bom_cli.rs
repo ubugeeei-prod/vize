@@ -102,6 +102,26 @@ fn capture_malformed(name: &str, actual: &Value) {
     }
 }
 
+fn expected_malformed(root: &Path, forced_color: bool) -> Value {
+    // #9334 rejects an invalid selected project before input collection. Keep
+    // the original packets in MALFORMED; author this successor independently
+    // from the current subprocess response, including its complete JSON bytes.
+    let prefix = if forced_color {
+        "\x1b[31mError:\x1b[0m"
+    } else {
+        "Error:"
+    };
+    json!({
+        "exitCode": 2,
+        "stdout": "{\n  \"files\": [],\n  \"programs\": [],\n  \"errorCount\": 0,\n  \"warningCount\": 0,\n  \"fileCount\": 0\n}\n",
+        "stderr": cstr!(
+            "{prefix} Failed to resolve TypeScript configuration `{}`: Configuration error: cannot parse tsconfig {}: JSON parse error: EOF while parsing a value at line 1 column 20\n",
+            root.join("tsconfig.json").display(),
+            root.join("tsconfig.json").display()
+        ),
+    })
+}
+
 fn run_group(group: &str, variants: &[&str], native: &Path) {
     let corpus: Value = serde_json::from_str(INPUT).unwrap();
     let stock: Value = serde_json::from_str(STOCK).unwrap();
@@ -191,7 +211,7 @@ fn bom_extended_root_or_parent_keeps_whole_authored_program_and_repair() {
 }
 
 #[test]
-fn malformed_plain_and_bom_configs_preserve_whole_original_cli_failure() {
+fn malformed_plain_and_bom_configs_report_whole_early_root_admission_failure() {
     let Some(native) = corsa_requirement::required_or_skip(None::<PathBuf>) else {
         return;
     };
@@ -208,10 +228,14 @@ fn malformed_plain_and_bom_configs_preserve_whole_original_cli_failure() {
             for explicit in [false, true] {
                 let output = check(&root, &native, &corpus, explicit);
                 calls += 1;
-                actual.push(json!({"group":group,"variant":variant,"explicit":explicit,"wholePacket":output}));
+                actual.push(json!({"group":group,"variant":variant,"explicit":explicit,
+                    "historicalWholePacket":malformed["wholeOriginalPackets"][group][variant][if explicit { "explicit" } else { "default" }],
+                    "historicalPlainExpectation":malformed["expectedPlainFailure"],
+                    "wholePacket":output}));
                 capture_malformed("malformed-runtime.json", &json!(actual));
                 assert_eq!(
-                    output, malformed["expectedPlainFailure"],
+                    output,
+                    expected_malformed(&root, false),
                     "{group}/{variant}/explicit={explicit}"
                 );
             }
@@ -230,7 +254,7 @@ fn malformed_whole_packets_obey_controlled_plain_and_forced_color_policies() {
     let corpus: Value = serde_json::from_str(INPUT).unwrap();
     let malformed: Value = serde_json::from_str(MALFORMED).unwrap();
     // Authored independently from the current response; no escape removal or filtering.
-    let colored = json!({"exitCode":1,"stdout":"",
+    let historical_colored = json!({"exitCode":1,"stdout":"",
         "stderr":"\x1b[31mError:\x1b[0m JSON parse error: EOF while parsing a value at line 1 column 20\n"});
     let mut actual = Vec::new();
     for (group, variants) in malformed["wholeCases"].as_object().unwrap() {
@@ -252,17 +276,23 @@ fn malformed_whole_packets_obey_controlled_plain_and_forced_color_policies() {
                     }
                     let forced = packet(&mut command);
                     actual.push(json!({"group":group,"variant":variant,"explicit":explicit,
-                        "forcingVariables":overrides,"noColor":"1","forcedWholePacket":forced}));
+                        "forcingVariables":overrides,"noColor":"1",
+                        "historicalWholePacket":malformed["wholeOriginalPackets"][group][variant][if explicit { "explicit" } else { "default" }],
+                        "historicalForcedExpectation":historical_colored,
+                        "historicalControlledExpectation":malformed["expectedPlainFailure"],
+                        "forcedWholePacket":forced}));
                     capture_malformed("malformed-color-runtime.json", &json!(actual));
                     assert_eq!(
-                        forced, colored,
+                        forced,
+                        expected_malformed(&root, true),
                         "{group}/{variant}/{explicit}/{overrides:?}"
                     );
                     let controlled = packet(plain_output(&mut command));
                     actual.last_mut().unwrap()["controlledWholePacket"] = controlled.clone();
                     capture_malformed("malformed-color-runtime.json", &json!(actual));
                     assert_eq!(
-                        controlled, malformed["expectedPlainFailure"],
+                        controlled,
+                        expected_malformed(&root, false),
                         "{group}/{variant}/{explicit}/{overrides:?}"
                     );
                 }

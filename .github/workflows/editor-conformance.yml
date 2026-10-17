@@ -128,6 +128,17 @@ jobs:
           echo "VIZE_TEST_NVIM_PATH=${RUNNER_TEMP}/nvim-linux-x86_64/bin/nvim" >> "$GITHUB_ENV"
           "${RUNNER_TEMP}/nvim-linux-x86_64/bin/nvim" --version | head -1
 
+      - name: Exercise both packaged Neovim headless suites
+        if: matrix.client == 'neovim'
+        run: |
+          set -euo pipefail
+          PATH="$(dirname "${VIZE_TEST_NVIM_PATH}"):$PATH"
+          export PATH
+          test "$(command -v nvim)" = "${VIZE_TEST_NVIM_PATH}"
+          command -v nvim
+          nvim --version | head -1
+          vp run --workspace-root test:nvim-extension:headless
+
       - name: Install pinned Helix
         if: matrix.client == 'helix'
         env:
@@ -210,6 +221,10 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
+
+      - name: Qualify serialized Neovim profiles against the verified server
+        if: matrix.client == 'neovim'
+        run: node tests/editor-conformance/named-profiles.ts neovim "${RUNNER_TEMP}/ts45/named-profiles"
 
       - name: Play the TS-45 scenario
         env:
@@ -315,6 +330,8 @@ jobs:
           git -C "${RUNNER_TEMP}/vim-lsp" fetch --depth 1 origin "$VIM_LSP_COMMIT"
           git -C "${RUNNER_TEMP}/vim-lsp" checkout --detach FETCH_HEAD
           test "$(git -C "${RUNNER_TEMP}/vim-lsp" rev-parse HEAD)" = "$VIM_LSP_COMMIT"
+      - name: Qualify serialized profiles against the verified server
+        run: node tests/editor-conformance/named-profiles.ts "${{ matrix.client }}" "${RUNNER_TEMP}/configuration-client/named-profiles"
       - name: Exercise project configuration through the actual client
         env:
           CLIENT: ${{ matrix.client }}

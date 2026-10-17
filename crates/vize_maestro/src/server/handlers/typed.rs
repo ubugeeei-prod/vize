@@ -40,7 +40,7 @@ impl MaestroServer {
         })
     }
 
-    pub(super) fn local_completion_response(
+    pub(in crate::server) fn local_completion_response(
         &self,
         params: &CompletionParams,
     ) -> Result<Option<Option<CompletionResponse>>> {

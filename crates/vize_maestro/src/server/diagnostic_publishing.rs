@@ -11,6 +11,8 @@ use crate::ide::DiagnosticService;
 use super::MaestroServer;
 
 #[cfg(all(test, feature = "native", unix))]
+mod configuration_failure_tests;
+#[cfg(all(test, feature = "native", unix))]
 mod retry_tests;
 #[cfg(feature = "native")]
 mod sync_feedback;
@@ -189,12 +191,12 @@ impl MaestroServer {
         &self,
         uri: &Url,
         collected: CollectedDiagnostics,
-        explicit_save: bool,
+        explicit_refresh: bool,
     ) {
         // Without native work there is no asynchronous stamped coalescing;
         // both causes retain the ordinary complete publication below.
         #[cfg(not(feature = "native"))]
-        let _ = explicit_save;
+        let _ = explicit_refresh;
         let CollectedDiagnostics {
             version,
             diagnostics,
@@ -238,7 +240,7 @@ impl MaestroServer {
                 version,
                 stamp,
                 &diagnostics,
-                explicit_save,
+                explicit_refresh,
             );
             if !stamp.is_current(&self.state) || self.state.documents.version(uri) != Some(version)
             {

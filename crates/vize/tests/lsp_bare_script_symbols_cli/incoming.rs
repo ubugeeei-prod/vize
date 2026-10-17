@@ -95,8 +95,12 @@ fn bare_exporter_references_retain_the_entire_closed_and_open_incoming_script() 
                 .refuse_writes(file, token, "exportValueNext")
                 .unwrap();
         }
-        fixture.reopen_both(files[0].0, "typescript", 1).unwrap();
-        fixture.reopen_both(files[1].0, "typescript", 1).unwrap();
+        fixture
+            .reopen_both(files[0].0, "typescript", 1, json!([]))
+            .unwrap();
+        fixture
+            .reopen_both(files[1].0, "typescript", 1, json!([]))
+            .unwrap();
         whole_project(&mut fixture, files[0].0, (0, 20, 31)).unwrap();
         fixture.assert_disks().unwrap();
         fixture.finish().unwrap();

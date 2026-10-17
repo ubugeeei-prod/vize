@@ -170,6 +170,7 @@ fn load_lsp_config_from_vite() {
 #[test]
 fn load_lsp_config_updates_type_checker_config() {
     let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join("tsconfig.app.json"), "{}").unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         r#"export default { vue: {

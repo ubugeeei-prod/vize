@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 
 use rayon::prelude::*;
 
-mod graph;
+pub(super) mod graph;
 mod implicit_exclude;
 mod ownership;
 mod spec;
@@ -26,6 +26,16 @@ pub(in super::super) fn referenced_project_configs(tsconfig_path: &Path) -> Vec<
     let mut cache = TsconfigOwnershipCache::default();
     cache
         .project_paths(tsconfig_path)
+        .into_iter()
+        .skip(1)
+        .collect()
+}
+
+pub(in super::super) fn referenced_project_configs_with_inputs(
+    tsconfig_path: &Path,
+    inputs: Option<&super::compiler_inputs::CompilerInputs>,
+) -> Vec<PathBuf> {
+    graph::collect_project_paths_with_inputs(tsconfig_path, inputs)
         .into_iter()
         .skip(1)
         .collect()

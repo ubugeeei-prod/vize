@@ -108,9 +108,14 @@ jobs:
         with: { fetch-depth: "${{ matrix.lane == 'attributes' && '0' || '1' }}" }
       - uses: ./.github/actions/cache-vp-bootstrap
         if: ${{ matrix.lane != 'none' }}
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ matrix.lane != 'none' }}
-        with: { node-version-file: "package.json", cache: true, run-install: false }
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         if: ${{ matrix.lane != 'none' }}
         with: { toolchain: "1.99.1" }
@@ -191,9 +196,14 @@ jobs:
           tool: wasm-bindgen-cli@0.2.129
       - uses: ./.github/actions/cache-vp-bootstrap
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
-        with: { node-version-file: "package.json", cache: true, run-install: false }
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: false
       - name: Build WASM
         if: ${{ env.RUN_PLAYGROUND == 'true' && steps.cache-wasm.outputs.cache-hit != 'true' }}
         run: node tools/support/github/build-vitrine-wasm.ts playground/src/wasm

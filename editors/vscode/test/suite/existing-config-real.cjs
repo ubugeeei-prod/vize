@@ -81,6 +81,9 @@ exports.run = async function run() {
     '<script setup lang="ts">\nconst count = 1;\n</script>\n\n<template>\n  <div>{{ count }}</div>\n</template>\n',
     "the complete server edit vector formats the existing-config buffer",
   );
+  if (process.env.VIZE_TEST_CONFIG_MODE === "external") {
+    await require("./external-config-real.cjs").run();
+  }
   await vscode.commands.executeCommand("vize.disable");
   assert.equal(vscode.workspace.getConfiguration("vize").get("enable"), false);
 };

@@ -15,7 +15,7 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
     // Snapshot identity and filesystem ownership stay in Carton. Only this
     // private facade can expose the reviewed host APIs to state consumers.
     storage = storage.replace(
-      /^pub\(in crate::server::state\) use vize_carton::config::(?:LoadedLspConfig|ProjectModel|load_config_with_source|load_lsp_config_snapshot);$/gmu,
+      /^pub\(in crate::server::state\) use vize_carton::config::(?:ConfigLoadFailureIdentity|LoadedLspConfig|ProjectModel|load_config_with_source|load_lsp_config_snapshot|load_lsp_config_snapshot_observed);$/gmu,
       "host_config_snapshot_facade",
     );
   }

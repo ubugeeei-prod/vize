@@ -58,6 +58,24 @@ pub(crate) fn installed_package_manifest(
     Some((root.join("package.json"), manifest))
 }
 
+/// Reuse package lookup semantics with an embedding capture's input reader.
+pub(crate) fn installed_package_manifest_with_reader(
+    importer_dir: &Path,
+    package: &str,
+    mut read: impl FnMut(&Path) -> Option<Value>,
+    observe: impl Fn(&Path),
+) -> Option<(PathBuf, Value)> {
+    let root = search::find_package_root_with_reader(
+        importer_dir,
+        package,
+        &mut Vec::new(),
+        &mut |directory| read(&directory.join("package.json")),
+        &observe,
+    )?;
+    let path = root.join("package.json");
+    Some((path.clone(), read(&path)?))
+}
+
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub struct PackageSourceOptions {
     include_javascript: bool,

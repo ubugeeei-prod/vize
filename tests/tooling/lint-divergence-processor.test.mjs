@@ -18,6 +18,7 @@ import {
   assertBudgetsPassed,
   evaluateBudget,
 } from "../../tools/support/compat/fixtures/lint-divergence-budget.mjs";
+import { baselineScript as embedded } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const digest = (body) => createHash("sha256").update(body).digest("hex");
@@ -51,11 +52,10 @@ assert.equal(runtime.version, "10.9.2");
 assert.equal(base.processor, "vue/vue");
 assert.equal(runtime.plugin.processors.vue, runtime.plugin.processors[".vue"]);
 const producer = fs.readFileSync(
-  path.join(root, "tools/commands/fixtures/lint-divergence-report.rs"),
+  path.join(root, "tools/support/fixtures/lint_divergence/runtime.ts"),
   "utf8",
 );
-const embedded = producer.match(/let script = r#"([\s\S]*?)"#;/u)?.[1];
-assert.ok(embedded, "exercise the actual Rust producer's ESLint entry point");
+assert.ok(embedded, "exercise the actual TypeScript producer's ESLint entry point");
 
 function record(input, boundary, packet) {
   const directory = process.env.VIZE_LINT_PROCESSOR_CAPTURE_DIR;
@@ -120,7 +120,7 @@ function actual(input, selected) {
     encoding: "utf8",
     timeout: 30000,
   });
-  record(input, "rust-process", {
+  record(input, "typescript-process", {
     selected,
     status: child.status,
     signal: child.signal,
@@ -161,7 +161,7 @@ async function paired(input, selected = rules) {
   record(input, "whole-results-before-collection", {
     selected,
     publicProcessor: expected,
-    actualRust: measured[0],
+    actualTypeScript: measured[0],
     compatibility: measured[1],
   });
   for (const packet of measured) {

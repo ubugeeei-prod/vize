@@ -211,3 +211,36 @@ fn invalid_native_project_initialization_refuses_lint_until_valid_configuration_
         Some(&LintRuleSeverity::Off)
     );
 }
+
+#[test]
+#[cfg(feature = "native")]
+#[expect(
+    clippy::disallowed_types,
+    reason = "the asynchronous admission worker retains its shared editor owner"
+)]
+fn invalid_primary_initialization_loads_other_folders_on_the_same_worker() {
+    let project = tempfile::tempdir().unwrap();
+    let invalid = folder_with_config(project.path(), "invalid", "{formatter:{printWidth:'bad'}}");
+    let valid = folder_with_config(
+        project.path(),
+        "valid",
+        "{linter:{rules:{'a11y/alt-text':'off'}}}",
+    );
+    let state = std::sync::Arc::new(ServerState::new());
+    state.set_workspace_root(invalid.clone());
+    let folders = [invalid.clone(), valid.clone()].map(|root| WorkspaceFolder {
+        uri: Url::from_file_path(&root).unwrap(),
+        name: root.file_name().unwrap().to_string_lossy().into_owned(),
+    });
+    assert!(crate::runtime::block_on(
+        state.load_workspace_config_async(&invalid, Some(&folders))
+    ));
+    let invalid_uri = Url::from_file_path(invalid.join("App.vue")).unwrap();
+    assert!(state.linter_settings_for_uri(&invalid_uri).is_none());
+    let valid_uri = Url::from_file_path(valid.join("App.vue")).unwrap();
+    let (config, _, _) = state.linter_settings_for_uri(&valid_uri).unwrap();
+    assert_eq!(
+        config.rules.get("a11y/alt-text"),
+        Some(&LintRuleSeverity::Off)
+    );
+}
