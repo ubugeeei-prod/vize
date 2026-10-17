@@ -82,6 +82,7 @@ try {
       stack: sanitizedError instanceof Error ? sanitizedError.stack : undefined,
     });
   } finally {
+    secrets.stage("observer-cleanup");
     try {
       await cleanup(e, "observer-cleanup", [
         { name: "chromium", run: async () => owned.browser?.close() },
@@ -96,6 +97,7 @@ try {
         },
       ]);
     } catch (error) {
+      secrets.failed("observer-cleanup");
       const sanitizedError = secrets.sanitizeError(error);
       e.records.push({ phase: "cleanup", error: String(sanitizedError) });
       failure ??= sanitizedError;

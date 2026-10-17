@@ -11,6 +11,7 @@ const schema = "vize-public-vrt-log-barrier-v1";
 
 const diagnosticPhases = [
   "observer-entry",
+  "observer-cleanup",
   "installed-native-custody",
   "sealed-delivered-inputs",
   "public-chromium",
@@ -86,21 +87,22 @@ export class VrtSecrets {
   #phase: VrtPhase = "observer-entry";
 
   stage(phase: VrtPhase): void {
-    this.#phase = phase;
-    this.report(phase, "entered");
+    if (this.report(phase, "entered")) this.#phase = phase;
   }
 
   failed(phase = this.#phase): void {
     this.report(phase, "failed");
   }
 
-  report(phase: VrtPhase, disposition: VrtDisposition): void {
-    vrtDiagnosticRecord(phase, disposition);
+  report(phase: VrtPhase, disposition: VrtDisposition): boolean {
     try {
+      vrtDiagnosticRecord(phase, disposition);
       this.#diagnostic?.(phase, disposition);
+      return true;
     } catch {
       // Diagnostic channel failure refuses acceptance but never interrupts owned cleanup or scans.
       process.exitCode ||= 1;
+      return false;
     }
   }
 
@@ -179,7 +181,10 @@ export class VrtSecrets {
     return safe;
   }
 
-  async closeBarrier(trustedSurfaces: () => void, publishedChildren: () => void): Promise<void> {
+  async closeBarrier(
+    trustedSurfaces: () => void | Promise<void>,
+    publishedChildren: () => void | Promise<void>,
+  ): Promise<void> {
     this.stage("closure-barrier");
     const checks = [
       ["closure-trusted-surfaces", trustedSurfaces],
@@ -187,9 +192,9 @@ export class VrtSecrets {
     ] as const;
     const results = await Promise.allSettled(
       checks.map(([phase, verify]) =>
-        Promise.resolve().then(() => {
+        Promise.resolve().then(async () => {
           try {
-            verify();
+            await verify();
             this.report(phase, "passed");
           } catch (error) {
             this.failed(phase);

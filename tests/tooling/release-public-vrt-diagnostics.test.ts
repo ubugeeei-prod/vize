@@ -184,6 +184,61 @@ test("a broken diagnostic sink still completes pending writers, cleanup and the 
   await verifiedVrtLog(result.log);
 });
 
+test("invalid runtime diagnostic input refuses acceptance without interrupting cleanup or scans", async (t) => {
+  const result = await run(t, "pending", "invalid");
+  assert.equal(result.code, 1);
+  assert.ok(
+    result.rows.some((row) => row.phase === "seal-complete" && row.disposition === "passed"),
+  );
+  assert.equal(
+    (await fs.readFile(path.join(result.root, "evidence/pending.bin"))).length,
+    1024 * 1024,
+  );
+  assert.equal(
+    await fs.readFile(path.join(result.root, "evidence/cleanup-end.bin"), "utf8"),
+    "cleanup completed",
+  );
+  await verifiedVrtLog(result.log);
+});
+
+test("closure waits for a delayed rejection while still running the other callback", async () => {
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const rows: Array<{ phase: string; disposition: string }> = [];
+  const scope = new VrtSecrets((phase, disposition) =>
+    rows.push(JSON.parse(vrtDiagnosticRecord(phase, disposition))),
+  );
+  let secondCalled = false;
+  let settled = false;
+  const barrier = scope.closeBarrier(
+    async () => {
+      await gate;
+      throw new Error(control);
+    },
+    () => {
+      secondCalled = true;
+    },
+  );
+  void barrier.catch(() => {
+    settled = true;
+  });
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.equal(secondCalled, true);
+  assert.equal(settled, false);
+  assert.equal(
+    rows.some((row) => row.phase === "closure-trusted-surfaces" && row.disposition === "passed"),
+    false,
+  );
+  release();
+  await assert.rejects(barrier, /Owned VRT closure barrier refused/u);
+  assert.ok(
+    rows.some((row) => row.phase === "closure-trusted-surfaces" && row.disposition === "failed"),
+  );
+  assert.equal(JSON.stringify(rows).includes(control), false);
+});
+
 test("successful diagnostics do not alter verified original bytes or authorize a modified suffix", async (t) => {
   const result = await run(t, "plain");
   assert.equal(result.code, 0);

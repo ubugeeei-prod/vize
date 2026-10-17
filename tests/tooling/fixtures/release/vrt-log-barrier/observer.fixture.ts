@@ -8,13 +8,14 @@ import {
 import {
   VrtSecrets,
   writeVrtDiagnostic,
+  type VrtPhase,
 } from "../../../../../tools/support/release/public_acceptance/vrt_secrets.ts";
 
 const [root, mode] = process.argv.slice(2);
 assert.ok(root && mode);
 const diagnostic = process.argv[4];
 const scope = new VrtSecrets(
-  diagnostic === "enabled"
+  diagnostic === "enabled" || diagnostic === "invalid"
     ? writeVrtDiagnostic
     : diagnostic === "broken"
       ? () => {
@@ -28,6 +29,7 @@ const a = Buffer.alloc(32, 2).toString("base64url");
 const b = Buffer.alloc(32, 3).toString("base64url");
 scope.remember(a);
 scope.remember(b);
+if (diagnostic === "invalid") scope.stage(a as VrtPhase);
 if (diagnostic === "enabled" && mode === "scan-refusal") console.error(a);
 try {
   let failure: unknown;
