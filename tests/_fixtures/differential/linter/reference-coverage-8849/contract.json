@@ -1,0 +1,70 @@
+{
+  "schema": "vize.lintReferenceCoverage",
+  "version": 1,
+  "cases": [
+    {
+      "id": "bare-slot-shorthand",
+      "project": "gui-for-singbox",
+      "revision": "1be4816dea1e8793d8e08ae4f8f016c28101672d",
+      "preset": "ecosystem",
+      "source": "AppShell.vue.txt",
+      "sourceSha256": "4b7c77d382e1d3e46eeb6765eb6ab6cfaebb7c1d2b7a2a65a06871289b734c6e",
+      "finding": {
+        "column": 19,
+        "endColumn": 36,
+        "endLine": 18,
+        "file": "frontend/src/components/_common/AppShell.vue",
+        "line": 18,
+        "message": "[vize:vue/v-slot-style] Expected 'v-slot' instead of '#'",
+        "ruleId": "vue/v-slot-style",
+        "severity": "warning"
+      },
+      "options": [],
+      "upstreamOptions": [],
+      "runtimeVersions": {
+        "eslint": "10.4.1",
+        "eslint-plugin-vue": "10.9.2",
+        "vue-eslint-parser": "10.4.1",
+        "@typescript-eslint/parser": "8.65.0"
+      },
+      "issue": 8849,
+      "reason": "Vue parses bare # as a default slot directive, but vue-eslint-parser treats it as a non-directive attribute, so the reference slot-style visitor does not run.",
+      "packetSha256": "c9ecb9b4792dd220f61315e47a3ea407d0a13e0ca8fe48c933d00a562bee55c1",
+      "packet": "gui-for-singbox-lint-divergence.json.gz",
+      "nativePacket": "gui-for-singbox-linter.json.gz",
+      "nativePacketSha256": "d61b27a83593bdd6f5ed078f954af6e908ed2ceecf81ae11fa268e37ae270dd9"
+    },
+    {
+      "id": "class-decorator-prop",
+      "project": "mobile-web-best-practice",
+      "revision": "34a793b13492405f75c97b46253df5ee142014cc",
+      "preset": "ecosystem",
+      "source": "card.vue.txt",
+      "sourceSha256": "0e8ca44978bf438cf9ff9df7bb2adf315af226efc32b511d12a10c75dc22f6e1",
+      "finding": {
+        "column": 25,
+        "endColumn": 39,
+        "endLine": 10,
+        "file": "src/views/home/widgets/card.vue",
+        "line": 10,
+        "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'notebook.notes' via v-model",
+        "ruleId": "vue/no-mutating-props",
+        "severity": "error"
+      },
+      "options": [],
+      "upstreamOptions": [],
+      "runtimeVersions": {
+        "eslint": "10.4.1",
+        "eslint-plugin-vue": "10.9.2",
+        "vue-eslint-parser": "10.4.1",
+        "@typescript-eslint/parser": "8.65.0"
+      },
+      "issue": 8849,
+      "reason": "The template writes a class @Prop binding; Patina recognizes decorator props, while the reference no-mutating-props visitors only register object Options API and script setup declarations.",
+      "packetSha256": "2f957e4d7659b623802a5e518ff5cf6b004f90f58759e7cf02981d9f56b9e083",
+      "packet": "mobile-web-best-practice-lint-divergence.json.gz",
+      "nativePacket": "mobile-web-best-practice-linter.json.gz",
+      "nativePacketSha256": "208dbdcd5ae68be6b45d5eda85c39ff0e77b9e528dd50274659f50237094c3a0"
+    }
+  ]
+}
