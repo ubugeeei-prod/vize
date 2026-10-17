@@ -7,7 +7,6 @@ import { test } from "node:test";
 
 import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
-import { writeFakeNpmRegistry } from "./support/fake-npm-registry.ts";
 
 const versionUrl = "https://registry.npmjs.org/%40vizejs%2Fexample/1.2.3-beta.1";
 const metadataUrl = "https://registry.npmjs.org/%40vizejs%2Fexample";
@@ -72,7 +71,30 @@ test("publish_npm_package computes the tag and forwards provenance to vp", () =>
   try {
     fs.mkdirSync(packageDir, { recursive: true });
     fs.mkdirSync(binDir, { recursive: true });
-    writeFakeNpmRegistry(binDir);
+    // Only vp publishes state. Concurrent registry reads must not rewrite the
+    // same JSON file merely to count requests; the append-only trace counts them.
+    writeFakeCommand(
+      binDir,
+      "curl",
+      [
+        "const fs = require('node:fs');",
+        "const url = process.argv.at(-1);",
+        "const name = decodeURIComponent(new URL(url).pathname.split('/')[1]);",
+        "const version = process.env.NPM_FAKE_VERSION;",
+        "const statePath = process.env.NPM_FAKE_STATE_PATH;",
+        "const state = fs.existsSync(statePath)",
+        "  ? JSON.parse(fs.readFileSync(statePath, 'utf8')) : {};",
+        "fs.appendFileSync(process.env.NPM_FAKE_URL_LOG, `${url}\\n`);",
+        "if (state.published !== true) {",
+        "  process.stdout.write('{}VIZE_HTTP_STATUS:404');",
+        "  process.exit(0);",
+        "}",
+        "const body = url.includes(`/${version}?`)",
+        "  ? { name, version }",
+        "  : { name, 'dist-tags': { latest: version, beta: version, rc: version } };",
+        "process.stdout.write(`${JSON.stringify(body)}VIZE_HTTP_STATUS:200`);",
+      ].join("\n"),
+    );
     writeFileSync(
       path.join(packageDir, "package.json"),
       `${JSON.stringify({ name: "@vizejs/example", version: "1.2.3-beta.1" }, null, 2)}\n`,
@@ -141,7 +163,7 @@ test("publish_npm_package computes the tag and forwards provenance to vp", () =>
     ]);
     assert.equal(fs.realpathSync(fs.readFileSync(cwdLogPath, "utf8")), fs.realpathSync(packageDir));
     assertPublicationTrace(fs.readFileSync(registryUrlLogPath, "utf8").trim().split("\n"));
-    assert.equal(JSON.parse(fs.readFileSync(statePath, "utf8")).published, true);
+    assert.equal(fs.readFileSync(statePath, "utf8"), JSON.stringify({ published: true }));
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
