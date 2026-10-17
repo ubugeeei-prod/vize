@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "issue": 9300,
+  "umbrella": 3984,
+  "qualification": "Historical actual published-CLI RED; not a current-main binary execution",
+  "release": "v0.457.0",
+  "frozenSource": "03882089eff75664abe99ba71868e33739496b01",
+  "auditedMain": "8f2e12d8519205bf2b5eae2db0e5e323a45a57d0",
+  "postprocessorBlobInBothSources": "f365a4bab02ac216b43336de8b3d3f44156e0a4f",
+  "archiveSHA256": "f6016dfc0ecce3dd631b1621613527071a2f461ad069f4b24040ed23b3249f75",
+  "cliSHA256": "c45adea0d02352c526a9ae5f31e70f2bdf4fd315426c2cab838f7a5605526d57",
+  "nativeVersion": "7.0.2",
+  "nativeSHA256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+  "consumerCommand": [
+    "tsc",
+    "--noEmit",
+    "--pretty",
+    "false",
+    "-p",
+    "tsconfig.json"
+  ],
+  "packets": [
+    {
+      "path": "historical-binding-collision.json",
+      "sha256": "c9a60f2ffb2f0c4d2c69ad152e2f6ebc34fcf4b2696f0595599ba007f5c75011"
+    },
+    {
+      "path": "historical-consumer-red.json",
+      "sha256": "d58949a38d860cc902bff1e406d1e6d30f11063af7e460c7d27635ce22c95d72"
+    },
+    {
+      "path": "historical-producer-control.json",
+      "sha256": "d15c66a753508b98c8ba4ed3dfc59a2942517d0ccbc579db29bb20c8d2cc1d42"
+    },
+    {
+      "path": "historical-producer-red.json",
+      "sha256": "07e5bfa2d8c04f5c186b7161561688546d5070a59f3583d6e9408bc8cb1b03fb"
+    },
+    {
+      "path": "historical-tsx-red.json",
+      "sha256": "e0f88c244303d63ddc43face6c9681419f38fb05d43b0e8356218bdb42a1cd86"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "1d4ac70cd144959267b1d43779a7265a89128bda9f9dd92d0d2147db6ddfcd98"
+    }
+  ]
+}

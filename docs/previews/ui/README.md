@@ -47,7 +47,7 @@ acceptance checks each rendered Japanese label and its destination at desktop an
 mobile widths. Device and permission examples expose host availability; their
 presence does not establish successful device access or granted-permission behavior.
 
-One hundred twenty-five complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
+One hundred twenty-six complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
 bounded quantities, debounced local search, blur validation, undo/redo, and
 pagination, plus async results, interval/timeout controls, browser storage,
 media queries, document focus, form submission, multistep navigation, bounded
@@ -81,6 +81,10 @@ The virtual-list catalogue uses real native scrolling over 1,000 local records,
 with a bounded rendered slice, search/empty states and keyboard jump controls.
 Its checks verify actual row dimensions, native Home/End/PageDown, ARIA positions
 and total counts, and retained input/list focus after filtering and scrolling.
+
+The textarea-autosize release-note editor checks native multiline input, clear,
+real width observation, editing focus and selection, and CSS maximum-height scrolling.
+Declared rows remain the server fallback; the live draft is local only.
 
 The async-resource delivery quote demonstrates native abortable local producers,
 retained successful data, failures, cancellation, supersession and reset. The
