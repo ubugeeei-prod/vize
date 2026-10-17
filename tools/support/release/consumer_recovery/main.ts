@@ -12,10 +12,10 @@ import {
   files,
   verifiedRecovery,
   verifyIntegration,
+  verifyConsumerDirectory,
   verifyStoredIntegration,
   type Original,
 } from "./custody.ts";
-import { verifyConsumer } from "./consumer.ts";
 import { assertOracleFiles } from "./oracles.ts";
 import { revalidatePublicArchives, type InstalledArchive } from "./archive.ts";
 import {
@@ -57,7 +57,11 @@ if (operation === "prepare" || operation === "finalize") {
       run: process.env.GITHUB_RUN_ID,
       attempt: process.env.GITHUB_RUN_ATTEMPT,
     });
-    const original = await collectOriginal(expected, policySha);
+    const original = await collectOriginal(
+      expected,
+      policySha,
+      path.join(output, "original-log-capture"),
+    );
     save(output, "original.json", original);
     writeFileSync(path.join(output, "original-failure.log"), original.log, { flag: "wx" });
     writeFileSync(path.join(output, "consumer.ts"), String(original.blobs.consumerSha256), {
@@ -82,8 +86,7 @@ if (operation === "prepare" || operation === "finalize") {
     const consumers: Json[] = [];
     for (const role of roles) {
       const file = path.join(output, "consumers", role, "consumer.json");
-      const packet = load(file);
-      verifyConsumer(packet, original);
+      const packet = verifyConsumerDirectory(path.dirname(file), original);
       assertOracleFiles(path.dirname(file), original.policy, role === "deno-linux");
       save(
         output,
@@ -102,7 +105,7 @@ if (operation === "prepare" || operation === "finalize") {
       );
       consumers.push({ role, sha256: sha256(readFileSync(file)) });
     }
-    const live = await collectOriginal(expected, policySha);
+    const live = await collectOriginal(expected, policySha, path.join(output, "final-log-capture"));
     for (const key of [
       "policy",
       "run",
@@ -110,6 +113,7 @@ if (operation === "prepare" || operation === "finalize") {
       "failed",
       "log",
       "logIdentity",
+      "logCustody",
       "blobs",
       "artifacts",
       "pin",

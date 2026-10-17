@@ -290,6 +290,15 @@ export default function publicSetup(app, context) {
     assert.equal(receipt.success, true);
   }
   const publication = load("publication.json");
+  if (source.recoveryRun) {
+    // All installed/native processes have completed. This trusted metadata-only
+    // step receives the read credential again and rechecks current recovery/R.
+    const fresh = await verifyPublication(derivePublicationPlan(root, source.head), source);
+    assert.equal(fresh.github.runConclusion, "failure");
+    assert.deepEqual(fresh.source, publication.source);
+    assert.deepEqual(fresh.github.consumerRecovery, publication.github.consumerRecovery);
+    save("publication-after-installed.json", fresh);
+  }
   for (const item of native.packages) {
     const publicItem = publication.npm.find((entry: { name: string }) => entry.name === item.name);
     assert.ok(publicItem, item.name);

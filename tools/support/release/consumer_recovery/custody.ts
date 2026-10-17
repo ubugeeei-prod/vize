@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { verifyConsumer } from "./consumer.ts";
+import { captureCommand, effectiveDenoConfig, strictUtf8 } from "./runtime.ts";
 import { custodyProbe, assertOracleFiles, type OraclePolicy } from "./oracles.ts";
 import { revalidatePublicArchives, type InstalledArchive } from "./archive.ts";
 import {
@@ -63,22 +64,71 @@ export async function pages(endpoint: string, key: string): Promise<Json[]> {
   }
   throw new Error("incomplete inventory");
 }
+// Closed source/config/workflow closure for signing AND consuming recovery evidence.
+// Include all materialized public harness modules as well as static imports.
+export const policyFiles = [
+  ".github/workflows/release-consumer-recovery.yml",
+  ".github/workflows/release-operator.yml",
+  ".github/workflows/release-public-acceptance.yml",
+  "tests/performance/support/warm-type-backed-public-archives.ts",
+  "tools/support/release/consumer_recovery/archive.ts",
+  "tools/support/release/consumer_recovery/consumer.ts",
+  "tools/support/release/consumer_recovery/custody.ts",
+  "tools/support/release/consumer_recovery/main.ts",
+  "tools/support/release/consumer_recovery/oracles.ts",
+  "tools/support/release/consumer_recovery/policy.ts",
+  "tools/support/release/consumer_recovery/runtime.ts",
+  "tools/support/release/jsr/consumer-deno.json",
+  "tools/support/release/marketplace_query.ts",
+  "tools/support/release/public_acceptance/accept.ts",
+  "tools/support/release/public_acceptance/browser.ts",
+  "tools/support/release/public_acceptance/browser_observation.ts",
+  "tools/support/release/public_acceptance/gallery.ts",
+  "tools/support/release/public_acceptance/github.ts",
+  "tools/support/release/public_acceptance/http.ts",
+  "tools/support/release/public_acceptance/inputs.ts",
+  "tools/support/release/public_acceptance/installed.ts",
+  "tools/support/release/public_acceptance/lsp.ts",
+  "tools/support/release/public_acceptance/lsp_assets.ts",
+  "tools/support/release/public_acceptance/lsp_cargo.ts",
+  "tools/support/release/public_acceptance/lsp_case.ts",
+  "tools/support/release/public_acceptance/lsp_packets.ts",
+  "tools/support/release/public_acceptance/lsp_source.ts",
+  "tools/support/release/public_acceptance/native.ts",
+  "tools/support/release/public_acceptance/plan.ts",
+  "tools/support/release/public_acceptance/registry.ts",
+  "tools/support/release/public_acceptance/vrt_api.ts",
+  "tools/support/release/public_acceptance/vrt_artifacts.ts",
+  "tools/support/release/public_acceptance/vrt_audit.ts",
+  "tools/support/release/public_acceptance/vrt_cli.ts",
+  "tools/support/release/public_acceptance/vrt_fixtures.ts",
+  "tools/support/release/public_acceptance/vrt_host.ts",
+  "tools/support/release/public_acceptance/vrt_hosted.ts",
+  "tools/support/release/public_acceptance/vrt_literal.ts",
+  "tools/support/release/public_acceptance/vrt_observer.ts",
+  "tools/support/release/public_acceptance/vrt_retained.ts",
+  "tools/support/release/public_acceptance/vrt_retained_scan.ts",
+  "tools/support/release/public_acceptance/vrt_secrets.ts",
+  "tools/support/release/public_acceptance/vrt_service_announcement.ts",
+  "tools/support/release/public_acceptance/vrt_service_process.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_color_build.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_color_capture.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_colors.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_failures.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_gallery.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_network.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_observation.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_report_isolation.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_surface.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_ui.ts",
+  "tools/support/release/public_acceptance/vrt_tunnel.ts",
+  "tools/support/release/public_acceptance/vrt_tunnel_metadata.ts",
+  "tools/support/release/public_acceptance/vrt_tunnel_process.ts",
+  "tools/support/release/public_acceptance/vrt_tunnel_setup.ts",
+  "tools/support/release/windows_hover_acceptance.ts",
+] as const;
 export function authority(sha: string) {
-  const directory = fileURLToPath(new URL("./", import.meta.url));
-  const files = readdirSync(directory)
-    .filter((file) => file.endsWith(".ts"))
-    .map((file) => `tools/support/release/consumer_recovery/${file}`);
-  files.push(
-    workflow,
-    ".github/workflows/release-operator.yml",
-    ".github/workflows/release-public-acceptance.yml",
-    ...["github", "registry", "plan", "http", "inputs", "installed"].map(
-      (name) => `tools/support/release/public_acceptance/${name}.ts`,
-    ),
-    "tools/support/release/windows_hover_acceptance.ts",
-    "tools/support/release/marketplace_query.ts",
-  );
-  return files.sort().map((file) => {
+  return policyFiles.map((file) => {
     const bytes = readFileSync(path.join(root, file));
     same(sha256(gitBlob(sha, file)), sha256(bytes), "policy checkout differs from reviewed source");
     return { file, sha256: sha256(bytes) };
@@ -99,6 +149,7 @@ export interface Original extends Json {
   jobs: Json[];
   failed: Json;
   log: string;
+  logCustody: Json;
   blobs: Json;
   artifacts: Json[];
 }
@@ -113,7 +164,11 @@ export function admission(original: Original): Admission {
     original.blobs,
   );
 }
-export async function collectOriginal(expected: Identity, policySha: string): Promise<Original> {
+export async function collectOriginal(
+  expected: Identity,
+  policySha: string,
+  logDirectory?: string,
+): Promise<Original> {
   const policy = {
     sha: policySha,
     authority: policyOnMain(policySha),
@@ -142,11 +197,17 @@ export async function collectOriginal(expected: Identity, policySha: string): Pr
   const failures = jobs.filter((job) => job.conclusion === "failure");
   same(failures.length, 1, "one known failed consumer required");
   const failed = api(`actions/jobs/${positive(failures[0].id)}`);
-  const logBytes = command("gh", failureLogArguments(failed.id));
-  const log = logBytes.toString("utf8");
-  assert.ok(Buffer.from(log, "utf8").equals(logBytes), "raw failure log cannot be lossily decoded");
+  const logOutput =
+    logDirectory ?? path.join(mkdtempSync(path.join(os.tmpdir(), "vize-original-log-")), "capture");
+  const captured = await captureCommand("gh", failureLogArguments(failed.id), logOutput);
+  // Whole raw stdout/stderr and process packet exist even if any following gate refuses.
+  same(captured.error, undefined, "failed log transport error");
+  same(captured.signal, null, "failed log transport signal");
+  same(captured.status, 0, "failed log transport exit");
+  const log = strictUtf8(captured.stdout);
+  const logBytes = captured.stdout;
   assert.ok(
-    Buffer.byteLength(log) > 0 && Buffer.byteLength(log) <= 16 * 1024 * 1024,
+    captured.stdout.length > 0 && captured.stdout.length <= 16 * 1024 * 1024,
     "bounded complete failed log required",
   );
   const blobs = {
@@ -176,6 +237,11 @@ export async function collectOriginal(expected: Identity, policySha: string): Pr
     jobs,
     failed,
     log,
+    // The raw process packet retains its actual transport cwd. That local path
+    // is not an original Release identity and may differ between trusted hosts.
+    logCustody: Object.fromEntries(
+      Object.entries(captured.custody).filter(([key]) => key !== "cwd"),
+    ),
     logIdentity: { sha256: sha256(logBytes), bytes: logBytes.byteLength, encoding: "utf8" },
     blobs,
     artifacts,
@@ -297,6 +363,41 @@ export function files(directory: string) {
   visit("");
   return found;
 }
+/** Check the signed packet against the actual retained command bytes and effective config. */
+export function verifyConsumerDirectory(directory: string, original: Original) {
+  const packet = object(JSON.parse(readFileSync(path.join(directory, "consumer.json"), "utf8")));
+  verifyConsumer(packet, original);
+  for (const value of packet.commands as unknown[]) {
+    const record = object(value),
+      label = String(record.label);
+    assert.match(label, /^[a-z-]+$/);
+    const raw = path.join(directory, `${label}-raw`);
+    const stdout = readFileSync(path.join(raw, "stdout.bin")),
+      stderr = readFileSync(path.join(raw, "stderr.bin"));
+    same(strictUtf8(stdout), record.stdout, "complete command stdout changed");
+    same(strictUtf8(stderr), record.stderr, "complete command stderr changed");
+    const process = object(JSON.parse(readFileSync(path.join(raw, "process.json"), "utf8")));
+    for (const key of ["command", "args", "cwd", "status", "signal", "error"])
+      same(process[key], record[key], `raw command ${key} changed`);
+    same(
+      process.stdout,
+      { bytes: stdout.length, sha256: sha256(stdout) },
+      "raw stdout digest changed",
+    );
+    same(
+      process.stderr,
+      { bytes: stderr.length, sha256: sha256(stderr) },
+      "raw stderr digest changed",
+    );
+  }
+  if (packet.role === "deno-linux")
+    same(
+      readFileSync(path.join(directory, "deno.json"), "utf8"),
+      effectiveDenoConfig,
+      "effective Deno config changed",
+    );
+  return packet;
+}
 export async function verifiedRecovery(
   expected: Identity,
   recoveryRun: string,
@@ -400,10 +501,7 @@ export async function verifiedRecovery(
   same(original.identity, expected, "original identity reused");
   const admitted = admission(original);
   for (const role of roles) {
-    const packet = object(
-      JSON.parse(readFileSync(path.join(directory, "consumers", role, "consumer.json"), "utf8")),
-    );
-    verifyConsumer(packet, original);
+    const packet = verifyConsumerDirectory(path.join(directory, "consumers", role), original);
     assertOracleFiles(
       path.join(directory, "consumers", role),
       original.policy,
@@ -424,6 +522,7 @@ export async function verifiedRecovery(
     "failed",
     "log",
     "logIdentity",
+    "logCustody",
     "blobs",
     "artifacts",
     "pin",

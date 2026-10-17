@@ -30,7 +30,6 @@ jobs:
       PUBLIC_SOURCE_PR: ${{ inputs.source_pr }}
       PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
       PUBLIC_CONSUMER_RECOVERY_RUN: ${{ inputs.consumer_recovery_run }}
-      GH_TOKEN: ${{ github.token }}
       PUBLIC_OUTPUT: ${{ github.workspace }}/artifacts/public-release/${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Require reviewed main and absent runtime overrides
@@ -54,6 +53,7 @@ jobs:
         uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
         with: { cosign-release: v2.4.1 }
       - name: Authenticate public release and prepare a fresh consumer
+        env: { GH_TOKEN: "${{ github.token }}" }
         id: prepare
         shell: bash
         run: |
@@ -139,6 +139,7 @@ jobs:
           fi
           exit "$vrt_status"
       - name: Seal installed public acceptance
+        env: { GH_TOKEN: "${{ github.token }}" }
         if: ${{ success() && steps.native.outcome == 'success' && steps.browser.outcome == 'success' && steps.lsp.outcome == 'success' }}
         shell: bash
         run: node tools/support/release/public_acceptance/accept.ts finish 2>&1 | tee "$PUBLIC_OUTPUT/finish.log"

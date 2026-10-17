@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { lstatSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { sha256, same } from "./policy.ts";
+import { effectiveDenoConfig } from "./runtime.ts";
 
 export interface OraclePolicy {
   consumerSha256: string;
@@ -13,7 +14,7 @@ function expected(policy: OraclePolicy, deno: boolean) {
   return {
     "consumer.ts": policy.consumerSha256,
     "custody.ts": policy.custodyProbeSha256,
-    ...(deno ? { "deno.json": policy.denoConfigSha256 } : {}),
+    ...(deno ? { "deno.json": sha256(effectiveDenoConfig) } : {}),
   };
 }
 export function verifyOracleHashes(actual: unknown, policy: OraclePolicy, deno: boolean) {
