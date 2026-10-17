@@ -143,7 +143,19 @@ test("CI hydrates the exact pinned create-vue revision before the packaged host"
 test("CI runs both headless editor specs", () => {
   const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
 
-  assert.match(taskCommand("test:nvim-extension:headless"), /VIZE_TEST_ART_VUE_NATIVE_PARSER=1/);
+  assert.equal(
+    taskCommand("test:nvim-extension:headless"),
+    "nvim --headless -u NONE --noplugin -l editors/nvim/test/vize_spec.lua && VIZE_TEST_ART_VUE_NATIVE_PARSER=1 nvim --headless -u NONE --noplugin -l editors/nvim/test/vize_spec.lua",
+    "both complete Lua suites must propagate assertion failures to CI",
+  );
+  const conformance = readRepoFile(".github", "workflows", "editor-conformance.yml");
+  const pinnedAt = conformance.indexOf("- name: Install pinned Neovim");
+  const headlessAt = conformance.indexOf("- name: Exercise both packaged Neovim headless suites");
+  assert.ok(pinnedAt >= 0 && headlessAt > pinnedAt, "headless suites consume the pinned editor");
+  assert.match(
+    conformance.slice(headlessAt),
+    /^- name: Exercise both packaged Neovim headless suites\n        if: matrix.client == 'neovim'\n        run: \|\n          set -euo pipefail\n          export PATH="\$\(dirname "\$\{VIZE_TEST_NVIM_PATH\}"\):\$PATH"\n          test "\$\(command -v nvim\)" = "\$\{VIZE_TEST_NVIM_PATH\}"\n          command -v nvim\n          nvim --version \| head -1\n          vp run --workspace-root test:nvim-extension:headless\n/,
+  );
   assert.match(action, /vp run --workspace-root test:nvim-extension:headless/);
   assert.match(action, /vp run --workspace-root test:vim-extension:headless/);
   assert.match(action, /command -v vim/);
