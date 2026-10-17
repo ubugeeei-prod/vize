@@ -140,22 +140,33 @@ interface IgnoreRule {
   pattern: string;
   negate: boolean;
   directory: boolean;
+  git: boolean;
 }
-function ignoreRules(directory: string): IgnoreRule[] {
-  const filename = path.join(directory, ".ignore");
+function gitRoot(directory: string): string | null {
+  for (;;) {
+    if (fs.existsSync(path.join(directory, ".git"))) return directory;
+    const parent = path.dirname(directory);
+    if (parent === directory) return null;
+    directory = parent;
+  }
+}
+function parseIgnoreRule(source: string, base: string, git: boolean): IgnoreRule[] {
+  let pattern = source.trimEnd();
+  if (!pattern || pattern.startsWith("#")) return [];
+  const negate = pattern.startsWith("!");
+  if (negate) pattern = pattern.slice(1);
+  const directory = pattern.endsWith("/");
+  if (directory) pattern = pattern.slice(0, -1);
+  return [{ base, pattern, negate, directory, git }];
+}
+function ignoreRules(directory: string, git = false): IgnoreRule[] {
+  if (git && gitRoot(directory) === null) return [];
+  const filename = path.join(directory, git ? ".gitignore" : ".ignore");
   try {
     return fs
       .readFileSync(filename, "utf8")
       .split(/\r?\n/)
-      .flatMap((source) => {
-        let pattern = source.trimEnd();
-        if (!pattern || pattern.startsWith("#")) return [];
-        const negate = pattern.startsWith("!");
-        if (negate) pattern = pattern.slice(1);
-        const onlyDirectory = pattern.endsWith("/");
-        if (onlyDirectory) pattern = pattern.slice(0, -1);
-        return [{ base: directory, pattern, negate, directory: onlyDirectory }];
-      });
+      .flatMap((source) => parseIgnoreRule(source, directory, git));
   } catch {
     return [];
   }
@@ -175,7 +186,7 @@ function ignoredByRules(
     if (
       pattern.includes("/") || rule.pattern.startsWith("/")
         ? matcher.test(relative)
-        : relative.split("/").some((part) => matcher.test(part))
+        : matcher.test(path.basename(relative))
     )
       ignored = !rule.negate;
   }
@@ -190,17 +201,44 @@ function inheritedIgnoreRules(directory: string): IgnoreRule[] {
     if (parent === current) break;
     current = parent;
   }
-  return ancestors.flatMap(ignoreRules);
+  const repository = gitRoot(directory);
+  return ancestors.flatMap((ancestor) => [
+    ...ignoreRules(ancestor),
+    ...(repository !== null &&
+    (ancestor === repository || ancestor.startsWith(repository + path.sep))
+      ? ignoreRules(ancestor, true)
+      : []),
+  ]);
 }
 function gitIgnored(directory: string, filenames: string[]): Set<string> {
   if (!filenames.length) return new Set();
-  const result = spawnSync("git", ["check-ignore", "--no-index", "-z", "--stdin"], {
+  const result = spawnSync("git", ["check-ignore", "--no-index", "--verbose", "-z", "--stdin"], {
     cwd: directory,
     input: filenames.join("\0") + "\0",
     encoding: "utf8",
     maxBuffer: Infinity,
   });
-  return new Set((result.stdout ?? "").split("\0").filter(Boolean));
+  const fields = (result.stdout ?? "").split("\0"),
+    ignored = new Set<string>(),
+    root = gitRoot(directory) ?? directory;
+  for (let index = 0; index + 3 < fields.length; index += 4) {
+    const origin = fields[index],
+      pattern = fields[index + 2],
+      filename = fields[index + 3];
+    // WalkBuilder calls Gitignore::matched for each visited entry. Git's
+    // check-ignore also propagates an ignored ancestor directory, which would
+    // incorrectly suppress an explicitly selected root under e.g. target/.
+    const base = path.dirname(path.isAbsolute(origin) ? origin : path.join(root, origin));
+    let isDirectory = false;
+    try {
+      isDirectory = fs.statSync(filename).isDirectory();
+    } catch {
+      continue;
+    }
+    if (ignoredByRules(filename, isDirectory, parseIgnoreRule(pattern, base, true)) === true)
+      ignored.add(filename);
+  }
+  return ignored;
 }
 function walk(
   cwd: string,
@@ -216,12 +254,22 @@ function walk(
   } catch {
     return;
   }
-  const rules = [...inherited, ...ignoreRules(directory)];
+  const rules = [...inherited, ...ignoreRules(directory), ...ignoreRules(directory, true)];
   const paths = entries.map((entry) => path.join(directory, entry.name));
   const ignored = gitIgnored(directory, paths);
   for (const entry of entries) {
     const filename = path.join(directory, entry.name);
-    const localIgnore = ignoredByRules(filename, entry.isDirectory(), rules);
+    const localIgnore =
+      ignoredByRules(
+        filename,
+        entry.isDirectory(),
+        rules.filter((rule) => !rule.git),
+      ) ??
+      ignoredByRules(
+        filename,
+        entry.isDirectory(),
+        rules.filter((rule) => rule.git),
+      );
     if (
       entry.name === ".git" ||
       (matcher === null && entry.name.startsWith(".")) ||
