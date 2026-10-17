@@ -36,10 +36,25 @@ fn all_six_presets_emit_the_complete_authored_warning_packets() {
                 .unwrap()
                 .iter()
                 .any(|name| name == preset.as_str());
+            let baseline = if case["baselinePresets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|name| name == preset.as_str())
+            {
+                case["baselineDiagnostics"].as_array().unwrap().clone()
+            } else {
+                vec![]
+            };
+            let mut diagnostics = if enabled {
+                vec![case["diagnostic"].clone()]
+            } else {
+                vec![]
+            };
+            diagnostics.extend(baseline.clone());
             let expected = json!({
                 "filename": filename, "error_count": 0,
-                "warning_count": usize::from(enabled),
-                "diagnostics": if enabled { vec![case["diagnostic"].clone()] } else { vec![] }
+                "warning_count": diagnostics.len(), "diagnostics": diagnostics
             });
             let linter = Linter::with_preset(preset);
             assert_eq!(
@@ -59,7 +74,7 @@ fn all_six_presets_emit_the_complete_authored_warning_packets() {
             let disabled = linter.with_disabled_rules(vec![case["rule"].as_str().unwrap().into()]);
             assert_eq!(
                 whole(&disabled.lint_sfc(case["source"].as_str().unwrap(), filename)),
-                json!({"filename": filename, "error_count": 0, "warning_count": 0, "diagnostics": []}),
+                json!({"filename": filename, "error_count": 0, "warning_count": baseline.len(), "diagnostics": baseline}),
                 "{} / {} / explicit off",
                 case["id"],
                 preset.as_str()

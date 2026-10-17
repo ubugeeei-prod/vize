@@ -233,9 +233,34 @@ fn six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_pac
                     output_details(&output)
                 );
                 let warning = enabled && mode == "default";
+                let mut messages = if warning {
+                    vec![case["cliMessage"].clone()]
+                } else {
+                    vec![]
+                };
+                if mode != "repair"
+                    && case["baselinePresets"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|name| {
+                            name == if preset == "default" {
+                                "happy-path"
+                            } else {
+                                preset
+                            }
+                        })
+                {
+                    messages.extend(
+                        case["baselineCliMessages"]
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .cloned(),
+                    );
+                }
                 let expected = serde_json::json!([{
-                    "file": filename, "errorCount": 0, "warningCount": usize::from(warning),
-                    "messages": if warning { vec![case["cliMessage"].clone()] } else { vec![] }
+                    "file": filename, "errorCount": 0, "warningCount": messages.len(), "messages": messages
                 }]);
                 assert_eq!(
                     serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap(),

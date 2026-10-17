@@ -101,12 +101,12 @@
       },
       "after": {
         "bytes": 5177,
-        "sha256": "18e5c7c0d31c07d2f5425c1ed6f6844c494bbccd1aed7d0d90d56afec8b12868"
+        "sha256": "1f10391e1519348333337f3ff6a1e674163e1ef44ac26a0ee06183946414c2eb"
       },
       "hunks": [
         {
-          "before": "#[cfg(test)]\nmod default_migration_tests;\n",
-          "after": "#[cfg(test)]\nmod default_warning_tests;\n#[cfg(test)]\nmod default_migration_tests;\n"
+          "before": "#[cfg(test)]\nmod eslint_vue_rule_map_tests;\n",
+          "after": "#[cfg(test)]\nmod default_warning_tests;\n#[cfg(test)]\nmod eslint_vue_rule_map_tests;\n"
         }
       ]
     },
@@ -124,6 +124,23 @@
         {
           "before": "nextest-version = \"0.9.146\"\n\n",
           "after": "nextest-version = \"0.9.146\"\n\n# Retain the 38 exact default/off/repair/alias CLI packets without changing selection.\n[[profile.default.overrides]]\nfilter = 'package(=vize) & binary(=lint_preset_scope_cli) & test(=six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_packets)'\njunit.store-success-output = true\n\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/_fixtures/patina-eslint-vue-rule-map.json",
+      "before": {
+        "bytes": 46204,
+        "sha256": "d51e011ffc2c3718d4eb2aa305b5827f8c9eb94e1248c4d92596adc93431ba2c"
+      },
+      "after": {
+        "bytes": 46256,
+        "sha256": "72fe918cc67a0a434c6f1a96dd54e44e27345d4cfa0fc7f9755dd0739d21f4b0"
+      },
+      "hunks": [
+        {
+          "before": "    \"vue/no-use-v-else-with-v-for\": {\n      \"patinaPresets\": [\n        \"nuxt\",\n        \"opinionated\"\n      ],",
+          "after": "    \"vue/no-use-v-else-with-v-for\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],"
         }
       ]
     }
@@ -163,8 +180,8 @@
   ],
   "cases": {
     "path": "tests/_fixtures/lint-preset-default-warnings/cases.json",
-    "bytes": 3392,
-    "sha256": "731aa0c0dbeb7b6bf9f046dbc8d58b36fb00b89eb7317e9b89ffc8521c7959d7"
+    "bytes": 5090,
+    "sha256": "af32bd2251b0b4d8a42d2228f26dd9cd35b2acf9aa938a9c2b3e57f218d92f52"
   },
   "credit": {
     "compiled": false,
@@ -175,5 +192,10 @@
     "path": "crates/vize_patina/src/rules/vue/no_use_v_else_with_v_for.rs",
     "bytes": 4100,
     "sha256": "ecf746b5da839d6d87378756d797450d2aa66e1269f3097dd4bfff820107d9a5"
+  },
+  "authoredCasesBeforeBaseline": {
+    "path": "tests/_fixtures/lint-preset-default-warnings/authored-cases-before-baseline.json",
+    "bytes": 3392,
+    "sha256": "731aa0c0dbeb7b6bf9f046dbc8d58b36fb00b89eb7317e9b89ffc8521c7959d7"
   }
 }

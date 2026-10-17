@@ -10,7 +10,7 @@ const read = (name) => fs.readFileSync(path.join(root, name));
 const sha = (body) => createHash("sha256").update(body).digest("hex");
 const directory = "tests/_fixtures/lint-preset-default-warnings";
 const bytes = read(`${directory}/successor.json`);
-assert.equal(sha(bytes), "6c7323f6213f9fdeadd210712cbabee7734739d9679f932c05100f5f38fee276");
+assert.equal(sha(bytes), "30d630da3f38e9eb667e2097bda2b65d8e0e3b82bb5f62c61e4aead8a4cdc295");
 const manifest = JSON.parse(bytes);
 
 function identity(body, expected) {
@@ -56,7 +56,7 @@ function inverseMembership(body) {
   return table;
 }
 
-test("only the exact four-preset registration and metadata edits invert to the unchanged parent", () => {
+void test("only the exact four-preset registration and metadata edits invert to the unchanged parent", () => {
   assert.equal(manifest.schema, "vize.lint.preset-warning-source-successor");
   assert.equal(manifest.version, 1);
   assert.equal(manifest.parent, "883b800148b0faca3f4590d0b029f86e494a0b5e");
@@ -71,6 +71,7 @@ test("only the exact four-preset registration and metadata edits invert to the u
       "crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs",
       "crates/vize_patina/src/preset.rs",
       ".config/nextest.toml",
+      "tests/_fixtures/patina-eslint-vue-rule-map.json",
     ],
   );
   for (const row of manifest.sources) inverse(row, read(row.path));
@@ -95,7 +96,7 @@ test("only the exact four-preset registration and metadata edits invert to the u
   identity(read(manifest.unchangedRule.path), manifest.unchangedRule);
 });
 
-test("missing, duplicated and unrelated source edits cannot receive the finite inverse", () => {
+void test("missing, duplicated and unrelated source edits cannot receive the finite inverse", () => {
   for (const row of manifest.sources) {
     const body = read(row.path);
     const hunk = row.hunks[0];
@@ -113,7 +114,7 @@ test("missing, duplicated and unrelated source edits cannot receive the finite i
   assert.throws(() => inverseMembership(Buffer.concat([body, Buffer.from("\n")])));
 });
 
-test("independently authored native and CLI packets preserve complete warning and source ranges", () => {
+void test("independently authored native and CLI packets preserve complete warning and source ranges", () => {
   const body = read(manifest.cases.path);
   identity(body, manifest.cases);
   const corpus = JSON.parse(body);
@@ -135,7 +136,7 @@ test("independently authored native and CLI packets preserve complete warning an
     ]) {
       const prefix = Buffer.from(entry.source).subarray(0, offset).toString("utf8");
       assert.equal(prefix.split("\n").length, line);
-      assert.equal([...prefix.split("\n").at(-1)].length + 1, column);
+      assert.equal(Array.from(prefix.split("\n").at(-1) ?? "").length + 1, column);
     }
     assert(!entry.enabledPresets.includes("essential"));
     assert(!entry.enabledPresets.includes("incremental"));
@@ -143,12 +144,47 @@ test("independently authored native and CLI packets preserve complete warning an
   }
 });
 
-test("all generated locale tables and bilingual references expose the actual preset memberships", () => {
+void test("the existing warning baseline preserves every original source, repair and promoted descriptor", () => {
+  const before = read(manifest.authoredCasesBeforeBaseline.path);
+  identity(before, manifest.authoredCasesBeforeBaseline);
+  assert.equal(sha(before), "731aa0c0dbeb7b6bf9f046dbc8d58b36fb00b89eb7317e9b89ffc8521c7959d7");
+  const original = JSON.parse(before);
+  const current = JSON.parse(read(manifest.cases.path));
+  assert.equal(current.cases.length, original.cases.length);
+  for (const [index, row] of original.cases.entries()) {
+    const actual = current.cases[index];
+    for (const key of Object.keys(row))
+      assert.deepEqual(actual[key], row[key], `${row.id} / ${key}`);
+    assert.deepEqual(
+      Object.keys(actual).filter((key) => !Object.hasOwn(row, key)),
+      ["baselinePresets", "baselineDiagnostics", "baselineCliMessages"],
+    );
+  }
+  assert.equal(current.baselineAuthority.run, 38991839496);
+  assert.equal(current.baselineAuthority.job, 117275806128);
+  assert.equal(
+    current.baselineAuthority.rawLogSha256,
+    "70465d7e2aabd3bed3c1ef186ddab3fec829061fc2f63078c2891f2c91d8d31f",
+  );
+});
+
+void test("all generated locale tables and bilingual references expose the actual preset memberships", () => {
   const locales = ["en", "ja", "fr", "pt-BR", "zh-CN"];
-  const presets = (line) => [...line.matchAll(/`([^`]+)`/g)].map((match) => match[1]).sort();
-  for (const [name, expected, section] of [
-    ["vue/no-use-v-else-with-v-for", ["ecosystem", "happy-path", "nuxt", "opinionated"], "vue"],
-    ["script/no-deep-destructure-in-props", ["nuxt", "opinionated"], "type-and-script"],
+  const presets = (line) =>
+    [...line.matchAll(/`([^`]+)`/g)]
+      .map((match) => match[1])
+      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  for (const { name, expected, section } of [
+    {
+      name: "vue/no-use-v-else-with-v-for",
+      expected: ["ecosystem", "happy-path", "nuxt", "opinionated"],
+      section: "vue",
+    },
+    {
+      name: "script/no-deep-destructure-in-props",
+      expected: ["nuxt", "opinionated"],
+      section: "type-and-script",
+    },
   ]) {
     const slug = name.replaceAll("/", "-");
     for (const filename of locales.map(
