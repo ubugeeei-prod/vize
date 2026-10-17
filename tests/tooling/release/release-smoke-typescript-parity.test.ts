@@ -19,6 +19,8 @@ type Fixture = {
   name: string;
   status: number;
   manifests?: unknown[];
+  manifestSources?: string[];
+  expectedPreparedNumbers?: string[];
   args?: string[];
   fault?: string;
   prepare?: boolean;
@@ -32,6 +34,7 @@ type Observation = {
   stderr: string;
   calls: unknown[];
   manifests: unknown[];
+  manifestBytes: string[];
 };
 const base = { name: "@vizejs/parity", version: "1.2.3", main: "./index.js" };
 const packInstall = ["pack", "install"];
@@ -98,6 +101,24 @@ const fixtures: Fixture[] = [
     name: "well-formed Unicode strings and object keys",
     status: 0,
     manifests: [{ ...base, description: "雪😀", ["😀"]: "surrogate pair remains valid" }],
+    expectedCommands: packInstall,
+  },
+  {
+    name: "valid duplicate keys and quoted escape text retain their JSON meaning",
+    status: 0,
+    manifestSources: [
+      String.raw`{"name":"@vizejs/parity","version":"1.2.3","main":"./index.js","key":1,"key":2,"escaped":"\\ud800 and 1e400"}`,
+    ],
+    expectedCommands: packInstall,
+  },
+  {
+    name: "preparing manifests preserves exact signed and unsigned 64-bit source numbers",
+    status: 0,
+    prepare: true,
+    manifestSources: [
+      String.raw`{"name":"@vizejs/parity","version":"1.2.3","main":"./index.js","numbers":{"unsigned":18446744073709551615,"signed":-9223372036854775808,"nested":[9007199254740993]},"dependencies":{"@vizejs/parity":"workspace:*"}}`,
+    ],
+    expectedPreparedNumbers: ["18446744073709551615", "-9223372036854775808", "9007199254740993"],
     expectedCommands: packInstall,
   },
   { name: "zero tarballs", status: 1, fault: "zero-packs", expectedCommands: ["pack"] },
@@ -251,6 +272,13 @@ for (const fixture of fixtures) {
       assert.equal(typescript.status, fixture.status, JSON.stringify(typescript));
       assert.deepEqual(typescript, rust);
       assert.deepEqual(commandNames(rust.calls), fixture.expectedCommands);
+      for (const number of fixture.expectedPreparedNumbers ?? []) {
+        assert.ok(rust.manifestBytes[0].includes(number), `Rust must retain exact ${number}`);
+        assert.ok(
+          typescript.manifestBytes[0].includes(number),
+          `TypeScript must retain exact ${number}`,
+        );
+      }
     } finally {
       fs.rmSync(temporary, { force: true, recursive: true });
     }
@@ -281,7 +309,7 @@ function observe(fixture: Fixture, driver: "rust" | "typescript", temporary: str
     fs.mkdirSync(packageDir);
     fs.writeFileSync(
       path.join(packageDir, "package.json"),
-      JSON.stringify(manifest, null, 2) + "\n",
+      fixture.manifestSources?.[index] ?? JSON.stringify(manifest, null, 2) + "\n",
     );
     fs.writeFileSync(path.join(packageDir, "index.js"), "module.exports = { ok: true };\n");
     fs.writeFileSync(
@@ -362,6 +390,9 @@ function observe(fixture: Fixture, driver: "rust" | "typescript", temporary: str
     stdout: normalize(result.stdout),
     stderr: normalize(result.stderr),
     calls,
+    manifestBytes: packageDirs.map((dir) =>
+      fs.readFileSync(path.join(dir, "package.json"), "utf8"),
+    ),
     manifests: packageDirs.map(
       (dir) => JSON.parse(fs.readFileSync(path.join(dir, "package.json"), "utf8")) as unknown,
     ),
@@ -411,6 +442,8 @@ test("both drivers refuse malformed JSON before npm and retain native parser dia
       { source: String.raw`{"\ud800":"x"}`, operation: "parse JSON" },
       { source: '{"name":"x","value":1e400}', operation: "parse JSON" },
       { source: '{"name":"x","value":-1e400}', operation: "parse JSON" },
+      { source: String.raw`{"name":"x","value":"\ud800","value":"ok"}`, operation: "parse JSON" },
+      { source: '{"name":"x","value":1e400,"value":0}', operation: "parse JSON" },
       { source: new Uint8Array([0x7b, 0x22, 0xff, 0x22, 0x3a, 0x31, 0x7d]), operation: "read" },
     ];
     for (const { source, operation } of cases) {

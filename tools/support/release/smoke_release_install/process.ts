@@ -87,6 +87,12 @@ export function runCommand(command: string, args: readonly string[], cwd: string
   return output.stdout;
 }
 export function sortedJson(value: unknown): unknown {
+  // BigInts come only from exact i64/u64 source tokens in readJson. Emit JSON
+  // numbers, not quoted strings, without passing through a rounded Number.
+  if (typeof value === "bigint") {
+    const json = JSON as typeof JSON & { rawJSON(source: string): unknown };
+    return json.rawJSON(value.toString());
+  }
   if (Array.isArray(value)) return value.map(sortedJson);
   if (value !== null && typeof value === "object") {
     return Object.fromEntries(

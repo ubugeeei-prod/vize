@@ -34,16 +34,39 @@ export function readJson(filename: string): unknown {
     );
   }
   try {
-    // serde_json rejects lone UTF-16 surrogates and overflowing JSON numbers.
-    // Keep that input domain while retaining native parser diagnostics.
+    // First keep V8's syntax diagnostics. Then check every raw scalar token:
+    // serde_json rejects invalid values even when a duplicate key replaces
+    // them later, so a reviver over the surviving object would miss refusals.
+    const parsed = JSON.parse(
+      text,
+      (_key: string, value: unknown, context?: { source?: string }): unknown => {
+        const source = context?.source;
+        if (
+          typeof value === "number" &&
+          !Number.isSafeInteger(value) &&
+          typeof source === "string" &&
+          /^-?\d+$/.test(source)
+        ) {
+          // serde_json stores these exact integers as i64/u64. Recover their
+          // source digits before JavaScript's rounded Number can be written.
+          const integer = BigInt(source);
+          if (integer >= -9223372036854775808n && integer <= 18446744073709551615n) return integer;
+        }
+        return value;
+      },
+    ) as unknown;
     const loneSurrogate = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
-    return JSON.parse(text, (key: string, value: unknown): unknown => {
-      if (loneSurrogate.test(key) || (typeof value === "string" && loneSurrogate.test(value)))
-        throw new SyntaxError("JSON strings must contain valid Unicode scalar values");
-      if (typeof value === "number" && !Number.isFinite(value))
+    for (const [token] of text.matchAll(
+      /"(?:\\[\s\S]|[^"\\])*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g,
+    )) {
+      if (token.startsWith('"')) {
+        const value = JSON.parse(token) as string;
+        if (loneSurrogate.test(value))
+          throw new SyntaxError("JSON strings must contain valid Unicode scalar values");
+      } else if (!Number.isFinite(Number(token)))
         throw new SyntaxError("JSON number is out of range");
-      return value;
-    }) as unknown;
+    }
+    return parsed;
   } catch (error) {
     throw new Error(
       `cannot parse JSON ${filename}: ${error instanceof Error ? error.message : String(error)}`,
