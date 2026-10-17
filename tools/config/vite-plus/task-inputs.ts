@@ -87,6 +87,7 @@ export const testedPackages = [
   "./npm/builder/rspack",
   "./npm/framework/nuxt-lint-config",
   "./npm/framework/nuxt",
+  "./npm/framework/musea-nuxt",
   "./npm/mcp-musea",
   "./npm/fresco",
   "./npm/compose/core",

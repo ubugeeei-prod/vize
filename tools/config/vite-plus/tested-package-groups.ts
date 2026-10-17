@@ -30,6 +30,7 @@ export const testedPackageGroups = [
       "./npm/builder/rspack",
       "./npm/framework/nuxt-lint-config",
       "./npm/framework/nuxt",
+      "./npm/framework/musea-nuxt",
     ],
     prebuilt: ["./npm/oxlint"],
   },

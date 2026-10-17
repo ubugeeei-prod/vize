@@ -115,6 +115,26 @@ void test("PR package groups test every package in testedPackages exactly once",
   assert.deepEqual(perGroup.sort(), selectedTests(testedPackages).sort());
 });
 
+void test("Musea Nuxt packed consumers run in ordinary and full builder qualification", () => {
+  const pkg: PackagePath = "./npm/framework/musea-nuxt";
+  assert.equal(testedPackages.filter((candidate) => candidate === pkg).length, 1);
+  assert.deepEqual(
+    testedPackageGroups
+      .filter(({ packages }) => (packages as readonly PackagePath[]).includes(pkg))
+      .map(({ name }) => name),
+    ["builders"],
+  );
+  assert.equal(
+    manifests.get(pkg)?.scripts?.test,
+    "pnpm build && node --test src/*.test.ts src/**/*.test.ts",
+  );
+  for (const taskName of ["test:js", "test:js:builders"])
+    assert.ok(command(taskName).includes(pkg));
+  const plan = planAffectedJs(readJsWorkspace(root), ["npm/framework/musea-nuxt/src/plugin.ts"]);
+  assert.ok(plan.packages.includes(pkg.slice(2)));
+  assert.ok(plan.groups.includes("builders"));
+});
+
 void test("each group holds its tested dependencies or builds their test bundles first", () => {
   for (const { name, packages, prebuilt } of testedPackageGroups) {
     const members = new Set<PackagePath>(packages);
