@@ -24,7 +24,7 @@ pub(super) fn open_project_request(id: u8, options: Value, compiler_options: Val
         "id": id,
         "method": "openProject",
         "params": {
-            "configFileName": "/project/tsconfig.json",
+            "configFileName": "",
             "projectHandle": PROJECT_HANDLE,
             "options": options,
             "compilerOptions": compiler_options

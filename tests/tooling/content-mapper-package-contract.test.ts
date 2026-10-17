@@ -24,6 +24,7 @@ function withInstalledMapper(run: (installDir: string, packageRoot: string) => v
         name: "vize",
         typescript: {
           contentMapper: {
+            dynamicConfig: true,
             exec: ["node", "./bin/vize", "content-mapper"],
             compilerOptions: ["noUnusedLocals"],
           },
@@ -84,6 +85,19 @@ test("installed Content Mapper contract rejects a dropped compilerOptions declar
     delete manifest.typescript.contentMapper.compilerOptions;
     fs.writeFileSync(manifestPath, JSON.stringify(manifest));
 
+    assert.throws(
+      () => assertInstalledMapperContract(installDir),
+      /must expose the production typescript\.contentMapper contract/,
+    );
+  });
+});
+
+test("installed Content Mapper contract rejects a dropped dynamicConfig declaration", () => {
+  withInstalledMapper((installDir, packageRoot) => {
+    const manifestPath = path.join(packageRoot, "package.json");
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    delete manifest.typescript.contentMapper.dynamicConfig;
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
     assert.throws(
       () => assertInstalledMapperContract(installDir),
       /must expose the production typescript\.contentMapper contract/,
