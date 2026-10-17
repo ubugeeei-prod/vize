@@ -6,6 +6,9 @@ import path from "node:path";
 import type { Context } from "@oxlint/plugins";
 import { it, vi } from "vite-plus/test";
 import * as binding from "./binding.ts";
+import * as native from "./native.ts";
+import { extractSfcBlocks } from "./sfc-blocks.ts";
+import type { PatinaBinding } from "./model.ts";
 import { parseRuleSelection } from "./rule-selection.ts";
 
 import {
@@ -13,6 +16,7 @@ import {
   getDiagnosticsForRule,
   getFileState,
   getFileStateCacheStats,
+  getSfcBlocks,
   markDiagnosticAsReported,
 } from "./file-state.ts";
 import { appendScriptlessWorkaround, resolveWorkaroundSource } from "./workaround.ts";
@@ -325,5 +329,89 @@ it("a canonical CSS rule map preserves the native positive diagnostic vector", (
   } finally {
     clearFileStateCache();
     fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+it("native block parsing is cached by exact physical revision across script programs", () => {
+  clearFileStateCache();
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-sfc-native-cache-"));
+  const filename = path.join(root, "Nested.vue");
+  const firstSource =
+    '<script>const a=1;</script><script setup>const b=2;</script><template><template v-if="a"/><input/></template>';
+  const secondSource = firstSource.replace('v-if="a"', 'v-if="b"');
+  const spy = vi.spyOn(native.loadBinding(), "parseSfc");
+  try {
+    fs.writeFileSync(filename, firstSource);
+    const first = getFileState(createContext(filename, "const a=1;"));
+    const blocks = getSfcBlocks(first);
+    assert.deepEqual(
+      blocks.map((block) => block.kind),
+      ["script", "script-setup", "template"],
+    );
+    assert.strictEqual(getSfcBlocks(first), blocks);
+    const dualProgram = getFileState(createContext(filename, "const b=2;"));
+    assert.strictEqual(dualProgram, first);
+    assert.strictEqual(getSfcBlocks(dualProgram), blocks);
+    assert.deepEqual(spy.mock.calls, [[firstSource]]);
+
+    assert.equal(Buffer.byteLength(firstSource), Buffer.byteLength(secondSource));
+    fs.writeFileSync(filename, secondSource);
+    const changed = getFileState(createContext(filename, "const b=2;"));
+    assert.notStrictEqual(changed, first);
+    assert.equal(getSfcBlocks(changed)[2]?.content, '<template v-if="b"/><input/>');
+    assert.deepEqual(spy.mock.calls, [[firstSource], [secondSource]]);
+
+    const invalidSource = '<template><template v-if="a"><b/></template>';
+    fs.writeFileSync(filename, invalidSource);
+    const invalid = getFileState(createContext(filename, ""));
+    const noOwnership = getSfcBlocks(invalid);
+    assert.deepEqual(noOwnership, []);
+    assert.strictEqual(getSfcBlocks(getFileState(createContext(filename, ""))), noOwnership);
+    assert.deepEqual(spy.mock.calls, [[firstSource], [secondSource], [invalidSource]]);
+  } finally {
+    spy.mockRestore();
+    clearFileStateCache();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+it("only dedicated malformed-source errors refuse block ownership", () => {
+  const original = new Error("complete original parse reason");
+  Object.assign(original, { code: "InvalidSfc" });
+  const parser = vi.fn(() => {
+    throw original;
+  });
+  const spy = vi
+    .spyOn(native, "loadBinding")
+    .mockReturnValue({ parseSfc: parser } as unknown as PatinaBinding);
+  try {
+    assert.deepEqual(extractSfcBlocks("<template>"), []);
+    assert.deepEqual(parser.mock.calls, [["<template>"]]);
+    for (const error of [
+      new TypeError("native input conversion failed"),
+      Object.assign(new Error("native runtime failed"), { code: "GenericFailure" }),
+    ]) {
+      parser.mockImplementation(() => {
+        throw error;
+      });
+      assert.throws(
+        () => extractSfcBlocks("<template>"),
+        (actual) => actual === error,
+      );
+    }
+    spy.mockReturnValue({} as PatinaBinding);
+    assert.throws(() => extractSfcBlocks("<template>"), {
+      message: "Vize native binding does not expose the SFC parser.",
+    });
+    // A lookup failure with the same code is still outside the parse catch.
+    spy.mockImplementation(() => {
+      throw original;
+    });
+    assert.throws(
+      () => extractSfcBlocks("<template>"),
+      (actual) => actual === original,
+    );
+  } finally {
+    spy.mockRestore();
   }
 });

@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { runOriginalSfcHostMatrix } from "./test-support/original-sfc-host-matrix.ts";
 
 const packageDir = fileURLToPath(new URL("..", import.meta.url));
 const workspaceRoot = path.resolve(packageDir, "../..");
@@ -75,3 +76,12 @@ try {
 } finally {
   fs.rmSync(fixture, { recursive: true, force: true });
 }
+
+const originalEvidenceRoot = path.join(workspaceRoot, "target/vize-tests");
+fs.mkdirSync(originalEvidenceRoot, { recursive: true });
+await runOriginalSfcHostMatrix({
+  pluginPackage: packageDir,
+  oxlintPackage: path.join(workspaceRoot, "node_modules/oxlint"),
+  output: fs.mkdtempSync(path.join(originalEvidenceRoot, "original-sfc-host-7004-7005-")),
+  expectation: "candidate",
+});
