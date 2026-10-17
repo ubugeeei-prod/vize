@@ -368,7 +368,11 @@ jobs:
           path: .artifacts/shared-js-build/
           if-no-files-found: error
           retention-days: 7
-  test-js-packages:
+  full-js-package-tests:
+    name: Full JS package tests (${{ matrix.group }})
+    strategy:
+      fail-fast: false
+      matrix: { group: [builders, ui, oxlint] }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 45
@@ -380,6 +384,32 @@ jobs:
       - name: Test JS packages
         if: ${{ !cancelled() }}
         uses: ./.github/actions/test-js-packages-with-history
+        with: { partition: "${{ matrix.group }}" }
+  full-js-original-project:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 45
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/setup-js-package-tests
+      - name: Qualify original Oxlint projects
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/test-js-packages-with-history
+        with: { partition: original-project }
+  test-js-packages:
+    runs-on: ubuntu-24.04
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    timeout-minutes: 5
+    needs: [full-js-package-tests, full-js-original-project]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", cache: false, run-install: false }
+      - name: Require every full JS partition to succeed
+        env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
+        run: node tools/support/compat/github/require-needs-success.ts --full-js-packages
   full-js-report:
     name: full-js-report
     runs-on: ubuntu-24.04

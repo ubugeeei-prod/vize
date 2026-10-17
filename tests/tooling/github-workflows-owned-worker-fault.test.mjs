@@ -58,7 +58,7 @@ void test("worker ptrace is explicit manual-only and every original gate stays u
   assert.doesNotMatch(steps.at(-1).with.path, /private|probe|core|\.node/);
   const original = parse(read(".github/actions/test-js-packages-with-history/action.yml"));
   assert.equal(
-    original.runs.steps[0].run,
+    original.runs.steps.find((step) => step.name === "Test JS packages").run,
     "node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root test:js",
   );
   const debuggerSource = read("tools/support/compat/github/owned_worker_gdb.py");

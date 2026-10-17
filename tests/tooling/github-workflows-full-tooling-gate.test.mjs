@@ -166,10 +166,12 @@ void test("independent native and package execution stops on cancellation withou
           );
         }
 
-  const js = yaml(".github/workflows/check.yml").jobs["test-js-packages"].steps.find(
-    (step) => step.uses === "./.github/actions/test-js-packages-with-history",
+  const js = ["full-js-package-tests", "full-js-original-project"].map((name) =>
+    yaml(".github/workflows/check.yml").jobs[name].steps.find(
+      (step) => step.uses === "./.github/actions/test-js-packages-with-history",
+    ),
   );
-  const execution = [js];
+  const execution = [...js];
   for (const name of [
     "test-native-js-setup",
     "test-native-selected-sfc-dom",
@@ -181,7 +183,7 @@ void test("independent native and package execution stops on cancellation withou
         (step) => step.if && !step.uses?.startsWith("actions/upload-artifact@"),
       ),
     );
-  assert.equal(execution.length, 7);
+  assert.equal(execution.length, 8);
   for (const step of execution)
     for (const prior of ["success", "failure", "skipped"])
       for (const cancelled of [false, true])

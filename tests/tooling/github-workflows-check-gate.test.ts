@@ -22,6 +22,8 @@ const FULL_SUITE_JOBS = [
   "editor-host-smoke",
   "build-js-packages",
   "test-js-packages",
+  "full-js-package-tests",
+  "full-js-original-project",
   "clippy-and-test",
   "coverage",
   "source-coverage",
@@ -90,7 +92,7 @@ test("source gates cover iteration events while full qualification runs on sched
       workflow.jobs?.[job]?.if,
       job === "source-coverage"
         ? "${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !(inputs.release-qualification && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')))) }}"
-        : job === "clippy-and-test"
+        : job === "clippy-and-test" || job === "test-js-packages"
           ? "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
           : job === "test-scripts"
             ? "${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
@@ -288,11 +290,29 @@ test("full JS qualification retains independent native builds and strictly gates
   });
   assert.ok(report.runs.steps.indexOf(setup) < report.runs.steps.indexOf(gate));
   const testJob = workflow.jobs?.["test-js-packages"];
-  const history = testJob?.steps?.find((step) => step.name === "Test JS packages");
-  assert.equal(history?.if, "${{ !cancelled() }}");
-  assert.equal(history?.uses, "./.github/actions/test-js-packages-with-history");
-  assert.equal(history?.run, undefined);
-  for (const job of [testJob, workflow.jobs?.["build-js-packages"]]) {
+  const producers = ["full-js-package-tests", "full-js-original-project"];
+  assert.deepEqual(testJob?.needs, producers);
+  const packageGate = testJob?.steps?.at(-1);
+  assert.equal(
+    packageGate?.run,
+    "node tools/support/compat/github/require-needs-success.ts --full-js-packages",
+  );
+  assert.deepEqual(packageGate?.env, { NEEDS_JSON: "${{ toJSON(needs) }}" });
+  for (const [id, partition] of [
+    ["full-js-package-tests", "${{ matrix.group }}"],
+    ["full-js-original-project", "original-project"],
+  ]) {
+    const history = workflow.jobs?.[id]?.steps?.find(
+      (step) => step.uses === "./.github/actions/test-js-packages-with-history",
+    );
+    assert.equal(history?.if, "${{ !cancelled() }}");
+    assert.deepEqual(history?.with, { partition });
+    assert.equal(history?.run, undefined);
+  }
+  for (const job of [
+    ...producers.map((id) => workflow.jobs?.[id]),
+    workflow.jobs?.["build-js-packages"],
+  ]) {
     assert.ok(job);
     assert.equal(job.needs, undefined, "each exact-source job owns its physical native build");
     assert.ok(job.steps?.some((step) => step.uses?.startsWith("actions/checkout@")));
