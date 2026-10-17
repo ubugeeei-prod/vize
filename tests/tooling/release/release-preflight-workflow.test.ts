@@ -179,6 +179,11 @@ test("actual publication verify-only refuses absent Check without dispatching co
 });
 
 test("actual read-only wait CLI refuses missing Q and makes only authenticated GET requests", async (t) => {
+  const carrier = parse(readRepoFile(".github", "workflows", "release-preflight-contracts.yml"));
+  const checkout = carrier.jobs.contracts.steps.find((step: WorkflowStep) =>
+    step.uses?.startsWith("actions/checkout@"),
+  );
+  assert.deepEqual(checkout.with, { "fetch-depth": 2, "persist-credentials": false });
   const head = execFileSync("git", ["rev-parse", "HEAD"], {
     cwd: repoRoot,
     encoding: "utf8",
