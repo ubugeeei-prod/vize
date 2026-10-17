@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { stripTypeScriptTypes } from "node:module";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { unpackPublicArchive } from "../../../../tests/performance/support/warm-type-backed-public-archives.ts";
 import { publicReader } from "./http.ts";
 import { rejectOverrides } from "./installed.ts";
 import { sha256 } from "./lsp_source.ts";
+import { readRawBlob } from "./plan.ts";
 
 export const lspOverrides = [
   "VIZE_CORSA_DEV_PATHS",
@@ -39,7 +42,7 @@ export function contained(file: string, root: string) {
   );
   return real;
 }
-export function packageProvider(consumer: string, name: string, version: string, binary?: string) {
+export function packageProvider(consumer: string, name: string, version: string) {
   const lock = JSON.parse(fs.readFileSync(path.join(consumer, "package-lock.json"), "utf8"));
   const location = `node_modules/${name}`;
   const entry = lock.packages[location];
@@ -53,7 +56,6 @@ export function packageProvider(consumer: string, name: string, version: string,
   const pkg = JSON.parse(manifest.toString());
   assert.equal(pkg.name, name);
   assert.equal(pkg.version, version);
-  const executable = binary ? contained(path.join(directory, binary), directory) : undefined;
   return {
     name,
     version,
@@ -61,8 +63,58 @@ export function packageProvider(consumer: string, name: string, version: string,
     resolved: entry.resolved,
     integrity: entry.integrity,
     manifestSha256: sha256(manifest),
+  };
+}
+/** Use the shipped CLI's version-bound launcher contract, never a guessed or host binary. */
+export async function installedCorsaProvider(
+  consumer: string,
+  cliVersion: string,
+  head: string,
+  name: string,
+  version: string,
+  root = process.cwd(),
+) {
+  const cli = packageProvider(consumer, "vize", cliVersion);
+  const provider = packageProvider(consumer, name, version);
+  const manifest = JSON.parse(fs.readFileSync(path.join(cli.directory, "package.json"), "utf8"));
+  assert.equal(
+    manifest.optionalDependencies?.[name],
+    version,
+    "published CLI declares exact H provider",
+  );
+  assert.equal(name, `@typescript/typescript-${process.platform}-${process.arch}`);
+  const sourceFile = "npm/cli/src/corsa-runtime.ts";
+  const module = contained(path.join(cli.directory, "src/corsa-runtime.ts"), cli.directory);
+  const source = fs.readFileSync(module);
+  const moduleSha256 = sha256(source);
+  assert.equal(
+    moduleSha256,
+    sha256(readRawBlob(root, head, sourceFile)),
+    "installed launcher resolver must match frozen H source",
+  );
+  // Node refuses direct TS imports under node_modules. Strip only authenticated source;
+  // the explicit packageRoot below keeps resolution anchored to the installed CLI.
+  const javascript = Buffer.from(
+    stripTypeScriptTypes(source.toString(), { sourceUrl: pathToFileURL(module).href }),
+  );
+  const runtime = await import(`data:text/javascript;base64,${javascript.toString("base64")}`);
+  assert.equal(typeof runtime.resolveBundledCorsaRuntime, "function", "shipped resolver required");
+  const selected: unknown = runtime.resolveBundledCorsaRuntime({
+    packageRoot: cli.directory,
+    platform: process.platform,
+    arch: process.arch,
+  });
+  assert.ok(
+    typeof selected === "string" && selected.length > 0,
+    "shipped Corsa provider required; no host fallback",
+  );
+  const executable = contained(selected, provider.directory);
+  assert.ok(fs.lstatSync(executable).isFile(), "installed Corsa executable must be a regular file");
+  return {
+    ...provider,
     executable,
-    executableSha256: executable && sha256(fs.readFileSync(executable)),
+    executableSha256: sha256(fs.readFileSync(executable)),
+    resolver: { cli, module, moduleSha256, javascriptSha256: sha256(javascript), sourceFile, head },
   };
 }
 export function versionProbe(executable: string) {

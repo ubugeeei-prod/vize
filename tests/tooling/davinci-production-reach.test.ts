@@ -4,7 +4,7 @@ import { differentialSteps } from "../../tools/support/compat/github/rust-differ
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-// P3-17: the production-reach gate rides the required clippy-and-test job,
+// P3-17: the production-reach gate rides the required rust-native-differential job,
 // its floors live in reach-budgets.toml [reach] for exactly the measured shapes,
 // and the plan record names every shape the Rust gate measures.
 const reachCommand =
@@ -21,7 +21,7 @@ function reachSection(budgets: string): string {
 
 test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
-  const clippyJob = workflowJobBody(workflow, "clippy-and-test");
+  const nativeJob = workflowJobBody(workflow, "rust-native-differential");
   const recipe = readRepoFile(
     ".github",
     "actions",
@@ -39,7 +39,7 @@ test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
     "shapes.rs",
   );
 
-  assert.match(clippyJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
+  assert.match(nativeJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
   assert.match(
     recipe,
     /run: node tools\/support\/compat\/github\/rust-differential-lanes\.ts --all/,

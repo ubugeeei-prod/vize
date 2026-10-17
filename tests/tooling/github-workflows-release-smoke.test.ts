@@ -43,9 +43,9 @@ test("smoke job downloads every packed artifact directory it smoke-installs", ()
   const smokeJob = jobs["smoke-release-packages"];
   assert.ok(smokeJob, "missing smoke-release-packages job");
   const smokeRun = (smokeJob.steps ?? []).find((step) =>
-    step.run?.includes("smoke-release-install.rs"),
+    step.run?.includes("smoke-release-install.ts"),
   )?.run;
-  assert.ok(smokeRun, "smoke-release-packages must run smoke-release-install.rs");
+  assert.ok(smokeRun, "smoke-release-packages must run smoke-release-install.ts");
   const smokedDirectories = smokeRun
     .replace(/\\\n/g, " ")
     .split(/\s+/)
@@ -89,13 +89,57 @@ test("wasm release job installs workspace dependencies before root smoke scripts
     (step) => step.uses?.includes("voidzero-dev/setup-vp@") && step.with?.["run-install"] === true,
   );
   const smokeIndex = steps.findIndex((step) =>
-    step.run?.includes("rust-script tools/commands/release/npm/smoke-release-install.rs npm/wasm"),
+    step.run?.includes("node tools/commands/release/npm/smoke-release-install.ts npm/wasm"),
   );
 
   assert.notEqual(setupIndex, -1, "release-npm-wasm setup-vp must install root dependencies");
   assert.notEqual(smokeIndex, -1, "release-npm-wasm must smoke install the WASM tarball");
   assert.ok(
     setupIndex < smokeIndex,
-    "release-npm-wasm must install root dependencies before smoke-release-install.rs imports semver",
+    "release-npm-wasm must install root dependencies before smoke-release-install.ts imports semver",
   );
+});
+
+test("all five release installers use TypeScript and retain unrelated Rust WASM checks", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
+    jobs: Record<string, ReleaseJob>;
+  };
+  const expected = [
+    "build-wasm-package",
+    "smoke-release-packages",
+    "release-npm-native",
+    "release-npm-fresco-native",
+    "release-npm-wasm",
+  ];
+  const invocations = Object.entries(workflow.jobs).flatMap(([job, body]) =>
+    (body.steps ?? [])
+      .filter((step) => step.run?.includes("smoke-release-install."))
+      .map((step) => ({ job, args: step.run!.replace(/\\\n/gu, " ").trim().split(/\s+/u) })),
+  );
+  assert.deepEqual(
+    invocations.map(({ job }) => job),
+    expected,
+  );
+  for (const { args } of invocations)
+    assert.deepEqual(args.slice(0, 2), [
+      "node",
+      "tools/commands/release/npm/smoke-release-install.ts",
+    ]);
+  for (const job of ["smoke-release-packages", "release-npm-native", "release-npm-fresco-native"])
+    for (const step of workflow.jobs[job].steps ?? []) {
+      assert.ok(!step.uses?.includes("rust-toolchain"), `${job} needs no Rust toolchain`);
+      assert.notEqual(step.uses, "./.github/actions/setup-rust-script");
+      assert.ok(!step.run?.includes("rust-script"), `${job} must not retain a Rust script caller`);
+    }
+  for (const job of ["build-wasm-package", "release-npm-wasm"]) {
+    const steps = workflow.jobs[job].steps ?? [];
+    assert.ok(steps.some((step) => step.uses?.includes("rust-toolchain")));
+    assert.ok(steps.some((step) => step.uses === "./.github/actions/setup-rust-script"));
+    assert.ok(
+      steps.some(
+        (step) =>
+          step.run === "rust-script tools/commands/release/npm/smoke-wasm-package.rs npm/wasm",
+      ),
+    );
+  }
 });

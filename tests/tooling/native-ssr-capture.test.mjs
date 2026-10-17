@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
+import { parse } from "yaml";
+import { planNativeRuntime } from "../../tools/support/compat/github/plan-native-runtime.ts";
 import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/native-ssr-capture.mjs";
 import { directChildHistoricalSuccessor } from "./support/native-ssr-direct-child-successor.ts";
 
@@ -121,44 +123,35 @@ void test("prose, generated ledgers and independent target consumers do not gran
   );
 });
 
-void test("the existing first-shard action remains mandatory for merge groups and qualified PR sources", () => {
-  const workflow = fs.readFileSync(
-    new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
-    "utf8",
-  );
-  const planner = fs.readFileSync(
-    new URL("../../tools/support/compat/github/plan-tooling-tests.mjs", import.meta.url),
-    "utf8",
+void test("the native runtime matrix requires SSR for affected sources and broad qualification", () => {
+  const workflow = parse(
+    fs.readFileSync(
+      new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
+      "utf8",
+    ),
   );
   const action = fs.readFileSync(
     new URL("../../.github/actions/test-native-ssr/action.yml", import.meta.url),
     "utf8",
   );
-  assert(workflow.split("\n").length - 1 <= 350);
-  assert(
-    workflow.includes("native-ssr-capture: ${{ steps.tooling-plan.outputs.native-ssr-capture }}"),
+  const worker = workflow.jobs["pr-native-runtime"];
+  assert.equal(worker.needs, "pr-source-plan");
+  assert.equal(worker.strategy["fail-fast"], false);
+  assert.equal(
+    worker.strategy.matrix,
+    "${{ fromJSON(needs.pr-source-plan.outputs.native-runtime-matrix) }}",
   );
-  assert(
-    workflow.includes(
-      "matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true'))",
-    ),
+  const hooks = worker.steps.filter((step) => step.uses === "./.github/actions/test-native-ssr");
+  assert.equal(hooks.length, 1);
+  assert.equal(hooks[0].if, "${{ matrix.lane == 'ssr' }}");
+  assert.notEqual(hooks[0]["continue-on-error"], true);
+  assert.ok(workflow.jobs["source-report"].needs.includes("pr-native-runtime"));
+  assert.ok(planNativeRuntime([]).matrix.lane.includes("ssr"));
+  assert.ok(
+    planNativeRuntime(["crates/vize_atelier_sfc/src/native_ssr.rs"]).matrix.lane.includes("ssr"),
   );
-  assert.equal(workflow.match(/uses: \.\/\.github\/actions\/test-native-ssr/g)?.length, 1);
-  assert(
-    planner.includes(
-      "toolingChecksRequired(plan, paths) || nativeSsrCaptureRequired(capturePaths)",
-    ),
-  );
-  assert(
-    planner.includes(
-      "native-ssr-capture=${nativeSsrCaptureRequired(capturePaths) || nativeScopedCaptureRequired(capturePaths)}",
-    ),
-  );
-  assert(
-    planner.includes(
-      'const capturePaths = /^0+$/.test(base) ? [".github/workflows/check.yml"] : paths;',
-    ),
-  );
+  assert.ok(planNativeRuntime(["davinci/vize_l1/src/css.rs"]).matrix.lane.includes("ssr"));
+  assert.equal(planNativeRuntime(["docs/unrelated.md"]).matrix.lane.includes("ssr"), false);
   assert(action.includes('VIZE_L4_SSR_REQUIRE_NATIVE: "1"'));
   assert(action.includes("--test native_scriptless_ssr -- --nocapture"));
   assert(action.includes("--test native_scriptless_setup_ssr -- --nocapture"));

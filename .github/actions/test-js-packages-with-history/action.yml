@@ -1,16 +1,38 @@
 name: Test JS packages with public native history
 description: Preserve the existing JS package gate and all actual formatter build and call evidence.
+inputs:
+  partition:
+    description: Existing package group, original-project, or the complete diagnostic sequence.
+    default: all
 runs:
   using: composite
   steps:
+    - name: Validate full JS partition
+      shell: bash
+      env: { VIZE_JS_PARTITION: "${{ inputs.partition }}" }
+      run: |
+        node --input-type=module <<'NODE'
+        import assert from 'node:assert/strict';
+        import { testedPackageGroups } from './tools/config/vite-plus/tested-package-groups.ts';
+        assert.ok(['all', 'original-project', ...testedPackageGroups.map(({ name }) => name)].includes(process.env.VIZE_JS_PARTITION), 'unknown full JS partition');
+        NODE
     # Composite success() scopes to this action; also retain the outer job guard.
     - name: Test JS packages
-      if: ${{ success() && job.status == 'success' }}
+      if: ${{ success() && job.status == 'success' && inputs.partition == 'all' }}
       shell: bash
       run: node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root test:js
+    - name: Test JS package group
+      if: ${{ success() && job.status == 'success' && inputs.partition != 'all' && inputs.partition != 'original-project' }}
+      shell: bash
+      env: { VIZE_JS_PACKAGE_GROUP: "${{ inputs.partition }}" }
+      run: node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"
+    - name: Build the source addon and Oxlint bundles
+      if: ${{ success() && job.status == 'success' && inputs.partition == 'original-project' }}
+      shell: bash
+      run: vp run --workspace-root build:oxlint-qualification
     - name: Qualify original project checks with both real Oxlint hosts
       id: original-project-qualification
-      if: ${{ success() && job.status == 'success' }}
+      if: ${{ success() && job.status == 'success' && (inputs.partition == 'all' || inputs.partition == 'original-project') }}
       shell: bash
       env:
         VIZE_N8N_BASELINE_MODE: partitioned
@@ -19,7 +41,7 @@ runs:
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}
+        name: public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.partition }}
         path: npm/native/.artifacts/native/formatter-history/**
         if-no-files-found: warn
         retention-days: 14
@@ -27,7 +49,7 @@ runs:
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}
+        name: template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.partition }}
         path: target/template-style-fixes-7905.json
         if-no-files-found: warn
         retention-days: 14
@@ -36,7 +58,7 @@ runs:
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}
+        name: oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.partition }}
         path: |
           target/oxlint-original-locations-7904.json
           target/oxlint-original-project-checks-7903.json
@@ -55,7 +77,7 @@ runs:
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: js-native-fault-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}
+        name: js-native-fault-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.partition }}
         path: ${{ runner.temp }}/js-native-fault-evidence-*/**/*.json
         if-no-files-found: warn
         retention-days: 14

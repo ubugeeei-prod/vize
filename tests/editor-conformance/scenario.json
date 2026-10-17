@@ -14,7 +14,7 @@
       "id": "initialize",
       "label": "initialize",
       "kind": "initialize",
-      "expect": { "$file": "expected/initialize.json" }
+      "expect": { "$file": "expected/initialize-current.json" }
     },
     {
       "id": "open",
@@ -42,7 +42,7 @@
       "kind": "request",
       "method": "textDocument/completion",
       "match": { "position": { "line": 7, "character": 16 } },
-      "expect": { "$file": "expected/completion.json" }
+      "expect": { "$file": "expected/completion-current.json" }
     },
     {
       "id": "definition",
@@ -57,6 +57,7 @@
       "label": "code actions",
       "kind": "request",
       "method": "textDocument/codeAction",
+      "diagnosticsFromRequest": true,
       "match": {
         "range": { "start": { "line": 7, "character": 6 }, "end": { "line": 7, "character": 7 } }
       },

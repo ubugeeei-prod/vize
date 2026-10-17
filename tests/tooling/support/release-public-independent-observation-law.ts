@@ -18,7 +18,7 @@ export function independentPublicObservationLaw() {
     readRepoFile(".github", "workflows", "release-public-acceptance.yml"),
   ) as Workflow;
   const job = workflow.jobs["public-consumer"];
-  const prerequisiteIds = ["guard", "prepare", "install", "chromium"];
+  const prerequisiteIds = ["guard", "prepare", "install", "installed", "chromium"];
   const ids = [...prerequisiteIds, "native", "browser", "lsp"];
   for (const id of ids) assert.equal(job.steps.filter((step) => step.id === id).length, 1);
   assert.ok(!job["continue-on-error"]);

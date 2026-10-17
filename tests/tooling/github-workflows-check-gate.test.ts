@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
@@ -22,6 +22,8 @@ const FULL_SUITE_JOBS = [
   "editor-host-smoke",
   "build-js-packages",
   "test-js-packages",
+  "full-js-package-tests",
+  "full-js-original-project",
   "clippy-and-test",
   "coverage",
   "source-coverage",
@@ -88,9 +90,13 @@ test("source gates cover iteration events while full qualification runs on sched
   for (const job of FULL_SUITE_JOBS) {
     assert.equal(
       workflow.jobs?.[job]?.if,
-      job === "test-scripts"
-        ? "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
-        : "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+      job === "source-coverage"
+        ? "${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !(inputs.release-qualification && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')))) }}"
+        : job === "clippy-and-test" || job === "test-js-packages"
+          ? "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+          : job === "test-scripts"
+            ? "${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+            : "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
     );
   }
   assert.equal(
@@ -181,12 +187,12 @@ test("source gates cover iteration events while full qualification runs on sched
   const jsTestCommands = history.runs.steps.map((step) => step.run ?? "").join("\n");
   assert.match(jsTestCommands, /vp run --workspace-root test:js/);
   assert.match(jsTestCommands, /node npm\/oxlint\/scripts\/check-project-transport\.mjs/);
-  assert.match(commands("clippy-and-test"), /cargo clippy --workspace/);
+  assert.match(commands("rust-clippy-portability"), /cargo clippy --workspace/);
   assert.equal(
-    workflow.jobs?.["clippy-and-test"]?.steps?.find((step) => step.name === "Test")?.uses,
+    workflow.jobs?.["rust-native-differential"]?.steps?.find((step) => step.name === "Test")?.uses,
     "./.github/actions/test-rust-workspace-differential",
   );
-  assert.match(commands("clippy-and-test"), /cargo bench -p vize_l1_to_l2/);
+  assert.match(commands("rust-davinci-allocations"), /cargo bench -p vize_l1_to_l2/);
   assert.match(commands("branch-coverage"), /coverage:source:branch/);
   assert.match(commands("playground-test"), /test:browser/);
   assert.deepEqual(workflow.jobs?.["playground-test"]?.needs, ["build-js-packages"]);
@@ -284,11 +290,29 @@ test("full JS qualification retains independent native builds and strictly gates
   });
   assert.ok(report.runs.steps.indexOf(setup) < report.runs.steps.indexOf(gate));
   const testJob = workflow.jobs?.["test-js-packages"];
-  const history = testJob?.steps?.find((step) => step.name === "Test JS packages");
-  assert.equal(history?.if, "${{ always() }}");
-  assert.equal(history?.uses, "./.github/actions/test-js-packages-with-history");
-  assert.equal(history?.run, undefined);
-  for (const job of [testJob, workflow.jobs?.["build-js-packages"]]) {
+  const producers = ["full-js-package-tests", "full-js-original-project"];
+  assert.deepEqual(testJob?.needs, producers);
+  const packageGate = testJob?.steps?.at(-1);
+  assert.equal(
+    packageGate?.run,
+    "node tools/support/compat/github/require-needs-success.ts --full-js-packages",
+  );
+  assert.deepEqual(packageGate?.env, { NEEDS_JSON: "${{ toJSON(needs) }}" });
+  for (const [id, partition] of [
+    ["full-js-package-tests", "${{ matrix.group }}"],
+    ["full-js-original-project", "original-project"],
+  ]) {
+    const history = workflow.jobs?.[id]?.steps?.find(
+      (step) => step.uses === "./.github/actions/test-js-packages-with-history",
+    );
+    assert.equal(history?.if, "${{ !cancelled() }}");
+    assert.deepEqual(history?.with, { partition });
+    assert.equal(history?.run, undefined);
+  }
+  for (const job of [
+    ...producers.map((id) => workflow.jobs?.[id]),
+    workflow.jobs?.["build-js-packages"],
+  ]) {
     assert.ok(job);
     assert.equal(job.needs, undefined, "each exact-source job owns its physical native build");
     assert.ok(job.steps?.some((step) => step.uses?.startsWith("actions/checkout@")));
@@ -304,11 +328,15 @@ test("full JS qualification retains independent native builds and strictly gates
     for (const result of ["failure", "cancelled", "skipped", "unknown"]) {
       const observed = { ...allSucceeded, [job]: { result } };
       assert.equal(aggregateNeedsResults(observed).exitCode, 1, `${job}: ${result}`);
-      const command = spawnSync(process.execPath, [gate.run.split(" ")[1]], {
-        cwd: root,
-        encoding: "utf8",
-        env: { ...process.env, NEEDS_JSON: JSON.stringify(observed) },
-      });
+      const command: SpawnSyncReturns<string> = spawnSync(
+        process.execPath,
+        [gate.run.split(" ")[1]],
+        {
+          cwd: root,
+          encoding: "utf8",
+          env: { ...process.env, NEEDS_JSON: JSON.stringify(observed) },
+        },
+      );
       assert.equal(command.status, 1, `${command.stderr}\n${command.stdout}`);
       assert.ok(command.stderr.includes(`${job}: ${result}`));
     }

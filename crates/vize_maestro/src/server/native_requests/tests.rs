@@ -11,6 +11,67 @@ const APP: &str =
 const TOAST: &str =
     include_str!("../../../../../tests/_fixtures/lsp-corsa-responsiveness-8012/useToast.ts");
 
+#[test]
+fn local_responses_keep_the_complete_reply_without_waiting_for_the_native_scope() {
+    let (service, _socket) = build_lsp_service();
+    let server = service.inner();
+    let uri = Url::parse("file:///project/src/App.vue").unwrap();
+    server
+        .state
+        .documents
+        .open(uri, APP.into(), 1, "vue".into());
+    let active = block_on(server.state.corsa_request_scope());
+    assert_eq!(
+        server.local_request(|| Ok(pending_native_reply())),
+        Ok(pending_native_reply())
+    );
+    drop(active);
+}
+
+#[test]
+fn local_responses_refuse_source_close_configuration_and_retirement_changes() {
+    #[derive(Debug)]
+    enum Mutation {
+        Source,
+        Close,
+        Configuration,
+        Retirement,
+    }
+    for mutation in [
+        Mutation::Source,
+        Mutation::Close,
+        Mutation::Configuration,
+        Mutation::Retirement,
+    ] {
+        let (service, _socket) = build_lsp_service();
+        let server = service.inner();
+        let uri = Url::parse("file:///project/src/App.vue").unwrap();
+        server
+            .state
+            .documents
+            .open(uri.clone(), APP.into(), 1, "vue".into());
+        let response = server.local_request(|| {
+            match mutation {
+                Mutation::Source => {
+                    server
+                        .state
+                        .documents
+                        .open(uri.clone(), TOAST.into(), 2, "vue".into());
+                }
+                Mutation::Close => {
+                    server.state.documents.close(&uri);
+                }
+                Mutation::Configuration => server
+                    .state
+                    .apply_lsp_initialization_options(Some(&json!({"hover":false}))),
+                Mutation::Retirement => server.state.retire_project_contexts(),
+            }
+            Ok(pending_native_reply())
+        });
+        assert_eq!(response, Err(Error::content_modified()), "{mutation:?}");
+    }
+}
+
 fn pending_native_reply() -> Value {
     // Include an edit outside the request root: stale responses must be
     // refused whole, rather than keeping only apparently unchanged edits.

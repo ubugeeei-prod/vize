@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { matchesGlob } from "node:path";
 import { test } from "node:test";
 import { toolingTestScopes } from "../../tools/config/vite-plus/tooling-test-scopes.ts";
 import {
@@ -23,6 +24,18 @@ const deliveredInitContracts = [
 const installedReportedContracts = ["tests/tooling/release/release-public-vapor.test.ts"];
 const stablePatchContracts = ["tests/tooling/release/release-stable-operator.test.ts"];
 const sharedPublisherContracts = ["tests/tooling/release/release-public-shared-publisher.test.ts"];
+const installedSmokeMigrationContracts = [
+  "tests/tooling/release/release-smoke-parity-peer-copy.test.ts",
+  "tests/tooling/release/release-smoke-public-native.test.ts",
+  "tests/tooling/release/release-smoke-typescript-parity.test.ts",
+  "tests/tooling/release/release-smoke-typescript-runtime.test.ts",
+];
+// The immutable generated consumer imports its installed native provider dynamically.
+// Its two callers must retain the planner's conservative broad fallback.
+const dynamicPublisherContracts = [
+  "tests/tooling/release/release-public-acceptance.test.ts",
+  ...sharedPublisherContracts,
+];
 
 const installedHttpsContracts = [
   "tests/tooling/release/release-public-quick-tunnel.test.ts",
@@ -37,6 +50,7 @@ const installedHttpsContracts = [
 
 void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
   const historicalUnscoped = [
+    "tests/tooling/release/legacy-check-qualification.test.ts",
     "tests/tooling/release/release-guest-locks.test.ts",
     "tests/tooling/release/release-integration-catalog.test.ts",
     "tests/tooling/release/release-preflight-full-js.test.ts",
@@ -52,6 +66,7 @@ void test("audited release contracts have complete imports and leave unresolved 
     ...installedReportedContracts,
     ...stablePatchContracts,
     ...sharedPublisherContracts,
+    ...installedSmokeMigrationContracts,
   ].sort();
   const inventory = [...scoped, ...expectedUnscoped].sort();
   assert.equal(new Set(inventory).size, inventory.length, "contracts belong to exactly one scope");
@@ -61,29 +76,64 @@ void test("audited release contracts have complete imports and leave unresolved 
     inventory,
     "every release contract has an explicit inventory entry",
   );
-  for (const file of [...scoped, ...sharedPublisherContracts]) {
+  for (const file of scoped) {
     assert.ok(releaseFiles.includes(file), `${file} must exist`);
-    assert.equal(localImportInputs(file).complete, true, `${file} import closure`);
+    assert.equal(
+      localImportInputs(file).complete,
+      !dynamicPublisherContracts.includes(file),
+      `${file} import closure`,
+    );
   }
-  assert.deepEqual(selected("davinci/vize_l1/src/parser.rs"), unscoped);
+  assert.deepEqual(
+    selected("davinci/vize_l1/src/parser.rs"),
+    [...new Set([...unscoped, ...dynamicPublisherContracts])].sort(),
+  );
 });
 
-void test("shared publisher authority and fixtures keep their complete release contract", () => {
-  const [contract] = sharedPublisherContracts;
-  const imports = localImportInputs(contract);
-  assert.equal(imports.complete, true);
-  for (const input of [
-    "tools/support/release/public_acceptance/plan.ts",
-    "tests/tooling/support/release-public-acceptance-fixtures.ts",
-    "tests/tooling/support/github-workflows.ts",
-  ]) {
-    assert.ok(imports.files.includes(input), `${contract}: ${input}`);
+void test("installed smoke migration contracts retain unreviewed broad inputs", () => {
+  const plans = ["davinci/vize_l1/src/parser.rs", "crates/vize_maestro/src/server.rs"].map(
+    (input) => ({ input, plan: planToolingTests([input]) }),
+  );
+  for (const contract of installedSmokeMigrationContracts) {
+    assert.equal(
+      toolingTestScopes.some((entry) =>
+        entry.tests.some((pattern) => matchesGlob(contract, pattern)),
+      ),
+      false,
+      `${contract} has no audited scope registration`,
+    );
+    const imports = localImportInputs(contract);
+    for (const { input, plan } of plans) {
+      assert.equal(imports.files.includes(input), false, `${contract}: independent input`);
+      assert.equal(plan.reason, "declared task and import inputs", input);
+      assert.ok(plan.tests.includes(contract), `${input}: ${contract} retains broad fallback`);
+    }
   }
-  for (const input of [
-    ".github/actions/publish-release-package/action.yml",
-    "tests/tooling/support/release-public-acceptance-fixtures.ts",
-  ]) {
-    assert.ok(selected(input).includes(contract), input);
+});
+
+void test("shared publisher authority retains broad inputs across the dynamic consumer oracle", () => {
+  for (const contract of dynamicPublisherContracts) {
+    const imports = localImportInputs(contract);
+    assert.equal(
+      imports.complete,
+      false,
+      "the generated consumer oracle has a dynamic native import",
+    );
+    for (const input of [
+      "tools/support/release/public_acceptance/plan.ts",
+      "tools/support/release/consumer_recovery/oracles.ts",
+      "tests/tooling/support/release-public-acceptance-fixtures.ts",
+      "tests/tooling/support/github-workflows.ts",
+    ]) {
+      assert.ok(imports.files.includes(input), `${contract}: ${input}`);
+    }
+    for (const input of [
+      ".github/actions/publish-release-package/action.yml",
+      "tools/support/release/consumer_recovery/oracles.ts",
+      "tests/tooling/support/release-public-acceptance-fixtures.ts",
+    ]) {
+      assert.ok(selected(input).includes(contract), input);
+    }
   }
 });
 

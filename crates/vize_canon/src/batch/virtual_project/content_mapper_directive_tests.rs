@@ -171,7 +171,7 @@ fn static_component_expect_owns_one_packet_without_its_child() {
                 ("bad", "save"),
                 ("ok", "save"),
             ] {
-                let source = vize_carton::cstr!(
+                let source = vize_l0::cstr!(
                     "<script setup lang=\"ts\">import Comp from './Comp.vue'; const value = 1; const noop = () => {{}};</script>{newline}<template>{prefix}<!-- @vue-expect-error -->{newline}<Comp{newline} id=\"{id}\" @{event}=\"noop\">{{{{ value.bad }}}}</Comp></template>"
                 );
                 let result = transform(source.as_str());
@@ -219,7 +219,7 @@ fn unrelated_marker_text_never_creates_owner_directives() {
         "@vue-expect-error<Comp id=\"bad\" @save=\"noop\">{{ value.bad }}</Comp>",
         "<Comp id=\"@vue-expect-error\" @save=\"noop\">{{ value.bad }}</Comp>",
     ] {
-        let source = vize_carton::cstr!(
+        let source = vize_l0::cstr!(
             "<script setup lang=\"ts\">import Comp from './Comp.vue'; const value = 1; const noop = () => {{}};</script><template>{template}</template>"
         );
         assert!(transform(source.as_str()).diagnostic_directives.is_none());

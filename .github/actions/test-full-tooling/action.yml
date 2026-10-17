@@ -34,15 +34,19 @@ runs:
       if: ${{ inputs.shard == '1' }}
       uses: ./.github/actions/check-router-page-types
     - name: Prepare the pinned plugin isolation runtime for other workers
-      if: ${{ always() && inputs.shard != '1' }}
+      if: ${{ !cancelled() && inputs.shard != '1' }}
       shell: bash
       run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
     - name: Prepare plugin runtime and test native JS setup
-      if: ${{ always() && inputs.shard == '1' }}
+      if: ${{ !cancelled() && inputs.shard == '1' }}
       uses: ./.github/actions/test-native-js-setup
     - name: Capture original native attribute values and fixed fresh mounts
-      if: ${{ always() && inputs.shard == '1' }}
+      if: ${{ !cancelled() && inputs.shard == '1' }}
       uses: ./.github/actions/test-native-attribute-values-7502
+    - name: Join original historical Vue documents to pinned whole goldens
+      if: ${{ !cancelled() && inputs.shard == '1' }}
+      uses: ./.github/actions/test-native-historical-sfc-documents
+      with: { comparison-base: "${{ github.sha }}" }
     - name: Install CSS formatter reference browser
       uses: ./.github/actions/install-formatter-css-browser
     - name: Select the exhaustive full tooling inventory

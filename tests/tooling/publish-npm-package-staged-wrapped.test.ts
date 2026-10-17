@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { test } from "node:test";
 
 import { repoRoot, runReleaseCommand } from "./support/release-command.ts";
-import { writeFakeCommand } from "./support/fake-command.ts";
+import { fakeJsonStateTransaction, writeFakeCommand } from "./support/fake-command.ts";
 
 const fixturePath = path.join(
   repoRoot,
@@ -104,13 +104,14 @@ for (const row of cases) {
         "curl",
         [
           "const fs = require('node:fs');",
-          "const state = JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'));",
           "const url = new URL(process.argv.at(-1));",
           "const exact = url.pathname.endsWith('/0.433.0');",
-          "if (exact) state.versionChecks++; else state.tagChecks++;",
-          "fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
+          fakeJsonStateTransaction,
+          "const state = mutateFakeJsonState(process.env.VP_STATE_PATH, (state) => {",
+          "  if (exact) state.versionChecks++; else state.tagChecks++;",
+          "});",
           "const visible = process.env.WRAP_HIDDEN !== '1' && (state.published",
-          "  || (state.publishCalls === 1 && state.versionChecks >= 3));",
+          "  || (state.publishCalls === 1 && (!exact || state.versionChecks >= 3)));",
           "if (!visible) { process.stdout.write('{}VIZE_HTTP_STATUS:404'); process.exit(0); }",
           "const name = '@vizejs/native-darwin-arm64';",
           "const tag = process.env.WRAP_WRONG_TAG === '1' ? '0.432.0' : '0.433.0';",

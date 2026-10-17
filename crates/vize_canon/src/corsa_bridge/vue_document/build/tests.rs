@@ -301,3 +301,7 @@ fn identical_source_in_separate_roots_keeps_authored_membership() {
         );
     }
 }
+
+#[cfg(test)]
+#[path = "native_union_tests.rs"]
+mod native_union;

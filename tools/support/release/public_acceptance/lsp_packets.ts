@@ -11,6 +11,64 @@ type Json = ReturnType<typeof JSON.parse>;
 const files = ["Child.vue", "Parent.vue", "Other.vue"];
 const reply = (id: number, result: Json) => ({ jsonrpc: "2.0", id, result });
 
+/** Validate H's decoded ledger, whose reader stops silently at frame-boundary EOF.
+ * This ledger does not retain raw stdout frames or prove header byte completeness.
+ */
+export function assertDecodedLspLifecycle(protocol: Json[], terminal: Json) {
+  assert.equal(terminal.success, true);
+  assert.equal(terminal.exitCode, 0);
+  assert.equal(terminal.stdoutReaderJoined, true);
+  assert.equal(terminal.stderrReaderJoined, true);
+  assert.ok(protocol.length >= 6, "complete decoded lifecycle required");
+  assert.ok(
+    protocol.every((row) => row.direction === "request" || row.direction === "response"),
+    "reader errors cannot qualify as clean boundary EOF",
+  );
+  const requests = protocol.flatMap((row, index) =>
+    row.direction === "request" ? [{ message: row.message, index }] : [],
+  );
+  const once = (method: string) => {
+    const entries = requests.filter((row) => row.message.method === method);
+    assert.equal(entries.length, 1, `one ${method} required`);
+    return entries[0];
+  };
+  const initialize = once("initialize"),
+    initialized = once("initialized"),
+    shutdown = once("shutdown"),
+    exit = once("exit");
+  assert.equal(initialize.index, 0);
+  assert.ok(Number.isSafeInteger(initialize.message.id));
+  assert.ok(Number.isSafeInteger(shutdown.message.id));
+  assert.notEqual(initialize.message.id, shutdown.message.id);
+  const response = (id: number) => {
+    const rows = protocol.flatMap((row, index) =>
+      row.direction === "response" && row.message.id === id
+        ? [{ message: row.message, index }]
+        : [],
+    );
+    assert.equal(rows.length, 1, "one lifecycle response required");
+    return rows[0];
+  };
+  const ready = response(initialize.message.id),
+    stopped = response(shutdown.message.id);
+  assert.equal(initialize.message.jsonrpc, "2.0");
+  assert.equal(ready.message.jsonrpc, "2.0");
+  assert.ok(Object.hasOwn(ready.message, "result") && !Object.hasOwn(ready.message, "error"));
+  assert.deepEqual(initialized.message, { jsonrpc: "2.0", method: "initialized", params: {} });
+  assert.ok(initialize.index < ready.index && ready.index < initialized.index);
+  assert.ok(initialized.index < shutdown.index && shutdown.index < stopped.index);
+  assert.ok(stopped.index < exit.index);
+  assert.equal(exit.index, protocol.length - 1, "exit must end the decoded ledger");
+  assert.deepEqual(shutdown.message, {
+    jsonrpc: "2.0",
+    id: shutdown.message.id,
+    method: "shutdown",
+  });
+  assert.deepEqual(stopped.message, reply(shutdown.message.id, null));
+  assert.deepEqual(exit.message, { jsonrpc: "2.0", method: "exit" });
+  assert.ok(requests.every((row) => row.index <= shutdown.index || row.index === exit.index));
+}
+
 export function assertProcess(
   packet: Json,
   source: Json,
@@ -46,10 +104,6 @@ export function assertProcess(
     fs.realpathSync(path.join(consumer, "target/vize-tests/tests")),
   );
   assert.match(path.basename(project), /^lsp-(named-model|bound-event)-[A-Za-z0-9]+$/u);
-  assert.deepEqual(terminal.success, true);
-  assert.equal(terminal.exitCode, 0);
-  assert.equal(terminal.stdoutReaderJoined, true);
-  assert.equal(terminal.stderrReaderJoined, true);
   const stderr = fs.readFileSync(path.join(trace, "stderr.bin"));
   assert.equal(stderr.length, terminal.stderrBytes);
   assert.equal(sha256(stderr), terminal.stderrSha256);
@@ -76,11 +130,7 @@ export function assertProcess(
     .trim()
     .split("\n")
     .map((line) => JSON.parse(line));
-  assert.ok(protocol.length > 0);
-  assert.ok(
-    protocol.every((row) => row.direction === "request" || row.direction === "response"),
-    "protocol reader errors cannot qualify",
-  );
+  assertDecodedLspLifecycle(protocol, terminal);
   const responses = protocol
     .filter((row) => row.direction === "response")
     .map((row) => row.message);

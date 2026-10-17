@@ -17,6 +17,71 @@ const archive = path.join(
   "tests/_fixtures/differential/config/project-settings-8371/archives",
 );
 
+function invertTypescriptDriverSuccessor(current: string, original: string): string {
+  const replaceOnce = (successor: string, predecessor: string) => {
+    assert.equal(current.split(successor).length, 2, "undeclared runtime oracle successor");
+    current = current.replace(successor, predecessor);
+  };
+  replaceOnce(
+    [
+      'const typescriptDriver = process.env.VIZE_RELEASE_SMOKE_DRIVER === "typescript";',
+      'const command = typescriptDriver ? process.execPath : "rust-script";',
+      'const entry = `tools/commands/release/npm/smoke-release-install.${typescriptDriver ? "ts" : "rs"}`;',
+      'const prefix = typescriptDriver ? [] : ["--force"];',
+      "",
+    ].join("\n"),
+    "",
+  );
+  replaceOnce(
+    'test("the release command forwards all tarballs to the fresh-project oracle",',
+    'test("the Rust release command forwards all tarballs to the fresh-project oracle",',
+  );
+  for (const kind of ["dispatch", "oracle"]) {
+    replaceOnce(
+      `  const temporary = fs.realpathSync.native(\n    fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-${kind}-")),\n  );`,
+      `  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-${kind}-"));`,
+    );
+  }
+  replaceOnce(
+    "assert.equal(context.repoRoot, fs.realpathSync.native(process.env.VIZE_REPO_ROOT));",
+    "assert.equal(context.repoRoot, fs.realpathSync(process.env.VIZE_REPO_ROOT));",
+  );
+  // These complete successor calls retain every original argument, environment
+  // and refusal check. Only the reviewed driver selector and Windows canonical
+  // roots change. An altered option cannot disappear behind the inverse.
+  const calls = [
+    `    const result = spawnSync(command, [...prefix, entry, "--runtime-checks", cli, platform], {
+      cwd: root,
+      encoding: "utf8",
+      timeout: 180_000,
+      env: {
+        ...process.env,
+        VIZE_REPO_ROOT: fs.realpathSync.native(temporary),
+        COREPACK_HOME: path.join(temporary, "stale-host-corepack"),
+        CORSA_PATH: "/unrelated/host/corsa",
+        CORSA_EXECUTABLE: "/unrelated/host/corsa",
+        TSGO_PATH: "/unrelated/host/tsgo",
+        TSGO_EXECUTABLE: "/unrelated/host/tsgo",
+      },
+    });
+`,
+    `    const result = spawnSync(command, [...prefix, entry, "--runtime-checks", packageRoot], {
+      cwd: root,
+      encoding: "utf8",
+      timeout: 180_000,
+    });
+`,
+  ];
+  const originalCalls = [
+    ...original.matchAll(
+      /    const result = spawnSync\(\n[\s\S]+?(?=    assert\.ifError\(result\.error\);)/gu,
+    ),
+  ];
+  assert.equal(originalCalls.length, 2);
+  for (const [index, call] of calls.entries()) replaceOnce(call, originalCalls[index][0]);
+  return current;
+}
+
 function installedPreludeFixture(t: TestContext, mode: string) {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-init-file-policy-"));
   const installDir = path.join(temporary, "install");
@@ -172,9 +237,12 @@ test("the declared generated-file successor restores both entire archival source
     path.join(archive, "release-smoke-runtime-oracle.original.test.ts.txt"),
     "utf8",
   );
-  const currentOracle = fs.readFileSync(
-    path.join(root, "tests/tooling/release/release-smoke-runtime-oracle.test.ts"),
-    "utf8",
+  const currentOracle = invertTypescriptDriverSuccessor(
+    fs.readFileSync(
+      path.join(root, "tests/tooling/release/release-smoke-runtime-oracle.test.ts"),
+      "utf8",
+    ),
+    originalOracle,
   );
   assert.equal(
     createHash("sha256").update(originalOracle).digest("hex"),
@@ -216,4 +284,30 @@ test("the declared generated-file successor restores both entire archival source
     originalOracle.slice(originalStart, originalEnd) +
     currentOracle.slice(currentEnd);
   assert.equal(inverseOracle, originalOracle);
+});
+
+test("the driver successor inverse refuses undeclared dispatcher or invocation changes", () => {
+  const original = fs.readFileSync(
+    path.join(archive, "release-smoke-runtime-oracle.original.test.ts.txt"),
+    "utf8",
+  );
+  const current = fs.readFileSync(
+    path.join(root, "tests/tooling/release/release-smoke-runtime-oracle.test.ts"),
+    "utf8",
+  );
+  for (const [before, after] of [
+    [
+      'const command = typescriptDriver ? process.execPath : "rust-script";',
+      'const command = "npm";',
+    ],
+    ['[...prefix, entry, "--runtime-checks", cli, platform]', "[...prefix, entry, cli]"],
+    ["timeout: 180_000", "timeout: 360_000"],
+    ['CORSA_PATH: "/unrelated/host/corsa"', "CORSA_PATH: process.env.CORSA_PATH"],
+  ]) {
+    assert.notEqual(current.indexOf(before), -1);
+    assert.throws(
+      () => invertTypescriptDriverSuccessor(current.replace(before, after), original),
+      /undeclared runtime oracle successor/u,
+    );
+  }
 });

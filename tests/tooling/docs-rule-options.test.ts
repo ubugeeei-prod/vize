@@ -176,7 +176,22 @@ test("strict boolean rows render within the complete option and type-aware table
       path.join(repoRoot, `docs/content/${locale}rules/options.md`),
       "utf8",
     );
-    assert.deepEqual(tableRules(source), expectedOptions, locale || "en");
+    const currentOptions = tableRules(source);
+    assert.equal(currentOptions.length, expectedOptions.length + 1, locale || "en");
+    assert.equal(
+      currentOptions[3],
+      "vue/valid-v-on",
+      "the single new modifier option follows the original restriction rules",
+    );
+    assert.deepEqual(
+      currentOptions.filter((rule) => rule !== "vue/valid-v-on"),
+      expectedOptions,
+      locale || "en",
+    );
+    assert.match(
+      source.split("\n").find((line) => line.startsWith("| `vue/valid-v-on` |"))!,
+      /`\{ modifiers\?: string\[\] \}`/,
+    );
   }
   const allRules = fs.readFileSync(path.join(repoRoot, "docs/content/rules/all.md"), "utf8");
   const typeRows = allRules.split("\n").filter((line) => line.startsWith("| [`type/"));
