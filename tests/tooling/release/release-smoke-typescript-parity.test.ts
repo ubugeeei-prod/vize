@@ -382,7 +382,9 @@ test("native and fresh-init oracle scripts retain every original Rust byte", () 
 // false byte parity. Both runtimes must refuse the same malformed input before
 // invoking npm and keep the package path and failure context in their output.
 test("both drivers refuse malformed JSON before npm and retain native parser diagnostics", () => {
-  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-json-refusal-"));
+  const temporary = fs.realpathSync.native(
+    fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-json-refusal-")),
+  );
   try {
     for (const source of ["", '{"name":', '{"name":"unfinished', '{"name":"x",}']) {
       const directory = path.join(temporary, "package");
