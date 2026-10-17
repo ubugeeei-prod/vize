@@ -6,8 +6,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { rejectOverrides } from "../public_acceptance/installed.ts";
 import { publicReader } from "../public_acceptance/http.ts";
-import { verifyPackageIdentity } from "../windows_hover_acceptance.ts";
 import { captureCommand, effectiveDenoConfig, publicEnvironment, strictUtf8 } from "./runtime.ts";
+import { custodyProbe, assertOracleFiles, verifyOracleHashes } from "./oracles.ts";
+import { verifyRegistrySource } from "../windows_hover_acceptance.ts";
+import {
+  readArchive,
+  observeInstalledArchive,
+  verifyInstalledArchive,
+  type InstalledArchive,
+} from "./archive.ts";
 
 type Original = {
   schema: string;
@@ -19,7 +26,13 @@ type Original = {
     run: string;
     attempt: number;
   };
-  policy: { sha: string; workflowSha256: string; consumerSha256: string; denoConfigSha256: string };
+  policy: {
+    sha: string;
+    workflowSha256: string;
+    consumerSha256: string;
+    denoConfigSha256: string;
+    custodyProbeSha256: string;
+  };
 };
 const roles = {
   "node22-linux": { runtime: "node", node: "22", platform: "linux" },
@@ -49,6 +62,8 @@ type Command = {
   stdout: string;
   stderr: string;
   denoDir: string | null;
+  oracleBefore: Record<string, string>;
+  oracleAfter?: Record<string, string>;
 };
 type Installed = {
   native: { path: string; loaded: boolean; sha256: string };
@@ -172,6 +187,8 @@ export function verifyConsumer(value: unknown, expected?: unknown) {
     assert.equal(command.cwd, packet.project);
     assert.equal(command.denoDir, selected.runtime === "deno" ? cache : null);
     assert.equal(command.error, undefined);
+    verifyOracleHashes(command.oracleBefore, packet.policy, selected.runtime === "deno");
+    verifyOracleHashes(command.oracleAfter, packet.policy, selected.runtime === "deno");
   }
   assert.match(packet.commands[0].stdout, new RegExp(`^v${selected.node}\\.`));
   const completed = packet.commands.find((command) => command.label === "consumer");
@@ -203,7 +220,25 @@ export function verifyConsumer(value: unknown, expected?: unknown) {
       ...(selected.runtime === "deno" ? [] : ["@vizejs/vite-plugin"]),
     ].sort((a, b) => a.localeCompare(b)),
   );
+  assert.deepEqual(
+    packet.installed.packages.map((record) => record.name).sort((a, b) => a.localeCompare(b)),
+    packet.packages.map((record) => String(record.name)).sort((a, b) => a.localeCompare(b)),
+    "actual installed package observations must be complete",
+  );
   for (const record of packet.packages) {
+    const installedObservation: Installed["packages"][number] | undefined =
+      packet.installed.packages.find((installed) => installed.name === record.name);
+    assert.ok(installedObservation, "actual provider observation required");
+    for (const key of ["name", "version", "directory", "manifestSha256"] as const)
+      assert.equal(
+        record[key],
+        installedObservation[key],
+        `actual installed ${key} differs from archive observation`,
+      );
+    verifyInstalledArchive({
+      ...record,
+      native: record.name === provider ? packet.installed.native : undefined,
+    } as InstalledArchive);
     assert.equal(record.version, version);
     assert.equal(record.source, packet.identity.head);
     assert.equal(new URL(String(record.tarball)).origin, "https://registry.npmjs.org");
@@ -223,62 +258,6 @@ export function verifyConsumer(value: unknown, expected?: unknown) {
 
 // Supplemental observation runs inside the same runtime and fresh dependency tree.
 // The actual acceptance script is copied byte for byte from the frozen release H.
-const probe = String.raw`
-import assert from "node:assert/strict";
-import { createRequire } from "node:module";
-import fs from "node:fs";
-import path from "node:path";
-import { createHash } from "node:crypto";
-const [root, version, output, cache] = process.argv.slice(2);
-const require = createRequire(import.meta.url);
-const native = await import(root + "/native");
-const result = native.compileSfc("<template><p>custody</p></template>", {filename:"Custody.vue"});
-assert.equal(result.errors.length, 0);
-const bindings = Object.entries(require.cache).filter(([name, module]) =>
-  name.endsWith(".node") && module?.loaded && name.includes("vize"));
-assert.equal(bindings.length, 1, "one actual loaded public Vize native provider required");
-const entry = fs.realpathSync(bindings[0][0]);
-const packages = [];
-const wanted = new Set(["vize", "@vizejs/native", ...(cache ? [] : ["@vizejs/vite-plugin"])]);
-let cursor = path.dirname(entry);
-while (cursor !== path.dirname(cursor)) {
-  const manifest = path.join(cursor, "package.json");
-  if (fs.existsSync(manifest)) {
-    const value = JSON.parse(fs.readFileSync(manifest, "utf8"));
-    if (value.name?.startsWith("@vizejs/native-")) {
-      wanted.add(value.name);
-      break;
-    }
-  }
-  cursor = path.dirname(cursor);
-}
-function walk(directory, depth = 0) {
-  if (depth > 8) return;
-  const manifest = path.join(directory, "package.json");
-  if (fs.existsSync(manifest)) {
-    const value = JSON.parse(fs.readFileSync(manifest, "utf8"));
-    if (wanted.has(value.name)) {
-      assert.equal(value.version, version, value.name);
-      packages.push({name:value.name, version:value.version, directory:fs.realpathSync(directory),
-        manifestSha256:createHash("sha256").update(fs.readFileSync(manifest)).digest("hex")});
-      wanted.delete(value.name);
-    }
-    // npm cache packages have their own dependencies but never contain our other packages.
-    if (!directory.endsWith("node_modules") && !directory.includes("node_modules/.")) return;
-  }
-  for (const item of fs.readdirSync(directory, {withFileTypes:true})) {
-    if (item.isDirectory() && item.name !== ".bin") walk(path.join(directory,item.name),depth+1);
-  }
-}
-walk(cache || path.join(process.cwd(),"node_modules"));
-assert.equal(wanted.size, 0, "every public Vize package manifest must be observed");
-assert.ok(packages.some(p => p.name.startsWith("@vizejs/native-") &&
-  entry.startsWith(p.directory + path.sep)), "loaded binary belongs to public native package");
-fs.writeFileSync(output, JSON.stringify({packages,native:{path:entry,loaded:true,
-  sha256:createHash("sha256").update(fs.readFileSync(entry)).digest("hex")},
-  runtime:{node:process.version,deno:globalThis.Deno?.version,bun:process.versions.bun,
-    platform:process.platform,arch:process.arch}},null,2)+"\n");
-`;
 
 async function main() {
   const [roleValue, outputValue, originalFile] = process.argv.slice(2);
@@ -328,7 +307,7 @@ async function main() {
     path.join(project, "package.json"),
     '{ "name": "vize-jsr-consumer", "private": true, "type": "module" }\n',
   );
-  fs.writeFileSync(path.join(project, "custody.ts"), probe);
+  fs.writeFileSync(path.join(project, "custody.ts"), custodyProbe);
   const cache = path.join(project, "deno-cache");
   if (selected.runtime === "deno") {
     fs.mkdirSync(cache);
@@ -367,6 +346,7 @@ async function main() {
   const persist = () => save("consumer.json", packet);
   persist();
   const run = async (label: string, command: string, args: string[]) => {
+    const oracleBefore = assertOracleFiles(project, original.policy, selected.runtime === "deno");
     const began = new Date().toISOString();
     const result = await captureCommand(command, args, path.join(output, `${label}-raw`), {
       cwd: project,
@@ -386,12 +366,17 @@ async function main() {
       stdout: strictUtf8(result.stdout),
       stderr: strictUtf8(result.stderr),
       denoDir: selected.runtime === "deno" ? cache : null,
+      oracleBefore,
+      oracleAfter: undefined as Record<string, string> | undefined,
     };
     packet.commands.push(record);
     save(`${label}.json`, record);
     persist();
     assert.equal(result.error, undefined, label);
     assert.equal(result.signal, null, label);
+    record.oracleAfter = assertOracleFiles(project, original.policy, selected.runtime === "deno");
+    save(`${label}.json`, record);
+    persist();
     assert.equal(result.status, 0, `${label}: ${record.stderr}`);
     return record.stdout;
   };
@@ -450,21 +435,20 @@ async function main() {
         ).toString("utf8"),
       );
       const dist = object(metadata.dist);
-      const archive = await reader.download(String(dist.tarball));
-      assert.equal(`sha512-${archive.sha512}`, dist.integrity);
-      const identity = verifyPackageIdentity(
+      const archive = await readArchive(String(dist.tarball), String(dist.integrity));
+      const identity = verifyRegistrySource(
         name,
         version,
         original.identity.head,
         metadata,
         statement,
-        { version, resolved: dist.tarball, integrity: dist.integrity },
       );
       const record = {
         ...identity,
         ...installed,
         published,
-        archive,
+        ...archive,
+        ...observeInstalledArchive(installed.directory, archive.archiveEntries),
         observation: "registry source metadata; not cryptographic attestation verification",
       };
       packet.packages.push(record);
@@ -472,7 +456,7 @@ async function main() {
         metadata,
         published,
         attestations,
-        archive,
+        ...archive,
         installed,
       });
       persist();

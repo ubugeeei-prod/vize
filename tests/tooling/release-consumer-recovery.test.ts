@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -10,6 +10,7 @@ import {
   sha256,
   assertFresh,
   consumerAttempt,
+  failureLogArguments,
   object,
   roles,
   recoveryRunIdentity,
@@ -31,6 +32,11 @@ import {
   publicEnvironment,
   strictUtf8,
 } from "../../tools/support/release/consumer_recovery/runtime.ts";
+import {
+  assertOracleFiles,
+  custodyProbe,
+  verifyOracleHashes,
+} from "../../tools/support/release/consumer_recovery/oracles.ts";
 
 type Snapshot = {
   identity: Identity;
@@ -45,6 +51,61 @@ const retained: Snapshot = JSON.parse(
 );
 const admit = (packet: Snapshot) =>
   admitOriginal(packet.identity, packet.run, packet.jobs, packet.failed, packet.log, packet.blobs);
+
+test("complete raw GitHub logs explicitly retain ANSI bytes before fingerprint normalization", () => {
+  assert.deepEqual(failureLogArguments(117254411511), [
+    "api",
+    "--allow-escape-sequences",
+    "repos/ubugeeei-prod/vize/actions/jobs/117254411511/logs",
+  ]);
+  assert.ok(
+    retained.log.includes(String.fromCharCode(27)),
+    "primary incident retains original escape bytes",
+  );
+  const before = Buffer.from(retained.log);
+  admit(retained);
+  assert.deepEqual(
+    Buffer.from(retained.log),
+    before,
+    "fingerprint matching must not rewrite custody bytes",
+  );
+  for (const id of ["", "1;false", "001", -1]) assert.throws(() => failureLogArguments(id));
+});
+
+test("installation or invocation side effects and forged retained oracle claims refuse qualification", () => {
+  const directory = mkdtempSync(path.join(os.tmpdir(), "vize-consumer-oracle-"));
+  const bytes = {
+    "consumer.ts": String(retained.blobs.consumerSha256),
+    "deno.json": effectiveDenoConfig,
+    "custody.ts": custodyProbe,
+  };
+  const policy = {
+    consumerSha256: sha256(bytes["consumer.ts"]),
+    denoConfigSha256: fixture.denoConfigSha256,
+    custodyProbeSha256: sha256(custodyProbe),
+  };
+  try {
+    for (const [name, source] of Object.entries(bytes))
+      writeFileSync(path.join(directory, name), source);
+    const before = assertOracleFiles(directory, policy, true);
+    assert.doesNotThrow(() => verifyOracleHashes(before, policy, true));
+    for (const [name, source] of Object.entries(bytes)) {
+      writeFileSync(
+        path.join(directory, name),
+        source + "\n// installer or consumer changed oracle\n",
+      );
+      // Packet claims can remain identical to the expected hashes; actual retained bytes still refuse.
+      assert.throws(() => assertOracleFiles(directory, policy, true));
+      writeFileSync(path.join(directory, name), source);
+    }
+    assert.throws(() =>
+      verifyOracleHashes({ ...before, "consumer.ts": "f".repeat(64) }, policy, true),
+    );
+    assert.deepEqual(assertOracleFiles(directory, policy, true), before);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 test("actual retained frozen source and 56 effective jobs admit only the known Deno fixture failure", () => {
   const admitted = admit(retained);
@@ -332,6 +393,21 @@ test("recovery is an explicit read-only official operation; ordinary resume rema
     "prepare",
   ]);
   assert.equal(recovery.jobs.prepare.needs, "contracts");
+  for (const job of Object.values(recovery.jobs)) {
+    for (const step of object(job).steps as Record<string, unknown>[]) {
+      if (String(step.uses).startsWith("actions/upload-artifact@"))
+        assert.ok(
+          String(object(step.with).name).includes("${{ github.run_attempt }}"),
+          "every producer isolates its actual attempt",
+        );
+    }
+  }
+  assert.ok(
+    recovery.jobs.finalize.steps.some(
+      (step: { with?: { pattern?: string } }) =>
+        step.with?.pattern === "consumer-recovery-*-${{ github.run_attempt }}",
+    ),
+  );
   assert.equal(recovery.jobs.consumer.strategy.matrix.include.length, 6);
   assert.equal(recovery.jobs.prepare.if, "github.ref == 'refs/heads/main'");
   const operator = YAML.parse(file("release-operator.yml"));
@@ -386,6 +462,7 @@ test("recovery policy binds the complete local import and materialized public ha
     for (const match of imports)
       visit(path.posix.normalize(path.posix.join(path.posix.dirname(file), match[1])));
   }
+  for (const file of policyFiles) if (file.endsWith(".ts")) visit(file);
   visit("tools/support/release/consumer_recovery/main.ts");
   visit("tools/support/release/consumer_recovery/consumer.ts");
   visit("tools/support/release/public_acceptance/accept.ts");
@@ -489,7 +566,7 @@ test("raw failure custody retains original ANSI and arbitrary bytes before statu
 function completeDenoPacket() {
   const project = "/fresh",
     output = "/evidence";
-  const policy = { sha: "a".repeat(40), ...fixture };
+  const policy = { sha: "a".repeat(40), ...fixture, custodyProbeSha256: sha256(custodyProbe) };
   const packet: Parameters<typeof commandPlan>[0] = {
     schema: "vize-consumer-recovery-consumer-v1",
     status: "passed",
@@ -511,17 +588,46 @@ function completeDenoPacket() {
       native: { path: "/fresh/provider/vize.node", loaded: true, sha256: "a".repeat(64) },
       runtime: { node: "v24.14.0", deno: { deno: "2.9.7" }, platform: "linux", arch: "x64" },
     },
-    packages: ["vize", "@vizejs/native", "@vizejs/native-linux-x64-gnu"].map((name) => ({
-      name,
-      version: "0.457.0",
-      source: retained.identity.head,
-      tarball: "https://registry.npmjs.org/package.tgz",
-      integrity: "sha512-packet-digest",
-      archive: { sha512: "packet-digest", sha256: "a".repeat(64) },
-      published: "2026-10-15T00:00:00Z",
-      directory: name.includes("native-linux") ? "/fresh/provider" : "/fresh/package",
-    })),
+    packages: ["vize", "@vizejs/native", "@vizejs/native-linux-x64-gnu"].map((name) => {
+      const content = JSON.stringify({ name, version: "0.457.0" });
+      const entries = [
+        { path: "package.json", sha256: sha256(content), bytes: Buffer.byteLength(content) },
+        { path: "vize.node", sha256: "a".repeat(64), bytes: 1 },
+      ];
+      const integrity = "A".repeat(86) + "==";
+      return {
+        name,
+        version: "0.457.0",
+        source: retained.identity.head,
+        tarball: "https://registry.npmjs.org/package.tgz",
+        integrity: "sha512-" + integrity,
+        archive: { sha512: integrity, sha256: "a".repeat(64), bytes: 1 },
+        archiveEntries: entries,
+        installedFiles: structuredClone(entries),
+        archiveManifest: {
+          name,
+          version: "0.457.0",
+          content,
+          sha256: sha256(content),
+          bytes: Buffer.byteLength(content),
+        },
+        manifestSha256: sha256(content),
+        published: "2026-10-15T00:00:00Z",
+        directory: name.includes("native-linux") ? "/fresh/provider" : "/fresh/package",
+      };
+    }),
     jsr: {},
+  };
+  packet.installed!.packages = packet.packages.map((record) => ({
+    name: String(record.name),
+    version: String(record.version),
+    directory: String(record.directory),
+    manifestSha256: String(record.manifestSha256),
+  }));
+  const oracle = {
+    "consumer.ts": policy.consumerSha256,
+    "custody.ts": policy.custodyProbeSha256,
+    "deno.json": sha256(effectiveDenoConfig),
   };
   packet.commands = commandPlan(packet).map(([label, command, args]) => ({
     label,
@@ -540,6 +646,8 @@ function completeDenoPacket() {
           : "",
     stderr: "legitimate retained stderr",
     denoDir: "/fresh/deno-cache",
+    oracleBefore: { ...oracle },
+    oracleAfter: { ...oracle },
   }));
   return packet;
 }

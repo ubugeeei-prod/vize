@@ -56,11 +56,19 @@ package and JSR version is at least 24 hours old remain required.
    Node/Bun retain the Vite assertion; the original Deno contract does not import that entry point.
    Complete commands, stdout/stderr, exit status, installed paths, archive hashes, manifests,
    lockfiles and publication times remain in the packet.
+   The actual installed manifest and every shipped regular package file must match the entries
+   of the SRI-verified public tarball, including the loaded native provider's exact bytes. The
+   original consumer, Deno configuration and custody probe are hashed around every command;
+   their retained files are verified again before signing and during signed verification.
 4. Finalization requires all six packets from the same current run and attempt, rechecks the
    original identities and all public channels, authenticates the closed source/import/config and
    materialized harness policy, and signs a complete file manifest with the
    existing pinned Cosign/OIDC toolchain. The receipt says `originalConclusion: "failure"` and
    `status: "consumer-requalified"`; it never represents R as successful.
+   The finalizer independently fetches trusted exact-version npm metadata and re-inspects each
+   public archive; the later signed verifier does the same. An archive index supplied by a consumer
+   cannot authorize itself. Downloads are deduplicated by public URL and SRI, and the signed packet
+   retains the recomputed index and archive digest rather than copies of large native archives.
 5. Dispatch the protected main-only **Release Operator**, operation `recover-consumer`, with
    `source_cut`, `source_pr`, `source_head`, `source_tag`, `release_run`, and
    `consumer_recovery_run`. It verifies the exact signer workflow/ref/repository/commit, signed

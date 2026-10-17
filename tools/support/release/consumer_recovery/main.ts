@@ -15,6 +15,8 @@ import {
   verifyConsumerDirectory,
   type Original,
 } from "./custody.ts";
+import { assertOracleFiles } from "./oracles.ts";
+import { revalidatePublicArchives, type InstalledArchive } from "./archive.ts";
 import {
   assertFresh,
   consumerAttempt,
@@ -81,6 +83,15 @@ if (operation === "prepare" || operation === "finalize") {
     for (const role of roles) {
       const file = path.join(output, "consumers", role, "consumer.json");
       const packet = verifyConsumerDirectory(path.dirname(file), original);
+      assertOracleFiles(path.dirname(file), original.policy, role === "deno-linux");
+      save(
+        output,
+        `revalidated-${role}.json`,
+        await revalidatePublicArchives(
+          packet.packages as InstalledArchive[],
+          object(object(packet.installed).native) as { path: string; sha256: string },
+        ),
+      );
       same(packet.role, role, "consumer role substitution");
       consumerAttempt(
         packet.run,
@@ -97,9 +108,12 @@ if (operation === "prepare" || operation === "finalize") {
       "jobs",
       "failed",
       "log",
+      "logIdentity",
       "logCustody",
       "blobs",
       "artifacts",
+      "pin",
+      "sourceReceipt",
     ])
       same(original[key], live[key], `original ${key} changed during fresh consumers`);
     const publication = await verifyPublication(

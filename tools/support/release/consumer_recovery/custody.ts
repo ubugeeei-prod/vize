@@ -6,6 +6,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { verifyConsumer } from "./consumer.ts";
 import { captureCommand, effectiveDenoConfig, strictUtf8 } from "./runtime.ts";
+import { custodyProbe, assertOracleFiles, type OraclePolicy } from "./oracles.ts";
+import { revalidatePublicArchives, type InstalledArchive } from "./archive.ts";
 import {
   admitOriginal,
   annotatedIntegrationPr,
@@ -13,6 +15,7 @@ import {
   compareText,
   consumerAttempt,
   fixture,
+  failureLogArguments,
   object,
   positive,
   repository,
@@ -67,9 +70,11 @@ export const policyFiles = [
   ".github/workflows/release-operator.yml",
   ".github/workflows/release-public-acceptance.yml",
   "tests/performance/support/warm-type-backed-public-archives.ts",
+  "tools/support/release/consumer_recovery/archive.ts",
   "tools/support/release/consumer_recovery/consumer.ts",
   "tools/support/release/consumer_recovery/custody.ts",
   "tools/support/release/consumer_recovery/main.ts",
+  "tools/support/release/consumer_recovery/oracles.ts",
   "tools/support/release/consumer_recovery/policy.ts",
   "tools/support/release/consumer_recovery/runtime.ts",
   "tools/support/release/jsr/consumer-deno.json",
@@ -138,7 +143,7 @@ export function policyOnMain(sha: string) {
 export interface Original extends Json {
   schema: string;
   identity: Identity;
-  policy: Json;
+  policy: Json & OraclePolicy & { sha: string };
   run: Json;
   jobs: Json[];
   failed: Json;
@@ -163,28 +168,43 @@ export async function collectOriginal(
   policySha: string,
   logDirectory?: string,
 ): Promise<Original> {
-  const policy = { sha: policySha, authority: policyOnMain(policySha), ...fixture };
+  const policy = {
+    sha: policySha,
+    authority: policyOnMain(policySha),
+    ...fixture,
+    custodyProbeSha256: sha256(custodyProbe),
+  };
   const run = api(`actions/runs/${expected.run}`);
+  const tagRef = api(`git/ref/tags/${expected.tag}`);
+  same(object(tagRef.object).type, "tag", "original annotated tag required");
+  const tagObject = api(`git/tags/${String(object(tagRef.object).sha)}`);
+  same(object(tagObject.object).sha, expected.head, "original tag target H mismatch");
+  const source = api(`pulls/${expected.sourcePr}`);
+  const sourceReceipt = {
+    number: source.number,
+    title: source.title,
+    body: source.body,
+    draft: source.draft,
+    head: {
+      sha: object(source.head).sha,
+      ref: object(source.head).ref,
+      repository: object(object(source.head).repo).full_name,
+    },
+    base: { ref: object(source.base).ref, repository: object(object(source.base).repo).full_name },
+  };
   const jobs = await pages(`actions/runs/${expected.run}/jobs?filter=latest`, "jobs");
   const failures = jobs.filter((job) => job.conclusion === "failure");
   same(failures.length, 1, "one known failed consumer required");
   const failed = api(`actions/jobs/${positive(failures[0].id)}`);
   const logOutput =
     logDirectory ?? path.join(mkdtempSync(path.join(os.tmpdir(), "vize-original-log-")), "capture");
-  const captured = await captureCommand(
-    "gh",
-    [
-      "api",
-      "--allow-escape-sequences",
-      `repos/${repository}/actions/jobs/${positive(failed.id)}/logs`,
-    ],
-    logOutput,
-  );
+  const captured = await captureCommand("gh", failureLogArguments(failed.id), logOutput);
   // Whole raw stdout/stderr and process packet exist even if any following gate refuses.
   same(captured.error, undefined, "failed log transport error");
   same(captured.signal, null, "failed log transport signal");
   same(captured.status, 0, "failed log transport exit");
   const log = strictUtf8(captured.stdout);
+  const logBytes = captured.stdout;
   assert.ok(
     captured.stdout.length > 0 && captured.stdout.length <= 16 * 1024 * 1024,
     "bounded complete failed log required",
@@ -221,8 +241,11 @@ export async function collectOriginal(
     logCustody: Object.fromEntries(
       Object.entries(captured.custody).filter(([key]) => key !== "cwd"),
     ),
+    logIdentity: { sha256: sha256(logBytes), bytes: logBytes.byteLength, encoding: "utf8" },
     blobs,
     artifacts,
+    pin: { tagRef, tagObject },
+    sourceReceipt,
   };
   admission(original);
   same(api(`actions/runs/${expected.run}`), run, "R changed during original collection");
@@ -449,11 +472,32 @@ export async function verifiedRecovery(
   const admitted = admission(original);
   for (const role of roles) {
     const packet = verifyConsumerDirectory(path.join(directory, "consumers", role), original);
+    assertOracleFiles(
+      path.join(directory, "consumers", role),
+      original.policy,
+      role === "deno-linux",
+    );
+    await revalidatePublicArchives(
+      packet.packages as InstalledArchive[],
+      object(object(packet.installed).native) as { path: string; sha256: string },
+    );
     same(packet.role, role, "replacement role substituted");
     consumerAttempt(packet.run, recoveryRun, attempt, policySha);
   }
   const live = await collectOriginal(expected, policySha);
-  for (const key of ["policy", "run", "jobs", "failed", "log", "logCustody", "blobs", "artifacts"])
+  for (const key of [
+    "policy",
+    "run",
+    "jobs",
+    "failed",
+    "log",
+    "logIdentity",
+    "logCustody",
+    "blobs",
+    "artifacts",
+    "pin",
+    "sourceReceipt",
+  ])
     same(original[key], live[key], `original ${key} changed after requalification`);
   same(api(`actions/runs/${recoveryRun}`), run, "replacement attempt changed during verification");
   assert.ok(realpathSync(directory) === directory, "replacement root redirected");
