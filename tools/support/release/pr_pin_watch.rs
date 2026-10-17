@@ -112,7 +112,7 @@ pub(super) fn watch(
             }
         }
         println!(
-            "Pinned source PR #{number}, H={head}, R={id}: qualification passed. Admitting the version integration; the tag follows that merge."
+            "Pinned source PR #{number}, H={head}, R={id}: waiting for qualification and artifact gates. The tag follows their successful join and version integration."
         );
         budget.sleep(Duration::from_secs(20))?;
     }

@@ -13,6 +13,25 @@ pub(crate) fn resolve_extended_tsconfig_path(
     tsconfig_path: &Path,
     extends: &str,
 ) -> Option<PathBuf> {
+    resolve_extended_tsconfig_path_observed(tsconfig_path, extends, &mut |_| {})
+}
+
+/// The same resolver, retaining file probes that can change the selected parent.
+pub(super) fn resolve_extended_tsconfig_path_with_dependencies(
+    tsconfig_path: &Path,
+    extends: &str,
+    dependencies: &mut Vec<PathBuf>,
+) -> Option<PathBuf> {
+    resolve_extended_tsconfig_path_observed(tsconfig_path, extends, &mut |path| {
+        dependencies.push(path.to_path_buf());
+    })
+}
+
+fn resolve_extended_tsconfig_path_observed(
+    tsconfig_path: &Path,
+    extends: &str,
+    observe: &mut impl FnMut(&Path),
+) -> Option<PathBuf> {
     let base_dir = tsconfig_path.parent().unwrap_or(Path::new("."));
     let extends_path = Path::new(extends);
     if !(extends_path.is_absolute()
@@ -24,7 +43,7 @@ pub(crate) fn resolve_extended_tsconfig_path(
         // Bare specifier (`@vue/tsconfig/tsconfig.dom.json`): resolved like a
         // Node import, walking ancestor `node_modules` directories from the
         // extending config.
-        return resolve_package_tsconfig_path(base_dir, extends);
+        return resolve_package_tsconfig_path(base_dir, extends, observe);
     }
 
     let base = if extends_path.is_absolute() {
@@ -36,16 +55,25 @@ pub(crate) fn resolve_extended_tsconfig_path(
     tsconfig_path_candidates(base)
         .into_iter()
         .map(|candidate| normalize_path_lexically(&candidate))
-        .find(|candidate| candidate.exists())
+        .find(|candidate| {
+            observe(candidate);
+            candidate.exists()
+        })
 }
 
-fn resolve_package_tsconfig_path(base_dir: &Path, extends: &str) -> Option<PathBuf> {
+fn resolve_package_tsconfig_path(
+    base_dir: &Path,
+    extends: &str,
+    observe: &mut impl FnMut(&Path),
+) -> Option<PathBuf> {
     let (package, subpath) = split_package_specifier(extends)?;
     let mut current = Some(base_dir);
     while let Some(dir) = current {
         let package_root = dir.join("node_modules").join(package);
         let from_package_json = if subpath.is_none() {
-            std::fs::read_to_string(package_root.join("package.json"))
+            let package_json = package_root.join("package.json");
+            observe(&package_json);
+            std::fs::read_to_string(package_json)
                 .ok()
                 .and_then(|content| parse_jsonc_value(&content).ok())
                 .and_then(|package| {
@@ -66,7 +94,10 @@ fn resolve_package_tsconfig_path(base_dir: &Path, extends: &str) -> Option<PathB
             .flat_map(tsconfig_path_candidates)
             .chain(tsconfig_path_candidates(base))
             .map(|candidate| normalize_path_lexically(&candidate))
-            .find(|candidate| candidate.is_file())
+            .find(|candidate| {
+                observe(candidate);
+                candidate.is_file()
+            })
         {
             // Resolve through the link before returning. A bare specifier goes
             // through Node resolution, which follows symlinks unless

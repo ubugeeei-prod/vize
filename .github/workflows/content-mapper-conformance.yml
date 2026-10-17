@@ -13,9 +13,17 @@ on:
         description: "Compare genuine old/new static directive owners and standard stock LSP gates"
         type: boolean
         default: false
+      official-css-options-only:
+        description: "Qualify Escaton's four original cases with the official published TypeScript 7.1 host"
+        type: boolean
+        default: false
+      expected-source-sha:
+        description: "Exact reviewed Vize source for official-css-options-only"
+        type: string
+        required: false
 
 concurrency:
-  group: content-mapper-${{ github.event.pull_request.number || github.ref }}${{ inputs.directive-owners-only && '-directive-owners' || inputs.event-rename-only && '-event-rename' || '' }}
+  group: content-mapper-${{ github.event.pull_request.number || github.ref }}${{ inputs.official-css-options-only && '-official-css-options' || inputs.directive-owners-only && '-directive-owners' || inputs.event-rename-only && '-event-rename' || '' }}
   cancel-in-progress: true
 
 permissions:
@@ -28,7 +36,7 @@ env:
 
 jobs:
   exact-tsgo-project:
-    if: ${{ !inputs.event-rename-only && !inputs.directive-owners-only }}
+    if: ${{ !inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -152,7 +160,7 @@ jobs:
           done
 
   event-rename:
-    if: github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.directive-owners-only
+    if: github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -250,7 +258,7 @@ jobs:
         run: test "$TRANSACTIONS_OUTCOME" = success
 
   directive-owners:
-    if: github.event_name == 'workflow_dispatch' && inputs.directive-owners-only
+    if: github.event_name == 'workflow_dispatch' && inputs.directive-owners-only && !inputs.official-css-options-only
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -332,3 +340,84 @@ jobs:
             ${{ runner.temp }}/directive-owners/verified.json
             ${{ runner.temp }}/directive-owners/verification-failure.json
           if-no-files-found: warn
+
+  official-css-options:
+    if: github.event_name == 'workflow_dispatch' && inputs.official-css-options-only
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
+    steps:
+      - name: Require an unambiguous focused campaign
+        env:
+          EVENT_RENAME_ONLY: ${{ inputs.event-rename-only }}
+          DIRECTIVE_OWNERS_ONLY: ${{ inputs.directive-owners-only }}
+        run: |
+          test "$EVENT_RENAME_ONLY" != true
+          test "$DIRECTIVE_OWNERS_ONLY" != true
+      - name: Checkout the reviewed Vize source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - name: Authenticate source and recipe before any build
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"
+          test "$GITHUB_WORKFLOW_SHA" = "$EXPECTED_SOURCE_SHA"
+          test -z "$(git status --porcelain)"
+          mkdir -p "$RUNNER_TEMP/official-css-source"
+          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/official-css-source/git-identity.txt"
+          sha256sum Cargo.toml Cargo.lock rust-toolchain.toml \
+            tools/support/compat/content-mapper/official-css-options.ts \
+            tests/_fixtures/content-mapper/escaton-css-options.json \
+            .github/workflows/content-mapper-conformance.yml \
+            > "$RUNNER_TEMP/official-css-source/inputs.sha256"
+      - name: Setup pinned Node and Vite Plus
+        uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: false
+      - name: Setup repository Rust toolchain
+        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: content-mapper-official-css-options
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install frozen workspace dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build the real packed mapper runtime
+        run: |
+          vp run --filter './npm/native' build:ci
+          (cd npm/cli && vp pack)
+          (cd npm/native && vp exec napi create-npm-dirs)
+          (cd npm/native && vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish)
+          cp npm/native/vize-vitrine.linux-x64-gnu.node npm/native/npm/linux-x64-gnu/
+          sha256sum npm/native/vize-vitrine.linux-x64-gnu.node > "$RUNNER_TEMP/official-css-source/native-image.sha256"
+      - name: Run original public failures and fresh packed official host controls
+        id: official
+        run: >-
+          node tools/support/compat/content-mapper/official-css-options.ts
+          --output "$RUNNER_TEMP/official-css-options"
+      - name: Retain complete official compiler diagnostics and package evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: official-css-options-${{ github.sha }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            ${{ runner.temp }}/official-css-source/
+            ${{ runner.temp }}/official-css-options/
+            !${{ runner.temp }}/official-css-options/**/node_modules
+            !${{ runner.temp }}/official-css-options/**/node_modules/**

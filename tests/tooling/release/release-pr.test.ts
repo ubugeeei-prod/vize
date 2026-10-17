@@ -175,7 +175,7 @@ test("release-only workflow validates all artifacts before promotion and preserv
   );
   assert.equal(workflow.jobs["candidate-preflight"].needs, "candidate");
   assert.deepEqual(workflow.jobs["candidate-preflight"].permissions, {
-    actions: "write",
+    actions: "read",
     contents: "read",
     issues: "read",
     "pull-requests": "read",

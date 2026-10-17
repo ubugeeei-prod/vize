@@ -83,3 +83,34 @@ publication lasted 11m27s before its downstream publication stages. Those are
 separate remaining critical paths. Moving H qualification before Release R
 does not remove it from elapsed release-command time. Qualification, R and
 installed acceptance timings must continue to be reported separately and in total.
+
+## Overlap qualification with artifact builds
+
+The official operator starts or finds exact-H Check Q before dispatching Release R,
+then authenticates the unchanged candidate again. It does not call a pending Q
+qualified. R's existing native, package and editor build fanout runs while its
+read-only preflight joins that already existing Q. The original ten-minute
+`--verify-only` step follows the join; crate validation remains independent.
+`candidate-ready`, metadata, blockers, promotion, tag and publication gates remain
+unchanged. No Q dispatch, bootstrap or rerun capability exists in R's join.
+
+The operator authenticates H's immutable dispatch declaration before selecting
+this protocol. A known legacy H without the deadline input retains its original
+blocking Check qualification and receives no undeclared input. Unknown or
+ambiguous declarations refuse before Q or R dispatch. Resuming an existing R
+continues to reuse that R's original source and inputs.
+
+The operator carries one absolute qualification deadline into R: the earlier of
+its inherited effective deadline and Q's authenticated creation time plus the
+existing 345-minute full-gate cap. Polls and jobs cannot restart that budget.
+Missing, failed, cancelled or changed Q evidence refuses. An expired pending Q
+cannot wait again. An official resume may immediately authenticate an already
+successful latest Q and every one of its nineteen required jobs, without renewed
+waiting or dispatch. The unchanged verify-only step rechecks live evidence before
+publication. A manually dispatched new candidate must supply a valid bounded
+deadline; it cannot extend the authenticated Q cap.
+
+This removes the serial Q-then-R build dependency. It does not establish a
+fifteen-minute release: the historical Windows ARM build and native npm publish
+critical paths above remain separate optimization work. Actual-source Q/R overlap,
+total release duration and installed acceptance still require measurement.
