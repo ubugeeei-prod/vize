@@ -16,7 +16,9 @@ use vize_l0::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
 
 use super::ServerState;
 use super::features::LspConfigSection;
-use host::{LoadedLspConfig, load_lsp_config_snapshot};
+use host::LoadedLspConfig;
+#[cfg(not(feature = "native"))]
+use host::load_lsp_config_snapshot;
 
 impl ServerState {
     /// Apply LSP initialization options sent by an editor client.
@@ -220,20 +222,47 @@ impl ServerState {
 
     /// Load workspace options from the shared Vite/TypeScript project snapshot.
     pub fn load_workspace_config(&self, dir: &Path) {
+        #[cfg(feature = "native")]
+        let _ = self.apply_observed_workspace_config_snapshot(
+            dir,
+            host::load_observed_lsp_config_snapshot(Some(dir)),
+        );
+        #[cfg(not(feature = "native"))]
         let _ = self.apply_workspace_config_snapshot(dir, load_lsp_config_snapshot(Some(dir)));
     }
 
+    #[cfg(not(feature = "native"))]
     pub(super) fn apply_workspace_config_snapshot(
         &self,
         dir: &Path,
         loaded: LoadedLspConfig,
     ) -> bool {
-        self.apply_workspace_snapshot(dir, loaded, true)
+        self.apply_workspace_snapshot(
+            dir,
+            loaded,
+            true,
+            #[cfg(feature = "native")]
+            None,
+        )
+    }
+
+    #[cfg(feature = "native")]
+    pub(super) fn apply_observed_workspace_config_snapshot(
+        &self,
+        dir: &Path,
+        snapshot: host::ObservedLspConfig,
+    ) -> bool {
+        self.apply_workspace_snapshot(
+            dir,
+            snapshot.loaded,
+            true,
+            Some((snapshot.before, snapshot.needs_confirmation)),
+        )
     }
 
     #[cfg(feature = "native")]
     pub(super) fn apply_retained_workspace_config(&self, dir: &Path, loaded: LoadedLspConfig) {
-        let _ = self.apply_workspace_snapshot(dir, loaded, false);
+        let _ = self.apply_workspace_snapshot(dir, loaded, false, None);
     }
 
     fn apply_workspace_snapshot(
@@ -241,12 +270,34 @@ impl ServerState {
         dir: &Path,
         loaded: LoadedLspConfig,
         refresh_tsconfig: bool,
+        #[cfg(feature = "native")] observed: Option<(vize_canon::ConfigurationObservations, bool)>,
     ) -> bool {
         #[cfg(feature = "native")]
         let authored = loaded.clone();
         #[cfg(feature = "native")]
         let mut loaded = loaded;
         if !loaded.valid {
+            #[cfg(feature = "native")]
+            {
+                *self.project_contexts.configuration_observation.write() = Some(
+                    super::project_contexts::freshness::ConfigurationObservation::initial(
+                        &loaded,
+                        &loaded,
+                        observed
+                            .as_ref()
+                            .map(|(before, _)| before.clone())
+                            .unwrap_or_default(),
+                        false,
+                        observed.as_ref().map(|(before, _)| before),
+                        observed.as_ref().is_some_and(|(_, unverified)| *unverified),
+                    ),
+                );
+            }
+            #[cfg(feature = "native")]
+            if self.project_contexts.applied_config.read().is_none() {
+                self.refuse_unconfigured_linter_context(dir);
+            }
+            #[cfg(not(feature = "native"))]
             self.refuse_unconfigured_linter_context(dir);
             #[cfg(feature = "native")]
             self.project_contexts
@@ -256,8 +307,17 @@ impl ServerState {
         }
         #[cfg(feature = "native")]
         {
-            if refresh_tsconfig && !self.apply_tsconfig_config_snapshot(dir, &mut loaded) {
-                self.refuse_unconfigured_linter_context(dir);
+            if refresh_tsconfig
+                && !self.apply_tsconfig_config_snapshot(
+                    dir,
+                    &mut loaded,
+                    observed.as_ref().map(|(before, _)| before),
+                    observed.as_ref().is_some_and(|(_, unverified)| *unverified),
+                )
+            {
+                if self.project_contexts.applied_config.read().is_none() {
+                    self.refuse_unconfigured_linter_context(dir);
+                }
                 self.project_contexts
                     .config_reload_failed
                     .store(true, Ordering::Release);
@@ -335,15 +395,25 @@ impl ServerState {
 
     /// Load LSP options from the shared Vite/TypeScript project snapshot.
     pub fn load_lsp_config(&self, dir: &Path) {
-        let loaded = load_lsp_config_snapshot(Some(dir));
         #[cfg(feature = "native")]
-        let mut loaded = loaded;
+        let observed = host::load_observed_lsp_config_snapshot(Some(dir));
+        #[cfg(feature = "native")]
+        let mut loaded = observed.loaded;
+        #[cfg(not(feature = "native"))]
+        let loaded = load_lsp_config_snapshot(Some(dir));
         if !loaded.valid {
             return;
         }
         #[cfg(feature = "native")]
-        if !self.apply_tsconfig_config_snapshot(dir, &mut loaded) {
-            self.refuse_unconfigured_linter_context(dir);
+        if !self.apply_tsconfig_config_snapshot(
+            dir,
+            &mut loaded,
+            Some(&observed.before),
+            observed.needs_confirmation,
+        ) {
+            if self.project_contexts.applied_config.read().is_none() {
+                self.refuse_unconfigured_linter_context(dir);
+            }
             return;
         }
         self.apply_project_formatting_default(loaded.source_path.as_deref());

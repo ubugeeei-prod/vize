@@ -217,6 +217,11 @@ fn prepare_and_execute(
         .tsconfig_path
         .clone()
         .or_else(|| resolve_tsconfig_path(None, cwd, &project_root, &candidate.files));
+    // A nested selected owner may reject every explicit JavaScript input.
+    // Validate its authored chain before the file filter can end the run.
+    if let Some(path) = discovered_tsconfig_path.as_deref() {
+        input_scope::validate_tsconfig_chain(path)?;
+    }
     let program_tsconfig_path = filter_for_program(ProgramInputContext {
         tsconfig_path: discovered_tsconfig_path.as_deref(),
         explicit: !args.patterns.is_empty(),

@@ -211,6 +211,10 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Qualify serialized Neovim profiles against the verified server
+        if: matrix.client == 'neovim'
+        run: node tests/editor-conformance/named-profiles.ts neovim "${RUNNER_TEMP}/ts45/named-profiles"
+
       - name: Play the TS-45 scenario
         env:
           VIZE_TEST_VSCODE_VERSION: "1.107.1"
@@ -315,6 +319,8 @@ jobs:
           git -C "${RUNNER_TEMP}/vim-lsp" fetch --depth 1 origin "$VIM_LSP_COMMIT"
           git -C "${RUNNER_TEMP}/vim-lsp" checkout --detach FETCH_HEAD
           test "$(git -C "${RUNNER_TEMP}/vim-lsp" rev-parse HEAD)" = "$VIM_LSP_COMMIT"
+      - name: Qualify serialized profiles against the verified server
+        run: node tests/editor-conformance/named-profiles.ts "${{ matrix.client }}" "${RUNNER_TEMP}/configuration-client/named-profiles"
       - name: Exercise project configuration through the actual client
         env:
           CLIENT: ${{ matrix.client }}

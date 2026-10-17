@@ -14,6 +14,11 @@ pub(crate) struct EditorMirrorSession {
     cache: Mutex<SessionCache>,
     /// The workspace preparation in flight, shared by equal requests.
     preparing: Mutex<Option<Preparation>>,
+    #[expect(
+        clippy::disallowed_types,
+        reason = "immutable snapshots are shared by editor owners"
+    )]
+    compiler_configuration: Option<std::sync::Arc<crate::CompilerConfigurationSnapshot>>,
 }
 
 /// One preparation identity and the signal its worker thread resolves.
@@ -24,6 +29,16 @@ pub(in crate::corsa_bridge) type Preparation = (
 
 impl EditorMirrorSession {
     pub(crate) fn new() -> Self {
+        Self::with_compiler_configuration(None)
+    }
+
+    #[expect(
+        clippy::disallowed_types,
+        reason = "immutable snapshots are shared by editor owners"
+    )]
+    pub(crate) fn with_compiler_configuration(
+        compiler_configuration: Option<std::sync::Arc<crate::CompilerConfigurationSnapshot>>,
+    ) -> Self {
         let storage = create_storage().map_err(|error| {
             vize_carton::cstr!("failed to create private editor mirror storage: {error}")
         });
@@ -31,7 +46,18 @@ impl EditorMirrorSession {
             storage,
             cache: Mutex::new(SessionCache::default()),
             preparing: Mutex::new(None),
+            compiler_configuration,
         }
+    }
+
+    #[expect(
+        clippy::disallowed_types,
+        reason = "immutable snapshots are shared by editor owners"
+    )]
+    pub(crate) fn compiler_configuration(
+        &self,
+    ) -> Option<&std::sync::Arc<crate::CompilerConfigurationSnapshot>> {
+        self.compiler_configuration.as_ref()
     }
 
     pub(crate) fn root(&self) -> Result<&Path, CorsaBridgeError> {

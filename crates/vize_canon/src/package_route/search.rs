@@ -163,12 +163,29 @@ pub(super) fn find_package_root(
     invalidation_paths: &mut Vec<PathBuf>,
     cache: &mut PackageSearchCache,
 ) -> Option<PathBuf> {
+    find_package_root_with_reader(
+        importer_dir,
+        package,
+        invalidation_paths,
+        &mut |directory| read_manifest(directory, cache),
+        &|_| {},
+    )
+}
+
+pub(super) fn find_package_root_with_reader(
+    importer_dir: &Path,
+    package: &str,
+    invalidation_paths: &mut Vec<PathBuf>,
+    read: &mut impl FnMut(&Path) -> Option<Value>,
+    observe: &impl Fn(&Path),
+) -> Option<PathBuf> {
     // Node resolves a package self-reference from the nearest package scope
     // before walking `node_modules`. Do that as a separate cached pass so a
     // same-named nested install cannot shadow the authored package itself.
     for dir in importer_dir.ancestors() {
         invalidation_paths.push(dir.join("package.json"));
-        if let Some(manifest) = read_manifest(dir, cache) {
+        observe(&dir.join("package.json"));
+        if let Some(manifest) = read(dir) {
             if manifest.get("name").and_then(Value::as_str) == Some(package) {
                 return Some(dir.to_path_buf());
             }
@@ -180,6 +197,8 @@ pub(super) fn find_package_root(
         let manifest = candidate.join("package.json");
         invalidation_paths.push(candidate.clone());
         invalidation_paths.push(manifest.clone());
+        observe(&candidate);
+        observe(&manifest);
         if manifest.is_file() {
             return Some(candidate);
         }

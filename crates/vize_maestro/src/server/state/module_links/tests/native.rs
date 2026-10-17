@@ -4,6 +4,14 @@ use vize_l0::config::TypeCheckerConfig;
 
 const CONFIG: &str = r#"{"typeChecker":{"enabled":false,"strict":true,"checkProps":false,"checkEmits":false,"checkTemplateBindings":false,"checkReactivity":false,"checkSetupContext":false,"checkInvalidExports":false,"checkFallthroughAttrs":false,"tsconfig":"app/tsconfig.json","corsaPath":"tools/corsa","globalsFile":"globals.d.ts","servers":2,"lspRequestTimeoutMs":91000}}"#;
 
+// CONFIG names this project explicitly. Keep it valid so these tests exercise
+// applied checker identity rather than initial-invalid configuration refusal.
+fn create_selected_tsconfig(root: &Path) {
+    let directory = root.join("app");
+    std::fs::create_dir_all(&directory).unwrap();
+    std::fs::write(directory.join("tsconfig.json"), "{}").unwrap();
+}
+
 #[test]
 fn module_link_context_retains_complete_actual_applied_values_and_separate_load_origin() {
     for load in [
@@ -16,6 +24,7 @@ fn module_link_context_retains_complete_actual_applied_values_and_separate_load_
         let config_path = config_dir.join("vite.config.mjs");
         let root = dir.path().join("actual-root");
         std::fs::create_dir(&root).unwrap();
+        create_selected_tsconfig(&root);
         std::fs::write(
             &config_path,
             vize_l0::cstr!(
@@ -80,6 +89,7 @@ fn module_link_actual_equal_reload_and_root_checker_aba_invalidate_original_tick
         vize_l0::cstr!("export default {{ vue: {} }};", CONFIG).as_bytes(),
     )
     .unwrap();
+    create_selected_tsconfig(dir.path());
     let state = ServerState::new();
     state.set_workspace_root(dir.path().into());
     state.load_lsp_config(dir.path());
@@ -131,6 +141,7 @@ fn module_link_missing_config_does_not_replace_actual_origin_or_generation() {
         vize_l0::cstr!("export default {{ vue: {} }};", CONFIG).as_bytes(),
     )
     .unwrap();
+    create_selected_tsconfig(dir.path());
     let state = ServerState::new();
     state.set_workspace_root(dir.path().into());
     state.load_workspace_config(dir.path());

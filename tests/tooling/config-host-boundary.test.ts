@@ -189,13 +189,14 @@ test("applied module context retains only its exact reviewed host ProjectModel i
   }
 });
 
-test("one private snapshot facade exposes only the four reviewed Carton host APIs", () => {
+test("one private snapshot facade exposes only the five reviewed Carton host APIs", () => {
   const file = "crates/vize_maestro/src/server/state/config/host.rs";
   const symbols = [
     "LoadedLspConfig",
     "ProjectModel",
     "load_config_with_source",
     "load_lsp_config_snapshot",
+    "load_lsp_config_snapshot_observed",
   ];
   const declarations = symbols.map(
     (symbol) => `pub(in crate::server::state) use vize_carton::config::${symbol};`,

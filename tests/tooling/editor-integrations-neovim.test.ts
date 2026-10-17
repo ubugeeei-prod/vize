@@ -61,9 +61,9 @@ test("nvim config defines profiles and leaves feature defaults to the server", (
   const config = readRepoFile("editors/nvim/lua/vize/config.lua");
 
   // All three named profiles are defined inside the profiles table.
-  assert.match(config, /\blint\s*=\s*\{/);
+  assert.match(config, /\blint\s*=\s*exclusive_profile\(true\)/);
   assert.match(config, /\brecommended\s*=\s*\{/);
-  assert.match(config, /\boff\s*=\s*\{\s*\}/);
+  assert.match(config, /\boff\s*=\s*exclusive_profile\(false\)/);
 
   // An empty override preserves authored project settings.
   assert.match(config, /init_options\s*=\s*vim\.empty_dict\(\)/);

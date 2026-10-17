@@ -24,9 +24,12 @@ require client watch support or restarting the language server.
 
 Profiles:
 
-- `lint`: enables Vize lint diagnostics only.
+- `lint`: enables lint diagnostics; disables type checking, editor features,
+  ecosystem helpers, formatting, and cross-file analysis, including project-enabled features.
 - `recommended`: enables lint, typecheck, editor, and ecosystem features.
-- `off`: starts Vize with no features enabled.
+- `off`: starts Vize with every feature explicitly disabled, including project-enabled features.
+
+Default setup still inherits project settings. Custom partial overrides change only their named features.
 
 Custom command:
 

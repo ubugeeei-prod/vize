@@ -14,12 +14,53 @@ call assert_equal({
       \ 'typecheck': v:true,
       \ }, s:recommended.initialization_options)
 
-call assert_equal({'lint': v:true}, vize#profile('lint'))
-call assert_equal({}, vize#profile('off'))
+let s:off = {
+      \ 'enabled': v:false,
+      \ 'nativeLinkedEditing': v:false,
+      \ 'diagnostics': v:false,
+      \ 'lint': v:false,
+      \ 'typecheck': v:false,
+      \ 'editor': v:false,
+      \ 'ecosystem': v:false,
+      \ 'optionsApi': v:false,
+      \ 'legacyVue2': v:false,
+      \ 'completion': v:false,
+      \ 'signatureHelp': v:false,
+      \ 'hover': v:false,
+      \ 'definition': v:false,
+      \ 'references': v:false,
+      \ 'documentSymbols': v:false,
+      \ 'workspaceSymbols': v:false,
+      \ 'codeActions': v:false,
+      \ 'rename': v:false,
+      \ 'formatting': v:false,
+      \ 'codeLens': v:false,
+      \ 'semanticTokens': v:false,
+      \ 'documentLinks': v:false,
+      \ 'foldingRanges': v:false,
+      \ 'inlayHints': v:false,
+      \ 'fileRename': v:false,
+      \ 'autoInsert': v:false,
+      \ 'corsa': v:false,
+      \ 'tsgo': v:false,
+      \ 'crossFile': v:false,
+      \ }
+let s:lint = extend(deepcopy(s:off), {'enabled': v:true, 'lint': v:true})
+call assert_equal(s:lint, vize#profile('lint'))
+call assert_equal(s:off, vize#profile('off'))
 
 let s:lint_profile = vize#profile('lint')
 let s:lint_profile.lint = v:false
-call assert_equal({'lint': v:true}, vize#profile('lint'))
+call assert_equal(s:lint, vize#profile('lint'))
+
+let s:project = map(deepcopy(s:off), {key, value -> v:true})
+for s:name in ['off', 'lint']
+  let s:wire = json_decode(json_encode(vize#profile(s:name)))
+  call assert_equal(s:name ==# 'off' ? s:off : s:lint, extend(deepcopy(s:project), s:wire))
+endfor
+call assert_equal(s:project, extend(deepcopy(s:project), s:defaults.initialization_options))
+let s:partial = vize#normalize({'initialization_options': {'hover': v:false}}).initialization_options
+call assert_equal(extend(deepcopy(s:project), {'hover': v:false}), extend(deepcopy(s:project), s:partial))
 
 let s:default_copy = vize#default_config()
 let s:default_copy.cmd[0] = 'changed'
@@ -106,7 +147,7 @@ execute 'set runtimepath^=' . fnameescape(s:lsp_stub_root)
 command! LspStatus echo 'stub'
 call vize#setup({'profile': 'lint'})
 call assert_equal('vize', g:vize_test_registered_server.name)
-call assert_equal({'lint': v:true}, g:vize_test_registered_server.initialization_options)
+call assert_equal(s:lint, g:vize_test_registered_server.initialization_options)
 " Unit transport boundary: another running server never receives Vize saves.
 call mkdir(s:lsp_stub_root . '/autoload/lsp', 'p')
 call writefile([
@@ -221,6 +262,11 @@ augroup vize_test_custom_art_syntax
 augroup END
 execute 'edit ' . fnameescape(tempname() . '.art.vue')
 call assert_equal('custom-art', &syntax)
+
+if !empty($VIZE_PROFILE_PACKET)
+  call writefile([json_encode({'defaults': s:defaults.initialization_options, 'partial': s:partial,
+        \ 'recommended': s:recommended.initialization_options, 'lint': vize#profile('lint'), 'off': vize#profile('off')})], $VIZE_PROFILE_PACKET)
+endif
 
 if !empty(v:errors)
   cquit

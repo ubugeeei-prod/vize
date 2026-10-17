@@ -33,9 +33,28 @@
   :type '(repeat symbol)
   :group 'vize)
 
+(defconst vize--feature-keys
+  '(:enabled :nativeLinkedEditing :diagnostics :lint
+    :typecheck :editor :ecosystem :optionsApi
+    :legacyVue2 :completion :signatureHelp :hover
+    :definition :references :documentSymbols :workspaceSymbols
+    :codeActions :rename :formatting :codeLens
+    :semanticTokens :documentLinks :foldingRanges :inlayHints
+    :fileRename :autoInsert :corsa :tsgo
+    :crossFile)
+  "Public feature overrides accepted by the Vize language server.")
+
+(defun vize--exclusive-profile (lint-only)
+  "Disable every feature, enabling only lint diagnostics when LINT-ONLY is non-nil."
+  (let (options)
+    (dolist (key vize--feature-keys)
+      (setq options (append options (list key :json-false))))
+    (setq options (plist-put options :enabled (if lint-only t :json-false)))
+    (plist-put options :lint (if lint-only t :json-false))))
+
 (defconst vize--profiles
-  '((lint . (:lint t))
-    (off . nil)
+  `((lint . ,(vize--exclusive-profile t))
+    (off . ,(vize--exclusive-profile nil))
     (recommended . (:editor t :ecosystem t :lint t :typecheck t)))
   "Vize initialization option profiles.")
 

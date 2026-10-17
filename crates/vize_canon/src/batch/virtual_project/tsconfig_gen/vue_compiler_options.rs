@@ -15,8 +15,9 @@ use crate::virtual_ts::ResolveStyleClassNames;
 
 use super::super::VirtualProject;
 use super::super::tsconfig_paths::{
-    normalize_path_lexically, parse_jsonc_value, resolve_extended_tsconfig_path,
+    normalize_path_lexically, resolve_extended_tsconfig_path_with_inputs,
 };
+use super::compiler_inputs::{CompilerInputs, read_jsonc};
 
 /// Read the Vue dialect from an effective TypeScript project's standard
 /// `vueCompilerOptions.target`, including JSONC and standard `extends` chains.
@@ -31,20 +32,32 @@ pub fn snapshot_tsconfig_vue_target(
     tsconfig_path: &Path,
 ) -> CorsaResult<Option<vize_carton::config::VueVersion>> {
     let options = load_vue_compiler_options(Some(tsconfig_path))?;
+    vue_target_from_options(project_root, tsconfig_path, &options, None)
+}
+
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+pub(super) fn vue_target_from_options(
+    project_root: &Path,
+    tsconfig_path: &Path,
+    options: &Map<std::string::String, Value>,
+    inputs: Option<&CompilerInputs>,
+) -> CorsaResult<Option<vize_carton::config::VueVersion>> {
     let Some(target) = options.get("target") else {
         return Ok(None);
     };
     if target.as_str() == Some("auto") {
         let directory = tsconfig_path.parent().unwrap_or(project_root);
-        let (manifest_path, manifest) = crate::package_route::installed_package_manifest(
-            directory, "vue",
-        )
-        .ok_or_else(|| {
-            crate::batch::error::CorsaError::Configuration(vize_carton::cstr!(
-                "cannot resolve installed Vue for vueCompilerOptions.target \"auto\" in {}",
-                tsconfig_path.display()
-            ))
-        })?;
+        let (manifest_path, manifest) = inputs
+            .map_or_else(
+                || crate::package_route::installed_package_manifest(directory, "vue"),
+                |inputs| inputs.installed_vue_manifest(directory),
+            )
+            .ok_or_else(|| {
+                crate::batch::error::CorsaError::Configuration(vize_carton::cstr!(
+                    "cannot resolve installed Vue for vueCompilerOptions.target \"auto\" in {}",
+                    tsconfig_path.display()
+                ))
+            })?;
         let version = manifest
             .get("version")
             .and_then(Value::as_str)
@@ -87,28 +100,38 @@ pub fn snapshot_tsconfig_vue_target(
 
 #[derive(Default)]
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
-struct ChainLoad {
+struct ChainLoad<'a> {
+    inputs: Option<&'a CompilerInputs>,
     active: FxHashSet<PathBuf>,
     completed: FxHashMap<PathBuf, Map<std::string::String, Value>>,
     cycle_cut: bool,
 }
 
 impl VirtualProject {
-    pub(in super::super) fn vue_target_manifest_path(&self, config: &Path) -> Option<PathBuf> {
-        let options = load_vue_compiler_options(Some(config)).ok()?;
+    pub(in super::super) fn vue_target_manifest_path_with_inputs(
+        &self,
+        config: &Path,
+        inputs: Option<&CompilerInputs>,
+    ) -> Option<PathBuf> {
+        let options = load_vue_compiler_options_with_inputs(Some(config), inputs).ok()?;
         if options.get("target").and_then(Value::as_str) != Some("auto") {
             return None;
         }
-        crate::package_route::installed_package_manifest(
-            config.parent().unwrap_or(&self.project_root),
-            "vue",
-        )
-        .map(|(path, _)| path)
+        let directory = config.parent().unwrap_or(&self.project_root);
+        inputs
+            .map_or_else(
+                || crate::package_route::installed_package_manifest(directory, "vue"),
+                |inputs| inputs.installed_vue_manifest(directory),
+            )
+            .map(|(path, _)| path)
     }
 
     pub(in super::super) fn refresh_vue_compiler_options(&mut self) {
         let path = self.resolved_tsconfig_path();
-        let options = load_vue_compiler_options(path.as_deref()).ok();
+        let options = self.compiler_configuration.as_ref().map_or_else(
+            || load_vue_compiler_options(path.as_deref()).ok(),
+            |snapshot| Some(snapshot.vue_options.clone()),
+        );
         self.typed_router.root =
             super::super::typed_router::configured_root(self, options.as_ref(), path.as_deref());
         self.virtual_ts_check_options.check_unknown_props = if path.is_none() {
@@ -251,21 +274,35 @@ impl VirtualProject {
 }
 
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
-fn load_vue_compiler_options(
+pub(super) fn load_vue_compiler_options(
     tsconfig_path: Option<&Path>,
+) -> CorsaResult<Map<std::string::String, Value>> {
+    load_vue_compiler_options_with_inputs(tsconfig_path, None)
+}
+
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+pub(super) fn load_vue_compiler_options_with_inputs(
+    tsconfig_path: Option<&Path>,
+    inputs: Option<&CompilerInputs>,
 ) -> CorsaResult<Map<std::string::String, Value>> {
     let Some(tsconfig_path) = tsconfig_path else {
         return Ok(Map::new());
     };
-    let mut load = ChainLoad::default();
+    let mut load = ChainLoad {
+        inputs,
+        ..Default::default()
+    };
     load_vue_compiler_options_inner(tsconfig_path, &mut load)
 }
 
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn load_vue_compiler_options_inner(
     tsconfig_path: &Path,
-    load: &mut ChainLoad,
+    load: &mut ChainLoad<'_>,
 ) -> CorsaResult<Map<std::string::String, Value>> {
+    if let Some(inputs) = load.inputs {
+        inputs.observe(tsconfig_path);
+    }
     if !tsconfig_path.exists() {
         return Ok(Map::new());
     }
@@ -291,10 +328,9 @@ fn load_vue_compiler_options_inner(
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn merge_extended_vue_compiler_options(
     normalized: &Path,
-    load: &mut ChainLoad,
+    load: &mut ChainLoad<'_>,
 ) -> CorsaResult<Map<std::string::String, Value>> {
-    let content = std::fs::read_to_string(normalized)?;
-    let config = parse_jsonc_value(&content)?;
+    let config = read_jsonc(normalized, load.inputs)?;
     let current = config
         .get("vueCompilerOptions")
         .and_then(Value::as_object)
@@ -304,13 +340,17 @@ fn merge_extended_vue_compiler_options(
     let mut inherited = Map::new();
     match config.get("extends") {
         Some(Value::String(extends)) => {
-            if let Some(parent_path) = resolve_extended_tsconfig_path(normalized, extends) {
+            if let Some(parent_path) =
+                resolve_extended_tsconfig_path_with_inputs(normalized, extends, load.inputs)
+            {
                 inherited = load_vue_compiler_options_inner(&parent_path, load)?;
             }
         }
         Some(Value::Array(entries)) => {
             for extends in entries.iter().filter_map(Value::as_str) {
-                if let Some(parent_path) = resolve_extended_tsconfig_path(normalized, extends) {
+                if let Some(parent_path) =
+                    resolve_extended_tsconfig_path_with_inputs(normalized, extends, load.inputs)
+                {
                     inherited.extend(load_vue_compiler_options_inner(&parent_path, load)?);
                 }
             }

@@ -75,6 +75,8 @@ impl MaestroServer {
         } else {
             Vec::new()
         };
+        #[cfg(feature = "native")]
+        let mut admission = self.configuration_admission.clone();
         for importer in dependents {
             if self.state.documents.version(uri) != version {
                 tracing::debug!(
@@ -86,6 +88,11 @@ impl MaestroServer {
                 break;
             }
             tracing::info!("refreshing importer {} for {}", importer, uri);
+            #[cfg(feature = "native")]
+            let project = self
+                .for_document_in_operation(&importer, &mut admission)
+                .await;
+            #[cfg(not(feature = "native"))]
             let project = self.for_document(&importer).await;
             if self.state.documents.version(uri) != version {
                 break;

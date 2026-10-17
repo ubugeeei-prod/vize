@@ -66,6 +66,13 @@ use tower_lsp::{Client, ClientSocket, LspService};
 
 use crate::document::DocumentStore;
 
+#[cfg(feature = "native")]
+#[expect(
+    clippy::disallowed_types,
+    reason = "foreground document views retain the same root watch controller"
+)]
+type ConfigurationWatchControl = std::sync::Arc<workspace_files::config_watchers::Control>;
+
 /// The Maestro LSP server.
 pub struct MaestroServer {
     /// LSP client for sending notifications
@@ -91,6 +98,12 @@ pub struct MaestroServer {
     /// own the same client and state without spawning one thread per document.
     #[cfg(feature = "native")]
     initial_diagnostics: Option<initial_diagnostics::InitialDiagnosticsScheduler>,
+    /// Registration ACKs run independently of document requests and diagnostics.
+    #[cfg(feature = "native")]
+    configuration_watchers: Option<ConfigurationWatchControl>,
+    /// Explicit checked-root receipt carried only by a single operation view.
+    #[cfg(feature = "native")]
+    configuration_admission: project_contexts::ConfigurationAdmissionReceipt,
 }
 
 impl MaestroServer {
@@ -130,6 +143,10 @@ impl MaestroServer {
             state,
             #[cfg(feature = "native")]
             initial_diagnostics,
+            #[cfg(feature = "native")]
+            configuration_watchers: Some(ConfigurationWatchControl::new(Default::default())),
+            #[cfg(feature = "native")]
+            configuration_admission: Default::default(),
             #[cfg(feature = "experimental-source-navigation")]
             navigation,
             #[cfg(feature = "experimental-source-navigation")]
@@ -143,6 +160,10 @@ impl MaestroServer {
     }
 
     fn finish_shutdown(&self) -> tower_lsp::jsonrpc::Result<()> {
+        #[cfg(feature = "native")]
+        if let Some(watchers) = &self.configuration_watchers {
+            watchers.shutdown();
+        }
         #[cfg(feature = "native")]
         self.state.retire_project_contexts();
         #[cfg(feature = "experimental-source-navigation")]
@@ -166,6 +187,8 @@ impl MaestroServer {
             client,
             state,
             initial_diagnostics: None,
+            configuration_watchers: None,
+            configuration_admission: Default::default(),
             #[cfg(feature = "experimental-source-navigation")]
             navigation: None,
             #[cfg(feature = "experimental-source-navigation")]

@@ -110,7 +110,7 @@ type ProfileDeclaration = {
 };
 
 const PROFILE_DECLARATIONS: ProfileDeclaration[] = [
-  // Neovim: `local profiles = { lint = {...}, off = {}, recommended = {...} }`.
+  // Neovim: a top-level table of named profile values, including computed exclusions.
   {
     editor: "neovim",
     file: "editors/nvim/lua/vize/config.lua",
@@ -123,12 +123,12 @@ const PROFILE_DECLARATIONS: ProfileDeclaration[] = [
       return names;
     },
   },
-  // Emacs: `(defconst vize--profiles '((lint . ...) (off . nil) (recommended . ...)))`.
+  // Emacs: a backquoted alist with computed lint/off and the explicit recommended profile.
   {
     editor: "emacs",
     file: "editors/emacs/vize.el",
     extract: (text) => {
-      const block = /\(defconst vize--profiles\s*'\(([\s\S]*?)\)\s*"Vize/.exec(text);
+      const block = /\(defconst vize--profiles\s*`\(([\s\S]*?)\)\s*"Vize/.exec(text);
       assert.ok(block, "emacs vize.el should declare a vize--profiles constant");
       const names = [...block[1].matchAll(/\(([A-Za-z][\w-]*)\s*\./g)].map((m) => m[1]);
       return names;

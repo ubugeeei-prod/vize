@@ -56,6 +56,10 @@ use signature_help::{SigHelp, SigHelpParams};
 impl LanguageServer for MaestroServer {
     async fn initialize(&self, params: InitializeParams) -> Result<InitializeResult> {
         self.state.record_client_capabilities(&params.capabilities);
+        #[cfg(feature = "native")]
+        if let Some(watchers) = &self.configuration_watchers {
+            watchers.record_capabilities(&params.capabilities);
+        }
         // Resolve workspace root
         let workspace_path = self.state.primary_workspace_path(&params);
 
@@ -68,9 +72,19 @@ impl LanguageServer for MaestroServer {
 
         // Load format config from workspace root (always, regardless of feature)
         if let Some(ref path) = workspace_path {
+            #[cfg(feature = "native")]
+            if !self
+                .state
+                .load_workspace_config_async(path, params.workspace_folders.as_deref())
+                .await
+            {
+                return Err(tower_lsp::jsonrpc::Error::internal_error());
+            }
+            #[cfg(not(feature = "native"))]
             self.state.load_workspace_config(path);
         }
         // Record every workspace folder so per-document features resolve their own folder's config in multi-root sessions (#3240).
+        #[cfg(not(feature = "native"))]
         self.state.apply_initialize_workspace_folders(
             params.workspace_folders.as_deref(),
             workspace_path.as_deref(),
@@ -130,7 +144,7 @@ impl LanguageServer for MaestroServer {
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
         let server = self.for_pos(&params.text_document_position_params).await;
         if let Some(response) = server.local_hover_response(&params)? {
-            return Ok(response);
+            return server.authored_response(Ok(response));
         }
         server.native_request(server.hover_request(params)).await
     }
@@ -138,7 +152,7 @@ impl LanguageServer for MaestroServer {
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
         let server = self.for_pos(&params.text_document_position).await;
         if let Some(response) = server.local_completion_response(&params)? {
-            return Ok(response);
+            return server.authored_response(Ok(response));
         }
         server
             .native_request(server.completion_request(params))
@@ -154,10 +168,9 @@ impl LanguageServer for MaestroServer {
             .and_then(serde_json::Value::as_str)
             .and_then(|uri| tower_lsp::lsp_types::Url::parse(uri).ok());
         let server = match &uri {
-            Some(uri) => Some(self.for_document(uri).await),
-            None => None,
+            Some(uri) => self.for_document(uri).await,
+            None => super::project_contexts::DocumentServer::primary(self),
         };
-        let server = server.as_deref().unwrap_or(self);
         server
             .native_request(async {
                 #[cfg(feature = "native")]

@@ -96,10 +96,21 @@ pub(super) fn build_with_import_facts(
     // The workspace root selects the mirror's filesystem scope, not the
     // compiler options for every package beneath it. Anchor the source to its
     // nearest config before resolving a solution-style project's references.
-    if let Some(tsconfig) = configured_tsconfig.or(discovered_config) {
-        project.set_tsconfig_path(Some(tsconfig));
+    if let Some(snapshot) = environment.editor_session.compiler_configuration() {
+        #[expect(
+            clippy::disallowed_types,
+            reason = "native rebuilds retain the admitted owner's shared immutable compiler authority"
+        )]
+        let retained = std::sync::Arc::clone(snapshot);
+        project
+            .set_compiler_configuration_snapshot(retained)
+            .map_err(bridge_error)?;
+    } else {
+        if let Some(tsconfig) = configured_tsconfig.or(discovered_config) {
+            project.set_tsconfig_path(Some(tsconfig));
+        }
+        project.use_effective_tsconfig_for_source(source_path);
     }
-    project.use_effective_tsconfig_for_source(source_path);
     let namespace_identity = super::namespace::editor_namespace_identity(
         options,
         environment.virtual_ts_options,

@@ -4,6 +4,8 @@ use std::path::{Path, PathBuf};
 use vize_canon::{CorsaBridge, CorsaBridgeConfig, LspHover, LspHoverContents, LspMarkedString};
 use vize_l0::ToCompactString;
 
+#[path = "lsp_import_resolution/compiler_snapshot.rs"]
+mod compiler_snapshot;
 #[path = "lsp_import_resolution/shared_editor_session.rs"]
 mod shared_editor_session;
 #[path = "lsp_import_resolution/virtual_dependencies.rs"]

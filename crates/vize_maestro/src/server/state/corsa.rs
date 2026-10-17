@@ -99,9 +99,10 @@ impl ServerState {
         let corsa_path = config.corsa_path.clone();
         let existing = { self.corsa_bridge.read().clone() };
         let bridge = existing.unwrap_or_else(|| {
-            Arc::new(CorsaBridge::with_config_and_package_routes(
+            Arc::new(CorsaBridge::with_compiler_configuration(
                 config,
                 self.package_route_resolver.lock().clone(),
+                self.project_contexts.compiler_configuration.read().clone(),
             ))
         });
         // Keep a cancelled startup's worker/session owner. Until it drains,
@@ -199,6 +200,22 @@ impl ServerState {
                 .read()
                 .as_ref()
                 .is_some_and(|bridge| bridge.is_initialized())
+    }
+
+    /// A buffer moved to another admitted owner. Preserve this owner's backend
+    /// for its remaining sources, but remove the moved overlay and union member.
+    pub(super) fn retire_document_project_membership(&self, uri: &tower_lsp::lsp_types::Url) {
+        let _change = self.corsa_environment_change();
+        self.forget_closed_document(uri);
+        self.remove_virtual_docs(uri);
+        self.forget_workspace_vue_files(uri.as_str());
+        self.batch_cache.invalidate();
+        if let Ok(path) = uri.to_file_path()
+            && let Some(bridge) = self.corsa_bridge.read().as_ref()
+        {
+            bridge.forget_cached_vue_virtual_documents(&[path]);
+            bridge.mark_disk_project_state_dirty();
+        }
     }
 
     /// Drop the cached editor session after a Vue file disappears on disk.
