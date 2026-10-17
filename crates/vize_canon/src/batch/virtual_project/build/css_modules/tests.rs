@@ -86,7 +86,7 @@ fn global_and_local_scopes_preserve_only_authored_module_exports() {
         (":global(.external) .root {}", vec!["root"]),
         (":global .external .another, .root {}", vec!["root"]),
         (":global .external :local .root {}", vec!["root"]),
-        (":global(.external :local(.root)) {}", vec!["root"]),
+        (":global(.external) :local(.root) {}", vec!["root"]),
         (
             ":local(.root, .row):global(.loaded) {}",
             vec!["root", "row"],
