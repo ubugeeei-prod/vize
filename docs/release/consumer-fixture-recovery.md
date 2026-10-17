@@ -1,0 +1,82 @@
+# Requalifying a published immutable consumer fixture
+
+Tracking issue: [#9309](https://github.com/ubugeeei-prod/vize/issues/9309).
+
+An immutable Release run can publish its packages successfully and then fail because its own
+consumer fixture is defective. Retrying executes the same frozen workflow. Rewriting that source,
+changing its tag, declaring its failed run successful, or using unpublished retirement would lose
+the original evidence. This procedure preserves all of it.
+
+This is an explicitly selected, digest-bound migration for one reviewed fixture shape. Ordinary
+releases and ordinary `resume` still require their original Release run to succeed. No automatic
+fallback selects replacement evidence.
+
+## Admission
+
+The original C, H, source PR, annotated tag, integration PR and Release run must authenticate
+together. The integration must retain its actual signed merge and exact delivery Check success.
+The original frozen policy records the actual signed delivery as its protected candidate; it does
+not claim a merge-group workflow ran on that SHA. Recovery preserves that original contract.
+Every original artifact must remain available with its recorded archive digest.
+
+The original release and JSR workflow bytes and the unchanged consumer bytes must match the
+reviewed hashes in `consumer_recovery/policy.ts`. The complete effective job inventory must match
+the original 56-job graph: 54 successes, the conditional crates.io handoff skip, and exactly one
+failed Deno consumer. Missing, pending, failed, cancelled or newly skipped build/publication jobs
+refuse recovery. The failed job must belong to the latest attempt, contain exactly the known
+`npm:vize@VERSION` / `node_modules` exception, and have failed only its original Deno invocation.
+
+The replacement uses the exact Deno 2.9.7 configuration qualified in [#9257](https://github.com/ubugeeei-prod/vize/pull/9257):
+`nodeModulesDir: "none"`, with an empty Deno cache. It adds no dependency-age exception. Every
+observed Vize npm package and JSR version must already be at least 24 hours old, even though the
+existing approved configuration contains scoped Vize exclusions.
+
+## Official sequence
+
+1. Review and merge this policy normally. Dispatch **Public release consumer recovery** from
+   `main`, supplying exact C/H/tag/source-PR/original-R/latest-attempt identities. This workflow
+   reads registries; it cannot publish, change a tag, rerun R or close a PR.
+2. Admission retains the complete original failure log, job inventory, source bytes, artifact
+   identities, signed integration evidence and fresh public registry archive observations.
+3. All six original contracts execute in fresh projects outside the checkout: Node 22 and 24 on
+   Linux, Node 24 on macOS and Windows, Deno 2.9.7 on Linux, and Bun 1.3.14 on Linux. Each uses the
+   byte-for-byte original consumer, actual public JSR/npm packages and a loaded native provider.
+   Node/Bun retain the Vite assertion; the original Deno contract does not import that entry point.
+   Complete commands, stdout/stderr, exit status, installed paths, archive hashes, manifests,
+   lockfiles and publication times remain in the packet.
+4. Finalization requires all six packets from the same current run and attempt, rechecks the
+   original identities and all public channels, and signs a complete file manifest with the
+   existing pinned Cosign/OIDC toolchain. The receipt says `originalConclusion: "failure"` and
+   `status: "consumer-requalified"`; it never represents R as successful.
+5. Dispatch the protected main-only **Release Operator**, operation `recover-consumer`, with
+   `source_cut`, `source_pr`, `source_head`, `source_tag`, `release_run`, and
+   `consumer_recovery_run`. It verifies the exact signer workflow/ref/repository/commit, signed
+   receipt, all raw evidence, current original attempt, integration and public registries.
+   This operation verifies evidence and writes its own Actions artifact only.
+6. Run **Public release acceptance** with the original C/H/tag/source-PR/R and the explicit
+   `consumer_recovery_run`. Signature verification is mandatory; the workflow preserves the
+   original failure in its publication packet and runs its complete installed native, LSP,
+   browser/Musea and VRT acceptance. Existing product checks remain required.
+7. Only after that acceptance succeeds may the maintainer close the original unmerged source
+   receipt and start the next official release. Retain original R as failed and leave H, the
+   annotated tag, original workflow and public versions unchanged.
+
+A replacement expires after 24 hours, binds one exact original run attempt and one reviewed policy
+commit, and requires every recovery job to succeed in its own exact attempt. Rerunning either run,
+changing policy bytes, substituting a consumer, missing raw files or invalid signatures refuses
+verification. Produce a new complete proof instead of reusing an old packet. Signatures verify
+through the normal public Sigstore trust chain and transparency evidence; no ignore-log or
+insecure verification flags are supported.
+
+## Original incident
+
+The initial request is C `014bd42cacdf3d026fb75162cfa80dce76d78315`, H
+`03882089eff75664abe99ba71868e33739496b01`, tag `v0.457.0`, source PR #9196, original R
+[`38805261385`](https://github.com/ubugeeei-prod/vize/actions/runs/38805261385), attempt 4.
+Its failed job is `117254411511`. Those operational identities are retained in the primary test
+fixture and supplied explicitly at dispatch; production admission is based on authenticated
+identities and the reviewed frozen bytes and job graph.
+
+The implementation and unit tests do not establish actual hosted requalification or release
+completion. Record the resulting signed recovery run and full installed acceptance run before
+claiming this incident complete.

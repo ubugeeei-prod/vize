@@ -2,6 +2,7 @@ import { publicReader } from "./http.ts";
 import { verifyGithub } from "./github.ts";
 import type { PublicationPlan, PublicationTarget } from "./plan.ts";
 import { readMarketplace } from "../marketplace_query.ts";
+import type { Admission } from "../consumer_recovery/policy.ts";
 
 export interface PublicationOptions {
   tag: string;
@@ -9,6 +10,7 @@ export interface PublicationOptions {
   head: string;
   sourcePr: string | number;
   run: string | number;
+  recoveryRun?: string;
   fetch?: typeof globalThis.fetch;
 }
 
@@ -43,7 +45,11 @@ function publicUrl(value: unknown, host: string): string {
 }
 
 /** Public registry identity and archive digests, not signature verification or installed-product proof. */
-export async function verifyPublication(plan: PublicationPlan, options: PublicationOptions) {
+export async function verifyPublication(
+  plan: PublicationPlan,
+  options: PublicationOptions,
+  originalAdmission?: Admission,
+) {
   const run = String(options.run);
   const sourcePr = String(options.sourcePr);
   requireValue(
@@ -93,10 +99,8 @@ export async function verifyPublication(plan: PublicationPlan, options: Publicat
   );
   const { json, download, text } = publicReader(options.fetch);
 
-  const { tagObject, tag, source, releaseRun, release, jobs, integrationPr } = await verifyGithub(
-    options,
-    json,
-  );
+  const { tagObject, tag, source, releaseRun, release, jobs, integrationPr, recovery } =
+    await verifyGithub(options, json, originalAdmission);
 
   const npmTarget = async (item: PublicationTarget) => {
     const metadataUrl = `https://registry.npmjs.org/${encodeURIComponent(item.name)}/${item.version}`;
@@ -251,6 +255,7 @@ export async function verifyPublication(plan: PublicationPlan, options: Publicat
       sourceState: source.state,
       integrationPr,
       jobs,
+      ...(recovery ? { consumerRecovery: recovery } : {}),
     },
     npm,
     crates,

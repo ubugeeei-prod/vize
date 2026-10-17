@@ -1,4 +1,6 @@
 import type { PublicationOptions } from "./registry.ts";
+import { verifiedRecovery } from "../consumer_recovery/custody.ts";
+import { same, type Admission } from "../consumer_recovery/policy.ts";
 
 type ObjectValue = Record<string, unknown>;
 const repository = "ubugeeei-prod/vize";
@@ -18,6 +20,7 @@ function object(value: unknown): ObjectValue {
 export async function verifyGithub(
   options: PublicationOptions,
   json: (url: string) => Promise<ObjectValue>,
+  originalAdmission?: Admission,
 ) {
   const sourcePr = String(options.sourcePr),
     run = String(options.run);
@@ -96,6 +99,33 @@ export async function verifyGithub(
     "positive source integration marker required",
   );
   const releaseRun = await json(`${github}/actions/runs/${run}`);
+  const recovered = options.recoveryRun
+    ? await verifiedRecovery(
+        {
+          cut: options.cut,
+          head: options.head,
+          tag: options.tag,
+          sourcePr,
+          run,
+          attempt: Number(releaseRun.run_attempt),
+        },
+        options.recoveryRun,
+      )
+    : undefined;
+  const admission = recovered?.admission ?? originalAdmission;
+  if (admission)
+    same(
+      admission.identity,
+      {
+        cut: options.cut,
+        head: options.head,
+        tag: options.tag,
+        sourcePr,
+        run,
+        attempt: releaseRun.run_attempt,
+      },
+      "consumer recovery must bind this exact original attempt",
+    );
   requireValue(
     String(releaseRun.id) === run &&
       object(releaseRun.repository).full_name === repository &&
@@ -107,7 +137,8 @@ export async function verifyGithub(
         `Pinned Release ${options.tag} PR #${sourcePr} @ ${options.head}` &&
       releaseRun.path === ".github/workflows/release.yml" &&
       releaseRun.status === "completed" &&
-      releaseRun.conclusion === "success",
+      (releaseRun.conclusion === "success" ||
+        (releaseRun.conclusion === "failure" && admission !== undefined)),
     "terminal own-repository exact-H/source-PR Pinned Release run required",
   );
   requireValue(
@@ -146,7 +177,9 @@ export async function verifyGithub(
           job.run_attempt <= Number(releaseRun.run_attempt) &&
           job.head_sha === options.head &&
           job.status === "completed" &&
-          (job.conclusion === "success" || job.conclusion === "skipped"),
+          (job.conclusion === "success" ||
+            job.conclusion === "skipped" ||
+            (job.conclusion === "failure" && job.id === admission?.failedJob)),
         "terminal exact-H/R Release job required",
       );
       ids.add(job.id);
@@ -195,5 +228,14 @@ export async function verifyGithub(
     "published GitHub Release identity mismatch",
   );
 
-  return { tagObject, tag, source, releaseRun, release, jobs, integrationPr };
+  return {
+    tagObject,
+    tag,
+    source,
+    releaseRun,
+    release,
+    jobs,
+    integrationPr,
+    recovery: recovered?.receipt,
+  };
 }

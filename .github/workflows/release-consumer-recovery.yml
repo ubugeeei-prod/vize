@@ -1,0 +1,149 @@
+name: Public release consumer recovery
+on:
+  workflow_dispatch:
+    inputs:
+      cut: { description: Official source before versioning C, required: true, type: string }
+      head: { description: Immutable published source H, required: true, type: string }
+      tag: { description: Published stable minor tag, required: true, type: string }
+      source_pr: { description: Frozen official source PR, required: true, type: string }
+      release_run: { description: Original failed Release run R, required: true, type: string }
+      release_attempt:
+        { description: Exact completed failed Release attempt, required: true, type: string }
+permissions: { contents: read, actions: read }
+concurrency:
+  group: release-consumer-recovery-${{ inputs.release_run }}-${{ inputs.release_attempt }}
+  cancel-in-progress: false
+env:
+  PUBLIC_CUT: ${{ inputs.cut }}
+  PUBLIC_HEAD: ${{ inputs.head }}
+  PUBLIC_TAG: ${{ inputs.tag }}
+  PUBLIC_SOURCE_PR: ${{ inputs.source_pr }}
+  PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
+  PUBLIC_RELEASE_ATTEMPT: ${{ inputs.release_attempt }}
+jobs:
+  prepare:
+    name: Admit frozen consumer failure
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - name: Admit the exact frozen failure and retain immutable inputs
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
+        run: node tools/support/release/consumer_recovery/main.ts prepare "$RUNNER_TEMP/recovery"
+      - name: Preserve admission evidence including failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: recovery-original
+          path: ${{ runner.temp }}/recovery
+          if-no-files-found: error
+          retention-days: 30
+  consumer:
+    name: Replay ${{ matrix.role }}
+    needs: prepare
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { role: node22-linux, os: ubuntu-24.04, runtime: node, node: "22" }
+          - { role: node24-linux, os: ubuntu-24.04, runtime: node, node: "24" }
+          - { role: node24-macos, os: blacksmith-12vcpu-macos-15, runtime: node, node: "24" }
+          - { role: node24-windows, os: blacksmith-32vcpu-windows-2025, runtime: node, node: "24" }
+          - { role: deno-linux, os: ubuntu-24.04, runtime: deno, node: "24" }
+          - { role: bun-linux, os: ubuntu-24.04, runtime: bun, node: "24" }
+    defaults:
+      run: { shell: bash }
+    env:
+      RECOVERY_RUNTIME: ${{ matrix.runtime }}
+      RECOVERY_NODE: ${{ matrix.node }}
+      RECOVERY_OS: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "${{ matrix.node }}", package-manager-cache: false }
+      - if: matrix.runtime == 'deno'
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
+        with: { deno-version: "2.9.7" }
+      - if: matrix.runtime == 'bun'
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with: { bun-version: "1.3.14" }
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: recovery-original
+          path: ${{ runner.temp }}/recovery-original
+      - name: Replay the original consumer against the public tuple
+        env: { RECOVERY_ROLE: "${{ matrix.role }}" }
+        run: |
+          node --experimental-strip-types tools/support/release/consumer_recovery/consumer.ts \
+            "$RECOVERY_ROLE" "$RUNNER_TEMP/recovery-consumer" "$RUNNER_TEMP/recovery-original/original.json"
+      - name: Preserve complete runtime and installation evidence including failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: consumer-recovery-${{ matrix.role }}
+          path: ${{ runner.temp }}/recovery-consumer
+          if-no-files-found: error
+          retention-days: 30
+  finalize:
+    name: Sign consumer replacement receipt
+    needs: [prepare, consumer]
+    if: always() && github.ref == 'refs/heads/main' && needs.prepare.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: { contents: read, actions: read, id-token: write }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: recovery-original
+          path: ${{ runner.temp }}/recovery
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: consumer-recovery-*
+          path: ${{ runner.temp }}/recovery/consumers
+      - name: Arrange complete or partial consumer packets
+        if: always()
+        shell: bash
+        run: |
+          for role in node22-linux node24-linux node24-macos node24-windows deno-linux bun-linux; do
+            directory="$RUNNER_TEMP/recovery/consumers/consumer-recovery-$role"
+            if [ -d "$directory" ]; then
+              mv "$directory" "$RUNNER_TEMP/recovery/consumers/$role"
+            fi
+          done
+      - name: Require all six fresh public consumers and recheck the original failure
+        id: finalize
+        if: needs.consumer.result == 'success'
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
+        run: node tools/support/release/consumer_recovery/main.ts finalize "$RUNNER_TEMP/recovery"
+      - name: Install pinned receipt signer
+        if: steps.finalize.outcome == 'success'
+        uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
+        with: { cosign-release: v2.4.1 }
+      - name: Sign only the complete successful receipt
+        if: steps.finalize.outcome == 'success'
+        shell: bash
+        run: |
+          cosign sign-blob --yes --bundle "$RUNNER_TEMP/recovery/receipt.sigstore.json" \
+            "$RUNNER_TEMP/recovery/receipt.json"
+      - name: Retain complete packet and any incomplete evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: consumer-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/recovery
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail incomplete qualification
+        if: needs.consumer.result != 'success'
+        run: exit 1

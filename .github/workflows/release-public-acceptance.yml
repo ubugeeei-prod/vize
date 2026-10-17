@@ -7,7 +7,12 @@ on:
       tag: { description: Published stable minor tag, required: true, type: string }
       source_pr: { description: Official frozen source PR, required: true, type: string }
       release_run: { description: Successful official Release run R, required: true, type: string }
-permissions: { contents: read }
+      consumer_recovery_run:
+        description: Explicit signed consumer replacement run for an admitted frozen fixture failure only
+        required: false
+        default: ""
+        type: string
+permissions: { contents: read, actions: read }
 concurrency:
   group: public-release-acceptance-${{ inputs.release_run }}
   cancel-in-progress: false
@@ -21,6 +26,8 @@ jobs:
       PUBLIC_TAG: ${{ inputs.tag }}
       PUBLIC_SOURCE_PR: ${{ inputs.source_pr }}
       PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
+      PUBLIC_CONSUMER_RECOVERY_RUN: ${{ inputs.consumer_recovery_run }}
+      GH_TOKEN: ${{ github.token }}
       PUBLIC_OUTPUT: ${{ github.workspace }}/artifacts/public-release/${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Require reviewed main and absent runtime overrides
@@ -39,6 +46,10 @@ jobs:
         with: { fetch-depth: 0, persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, run-install: false }
+      - name: Install pinned signed consumer replacement verifier
+        if: inputs.consumer_recovery_run != ''
+        uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
+        with: { cosign-release: v2.4.1 }
       - name: Authenticate public release and prepare a fresh consumer
         id: prepare
         shell: bash
