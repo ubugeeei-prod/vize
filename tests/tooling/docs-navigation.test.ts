@@ -273,15 +273,19 @@ void test("the sidebar groups the pages the site actually publishes", () => {
 void test("every locale labels every sidebar entry", () => {
   const hidden = (navPath: string) =>
     sitemap.hiddenPathPatterns.some((pattern) => pattern.test(navPath));
-  // English is the fallback for every other locale, so it is the only file
-  // carrying the dated blog post titles. Strip those and the five files must
-  // agree key for key, in the same order.
+  // English remains the fallback. Japanese also authors every dated blog
+  // title; the other locales retain the same original fallback policy.
+  // The shared entries and each complete authored key list stay order-sensitive.
   const expectedKeys = Object.keys(locales.en.labels).filter((navPath) => !hidden(navPath));
 
   const groupKeys = sitemap.navGroups.map((group) => group.key);
   for (const locale of localeCodes) {
     const keys = Object.keys(locales[locale].labels);
-    assert.deepEqual(locale === "en" ? keys.filter((k) => !hidden(k)) : keys, expectedKeys);
+    const localizedExpected =
+      locale === "ja"
+        ? [...expectedKeys, ...Object.keys(locales.en.labels).filter(hidden)]
+        : expectedKeys;
+    assert.deepEqual(locale === "en" ? keys.filter((k) => !hidden(k)) : keys, localizedExpected);
     // Derived from the sitemap, whose own key list is pinned literally above,
     // so a new group forces a heading in every locale. Order-sensitive: these
     // are hand-maintained files and keeping them aligned costs nothing.
