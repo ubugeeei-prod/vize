@@ -17,6 +17,8 @@ const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(va
 const benchmarks = /<!-- benchmark:(\w+):start -->[\s\S]*?<!-- benchmark:\1:end -->/g;
 const completeBlocks = (source: string) =>
   [...source.matchAll(benchmarks)].map((match) => match[0]);
+const restoreOriginalSnapshotLinks = (source: string) =>
+  source.replaceAll("](./performance-blacksmith.md)", "](./performance-blacksmith)");
 
 void test("Japanese performance review survives both translation and benchmark regeneration", async () => {
   const retained = await collectReviewedTranslations([path], resolve(root, "docs/content/ja"));
@@ -39,9 +41,9 @@ void test("Japanese performance review survives both translation and benchmark r
   );
   assert.equal(completeBlocks(japanese).length, 3);
   assert.equal(
-    digest(completeBlocks(japanese)),
+    digest(completeBlocks(japanese).map(restoreOriginalSnapshotLinks)),
     "22cbc8705fdfe99e3d7901fa24759fa0125b98ee4453e140022d1168ba51a25f",
-    "all original complete generated benchmark blocks",
+    "all original complete blocks after reversing only the three declared snapshot-link repairs",
   );
 });
 
@@ -58,8 +60,15 @@ void test("the wording review preserves all original examples, APIs, measurement
     "97283c47a54584a4ad5a795179975e1e660148e38a9766a830172c2cec7016a4",
   );
   const links = [...japanese.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]);
+  assert.equal(links.filter((link) => link === "./performance-blacksmith.md").length, 3);
+  const originalLinks = links.map((link) =>
+    link === "./performance-blacksmith.md" ? "./performance-blacksmith" : link,
+  );
   assert.equal(links.length, 15);
-  assert.equal(digest(links), "3d648a3c9c68363e33c469f80dbf321549123a53681bf7ff29b21b5e2f0c6a28");
+  assert.equal(
+    digest(originalLinks),
+    "3d648a3c9c68363e33c469f80dbf321549123a53681bf7ff29b21b5e2f0c6a28",
+  );
   const measurements = japanese
     .split("\n")
     .filter((row) => row.startsWith("|") && /\d/.test(row))

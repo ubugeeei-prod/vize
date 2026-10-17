@@ -33,8 +33,10 @@ The development warning keeps its production-readiness limitation. Mark this
 complete article reviewed so ordinary translation regeneration retains it.
 
 All three complete generated benchmark blocks, both complete Rust examples,
-89 inline code occurrences, 15 link destinations and all 36 numeric table rows
-retain their original bytes or ordered values. Nine changed headings keep their
+89 inline code occurrences and all 36 numeric table rows retain their original
+bytes or ordered values. Of the 15 link destinations, three generated snapshot
+references use the canonical `.md` source-link form; the other twelve remain
+unchanged. Nine changed headings keep their
 old native bookmarks. The existing desktop/mobile route campaign gains this
 one Japanese article; no existing route or check is removed.
 
@@ -65,3 +67,21 @@ rendering and desktop/mobile screenshot review, protected merge and deployed
 reading-flow verification remain delivery requirements. The other Japanese
 pages, remaining navigation/warnings and generated descriptions still require
 their site-wide editorial and rendered review; #8372 remains open.
+
+## Snapshot-link correction
+
+The first exact-source browser campaign at `97b5fa2` exposed an inherited
+reading-flow failure: the extensionless `./performance-blacksmith` link resolves
+inside the current page directory and returns 404. Both desktop and mobile
+focused checks reached the real link predicate after passing layout, fonts and
+theme checks. Keep that failed campaign and focused evidence unchanged.
+
+Change the three owning benchmark-renderer templates to
+`./performance-blacksmith.md`, the existing canonical source-link form. The
+normal publication generator regenerates all five locale sections; its only
+additional Japanese changes align whitespace in the two authored tables.
+Measurements, examples and prose remain unchanged. The original three complete
+Japanese block hashes and ordered link hash remain pinned after reversing only
+these three exact URL substitutions. A new law checks the real publication
+generator across all five locale pages. Exact-source artifact and browser
+qualification must be repeated for the corrected source before delivery.

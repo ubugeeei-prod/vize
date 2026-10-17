@@ -34,7 +34,7 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 | workers / max | 1.61s             | 65.0ms  | **24.7x** |
 | 1T / max      | 3.57s             | 65.0ms  | **54.8x** |
 
-[完整方法与验证结果](./performance-blacksmith)
+[完整方法与验证结果](./performance-blacksmith.md)
 
 <details class="benchmark-provenance">
 <summary>工具版本与二进制校验和</summary>
@@ -225,7 +225,7 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 
 类型检查速度比比较 Vize 与 vue-tsc，即 Vue 项目当前实际使用的类型检查器。vue-tsc 运行 JavaScript 版 TypeScript 编译器，而 Vize 运行原生 tsgo，因此该比值涵盖整条工具链，而非仅 Vue 层；完整快照中按引擎类别分组的表格会在同一引擎内部排名，用于单独衡量 Vue 层。每次计时都通过诊断工作验证，但不同工具的诊断覆盖范围并不相同。这些比值不代表准确性相同，也不代表相对于旧版 Vize 的性能提升。未通过验证的比较工具不发布耗时或排名。
 
-[完整方法与验证结果](./performance-blacksmith)
+[完整方法与验证结果](./performance-blacksmith.md)
 
 以下分析为历史本地测量，不属于本次参考环境比较。
 
@@ -278,7 +278,7 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 | --------- | ------------------ | ------------------- | -------- |
 | Vite 构建 | 1.66s              | 889.2ms             | **1.9x** |
 
-[完整方法与验证结果](./performance-blacksmith)
+[完整方法与验证结果](./performance-blacksmith.md)
 
 <!-- benchmark:vite:end -->
 
