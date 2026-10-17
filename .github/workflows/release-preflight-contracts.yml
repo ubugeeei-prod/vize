@@ -5,6 +5,7 @@ on:
       - ".github/workflows/release-preflight*.yml"
       - ".github/workflows/release.yml"
       - ".github/workflows/release-operator.yml"
+      - "tests/tooling/package-manifests.test.ts"
       - "tests/tooling/github-workflows-release-publish.test.ts"
       - "tests/tooling/github-workflows-release-build.test.ts"
       - "tests/tooling/github-workflows-release-smoke.test.ts"
@@ -82,6 +83,7 @@ jobs:
           tests/tooling/release/release-signing.test.ts
           tests/tooling/drop-in-claim-scope.test.ts
           tests/tooling/github-workflows-full-rust.test.ts
+          tests/tooling/package-manifests.test.ts
       - name: Require exact concurrent npm publication fixture controls
         run: node --test tests/tooling/publish-npm-package*.test.ts
       - name: Require native policy and every incomplete full qualification to fail closed
