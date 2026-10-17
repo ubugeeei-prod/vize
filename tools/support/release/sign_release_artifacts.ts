@@ -1,7 +1,8 @@
 // Sign the existing release asset set without serializing independent cosign calls.
 import { spawn, type ChildProcess } from "node:child_process";
 import { createHash } from "node:crypto";
-import { lstatSync, readFileSync, readdirSync } from "node:fs";
+import { lstatSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { isEntrypoint } from "../command-runtime.ts";
 import { cliReleasePlatforms, parseReleaseVersion } from "../github/release-platforms.ts";
@@ -110,6 +111,7 @@ export async function signReleaseArtifacts(
     }
   }
   const active = new Set<ChildProcess>();
+  const caches: string[] = [];
   let failure: Error | undefined;
   function stop(error: Error): void {
     failure ??= error;
@@ -128,7 +130,7 @@ export async function signReleaseArtifacts(
   let next = 0;
   try {
     if (signal?.aborted) abort();
-    async function sign(file: string): Promise<void> {
+    async function sign(file: string, tufRoot: string): Promise<void> {
       if (failure) return;
       process.stdout.write(`Signing ${file}\n`);
       const child = spawn(
@@ -144,7 +146,13 @@ export async function signReleaseArtifacts(
           `${file}.sig`,
           file,
         ],
-        { cwd: root, detached: true, shell: false, stdio: "inherit" },
+        {
+          cwd: root,
+          detached: true,
+          shell: false,
+          stdio: "inherit",
+          env: { ...process.env, TUF_ROOT: tufRoot },
+        },
       );
       active.add(child);
       await new Promise<void>((resolve) => {
@@ -180,7 +188,12 @@ export async function signReleaseArtifacts(
     await Promise.all(
       Array.from({ length: CONCURRENCY }, async () => {
         try {
-          while (!failure && next < inputs.length) await sign(inputs[next++]);
+          if (failure) return;
+          // Even a warm TUF cache takes an exclusive LevelDB lock when opened.
+          // A worker reuses its private cache only after the writer barrier above.
+          const tufRoot = mkdtempSync(path.join(tmpdir(), "vize-release-tuf-"));
+          caches.push(tufRoot);
+          while (!failure && next < inputs.length) await sign(inputs[next++], tufRoot);
         } catch (error) {
           stop(error instanceof Error ? error : new Error(String(error)));
         }
@@ -188,6 +201,8 @@ export async function signReleaseArtifacts(
     );
   } finally {
     signal?.removeEventListener("abort", abort);
+    if (active.size === 0)
+      for (const cache of caches) rmSync(cache, { recursive: true, force: true });
   }
   if (failure) throw failure;
   if (active.size !== 0) throw new Error("Signer child remains before output verification");

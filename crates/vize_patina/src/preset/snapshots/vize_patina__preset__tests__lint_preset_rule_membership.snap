@@ -201,6 +201,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/require-toggle-inside-transition",
     "vue/valid-template-root",
     "vue/use-v-on-exact",
+    "vue/no-non-component-keep-alive-child",
     "vue/no-v-html",
     "vue/no-unsafe-url",
     "html/id-duplication",
@@ -230,7 +231,8 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/valid-define-props",
     "script/valid-define-emits",
     "script/require-valid-default-prop",
-    "script/no-ref-as-operand"
+    "script/no-ref-as-operand",
+    "script/no-duplicate-attr-inheritance"
   ],
   "happy_path": [
     "vue/require-v-for-key",

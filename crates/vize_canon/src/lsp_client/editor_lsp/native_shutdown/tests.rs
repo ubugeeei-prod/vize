@@ -62,9 +62,9 @@ fn null_ack_precedes_eof_foreign_exit_is_preserved_and_failed_ack_still_closes()
         (true, "non-null"),
     ] {
         let temp = tempfile::tempdir().unwrap();
-        let script = temp.path().join("peer.py");
+        let script = temp.path().join("peer.ts");
         let log = temp.path().join("whole-packets.jsonl");
-        let source = include_str!("peer.py.txt")
+        let source = include_str!("peer.ts.txt")
             .replace("LOG_PATH", &serde_json::to_string(&log).unwrap())
             .replace("REPLY_MODE", &serde_json::to_string(mode).unwrap());
         fs::write(&script, source).unwrap();

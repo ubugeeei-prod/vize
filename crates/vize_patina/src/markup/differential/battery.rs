@@ -269,8 +269,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // Custom, custom without a handler, and custom with a handler (#9203).
     // Their six additional dynamic-template calls retain the complete modifier
     // matrices in rule tests; the scanner deliberately records those as skips.
-    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11,
-    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6,
+    // KeepAlive's complete source/repair packets add five nonliteral calls;
+    // their explicit loops remain in rule tests, and all literal samples remain.
+    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5,
+    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25,
     restructured: 0,

@@ -1,0 +1,176 @@
+{
+  "schema": "vize.patina.keepalive-vshow-identity",
+  "version": 1,
+  "authority": "Authored templates shared verbatim by whole Patina warning packets and installed Vue compiler/runtime lifecycle controls. Vue runtime receipts do not establish Vize candidate execution. Static visibility exclusion from #5966 is intentional.",
+  "listBoundary": "The repair selects one component to cache. Removing a list wrapper still leaves a Fragment and does not make KeepAlive cache arbitrary lists.",
+  "cases": [
+    {
+      "id": "dynamic-type",
+      "transition": "type",
+      "source": "<KeepAlive><div v-show=\"opened\"><component :is=\"view\" /></div></KeepAlive>",
+      "repair": "<KeepAlive><component :is=\"view\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "conditional-removal",
+      "transition": "condition",
+      "source": "<KeepAlive><div v-show=\"opened\"><PanelA v-if=\"visible\" /></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA v-if=\"visible\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "conditional-branches",
+      "transition": "condition",
+      "source": "<KeepAlive><div v-show=\"opened\"><PanelA v-if=\"visible\" /><PanelB v-else /></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA v-if=\"visible\" v-show=\"opened\" /><PanelB v-else v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "component-key",
+      "transition": "key",
+      "source": "<KeepAlive><div v-show=\"opened\"><PanelA :key=\"identity\" /></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA :key=\"identity\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "ancestor-key",
+      "transition": "key",
+      "source": "<KeepAlive><div v-show=\"opened\"><section :key=\"identity\"><PanelA /></section></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA :key=\"identity\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "component-for",
+      "transition": "list",
+      "source": "<KeepAlive><div v-show=\"opened\"><PanelA v-for=\"item in items\" :key=\"item\" /></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA :key=\"items[0]\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "template-for",
+      "transition": "list",
+      "source": "<KeepAlive><div v-show=\"opened\"><template v-for=\"item in items\" :key=\"item\"><PanelA /></template></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA :key=\"items[0]\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "static-visibility",
+      "transition": "static",
+      "source": "<KeepAlive><div v-show=\"opened\"><PanelA /></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA v-show=\"opened\" /></KeepAlive>",
+      "warning": false
+    },
+    {
+      "id": "literal-type-and-key",
+      "transition": "static",
+      "source": "<KeepAlive><div v-show=\"opened\"><component :is=\"('PanelA')\" :key=\"-1\" /></div></KeepAlive>",
+      "repair": "<KeepAlive><component :is=\"('PanelA')\" :key=\"-1\" v-show=\"opened\" /></KeepAlive>",
+      "warning": false
+    },
+    {
+      "id": "literal-true-branch",
+      "transition": "type",
+      "source": "<KeepAlive><div v-show=\"opened\"><PanelA v-if=\"true\" /><component v-else :is=\"view\" /></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA v-if=\"true\" v-show=\"opened\" /><component v-else :is=\"view\" v-show=\"opened\" /></KeepAlive>",
+      "warning": false
+    },
+    {
+      "id": "literal-false-branch",
+      "transition": "type",
+      "source": "<KeepAlive><div v-show=\"opened\"><component v-if=\"false\" :is=\"view\" /><PanelA v-else /></div></KeepAlive>",
+      "repair": "<KeepAlive><component v-if=\"false\" :is=\"view\" v-show=\"opened\" /><PanelA v-else v-show=\"opened\" /></KeepAlive>",
+      "warning": false
+    },
+    {
+      "id": "constant-unary-false-branch",
+      "transition": "type",
+      "source": "<KeepAlive><div v-show=\"opened\"><component v-if=\"!true\" :is=\"view\" /><PanelA v-else /></div></KeepAlive>",
+      "repair": "<KeepAlive><component v-if=\"!true\" :is=\"view\" v-show=\"opened\" /><PanelA v-else v-show=\"opened\" /></KeepAlive>",
+      "warning": false
+    },
+    {
+      "id": "constant-binary-false-branch",
+      "transition": "type",
+      "source": "<KeepAlive><div v-show=\"opened\"><component v-if=\"0 === 1\" :is=\"view\" /><PanelA v-else /></div></KeepAlive>",
+      "repair": "<KeepAlive><component v-if=\"0 === 1\" :is=\"view\" v-show=\"opened\" /><PanelA v-else v-show=\"opened\" /></KeepAlive>",
+      "warning": false
+    },
+    {
+      "id": "nested-Transition",
+      "transition": "type",
+      "source": "<KeepAlive><div v-show=\"opened\"><Transition :css=\"false\"><component :is=\"view\" /></Transition></div></KeepAlive>",
+      "repair": "<KeepAlive><component :is=\"view\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "nested-transition",
+      "transition": "type",
+      "source": "<KeepAlive><div v-show=\"opened\"><transition :css=\"false\"><component :is=\"view\" /></transition></div></KeepAlive>",
+      "repair": "<KeepAlive><component :is=\"view\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "nested-BaseTransition",
+      "transition": "type",
+      "source": "<KeepAlive><div v-show=\"opened\"><BaseTransition :css=\"false\"><component :is=\"view\" /></BaseTransition></div></KeepAlive>",
+      "repair": "<KeepAlive><component :is=\"view\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "nested-base-transition",
+      "transition": "type",
+      "source": "<KeepAlive><div v-show=\"opened\"><base-transition :css=\"false\"><component :is=\"view\" /></base-transition></div></KeepAlive>",
+      "repair": "<KeepAlive><component :is=\"view\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "constant-or-true",
+      "transition": "condition",
+      "source": "<KeepAlive><div v-show=\"opened\"><PanelA v-if=\"true || visible\" /></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA v-if=\"true || visible\" v-show=\"opened\" /></KeepAlive>",
+      "warning": false
+    },
+    {
+      "id": "constant-array-true",
+      "transition": "condition",
+      "source": "<KeepAlive><div v-show=\"opened\"><PanelA v-if=\"[]\" /></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA v-if=\"[]\" v-show=\"opened\" /></KeepAlive>",
+      "warning": false
+    },
+    {
+      "id": "constant-and-false-else",
+      "transition": "condition",
+      "source": "<KeepAlive><div v-show=\"opened\"><component v-if=\"visible && false\" :is=\"view\" /><PanelA v-else /></div></KeepAlive>",
+      "repair": "<KeepAlive><component v-if=\"visible && false\" :is=\"view\" v-show=\"opened\" /><PanelA v-else v-show=\"opened\" /></KeepAlive>",
+      "warning": false
+    },
+    {
+      "id": "prior-unknown-before-constant-true",
+      "transition": "condition",
+      "source": "<KeepAlive><div v-show=\"opened\"><span v-if=\"!visible\" /><PanelA v-else-if=\"true || visible\" /></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA v-if=\"visible\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "ancestor-key-before-constant-true",
+      "transition": "key",
+      "source": "<KeepAlive><div v-show=\"opened\"><section :key=\"identity\"><PanelA v-if=\"true || visible\" /></section></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA :key=\"identity\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "component-key-with-constant-true",
+      "transition": "key",
+      "source": "<KeepAlive><div v-show=\"opened\"><PanelA v-if=\"true || visible\" :key=\"identity\" /></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA v-if=\"true || visible\" :key=\"identity\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    },
+    {
+      "id": "unknown-logical-condition",
+      "transition": "condition",
+      "source": "<KeepAlive><div v-show=\"opened\"><PanelA v-if=\"visible || false\" /></div></KeepAlive>",
+      "repair": "<KeepAlive><PanelA v-if=\"visible || false\" v-show=\"opened\" /></KeepAlive>",
+      "warning": true
+    }
+  ]
+}

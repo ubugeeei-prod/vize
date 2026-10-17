@@ -7,6 +7,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -46,10 +47,13 @@ const hash = (value: string | Buffer) => createHash("sha256").update(value).dige
 // The executable records real process boundaries. Its release-file barrier makes
 // overlap deterministic, and append-only events avoid a shared counter race.
 const fakeSigner = String.raw`
-import { appendFileSync, existsSync, readFileSync, writeFileSync, symlinkSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync, symlinkSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 const args = process.argv.slice(2), input = args.at(-1), mode = process.env.FAKE_MODE;
-const event = (type) => appendFileSync(process.env.FAKE_EVENTS, JSON.stringify({type,input,pid:process.pid,args,yes:process.env.COSIGN_YES})+'\n');
+const tufRoot=process.env.TUF_ROOT;
+const event = (type) => appendFileSync(process.env.FAKE_EVENTS, JSON.stringify({type,input,pid:process.pid,args,yes:process.env.COSIGN_YES,tufRoot,cacheExists:existsSync(tufRoot),cacheMode:statSync(tufRoot).mode&0o777})+'\n');
+let cacheConflict=false;
+if(mode==='tuf-lock'){try{mkdirSync(tufRoot+'/LOCK');}catch{cacheConflict=true;}}
 event('start');
 if (mode === 'fail' && input === process.env.FAKE_TARGET) process.exit(9);
 if (mode === 'descendant' && input === process.env.FAKE_TARGET) {
@@ -59,6 +63,7 @@ if (mode === 'descendant' && input === process.env.FAKE_TARGET) {
   const wait = setInterval(()=>{
     if (!existsSync(process.env.FAKE_RELEASE)) return;
     clearInterval(wait);
+    if(cacheConflict){console.error('creating cached local store: resource temporarily unavailable');process.exit(9);}
     if(mode==='mutate' && input===process.env.FAKE_TARGET) writeFileSync(input,'changed input');
     for (const option of ['--bundle','--output-certificate','--output-signature']) {
       const output = args[args.indexOf(option)+1];
@@ -70,6 +75,7 @@ if (mode === 'descendant' && input === process.env.FAKE_TARGET) {
       writeFileSync(output, option+' '+input+' '+readFileSync(input).toString());
     }
     if(mode==='extra' && input===process.env.FAKE_TARGET) writeFileSync(input+'.foreign.sig','foreign');
+    if(mode==='tuf-lock') rmSync(tufRoot+'/LOCK',{recursive:true});
     event('finish');
   },10);
 }
@@ -81,11 +87,19 @@ interface Event {
   pid: number;
   args: string[];
   yes: string;
+  tufRoot: string;
+  cacheExists: boolean;
+  cacheMode: number;
 }
 function fixture() {
   const root = mkdtempSync(path.join(tmpdir(), "vize-release-signing-"));
   const bin = path.join(root, "bin");
   mkdirSync(bin);
+  const temporary = path.join(root, "temporary"),
+    ambient = path.join(root, "ambient-tuf");
+  mkdirSync(temporary);
+  mkdirSync(ambient);
+  writeFileSync(path.join(ambient, "trusted-marker"), "ambient must remain unchanged\n");
   for (const file of assets) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     const contents = `original bytes ${file}\n`;
@@ -120,6 +134,8 @@ function fixture() {
         ...process.env,
         PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}`,
         COSIGN_YES: "true",
+        TMPDIR: temporary,
+        TUF_ROOT: ambient,
         FAKE_MODE: mode,
         FAKE_TARGET: "cli-artifacts/vize-x86_64-apple-darwin.tar.gz",
         FAKE_EVENTS: events,
@@ -156,7 +172,17 @@ function fixture() {
     release,
     late,
     childReady,
-    clean: () => rmSync(root, { recursive: true, force: true }),
+    temporary,
+    ambient,
+    clean: () => {
+      assert.deepEqual(readdirSync(temporary), [], "private TUF caches remain after child reaping");
+      assert.deepEqual(readdirSync(ambient), ["trusted-marker"]);
+      assert.equal(
+        readFileSync(path.join(ambient, "trusted-marker"), "utf8"),
+        "ambient must remain unchanged\n",
+      );
+      rmSync(root, { recursive: true, force: true });
+    },
   };
 }
 
@@ -178,7 +204,7 @@ test("four actual signers overlap, all sixteen original protocols and forty-eigh
     const before = new Map(
       assets.map((file) => [file, hash(readFileSync(path.join(f.root, file)))]),
     );
-    const run = f.start("success", true);
+    const run = f.start("tuf-lock", true);
     await until(() => f.rows().filter((event) => event.type === "start").length === 4);
     assert.equal(f.rows().filter((event) => event.type === "finish").length, 0);
     writeFileSync(f.release, "go");
@@ -195,6 +221,14 @@ test("four actual signers overlap, all sixteen original protocols and forty-eigh
     assert.equal(peak, 4);
     const starts = events.filter((event) => event.type === "start");
     assert.deepEqual(starts.map((event) => event.input).sort(), assets);
+    assert.equal(new Set(starts.map((row) => row.tufRoot)).size, 4);
+    for (const row of events) {
+      assert.notEqual(row.tufRoot, f.ambient);
+      assert.equal(path.dirname(row.tufRoot), f.temporary);
+      assert.equal(row.cacheExists, true, "cache removed before a signer finished");
+      assert.equal(row.cacheMode, 0o700);
+      assert.equal(existsSync(row.tufRoot), false, "owned cache remains after return");
+    }
     for (const row of starts) {
       assert.deepEqual(row.args, [
         "sign-blob",
@@ -249,6 +283,20 @@ test("a signer failure stops queued work and reaps every overlapping child befor
   }
 });
 
+test("a signer spawn failure removes every private cache without touching ambient trust", async () => {
+  const f = fixture();
+  try {
+    writeFileSync(f.signer, "#!/vize-missing-signer-interpreter\n");
+    const result = await f.start().closed;
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /ENOENT/);
+    assert.deepEqual(f.rows(), []);
+    assert.doesNotMatch(result.stdout, /vize-release-signing-v1/);
+  } finally {
+    f.clean();
+  }
+});
+
 test("SIGTERM abort waits for all four owned children and never leaves late outputs", async () => {
   const f = fixture();
   try {
@@ -296,6 +344,7 @@ test("the same uncontained descendant really writes after its successful leader 
       stdio: "ignore",
       env: {
         ...process.env,
+        TUF_ROOT: f.ambient,
         FAKE_MODE: "descendant",
         FAKE_TARGET: "cli-artifacts/vize-x86_64-apple-darwin.tar.gz",
         FAKE_EVENTS: path.join(f.root, "events.jsonl"),

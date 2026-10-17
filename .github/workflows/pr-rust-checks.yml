@@ -286,7 +286,8 @@ jobs:
         run: node tools/support/compat/github/rust-test-archive.mjs verify .artifacts/rust-test-archive/tests.tar.zst .artifacts/rust-test-archive/receipt.json
       - name: Hydrate the required ElementPlus projection fixture
         if: ${{ github.event_name == 'merge_group' && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}
-        run: git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus
+        uses: ./.github/actions/hydrate-pinned-fixture
+        with: { fixture: tests/_fixtures/_git/element-plus }
       - name: Prepare required typechecker observations
         if: ${{ github.event_name == 'merge_group' && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}
         run: |
