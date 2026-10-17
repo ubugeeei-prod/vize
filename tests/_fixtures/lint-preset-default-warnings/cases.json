@@ -125,7 +125,7 @@
       "negativeSources": [
         "<template><KeepAlive><component :is=\"view\" /></KeepAlive></template>\n",
         "<template><keep-alive><n-layout /></keep-alive></template>\n",
-        "<template><KeepAlive><div v-show=\"visible\"><component :is=\"view\" /></div></KeepAlive></template>\n",
+        "<script setup>\nimport CachedPanel from './CachedPanel.vue';\nconst visible = true;\n</script>\n<template><KeepAlive><CachedPanel v-show=\"visible\" /></KeepAlive></template>\n",
         "<template><Transition><div v-if=\"open\"></div></Transition></template>\n",
         "<template><KeepAlive><Transition><component :is=\"view\" /></Transition></KeepAlive></template>\n"
       ],
