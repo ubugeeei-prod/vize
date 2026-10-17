@@ -196,6 +196,19 @@ test("the workflow publishes only the prepared body at the pinned source and rem
     job.indexOf("Generate notes for the exact published version range") <
       job.indexOf("name: Create Release"),
   );
+  const preflight = readFileSync(
+    new URL("../../../.github/workflows/release-preflight-contracts.yml", import.meta.url),
+    "utf8",
+  );
+  assert.ok(preflight.includes("          tests/tooling/release/release-notes.test.ts\n"));
+  assert.ok(preflight.includes("          tests/tooling/drop-in-claim-scope.test.ts\n"));
+  for (const input of [
+    ".github/workflows/release.yml",
+    ".github/release-notes/drop-in-scope.md",
+    "tests/tooling/drop-in-claim-scope.test.ts",
+  ]) {
+    assert.ok(preflight.includes(`      - "${input}"\n`));
+  }
   const scope = readFileSync(
     new URL("../../../.github/release-notes/drop-in-scope.md", import.meta.url),
     "utf8",
