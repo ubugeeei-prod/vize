@@ -11,6 +11,7 @@ import {
   relativePath,
   type Json,
   type JsonObject,
+  canonicalJson,
 } from "./value.ts";
 
 function unusableReason(artifact: Json): string | null {
@@ -179,12 +180,7 @@ export function renderMarkdown(artifact: Json): string {
   const summary = get(artifact, "divergence", "summary"),
     baseline = get(artifact, "baseline");
   const count = (key: string) => JSON.stringify(get(summary, key));
-  const ratio = (key: string) => {
-    const value = get(summary, key);
-    return typeof value === "number" && Number.isInteger(value)
-      ? `${value}.0`
-      : JSON.stringify(value);
-  };
+  const ratio = (key: string) => canonicalJson(get(summary, key));
   const lines = [
     `## ${text(get(artifact, "project"), "-")} lint divergence`,
     "",

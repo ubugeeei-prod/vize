@@ -25,6 +25,7 @@ import {
   text,
   type Json,
   type JsonObject,
+  JsonFloat,
 } from "./value.ts";
 
 export function indexRuleMap(ruleMap: Json) {
@@ -219,8 +220,8 @@ export function compareLintFindings(
     baselineParseErrorCount: baseline.parseErrorCount,
     baselineExcludedNonVueCount: baseline.excludedNonVueCount,
     baselineInvalidRangeCount: baseline.invalidRangeCount,
-    falsePositiveRatio: ratio(falsePositives.length, comparablePatina.length),
-    falseNegativeRatio: ratio(falseNegatives.length, comparableBaseline.length),
+    falsePositiveRatio: new JsonFloat(ratio(falsePositives.length, comparablePatina.length)),
+    falseNegativeRatio: new JsonFloat(ratio(falseNegatives.length, comparableBaseline.length)),
   };
   const classified: JsonObject = {
     referenceCoverageExpectations: expectations,

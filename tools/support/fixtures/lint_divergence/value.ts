@@ -67,11 +67,10 @@ export function canonicalJson(value: Json, pretty = false): string {
     if (magnitude !== 0 && (magnitude < 0.00001 || magnitude >= 1e16)) return value.toExponential();
     return Number.isInteger(value) ? `${value}.0` : String(value);
   };
-  function encode(item: Json, depth: number, key = ""): string {
+  function encode(item: Json, depth: number): string {
     if (item instanceof JsonFloat) return float(item.value);
     if (typeof item === "bigint") return item.toString();
     if (item === null || typeof item !== "object") {
-      if (typeof item === "number" && key.endsWith("Ratio")) return float(item);
       return JSON.stringify(item);
     }
     const indent = (level: number) => (pretty ? "  ".repeat(level) : "");
@@ -82,7 +81,7 @@ export function canonicalJson(value: Json, pretty = false): string {
           .sort(byteOrder)
           .map(
             (name) =>
-              `${JSON.stringify(name)}:${pretty ? " " : ""}${encode(item[name], depth + 1, name)}`,
+              `${JSON.stringify(name)}:${pretty ? " " : ""}${encode(item[name], depth + 1)}`,
           );
     const [open, close] = Array.isArray(item) ? ["[", "]"] : ["{", "}"];
     return values.length
