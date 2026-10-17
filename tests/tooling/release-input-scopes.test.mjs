@@ -52,6 +52,7 @@ void test("audited release contracts have complete imports and leave unresolved 
   const historicalUnscoped = [
     "tests/tooling/release/legacy-check-qualification.test.ts",
     "tests/tooling/release/release-integration-catalog.test.ts",
+    "tests/tooling/release/release-notes.test.ts",
     "tests/tooling/release/release-preflight-full-js.test.ts",
     "tests/tooling/release/release-public-native-invocation.test.ts",
     "tests/tooling/release/release-smoke-init-fresh.test.ts",
