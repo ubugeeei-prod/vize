@@ -51,7 +51,6 @@ const installedHttpsContracts = [
 void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
   const historicalUnscoped = [
     "tests/tooling/release/legacy-check-qualification.test.ts",
-    "tests/tooling/release/release-guest-locks.test.ts",
     "tests/tooling/release/release-integration-catalog.test.ts",
     "tests/tooling/release/release-preflight-full-js.test.ts",
     "tests/tooling/release/release-public-native-invocation.test.ts",
