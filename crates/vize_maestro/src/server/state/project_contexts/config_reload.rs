@@ -3,6 +3,43 @@ use super::paths::physical_path;
 use super::{Arc, Path, PathBuf, ProjectContextKey, ServerState, Url};
 use tower_lsp::lsp_types::{FileEvent, MessageType, ShowMessageParams};
 
+/// One checked Vite evaluation's post-read repair baseline, shared by its
+/// full-key Canon owners. This never supplies consumed-byte authority or a
+/// current validation sample, and is dropped with the local authored attempt.
+pub(super) struct ConfigurationPostRead {
+    reported: Vec<PathBuf>,
+    known: super::FxHashSet<PathBuf>,
+    common: Option<vize_canon::ConfigurationObservations>,
+}
+
+impl ConfigurationPostRead {
+    pub(super) fn new(reported: &[PathBuf]) -> Self {
+        Self {
+            reported: reported.to_vec(),
+            known: reported.iter().cloned().collect(),
+            common: None,
+        }
+    }
+
+    pub(super) fn capture(&mut self, applied: &[PathBuf]) -> vize_canon::ConfigurationObservations {
+        // Capture lazily at the first successful Canon owner's original
+        // post-read boundary. Later owners retain this earliest baseline.
+        let mut observations = self
+            .common
+            .get_or_insert_with(|| vize_canon::ConfigurationObservations::capture(&self.reported))
+            .clone();
+        let specific = applied
+            .iter()
+            .filter(|path| !self.known.contains(*path))
+            .cloned()
+            .collect::<Vec<_>>();
+        // Canon-specific paths (and their link ancestors) are still captured
+        // separately for each owner, retaining conflicts with consumed inputs.
+        observations.extend(&vize_canon::ConfigurationObservations::capture(&specific));
+        observations
+    }
+}
+
 pub(super) struct ConfigEventScope {
     pub(super) affected: Vec<ProjectContextKey>,
     pub(super) confirmations: Vec<(ProjectContextKey, vize_canon::ConfigurationObservations)>,

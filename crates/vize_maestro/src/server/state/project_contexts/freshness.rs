@@ -31,7 +31,7 @@ impl ConfigurationObservation {
             return Self::failed(raw, loaded, &compiler);
         }
         if let Some(before) = before {
-            let mut record = Self::checked(raw, loaded, before, &compiler);
+            let mut record = Self::checked(raw, loaded, before, &compiler, None);
             record.unverified |= needs_confirmation;
             return record;
         }
@@ -58,6 +58,7 @@ impl ConfigurationObservation {
         applied: &LoadedLspConfig,
         before: &ConfigurationObservations,
         compiler: &ConfigurationObservations,
+        post_read: Option<&mut super::config_reload::ConfigurationPostRead>,
     ) -> Self {
         let mut observations = before.clone();
         observations.extend(compiler);
@@ -76,9 +77,10 @@ impl ConfigurationObservation {
         phase.finish();
         // This post-read observes future repair only. `unverified` explicitly
         // prevents it from being represented as an evaluated-byte receipt.
-        observations.extend(&ConfigurationObservations::capture(
-            &applied.watch_dependencies,
-        ));
+        observations.extend(&match post_read {
+            Some(post_read) => post_read.capture(&applied.watch_dependencies),
+            None => ConfigurationObservations::capture(&applied.watch_dependencies),
+        });
         Self {
             observations,
             before_inputs: before.clone(),
@@ -201,6 +203,7 @@ impl ServerState {
         raw: &LoadedLspConfig,
         before: &ConfigurationObservations,
         dependencies: &[PathBuf],
+        post_read: Option<&mut super::config_reload::ConfigurationPostRead>,
     ) -> (
         Result<RetainedConfiguration, vize_l0::String>,
         ConfigurationObservation,
@@ -213,7 +216,7 @@ impl ServerState {
         } else {
             Self::prepare_tsconfig_config_snapshot(&key.root, Some(key), &mut applied, &mut compiler_observations)
                 .map(|compiler| RetainedConfiguration {
-                    observation: ConfigurationObservation::checked(raw, &applied, before, &compiler_observations),
+                    observation: ConfigurationObservation::checked(raw, &applied, before, &compiler_observations, post_read),
                     authored: raw.clone(), applied: applied.clone(), compiler,
                 })
         }.and_then(|snapshot| {

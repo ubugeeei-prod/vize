@@ -236,16 +236,24 @@ impl ServerState {
             };
             let changed = known_config_events(&key.root, &dependencies, markers, changes);
             result.configuration_events.extend(changed.clone());
-            let (raw, before) = authored.entry(key.root.clone()).or_insert_with(|| {
+            let (raw, before, post_read) = authored.entry(key.root.clone()).or_insert_with(|| {
                 let mut before = vize_canon::ConfigurationObservations::capture(
                     &self.configuration_vite_paths_for_root(&key.root),
                 );
                 let loaded = super::load_observed_lsp_config_snapshot(Some(&key.root));
                 before.extend(&loaded.before);
-                (loaded.loaded, before)
+                let post_read = super::config_reload::ConfigurationPostRead::new(
+                    &loaded.loaded.watch_dependencies,
+                );
+                (loaded.loaded, before, post_read)
             });
-            let (snapshot, observation) =
-                Self::prepare_configuration_attempt(&key, raw, before, &dependencies);
+            let (snapshot, observation) = Self::prepare_configuration_attempt(
+                &key,
+                raw,
+                before,
+                &dependencies,
+                Some(post_read),
+            );
             let repeated_failure = snapshot.as_ref().err().is_some_and(|error| {
                 self.project_contexts
                     .configuration_attempts

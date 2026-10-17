@@ -104,6 +104,7 @@ test("startup diagnostics retain the production producer and unchanged scale-one
     steps[controls].run,
     "cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::initial_diagnostics::\n" +
       "cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::native_requests::\n" +
+      "cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::state::project_contexts:: -- --nocapture\n" +
       "cargo clippy --locked --profile ci -p vize_maestro --features legacy --all-targets -- -D warnings\n",
   );
   const symlinkControls = steps.findIndex(

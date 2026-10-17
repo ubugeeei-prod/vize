@@ -111,7 +111,7 @@ pub(super) async fn run<T: Send + 'static>(work: impl FnOnce() -> T + Send + 'st
 
 #[cfg(test)]
 mod tests {
-    use super::{CAPACITY, Queue};
+    use super::{Arc, CAPACITY, Queue};
     use futures::{Future, FutureExt};
     use std::task::{Context, Poll};
 
@@ -136,5 +136,51 @@ mod tests {
         futures::executor::block_on(queue.enqueue(Box::new(|| {})));
         assert_eq!(queue.state.lock().jobs.len(), CAPACITY);
         assert!(registry.peek().is_none());
+    }
+    #[test]
+    fn full_queue_requires_real_wake_and_repoll_before_a_job_is_admitted() {
+        use futures::task::{ArcWake, waker};
+        use std::{sync::mpsc, time::Duration};
+        struct Wake(mpsc::Sender<()>);
+        impl ArcWake for Wake {
+            fn wake_by_ref(this: &Arc<Self>) {
+                let _ = this.0.send(());
+            }
+        }
+        let queue = Queue::default();
+        for _ in 0..CAPACITY {
+            queue.state.lock().jobs.push_back(Box::new(|| {}));
+        }
+        let (entered_tx, entered_rx) = mpsc::channel();
+        let mut enqueue = Box::pin(queue.enqueue(Box::new(move || {
+            entered_tx.send(()).unwrap();
+        })));
+        let mut noop = Context::from_waker(futures::task::noop_waker_ref());
+        assert!(matches!(enqueue.as_mut().poll(&mut noop), Poll::Pending));
+        (queue.take())();
+        assert_eq!(queue.state.lock().jobs.len(), CAPACITY - 1);
+        assert!(matches!(
+            entered_rx.try_recv(),
+            Err(mpsc::TryRecvError::Empty)
+        ));
+        // Reproduce full capacity, now with a real wake receiver. The original
+        // NOOP single poll above never enqueued the job after capacity returned.
+        queue.state.lock().jobs.push_back(Box::new(|| {}));
+        let (wake_tx, wake_rx) = mpsc::channel();
+        let wake = waker(Arc::new(Wake(wake_tx)));
+        let mut context = Context::from_waker(&wake);
+        assert!(matches!(enqueue.as_mut().poll(&mut context), Poll::Pending));
+        (queue.take())();
+        wake_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+        assert!(matches!(
+            enqueue.as_mut().poll(&mut context),
+            Poll::Ready(())
+        ));
+        assert_eq!(queue.state.lock().jobs.len(), CAPACITY);
+        for _ in 0..CAPACITY {
+            (queue.take())();
+        }
+        entered_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+        assert!(queue.state.lock().jobs.is_empty());
     }
 }

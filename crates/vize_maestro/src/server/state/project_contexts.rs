@@ -458,6 +458,9 @@ pub(super) mod freshness;
 #[cfg(test)]
 mod freshness_tests;
 
+#[cfg(test)]
+mod config_post_read_tests;
+
 mod topology;
 
 #[cfg(test)]
