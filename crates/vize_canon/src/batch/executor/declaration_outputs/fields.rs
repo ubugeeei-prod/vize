@@ -74,14 +74,13 @@ fn component_literal<'a, 'b>(kind: &'b TSType<'a>) -> Option<&'b TSTypeLiteral<'
 /// Preserve the established pretty-printed output, without deleting adjacent
 /// authored tokens or comments when TypeScript puts two members on one line.
 pub(super) fn include_line_whitespace(source: &str, range: Range<usize>) -> Range<usize> {
-    let start = source[..range.start]
-        .rfind('\n')
-        .map_or(0, |offset| offset + 1);
-    let end = source[range.end..]
-        .find('\n')
-        .map_or(source.len(), |offset| range.end + offset + 1);
-    if source[start..range.start].trim().is_empty() && source[range.end..end].trim().is_empty() {
-        start..end
+    let (Some(before), Some(after)) = (source.get(..range.start), source.get(range.end..)) else {
+        return range;
+    };
+    let leading = before.rsplit('\n').next().unwrap_or_default();
+    let trailing = after.split_inclusive('\n').next().unwrap_or_default();
+    if leading.trim().is_empty() && trailing.trim().is_empty() {
+        range.start - leading.len()..range.end + trailing.len()
     } else {
         range
     }
