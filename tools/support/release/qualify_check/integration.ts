@@ -157,10 +157,11 @@ async function authenticate(
     assert.equal(object(value.head).sha, head);
     assert.equal(object(value.base).ref, "main");
     const user = object(value.user);
+    const login = user.login;
     assert.equal(user.type, "User");
-    assert.equal(typeof user.login, "string", "authenticated PR author required");
-    assert.match(user.login as string, /^[A-Za-z0-9][A-Za-z0-9-]*$/u);
-    const permission = await api.read(`collaborators/${user.login}/permission`);
+    assert.ok(typeof login === "string", "authenticated PR author required");
+    assert.match(login, /^[A-Za-z0-9][A-Za-z0-9-]*$/u);
+    const permission = await api.read(`collaborators/${login}/permission`);
     assert.ok(["maintain", "admin"].includes(String(permission.role_name)), "maintainer required");
     assert.equal(await ref(branch), head, "current PR branch moved");
     return value;

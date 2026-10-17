@@ -220,7 +220,7 @@ fn expired_original_budget_uses_actual_watch_finish_to_withdraw_only_acquired_en
         "repos/owner/repo/pulls/43":pr(43,false,"release-integration/v1.2.3",&i,body::generated(42,&cut,&head,"v1.2.3")),
         "repos/owner/repo/collaborators/maintainer/permission":{"role_name":"maintain"},
         "repos/owner/repo/actions/runs/7":{"id":7,"run_attempt":2,"head_sha":cut,"head_branch":"main","event":"workflow_dispatch","path":".github/workflows/release-operator.yml","status":"in_progress","conclusion":null,"head_repository":{"full_name":"owner/repo"},"actor":{"login":"maintainer"},"triggering_actor":{"login":"maintainer"}},
-        "repos/owner/repo/rules/branches/main":[{"type":"required_status_checks","parameters":{"required_status_checks":["check-js","check-vize-apps","fmt-rust","test-report"].map(|context|json!({"context":context,"integration_id":15368}))}},{"type":"merge_queue","ruleset_id":24013395,"parameters":{"grouping_strategy":"ALLGREEN"}}]
+        "repos/owner/repo/rules/branches/main":[{"type":"required_status_checks","parameters":{"required_status_checks":(["check-js","check-vize-apps","fmt-rust","test-report"].map(|context|json!({"context":context,"integration_id":15368})))}},{"type":"merge_queue","ruleset_id":24013395,"parameters":{"grouping_strategy":"ALLGREEN"}}]
     });
     for (branch, id) in [
         ("release/v1.2.3", &head),

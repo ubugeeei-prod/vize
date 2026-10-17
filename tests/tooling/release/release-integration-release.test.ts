@@ -231,6 +231,36 @@ const invalid: [string, (f: Awaited<ReturnType<typeof releaseFixture>>) => void]
     },
   ],
   [
+    "numeric actor",
+    (f) => {
+      f.run.actor = { login: 42, type: "User" };
+    },
+  ],
+  [
+    "empty actor",
+    (f) => {
+      f.run.actor = { login: "", type: "User" };
+    },
+  ],
+  [
+    "numeric triggering actor",
+    (f) => {
+      f.run.triggering_actor = { login: 42, type: "User" };
+    },
+  ],
+  [
+    "empty triggering actor",
+    (f) => {
+      f.run.triggering_actor = { login: "", type: "User" };
+    },
+  ],
+  [
+    "string R ID",
+    (f) => {
+      f.run.id = "7";
+    },
+  ],
+  [
     "failed R",
     (f) => {
       f.run.status = "completed";

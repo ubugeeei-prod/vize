@@ -134,7 +134,8 @@ async function releaseRun(q: IntegrationReceipt, api: ReadApi, now: number): Pro
   assert.ok(matches.length > 0, "existing exact pinned R missing; no bootstrap permitted");
   assert.equal(matches.filter((row) => row.id === matches[0].id).length, 1, "ambiguous latest R");
   const listed = matches[0];
-  const run = await api.read(`actions/runs/${listed.id}`);
+  const listedId = positive(listed.id);
+  const run = await api.read(`actions/runs/${listedId}`);
   assertRun(run);
   for (const key of [
     "id",
@@ -167,12 +168,13 @@ async function releaseRun(q: IntegrationReceipt, api: ReadApi, now: number): Pro
   if (operator) assert.ok(created >= timestamp(operator.created_at, now), "R predates original O");
   for (const field of ["actor", "triggering_actor"]) {
     const actor = object(run[field]);
+    const login = actor.login;
     assert.equal(actor.type, "User", "genuine R maintainer required");
-    assert.equal(typeof actor.login, "string");
-    assert.match(String(actor.login), /^[a-zA-Z0-9][a-zA-Z0-9-]*$/u);
+    assert.ok(typeof login === "string");
+    assert.match(login, /^[a-zA-Z0-9][a-zA-Z0-9-]*$/u);
     if (operator) assert.equal(actor.login, object(operator.actor).login, "R/O actor changed");
     else {
-      const permission = await api.read(`collaborators/${actor.login}/permission`);
+      const permission = await api.read(`collaborators/${login}/permission`);
       assert.ok(
         ["maintain", "admin"].includes(String(permission.role_name)),
         "R maintainer required",

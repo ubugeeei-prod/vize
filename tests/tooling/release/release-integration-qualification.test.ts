@@ -114,6 +114,10 @@ for (const [label, key, value] of badContexts)
 const badAuthority: Array<[string, string, string, unknown]> = [
   ["foreign source", "pulls/42", "head.repo.full_name", "foreign/repo"],
   ["integration head", "pulls/99", "head.sha", H],
+  ["numeric source author", "pulls/42", "user", { login: 42, type: "User" }],
+  ["empty source author", "pulls/42", "user", { login: "", type: "User" }],
+  ["numeric integration author", "pulls/99", "user", { login: 42, type: "User" }],
+  ["empty integration author", "pulls/99", "user", { login: "", type: "User" }],
   ["nonmaintainer", "collaborators/maintainer/permission", "role_name", "write"],
   ["pin parent", `git/commits/${pinSha}`, "parents", [{ sha: C }]],
   ["pin tree", `git/commits/${pinSha}`, "tree.sha", C],
