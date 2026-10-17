@@ -279,3 +279,5 @@ fn native_adapter_keeps_moved_tokenizer_events_and_recovery() {
         assert_eq!(adapted_trace_with::<Component>(source, true), compat);
     }
 }
+
+mod markup_lex_parity_support;
