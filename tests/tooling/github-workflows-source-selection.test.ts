@@ -21,12 +21,18 @@ type Job = {
   outputs?: Record<string, string>;
   strategy?: { "fail-fast": boolean; matrix: { shard: number[] } | string };
   with?: Record<string, string>;
+  "continue-on-error"?: boolean;
 };
 const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
   jobs: Record<string, Job>;
 };
 const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
   jobs: Record<string, Job>;
+  on: {
+    workflow_call: {
+      inputs: Record<string, { type: string; required: boolean; default?: boolean }>;
+    };
+  };
 };
 
 test("source planning uses Node and offline metadata before selecting affected products", () => {
@@ -62,6 +68,92 @@ test("source planning uses Node and offline metadata before selecting affected p
     ciSelection?.run,
     "node --test tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-test-archive.test.mjs tests/tooling/rust-build-evidence.test.mjs",
   );
+});
+
+function requireDailySourceContracts(planWorkflow: typeof source, rustWorkflow: typeof rust) {
+  const plan = planWorkflow.jobs["pr-source-plan"];
+  assert.equal(plan.outputs?.["source-contracts"], "${{ steps.plan.outputs.source-contracts }}");
+  assert.equal(
+    planWorkflow.jobs["pr-rust-source"].with?.["run-source-contracts"],
+    "${{ needs.pr-source-plan.outputs.source-contracts == 'true' }}",
+  );
+  assert.deepEqual(rustWorkflow.on.workflow_call.inputs["run-source-contracts"], {
+    type: "boolean",
+    required: false,
+    default: true,
+  });
+  const job = rustWorkflow.jobs["pr-rust-build"];
+  assert.equal(job.if, "${{ inputs.run-rust }}");
+  assert.equal(job["continue-on-error"], undefined);
+  const steps = job.steps ?? [];
+  const contracts = steps.findIndex(
+    (step) => step.name === "Require current-tree source, API and reviewed-doc contracts",
+  );
+  assert.ok(contracts >= 0);
+  assert.equal(steps[contracts].if, "${{ inputs.run-source-contracts }}");
+  assert.equal(steps[contracts]["continue-on-error"], undefined);
+  assert.equal(
+    steps[contracts].run,
+    "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts",
+  );
+  for (const action of [
+    "actions/setup-node@",
+    "dtolnay/rust-toolchain@",
+    "./.github/actions/setup-rust-sticky-cache",
+    "./.github/actions/setup-rust-script",
+  ]) {
+    const setup = steps.findIndex((step) => step.uses?.startsWith(action));
+    assert.ok(setup >= 0 && setup < contracts, action);
+    if (action.endsWith("setup-rust-script")) {
+      assert.equal(steps[setup].if, "${{ inputs.run-source-contracts }}");
+      assert.equal(steps[setup]["continue-on-error"], undefined);
+    }
+  }
+  const report = rustWorkflow.jobs["rust-source-report"];
+  assert.ok(report.needs?.includes("pr-rust-build"));
+  const gate = report.steps?.find((step) => step.name === "Require the complete Rust tier");
+  assert.equal(gate?.run, "node tools/support/compat/github/require-rust-tier.ts");
+  assert.equal(gate?.["continue-on-error"], undefined);
+  assert.ok(
+    (plan.steps ?? []).every(
+      (step) =>
+        !step.uses?.includes("rust-toolchain@") &&
+        step.uses !== "./.github/actions/setup-rust-script",
+    ),
+  );
+}
+
+test("the existing required Rust source job runs the original three contracts with strict defaults", () => {
+  requireDailySourceContracts(source, rust);
+  for (const mutation of [
+    "default-false",
+    "step-skip",
+    "step-advisory",
+    "job-skip",
+    "job-advisory",
+    "report-detach",
+    "wrong-command",
+  ]) {
+    const changed = structuredClone(rust);
+    const job = changed.jobs["pr-rust-build"];
+    const step = job.steps!.find(
+      (candidate) =>
+        candidate.name === "Require current-tree source, API and reviewed-doc contracts",
+    )!;
+    if (mutation === "default-false")
+      changed.on.workflow_call.inputs["run-source-contracts"].default = false;
+    if (mutation === "step-skip") step.if = "${{ false }}";
+    if (mutation === "step-advisory") step["continue-on-error"] = true;
+    if (mutation === "job-skip") job.if = "${{ false }}";
+    if (mutation === "job-advisory") job["continue-on-error"] = true;
+    if (mutation === "report-detach") changed.jobs["rust-source-report"].needs = ["pr-rust-shard"];
+    if (mutation === "wrong-command") step.run = "echo contracts passed";
+    assert.throws(
+      () => requireDailySourceContracts(source, changed),
+      assert.AssertionError,
+      mutation,
+    );
+  }
 });
 
 test("affected native runtime proofs execute independently of the scheduled tooling campaign", () => {

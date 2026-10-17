@@ -20,6 +20,7 @@ jobs:
       canonical-corpus: ${{ steps.plan.outputs.heavy == 'true' && steps.canonical-corpus-plan.outputs.canonical-corpus || 'false' }}
       rust: ${{ steps.plan.outputs.rust }}
       rust-plan: ${{ steps.plan.outputs.rust-plan }}
+      source-contracts: ${{ steps.plan.outputs.source-contracts }}
       js: ${{ steps.plan.outputs.js }}
       js-plan: ${{ steps.plan.outputs.js-plan }}
       native-runtime-matrix: ${{ steps.plan.outputs.native-runtime-matrix }}
@@ -79,6 +80,7 @@ jobs:
       # narrows packages; it cannot disable test or Clippy acceptance.
       run-rust: true
       rust-plan: ${{ needs.pr-source-plan.outputs.rust-plan }}
+      run-source-contracts: ${{ needs.pr-source-plan.outputs.source-contracts == 'true' }}
   pr-js-packages:
     name: PR JS packages
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
