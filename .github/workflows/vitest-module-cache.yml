@@ -45,6 +45,7 @@ jobs:
         with:
           key: vitest-module-cache
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
       - name: Install candidate workspace dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
       - name: Build the actual source addon and Vite adapter
