@@ -70,6 +70,7 @@ void test("audited release contracts have complete imports and leave unresolved 
     ...stablePatchContracts,
     ...sharedPublisherContracts,
     ...installedSmokeMigrationContracts,
+    "tests/tooling/release/retirement-qualification.test.ts",
   ].sort();
   const inventory = [...scoped, ...expectedUnscoped].sort();
   assert.equal(new Set(inventory).size, inventory.length, "contracts belong to exactly one scope");
