@@ -203,7 +203,7 @@ fn css_module_type(shape: &CssModuleShape, strict: bool) -> CompactString {
 
 fn contains_dynamic_css_module_exports(css: &str) -> bool {
     let lower = css.to_ascii_lowercase();
-    ["@value", "composes", ":export", ":global", "#{"]
+    ["@value", "composes", ":export", "#{"]
         .iter()
         .any(|marker| lower.contains(marker))
 }
@@ -290,22 +290,60 @@ fn collect_classes_from_selector_prelude(
     }
 
     let mut index = 0usize;
-    while let Some([dot, first]) = trimmed.get(index..index + 2) {
-        if *dot != b'.' || !is_css_class_start(*first) {
-            index += 1;
-            continue;
+    let mut local = true;
+    // Each function keeps its outer mode and its own initial mode: commas
+    // reset bare `:global`/`:local` only within that selector list.
+    let mut functions = Vec::new();
+    let mut attribute_depth = 0usize;
+    while let Some(&byte) = trimmed.get(index) {
+        if byte == b'[' {
+            attribute_depth += 1;
+        } else if byte == b']' {
+            attribute_depth = attribute_depth.checked_sub(1)?;
+        } else if attribute_depth == 0 {
+            let scope = [(b":global".as_slice(), false), (b":local".as_slice(), true)]
+                .into_iter()
+                .find(|(keyword, _)| {
+                    trimmed[index..].starts_with(keyword)
+                        && trimmed
+                            .get(index + keyword.len())
+                            .is_none_or(|&next| next == b'(' || next.is_ascii_whitespace())
+                });
+            if let Some((keyword, mode)) = scope {
+                index += keyword.len();
+                if trimmed.get(index) == Some(&b'(') {
+                    functions.push((local, mode));
+                    index += 1;
+                }
+                local = mode;
+                continue;
+            }
+            match byte {
+                b'(' => functions.push((local, local)),
+                b')' => local = functions.pop()?.0,
+                b',' => local = functions.last().map_or(true, |&(_, initial)| initial),
+                b'.' if local
+                    && trimmed
+                        .get(index + 1)
+                        .is_some_and(|&b| is_css_class_start(b)) =>
+                {
+                    let start = index + 1;
+                    let mut end = start + 1;
+                    while trimmed.get(end).is_some_and(|&b| is_css_class_continue(b)) {
+                        end += 1;
+                    }
+                    let class_name = std::str::from_utf8(trimmed.get(start..end)?).ok()?;
+                    classes.insert(class_name.to_compact_string());
+                    index = end;
+                    continue;
+                }
+                _ => {}
+            }
         }
-        let start = index + 1;
-        let mut end = start + 1;
-        while trimmed
-            .get(end)
-            .is_some_and(|&byte| is_css_class_continue(byte))
-        {
-            end += 1;
-        }
-        let class_name = std::str::from_utf8(trimmed.get(start..end)?).ok()?;
-        classes.insert(class_name.to_compact_string());
-        index = end;
+        index += 1;
+    }
+    if attribute_depth != 0 || !functions.is_empty() {
+        return None;
     }
     Some(())
 }
