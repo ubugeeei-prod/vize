@@ -148,3 +148,140 @@ fn lint_limits_nuxt_link_guidance_to_nuxt_preset() {
 
     let _ = fs::remove_dir_all(project_root);
 }
+
+#[test]
+fn six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_packets() {
+    let corpus: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/lint-preset-default-warnings/cases.json"
+    ))
+    .unwrap();
+    let project = tempfile::tempdir().unwrap();
+    let mut commands = 0;
+    let mut receipts = Vec::new();
+    for case in corpus["cases"].as_array().unwrap() {
+        let filename = case["filename"].as_str().unwrap();
+        for preset in [
+            "happy-path",
+            "ecosystem",
+            "opinionated",
+            "nuxt",
+            "essential",
+            "incremental",
+            "default",
+        ] {
+            let enabled = case["enabledPresets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|name| {
+                    name == if preset == "default" {
+                        "happy-path"
+                    } else {
+                        preset
+                    }
+                });
+            for mode in ["default", "off", "repair"] {
+                if preset == "default" && mode != "default" {
+                    continue;
+                }
+                let source = case[if mode == "repair" { "repair" } else { "source" }]
+                    .as_str()
+                    .unwrap();
+                write_project_file(project.path(), filename, source);
+                let mut config = serde_json::json!({"linter": {"preset": preset}});
+                if mode == "off" {
+                    config["linter"]["rules"] =
+                        serde_json::json!({(case["rule"].as_str().unwrap()): "off"});
+                }
+                write_project_file(
+                    project.path(),
+                    "vize.config.json",
+                    &serde_json::to_string(&config).unwrap(),
+                );
+                let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+                    .current_dir(project.path())
+                    .args([
+                        "lint",
+                        "--config",
+                        "vize.config.json",
+                        "--format",
+                        "json",
+                        "--locale",
+                        "en",
+                        filename,
+                    ])
+                    .output()
+                    .unwrap();
+                commands += 1;
+                receipts.push(serde_json::json!({
+                    "case": case["id"], "preset": preset, "mode": mode,
+                    "source": source, "config": config,
+                    "status": output.status.code(),
+                    "stdoutBytes": &output.stdout, "stderrBytes": &output.stderr
+                }));
+                assert_eq!(
+                    output.status.code(),
+                    Some(0),
+                    "{} / {preset} / {mode}: {}",
+                    case["id"],
+                    output_details(&output)
+                );
+                assert!(
+                    output.stderr.is_empty(),
+                    "{} / {preset} / {mode}: {}",
+                    case["id"],
+                    output_details(&output)
+                );
+                let warning = enabled && mode == "default";
+                let mut messages = if warning {
+                    vec![case["cliMessage"].clone()]
+                } else {
+                    vec![]
+                };
+                if mode != "repair"
+                    && case["baselinePresets"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|name| {
+                            name == if preset == "default" {
+                                "happy-path"
+                            } else {
+                                preset
+                            }
+                        })
+                {
+                    messages.extend(
+                        case["baselineCliMessages"]
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .cloned(),
+                    );
+                }
+                let expected = serde_json::json!([{
+                    "file": filename, "errorCount": 0, "warningCount": messages.len(), "messages": messages
+                }]);
+                assert_eq!(
+                    serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap(),
+                    expected,
+                    "{} / {preset} / {mode}: {}",
+                    case["id"],
+                    output_details(&output)
+                );
+                assert_eq!(
+                    fs::read_to_string(project.path().join(filename)).unwrap(),
+                    source
+                );
+            }
+        }
+    }
+    assert_eq!(commands, 38);
+    println!(
+        "{}",
+        serde_json::json!({
+            "schema": "vize.lint.preset-default-warning-cli", "version": 1,
+            "commands": commands, "runs": receipts
+        })
+    );
+}

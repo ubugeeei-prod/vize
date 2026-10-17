@@ -1070,6 +1070,8 @@
     },
     "vue/no-use-v-else-with-v-for": {
       "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
         "nuxt",
         "opinionated"
       ],

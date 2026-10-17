@@ -97,6 +97,7 @@ const ESSENTIAL_SCRIPT_PRESETS: &[&str] = &[
 const HAPPY_PATH_SCRIPT_PRESETS: &[&str] = &["happy-path", "ecosystem", "nuxt", "opinionated"];
 const OPINIONATED_ONLY_SCRIPT_PRESETS: &[&str] = &["opinionated"];
 const OPINIONATED_SCRIPT_PRESETS: &[&str] = &["opinionated"];
+const OPINIONATED_AND_NUXT_SCRIPT_PRESETS: &[&str] = &["opinionated", "nuxt"];
 const ECOSYSTEM_SCRIPT_PRESETS: &[&str] = &["ecosystem"];
 const NUXT_SCRIPT_PRESETS: &[&str] = &["nuxt"];
 const OPT_IN_SCRIPT_PRESETS: &[&str] = &[];

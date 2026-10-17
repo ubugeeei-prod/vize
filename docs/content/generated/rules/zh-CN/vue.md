@@ -3870,7 +3870,7 @@ vp run lint
 [错误示例](#vue-no-use-v-else-with-v-for-bad) · [正确示例](#vue-no-use-v-else-with-v-for-good)
 
 默认严重程度: `warning`  
-预设: `nuxt`, `opinionated`  
+预设: `ecosystem`, `happy-path`, `nuxt`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
 选项: 没有规则专属选项。可以配置严重程度和预设。

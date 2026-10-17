@@ -32,14 +32,16 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | プリセット | ルール数 | 有効になる内容 |
 | --- | ---: | --- |
 | `essential` | 77 | テンプレートとディレクティブの妥当性、Vue 3 で削除された構文と API（`vue/no-deprecated-*`、`script/no-deprecated-*`）、スクリプトのマクロと Options API の正しさ、`vue/no-v-html`、`vue/no-unsafe-url`、`html/id-duplication` |
-| `happy-path`（既定） | 139 | `essential` に加え、テンプレートの書式、アクセシビリティ、HTML 適合性、SSR の危険、未使用のコンポーネントとプロパティ、props と emits の型 |
-| `ecosystem` | 147 | `happy-path` に加え、エコシステムのライブラリー向けの検査 |
-| `nuxt` | 196 | `opinionated` を Nuxt の自動インポートに合わせたもの |
-| `opinionated` | 197 | `happy-path` に加え、より厳しい規約、props の型宣言と `css/*` のスタイル規則 |
+| `happy-path`（既定） | 140 | `essential` に加え、テンプレートの書式、アクセシビリティ、HTML 適合性、SSR の危険、未使用のコンポーネントとプロパティ、props と emits の型 |
+| `ecosystem` | 148 | `happy-path` に加え、エコシステムのライブラリー向けの検査 |
+| `nuxt` | 197 | `opinionated` を Nuxt の自動インポートに合わせたもの |
+| `opinionated` | 198 | `happy-path` に加え、より厳しい規約、props の型宣言と `css/*` のスタイル規則 |
 | `incremental` | 0 | なし |
 
 ルール数にファイル横断のルールは含みません。各ルールの所属は[全ルールの一覧](./all.md)の「プリセット」列で確認できます。
 `compiler.compatibility.vueVersion` が `2` または `2.7` のときは、Vue 3 で削除された構文と API の検査を無効にします。
+
+`vue/no-use-v-else-with-v-for` は、同じ要素に条件とループを置く、Vue が受け付ける構文への警告です。条件をラッパーに分け、役割を明確にします。`script/no-deep-destructure-in-props` は `opinionated` と `nuxt` で有効な深さの規約です。コンパイラーの `propsDestructure` 設定は参照せず、リアクティブな分割代入を無効にした場合や `withDefaults` を使った場合は、入れ子の代入もコンパイルできます。どちらも警告であり、ルール名を指定して無効にできます。`essential` と、空の `incremental` は変更しません。
 
 型を使うルールには TypeScript プロジェクトと `typeAware` が必要です。グローバル名の型は
 `tsconfig.json` の `compilerOptions.types` や project references で管理してください。

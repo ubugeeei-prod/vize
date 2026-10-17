@@ -51,14 +51,16 @@ larger preset.
 | Preset | Rules | What is on |
 | --- | ---: | --- |
 | `essential` | 77 | Template and directive validity, Vue 3 removals (`vue/no-deprecated-*`, `script/no-deprecated-*`), script macro and Options API correctness, `vue/no-v-html`, `vue/no-unsafe-url`, `html/id-duplication` |
-| `happy-path` (default) | 139 | `essential`, plus template formatting conventions, accessibility, HTML conformance, SSR hazards, unused components and properties, and typed props and emits |
-| `ecosystem` | 147 | `happy-path`, plus the ecosystem library checks |
-| `nuxt` | 196 | `opinionated`, adjusted for Nuxt auto-imports |
-| `opinionated` | 197 | `happy-path`, plus stricter conventions, typed props and the `css/*` style rules |
+| `happy-path` (default) | 140 | `essential`, plus template formatting conventions, accessibility, HTML conformance, SSR hazards, unused components and properties, and typed props and emits |
+| `ecosystem` | 148 | `happy-path`, plus the ecosystem library checks |
+| `nuxt` | 197 | `opinionated`, adjusted for Nuxt auto-imports |
+| `opinionated` | 198 | `happy-path`, plus stricter conventions, typed props and the `css/*` style rules |
 | `incremental` | 0 | Nothing |
 
 Counts exclude cross-file rules. The Presets column of [All lint rules](./all.md) shows each rule's
 presets. The Vue 3 removal checks are off when `compiler.compatibility.vueVersion` is `2` or `2.7`.
+
+`vue/no-use-v-else-with-v-for` warns about accepted Vue syntax whose conditional and loop share an element; put the conditional on a wrapper for clarity. `script/no-deep-destructure-in-props` is a depth convention enabled by `opinionated` and `nuxt`. It does not read the compiler’s `propsDestructure` setting: nested bindings can compile when reactive destructuring is disabled or `withDefaults` is used. Both rules remain warnings and can be disabled by name. `essential` and the empty `incremental` bundle are unchanged.
 
 ## Type-Aware Configuration
 

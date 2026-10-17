@@ -116,6 +116,22 @@ if (import.meta.vitest) {
       expect(configs.happyPath).toEqual(configs.recommended);
     });
 
+    it("exposes the exact default warning policy through native metadata", () => {
+      const elseFor = "vize/vue/no-use-v-else-with-v-for";
+      const deepProps = "vize/script/no-deep-destructure-in-props";
+      for (const config of [configs.happyPath, configs.recommended, configs.ecosystem]) {
+        expect(config[elseFor]).toBe("warn");
+        expect(config[deepProps]).toBeUndefined();
+      }
+      for (const config of [configs.opinionated, configs.nuxt]) {
+        expect(config[elseFor]).toBe("warn");
+        expect(config[deepProps]).toBe("warn");
+      }
+      expect(configs.essential[elseFor]).toBeUndefined();
+      expect(configs.essential[deepProps]).toBeUndefined();
+      expect(createVizeRuleConfig({ preset: "happy-path" })).toEqual(configs.recommended);
+    });
+
     it("unions multiple presets", () => {
       const config = createVizeRuleConfig({ presets: ["happy-path", "ecosystem"] });
 

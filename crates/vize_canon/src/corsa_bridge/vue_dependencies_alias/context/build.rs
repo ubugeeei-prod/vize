@@ -16,6 +16,7 @@ pub(super) struct SourceRevision<'a> {
     pub overlay_identity: u64,
 }
 
+#[cfg(test)]
 pub(super) fn build(
     source_path: &Path,
     content: &str,
@@ -43,7 +44,7 @@ pub(super) fn build(
     clippy::too_many_arguments,
     reason = "explicit preparation inputs plus build-local syntax facts"
 )]
-fn build_with_import_facts(
+pub(super) fn build_with_import_facts(
     source_path: &Path,
     content: &str,
     overlays: &FxHashMap<PathBuf, &str>,
@@ -346,3 +347,6 @@ mod package_targets_tests;
 
 #[cfg(test)]
 mod import_facts_tests;
+
+#[cfg(test)]
+mod stamp_import_facts_tests;

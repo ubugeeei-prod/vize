@@ -1,0 +1,116 @@
+{
+  "schema": "vize.lint.preset-default-warning-controls",
+  "version": 1,
+  "authority": "Original source payloads, repairs and newly promoted warning descriptors were authored before candidate execution and are retained byte-exact in authored-cases-before-baseline.json. Separate existing baseline fields retain the complete observed unrelated finding; no diagnostic is filtered or suppressed.",
+  "cases": [
+    {
+      "id": "else-for",
+      "filename": "DefaultControlFlow.vue",
+      "source": "<template><section><p v-if=\"true\">one</p><p v-for=\"item in [1]\" v-else :key=\"item\">{{ item }}</p></section></template>\n",
+      "sourceSha256": "134c24beedb595d340a37f3872c3147e5d5ffcf627d7406a194397ee558e0cea",
+      "rule": "vue/no-use-v-else-with-v-for",
+      "enabledPresets": [
+        "happy-path",
+        "ecosystem",
+        "opinionated",
+        "nuxt"
+      ],
+      "diagnostic": {
+        "rule_name": "vue/no-use-v-else-with-v-for",
+        "severity": "warning",
+        "message": "Unexpected `v-else` and `v-for` on the same element. Move `v-else` to a wrapper element instead.",
+        "start": 41,
+        "end": 97,
+        "help": "Move the conditional directive to a wrapper element around the v-for element.",
+        "fix": null,
+        "labels": []
+      },
+      "cliMessage": {
+        "ruleId": "vue/no-use-v-else-with-v-for",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-use-v-else-with-v-for] Unexpected `v-else` and `v-for` on the same element. Move `v-else` to a wrapper element instead.",
+        "line": 1,
+        "column": 42,
+        "endLine": 1,
+        "endColumn": 98,
+        "help": "Move the conditional directive to a wrapper element around the v-for element."
+      },
+      "repair": "<template><section><p v-if=\"true\">one</p><template v-else><p v-for=\"item in [1]\" :key=\"item\">{{ item }}</p></template></section></template>\n",
+      "baselinePresets": [],
+      "baselineDiagnostics": [],
+      "baselineCliMessages": []
+    },
+    {
+      "id": "deep-props",
+      "filename": "DefaultDepthPolicy.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><p>{{ name }}</p></template>\n",
+      "sourceSha256": "cf1e5cb02e9c48f2b07e3e6cac25ee8e2cc1721267908dbaead8f1dd6497faf9",
+      "rule": "script/no-deep-destructure-in-props",
+      "enabledPresets": [
+        "opinionated",
+        "nuxt"
+      ],
+      "diagnostic": {
+        "rule_name": "script/no-deep-destructure-in-props",
+        "severity": "warning",
+        "message": "Avoid deeply nested destructuring in defineProps",
+        "start": 31,
+        "end": 49,
+        "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+        "fix": null,
+        "labels": []
+      },
+      "cliMessage": {
+        "ruleId": "script/no-deep-destructure-in-props",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+        "line": 2,
+        "column": 7,
+        "endLine": 2,
+        "endColumn": 25,
+        "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+      },
+      "repair": "<script setup lang=\"ts\">\nconst { user } = defineProps<{ user: { name: string } }>();\n</script>\n<template><p>{{ user.name }}</p></template>\n",
+      "baselinePresets": [
+        "happy-path",
+        "ecosystem",
+        "opinionated",
+        "nuxt"
+      ],
+      "baselineDiagnostics": [
+        {
+          "rule_name": "vue/no-unused-properties",
+          "severity": "warning",
+          "message": "Prop 'user' is defined but never used",
+          "start": 66,
+          "end": 88,
+          "help": "Remove unused prop or use it in your template/script",
+          "fix": null,
+          "labels": []
+        }
+      ],
+      "baselineCliMessages": [
+        {
+          "ruleId": "vue/no-unused-properties",
+          "ruleDocsPath": "docs/content/rules/vue.md",
+          "severity": 1,
+          "message": "[vize:vue/no-unused-properties] Prop 'user' is defined but never used",
+          "line": 2,
+          "column": 42,
+          "endLine": 2,
+          "endColumn": 64,
+          "help": "Remove unused prop or use it in your template/script"
+        }
+      ]
+    }
+  ],
+  "baselineAuthority": {
+    "run": 38991839496,
+    "job": 117275806128,
+    "head": "7bcbd9e60b2d1a1aa9f6dc9df85bf42ca7b2e874",
+    "rawLogSha256": "70465d7e2aabd3bed3c1ef186ddab3fec829061fc2f63078c2891f2c91d8d31f",
+    "scope": "The unchanged nested source also exposes an existing nested-ownership diagnostic frontier in vue/no-unused-properties. Preserve this complete current-source baseline in broad defaults and explicit-new-rule-off packets; this is not a correctness endorsement or a claim of historical execution. No source or newly promoted warning descriptor changed."
+  }
+}

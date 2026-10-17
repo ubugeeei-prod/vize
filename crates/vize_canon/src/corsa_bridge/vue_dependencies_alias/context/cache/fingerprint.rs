@@ -4,6 +4,8 @@ use super::super::{AliasContext, namespace::editor_namespace_identity};
 use std::path::{Path, PathBuf};
 use vize_carton::FxHashMap;
 
+use crate::batch::ModuleSpecifierFactsCache;
+
 /// The import closure and disk inputs a cached editor route depends on.
 #[derive(Clone)]
 pub(crate) struct ContextFingerprint {
@@ -52,14 +54,36 @@ impl ContextFingerprint {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn stamp(&mut self, context: &AliasContext) {
+        self.stamp_inner(context, None);
+    }
+
+    /// Syntax facts end with this build/stamp invocation; probe and disk
+    /// observations still belong to the current fingerprint capture.
+    pub(in super::super) fn stamp_with_import_facts(
+        &mut self,
+        context: &AliasContext,
+        facts: &mut ModuleSpecifierFactsCache,
+    ) {
+        self.stamp_inner(context, Some(facts));
+    }
+
+    fn stamp_inner(
+        &mut self,
+        context: &AliasContext,
+        facts: Option<&mut ModuleSpecifierFactsCache>,
+    ) {
         let mut paths = vec![context.project_root.join("tsconfig.json")];
         if let Some(mirror) = context.mirror.as_ref() {
             paths.extend(mirror.governing_config_paths());
             // The materialized closure intentionally keeps content digests:
             // same-mtime, same-length edits must invalidate an editor session.
             paths.extend(mirror.registered_original_paths_sorted());
-            paths.extend(mirror.editor_resolution_inputs());
+            paths.extend(match facts {
+                Some(facts) => mirror.editor_resolution_inputs_with_import_facts(facts),
+                None => mirror.editor_resolution_inputs(),
+            });
         }
         paths.extend(context.route_inputs.iter().cloned());
         paths.sort();
@@ -110,5 +134,17 @@ impl ContextFingerprint {
         let mut hash = std::hash::DefaultHasher::new();
         (self.host_content, self.overlays, self.generation_options).hash(&mut hash);
         hash.finish()
+    }
+}
+
+#[cfg(test)]
+impl super::SessionCache {
+    pub(in super::super) fn cached_input_stamps(
+        &self,
+        source_path: &Path,
+    ) -> Option<Vec<crate::package_route::stamp::InputStamp>> {
+        self.slots
+            .get(source_path)
+            .map(|cached| cached.fingerprint.input_stamps())
     }
 }
