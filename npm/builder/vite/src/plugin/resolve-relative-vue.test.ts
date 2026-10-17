@@ -105,8 +105,6 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   );
 }
 
-console.log("vite-plugin-vize relative Vue resolve tests passed!");
-
 // Vite resolves the complete asset request against the physical SFC importer.
 // Preserve every returned field in both graphs and dependency scans.
 {
@@ -160,3 +158,40 @@ console.log("vite-plugin-vize relative Vue resolve tests passed!");
     "The effective query from an upstream resolver retains its complete asset result",
   );
 }
+
+// Persisted import graphs replay root-relative URLs before any SFC import has
+// established the absolute filesystem identity in Vite's module graph (#9363).
+{
+  const projectRoot = fs.mkdtempSync(path.join(testRoot, "persisted-vue-url-"));
+  const source = path.join(projectRoot, "src", "Hello.vue");
+  writeFixtureFile(source, "<template><p>Hello</p></template>");
+  const state = createState(projectRoot);
+  const context = { resolve: async () => null };
+  for (const ssr of [false, true]) {
+    for (const suffix of ["?vue&vize", "?vue&vize&used=true", "?vue&vize-ssr&t=123"]) {
+      const expected = toPluginVisibleVirtualId(source, ssr, suffix);
+      for (const id of ["/src/Hello.vue" + suffix, source + suffix, "/@fs" + source + suffix]) {
+        assert.equal(
+          expectResolvedId(await resolveIdHook(context, state, id, undefined, { ssr })),
+          expected,
+          "Fresh module graphs must resolve persisted URLs to the same absolute SFC identity",
+        );
+        assert.equal(
+          expectResolvedId(await resolveIdHook(context, state, id, undefined, { ssr, scan: true })),
+          source,
+          "Dependency scans must receive the real source for persisted and absolute SFC URLs",
+        );
+      }
+    }
+  }
+  const externalRoot = fs.mkdtempSync(path.join(testRoot, "external-persisted-vue-"));
+  const externalSource = path.join(externalRoot, "Outside.vue");
+  writeFixtureFile(externalSource, "<template><span>Outside</span></template>");
+  assert.equal(
+    expectResolvedId(await resolveIdHook(context, state, toPluginVisibleVirtualId(externalSource))),
+    toPluginVisibleVirtualId(externalSource),
+    "Real absolute SFCs outside Vite root must retain their filesystem identity",
+  );
+}
+
+console.log("vite-plugin-vize relative Vue resolve tests passed!");

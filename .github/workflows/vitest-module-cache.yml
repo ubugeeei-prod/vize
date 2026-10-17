@@ -1,0 +1,73 @@
+name: Vitest persistent Vue modules
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/vitest-module-cache.yml"
+      - "npm/builder/vite/**"
+      - "npm/native/**"
+      - "crates/vize_atelier_sfc/src/vite_plugin/**"
+      - "crates/vize_atelier_sfc/src/vite_plugin.rs"
+      - "tools/support/compat/vitest-module-cache.ts"
+      - "tests/_fixtures/_projects/vitest-fs-module-cache/**"
+  workflow_dispatch:
+
+permissions: { contents: read }
+concurrency:
+  group: vitest-module-cache-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  vitest-module-cache:
+    name: Cold and repeated warm Vue mount
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1
+        with:
+          node-version-file: package.json
+          version: latest
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: vitest-module-cache
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install candidate workspace dependencies
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
+      - name: Build the actual source addon and Vite adapter
+        run: |
+          vp run --workspace-root build:native:test
+          vp run --workspace-root build:vite-plugin
+          node npm/builder/vite/scripts/run-tests.mjs --require-prepared
+      - name: Install the exact reported Vitest and official Vue control
+        working-directory: tests/_fixtures/_projects/vitest-fs-module-cache
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Resolve persisted module identities with the source addon
+        run: node npm/native/scripts/test-preparation.mjs node npm/builder/vite/src/plugin/resolve-relative-vue.test.ts
+      - name: Execute cold, warm, warm again, failure and source-change controls
+        run: node npm/native/scripts/test-preparation.mjs node tools/support/compat/vitest-module-cache.ts --candidate npm/builder/vite/dist/index.mjs --output target/vitest-module-cache
+      - name: Retain successful and failed cache observations
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vitest-module-cache-${{ env.SOURCE_SHA }}-${{ github.run_attempt }}
+          path: |
+            target/vitest-module-cache/
+            !target/vitest-module-cache/**/node_modules/**
+            npm/native/.artifacts/native/formatter-history/**
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
