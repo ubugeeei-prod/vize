@@ -10,6 +10,9 @@ import {
   evidenceDirectory,
   fixture,
   materializeFrozenReporters,
+  reportFile,
+  indexFile,
+  object,
   root,
   runReporter,
   type Fixture,
@@ -27,6 +30,7 @@ before(() => {
       {
         runtime:
           "Exact rustc --version versus exact Node process.version; machine and source identity unchanged",
+        usage: "Only exact Rust/Node canonical first header; all remaining help bytes unchanged",
         durationMs:
           "Each baseline duration is a safe integer in [0, 240000]; only this monotonic measurement is removed",
         originalAdditions:
@@ -94,8 +98,8 @@ test("complete reports preserve deterministic ignore, rule, raw process and shar
     input.write(".gitignore", "generated/\n");
     input.write("generated/Ignored.vue", "<template><div v-html='x' /></template>\n");
     input.configure([
-      input.project("zeta"),
-      input.project("alpha"),
+      input.project("zeta", { vueGlobs: ["**/*.vue"] }),
+      input.project("alpha", { vueGlobs: ["**/*.vue"] }),
       input.project("middle", { coverage: ["formatter"] }),
     ]);
     const args = [
@@ -112,7 +116,7 @@ test("complete reports preserve deterministic ignore, rule, raw process and shar
     assert.equal(result.processes.length, 1);
     assert.deepEqual(result.processes[0].argv, [
       "lint",
-      "App.vue",
+      "**/*.vue",
       "--format",
       "json",
       "--no-config",
@@ -123,8 +127,28 @@ test("complete reports preserve deterministic ignore, rule, raw process and shar
       file.endsWith("-lint-divergence.json"),
     );
     assert.equal(reports.length, 1);
-    assert.deepEqual(reports[0][1].files, { comparedCount: 1, expectedCount: null });
-    assert.equal(result.files["lint-divergence-summary.json"].budget.passed, true);
+    assert.deepEqual(reportFile(result, reports[0][0]).files, {
+      comparedCount: 1,
+      expectedCount: null,
+    });
+    assert.equal(indexFile(result).budget.passed, true);
+    // .ignore overrides .gitignore; the nested .ignore re-includes one input.
+    input.write(".ignore", "!generated/\ngenerated/*\n");
+    input.write("generated/.ignore", "!Keep.vue\n");
+    input.write("generated/Keep.vue", "<template><span /></template>\n");
+    input.configure([input.project("nested", { vueGlobs: ["**/*.vue"] })], {
+      results: [
+        { file: "App.vue", messages: [] },
+        { file: "generated/Keep.vue", messages: [] },
+      ],
+    });
+    const nested = compare(input, [...input.args, "--preset", "no-rules"]);
+    assert.equal(nested.status, 0, nested.stderr);
+    assert.deepEqual(reportFile(nested, "nested-lint-divergence.json").files, {
+      comparedCount: 2,
+      expectedCount: null,
+    });
+    assert.deepEqual(nested.processes[0].argv, result.processes[0].argv);
   } finally {
     input.clean();
   }
@@ -137,7 +161,7 @@ test("actual pinned ESLint mapped diagnostics preserve full reports, breached bu
     for (const mode of ["enforce", "record-only"]) {
       const result = compare(input, [...input.args, "--budget-mode", mode]);
       assert.equal(result.status, mode === "enforce" ? 1 : 0);
-      const report = result.files["parity-lint-divergence.json"];
+      const report = reportFile(result, "parity-lint-divergence.json");
       assert.equal(report.divergence.summary.falseNegativeCount, 1);
       assert.equal(report.divergence.falseNegatives[0].upstreamRuleId, "vue/no-v-html");
       assert.equal(report.budget.passed, false);
@@ -157,7 +181,7 @@ test("raw fatal ESLint diagnostics including source remain complete and unusable
     input.write("App.vue", source);
     const result = compare(input);
     assert.equal(result.status, 1);
-    const report = result.files["parity-lint-divergence.json"];
+    const report = reportFile(result, "parity-lint-divergence.json");
     assert.equal(report.budget.verdict, "unusable");
     assert.equal(report.divergence.summary.baselineParseErrorCount, 1);
     assert.deepEqual(report.baseline.parseErrorResults, report.raw.eslintResults);
@@ -172,16 +196,20 @@ test("u64 diagnostic ranges and arbitrary raw i64/u64 keys retain every source d
   const input = fixture();
   try {
     const stdout =
-      '[{"file":"App.vue","unknown":{"min":-9223372036854775808,"max":18446744073709551615},' +
+      '[{"file":"App.vue","unknown":{"min":-9223372036854775808,"max":18446744073709551615,"fraction":1.0,"negativeZero":-0.0,"small":1e-6,"large":1e16,"𐀀":2,"\ue000":3},' +
       '"messages":[{"ruleId":"vue/no-v-html","severity":1,"line":9007199254740993,"column":1,' +
       '"endLine":9007199254740993,"endColumn":2,"message":"precision control"}]}]';
     input.configure([input.project()], { stdout });
     const result = compare(input);
     assert.equal(result.status, 1);
-    const report = result.files["parity-lint-divergence.json"];
-    assert.equal(report.raw.patinaResults[0].unknown.min, -9223372036854775808n);
-    assert.equal(report.raw.patinaResults[0].unknown.max, 18446744073709551615n);
+    const report = reportFile(result, "parity-lint-divergence.json");
+    assert.equal(object(report.raw.patinaResults[0].unknown).min, -9223372036854775808n);
+    assert.equal(object(report.raw.patinaResults[0].unknown).max, 18446744073709551615n);
     assert.equal(report.raw.patinaFindings[0].line, 9007199254740993n);
+    const observed = result.rawUnknownTokens["parity-lint-divergence.json"];
+    assert.equal(observed.tokens.fraction, "1.0");
+    assert.equal(observed.tokens.negativeZero, "-0.0");
+    assert.deepEqual(observed.keys.slice(-2), ["\ue000", "𐀀"]);
     assert.equal(report.divergence.falsePositives[0].line, 9007199254740993n);
     assert.equal(Buffer.from(result.processes[0].stdout, "base64").toString(), stdout);
   } finally {
@@ -196,7 +224,7 @@ test("zero input requires an explicit integer zero and preserves all refusal sid
     input.configure([input.project("parity", { expectedVueFileCount: 0 })], { results: [] });
     const result = compare(input);
     assert.equal(result.status, 0, result.stderr);
-    assert.deepEqual(result.files["parity-lint-divergence.json"].files, {
+    assert.deepEqual(reportFile(result, "parity-lint-divergence.json").files, {
       comparedCount: 0,
       expectedCount: 0,
     });
@@ -304,9 +332,25 @@ test("named invalid JSON scalar vectors refuse before artifacts, including shado
   }
 });
 
-const reviewed = JSON.parse(
+interface ReviewedCase {
+  id: string;
+  project: string;
+  revision: string;
+  source: string;
+  finding: { file: string; [key: string]: unknown };
+}
+const reviewedValue: unknown = JSON.parse(
   fs.readFileSync(path.join(root, contractDirectory, "contract.json"), "utf8"),
-).cases;
+);
+const reviewedCases = object(reviewedValue).cases;
+assert.ok(Array.isArray(reviewedCases));
+const reviewed = reviewedCases.map((value: unknown): ReviewedCase => {
+  const row = object(value);
+  for (const key of ["id", "project", "revision", "source"])
+    assert.equal(typeof row[key], "string");
+  assert.equal(typeof object(row.finding).file, "string");
+  return row as unknown as ReviewedCase;
+});
 for (const entry of reviewed) {
   test(`updated real Rust and TS preserve full reviewed case ${entry.id} and missing/duplicate findings`, () => {
     const input = fixture();
@@ -328,7 +372,7 @@ for (const entry of reviewed) {
         });
         const result = compare(input, input.args, ["updated"]);
         assert.equal(result.status, count === 1 ? 0 : 1, result.stderr);
-        const report = result.files[`${entry.project}-lint-divergence.json`];
+        const report = reportFile(result, `${entry.project}-lint-divergence.json`);
         assert.equal(report.divergence.referenceCoverageExpectations.length, 1);
         assert.equal(report.divergence.referenceCoverageExpectations[0].observedCount, count);
         assert.equal(
@@ -360,7 +404,7 @@ test("unmeasured foreign reviewed source is scored: explicit correction to updat
     const actual = runReporter(input, nodeCommand);
     assert.equal(old.status, 0, old.stderr);
     assert.equal(actual.status, 1, actual.stderr);
-    const report = actual.files[`${entry.project}-lint-divergence.json`];
+    const report = reportFile(actual, `${entry.project}-lint-divergence.json`);
     assertDigest(report.divergence);
     assert.deepEqual(report.divergence.referenceCoverageExpectations, []);
     assert.equal(report.divergence.summary.falsePositiveCount, 1);
