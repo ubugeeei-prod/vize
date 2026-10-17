@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const fixture = path.join(repo, "tests/_fixtures/_projects/vitest-fs-module-cache");
+const fixture = path.join(repo, "tools/support/compat/vitest/fixtures/fs-module-cache");
 const args = process.argv.slice(2);
 assert.equal(
   args.length,

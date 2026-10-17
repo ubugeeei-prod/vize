@@ -9,7 +9,7 @@ on:
       - "crates/vize_atelier_sfc/src/vite_plugin/**"
       - "crates/vize_atelier_sfc/src/vite_plugin.rs"
       - "tools/support/compat/vitest-module-cache.ts"
-      - "tests/_fixtures/_projects/vitest-fs-module-cache/**"
+      - "tools/support/compat/vitest/fixtures/fs-module-cache/**"
   workflow_dispatch:
 
 permissions: { contents: read }
@@ -54,7 +54,7 @@ jobs:
           vp run --workspace-root build:vite-plugin
           node npm/builder/vite/scripts/run-tests.mjs --require-prepared
       - name: Install the exact reported Vitest and official Vue control
-        working-directory: tests/_fixtures/_projects/vitest-fs-module-cache
+        working-directory: tools/support/compat/vitest/fixtures/fs-module-cache
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Resolve persisted module identities with the source addon
         run: node npm/native/scripts/test-preparation.mjs node npm/builder/vite/src/plugin/resolve-relative-vue.test.ts
