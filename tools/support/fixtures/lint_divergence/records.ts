@@ -45,7 +45,9 @@ function severity(value: Json, label: string): string {
   throw new Error(`${label}.severity must be an ESLint severity (1 or 2)`);
 }
 function validateRange(record: LintRecord): void {
-  if ([record.line, record.column, record.endLine, record.endColumn].some((n) => n === 0))
+  if (
+    [record.line, record.column, record.endLine, record.endColumn].some((n) => n === 0 || n === 0n)
+  )
     throw new Error(
       `finding range must be positive safe integers: ${record.file} ${record.ruleId}`,
     );
@@ -62,7 +64,7 @@ const normalizeMessage = (message: string) =>
     .join(" ");
 function requiredInteger(value: Json, key: string, label: string): Integer {
   const result = unsigned(get(value, key));
-  if (result === undefined || result === 0)
+  if (result === undefined || result === 0 || result === 0n)
     throw new Error(`${label}.${key} must be a positive integer`);
   return result;
 }

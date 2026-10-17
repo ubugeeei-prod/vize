@@ -21,6 +21,13 @@ export interface Launch {
   command: string;
   prefix: string[];
 }
+function exitStatus(status: number | null): number {
+  const value = status ?? 1;
+  return process.platform === "win32" && value >= 0x80000000 ? value - 0x100000000 : value;
+}
+function parseOutput(output: Uint8Array): Json {
+  return parseJsonSource(new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(output));
+}
 export function resolveVizeLaunch(root: string, vizeBin: string | null): Launch {
   const executable = process.platform === "win32" ? "vize.exe" : "vize";
   const absolute = (filename: string) =>
@@ -78,18 +85,17 @@ export function runPatina(
   if (args.preset !== null) argv.push("--preset", args.preset);
   const output = spawnSync(launch.command, argv, {
     cwd,
-    encoding: "utf8",
     env: { ...process.env, LANG: "C", LC_ALL: "C" },
     stdio: ["ignore", "pipe", "pipe"],
     maxBuffer: Infinity,
   });
   if (output.error) throw new Error(`vize lint failed to run: ${output.error.message}`);
-  const status = output.status ?? 1;
+  const status = exitStatus(output.status);
   if (status !== 0 && status !== 1)
     throw new Error(`vize lint exited with unsupported status ${status}: ${output.stderr}`);
   let envelope: Json;
   try {
-    envelope = parseJsonSource(output.stdout);
+    envelope = parseOutput(output.stdout);
   } catch (error) {
     throw new Error(`vize lint produced invalid JSON: ${errorMessage(error)}`);
   }
@@ -147,18 +153,17 @@ export function runEslintBaseline(
   };
   const output = spawnSync("node", ["--input-type=module", "--eval", baselineScript], {
     cwd: root,
-    encoding: "utf8",
     input: canonicalJson(input),
     maxBuffer: Infinity,
   });
   if (output.error) throw new Error(`eslint baseline failed to start: ${output.error.message}`);
   if (output.status !== 0)
     throw new Error(
-      `eslint baseline exited ${output.status ?? 1}:\n${output.stdout}${output.stderr}`,
+      `eslint baseline exited ${exitStatus(output.status)}:\n${output.stdout}${output.stderr}`,
     );
   let parsed: Json;
   try {
-    parsed = parseJsonSource(output.stdout);
+    parsed = parseOutput(output.stdout);
   } catch (error) {
     throw new Error(`eslint baseline produced invalid JSON: ${errorMessage(error)}`);
   }
