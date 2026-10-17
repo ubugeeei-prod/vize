@@ -309,7 +309,7 @@ test("the original Check's red latest attempt refuses when another older run is 
   const changed = before();
   const original = changed.gates.workflow_runs.find((run) => run.event === "push")!;
   const olderGreen = structuredClone(original);
-  olderGreen.id -= 1;
+  olderGreen.id = Number(olderGreen.id) - 1;
   changed.gates.workflow_runs.push(olderGreen);
   Object.assign(original, { run_attempt: 2, conclusion: "failure" });
   assert.throws(() => integrationIdentity(changed), /successful latest/);
