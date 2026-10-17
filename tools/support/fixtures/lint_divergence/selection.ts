@@ -102,7 +102,7 @@ function normalized(value: string): string {
 }
 
 /** Rust glob::Pattern syntax: braces are literal, stars require separators. */
-function globPattern(pattern: string): RegExp | null {
+function globPattern(pattern: string, grammar: "vue" | "ignore" = "vue"): RegExp | null {
   let expression = "";
   for (let i = 0; i < pattern.length; i++) {
     const char = pattern[i];
@@ -119,18 +119,24 @@ function globPattern(pattern: string): RegExp | null {
     } else if (char === "?") expression += "[^/]";
     else if (char === "[") {
       let end = i + 1;
-      if (pattern[end] === "!") end++;
+      if (pattern[end] === "!" || (grammar === "ignore" && pattern[end] === "^")) end++;
       if (pattern[end] === "]") end++;
       end = pattern.indexOf("]", end);
       if (end < 0) return null;
       let content = pattern.slice(i + 1, end);
-      if (content.startsWith("!")) content = "^" + content.slice(1);
-      expression += `[${content.replaceAll("\\", "\\\\")}]`;
+      // glob::Pattern accepts only ! as class negation; globset also accepts ^.
+      // A first ] is a literal member in both grammars, not an empty JS class.
+      const negated = content.startsWith("!") || (grammar === "ignore" && content.startsWith("^"));
+      if (negated) content = content.slice(1);
+      const members = Array.from(content, (member) =>
+        "\\[]^".includes(member) ? `\\${member}` : member,
+      ).join("");
+      expression += `${grammar === "vue" ? "(?!/)" : ""}[${negated ? "^" : ""}${members}]`;
       i = end;
     } else expression += char.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
   }
   try {
-    return new RegExp(`^${expression}$`);
+    return new RegExp(`^${expression}$`, grammar === "vue" ? "u" : "");
   } catch {
     return null;
   }
@@ -153,8 +159,9 @@ function gitRoot(directory: string): string | null {
 function parseIgnoreRule(source: string, base: string, git: boolean): IgnoreRule[] {
   let pattern = source.trimEnd();
   if (!pattern || pattern.startsWith("#")) return [];
-  const negate = pattern.startsWith("!");
-  if (negate) pattern = pattern.slice(1);
+  const escapedMarker = pattern.startsWith("\\!") || pattern.startsWith("\\#");
+  const negate = !escapedMarker && pattern.startsWith("!");
+  if (escapedMarker || negate) pattern = pattern.slice(1);
   const directory = pattern.endsWith("/");
   if (directory) pattern = pattern.slice(0, -1);
   return [{ base, pattern, negate, directory, git }];
@@ -181,7 +188,7 @@ function ignoredByRules(
     if (rule.directory && !directory) continue;
     const relative = relativePath(rule.base, filename),
       pattern = rule.pattern.replace(/^\//, "");
-    const matcher = globPattern(pattern);
+    const matcher = globPattern(pattern, "ignore");
     if (!matcher) continue;
     if (
       pattern.includes("/") || rule.pattern.startsWith("/")
@@ -210,8 +217,8 @@ function inheritedIgnoreRules(directory: string): IgnoreRule[] {
       : []),
   ]);
 }
-function gitIgnored(directory: string, filenames: string[]): Set<string> {
-  if (!filenames.length) return new Set();
+function gitDecisions(directory: string, filenames: string[]): Map<string, boolean> {
+  if (!filenames.length) return new Map();
   const result = spawnSync("git", ["check-ignore", "--no-index", "--verbose", "-z", "--stdin"], {
     cwd: directory,
     input: filenames.join("\0") + "\0",
@@ -219,7 +226,7 @@ function gitIgnored(directory: string, filenames: string[]): Set<string> {
     maxBuffer: Infinity,
   });
   const fields = (result.stdout ?? "").split("\0"),
-    ignored = new Set<string>(),
+    decisions = new Map<string, boolean>(),
     root = gitRoot(directory) ?? directory;
   for (let index = 0; index + 3 < fields.length; index += 4) {
     const origin = fields[index],
@@ -235,10 +242,10 @@ function gitIgnored(directory: string, filenames: string[]): Set<string> {
     } catch {
       continue;
     }
-    if (ignoredByRules(filename, isDirectory, parseIgnoreRule(pattern, base, true)) === true)
-      ignored.add(filename);
+    const decision = ignoredByRules(filename, isDirectory, parseIgnoreRule(pattern, base, true));
+    if (decision !== undefined) decisions.set(filename, decision);
   }
-  return ignored;
+  return decisions;
 }
 function walk(
   cwd: string,
@@ -254,9 +261,14 @@ function walk(
   } catch {
     return;
   }
-  const rules = [...inherited, ...ignoreRules(directory), ...ignoreRules(directory, true)];
+  // A nested Git root stops parent Git rules, while ordinary .ignore rules
+  // continue across that boundary (ignore::matched_ignore's saw_git contract).
+  const parents = fs.existsSync(path.join(directory, ".git"))
+    ? inherited.filter((rule) => !rule.git)
+    : inherited;
+  const rules = [...parents, ...ignoreRules(directory), ...ignoreRules(directory, true)];
   const paths = entries.map((entry) => path.join(directory, entry.name));
-  const ignored = gitIgnored(directory, paths);
+  const git = gitDecisions(directory, paths);
   for (const entry of entries) {
     const filename = path.join(directory, entry.name);
     const localIgnore =
@@ -269,11 +281,12 @@ function walk(
         filename,
         entry.isDirectory(),
         rules.filter((rule) => rule.git),
-      );
+      ) ??
+      git.get(filename);
     if (
       entry.name === ".git" ||
-      (matcher === null && entry.name.startsWith(".")) ||
-      (localIgnore === undefined ? ignored.has(filename) : localIgnore)
+      (matcher === null && localIgnore === undefined && entry.name.startsWith(".")) ||
+      localIgnore === true
     )
       continue;
     if (entry.isDirectory()) walk(cwd, filename, matcher, absolute, files, rules);
