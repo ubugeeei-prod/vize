@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { cp, mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import path from "node:path";
 import { galleryPath, sha256, sides, writeVrtConfig, type VrtFixture } from "./vrt_fixtures.ts";
@@ -164,7 +164,14 @@ export async function buildHostedVrt(
 /** Only real emitted static bytes are served; no preview, compiler, API or runner substitution. */
 export async function staticVrtHost(directory: string, e: Evidence) {
   const requests: unknown[] = [];
-  const saved = new Set<string>();
+  // Several emitted hosts share one Evidence owner during this campaign.
+  // Allocate each host an exclusive namespace; never overwrite or ignore a
+  // failed immutable evidence write when an asset is served again.
+  const bodyRoot = path.join(e.output, "http-bodies");
+  await mkdir(bodyRoot, { recursive: true });
+  const bodyDirectory = await mkdtemp(path.join(bodyRoot, "host-"));
+  const bodyPrefix = path.relative(e.output, bodyDirectory).split(path.sep).join("/");
+  const saved = new Map<string, Promise<void>>();
   let refuseAxe = false;
   const types: Record<string, string> = {
     ".html": "text/html",
@@ -212,10 +219,14 @@ export async function staticVrtHost(directory: string, e: Evidence) {
         bytes = Buffer.from("Not found");
       }
       const digest = sha256(bytes);
-      if (!saved.has(digest)) {
-        saved.add(digest);
-        await e.save(`http-bodies/${digest}.bin`, bytes);
+      let writing = saved.get(digest);
+      if (!writing) {
+        writing = e.save(`${bodyPrefix}/${digest}.bin`, bytes);
+        saved.set(digest, writing);
       }
+      // Concurrent responses wait for the same complete write, including its
+      // rejection. A prior failure cannot become a later successful response.
+      await writing;
       requests.push({
         method: request.method,
         target: request.url,
