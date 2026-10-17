@@ -151,6 +151,7 @@ pub(super) fn prequalification_fixture(repo: &Repo) -> (Value, String, String, S
     identity.insert("qualificationRun".into(), json!(8));
     identity.insert("qualificationAttempt".into(), json!(1));
     let mut qualification = receipt["originalEvidence"]["HRunPages"][0]["workflow_runs"][1].clone();
+    qualification["run_started_at"] = json!("2026-10-17T01:00:00Z");
     qualification["status"] = json!("completed");
     qualification["conclusion"] = json!("failure");
     qualification["display_title"] = json!(format!("Check full @ {head}"));
