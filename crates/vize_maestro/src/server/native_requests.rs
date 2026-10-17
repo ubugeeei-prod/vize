@@ -8,6 +8,23 @@ use tower_lsp::jsonrpc::Result;
 use super::MaestroServer;
 
 impl MaestroServer {
+    /// Source-local answers never touch the backend or borrow its transaction.
+    /// Retain the same source/config freshness boundary around their sync work.
+    pub(super) fn local_request<T>(&self, request: impl FnOnce() -> Result<T>) -> Result<T> {
+        #[cfg(feature = "native")]
+        let stamp = self.state.corsa_request_stamp();
+        #[cfg(feature = "native")]
+        if !stamp.is_current(&self.state) {
+            return Err(Error::content_modified());
+        }
+        let response = request();
+        #[cfg(feature = "native")]
+        if !stamp.is_current(&self.state) {
+            return Err(Error::content_modified());
+        }
+        response
+    }
+
     /// Bulk requests do not borrow the retired primary's Corsa transaction.
     /// Each native owner acquires its own scope; the aggregate also refuses
     /// results if any routing policy or shared authored buffer changed.

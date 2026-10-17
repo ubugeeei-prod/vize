@@ -96,7 +96,7 @@ void test("Only Playground and canonical SSR-Pug use the new adapter", () => {
     );
   // Every other Wild user keeps the pinned upstream action, counted per file.
   assert.deepEqual(uses(pr.jobs, local), ["pr-playground-test"]);
-  assert.deepEqual(uses(pr.jobs, upstream), ["pr-tooling-scripts"]);
+  assert.deepEqual(uses(pr.jobs, upstream), ["pr-native-runtime"]);
   const js = parse(fs.readFileSync(".github/workflows/pr-js-checks.yml", "utf8"));
   assert.deepEqual(uses(js.jobs, local), []);
   assert.deepEqual(uses(js.jobs, upstream), Object.keys(js.jobs));

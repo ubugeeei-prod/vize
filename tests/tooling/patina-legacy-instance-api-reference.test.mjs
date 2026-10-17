@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -6,6 +7,9 @@ import path from "node:path";
 import { test } from "node:test";
 import { gunzipSync } from "node:zlib";
 import { compileFunction } from "node:vm";
+import { pathToFileURL } from "node:url";
+
+import { loadFrozenTemplateCompiler } from "./support/patina-template-provider.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const fixture = path.join(root, "tests/_fixtures/differential/lint/legacy-instance-apis-9217");
@@ -221,22 +225,60 @@ await test("legacy instance API packets preserve every pinned original source an
 
 await test("original Vue compiler scope and TS erasure preserve explicit reference blind spots", () => {
   const boundaries = json("template-boundaries.json");
-  const requireVue = createRequire(
-    process.env.VIZE_LEGACY_API_VUE_MANIFEST ??
-      path.join(root, "tools/benchmarks/scripts/package.json"),
+  const { compiler, typescript } = loadFrozenTemplateCompiler(
+    "template-boundaries.json",
+    boundaries.compilerProvider,
+    "dom",
   );
-  const compiler = requireVue("@vue/compiler-dom");
-  const typescript = requireVue("typescript");
-  assert.equal(requireVue("vue/package.json").version, boundaries.compilerProvider.vue);
-  assert.equal(
-    requireVue("@vue/compiler-dom/package.json").version,
-    boundaries.compilerProvider.compiler,
-  );
-  assert.equal(typescript.version, boundaries.compilerProvider.typescript);
-  for (const source of boundaries.compilerProvider.sources) {
-    const directory = path.dirname(requireVue.resolve(`${source.packageName}/package.json`));
-    assert.equal(hash(fs.readFileSync(path.join(directory, source.path))), source.sha256);
+  for (const altered of [
+    { ...boundaries.compilerProvider, sources: [] },
+    { ...boundaries.compilerProvider, vue: "0.0.0" },
+  ]) {
+    assert.throws(
+      () => loadFrozenTemplateCompiler("template-boundaries.json", altered, "dom"),
+      assert.AssertionError,
+      "the complete authenticated provider cannot omit source custody or change versions",
+    );
   }
+  const helper = pathToFileURL(
+    path.join(root, "tests/tooling/support/patina-template-provider.ts"),
+  );
+  const requireTests = createRequire(path.join(root, "tests/package.json"));
+  const foreignManifest = requireTests.resolve("vue-language-tools-fixture-vue/package.json");
+  const foreign = spawnSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "-e",
+      `import assert from "node:assert/strict";
+import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
+import { loadFrozenTemplateCompiler } from ${JSON.stringify(helper.href)};
+const provider = JSON.parse(readFileSync(${JSON.stringify(path.join(fixture, "template-boundaries.json"))}, "utf8")).compilerProvider;
+const foreignRequire = createRequire(process.env.VIZE_LEGACY_API_VUE_MANIFEST);
+const installed = foreignRequire("vue/package.json").version;
+const runtimeVersion = foreignRequire("vue").version;
+assert.equal(runtimeVersion, installed);
+assert.notEqual(installed, provider.vue, "the control must install a genuinely different Vue");
+assert.throws(() => loadFrozenTemplateCompiler("template-boundaries.json", provider, "dom"), assert.AssertionError);
+process.stdout.write(JSON.stringify({ installed, runtimeVersion, expected: provider.vue, refused: true }));`,
+    ],
+    {
+      encoding: "utf8",
+      timeout: 10_000,
+      env: {
+        ...process.env,
+        VIZE_LEGACY_API_VUE_MANIFEST: foreignManifest,
+      },
+    },
+  );
+  assert.equal(foreign.status, 0, foreign.error?.message ?? foreign.stderr);
+  const refusal = JSON.parse(foreign.stdout);
+  assert.equal(refusal.refused, true);
+  assert.equal(refusal.installed, "3.6.0-rc.6");
+  assert.equal(refusal.runtimeVersion, refusal.installed);
+  assert.equal(refusal.expected, boundaries.compilerProvider.vue);
+  assert.notEqual(refusal.installed, refusal.expected);
   assert.equal(boundaries.syntaxProof.length, 5);
   for (const expected of boundaries.syntaxProof) {
     const original = boundaries.records.find((record) => record.id === expected.id);
@@ -291,23 +333,36 @@ await test("original Vue compiler scope and TS erasure preserve explicit referen
 });
 
 await test("Vue 3 keeps removed APIs unavailable on public instances and Options-returning factories", () => {
-  const requireVue = createRequire(
-    process.env.VIZE_LEGACY_API_VUE_MANIFEST ??
-      path.join(root, "tools/benchmarks/scripts/package.json"),
-  );
-  const requireTypeScript = createRequire(
+  const vueManifest = process.env.VIZE_LEGACY_API_VUE_MANIFEST;
+  const requireVue = createRequire(vueManifest ?? path.join(root, "tests/package.json"));
+  // The immutable runtime packet owns an exact dependency, independently of
+  // the benchmark's moving Vue track. External replays still supply plain Vue.
+  const vuePackage = vueManifest ? "vue" : "vue-legacy-instance-oracle";
+  const requireScriptParser = createRequire(
     process.env.VIZE_LEGACY_API_SCRIPT_PARSER_MANIFEST ??
       path.join(root, "tools/benchmarks/scripts/package.json"),
   );
   const runtime = json("runtime.json");
-  const { createRenderer, h, version } = requireVue("vue");
-  const requireDom = createRequire(requireVue.resolve("@vue/runtime-dom/package.json"));
+  if (!vueManifest) {
+    assert.equal(
+      requireVue("./package.json").devDependencies[vuePackage],
+      `npm:vue@${runtime.provider.vue}`,
+    );
+  }
+  const { createRenderer, h, version } = requireVue(vuePackage);
+  // Follow the actual Vue package dependency graph under isolated installs.
+  // runtime-dom is Vue's dependency, not a direct benchmark dependency.
+  const requireVuePackage = createRequire(requireVue.resolve(`${vuePackage}/package.json`));
+  const requireDom = createRequire(requireVuePackage.resolve("@vue/runtime-dom/package.json"));
   const runtimePath = path.join(
     path.dirname(requireDom.resolve("@vue/runtime-core/package.json")),
     runtime.provider.source.path,
   );
   assert.equal(version, runtime.provider.vue);
   assert.equal(hash(fs.readFileSync(runtimePath)), runtime.provider.source.sha256);
+  const requireTypeScript = createRequire(
+    requireScriptParser.resolve("@typescript-eslint/parser/package.json"),
+  );
   const typescript = requireTypeScript("typescript");
   assert.equal(typescript.version, runtime.provider.typescript);
   const { transpileModule, ModuleKind, ScriptTarget } = typescript;

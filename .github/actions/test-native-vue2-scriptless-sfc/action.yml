@@ -13,7 +13,7 @@ runs:
       env:
         BASE_SHA: ${{ inputs.comparison-base }}
       run: |
-        if [[ "$GITHUB_EVENT_NAME" == "merge_group" ]]; then
+        if [[ "$GITHUB_EVENT_NAME" == "merge_group" || "$GITHUB_EVENT_NAME" == "schedule" || "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
           echo 'selected=true' >> "$GITHUB_OUTPUT"
         else
           git diff --name-only "$BASE_SHA" "$GITHUB_SHA" > "$RUNNER_TEMP/vue2-whole-sfc-paths.txt"

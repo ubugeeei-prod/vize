@@ -7,7 +7,8 @@ test("check workflow runs JS package unit tests and production dependency audit"
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const packageJson = JSON.parse(readRepoFile("package.json"));
   const pnpmWorkspace = readRepoFile("pnpm-workspace.yaml");
-  const jsPackageJob = workflowJobBody(workflow, "test-js-packages");
+  const jsPackageJob = workflowJobBody(workflow, "full-js-package-tests");
+  const jsPackageGate = workflowJobBody(workflow, "test-js-packages");
   const auditJob = workflowJobBody(workflow, "security-audit");
 
   assert.equal(packageJson.packageManager, "pnpm@12.1.0");
@@ -29,6 +30,8 @@ test("check workflow runs JS package unit tests and production dependency audit"
     /run: node \.github\/actions\/test-js-packages-with-history\/native-fault-evidence\.ts -- vp run --workspace-root test:js/,
   );
   assert.match(jsPackageJob, /uses: \.\/\.github\/actions\/setup-js-package-tests/);
+  assert.match(jsPackageGate, /needs: \[full-js-package-tests, full-js-original-project\]/);
+  assert.match(jsPackageGate, /require-needs-success\.ts --full-js-packages/);
   const jsSetup = readRepoFile(".github", "actions", "setup-js-package-tests", "action.yml");
   assert.match(jsSetup, /key:\s*test-js-packages/);
   assert.match(auditJob, /node tools\/commands\/ci\/npm-audit-retry\.ts/);

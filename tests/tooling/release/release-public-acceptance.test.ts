@@ -1,5 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import {
+  prepareLspSourceRoot,
+  assertLspSourceRoot,
+} from "../../../tools/support/release/public_acceptance/lsp_source.ts";
 import { retirementAbsenceLaw } from "../support/release-retirement-absence-fixtures.ts";
 import { retirementTransportLaw } from "../support/release-retirement-transport-law.ts";
 import { publicArchiveReceiptLaw } from "../support/release-public-archive-receipt-law.ts";
@@ -33,6 +40,114 @@ import {
 } from "../support/release-public-acceptance-fixtures.ts";
 
 test("retirement refuses incomplete or ambiguous public absence", retirementAbsenceLaw);
+
+function sourceActors(context: { after: (callback: () => void) => void }) {
+  const temporary = fs.realpathSync(
+    fs.mkdtempSync(path.join(os.tmpdir(), "vize-public-actor-test-")),
+  );
+  context.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const roots = Object.fromEntries(
+    ["checkout", "consumer", "output"].map((name) => {
+      const directory =
+        name === "output" ? path.join(temporary, "checkout/artifacts") : path.join(temporary, name);
+      fs.mkdirSync(directory);
+      return [name, directory];
+    }),
+  ) as { checkout: string; consumer: string; output: string };
+  return {
+    ...roots,
+    temporary,
+    owned: prepareLspSourceRoot(roots.checkout, roots.consumer, roots.output),
+  };
+}
+
+test("copied LSP fixture source remains outside the browser input tree without exclusions", (t) => {
+  const actors = sourceActors(t);
+  const intentional = path.join(
+    actors.owned.sourceTree,
+    "tests/_fixtures/upstream/tsc/#5136/src.vue",
+  );
+  fs.mkdirSync(path.dirname(intentional), { recursive: true });
+  const fixture =
+    '<template><p>original LSP fixture</p></template><style src="./main.css"></style>';
+  fs.writeFileSync(intentional, fixture);
+  fs.mkdirSync(path.join(actors.consumer, "src"));
+  fs.writeFileSync(
+    path.join(actors.consumer, "src/App.vue"),
+    "<template>browser fixture</template>",
+  );
+  const scan = (directory: string): string[] =>
+    fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+      const file = path.join(directory, entry.name);
+      return entry.isDirectory() ? scan(file) : file.endsWith(".vue") ? [file] : [];
+    });
+  assert.deepEqual(scan(actors.consumer), [path.join(actors.consumer, "src/App.vue")]);
+  assert.deepEqual(scan(actors.owned.sourceTree), [intentional]);
+  assert.equal(fs.readFileSync(intentional, "utf8"), fixture, "source fixture bytes are preserved");
+  assertLspSourceRoot(actors.owned, actors);
+  assert.equal(path.dirname(actors.owned.sourceRoot), path.dirname(actors.consumer));
+  assert.equal(fs.existsSync(path.join(actors.consumer, "lsp-source")), false);
+});
+
+test("LSP source ownership rejects relocated, missing, borrowed and aliased roots", (t) => {
+  const actors = sourceActors(t);
+  const { owned } = actors;
+  const borrowed = prepareLspSourceRoot(actors.checkout, actors.consumer, actors.output);
+  assert.throws(() => assertLspSourceRoot({ ...owned, sourceTree: borrowed.sourceTree }));
+  const alias = path.join(actors.temporary, "vize-public-lsp-source-alias");
+  fs.symlinkSync(owned.sourceRoot, alias);
+  assert.throws(() =>
+    assertLspSourceRoot({
+      ...owned,
+      sourceRoot: alias,
+      sourceTree: path.join(alias, "lsp-source"),
+    }),
+  );
+  assert.throws(() => prepareLspSourceRoot(actors.checkout, alias, actors.output));
+  const moved = owned.sourceRoot + "Moved";
+  fs.renameSync(owned.sourceRoot, moved);
+  assert.throws(() => assertLspSourceRoot(owned));
+  assert.throws(
+    () =>
+      assertLspSourceRoot({
+        ...owned,
+        sourceRoot: moved,
+        sourceTree: path.join(moved, "lsp-source"),
+      }),
+    /borrowed source ownership/,
+  );
+  const marker = path.join(borrowed.sourceRoot, "source-owner.json");
+  fs.unlinkSync(marker);
+  assert.throws(() => assertLspSourceRoot(borrowed));
+});
+
+test("source isolation refuses root overlap and ownership-marker substitution", (t) => {
+  const actors = sourceActors(t);
+  assert.throws(() =>
+    prepareLspSourceRoot(path.parse(actors.checkout).root, actors.consumer, actors.output),
+  );
+  const insideCheckout = path.join(actors.checkout, "consumer");
+  fs.mkdirSync(insideCheckout);
+  assert.throws(() => prepareLspSourceRoot(actors.checkout, insideCheckout, actors.output));
+  const insideConsumer = path.join(actors.consumer, "output");
+  fs.mkdirSync(insideConsumer);
+  assert.throws(() => prepareLspSourceRoot(actors.checkout, actors.consumer, insideConsumer));
+  assert.throws(() =>
+    assertLspSourceRoot({
+      ...actors.owned,
+      isolation: { ...actors.owned.isolation, checkout: actors.owned.sourceRoot },
+    }),
+  );
+  assert.throws(() => assertLspSourceRoot(actors.owned, { ...actors, consumer: actors.checkout }));
+  const marker = path.join(actors.owned.sourceRoot, "source-owner.json");
+  fs.writeFileSync(marker, "{}");
+  assert.throws(() => assertLspSourceRoot(actors.owned), /ownership bytes changed/);
+  fs.unlinkSync(marker);
+  const foreign = path.join(actors.temporary, "borrowed-owner.json");
+  fs.writeFileSync(foreign, "{}");
+  fs.symlinkSync(foreign, marker);
+  assert.throws(() => assertLspSourceRoot(actors.owned), /normal source ownership marker/);
+});
 test("retirement retries preserve complete absence refusals", retirementTransportLaw);
 test(
   "public browser observation requires completed prerequisites, preserving a strict seal",

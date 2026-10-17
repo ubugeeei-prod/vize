@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { quickTunnelPin } from "./vrt_tunnel.ts";
+import { assertFresh } from "../consumer_recovery/policy.ts";
 
 const repository = "https://api.github.com/repos/cloudflare/cloudflared";
 export const quickTunnelMetadata = {
@@ -108,10 +109,53 @@ export function assertTunnelReleaseCustody(
   assert.equal(published.success, true);
   const publishedSource = metadataObject(published.source),
     github = metadataObject(published.github);
-  for (const [key, value] of Object.entries(source))
+  const { recoveryRun, ...original } = source;
+  for (const [key, value] of Object.entries(original))
     assert.equal(publishedSource[key], value, `official release ${key}`);
   assert.equal(github.target, source.head);
   assert.equal(github.runStatus, "completed");
-  assert.equal(github.runConclusion, "success");
   assert.ok(Number.isSafeInteger(github.releaseId) && Number(github.releaseId) > 0);
+  if (recoveryRun === undefined) {
+    assert.equal(github.runConclusion, "success", "successful original Release required");
+    assert.equal(github.consumerRecovery, undefined, "explicit recovery run required");
+    return;
+  }
+  // prepare/verifyGithub already authenticates the signature, live run and all six consumers.
+  // Bind that private publication output here; never turn an arbitrary failed R into success.
+  assert.match(recoveryRun, /^[1-9][0-9]*$/u, "positive exact recovery run required");
+  assert.ok(Number.isSafeInteger(Number(recoveryRun)), "safe recovery run required");
+  assert.equal(github.runConclusion, "failure", "original Release failure must remain visible");
+  const receipt = metadataObject(github.consumerRecovery),
+    identity = metadataObject(receipt.identity),
+    recovered = metadataObject(receipt.recovery);
+  assert.ok(
+    typeof identity.attempt === "number" &&
+      Number.isSafeInteger(identity.attempt) &&
+      identity.attempt > 0,
+    "positive original Release attempt required",
+  );
+  assertFresh(receipt, {
+    cut: source.cut,
+    head: source.head,
+    tag: source.tag,
+    sourcePr: source.sourcePr,
+    run: source.run,
+    attempt: identity.attempt,
+  });
+  assert.equal(recovered.run, recoveryRun, "exact authenticated recovery run required");
+  assert.ok(
+    typeof recovered.attempt === "number" &&
+      Number.isSafeInteger(recovered.attempt) &&
+      recovered.attempt > 0,
+    "positive recovery attempt required",
+  );
+  assert.ok(typeof recovered.policySha === "string", "recovery policy SHA required");
+  assert.match(recovered.policySha, /^[0-9a-f]{40}$/u, "full recovery policy SHA required");
+  assert.ok(Array.isArray(github.jobs), "authenticated original Release jobs required");
+  const failed = github.jobs.map(metadataObject).filter((job) => job.conclusion === "failure");
+  assert.equal(failed.length, 1, "one admitted original consumer failure required");
+  assert.equal(String(failed[0].run), source.run, "original failed job run required");
+  assert.equal(failed[0].head, source.head, "original failed job H required");
+  assert.equal(failed[0].status, "completed", "terminal original failed job required");
+  assert.equal(failed[0].attempt, identity.attempt, "exact original failed attempt required");
 }

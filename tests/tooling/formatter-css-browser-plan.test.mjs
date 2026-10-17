@@ -46,25 +46,14 @@ await test("only the selected browser-owning runner needs Chromium, with complet
   );
 });
 
-await test("selected and full workflows provision the actual tests-package browser before execution", () => {
+await test("the full workflow and its shared worker provision the actual tests-package browser before execution", () => {
   const read = (file) => fs.readFileSync(new URL(`../../${file}`, import.meta.url), "utf8");
-  const source = read(".github/workflows/pr-source-checks.yml");
-  const prepare = source.indexOf(
-    "- name: Prepare checksum-pinned Pkl and upstream lint dependencies",
-  );
-  const install = source.indexOf("uses: ./.github/actions/install-formatter-css-browser");
-  const selected = source.indexOf("- name: Test selected PR tooling scripts");
-  const full = source.indexOf("- name: Test tooling scripts");
-  assert.ok(prepare >= 0 && prepare < install && install < selected && selected < full);
-  assert.match(
-    source.slice(prepare, install),
-    /VIZE_TOOLING_TEST_PLAN: \$\{\{ runner\.temp \}\}\/tooling-plan\.json/,
-  );
   const check = read(".github/workflows/check.yml");
   const tooling = check.slice(
     check.indexOf("\n  test-scripts:"),
     check.indexOf("\n  editor-extensions:"),
   );
+  assert.match(tooling, /needs: \[full-source-cli, tooling-plan\]/);
   assert.match(tooling, /uses: \.\/\.github\/actions\/test-full-tooling/);
   const worker = read(".github/actions/test-full-tooling/action.yml");
   assert.ok(

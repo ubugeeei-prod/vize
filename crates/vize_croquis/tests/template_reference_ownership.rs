@@ -52,37 +52,88 @@ const COLLECTION_SOURCES: &[(&str, &str)] = &[
     ),
     (
         "token scopes",
-        include_str!("../src/drawer/helpers/identifiers/ast/walk/retained_scopes.rs"),
+        include_str!("../src/drawer/helpers/identifiers/ast/walk/retained/scopes.rs"),
     ),
     (
         "token targets",
-        include_str!("../src/drawer/helpers/identifiers/ast/walk/retained_assignments.rs"),
+        include_str!("../src/drawer/helpers/identifiers/ast/walk/retained/assignments.rs"),
     ),
 ];
 
-fn assert_no_parser_or_fallback_entry_points() {
-    for &(module, source) in COLLECTION_SOURCES {
-        for forbidden in [
-            "oxc_parser",
-            "Parser::",
-            "parse_once(",
-            ".parse_expression(",
-            ".parse_slot_parameters(",
-            ".parse_v_for_parameters(",
-            ".parse()",
-            "parse_program_for_analysis(",
-            "extract_identifiers_oxc(",
-            "extract_identifier_refs_oxc(",
-            "extract_identifier_refs_checked(",
-            "extract_identifier_refs_with_witness(",
-            "extract_identifiers_checked(",
-        ] {
-            assert!(
-                !source.contains(forbidden),
-                "{module} introduced a parser/fallback entry point: {forbidden}"
-            );
+const FORBIDDEN_ENTRY_POINTS: &[&str] = &[
+    "oxc_parser",
+    "Parser::",
+    "parse_once(",
+    ".parse_expression(",
+    ".parse_slot_parameters(",
+    ".parse_v_for_parameters(",
+    ".parse()",
+    "parse_program_for_analysis(",
+    "extract_identifiers_oxc(",
+    "extract_identifier_refs_oxc(",
+    "extract_identifier_refs_checked(",
+    "extract_identifier_refs_with_witness(",
+    "extract_identifiers_checked(",
+];
+
+#[derive(Debug, PartialEq, Eq)]
+struct ForbiddenEntryPoint {
+    module: &'static str,
+    token: &'static str,
+    byte_range: std::ops::Range<usize>,
+}
+
+fn forbidden_entry_points(sources: &[(&'static str, &str)]) -> Vec<ForbiddenEntryPoint> {
+    let mut entries = Vec::new();
+    for &(module, source) in sources {
+        for &token in FORBIDDEN_ENTRY_POINTS {
+            for (start, _) in source.match_indices(token) {
+                entries.push(ForbiddenEntryPoint {
+                    module,
+                    token,
+                    byte_range: start..start + token.len(),
+                });
+            }
         }
     }
+    entries
+}
+
+fn assert_no_parser_or_fallback_entry_points() {
+    assert_eq!(
+        forbidden_entry_points(COLLECTION_SOURCES),
+        Vec::<ForbiddenEntryPoint>::new(),
+        "complete collection/parser refusal inventory"
+    );
+}
+
+// This control only reads strings; it never touches the process-global profiler.
+#[test]
+fn forbidden_entry_point_inventory_retains_repetitions_modules_and_utf8_byte_ranges() {
+    assert_eq!(
+        forbidden_entry_points(&[
+            ("first", "π Parser::new(); Parser::new();"),
+            ("second", "λ parse_once(value);"),
+            ("allowed", "let value = original;"),
+        ]),
+        vec![
+            ForbiddenEntryPoint {
+                module: "first",
+                token: "Parser::",
+                byte_range: 3..11,
+            },
+            ForbiddenEntryPoint {
+                module: "first",
+                token: "Parser::",
+                byte_range: 18..26,
+            },
+            ForbiddenEntryPoint {
+                module: "second",
+                token: "parse_once(",
+                byte_range: 3..14,
+            },
+        ]
+    );
 }
 
 fn counters() -> Vec<(&'static str, u64, u64)> {

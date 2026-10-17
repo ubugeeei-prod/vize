@@ -7,9 +7,15 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const typescriptDriver = process.env.VIZE_RELEASE_SMOKE_DRIVER === "typescript";
+const command = typescriptDriver ? process.execPath : "rust-script";
+const entry = `tools/commands/release/npm/smoke-release-install.${typescriptDriver ? "ts" : "rs"}`;
+const prefix = typescriptDriver ? [] : ["--force"];
 
-test("the Rust release command forwards all tarballs to the fresh-project oracle", () => {
-  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-dispatch-"));
+test("the release command forwards all tarballs to the fresh-project oracle", () => {
+  const temporary = fs.realpathSync.native(
+    fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-dispatch-")),
+  );
   try {
     const helpers = path.join(temporary, "tools/support/compat/npm");
     fs.mkdirSync(helpers, { recursive: true });
@@ -31,7 +37,7 @@ export function runFreshProjectInitChecks(context) {
     assert.ok(fs.statSync(tarball).isFile());
     assert.equal(tarball, fs.realpathSync.native(tarball));
   }
-  assert.equal(context.repoRoot, fs.realpathSync(process.env.VIZE_REPO_ROOT));
+  assert.equal(context.repoRoot, fs.realpathSync.native(process.env.VIZE_REPO_ROOT));
   assert.equal(context.installDir, process.cwd());
   assert.equal(context.tempDir, path.dirname(context.installDir));
   assert.equal(process.env.COREPACK_HOME, path.join(context.tempDir, "corepack"));
@@ -62,30 +68,20 @@ export function runFreshProjectInitChecks(context) {
         os: [process.platform === "win32" ? "linux" : "win32"],
       }),
     );
-    const result = spawnSync(
-      "rust-script",
-      [
-        "--force",
-        "tools/commands/release/npm/smoke-release-install.rs",
-        "--runtime-checks",
-        cli,
-        platform,
-      ],
-      {
-        cwd: root,
-        encoding: "utf8",
-        timeout: 180_000,
-        env: {
-          ...process.env,
-          VIZE_REPO_ROOT: fs.realpathSync(temporary),
-          COREPACK_HOME: path.join(temporary, "stale-host-corepack"),
-          CORSA_PATH: "/unrelated/host/corsa",
-          CORSA_EXECUTABLE: "/unrelated/host/corsa",
-          TSGO_PATH: "/unrelated/host/tsgo",
-          TSGO_EXECUTABLE: "/unrelated/host/tsgo",
-        },
+    const result = spawnSync(command, [...prefix, entry, "--runtime-checks", cli, platform], {
+      cwd: root,
+      encoding: "utf8",
+      timeout: 180_000,
+      env: {
+        ...process.env,
+        VIZE_REPO_ROOT: fs.realpathSync.native(temporary),
+        COREPACK_HOME: path.join(temporary, "stale-host-corepack"),
+        CORSA_PATH: "/unrelated/host/corsa",
+        CORSA_EXECUTABLE: "/unrelated/host/corsa",
+        TSGO_PATH: "/unrelated/host/tsgo",
+        TSGO_EXECUTABLE: "/unrelated/host/tsgo",
       },
-    );
+    });
     assert.ifError(result.error);
     assert.notEqual(result.status, 0);
     assert.match(
@@ -98,7 +94,9 @@ export function runFreshProjectInitChecks(context) {
 });
 
 test("the release command rejects a packed CLI that accepts every broken project", () => {
-  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-oracle-"));
+  const temporary = fs.realpathSync.native(
+    fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-oracle-")),
+  );
   try {
     const packageRoot = path.join(temporary, "package");
     fs.mkdirSync(path.join(packageRoot, "bin"), { recursive: true });
@@ -132,16 +130,11 @@ if (args[0] === "init") {
       "",
     );
     fs.writeFileSync(path.join(packageRoot, "bin/vize"), configFreeFalseCleanCli, { mode: 0o755 });
-    const result = spawnSync(
-      "rust-script",
-      [
-        "--force",
-        "tools/commands/release/npm/smoke-release-install.rs",
-        "--runtime-checks",
-        packageRoot,
-      ],
-      { cwd: root, encoding: "utf8", timeout: 180_000 },
-    );
+    const result = spawnSync(command, [...prefix, entry, "--runtime-checks", packageRoot], {
+      cwd: root,
+      encoding: "utf8",
+      timeout: 180_000,
+    });
     assert.ifError(result.error);
     assert.notEqual(
       result.status,

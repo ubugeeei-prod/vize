@@ -134,9 +134,29 @@ export function aggregateCheckReportResults(needs: unknown, eventName: unknown):
   );
 }
 
+/** Full qualification requires both the exhaustive package matrix and both-host project replay. */
+export function aggregateFullJsPackageResults(needs: unknown): GateReport {
+  const expected = ["full-js-original-project", "full-js-package-tests"];
+  if (
+    !needs ||
+    typeof needs !== "object" ||
+    Array.isArray(needs) ||
+    Object.keys(needs).length !== expected.length ||
+    expected.some((job) => !Object.hasOwn(needs, job))
+  ) {
+    throw new Error(
+      "Full JS qualification requires exactly the package matrix and original-project jobs",
+    );
+  }
+  return aggregateNeedsResults(needs);
+}
+
 function main(): void {
   const args = process.argv.slice(2);
-  if (args.length > 1 || (args.length === 1 && !["--check", "--check-report"].includes(args[0]))) {
+  if (
+    args.length > 1 ||
+    (args.length === 1 && !["--check", "--check-report", "--full-js-packages"].includes(args[0]))
+  ) {
     throw new Error("Unknown report mode");
   }
   const raw = process.env.NEEDS_JSON;
@@ -149,11 +169,13 @@ function main(): void {
   }
   const results: unknown = JSON.parse(raw);
   const { exitCode, message } =
-    args[0] === "--check-report"
-      ? aggregateCheckReportResults(results, process.env.GITHUB_EVENT_NAME)
-      : args[0] === "--check"
-        ? aggregateCheckNeedsResults(results, process.env.GITHUB_EVENT_NAME)
-        : aggregateNeedsResults(results);
+    args[0] === "--full-js-packages"
+      ? aggregateFullJsPackageResults(results)
+      : args[0] === "--check-report"
+        ? aggregateCheckReportResults(results, process.env.GITHUB_EVENT_NAME)
+        : args[0] === "--check"
+          ? aggregateCheckNeedsResults(results, process.env.GITHUB_EVENT_NAME)
+          : aggregateNeedsResults(results);
   if (exitCode === 0) {
     console.log(message);
     return;

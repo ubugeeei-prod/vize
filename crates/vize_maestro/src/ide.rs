@@ -22,6 +22,18 @@ mod native_code_actions;
 pub(crate) use corsa_support::normalize_physical_path;
 #[cfg(all(test, feature = "native"))]
 pub(crate) use corsa_support::{canonical_request_path, request_file_uri};
+
+/// Prepare the canonical native project without exposing IDE projection owners.
+#[cfg(feature = "native")]
+pub(crate) async fn prepare_canonical_virtual_document(
+    ctx: &IdeContext<'_>,
+    bridge: &vize_canon::CorsaBridge,
+) -> Result<bool, vize_canon::CorsaBridgeError> {
+    corsa_support::open_canonical_virtual_document_strict(ctx, bridge)
+        .await
+        .map(|document| document.is_some())
+}
+
 #[cfg(feature = "native")]
 pub(crate) use native_code_actions::NATIVE_SOURCE_KINDS;
 pub mod cursor_context;

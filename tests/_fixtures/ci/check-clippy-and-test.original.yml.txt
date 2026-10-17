@@ -1,0 +1,40 @@
+  clippy-and-test:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 45
+    env: { VIZE_NUXT_CONFIG_ITERATIONS: "100" }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, components: clippy }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: true
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: clippy-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Clippy
+        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && rust-script tools/commands/ci/github/check-maestro-feature-contract.rs && rust-script tools/commands/ci/check-workspace-lints.rs --check && rust-script tools/commands/ci/check-skeleton-todos.rs --check
+      - name: Davinci no_std stage-library portability lanes (TS-24)
+        run: cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 && cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 --no-default-features
+      - name: Davinci allocation gate
+        run: cargo bench -p vize_l1_to_l2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools/commands/davinci/bench-compare.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root --bench patina_s2_markup_one_root && cargo bench -p vize_musea --bench davinci_art -- --quick && rust-script tools/commands/davinci/bench-compare.rs --bench musea_parse_art_define_art --bench musea_parse_art_legacy_attrs --bench musea_parse_art_inline
+      - name: Upload Davinci allocation bench reports
+        if: ${{ always() }}
+        uses: ./.github/actions/upload-davinci-compact-storage-bench-reports
+      - name: Install Pkl CLI and hydrate pinned native fixture
+        run: npm install --global @pkl-community/pkl@0.27.2 && git submodule update --init --force --depth 1 -- tests/_fixtures/_git/element-plus
+      - name: Test
+        env: { VIZE_TEST_REQUIRE_TSGO: "1" }
+        uses: ./.github/actions/test-rust-workspace-differential
+        # The required full-rust-report verifies the sibling's source-bound
+        # complete inventory, JUnit and doctests as well as this native tail.
+        with: { workspace-already-tested: "true" }
+      - uses: ./.github/actions/retain-sfc-runtime
+        if: ${{ always() }}

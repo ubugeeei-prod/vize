@@ -12,6 +12,15 @@ const helper = path.join(root, "npm/native/native-binding-identity.js");
 function probe(script: string): void {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-native-identity-"));
   try {
+    // Exercise real filesystem paths through both subprocess boundaries. A
+    // literal backslash on Unix also exposes accidental JavaScript escaping.
+    const helperDirectory = path.join(directory, "helper with spaces");
+    fs.mkdirSync(helperDirectory);
+    const helperPath = path.join(
+      helperDirectory,
+      process.platform === "win32" ? "binding.cjs" : "native\\binding.cjs",
+    );
+    fs.copyFileSync(helper, helperPath);
     const filename = path.join(directory, "probe.cjs");
     fs.writeFileSync(
       filename,
@@ -20,8 +29,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { createRequire } = require('node:module');
-const requireWithBindingIdentity = (...args) => require(${JSON.stringify(helper)}).requireWithBindingIdentity(...args);
-const getBindingIdentity = (...args) => require(${JSON.stringify(helper)}).getBindingIdentity(...args);
+const helper = process.argv[2];
+const requireWithBindingIdentity = (...args) => require(helper).requireWithBindingIdentity(...args);
+const getBindingIdentity = (...args) => require(helper).getBindingIdentity(...args);
 const localRequire = createRequire(__filename);
 const binary = path.join(__dirname, 'provider.node');
 const oldBody = 'old-provider';
@@ -36,7 +46,8 @@ require.extensions['.node'] = (module, filename) => {
 ${script}
 `,
     );
-    const result = spawnSync(process.execPath, [filename], { encoding: "utf8" });
+    const result = spawnSync(process.execPath, [filename, helperPath], { encoding: "utf8" });
+    assert.ifError(result.error);
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
@@ -73,9 +84,10 @@ const fresh = require('node:child_process').spawnSync(process.execPath, ['-e', \
     const token = require('node:crypto').createHash('sha256').update(body).digest('hex').slice(0, 32);
     m.exports = { body, getNativeBuildToken: () => token };
   };
-  const h = require(${JSON.stringify(helper)});
-  console.log(JSON.stringify(h.getBindingIdentity(h.requireWithBindingIdentity(require, \${JSON.stringify(binary)}))));
-\`], { encoding: 'utf8' });
+  const h = require(process.argv[1]);
+  console.log(JSON.stringify(h.getBindingIdentity(h.requireWithBindingIdentity(require, process.argv[2]))));
+\`, helper, binary], { encoding: 'utf8' });
+assert.ifError(fresh.error);
 assert.equal(fresh.status, 0, fresh.stderr);
 const successor = JSON.parse(fresh.stdout);
 assert.equal(successor.token, crypto.createHash('sha256').update(newBody).digest('hex').slice(0, 32));
@@ -131,7 +143,7 @@ require.extensions['.node'] = (module, filename) => {
 const before = requireWithBindingIdentity(localRequire, binary);
 const first = getBindingIdentity(before);
 const helperCopy = path.join(__dirname, 'independent-helper.cjs');
-fs.copyFileSync(${JSON.stringify(helper)}, helperCopy);
+fs.copyFileSync(helper, helperCopy);
 const other = localRequire(helperCopy);
 assert.equal(other.getBindingIdentity(before), first, 'same-isolate helper copies retain actual binding identity');
 fs.writeFileSync(binary, newBody);

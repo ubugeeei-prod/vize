@@ -154,9 +154,16 @@ void test("Japanese rule options retain the complete authored review and origina
   );
   const fencePattern = /^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm;
   const fences = [...japanese.matchAll(fencePattern)].map((match) => match[0]);
-  const inlineTokens = [
+  const currentInlineTokens = [
     ...japanese.replace(fencePattern, "").matchAll(/(?<!`)`([^`\n]+)`(?!`)/g),
   ].map((match) => match[1]);
+  assert.equal(currentInlineTokens.length, 135);
+  const inlineTokens = [...currentInlineTokens];
+  assert.deepEqual(
+    inlineTokens.splice(19, 3),
+    ["vue/valid-v-on", "{ modifiers?: string[] }", "[]"],
+    "only the approved custom modifier row succeeds the frozen 132-token contract",
+  );
   const digest = (value: string[]) =>
     createHash("sha256").update(JSON.stringify(value)).digest("hex");
   const propsCorrections = new Map<number, string>([
@@ -191,7 +198,7 @@ void test("Japanese rule options retain the complete authored review and origina
   );
   assert.deepEqual(
     [...japanese.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]),
-    ["./options-type.md", "../guide/lint-execution.md"],
+    ["./options-type.md", "../guide/lint-execution.md", "./reference/vue-valid-v-on.md"],
     "retain the original type-aware destination and the authored rule-selection next step",
   );
   assert.ok(readFileSync(resolve(root, "docs/content/ja/guide/lint-execution.md"), "utf8"));

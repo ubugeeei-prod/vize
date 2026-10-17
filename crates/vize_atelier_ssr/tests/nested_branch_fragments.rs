@@ -106,6 +106,37 @@ const CASES: &[(&str, &str, bool)] = &[
     ),
 ];
 
+// These complete modules also run against official Vue in the scoped SSR action.
+// Pin both fragment anchors and attribute ownership without partial code checks.
+const NESTED_ROOT_CODE: &str = r#"function ssrRender(_ctx, _push, _parent, _attrs) {
+  if (_ctx.outer) {
+    _push(`<!--[-->`)
+    if (_ctx.inner) {
+      _push(`<button>a</button>`)
+    } else {
+      _push(`<button>b</button>`)
+    }
+    _push(`<!--]-->`)
+  } else {
+    _push(`<!---->`)
+  }
+}
+"#;
+const NESTED_ELSE_CODE: &str = r#"function ssrRender(_ctx, _push, _parent, _attrs) {
+  if (_ctx.outer) {
+    _push(`<i${_ssrRenderAttrs(_attrs)}>outer</i>`)
+  } else {
+    _push(`<!--[-->`)
+    if (_ctx.inner) {
+      _push(`<button>a</button>`)
+    } else {
+      _push(`<button>b</button>`)
+    }
+    _push(`<!--]-->`)
+  }
+}
+"#;
+
 #[test]
 fn nested_template_conditionals_keep_fragments_and_both_emission_routes() {
     let mut captures = Vec::new();
@@ -135,14 +166,16 @@ fn nested_template_conditionals_keep_fragments_and_both_emission_routes() {
             );
             assert_eq!(pair.selected.result.map, pair.legacy.result.map, "{name}");
             if nested {
-                assert!(
-                    pair.selected.result.code.contains("_push(`<!--[-->`)"),
-                    "nested conditional needs its own fragment: {name}"
-                );
-                assert!(
-                    !pair.selected.result.code.contains("<button${"),
-                    "parent attrs cannot cross the fragment into its button: {name}"
-                );
+                let (code, preamble) = match name {
+                    "nested-root" => (NESTED_ROOT_CODE, ""),
+                    "nested-else" => (
+                        NESTED_ELSE_CODE,
+                        "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n",
+                    ),
+                    _ => panic!("missing complete nested branch reference: {name}"),
+                };
+                assert_eq!(pair.selected.result.code, code, "{name}");
+                assert_eq!(pair.selected.result.preamble, preamble, "{name}");
             }
             captures.push(serde_json::json!({
                 "name": name,
