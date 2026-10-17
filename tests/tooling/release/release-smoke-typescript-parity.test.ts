@@ -10,6 +10,8 @@ import {
   INIT_SCRIPT,
 } from "../../../tools/support/release/smoke_release_install/runtime.ts";
 
+import { fakeNpm } from "./release-smoke-parity-peer.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const entry = path.join(root, "tools/commands/release/npm/smoke-release-install");
 type Fixture = {
@@ -359,52 +361,6 @@ function observe(fixture: Fixture, driver: "rust" | "typescript", temporary: str
     ),
   };
 }
-
-// A deterministic npm protocol peer, not a smoke implementation: it records
-// exactly what the real driver requests and can corrupt the installed artifact.
-const fakeNpm = String.raw`
-const fs = require("node:fs");
-const path = require("node:path");
-const argv = process.argv.slice(2);
-const cwd = process.cwd();
-const fault = process.env.PARITY_FAULT;
-const manifest = JSON.parse(fs.readFileSync(path.join(cwd, "package.json"), "utf8"));
-fs.appendFileSync(process.env.PARITY_LOG, JSON.stringify({ argv, cwd, manifest }) + "\n");
-if (fault === "fail-" + argv[0]) {
-  process.stdout.write("npm child stdout\n");
-  process.stderr.write("npm child stderr\n");
-  process.exit(23);
-}
-if (argv[0] === "pack") {
-  const destination = argv[argv.indexOf("--pack-destination") + 1];
-  const count = fault === "zero-packs" ? 0 : fault === "two-packs" ? 2 : 1;
-  for (let index = 0; index < count; index++) {
-    fs.writeFileSync(path.join(destination, manifest.name.replaceAll("/", "-") + index + ".tgz"), JSON.stringify({ cwd, manifest }));
-  }
-} else if (argv[0] === "install") {
-  for (const [name, specifier] of Object.entries(manifest.dependencies)) {
-    if (!specifier.startsWith("file:")) continue;
-    const packed = JSON.parse(fs.readFileSync(specifier.slice(5), "utf8"));
-    const destination = path.join(cwd, "node_modules", name);
-    fs.cpSync(packed.cwd, destination, { recursive: true });
-    const installed = packed.manifest;
-    if (fault === "wrong-name") installed.name = "@vizejs/counterfeit";
-    if (fault === "wrong-version") installed.version = "0.0.0-counterfeit";
-    if (fault === "installed-workspace") installed.dependencies = { unresolved: "workspace:*" };
-    if (fault === "installed-entrypoint") installed.main = "missing-installed.js";
-    fs.writeFileSync(path.join(destination, "package.json"), JSON.stringify(installed));
-    const bins = typeof installed.bin === "string" ? [installed.name] : Object.keys(installed.bin || {});
-    for (const bin of bins) {
-      if (fault === "missing-bin") continue;
-      const binPath = path.join(cwd, "node_modules/.bin", bin);
-      fs.mkdirSync(path.dirname(binPath), { recursive: true });
-      fs.writeFileSync(binPath, "#!/bin/sh\nexit 0\n", { mode: fault === "non-executable-bin" ? 0o644 : 0o755 });
-    }
-  }
-} else {
-  throw new Error("unexpected npm command " + JSON.stringify(argv));
-}
-`;
 
 // The executed port retains the complete independently authored reference scripts,
 // in addition to the installed-runtime controls in the Actions carrier.
