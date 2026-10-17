@@ -159,7 +159,7 @@ export function environmentSection(data, locale) {
     `## ${t.compile}`,
     `${t.columns[1]}: **${s.files.toLocaleString("en-US")}** (${s.bytes.toLocaleString("en-US")} bytes).`,
     table(["", "@vue/compiler-sfc", "Vize", t.columns[6]], rows),
-    `[${t.full}](./performance-blacksmith)`,
+    `[${t.full}](./performance-blacksmith.md)`,
     provenanceDetails(data, locale),
   ].join("\n\n");
 }
@@ -171,7 +171,7 @@ export function typecheckSection(data, locale) {
     provenance(data, locale),
     summaryTable(data, locale, ["check", "large-check"]),
     t.note,
-    `[${t.full}](./performance-blacksmith)`,
+    `[${t.full}](./performance-blacksmith.md)`,
     t.profile,
   ].join("\n\n");
 }
@@ -194,6 +194,6 @@ export function viteSection(data, locale) {
         ],
       ],
     ),
-    `[${t.full}](./performance-blacksmith)`,
+    `[${t.full}](./performance-blacksmith.md)`,
   ].join("\n\n");
 }

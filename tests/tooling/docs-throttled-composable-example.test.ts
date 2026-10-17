@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { test } from "node:test";
 import path from "node:path";
 
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 import { COMPOSABLE_CATALOG } from "../../npm/compose/core/src/catalog.ts";
 import {
   composableExamples,

@@ -5,6 +5,14 @@ use vize_l0::{CompactString, directive::DirectiveSeverity};
 use super::{DisabledRange, LintContext, eslint_directive::parse_eslint_disable_comment};
 
 impl LintContext<'_> {
+    pub(crate) fn register_executed_template_rule(&mut self, rule: &'static str) {
+        self.executed_template_rules.push(rule);
+    }
+
+    pub(crate) fn has_executed_template_rule(&self, rule: &str) -> bool {
+        self.executed_template_rules.contains(&rule)
+    }
+
     /// Check if a rule is disabled at a specific line.
     #[inline]
     pub(super) fn is_disabled_at(&self, rule_name: &str, line: u32) -> bool {

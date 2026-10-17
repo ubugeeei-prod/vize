@@ -1,0 +1,195 @@
+{
+  "schema": "vize.lint.scoped-slots-template",
+  "version": 1,
+  "origin": {
+    "source": "8df6e1fe3e8e91fe2a0adbb4633d1de38e81e506",
+    "originalCaseFile": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research.json",
+    "originalCaseId": "script-scopedslots--template-instance",
+    "originalSourceSha256": "69c546752b9f19ccf08a46712c305f53492c109c340e06acca9d2357f0227ccb",
+    "originalCliExpectation": {
+      "file": "script-scopedslots--template-instance.vue",
+      "messages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-scopedslots-api",
+          "ruleDocsPath": "docs/content/rules/type-and-script.md",
+          "severity": 2,
+          "message": "[vize:script/no-deprecated-dollar-scopedslots-api] `$scopedSlots` was removed in Vue 3",
+          "line": 4,
+          "column": 19,
+          "endLine": 4,
+          "endColumn": 31,
+          "help": "Replace $scopedSlots with $slots. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists."
+        }
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    },
+    "authority": "Existing frozen whole51 n8n authored positive and independent provider packet; additional authored native/CLI controls preserve physical source spans, lexical owners, component values and suppression. No fresh execution or whole51 parity claim."
+  },
+  "cases": [
+    {
+      "id": "n8n-original",
+      "filename": "script-scopedslots--template-instance.vue",
+      "source": "<script>\nexport default {}\n</script>\n<template><div>{{ $scopedSlots }}</div></template>\n",
+      "sourceSha256": "69c546752b9f19ccf08a46712c305f53492c109c340e06acca9d2357f0227ccb",
+      "nativeDiagnostics": [
+        {
+          "rule_name": "script/no-deprecated-dollar-scopedslots-api",
+          "severity": "error",
+          "message": "`$scopedSlots` was removed in Vue 3",
+          "start": 55,
+          "end": 67,
+          "help": "Replace `$scopedSlots` with `$slots`. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists.",
+          "fix": null,
+          "labels": []
+        }
+      ],
+      "cliMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-scopedslots-api",
+          "ruleDocsPath": "docs/content/rules/type-and-script.md",
+          "severity": 2,
+          "message": "[vize:script/no-deprecated-dollar-scopedslots-api] `$scopedSlots` was removed in Vue 3",
+          "line": 4,
+          "column": 19,
+          "endLine": 4,
+          "endColumn": 31,
+          "help": "Replace $scopedSlots with $slots. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists."
+        }
+      ]
+    },
+    {
+      "id": "scriptless-entity-unicode",
+      "filename": "scriptless-entity-unicode.vue",
+      "source": "<template>\r\n<div>界😀 {{ $scope&#100;Slots }} {{ $slots }}</div>\r\n</template>\r\n",
+      "sourceSha256": "8f413c2a87f23282a1f4cdb3f95d03d8054f0c071559b04e249bebb4e971b7e3",
+      "nativeDiagnostics": [
+        {
+          "rule_name": "script/no-deprecated-dollar-scopedslots-api",
+          "severity": "error",
+          "message": "`$scopedSlots` was removed in Vue 3",
+          "start": 28,
+          "end": 45,
+          "help": "Replace `$scopedSlots` with `$slots`. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists.",
+          "fix": null,
+          "labels": []
+        }
+      ],
+      "cliMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-scopedslots-api",
+          "ruleDocsPath": "docs/content/rules/type-and-script.md",
+          "severity": 2,
+          "message": "[vize:script/no-deprecated-dollar-scopedslots-api] `$scopedSlots` was removed in Vue 3",
+          "line": 2,
+          "column": 12,
+          "endLine": 2,
+          "endColumn": 29,
+          "help": "Replace $scopedSlots with $slots. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists."
+        }
+      ]
+    },
+    {
+      "id": "loop-local-and-component-neighbor",
+      "filename": "loop-local-and-component-neighbor.vue",
+      "source": "<template><section><div v-for=\"$scopedSlots in [{}]\">{{ $scopedSlots }}</div><p>{{ $scopedSlots }}</p></section></template>\n",
+      "sourceSha256": "ca42d1a0da0c25001a2071e434ccc4c148de3a1dbdd619fe4f0af6637aa2ec9b",
+      "nativeDiagnostics": [
+        {
+          "rule_name": "script/no-deprecated-dollar-scopedslots-api",
+          "severity": "error",
+          "message": "`$scopedSlots` was removed in Vue 3",
+          "start": 83,
+          "end": 95,
+          "help": "Replace `$scopedSlots` with `$slots`. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists.",
+          "fix": null,
+          "labels": []
+        }
+      ],
+      "cliMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-scopedslots-api",
+          "ruleDocsPath": "docs/content/rules/type-and-script.md",
+          "severity": 2,
+          "message": "[vize:script/no-deprecated-dollar-scopedslots-api] `$scopedSlots` was removed in Vue 3",
+          "line": 1,
+          "column": 84,
+          "endLine": 1,
+          "endColumn": 96,
+          "help": "Replace $scopedSlots with $slots. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists."
+        }
+      ]
+    },
+    {
+      "id": "slot-local-and-component-neighbor",
+      "filename": "slot-local-and-component-neighbor.vue",
+      "source": "<template><section><Child v-slot=\"{ $scopedSlots }\">{{ $scopedSlots }}</Child><p>{{ $scopedSlots }}</p></section></template>\n",
+      "sourceSha256": "d9a2956a868632d4df61339ccb91a4a3a2b531d9c6bfc0b5a84d46c0b2ace7da",
+      "nativeDiagnostics": [
+        {
+          "rule_name": "script/no-deprecated-dollar-scopedslots-api",
+          "severity": "error",
+          "message": "`$scopedSlots` was removed in Vue 3",
+          "start": 84,
+          "end": 96,
+          "help": "Replace `$scopedSlots` with `$slots`. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists.",
+          "fix": null,
+          "labels": []
+        }
+      ],
+      "cliMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-scopedslots-api",
+          "ruleDocsPath": "docs/content/rules/type-and-script.md",
+          "severity": 2,
+          "message": "[vize:script/no-deprecated-dollar-scopedslots-api] `$scopedSlots` was removed in Vue 3",
+          "line": 1,
+          "column": 85,
+          "endLine": 1,
+          "endColumn": 97,
+          "help": "Replace $scopedSlots with $slots. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists."
+        }
+      ]
+    },
+    {
+      "id": "setup-value",
+      "filename": "setup-value.vue",
+      "source": "<script setup>const $scopedSlots = {}</script>\n<template>{{ $scopedSlots }}</template>\n",
+      "sourceSha256": "28cd4898e90edef38423098c8d70fa7675d674ec9c6eb7678ec4a7b8f9e7cb1c",
+      "nativeDiagnostics": [],
+      "cliMessages": []
+    },
+    {
+      "id": "normal-setup-value",
+      "filename": "normal-setup-value.vue",
+      "source": "<script>export default { setup() { return { $scopedSlots: {} } } }</script>\n<template>{{ $scopedSlots }}</template>\n",
+      "sourceSha256": "c6afa1edabfd0d63274a7ae46dad09f911c39f3e25cd6d11ad73b058a7b81368",
+      "nativeDiagnostics": [],
+      "cliMessages": []
+    },
+    {
+      "id": "noncode",
+      "filename": "noncode.vue",
+      "source": "<template><div title=\"$scopedSlots\"><!-- $scopedSlots -->{{ '$scopedSlots' }}</div></template>\n",
+      "sourceSha256": "45070249609f8b33445ab8367942c367900e579ad3a41d59d76f53088f670028",
+      "nativeDiagnostics": [],
+      "cliMessages": []
+    },
+    {
+      "id": "suppressed",
+      "filename": "suppressed.vue",
+      "source": "<template>\n<!-- eslint-disable-next-line vue/no-deprecated-dollar-scopedslots-api -->\n<div>{{ $scopedSlots }}</div>\n</template>\n",
+      "sourceSha256": "b78dd103a8bc9dbfe5805049486b4e052ae0beeeb2389436e6c95f702709bdae",
+      "nativeDiagnostics": [],
+      "cliMessages": []
+    },
+    {
+      "id": "vue3-slots",
+      "filename": "vue3-slots.vue",
+      "source": "<template><div>{{ $slots }}</div></template>\n",
+      "sourceSha256": "9a109d82a0e45c76f87239dfc5e8b6f271dff781d37bcc6f8f579c41199f50c7",
+      "nativeDiagnostics": [],
+      "cliMessages": []
+    }
+  ]
+}

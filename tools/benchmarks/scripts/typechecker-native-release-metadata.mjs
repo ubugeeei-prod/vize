@@ -5,6 +5,7 @@ export function rewriteVersionMetadata(path, content, old, next) {
     (path.startsWith("npm/") ||
       ["editors/vscode/package.json", "editors/vscode-art/package.json"].includes(path));
   const readme = path === "README.md" || (path.startsWith("npm/") && path.endsWith("/README.md"));
+  // Preserve read-only metadata custody for historical published integrations.
   const cargoLock =
     ["Cargo.lock", "editors/zed/Cargo.lock", "examples/volt-target/Cargo.lock"].includes(path) ||
     (path.startsWith("davinci/vize_extension_host/tests/guests/") && path.endsWith("/Cargo.lock"));

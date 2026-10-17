@@ -16,7 +16,7 @@ test("JS check runtime reserves native prerequisites for full qualification", ()
     checkJsJob,
     /vp run --no-cache --filter '\.\/npm\/native' build:debug && vp run --workspace-root check:ci/,
   );
-  assert.match(action, /setup-moonbit/);
+  assert.doesNotMatch(action, /setup-moonbit/);
   assert.match(action, /dtolnay\/rust-toolchain/);
   assert.match(action, /wild-linker\/action/);
   assert.ok(actionUses.includes("./.github/actions/setup-rust-script"));

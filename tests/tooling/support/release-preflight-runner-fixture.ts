@@ -12,7 +12,7 @@ import {
   realProjectArtifacts,
   shardEntries,
 } from "../_helpers/release-preflight-matrix-evidence-fixture.ts";
-import { repoRoot } from "../_helpers/moonbit.ts";
+import { repoRoot } from "../_helpers/tool-commands.ts";
 import { writeFakeCommand } from "./fake-command.ts";
 
 const releaseSha = "a".repeat(40);

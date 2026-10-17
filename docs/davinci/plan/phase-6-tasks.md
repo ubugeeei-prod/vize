@@ -100,7 +100,7 @@
 **Steps:**
 
 - [x] Host crate; the same guest binary runs out-of-process and in-process
-- [x] A tooling test: nothing outside `extension-host` features depends on `wasmtime` ([`davinci-extension-host-deps.test.ts`](../../../tests/tooling/davinci-extension-host-deps.test.ts))
+- [x] A tooling test: nothing outside `extension-host` features depends on `wasmtime` ([`davinci-extension-host-deps.test.ts`](https://github.com/ubugeeei-prod/vize/blob/fbed58b325ae9edbe5972a312b10c719f18397a1/tests/tooling/davinci-extension-host-deps.test.ts))
 
 **Acceptance:** the same guest passes TS-48 in both hosting modes; a guest exceeding its fuel budget is stopped with the exact error; the dependency test green and proven to fail on an injected edge; `cargo audit --deny warnings` green.
 

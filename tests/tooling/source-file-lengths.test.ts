@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 import { resolveSourceLengthBase as resolveBaseRef } from "./support/source-length-base.ts";
 
 const command = path.join(repoRoot, "tools/commands/ci/source-file-lengths.rs");

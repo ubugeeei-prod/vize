@@ -103,8 +103,6 @@ runs:
         cmp "$runtime/checker-before.json" "$runtime/checker-after.json"
         printf '%s\n' "VIZE_APP_CHECK_PREPARE_NODE22=$prep_node22" >> "$GITHUB_ENV"
 
-    - uses: ./.github/actions/setup-moonbit
-
     - name: Install JavaScript dependencies
       shell: bash
       run: |

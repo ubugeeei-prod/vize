@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 
 const referenceHeadings = [
   "## Entry Points",

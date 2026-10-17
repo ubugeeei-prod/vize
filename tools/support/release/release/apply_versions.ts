@@ -6,7 +6,6 @@ import {
   pathExists,
   readDir,
   readFileToString,
-  replaceFirst,
   tryWriteStringToFile,
 } from "../command_runtime.ts";
 import {
@@ -26,17 +25,6 @@ import {
 } from "./preparation.ts";
 import { updateReleaseReadmes } from "./readmes.ts";
 import { updateWorkspaceManifestVersions } from "./versions.ts";
-
-/**
- * These standalone workspaces depend on the in-tree SDK and build with
- * --locked. Updating the root workspace lockfile cannot refresh them.
- */
-export const standaloneGuestManifests: readonly string[] = [
-  "davinci/vize_extension_host/tests/guests/expression-echo/Cargo.toml",
-  "davinci/vize_extension_host/tests/guests/output-echo/Cargo.toml",
-  "davinci/vize_extension_host/tests/guests/typed-expression-echo/Cargo.toml",
-  "examples/volt-target/Cargo.toml",
-];
 
 /** Rewrites one existing file, reporting the original read or write diagnostic. */
 function rewriteFile(target: string, transform: (content: string) => string): boolean {
@@ -176,27 +164,6 @@ export async function prepareCandidate(
     }
     println(`  Updated ${zedCargoLock}`);
     filesToStage.push(zedCargoLock);
-  }
-
-  for (const manifest of standaloneGuestManifests) {
-    if (!pathExists(manifest)) continue;
-    const guestLockfile = replaceFirst(manifest, "Cargo.toml", "Cargo.lock");
-    // Reuse the protected integration's exact version transformation. Cargo's
-    // offline resolver can downgrade unrelated packages absent from its cache.
-    if (
-      (await run("rust-script", [
-        "tools/commands/release/pr.rs",
-        "rewrite-guest-lock",
-        guestLockfile,
-        currentVersion,
-        newVersion,
-      ])) !== 0
-    ) {
-      writeStderr(`Failed to update the SDK guest lockfile for ${manifest}\n`);
-      return 1;
-    }
-    println(`  Updated ${guestLockfile}`);
-    filesToStage.push(guestLockfile);
   }
 
   if (!(await updateReleaseReadmes(currentVersion, newVersion, filesToStage))) {

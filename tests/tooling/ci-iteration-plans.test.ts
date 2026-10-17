@@ -116,11 +116,7 @@ test("shared, deleted and unknown inputs still select every Rust package", () =>
     assert.equal(planAffectedRust(metadata, [tool]).scope, "workspace", tool);
     assert.equal(planAffectedJs(workspace, [tool]).scope, "workspace", tool);
   }
-  for (const input of [
-    "npm/cli/pkl/Vize.pkl",
-    "examples/html-conformance/src/App.vue",
-    "examples/volt-target/src/lib.ts",
-  ]) {
+  for (const input of ["npm/cli/pkl/Vize.pkl", "examples/html-conformance/src/App.vue"]) {
     assert.equal(planSourceChecks([input], "merge_group").rust, true, input);
     assert.equal(
       planAffectedRust(metadata, ["crates/vize_curator/src/lib.rs", input]).scope,
@@ -390,7 +386,7 @@ test("Rust report rejects skipped checks and missing or failed required work", (
 });
 
 test("queue product qualifications require actual success and allow their explicit PR skip", () => {
-  const jobs = ["wit-contracts", "nuxt-module-qualification"];
+  const jobs = ["nuxt-module-qualification"];
   const success = () => Object.fromEntries(jobs.map((job) => [job, { result: "success" }]));
   assert.equal(aggregateCheckNeedsResults(success(), "merge_group").exitCode, 0);
   for (const job of jobs) {

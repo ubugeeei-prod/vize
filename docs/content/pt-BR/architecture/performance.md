@@ -34,7 +34,7 @@ Arquivos: **3,000** (12,302,100 bytes).
 | workers / max | 1.61s             | 65.0ms  | **24.7x** |
 | 1T / max      | 3.57s             | 65.0ms  | **54.8x** |
 
-[Metodologia e resultados completos](./performance-blacksmith)
+[Metodologia e resultados completos](./performance-blacksmith.md)
 
 <details class="benchmark-provenance">
 <summary>Versões das ferramentas e checksums</summary>
@@ -224,7 +224,7 @@ Um único artefato versionado alimenta o README e todos os idiomas. A quantidade
 
 As razões da verificação de tipos comparam Vize e vue-tsc, o verificador que os projetos Vue usam hoje. O vue-tsc executa o compilador TypeScript em JavaScript enquanto o Vize executa o tsgo nativo, portanto a razão cobre toda a cadeia de ferramentas e não apenas a camada Vue; as tabelas por classe de motor do instantâneo completo classificam ferramentas do mesmo motor entre si para isolar essa camada. Cada execução cronometrada valida o trabalho de diagnóstico, mas a cobertura varia entre ferramentas. Essas razões não demonstram precisão equivalente nem uma melhoria sobre uma versão anterior do Vize. Comparadores rejeitados não recebem tempo publicado nem classificação.
 
-[Metodologia e resultados completos](./performance-blacksmith)
+[Metodologia e resultados completos](./performance-blacksmith.md)
 
 Os perfis abaixo são medições locais históricas e não fazem parte desta comparação.
 
@@ -277,7 +277,7 @@ Arquivos: **1,000**.
 | ---------- | ------------------ | ------------------- | -------- |
 | Build Vite | 1.66s              | 889.2ms             | **1.9x** |
 
-[Metodologia e resultados completos](./performance-blacksmith)
+[Metodologia e resultados completos](./performance-blacksmith.md)
 
 <!-- benchmark:vite:end -->
 

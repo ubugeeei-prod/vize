@@ -36,8 +36,7 @@ export function isSharedRustInput(path: string) {
       !isCensusToolingInput(path)) ||
     path === "npm/cli/schemas/vize.config.schema.json" ||
     path.startsWith("npm/cli/pkl/") ||
-    path.startsWith("examples/html-conformance/") ||
-    path.startsWith("examples/volt-target/")
+    path.startsWith("examples/html-conformance/")
   );
 }
 

@@ -50,7 +50,7 @@ export function moveFoundation(root, mode) {
     before,
     "Cargo.toml",
     manifest.slice(0, manifest.indexOf("[dependencies]")) +
-      '[dependencies]\nvize_l0 = { workspace = true }\n\n[features]\ndefault = []\nextension = ["vize_l0/extension"]\nlint-glob = ["vize_l0/lint-glob"]\n\n' +
+      '[dependencies]\nvize_l0 = { workspace = true }\n\n[features]\ndefault = []\nlint-glob = ["vize_l0/lint-glob"]\n\n' +
       manifest
         .slice(manifest.indexOf("[dev-dependencies]"))
         .replace("[dev-dependencies]\n", "[dev-dependencies]\nserde_json.workspace = true\n"),

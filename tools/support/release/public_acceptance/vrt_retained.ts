@@ -13,7 +13,7 @@ import {
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { sha256 } from "./vrt_fixtures.ts";
-import { verifiedVrtFiles } from "./vrt_secrets.ts";
+import { verifiedVrtFiles, vrtDiagnosticRecord, type VrtPhase } from "./vrt_secrets.ts";
 import { verifiedRetainedScan } from "./vrt_retained_scan.ts";
 
 /** Only post-exit, whole-verified buffers enter the original upload tree. */
@@ -84,7 +84,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const [log, retained] = process.argv.slice(2);
   let privateRoot: string | undefined;
   let retainedSafe = false;
+  let phase: VrtPhase = "promotion-inputs";
+  const report = (disposition: "entered" | "passed" | "failed") =>
+    console.error(vrtDiagnosticRecord(phase, disposition).trimEnd());
   try {
+    report("entered");
     assert.ok(log && retained && path.isAbsolute(log) && path.isAbsolute(retained));
     const root = path.dirname(log);
     const info = await lstat(root);
@@ -93,15 +97,23 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     assert.equal(await realpath(root), root);
     assert.ok(root !== retained && !root.startsWith((await realpath(retained)) + path.sep));
     privateRoot = root;
+    phase = "promotion-whole-files";
+    report("entered");
     const bytes = await promoteVrt(log, retained);
+    report("passed");
     retainedSafe = true;
     process.stdout.write(bytes);
   } catch {
+    report("failed");
     if (privateRoot && retained) {
+      phase = "promotion-retained-fallback";
+      report("entered");
       try {
         await verifiedRetainedScan(privateRoot, retained);
+        report("passed");
         retainedSafe = true;
       } catch {
+        report("failed");
         console.error("Original retained output upload withheld: closed scan was not verified");
       }
     }
@@ -133,6 +145,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       try {
         await rm(privateRoot, { recursive: true, force: true });
       } catch {
+        phase = "promotion-cleanup";
+        report("failed");
         console.error("VRT private staging cleanup failed");
         process.exitCode ||= 1;
       }

@@ -29,8 +29,25 @@ The raw-interpolation switch checks the default **opening** delimiter. A custom
 closing delimiter retains its existing behavior. Empty and arbitrary byte
 delimiters, repeated setters, live mode polling and an interrupted callback
 followed by a non-EOF profile change remain covered. Document selects declaration
-tolerance in the lexer; its complete host tree-construction rules are not
-implemented by this facade.
+tolerance and ASCII case-insensitive recognition of the four special opening
+tag names (`script`, `style`, `title`, `textarea`) in the lexer. The latter
+correction addresses #6835: both leading bytes must follow `FOLD_NAME_CASE`,
+not only the later sequence bytes. Authored tag-name spans remain unchanged.
+Script/style retain RAWTEXT; title/textarea retain RCDATA entity and Vue
+interpolation callbacks. Component's existing case rules remain unchanged,
+including its historical case-insensitive sequence tail after the first two
+lowercase bytes. Exact-name boundaries still reject prefixes such as
+`SCRIPTx`; actual UTF-8 body offsets and the following tag are retained.
+
+Five authored complete-event laws exercise both the public tokenizer and native
+Document/Component specializations through the existing feature-enabled
+`markup_lex_parity` target. They are independent expected packets, rather than
+only parity between two routes through the same lexer. Historical frozen
+callbacks and all existing differential fixtures remain unchanged. Fresh
+source Actions and protected Check/instruction gates are required for this
+correction; no local Rust execution or whole-product acceptance is claimed.
+The complete Document host tree-construction rules remain unfinished, and
+#6835 stays open.
 
 The duplicate compatibility state methods, dynamic-argument scanner, in-tag
 comment loop, sequence matcher and entity-decoding algorithms are removed. The

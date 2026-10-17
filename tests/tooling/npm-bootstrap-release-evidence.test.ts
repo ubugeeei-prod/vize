@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 
 import {
   requiredSuccessfulReleaseJobs,

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { Response } from "playwright";
+import type { Request, Response } from "playwright";
 
 export interface PackedGalleryHttpRecord {
   url: string;
@@ -29,10 +29,19 @@ export interface PackedGalleryHttpContext {
   sha256: (body: Buffer) => string;
 }
 
+type PackedGalleryResponse = Pick<Response, "url" | "status" | "allHeaders" | "body"> & {
+  request(): Pick<Request, "allHeaders" | "redirectedTo">;
+};
+
+/** Finish original response bodies before their document or iframe is replaced. */
+export async function drainPackedGalleryHttp(pending: Promise<void>[]): Promise<void> {
+  for (const capture of pending) await capture;
+}
+
 export function createPackedGalleryHttpObserver(context: PackedGalleryHttpContext) {
   const { origin, caseOutput, responses, pending, httpErrors, sha256 } = context;
   const owners = new Map<string, Promise<PackedGalleryHttpRecord | undefined>>();
-  return (response: Response) => {
+  return (response: PackedGalleryResponse) => {
     if (!response.url().startsWith(origin + "/")) return;
     const status = response.status();
     const priorOwner = status === 304 ? owners.get(response.url()) : undefined;
