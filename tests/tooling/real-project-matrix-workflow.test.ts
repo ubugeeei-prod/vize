@@ -226,7 +226,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     "the hydrated fixture corpus must be measured against the lint baseline",
   );
   for (const pattern of [
-    /tools\/commands\/fixtures\/lint-divergence-report\.rs/,
+    /\bnode\s+tools\/commands\/fixtures\/lint-divergence-report\.ts/,
     /--shard-index "\$FIXTURE_SHARD_INDEX"/,
     /--shard-count "\$FIXTURE_SHARD_COUNT"/,
     /--measure-coverage-gap/,
