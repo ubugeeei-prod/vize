@@ -10,12 +10,13 @@ use std::path::{Path, PathBuf};
 use serde_json::{Map, Value};
 use vize_carton::{FxHashMap, FxHashSet};
 
-use crate::batch::error::CorsaResult;
+use crate::batch::error::{CorsaError, CorsaResult};
 use crate::virtual_ts::ResolveStyleClassNames;
 
 use super::super::VirtualProject;
 use super::super::tsconfig_paths::{
     normalize_path_lexically, parse_jsonc_value, resolve_extended_tsconfig_path,
+    resolve_extended_tsconfig_path_with_dependencies,
 };
 
 #[derive(Default)]
@@ -24,6 +25,7 @@ struct ChainLoad {
     active: FxHashSet<PathBuf>,
     completed: FxHashMap<PathBuf, Map<std::string::String, Value>>,
     cycle_cut: bool,
+    dependencies: Option<Vec<PathBuf>>,
 }
 
 impl VirtualProject {
@@ -179,69 +181,125 @@ impl VirtualProject {
             return Ok(Map::new());
         };
         let mut load = ChainLoad::default();
-        self.load_vue_compiler_options_inner(tsconfig_path, &mut load)
+        load_vue_compiler_options_inner(tsconfig_path, &mut load)
     }
+}
 
-    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
-    fn load_vue_compiler_options_inner(
-        &self,
-        tsconfig_path: &Path,
-        load: &mut ChainLoad,
-    ) -> CorsaResult<Map<std::string::String, Value>> {
-        if !tsconfig_path.exists() {
-            return Ok(Map::new());
-        }
-        let normalized = normalize_path_lexically(tsconfig_path);
-        if let Some(cached) = load.completed.get(&normalized) {
-            return Ok(cached.clone());
-        }
-        if !load.active.insert(normalized.clone()) {
-            load.cycle_cut = true;
-            return Ok(Map::new());
-        }
-        let enclosing_cycle_cut = std::mem::replace(&mut load.cycle_cut, false);
-        let flattened = self.merge_extended_vue_compiler_options(&normalized, load);
-        load.active.remove(&normalized);
-        let chain_cycle_cut = load.cycle_cut;
-        load.cycle_cut = enclosing_cycle_cut || chain_cycle_cut;
-        if !chain_cycle_cut && let Ok(flattened) = &flattened {
-            load.completed.insert(normalized, flattened.clone());
-        }
-        flattened
+/// Resolve Vue options through the existing chain authority, retaining all file probes.
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+pub(in super::super) fn snapshot_vue_compiler_options(
+    path: &Path,
+) -> CorsaResult<(Map<std::string::String, Value>, Vec<PathBuf>)> {
+    let mut load = ChainLoad {
+        dependencies: Some(Vec::new()),
+        ..Default::default()
+    };
+    let options = load_vue_compiler_options_inner(path, &mut load)?;
+    let mut dependencies = load.dependencies.unwrap_or_default();
+    dependencies.sort();
+    dependencies.dedup();
+    Ok((options, dependencies))
+}
+
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+fn load_vue_compiler_options_inner(
+    tsconfig_path: &Path,
+    load: &mut ChainLoad,
+) -> CorsaResult<Map<std::string::String, Value>> {
+    if let Some(dependencies) = &mut load.dependencies {
+        dependencies.push(tsconfig_path.to_path_buf());
     }
+    if !tsconfig_path.exists() {
+        if load.dependencies.is_some() {
+            return Err(CorsaError::Io(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                vize_carton::cstr!("Cannot read tsconfig '{}'", tsconfig_path.display()),
+            )));
+        }
+        return Ok(Map::new());
+    }
+    let normalized = normalize_path_lexically(tsconfig_path);
+    if let Some(cached) = load.completed.get(&normalized) {
+        return Ok(cached.clone());
+    }
+    if !load.active.insert(normalized.clone()) {
+        load.cycle_cut = true;
+        return Ok(Map::new());
+    }
+    let enclosing_cycle_cut = std::mem::replace(&mut load.cycle_cut, false);
+    let flattened = merge_extended_vue_compiler_options(&normalized, load);
+    load.active.remove(&normalized);
+    let chain_cycle_cut = load.cycle_cut;
+    load.cycle_cut = enclosing_cycle_cut || chain_cycle_cut;
+    if !chain_cycle_cut && let Ok(flattened) = &flattened {
+        load.completed.insert(normalized, flattened.clone());
+    }
+    flattened
+}
 
-    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
-    fn merge_extended_vue_compiler_options(
-        &self,
-        normalized: &Path,
-        load: &mut ChainLoad,
-    ) -> CorsaResult<Map<std::string::String, Value>> {
-        let content = std::fs::read_to_string(normalized)?;
-        let config = parse_jsonc_value(&content)?;
-        let current = config
-            .get("vueCompilerOptions")
-            .and_then(Value::as_object)
-            .cloned()
-            .unwrap_or_default();
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+fn merge_extended_vue_compiler_options(
+    normalized: &Path,
+    load: &mut ChainLoad,
+) -> CorsaResult<Map<std::string::String, Value>> {
+    let content = std::fs::read_to_string(normalized)?;
+    let config = parse_jsonc_value(&content).map_err(|error| {
+        if load.dependencies.is_some() {
+            CorsaError::Io(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                vize_carton::cstr!("Invalid tsconfig '{}': {error}", normalized.display()),
+            ))
+        } else {
+            error
+        }
+    })?;
+    let current = config
+        .get("vueCompilerOptions")
+        .and_then(Value::as_object)
+        .cloned()
+        .unwrap_or_default();
 
-        let mut inherited = Map::new();
-        match config.get("extends") {
-            Some(Value::String(extends)) => {
-                if let Some(parent_path) = resolve_extended_tsconfig_path(normalized, extends) {
-                    inherited = self.load_vue_compiler_options_inner(&parent_path, load)?;
+    let mut inherited = Map::new();
+    match config.get("extends") {
+        Some(Value::String(extends)) => {
+            if let Some(parent_path) = resolve_parent(normalized, extends, load)? {
+                inherited = load_vue_compiler_options_inner(&parent_path, load)?;
+            }
+        }
+        Some(Value::Array(entries)) => {
+            for extends in entries.iter().filter_map(Value::as_str) {
+                if let Some(parent_path) = resolve_parent(normalized, extends, load)? {
+                    inherited.extend(load_vue_compiler_options_inner(&parent_path, load)?);
                 }
             }
-            Some(Value::Array(entries)) => {
-                for extends in entries.iter().filter_map(Value::as_str) {
-                    if let Some(parent_path) = resolve_extended_tsconfig_path(normalized, extends) {
-                        inherited.extend(self.load_vue_compiler_options_inner(&parent_path, load)?);
-                    }
-                }
-            }
-            _ => {}
         }
-        inherited.extend(current);
-        Ok(inherited)
+        _ => {}
+    }
+    inherited.extend(current);
+    Ok(inherited)
+}
+
+fn resolve_parent(
+    path: &Path,
+    extends: &str,
+    load: &mut ChainLoad,
+) -> CorsaResult<Option<PathBuf>> {
+    match &mut load.dependencies {
+        Some(dependencies) => {
+            let parent =
+                resolve_extended_tsconfig_path_with_dependencies(path, extends, dependencies)
+                    .ok_or_else(|| {
+                        CorsaError::Io(std::io::Error::new(
+                            std::io::ErrorKind::NotFound,
+                            vize_carton::cstr!(
+                                "Cannot resolve extended tsconfig '{extends}' from '{}'",
+                                path.display()
+                            ),
+                        ))
+                    })?;
+            Ok(Some(parent))
+        }
+        None => Ok(resolve_extended_tsconfig_path(path, extends)),
     }
 }
 

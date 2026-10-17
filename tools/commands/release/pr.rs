@@ -7,7 +7,7 @@
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: release-pre-qualification-retirement-v17.
+//! Driver source pin: release-check-qualification-overlap-v18.
 
 #[path = "../../support/release/pr_budget.rs"]
 mod pr_budget;

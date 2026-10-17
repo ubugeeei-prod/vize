@@ -12,9 +12,7 @@ use std::path::Path;
 use clap::Args;
 use serde::Deserialize;
 use serde_json::{Value, json};
-use vize_canon::{
-    ContentMapperTransformOptions, generate_vue_content_mapper_transform_with_options,
-};
+use vize_canon::generate_vue_content_mapper_transform_with_options;
 use vize_l0::{String as CompactString, cstr};
 
 #[path = "content_mapper/project.rs"]
@@ -121,9 +119,17 @@ fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()>
                         continue;
                     }
                 };
-                let (settings, result) = resolve_open_project(&params);
-                projects.open(params.project_handle, settings);
-                write_result(writer, id, result)?;
+                match resolve_open_project(&params) {
+                    Ok((settings, result)) => {
+                        projects.open(params.project_handle, settings);
+                        write_result(writer, id, result)?;
+                    }
+                    Err(error) => {
+                        projects.close(params.project_handle.as_str());
+                        let message = cstr!("Failed to load content mapper configuration: {error}");
+                        write_error(writer, id, -32603, &message)?;
+                    }
+                }
             }
             "closeProject" => {
                 let params = match serde_json::from_value::<CloseProjectParams>(request.params) {
@@ -152,13 +158,10 @@ fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()>
                     write_error(writer, id, -32602, &message)?;
                     continue;
                 };
-                let transform_options = ContentMapperTransformOptions::default()
-                    .with_options_api(settings.options_api)
-                    .with_preserve_unused_diagnostics(settings.no_unused_locals);
                 match generate_vue_content_mapper_transform_with_options(
                     Path::new(params.file_name.as_str()),
                     params.content.as_str(),
-                    transform_options,
+                    settings.transform_options,
                 ) {
                     Ok(result) => write_result(writer, id, result)?,
                     Err(error) => {

@@ -73,7 +73,7 @@ test("hosted operator keeps user authority on protected main and does not deadlo
   assert.ok(contracts.on.pull_request.paths.includes(".github/workflows/release-operator.yml"));
   assert.equal(
     contracts.jobs.contracts.steps.at(-1).run,
-    "node --test tests/tooling/release/release-pr.test.ts tests/tooling/release/retirement-qualification.test.ts",
+    "node --test tests/tooling/release/release-pr.test.ts tests/tooling/release/retirement-qualification.test.ts tests/tooling/release/release-stable-operator.test.ts",
   );
 });
 
@@ -417,12 +417,12 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
   }
 });
 
-test("new publication runs wait for full Check outside the bounded verify-only preflight", () => {
+test("new release builds overlap Q while the read-only preflight retains the final qualification gate", () => {
   const runs = readRepoFile("tools", "support", "release", "pr_pin_runs.rs");
   const watcher = readRepoFile("tools", "support", "release", "pr_pin_watch.rs");
   const shared = readRepoFile("tools", "support", "release", "pr_ci.rs");
   const existing = runs.indexOf("if let Some(id) = find()?");
-  const qualify = runs.indexOf("pr_ci::qualify_check(");
+  const qualify = runs.indexOf("pr_ci::start_check(");
   const authenticate = runs.indexOf("let current = super::source(");
   const recheckRun = runs.indexOf("if let Some(id) = find()?", existing + 1);
   const dispatch = runs.indexOf('"workflow",');
@@ -439,8 +439,8 @@ test("new publication runs wait for full Check outside the bounded verify-only p
   assert.match(child, /&candidate\.branch/);
   assert.match(child, /&candidate\.head/);
   assert.match(child, /&source\.cut/);
-  assert.match(shared, /pr_budget::child_command\(&mut qualification, budget\)/);
-  assert.match(shared, /if !status\.success\(\)/);
+  assert.match(shared, /pr_budget::child_command\(&mut command, budget\)/);
+  assert.match(shared, /if !output\.status\.success\(\)/);
   assert.match(child, /operator\.verify\(\)\?/);
   const final = runs.slice(authenticate, dispatch);
   assert.match(final, /current\.cut != source\.cut/);

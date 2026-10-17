@@ -99,6 +99,7 @@
       "compilerOptions": [
         "noUnusedLocals"
       ],
+      "dynamicConfig": true,
       "exec": [
         "node",
         "./bin/vize",

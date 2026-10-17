@@ -92,6 +92,7 @@ export function assertInstalledMapperContract(installDir) {
   assert.deepEqual(
     manifest.typescript?.contentMapper,
     {
+      dynamicConfig: true,
       exec: ["node", "./bin/vize", "content-mapper"],
       compilerOptions: ["noUnusedLocals"],
     },

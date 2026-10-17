@@ -649,8 +649,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             emit_template_context(
                 &mut ts,
                 options,
-                dialect,
-                legacy_vue2,
+                summary,
+                (dialect, legacy_vue2),
                 &setup_imports,
                 &template_record,
                 template_emit.as_deref(),

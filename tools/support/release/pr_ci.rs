@@ -123,33 +123,168 @@ pub fn wait_for_promotion_pinned(
     super::pr_pin::wait_for_promotion(number, head, tag, root)
 }
 
-/// Complete source CI before starting the separately bounded publication workflow.
-pub(super) fn qualify_check(
+/// New H overlaps Q/R; legacy H keeps its original blocking qualification API.
+pub(super) fn start_check(
     repository: &str,
     branch: &str,
     head: &str,
     cut: &str,
     budget: Option<&Budget>,
     root: &Path,
-) -> Result<(), String> {
+) -> Result<Option<u64>, String> {
     pr_budget::check(budget)?;
-    let mut qualification = Command::new("node");
-    qualification
+    let workflow = github::git(
+        &[
+            "--no-replace-objects",
+            "show",
+            &format!("{head}:.github/workflows/release.yml"),
+        ],
+        root,
+    )?;
+    let mut capability = Command::new("node");
+    capability
         .args([
-            "tools/support/release/qualify_check/main.ts",
-            repository,
-            branch,
-            head,
-            cut,
+            "--input-type=module-typescript",
+            "--eval",
+            include_str!("qualify_check/capability.ts"),
         ])
         .current_dir(root)
-        .stdin(Stdio::null());
-    pr_budget::child_command(&mut qualification, budget)?;
-    let status = qualification
-        .status()
-        .map_err(|error| format!("Could not start exact-source Check qualification: {error}"))?;
-    if !status.success() {
-        return Err("Exact-source full Check qualification failed; no Release was dispatched. Preserve the source and its Check evidence.".into());
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::inherit());
+    pr_budget::child_command(&mut capability, budget)?;
+    let mut child = capability.spawn().map_err(|error| error.to_string())?;
+    child
+        .stdin
+        .take()
+        .ok_or("Missing workflow parser stdin")?
+        .write_all(workflow.as_bytes())
+        .map_err(|error| error.to_string())?;
+    let parsed = child
+        .wait_with_output()
+        .map_err(|error| error.to_string())?;
+    if !parsed.status.success() {
+        return Err(
+            "Immutable H has an unknown release dispatch declaration; no Q or R was dispatched"
+                .into(),
+        );
     }
-    pr_budget::check(budget)
+    let overlap = match parsed.stdout.as_slice() {
+        b"overlap\n" => true,
+        b"legacy\n" => false,
+        _ => return Err("Unknown release workflow capability receipt".into()),
+    };
+    pr_budget::check(budget)?;
+    let mut command = Command::new("node");
+    command.arg("tools/support/release/qualify_check/main.ts");
+    if overlap {
+        command.arg("--start");
+    }
+    command
+        .args([repository, branch, head, cut])
+        .current_dir(root)
+        .stdin(Stdio::null())
+        .stdout(if overlap {
+            Stdio::piped()
+        } else {
+            Stdio::inherit()
+        })
+        .stderr(Stdio::inherit());
+    pr_budget::child_command(&mut command, budget)?;
+    let output = command
+        .output()
+        .map_err(|error| format!("Could not start exact-source Check: {error}"))?;
+    if !output.status.success() {
+        return Err("Exact-source Check could not start; no Release was dispatched. Preserve its source and evidence.".into());
+    }
+    pr_budget::check(budget)?;
+    if !overlap {
+        // This source's original four-argument API blocks through all Check gates.
+        return Ok(None);
+    }
+    let receipt: serde_json::Value =
+        serde_json::from_slice(&output.stdout).map_err(|e| e.to_string())?;
+    started_check_deadline(&receipt, repository, branch, head, cut).map(Some)
+}
+
+fn started_check_deadline(
+    receipt: &serde_json::Value,
+    repository: &str,
+    branch: &str,
+    head: &str,
+    cut: &str,
+) -> Result<u64, String> {
+    let object = receipt
+        .as_object()
+        .ok_or("Check startup receipt must be an object")?;
+    if object.len() != 9
+        || receipt["kind"] != "vize-release-check-start-v1"
+        || receipt["repository"] != repository
+        || receipt["branch"] != branch
+        || receipt["head"] != head
+        || receipt["cut"] != cut
+        || receipt["createdAt"].as_str().is_none_or(str::is_empty)
+    {
+        return Err("Check startup receipt does not match the exact source".into());
+    }
+    for key in ["runId", "runAttempt", "qualificationDeadline"] {
+        if receipt[key]
+            .as_u64()
+            .is_none_or(|n| n == 0 || n > 9_007_199_254_740_991)
+        {
+            return Err(format!("Check startup receipt has an invalid {key}"));
+        }
+    }
+    receipt["qualificationDeadline"]
+        .as_u64()
+        .ok_or_else(|| "Missing qualification deadline".into())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::started_check_deadline;
+    use serde_json::json;
+
+    #[test]
+    fn startup_receipt_preserves_the_exact_source_and_refuses_foreign_or_malformed_fields() {
+        let valid = json!({"kind":"vize-release-check-start-v1", "repository":"owner/repo",
+            "branch":"release/v1.2.3", "head":"a".repeat(40), "cut":"b".repeat(40),
+            "runId":71, "runAttempt":1, "createdAt":"2026-10-17T00:00:00Z", "qualificationDeadline":123456});
+        let check = |value: &serde_json::Value| {
+            started_check_deadline(
+                value,
+                "owner/repo",
+                "release/v1.2.3",
+                &"a".repeat(40),
+                &"b".repeat(40),
+            )
+        };
+        assert_eq!(check(&valid), Ok(123456));
+        for (key, value) in [
+            ("kind", json!("foreign")),
+            ("repository", json!("other/repo")),
+            ("branch", json!("main")),
+            ("head", json!("c".repeat(40))),
+            ("cut", json!("c".repeat(40))),
+            ("createdAt", json!("")),
+            ("runId", json!(0)),
+            ("runId", json!("71")),
+            ("runAttempt", json!(-1)),
+            ("runAttempt", json!(1.5)),
+            ("qualificationDeadline", json!(0)),
+            ("qualificationDeadline", json!(9_007_199_254_740_992_u64)),
+            ("qualificationDeadline", json!("123456")),
+            ("foreign", json!(true)),
+        ] {
+            let mut changed = valid.clone();
+            changed[key] = value;
+            assert!(check(&changed).is_err(), "{key}");
+        }
+        let mut missing = valid.clone();
+        missing
+            .as_object_mut()
+            .expect("receipt fixture must be an object")
+            .remove("createdAt");
+        assert!(check(&missing).is_err());
+    }
 }

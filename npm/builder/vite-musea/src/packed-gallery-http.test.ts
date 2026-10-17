@@ -45,7 +45,7 @@ async function fixture(context: TestContext) {
   };
 }
 
-void test("original body capture completes before navigation and remains the whole cached owner", async (t) => {
+void test("original body capture starts before delayed metadata and remains the whole cached owner", async (t) => {
   const capture = await fixture(t);
   const headers = deferred<Record<string, string>>();
   const trace: string[] = [];
@@ -62,11 +62,10 @@ void test("original body capture completes before navigation and remains the who
     },
   });
   const captured = drainPackedGalleryHttp(capture.pending);
-  assert.deepEqual<string[]>(trace, []);
-  headers.resolve({ etag: '"original"', "content-type": "text/html" });
-  await captured;
   trace.push("navigate");
   navigated = true;
+  headers.resolve({ etag: '"original"', "content-type": "text/html" });
+  await captured;
   capture.observe({
     url: () => url,
     status: () => 304,
@@ -80,8 +79,8 @@ void test("original body capture completes before navigation and remains the who
     },
   });
   await drainPackedGalleryHttp(capture.pending);
-  assert.deepEqual(trace, ["original-body", "navigate"]);
   assert.deepEqual(capture.httpErrors, []);
+  assert.deepEqual(trace, ["original-body", "navigate"]);
   assert.deepEqual(capture.responses, [
     {
       url,
@@ -115,7 +114,7 @@ void test("original body capture completes before navigation and remains the who
 void test("navigation before body capture retains the entire original protocol failure", async (t) => {
   const capture = await fixture(t);
   const headers = deferred<Record<string, string>>();
-  let navigated = false;
+  const navigated = true;
   const message =
     "response.body: Protocol error (Network.getResponseBody): No resource with given identifier found\n" +
     "Response body is not available for a response that was navigated away from. Read response.body() before triggering any navigation.";
@@ -129,9 +128,14 @@ void test("navigation before body capture retains the entire original protocol f
       return body;
     },
   });
-  navigated = true;
+  let drained = false;
+  const finished = drainPackedGalleryHttp(capture.pending).then(() => {
+    drained = true;
+  });
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.equal(drained, false, "a failed body must still retain its original metadata");
   headers.resolve({ "content-type": "text/html" });
-  await drainPackedGalleryHttp(capture.pending);
+  await finished;
   assert.deepEqual(capture.httpErrors, [`Error: ${message}`]);
   assert.deepEqual(capture.responses, [
     { url, status: 200, headers: { "content-type": "text/html" }, requestHeaders: {} },
