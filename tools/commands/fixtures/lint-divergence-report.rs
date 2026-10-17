@@ -24,8 +24,6 @@ use std::{
     time::Instant,
 };
 
-#[path = "../../support/lint_reference_coverage.rs"]
-mod reference_coverage;
 #[path = "../../support/lint_divergence_surface.rs"]
 mod surface;
 use surface::{baseline_intentional_reason, outside_baseline_surface};
@@ -139,7 +137,7 @@ fn measure_project(
         return Err(format!("{project_id} matched no Vue files"));
     }
 
-    let patina = run_patina(&cwd, project, args, launch, files.len())?;
+    let patina_findings = run_patina(&cwd, project, args, launch, files.len())?;
     let baseline_started = Instant::now();
     let baseline = run_eslint_baseline(root, &cwd, &files, &comparable.rules)?;
     let baseline_duration_ms = baseline_started.elapsed().as_millis() as u64;
@@ -148,15 +146,8 @@ fn measure_project(
         &project_id,
         &cwd,
         rule_map,
-        &patina.findings,
+        &patina_findings,
         &baseline.results,
-        &json!({
-            "revision": project.get("revision"),
-            "preset": args.preset,
-            "runtimeVersions": baseline.runtime_versions,
-            "rules": comparable.rules,
-            "files": files,
-        }),
     )?;
     let mut artifact = json!({
         "schema": "vize.fixtureLintDivergenceRun",
@@ -169,7 +160,6 @@ fn measure_project(
         "baseline": {
             "package": rule_map.pointer("/upstream/package").cloned().unwrap_or(Value::Null),
             "version": baseline.version,
-            "runtimeVersions": baseline.runtime_versions,
             "comparedRuleCount": comparable.rules.len(),
             "mappedRuleCount": comparable.mapped_rule_count,
             "skippedByPresetCount": comparable.skipped_by_preset_count,
@@ -180,11 +170,6 @@ fn measure_project(
                     messages.iter().any(|message| message.get("ruleId").is_none_or(Value::is_null))
                 })
             }).collect::<Vec<_>>(),
-        },
-        "raw": {
-            "patinaResults": patina.results,
-            "patinaFindings": patina.findings,
-            "eslintResults": baseline.raw_results,
         },
         "divergence": divergence,
     });
@@ -202,18 +187,13 @@ fn measure_project(
     Ok(Some(artifact))
 }
 
-struct PatinaRun {
-    findings: Vec<Value>,
-    results: Value,
-}
-
 fn run_patina(
     cwd: &Path,
     project: &Value,
     args: &Args,
     launch: &Launch,
     expected_file_count: usize,
-) -> Result<PatinaRun, String> {
+) -> Result<Vec<Value>, String> {
     let mut command_args = launch.prefix.clone();
     command_args.push("lint".to_string());
     command_args.extend(project_string_array(project, "vueGlobs")?);
@@ -268,16 +248,11 @@ fn run_patina(
             findings.push(finding);
         }
     }
-    Ok(PatinaRun {
-        findings,
-        results: envelope,
-    })
+    Ok(findings)
 }
 
 struct BaselineRun {
     version: String,
-    runtime_versions: Value,
-    raw_results: Vec<Value>,
     results: Vec<Value>,
     dropped_config_message_count: u64,
 }
@@ -291,11 +266,6 @@ fn run_eslint_baseline(
     if rules.is_empty() {
         return Ok(BaselineRun {
             version: rule_map_version(root)?,
-            runtime_versions: json!({}),
-            raw_results: files
-                .iter()
-                .map(|file| json!({ "filePath": cwd.join(file), "messages": [] }))
-                .collect(),
             results: files
                 .iter()
                 .map(|file| json!({ "filePath": cwd.join(file), "messages": [] }))
@@ -335,11 +305,7 @@ const retained = results.map((result) => ({
     return false;
   })
 }));
-const runtimeVersions = Object.fromEntries(
-  ["eslint", "eslint-plugin-vue", "vue-eslint-parser", "@typescript-eslint/parser"]
-    .map(name => [name, requireFromBench(`${name}/package.json`).version])
-);
-process.stdout.write(JSON.stringify({ version: manifest.version, runtimeVersions, rawResults: results, results: retained, droppedConfigMessageCount }));
+process.stdout.write(JSON.stringify({ version: manifest.version, results: retained, droppedConfigMessageCount }));
 "#;
     let input = json!({
         "benchPackageJson": root.join("tools/benchmarks/scripts/package.json"),
@@ -375,15 +341,6 @@ process.stdout.write(JSON.stringify({ version: manifest.version, runtimeVersions
     let parsed = serde_json::from_slice::<Value>(&output.stdout)
         .map_err(|error| format!("eslint baseline produced invalid JSON: {error}"))?;
     Ok(BaselineRun {
-        raw_results: parsed
-            .get("rawResults")
-            .and_then(Value::as_array)
-            .cloned()
-            .ok_or_else(|| "eslint baseline must retain complete raw results".to_string())?,
-        runtime_versions: parsed
-            .get("runtimeVersions")
-            .cloned()
-            .unwrap_or(Value::Null),
         version: parsed
             .get("version")
             .and_then(Value::as_str)
@@ -407,32 +364,10 @@ fn compare_lint_findings(
     rule_map: &Value,
     patina_findings: &[Value],
     eslint_results: &[Value],
-    reference_context: &Value,
 ) -> Result<Value, String> {
     let index = RuleMapIndex::new(rule_map)?;
     let patina = collect_patina_findings(patina_findings, cwd)?;
     let baseline_input = collect_baseline_findings(eslint_results, cwd)?;
-    let reference_expectations =
-        reference_coverage::eligible(project_id, reference_context, |file| {
-            fs::read_to_string(cwd.join(file)).ok()
-        })
-        .into_iter()
-        .map(|case| {
-            let observed = patina
-                .iter()
-                .filter(|finding| finding.to_value() == case["finding"])
-                .count();
-            json!({
-                "case": case["id"], "expectedFinding": case["finding"],
-                "sourceSha256": case["sourceSha256"], "expectedCount": 1,
-                "observedCount": observed, "passed": observed == 1,
-            })
-        })
-        .collect::<Vec<_>>();
-    let reference_integrity_errors = reference_expectations
-        .iter()
-        .filter(|case| case["passed"] != true)
-        .count();
 
     let mut unimplemented = Vec::new();
     let mut intentional_divergences = Vec::new();
@@ -490,7 +425,6 @@ fn compare_lint_findings(
     // eslint-plugin-vue's vue/no-unused-components checks only the `components`
     // option, so an unused <script setup> import is outside its surface too.
     let mut sources = BTreeMap::<String, Option<String>>::new();
-    let mut covered_reference_cases = BTreeSet::new();
     for finding in patina {
         let source = sources
             .entry(finding.file.clone())
@@ -501,28 +435,7 @@ fn compare_lint_findings(
         {
             patina_outside_baseline_surface.push(finding.to_value());
         } else if index.patina_targets.contains(&finding.rule_id) {
-            let coverage = source.as_deref().and_then(|source| {
-                reference_coverage::classify(
-                    project_id,
-                    reference_context,
-                    &finding.to_value(),
-                    source,
-                    || {
-                        comparable_baseline.iter().any(|other| {
-                            other.file == finding.file && other.rule_id == finding.rule_id
-                        })
-                    },
-                )
-            });
-            if let Some(coverage) = coverage
-                && covered_reference_cases.insert(coverage["case"].to_string())
-            {
-                let mut value = finding.to_value();
-                value["referenceCoverage"] = coverage;
-                patina_outside_baseline_surface.push(value);
-            } else {
-                comparable_patina.push(finding);
-            }
+            comparable_patina.push(finding);
         } else {
             patina_only_rule_findings.push(finding.to_value());
         }
@@ -588,7 +501,6 @@ fn compare_lint_findings(
     sort_values(&mut patina_outside_baseline_surface);
 
     let summary = json!({
-        "referenceCoverageIntegrityErrorCount": reference_integrity_errors,
         "patinaFindingCount": comparable_patina.len() + patina_only_rule_findings.len() + patina_outside_baseline_surface.len(),
         "baselineFindingCount": comparable_baseline.len() + unimplemented.len() + intentional_divergences.len(),
         "comparableBaselineCount": comparable_baseline.len(),
@@ -609,7 +521,6 @@ fn compare_lint_findings(
         "falseNegativeRatio": ratio(false_negative_values.len(), comparable_baseline.len()),
     });
     let classified = json!({
-        "referenceCoverageExpectations": reference_expectations,
         "shared": shared,
         "messageDifferences": message_differences,
         "falsePositives": false_positive_values,
@@ -623,7 +534,6 @@ fn compare_lint_findings(
     });
     let hash_input = json!({
         "summary": summary,
-        "referenceCoverageExpectations": classified["referenceCoverageExpectations"],
         "shared": classified["shared"],
         "messageDifferences": classified["messageDifferences"],
         "falsePositives": classified["falsePositives"],
@@ -644,7 +554,6 @@ fn compare_lint_findings(
             "version": rule_map.pointer("/upstream/version").cloned().unwrap_or(Value::Null),
         },
         "summary": summary,
-        "referenceCoverageExpectations": classified["referenceCoverageExpectations"],
         "shared": classified["shared"],
         "messageDifferences": classified["messageDifferences"],
         "falsePositives": classified["falsePositives"],
@@ -1248,14 +1157,6 @@ fn render_markdown(artifact: &Value) -> String {
             summary["patinaOnlyRuleFindingCount"]
         ),
         format!(
-            "Patina findings outside reference coverage: {}",
-            summary["patinaOutsideBaselineSurfaceCount"]
-        ),
-        format!(
-            "Reference coverage integrity errors: {}",
-            summary["referenceCoverageIntegrityErrorCount"]
-        ),
-        format!(
             "Baseline parse errors: {}",
             summary["baselineParseErrorCount"]
         ),
@@ -1311,12 +1212,6 @@ fn render_markdown(artifact: &Value) -> String {
         "Unimplemented upstream rules",
         artifact
             .pointer("/divergence/unimplemented")
-            .and_then(Value::as_array),
-    ));
-    lines.extend(rule_table(
-        "Patina findings outside reference coverage",
-        artifact
-            .pointer("/divergence/patinaOutsideBaselineSurface")
             .and_then(Value::as_array),
     ));
     format!("{}\n", lines.join("\n"))
@@ -1685,15 +1580,6 @@ fn rule_map_version(root: &Path) -> Result<String, String> {
 }
 
 fn unusable_lint_reason(artifact: &Value) -> Option<String> {
-    let reference_errors = artifact
-        .pointer("/divergence/summary/referenceCoverageIntegrityErrorCount")
-        .and_then(Value::as_u64)
-        .unwrap_or(0);
-    if reference_errors > 0 {
-        return Some(format!(
-            "expected exactly one native finding for {reference_errors} reviewed reference-coverage case(s)"
-        ));
-    }
     let compared_count = artifact
         .pointer("/files/comparedCount")
         .and_then(Value::as_u64);

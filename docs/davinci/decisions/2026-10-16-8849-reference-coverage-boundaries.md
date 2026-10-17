@@ -78,14 +78,14 @@ The source-free JavaScript comparator does not apply these source-bound cases.
 `tests/tooling/lint-reference-coverage.test.mjs` checks frozen full packets,
 source identities, pinned package/visitor hashes, the two missing reference
 findings, the supported `#default` and object-prop positive controls, and valid
-`v-slot`/read-only negative neighbors. It executes the actual Rust matcher and
+`v-slot`/read-only negative neighbors. It executes the actual TypeScript matcher and
 actual report runner. Appending a newline to either full source restores the
 original finding to false positives while retaining both raw packets. Deleting
 either expected row fails enforced report integrity; duplicating it remains
 visible and unusable. With a changed source hash, neither case is eligible,
 including when its native row is absent.
 
-Rust matcher mutations cover every finding identity field, each runtime pin,
+TypeScript matcher mutations cover every finding identity field, each runtime pin,
 revision, preset, explicit options/severity changes and newly visible reference
 coverage, for both cases. Product regression tests separately assert that Vize
 continues warning on bare component `#` and reporting the class prop mutation,
@@ -93,3 +93,24 @@ while retaining valid template slots, writable class locals and read-only props.
 
 Exact-head Actions must pass before this classification is accepted. This
 change does not qualify a full Matrix campaign or close #8849.
+
+## TypeScript successor and measured input boundary
+
+The original stacked proposal is preserved at commit
+`7421901d05ac2e252636dd8ee426e8783255378d`. The production successor uses
+`tools/commands/fixtures/lint-divergence-report.ts`; the previous Rust command at
+`49545646fde08ade1000c4a33b38c9dd1ac4fb99` remains an immutable Git reference for
+actual subprocess parity, rather than a second production command.
+
+Classification and independent expected-finding discovery share the same measured
+file membership check. Missing, non-array, empty, or unrelated `context.files`
+refuses exemption before reading reference packets. A reviewed file remaining on
+disk cannot exempt a native result outside the actual measured corpus. Both
+reviewed cases have complete real-report foreign-glob controls: their unchanged
+native rows remain false positives with zero budgets and fail enforced reporting.
+
+The focused Actions carrier runs the original reference and proposed classifier
+reference as real subprocesses, retains complete reports and raw process packets,
+and checks the TypeScript successor against every original report contract. The
+runtime identity and elapsed measurements remain explicitly distinguished; no
+historical source result is promoted into current native or full Matrix credit.

@@ -21,12 +21,16 @@ function fixture(index: number) {
     rules: { [rule]: entry.finding.severity === "warning" ? "warn" : "error" },
   };
   const source = readFileSync(
-    new URL(`../_fixtures/differential/linter/reference-coverage-8849/${entry.source}`, import.meta.url),
+    new URL(
+      `../_fixtures/differential/linter/reference-coverage-8849/${entry.source}`,
+      import.meta.url,
+    ),
     "utf8",
   );
   return { entry, context, source, rule, finding: entry.finding };
 }
-const noScan = () => assert.fail("unrelated or unmeasured findings must not scan reference packets");
+const noScan = () =>
+  assert.fail("unrelated or unmeasured findings must not scan reference packets");
 
 for (let index = 0; index < 2; index++) {
   const { entry, context, source, rule, finding } = fixture(index);
@@ -36,16 +40,37 @@ for (let index = 0; index < 2; index++) {
     assert.equal(answer.category, "reference-coverage-gap");
     assert.equal(answer.sourceSha256, entry.sourceSha256);
     assert.deepEqual(answer.options, []);
-    assert.deepEqual(eligible(entry.project, context, () => source), [entry]);
-    assert.deepEqual(eligible(entry.project, context, () => source + "\n"), []);
+    assert.deepEqual(
+      eligible(entry.project, context, () => source),
+      [entry],
+    );
+    assert.deepEqual(
+      eligible(entry.project, context, () => source + "\n"),
+      [],
+    );
     assert.equal(classify("other-project", context, finding, source, noScan), null);
     assert.equal(classify(entry.project, context, finding, source + "\n", noScan), null);
-    for (const field of ["file", "ruleId", "severity", "line", "column", "endLine", "endColumn", "message"]) {
+    for (const field of [
+      "file",
+      "ruleId",
+      "severity",
+      "line",
+      "column",
+      "endLine",
+      "endColumn",
+      "message",
+    ]) {
       const original = finding[field];
-      const changed = { ...finding, [field]: typeof original === "number" ? original + 1 : String(original) + "x" };
+      const changed = {
+        ...finding,
+        [field]: typeof original === "number" ? original + 1 : String(original) + "x",
+      };
       assert.equal(classify(entry.project, context, changed, source, noScan), null, field);
     }
-    assert.equal(classify(entry.project, context, { ...finding, foreign: true }, source, noScan), null);
+    assert.equal(
+      classify(entry.project, context, { ...finding, foreign: true }, source, noScan),
+      null,
+    );
   });
 
   void test(`${entry.id}: changed configuration and newly visible reference findings stay scored`, () => {
@@ -63,17 +88,37 @@ for (let index = 0; index < 2; index++) {
       assert.deepEqual(eligible(entry.project, settings, noScan), []);
       assert.equal(classify(entry.project, settings, finding, source, noScan), null);
     }
-    assert.equal(classify(entry.project, context, finding, source, () => true), null);
+    assert.equal(
+      classify(entry.project, context, finding, source, () => true),
+      null,
+    );
   });
 
   void test(`${entry.id}: missing, empty, foreign and malformed measured-file domains refuse exemption AND expectations`, () => {
     const { files: _files, ...missing } = context;
-    for (const settings of [missing, ...[[], ["foreign.vue"], null, entry.finding.file, {}].map((files) => ({ ...context, files }))]) {
-      assert.deepEqual(eligible(entry.project, settings, noScan), [], JSON.stringify(settings.files));
-      assert.equal(classify(entry.project, settings, finding, source, noScan), null, JSON.stringify(settings.files));
+    for (const settings of [
+      missing,
+      ...[[], ["foreign.vue"], null, entry.finding.file, {}].map((files) => ({
+        ...context,
+        files,
+      })),
+    ]) {
+      assert.deepEqual(
+        eligible(entry.project, settings, noScan),
+        [],
+        JSON.stringify(settings.files),
+      );
+      assert.equal(
+        classify(entry.project, settings, finding, source, noScan),
+        null,
+        JSON.stringify(settings.files),
+      );
     }
     const measured = { ...context, files: ["foreign.vue", entry.finding.file] };
     assert.equal(classify(entry.project, measured, finding, source, () => false)?.case, entry.id);
-    assert.deepEqual(eligible(entry.project, measured, () => source), [entry]);
+    assert.deepEqual(
+      eligible(entry.project, measured, () => source),
+      [entry],
+    );
   });
 }

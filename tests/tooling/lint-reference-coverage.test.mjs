@@ -124,20 +124,6 @@ await test("pinned reference AST and visitors miss only the two proven coverage 
   );
 });
 
-await test("actual Rust coverage matcher rejects changed settings, source, rows and new reference coverage", () => {
-  const result = spawnSync(
-    "rust-script",
-    ["--test", "tools/commands/fixtures/test-lint-reference-coverage.rs"],
-    {
-      cwd: root,
-      encoding: "utf8",
-      timeout: 120000,
-    },
-  );
-  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /2 passed/);
-});
-
 await test("actual report retains complete raw packets and scores a neighboring changed source", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-reference-coverage-"));
   try {
@@ -174,10 +160,9 @@ await test("actual report retains complete raw packets and scores a neighboring 
           `#!/usr/bin/env node\nprocess.stdout.write(${JSON.stringify(JSON.stringify([{ file: entry.finding.file, messages }]))});\n`,
         );
         const result = spawnSync(
-          "rust-script",
+          process.execPath,
           [
-            "--force",
-            "tools/commands/fixtures/lint-divergence-report.rs",
+            "tools/commands/fixtures/lint-divergence-report.ts",
             "--registry",
             registry,
             "--output-dir",
@@ -228,6 +213,23 @@ await test("actual report retains complete raw packets and scores a neighboring 
       assert.deepEqual(duplicated.divergence.falsePositives, [entry.finding]);
       assert.equal(duplicated.divergence.referenceCoverageExpectations[0].observedCount, 2);
       assert.equal(duplicated.budget.verdict, "unusable");
+      // A file may remain on disk while the actual measured corpus excludes it.
+      // The complete native answer must then stay scored, with no integrity exemption.
+      const registered = fs.readFileSync(registry, "utf8");
+      const foreign = JSON.parse(registered);
+      foreign.projects[0].vueGlobs = ["Foreign.vue"];
+      fs.writeFileSync(path.join(projectDir, "Foreign.vue"), "<template><div /></template>\n");
+      fs.writeFileSync(registry, JSON.stringify(foreign));
+      const unmeasured = run([entry.finding], "enforce", 1);
+      assert.deepEqual(unmeasured.raw.patinaFindings, [entry.finding]);
+      assert.deepEqual(unmeasured.divergence.patinaOutsideBaselineSurface, []);
+      assert.deepEqual(unmeasured.divergence.referenceCoverageExpectations, []);
+      assert.deepEqual(unmeasured.divergence.falsePositives, [entry.finding]);
+      assert.equal(unmeasured.budget.maxFalsePositiveCount, 0);
+      assert.equal(unmeasured.budget.maxFalseNegativeCount, 0);
+      assert.equal(unmeasured.budget.verdict, "breached");
+      assert.equal(unmeasured.budget.passed, false);
+      fs.writeFileSync(registry, registered);
       fs.writeFileSync(sourcePath, source + "\n");
       const changed = run();
       assert.deepEqual(changed.divergence.patinaOutsideBaselineSurface, []);

@@ -35,7 +35,11 @@ export function referenceCoverageCases(): ReferenceCoverageCase[] {
 function settingsMatch(entry: ReferenceCoverageCase, project: string, context: Json): boolean {
   const rule = entry.finding.ruleId;
   const severity =
-    entry.finding.severity === "warning" ? "warn" : entry.finding.severity === "error" ? "error" : null;
+    entry.finding.severity === "warning"
+      ? "warn"
+      : entry.finding.severity === "error"
+        ? "error"
+        : null;
   return (
     typeof rule === "string" &&
     severity !== null &&
@@ -58,7 +62,8 @@ export function classifyReferenceCoverage(
   hasReferenceFinding: () => boolean,
 ): Json | null {
   const entry = contract.cases.find(
-    (candidate) => settingsMatch(candidate, project, context) && isDeepStrictEqual(candidate.finding, finding),
+    (candidate) =>
+      settingsMatch(candidate, project, context) && isDeepStrictEqual(candidate.finding, finding),
   );
   if (!entry || entry.sourceSha256 !== hash(source) || hasReferenceFinding()) return null;
   return {
@@ -84,7 +89,8 @@ export function eligibleReferenceCoverage(
 ): ReferenceCoverageCase[] {
   return contract.cases
     .filter((entry) => {
-      if (!settingsMatch(entry, project, context) || typeof entry.finding.file !== "string") return false;
+      if (!settingsMatch(entry, project, context) || typeof entry.finding.file !== "string")
+        return false;
       const source = sourceFor(entry.finding.file);
       return source !== null && entry.sourceSha256 === hash(source);
     })
