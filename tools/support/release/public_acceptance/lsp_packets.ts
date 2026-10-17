@@ -203,8 +203,8 @@ export function assertAllLspPackets(
     namedModelCursors: 224,
     namedModelResponses: 896,
     boundEventCursorTriples: 660,
-    contractedBoundDefinitions: 500,
-    observedUncontractedBoundDefinitions: 160,
+    contractedBoundDefinitions: 660,
+    observedUncontractedBoundDefinitions: 0,
     results,
     stockHost:
       "Unchanged stock Content Mapper null/refusal laws are not functional stock-host rename proof.",
