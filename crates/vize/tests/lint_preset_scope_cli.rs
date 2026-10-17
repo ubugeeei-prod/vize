@@ -150,7 +150,7 @@ fn lint_limits_nuxt_link_guidance_to_nuxt_preset() {
 }
 
 #[test]
-fn six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_packets() {
+fn six_default_presets_preserve_76_complete_cli_warning_off_repair_and_alias_packets() {
     let corpus: serde_json::Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/lint-preset-default-warnings/cases.json"
     ))
@@ -276,7 +276,7 @@ fn six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_pac
             }
         }
     }
-    assert_eq!(commands, 38);
+    assert_eq!(commands, 76);
     println!(
         "{}",
         serde_json::json!({

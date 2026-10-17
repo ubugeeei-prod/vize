@@ -1,4 +1,4 @@
-//! Whole authored packets for the two default warning policies.
+//! Whole authored packets for default warning policies and explicit adoption.
 
 use crate::{LintPreset, LintResult, Linter, rule::RuleRegistry};
 use serde_json::{Value, json};
@@ -78,6 +78,50 @@ fn all_six_presets_emit_the_complete_authored_warning_packets() {
                 case["id"],
                 preset.as_str()
             );
+            if let Some(negatives) = case["negativeSources"].as_array() {
+                let rule = case["rule"].as_str().unwrap();
+                let selected =
+                    Linter::with_preset(preset).with_enabled_rules(Some(vec![rule.into()]));
+                assert_eq!(
+                    whole(&selected.lint_sfc(case["source"].as_str().unwrap(), filename)),
+                    json!({"filename": filename, "error_count": 0, "warning_count": 1, "diagnostics": [case["diagnostic"]]}),
+                    "{} / {} / explicit selection",
+                    case["id"],
+                    preset.as_str()
+                );
+                let clean = json!({"filename": filename, "error_count": 0, "warning_count": 0, "diagnostics": []});
+                for source in negatives {
+                    assert_eq!(
+                        whole(&selected.lint_sfc(source.as_str().unwrap(), filename)),
+                        clean,
+                        "{} / {} / negative {source}",
+                        case["id"],
+                        preset.as_str()
+                    );
+                }
+                assert_eq!(
+                    whole(
+                        &selected
+                            .with_disabled_rules(vec![rule.into()])
+                            .lint_sfc(case["source"].as_str().unwrap(), filename)
+                    ),
+                    clean,
+                    "{} / {} / explicit off overrides selection",
+                    case["id"],
+                    preset.as_str()
+                );
+                assert_eq!(
+                    whole(
+                        &Linter::with_preset(preset)
+                            .with_enabled_rules(Some(vec!["vue/valid-v-if".into()]))
+                            .lint_sfc(case["source"].as_str().unwrap(), filename)
+                    ),
+                    clean,
+                    "{} / {} / unrelated explicit subset",
+                    case["id"],
+                    preset.as_str()
+                );
+            }
         }
         for alias in [
             "default",
