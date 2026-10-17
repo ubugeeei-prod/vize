@@ -38,7 +38,7 @@ impl ContentMapperProjectConfiguration {
         // Fingerprint the effective dynamic options and resolution closure,
         // rather than rereading files after the snapshot has been selected.
         let identity = serde_json::to_vec(&(&options, &watched_files))?;
-        let digest = Sha256::digest(identity);
+        let digest = super::identity::encode_digest(Sha256::digest(identity));
         let transform_options = if config_file_name.as_os_str().is_empty() {
             ContentMapperTransformOptions::default()
         } else {
@@ -46,7 +46,7 @@ impl ContentMapperProjectConfiguration {
         };
         Ok(Self {
             transform_options,
-            config_identity: cstr!("vize-content-mapper-v1:{digest:x}"),
+            config_identity: cstr!("vize-content-mapper-v1:{digest}"),
             watched_files,
         })
     }
@@ -78,6 +78,15 @@ mod tests {
 
     fn load(path: &Path) -> ContentMapperProjectConfiguration {
         ContentMapperProjectConfiguration::load(path).unwrap()
+    }
+
+    #[test]
+    fn inferred_identity_retains_the_complete_sha256_digest() {
+        let configuration = load(Path::new(""));
+        assert_eq!(
+            configuration.config_identity.as_str(),
+            "vize-content-mapper-v1:7a38905296006c575d7d45d1d881690a3ee87361ed67ce64642e2504482da818"
+        );
     }
 
     #[test]
