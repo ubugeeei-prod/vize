@@ -11,7 +11,7 @@ type Json = ReturnType<typeof JSON.parse>;
 const files = ["Child.vue", "Parent.vue", "Other.vue"];
 const reply = (id: number, result: Json) => ({ jsonrpc: "2.0", id, result });
 
-/** Validate H's decoded ledger, which records clean pipe EOF as a reader event.
+/** Validate H's decoded ledger, whose reader stops silently at frame-boundary EOF.
  * This ledger does not retain raw stdout frames or prove header byte completeness.
  */
 export function assertDecodedLspLifecycle(protocol: Json[], terminal: Json) {
@@ -19,16 +19,10 @@ export function assertDecodedLspLifecycle(protocol: Json[], terminal: Json) {
   assert.equal(terminal.exitCode, 0);
   assert.equal(terminal.stdoutReaderJoined, true);
   assert.equal(terminal.stderrReaderJoined, true);
-  assert.ok(protocol.length >= 7, "complete decoded lifecycle required");
-  assert.deepEqual(protocol.at(-1), {
-    direction: "stdoutError",
-    message: { kind: "UnexpectedEof", message: "LSP stdout reached EOF" },
-  });
+  assert.ok(protocol.length >= 6, "complete decoded lifecycle required");
   assert.ok(
-    protocol
-      .slice(0, -1)
-      .every((row) => row.direction === "request" || row.direction === "response"),
-    "only the final clean EOF reader event can qualify",
+    protocol.every((row) => row.direction === "request" || row.direction === "response"),
+    "reader errors cannot qualify as clean boundary EOF",
   );
   const requests = protocol.flatMap((row, index) =>
     row.direction === "request" ? [{ message: row.message, index }] : [],
@@ -64,7 +58,7 @@ export function assertDecodedLspLifecycle(protocol: Json[], terminal: Json) {
   assert.ok(initialize.index < ready.index && ready.index < initialized.index);
   assert.ok(initialized.index < shutdown.index && shutdown.index < stopped.index);
   assert.ok(stopped.index < exit.index);
-  assert.equal(exit.index, protocol.length - 2, "EOF must immediately follow exit");
+  assert.equal(exit.index, protocol.length - 1, "exit must end the decoded ledger");
   assert.deepEqual(shutdown.message, {
     jsonrpc: "2.0",
     id: shutdown.message.id,

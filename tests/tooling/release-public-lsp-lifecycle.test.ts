@@ -6,7 +6,7 @@ import { assertDecodedLspLifecycle } from "../../tools/support/release/public_ac
 
 const fixture = JSON.parse(
   fs.readFileSync(
-    new URL("../_fixtures/release/public-lsp-clean-eof.json", import.meta.url),
+    new URL("../_fixtures/release/public-lsp-boundary-eof.json", import.meta.url),
     "utf8",
   ),
 );
@@ -23,49 +23,115 @@ const shutdownResponse = (rows: Ledger) => {
   return rows.findIndex((row) => row.direction === "response" && row.message.id === id);
 };
 
-test("actual public decoded ledger admits only its clean shutdown EOF without rewriting rows", () => {
+test("actual public 0.458 decoded ledger ends at exit without rewriting rows", () => {
   assert.equal(
     createHash("sha256").update(fixture.protocol).digest("hex"),
     fixture.provenance.protocolSha256,
   );
-  assert.equal(fixture.provenance.version, "0.457.0");
+  assert.equal(fixture.provenance.version, "0.458.0");
   const rows = original(),
     before = structuredClone(rows);
   assertDecodedLspLifecycle(rows, fixture.terminal);
   assert.deepEqual(rows, before);
-  assert.equal(rows.length, 95);
-  assert.equal(rows.at(-1).direction, "stdoutError");
+  assert.equal(rows.length, 94);
+  assert.deepEqual(rows.at(-1), {
+    direction: "request",
+    message: { jsonrpc: "2.0", method: "exit" },
+  });
+  assert.equal(fixture.all32.length, 32);
+  assert.equal(new Set(fixture.all32.map((row: { trace: string }) => row.trace)).size, 32);
+  assert.equal(
+    fixture.all32.filter(
+      (row: { namespace: string }) => row.namespace === "named-model-transactions",
+    ).length,
+    12,
+  );
+  assert.equal(
+    fixture.all32.filter(
+      (row: { namespace: string }) => row.namespace === "bound-event-casing-transactions",
+    ).length,
+    20,
+  );
+  assert.equal(fixture.provenance.source.head, "6951e6fd56c14dd8e466579cb96652932ec216c6");
+});
+
+const historical = JSON.parse(
+  fs.readFileSync(
+    new URL("../_fixtures/release/public-lsp-clean-eof.json", import.meta.url),
+    "utf8",
+  ),
+);
+const legacyEof = () => ({
+  direction: "stdoutError",
+  message: { kind: "UnexpectedEof", message: "LSP stdout reached EOF" },
+});
+test("historical 0.457 error ledger remains evidence, not an accepted successor shape", () => {
+  assert.equal(
+    createHash("sha256").update(historical.protocol).digest("hex"),
+    historical.provenance.protocolSha256,
+  );
+  assert.equal(historical.provenance.version, "0.457.0");
+  assert.throws(() =>
+    assertDecodedLspLifecycle(
+      historical.protocol.trim().split("\n").map(JSON.parse),
+      historical.terminal,
+    ),
+  );
 });
 
 const invalid: Record<string, (rows: Ledger) => void> = {
-  "a missing EOF event": (rows) => {
-    rows.pop();
+  "the legacy EOF error after exit": (rows) => {
+    rows.push(legacyEof());
   },
-  "a duplicated EOF event": (rows) => {
-    rows.push(structuredClone(rows.at(-1)));
+  "a duplicated reader error": (rows) => {
+    rows.push(legacyEof(), legacyEof());
   },
-  "an early reader EOF even with a successful later shutdown": (rows) => {
-    rows.splice(3, 0, structuredClone(rows.at(-1)));
+  "an early reader EOF despite later successful shutdown": (rows) => {
+    rows.splice(3, 0, legacyEof());
   },
-  "a truncated response body with the same error kind": (rows) => {
-    rows.at(-1).message.message = "failed to fill whole buffer";
+  "a truncated response body": (rows) => {
+    rows.push({
+      direction: "stdoutError",
+      message: { kind: "UnexpectedEof", message: "failed to fill whole buffer" },
+    });
   },
-  "a missing Content-Length error": (rows) => {
-    rows.at(-1).message = { kind: "InvalidData", message: "missing Content-Length header" };
+  "a truncated header": (rows) => {
+    rows.push({
+      direction: "stdoutError",
+      message: { kind: "UnexpectedEof", message: "incomplete LSP header line" },
+    });
   },
-  "a different reader error kind": (rows) => {
-    rows.at(-1).message.kind = "BrokenPipe";
+  "a partial following frame": (rows) => {
+    rows.push({
+      direction: "stdoutError",
+      message: { kind: "UnexpectedEof", message: "LSP stdout closed inside frame headers" },
+    });
+  },
+  "malformed complete JSON": (rows) => {
+    rows.push({
+      direction: "stdoutError",
+      message: { kind: "InvalidData", message: "expected value at line 1 column 1" },
+    });
+  },
+  "a missing Content-Length": (rows) => {
+    rows.push({
+      direction: "stdoutError",
+      message: { kind: "InvalidData", message: "missing Content-Length header" },
+    });
   },
   "a stderr reader error": (rows) => {
-    rows.at(-1).direction = "stderrError";
+    rows.push({ ...legacyEof(), direction: "stderrError" });
   },
-  "extra unverified EOF fields": (rows) => {
-    rows.at(-1).message.extra = true;
+  "a broken pipe reader error": (rows) => {
+    rows.push({ direction: "stdoutError", message: { kind: "BrokenPipe", message: "closed" } });
   },
-  "a response after EOF": (rows) => {
+  "a reader error with extra fields": (rows) => {
+    rows.push({ ...legacyEof(), extra: true });
+  },
+  "a response after exit": (rows) => {
     rows.push(structuredClone(rows[1]));
   },
-  "EOF before the exit notification": (rows) => {
+  "exit before shutdown acknowledgement": (rows) => {
     const last = rows.length - 1;
     [rows[last], rows[last - 1]] = [rows[last - 1], rows[last]];
   },
@@ -155,9 +221,11 @@ for (const [key, value] of [
   ["exitCode", 1],
   ["exitCode", null],
   ["stdoutReaderJoined", false],
+  ["stdoutReaderJoined", null],
   ["stderrReaderJoined", false],
+  ["stderrReaderJoined", null],
 ] as const)
-  test(`clean EOF cannot qualify terminal ${key}=${value}`, () => {
+  test(`boundary EOF cannot qualify terminal ${key}=${value}`, () => {
     assert.throws(() =>
       assertDecodedLspLifecycle(original(), { ...fixture.terminal, [key]: value }),
     );
