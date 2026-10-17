@@ -284,22 +284,37 @@ test("every qualifying exact Check is retained and ordering cannot create a fals
   assert.throws(() => integrationIdentity(changed), "duplicate authority runs must be refused");
 });
 
-test("a later red exact-candidate Check remains bound beside an earlier green run", () => {
+test("an initially latest red exact Check refuses despite an older green run", () => {
   const changed = before();
-  const green = integrationIdentity(changed);
   const run = structuredClone(changed.gates.workflow_runs.find((value) => value.event === "push")!);
   Object.assign(run, { id: 38808071559, run_attempt: 2, conclusion: "failure" });
   changed.gates.workflow_runs.push(run);
+  assert.throws(() => integrationIdentity(changed), /successful latest/);
+  const newerGreen = structuredClone(run);
+  Object.assign(newerGreen, { id: 38808071561, run_attempt: 1, conclusion: "success" });
+  changed.gates.workflow_runs.push(newerGreen);
   const withFailure = integrationIdentity(changed);
-  assert.notDeepEqual(withFailure, green);
+  assert.equal(withFailure.checks.find((check) => check.id === run.id)?.conclusion, "failure");
   run.run_attempt = 3;
   assert.notDeepEqual(integrationIdentity(changed), withFailure);
-  changed.gates.workflow_runs.pop();
+  changed.gates.workflow_runs = changed.gates.workflow_runs.filter((check) => check !== run);
   assert.notDeepEqual(
     integrationIdentity(changed),
     withFailure,
     "a green run must not hide a removed red observation",
   );
+});
+
+test("the original Check's red latest attempt refuses when another older run is green", () => {
+  const changed = before();
+  const original = changed.gates.workflow_runs.find((run) => run.event === "push")!;
+  const olderGreen = structuredClone(original);
+  olderGreen.id -= 1;
+  changed.gates.workflow_runs.push(olderGreen);
+  Object.assign(original, { run_attempt: 2, conclusion: "failure" });
+  assert.throws(() => integrationIdentity(changed), /successful latest/);
+  original.conclusion = "success";
+  assert.equal(integrationIdentity(changed).checks.at(-1)?.run_attempt, 2);
 });
 
 test("retained before and live-after snapshots independently satisfy the original tag's delivery guards", () => {
@@ -340,7 +355,7 @@ test("retained before and live-after snapshots independently satisfy the origina
   }
 });
 
-test("a red latest attempt of the original Check cannot disappear behind another green run", () => {
+test("an older red original Check remains bound when a newer Check succeeds", () => {
   const raw = before();
   const original = integrationIdentity(raw);
   const run = raw.gates.workflow_runs.find((value) => value.event === "push")!;

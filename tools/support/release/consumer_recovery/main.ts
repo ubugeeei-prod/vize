@@ -71,7 +71,9 @@ if (operation === "prepare" || operation === "finalize") {
     const plan = derivePublicationPlan(root, expected.head);
     const publication = await verifyPublication(plan, expected, admission(original));
     save(output, "publication-before.json", publication);
-    save(output, "integration.json", verifyIntegration(publication.github, expected));
+    const integration = verifyIntegration(publication.github, expected);
+    integrationIdentity(integration);
+    save(output, "integration.json", integration);
     console.log("Known frozen consumer fixture admitted; original Release remains failed.");
   } else {
     const original = load(path.join(output, "original.json")) as Original;

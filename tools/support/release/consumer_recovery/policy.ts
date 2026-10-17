@@ -118,11 +118,12 @@ export function integrationIdentity(value: unknown) {
       };
     })
     .sort((left, right) => left.id - right.id);
-  assert.ok(
-    checks.some((run) => run.status === "completed" && run.conclusion === "success"),
-    "successful exact original delivery Check required",
-  );
   same(new Set(checks.map((run) => run.id)).size, checks.length, "duplicate delivery Check");
+  const latest = checks.at(-1);
+  assert.ok(
+    latest?.status === "completed" && latest.conclusion === "success",
+    "successful latest exact original delivery Check required",
+  );
   return {
     integration: {
       id: number(integration.id),
