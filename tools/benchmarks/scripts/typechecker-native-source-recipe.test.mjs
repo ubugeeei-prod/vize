@@ -21,6 +21,7 @@ import {
   currentBytes,
   currentOriginalRun,
   currentRequiredRun,
+  retiredProjectionCommand,
   jsxRequiredRun,
   bomRequiredRun,
   git,
@@ -92,7 +93,10 @@ await test("ordinary source retains the complete authored thirteen-target succes
     assert.ok(run.includes('bash --noprofile --norc -e -o pipefail "$recipe"'));
     assert.ok(run.includes("GITHUB_WORKFLOW_SHA"));
     assert.equal([...run.matchAll(/--test check_tsconfig_types_extends_cli/gu)].length, 1);
-    for (const line of sourceRun.split("\n").slice(4).filter(Boolean))
+    for (const line of sourceRun
+      .split("\n")
+      .slice(4)
+      .filter((line) => line && line !== retiredProjectionCommand))
       assert.ok(run.includes(line), line);
   });
 });

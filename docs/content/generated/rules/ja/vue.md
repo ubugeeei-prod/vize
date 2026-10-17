@@ -6645,6 +6645,13 @@ export default defineConfig({
       "preset": "incremental",
       "rules": {
         "vue/valid-v-on": "error"
+      },
+      "ruleOptions": {
+        "vue/valid-v-on": {
+          "modifiers": [
+            "custom"
+          ]
+        }
       }
     },
   },
@@ -6659,7 +6666,7 @@ vp run lint
 
 **悪い**
 
-イベント引数または必要なハンドラー・オブジェクト式がありません。
+必要なイベントや式がないか、.sync や .nativeish など未対応の修飾子を使っています。
 
 ```vue annotate="remove:2,3,4,5,6,7"
 <template>
@@ -6676,7 +6683,7 @@ vp run lint
 
 **良い**
 
-イベントとハンドラーを指定するか、引数なしの `v-on` にリスナーのオブジェクトを渡します。
+ハンドラー、式を省略できる動作修飾子、対応するキー修飾子、または引数なしの `v-on` に渡すリスナーのオブジェクトを使います。
 
 ```vue annotate="add:2,3,4,5,6"
 <template>

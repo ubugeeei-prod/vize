@@ -13,6 +13,23 @@ export const nativeHistoryReceipt = (nativeDir) =>
 export const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 export const bytes = (value) => ({ base64: value.toString("base64"), sha256: hash(value) });
 
+// Only the captured Linux Actions build uses this override. Keep dev behavior
+// and useful source backtraces without embedding full type/variable DWARF.
+export const nativeHistoryCargoOptions = [
+  "--message-format=json-render-diagnostics",
+  "--locked",
+  "--config",
+  'profile.dev.debug="line-tables-only"',
+];
+
+export function validateNativeHistoryProfile(profile) {
+  assert.equal(profile.test, false);
+  assert.equal(profile.opt_level, "0");
+  assert.equal(profile.debuginfo, "line-tables-only");
+  assert.equal(profile.debug_assertions, true);
+  assert.equal(profile.overflow_checks, true);
+}
+
 const buildEnvironmentKeys = [
   "CARGO",
   "CARGO_TARGET_DIR",
@@ -134,6 +151,7 @@ export function captureNativeHistoryBuild(nativeDir, before, command, result) {
   assert.equal(process.exitStatus, 0);
   assert.equal(process.signal, null);
   assert.equal(process.error, null);
+  validateNativeHistoryCommand(nativeDir, command);
   assert.deepEqual(
     nativeHistorySource(nativeDir),
     before.source,
@@ -144,6 +162,7 @@ export function captureNativeHistoryBuild(nativeDir, before, command, result) {
     after: nativeHistoryBuildEnvironment(),
   });
   const emitted = emittedNativeArtifact(stdout);
+  validateNativeHistoryProfile(emitted.cargo.profile);
   const generated = fs
     .readdirSync(path.join(nativeDir, ".artifacts/native"))
     .filter((name) => name.startsWith("vize-vitrine.") && name.endsWith(".node"));
@@ -177,14 +196,8 @@ export function captureNativeHistoryBuild(nativeDir, before, command, result) {
   return receipt;
 }
 
-export function validateNativeHistoryBuild(nativeDir, receipt) {
-  if (receipt.schema === "vize.public-native-formatter-ci-build")
-    return validateCiBuild(nativeDir, receipt);
-  assert.equal(receipt.schema, "vize.public-native-formatter-build");
-  assert.equal(receipt.version, 1);
-  assert.deepEqual(receipt.source, nativeHistorySource(nativeDir));
-  validateNativeHistoryEnvironment(receipt.environment);
-  assert.deepEqual(receipt.process.command, [
+export function validateNativeHistoryCommand(nativeDir, command) {
+  assert.deepEqual(command, [
     "pnpm",
     "exec",
     "napi",
@@ -200,9 +213,18 @@ export function validateNativeHistoryBuild(nativeDir, receipt) {
     path.join(nativeDir, ".artifacts/native"),
     "--no-js",
     "--",
-    "--message-format=json-render-diagnostics",
-    "--locked",
+    ...nativeHistoryCargoOptions,
   ]);
+}
+
+export function validateNativeHistoryBuild(nativeDir, receipt) {
+  if (receipt.schema === "vize.public-native-formatter-ci-build")
+    return validateCiBuild(nativeDir, receipt);
+  assert.equal(receipt.schema, "vize.public-native-formatter-build");
+  assert.equal(receipt.version, 1);
+  assert.deepEqual(receipt.source, nativeHistorySource(nativeDir));
+  validateNativeHistoryEnvironment(receipt.environment);
+  validateNativeHistoryCommand(nativeDir, receipt.process.command);
   assert.equal(receipt.process.exitStatus, 0);
   assert.equal(receipt.process.signal, null);
   assert.equal(receipt.process.error, null);
@@ -216,6 +238,7 @@ export function validateNativeHistoryBuild(nativeDir, receipt) {
     receipt.emitted,
     emittedNativeArtifact(Buffer.from(receipt.process.stdout.base64, "base64")),
   );
+  validateNativeHistoryProfile(receipt.emitted.cargo.profile);
   assert.equal(
     fs.realpathSync(receipt.emitted.cargo.target.src_path),
     fs.realpathSync(path.join(nativeDir, "../../crates/vize_vitrine/src/lib.rs")),

@@ -42,6 +42,32 @@ runs:
         NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       run: vp install --frozen-lockfile --prefer-offline
 
+    - name: Test native completion lifetime across unchanged diagnostics
+      shell: bash
+      env:
+        VIZE_COMPLETION_PROBE_ROOT: ${{ github.workspace }}/.completion-native-lifetime
+      run: |
+        node --input-type=module <<'NODE'
+        import path from 'node:path';
+        import { prepareRealVueWorkspace } from './tools/support/compat/editor-e2e/real-vue-workspace.mjs';
+        for (const name of ['immediate', 'same-document', 'sibling', 'edited-sibling', 'deleted-dependency', 'reopened']) {
+          prepareRealVueWorkspace(path.join(process.env.VIZE_COMPLETION_PROBE_ROOT, name));
+        }
+        NODE
+        cargo test --locked --profile ci -p vize_maestro --lib ide::completion::resolve:: -- --include-ignored --nocapture --test-threads=1
+
+    - name: Preserve native completion packets and protocol traces
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: native-completion-lifetime-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          .completion-native-lifetime/*/receipt.json
+          .completion-native-lifetime/*/protocol-traces/
+        include-hidden-files: true
+        if-no-files-found: warn
+        retention-days: 7
+
     - name: Install pinned Zed extension CLI
       shell: bash
       env:

@@ -6638,6 +6638,13 @@ export default defineConfig({
       "preset": "incremental",
       "rules": {
         "vue/valid-v-on": "error"
+      },
+      "ruleOptions": {
+        "vue/valid-v-on": {
+          "modifiers": [
+            "custom"
+          ]
+        }
       }
     },
   },
@@ -6652,7 +6659,7 @@ vp run lint
 
 **Bad**
 
-The listener forms omit an event argument or their required handler/object expression.
+The listeners omit a required event or expression, or use unsupported modifiers such as .sync and .nativeish.
 
 ```vue annotate="remove:2,3,4,5,6,7"
 <template>
@@ -6669,7 +6676,7 @@ The listener forms omit an event argument or their required handler/object expre
 
 **Good**
 
-Use an event with its handler, or pass a listener object to argument-free `v-on`.
+Use a handler, a handler-free action modifier, a supported keyboard modifier, or a listener object for argument-free `v-on`.
 
 ```vue annotate="add:2,3,4,5,6"
 <template>

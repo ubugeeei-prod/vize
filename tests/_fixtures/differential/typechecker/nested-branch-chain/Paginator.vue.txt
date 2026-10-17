@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import type { NotificationSlot } from './types';
+defineSlots<{ default(props: { item: NotificationSlot }): any }>();
+</script>
+<template><div /></template>

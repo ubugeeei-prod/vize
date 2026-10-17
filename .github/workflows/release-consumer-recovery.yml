@@ -9,6 +9,7 @@ on:
       - "tools/support/release/public_acceptance/**"
       - "tools/support/release/windows_hover_acceptance.ts"
       - "tests/tooling/release-consumer-recovery.test.ts"
+      - "tests/tooling/release-consumer-snapshots.test.ts"
       - "tests/tooling/release-consumer-archive.test.ts"
       - "tests/tooling/release-consumer-integration.test.ts"
       - "tests/tooling/windows-hover-public-identity.test.ts"
@@ -51,6 +52,7 @@ jobs:
       - name: Verify admission, installed acceptance and original consumer contracts
         run: |
           node --test tests/tooling/release-consumer-recovery.test.ts tests/tooling/release-consumer-archive.test.ts tests/tooling/release-consumer-integration.test.ts tests/tooling/windows-hover-public-identity.test.ts tests/tooling/release/release-public-acceptance.test.ts tests/tooling/release-jsr-workflow.test.ts
+          node --test tests/tooling/release-consumer-snapshots.test.ts
           node --test --test-name-pattern=hosted tests/tooling/release/release-operator.test.ts
   prepare:
     name: Admit frozen consumer failure

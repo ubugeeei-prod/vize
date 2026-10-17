@@ -3,11 +3,12 @@ import { appendFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { comparisonBase } from "./comparison-base.ts";
+import { isOpinionatedSourceInput } from "../../github/opinionated-source-inputs.ts";
 
 export function planCheckInputs(paths: readonly string[], full = false) {
   // A change to the selector or task definitions must exercise its consumers.
   const shared = paths.some((path) =>
-    /^(?:\.github\/workflows\/check\.yml|tools\/support\/compat\/github\/plan-check-inputs\.ts|tools\/config\/vite-plus\/|vite\.config\.ts)/.test(
+    /^(?:\.github\/workflows\/check\.yml|tools\/support\/compat\/github\/plan-check-inputs\.ts|tools\/support\/github\/opinionated-source-inputs\.ts|tools\/config\/vite-plus\/|vite\.config\.ts)/.test(
       path,
     ),
   );
@@ -26,10 +27,9 @@ export function planCheckInputs(paths: readonly string[], full = false) {
       ),
     apps:
       dependencies ||
-      // npm SFCs, including composable examples, are authored inputs to the
-      // current-source opinionated lint step in check-vize-apps.
+      paths.some(isOpinionatedSourceInput) ||
       matches(
-        /^(?:crates|davinci|vendor|playground|examples\/vite-musea)\/|^npm\/.*\.vue$|^npm\/(?:cli|native|builder\/(?:vite|vite-musea|unplugin))\/|^\.cargo\/|^rust-toolchain(?:\.toml)?$|^docs\/davinci\/plan\/(?!.*\.md$)|^docs\/davinci\/plan\/.*fact-alpha-schemas\.md$|^\.github\/actions\/(?:setup-rust-sticky-cache|check-vize-apps)\/|^tools\/commands\/ci\/opinionated-source-lint\./,
+        /^(?:crates|davinci|vendor|playground|examples\/vite-musea)\/|^npm\/(?:cli|native|builder\/(?:vite|vite-musea|unplugin))\/|^\.cargo\/|^rust-toolchain(?:\.toml)?$|^docs\/davinci\/plan\/(?!.*\.md$)|^docs\/davinci\/plan\/.*fact-alpha-schemas\.md$|^\.github\/actions\/(?:setup-rust-sticky-cache|check-vize-apps)\/|^tools\/commands\/ci\/opinionated-source-lint\./,
       ),
   };
 }

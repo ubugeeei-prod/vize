@@ -4,6 +4,7 @@ import process from "node:process";
 import { build } from "vite-plus";
 import { chromium } from "@playwright/test";
 import { mountEventFixture } from "./davinci-event-browser.mjs";
+import { vueVaporRuntimeEntry, vueVaporVersion } from "./vue-vapor-release.mjs";
 
 const require = createRequire(import.meta.url);
 const stable = require("@vue/compiler-dom");
@@ -12,6 +13,7 @@ const beta = createRequire(require.resolve("@vue/compiler-sfc"))("@vue/compiler-
 const versions = {
   stable: require("@vue/compiler-dom/package.json").version,
   beta: require("@vue/compiler-sfc/package.json").version,
+  vapor: vueVaporVersion,
 };
 assert.equal(require("@vue/runtime-dom/package.json").version, versions.stable);
 assert.equal(require("vue/package.json").version, versions.beta);
@@ -36,6 +38,7 @@ async function runtimeUrl(entry) {
 const runtimes = {
   stable: await runtimeUrl(require.resolve("@vue/runtime-dom/dist/runtime-dom.esm-bundler.js")),
   beta: await runtimeUrl(require.resolve("vue/dist/vue.runtime.esm-bundler.js")),
+  vapor: await runtimeUrl(vueVaporRuntimeEntry),
 };
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
@@ -83,7 +86,9 @@ try {
         name: `Vize ${backend}/${mode}`,
         backend,
         code,
-        runtime: "beta",
+        // Retain the historical reference engines above. Candidate Vapor uses
+        // its targeted ABI: unlike beta.10, rc.9's `on` wraps event errors.
+        runtime: backend === "vapor" ? "vapor" : "beta",
       })),
     ];
     if (fixture.referenceExpected) {

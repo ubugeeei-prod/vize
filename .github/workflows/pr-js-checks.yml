@@ -50,6 +50,8 @@ jobs:
         with:
           key: test-js-packages
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/cache-pnpm-verification
+        if: ${{ (inputs.run-js && matrix.group != 'none') }}
       - name: Install JS dependencies
         if: ${{ (inputs.run-js && matrix.group != 'none') }}
         env: { VIZE_JS_PACKAGE_GROUP: "${{ matrix.group }}" }
@@ -125,6 +127,8 @@ jobs:
         with:
           key: test-js-packages
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/cache-pnpm-verification
+        if: ${{ inputs.run-js }}
       - name: Install JS dependencies
         if: ${{ inputs.run-js }}
         run: node tools/support/compat/github/install-js-checks.ts original-project
@@ -200,6 +204,8 @@ jobs:
         with:
           key: build-js-packages
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/cache-pnpm-verification
+        if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
       - name: Install JS dependencies
         if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
         env: { CONFORMANCE_GROUP: "${{ matrix.surface }}-conformance" }

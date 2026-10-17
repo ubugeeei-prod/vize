@@ -506,6 +506,7 @@ jobs:
         build-release-packages,
         release-npm-native,
         release-npm-cli,
+        release-npm-unplugin,
         smoke-release-packages,
         release-preflight,
       ]
@@ -829,12 +830,32 @@ jobs:
       version: ${{ inputs.tag_name }}
       source_sha: ${{ inputs.expected_sha }}
 
+  # Preparation overlaps registry propagation; public release still waits for every gate.
+  prepare-release-assets:
+    name: Prepare signed release assets
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    needs: [build-cli, build-editor-extensions, release-preflight]
+    timeout-minutes: 20
+    permissions: { contents: read, id-token: write }
+    outputs:
+      artifact-id: ${{ steps.assets.outputs.artifact-id }}
+      sha256: ${{ steps.assets.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/prepare-release-assets
+        id: assets
+        with:
+          tag-name: ${{ inputs.tag_name }}
+          source-sha: ${{ inputs.expected_sha }}
+
   # Create GitHub Release with CLI binaries
   create-github-release:
     name: Create GitHub Release
     runs-on: blacksmith-32vcpu-ubuntu-2404
     needs:
       - build-cli
+      - prepare-release-assets
       - release-vscode-extension
       - release-npm-native
       - release-npm-fresco-native
@@ -857,78 +878,26 @@ jobs:
       - release-npm-nuxt
       - release-crates
       - release-preflight
-    env: { RELEASE_TAG_NAME: "${{ inputs.tag_name }}" }
+    env:
+      RELEASE_TAG_NAME: ${{ inputs.tag_name }}
+      RELEASE_SOURCE_SHA: ${{ inputs.expected_sha }}
     timeout-minutes: 20
-    # `id-token: write` is required by sigstore/cosign-installer to mint the keyless signing
-    # certificate, and by anchore/sbom-action when it uploads the SBOM as a release asset.
-    permissions:
-      contents: write
-      id-token: write
+    permissions: { contents: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Download CLI artifacts
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Download signed release assets from this run
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { pattern: cli-*, path: cli-artifacts, merge-multiple: true }
-      - name: Download editor extension artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: editor-extensions, path: editor-extension-artifacts }
-      - name: List CLI artifacts
-        run: ls -la cli-artifacts/
-      - name: List editor extension artifacts
-        run: find editor-extension-artifacts -maxdepth 5 -type f | sort
-      # Publish CycloneDX and SPDX SBOMs for dependency auditing.
-      - name: Generate workspace SBOM (CycloneDX)
-        uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.8
         with:
-          artifact-name: vize-${{ inputs.tag_name }}-cyclonedx.sbom.json
-          format: cyclonedx-json
-          output-file: vize-${{ inputs.tag_name }}-cyclonedx.sbom.json
-          upload-artifact: false
-      - name: Generate workspace SBOM (SPDX)
-        uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.8
-        with:
-          artifact-name: vize-${{ inputs.tag_name }}-spdx.sbom.json
-          format: spdx-json
-          output-file: vize-${{ inputs.tag_name }}-spdx.sbom.json
-          upload-artifact: false
-      # Sign artifacts with the workflow OIDC identity and Sigstore.
-      - name: Install cosign
-        uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
-        with:
-          cosign-release: v2.4.1
-      # Publish SHA-256 checksums alongside signatures and certificates.
-      - name: Generate SHA-256 checksums for release artifacts
-        run: |
-          for artifact in \
-            cli-artifacts/*.tar.gz \
-            cli-artifacts/*.zip \
-            editor-extension-artifacts/editors/vscode/dist/*.vsix \
-            editor-extension-artifacts/*.tar.gz; do
-            if [ -f "$artifact" ]; then
-              echo "Hashing $artifact"
-              ( cd "$(dirname "$artifact")" && sha256sum "$(basename "$artifact")" ) > "${artifact}.sha256"
-            fi
-          done
-      - name: Sign release artifacts (keyless)
+          artifact-ids: ${{ needs.prepare-release-assets.outputs.artifact-id }}
+          path: ${{ runner.temp }}/release-assets
+          merge-multiple: true
+      - name: Verify signed asset bytes and source identity
         env:
-          COSIGN_YES: "true"
-        run: |
-          for artifact in \
-            cli-artifacts/*.tar.gz \
-            cli-artifacts/*.zip \
-            editor-extension-artifacts/editors/vscode/dist/*.vsix \
-            editor-extension-artifacts/*.tar.gz \
-            vize-${RELEASE_TAG_NAME}-cyclonedx.sbom.json \
-            vize-${RELEASE_TAG_NAME}-spdx.sbom.json; do
-            if [ -f "$artifact" ]; then
-              echo "Signing $artifact"
-              cosign sign-blob --yes \
-                --bundle "${artifact}.cosign.bundle" \
-                --output-certificate "${artifact}.pem" \
-                --output-signature "${artifact}.sig" \
-                "$artifact"
-            fi
-          done
+          RELEASE_ASSETS_SHA256: ${{ needs.prepare-release-assets.outputs.sha256 }}
+        run: node tools/support/release/release-assets.ts extract "$RUNNER_TEMP/release-assets/release-assets.tar" "$RELEASE_ASSETS_SHA256"
       - name: Create Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
@@ -958,7 +927,6 @@ jobs:
             vize-${{ inputs.tag_name }}-*.cosign.bundle
 
   # Publish vize CLI npm package (using Trusted Publishing / OIDC)
-
   # Native bindings are distributed via @vizejs/native-* optionalDependencies (NAPI-RS)
   release-npm-cli:
     name: Release vize CLI to npm

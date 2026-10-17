@@ -88,13 +88,30 @@ test("check workflow blocks on Rust source and branch coverage budgets", () => {
   const clippyJob = workflowJobBody(workflow, "clippy-and-test");
   const sourceJob = workflowJobBody(workflow, "source-coverage");
   const branchJob = workflowJobBody(workflow, "branch-coverage");
-  const jobs = parse(workflow).jobs as Record<string, { env?: Record<string, unknown> }>;
+  const jobs = parse(workflow).jobs as Record<
+    string,
+    {
+      env?: Record<string, unknown>;
+      steps: { uses?: string; with?: { tool?: string } }[];
+    }
+  >;
+  const installedTools = (jobName: string) => {
+    const installer = jobs[jobName].steps.find((step) =>
+      step.uses?.startsWith("taiki-e/install-action@"),
+    );
+    assert.ok(installer, `${jobName} must install its coverage tools`);
+    assert.match(installer.uses ?? "", /^taiki-e\/install-action@[0-9a-f]{40}$/);
+    return installer.with?.tool
+      ?.split(",")
+      .map((tool) => tool.trim())
+      .sort();
+  };
 
   assert.equal(jobs["clippy-and-test"].env?.VIZE_NUXT_CONFIG_ITERATIONS, "100");
   assert.match(clippyJob, /uses: voidzero-dev\/setup-vp@[0-9a-f]{40}/);
   assert.match(clippyJob, /cache:\s*true[\s\S]*run-install:\s*true/);
   assert.equal(jobs["source-coverage"].env?.VIZE_NUXT_CONFIG_ITERATIONS, "100");
-  assert.match(sourceJob, /tool:\s*cargo-llvm-cov/);
+  assert.deepEqual(installedTools("source-coverage"), ["cargo-llvm-cov", "cargo-nextest@0.9.146"]);
   assert.match(sourceJob, /vp install --frozen-lockfile --prefer-offline/);
   assert.match(sourceJob, /setup-rust-script[\s\S]*coverage:source/);
   assert.match(sourceJob, /Verify source coverage summary/);
@@ -104,7 +121,7 @@ test("check workflow blocks on Rust source and branch coverage budgets", () => {
   assert.match(sourceJob, /continue-on-error:\s*true/);
 
   assert.match(branchJob, /toolchain:\s*nightly/);
-  assert.match(branchJob, /tool:\s*cargo-llvm-cov/);
+  assert.deepEqual(installedTools("branch-coverage"), ["cargo-llvm-cov"]);
   assert.match(branchJob, /vp install --frozen-lockfile --prefer-offline/);
   assert.match(branchJob, /setup-rust-script[\s\S]*coverage:source:branch/);
   assert.match(branchJob, /Verify branch coverage summary/);
@@ -151,7 +168,7 @@ test("check workflow builds local native bindings before JS checks", () => {
     "build-js-packages must install rust-script before build:packages",
   );
   assert.match(buildJob, /name:\s*shared-js-build/);
-  assert.match(playgroundJob, /needs:\n\s+- build-js-packages\b/);
+  assert.deepEqual(parse(workflow).jobs["playground-test"].needs, ["build-js-packages"]);
   assert.match(playgroundJob, /name:\s*shared-js-build/);
   assert.doesNotMatch(playgroundJob, /name: Build npm packages/);
 });

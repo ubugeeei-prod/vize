@@ -30,6 +30,7 @@ function idealTranscript(source: Scenario = scenario): Entry[] {
   const entries: Entry[] = [];
   let id = 0;
   let version = 0;
+  let diagnostics: any[] = [];
   const push = (dir: "c2s" | "s2c", msg: object) =>
     entries.push({
       session: 7,
@@ -55,6 +56,7 @@ function idealTranscript(source: Scenario = scenario): Entry[] {
         params: { textDocument: { uri, languageId: source.languageId, version, text: expect } },
       });
     } else if (step.kind === "diagnostics") {
+      diagnostics = expect;
       push("s2c", {
         method: "textDocument/publishDiagnostics",
         params: { uri, version, diagnostics: expect },
@@ -63,9 +65,22 @@ function idealTranscript(source: Scenario = scenario): Entry[] {
       push("c2s", {
         id: ++id,
         method: step.method,
-        params: { textDocument: { uri }, ...step.match },
+        params: {
+          textDocument: { uri },
+          ...step.match,
+          ...(step.method === "textDocument/codeAction" ? { context: { diagnostics } } : {}),
+        },
       });
-      push("s2c", { id, result: expect });
+      // The independent response retains the actual lint diagnostic that the
+      // client sent, rather than copying the expectation's reference syntax.
+      const result =
+        step.method === "textDocument/codeAction"
+          ? expect.map((action: any) => ({
+              ...action,
+              diagnostics: diagnostics.filter((diagnostic) => diagnostic.source === "vize/lint"),
+            }))
+          : expect;
+      push("s2c", { id, result });
     } else if (step.kind === "text") {
       push("c2s", {
         method: "textDocument/didChange",
@@ -133,6 +148,95 @@ test("text expectations follow from the response expectations (independent oracl
 test("the judge accepts the ideal transcript and rejects every corrupted expectation", () => {
   assert.deepEqual(failures(idealTranscript()), []);
   assert.deepEqual(negativeControl(scenario, idealTranscript(), [root]), []);
+});
+
+function actionExchange(entries: Entry[]) {
+  const request = entries.find((entry) => entry.msg?.method === "textDocument/codeAction")!.msg!;
+  const response = entries.find(
+    (entry) => entry.dir === "s2c" && entry.msg?.id === request.id,
+  )!.msg!;
+  return { request, response };
+}
+
+test("code actions retain the whole client diagnostic with or without optional metadata", () => {
+  for (const description of [false, true]) {
+    const entries = idealTranscript();
+    const { request, response } = actionExchange(entries);
+    const diagnostic = request.params.context.diagnostics.find(
+      (item: any) => item.source === "vize/lint",
+    );
+    if (!description) delete diagnostic.codeDescription;
+    diagnostic.data = { token: "client-owned" };
+    diagnostic.tags = [1];
+    for (const action of response.result) action.diagnostics = [structuredClone(diagnostic)];
+    assert.deepEqual(failures(entries), []);
+    assert.deepEqual(negativeControl(scenario, entries, [root]), []);
+    response.result[0].diagnostics[0].unexpected = true;
+    assert.deepEqual(failures(entries), ["code-action"]);
+  }
+});
+
+test("code-action diagnostic response fields cannot be dropped or changed", () => {
+  const corruptions = [
+    (diagnostic: any) => {
+      delete diagnostic.codeDescription;
+    },
+    (diagnostic: any) => {
+      diagnostic.codeDescription.href += "/wrong";
+    },
+    (diagnostic: any) => {
+      diagnostic.message += " wrong";
+    },
+    (diagnostic: any) => {
+      diagnostic.severity = 1;
+    },
+    (diagnostic: any) => {
+      diagnostic.range.end.character++;
+    },
+    (diagnostic: any) => {
+      diagnostic.data.token = "wrong";
+    },
+    (diagnostic: any) => {
+      delete diagnostic.tags;
+    },
+  ];
+  for (const corrupt of corruptions) {
+    const entries = idealTranscript();
+    const { request, response } = actionExchange(entries);
+    const diagnostic = request.params.context.diagnostics.find(
+      (item: any) => item.source === "vize/lint",
+    );
+    diagnostic.data = { token: "client-owned" };
+    diagnostic.tags = [1];
+    for (const action of response.result) action.diagnostics = [structuredClone(diagnostic)];
+    corrupt(response.result[0].diagnostics[0]);
+    assert.deepEqual(failures(entries), ["code-action"]);
+  }
+});
+
+test("code-action diagnostic references require one exact source, code, and range", () => {
+  const corruptions = [
+    (diagnostics: any[]) => {
+      diagnostics[0].source = "other/linter";
+    },
+    (diagnostics: any[]) => {
+      diagnostics[0].code = "vue/another-rule";
+    },
+    (diagnostics: any[]) => {
+      diagnostics[0].range.start.character++;
+    },
+    (diagnostics: any[]) => {
+      diagnostics.push(structuredClone(diagnostics[0]));
+    },
+    (diagnostics: any[]) => {
+      diagnostics.length = 0;
+    },
+  ];
+  for (const corrupt of corruptions) {
+    const entries = idealTranscript();
+    corrupt(actionExchange(entries).request.params.context.diagnostics);
+    assert.deepEqual(failures(entries), ["code-action"]);
+  }
 });
 
 test("initialize requires the declared disabled JSX routing hint without weakening exactness", () => {

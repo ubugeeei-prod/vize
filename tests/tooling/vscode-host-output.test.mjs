@@ -116,6 +116,9 @@ await test("actual runner retains native output on success and failure while pre
       async runTests(options) {
         assert.equal(options.version, process.env.VIZE_TEST_VSCODE_VERSION ?? "1.107.1");
         assert.equal(options.extensionTestsEnv.VIZE_TEST_ENABLE_HOST_COMMANDS, "1");
+        const workspace = options.launchArgs.at(-1);
+        assert.deepEqual(fs.readdirSync(path.join(workspace, "packages/app")), []);
+        assert.deepEqual(fs.readdirSync(workspace).sort(), ["packages", "src"]);
         const userData = options.launchArgs.find((argument) =>
           argument.startsWith("--user-data-dir="),
         );

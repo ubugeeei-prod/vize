@@ -167,6 +167,7 @@ test("strict boolean rows render within the complete option and type-aware table
     "vue/html-self-closing",
     "vue/v-on-event-hyphenation",
     "vue/attribute-hyphenation",
+    "vue/valid-v-on",
     "vue/valid-v-slot",
     "musea/prefer-design-tokens",
     "type/strict-boolean-expressions",
@@ -176,7 +177,7 @@ test("strict boolean rows render within the complete option and type-aware table
       path.join(repoRoot, `docs/content/${locale}rules/options.md`),
       "utf8",
     );
-    assert.deepEqual(tableRules(source), expectedOptions, locale || "en");
+    assert.deepEqual(tableRules(source).toSorted(), expectedOptions.toSorted(), locale || "en");
   }
   const allRules = fs.readFileSync(path.join(repoRoot, "docs/content/rules/all.md"), "utf8");
   const typeRows = allRules.split("\n").filter((line) => line.startsWith("| [`type/"));

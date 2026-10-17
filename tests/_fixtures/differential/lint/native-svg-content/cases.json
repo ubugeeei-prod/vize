@@ -1,0 +1,116 @@
+[
+  {
+    "id": "html",
+    "template": "<section v-html=\"content\" />",
+    "component": false,
+    "eslintDefault": false
+  },
+  {
+    "id": "root-svg-group",
+    "template": "<g v-html=\"content\" />",
+    "component": false,
+    "eslintDefault": true
+  },
+  {
+    "id": "root-svg-text",
+    "template": "<text v-text=\"label\" />",
+    "component": false,
+    "eslintDefault": true
+  },
+  {
+    "id": "root-svg-view",
+    "template": "<view class=\"bar\" v-html=\"title\" />",
+    "component": false,
+    "eslintDefault": true
+  },
+  {
+    "id": "root-math",
+    "template": "<mi v-text=\"label\" />",
+    "component": false,
+    "eslintDefault": true
+  },
+  {
+    "id": "chart-svg-slot",
+    "template": "<Chart><template #svg><g v-html=\"content\" /></template></Chart>",
+    "component": false,
+    "eslintDefault": true
+  },
+  {
+    "id": "svg-text",
+    "template": "<svg><text v-text=\"label\" /></svg>",
+    "component": false,
+    "eslintDefault": false
+  },
+  {
+    "id": "svg-view",
+    "template": "<svg><g><view v-html=\"content\" /></g></svg>",
+    "component": false,
+    "eslintDefault": false
+  },
+  {
+    "id": "math",
+    "template": "<math><mi v-text=\"label\" /></math>",
+    "component": false,
+    "eslintDefault": false
+  },
+  {
+    "id": "native-through-foreign-object",
+    "template": "<svg><foreignObject><view v-html=\"content\" /></foreignObject></svg>",
+    "component": false,
+    "eslintDefault": true
+  },
+  {
+    "id": "nested-svg",
+    "template": "<svg><foreignObject><svg><g v-html=\"content\" /></svg></foreignObject></svg>",
+    "component": false,
+    "eslintDefault": false
+  },
+  {
+    "id": "unknown-lowercase",
+    "template": "<widget v-html=\"content\" />",
+    "component": true,
+    "eslintDefault": true
+  },
+  {
+    "id": "unknown-lowercase-text",
+    "template": "<widget v-text=\"content\" />",
+    "component": true,
+    "eslintDefault": true
+  },
+  {
+    "id": "kebab-component",
+    "template": "<my-element v-html=\"content\" />",
+    "component": true,
+    "eslintDefault": true
+  },
+  {
+    "id": "uppercase-component",
+    "template": "<G v-html=\"content\" />",
+    "component": true,
+    "eslintDefault": true
+  },
+  {
+    "id": "unknown-in-svg",
+    "template": "<svg><widget v-html=\"content\" /></svg>",
+    "component": true,
+    "eslintDefault": true
+  },
+  {
+    "id": "unknown-in-math",
+    "template": "<math><widget v-text=\"content\" /></math>",
+    "component": true,
+    "eslintDefault": true
+  },
+  {
+    "id": "unknown-through-foreign-object",
+    "template": "<svg><foreignObject><widget v-html=\"content\" /></foreignObject></svg>",
+    "component": true,
+    "eslintDefault": true
+  },
+  {
+    "id": "explicit-native-component",
+    "template": "<g is=\"vue:Watermark\" v-html=\"content\" />",
+    "component": true,
+    "eslintDefault": true
+  }
+]

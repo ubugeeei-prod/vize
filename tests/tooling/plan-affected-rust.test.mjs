@@ -172,6 +172,11 @@ void test("runner inserts argument arrays at the Cargo subcommand without invoki
     "unrelated",
     "--doc",
   ]);
+  assert.deepEqual(
+    rustCommand(plan, ["cargo", "build", "@packages@", "--profile", "ci", "--examples"]),
+    ["cargo", "build", "--package", "unrelated", "--profile", "ci", "--examples"],
+  );
+  assert.throws(() => rustCommand(plan, ["cargo", "install", "@packages@"]), /Cargo check command/);
   assert.throws(
     () => rustCommand({ ...plan, packages: ["$(touch hacked)"] }, ["cargo", "test", "@packages@"]),
     /valid/,

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -102,6 +103,14 @@ const timing = {
 };
 const junit =
   '<testsuites><testsuite name="crate::integration"><testcase name="module::case&lt;&amp;&gt;" classname="crate::integration" /></testsuite></testsuites>';
+const TOML = createRequire(import.meta.url)("@iarna/toml");
+const workspaceManifest = readFileSync(new URL("../../Cargo.toml", import.meta.url), "utf8");
+const workspaceConfig = readFileSync(new URL("../../.cargo/config.toml", import.meta.url), "utf8");
+function changedWorkspaceProfiles(change) {
+  const manifest = TOML.parse(workspaceManifest);
+  change(manifest.profile);
+  return TOML.stringify(manifest);
+}
 
 void test("profile defaults are inferred only after manifest, config and environment override checks", () => {
   const manifest = '[profile.ci]\ninherits = "dev"\ndebug = false\n';
@@ -126,6 +135,96 @@ void test("profile defaults are inferred only after manifest, config and environ
   assert.throws(() =>
     inferWorkspaceProfileDefaults(manifest, "", { RUSTFLAGS: "-Cdebug-assertions=off" }),
   );
+});
+
+void test("the actual workspace retains checked defaults with or without its reviewed CI hash override", () => {
+  assert.deepEqual(
+    inferWorkspaceProfileDefaults(workspaceManifest, workspaceConfig),
+    source.inferredProfileDefaults,
+  );
+  const withoutOverride = changedWorkspaceProfiles((profiles) => {
+    delete profiles.ci.package;
+  });
+  assert.deepEqual(
+    inferWorkspaceProfileDefaults(withoutOverride, workspaceConfig),
+    source.inferredProfileDefaults,
+  );
+});
+
+void test("the actual CI hash override refuses other packages, versions, fields and unchecked defaults", () => {
+  const refuse = (change) =>
+    assert.throws(
+      () => inferWorkspaceProfileDefaults(changedWorkspaceProfiles(change), workspaceConfig),
+      /package overrides/,
+    );
+  for (const name of ["sha2", "sha2:0.11.0", "vize", "*"])
+    refuse((profiles) => {
+      profiles.ci.package = { [name]: profiles.ci.package["sha2:0.11.1"] };
+    });
+  refuse((profiles) => {
+    profiles.ci.package.serde = { ...profiles.ci.package["sha2:0.11.1"] };
+  });
+  refuse((profiles) => {
+    profiles.ci.package = {};
+  });
+  for (const field of ["codegen-units", "debug"])
+    refuse((profiles) => {
+      profiles.ci.package["sha2:0.11.1"][field] = 1;
+    });
+  for (const [field, value] of Object.entries({
+    "opt-level": 2,
+    "debug-assertions": false,
+    "overflow-checks": false,
+  })) {
+    refuse((profiles) => {
+      profiles.ci.package["sha2:0.11.1"][field] = value;
+    });
+    refuse((profiles) => {
+      delete profiles.ci.package["sha2:0.11.1"][field];
+    });
+  }
+});
+
+void test("the reviewed hash override never admits global, build, config or environment overrides", () => {
+  for (const name of ["ci", "dev", "test"]) {
+    for (const [field, value] of Object.entries({
+      "opt-level": 3,
+      "debug-assertions": false,
+      "overflow-checks": false,
+      "build-override": { "opt-level": 0 },
+    }))
+      assert.throws(() =>
+        inferWorkspaceProfileDefaults(
+          changedWorkspaceProfiles((profiles) => {
+            profiles[name] = { ...profiles[name], [field]: value };
+          }),
+          workspaceConfig,
+        ),
+      );
+    if (name !== "ci")
+      assert.throws(() =>
+        inferWorkspaceProfileDefaults(
+          changedWorkspaceProfiles((profiles) => {
+            profiles[name] = { ...profiles[name], package: profiles.ci.package };
+          }),
+          workspaceConfig,
+        ),
+      );
+    const config = TOML.parse(workspaceConfig);
+    config.profile = { [name]: TOML.parse(workspaceManifest).profile.ci };
+    assert.throws(() => inferWorkspaceProfileDefaults(workspaceManifest, TOML.stringify(config)));
+    assert.throws(() =>
+      inferWorkspaceProfileDefaults(workspaceManifest, workspaceConfig, {
+        [`CARGO_PROFILE_${name.toUpperCase()}_OPT_LEVEL`]: "3",
+      }),
+    );
+  }
+  for (const field of ["RUSTFLAGS", "RUSTDOCFLAGS", "CARGO_ENCODED_RUSTFLAGS"])
+    assert.throws(() =>
+      inferWorkspaceProfileDefaults(workspaceManifest, workspaceConfig, {
+        [field]: "-Coverflow-checks=off",
+      }),
+    );
 });
 
 void test("retained receipts require the complete unmodified raw nextest list", () => {

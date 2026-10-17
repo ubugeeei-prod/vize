@@ -91,17 +91,27 @@ test("publish_npm_package computes the tag and forwards provenance to vp", () =>
       .trim()
       .split("\n")
       .map((url) => new URL(url));
+    const versionPath = "/%40vizejs%2Fexample/1.2.3-beta.1";
+    assert.equal(registryUrls[0].pathname, versionPath, "check rerun safety before publishing");
+    // Version and tag propagation are checked together; process scheduling
+    // must not decide which endpoint appears first in the request log.
     assert.deepEqual(
-      registryUrls.map((url) => url.pathname),
-      [
-        "/%40vizejs%2Fexample/1.2.3-beta.1",
-        "/%40vizejs%2Fexample/1.2.3-beta.1",
-        "/%40vizejs%2Fexample",
-      ],
+      registryUrls
+        .slice(1)
+        .map((url) => url.pathname)
+        .sort(),
+      [versionPath, "/%40vizejs%2Fexample"].sort(),
     );
+    const visibilityVersion = registryUrls.slice(1).find((url) => url.pathname === versionPath)!;
+    const visibilityTag = registryUrls.slice(1).find((url) => url.pathname !== versionPath)!;
     assert.notEqual(
       registryUrls[0].searchParams.get("vize-publish-check"),
-      registryUrls[1].searchParams.get("vize-publish-check"),
+      visibilityVersion.searchParams.get("vize-publish-check"),
+    );
+    assert.equal(
+      visibilityVersion.searchParams.get("vize-publish-check"),
+      visibilityTag.searchParams.get("vize-publish-check"),
+      "both endpoints belong to the same visibility poll",
     );
   } finally {
     rmSync(tempDir, { recursive: true, force: true });

@@ -1,10 +1,11 @@
 // TS-45 judge: evaluates one editor's transcript (written by `lsp-tap.mjs`)
 // against the single scenario in `scenario.json`. Every client is judged by
 // the same code on the same expectations — there is no per-client branch
-// anywhere in this file, and every comparison is exact deep equality after
-// URI normalization.
+// anywhere in this file. Comparisons use exact deep equality after URI
+// normalization and explicit code-action diagnostic references to the request.
 import { isDeepStrictEqual } from "node:util";
 
+import { codeActionExpectation } from "./support/code-action-expectation.ts";
 import { applyContentChange, type ContentChange } from "./support/document.ts";
 
 export type Entry = {
@@ -275,9 +276,17 @@ export function evaluate(scenario: Scenario, entries: Entry[], roots: string[]):
           const detail = `the server answered with an error: ${JSON.stringify(response.error)}`;
           return { pass: false, detail };
         }
-        return isDeepStrictEqual(response.result ?? null, step.expect)
+        let expected = step.expect;
+        if (step.method === "textDocument/codeAction") {
+          try {
+            expected = codeActionExpectation(expected, line.messages[at].params);
+          } catch (error) {
+            return { pass: false, detail: String(error) };
+          }
+        }
+        return isDeepStrictEqual(response.result ?? null, expected)
           ? { pass: true, detail: "", at }
-          : { pass: false, detail: mismatch(step.method, step.expect, response.result) };
+          : { pass: false, detail: mismatch(step.method, expected, response.result) };
       }
       case "text": {
         const previous = text;

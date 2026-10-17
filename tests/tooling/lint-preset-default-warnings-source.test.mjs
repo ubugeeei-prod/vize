@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { parse as parseToml, stringify as stringifyToml } from "@iarna/toml";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (name) => fs.readFileSync(path.join(root, name));
@@ -12,6 +13,20 @@ const directory = "tests/_fixtures/lint-preset-default-warnings";
 const bytes = read(`${directory}/successor.json`);
 assert.equal(sha(bytes), "30d630da3f38e9eb667e2097bda2b65d8e0e3b82bb5f62c61e4aead8a4cdc295");
 const manifest = JSON.parse(bytes);
+// The scheduler has evolved since this source-history audit. Preserve its
+// authentic old bytes; the live output-retention override is checked below.
+const auditSource = (row) =>
+  read(row.path === ".config/nextest.toml" ? `${directory}/nextest-8df6e1.toml` : row.path);
+const warningFilter =
+  "package(=vize) & binary(=lint_preset_scope_cli) & test(=six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_packets)";
+
+function assertWarningRetention(source) {
+  const overrides = parseToml(source).profile?.default?.overrides ?? [];
+  assert.deepEqual(
+    overrides.filter((row) => row.filter === warningFilter),
+    [{ filter: warningFilter, junit: { "store-success-output": true } }],
+  );
+}
 
 function identity(body, expected) {
   assert.equal(body.length, expected.bytes);
@@ -74,7 +89,7 @@ void test("only the exact four-preset registration and metadata edits invert to 
       "tests/_fixtures/patina-eslint-vue-rule-map.json",
     ],
   );
-  for (const row of manifest.sources) inverse(row, read(row.path));
+  for (const row of manifest.sources) inverse(row, auditSource(row));
   const old = inverseMembership(read(manifest.membership.path));
   const table = JSON.parse(read(manifest.membership.path).toString().split("---\n").at(-1));
   assert.deepEqual(
@@ -98,7 +113,7 @@ void test("only the exact four-preset registration and metadata edits invert to 
 
 void test("missing, duplicated and unrelated source edits cannot receive the finite inverse", () => {
   for (const row of manifest.sources) {
-    const body = read(row.path);
+    const body = auditSource(row);
     const hunk = row.hunks[0];
     for (const text of [
       body.toString().replace(hunk.after, hunk.before),
@@ -112,6 +127,48 @@ void test("missing, duplicated and unrelated source edits cannot receive the fin
     inverseMembership(Buffer.from(body.toString().replace('"essential": [', '"unknown": ['))),
   );
   assert.throws(() => inverseMembership(Buffer.concat([body, Buffer.from("\n")])));
+});
+
+void test("the live nextest configuration retains the complete warning CLI output", () => {
+  assertWarningRetention(read(".config/nextest.toml").toString("utf8"));
+});
+
+void test("live warning retention rejects missing, duplicate, changed-filter and disabled overrides", () => {
+  const original = parseToml(read(".config/nextest.toml").toString("utf8"));
+  const index = original.profile.default.overrides.findIndex((row) => row.filter === warningFilter);
+  assert(index >= 0);
+  for (const mutate of [
+    (config, rows) => rows.splice(index, 1),
+    (config, rows) => rows.push(structuredClone(rows[index])),
+    (config, rows) => {
+      rows[index].filter = "package(=vize)";
+    },
+    (config, rows) => {
+      rows[index].filter = warningFilter.replace("=vize)", "=other)");
+    },
+    (config, rows) => {
+      rows[index].filter = warningFilter.replace("=lint_preset_scope_cli", "=other");
+    },
+    (config, rows) => {
+      rows[index].filter = warningFilter.replace("six_default_presets", "other");
+    },
+    (config, rows) => {
+      rows[index].junit["store-success-output"] = false;
+    },
+    (config, rows) => {
+      rows[index].junit["store-success-output"] = "true";
+    },
+    (config, rows) => {
+      delete rows[index].junit["store-success-output"];
+    },
+    (config, rows) => {
+      config.profile.pr.overrides.push(...rows.splice(index, 1));
+    },
+  ]) {
+    const config = structuredClone(original);
+    mutate(config, config.profile.default.overrides);
+    assert.throws(() => assertWarningRetention(stringifyToml(config)));
+  }
 });
 
 void test("independently authored native and CLI packets preserve complete warning and source ranges", () => {

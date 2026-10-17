@@ -153,7 +153,7 @@ test("the original 51-rule projection and explicit typed-default comparison reta
   );
 });
 
-test("complete corrected captures retract exactly three positive client-guard warnings and preserve every other field", () => {
+test("the Oct 11 corrected captures retract exactly three positive client-guard warnings and preserve every other field", () => {
   const directory = path.join(
     root,
     "tests/_fixtures/_projects/lint-review/2026-10-11-direct-client-correction",
@@ -183,9 +183,10 @@ test("complete corrected captures retract exactly three positive client-guard wa
   const observed: unknown[] = [];
   let files = 0;
   for (const capture of captures) {
+    // These immutable captures retain the Oct 11 correction. Current App lint
+    // goldens evolve with separately reviewed rule and diagnostic changes.
     assert.equal(hash(capture.raw), capture.sha256);
     assert.equal(hash(capture.baselineRaw), capture.baselineSha256);
-    assert.equal(fs.readFileSync(path.join(root, capture.path), "utf8"), capture.raw);
     const actual = JSON.parse(capture.raw),
       previous = JSON.parse(capture.baselineRaw);
     assert.deepEqual(

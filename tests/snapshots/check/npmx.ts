@@ -1,4 +1,4 @@
-import { describe, it, before } from "node:test";
+import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
 import * as path from "node:path";
@@ -7,16 +7,22 @@ import { npmxApp, CORSA_BIN, VIZE_BIN, requireVizeAndCorsaBins } from "../../_he
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
 import { stringifyDiagnosticSnapshot } from "../../_helpers/vize-check.ts";
 import { retainAppCheckPacket } from "../../_helpers/app-check-packet.ts";
+import { prepareCheckFixtureDependencies } from "../../_helpers/lint-fixture-dependencies.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = npmxApp;
+let fixture: ReturnType<typeof prepareCheckFixtureDependencies>;
 
 describe(`${app.name} check (type checker)`, () => {
-  before(requireVizeAndCorsaBins);
+  before(() => {
+    requireVizeAndCorsaBins();
+    fixture = prepareCheckFixtureDependencies(app);
+  });
+  after(() => fixture?.verify());
 
   it("vize check does not crash and snapshot matches", () => {
-    const checkConfig = app.check!;
+    const checkConfig = fixture.app.check!;
     const patterns = checkConfig.patterns.map((p) => `'${p}'`).join(" ");
     const cmd = `${VIZE_BIN} check ${patterns} --format json --quiet --corsa-path '${CORSA_BIN}'`;
     console.log(`Running: ${cmd}`);
@@ -25,6 +31,7 @@ describe(`${app.name} check (type checker)`, () => {
     try {
       stdout = execSync(cmd, {
         cwd: checkConfig.cwd,
+        env: fixture.env,
         timeout: 120_000,
         maxBuffer: 100 * 1024 * 1024,
       }).toString();

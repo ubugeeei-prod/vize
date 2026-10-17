@@ -80,12 +80,13 @@ Nuxt's three runtime scenarios run independently. Artifact uploads exclude
 node_modules while keeping candidate/public adapter snapshots and observations.
 
 Instruction-count ceilings run in the queue and scheduled/manual qualification.
-Their existing advisory policy from [#9183](https://github.com/ubugeeei-prod/vize/pull/9183)
-and [#9195](https://github.com/ubugeeei-prod/vize/pull/9195) is preserved; this
-performance change does not turn existing level/formatter ceiling failures into
-a new merge requirement. Measurements still report failures and existing ceiling
-values are unchanged. Required product checks continue to fail the aggregate
-when they fail, cancel or unexpectedly skip.
+The initial implementation retained the advisory policy from
+[#9183](https://github.com/ubugeeei-prod/vize/pull/9183) and
+[#9195](https://github.com/ubugeeei-prod/vize/pull/9195). The subsequent
+[required-ceilings decision](./2026-10-16-6830-required-instruction-ceilings.md)
+supersedes that policy: comparator failure now fails the required aggregate.
+Existing ceiling values are unchanged. Required product checks continue to fail
+the aggregate when they fail, cancel or unexpectedly skip.
 
 ## Build and publication reuse
 

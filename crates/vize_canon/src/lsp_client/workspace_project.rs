@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use vize_l0::String;
+use vize_l0::{FxHashMap, FxHashSet, String};
 
 use super::{
     CorsaProjectClient,
@@ -18,7 +18,12 @@ impl CorsaProjectClient {
         changes: &crate::batch::virtual_project::MaterializedFileDelta,
     ) -> Result<(), String> {
         if changes.has_topology_changes() {
+            let retained = self.unchanged_canon_overlays(project_root, config_path, changes);
             self.activate_workspace_project_with_reload(project_root, config_path, true)?;
+            // A new query member must not close unchanged canonical buffers.
+            // Reopening those buffers during a later sibling diagnostic would
+            // invalidate a completion issued after this topology refresh.
+            self.document_texts.extend(retained);
             self.refresh_materialized_files(&changes.changed, &changes.created, &changes.deleted)?;
         } else {
             self.activate_workspace_project_with_reload(project_root, config_path, false)?;
@@ -31,6 +36,52 @@ impl CorsaProjectClient {
             }
         }
         Ok(())
+    }
+
+    fn unchanged_canon_overlays(
+        &self,
+        project_root: &Path,
+        config_path: Option<&Path>,
+        changes: &crate::batch::virtual_project::MaterializedFileDelta,
+    ) -> FxHashMap<String, String> {
+        let root = project_root
+            .canonicalize()
+            .unwrap_or_else(|_| project_root.to_path_buf());
+        let current_config = self
+            .explicit_project_config
+            .clone()
+            .unwrap_or_else(|| workspace_config_path(&self.project_root));
+        let requested_config = config_path
+            .map(Path::to_path_buf)
+            .unwrap_or_else(|| workspace_config_path(&root));
+        if self.materialized_project_session
+            || self.project_root != root
+            || current_config != requested_config
+            || !root.join("__vize_vue_modules.d.ts").is_file()
+        {
+            return FxHashMap::default();
+        }
+        let invalidated = changes
+            .changed
+            .iter()
+            .chain(&changes.created)
+            .chain(&changes.deleted)
+            .map(|path| path.as_path())
+            .collect::<FxHashSet<_>>();
+        self.document_texts
+            .iter()
+            .filter_map(|(uri, text)| {
+                let path = crate::file_uri::file_uri_to_path(uri)?;
+                if !path.starts_with(&root)
+                    || path.canonicalize().ok().as_ref() != Some(&path)
+                    || invalidated.contains(path.as_path())
+                    || std::fs::read_to_string(&path).ok().as_deref() != Some(text.as_str())
+                {
+                    return None;
+                }
+                Some((uri.clone(), text.clone()))
+            })
+            .collect()
     }
 
     /// Move both native query transports to an already-materialized Canon
@@ -112,6 +163,10 @@ impl CorsaProjectClient {
         self.editor_lsp_documents_dirty = true;
     }
 }
+
+#[cfg(test)]
+#[path = "workspace_project_retention_tests.rs"]
+mod retention_tests;
 
 fn explicit_config_changed(current: Option<&Path>, requested: Option<&Path>, root: &Path) -> bool {
     current.is_some_and(|current| {

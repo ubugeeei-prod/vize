@@ -1,0 +1,4 @@
+export type QueryResultItem = { type: 'search'; search: string; index: number } | { type: 'command'; cmd: string; index: number };
+export interface Notification { type: 'mention' | 'status'; account: string; createdAt: string }
+export type NotificationSlot = Notification | { type: 'grouped-follow'; items: string[] } | { type: 'grouped-reblogs-and-favourites'; items: string[] };
+export interface User { id: string }

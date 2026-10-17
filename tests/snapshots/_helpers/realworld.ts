@@ -34,6 +34,7 @@ export interface InjectedTypeErrorSummary extends VizeCheckSummary {
 
 interface InjectedTypeErrorOptions {
   timeoutMs?: number;
+  env?: NodeJS.ProcessEnv;
   tsconfig?: {
     relativePath: string;
     content: string;
@@ -103,23 +104,24 @@ function runVizeCheckJson(
   checkConfig: NonNullable<AppConfig["check"]>,
   patterns: string[],
   timeoutMs: number,
+  env?: NodeJS.ProcessEnv,
 ): VizeCheckResult {
   const cmd = buildVizeCheckCommand(checkConfig, patterns);
   console.log(`Running: ${cmd}`);
 
-  const stdout = readCommandStdout(cmd, checkConfig.cwd, timeoutMs);
+  const stdout = readCommandStdout(cmd, checkConfig.cwd, timeoutMs, env);
   return JSON.parse(stdout) as VizeCheckResult;
 }
 
 export function runCrashFreeVizeCheck(
   app: AppConfig,
-  options: { timeoutMs?: number } = {},
+  options: { timeoutMs?: number; env?: NodeJS.ProcessEnv } = {},
 ): VizeCheckSummary {
   const checkConfig = app.check!;
   const timeoutMs = options.timeoutMs ?? 300_000;
 
   const startedAt = performance.now();
-  const parsed = runVizeCheckJson(checkConfig, checkConfig.patterns, timeoutMs);
+  const parsed = runVizeCheckJson(checkConfig, checkConfig.patterns, timeoutMs, options.env);
   const durationMs = performance.now() - startedAt;
 
   assert.ok((parsed.fileCount ?? 0) > 0, "check fileCount should be > 0");
@@ -196,7 +198,7 @@ const __vizeIntentionalTypeError: number = "not-a-number";
   }
 
   try {
-    const clean = runVizeCheckJson(effectiveCheckConfig, [relativeFile], timeoutMs);
+    const clean = runVizeCheckJson(effectiveCheckConfig, [relativeFile], timeoutMs, options.env);
     const cleanFile = (clean.files ?? []).find(
       (file) => file.file?.replaceAll("\\", "/") === relativeFile,
     );
@@ -208,7 +210,7 @@ const __vizeIntentionalTypeError: number = "not-a-number";
 
     fs.writeFileSync(absoluteFile, brokenSource, "utf-8");
     const startedAt = performance.now();
-    const parsed = runVizeCheckJson(effectiveCheckConfig, [relativeFile], timeoutMs);
+    const parsed = runVizeCheckJson(effectiveCheckConfig, [relativeFile], timeoutMs, options.env);
     const durationMs = performance.now() - startedAt;
     const files = parsed.files ?? [];
     const injected = files.find((file) => file.file?.replaceAll("\\", "/") === relativeFile);
@@ -225,7 +227,7 @@ const __vizeIntentionalTypeError: number = "not-a-number";
 
     fs.writeFileSync(absoluteFile, cleanSource, "utf-8");
     const repairStartedAt = performance.now();
-    const repaired = runVizeCheckJson(effectiveCheckConfig, [relativeFile], timeoutMs);
+    const repaired = runVizeCheckJson(effectiveCheckConfig, [relativeFile], timeoutMs, options.env);
     const repairDurationMs = performance.now() - repairStartedAt;
     assert.deepEqual(
       repaired,

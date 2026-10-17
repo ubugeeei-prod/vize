@@ -44,11 +44,12 @@ Vue input hash also matches. Intentional generic-library and listener inference
 changes added 2,029 bytes that the historical reconstruction does not remove.
 That explains the old comparison of 36,507 reconstructed bytes to 34,478 bytes.
 
-The failing historical assertion remains visible in scheduled/manual reports.
-Do not rewrite its frozen baseline, silently accept a different digest, or
-claim that this historical proof passed. Its future repair or retirement is
-qualification debt tracked by #6830. Extending a generated-source rewind after
-every valid product change is not a daily development prerequisite.
+The failed historical runs remain evidence; this proof did not pass. The
+[retirement decision](./2026-10-17-6830-retire-template-emit-rewind.md) removes
+retrospective generated-source reconstruction from the current scheduled recipe
+and archives its verifier without changing the frozen baseline. Extending a
+generated-source rewind after every valid product change is not a continuing
+qualification requirement. Current whole-output product assertions remain.
 
 This separates semantic regressions from historical benchmark qualification;
 it does not make a benchmark artifact from one source valid for another source.

@@ -7,6 +7,7 @@ import path from "node:path";
 const files = [
   "node_modules/.vize/lsp.log",
   "node_modules/.vize/rich-hover.json",
+  "node_modules/.vize/rich-completion.json",
   "src/RichAuthoring.vue",
   "src/SlotAuthoring.vue",
   "src/AttrAuthoring.vue",

@@ -1,0 +1,35 @@
+name: Cache pnpm lockfile verification
+description: Reuse pnpm's own successful policy verdict for the exact lockfile, pinned version, and active policy and registry configuration.
+
+inputs:
+  save:
+    description: Save after a successful trusted default-branch job. PR and merge-queue consumers only restore.
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve the pnpm verification cache
+      id: key
+      shell: bash
+      env:
+        VIZE_PNPM_CACHE_ACTION_PATH: ${{ github.action_path }}
+        DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        SAVE_REQUESTED: ${{ inputs.save }}
+      run: node "$VIZE_PNPM_CACHE_ACTION_PATH/cache-key.ts"
+    # Only pnpm writes the verdict. Its content hash and policy checks remain
+    # authoritative; missing, changed or corrupt records run normal verification.
+    # actions/cache saves in its success-only post step, after the caller's install.
+    - name: Save pnpm verification from a trusted default branch
+      if: ${{ steps.key.outputs.key != '' && steps.key.outputs.save == 'true' }}
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      with:
+        path: ${{ steps.key.outputs.path }}
+        key: ${{ steps.key.outputs.key }}
+    - name: Restore pnpm verification
+      if: ${{ steps.key.outputs.key != '' && steps.key.outputs.save != 'true' }}
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      with:
+        path: ${{ steps.key.outputs.path }}
+        key: ${{ steps.key.outputs.key }}

@@ -154,8 +154,29 @@ void test("Japanese rule options retain the complete authored review and origina
   );
   const fencePattern = /^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm;
   const fences = [...japanese.matchAll(fencePattern)].map((match) => match[0]);
+  // The authored modifier-option row follows the original reviewed article.
+  // Validate its API and real destination before comparing historical tokens;
+  // no source recipe or existing inline API is discarded from the inverse.
+  const modifierRows = japanese
+    .split("\n")
+    .filter((line) => line.startsWith("| `vue/valid-v-on` |"));
+  assert.equal(modifierRows.length, 1);
+  const modifierRow = modifierRows[0];
+  assert.deepEqual(
+    [...modifierRow.matchAll(/`([^`]+)`/g)].map((match) => match[1]),
+    ["vue/valid-v-on", "{ modifiers?: string[] }", "[]"],
+  );
+  assert.deepEqual(
+    [...modifierRow.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]),
+    ["./reference/vue-valid-v-on.md"],
+  );
+  assert.match(
+    readFileSync(resolve(root, "docs/content/ja/rules/reference/vue-valid-v-on.md"), "utf8"),
+    /^## 修飾子の検証$/m,
+  );
+  const originalBody = japanese.replace(modifierRow, "");
   const inlineTokens = [
-    ...japanese.replace(fencePattern, "").matchAll(/(?<!`)`([^`\n]+)`(?!`)/g),
+    ...originalBody.replace(fencePattern, "").matchAll(/(?<!`)`([^`\n]+)`(?!`)/g),
   ].map((match) => match[1]);
   const digest = (value: string[]) =>
     createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -176,21 +197,22 @@ void test("Japanese rule options retain the complete authored review and origina
       '"script/define-props-destructuring": { mode:',
     );
   });
-  assert.equal(fences.length, 43);
   assert.equal(
     digest(originalFences),
     "7af601c217a94df10b23bd1e10860b4329c2356b90deb9910cb113300490bf43",
   );
-  assert.equal(inlineTokens[26], '{ destructure?: "only-when-assigned" \\| "always" \\| "never" }');
   const originalTokens = [...inlineTokens];
-  originalTokens[26] = '{ mode?: "only-when-assigned" \\| "always" \\| "never" }';
-  assert.equal(inlineTokens.length, 132);
+  const propsShape = originalTokens.indexOf(
+    '{ destructure?: "only-when-assigned" \\| "always" \\| "never" }',
+  );
+  assert.notEqual(propsShape, -1);
+  originalTokens[propsShape] = '{ mode?: "only-when-assigned" \\| "always" \\| "never" }';
   assert.equal(
     digest(originalTokens),
     "90b695added36c831b6af36e61fc2b31a0f7cd58f914ba16974bb3d8a8de30b1",
   );
   assert.deepEqual(
-    [...japanese.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]),
+    [...originalBody.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]),
     ["./options-type.md", "../guide/lint-execution.md"],
     "retain the original type-aware destination and the authored rule-selection next step",
   );

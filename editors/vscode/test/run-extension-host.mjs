@@ -37,6 +37,9 @@ const packageJson = JSON.parse(
 fs.rmSync(testDataPath, { force: true, recursive: true });
 fs.mkdirSync(fakeServerDir, { recursive: true });
 fs.cpSync(fixtureWorkspacePath, workspacePath, { recursive: true });
+// Existing-project config cases create their files after activation. Prepare
+// only the empty parent before VS Code's recursive watcher takes its snapshot.
+fs.mkdirSync(path.join(workspacePath, "packages", "app"), { recursive: true });
 fs.writeFileSync(fakeServerLogPath, "");
 
 if (process.platform === "win32") {

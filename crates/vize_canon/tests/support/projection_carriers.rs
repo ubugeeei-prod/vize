@@ -1,4 +1,4 @@
-//! Only the 49 authenticated physical inputs introduced by #8757 are additive.
+//! Only separately registered, authenticated physical inputs are additive.
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
@@ -11,6 +11,8 @@ const PREFIXES: [&str; 2] = [
     "differential/lint/attrs-expression-ranges-8090/sources",
     "differential/lint/transition-custom-child-6881/sources",
 ];
+const SVG_REGISTRY: &str = include_str!("../fixtures/projection-carriers-svg-9200.json");
+const SVG_PREFIXES: [&str; 1] = ["differential/lint/native-svg-content"];
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -37,10 +39,39 @@ pub struct Carriers {
 
 impl Carriers {
     pub fn new(root: &Path, files: &[PathBuf]) -> Self {
-        let registry: Registry = serde_json::from_str(REGISTRY).expect("fixed carrier registry");
+        Self::from_registry(
+            root,
+            files,
+            REGISTRY,
+            "d95c151c18d85c8fdd95541291bc614e44790101",
+            49,
+            &PREFIXES,
+        )
+    }
+
+    pub fn svg(root: &Path, files: &[PathBuf]) -> Self {
+        Self::from_registry(
+            root,
+            files,
+            SVG_REGISTRY,
+            "be62f9e2ae434bd52f776340615436e31d9b102a",
+            2,
+            &SVG_PREFIXES,
+        )
+    }
+
+    fn from_registry(
+        root: &Path,
+        files: &[PathBuf],
+        registry: &str,
+        source: &str,
+        count: usize,
+        prefixes: &[&str],
+    ) -> Self {
+        let registry: Registry = serde_json::from_str(registry).expect("fixed carrier registry");
         assert_eq!(registry.version, 1);
-        assert_eq!(registry.source, "d95c151c18d85c8fdd95541291bc614e44790101");
-        assert_eq!(registry.entries.len(), 49);
+        assert_eq!(registry.source, source);
+        assert_eq!(registry.entries.len(), count);
         let mut entries = BTreeMap::new();
         for entry in registry.entries {
             let relative = Path::new(&entry.path);
@@ -50,7 +81,7 @@ impl Carriers {
                     .all(|part| matches!(part, std::path::Component::Normal(_)))
             );
             assert!(
-                PREFIXES
+                prefixes
                     .iter()
                     .any(|prefix| relative.parent() == Some(Path::new(prefix))),
                 "carrier parent must equal a registered source directory"
@@ -68,7 +99,7 @@ impl Carriers {
         let actual: BTreeSet<_> = files
             .iter()
             .filter(|file| {
-                PREFIXES
+                prefixes
                     .iter()
                     .any(|prefix| file.starts_with(root.join(prefix)))
             })
@@ -143,8 +174,12 @@ mod controls {
     use std::panic::{AssertUnwindSafe, catch_unwind};
 
     fn fixture() -> (tempfile::TempDir, Vec<PathBuf>) {
+        fixture_from(REGISTRY)
+    }
+
+    fn fixture_from(registry: &str) -> (tempfile::TempDir, Vec<PathBuf>) {
         let source = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures");
-        let registry: Registry = serde_json::from_str(REGISTRY).expect("fixture registry");
+        let registry: Registry = serde_json::from_str(registry).expect("fixture registry");
         let temporary = tempfile::tempdir().expect("private carrier fixture");
         let mut files = Vec::new();
         for entry in registry.entries {
@@ -154,6 +189,24 @@ mod controls {
             files.push(file);
         }
         (temporary, files)
+    }
+
+    #[test]
+    fn svg_originals_remain_complete_and_reject_missing_or_changed_inputs() {
+        let (temporary, files) = fixture_from(SVG_REGISTRY);
+        let mut carriers = Carriers::svg(temporary.path(), &files);
+        for file in &files {
+            let source = std::fs::read_to_string(file).expect("whole SVG fixture source");
+            assert!(carriers.source(file, &source));
+        }
+        carriers.finish();
+        assert!(catch_unwind(|| Carriers::svg(temporary.path(), &files[..1])).is_err());
+        let mut changed = std::fs::read(&files[0]).expect("original SVG fixture");
+        changed[0] ^= 1;
+        std::fs::write(&files[0], changed).expect("same-size physical corruption");
+        let source = std::fs::read_to_string(&files[0]).expect("changed SVG fixture source");
+        let mut carriers = Carriers::svg(temporary.path(), &files);
+        assert!(catch_unwind(AssertUnwindSafe(|| carriers.source(&files[0], &source))).is_err());
     }
 
     #[test]

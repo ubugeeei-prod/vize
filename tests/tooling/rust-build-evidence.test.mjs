@@ -136,7 +136,7 @@ await test("failed/missing preparation keeps partial raw output and excludes cac
   }
 });
 
-await test("actual PR shell keeps selected arguments, captured stdout and exit0/17 through tee", () => {
+await test("actual PR shell keeps selected arguments, owned stdout capture and exit0/17", () => {
   for (const exit of [0, 17]) {
     const { directory } = fixture();
     try {
@@ -146,6 +146,12 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
       mkdirSync(scripts, { recursive: true });
       for (const name of [
         "run-affected-rust.ts",
+        "run-rust-test-cohort.ts",
+        "rust-test-cohorts.ts",
+        "rust-test-default-features.ts",
+        "plan-affected-rust.ts",
+        "plan-source-checks.ts",
+        "rust-differential-lanes.ts",
         "rust-build-evidence.ts",
         "compare-unused-bindings-profiles.ts",
       ])
@@ -153,7 +159,7 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
       const argsFile = join(directory, "args.txt");
       writeFileSync(
         join(bin, "cargo"),
-        `#!/bin/sh\nprintf '%s\\n' "$@" > "$ARGS_FILE"\nprintf '%s\\n' '{"reason":"build-finished","success":${exit === 0}}'\nexit ${exit}\n`,
+        `#!/bin/sh\nif [ "$1" = metadata ]; then printf '%s' "$CARGO_METADATA"; exit 0; fi\nprintf '%s\\n' "$@" > "$ARGS_FILE"\nprintf '%s\\n' '{"reason":"build-finished","success":${exit === 0}}'\nexit ${exit}\n`,
         { mode: 0o755 },
       );
       const plan = {
@@ -170,6 +176,17 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
           PATH: `${bin}:${dirname(process.execPath)}:${process.env.PATH}`,
           RUNNER_TEMP: directory,
           RUST_PLAN_JSON: JSON.stringify(plan),
+          CARGO_METADATA: JSON.stringify({
+            workspace_root: directory,
+            workspace_members: plan.packages,
+            packages: plan.packages.map((name) => ({
+              id: name,
+              name,
+              manifest_path: join(directory, name, "Cargo.toml"),
+              dependencies: [],
+              targets: [{ name, kind: ["lib"], test: true }],
+            })),
+          }),
           NEXTEST_PROFILE: "pr",
           NEXTEST_FILTER: "package(=vize_l0)",
           COHORT: "compiler",
@@ -184,6 +201,7 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
         "run",
         "--package",
         "vize_l0",
+        "--lib",
         "--cargo-profile",
         "ci",
         "--timings",
@@ -194,7 +212,11 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
         "package(=vize_l0)",
         "--no-tests=pass",
       ]);
-      const packet = json(join(directory, "rust-build-evidence/cargo.jsonl"));
+      const captured = readFileSync(join(directory, "rust-build-evidence/cargo.jsonl"), "utf8");
+      assert.equal(captured, result.stdout, "retain the complete unmodified stdout stream");
+      const packets = captured.split("\n").filter((line) => line.startsWith("{"));
+      assert.equal(packets.length, 1);
+      const packet = JSON.parse(packets[0]);
       assert.equal(packet.success, exit === 0);
       assert.equal(json(join(directory, "target/nextest/pr/timing.json")).exit_code, exit);
       assert.equal(

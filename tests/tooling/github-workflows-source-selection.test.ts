@@ -57,10 +57,15 @@ test("source planning uses Node and offline metadata before selecting affected p
     (step) => step.name === "Test CI selection when its inputs change",
   );
   assert.equal(ciSelection?.if, "${{ steps.plan.outputs.tooling == 'true' }}");
-  assert.equal(
-    ciSelection?.run,
-    "node --test tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-test-archive.test.mjs",
-  );
+  assert.deepEqual(ciSelection?.run?.trim().split(/\s+/), [
+    "node",
+    "--test",
+    "tests/tooling/ci-iteration-plans.test.ts",
+    "tests/tooling/pr-required-rust.test.ts",
+    "tests/tooling/rust-test-cohorts.test.ts",
+    "tests/tooling/rust-test-archive.test.mjs",
+    "tests/tooling/rust-build-evidence.test.mjs",
+  ]);
 });
 
 test("affected native runtime proofs execute independently of the scheduled tooling campaign", () => {
@@ -97,7 +102,10 @@ test("affected native runtime proofs execute independently of the scheduled tool
   const skip = steps.find((step) => step.name === "Explain unrelated skip");
   assert.equal(skip?.if, "${{ matrix.lane == 'none' }}");
   const report = source.jobs["source-report"];
-  assert.equal(report.if, "${{ always() && !contains(needs.*.result, 'cancelled') }}");
+  assert.equal(
+    report.if,
+    "${{ always() && github.event_name == 'merge_group' && !contains(needs.*.result, 'cancelled') }}",
+  );
   assert.ok(report.needs?.includes("pr-native-runtime"));
   assert.equal(
     report.steps?.at(-1)?.run,
@@ -151,23 +159,22 @@ test("the Rust report waits for the builder and every named test cohort", () => 
   ]);
   assert.equal(
     rust.jobs["rust-source-report"].if,
-    "${{ always() && !contains(needs.*.result, 'cancelled') }}",
+    "${{ always() && github.event_name == 'merge_group' && !contains(needs.*.result, 'cancelled') }}",
   );
   const reportSteps = rust.jobs["rust-source-report"].steps ?? [];
   const gate = reportSteps.findIndex((step) => step.name === "Require the complete Rust tier");
-  const gateRuntime = reportSteps.findIndex((step) =>
-    step.uses?.startsWith("voidzero-dev/setup-vp@"),
-  );
+  const gateRuntime = reportSteps.findIndex((step) => step.uses?.startsWith("actions/setup-node@"));
   assert.ok(gateRuntime >= 0 && gateRuntime < gate);
   assert.equal(reportSteps[gateRuntime].if, undefined);
   assert.equal(
-    reportSteps.filter((step) => step.uses?.startsWith("voidzero-dev/setup-vp@")).length,
+    reportSteps.filter((step) => step.uses?.startsWith("actions/setup-node@")).length,
     1,
   );
   assert.deepEqual(reportSteps[gateRuntime].with, {
     "node-version-file": "package.json",
-    "run-install": false,
+    "package-manager-cache": false,
   });
+  assert.ok(reportSteps.every((step) => !step.uses?.includes("setup-vp@")));
   const select = reportSteps.findIndex(
     (step) => step.name === "Select latest source-bound Rust workers",
   );

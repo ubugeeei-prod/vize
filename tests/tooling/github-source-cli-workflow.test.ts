@@ -76,7 +76,7 @@ void test("scheduled tooling owns the CLI producer without delaying independent 
   assert.deepEqual(source.jobs["source-report"].needs, sourceNeeds);
   assert.equal(
     source.jobs["source-report"].if,
-    "${{ always() && !contains(needs.*.result, 'cancelled') }}",
+    "${{ always() && github.event_name == 'merge_group' && !contains(needs.*.result, 'cancelled') }}",
   );
   const required = full.jobs["test-report"].needs;
   assert.ok(Array.isArray(required) && required.includes("pr-source-checks"));

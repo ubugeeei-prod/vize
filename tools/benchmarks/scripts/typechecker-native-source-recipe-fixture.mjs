@@ -91,8 +91,10 @@ assert.equal(
   hash(selectedAliasRequiredRun),
   "ae22cd812c7def2272acf9596ba7c9fe0e94d2c590b5f9d3411fad73b84b14a2",
 );
+export const retiredProjectionCommand =
+  "node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs";
 const receiptCommands = [
-  "node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs",
+  retiredProjectionCommand,
   "node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs",
   "node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs",
 ];
@@ -106,7 +108,7 @@ assert.equal(
     .replace(receiptCommands.join("\n") + "\n", receiptCommands.join("; ") + "\n"),
 );
 
-export const currentRequiredRun = readFileSync(
+const passiveRequiredRun = readFileSync(
   new URL(
     "../../../tests/_fixtures/tooling/native-current-recipe-passive-lsp-3952.sh",
     import.meta.url,
@@ -114,19 +116,22 @@ export const currentRequiredRun = readFileSync(
   "utf8",
 );
 assert.equal(
-  hash(currentRequiredRun),
+  hash(passiveRequiredRun),
   "9a6c630b68910f0c48f45040eb166ae7fa7fa4b0df798d34c74154eb1742d518",
 );
 const selectedAliasFirstCargo = selectedAliasRequiredRun.split("\n")[3];
 const passiveCargo =
   "env -u VIZE_INLAY_HINT_CAPTURE VIZE_LSP_PASSIVE_EVIDENCE=\"$RUNNER_TEMP/lsp-passive-3952\" VIZE_TRACE_EDITOR_PREPARATION=1 cargo test --locked --profile ci-opt -p vize --test lsp_passive_evidence_cli --test lsp_reactive_diagnostics_cli --config 'profile.ci-opt.inherits=\"release\"' --config 'profile.ci-opt.lto=\"thin\"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip=\"symbols\"' -- --nocapture";
 assert.equal(
-  currentRequiredRun,
+  passiveRequiredRun,
   selectedAliasRequiredRun.replace(
     selectedAliasFirstCargo + "\n",
     selectedAliasFirstCargo + "\n" + passiveCargo + "\n",
   ),
 );
+const retiredInvocation = retiredProjectionCommand + "; ";
+assert.equal(passiveRequiredRun.split(retiredInvocation).length, 2);
+export const currentRequiredRun = passiveRequiredRun.replace(retiredInvocation, "");
 
 export function git(root, ...args) {
   const r = spawnSync("git", args, {

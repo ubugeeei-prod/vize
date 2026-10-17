@@ -38,58 +38,48 @@ function rejectFailedPlan(
   assert.match(run.stderr, /corpus plan did not succeed/u);
 }
 
-test("failed source preflights block every source build and cannot pass the source report", () => {
+test("source planning is required before product builds and a failed plan cannot pass the report", () => {
   const plan = source.jobs["pr-source-plan"];
   const steps = plan.steps ?? [];
-  const runtime = steps.findIndex((step) => step.uses?.startsWith("actions/setup-node@") === true);
-  const base = steps.findIndex((step) => step.name === "Resolve and fetch comparison base");
-  const inventory = steps.findIndex(
-    (step) => step.uses === "./.github/actions/check-level-inventories",
+  const required = steps.filter((step) =>
+    /(?:comparison-base\.ts|plan-pr-checks\.ts|canonical-corpus-selection\.mjs)/.test(
+      step.run ?? "",
+    ),
   );
-  const layout = steps.findIndex(
-    (step) => step.run === "node --test tests/tooling/davinci-module-layout.test.ts",
-  );
-  const retired = steps.findIndex(
-    (step) => step.run === "node --test tests/tooling/retired-tooling-languages.test.ts",
-  );
-  const output = steps.findIndex((step) => step.name === "Plan source checks");
-  assert.ok(runtime >= 0 && runtime < base && base < inventory && inventory < layout);
-  assert.ok(layout < retired, "the retired-language ratchet runs with the source preflights");
-  assert.ok(retired < output, "preflights must finish before source selection and Rust setup");
-  for (const step of [steps[inventory], steps[layout], steps[retired]]) {
-    assert.equal(step.if, undefined, "source preflights cannot skip");
-    assert.equal(step["continue-on-error"], undefined, "source preflight failures are required");
+  assert.equal(required.length, 3);
+  for (const step of required) {
+    assert.equal(step.if, undefined, "planning cannot skip");
+    assert.notEqual(step["continue-on-error"], true, "planning failures are required");
   }
   for (const lane of [
     "pr-rust-source",
     "pr-js-packages",
-    "pr-tooling-scripts",
+    "pr-native-runtime",
     "pr-playground-test",
   ]) {
-    assert.deepEqual(
-      source.jobs[lane].needs,
-      lane === "pr-tooling-scripts" ? ["pr-source-plan", "pr-source-cli"] : "pr-source-plan",
-      lane,
+    assert.equal(source.jobs[lane].needs, "pr-source-plan", lane);
+    assert.ok(
+      source.jobs[lane].if === undefined || source.jobs[lane].if === plan.if,
+      `${lane} retains implicit success() gating`,
     );
-    assert.equal(source.jobs[lane].if, plan.if, `${lane} retains implicit success() gating`);
   }
-  assert.equal(source.jobs["pr-source-cli"].needs, "pr-source-plan");
-  assert.equal(source.jobs["pr-source-cli"].if, undefined, "producer retains implicit success()");
   const report = source.jobs["source-report"];
   const dependencies = typeof report.needs === "string" ? [report.needs] : (report.needs ?? []);
-  assert.equal(report.if, "${{ always() && !contains(needs.*.result, 'cancelled') }}");
+  assert.equal(
+    report.if,
+    "${{ always() && github.event_name == 'merge_group' && !contains(needs.*.result, 'cancelled') }}",
+  );
   assert.ok(dependencies.includes("pr-source-plan"));
   assert.equal(
     report.steps?.at(-1)?.run,
     "node tools/support/compat/github/canonical-corpus-selection.mjs --check",
   );
-  const failed = Object.fromEntries(
-    dependencies.map((lane) => [
-      lane,
-      { result: lane === "pr-source-plan" ? "failure" : "skipped" },
-    ]),
-  );
   for (const event of ["pull_request", "merge_group"]) {
-    rejectFailedPlan(event, failed);
+    for (const result of ["failure", "cancelled", "skipped", undefined]) {
+      const failed = Object.fromEntries(dependencies.map((lane) => [lane, { result: "success" }]));
+      if (result) failed["pr-source-plan"] = { result };
+      else delete failed["pr-source-plan"];
+      rejectFailedPlan(event, failed);
+    }
   }
 });

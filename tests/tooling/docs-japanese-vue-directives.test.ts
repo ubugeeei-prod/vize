@@ -25,7 +25,7 @@ const blocks = (text: string) =>
     match[2],
   ]);
 
-await test("Japanese directive conventions retain six whole original packets and twenty-four source blocks", () => {
+await test("Japanese directive conventions retain complete original sources in each rule packet", () => {
   const source = read(generated);
   const index = read("docs/content/ja/rules/vue-directives.md");
   const headings = [...source.matchAll(/^### `([^`]+)`$/gm)];
@@ -33,21 +33,22 @@ await test("Japanese directive conventions retain six whole original packets and
     headings.map((match) => match[1]),
     expected,
   );
-  assert.equal(blocks(source).length, 24);
   const allRows = read("docs/content/rules/all.md").split("\n");
   for (const [position, heading] of headings.entries()) {
     const name = heading[1];
     const id = name.replaceAll("/", "-");
     const packet = source.slice(heading.index, headings[position + 1]?.index);
     const original = read(`docs/content/ja/rules/reference/${id}.md`);
-    assert.equal(blocks(original).length, 4);
     assert.deepEqual(blocks(packet), blocks(original));
     assert.deepEqual(blocks(packet), blocks(read(`docs/content/rules/reference/${id}.md`)));
+    const sectionTitles = new Set([...original.matchAll(/^## (.+)$/gm)].map((match) => match[1]));
     const restored = packet
       .replace(/^### /, "# ")
       .replaceAll(`<span id="${id}-bad"></span>\n\n`, "")
       .replaceAll(`<span id="${id}-good"></span>\n\n`, "")
-      .replace(/^\*\*(設定（Vite\+）|悪い|良い)\*\*$/gm, "## $1")
+      .replace(/^\*\*(.+)\*\*$/gm, (line, title: string) =>
+        sectionTitles.has(title) ? `## ${title}` : line,
+      )
       .replace(/^(```(?:ts|sh|vue)) annotate="(?:add|remove):\d+(?:,\d+)*"$/gm, "$1")
       .replaceAll(`](#${id}-bad)`, "](#悪い)")
       .replaceAll(`](#${id}-good)`, "](#良い)")

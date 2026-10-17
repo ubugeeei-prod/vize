@@ -10,10 +10,11 @@ const read = (path: string) => readFileSync(new URL(`../../${path}`, import.meta
 const action = parse(read(".github/actions/test-native-vue1-text-document/action.yml"));
 const combined = parse(read(".github/actions/test-native-historical-text-documents/action.yml"));
 const outer = parse(read(".github/actions/test-native-historical-sfc-documents/action.yml"));
-const workflow = parse(read(".github/workflows/pr-source-checks.yml"));
+const workflow = parse(read(".github/workflows/check.yml"));
+const worker = parse(read(".github/actions/test-full-tooling/action.yml"));
 const select = action.runs.steps.find((step: { id?: string }) => step.id === "select");
 
-function selection(event: string, paths: string[], gitStatus = 0) {
+function selection(event: string, paths: string[], gitStatus = 0, selector = select) {
   const directory = mkdtempSync(join(tmpdir(), "vue1-capture-select-"));
   try {
     const result = spawnSync(
@@ -29,7 +30,7 @@ function selection(event: string, paths: string[], gitStatus = 0) {
         if [[ "$MOCK_GIT_STATUS" != 0 ]]; then return "$MOCK_GIT_STATUS"; fi
         printf '%s' "$MOCK_CHANGED_PATHS"
       }
-      ${select.run}
+      ${selector.run}
     `,
       ],
       {
@@ -55,7 +56,7 @@ function selection(event: string, paths: string[], gitStatus = 0) {
   }
 }
 
-test("actual historical capture composition preserves original Vue2 order and the first-shard guard", () => {
+test("full tooling captures historical documents once with the original Vue2 order and browser", () => {
   assert.deepEqual(
     combined.runs.steps.map((step: { uses: string }) => step.uses),
     [
@@ -75,23 +76,47 @@ test("actual historical capture composition preserves original Vue2 order and th
   assert.equal(outer.runs.steps[1].if, "${{ always() }}");
   for (const step of outer.runs.steps)
     assert.deepEqual(step.with, { "comparison-base": "${{ inputs.comparison-base }}" });
-  const steps = Object.values(workflow.jobs).flatMap((job: any) => job.steps ?? []);
+  assert.equal(
+    workflow.jobs["test-scripts"].if,
+    "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
+  );
+  assert.equal(
+    workflow.jobs["test-scripts"].steps.filter(
+      (step: any) => step.uses === "./.github/actions/test-full-tooling",
+    ).length,
+    1,
+  );
+  const steps = worker.runs.steps;
   const hooks = steps.filter(
     (step: any) => step.uses === "./.github/actions/test-native-historical-sfc-documents",
   );
   assert.equal(hooks.length, 1);
-  assert.equal(
-    hooks[0].if,
-    "${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}",
-  );
+  assert.equal(hooks[0].if, "${{ always() && inputs.shard == '1' }}");
   assert.deepEqual(hooks[0].with, {
-    "comparison-base": "${{ needs.pr-source-plan.outputs.comparison-base }}",
+    "comparison-base": "0000000000000000000000000000000000000000",
   });
-  assert.ok(read(".github/workflows/pr-source-checks.yml").split("\n").length - 1 <= 500);
+  const browser = steps.findIndex(
+    (step: any) => step.uses === "./.github/actions/install-formatter-css-browser",
+  );
+  const capture = steps.indexOf(hooks[0]);
+  const tests = steps.findIndex((step: any) => /\btest:scripts:planned\b/.test(step.run ?? ""));
+  assert.ok(browser >= 0 && browser < capture && capture < tests);
 });
 
-test("the actual source selector runs every merge group and fails closed on missing comparison authority", () => {
-  assert.deepEqual(selection("merge_group", [], 42), { status: 0, output: "selected=true\n" });
+test("all historical selectors capture full qualification without a comparison diff", () => {
+  for (const name of ["vue1-text-document", "vue2-text-document", "vue2-scriptless-sfc"]) {
+    const leaf = parse(read(`.github/actions/test-native-${name}/action.yml`));
+    const selector = leaf.runs.steps.find((step: { id?: string }) => step.id === "select");
+    for (const event of ["merge_group", "schedule", "workflow_dispatch"])
+      assert.deepEqual(
+        selection(event, [], 42, selector),
+        { status: 0, output: "selected=true\n" },
+        `${name}: ${event}`,
+      );
+  }
+});
+
+test("the actual PR source selector fails closed on missing comparison authority", () => {
   for (const path of [
     "crates/vize_glyph/src/native_doc.rs",
     "crates/vize_glyph/src/native_doc/vue1_text.rs",

@@ -48,7 +48,10 @@ test("affected Maestro source builds require real native feature tests before re
   assert.notEqual(build["continue-on-error"], true);
   const report = workflow.jobs["rust-source-report"];
   assert.ok(report.needs.includes("pr-rust-build"));
-  assert.equal(report.if, "${{ always() && !contains(needs.*.result, 'cancelled') }}");
+  assert.equal(
+    report.if,
+    "${{ always() && github.event_name == 'merge_group' && !contains(needs.*.result, 'cancelled') }}",
+  );
   const aggregate = report.steps.find(
     (step: { run?: string }) =>
       step.run === "node tools/support/compat/github/require-rust-tier.ts",

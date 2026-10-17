@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { verifyConsumer } from "./consumer.ts";
 import { custodyProbe, assertOracleFiles, type OraclePolicy } from "./oracles.ts";
 import { revalidatePublicArchives, type InstalledArchive } from "./archive.ts";
+import { sameOriginalSnapshot, sameRunSnapshot } from "./snapshots.ts";
 import {
   admitOriginal,
   assertFresh,
@@ -183,7 +184,7 @@ export async function collectOriginal(expected: Identity, policySha: string): Pr
     sourceReceipt,
   };
   admission(original);
-  same(api(`actions/runs/${expected.run}`), run, "R changed during original collection");
+  sameRunSnapshot(api(`actions/runs/${expected.run}`), run, "R changed during original collection");
   return original;
 }
 export function verifyIntegration(github: Json, expected: Identity, read = api) {
@@ -417,19 +418,7 @@ export async function verifiedRecovery(
     consumerAttempt(packet.run, recoveryRun, attempt, policySha);
   }
   const live = await collectOriginal(expected, policySha);
-  for (const key of [
-    "policy",
-    "run",
-    "jobs",
-    "failed",
-    "log",
-    "logIdentity",
-    "blobs",
-    "artifacts",
-    "pin",
-    "sourceReceipt",
-  ])
-    same(original[key], live[key], `original ${key} changed after requalification`);
+  sameOriginalSnapshot(original, live, "after requalification");
   const currentIntegration = verifyIntegration(
     object(
       object(JSON.parse(readFileSync(path.join(directory, "publication-after.json"), "utf8")))
@@ -442,7 +431,11 @@ export async function verifiedRecovery(
     integration("integration-after.json", "publication-after.json"),
     "original signed integration changed since requalification",
   );
-  same(api(`actions/runs/${recoveryRun}`), run, "replacement attempt changed during verification");
+  sameRunSnapshot(
+    api(`actions/runs/${recoveryRun}`),
+    run,
+    "replacement attempt changed during verification",
+  );
   assert.ok(realpathSync(directory) === directory, "replacement root redirected");
   return { admission: admitted, receipt, directory, integration: currentIntegration };
 }

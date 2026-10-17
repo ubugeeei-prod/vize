@@ -45,6 +45,7 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/cache-vp-bootstrap
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
@@ -57,6 +58,7 @@ jobs:
           key: native-inline-browser
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
+      - uses: ./.github/actions/cache-pnpm-verification
       - name: Install source-native browser dependencies
         run: vp install --filter './npm/native...' --filter './npm/builder/vite...' --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -129,11 +131,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/cache-vp-bootstrap
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
           cache: true
           run-install: false
+      - uses: ./.github/actions/cache-pnpm-verification
       - name: Install Musea test dependencies
         run: vp install --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5

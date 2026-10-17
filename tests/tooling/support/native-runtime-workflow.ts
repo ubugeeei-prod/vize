@@ -30,7 +30,10 @@ export function assertNativeRuntimeHook(lane: string, action: string) {
   assert.equal(hooks[0]["continue-on-error"], undefined, action);
   const report = workflow.jobs["source-report"];
   assert(report.needs.includes("pr-native-runtime"));
-  assert.equal(report.if, "${{ always() && !contains(needs.*.result, 'cancelled') }}");
+  assert.equal(
+    report.if,
+    "${{ always() && github.event_name == 'merge_group' && !contains(needs.*.result, 'cancelled') }}",
+  );
   assert.equal(report["continue-on-error"], undefined);
   const gate = report.steps.find(
     (step: { run?: string }) =>

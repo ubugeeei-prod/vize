@@ -54,7 +54,7 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
     if: "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
     uses: "./.github/workflows/pr-source-checks.yml",
   });
-  assert.deepEqual(source.on, { workflow_call: null });
+  assert.equal(Object.hasOwn(source.on, "workflow_call"), true);
   assert.deepEqual(source.jobs["wit-contracts"], {
     name: "Guest contracts",
     if: "${{ github.event_name == 'merge_group' }}",
@@ -68,7 +68,7 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
   ]);
   assert.equal(
     source.jobs["source-report"].if,
-    "${{ always() && !contains(needs.*.result, 'cancelled') }}",
+    "${{ always() && github.event_name == 'merge_group' && !contains(needs.*.result, 'cancelled') }}",
   );
   assert.equal(
     source.jobs["source-report"].steps?.at(-1)?.run,

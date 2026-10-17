@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
+import { nativeReleasePlatforms } from "../../tools/support/github/release-platforms.ts";
 
 import {
   hostedOrBlacksmith,
@@ -111,13 +112,6 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
 
   const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
   const nativeWorkflow = readRepoFile(".github", "workflows", "native-smoke.yml");
-  const releasePlatforms = readRepoFile(
-    "tools",
-    "commands",
-    "ci",
-    "github",
-    "release-platforms.rs",
-  );
 
   // check.yml runs every job on the same Linux runner — we accept either the
   // GitHub-hosted label or any Blacksmith Ubuntu SKU so changing vCPU size
@@ -126,12 +120,16 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
   assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("ubuntu-22.04-arm")}`));
   assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("macos-15")}`));
   assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("windows-2025")}`));
-  assert.match(
-    releasePlatforms,
-    new RegExp(`host:\\s*"${hostedOrBlacksmith("ubuntu-22.04-arm")}"`),
-  );
-  assert.match(releasePlatforms, new RegExp(`host:\\s*"${hostedOrBlacksmith("macos-15")}"`));
-  assert.match(releasePlatforms, new RegExp(`host:\\s*"${hostedOrBlacksmith("windows-2025")}"`));
+  // The release planner is TypeScript; its Rust entry point is only a shim.
+  // release-platforms.test.ts checks both exact GNU ABI-floor hosts and the
+  // release-build tests retain the complete shipping target set.
+  for (const platform of ["macos-15", "windows-2025"]) {
+    const host = new RegExp(`^${hostedOrBlacksmith(platform)}$`);
+    assert.ok(
+      nativeReleasePlatforms.some((entry) => host.test(entry.host)),
+      `native releases must retain a ${platform} runner`,
+    );
+  }
 });
 
 test("GitHub workflows use Node 24-compatible artifact downloads", () => {
@@ -253,7 +251,7 @@ test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", ()
   );
 });
 
-test("Linux Rust CI installs Wild linker before cargo builds", () => {
+test("Linux Rust build recipes retain the pinned Wild linker", () => {
   for (const relativePath of [
     ".github/workflows/benchmark.yml",
     ".github/workflows/build-docs.yml",
@@ -262,8 +260,10 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
     // App E2E runs every row through the shared composite action.
     ".github/actions/app-e2e-row/action.yml",
     ".github/workflows/native-smoke.yml",
-    ".github/workflows/release-preflight.yml",
-    ".github/workflows/release.yml",
+    // Release jobs delegate binary builds to these shared recipes. The
+    // evidence/preflight workflow intentionally uses no custom linker.
+    ".github/actions/build-release-cli/action.yml",
+    ".github/actions/build-release-native/action.yml",
     ".github/workflows/tool-benchmark.yml",
   ]) {
     const file = readRepoFile(...relativePath.split("/"));
@@ -314,15 +314,21 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
   assert.match(benchmarkWorkflow, /secondary-target-path:\s*base\/target/);
   assert.doesNotMatch(benchmarkWorkflow, /Swatinem\/rust-cache/);
 
-  for (const workflowName of ["native-smoke.yml", "release.yml"]) {
-    const workflow = readRepoFile(".github", "workflows", workflowName);
+  for (const relativePath of [
+    ".github/workflows/native-smoke.yml",
+    ".github/actions/build-release-cli/action.yml",
+    ".github/actions/build-release-native/action.yml",
+  ]) {
+    const workflow = readRepoFile(...relativePath.split("/"));
     assert.match(
       workflow,
       /(?:if:\s*runner\.os == 'Linux'[\s\S]{0,240}setup-rust-sticky-cache|setup-rust-sticky-cache[\s\S]{0,240}if:\s*runner\.os == 'Linux')/,
+      `${relativePath} must use sticky caches only on Linux`,
     );
     assert.match(
       workflow,
       /(?:if:\s*runner\.os != 'Linux'[\s\S]{0,240}Swatinem\/rust-cache|Swatinem\/rust-cache[\s\S]{0,240}if:\s*runner\.os != 'Linux')/,
+      `${relativePath} must retain the non-Linux Rust cache`,
     );
   }
 });

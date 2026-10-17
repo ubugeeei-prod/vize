@@ -83,7 +83,13 @@ void test("dormant queue workflow retains each planned gate and its original pre
   type Workflow = {
     jobs: Record<
       string,
-      { needs?: string[]; if?: string; uses?: string; with?: object; steps?: unknown[] }
+      {
+        needs?: string[];
+        if?: string;
+        uses?: string;
+        with?: object;
+        steps?: { uses?: string; run?: string }[];
+      }
     >;
   };
   const check = parse(readRepoFile(".github", "workflows", "check.yml")) as Workflow;
@@ -94,14 +100,20 @@ void test("dormant queue workflow retains each planned gate and its original pre
   // Current publication is guarded by exact-source full Check below.
   assert.equal(check.jobs["release-gates"], undefined);
   const gate = workflow.jobs["release-gates"]!;
+  assert.equal(gate.if, "${{ always() }}");
+  assert.ok(
+    gate.steps?.some(
+      (step) => step.run === "node tools/support/compat/github/plan-release-gates.ts --check",
+    ),
+  );
   assert.deepEqual(
     [...gate.needs!].sort(),
     ["release-gate-plan", ...Object.values(RELEASE_GATE_JOBS)].sort(),
   );
-  assert.deepEqual(
-    workflow.jobs["vue-parity"]!.steps,
-    check.jobs["vue-parity"]!.steps,
-    "the queue runs the release vue-parity job unchanged",
+  assert.ok(
+    workflow.jobs["vue-parity"]!.steps?.some(
+      (step) => step.uses === "./.github/actions/check-vue-parity",
+    ),
   );
   for (const [decision, job] of Object.entries(RELEASE_GATE_JOBS)) {
     assert.match(

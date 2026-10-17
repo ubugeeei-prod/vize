@@ -105,7 +105,7 @@ await test("pinned Deno runtime proof retains independent fresh-cache controls a
   assert.equal(steps[deno]?.with?.["deno-version"], "2.9.7");
   assert.equal(
     steps[proof]?.run,
-    'node tools/support/release/jsr/verify-consumer-age.mjs "$RUNNER_TEMP/jsr-consumer-age"',
+    'node tools/support/release/jsr/verify-consumer-age.ts "$RUNNER_TEMP/jsr-consumer-age"',
   );
   assert.equal(
     steps[proof]?.env?.JSR_CONSUMER_PUBLISHED_VERSION,

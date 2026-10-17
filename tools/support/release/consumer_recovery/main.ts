@@ -18,6 +18,7 @@ import {
 import { verifyConsumer } from "./consumer.ts";
 import { assertOracleFiles } from "./oracles.ts";
 import { revalidatePublicArchives, type InstalledArchive } from "./archive.ts";
+import { sameOriginalSnapshot } from "./snapshots.ts";
 import {
   assertFresh,
   consumerAttempt,
@@ -103,19 +104,7 @@ if (operation === "prepare" || operation === "finalize") {
       consumers.push({ role, sha256: sha256(readFileSync(file)) });
     }
     const live = await collectOriginal(expected, policySha);
-    for (const key of [
-      "policy",
-      "run",
-      "jobs",
-      "failed",
-      "log",
-      "logIdentity",
-      "blobs",
-      "artifacts",
-      "pin",
-      "sourceReceipt",
-    ])
-      same(original[key], live[key], `original ${key} changed during fresh consumers`);
+    sameOriginalSnapshot(original, live, "during fresh consumers");
     const publication = await verifyPublication(
       derivePublicationPlan(root, expected.head),
       expected,

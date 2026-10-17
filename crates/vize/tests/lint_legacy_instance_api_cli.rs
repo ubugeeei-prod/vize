@@ -390,18 +390,14 @@ fn script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_
         .unwrap();
     assert_eq!(qualified.len(), 19);
     assert_eq!(observation, &[json!("listeners-template-this-frontier")]);
-    let acceptance_partition: BTreeSet<_> = qualified
-        .iter()
-        .chain(observation)
-        .map(|id| id.as_str().unwrap())
-        .collect();
-    assert_eq!(acceptance_partition.len(), 20);
     assert_eq!(
-        acceptance_partition,
-        primary
+        qualified,
+        &primary
             .iter()
-            .map(|id| id.as_str().unwrap())
-            .collect::<BTreeSet<_>>()
+            .filter(|id| **id != json!("listeners-template-this-frontier"))
+            .cloned()
+            .collect::<Vec<_>>(),
+        "every primary control except the explicit frontier is accepted, in original order",
     );
     let source_projection: Vec<_> = primary
         .iter()
@@ -442,7 +438,6 @@ fn script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_
             );
             assert_eq!(case["expected"][0]["messages"], json!([]));
         } else {
-            assert!(qualified.contains(id));
             assert_eq!(case["qualifiedAcceptance"], true);
             assert_eq!(case["qualification"], "qualified-primary-listeners");
         }

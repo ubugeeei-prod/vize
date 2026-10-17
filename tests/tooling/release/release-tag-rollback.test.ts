@@ -209,11 +209,11 @@ test("PR releases create no premature tag and retain the legacy rollback helper"
   assert.match(JSON.stringify(rollback), /release-tag-rollback\.rs/);
 });
 
-test("release stabilizes apt before installing ARM64 cross-compilation tools", () => {
-  const release = parse(readRepoFile(".github", "workflows", "release.yml")) as {
-    jobs: Record<string, { steps: Array<{ run?: string; uses?: string }> }>;
+test("release CLI recipe stabilizes apt before installing ARM64 cross-compilation tools", () => {
+  const recipe = parse(readRepoFile(".github", "actions", "build-release-cli", "action.yml")) as {
+    runs: { steps: Array<{ run?: string; uses?: string }> };
   };
-  const steps = release.jobs["build-cli"].steps;
+  const steps = recipe.runs.steps;
   const archiveSetup = steps.findIndex(
     (step) => step.uses === "./.github/actions/setup-ubuntu-archive",
   );

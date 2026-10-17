@@ -37,8 +37,10 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
+      - name: Install the repository Rust toolchain
+        run: |
+          rustup toolchain install || rustup show active-toolchain
+          cargo --version
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -49,7 +51,7 @@ jobs:
           run-install: true
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: unused-bindings
+          key: nextest-ci
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
       - name: Hydrate the pinned P0-13 shard
@@ -66,7 +68,7 @@ jobs:
           set -o pipefail
           cargo test --profile ci --message-format=json-render-diagnostics -p vize_l0 --test fact_demand | tee target/unused-bindings-units/ci-fact_demand.jsonl
           cargo test --profile ci --message-format=json-render-diagnostics -p vize_croquis --test fact_spec | tee target/unused-bindings-units/ci-fact_spec.jsonl
-          cargo test --profile ci --message-format=json-render-diagnostics -p vize_patina unused_setup_bindings | tee target/unused-bindings-units/ci-unused_setup_bindings.jsonl
+          cargo test --profile ci --message-format=json-render-diagnostics -p vize_patina --lib unused_setup_bindings | tee target/unused-bindings-units/ci-unused_setup_bindings.jsonl
       - name: Compare the same complete fact specs under both profiles
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.compare-profiles }}
         env:

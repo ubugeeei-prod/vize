@@ -6640,6 +6640,13 @@ export default defineConfig({
       "preset": "incremental",
       "rules": {
         "vue/valid-v-on": "error"
+      },
+      "ruleOptions": {
+        "vue/valid-v-on": {
+          "modifiers": [
+            "custom"
+          ]
+        }
       }
     },
   },
@@ -6654,7 +6661,7 @@ vp run lint
 
 **Incorreto**
 
-As formas de listener omitem um argumento de evento ou a expressão obrigatória de manipulador ou objeto.
+Os listeners omitem um evento ou expressão obrigatória, ou usam modificadores não suportados, como .sync e .nativeish.
 
 ```vue annotate="remove:2,3,4,5,6,7"
 <template>
@@ -6671,7 +6678,7 @@ As formas de listener omitem um argumento de evento ou a expressão obrigatória
 
 **Correto**
 
-Use um evento com seu manipulador ou passe um objeto de listeners para `v-on` sem argumento.
+Use um manipulador, um modificador de ação sem manipulador, um modificador de teclado suportado ou um objeto de listeners para `v-on` sem argumento.
 
 ```vue annotate="add:2,3,4,5,6"
 <template>

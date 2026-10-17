@@ -1,0 +1,55 @@
+import { defineComponent as _defineComponent } from 'vue'
+import type { mastodon } from 'masto'
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'StatusMedia',
+  props: {
+    status: {},
+    fullSize: { type: Boolean },
+    isPreview: { type: Boolean, default: false }
+  },
+  setup(__props: any, { expose: __expose }) {
+  __expose();
+
+
+
+const gridColumnNumber = computed(() => {
+  const num = __props.status.mediaAttachments.length
+  if (num <= 1)
+    return 1
+  else if (num <= 4)
+    return 2
+  else
+    return 3
+})
+
+const __returned__ = { gridColumnNumber }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+})
+
+import { resolveComponent as _resolveComponent, mergeProps as _mergeProps } from "vue"
+import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderList as _ssrRenderList } from "vue/server-renderer"
+
+export function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  const _component_StatusAttachment = _resolveComponent("StatusAttachment")
+
+  const _cssVars = { style: {
+  ":--v4a184587": ($setup.gridColumnNumber)
+}}
+  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: "status-media-container" }, _attrs, _cssVars))}><!--[-->`)
+  _ssrRenderList($props.status.mediaAttachments, (attachment) => {
+    _push(_ssrRenderComponent(_component_StatusAttachment, {
+      attachment: attachment,
+      attachments: $props.status.mediaAttachments,
+      "full-size": $props.fullSize,
+      "w-full": "",
+      "h-full": "",
+      "is-preview": $props.isPreview
+    }, null, _parent))
+  })
+  _push(`<!--]--></div>`)
+}

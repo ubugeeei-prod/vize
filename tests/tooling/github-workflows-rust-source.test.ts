@@ -15,6 +15,7 @@ type Step = {
 };
 type Job = {
   if?: string;
+  "runs-on"?: string;
   needs?: string[] | string;
   steps?: Step[];
   uses?: string;
@@ -68,7 +69,7 @@ void test("required source reports include selected product gates and mandatory 
   assert.equal(source.jobs["pr-js-packages"].uses, "./.github/workflows/pr-js-checks.yml");
   assert.equal(
     source.jobs["source-report"].if,
-    "${{ always() && !contains(needs.*.result, 'cancelled') }}",
+    "${{ always() && github.event_name == 'merge_group' && !contains(needs.*.result, 'cancelled') }}",
   );
   assert.match(commands(source.jobs["source-report"]), /canonical-corpus-selection\.mjs --check/);
   for (const [name, job] of [
@@ -101,6 +102,38 @@ void test("Clippy and doctests start beside affected cohort execution and stay r
     /cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports/,
   );
   assert.match(validation, /cargo test @packages@ --profile ci --doc/);
+  const steps = parallel.steps ?? [];
+  const doctests = steps.findIndex((step) =>
+    /cargo test @packages@ --profile ci --doc/.test(step.run ?? ""),
+  );
+  const examples = steps.filter((step) =>
+    /cargo build @packages@ --profile ci --examples/.test(step.run ?? ""),
+  );
+  assert.equal(examples.length, 1);
+  assert.equal(steps.indexOf(examples[0]), doctests + 1);
+  assert.equal(examples[0].if, "${{ github.event_name == 'pull_request' }}");
+  assert.match(examples[0].run ?? "", /rust-build-evidence\.ts before "\$evidence"/);
+  assert.ok(
+    examples[0].run?.includes(
+      'node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo build @packages@ --profile ci --examples --timings --message-format=json-render-diagnostics > "$evidence/cargo.jsonl"',
+    ),
+  );
+  const evidence = steps[steps.indexOf(examples[0]) + 1];
+  assert.equal(evidence.if, "${{ always() && github.event_name == 'pull_request' }}");
+  assert.equal(
+    evidence.run,
+    'node tools/support/compat/github/rust-build-evidence.ts collect "$RUNNER_TEMP/rust-example-build-evidence"',
+  );
+  const upload = steps[steps.indexOf(examples[0]) + 2];
+  assert.equal(upload.if, evidence.if);
+  assert.ok(upload.uses?.startsWith("actions/upload-artifact@"));
+  assert.equal(
+    upload.with?.name,
+    "rust-build-evidence-examples-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
+  );
+  assert.equal(upload.with?.path, "${{ runner.temp }}/rust-example-build-evidence/");
+  assert.equal(upload.with?.["if-no-files-found"], "error");
+  assert.doesNotMatch(validation, /cargo test[^\n]*--examples/);
   assert.doesNotMatch(validation, /nextest archive/);
   const producer = rust.jobs["merge-rust-source"];
   assert.match(producer.if ?? "", /github\.event_name == 'merge_group'/);
@@ -129,7 +162,7 @@ void test("named Rust cohorts preserve filtered execution and receipt-bound queu
   assert.equal(workers.env?.NEXTEST_FILTER, "${{ matrix.filter }}");
   assert.deepEqual(needs(workers), ["merge-rust-source"]);
   const steps = workers.steps ?? [];
-  const prRun = steps.find((step) => /cargo nextest run @packages@/.test(step.run ?? ""));
+  const prRun = steps.find((step) => /run-rust-test-cohort\.ts/.test(step.run ?? ""));
   const archiveRun = steps.find((step) => /cargo nextest run --archive-file/.test(step.run ?? ""));
   assert.ok(prRun && archiveRun);
   assert.match(prRun.if ?? "", /pull_request/);
@@ -137,10 +170,14 @@ void test("named Rust cohorts preserve filtered execution and receipt-bound queu
   for (const step of [prRun, archiveRun]) {
     assert.match(step.run ?? "", /-E "\$NEXTEST_FILTER"/);
     assert.match(step.run ?? "", /--profile "\$NEXTEST_PROFILE"/);
-    assert.match(step.run ?? "", /else phase_exit=\$\?/);
-    assert.match(step.run ?? "", /exit "\$phase_exit"/);
     assert.doesNotMatch(step.run ?? "", /--partition/);
   }
+  assert.match(
+    prRun.run ?? "",
+    /exec node tools\/support\/compat\/github\/run-rust-test-cohort\.ts/,
+  );
+  assert.match(archiveRun.run ?? "", /else phase_exit=\$\?/);
+  assert.match(archiveRun.run ?? "", /exit "\$phase_exit"/);
   const verify = steps.findIndex((step) => /rust-test-archive\.mjs verify/.test(step.run ?? ""));
   assert.ok(
     verify >= 0 && verify < steps.indexOf(archiveRun),
@@ -201,4 +238,47 @@ void test("trusted main and scheduled runs seed the CI profiles while candidate 
     assert.ok(String(mount.with?.key).startsWith("${{ steps.cache-policy.outputs.sticky-"));
     assert.ok(mount.if?.includes("steps.cache-policy.outputs.sticky == 'true'"));
   }
+});
+
+void test("the native seed reuses the PR build profile and cache without running package tests", () => {
+  const seed = workflow("rust-pr-target-seed.yml");
+  const job = seed.jobs["js-native-target-seed"];
+  const candidate = js.jobs["pr-js-package-tests"];
+  assert.equal(job["runs-on"], candidate["runs-on"]);
+  assert.equal(job.env?.CARGO_BUILD_JOBS, candidate.env?.CARGO_BUILD_JOBS);
+  assert.equal(commands(job).trim(), "vp run --workspace-root build:native:test");
+  assert.ok(job.steps?.some((step) => step.uses === "./.github/actions/setup-js-package-tests"));
+  const bootstrap = job.steps?.find((step) => step.uses === "./.github/actions/cache-vp-bootstrap");
+  assert.ok(bootstrap);
+  assert.notEqual(bootstrap.with?.save, "true", "only the runtime seed saves the bootstrap key");
+
+  const setup = parse(
+    readRepoFile(".github", "actions", "setup-js-package-tests", "action.yml"),
+  ) as {
+    runs: { steps: Step[] };
+  };
+  for (const action of [
+    "dtolnay/rust-toolchain@",
+    "wild-linker/action@",
+    "./.github/actions/setup-rust-sticky-cache",
+  ]) {
+    const seeded = setup.runs.steps.find((step) => step.uses?.startsWith(action));
+    const checked = candidate.steps?.find((step) => step.uses?.startsWith(action));
+    assert.ok(seeded && checked, `${action} is shared with the candidate build`);
+    assert.deepEqual(seeded.with, checked.with);
+  }
+  assert.equal(
+    setup.runs.steps.find((step) => step.uses === "./.github/actions/setup-rust-sticky-cache")?.with
+      ?.key,
+    "test-js-packages",
+  );
+  const push = seed.on?.push as { paths: string[] } | undefined;
+  assert.ok(push);
+  for (const path of [
+    "npm/native/**",
+    "tools/config/vite-plus/tasks/build.ts",
+    "tools/config/vite-plus/task-*.ts",
+    ".github/actions/setup-js-package-tests/**",
+  ])
+    assert.ok(push.paths.includes(path), `${path} refreshes the native seed`);
 });

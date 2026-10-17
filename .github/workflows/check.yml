@@ -499,9 +499,7 @@ jobs:
           key: coverage
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: "package.json"
-          run-install: false
+        with: { node-version-file: "package.json", run-install: false }
       # The fixture-coverage runner evaluates the SFC Pkl fixtures.
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
@@ -538,18 +536,20 @@ jobs:
         run: npm install --global @pkl-community/pkl@0.27.2 && git submodule update --init --force --depth 1 -- tests/_fixtures/_git/element-plus
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
-        with:
-          tool: cargo-llvm-cov,cargo-nextest@0.9.146
+        with: { tool: "cargo-llvm-cov,cargo-nextest@0.9.146" }
       - name: Source coverage report
         env:
           VIZE_NATIVE_SYNTAX_CAPTURE_DIR: ${{ runner.temp }}/source-coverage-native-syntax
+          VIZE_LSP_EXIT_FAILURE_EVIDENCE: ${{ runner.temp }}/source-coverage-lsp-exit
         run: vp run --workspace-root coverage:source
-      - name: Retain raw source coverage native syntax packets
+      - name: Retain native syntax and failed LSP exit packets
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: source-coverage-native-syntax-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/source-coverage-native-syntax/
+          path: |
+            ${{ runner.temp }}/source-coverage-native-syntax/
+            ${{ runner.temp }}/source-coverage-lsp-exit/
           if-no-files-found: warn
       - name: Verify source coverage summary
         run: test -s target/llvm-cov/source-summary.json
@@ -591,8 +591,7 @@ jobs:
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
-        with:
-          tool: cargo-llvm-cov
+        with: { tool: cargo-llvm-cov }
       - name: Branch coverage report
         run: vp run --workspace-root coverage:source:branch
       - name: Verify branch coverage summary
@@ -609,8 +608,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 30
-    needs:
-      - build-js-packages
+    needs: [build-js-packages]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       # Rust is always needed for @vizejs/native (used by vite-plugin-vize)
@@ -630,8 +628,7 @@ jobs:
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
-        with:
-          tool: wasm-bindgen-cli@0.2.129
+        with: { tool: wasm-bindgen-cli@0.2.129 }
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -697,12 +694,15 @@ jobs:
       - instruction-counts
       - level-dependency-direction
       - release-integration-catalog
-    permissions:
-      contents: read
+    permissions: { contents: read }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Require every PR source and Rust result
+        if: ${{ github.event_name == 'pull_request' }}
+        env: { PR_SOURCE_JOBS_JSON: "${{ needs.pr-source-checks.outputs.jobs-json }}" }
+        run: node tools/support/compat/github/require-pr-checks.ts
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
         run: node tools/support/compat/github/require-needs-success.ts --check-report

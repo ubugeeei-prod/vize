@@ -8,6 +8,7 @@ import {
   captureNativeHistoryBuild,
   nativeHistorySource,
   nativeHistoryBuildEnvironment,
+  nativeHistoryCargoOptions,
 } from "./formatter-history-build.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
@@ -91,7 +92,7 @@ const captureHistory =
 const before = captureHistory
   ? { source: nativeHistorySource(packageDir), environment: nativeHistoryBuildEnvironment() }
   : null;
-if (captureHistory) buildArgs.push("--", "--message-format=json-render-diagnostics", "--locked");
+if (captureHistory) buildArgs.push("--", ...nativeHistoryCargoOptions);
 
 const buildResult = spawnSync("pnpm", buildArgs, {
   cwd: packageDir,

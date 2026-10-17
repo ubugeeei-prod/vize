@@ -20,7 +20,12 @@ import {
 } from "../../tools/support/compat/github/update-tooling-test-timings.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
-type Step = { name?: string; if?: string };
+type Step = {
+  uses?: string;
+  run?: string;
+  with?: Record<string, string>;
+  env?: Record<string, string>;
+};
 const reporter = fileURLToPath(
   new URL("../../tools/support/compat/github/tooling-test-timing-reporter.ts", import.meta.url),
 );
@@ -55,32 +60,24 @@ void test("the committed timing table is complete, sorted and names only tooling
   }
 });
 
-void test("every runner-1 step of the tooling job has a reserved, correctly gated lead entry", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
+void test("scheduled tooling forwards its execution identity into the timing record", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as {
     jobs: Record<string, { steps: Step[] }>;
   };
-  const steps = workflow.jobs["pr-tooling-scripts"].steps;
-  const lead = steps.filter((step) => step.if?.includes("matrix.index == 1"));
-  assert.deepEqual(
-    lead.map((step) => step.name),
-    TOOLING_LEAD_STEPS.map(({ step }) => step),
+  const worker = workflow.jobs["test-scripts"].steps.find(
+    (step) => step.uses === "./.github/actions/test-full-tooling",
   );
-  for (const { step, output } of TOOLING_LEAD_STEPS) {
-    const gate = lead.find((entry) => entry.name === step)?.if ?? "";
-    const outputs = [...gate.matchAll(/needs\.pr-source-plan\.outputs\.([\w-]+) == 'true'/g)]
-      .map(([, name]) => name)
-      .filter((name) => name !== "tooling");
-    if (output === "always") {
-      assert.deepEqual(outputs, [], step);
-      assert.doesNotMatch(gate, /event_name/, step);
-    } else if (output === "merge-only") {
-      assert.deepEqual(outputs, [], step);
-      assert.match(gate, /github\.event_name == 'merge_group' &&/, step);
-    } else {
-      assert.deepEqual(outputs, [output], step);
-      assert.match(gate, /\(github\.event_name == 'merge_group' \|\| \(/, step);
-    }
-  }
+  assert.equal(worker?.with?.shard, "${{ matrix.index }}");
+  assert.equal(worker?.with?.total, "${{ matrix.total }}");
+  const action = parse(readRepoFile(".github", "actions", "test-full-tooling", "action.yml")) as {
+    runs: { steps: Step[] };
+  };
+  const tests = action.runs.steps.find(
+    (step) => step.run === "vp run --workspace-root test:scripts:planned",
+  );
+  assert.equal(tests?.env?.VIZE_TOOLING_TEST_TIER, "merge");
+  assert.equal(tests?.env?.VIZE_TOOLING_TEST_SHARD, "${{ inputs.shard }}/${{ inputs.total }}");
+  assert.equal(tests?.env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
 });
 
 void test("the timing reporter records each file's wall time, imports included", () => {
@@ -130,7 +127,7 @@ void test("the timing reporter records each file's wall time, imports included",
   }
 });
 
-void test("logged records, lead steps and merges refresh only what a run measured", () => {
+void test("historical numeric job records refresh only the files and lead steps they measured", () => {
   const line = (shard: string, files: Record<string, number>, tier = "pr") =>
     `2026-10-13T06:26:43.1234567Z \u001b[32m${TOOLING_TIMINGS_LOG_MARKER} ${JSON.stringify({ tier, shard, files })}\u001b[0m`;
   const log = ["noise", line("1/2", { "tests/tooling/a.test.ts": 1200 }), "ℹ pass 1"].join("\n");
@@ -140,6 +137,7 @@ void test("logged records, lead steps and merges refresh only what a run measure
   for (const bad of [
     line("1/2", { a: -1 }),
     line("1/2", {}, "nightly"),
+    ...["0/16", "17/16", "1/0", "01/16", "1", "1/16 trailing"].map((shard) => line(shard, {})),
     `${TOOLING_TIMINGS_LOG_MARKER} {`,
   ]) {
     assert.throws(() => parseToolingTimingLog(bad));
@@ -202,4 +200,91 @@ void test("logged records, lead steps and merges refresh only what a run measure
   });
   assert.deepEqual(merged.leadSteps, { ...table.leadSteps, ...measured.leadSteps });
   assert.equal(merged.defaultMs, table.defaultMs);
+});
+
+void test("semantic workers consume logged identities and actual measurements, independent of labels", () => {
+  // Retained excerpt from successful job 116928189349 in run 38887139884.
+  // Its display label has no worker index; the emitted record is exactly 12/16.
+  const job = {
+    id: 116928189349,
+    name: "Tooling (docs-render-concurrency-browser + 83 files)",
+    conclusion: "success",
+  };
+  const files = {
+    "tests/tooling/app-check-prepared-environment.test.ts": 235,
+    "tests/tooling/docs-render-concurrency-browser.test.ts": 26353,
+  };
+  const log = `${TOOLING_TIMINGS_LOG_MARKER} ${JSON.stringify({ tier: "merge", shard: "12/16", files })}`;
+  const requested: number[] = [];
+  const measured = measureToolingJobs(
+    [
+      job,
+      { id: 2, name: "Tooling (failed group)", conclusion: "failure" },
+      { id: 3, name: "test-scripts", conclusion: "success" },
+    ],
+    (id) => {
+      requested.push(id);
+      return log;
+    },
+  );
+  assert.deepEqual(requested, [job.id]);
+  assert.deepEqual(measured, { tiers: { pr: {}, merge: files }, leadSteps: {} });
+  assert.deepEqual(
+    measureToolingJobs([{ ...job, name: `Check / ${job.name}` }], () => log),
+    measured,
+  );
+  assert.throws(
+    () => measureToolingJobs([job], () => `${log}\n${log.replace('"12/16"', '"13/16"')}`),
+    /shard mismatch/,
+  );
+});
+
+void test("semantic capture-only workers measure current lead steps without a fabricated timing record", () => {
+  const at = (second: number) => `2026-10-16T10:30:${String(second).padStart(2, "0")}Z`;
+  const steps = [
+    {
+      name: "Prepare plugin runtime and test native JS setup",
+      conclusion: "success",
+      started_at: at(0),
+      completed_at: at(4),
+    },
+    {
+      name: "Capture original native attribute values and fixed fresh mounts",
+      conclusion: "success",
+      started_at: at(4),
+      completed_at: at(7),
+    },
+    {
+      name: "Capture original historical Vue text and SFC documents",
+      conclusion: "success",
+      started_at: at(7),
+      completed_at: at(12),
+    },
+    {
+      name: "Post Capture original historical Vue text and SFC documents",
+      conclusion: "success",
+      started_at: at(12),
+      completed_at: at(13),
+    },
+  ];
+  const action = parse(readRepoFile(".github", "actions", "test-full-tooling", "action.yml")) as {
+    runs: { steps: { name?: string }[] };
+  };
+  for (const step of steps.filter((step) => !step.name.startsWith("Post "))) {
+    assert.ok(action.runs.steps.some(({ name }) => name === step.name));
+  }
+  assert.deepEqual(
+    measureToolingJobs(
+      [{ id: 1, name: "Tooling (runtime captures)", conclusion: "success", steps }],
+      () => "No tooling tests selected by the declared inputs.",
+    ),
+    {
+      tiers: { pr: {}, merge: {} },
+      leadSteps: {
+        "native-js-setup": 4000,
+        "native-attribute-values-7502": 3000,
+        "historical-sfc-documents": 6000,
+      },
+    },
+  );
 });

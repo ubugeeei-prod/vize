@@ -1,0 +1,23 @@
+[
+  {
+    "file": "elk-CommandPanel.vue.txt",
+    "repository": "elk-zone/elk",
+    "revision": "8aa2b4650760eeba4ea1fdd9dc18d8a88ca5d7f0",
+    "path": "app/components/command/CommandPanel.vue",
+    "sha256": "2dd6c320a2a026d946bc38cfaaf474320381552c2b107ab1bcf1e952524de9c3"
+  },
+  {
+    "file": "elk-NotificationPaginator.vue.txt",
+    "repository": "elk-zone/elk",
+    "revision": "8aa2b4650760eeba4ea1fdd9dc18d8a88ca5d7f0",
+    "path": "app/components/notification/NotificationPaginator.vue",
+    "sha256": "b22c25113937f4a47cbe8c2ccc5ae20c59a37b7f4c74853f21d38098bdfab2fd"
+  },
+  {
+    "file": "misskey-search.note.vue.txt",
+    "repository": "misskey-dev/misskey",
+    "revision": "810faa8e5db4bbf9d6d408a61df148559340ee99",
+    "path": "packages/frontend/src/pages/search.note.vue",
+    "sha256": "e9cebbb3733776944a2e805349a4f4b16c1d60cf4f59b28a9cf63608c56e8055"
+  }
+]

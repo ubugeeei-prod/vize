@@ -4,6 +4,10 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
+import {
+  assertLegacyInstanceCompilerSources,
+  legacyInstanceVueRequire,
+} from "./support/patina-legacy-instance-provider.ts";
 import { gunzipSync } from "node:zlib";
 import { compileFunction } from "node:vm";
 
@@ -221,10 +225,7 @@ await test("legacy instance API packets preserve every pinned original source an
 
 await test("original Vue compiler scope and TS erasure preserve explicit reference blind spots", () => {
   const boundaries = json("template-boundaries.json");
-  const requireVue = createRequire(
-    process.env.VIZE_LEGACY_API_VUE_MANIFEST ??
-      path.join(root, "tools/benchmarks/scripts/package.json"),
-  );
+  const requireVue = legacyInstanceVueRequire();
   const compiler = requireVue("@vue/compiler-dom");
   const typescript = requireVue("typescript");
   assert.equal(requireVue("vue/package.json").version, boundaries.compilerProvider.vue);
@@ -233,10 +234,11 @@ await test("original Vue compiler scope and TS erasure preserve explicit referen
     boundaries.compilerProvider.compiler,
   );
   assert.equal(typescript.version, boundaries.compilerProvider.typescript);
-  for (const source of boundaries.compilerProvider.sources) {
-    const directory = path.dirname(requireVue.resolve(`${source.packageName}/package.json`));
-    assert.equal(hash(fs.readFileSync(path.join(directory, source.path))), source.sha256);
-  }
+  assertLegacyInstanceCompilerSources(
+    requireVue,
+    "@vue/compiler-dom",
+    boundaries.compilerProvider.sources,
+  );
   assert.equal(boundaries.syntaxProof.length, 5);
   for (const expected of boundaries.syntaxProof) {
     const original = boundaries.records.find((record) => record.id === expected.id);
@@ -291,23 +293,28 @@ await test("original Vue compiler scope and TS erasure preserve explicit referen
 });
 
 await test("Vue 3 keeps removed APIs unavailable on public instances and Options-returning factories", () => {
-  const requireVue = createRequire(
-    process.env.VIZE_LEGACY_API_VUE_MANIFEST ??
-      path.join(root, "tools/benchmarks/scripts/package.json"),
-  );
-  const requireTypeScript = createRequire(
+  const vueManifest = process.env.VIZE_LEGACY_API_VUE_MANIFEST;
+  const vueSpecifier = vueManifest ? "vue" : "vue-legacy-instance-api-oracle";
+  const requireVue = createRequire(vueManifest ?? path.join(root, "tests/package.json"));
+  const requireScriptParser = createRequire(
     process.env.VIZE_LEGACY_API_SCRIPT_PARSER_MANIFEST ??
       path.join(root, "tools/benchmarks/scripts/package.json"),
   );
+  // Follow the selected providers' own dependencies under pnpm's isolated layout.
+  const requireTypeScript = createRequire(
+    requireScriptParser.resolve("@typescript-eslint/parser/package.json"),
+  );
   const runtime = json("runtime.json");
-  const { createRenderer, h, version } = requireVue("vue");
-  const requireDom = createRequire(requireVue.resolve("@vue/runtime-dom/package.json"));
+  const { createRenderer, h, version } = requireVue(vueSpecifier);
+  assert.equal(version, runtime.provider.vue);
+  const requireVueRuntime = createRequire(requireVue.resolve(`${vueSpecifier}/package.json`));
+  const requireDom = createRequire(requireVueRuntime.resolve("@vue/runtime-dom/package.json"));
   const runtimePath = path.join(
     path.dirname(requireDom.resolve("@vue/runtime-core/package.json")),
     runtime.provider.source.path,
   );
-  assert.equal(version, runtime.provider.vue);
   assert.equal(hash(fs.readFileSync(runtimePath)), runtime.provider.source.sha256);
+  assert.ok(requireDom.cache[runtimePath], "the pinned runtime-core implementation is loaded");
   const typescript = requireTypeScript("typescript");
   assert.equal(typescript.version, runtime.provider.typescript);
   const { transpileModule, ModuleKind, ScriptTarget } = typescript;

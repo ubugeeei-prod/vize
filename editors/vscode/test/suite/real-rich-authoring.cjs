@@ -1,7 +1,12 @@
 const assert = require("node:assert/strict");
 const vscode = require("vscode");
 const { openWorkspaceDocument, waitForDiagnostics } = require("./real-server-support.cjs");
-const { beginHover, retainHover } = require("./real-rich-hover-custody.cjs");
+const {
+  beginHover,
+  retainHover,
+  beginCompletion,
+  retainCompletion,
+} = require("./real-rich-hover-custody.cjs");
 
 function assertReadableDocumentation(value) {
   assert.match(value, /```typescript\n/);
@@ -287,6 +292,12 @@ async function assertMemberDocumentation(file, cases) {
       ),
       true,
     );
+    const completionRequest = beginCompletion(
+      document,
+      document.positionAt(start + incomplete.length),
+      { expression, incomplete, label, description, declaration },
+      16,
+    );
     const completions = await vscode.commands.executeCommand(
       "vscode.executeCompletionItemProvider",
       document.uri,
@@ -296,6 +307,7 @@ async function assertMemberDocumentation(file, cases) {
       // Resolve this small list so selecting a later item exercises its docs.
       16,
     );
+    retainCompletion(completionRequest, completions);
     const candidate = completions?.items.find(
       (item) => (typeof item.label === "string" ? item.label : item.label.label) === label,
     );

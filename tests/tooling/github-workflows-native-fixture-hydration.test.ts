@@ -72,19 +72,21 @@ test("whole-workspace source coverage prepares the native fixture in its own run
   assert.equal(report.run, "vp run --workspace-root coverage:source");
   assert.deepEqual(report.env, {
     VIZE_NATIVE_SYNTAX_CAPTURE_DIR: "${{ runner.temp }}/source-coverage-native-syntax",
+    VIZE_LSP_EXIT_FAILURE_EVIDENCE: "${{ runner.temp }}/source-coverage-lsp-exit",
   });
   assert.equal(report.if, undefined);
   assert.notEqual(report["continue-on-error"], true);
   assert.equal(job.env.VIZE_NATIVE_SYNTAX_CAPTURE_DIR, undefined);
+  assert.equal(job.env.VIZE_LSP_EXIT_FAILURE_EVIDENCE, undefined);
   const packets = job.steps.find(
-    (step: { name?: string }) => step.name === "Retain raw source coverage native syntax packets",
+    (step: { name?: string }) => step.name === "Retain native syntax and failed LSP exit packets",
   );
   assert.ok(job.steps.indexOf(report) < job.steps.indexOf(packets));
   assert.equal(packets.if, "${{ always() }}");
   assert.equal(packets.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
   assert.deepEqual(packets.with, {
     name: "source-coverage-native-syntax-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}",
-    path: "${{ runner.temp }}/source-coverage-native-syntax/",
+    path: "${{ runner.temp }}/source-coverage-native-syntax/\n${{ runner.temp }}/source-coverage-lsp-exit/\n",
     "if-no-files-found": "warn",
   });
   const taskSource = readRepoFile("tools", "config", "vite-plus", "tasks", "test-benchmark.ts");

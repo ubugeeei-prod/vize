@@ -60,9 +60,21 @@
   },
   {
     "file": "app/components/button/VFButton.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 66,
+        "column": 13,
+        "endLine": 66,
+        "endColumn": 19,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/cta/VFCta.vue",
@@ -102,9 +114,21 @@
   },
   {
     "file": "app/components/form/VFFileInput.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 63,
+        "column": 17,
+        "endLine": 63,
+        "endColumn": 23,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/form/VFForm.vue",
@@ -114,15 +138,39 @@
   },
   {
     "file": "app/components/form/VFInput.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 24,
+        "column": 15,
+        "endLine": 24,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/form/VFTextarea.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 21,
+        "column": 15,
+        "endLine": 21,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/components/header/VFHeader.vue",
@@ -178,11 +226,11 @@
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
-        "message": "[vize:script/no-duplicate-attr-inheritance] `v-bind=\"$attrs\"` on the root element applies the fallthrough attributes twice, because `inheritAttrs` defaults to true.",
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 18,
-        "column": 5,
+        "column": 13,
         "endLine": 18,
-        "endColumn": 20,
+        "endColumn": 19,
         "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],

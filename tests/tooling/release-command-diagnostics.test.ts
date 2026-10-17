@@ -51,7 +51,7 @@ test("argument errors keep their exact diagnostics and statuses", (t) => {
       "",
       usage(
         "publish_npm_package_dirs",
-        "<dir> [--concurrency 1..4] [--receipt path] [--provenance] [--ignore-failure] [--retries N] [--delay N]",
+        "<dir> [--concurrency 1..8] [--receipt path] [--provenance] [--ignore-failure] [--retries N] [--delay N]",
       ),
     ],
     [

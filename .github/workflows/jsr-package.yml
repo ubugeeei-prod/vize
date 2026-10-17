@@ -38,7 +38,7 @@ jobs:
       - name: Verify scoped dependency age with the actual Deno runtime
         env:
           JSR_CONSUMER_PUBLISHED_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.published-version || '' }}
-        run: node tools/support/release/jsr/verify-consumer-age.mjs "$RUNNER_TEMP/jsr-consumer-age"
+        run: node tools/support/release/jsr/verify-consumer-age.ts "$RUNNER_TEMP/jsr-consumer-age"
       - name: Generate the package for the checked-out release
         run: node tools/support/release/jsr/package.ts prepare "$RUNNER_TEMP/jsr-package"
       - name: Check the publication graph and public types

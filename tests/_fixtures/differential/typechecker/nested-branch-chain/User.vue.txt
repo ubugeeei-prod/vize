@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Child from './Child.vue';
+import type { User } from './types';
+defineProps<{ searchScope: string; user: User | null }>();
+</script>
+<template>
+  <div v-if="searchScope === 'user'">
+    <div v-if="user == null"><div /></div>
+    <div v-else><div><Child :user="user" /></div></div>
+  </div>
+</template>

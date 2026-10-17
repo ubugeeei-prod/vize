@@ -18,7 +18,11 @@ type TaskShape = {
 test("source coverage tracks the Nuxt stress iteration environment", () => {
   const coverage = testAndBenchmarkTasks["coverage:source"] as TaskShape;
 
-  assert.deepEqual(coverage.env, ["VIZE_NUXT_CONFIG_ITERATIONS", "VIZE_NATIVE_SYNTAX_CAPTURE_DIR"]);
+  assert.deepEqual(coverage.env, [
+    "VIZE_NUXT_CONFIG_ITERATIONS",
+    "VIZE_NATIVE_SYNTAX_CAPTURE_DIR",
+    "VIZE_LSP_EXIT_FAILURE_EVIDENCE",
+  ]);
 });
 
 function probeEnvironment(names: string[], variables: Record<string, string>) {
@@ -69,17 +73,23 @@ test("source coverage transports whole-packet capture through the real cacheable
   const names = coverage.env ?? [];
   const variables = {
     VIZE_NATIVE_SYNTAX_CAPTURE_DIR: "whole-packet-target",
+    VIZE_LSP_EXIT_FAILURE_EVIDENCE: "exit-deadline-target",
     VIZE_NUXT_CONFIG_ITERATIONS: "100",
     VIZE_HIDDEN_ENV: "must-not-leak",
   };
-  const before = names.filter((name) => name !== "VIZE_NATIVE_SYNTAX_CAPTURE_DIR");
+  const before = names.filter(
+    (name) =>
+      name !== "VIZE_NATIVE_SYNTAX_CAPTURE_DIR" && name !== "VIZE_LSP_EXIT_FAILURE_EVIDENCE",
+  );
   assert.deepEqual(probeEnvironment(before, variables), {
     VIZE_NATIVE_SYNTAX_CAPTURE_DIR: null,
+    VIZE_LSP_EXIT_FAILURE_EVIDENCE: null,
     VIZE_NUXT_CONFIG_ITERATIONS: "100",
     VIZE_HIDDEN_ENV: null,
   });
   assert.deepEqual(probeEnvironment(names, variables), {
     VIZE_NATIVE_SYNTAX_CAPTURE_DIR: "whole-packet-target",
+    VIZE_LSP_EXIT_FAILURE_EVIDENCE: "exit-deadline-target",
     VIZE_NUXT_CONFIG_ITERATIONS: "100",
     VIZE_HIDDEN_ENV: null,
   });

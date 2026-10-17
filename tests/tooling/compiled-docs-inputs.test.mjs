@@ -85,7 +85,7 @@ void test("plan contracts remain conservative across renames while ordinary pros
   }
 });
 
-void test("the actual exempt ledger has no compiled Rust consumer and still selects tooling", () => {
+void test("the prose ledger remains available to tooling without selecting product dependencies", () => {
   const ledger = "docs/davinci/plan/completion-2026-10-03.md";
   assert.ok(readFileSync(join(root, ledger), "utf8").startsWith("# Native completion ledger"));
   const rustFiles = (directory) =>
@@ -102,13 +102,15 @@ void test("the actual exempt ledger has no compiled Rust consumer and still sele
     }
   }
   assert.ok(planToolingTests([ledger]).tests.length > 0);
-  assert.deepEqual(planSourceChecks([ledger], "merge_group"), {
-    rust: true,
-    js: true,
-    tooling: true,
-    playground: true,
-  });
-  assert.equal(planAffectedRust(metadata, [ledger], "merge_group").scope, "workspace");
+  for (const event of ["pull_request", "merge_group"]) {
+    assert.deepEqual(planSourceChecks([ledger], event), {
+      rust: false,
+      js: false,
+      tooling: false,
+      playground: false,
+    });
+    assert.equal(planAffectedRust(metadata, [ledger], event).scope, "none");
+  }
 });
 
 void test("mutating the compiled CLI schema selects Rust while unrelated package schemas stay narrow", () => {

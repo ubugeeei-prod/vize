@@ -6639,6 +6639,13 @@ export default defineConfig({
       "preset": "incremental",
       "rules": {
         "vue/valid-v-on": "error"
+      },
+      "ruleOptions": {
+        "vue/valid-v-on": {
+          "modifiers": [
+            "custom"
+          ]
+        }
       }
     },
   },
@@ -6653,7 +6660,7 @@ vp run lint
 
 **Mauvais**
 
-Les formes d’écouteurs omettent un argument d’événement ou l’expression de gestionnaire ou d’objet nécessaire.
+Les écouteurs omettent un événement ou une expression obligatoire, ou utilisent des modificateurs non pris en charge tels que .sync et .nativeish.
 
 ```vue annotate="remove:2,3,4,5,6,7"
 <template>
@@ -6670,7 +6677,7 @@ Les formes d’écouteurs omettent un argument d’événement ou l’expression
 
 **Bon**
 
-Utilisez un événement avec son gestionnaire, ou transmettez un objet d’écouteurs à `v-on` sans argument.
+Utilisez un gestionnaire, un modificateur d’action sans gestionnaire, un modificateur de clavier pris en charge ou un objet d’écouteurs pour `v-on` sans argument.
 
 ```vue annotate="add:2,3,4,5,6"
 <template>

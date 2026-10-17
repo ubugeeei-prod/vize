@@ -52,16 +52,24 @@ const COLLECTION_SOURCES: &[(&str, &str)] = &[
     ),
     (
         "token scopes",
-        include_str!("../src/drawer/helpers/identifiers/ast/walk/retained_scopes.rs"),
+        include_str!("../src/drawer/helpers/identifiers/ast/walk/retained/scopes.rs"),
     ),
     (
         "token targets",
-        include_str!("../src/drawer/helpers/identifiers/ast/walk/retained_assignments.rs"),
+        include_str!("../src/drawer/helpers/identifiers/ast/walk/retained/assignments.rs"),
     ),
 ];
 
-fn assert_no_parser_or_fallback_entry_points() {
-    for &(module, source) in COLLECTION_SOURCES {
+fn parser_or_fallback_entry_points<'a>(
+    sources: &[(&'a str, &str)],
+) -> Vec<(&'a str, &'static str, usize)> {
+    let mut entries = Vec::new();
+    for &(module, source) in sources {
+        // Formatting cannot hide a forbidden spelling; report original byte offsets.
+        let compact: Vec<_> = source
+            .char_indices()
+            .filter(|(_, character)| !character.is_whitespace())
+            .collect();
         for forbidden in [
             "oxc_parser",
             "Parser::",
@@ -77,12 +85,43 @@ fn assert_no_parser_or_fallback_entry_points() {
             "extract_identifier_refs_with_witness(",
             "extract_identifiers_checked(",
         ] {
-            assert!(
-                !source.contains(forbidden),
-                "{module} introduced a parser/fallback entry point: {forbidden}"
+            entries.extend(
+                compact
+                    .windows(forbidden.len())
+                    .filter(|window| {
+                        window
+                            .iter()
+                            .map(|(_, character)| *character)
+                            .eq(forbidden.chars())
+                    })
+                    .map(|window| (module, forbidden, window[0].0)),
             );
         }
     }
+    entries
+}
+
+fn assert_no_parser_or_fallback_entry_points() {
+    assert_eq!(parser_or_fallback_entry_points(COLLECTION_SOURCES), []);
+    assert_eq!(
+        parser_or_fallback_entry_points(&[
+            ("import", "use oxc_parser::Parser;"),
+            ("direct", "Parser::new(source).parse()"),
+            ("fallback", "extract_identifier_refs_checked(source)"),
+            ("spaced", "Parser :: new(source). parse()"),
+            ("newline", "extract_identifier_refs_checked \n (source)"),
+        ]),
+        [
+            ("import", "oxc_parser", 4),
+            ("direct", "Parser::", 0),
+            ("direct", ".parse()", 19),
+            ("fallback", "extract_identifier_refs_checked(", 0),
+            ("spaced", "Parser::", 0),
+            ("spaced", ".parse()", 21),
+            ("newline", "extract_identifier_refs_checked(", 0),
+        ],
+        "retain every forbidden entry point and its exact source offset",
+    );
 }
 
 fn counters() -> Vec<(&'static str, u64, u64)> {

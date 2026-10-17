@@ -2004,9 +2004,7 @@
     },
     {
       "file": "packages/core/src/PinInput/story/PinInput.story.vue",
-      "diagnostics": [
-        "error:20:11 [TS2322] Type 'string[]' is not assignable to type 'number[]'.\nType 'string' is not assignable to type 'number'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "packages/core/src/PinInput/story/PinInputNumeric.story.vue",
@@ -3721,7 +3719,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 5,
+  "errorCount": 4,
   "warningCount": 0,
   "fileCount": 928
 }

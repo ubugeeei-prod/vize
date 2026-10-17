@@ -2,8 +2,9 @@ name: Seed PR Rust target
 # Trusted writer of the sticky disks that PR and merge-queue Rust jobs mount
 # read-only. `nextest-ci` repeats a workspace-scope PR's and the queue
 # producer's exact toolchain, linker, package list and Cargo commands;
-# `clippy-test` repeats the queue's differential feature recipe. A candidate
-# clone then only rebuilds what its change touches.
+# `clippy-test` repeats the queue's differential feature recipe and
+# `test-js-packages` repeats the JS tests' native dev build. Candidate clones
+# reuse unchanged dependencies while still rebuilding source-bound addons.
 on:
   push:
     branches: [main]
@@ -18,12 +19,20 @@ on:
       - "tools/benchmarks/crates/**"
       - "tests/davinci_test_support/**"
       - "tests/vize_test_runner/**"
+      - "npm/native/**"
+      - "vite.config.ts"
+      - "tools/config/vite-plus/task-*.ts"
+      - "tools/config/vite-plus/root-build-task-plugin.ts"
+      - "tools/config/vite-plus/tasks/build.ts"
       - ".github/actions/setup-rust-sticky-cache/**"
       - ".github/actions/reuse-rust-target/**"
       - ".github/actions/cache-vp-bootstrap/**"
+      - ".github/actions/cache-pnpm-verification/**"
+      - ".github/actions/setup-js-package-tests/**"
       - ".github/workflows/rust-pr-target-seed.yml"
       - "package.json"
       - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
   schedule:
     # Daily 02:41 UTC, ahead of the full Check run.
     - cron: "41 2 * * *"
@@ -101,7 +110,11 @@ jobs:
         with:
           node-version-file: "package.json"
           cache: true
-          run-install: true
+          run-install: false
+      - uses: ./.github/actions/cache-pnpm-verification
+        with: { save: "true" }
+      - name: Install JS dependencies
+        run: vp install
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: clippy-test
@@ -114,10 +127,25 @@ jobs:
         with:
           workspace-already-tested: "true"
 
+  # Keep the JS tests' dev-profile dependencies current after source merges.
+  # The shared setup owns the stable toolchain, linker and test-js-packages disk;
+  # build:native:test retains the fresh token and HEAD-bound native receipt.
+  js-native-target-seed:
+    name: Seed PR JS native target
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      CARGO_BUILD_JOBS: "12"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: ./.github/actions/setup-js-package-tests
+      - name: Build the JS tests' source addon
+        run: vp run --workspace-root build:native:test
+
   # Writes the Node.js LTS and pinned pnpm that setup-vp would otherwise
   # download on every fresh runner. Pull requests only restore this entry.
-  # This job is the only saver: the differential seed beside it must not
-  # reserve the same key.
+  # This job is the only saver: the other seeds only restore this key.
   seed-vp-bootstrap:
     name: Seed Vite+ runtime
     permissions: { contents: read, actions: write }

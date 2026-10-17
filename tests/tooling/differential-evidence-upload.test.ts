@@ -11,7 +11,7 @@ type Step = {
   with?: Record<string, string>;
 };
 type Workflow = {
-  jobs: Record<string, { steps: Step[]; needs?: string | string[]; uses?: string }>;
+  jobs: Record<string, { steps: Step[]; needs?: string | string[]; uses?: string; if?: string }>;
 };
 const actionPath = "./.github/actions/upload-formatter-api-corpus-evidence";
 const action = parse(readRepoFile(actionPath.slice(2), "action.yml")) as {
@@ -42,7 +42,7 @@ test("evidence artifact identity preserves its prefix and separates jobs, shards
   const identities = new Set<string>();
   for (const run of ["101", "102"]) {
     for (const attempt of ["1", "2"]) {
-      for (const job of ["test-scripts", "pr-tooling-scripts"]) {
+      for (const job of ["test-scripts", "another-worker"]) {
         for (const shard of ["full", "1", "2", "3", "4"]) {
           const identity = template
             .replace("${{ github.run_id }}", run)
@@ -58,22 +58,21 @@ test("evidence artifact identity preserves its prefix and separates jobs, shards
   assert.equal(identities.size, 40);
 });
 
-test("PR and full tooling gates retain failed observations after their tests", () => {
+test("scheduled and dispatched full tooling retains failed observations after its tests", () => {
   const full = parse(readRepoFile(".github", "workflows", "check.yml")) as Workflow;
-  const pr = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as Workflow;
-  const producer = parse(readRepoFile(".github", "workflows", "pr-source-cli.yml")) as Workflow;
   const fullProducer = parse(
     readRepoFile(".github", "workflows", "full-source-cli.yml"),
   ) as Workflow;
-  const fullWorker = {
-    ...full.jobs["test-scripts"],
-    steps: (
-      parse(readRepoFile(".github", "actions", "test-full-tooling", "action.yml")) as {
-        runs: { steps: Step[] };
-      }
-    ).runs.steps,
-  };
-  assert.deepEqual(fullWorker.needs, ["full-source-cli", "tooling-plan"]);
+  const steps = (
+    parse(readRepoFile(".github", "actions", "test-full-tooling", "action.yml")) as {
+      runs: { steps: Step[] };
+    }
+  ).runs.steps;
+  assert.deepEqual(full.jobs["test-scripts"].needs, ["full-source-cli", "tooling-plan"]);
+  assert.equal(
+    full.jobs["test-scripts"].if,
+    "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
+  );
   assert.equal(full.jobs["full-source-cli"].uses, "./.github/workflows/full-source-cli.yml");
   const call = full.jobs["test-scripts"].steps.find(
     (step) => step.uses === "./.github/actions/test-full-tooling",
@@ -86,53 +85,36 @@ test("PR and full tooling gates retain failed observations after their tests", (
   const restore = parse(readRepoFile(".github", "actions", "restore-source-cli", "action.yml")) as {
     runs: { steps: Step[] };
   };
-  for (const [job, condition, shard] of [
-    [fullWorker, "${{ always() }}", "${{ inputs.shard }}"],
-    [
-      pr.jobs["pr-tooling-scripts"],
-      "${{ !cancelled() && needs.pr-source-plan.outputs.tooling == 'true' }}",
-      "${{ matrix.index }}",
-    ],
-  ] as const) {
-    const uploads = job.steps.filter((step) => step.uses === actionPath);
-    assert.equal(uploads.length, 1);
-    assert.equal(uploads[0].if, condition);
-    assert.equal(uploads[0].with?.shard ?? action.inputs.shard.default, shard);
-    assert.deepEqual(Object.keys(uploads[0].with ?? {}), ["shard"]);
-    const uploadIndex = job.steps.indexOf(uploads[0]);
-    const tests = job.steps.filter((step) => /test:scripts(?::pr)?\b/.test(step.run ?? ""));
-    assert.ok(tests.length > 0);
-    for (const step of tests) assert.ok(job.steps.indexOf(step) < uploadIndex);
-    const shared = job === pr.jobs["pr-tooling-scripts"];
-    const build = job.steps.find((step) => step.uses === "./.github/actions/restore-source-cli");
-    assert.ok(build, "uploaded CLI receipt must be made by the actual selected source build");
-    assert.ok(job.steps.indexOf(build) < uploadIndex);
-    if (shared) {
-      assert.deepEqual(job.needs, ["pr-source-plan", "pr-source-cli"]);
-      assert.equal(pr.jobs["pr-source-cli"].uses, "./.github/workflows/pr-source-cli.yml");
-      assert.deepEqual(build.with, {
-        producer: "${{ toJSON(needs.pr-source-cli.outputs) }}",
-      });
-    } else {
-      assert.deepEqual(build.with, { producer: "${{ inputs.producer }}" });
-    }
-    const originalBuild = (shared ? producer : fullProducer).jobs.cli.steps.find((step) =>
-      /tests\/differential\/build-receipt\.ts/.test(step.run ?? ""),
-    );
-    assert.ok(originalBuild, "same-run producer makes the original uploaded receipt");
-    assert.match(
-      originalBuild.run ?? "",
-      /cargo build --profile ci -p vize && vp exec node tests\/differential\/build-receipt\.ts/,
-    );
-    assert.equal(originalBuild.if, shared ? "${{ inputs.run-cli }}" : undefined);
-    const downloads = restore.runs.steps.filter((step) =>
-      step.uses?.startsWith("actions/download-artifact@"),
-    );
-    assert.equal(downloads.length, 1);
-    assert.equal(downloads[0].with?.["digest-mismatch"], "error");
-    const restoreRun = restore.runs.steps.at(-1)?.run ?? "";
-    assert.match(restoreRun, /source-cli-artifact\.ts restore/);
-    assert.match(restoreRun, /cat target\/ci\/vize\.differential-build\.json/);
-    assert.doesNotMatch(restoreRun, /build-receipt\.ts/);
+  const uploads = steps.filter((step) => step.uses === actionPath);
+  assert.equal(uploads.length, 1);
+  assert.equal(uploads[0].if, "${{ always() }}");
+  assert.deepEqual(uploads[0].with, { shard: "${{ inputs.shard }}" });
+  const uploadIndex = steps.indexOf(uploads[0]);
+  const tests = steps.filter((step) => /\btest:scripts:planned\b/.test(step.run ?? ""));
+  assert.ok(tests.length > 0);
+  const build = steps.find((step) => step.uses === "./.github/actions/restore-source-cli");
+  assert.ok(build, "uploaded CLI receipt must be made by the actual selected source build");
+  assert.deepEqual(build.with, { producer: "${{ inputs.producer }}" });
+  for (const step of tests) {
+    assert.ok(steps.indexOf(build) < steps.indexOf(step));
+    assert.ok(steps.indexOf(step) < uploadIndex);
   }
+  const originalBuild = fullProducer.jobs.cli.steps.find((step) =>
+    /tests\/differential\/build-receipt\.ts/.test(step.run ?? ""),
+  );
+  assert.ok(originalBuild, "same-run producer makes the original uploaded receipt");
+  assert.match(
+    originalBuild.run ?? "",
+    /cargo build --profile ci -p vize && vp exec node tests\/differential\/build-receipt\.ts/,
+  );
+  assert.equal(originalBuild.if, undefined);
+  const downloads = restore.runs.steps.filter((step) =>
+    step.uses?.startsWith("actions/download-artifact@"),
+  );
+  assert.equal(downloads.length, 1);
+  assert.equal(downloads[0].with?.["digest-mismatch"], "error");
+  const restoreRun = restore.runs.steps.at(-1)?.run ?? "";
+  assert.match(restoreRun, /source-cli-artifact\.ts restore/);
+  assert.match(restoreRun, /cat target\/ci\/vize\.differential-build\.json/);
+  assert.doesNotMatch(restoreRun, /build-receipt\.ts/);
 });

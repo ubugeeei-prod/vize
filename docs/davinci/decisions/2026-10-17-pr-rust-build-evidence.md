@@ -21,8 +21,13 @@ the canonical cargo-timing.html alias is removed before the command. The after
 manifest records every candidate and hashes copied new/changed HTML. Cached
 unchanged reports and paths escaping the timing directory are excluded. A failed
 or canceled build can have partial JSON or no fresh HTML; those gaps remain
-visible in the always-uploaded evidence. Pipefail preserves the original command
-status through tee.
+visible in the always-uploaded evidence. The existing Node cohort runner owns
+stdout capture and forwards the exact bytes to the console and file with stream
+backpressure. Direct `exec` preserves Actions signal delivery; the runner awaits
+file and console flush while its owned-process cancellation handlers remain
+active. An output error drains that same Cargo group and fails the step. No tee
+subprocess or waiting shell sits in front of the runner. Existing cancellation
+controls and real mid-stream sink-failure controls retain unrelated processes.
 
 Rust1.99.1 uses Cargo revision
 [5f94df](https://github.com/rust-lang/cargo/blob/5f94df4789f005f9a352888e8355ffc645b7ed0e/src/util/command_prelude.rs#L498-L507):

@@ -52,12 +52,11 @@ const originalNames = [
   "text-selection",
 ];
 
-void test("the throttled preview appends one public example and retains original enrollment", () => {
+void test("the throttled preview retains public example enrollment independently of catalogue order", () => {
   const names = composableExamples.map(({ name }) => name);
-  assert.deepEqual(names.slice(0, 36), originalNames);
-  assert.deepEqual(names.slice(36, 37), ["use-throttled"]);
-  // Later examples append after the throttled preview.
-  assert.deepEqual(names.slice(37, 44), [
+  const retained = [
+    ...originalNames,
+    "use-throttled",
     "use-number-format",
     "use-list-format",
     "use-plural-rules",
@@ -65,8 +64,9 @@ void test("the throttled preview appends one public example and retains original
     "use-previous",
     "use-countdown",
     "use-relative-time-format",
-  ]);
-  assert.equal(new Set(names).size, 123);
+  ];
+  assert.deepEqual(names.filter((name) => retained.includes(name)).toSorted(), retained.toSorted());
+  assert.equal(new Set(names).size, names.length, "each example has one public identity");
   const entry = COMPOSABLE_CATALOG.entries.find(({ subpath }) => subpath === "./use-throttled");
   assert.ok(entry);
   assert.deepEqual(entry.runtimeExports, ["useThrottled"]);

@@ -4,6 +4,10 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
+import {
+  assertLegacyInstanceCompilerSources,
+  legacyInstanceVueRequire,
+} from "./support/patina-legacy-instance-provider.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const fixture = JSON.parse(
@@ -23,7 +27,29 @@ const requireProvider = createRequire(
 const requireParser = createRequire(
   process.env.VIZE_LEGACY_API_SCRIPT_PARSER_MANIFEST ?? packageManifest,
 );
-const requireVue = createRequire(process.env.VIZE_LEGACY_API_VUE_MANIFEST ?? packageManifest);
+const requireVue = legacyInstanceVueRequire();
+
+await test("the pinned compiler refuses benchmark Vue and altered source receipts", () => {
+  const sources = fixture.compilerProvider.sources;
+  assert.throws(
+    () =>
+      assertLegacyInstanceCompilerSources(
+        createRequire(packageManifest),
+        "@vue/compiler-sfc",
+        sources,
+      ),
+    /the pinned compiler must own its dependencies/,
+  );
+  for (const packageName of ["@vue/compiler-sfc", "@vue/compiler-core"]) {
+    const altered = sources.map((source) =>
+      source.packageName === packageName ? { ...source, sha256: "0".repeat(64) } : source,
+    );
+    assert.throws(
+      () => assertLegacyInstanceCompilerSources(requireVue, "@vue/compiler-sfc", altered),
+      { code: "ERR_ASSERTION" },
+    );
+  }
+});
 
 function compilerPacket(compiler, source) {
   const diagnostic = (error) =>
@@ -109,10 +135,11 @@ await test("component-owned reserved spellings retain complete pinned compiler a
     requireVue("@vue/compiler-sfc/package.json").version,
     fixture.compilerProvider.compiler,
   );
-  for (const source of fixture.compilerProvider.sources) {
-    const directory = path.dirname(requireVue.resolve(`${source.packageName}/package.json`));
-    assert.equal(hash(fs.readFileSync(path.join(directory, source.path))), source.sha256);
-  }
+  assertLegacyInstanceCompilerSources(
+    requireVue,
+    "@vue/compiler-sfc",
+    fixture.compilerProvider.sources,
+  );
   const compiler = requireVue("@vue/compiler-sfc");
   const { Linter } = requireProvider("eslint");
   const linter = new Linter();

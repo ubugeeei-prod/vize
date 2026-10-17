@@ -532,7 +532,7 @@ import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 import process from "node:process";
-
+process.env.NODE_ENV = "production";
 async function readStdin() {
   const chunks = [];
   for await (const chunk of process.stdin) chunks.push(chunk);
@@ -620,7 +620,6 @@ async function compileOfficialVue(file, target, compiler, formatter) {
     const inlineTemplate = Boolean(
       descriptor.scriptSetup && descriptor.template && officialTarget === "dom",
     );
-
     if (descriptor.script || descriptor.scriptSetup) {
       const script = compiler.compileScript(descriptor, {
         id: file.path,
@@ -631,17 +630,17 @@ async function compileOfficialVue(file, target, compiler, formatter) {
               filename: file.path,
               id: file.path,
               scoped,
+              slotted: descriptor.slotted,
               isProd: true,
               compilerOptions: {
                 expressionPlugins: isTypeScript ? ["typescript"] : undefined,
               },
             }
-          : undefined,
+          : { ssr: officialTarget === "ssr" },
       });
       scriptCode = script.content;
       bindingMetadata = script.bindings;
     }
-
     let templateCode = "";
     if (descriptor.template && !inlineTemplate) {
       const template = compiler.compileTemplate({
@@ -649,8 +648,10 @@ async function compileOfficialVue(file, target, compiler, formatter) {
         filename: file.path,
         id: file.path,
         scoped,
+        slotted: descriptor.slotted,
         isProd: true,
         ssr: officialTarget === "ssr",
+        ssrCssVars: descriptor.cssVars,
         compilerOptions: {
           bindingMetadata,
           expressionPlugins: isTypeScript ? ["typescript"] : undefined,
@@ -660,7 +661,6 @@ async function compileOfficialVue(file, target, compiler, formatter) {
       warnings.push(...normalizeCompilerMessages(template.errors));
       warnings.push(...normalizeCompilerMessages(template.tips));
     }
-
     const code = [scriptCode, templateCode].filter(Boolean).join("\n\n");
     return {
       code,

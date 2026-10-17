@@ -6639,6 +6639,13 @@ export default defineConfig({
       "preset": "incremental",
       "rules": {
         "vue/valid-v-on": "error"
+      },
+      "ruleOptions": {
+        "vue/valid-v-on": {
+          "modifiers": [
+            "custom"
+          ]
+        }
       }
     },
   },
@@ -6653,7 +6660,7 @@ vp run lint
 
 **错误示例**
 
-监听器形式缺少事件参数，或缺少所需的处理器或对象表达式。
+监听器缺少必需的事件或表达式，或使用了 .sync、.nativeish 等不受支持的修饰符。
 
 ```vue annotate="remove:2,3,4,5,6,7"
 <template>
@@ -6670,7 +6677,7 @@ vp run lint
 
 **正确示例**
 
-提供事件及其处理器，或将监听器对象传给无参数的 `v-on`。
+使用处理器、无需处理器的动作修饰符、受支持的键盘修饰符，或将监听器对象传给无参数的 `v-on`。
 
 ```vue annotate="add:2,3,4,5,6"
 <template>

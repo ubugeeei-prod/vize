@@ -1,8 +1,8 @@
 // Refresh the committed tooling shard timing table from finished Actions runs:
 //   node tools/support/compat/github/update-tooling-test-timings.ts <run-id>...
-// Each successful `PR tooling scripts (i/n)` job logs one per-file timing record. A run's
-// event decides nothing: every record names its own tier. Files a run did not execute keep
-// their previous value; files no longer in the suite are dropped.
+// Successful Tooling (...) workers and historical PR tooling scripts (i/n) jobs
+// log their execution identity and per-file timings. Files a run did not execute
+// keep their previous value; files no longer in the suite are dropped.
 import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -31,7 +31,14 @@ export type ToolingMeasurements = {
   leadSteps: Record<string, number>;
 };
 
-const TOOLING_JOB = /PR tooling scripts \((\d+)\/(\d+)\)$/;
+const LEGACY_TOOLING_JOB = /PR tooling scripts \((\d+)\/(\d+)\)$/;
+const TOOLING_JOB = /(?:^| \/ )Tooling \([^\r\n]+\)$/;
+// Current full-worker names differ from the historical PR lead-step names.
+const currentLeadSteps: Record<string, string> = {
+  "native-js-setup": "Prepare plugin runtime and test native JS setup",
+  "native-attribute-values-7502": "Capture original native attribute values and fixed fresh mounts",
+  "historical-sfc-documents": "Capture original historical Vue text and SFC documents",
+};
 
 export function parseToolingTimingLog(log: string): TimingRecord[] {
   const records: TimingRecord[] = [];
@@ -39,11 +46,16 @@ export function parseToolingTimingLog(log: string): TimingRecord[] {
     const at = line.indexOf(`${TOOLING_TIMINGS_LOG_MARKER} {`);
     if (at < 0) continue;
     const record = JSON.parse(line.slice(at + TOOLING_TIMINGS_LOG_MARKER.length + 1));
+    const shard =
+      typeof record?.shard === "string" && /^([1-9]\d*)\/([1-9]\d*)$/.exec(record.shard);
     if (
       !["pr", "merge"].includes(record?.tier) ||
-      typeof record.shard !== "string" ||
+      !shard ||
+      !Number.isSafeInteger(Number(shard[2])) ||
+      Number(shard[1]) > Number(shard[2]) ||
       typeof record.files !== "object" ||
       record.files === null ||
+      Array.isArray(record.files) ||
       !Object.values(record.files).every((ms) => Number.isSafeInteger(ms) && Number(ms) >= 0)
     ) {
       throw new Error("malformed tooling timing record");
@@ -57,14 +69,15 @@ export function parseToolingTimingLog(log: string): TimingRecord[] {
 export function leadStepDurations(steps: readonly JobStep[]) {
   const durations: Record<string, number> = {};
   for (const { id, step } of TOOLING_LEAD_STEPS) {
+    const names = [step, currentLeadSteps[id]].filter(Boolean);
     const ran = steps.filter(
       (entry) =>
-        (entry.name === step || entry.name === `Post ${step}`) &&
+        names.some((name) => entry.name === name || entry.name === `Post ${name}`) &&
         entry.conclusion === "success" &&
         entry.started_at &&
         entry.completed_at,
     );
-    if (!ran.some((entry) => entry.name === step)) continue;
+    if (!ran.some((entry) => names.includes(entry.name))) continue;
     durations[id] = ran.reduce(
       (sum, entry) => sum + Date.parse(entry.completed_at!) - Date.parse(entry.started_at!),
       0,
@@ -76,14 +89,18 @@ export function leadStepDurations(steps: readonly JobStep[]) {
 export function measureToolingJobs(jobs: readonly Job[], logs: (id: number) => string) {
   const measured: ToolingMeasurements = { tiers: { pr: {}, merge: {} }, leadSteps: {} };
   for (const job of jobs) {
-    const shard = TOOLING_JOB.exec(job.name);
-    if (!shard || job.conclusion !== "success") continue;
+    const legacy = LEGACY_TOOLING_JOB.exec(job.name);
+    if ((!legacy && !TOOLING_JOB.test(job.name)) || job.conclusion !== "success") continue;
+    let shard = legacy ? `${legacy[1]}/${legacy[2]}` : undefined;
     for (const record of parseToolingTimingLog(logs(job.id))) {
-      if (record.shard !== `${shard[1]}/${shard[2]}`)
-        throw new Error(`${job.name}: shard mismatch`);
+      if (shard && record.shard !== shard) throw new Error(`${job.name}: shard mismatch`);
+      shard = record.shard;
       Object.assign(measured.tiers[record.tier], record.files);
     }
-    if (shard[1] === "1") Object.assign(measured.leadSteps, leadStepDurations(job.steps ?? []));
+    // A semantic runtime-capture worker can have no test files or timing record.
+    // Its actual successful steps identify the lead work without inventing an index.
+    if (!legacy || legacy[1] === "1")
+      Object.assign(measured.leadSteps, leadStepDurations(job.steps ?? []));
   }
   return measured;
 }

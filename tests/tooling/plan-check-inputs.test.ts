@@ -16,6 +16,9 @@ await test("prose and tooling metadata do not rebuild product apps", () => {
     apps: false,
   });
   assert.equal(planCheckInputs(["tests/tooling/plan-source-checks.test.ts"]).apps, false);
+  assert.equal(planCheckInputs(["npm/compose/core/examples/README.md"]).apps, false);
+  assert.equal(planCheckInputs(["npm/compose/core/fixtures/invalid.vue"]).apps, false);
+  assert.equal(planCheckInputs(["npm/compose/core/examples/invalid.fixture.vue"]).apps, false);
 });
 
 await test("product, compiled documentation and cache changes retain app checks", () => {
@@ -26,6 +29,11 @@ await test("product, compiled documentation and cache changes retain app checks"
     "npm/builder/vite/src/index.ts",
     "npm/cli/schemas/vize.config.schema.json",
     "playground/src/App.vue",
+    "npm/compose/core/examples/virtual-list.vue",
+    "npm/compose/core/src/virtual-list.ts",
+    "npm/ui/scripts/reference-docs/composable-examples.ts",
+    "docs/theme/components/Guide.vue",
+    "examples/html-conformance/src/index.html",
     "docs/davinci/plan/canonical-corpus/budgets.toml",
     "docs/davinci/plan/fact-alpha-schemas.md",
     ".github/actions/setup-rust-sticky-cache/action.yml",
@@ -71,11 +79,11 @@ await test("npm Vue examples select the current-source opinionated lint consumer
   }
 });
 
-await test("npm prose and non-SFC composable edits do not select extra native app builds", () => {
+await test("npm prose and intentional fixtures stay outside authored source lint", () => {
   for (const path of [
     "npm/compose/core/examples/README.md",
-    "npm/compose/core/src/virtual-list.ts",
-    "npm/ui/scripts/reference-docs/composable-examples.ts",
+    "npm/compose/core/fixtures/invalid.vue",
+    "npm/compose/core/examples/invalid.fixture.vue",
   ]) {
     assert.equal(planCheckInputs([path]).apps, false, path);
   }
@@ -137,6 +145,7 @@ await test("changing selector and task definitions exercises every affected cons
   for (const path of [
     ".github/workflows/check.yml",
     "tools/support/compat/github/plan-check-inputs.ts",
+    "tools/support/github/opinionated-source-inputs.ts",
     "tools/config/vite-plus/tasks/check.ts",
   ]) {
     const plan = planCheckInputs([path]);

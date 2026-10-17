@@ -1,6 +1,6 @@
 use super::super::pr_github as github;
 use super::metadata::{paths, text};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
     env, fs,
@@ -200,6 +200,8 @@ pub(super) fn catalog(revision: &str, version: &str, root: &Path) -> Result<Valu
             ".github/actions/build-release-cli/action.yml",
             ".github/actions/build-release-native/action.yml",
             ".github/actions/publish-release-package/action.yml",
+            ".github/actions/prepare-release-assets/action.yml",
+            "tools/support/release/release-assets.ts",
         ] {
             if files.iter().any(|file| file == path) {
                 publication_authorities.insert(path, text(revision, path, root)?);

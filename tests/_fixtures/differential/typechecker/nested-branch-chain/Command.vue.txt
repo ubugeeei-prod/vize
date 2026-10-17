@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import Child from './Child.vue';
+import type { QueryResultItem } from './types';
+defineProps<{ loading: boolean; result: { length: number; grouped: Map<string, QueryResultItem[]> } }>();
+</script>
+<template>
+  <template v-if="loading"><div /></template>
+  <template v-else-if="result.length">
+    <template v-for="[scope, group] in result.grouped" :key="scope">
+      <template v-for="item in group" :key="item.index">
+        <Child v-if="item.type === 'search'" :result="item.search" />
+        <Child v-else :cmd="item.cmd" />
+      </template>
+    </template>
+  </template>
+</template>

@@ -24,7 +24,7 @@ export function rustCommand(plan: RustPlan, command: readonly string[]) {
   }
   if (
     command[0] !== "cargo" ||
-    !["clippy", "nextest", "test"].includes(command[1]) ||
+    !["build", "clippy", "nextest", "test"].includes(command[1]) ||
     command.filter((argument) => argument === "@packages@").length !== 1 ||
     command.some((argument) => typeof argument !== "string" || argument.includes("\0"))
   ) {

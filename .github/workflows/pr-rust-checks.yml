@@ -8,6 +8,13 @@ on:
       rust-plan:
         type: string
         required: true
+    outputs:
+      jobs-json:
+        description: Actual Rust job results for the final PR report
+        value: ${{ toJSON(jobs) }}
+      run-rust:
+        description: Whether the caller enabled the mandatory Rust tier
+        value: ${{ inputs.run-rust }}
 permissions:
   contents: read
 env:
@@ -172,8 +179,25 @@ jobs:
         uses: ./.github/actions/test-native-navigation
       - name: Run affected Rust doctests
         run: node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --doc
+      - name: Build affected Rust examples
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          evidence="$RUNNER_TEMP/rust-example-build-evidence"
+          node tools/support/compat/github/rust-build-evidence.ts before "$evidence"
+          node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo build @packages@ --profile ci --examples --timings --message-format=json-render-diagnostics > "$evidence/cargo.jsonl"
+      - name: Preserve actual PR Rust example build units
+        if: ${{ always() && github.event_name == 'pull_request' }}
+        run: node tools/support/compat/github/rust-build-evidence.ts collect "$RUNNER_TEMP/rust-example-build-evidence"
+      - name: Upload PR Rust example build evidence
+        if: ${{ always() && github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-build-evidence-examples-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: ${{ runner.temp }}/rust-example-build-evidence/
+          if-no-files-found: error
+          retention-days: 7
 
-  # Named cohorts build the same affected test binaries from the warm read-only
+  # Named cohorts build their affected test targets from the warm read-only
   # `nextest-ci` clone and start beside Clippy, instead of moving a multi-GB
   # archive. The merge queue keeps its archive: its receipts bind the evidence.
   pr-rust-shard:
@@ -187,7 +211,7 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.rust-plan).testMatrix }}
     env:
-      CARGO_BUILD_JOBS: "12"
+      CARGO_BUILD_JOBS: ${{ github.event_name == 'pull_request' && '24' || '12' }}
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
       RUST_TEST_THREADS: "4"
       NEXTEST_PROFILE: ${{ github.event_name == 'merge_group' && 'full' || 'pr' }}
@@ -213,7 +237,10 @@ jobs:
         with:
           node-version-file: "package.json"
           cache: true
-          run-install: true
+          run-install: false
+      - uses: ./.github/actions/cache-pnpm-verification
+      - name: Install JS dependencies
+        run: vp install
       - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: cargo-nextest@0.9.146
@@ -277,18 +304,15 @@ jobs:
           printf 'VIZE_TEST_FIX_HISTORY_CAPTURE_DIR=%s\nVIZE_TEST_FIX_HISTORY_ARCHIVE_RECEIPT=%s\n' "$GITHUB_WORKSPACE/target/nextest/full/typechecker-fixtures" "$GITHUB_WORKSPACE/.artifacts/rust-test-archive/receipt.json" >> "$GITHUB_ENV"
       - name: Build and run the affected Rust test cohort
         if: ${{ github.event_name == 'pull_request' }}
-        # Preserve affected package feature unification; the shared cohort
-        # registry partitions test binaries by their actual product surface.
+        # Keep every affected package root and its feature unification. Narrow
+        # Cargo targets when safe; the existing filter still selects all tests.
         run: |
           node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
+          export VIZE_RUST_COHORT_TIMING_PATH="target/nextest/$NEXTEST_PROFILE/timing.json"
           evidence="$RUNNER_TEMP/rust-build-evidence"
           node tools/support/compat/github/rust-build-evidence.ts before "$evidence"
-          set -o pipefail
-          phase_started=$SECONDS
-          if node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo nextest run @packages@ --cargo-profile ci --timings --cargo-message-format=json-render-diagnostics --profile "$NEXTEST_PROFILE" -E "$NEXTEST_FILTER" --no-tests=pass | tee "$evidence/cargo.jsonl"; then phase_exit=0; else phase_exit=$?; fi
-          mkdir -p "target/nextest/$NEXTEST_PROFILE"
-          printf '{"phase":"workspace-cohort","cohort":"%s","elapsed_seconds":%d,"exit_code":%d}\n' "$COHORT" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
-          exit "$phase_exit"
+          export VIZE_RUST_BUILD_STDOUT_PATH="$evidence/cargo.jsonl"
+          exec node tools/support/compat/github/run-rust-test-cohort.ts "$RUNNER_TEMP/rust-plan.json" "$COHORT" --cargo-profile ci --timings --cargo-message-format=json-render-diagnostics --profile "$NEXTEST_PROFILE" -E "$NEXTEST_FILTER" --no-tests=pass
       - name: Preserve actual PR Rust build units and fresh timing HTML
         if: ${{ always() && github.event_name == 'pull_request' }}
         run: node tools/support/compat/github/rust-build-evidence.ts collect "$RUNNER_TEMP/rust-build-evidence"
@@ -328,18 +352,17 @@ jobs:
   rust-source-report:
     name: Rust source report
     permissions: { contents: read, actions: read }
-    # A superseded run reports nothing: its required check fails in test-report.
-    if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
+    # PR results go directly to test-report; the queue also verifies worker evidence here.
+    if: ${{ always() && github.event_name == 'merge_group' && !contains(needs.*.result, 'cancelled') }}
     needs: [merge-rust-source, merge-rust-differential, pr-rust-build, pr-rust-shard]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: ./.github/actions/cache-vp-bootstrap
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version-file: "package.json"
-          run-install: false
+          package-manager-cache: false
       - name: Require the complete Rust tier
         env:
           RUN_RUST: ${{ inputs.run-rust }}
@@ -366,7 +389,7 @@ jobs:
         env: { GH_TOKEN: "${{ github.token }}" }
         run: |
           node tools/support/compat/github/select-rust-workers.mjs verify target/differential/typechecker/worker-selection.json .artifacts/typechecker-workers
-          vp node tests/differential/typechecker-shards.ts aggregate .artifacts/typechecker-workers target/differential/typechecker
+          node tests/differential/typechecker-shards.ts aggregate .artifacts/typechecker-workers target/differential/typechecker
       - name: Upload typechecker shared corpus evidence
         if: ${{ !cancelled() && github.event_name == 'merge_group' && inputs.run-rust && needs.pr-rust-shard.result == 'success' && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -1,0 +1,42 @@
+type QueryResultItem = { type: 'search'; search: string } | { type: 'command'; cmd: string };
+type Notification = { type: 'mention' | 'status'; account: string; createdAt: string };
+type NotificationSlot = Notification | { type: 'grouped-follow'; items: string[] } | { type: 'grouped-reblogs-and-favourites'; items: string[] };
+type User = { id: string };
+export function foldedCommand(visible: boolean, item: QueryResultItem) {
+  if (visible && item.type === 'search') { void item.search; }
+  else if (visible) { const cmd: string = item.cmd; void cmd; }
+}
+export function nestedCommand(visible: boolean, item: QueryResultItem) {
+  if (visible) {
+    if (item.type === 'search') { void item.search; }
+    else { const cmd: string = item.cmd; void cmd; }
+  }
+}
+export function foldedNotifications(virtualScroller: boolean, item: NotificationSlot) {
+  if (virtualScroller && item.type === 'grouped-follow') { void item.items; }
+  else if (virtualScroller && item.type === 'grouped-reblogs-and-favourites') { void item.items; }
+  else if (virtualScroller) { const notification: Notification = item; void notification; }
+}
+export function nestedNotifications(virtualScroller: boolean, item: NotificationSlot) {
+  if (virtualScroller) {
+    if (item.type === 'grouped-follow') { void item.items; }
+    else if (item.type === 'grouped-reblogs-and-favourites') { void item.items; }
+    else { const notification: Notification = item; void notification; }
+  }
+}
+export function foldedUser(searchScope: string, user: User | null) {
+  if (searchScope === 'user' && user == null) { void user; }
+  else if (searchScope === 'user') { const selected: User = user; void selected; }
+}
+export function nestedUser(searchScope: string, user: User | null) {
+  if (searchScope === 'user') {
+    if (user == null) { void user; }
+    else { const selected: User = user; void selected; }
+  }
+}
+export function wrongNestedCommand(visible: boolean, item: QueryResultItem) {
+  if (visible) {
+    if (item.type === 'search') { void item.search; }
+    else { const wrong: number = item.cmd; void wrong; }
+  }
+}

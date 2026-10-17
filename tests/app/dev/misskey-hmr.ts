@@ -7,6 +7,7 @@ import * as path from "node:path";
 
 import { collectConsoleErrors, isFatalError } from "../../_helpers/assertions";
 import { getProcessLogs } from "../../_helpers/server";
+import { isMisskeyAuthoredHotUpdate } from "./misskey-hmr-observer";
 import {
   MISSKEY_HMR_EXTERNAL_TEMPLATE,
   MISSKEY_HMR_TARGETS,
@@ -269,8 +270,7 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
         leakedMarkerLogs.push(message.text());
       }
       if (
-        message.text().includes("[vite] hot updated:") &&
-        message.text().includes(target.moduleSuffix)
+        isMisskeyAuthoredHotUpdate(message.text(), target.moduleSuffix, new URL(page.url()).origin)
       ) {
         completedUpdates.get(target.marker)?.push(message.text());
       }

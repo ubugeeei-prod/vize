@@ -112,7 +112,7 @@ jobs:
             cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_vue_helper_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
             export VIZE_TEMPLATE_EMIT_TS40_CAPTURE="$RUNNER_TEMP/template-emit-ts40-projection"
             cargo test --locked --profile ci-opt -p vize_maestro --test davinci_ts40_projection current_projection_matrix_is_exact_and_non_empty --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
-            node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs; node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs; node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs
+            node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs; node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs
             bash tools/benchmarks/scripts/typechecker-native-unknown-options.sh && cargo test --locked --profile ci-opt -p vize_patina --test documented_rule_examples documented_type_aware_examples_match_with_the_required_corsa_runtime --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
             # VIZE_NATIVE_SOURCE_INLINE_END
           fi

@@ -343,9 +343,32 @@
   },
   {
     "file": "packages/core/src/Autocomplete/AutocompleteRoot.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 93,
+        "column": 7,
+        "endLine": 93,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 252,
+        "column": 15,
+        "endLine": 252,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Autocomplete/story/AutocompleteDefault.story.vue",
@@ -517,8 +540,75 @@
   },
   {
     "file": "packages/core/src/Calendar/CalendarRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'locale'",
+        "line": 186,
+        "column": 7,
+        "endLine": 186,
+        "endColumn": 37,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 187,
+        "column": 7,
+        "endLine": 187,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isDateDisabled'",
+        "line": 210,
+        "column": 7,
+        "endLine": 241,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isDateUnavailable'",
+        "line": 210,
+        "column": 7,
+        "endLine": 241,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'nextPage'",
+        "line": 210,
+        "column": 7,
+        "endLine": 241,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'prevPage'",
+        "line": 210,
+        "column": 7,
+        "endLine": 241,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 6,
     "warningCount": 0
   },
   {
@@ -843,9 +933,21 @@
   },
   {
     "file": "packages/core/src/Checkbox/CheckboxIndicator.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 39,
+        "column": 15,
+        "endLine": 39,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Checkbox/CheckboxRoot.vue",
@@ -1155,8 +1257,20 @@
   },
   {
     "file": "packages/core/src/ColorField/ColorFieldRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'locale'",
+        "line": 90,
+        "column": 7,
+        "endLine": 90,
+        "endColumn": 37,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -1244,8 +1358,31 @@
   },
   {
     "file": "packages/core/src/ColorSlider/ColorSliderRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 76,
+        "column": 7,
+        "endLine": 76,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'step'",
+        "line": 163,
+        "column": 7,
+        "endLine": 163,
+        "endColumn": 71,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -1418,9 +1555,21 @@
   },
   {
     "file": "packages/core/src/Combobox/ComboboxAnchor.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 25,
+        "column": 15,
+        "endLine": 25,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/ComboboxArrow.vue",
@@ -1436,15 +1585,39 @@
   },
   {
     "file": "packages/core/src/Combobox/ComboboxContent.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 33,
+        "column": 34,
+        "endLine": 33,
+        "endColumn": 40,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/ComboboxContentImpl.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 141,
+        "column": 24,
+        "endLine": 141,
+        "endColumn": 30,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/ComboboxEmpty.vue",
@@ -1490,9 +1663,21 @@
   },
   {
     "file": "packages/core/src/Combobox/ComboboxRoot.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 253,
+        "column": 15,
+        "endLine": 253,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/ComboboxSeparator.vue",
@@ -1508,8 +1693,20 @@
   },
   {
     "file": "packages/core/src/Combobox/ComboboxViewport.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'nonce'",
+        "line": 23,
+        "column": 7,
+        "endLine": 23,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -1974,8 +2171,31 @@
   },
   {
     "file": "packages/core/src/DateField/DateFieldRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'locale'",
+        "line": 122,
+        "column": 7,
+        "endLine": 122,
+        "endColumn": 37,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 123,
+        "column": 7,
+        "endLine": 123,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -2157,9 +2377,21 @@
   },
   {
     "file": "packages/core/src/DatePicker/DatePickerContent.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 30,
+        "column": 34,
+        "endLine": 30,
+        "endColumn": 40,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DatePicker/DatePickerField.vue",
@@ -2355,8 +2587,31 @@
   },
   {
     "file": "packages/core/src/DateRangeField/DateRangeFieldRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'locale'",
+        "line": 125,
+        "column": 7,
+        "endLine": 125,
+        "endColumn": 37,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 126,
+        "column": 7,
+        "endLine": 126,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -2505,9 +2760,21 @@
   },
   {
     "file": "packages/core/src/DateRangePicker/DateRangePickerContent.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 30,
+        "column": 34,
+        "endLine": 30,
+        "endColumn": 40,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateRangePicker/DateRangePickerField.vue",
@@ -2703,15 +2970,50 @@
   },
   {
     "file": "packages/core/src/Dialog/DialogContent.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 51,
+        "column": 47,
+        "endLine": 51,
+        "endColumn": 53,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 60,
+        "column": 47,
+        "endLine": 60,
+        "endColumn": 53,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Dialog/DialogContentImpl.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 98,
+        "column": 15,
+        "endLine": 98,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Dialog/DialogContentModal.vue",
@@ -2733,9 +3035,21 @@
   },
   {
     "file": "packages/core/src/Dialog/DialogOverlay.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 34,
+        "column": 15,
+        "endLine": 34,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Dialog/DialogOverlayImpl.vue",
@@ -3042,10 +3356,21 @@
         "endLine": 10,
         "endColumn": 11,
         "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 12,
+        "column": 18,
+        "endLine": 12,
+        "endColumn": 24,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/DismissableLayer/story/_DismissableLayer.vue",
@@ -3131,15 +3456,50 @@
   },
   {
     "file": "packages/core/src/Drawer/DrawerContent.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 67,
+        "column": 47,
+        "endLine": 67,
+        "endColumn": 53,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 89,
+        "column": 47,
+        "endLine": 89,
+        "endColumn": 53,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Drawer/DrawerContentImpl.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 376,
+        "column": 39,
+        "endLine": 376,
+        "endColumn": 45,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Drawer/DrawerDescription.vue",
@@ -3167,9 +3527,21 @@
   },
   {
     "file": "packages/core/src/Drawer/DrawerOverlay.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 34,
+        "column": 15,
+        "endLine": 34,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Drawer/DrawerOverlayImpl.vue",
@@ -3483,8 +3855,31 @@
   },
   {
     "file": "packages/core/src/Editable/EditableRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 132,
+        "column": 7,
+        "endLine": 132,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'placeholder'",
+        "line": 144,
+        "column": 7,
+        "endLine": 146,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -3731,10 +4126,21 @@
         "endLine": 39,
         "endColumn": 26,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 97,
+        "column": 34,
+        "endLine": 97,
+        "endColumn": 40,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/HoverCard/HoverCardPortal.vue",
@@ -3891,9 +4297,21 @@
   },
   {
     "file": "packages/core/src/Listbox/ListboxItem.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 77,
+        "column": 15,
+        "endLine": 77,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Listbox/ListboxItemIndicator.vue",
@@ -3903,8 +4321,20 @@
   },
   {
     "file": "packages/core/src/Listbox/ListboxRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 106,
+        "column": 7,
+        "endLine": 106,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -4023,9 +4453,32 @@
   },
   {
     "file": "packages/core/src/Menu/MenuContent.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 37,
+        "column": 20,
+        "endLine": 37,
+        "endColumn": 26,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 43,
+        "column": 20,
+        "endLine": 43,
+        "endColumn": 26,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Menu/MenuContentImpl.vue",
@@ -4083,8 +4536,20 @@
   },
   {
     "file": "packages/core/src/Menu/MenuRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 63,
+        "column": 7,
+        "endLine": 63,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -4371,8 +4836,20 @@
   },
   {
     "file": "packages/core/src/Menubar/MenubarRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 68,
+        "column": 7,
+        "endLine": 68,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -4497,8 +4974,75 @@
   },
   {
     "file": "packages/core/src/MonthPicker/MonthPickerRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'locale'",
+        "line": 143,
+        "column": 7,
+        "endLine": 143,
+        "endColumn": 37,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 144,
+        "column": 7,
+        "endLine": 144,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isMonthDisabled'",
+        "line": 167,
+        "column": 7,
+        "endLine": 189,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isMonthUnavailable'",
+        "line": 167,
+        "column": 7,
+        "endLine": 189,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'nextPage'",
+        "line": 167,
+        "column": 7,
+        "endLine": 189,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'prevPage'",
+        "line": 167,
+        "column": 7,
+        "endLine": 189,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 6,
     "warningCount": 0
   },
   {
@@ -4593,8 +5137,75 @@
   },
   {
     "file": "packages/core/src/MonthRangePicker/MonthRangePickerRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 164,
+        "column": 7,
+        "endLine": 164,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'locale'",
+        "line": 165,
+        "column": 7,
+        "endLine": 165,
+        "endColumn": 37,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isMonthDisabled'",
+        "line": 200,
+        "column": 7,
+        "endLine": 222,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isMonthUnavailable'",
+        "line": 200,
+        "column": 7,
+        "endLine": 222,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'nextPage'",
+        "line": 200,
+        "column": 7,
+        "endLine": 222,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'prevPage'",
+        "line": 200,
+        "column": 7,
+        "endLine": 222,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 6,
     "warningCount": 0
   },
   {
@@ -4671,8 +5282,20 @@
   },
   {
     "file": "packages/core/src/NavigationMenu/NavigationMenuRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 140,
+        "column": 7,
+        "endLine": 140,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -4878,10 +5501,21 @@
         "endLine": 15,
         "endColumn": 8,
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 13,
+        "column": 17,
+        "endLine": 13,
+        "endColumn": 23,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/NavigationMenu/story/_StoryFrame.vue",
@@ -4921,8 +5555,20 @@
   },
   {
     "file": "packages/core/src/NumberField/NumberFieldRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'locale'",
+        "line": 93,
+        "column": 7,
+        "endLine": 93,
+        "endColumn": 37,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -5071,8 +5717,20 @@
   },
   {
     "file": "packages/core/src/PinInput/PinInputRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 91,
+        "column": 7,
+        "endLine": 91,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -5718,9 +6376,21 @@
   },
   {
     "file": "packages/core/src/RadioGroup/RadioGroupIndicator.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 37,
+        "column": 15,
+        "endLine": 37,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/RadioGroup/RadioGroupItem.vue",
@@ -5730,8 +6400,20 @@
   },
   {
     "file": "packages/core/src/RadioGroup/RadioGroupRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 74,
+        "column": 7,
+        "endLine": 74,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -5874,8 +6556,86 @@
   },
   {
     "file": "packages/core/src/RangeCalendar/RangeCalendarRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 224,
+        "column": 7,
+        "endLine": 224,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'locale'",
+        "line": 225,
+        "column": 7,
+        "endLine": 225,
+        "endColumn": 37,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isDateDisabled'",
+        "line": 266,
+        "column": 7,
+        "endLine": 297,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isDateUnavailable'",
+        "line": 266,
+        "column": 7,
+        "endLine": 297,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'nextPage'",
+        "line": 266,
+        "column": 7,
+        "endLine": 297,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'prevPage'",
+        "line": 266,
+        "column": 7,
+        "endLine": 297,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isDateHighlightable'",
+        "line": 299,
+        "column": 7,
+        "endLine": 322,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 7,
     "warningCount": 0
   },
   {
@@ -6140,8 +6900,20 @@
   },
   {
     "file": "packages/core/src/RovingFocus/RovingFocusGroup.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 74,
+        "column": 7,
+        "endLine": 74,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -6218,8 +6990,20 @@
   },
   {
     "file": "packages/core/src/ScrollArea/ScrollAreaRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 68,
+        "column": 7,
+        "endLine": 68,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -6230,9 +7014,21 @@
   },
   {
     "file": "packages/core/src/ScrollArea/ScrollAreaScrollbarAuto.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 49,
+        "column": 15,
+        "endLine": 49,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ScrollArea/ScrollAreaScrollbarGlimpse.vue",
@@ -6288,16 +7084,50 @@
         "endLine": 47,
         "endColumn": 26,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 86,
+        "column": 15,
+        "endLine": 86,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/ScrollArea/ScrollAreaScrollbarVisible.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 153,
+        "column": 13,
+        "endLine": 153,
+        "endColumn": 19,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 160,
+        "column": 13,
+        "endLine": 160,
+        "endColumn": 19,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/ScrollArea/ScrollAreaScrollbarX.vue",
@@ -6319,8 +7149,20 @@
   },
   {
     "file": "packages/core/src/ScrollArea/ScrollAreaViewport.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'nonce'",
+        "line": 26,
+        "column": 7,
+        "endLine": 26,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -6469,21 +7311,9 @@
   },
   {
     "file": "packages/core/src/Select/BubbleSelect.vue",
-    "messages": [
-      {
-        "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
-        "line": 59,
-        "column": 5,
-        "endLine": 63,
-        "endColumn": 6,
-        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Select/SelectArrow.vue",
@@ -6532,10 +7362,21 @@
         "endLine": 328,
         "endColumn": 10,
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+      },
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 301,
+        "column": 24,
+        "endLine": 301,
+        "endColumn": 30,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 4
   },
   {
     "file": "packages/core/src/Select/SelectGroup.vue",
@@ -6601,6 +7442,17 @@
     "file": "packages/core/src/Select/SelectRoot.vue",
     "messages": [
       {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 122,
+        "column": 7,
+        "endLine": 122,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
         "ruleId": "html/no-empty-palpable-content",
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
@@ -6623,7 +7475,7 @@
         "help": "Add text content, child elements, or use aria-label for accessible content."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 2
   },
   {
@@ -6664,8 +7516,20 @@
   },
   {
     "file": "packages/core/src/Select/SelectViewport.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'nonce'",
+        "line": 25,
+        "column": 7,
+        "endLine": 25,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -6837,8 +7701,20 @@
   },
   {
     "file": "packages/core/src/Slider/SliderRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 103,
+        "column": 7,
+        "endLine": 103,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -6974,8 +7850,20 @@
   },
   {
     "file": "packages/core/src/Splitter/SplitterResizeHandle.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'nonce'",
+        "line": 69,
+        "column": 7,
+        "endLine": 69,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -7178,8 +8066,20 @@
   },
   {
     "file": "packages/core/src/Stepper/StepperRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 84,
+        "column": 7,
+        "endLine": 84,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -7358,8 +8258,20 @@
   },
   {
     "file": "packages/core/src/Tabs/TabsRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 79,
+        "column": 7,
+        "endLine": 79,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -7454,8 +8366,20 @@
   },
   {
     "file": "packages/core/src/TagsInput/TagsInputRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 94,
+        "column": 7,
+        "endLine": 94,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -7580,8 +8504,31 @@
   },
   {
     "file": "packages/core/src/TimeField/TimeFieldRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'locale'",
+        "line": 125,
+        "column": 7,
+        "endLine": 125,
+        "endColumn": 37,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 126,
+        "column": 7,
+        "endLine": 126,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -7722,8 +8669,31 @@
   },
   {
     "file": "packages/core/src/TimeRangeField/TimeRangeFieldRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'locale'",
+        "line": 131,
+        "column": 7,
+        "endLine": 131,
+        "endColumn": 37,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 132,
+        "column": 7,
+        "endLine": 132,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 2,
     "warningCount": 0
   },
   {
@@ -7896,9 +8866,21 @@
   },
   {
     "file": "packages/core/src/Toast/ToastRoot.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 64,
+        "column": 15,
+        "endLine": 64,
+        "endColumn": 21,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Toast/ToastRootImpl.vue",
@@ -8075,8 +9057,20 @@
   },
   {
     "file": "packages/core/src/ToggleGroup/ToggleGroupRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 62,
+        "column": 7,
+        "endLine": 62,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -8147,8 +9141,20 @@
   },
   {
     "file": "packages/core/src/Toolbar/ToolbarRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 34,
+        "column": 7,
+        "endLine": 34,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -8225,9 +9231,21 @@
   },
   {
     "file": "packages/core/src/Tooltip/TooltipContentImpl.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 111,
+        "column": 20,
+        "endLine": 111,
+        "endColumn": 26,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Tooltip/TooltipPortal.vue",
@@ -8337,9 +9355,32 @@
   },
   {
     "file": "packages/core/src/Tree/TreeRoot.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 105,
+        "column": 7,
+        "endLine": 105,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "vue/use-v-on-exact",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/use-v-on-exact] @keydown without .exact will also fire when system modifiers are pressed",
+        "line": 287,
+        "column": 7,
+        "endLine": 287,
+        "endColumn": 31,
+        "help": "Why: @click fires even when Ctrl/Shift/Alt/Meta is pressed. Use .exact to only fire when no system modifiers are active.\nFix:\n  <!-- Before -->\n  <button @click=\"onClick\" @click.ctrl=\"onCtrlClick\" />\n  \n  <!-- After -->\n  <button @click.exact=\"onClick\" @click.ctrl=\"onCtrlClick\" />"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Tree/TreeVirtualizer.vue",
@@ -8486,8 +9527,20 @@
   },
   {
     "file": "packages/core/src/Viewport/Viewport.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'nonce'",
+        "line": 22,
+        "column": 7,
+        "endLine": 22,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 1,
     "warningCount": 0
   },
   {
@@ -8564,8 +9617,75 @@
   },
   {
     "file": "packages/core/src/YearPicker/YearPickerRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'locale'",
+        "line": 148,
+        "column": 7,
+        "endLine": 148,
+        "endColumn": 37,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 149,
+        "column": 7,
+        "endLine": 149,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isYearDisabled'",
+        "line": 172,
+        "column": 7,
+        "endLine": 195,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isYearUnavailable'",
+        "line": 172,
+        "column": 7,
+        "endLine": 195,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'nextPage'",
+        "line": 172,
+        "column": 7,
+        "endLine": 195,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'prevPage'",
+        "line": 172,
+        "column": 7,
+        "endLine": 195,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 6,
     "warningCount": 0
   },
   {
@@ -8660,8 +9780,75 @@
   },
   {
     "file": "packages/core/src/YearRangePicker/YearRangePickerRoot.vue",
-    "messages": [],
-    "errorCount": 0,
+    "messages": [
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'dir'",
+        "line": 169,
+        "column": 7,
+        "endLine": 169,
+        "endColumn": 34,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'locale'",
+        "line": 170,
+        "column": 7,
+        "endLine": 170,
+        "endColumn": 37,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isYearDisabled'",
+        "line": 205,
+        "column": 7,
+        "endLine": 228,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'isYearUnavailable'",
+        "line": 205,
+        "column": 7,
+        "endLine": 228,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'nextPage'",
+        "line": 205,
+        "column": 7,
+        "endLine": 228,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      },
+      {
+        "ruleId": "script/no-dupe-keys",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:script/no-dupe-keys] Duplicated key 'prevPage'",
+        "line": 205,
+        "column": 7,
+        "endLine": 228,
+        "endColumn": 3,
+        "help": "A prop and a setup binding share the component instance namespace; rename the binding or derive it from the prop."
+      }
+    ],
+    "errorCount": 6,
     "warningCount": 0
   },
   {

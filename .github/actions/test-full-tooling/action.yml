@@ -45,6 +45,11 @@ runs:
       uses: ./.github/actions/test-native-attribute-values-7502
     - name: Install CSS formatter reference browser
       uses: ./.github/actions/install-formatter-css-browser
+    - name: Capture original historical Vue text and SFC documents
+      if: ${{ always() && inputs.shard == '1' }}
+      uses: ./.github/actions/test-native-historical-sfc-documents
+      with:
+        comparison-base: "0000000000000000000000000000000000000000"
     - name: Select the exhaustive full tooling inventory
       shell: bash
       run: node tools/support/compat/github/plan-tooling-tests.mjs 0000000000000000000000000000000000000000 "$GITHUB_SHA" --tier merge --output "$RUNNER_TEMP/tooling-plan.json"

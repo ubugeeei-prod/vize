@@ -147,8 +147,8 @@ export const portugueseVue2: Record<string, readonly [purpose: string, bad: stri
     ],
     "vue/valid-v-on": [
       "Exigir diretivas `v-on` válidas",
-      "As formas de listener omitem um argumento de evento ou a expressão obrigatória de manipulador ou objeto.",
-      "Use um evento com seu manipulador ou passe um objeto de listeners para `v-on` sem argumento.",
+      "Os listeners omitem um evento ou expressão obrigatória, ou usam modificadores não suportados, como .sync e .nativeish.",
+      "Use um manipulador, um modificador de ação sem manipulador, um modificador de teclado suportado ou um objeto de listeners para `v-on` sem argumento.",
     ],
     "vue/valid-v-once": [
       "Exigir diretivas `v-once` válidas",

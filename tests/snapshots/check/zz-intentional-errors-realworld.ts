@@ -20,6 +20,7 @@ import {
   vuefesApp,
 } from "../../_helpers/apps.ts";
 import { naiveUiApp, primeVueApp, vuetifyApp } from "../../_helpers/ui-library-apps.ts";
+import { prepareCheckFixtureDependencies } from "../../_helpers/lint-fixture-dependencies.ts";
 import { runVizeCheckWithInjectedTypeError } from "../_helpers/realworld.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -89,9 +90,14 @@ describe("real-world vize check injected type errors", () => {
   it("ant-design-vue injected semantic diagnostics are tracked in #1727", { skip: true }, () => {});
 
   for (const app of realWorldApps) {
-    it(`${app.name} catches and repairs an injected TS2322`, () => {
-      const summary = runVizeCheckWithInjectedTypeError(app, {
+    it(`${app.name} catches and repairs an injected TS2322`, (t) => {
+      const fixture = ["misskey", "naive-ui", "npmx.dev", "voicevox"].includes(app.name)
+        ? prepareCheckFixtureDependencies(app)
+        : undefined;
+      if (fixture) t.after(fixture.verify);
+      const summary = runVizeCheckWithInjectedTypeError(fixture?.app ?? app, {
         timeoutMs: 300_000,
+        env: fixture?.env,
         tsconfig:
           app.name === "misskey"
             ? misskeyInjectedTsconfig

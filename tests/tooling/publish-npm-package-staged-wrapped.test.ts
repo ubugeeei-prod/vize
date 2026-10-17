@@ -80,10 +80,7 @@ for (const row of cases) {
         JSON.stringify({ name: "@vizejs/native-darwin-arm64", version: "0.433.0" }) + "\n",
       );
       fs.writeFileSync(detailPath, row.detail);
-      fs.writeFileSync(
-        statePath,
-        JSON.stringify({ publishCalls: 0, versionChecks: 0, tagChecks: 0, invocations: [] }),
-      );
+      fs.writeFileSync(statePath, JSON.stringify({ publishCalls: 0, invocations: [] }));
       writeFakeCommand(
         binDir,
         "vp",
@@ -107,10 +104,14 @@ for (const row of cases) {
           "const state = JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'));",
           "const url = new URL(process.argv.at(-1));",
           "const exact = url.pathname.endsWith('/0.433.0');",
-          "if (exact) state.versionChecks++; else state.tagChecks++;",
-          "fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
-          "const visible = process.env.WRAP_HIDDEN !== '1' && (state.published",
-          "  || (state.publishCalls === 1 && state.versionChecks >= 3));",
+          // Version and tag probes run concurrently. Each endpoint owns its
+          // observation log; neither rewrites the publisher's shared state.
+          "const checksPath = process.env.VP_STATE_PATH + (exact ? '.versions' : '.tags');",
+          "const checks = fs.existsSync(checksPath) ? fs.readFileSync(checksPath, 'utf8').trim().split('\\n').length : 0;",
+          "const available = state.published || state.publishCalls === 1;",
+          "const visible = available && (!exact || (process.env.WRAP_HIDDEN !== '1' && (state.published || checks >= 2)));",
+          "const matches = visible && (exact || process.env.WRAP_WRONG_TAG !== '1');",
+          "fs.appendFileSync(checksPath, JSON.stringify({ url: url.href, matches }) + '\\n');",
           "if (!visible) { process.stdout.write('{}VIZE_HTTP_STATUS:404'); process.exit(0); }",
           "const name = '@vizejs/native-darwin-arm64';",
           "const tag = process.env.WRAP_WRONG_TAG === '1' ? '0.432.0' : '0.433.0';",
@@ -139,13 +140,49 @@ for (const row of cases) {
       assert.equal(result.status, boundedFailure ? 1 : 0, `${result.stderr}\n${result.stdout}`);
       const state = JSON.parse(fs.readFileSync(statePath, "utf8")) as {
         publishCalls: number;
-        versionChecks: number;
-        tagChecks: number;
         invocations: { arguments: string[]; cwd: string }[];
       };
       assert.equal(state.publishCalls, row.generic ? 3 : 1);
-      assert.equal(state.versionChecks, boundedFailure ? 5 : row.generic ? 4 : 3);
-      assert.equal(state.tagChecks, boundedFailure ? 3 : 1);
+      const observations = (suffix: string) =>
+        fs
+          .readFileSync(statePath + suffix, "utf8")
+          .trim()
+          .split("\n")
+          .map((line) => JSON.parse(line) as { url: string; matches: boolean });
+      const versions = observations(".versions");
+      const tags = observations(".tags");
+      const probe = (observation: { url: string }) =>
+        new URL(observation.url).searchParams.get("vize-publish-check");
+      assert.equal(new Set(versions.map(probe)).size, versions.length);
+      assert.equal(new Set(tags.map(probe)).size, tags.length);
+      assert.ok(versions.length <= 1 + state.publishCalls + 3, "bounded version probes");
+      assert.ok(tags.length >= 1 && tags.length <= 3, "bounded visibility polls");
+      for (const tag of tags) {
+        assert.ok(
+          versions.some((version) => probe(version) === probe(tag)),
+          "each poll checks both endpoints",
+        );
+      }
+      if (boundedFailure) {
+        assert.equal(tags.length, 3, "all visibility attempts finish before timeout");
+        assert.ok(
+          tags.every(
+            (tag) =>
+              !tag.matches || !versions.find((version) => probe(version) === probe(tag))?.matches,
+          ),
+          "no poll observed the required version and tag together",
+        );
+        assert.ok(
+          row.hidden
+            ? tags.every((tag) => tag.matches)
+            : versions.some((version) => version.matches),
+          "one visible endpoint alone cannot complete publication",
+        );
+      } else {
+        const lastTag = tags.at(-1)!;
+        assert.ok(lastTag.matches);
+        assert.ok(versions.find((version) => probe(version) === probe(lastTag))?.matches);
+      }
       assert.deepEqual(
         state.invocations,
         Array.from({ length: state.publishCalls }, () => ({

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
+import { parse } from "yaml";
 import { needsFormatterCssBrowser } from "../../tools/support/compat/github/formatter-css-browser-plan.mjs";
 import {
   selectToolingShard,
@@ -46,33 +47,28 @@ await test("only the selected browser-owning runner needs Chromium, with complet
   );
 });
 
-await test("selected and full workflows provision the actual tests-package browser before execution", () => {
+await test("the full tooling owner provisions the actual tests-package browser before execution", () => {
   const read = (file) => fs.readFileSync(new URL(`../../${file}`, import.meta.url), "utf8");
-  const source = read(".github/workflows/pr-source-checks.yml");
-  const prepare = source.indexOf(
-    "- name: Prepare checksum-pinned Pkl and upstream lint dependencies",
+  const check = parse(read(".github/workflows/check.yml"));
+  assert.equal(
+    check.jobs["test-scripts"].steps.filter(
+      (step) => step.uses === "./.github/actions/test-full-tooling",
+    ).length,
+    1,
   );
-  const install = source.indexOf("uses: ./.github/actions/install-formatter-css-browser");
-  const selected = source.indexOf("- name: Test selected PR tooling scripts");
-  const full = source.indexOf("- name: Test tooling scripts");
-  assert.ok(prepare >= 0 && prepare < install && install < selected && selected < full);
-  assert.match(
-    source.slice(prepare, install),
-    /VIZE_TOOLING_TEST_PLAN: \$\{\{ runner\.temp \}\}\/tooling-plan\.json/,
+  const worker = parse(read(".github/actions/test-full-tooling/action.yml")).runs.steps;
+  const install = worker.findIndex(
+    (step) => step.uses === "./.github/actions/install-formatter-css-browser",
   );
-  const check = read(".github/workflows/check.yml");
-  const tooling = check.slice(
-    check.indexOf("\n  test-scripts:"),
-    check.indexOf("\n  editor-extensions:"),
+  const tests = worker.findIndex((step) => /\btest:scripts:planned\b/.test(step.run ?? ""));
+  assert.ok(install >= 0 && install < tests);
+  assert.equal(worker[install].if, undefined);
+  assert.equal(worker[tests].env.VIZE_TOOLING_TEST_TIER, "merge");
+  assert.equal(worker[tests].env.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
+  assert.equal(
+    worker[tests].env.VIZE_TOOLING_TEST_SHARD,
+    "${{ inputs.shard }}/${{ inputs.total }}",
   );
-  assert.match(tooling, /uses: \.\/\.github\/actions\/test-full-tooling/);
-  const worker = read(".github/actions/test-full-tooling/action.yml");
-  assert.ok(
-    worker.indexOf("- name: Install CSS formatter reference browser") >= 0 &&
-      worker.indexOf("- name: Install CSS formatter reference browser") <
-        worker.indexOf("- name: Test release scripts"),
-  );
-  assert.match(worker, /uses: \.\/\.github\/actions\/install-formatter-css-browser/);
   const action = read(".github/actions/install-formatter-css-browser/action.yml");
   assert.ok(action.indexOf("prepare-pkl-schema.mjs") < action.indexOf("id: formatter-css-browser"));
   assert.ok(action.indexOf("id: formatter-css-browser") < action.indexOf("setup-ubuntu-archive"));

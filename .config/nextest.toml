@@ -85,6 +85,12 @@ contract-guests = { max-threads = 1 }
 filter = 'package(=vize_extension_host)'
 test-group = "contract-guests"
 
+# This complete runtime parity case otherwise starts after the short compiler
+# tests and leaves an idle tail. Only its PR scheduling order changes.
+[[profile.pr.overrides]]
+filter = 'package(=vize_atelier_vapor) & binary(=vapor_custom_directive_parity) & test(=custom_directive_payloads_remain_reactive_on_elements_and_components)'
+priority = 100
+
 # Full T1 has no default-filter: every ordinary workspace case remains selected.
 [profile.full]
 fail-fast = false

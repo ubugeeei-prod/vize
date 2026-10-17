@@ -151,31 +151,45 @@ fn assert_number_queries(fixture: &mut Fixture, source: &str) {
 }
 
 fn assert_method(hover: &Value, name: &str) {
-    assert!(
-        hover["contents"]["value"]
-            .as_str()
-            .is_some_and(|text| text.contains(name)),
-        "{hover:#}"
+    // Complete standard-library hover packets from the pinned native runtime.
+    let value = match name {
+        "toPrecision" => concat!(
+            "```typescript\n(method) Number.toPrecision(precision?: number): string\n```\n",
+            "Returns a string containing a number represented either in exponential or ",
+            "fixed-point notation with a specified number of digits.\n\n",
+            "*@param* `precision` — Number of significant digits. Must be in the range 1 - 100, inclusive."
+        ),
+        "toUpperCase" => concat!(
+            "```typescript\n(method) String.toUpperCase(): string\n```\n",
+            "Converts all the alphabetic characters in a string to uppercase."
+        ),
+        _ => panic!("unexpected method oracle: {name}"),
+    };
+    assert_eq!(
+        hover,
+        &json!({
+            "contents": {"kind": "markdown", "value": value},
+            "range": {
+                "start": {"line": 2, "character": 6},
+                "end": {"line": 2, "character": 17}
+            }
+        })
     );
 }
 
 fn assert_native_missing_method(diagnostics: &Value, ty: &str, method: &str) {
-    let errors = diagnostics.as_array().expect("diagnostic publication");
-    assert!(
-        errors.iter().any(|diagnostic| {
-            diagnostic["source"] == "vize/types"
-                && diagnostic["code"] == 2339
-                && diagnostic["message"]
-                    .as_str()
-                    .is_some_and(|message| message.contains(ty) && message.contains(method))
-        }),
-        "{diagnostics:#}"
-    );
-    assert!(
-        !errors.iter().any(|diagnostic| diagnostic["message"]
-            .as_str()
-            .is_some_and(|message| message.contains("timed out"))),
-        "{diagnostics:#}"
+    assert_eq!(
+        diagnostics,
+        &json!([{
+            "source": "vize/types",
+            "code": 2339,
+            "severity": 1,
+            "message": vize_l0::cstr!("Property '{method}' does not exist on type '{ty}'."),
+            "range": {
+                "start": {"line": 2, "character": 6},
+                "end": {"line": 2, "character": 17}
+            }
+        }])
     );
 }
 

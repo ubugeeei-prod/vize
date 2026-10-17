@@ -219,6 +219,7 @@ test("--budget-mode record-only reports an unusable baseline as a warning", () =
       ].join("\n"),
     );
     const artifact = readJson(artifactPath(fixture, "json"));
+    assert.equal(artifact.budget.verdict, "unusable");
     assert.equal(artifact.budget.passed, false);
     assertRecordOnlyObservations(fixture, artifact, { baselineOutput: "", baselineFiles: [] });
   } finally {

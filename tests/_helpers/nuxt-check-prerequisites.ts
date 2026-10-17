@@ -4,21 +4,29 @@ import * as path from "node:path";
 import { npmxGeneratorTaskArgs } from "./app-fixture-runtime.ts";
 import { walkFiles } from "./nuxt-check-source.ts";
 
+export function authoredNuxtPrerequisiteTasks(
+  name: string,
+  postinstall: unknown,
+): readonly ("generate:lexicons" | "generate:sprite")[] {
+  if (name !== "npmx.dev") return [];
+  assert.equal(typeof postinstall, "string", "npmX must retain its authored postinstall");
+  const tasks = ["generate:lexicons", "generate:sprite"] as const;
+  for (const task of tasks) {
+    assert.ok(
+      (postinstall as string).includes(`vp run ${task}`),
+      `npmX no longer authors the ${task} prerequisite`,
+    );
+  }
+  return tasks;
+}
+
 /** These are the pinned npmX postinstall's generators, without its source rewrite. */
 export function prepareNuxtPrerequisites(
   name: string,
   postinstall: unknown,
   command: (args: string[], timeout: number) => void,
 ): void {
-  if (name !== "npmx.dev") return;
-  assert.equal(typeof postinstall, "string", "npmX must retain its authored postinstall");
-  for (const task of ["generate:lexicons", "generate:sprite"] as const) {
-    assert.ok(
-      (postinstall as string).includes(`vp run ${task}`),
-      `npmX no longer authors the ${task} prerequisite`,
-    );
-  }
-  for (const task of ["generate:lexicons", "generate:sprite"] as const)
+  for (const task of authoredNuxtPrerequisiteTasks(name, postinstall))
     command(npmxGeneratorTaskArgs(task), 120_000);
 }
 

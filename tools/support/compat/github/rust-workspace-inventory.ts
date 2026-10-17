@@ -38,10 +38,21 @@ export function inferWorkspaceProfileDefaults(manifest, cargoConfig, env = {}) {
     const profile = profiles[name] ?? {};
     for (const flag of ["opt-level", "debug-assertions", "overflow-checks"])
       assert.ok(!Object.hasOwn(profile, flag), `${name} overrides ${flag}`);
-    assert.ok(
-      !profile.package && !profile["build-override"],
-      `${name} has package/build overrides`,
-    );
+    assert.ok(!Object.hasOwn(profile, "build-override"), `${name} has build overrides`);
+    if (Object.hasOwn(profile, "package")) {
+      assert.equal(name, "ci", `${name} has package overrides`);
+      assert.deepEqual(
+        profile.package,
+        {
+          "sha2:0.11.1": {
+            "opt-level": 3,
+            "debug-assertions": true,
+            "overflow-checks": true,
+          },
+        },
+        "ci package overrides differ from the reviewed native image hash optimization",
+      );
+    }
     assert.ok(!config.profile?.[name], `Cargo config overrides ${name}`);
   }
   assert.ok(

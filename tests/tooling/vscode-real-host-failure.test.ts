@@ -12,12 +12,19 @@ test("real host failure preserves full log and controlled source bytes before cl
   const workspace = path.join(directory, "workspace");
   const destination = path.join(directory, "evidence");
   const log = Buffer.from("whole watched event\nwhole refusal stamp\n");
+  const completion = Buffer.from(
+    '{"packets":[{"source":"ownSlots.","selectedIndex":0,"publicItems":[{"label":"header","documentation":{"type":"undefined","isMarkdownString":false}}]}]}\n',
+  );
   const source = Buffer.from("<template>é\r\n<div>全体</div></template>\n");
   fs.mkdirSync(path.join(workspace, "node_modules", ".vize"), {
     recursive: true,
   });
   fs.mkdirSync(path.join(workspace, "src"));
   fs.writeFileSync(path.join(workspace, "node_modules", ".vize", "lsp.log"), log);
+  fs.writeFileSync(
+    path.join(workspace, "node_modules", ".vize", "rich-completion.json"),
+    completion,
+  );
   fs.writeFileSync(path.join(workspace, "src", "Scenario.vue"), source);
   fs.writeFileSync(path.join(workspace, "node_modules", "unrelated-large-file"), "not evidence");
   try {
@@ -29,12 +36,22 @@ test("real host failure preserves full log and controlled source bytes before cl
       log,
     );
     assert.deepEqual(fs.readFileSync(path.join(destination, "src/Scenario.vue.txt")), source);
+    assert.deepEqual(
+      fs.readFileSync(path.join(destination, "node_modules/.vize/rich-completion.json.txt")),
+      completion,
+    );
     assert.deepEqual(result.captured, [
       {
         file: "node_modules/.vize/lsp.log",
         output: "node_modules/.vize/lsp.log.txt",
         bytes: log.length,
         sha256: crypto.createHash("sha256").update(log).digest("hex"),
+      },
+      {
+        file: "node_modules/.vize/rich-completion.json",
+        output: "node_modules/.vize/rich-completion.json.txt",
+        bytes: completion.length,
+        sha256: crypto.createHash("sha256").update(completion).digest("hex"),
       },
       {
         file: "src/Scenario.vue",

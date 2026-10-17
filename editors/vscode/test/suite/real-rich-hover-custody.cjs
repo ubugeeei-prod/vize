@@ -1,13 +1,18 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const vscode = require("vscode");
 const { getWorkspaceFolderPath } = require("./real-server-support.cjs");
 
 const packets = [];
+const completionPackets = [];
+let requestOrder = 0;
 
 function beginHover(document, position, expected) {
   const source = document.getText();
   return {
+    order: ++requestOrder,
+    startedAt: new Date().toISOString(),
     source,
     sourceSha256: crypto.createHash("sha256").update(source).digest("hex"),
     document: {
@@ -56,4 +61,53 @@ function retainHover(request, hovers) {
   fs.writeFileSync(output, `${JSON.stringify({ schemaVersion: 1, packets }, null, 2)}\n`);
 }
 
-module.exports = { beginHover, retainHover };
+function beginCompletion(document, position, expected, maxItemsToResolve) {
+  const request = beginHover(document, position, expected);
+  request.request.method = "vscode.executeCompletionItemProvider";
+  request.request.maxItemsToResolve = maxItemsToResolve;
+  return request;
+}
+
+function retainCompletion(request, completions) {
+  const label = (item) => (typeof item.label === "string" ? item.label : item.label.label);
+  const selectedIndex = completions?.items.findIndex(
+    (item) => label(item) === request.expected.label,
+  );
+  const packet = {
+    ...request,
+    receivedAt: new Date().toISOString(),
+    resultType: completions === null ? "null" : typeof completions,
+    actual: completions,
+    selectedIndex,
+    publicItems: completions?.items.map((item, index) => ({
+      index,
+      ...item,
+      label: item.label,
+      kind: item.kind,
+      detail: item.detail,
+      data: item.data,
+      documentation: {
+        raw: item.documentation,
+        type: typeof item.documentation,
+        constructor: item.documentation?.constructor?.name,
+        isMarkdownString: item.documentation instanceof vscode.MarkdownString,
+        value: item.documentation?.value,
+        isTrusted: item.documentation?.isTrusted,
+        supportHtml: item.documentation?.supportHtml,
+        supportThemeIcons: item.documentation?.supportThemeIcons,
+        baseUri: item.documentation?.baseUri?.toString(),
+      },
+    })),
+  };
+  completionPackets.push(packet);
+  const output = path.join(getWorkspaceFolderPath(), "node_modules/.vize/rich-completion.json");
+  // This only records the first public result; the caller asserts the same
+  // original item without issuing any diagnostic or replacement request.
+  const bytes = `${JSON.stringify({ schemaVersion: 1, packets: completionPackets }, null, 2)}\n`;
+  for (const destination of [output, process.env.VIZE_TEST_COMPLETION_EVIDENCE].filter(Boolean)) {
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.writeFileSync(destination, bytes);
+  }
+}
+
+module.exports = { beginHover, retainHover, beginCompletion, retainCompletion };

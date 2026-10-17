@@ -10,6 +10,7 @@ import {
   createArchiveReceipt,
   verifyArchiveReceipt,
 } from "../../tools/support/compat/github/rust-test-archive.mjs";
+import { selectArchive } from "../../tools/support/compat/github/rust-archive-download.ts";
 
 // Only the merge queue still transfers a receipt-bound archive to its shards.
 for (const job of ["merge-rust-source"]) {
@@ -24,6 +25,7 @@ for (const job of ["merge-rust-source"]) {
       step.uses?.startsWith("actions/download-artifact@"),
     );
     assert.equal(upload.with.overwrite, true);
+    assert.equal(download.with["artifact-ids"], "${{ steps.rust-archive.outputs.id }}");
     const name = (template, context) =>
       template
         .replaceAll("${{ github.run_id }}", context.runId)
@@ -40,10 +42,22 @@ for (const job of ["merge-rust-source"]) {
       git("add", "fixture", "rust-toolchain.toml");
       git("commit", "-qm", "source identity");
       const producer = { runId: "36308996672", sha: git("rev-parse", "HEAD"), attempt: "1" };
-      const directory = join(cwd, "artifacts", name(upload.with.name, producer));
+      const artifact = {
+        id: 901,
+        name: name(upload.with.name, producer),
+        digest: `sha256:${"a".repeat(64)}`,
+        expired: false,
+        workflow_run: { id: Number(producer.runId), head_sha: producer.sha },
+      };
+      const archiveContext = (run) => ({
+        run: run.runId,
+        sha: run.sha,
+        repository: "ubugeeei-prod/vize",
+      });
+      const directory = join(cwd, "artifacts", String(artifact.id));
       mkdirSync(directory, { recursive: true });
-      const archive = join(directory, "tests.tar.zst");
-      const receiptPath = join(directory, "receipt.json");
+      let archive = join(directory, "tests.tar.zst");
+      let receiptPath = join(directory, "receipt.json");
       const context = {
         cwd,
         nextestVersion: "cargo-nextest 0.9.146",
@@ -61,26 +75,30 @@ for (const job of ["merge-rust-source"]) {
 
       // Retry the failed consumer only: there is deliberately no attempt-2 producer.
       const retry = { ...producer, attempt: "2" };
-      const selected = join(cwd, "artifacts", name(download.with.name, retry));
+      const selection = selectArchive([artifact], archiveContext(retry));
+      assert.deepEqual(selection, { id: artifact.id, digest: artifact.digest });
+      const selected = join(cwd, "artifacts", String(selection.id));
       await verifyArchiveReceipt(
         JSON.parse(readFileSync(join(selected, "receipt.json"), "utf8")),
         join(selected, "tests.tar.zst"),
         context,
       );
       for (const changed of [{ runId: "36308996673" }, { sha: "f".repeat(40) }]) {
-        const unrelated = join(
-          cwd,
-          "artifacts",
-          name(download.with.name, { ...retry, ...changed }),
+        assert.throws(
+          () => selectArchive([artifact], archiveContext({ ...retry, ...changed })),
+          /Exactly one immutable Rust archive is required/,
         );
-        assert.throws(() => readFileSync(join(unrelated, "receipt.json")), { code: "ENOENT" });
       }
 
-      // A completed full rerun replaces that same exact artifact and receipt together.
-      assert.equal(
-        name(upload.with.name, { ...producer, attempt: "3" }),
-        name(download.with.name, retry),
-      );
+      // A full rerun reuses the source-bound name but creates a new immutable ID.
+      const replacement = { ...artifact, id: 902, digest: `sha256:${"b".repeat(64)}` };
+      assert.equal(name(upload.with.name, { ...producer, attempt: "3" }), replacement.name);
+      const rebuilt = selectArchive([replacement], archiveContext(retry));
+      assert.notEqual(rebuilt.id, selection.id);
+      const rebuiltDirectory = join(cwd, "artifacts", String(rebuilt.id));
+      mkdirSync(rebuiltDirectory);
+      archive = join(rebuiltDirectory, "tests.tar.zst");
+      receiptPath = join(rebuiltDirectory, "receipt.json");
       writeFileSync(archive, "full rerun archive bytes");
       await assert.rejects(verifyArchiveReceipt(first, archive, context), /archiveSha256 mismatch/);
       writeFileSync(receiptPath, JSON.stringify(await createArchiveReceipt(archive, context)));

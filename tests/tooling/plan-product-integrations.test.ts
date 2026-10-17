@@ -91,9 +91,15 @@ test("shared dependency and planner changes exercise every integration", () => {
     "package.json",
     "tools/support/compat/github/plan-product-integrations.ts",
     ".github/actions/cache-vp-bootstrap/action.yml",
+    ".github/actions/cache-pnpm-verification/action.yml",
+    ".github/actions/cache-pnpm-verification/cache-key.ts",
     "patches/braces@3.0.3.patch",
   ]) {
-    assert.deepEqual(Object.values(planProductIntegrations([file])), [true, true, true]);
+    assert.deepEqual(
+      planProductIntegrations([file]),
+      { nuxt: true, "musea-native": true, "musea-browser": true },
+      file,
+    );
   }
 });
 

@@ -38,7 +38,7 @@ const inputs = [
   /^tools\/support\/compat\/github\/canonical-corpus-[a-z-]+\.(?:mjs|ts|rs)$/,
   /^tools\/support\/compat\/github\/(?:comparison-base|plan-source-checks|require-needs-success|prepare-vue-benchmarks|release-preflight-github)\.mjs$/,
   /^tools\/support\/compat\/github\/(?:comparison-base|plan-source-checks)\.ts$/,
-  /^tools\/support\/compat\/github\/(?:require-needs-success|require-rust-tier)\.ts$/,
+  /^tools\/support\/compat\/github\/(?:require-needs-success|require-rust-tier|require-pr-checks)\.ts$/,
 ];
 // A symlink can make the committed fixture sweep read any directory, so a
 // changed link anywhere under tests/_fixtures selects the corpus.

@@ -206,7 +206,11 @@ export const testAndBenchmarkTasks = defineTasks({
   coverage: task("cargo run -p vize_test_runner --bin coverage", { input: cacheInputs.rust }),
   "coverage:all": noCacheTask(runTasks("coverage", "coverage:source")),
   "coverage:source": task(rustSourceCoverageCommand, {
-    env: ["VIZE_NUXT_CONFIG_ITERATIONS", "VIZE_NATIVE_SYNTAX_CAPTURE_DIR"],
+    env: [
+      "VIZE_NUXT_CONFIG_ITERATIONS",
+      "VIZE_NATIVE_SYNTAX_CAPTURE_DIR",
+      "VIZE_LSP_EXIT_FAILURE_EVIDENCE",
+    ],
     input: cacheInputs.rust,
   }),
   "coverage:source:branch": task(rustBranchCoverageCommand, { input: cacheInputs.rust }),

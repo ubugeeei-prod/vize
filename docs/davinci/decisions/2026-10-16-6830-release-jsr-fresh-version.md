@@ -70,7 +70,7 @@ performance, cancellation, and publication changes are excluded. Future release
 preparation must refresh its release workflow manifest against the new source.
 The existing v0.457.0 release receipt remains immutable.
 
-The package check now invokes `verify-consumer-age.mjs` with the pinned actual
+The package check now invokes `verify-consumer-age.ts` with the pinned actual
 Deno 2.9.7 runtime. Three separate empty caches and projects use the exact shared
 policy against a local read-only npm registry fixture: a one-hour-old Vize-owned
 package executes, a one-hour-old external package is rejected by the dependency

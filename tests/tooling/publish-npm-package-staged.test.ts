@@ -14,6 +14,7 @@ test("publish_npm_package waits instead of retrying a hidden staged npm publish"
   const packageDir = path.join(tempDir, "pkg");
   const binDir = path.join(tempDir, "bin");
   const statePath = path.join(tempDir, "vp-state.json");
+  const registryUrlLogPath = path.join(tempDir, "registry-urls.log");
 
   try {
     fs.mkdirSync(packageDir, { recursive: true });
@@ -23,7 +24,7 @@ test("publish_npm_package waits instead of retrying a hidden staged npm publish"
       path.join(packageDir, "package.json"),
       `${JSON.stringify({ name: "@vizejs/example", version: "1.2.3" }, null, 2)}\n`,
     );
-    writeFileSync(statePath, JSON.stringify({ publishCalls: 0, tagChecks: 0, versionChecks: 0 }));
+    writeFileSync(statePath, JSON.stringify({ publishCalls: 0 }));
     writeFakeCommand(
       binDir,
       "vp",
@@ -32,27 +33,9 @@ test("publish_npm_package waits instead of retrying a hidden staged npm publish"
         "const args = process.argv.slice(2);",
         "const state = fs.existsSync(process.env.VP_STATE_PATH)",
         "  ? JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'))",
-        "  : { publishCalls: 0, tagChecks: 0, versionChecks: 0 };",
+        "  : { publishCalls: 0 };",
         "function save() {",
         "  fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'version') {",
-        "  state.versionChecks += 1;",
-        "  save();",
-        "  if (state.publishCalls === 1 && state.versionChecks >= 3) {",
-        "    process.stdout.write(JSON.stringify('1.2.3'));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'dist-tags') {",
-        "  state.tagChecks += 1;",
-        "  save();",
-        "  if (state.publishCalls === 1) {",
-        "    process.stdout.write(JSON.stringify({ latest: '1.2.3' }));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
         "}",
         "if (args[0] === 'pm' && args[1] === 'publish') {",
         "  state.publishCalls += 1;",
@@ -72,6 +55,7 @@ test("publish_npm_package waits instead of retrying a hidden staged npm publish"
         VP_STATE_PATH: statePath,
         NPM_FAKE_STATE_PATH: statePath,
         NPM_FAKE_VERSION: "1.2.3",
+        NPM_FAKE_URL_LOG: registryUrlLogPath,
         PUBLISH_RETRY_LIMIT: "6",
         PUBLISH_RETRY_DELAY: "1",
         PUBLISH_RESOLUTION_RETRY_LIMIT: "3",
@@ -84,12 +68,15 @@ test("publish_npm_package waits instead of retrying a hidden staged npm publish"
     assert.match(result.stdout, /visible in npm with dist-tag latest/i);
     const state = JSON.parse(fs.readFileSync(statePath, "utf8")) as {
       publishCalls: number;
-      tagChecks: number;
-      versionChecks: number;
     };
-    assert.equal(state.publishCalls, 1);
-    assert.equal(state.tagChecks, 1);
-    assert.equal(state.versionChecks, 3);
+    assert.deepEqual(state, { publishCalls: 1 }, "registry probes never rewrite publisher state");
+    const requests = fs
+      .readFileSync(registryUrlLogPath, "utf8")
+      .trim()
+      .split("\n")
+      .map((url) => new URL(url).pathname);
+    assert.equal(requests.filter((url) => url === "/%40vizejs%2Fexample").length, 1);
+    assert.equal(requests.filter((url) => url === "/%40vizejs%2Fexample/1.2.3").length, 3);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }

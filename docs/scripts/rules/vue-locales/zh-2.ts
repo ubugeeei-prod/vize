@@ -146,8 +146,8 @@ export const chineseVue2: Record<string, readonly [purpose: string, bad: string,
   ],
   "vue/valid-v-on": [
     "要求 `v-on` 指令有效",
-    "监听器形式缺少事件参数，或缺少所需的处理器或对象表达式。",
-    "提供事件及其处理器，或将监听器对象传给无参数的 `v-on`。",
+    "监听器缺少必需的事件或表达式，或使用了 .sync、.nativeish 等不受支持的修饰符。",
+    "使用处理器、无需处理器的动作修饰符、受支持的键盘修饰符，或将监听器对象传给无参数的 `v-on`。",
   ],
   "vue/valid-v-once": [
     "要求 `v-once` 指令有效",

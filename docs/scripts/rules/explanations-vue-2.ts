@@ -205,10 +205,10 @@ export const vue2Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "vue/valid-v-on",
-    "The listener forms omit an event argument or their required handler/object expression.",
-    "Use an event with its handler, or pass a listener object to argument-free `v-on`.",
-    "イベント引数または必要なハンドラー・オブジェクト式がありません。",
-    "イベントとハンドラーを指定するか、引数なしの `v-on` にリスナーのオブジェクトを渡します。",
+    "The listeners omit a required event or expression, or use unsupported modifiers such as .sync and .nativeish.",
+    "Use a handler, a handler-free action modifier, a supported keyboard modifier, or a listener object for argument-free `v-on`.",
+    "必要なイベントや式がないか、.sync や .nativeish など未対応の修飾子を使っています。",
+    "ハンドラー、式を省略できる動作修飾子、対応するキー修飾子、または引数なしの `v-on` に渡すリスナーのオブジェクトを使います。",
   ],
   [
     "vue/valid-v-once",

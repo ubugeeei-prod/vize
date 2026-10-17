@@ -287,6 +287,59 @@ test("release workflow creates GitHub Releases only after registry publishing su
   assert.match(JSON.stringify(releaseJob), /softprops\/action-gh-release@/);
 });
 
+test("signed asset preparation overlaps registries without moving public release ahead of its gates", () => {
+  const jobs = parse(readRepoFile(".github", "workflows", "release.yml")).jobs;
+  const prepared = jobs["prepare-release-assets"];
+  const published = jobs["create-github-release"];
+  assert.deepEqual(jobNeeds(prepared), [
+    "build-cli",
+    "build-editor-extensions",
+    "release-preflight",
+  ]);
+  assert.deepEqual(prepared.permissions, { contents: "read", "id-token": "write" });
+  assert.equal(prepared.if, undefined);
+  assert.equal(prepared["continue-on-error"], undefined);
+  assert.ok(jobNeeds(published).includes("prepare-release-assets"));
+  assert.equal(published.if, undefined);
+  assert.deepEqual(published.permissions, { contents: "write" });
+  const download = published.steps.find((step: { uses?: string }) =>
+    step.uses?.startsWith("actions/download-artifact@"),
+  );
+  assert.equal(
+    download.with["artifact-ids"],
+    "${{ needs.prepare-release-assets.outputs.artifact-id }}",
+  );
+  assert.equal(download.with["run-id"], undefined, "assets must come from this Release run");
+  const verification = published.steps.findIndex((step: { run?: string }) =>
+    step.run?.includes("release-assets.ts extract"),
+  );
+  const publication = published.steps.findIndex((step: { uses?: string }) =>
+    step.uses?.startsWith("softprops/action-gh-release@"),
+  );
+  assert.ok(verification >= 0 && verification < publication);
+  assert.equal(published.env.RELEASE_SOURCE_SHA, "${{ inputs.expected_sha }}");
+  assert.equal(
+    published.steps[verification].env.RELEASE_ASSETS_SHA256,
+    "${{ needs.prepare-release-assets.outputs.sha256 }}",
+  );
+  const recipe = parse(readRepoFile(".github/actions/prepare-release-assets/action.yml"));
+  const sboms = recipe.runs.steps.filter((step: { uses?: string }) =>
+    step.uses?.startsWith("anchore/sbom-action@"),
+  );
+  assert.equal(sboms.length, 2);
+  for (const step of sboms) assert.equal(step.with["upload-release-assets"], false);
+  const upload = recipe.runs.steps.find((step: { uses?: string }) =>
+    step.uses?.startsWith("actions/upload-artifact@"),
+  );
+  assert.equal(upload.with["if-no-files-found"], "error");
+  const catalog = readRepoFile("tools/support/release/pr_pin_catalog.rs");
+  for (const authority of [
+    ".github/actions/prepare-release-assets/action.yml",
+    "tools/support/release/release-assets.ts",
+  ])
+    assert.ok(catalog.includes(`"${authority}"`), authority);
+});
+
 test("release workflow requires VS Code Marketplace publication", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const publishJob = workflowJobBody(workflow, "release-vscode-extension");

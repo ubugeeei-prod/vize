@@ -311,14 +311,15 @@ test("publish_npm_package_dirs publishes only subdirectories that contain packag
   const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-dirs-"));
   const baseDir = path.join(tempDir, "packages");
   const binDir = path.join(tempDir, "bin");
-  const statePath = path.join(tempDir, "vp-state.json");
+  const registryDir = path.join(tempDir, "registry");
+  const publishLogPath = path.join(tempDir, "published.jsonl");
 
   try {
     fs.mkdirSync(path.join(baseDir, "pkg-a"), { recursive: true });
     fs.mkdirSync(path.join(baseDir, "skip-me"), { recursive: true });
     fs.mkdirSync(path.join(baseDir, "pkg-c"), { recursive: true });
     fs.mkdirSync(binDir, { recursive: true });
-    writeFakeNpmRegistry(binDir);
+    fs.mkdirSync(registryDir);
     writeFileSync(
       path.join(baseDir, "pkg-a", "package.json"),
       `${JSON.stringify({ name: "@vizejs/pkg-a", version: "1.0.0" }, null, 2)}\n`,
@@ -334,47 +335,39 @@ test("publish_npm_package_dirs publishes only subdirectories that contain packag
         "const fs = require('node:fs');",
         "const path = require('node:path');",
         "const args = process.argv.slice(2);",
-        "const state = fs.existsSync(process.env.VP_STATE_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'))",
-        "  : { published: {}, order: [] };",
-        "const packageJson = path.join(process.cwd(), 'package.json');",
-        "if (args[0] === 'pm' && args[1] === 'publish') {",
-        "  const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));",
-        "  state.published[pkg.name] = pkg.version;",
-        "  state.order.push(pkg.name);",
-        "  fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
-        "  process.exit(0);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'version') {",
-        "  const spec = args[2];",
-        "  const splitAt = spec.lastIndexOf('@');",
-        "  const name = spec.slice(0, splitAt);",
-        "  const version = state.published[name];",
-        "  if (version) {",
-        "    process.stdout.write(JSON.stringify(version));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'dist-tags') {",
-        "  const name = args[2];",
-        "  const version = state.published[name];",
-        "  if (version) {",
-        "    process.stdout.write(JSON.stringify({ latest: version }));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "process.exit(1);",
+        "if (args[0] !== 'pm' || args[1] !== 'publish') process.exit(1);",
+        "const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));",
+        "const published = path.join(process.env.MOCK_REGISTRY_DIR, encodeURIComponent(pkg.name));",
+        "const pending = published + '.' + process.pid;",
+        "fs.writeFileSync(pending, JSON.stringify({ name: pkg.name, version: pkg.version }));",
+        "fs.renameSync(pending, published);",
+        "fs.appendFileSync(process.env.MOCK_PUBLISH_LOG, JSON.stringify(pkg.name) + '\\n');",
+      ].join("\n"),
+    );
+    // Version and tag requests run concurrently. Registry reads must not rewrite
+    // the publisher's state or share a mutable JSON counter file.
+    writeFakeCommand(
+      binDir,
+      "curl",
+      [
+        "const fs = require('node:fs');",
+        "const path = require('node:path');",
+        "const url = new URL(process.argv.at(-1));",
+        "const [, encodedName, requestedVersion] = url.pathname.split('/');",
+        "const published = path.join(process.env.MOCK_REGISTRY_DIR, encodeURIComponent(decodeURIComponent(encodedName)));",
+        "if (!fs.existsSync(published)) { process.stdout.write('{}VIZE_HTTP_STATUS:404'); process.exit(0); }",
+        "const pkg = JSON.parse(fs.readFileSync(published, 'utf8'));",
+        "if (requestedVersion && requestedVersion !== pkg.version) { process.stdout.write('{}VIZE_HTTP_STATUS:404'); process.exit(0); }",
+        "const body = requestedVersion ? pkg : { name: pkg.name, 'dist-tags': { latest: pkg.version } };",
+        "process.stdout.write(JSON.stringify(body) + 'VIZE_HTTP_STATUS:200');",
       ].join("\n"),
     );
 
     const result = runReleaseCommand("publish_npm_package_dirs", [baseDir], {
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
-        VP_STATE_PATH: statePath,
-        NPM_FAKE_STATE_PATH: statePath,
-        NPM_FAKE_VERSION: "1.0.0",
+        MOCK_REGISTRY_DIR: registryDir,
+        MOCK_PUBLISH_LOG: publishLogPath,
         PUBLISH_RETRY_LIMIT: "1",
         PUBLISH_RETRY_DELAY: "1",
         PUBLISH_RESOLUTION_RETRY_LIMIT: "1",
@@ -383,12 +376,17 @@ test("publish_npm_package_dirs publishes only subdirectories that contain packag
     });
 
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    const state = JSON.parse(fs.readFileSync(statePath, "utf8")) as {
-      order: string[];
-      published: Record<string, string>;
-    };
-    assert.deepEqual(state.order, ["@vizejs/pkg-a", "@vizejs/pkg-c"]);
-    assert.deepEqual(Object.keys(state.published).sort(), ["@vizejs/pkg-a", "@vizejs/pkg-c"]);
+    const publishedNames = fs
+      .readFileSync(publishLogPath, "utf8")
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line) as string);
+    assert.deepEqual(publishedNames, ["@vizejs/pkg-a", "@vizejs/pkg-c"]);
+    assert.deepEqual(fs.readdirSync(registryDir).map(decodeURIComponent).sort(), publishedNames);
+    for (const name of publishedNames) {
+      const published = path.join(registryDir, encodeURIComponent(name));
+      assert.deepEqual(JSON.parse(fs.readFileSync(published, "utf8")), { name, version: "1.0.0" });
+    }
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }

@@ -8,6 +8,7 @@ runs:
         node-version-file: "package.json"
         cache: true
         run-install: false
+    - uses: ./.github/actions/cache-pnpm-verification
     - uses: ./.github/actions/setup-moonbit
     - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # stable
       with: { toolchain: stable }

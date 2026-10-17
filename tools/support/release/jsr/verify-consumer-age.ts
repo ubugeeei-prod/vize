@@ -10,10 +10,41 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { createServer } from "node:http";
+import { createServer, type IncomingMessage } from "node:http";
+import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+interface DenoCommand {
+  label: string;
+  argv: string[];
+  cwd: string;
+  denoDir: string;
+  env: NodeJS.ProcessEnv;
+  exitCode: number | null;
+  stdout: string;
+  stderr: string;
+}
+
+interface Evidence {
+  schema: string;
+  proof: "controlled-registry" | "public-registry";
+  status: "running" | "passed" | "failed";
+  sourceSha: string;
+  runId: string | null;
+  attempt: string | null;
+  denoVersion: string;
+  policy: unknown;
+  policySha256: string;
+  consumerSha256: string;
+  fixtures: Array<{ name: string; version: string; publishedAt: string; archiveSha256: string }>;
+  commands: DenoCommand[];
+  requests: Array<Pick<IncomingMessage, "method" | "url">>;
+  controlledRegistry?: string;
+  publicRegistry?: { version: string; status: "passed"; scope: string };
+  error?: string;
+}
 
 // This is a runtime acceptance check, deliberately invoked only after setup-deno.
 // The fixture serves immutable GET responses; it never writes to a registry.
@@ -22,7 +53,7 @@ const output = resolve(process.argv[2] ?? "artifacts/jsr-consumer-age");
 mkdirSync(output, { recursive: true });
 const root = realpathSync(mkdtempSync(join(tmpdir(), "vize-jsr-consumer-age-")));
 const policy = readFileSync(join(source, "tools/support/release/jsr/consumer-deno.json"), "utf8");
-const evidence = {
+const evidence: Evidence = {
   schema: "vize.jsr.consumer-age",
   proof: "controlled-registry",
   status: "running",
@@ -44,10 +75,10 @@ const save = () =>
 save();
 assert.match(evidence.denoVersion, /^deno 2\.9\.7\s/);
 
-async function run(label, args, cwd, extraEnv = {}) {
+async function run(label: string, args: string[], cwd: string, extraEnv: NodeJS.ProcessEnv = {}) {
   const cache = join(root, `${label}-cache`);
   mkdirSync(cache);
-  const command = {
+  const command: DenoCommand = {
     label,
     argv: ["deno", ...args],
     cwd,
@@ -58,7 +89,7 @@ async function run(label, args, cwd, extraEnv = {}) {
     stderr: "",
   };
   evidence.commands.push(command);
-  await new Promise((resolveRun, reject) => {
+  await new Promise<void>((resolveRun, reject) => {
     const child = spawn("deno", args, {
       cwd,
       env: { ...process.env, ...extraEnv, DENO_DIR: cache },
@@ -79,14 +110,14 @@ async function run(label, args, cwd, extraEnv = {}) {
   return command;
 }
 
-const packages = new Map();
+const packages = new Map<string, unknown>();
 const server = createServer((request, response) => {
   evidence.requests.push({ method: request.method, url: request.url });
   if (request.method !== "GET") {
     response.writeHead(405).end();
     return;
   }
-  const key = decodeURIComponent(request.url.split("?")[0].slice(1));
+  const key = decodeURIComponent(request.url!.split("?")[0].slice(1));
   const value = packages.get(key);
   if (!value) {
     response.writeHead(404).end();
@@ -98,8 +129,8 @@ const server = createServer((request, response) => {
   );
   response.end(Buffer.isBuffer(value) ? value : JSON.stringify(value));
 });
-await new Promise((resolveListen) => server.listen(0, "127.0.0.1", resolveListen));
-const registry = `http://127.0.0.1:${server.address().port}/`;
+await new Promise<void>((resolveListen) => server.listen(0, "127.0.0.1", resolveListen));
+const registry = `http://127.0.0.1:${(server.address() as AddressInfo).port}/`;
 
 try {
   const now = Date.now();
@@ -107,7 +138,7 @@ try {
     ["@vizejs/native", 1],
     ["vize-age-external-control", 1],
     ["vize-age-established-control", 48],
-  ]) {
+  ] as const) {
     const directory = join(root, name.replaceAll("/", "-"));
     const content = join(directory, "package");
     mkdirSync(content, { recursive: true });
@@ -172,7 +203,7 @@ try {
       assert.match(result.stderr, /minimum dependency date|minimum dependency age|newer than/i);
       assert.ok(!result.stdout.includes("age-control-executed"));
       assert.ok(
-        !evidence.requests.some((request) => request.url.includes(tarball)),
+        !evidence.requests.some((request) => request.url!.includes(tarball)),
         "rejected dependency archive was fetched",
       );
     } else {
@@ -223,10 +254,10 @@ try {
   console.log("Deno consumer age controls passed.");
 } catch (error) {
   evidence.status = "failed";
-  evidence.error = error.message;
+  evidence.error = (error as Error).message;
   throw error;
 } finally {
   save();
-  await new Promise((resolveClose) => server.close(resolveClose));
+  await new Promise<Error | undefined>((resolveClose) => server.close(resolveClose));
   rmSync(root, { recursive: true, force: true });
 }

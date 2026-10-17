@@ -23,6 +23,10 @@ const deliveredInitContracts = [
 const installedReportedContracts = ["tests/tooling/release/release-public-vapor.test.ts"];
 const stablePatchContracts = ["tests/tooling/release/release-stable-operator.test.ts"];
 const sharedPublisherContracts = ["tests/tooling/release/release-public-shared-publisher.test.ts"];
+const runtimeNativeProbeContracts = [
+  "tests/tooling/release/release-public-acceptance.test.ts",
+  ...sharedPublisherContracts,
+];
 
 const installedHttpsContracts = [
   "tests/tooling/release/release-public-quick-tunnel.test.ts",
@@ -35,8 +39,9 @@ const installedHttpsContracts = [
   "tests/tooling/release/release-public-vrt-upload-refusal.test.ts",
 ];
 
-void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
+void test("release contract inventories retain complete imports or explicit broad runtime inputs", () => {
   const historicalUnscoped = [
+    "tests/tooling/release/legacy-check-qualification.test.ts",
     "tests/tooling/release/release-guest-locks.test.ts",
     "tests/tooling/release/release-integration-catalog.test.ts",
     "tests/tooling/release/release-preflight-full-js.test.ts",
@@ -63,15 +68,22 @@ void test("audited release contracts have complete imports and leave unresolved 
   );
   for (const file of [...scoped, ...sharedPublisherContracts]) {
     assert.ok(releaseFiles.includes(file), `${file} must exist`);
-    assert.equal(localImportInputs(file).complete, true, `${file} import closure`);
+    assert.equal(
+      localImportInputs(file).complete,
+      !runtimeNativeProbeContracts.includes(file),
+      `${file} import closure`,
+    );
   }
-  assert.deepEqual(selected("davinci/vize_l1/src/parser.rs"), unscoped);
+  assert.deepEqual(
+    selected("davinci/vize_l1/src/parser.rs"),
+    [...new Set([...unscoped, ...runtimeNativeProbeContracts])].sort(),
+  );
 });
 
 void test("shared publisher authority and fixtures keep their complete release contract", () => {
   const [contract] = sharedPublisherContracts;
   const imports = localImportInputs(contract);
-  assert.equal(imports.complete, true);
+  assert.equal(imports.complete, false, "the public native probe requires broad runtime inputs");
   for (const input of [
     "tools/support/release/public_acceptance/plan.ts",
     "tests/tooling/support/release-public-acceptance-fixtures.ts",
@@ -84,6 +96,23 @@ void test("shared publisher authority and fixtures keep their complete release c
     "tests/tooling/support/release-public-acceptance-fixtures.ts",
   ]) {
     assert.ok(selected(input).includes(contract), input);
+  }
+});
+
+void test("public recovery native probes preserve the broad fallback for runtime imports", () => {
+  for (const contract of runtimeNativeProbeContracts) {
+    const imports = localImportInputs(contract);
+    assert.equal(imports.complete, false);
+    // The generated probe imports root + "/native" at runtime. Its provider
+    // cannot be proven from the statically imported repository files alone.
+    for (const input of [
+      "tools/support/release/consumer_recovery/custody.ts",
+      "tools/support/release/consumer_recovery/oracles.ts",
+    ]) {
+      assert.ok(imports.files.includes(input), `${contract}: ${input}`);
+      assert.ok(selected(input).includes(contract), `${input}: ${contract}`);
+    }
+    assert.ok(selected("new-root/unknown-native-provider.ts").includes(contract), contract);
   }
 });
 

@@ -2,7 +2,12 @@
   "capabilities": {
     "callHierarchyProvider": true,
     "codeActionProvider": {
-      "codeActionKinds": ["quickfix"],
+      "codeActionKinds": [
+        "quickfix",
+        "source.organizeImports",
+        "source.sortImports",
+        "source.removeUnusedImports"
+      ],
       "resolveProvider": false
     },
     "codeLensProvider": {
@@ -58,6 +63,7 @@
     "implementationProvider": true,
     "inlayHintProvider": true,
     "linkedEditingRangeProvider": true,
+    "monikerProvider": true,
     "referencesProvider": true,
     "renameProvider": {
       "prepareProvider": true

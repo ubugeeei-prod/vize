@@ -21,7 +21,7 @@ const ALL: ProductIntegrationPlan = {
 };
 
 const shared =
-  /^(package\.json$|pnpm-(lock|workspace)\.yaml$|patches\/|\.npmrc$|\.node-version$|vite\.config\.ts$|tools\/config\/|tools\/support\/compat\/github\/plan-product-integrations\.ts$|tests\/tooling\/plan-product-integrations\.test\.ts$|\.github\/actions\/(setup-ubuntu-archive|cache-vp-bootstrap)\/)/;
+  /^(package\.json$|pnpm-(lock|workspace)\.yaml$|patches\/|\.npmrc$|\.node-version$|vite\.config\.ts$|tools\/config\/|tools\/support\/compat\/github\/plan-product-integrations\.ts$|tests\/tooling\/plan-product-integrations\.test\.ts$|\.github\/actions\/(setup-ubuntu-archive|cache-vp-bootstrap|cache-pnpm-verification)\/)/;
 // These regressions replace the Vite and Nuxt JavaScript adapters in pinned
 // published installations. They do not build or exercise candidate Rust.
 const nuxt =

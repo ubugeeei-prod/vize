@@ -9,7 +9,75 @@ import {
   captureNativeHistoryBuild,
   nativeHistoryBuildEnvironment,
   validateNativeHistoryEnvironment,
+  validateNativeHistoryCommand,
+  validateNativeHistoryProfile,
 } from "../../npm/native/scripts/formatter-history-build.mjs";
+
+void test("captured native test builds change only debug information and retain exact Cargo custody", () => {
+  const nativeDir = path.resolve("synthetic-native");
+  const command = [
+    "pnpm",
+    "exec",
+    "napi",
+    "build",
+    "--platform",
+    "--manifest-path",
+    "../../crates/vize_vitrine/Cargo.toml",
+    "-p",
+    "vize_vitrine",
+    "--features",
+    "napi,legacy",
+    "--output-dir",
+    path.join(nativeDir, ".artifacts/native"),
+    "--no-js",
+    "--",
+    "--message-format=json-render-diagnostics",
+    "--locked",
+    "--config",
+    'profile.dev.debug="line-tables-only"',
+  ];
+  validateNativeHistoryCommand(nativeDir, command);
+  for (const [original, replacement] of [
+    ["napi,legacy", "napi"],
+    ["--no-js", "--release"],
+    ["--locked", "--offline"],
+    ['profile.dev.debug="line-tables-only"', "profile.dev.debug=0"],
+    ['profile.dev.debug="line-tables-only"', "profile.dev.debug=2"],
+  ]) {
+    assert.throws(() =>
+      validateNativeHistoryCommand(
+        nativeDir,
+        command.map((value) => (value === original ? replacement : value)),
+      ),
+    );
+  }
+  assert.throws(() => validateNativeHistoryCommand(nativeDir, command.slice(0, -2)));
+  assert.throws(() => validateNativeHistoryCommand(nativeDir, [...command, "--release"]));
+  const profile = {
+    test: false,
+    opt_level: "0",
+    debuginfo: "line-tables-only",
+    debug_assertions: true,
+    overflow_checks: true,
+  };
+  validateNativeHistoryProfile(profile);
+  for (const [key, value] of [
+    ["test", true],
+    ["opt_level", "1"],
+    ["debuginfo", 0],
+    ["debuginfo", 1],
+    ["debuginfo", 2],
+    ["debuginfo", "line-directives-only"],
+    ["debug_assertions", false],
+    ["overflow_checks", false],
+  ])
+    assert.throws(() => validateNativeHistoryProfile({ ...profile, [key]: value }));
+  for (const key of Object.keys(profile)) {
+    const missing = { ...profile };
+    delete missing[key];
+    assert.throws(() => validateNativeHistoryProfile(missing));
+  }
+});
 
 // Synthetic admission controls only. Real emitted addon custody is proved by
 // the mandatory existing hosted native build, not these generated vectors.

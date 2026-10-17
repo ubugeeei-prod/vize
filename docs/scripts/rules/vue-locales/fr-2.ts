@@ -146,8 +146,8 @@ export const frenchVue2 = {
   ],
   "vue/valid-v-on": [
     "Exiger des directives `v-on` valides",
-    "Les formes d’écouteurs omettent un argument d’événement ou l’expression de gestionnaire ou d’objet nécessaire.",
-    "Utilisez un événement avec son gestionnaire, ou transmettez un objet d’écouteurs à `v-on` sans argument.",
+    "Les écouteurs omettent un événement ou une expression obligatoire, ou utilisent des modificateurs non pris en charge tels que .sync et .nativeish.",
+    "Utilisez un gestionnaire, un modificateur d’action sans gestionnaire, un modificateur de clavier pris en charge ou un objet d’écouteurs pour `v-on` sans argument.",
   ],
   "vue/valid-v-once": [
     "Exiger des directives `v-once` valides",

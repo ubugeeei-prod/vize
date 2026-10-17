@@ -104,6 +104,20 @@ export function isRustTestCohort(value: unknown): value is RustTestCohortId {
   return RUST_TEST_COHORT_IDS.some((id) => id === value);
 }
 
+export function rustTestCohortForBinary(pkg: string, binary: string): RustTestCohortId {
+  if (pkg === "vize") {
+    return (
+      RUST_TEST_COHORT_IDS.find((id) =>
+        definitions[id].cliPrefixes?.some((prefix) => binary.startsWith(prefix)),
+      ) ?? "cli-and-integrations"
+    );
+  }
+  const owners = RUST_TEST_COHORTS.filter((cohort) => cohort.packages.includes(pkg));
+  if (owners.length !== 1)
+    throw new Error(`workspace package must have exactly one Rust test cohort: ${pkg}`);
+  return owners[0].id;
+}
+
 export function rustTestMatrix(metadata: CargoMetadata, selectedPackages: readonly string[]) {
   const workspace = new Set(workspaceGraph(metadata).names);
   for (const pkg of workspace) {

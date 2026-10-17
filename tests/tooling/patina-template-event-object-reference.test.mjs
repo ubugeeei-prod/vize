@@ -4,6 +4,10 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
+import {
+  assertLegacyInstanceCompilerSources,
+  legacyInstanceVueRequire,
+} from "./support/patina-legacy-instance-provider.ts";
 import { compileFunction } from "node:vm";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -24,7 +28,7 @@ const requireProvider = createRequire(
 const requireParser = createRequire(
   process.env.VIZE_LEGACY_API_SCRIPT_PARSER_MANIFEST ?? packageManifest,
 );
-const requireVue = createRequire(process.env.VIZE_LEGACY_API_VUE_MANIFEST ?? packageManifest);
+const requireVue = legacyInstanceVueRequire();
 
 function compilerPacket(compiler, source) {
   const diagnostic = (error) =>
@@ -224,15 +228,19 @@ await test("the existing event object expression preserves whole independent pro
     requireVue("@vue/compiler-sfc/package.json").version,
     proof.compilerProvider.compiler,
   );
-  for (const source of proof.compilerProvider.sources) {
-    const directory = path.dirname(requireVue.resolve(`${source.packageName}/package.json`));
-    assert.equal(hash(fs.readFileSync(path.join(directory, source.path))), source.sha256);
-  }
+  assertLegacyInstanceCompilerSources(
+    requireVue,
+    "@vue/compiler-sfc",
+    proof.compilerProvider.sources,
+  );
   const compiler = requireVue("@vue/compiler-sfc");
-  const typescript = requireParser("typescript");
+  const requireTypeScript = createRequire(
+    requireParser.resolve("@typescript-eslint/parser/package.json"),
+  );
+  const typescript = requireTypeScript("typescript");
   assert.equal(typescript.version, proof.typescriptProvider.version);
   assert.equal(
-    hash(fs.readFileSync(requireParser.resolve("typescript"))),
+    hash(fs.readFileSync(requireTypeScript.resolve("typescript"))),
     proof.typescriptProvider.source.sha256,
   );
   const vueRuntime = requireVue("vue");

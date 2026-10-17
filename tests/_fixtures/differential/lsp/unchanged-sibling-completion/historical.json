@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "7e13f5bb28520a9c643c6e7e515b7764c4cb95f6",
+  "sourceBase": "a00fb6cff9268e1371ba260739d905050e2a2573",
+  "run": 38934300022,
+  "job": 117085779070,
+  "artifact": 12059823868,
+  "native": {
+    "path": "/home/runner/_work/vize/vize/node_modules/.pnpm/@typescript+typescript-linux-x64@7.0.2/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+    "sha256": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4",
+    "stdout": "Version 7.0.2\n"
+  },
+  "inputSha256": {
+    "InvoiceCard.vue.txt": "80618c4425d1efde0541080d91655560f43c817289b17d629af6dd43e9db1516",
+    "RichAuthoring.vue.txt": "9eefca7d13941faaa9f08f6dcb5e4040f6c31a16c1ef15dd65f914fba6954511",
+    "SlotAuthoring.vue.txt": "7d22c92c9cb0d55a58d91d76c33710a6939fba3e1b4164d1332188b6e9594342"
+  },
+  "overlaySha256": "0f4735447304a3461db848f93325a07784bc91669d2cec7356eb902a9aabe670",
+  "orderedInterventions": {
+    "immediate": {
+      "selectedIndex": 0,
+      "originalItem": {
+        "data": {
+          "vizeCompletion": {
+            "item": {
+              "data": {
+                "fileName": "/tmp/vize-canon/editor/sessions/session-ecbAjm/projects/43c11cf7c534bde6c5b685111614660ee4e494ca0d34f66a1b7943fe814be415/src/SlotAuthoring.vue.ts",
+                "name": "header",
+                "position": 16748
+              },
+              "kind": 2,
+              "label": "header",
+              "sortText": "11"
+            },
+            "requestUri": "file:///tmp/vize-canon/editor/sessions/session-ecbAjm/projects/43c11cf7c534bde6c5b685111614660ee4e494ca0d34f66a1b7943fe814be415/src/SlotAuthoring.vue.ts",
+            "revision": 6,
+            "uri": "file:///home/runner/_work/vize/vize/.completion-native-diagnostic/immediate/src/SlotAuthoring.vue"
+          }
+        },
+        "kind": 2,
+        "label": "header",
+        "sortText": "11"
+      },
+      "resolvedItem": {
+        "data": {
+          "vizeCompletion": {
+            "item": {
+              "data": {
+                "fileName": "/tmp/vize-canon/editor/sessions/session-ecbAjm/projects/43c11cf7c534bde6c5b685111614660ee4e494ca0d34f66a1b7943fe814be415/src/SlotAuthoring.vue.ts",
+                "name": "header",
+                "position": 16748
+              },
+              "kind": 2,
+              "label": "header",
+              "sortText": "11"
+            },
+            "requestUri": "file:///tmp/vize-canon/editor/sessions/session-ecbAjm/projects/43c11cf7c534bde6c5b685111614660ee4e494ca0d34f66a1b7943fe814be415/src/SlotAuthoring.vue.ts",
+            "revision": 6,
+            "uri": "file:///home/runner/_work/vize/vize/.completion-native-diagnostic/immediate/src/SlotAuthoring.vue"
+          }
+        },
+        "detail": "(method) header(props: {\n    title: string;\n}): any",
+        "documentation": {
+          "kind": "markdown",
+          "value": "```typescript\n(method) header(props: {\n    title: string;\n}): any\n```\n\n**Header** shown above the invoice.\n\n*@param* `props` — Customer-visible heading.\n\n*@example*\n```tsx\nheader({ title: 'Summary' })\n```"
+        },
+        "kind": 2,
+        "label": "header",
+        "sortText": "11"
+      },
+      "slotRevisionBefore": 6,
+      "slotRevisionAfter": 6,
+      "siblingRevisionBefore": 5,
+      "siblingRevisionAfter": 5
+    },
+    "same-document": {
+      "selectedIndex": 0,
+      "originalItem": {
+        "data": {
+          "vizeCompletion": {
+            "item": {
+              "data": {
+                "fileName": "/tmp/vize-canon/editor/sessions/session-hntnw7/projects/cfbdfced999967c2e416d25cfc24a68c6cdda6b4864467004075c5da1c59db46/src/SlotAuthoring.vue.ts",
+                "name": "header",
+                "position": 16748
+              },
+              "kind": 2,
+              "label": "header",
+              "sortText": "11"
+            },
+            "requestUri": "file:///tmp/vize-canon/editor/sessions/session-hntnw7/projects/cfbdfced999967c2e416d25cfc24a68c6cdda6b4864467004075c5da1c59db46/src/SlotAuthoring.vue.ts",
+            "revision": 2,
+            "uri": "file:///home/runner/_work/vize/vize/.completion-native-diagnostic/same-document/src/SlotAuthoring.vue"
+          }
+        },
+        "kind": 2,
+        "label": "header",
+        "sortText": "11"
+      },
+      "resolvedItem": {
+        "data": {
+          "vizeCompletion": {
+            "item": {
+              "data": {
+                "fileName": "/tmp/vize-canon/editor/sessions/session-hntnw7/projects/cfbdfced999967c2e416d25cfc24a68c6cdda6b4864467004075c5da1c59db46/src/SlotAuthoring.vue.ts",
+                "name": "header",
+                "position": 16748
+              },
+              "kind": 2,
+              "label": "header",
+              "sortText": "11"
+            },
+            "requestUri": "file:///tmp/vize-canon/editor/sessions/session-hntnw7/projects/cfbdfced999967c2e416d25cfc24a68c6cdda6b4864467004075c5da1c59db46/src/SlotAuthoring.vue.ts",
+            "revision": 2,
+            "uri": "file:///home/runner/_work/vize/vize/.completion-native-diagnostic/same-document/src/SlotAuthoring.vue"
+          }
+        },
+        "detail": "(method) header(props: {\n    title: string;\n}): any",
+        "documentation": {
+          "kind": "markdown",
+          "value": "```typescript\n(method) header(props: {\n    title: string;\n}): any\n```\n\n**Header** shown above the invoice.\n\n*@param* `props` — Customer-visible heading.\n\n*@example*\n```tsx\nheader({ title: 'Summary' })\n```"
+        },
+        "kind": 2,
+        "label": "header",
+        "sortText": "11"
+      },
+      "slotRevisionBefore": 2,
+      "slotRevisionAfter": 2,
+      "siblingRevisionBefore": 1,
+      "siblingRevisionAfter": 1
+    },
+    "sibling": {
+      "selectedIndex": 0,
+      "originalItem": {
+        "data": {
+          "vizeCompletion": {
+            "item": {
+              "data": {
+                "fileName": "/tmp/vize-canon/editor/sessions/session-tgvzxO/projects/a80c616a0a876adcb3cbf9f773e4146bce8d9d7f6997c6f25964e877b0be13f9/src/SlotAuthoring.vue.ts",
+                "name": "header",
+                "position": 16748
+              },
+              "kind": 2,
+              "label": "header",
+              "sortText": "11"
+            },
+            "requestUri": "file:///tmp/vize-canon/editor/sessions/session-tgvzxO/projects/a80c616a0a876adcb3cbf9f773e4146bce8d9d7f6997c6f25964e877b0be13f9/src/SlotAuthoring.vue.ts",
+            "revision": 4,
+            "uri": "file:///home/runner/_work/vize/vize/.completion-native-diagnostic/sibling/src/SlotAuthoring.vue"
+          }
+        },
+        "kind": 2,
+        "label": "header",
+        "sortText": "11"
+      },
+      "resolvedItem": {
+        "data": {
+          "vizeCompletion": {
+            "item": {
+              "data": {
+                "fileName": "/tmp/vize-canon/editor/sessions/session-tgvzxO/projects/a80c616a0a876adcb3cbf9f773e4146bce8d9d7f6997c6f25964e877b0be13f9/src/SlotAuthoring.vue.ts",
+                "name": "header",
+                "position": 16748
+              },
+              "kind": 2,
+              "label": "header",
+              "sortText": "11"
+            },
+            "requestUri": "file:///tmp/vize-canon/editor/sessions/session-tgvzxO/projects/a80c616a0a876adcb3cbf9f773e4146bce8d9d7f6997c6f25964e877b0be13f9/src/SlotAuthoring.vue.ts",
+            "revision": 4,
+            "uri": "file:///home/runner/_work/vize/vize/.completion-native-diagnostic/sibling/src/SlotAuthoring.vue"
+          }
+        },
+        "kind": 2,
+        "label": "header",
+        "sortText": "11"
+      },
+      "slotRevisionBefore": 4,
+      "slotRevisionAfter": 4,
+      "siblingRevisionBefore": 3,
+      "siblingRevisionAfter": 3
+    }
+  }
+}

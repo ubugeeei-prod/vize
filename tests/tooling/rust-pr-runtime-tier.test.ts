@@ -134,7 +134,7 @@ for (const [event, profile, stepName] of [
       writeFileSync(
         join(bin, "cargo"),
         `#!/bin/sh
-exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);const full=process.env.NEXTEST_PROFILE==="full";if(full?(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")):(process.env.VIZE_TEST_DISABLE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_REQUIRE_TSGO")))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(full!==args.includes("--extract-overwrite"))process.exit(91);if(full)fs.writeFileSync("target/tmp/observation","writable");fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
+exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if(args[0]==="metadata"){process.stdout.write(process.env.CARGO_METADATA);process.exit(0)}const full=process.env.NEXTEST_PROFILE==="full";if(full?(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")):(process.env.VIZE_TEST_DISABLE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_REQUIRE_TSGO")))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(full!==args.includes("--extract-overwrite"))process.exit(91);if(full)fs.writeFileSync("target/tmp/observation","writable");fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
 `,
         { mode: 0o755 },
       );
@@ -164,18 +164,36 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
         ARGV: argv,
         RUNNER_TEMP: cwd,
         RUST_PLAN_JSON: JSON.stringify(plan),
+        CARGO_METADATA: JSON.stringify({
+          workspace_root: cwd,
+          workspace_members: plan.packages,
+          packages: plan.packages.map((name) => ({
+            id: name,
+            name,
+            manifest_path: join(cwd, name, "Cargo.toml"),
+            dependencies: [],
+            targets: [{ name, kind: ["lib"], test: true }],
+          })),
+        }),
       };
       // The PR step resolves the checked-out runner relative to the workspace.
       mkdirSync(join(cwd, "tools/support/compat/github"), { recursive: true });
-      for (const name of [
+      for (const file of [
         "run-affected-rust.ts",
+        "run-rust-test-cohort.ts",
+        "rust-test-default-features.ts",
+        "rust-test-cohorts.ts",
+        "plan-affected-rust.ts",
+        "plan-source-checks.ts",
+        "rust-differential-lanes.ts",
         "rust-build-evidence.ts",
         "compare-unused-bindings-profiles.ts",
-      ])
+      ]) {
         copyFileSync(
-          fileURLToPath(new URL(`../../tools/support/compat/github/${name}`, import.meta.url)),
-          join(cwd, "tools/support/compat/github", name),
+          fileURLToPath(new URL(`../../tools/support/compat/github/${file}`, import.meta.url)),
+          join(cwd, "tools/support/compat/github", file),
         );
+      }
       delete environment.VIZE_TEST_DISABLE_TSGO;
       delete environment.VIZE_TEST_REQUIRE_TSGO;
       const result = spawnSync(
@@ -216,6 +234,7 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
           "nextest",
           "run",
           ...plan.cargoArgs,
+          "--lib",
           "--cargo-profile",
           "ci",
           "--timings",

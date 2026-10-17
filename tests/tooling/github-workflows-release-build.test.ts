@@ -131,3 +131,13 @@ test("publication keeps installed-package smoke and exact promotion barriers", (
   assert.match(fresco, /collect-native-artifacts\.ts/);
   assert.doesNotMatch(fresco, /napi create-npm-dirs/);
 });
+
+test("Vite publication waits for its direct unplugin runtime dependency", () => {
+  const vite = JSON.parse(readRepoFile("npm", "builder", "vite", "package.json"));
+  const unplugin = JSON.parse(readRepoFile("npm", "builder", "unplugin", "package.json"));
+  assert.equal(vite.dependencies[unplugin.name], "workspace:*");
+  assert.ok(
+    release.jobs["release-npm-vite-plugin"].needs.includes("release-npm-unplugin"),
+    `${vite.name} must wait for ${unplugin.name} to become publicly resolvable`,
+  );
+});

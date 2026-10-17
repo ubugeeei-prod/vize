@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { type AppConfig, syncGitFixtureWorktree } from "./apps.ts";
 import { prepareSeparateLintInstallGraph } from "./lint-fixture-install-graph.ts";
 import { resolveLintEnvironmentCli } from "./lint-fixture-runtime.ts";
+import { prepareInstalledNpmxNuxt } from "./npmx-check-preparation.ts";
 import {
   assertPinnedFixtureFiles,
   exportPinnedFixtureGitlinks,
@@ -19,7 +20,7 @@ const testsDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."
 const repositoryDir = path.dirname(testsDir);
 const dependencyDir = path.join(testsDir, "_fixtures", "_projects", "lint-dependencies");
 
-export interface PreparedLintFixture {
+export interface PreparedAppFixture {
   app: AppConfig;
   root: string;
   env: NodeJS.ProcessEnv;
@@ -43,20 +44,29 @@ function prepareMissingUpstreamLock(name: string, root: string, revision: string
   fs.writeFileSync(path.join(root, "pnpm-lock.yaml"), lock);
 }
 
-/** Lint evaluates real configs, without the source rewrites needed for browser fixtures. */
-export function prepareLintFixtureDependencies(app: AppConfig): PreparedLintFixture {
+export function prepareLintFixtureDependencies(app: AppConfig): PreparedAppFixture {
+  return prepareFixtureDependencies(app, "lint");
+}
+
+export function prepareCheckFixtureDependencies(app: AppConfig): PreparedAppFixture {
+  return prepareFixtureDependencies(app, "check");
+}
+
+/** Both CLI commands evaluate the original configs and need their real providers. */
+function prepareFixtureDependencies(app: AppConfig, suite: "lint" | "check"): PreparedAppFixture {
   const name = app.name;
   assert.ok(["naive-ui", "npmx.dev", "voicevox", "misskey"].includes(name));
+  assert.ok(app[suite], `missing ${suite} fixture configuration`);
   const sourceDir = path.join(testsDir, "_fixtures", "_git", name);
   const expectedRevision = execFileSync("git", ["rev-parse", `HEAD:tests/_fixtures/_git/${name}`], {
     cwd: repositoryDir,
     encoding: "utf8",
   }).trim();
   const source = readPinnedFixtureSource(sourceDir, expectedRevision);
-  const root = syncGitFixtureWorktree(name, "lint");
+  const root = syncGitFixtureWorktree(name, suite);
   exportPinnedFixtureGitlinks(root, sourceDir, source);
   assertPinnedFixtureFiles(root, source);
-  const installRoot = name === "npmx.dev" ? syncGitFixtureWorktree(name, "lint-install") : root;
+  const installRoot = name === "npmx.dev" ? syncGitFixtureWorktree(name, `${suite}-install`) : root;
   const migration =
     name === "npmx.dev"
       ? prepareSeparateLintInstallGraph(root, installRoot, source, path.join(dependencyDir, name))
@@ -87,13 +97,17 @@ export function prepareLintFixtureDependencies(app: AppConfig): PreparedLintFixt
     timeout: 120_000,
   }).trim();
   assert.equal(actualManager, manager[1], "fixture must run its authored package-manager version");
-  console.log(`[vize:lint-setup] ${name}@${source.revision} with ${pkg.packageManager}`);
+  console.log(`[vize:${suite}-setup] ${name}@${source.revision} with ${pkg.packageManager}`);
   execFileSync(
     environmentCli,
     [...prefix, "install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
     { cwd: installRoot, env, stdio: "inherit", timeout: 900_000 },
   );
   migration?.attach();
+  const nuxt =
+    name === "npmx.dev" && suite === "check"
+      ? prepareInstalledNpmxNuxt(root, installRoot, source, env)
+      : undefined;
   // This exact authored postinstall command provides the eagerly imported
   // Electron path. Browser downloads and application generators are unrelated
   // to reading these original lint inputs and remain in their existing suites.
@@ -129,7 +143,7 @@ export function prepareLintFixtureDependencies(app: AppConfig): PreparedLintFixt
               .filter((file) => fs.statSync(path.join(root, "packages/i18n/built", file)).isFile())
               .map((file) => path.join("packages/i18n/built", file)),
           ]
-        : [];
+        : (nuxt?.generatedInputs ?? []);
   const generatedHashes = Object.fromEntries(
     generatedInputs.map((file) => [file, sha256(fs.readFileSync(path.join(root, file)))]),
   );
@@ -137,6 +151,7 @@ export function prepareLintFixtureDependencies(app: AppConfig): PreparedLintFixt
     assertPinnedFixtureFiles(root, source);
     assert.equal(sha256(fs.readFileSync(lockPath)), lockSha256, "frozen dependency lock changed");
     migration?.verify();
+    nuxt?.verify();
     for (const [file, expected] of Object.entries(generatedHashes)) {
       assert.equal(
         sha256(fs.readFileSync(path.join(root, file))),
@@ -149,14 +164,15 @@ export function prepareLintFixtureDependencies(app: AppConfig): PreparedLintFixt
   const relativeCwd =
     name === "misskey"
       ? path.join("packages", "frontend")
-      : path.relative(sourceDir, app.lint!.cwd);
-  assert.ok(!relativeCwd.startsWith(".."), "lint must remain inside the authenticated fixture");
+      : path.relative(sourceDir, app[suite]!.cwd);
+  assert.ok(!relativeCwd.startsWith(".."), `${suite} must remain inside the authenticated fixture`);
   const requireProject = createRequire(path.join(root, relativeCwd, "package.json"));
   const viteManifest = requireProject.resolve("vite/package.json");
   const viteEntrypoint = requireProject.resolve("vite");
   const receipt = `${JSON.stringify(
     {
       name,
+      suite,
       revision: source.revision,
       originalFiles: source.blobs.length,
       inventorySha256: source.inventorySha256,
@@ -170,6 +186,7 @@ export function prepareLintFixtureDependencies(app: AppConfig): PreparedLintFixt
       originalFrozenClosure: name !== "npmx.dev" && name !== "naive-ui",
       generatedLock: name === "naive-ui",
       ...(migration ? { migration: migration.receipt } : {}),
+      ...(nuxt ? { nuxt: nuxt.receipt } : {}),
       generatedInputs: generatedHashes,
       vite: {
         manifest: JSON.parse(fs.readFileSync(viteManifest, "utf8")),
@@ -180,12 +197,12 @@ export function prepareLintFixtureDependencies(app: AppConfig): PreparedLintFixt
     null,
     2,
   )}\n`;
-  fs.writeFileSync(path.join(root, ".vize-lint-dependencies.json"), receipt);
-  const artifactDir = path.join(repositoryDir, ".vize", "artifacts", "lint-fixtures");
+  fs.writeFileSync(path.join(root, `.vize-${suite}-dependencies.json`), receipt);
+  const artifactDir = path.join(repositoryDir, ".vize", "artifacts", `${suite}-fixtures`);
   fs.mkdirSync(artifactDir, { recursive: true });
   fs.writeFileSync(path.join(artifactDir, `${name}.json`), receipt);
   return {
-    app: { ...app, lint: { ...app.lint!, cwd: path.join(root, relativeCwd) } },
+    app: { ...app, [suite]: { ...app[suite]!, cwd: path.join(root, relativeCwd) } },
     root,
     env,
     verify,

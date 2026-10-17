@@ -1,0 +1,21 @@
+<script setup lang="ts">
+import Child from './Child.vue';
+import Paginator from './Paginator.vue';
+defineProps<{ virtualScroller: boolean }>();
+</script>
+<template>
+  <Paginator>
+    <template #default="{ item }">
+      <template v-if="virtualScroller">
+        <div v-if="item.type === 'grouped-follow'">{{ item.items }}</div>
+        <div v-else-if="item.type === 'grouped-reblogs-and-favourites'">{{ item.items }}</div>
+        <Child v-else :notification="item" />
+      </template>
+      <template v-else>
+        <div v-if="item.type === 'grouped-follow'">{{ item.items }}</div>
+        <div v-else-if="item.type === 'grouped-reblogs-and-favourites'">{{ item.items }}</div>
+        <Child v-else :notification="item" />
+      </template>
+    </template>
+  </Paginator>
+</template>

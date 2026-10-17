@@ -78,7 +78,7 @@ export async function verifyTocPointerLayer(page: Page, device: string, output: 
       }
       const link = links.first();
       const hash = await link.getAttribute("href");
-      assert(hash?.startsWith("#"));
+      assert(typeof hash === "string" && hash.startsWith("#"));
       await link.click();
       await page.waitForFunction(
         (value) => decodeURIComponent(location.hash) === decodeURIComponent(value),

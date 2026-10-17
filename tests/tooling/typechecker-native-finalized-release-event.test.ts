@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -12,6 +14,7 @@ import {
   currentBytes,
   currentRequiredRun,
   fixture,
+  git,
   hash,
 } from "../../tools/benchmarks/scripts/typechecker-native-source-recipe-fixture.mjs";
 
@@ -41,9 +44,8 @@ const lifecycle = JSON.parse(
   finalized: { action: string; body: string };
 };
 const workflow = parse(currentBytes);
-const actions: string[] = workflow.on.pull_request.types ?? ["opened", "synchronize", "reopened"];
 
-test("a finalized edited release event reaches the complete authenticated source recipe", () => {
+void test("historical finalized release metadata retains the complete authenticated source recipe", () => {
   fixture(
     (f: SourceFixture) => {
       const eventFor = (revision: typeof lifecycle.opened) => ({
@@ -55,13 +57,7 @@ test("a finalized edited release event reaches the complete authenticated source
         },
       });
       const opened = eventFor(lifecycle.opened);
-      const deliver = (event: ReturnType<typeof eventFor>) => {
-        assert.ok(
-          actions.includes(event.action),
-          `Native workflow did not receive ${event.action}`,
-        );
-        return selectSourceRecipe({ ...f, event });
-      };
+      const deliver = (event: ReturnType<typeof eventFor>) => selectSourceRecipe({ ...f, event });
       assert.throws(() => deliver(opened), /Missing\/ambiguous vize-release-integration/);
       // A rerun receives the original event payload, even after the body is finalized.
       const finalized = eventFor(lifecycle.finalized);
@@ -91,18 +87,9 @@ test("a finalized edited release event reaches the complete authenticated source
   );
 });
 
-test("ordinary PR events retain the current inline path and edited releases remain fail-closed", () => {
+void test("historical release metadata remains fail-closed without a current PR event subscription", () => {
   fixture(
     (f: SourceFixture) => {
-      for (const action of ["opened", "synchronize", "reopened", "edited"]) {
-        assert.ok(actions.includes(action), action);
-        const ordinary = { ...structuredClone(f.event), action };
-        ordinary.pull_request.head.ref = "fix/ordinary-native";
-        ordinary.pull_request.body = "Updated ordinary PR description";
-        const selected = selectSourceRecipe({ ...f, event: ordinary });
-        assert.equal(selected.mode, "current-inline");
-        assert.equal(selected.recipe, null);
-      }
       const edited = { ...structuredClone(f.event), action: "edited" };
       const missing = structuredClone(edited);
       missing.pull_request.body = lifecycle.opened.body
@@ -127,6 +114,70 @@ test("ordinary PR events retain the current inline path and edited releases rema
       assert.throws(() =>
         selectSourceRecipe({ ...f, event: edited, permission: { role_name: "write" } }),
       );
+    },
+    { workflow: currentBytes },
+  );
+});
+
+void test("the actual native campaign bootstrap authenticates scheduled and manual source identity", () => {
+  const bootstrap = workflow.jobs["native-phases"].steps.find(
+    (step: { name?: string }) =>
+      step.name === "Pin immutable driver, source and freshly fetched main baseline",
+  )?.run;
+  assert.equal(typeof bootstrap, "string");
+  fixture(
+    (f: SourceFixture) => {
+      git(f.root, "remote", "add", "origin", f.root);
+      const output = join(f.root, ".git", "github-env");
+      const env = {
+        ...process.env,
+        ...f.env,
+        GITHUB_EVENT_NAME: "workflow_dispatch",
+        GITHUB_REF: "refs/heads/main",
+        GITHUB_SHA: f.source,
+        SOURCE_SHA: f.cut,
+        GITHUB_ENV: output,
+        GITHUB_WORKSPACE: f.root,
+        RUNNER_TEMP: join(f.root, ".git"),
+      };
+      const run = (overrides: Record<string, string> = {}) =>
+        spawnSync("bash", ["--noprofile", "--norc", "-e", "-o", "pipefail", "-c", bootstrap], {
+          cwd: f.root,
+          env: { ...env, ...overrides },
+          encoding: "utf8",
+          timeout: 30_000,
+        });
+      const manual = run();
+      assert.equal(manual.status, 0, manual.stderr);
+      const identity = Object.fromEntries(
+        readFileSync(output, "utf8")
+          .trim()
+          .split("\n")
+          .map((line) => line.split("=")),
+      );
+      assert.equal(identity.MAIN_SOURCE_SHA, f.cut);
+      assert.equal(identity.MAIN_HEAD_SHA, f.source);
+      const scheduled = run({ GITHUB_EVENT_NAME: "schedule", SOURCE_SHA: f.source });
+      assert.equal(scheduled.status, 0, scheduled.stderr);
+      const acceptedIdentity = readFileSync(output, "utf8");
+      for (const overrides of [
+        { SOURCE_SHA: "" },
+        { SOURCE_SHA: "main" },
+        { SOURCE_SHA: f.pin },
+        { DRIVER_SHA: f.cut },
+        { GITHUB_WORKFLOW_SHA: f.cut },
+        { GITHUB_REPOSITORY: "someone/vize" },
+        { GITHUB_REF: "refs/heads/feature" },
+        { GITHUB_EVENT_NAME: "pull_request" },
+        { GITHUB_EVENT_NAME: "schedule", SOURCE_SHA: f.cut },
+        { GITHUB_EVENT_NAME: "schedule", SOURCE_SHA: f.source, GITHUB_SHA: f.cut },
+      ]) {
+        const rejected = run(overrides);
+        assert.equal(rejected.error, undefined, rejected.error?.message);
+        assert.equal(rejected.signal, null);
+        assert.notEqual(rejected.status, 0, JSON.stringify(overrides));
+        assert.equal(readFileSync(output, "utf8"), acceptedIdentity);
+      }
     },
     { workflow: currentBytes },
   );

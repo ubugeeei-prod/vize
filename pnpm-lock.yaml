@@ -1465,6 +1465,9 @@ importers:
       vue-language-tools-fixture-vue:
         specifier: npm:vue@3.6.0-rc.6
         version: vue@3.6.0-rc.6(typescript@6.0.3)
+      vue-legacy-instance-api-oracle:
+        specifier: npm:vue@3.6.0-rc.9
+        version: vue@3.6.0-rc.9(typescript@6.0.3)
       vue-property-decorator:
         specifier: 10.0.0-rc.3
         version: 10.0.0-rc.3(vue-class-component@8.0.0-rc.1(vue@3.6.0-beta.10(typescript@6.0.3)))(vue@3.6.0-beta.10(typescript@6.0.3))

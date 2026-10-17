@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -40,9 +41,15 @@ interface InspectorCompareReport {
   }>;
 }
 
+interface InspectorSourceIdentity {
+  fileCount: number;
+  pathsSha256: string;
+}
+
 export function assertInspectorCompareBudgets(
   app: AppConfig,
   budgets: InspectorDiffBudget[],
+  inputs: InspectorSourceIdentity,
 ): void {
   requireVizeBin();
 
@@ -50,10 +57,94 @@ export function assertInspectorCompareBudgets(
     const report = runInspectorCompare(app, budget.target);
     assert.equal(report.schema, "vize.inspector.compare");
     assert.equal(report.target, budget.target);
-    assert.ok(report.summary.fileCount > 0, `${app.name}:${budget.target} should inspect files`);
     writeInspectorReport(app.name, budget.target, report);
+    assert.ok(app.check, `${app.name} should define check fixtures`);
+    assertInspectorFileCoverage(app.check, report, inputs);
     assertBudget(report, budget, app.name);
   }
+}
+
+/** Require exactly one comparison for every original input selected by the app. */
+export function assertInspectorFileCoverage(
+  check: NonNullable<AppConfig["check"]>,
+  report: { summary: { fileCount: number }; files: ReadonlyArray<{ path: string }> },
+  inputs: InspectorSourceIdentity,
+): void {
+  const expected = inspectorSourcePaths(check);
+  assert.ok(expected.length > 0, "inspector fixtures must contain original source inputs");
+  assert.equal(expected.length, inputs.fileCount, "pinned original source count");
+  assert.equal(
+    createHash("sha256")
+      .update(`${expected.join("\n")}\n`)
+      .digest("hex"),
+    inputs.pathsSha256,
+    "pinned original source paths",
+  );
+  assert.deepEqual(
+    report.files.map((file) => file.path.replaceAll("\\", "/")).sort(),
+    expected,
+    "inspector must compare every original source exactly once",
+  );
+  assert.equal(report.summary.fileCount, expected.length, "inspector source count");
+}
+
+function inspectorSourcePaths(check: NonNullable<AppConfig["check"]>): string[] {
+  const selected = new Set<string>();
+  const walked = new Set<string>();
+  for (const pattern of check.patterns) {
+    const entry = fs.statSync(path.resolve(check.cwd, pattern), { throwIfNoEntry: false });
+    const root = entry?.isDirectory()
+      ? pattern
+      : entry?.isFile()
+        ? undefined
+        : recursiveVueRoot(pattern);
+    const candidates = entry?.isFile()
+      ? [pattern]
+      : root === undefined
+        ? fs.globSync(pattern, { cwd: check.cwd })
+        : fs
+            .globSync("**/*.vue", { cwd: path.resolve(check.cwd, root) })
+            .map((file) => path.join(root, file));
+    for (const file of candidates) {
+      const normalized = file.replaceAll("\\", "/");
+      if (
+        normalized.endsWith(".vue") &&
+        !normalized.split("/").includes(".git") &&
+        fs.statSync(path.resolve(check.cwd, file)).isFile()
+      ) {
+        (root === undefined ? selected : walked).add(normalized);
+      }
+    }
+  }
+
+  // Inspector's explicit files and generic globs bypass ignores. Only its
+  // directory/simple recursive-glob branch uses the authored Git ignore rules.
+  if (walked.size > 0) {
+    const result = spawnSync("git", ["check-ignore", "--no-index", "--stdin", "-z"], {
+      cwd: check.cwd,
+      input: `${[...walked].join("\0")}\0`,
+      encoding: "utf8",
+      maxBuffer: 8 * 1024 * 1024,
+      timeout: 10_000,
+    });
+    if (result.error) throw result.error;
+    assert.ok(
+      result.status === 0 || result.status === 1,
+      `cannot determine inspector Git ignores (exit ${result.status}): ${result.stderr}`,
+    );
+    const ignored = new Set(result.stdout.split("\0").filter(Boolean));
+    for (const file of walked) {
+      if (!ignored.has(file)) selected.add(file);
+    }
+  }
+  return [...selected].sort();
+}
+
+function recursiveVueRoot(pattern: string): string | undefined {
+  const normalized = pattern.replaceAll("\\", "/");
+  if (normalized === "**/*.vue" || normalized === "./**/*.vue") return ".";
+  const root = normalized.match(/^(.*)\/\*\*\/\*\.vue$/)?.[1];
+  return root && !/[?*[\]{}]/.test(root) ? root : undefined;
 }
 
 function runInspectorCompare(app: AppConfig, target: "dom" | "ssr"): InspectorCompareReport {
