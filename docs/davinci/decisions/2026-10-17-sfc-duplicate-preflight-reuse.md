@@ -99,9 +99,12 @@ Upper laws cover exact-once dispatch, late refusal, unrelated equal-text source,
 and full error/sidecar preservation. An existing `legacy-dom-differential`
 feature test defines 416 complete public Result comparisons over twenty-six
 original inputs, all four targets, maps off/on, ordinary and captured entry.
-The retained side selects the genuine compatibility DOM lane/callback entry;
-SSR/Vapor are unchanged complete negative controls. These tests have not been
-compiled or run. The existing SFC differential recipe now also executes
+The reference restores the untouched eager duplicate callback at its original
+SFC call position and supplies no hook to the ordinary/captured DOM dispatcher.
+It preserves default backend selection. Its guard exists only under
+`cfg(test)` plus `legacy-dom-differential`, and RAII restores nested and panicking
+invocations. SSR/Vapor remain complete negative controls. The existing SFC
+differential recipe also executes
 `cargo test --locked -p vize_atelier_sfc --features legacy-dom-differential --lib
 compile_template::duplicates:: -- --nocapture` under its existing profile and
 environment, so these feature unit laws are not omitted by integration-only
@@ -113,6 +116,33 @@ native preflight ran once and without the retained callback running. It asserts
 ordinary refusal notes, captured `Legacy("emit-refused")` with no native pages,
 and complete diagnostic/code/preamble/map/section plus public SFC Result parity.
 `@[event].stop` is a supported control, not a refusal witness.
+
+### The first MQ comparison exposed an oracle boundary
+
+[The first MQ SFC job](https://github.com/ubugeeei-prod/vize/actions/runs/38938620914/job/117100507469)
+passed the real late-refusal law but the complete comparison stopped on
+`<template><div :key..prop='a' :key.prop.='b'></div></template>`. Its reference
+incorrectly forced every DOM compile to the compatibility backend. That changes
+more than the duplicate callback: the compatibility parser reports
+`MissingDirectiveModifier`, while the original default native lowering drops
+empty modifier segments and emits two `.key` properties. The unchanged callback
+accepts these differently ordered modifier runs. This is a pre-existing parser
+and codegen frontier, not an optimized-preflight error to repin or omit.
+
+An independent installed official `@vue/compiler-dom` 3.5.41 probe on the exact
+inner template reported no errors and emitted one `.key` property using `a`.
+Neither Vize branch establishes complete Vue correctness for this input. The
+explicit frontier control records the existing difference; it is not the oracle
+for the 416 comparisons. Genuine forced-legacy comparison remains appropriate
+for the known post-parse refusal, where compatibility codegen actually supplies
+the default result.
+
+The first source compiler cohort passed 6,941 tests, including the ordinary
+preflight/provider laws. The corrected feature reference and its nested/unwind
+control still require a new source run and protected MQ execution. All 26
+original configured inputs are retained, and the 416-comparison law collects
+complete differences across every input/target/map/capture combination before
+failing, so one frontier cannot conceal later failures.
 
 Required shipping validation for the eventual coherent patch:
 

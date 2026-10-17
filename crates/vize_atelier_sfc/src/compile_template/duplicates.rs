@@ -240,6 +240,11 @@ mod preflight_tests;
 #[cfg(all(test, feature = "legacy-dom-differential"))]
 mod whole_parity;
 
+#[cfg(all(test, feature = "legacy-dom-differential"))]
+pub(super) fn original_preflight_requested() -> bool {
+    whole_parity::original_preflight_requested()
+}
+
 #[cfg(test)]
 mod tests {
     use super::find_duplicate_props;

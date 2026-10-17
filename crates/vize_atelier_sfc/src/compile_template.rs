@@ -108,7 +108,10 @@ pub(crate) fn compile_template_block_with_capture(
     codegen_options: &CodegenOptions,
     mut capture: Option<&mut StageCapture>,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
-    if options.ssr && !options.dialect.is_legacy() {
+    let eager_preflight = options.ssr;
+    #[cfg(all(test, feature = "legacy-dom-differential"))]
+    let eager_preflight = eager_preflight || duplicates::original_preflight_requested();
+    if eager_preflight && !options.dialect.is_legacy() {
         duplicates::reject_duplicate_props(template)?;
     }
     let TemplateBlockCompileContext {
@@ -262,6 +265,13 @@ pub(crate) fn compile_template_block_with_capture(
         !options.dialect.is_legacy(),
         compiler_options.is_some_and(|options| options.experimental_in_tag_comments),
     );
+    let preflight_hook = Some(&mut preflight as &mut dyn vize_l1_to_l2::SurfacePreflight);
+    #[cfg(all(test, feature = "legacy-dom-differential"))]
+    let preflight_hook = if duplicates::original_preflight_requested() {
+        None
+    } else {
+        preflight_hook
+    };
     // The native hook runs before any captured page/remark, and a false
     // result stops before the legacy entry. Only appended option metadata
     // needs rollback to preserve the eager preflight's exact error boundary.
@@ -278,11 +288,14 @@ pub(crate) fn compile_template_block_with_capture(
             codegen_options.clone(),
             codegen_experimental_options,
             has_scoped && !slotted,
-            &mut preflight,
+            preflight_hook,
             capture.as_deref_mut(),
         )
     );
-    if let Err(error) = preflight.finish() {
+    let finish_preflight = true;
+    #[cfg(all(test, feature = "legacy-dom-differential"))]
+    let finish_preflight = finish_preflight && !duplicates::original_preflight_requested();
+    if finish_preflight && let Err(error) = preflight.finish() {
         if let (Some(capture), Some(before)) = (capture, before_preflight) {
             capture.options.truncate(before);
         }

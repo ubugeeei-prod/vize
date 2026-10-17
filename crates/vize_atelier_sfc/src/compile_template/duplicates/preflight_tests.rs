@@ -101,7 +101,7 @@ fn actual_dom_dispatch_observes_native_parse_or_original_compatibility_once() {
                 CodegenOptions::default(),
                 CodegenExperimentalOptions::default(),
                 false,
-                &mut check,
+                Some(&mut check),
                 captured.then_some(&mut capture),
             );
             assert!(

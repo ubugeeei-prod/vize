@@ -357,7 +357,7 @@ pub fn compile_sfc_template_with_preflight<'a>(
     codegen_options: CodegenOptions,
     codegen_experimental_options: CodegenExperimentalOptions,
     no_slotted: bool,
-    preflight: &mut dyn vize_l1_to_l2::SurfacePreflight,
+    preflight: Option<&mut dyn vize_l1_to_l2::SurfacePreflight>,
     capture: Option<&mut StageCapture>,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
     if let Some(capture) = capture {
@@ -381,7 +381,7 @@ pub fn compile_sfc_template_with_preflight<'a>(
             codegen_experimental_options,
             no_slotted,
             capture,
-            Some(preflight),
+            preflight,
         )
     } else {
         compile_template_inner_for_sfc_with_sections_captured(
@@ -395,7 +395,7 @@ pub fn compile_sfc_template_with_preflight<'a>(
             codegen_experimental_options,
             no_slotted,
             &mut vize_l0::dump::capture::NoCapture,
-            Some(preflight),
+            preflight,
         )
     }
 }

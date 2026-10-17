@@ -1,12 +1,55 @@
-//! Original full public Results against the untouched callback + legacy entry.
+//! Original full public Results against the eager callback and default backend.
 use crate::{
     SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
     compile_sfc_for_adapter_with_experimental_options, compile_sfc_for_adapter_with_stage_capture,
     parse_sfc,
 };
+use core::cell::Cell;
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 
 const LATE_REFUSAL_SFC: &str = r#"<template><Widget><template #actions="v-slot:actions"><button>Run</button></template></Widget></template>"#;
+
+std::thread_local! {
+    static ORIGINAL_PREFLIGHT: Cell<bool> = const { Cell::new(false) };
+}
+
+pub(super) fn original_preflight_requested() -> bool {
+    ORIGINAL_PREFLIGHT.with(Cell::get)
+}
+
+// Restore the original eager check without changing the DOM selector/backend.
+// This control exists only in this feature-enabled unit-test build.
+fn with_original_preflight<R>(f: impl FnOnce() -> R) -> R {
+    struct Reset(bool);
+    impl Drop for Reset {
+        fn drop(&mut self) {
+            ORIGINAL_PREFLIGHT.with(|flag| flag.set(self.0));
+        }
+    }
+    let _reset = Reset(ORIGINAL_PREFLIGHT.with(|flag| flag.replace(true)));
+    f()
+}
+
+#[test]
+fn original_preflight_reference_restores_nested_and_unwinding_invocations() {
+    assert!(!original_preflight_requested());
+    with_original_preflight(|| {
+        assert!(original_preflight_requested());
+        with_original_preflight(|| assert!(original_preflight_requested()));
+        assert!(original_preflight_requested());
+        let panicked = std::panic::catch_unwind(|| {
+            with_original_preflight(|| panic!("original reference unwind control"));
+        });
+        assert!(panicked.is_err());
+        assert!(original_preflight_requested());
+    });
+    assert!(!original_preflight_requested());
+    let panicked = std::panic::catch_unwind(|| {
+        with_original_preflight(|| panic!("outer reference unwind control"));
+    });
+    assert!(panicked.is_err());
+    assert!(!original_preflight_requested());
+}
 
 #[test]
 fn complete_original_dom_inline_module_maps_and_ssr_vapor_controls_match_retained() {
@@ -103,6 +146,7 @@ fn complete_original_dom_inline_module_maps_and_ssr_vapor_controls_match_retaine
     ];
     let mut pairs = 0;
     let mut populated_maps = 0;
+    let mut divergences = Vec::new();
     for (source, comments) in sources {
         let descriptor = parse_sfc(
             source,
@@ -144,7 +188,7 @@ fn complete_original_dom_inline_module_maps_and_ssr_vapor_controls_match_retaine
                         SfcCompileExperimentalOptions::default(),
                     )
                 };
-                let retained = vize_atelier_dom::differential::with_legacy_lane(compile);
+                let retained = with_original_preflight(compile);
                 if retained
                     .as_ref()
                     .ok()
@@ -153,11 +197,12 @@ fn complete_original_dom_inline_module_maps_and_ssr_vapor_controls_match_retaine
                     populated_maps += 1;
                 }
                 let expected = serde_json::to_value(&retained).unwrap();
-                assert_eq!(
-                    serde_json::to_value(compile()).unwrap(),
-                    expected,
-                    "{source} {shape} map={source_map}"
-                );
+                let actual = serde_json::to_value(compile()).unwrap();
+                if actual != expected {
+                    divergences.push(format!(
+                        "{source} {shape} map={source_map}\nactual: {actual}\noriginal: {expected}"
+                    ));
+                }
                 let captured = compile_sfc_for_adapter_with_stage_capture(
                     &descriptor,
                     options,
@@ -168,17 +213,51 @@ fn complete_original_dom_inline_module_maps_and_ssr_vapor_controls_match_retaine
                     SfcCompileExperimentalOptions::default(),
                 )
                 .map(|(result, _)| result);
-                assert_eq!(
-                    serde_json::to_value(captured).unwrap(),
-                    expected,
-                    "{source} {shape} map={source_map} captured"
-                );
+                let actual = serde_json::to_value(captured).unwrap();
+                if actual != expected {
+                    divergences.push(format!(
+                        "{source} {shape} map={source_map} captured\nactual: {actual}\noriginal: {expected}"
+                    ));
+                }
                 pairs += 2;
             }
         }
     }
     assert_eq!(pairs, 416);
     assert!(populated_maps > 0);
+    assert!(divergences.is_empty(), "{}", divergences.join("\n\n"));
+}
+
+#[test]
+fn empty_modifier_default_and_forced_legacy_remain_an_explicit_existing_frontier() {
+    let descriptor = parse_sfc(
+        "<template><div :key..prop='a' :key.prop.='b'></div></template>",
+        SfcParseOptions::default(),
+    )
+    .unwrap();
+    let compile = || {
+        compile_sfc_for_adapter_with_experimental_options(
+            &descriptor,
+            SfcCompileOptions::default(),
+            TemplateSyntaxMode::Standard,
+            CustomElementMatcher::default(),
+            CodegenOptions::default(),
+            SfcScriptOutputMode::SeparateTemplate,
+            SfcCompileExperimentalOptions::default(),
+        )
+    };
+    let original = with_original_preflight(compile);
+    assert!(original.is_ok());
+    assert_eq!(
+        serde_json::to_value(compile()).unwrap(),
+        serde_json::to_value(&original).unwrap()
+    );
+    let legacy = vize_atelier_dom::differential::with_legacy_lane(compile);
+    let error = legacy.expect_err("the existing compatibility parser rejects empty modifiers");
+    assert!(error.message.contains("MissingDirectiveModifier"));
+    // This records compatibility, not Vue correctness: pinned official Vue
+    // reports no errors and deduplicates these emitted .key properties.
+    assert_eq!(original.unwrap().code.matches("\".key\":").count(), 2);
 }
 
 #[test]
@@ -230,7 +309,7 @@ fn actual_post_parse_refusal_preserves_complete_results_and_checks_only_once() {
             CodegenOptions::default(),
             CodegenExperimentalOptions::default(),
             false,
-            &mut preflight,
+            Some(&mut preflight),
             captured.then_some(&mut capture),
         );
         assert_eq!((preflight.native_calls, preflight.retained_calls), (1, 0));
