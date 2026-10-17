@@ -1,14 +1,16 @@
 import { gunzipSync } from "node:zlib";
+import { spawnSync } from "node:child_process";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import {
-  assertDigest,
+  assertMembershipCorrection,
   assertParity,
   command,
   contractDirectory,
   evidenceDirectory,
+  fixture,
   materializeFrozenReporters,
   writeSeamReceipt,
   parseReport,
@@ -19,60 +21,8 @@ import {
   root,
   runReporter,
   type Oracle,
+  type Fixture,
 } from "../_helpers/lint-report-rust-parity.ts";
-function fixture() {
-  fs.mkdirSync(path.join(root, "target"), { recursive: true });
-  const directory = fs.mkdtempSync(path.join(root, "target", "lint-report-parity-"));
-  const output = path.join(directory, "output");
-  const transcript = path.join(directory, "processes.jsonl");
-  const response = path.join(directory, "response.json");
-  const binary = path.join(directory, "fake-vize.mjs");
-  const registry = path.join(directory, "registry.json");
-  fs.writeFileSync(binary, referenceFixtures.fakeVizeSource);
-  fs.chmodSync(binary, 0o755);
-  const project = (id = "parity", extra: Record<string, unknown> = {}) => ({
-    id,
-    revision: "0".repeat(40),
-    fixturePath: path.relative(root, directory),
-    vueGlobs: ["App.vue"],
-    coverage: ["linter"],
-    ...extra,
-  });
-  const write = (file: string, contents: string) => {
-    fs.mkdirSync(path.dirname(path.join(directory, file)), { recursive: true });
-    fs.writeFileSync(path.join(directory, file), contents);
-  };
-  write("App.vue", "<template><div /></template>\n");
-  const configure = (
-    projects = [project()],
-    value: Record<string, unknown> = { results: [{ file: "App.vue", messages: [] }] },
-  ) => {
-    fs.writeFileSync(registry, JSON.stringify({ projects }));
-    fs.writeFileSync(response, JSON.stringify(value));
-  };
-  configure();
-  return {
-    directory,
-    output,
-    transcript,
-    binary,
-    project,
-    write,
-    configure,
-    args: [
-      "--registry",
-      registry,
-      "--output-dir",
-      output,
-      "--vize-bin",
-      binary,
-      "--timeout-ms",
-      "30000",
-    ],
-    clean: () => fs.rmSync(directory, { recursive: true, force: true }),
-  };
-}
-type Fixture = ReturnType<typeof fixture>;
 let frozen: ReturnType<typeof materializeFrozenReporters>;
 before(() => {
   frozen = materializeFrozenReporters();
@@ -109,6 +59,10 @@ test("source-bound schema custody accepts complete legacy packets and strictly c
     assert.equal(actual.status, 0, actual.stderr);
     const text = fs.readFileSync(path.join(input.output, "parity-lint-divergence.json"), "utf8");
     parseReport(text, "typescript");
+    const modernRust: unknown = JSON.parse(text);
+    object(object(object(modernRust).evidence).runtime).name = "rust-script";
+    parseReport(JSON.stringify(modernRust), "updated");
+    assert.throws(() => parseReport(JSON.stringify(modernRust), "original"));
     for (const mode of ["original", "updated"] as const)
       assert.throws(() => parseReport(text, mode));
     for (const ownerKeys of referenceFixtures.missingModernPaths) {
@@ -196,6 +150,10 @@ test("complete reports preserve deterministic ignore, rule, raw process and shar
       expectedCount: null,
     });
     assert.equal(indexFile(result).budget.passed, false);
+    assert.equal(
+      object(reportFile(result, reports[0][0]).budget).unusableReason,
+      "no mapped eslint-plugin-vue rule was comparable under the selected preset",
+    );
     input.write(".ignore", "!generated/\ngenerated/*\n");
     input.write("generated/.ignore", "!Keep.vue\n");
     input.write("generated/Keep.vue", "<template><span /></template>\n");
@@ -220,6 +178,49 @@ test("complete reports preserve deterministic ignore, rule, raw process and shar
     assert.deepEqual(nested.processes[0].argv, result.processes[0].argv);
   } finally {
     input.clean();
+  }
+});
+test("frozen actual commands preserve hidden, escaped, nested-repository and Vue glob corpus identities", () => {
+  for (const entry of referenceFixtures.selectionCases) {
+    const input = fixture();
+    try {
+      fs.rmSync(path.join(input.directory, "App.vue"));
+      for (const [name, text] of Object.entries(entry.files)) input.write(name, text);
+      if (entry.gitRoot)
+        assert.equal(
+          spawnSync("git", ["init", "-q", path.join(input.directory, entry.gitRoot)]).status,
+          0,
+        );
+      input.configure([input.project(entry.id, { vueGlobs: entry.globs })], {
+        results: entry.expected.map((file) => ({ file, messages: [] })),
+      });
+      for (const mode of entry.id === "hidden-whitelist"
+        ? ["record-only", "enforce"]
+        : ["record-only"]) {
+        const result = compare(input, [
+          ...input.args,
+          "--preset",
+          "no-rules",
+          "--budget-mode",
+          mode,
+        ]);
+        assert.equal(result.status, mode === "enforce" ? 1 : 0, result.stderr);
+        const report = reportFile(result, `${entry.id}-lint-divergence.json`);
+        assert.equal(report.budget.passed, false);
+        assert.equal(report.budget.verdict, "unusable");
+        assert.equal(
+          object(report.budget).unusableReason,
+          "no mapped eslint-plugin-vue rule was comparable under the selected preset",
+        );
+        assert.deepEqual(
+          report.raw.eslintResults.map((row) => row.filePath),
+          entry.expected.map((file) => path.join(input.directory, file)),
+        );
+        assert.deepEqual(result.processes[0].argv.slice(1, 1 + entry.globs.length), entry.globs);
+      }
+    } finally {
+      input.clean();
+    }
   }
 });
 test("actual pinned ESLint mapped diagnostics preserve full reports, breached budgets and warnings", () => {
@@ -455,16 +456,7 @@ test("unmeasured foreign reviewed source is scored: explicit correction to updat
     });
     const old = runReporter(input, frozen.paths.updated, input.args, "updated");
     const actual = runReporter(input, nodeCommand);
-    assert.equal(old.status, 0, old.stderr);
-    assert.equal(actual.status, 1, actual.stderr);
-    const report = reportFile(actual, `${entry.project}-lint-divergence.json`);
-    assertDigest(report.divergence);
-    assert.deepEqual(report.divergence.referenceCoverageExpectations, []);
-    assert.equal(report.divergence.summary.falsePositiveCount, 1);
-    assert.equal(report.divergence.summary.patinaOutsideBaselineSurfaceCount, 0);
-    assert.equal(report.budget.verdict, "breached");
-    assert.deepEqual(actual.processes, old.processes);
-    assert.equal(report.raw.patinaResults[0].file, entry.finding.file);
+    assertMembershipCorrection(old, actual, object(entry));
   } finally {
     input.clean();
   }

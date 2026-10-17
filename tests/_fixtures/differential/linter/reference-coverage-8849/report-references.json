@@ -78,7 +78,10 @@
     ["baseline", "runtimeVersions"],
     ["divergence", "referenceCoverageExpectations"],
     ["divergence", "summary", "referenceCoverageIntegrityErrorCount"],
-    ["schema"]
+    ["schema"],
+    ["version"],
+    ["divergence", "schema"],
+    ["divergence", "version"]
   ],
   "seams": {
     "runtime": "Exact Rust/Node name and version; machine/source unchanged",
@@ -98,5 +101,142 @@
       }
     ],
     "membership": "Full explicit exempt-to-scored correction; zero budgets unchanged"
+  },
+  "selectionCases": [
+    {
+      "id": "hidden-whitelist",
+      "globs": ["."],
+      "files": {
+        ".ignore": "!.kept.vue\n",
+        ".kept.vue": "<template><div /></template>\n",
+        ".hidden.vue": "<template><div /></template>\n"
+      },
+      "expected": [".kept.vue"]
+    },
+    {
+      "id": "escaped-markers",
+      "globs": ["**/*.vue"],
+      "files": {
+        ".ignore": "\\#secret.vue\n\\!literal.vue\n",
+        "#secret.vue": "<template><div /></template>\n",
+        "!literal.vue": "<template><div /></template>\n",
+        "Keep.vue": "<template><div /></template>\n"
+      },
+      "expected": ["Keep.vue"]
+    },
+    {
+      "id": "nested-repository-boundary",
+      "globs": ["**/*.vue"],
+      "files": {
+        ".gitignore": "nested/Excluded.vue\n",
+        ".ignore": "nested/Blocked.vue\n",
+        "nested/Excluded.vue": "<template><div /></template>\n",
+        "nested/Blocked.vue": "<template><div /></template>\n"
+      },
+      "gitRoot": "nested",
+      "expected": ["nested/Excluded.vue"]
+    },
+    {
+      "id": "literal-caret",
+      "globs": ["src/[^a].vue"],
+      "files": {
+        "src/^.vue": "<template><div /></template>\n",
+        "src/a.vue": "<template><div /></template>\n",
+        "src/b.vue": "<template><div /></template>\n"
+      },
+      "expected": ["src/^.vue", "src/a.vue"]
+    },
+    {
+      "id": "literal-closing-bracket",
+      "globs": ["src/[]].vue"],
+      "files": {
+        "src/].vue": "<template><div /></template>\n"
+      },
+      "expected": ["src/].vue"]
+    }
+  ],
+  "membershipDelta": {
+    "fields": {
+      "summary": {
+        "before": {
+          "falsePositiveCount": 0,
+          "falsePositiveRatio": 0,
+          "patinaOutsideBaselineSurfaceCount": 1
+        },
+        "after": {
+          "falsePositiveCount": 1,
+          "falsePositiveRatio": 1,
+          "patinaOutsideBaselineSurfaceCount": 0
+        }
+      },
+      "budget": {
+        "before": {
+          "falsePositivePassed": true,
+          "passed": true,
+          "verdict": "passed"
+        },
+        "after": {
+          "falsePositivePassed": false,
+          "passed": false,
+          "verdict": "breached"
+        }
+      },
+      "indexTotals": {
+        "before": {
+          "falsePositiveCount": 0
+        },
+        "after": {
+          "falsePositiveCount": 1
+        }
+      },
+      "indexProject": {
+        "before": {
+          "falsePositiveCount": 0,
+          "falsePositiveRatio": 0,
+          "patinaOutsideBaselineSurfaceCount": 1
+        },
+        "after": {
+          "falsePositiveCount": 1,
+          "falsePositiveRatio": 1,
+          "patinaOutsideBaselineSurfaceCount": 0
+        }
+      },
+      "indexBudget": {
+        "before": {
+          "status": "success",
+          "passed": true,
+          "passedCount": 1,
+          "failedCount": 0,
+          "breachedCount": 0,
+          "failedProjects": []
+        },
+        "after": {
+          "status": "failure",
+          "passed": false,
+          "passedCount": 0,
+          "failedCount": 1,
+          "breachedCount": 1,
+          "failedProjects": ["gui-for-singbox"]
+        }
+      }
+    },
+    "markdown": [
+      ["False positives: 0 (0.0)\n", "False positives: 1 (1.0)\n"],
+      [
+        "Patina findings outside reference coverage: 1\n",
+        "Patina findings outside reference coverage: 0\n"
+      ],
+      ["Budget verdict: passed\n", "Budget verdict: breached\n"],
+      ["Budget passed: true\n", "Budget passed: false\n"],
+      [
+        "### False positives: none\n\n",
+        "### False positives: 1\n\n| Rule | Findings |\n| --- | ---: |\n| `vue/v-slot-style` | 1 |\n\n"
+      ],
+      [
+        "### Patina findings outside reference coverage: 1\n\n| Rule | Findings |\n| --- | ---: |\n| `vue/v-slot-style` | 1 |\n\n",
+        "### Patina findings outside reference coverage: none\n\n"
+      ]
+    ],
+    "stderr": "Lint divergence budget failed for 1 project(s):\nLint divergence budget breached for gui-for-singbox: 1 false positives exceed maxFalsePositiveCount 0\n"
   }
 }
