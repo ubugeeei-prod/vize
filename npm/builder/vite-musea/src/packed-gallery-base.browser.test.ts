@@ -12,6 +12,7 @@ import { createServer } from "vite";
 import type { MuseaVrtOptions } from "./types/plugin.ts";
 import {
   createPackedGalleryHttpObserver,
+  drainPackedGalleryHttp,
   type PackedGalleryHttpRecord,
 } from "./packed-gallery-http.ts";
 import type { VrtResult, VrtSummary } from "./vrt/types.ts";
@@ -187,16 +188,19 @@ void test(
           assert.ok(galleryAssets.length >= 2);
           assert.ok(galleryAssets.every((asset) => asset.startsWith(`${normalized}/assets/`)));
           for (const title of fixture.titles) {
+            await drainPackedGalleryHttp(pending);
             await page.locator(".art-item").filter({ hasText: title }).click();
             const preview = page.frameLocator(".variant-card iframe");
             await preview.getByRole("button", { name: title, exact: true }).waitFor();
             assert.equal(await preview.locator("museacomponent").count(), 0);
           }
+          await drainPackedGalleryHttp(pending);
           await page.locator(".art-item").filter({ hasText: "Left" }).click();
           await page
             .frameLocator(".variant-card iframe")
             .getByRole("button", { name: "Left", exact: true })
             .waitFor();
+          await drainPackedGalleryHttp(pending);
           await page.getByRole("button", { name: "VRT", exact: true }).click();
           const token = await page.evaluate(() => {
             const value = crypto.randomUUID();
@@ -263,6 +267,7 @@ void test(
           const beforeEdit = await readFile(arts[0], "utf8");
           const changed = beforeEdit.replace("#0000ff", "#00ff00");
           assert.notEqual(changed, beforeEdit);
+          await drainPackedGalleryHttp(pending);
           const reloaded = page.waitForEvent("framenavigated", {
             predicate: (frame) => frame === page.mainFrame(),
             timeout: 15000,
@@ -276,6 +281,7 @@ void test(
             },
             `${origin}${normalized}/api/arts/${encodeURIComponent(arts[0])}`,
           );
+          await drainPackedGalleryHttp(pending);
           await page.locator(".art-item").filter({ hasText: "Left" }).click();
           const updated = page.frameLocator(".variant-card iframe").getByRole("button", {
             name: "Left",
@@ -323,7 +329,7 @@ void test(
             greenPixels,
             pngSHA256: sha256(green),
           });
-          await Promise.all(pending);
+          await drainPackedGalleryHttp(pending);
           assert.deepEqual(errors, []);
           assert.deepEqual(consoleErrors, []);
           assert.deepEqual(httpErrors, []);
@@ -349,7 +355,7 @@ void test(
         } finally {
           const evidence = [
             async () => {
-              for (const work of pending) await work;
+              await drainPackedGalleryHttp(pending);
             },
             () =>
               writeFile(
@@ -390,6 +396,9 @@ void test(
         }
         if (evidenceErrors.length)
           throw new AggregateError(evidenceErrors, "Packed gallery evidence failed");
+        assert.deepEqual(errors, []);
+        assert.deepEqual(consoleErrors, []);
+        assert.deepEqual(httpErrors, []);
       });
     }
   },
