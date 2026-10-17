@@ -94,6 +94,12 @@ const fixtures: Fixture[] = [
     manifests: [{ ...base, private: false }],
     expectedCommands: packInstall,
   },
+  {
+    name: "well-formed Unicode strings and object keys",
+    status: 0,
+    manifests: [{ ...base, description: "雪😀", ["😀"]: "surrogate pair remains valid" }],
+    expectedCommands: packInstall,
+  },
   { name: "zero tarballs", status: 1, fault: "zero-packs", expectedCommands: ["pack"] },
   { name: "multiple tarballs", status: 1, fault: "two-packs", expectedCommands: ["pack"] },
   { name: "pack command failure", status: 1, fault: "fail-pack", expectedCommands: ["pack"] },
@@ -395,7 +401,19 @@ test("both drivers refuse malformed JSON before npm and retain native parser dia
     fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-json-refusal-")),
   );
   try {
-    for (const source of ["", '{"name":', '{"name":"unfinished', '{"name":"x",}']) {
+    const cases = [
+      { source: "", operation: "parse JSON" },
+      { source: '{"name":', operation: "parse JSON" },
+      { source: '{"name":"unfinished', operation: "parse JSON" },
+      { source: '{"name":"x",}', operation: "parse JSON" },
+      { source: String.raw`{"name":"\ud800"}`, operation: "parse JSON" },
+      { source: String.raw`{"name":"\udc00"}`, operation: "parse JSON" },
+      { source: String.raw`{"\ud800":"x"}`, operation: "parse JSON" },
+      { source: '{"name":"x","value":1e400}', operation: "parse JSON" },
+      { source: '{"name":"x","value":-1e400}', operation: "parse JSON" },
+      { source: new Uint8Array([0x7b, 0x22, 0xff, 0x22, 0x3a, 0x31, 0x7d]), operation: "read" },
+    ];
+    for (const { source, operation } of cases) {
       const directory = path.join(temporary, "package");
       fs.mkdirSync(directory, { recursive: true });
       const manifest = path.join(directory, "package.json");
@@ -414,7 +432,7 @@ test("both drivers refuse malformed JSON before npm and retain native parser dia
         assert.ifError(result.error);
         assert.equal(result.status, 1);
         assert.equal(result.stdout, "");
-        assert.ok(result.stderr.startsWith(`cannot parse JSON ${manifest}: `), result.stderr);
+        assert.ok(result.stderr.startsWith(`cannot ${operation} ${manifest}: `), result.stderr);
         assert.ok(result.stderr.endsWith("\n"));
         observations.push({
           driver,

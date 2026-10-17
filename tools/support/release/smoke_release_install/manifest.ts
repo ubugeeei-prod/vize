@@ -24,14 +24,26 @@ export function object(value: unknown): Record<string, unknown> | undefined {
 export function readJson(filename: string): unknown {
   let text: string;
   try {
-    text = fs.readFileSync(filename, "utf8");
+    // Rust read_to_string refuses invalid UTF-8 and preserves a leading BOM.
+    text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(
+      fs.readFileSync(filename),
+    );
   } catch (error) {
     throw new Error(
       `cannot read ${filename}: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
   try {
-    return JSON.parse(text) as unknown;
+    // serde_json rejects lone UTF-16 surrogates and overflowing JSON numbers.
+    // Keep that input domain while retaining native parser diagnostics.
+    const loneSurrogate = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+    return JSON.parse(text, (key: string, value: unknown): unknown => {
+      if (loneSurrogate.test(key) || (typeof value === "string" && loneSurrogate.test(value)))
+        throw new SyntaxError("JSON strings must contain valid Unicode scalar values");
+      if (typeof value === "number" && !Number.isFinite(value))
+        throw new SyntaxError("JSON number is out of range");
+      return value;
+    }) as unknown;
   } catch (error) {
     throw new Error(
       `cannot parse JSON ${filename}: ${error instanceof Error ? error.message : String(error)}`,
