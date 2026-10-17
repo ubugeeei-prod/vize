@@ -127,13 +127,20 @@ void test("pull-request setup-vp restores the bootstrap runtime and does not ins
 const dependencyAction = "voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af";
 const dependencyConsumers = [
   ["check.yml", "check-js"],
+  ["check.yml", "security-audit"],
+  ["check.yml", "node-engine-compat", "matrix"],
+  ["pr-js-checks.yml", "pr-js-package-tests"],
+  ["pr-js-checks.yml", "pr-oxlint-project-qualification"],
+  ["pr-js-checks.yml", "pr-js-package-conformance"],
+  ["pr-source-checks.yml", "pr-native-runtime"],
+  ["pr-source-checks.yml", "pr-playground-test"],
   ["pr-rust-checks.yml", "merge-rust-source"],
   ["pr-rust-checks.yml", "pr-rust-shard"],
   ["pr-rust-differential.yml", "differential"],
   ["rust-pr-target-seed.yml", "rust-differential-target-seed"],
 ];
 
-function assertDependencyConsumer(job) {
+function assertDependencyConsumer(job, runtime = "manifest") {
   assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   const steps = job.steps.filter((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
   assert.equal(steps.length, 1);
@@ -146,7 +153,17 @@ function assertDependencyConsumer(job) {
   assert.equal(setup.with.cache, true, "consumers must retain restoration");
   assert.equal(setup.with["cache-save"], false, "consumers cannot publish the dependency store");
   assert.equal(setup.with.version, "latest", "preserve the previous installer version policy");
-  assert.equal(setup.with["node-version-file"], "package.json");
+  if (runtime === "matrix") {
+    assert.deepEqual(job.strategy, {
+      "fail-fast": false,
+      matrix: { "node-version": ["22", "24"] },
+    });
+    assert.equal(setup.with["node-version"], "${{ matrix.node-version }}");
+    assert.equal(setup.with["node-version-file"], undefined);
+  } else {
+    assert.equal(setup.with["node-version-file"], "package.json");
+    assert.equal(setup.with["node-version"], undefined);
+  }
   assert.equal(setup.with["working-directory"], undefined);
   assert.equal(setup.with["cache-dependency-path"], undefined);
   assert.equal(job["continue-on-error"], undefined);
@@ -155,15 +172,20 @@ function assertDependencyConsumer(job) {
 }
 
 void test("Linux source consumers retain the same dependency identity without cache publication", () => {
-  for (const [file, name] of dependencyConsumers) {
+  assert.equal(dependencyConsumers.length, 12, "eleven ordinary jobs plus the differential seed");
+  for (const [file, name, runtime] of dependencyConsumers) {
     const job = workflow(`.github/workflows/${file}`).jobs[name];
-    const setup = assertDependencyConsumer(job);
-    assert.equal(setup.with["run-install"], !["check-js", "differential"].includes(name));
+    const setup = assertDependencyConsumer(job, runtime);
+    assert.equal(
+      setup.with["run-install"],
+      ["merge-rust-source", "pr-rust-shard", "rust-differential-target-seed"].includes(name),
+    );
     assert.ok(!JSON.stringify(job.needs ?? []).includes("seed-vp-dependencies"));
     for (const change of [
       { cache: false },
       { "cache-save": true },
       { "node-version-file": "other-package.json" },
+      { "node-version": "20" },
       { "working-directory": "npm/cli" },
       { "cache-dependency-path": "other-lock.yaml" },
       { version: "" },
@@ -173,7 +195,7 @@ void test("Linux source consumers retain the same dependency identity without ca
         ...setup.with,
         ...change,
       };
-      assert.throws(() => assertDependencyConsumer(invalid));
+      assert.throws(() => assertDependencyConsumer(invalid, runtime));
     }
   }
 });
