@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { rustSmokeInvocation } from "../support/release-smoke-reference.ts";
 import { runCommand } from "../../../tools/support/release/smoke_release_install/process.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
@@ -104,22 +105,25 @@ test(
           root,
           `tools/commands/release/npm/smoke-release-install.${driver === "rust" ? "rs" : "ts"}`,
         );
-        const result = spawnSync(
-          driver === "rust" ? "rust-script" : process.execPath,
-          [entry, "--runtime-checks", "--keep-temp", ...packages],
-          {
-            cwd: root,
-            encoding: "utf8",
-            maxBuffer: Infinity,
-            timeout: 180_000,
-            env: {
-              ...process.env,
-              NODE_BIN: process.execPath,
-              NPM_BIN: process.platform === "win32" ? "npm.cmd" : "npm",
-              VIZE_NATIVE_BUILD_TOKEN: "11111111111111111111111111111111",
-            },
+        const invocation =
+          driver === "rust"
+            ? rustSmokeInvocation(["--runtime-checks", "--keep-temp", ...packages])
+            : {
+                command: process.execPath,
+                args: [entry, "--runtime-checks", "--keep-temp", ...packages],
+              };
+        const result = spawnSync(invocation.command, invocation.args, {
+          cwd: root,
+          encoding: "utf8",
+          maxBuffer: Infinity,
+          timeout: 180_000,
+          env: {
+            ...process.env,
+            NODE_BIN: process.execPath,
+            NPM_BIN: process.platform === "win32" ? "npm.cmd" : "npm",
+            VIZE_NATIVE_BUILD_TOKEN: "11111111111111111111111111111111",
           },
-        );
+        });
         assert.ifError(result.error);
         assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
         const kept = /^kept (.+)$/m.exec(result.stdout)?.[1];

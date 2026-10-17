@@ -169,15 +169,13 @@ test("installed mapper rejects a missing executable", () =>
     fs.rmSync(f.bin);
     assert.throws(() => assertInstalledMapperContract(f.install), /bin[/\\]vize must exist/);
   }));
-test(
-  "installed mapper rejects a non-executable launcher",
-  { skip: process.platform === "win32" },
-  () =>
-    fixture((f) => {
-      fs.chmodSync(f.bin, 0o644);
-      assert.throws(() => assertInstalledMapperContract(f.install), /must be executable/);
-    }),
-);
+test("installed mapper retains the platform executable policy", () =>
+  fixture((f) => {
+    fs.chmodSync(f.bin, 0o644);
+    if (process.platform === "win32")
+      assert.doesNotThrow(() => assertInstalledMapperContract(f.install));
+    else assert.throws(() => assertInstalledMapperContract(f.install), /must be executable/);
+  }));
 
 for (const fault of ["normal", "alternate-declaration"]) {
   test(`installed mapper verifies ${fault} declarations with both complete compiler commands`, (t) =>

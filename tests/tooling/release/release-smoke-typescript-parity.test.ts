@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { rustSmokeInvocation } from "../support/release-smoke-reference.ts";
 import {
   NATIVE_RUNTIME_SCRIPT,
   INIT_SCRIPT,
@@ -301,30 +302,29 @@ function observe(fixture: Fixture, driver: "rust" | "typescript", temporary: str
     ...(fixture.runtimeFlag === undefined ? [] : [fixture.runtimeFlag]),
     ...packageDirs,
   ];
-  const result = spawnSync(
-    driver === "rust" ? "rust-script" : process.execPath,
-    [entry + (driver === "rust" ? ".rs" : ".ts"), ...argv],
-    {
-      cwd: root,
-      encoding: "utf8",
-      timeout: 150_000,
-      env: {
-        ...process.env,
-        PATH: `${path.dirname(process.execPath)}${path.delimiter}${process.env.PATH ?? ""}`,
-        NPM_BIN:
-          fixture.realNpm === true ? (process.platform === "win32" ? "npm.cmd" : "npm") : npm,
-        NODE_BIN: process.execPath,
-        TEMP: temp,
-        TMP: temp,
-        TMPDIR: temp,
-        PARITY_LOG: path.join(directory, "calls.jsonl"),
-        PARITY_FAULT: fixture.fault ?? "",
-        VIZE_TEST_CONTENT_MAPPER_TSGO: "",
-        npm_config_cache: path.join(directory, "npm-cache"),
-        npm_config_update_notifier: "false",
-      },
+  const invocation =
+    driver === "rust"
+      ? rustSmokeInvocation(argv)
+      : { command: process.execPath, args: [entry + ".ts", ...argv] };
+  const result = spawnSync(invocation.command, invocation.args, {
+    cwd: root,
+    encoding: "utf8",
+    timeout: 150_000,
+    env: {
+      ...process.env,
+      PATH: `${path.dirname(process.execPath)}${path.delimiter}${process.env.PATH ?? ""}`,
+      NPM_BIN: fixture.realNpm === true ? (process.platform === "win32" ? "npm.cmd" : "npm") : npm,
+      NODE_BIN: process.execPath,
+      TEMP: temp,
+      TMP: temp,
+      TMPDIR: temp,
+      PARITY_LOG: path.join(directory, "calls.jsonl"),
+      PARITY_FAULT: fixture.fault ?? "",
+      VIZE_TEST_CONTENT_MAPPER_TSGO: "",
+      npm_config_cache: path.join(directory, "npm-cache"),
+      npm_config_update_notifier: "false",
     },
-  );
+  });
   assert.ifError(result.error);
   const kept = /^kept (.+)$/m.exec(result.stdout)?.[1];
   const normalize = (text: string): string => {
@@ -391,15 +391,15 @@ test("both drivers refuse malformed JSON before npm and retain native parser dia
       fs.writeFileSync(manifest, source);
       const observations = [];
       for (const driver of ["rust", "typescript"]) {
-        const result = spawnSync(
-          driver === "rust" ? "rust-script" : process.execPath,
-          [entry + (driver === "rust" ? ".rs" : ".ts"), directory],
-          {
-            cwd: root,
-            encoding: "utf8",
-            env: { ...process.env, NPM_BIN: path.join(temporary, "must-not-run-npm") },
-          },
-        );
+        const invocation =
+          driver === "rust"
+            ? rustSmokeInvocation([directory])
+            : { command: process.execPath, args: [entry + ".ts", directory] };
+        const result = spawnSync(invocation.command, invocation.args, {
+          cwd: root,
+          encoding: "utf8",
+          env: { ...process.env, NPM_BIN: path.join(temporary, "must-not-run-npm") },
+        });
         assert.ifError(result.error);
         assert.equal(result.status, 1);
         assert.equal(result.stdout, "");

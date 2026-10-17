@@ -12,6 +12,7 @@ on:
       - "tools/support/release/smoke_release_install/**"
       - "tools/support/compat/npm/smoke-*"
       - "tests/tooling/release/release-smoke-*"
+      - "tests/tooling/support/release-smoke-*"
       - "tests/tooling/native-build-token.test.ts"
       - "tests/tooling/native-binding-identity.test.ts"
   workflow_dispatch:
@@ -54,17 +55,10 @@ jobs:
       - name: Compile the exact retained Rust reference before comparing child output
         shell: bash
         run: |
-          node --input-type=module - <<'JS'
-          import assert from 'node:assert/strict';
-          import { spawnSync } from 'node:child_process';
-          const result = spawnSync('rust-script', ['--force', 'tools/commands/release/npm/smoke-release-install.rs', '--prime-reference'], { encoding: 'utf8' });
-          assert.ifError(result.error);
-          assert.equal(result.status, 1, result.stdout + result.stderr);
-          assert.ok(result.stderr.endsWith('Unknown argument: --prime-reference\n'), result.stderr);
-          JS
+          node tests/tooling/support/release-smoke-reference.ts
       - name: Require complete actual Rust and TypeScript process parity
         shell: bash
-        run: node --test tests/tooling/release/release-smoke-typescript-parity.test.ts
+        run: node --test tests/tooling/release/release-smoke-parity-peer-copy.test.ts tests/tooling/release/release-smoke-typescript-parity.test.ts
       - name: Require installed public native image parity and existing image-token laws
         shell: bash
         run: node --test tests/tooling/release/release-smoke-public-native.test.ts tests/tooling/native-build-token.test.ts tests/tooling/native-binding-identity.test.ts
@@ -72,4 +66,14 @@ jobs:
         shell: bash
         env:
           VIZE_RELEASE_SMOKE_DRIVER: typescript
-        run: node --test tests/tooling/release/release-smoke-install.test.ts tests/tooling/release/release-smoke-runtime-oracle.test.ts
+        run: node --test tests/tooling/release/release-smoke-install.test.ts tests/tooling/release/release-smoke-runtime-oracle.test.ts tests/tooling/release/release-smoke-typescript-runtime.test.ts
+      - name: Retain compiled-reference source and image custody with raw compiler output
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: smoke-reference-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/smoke-reference.json
+            ${{ runner.temp }}/smoke-reference-compile.stdout
+            ${{ runner.temp }}/smoke-reference-compile.stderr
+          if-no-files-found: error

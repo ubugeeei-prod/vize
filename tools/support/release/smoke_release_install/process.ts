@@ -71,7 +71,9 @@ export function runCommandAllowFailure(command: string, args: readonly string[],
     windowsVerbatimArguments: invocation.verbatim,
   });
   if (result.error) throw new Error(`failed to run ${command}: ${result.error.message}`);
-  return { status: result.status ?? 1, stdout: result.stdout, stderr: result.stderr };
+  const code = result.status ?? 1;
+  const status = process.platform === "win32" && code >= 0x80000000 ? code - 0x100000000 : code;
+  return { status, stdout: result.stdout, stderr: result.stderr };
 }
 export function runCommand(command: string, args: readonly string[], cwd: string): string {
   const output = runCommandAllowFailure(command, args, cwd);
