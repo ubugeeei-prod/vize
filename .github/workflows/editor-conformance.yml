@@ -5,6 +5,8 @@ name: Editor conformance
 # from each client's recorded JSON-RPC transcript. Client pins match the
 # editor-host-smoke action (`tests/tooling/editor-conformance.test.ts`
 # rejects drift).
+# Vim and Emacs additionally exercise canonical project configuration, referenced
+# tsconfigs and real client save/watch behavior against the same verified build.
 
 on:
   schedule:
@@ -46,8 +48,15 @@ jobs:
         with:
           key: editor-conformance
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: false
+          run-install: false
       - name: Build vize CLI
         run: cargo build --profile ci -p vize
+      - name: Record the source-built server identity
+        run: node tests/editor-conformance/server-artifact.ts write target/ci/vize target/ci/server.json "$GITHUB_SHA"
       - name: Record the real server source and executable identity
         run: |
           set -euo pipefail
@@ -65,6 +74,7 @@ jobs:
           name: vize-server
           path: |
             target/ci/vize
+            target/ci/server.json
             target/ci/vize.sha256
             target/ci/vize-producer.txt
           retention-days: 1
@@ -95,11 +105,12 @@ jobs:
         with:
           name: vize-server
           path: ${{ runner.temp }}/vize-server
-      - name: Make the server executable
+      - name: Verify the source-built server
         run: |
           set -euo pipefail
           (cd "${RUNNER_TEMP}/vize-server" && sha256sum --check vize.sha256)
           grep -Fx "producer=${GITHUB_SHA}" "${RUNNER_TEMP}/vize-server/vize-producer.txt"
+          node tests/editor-conformance/server-artifact.ts verify "${RUNNER_TEMP}/vize-server/vize" "${RUNNER_TEMP}/vize-server/server.json" "$GITHUB_SHA"
           chmod +x "${RUNNER_TEMP}/vize-server/vize"
           echo "VIZE_SERVER_PATH=${RUNNER_TEMP}/vize-server/vize" >> "$GITHUB_ENV"
 
@@ -218,6 +229,113 @@ jobs:
           # artifacts from clients that already passed in an earlier attempt.
           overwrite: true
           path: ${{ runner.temp }}/ts45
+          retention-days: 14
+
+      - name: Hydrate the pinned full-host fixture
+        if: matrix.client == 'vscode'
+        run: |
+          git submodule update --init --force --depth 1 -- tests/_fixtures/_git/create-vue
+          test "$(git rev-parse HEAD:tests/_fixtures/_git/create-vue)" = \
+            "$(git -C tests/_fixtures/_git/create-vue rev-parse HEAD)"
+      - name: Run the complete packaged VS Code authoring oracle
+        if: matrix.client == 'vscode'
+        working-directory: editors/vscode
+        env:
+          VIZE_SERVER_PATH: ${{ runner.temp }}/vize-server/vize
+          VIZE_TEST_VSCODE_VERSION: "1.107.1"
+          VIZE_LSP_TRACE_NATIVE_SCOPE: "1"
+          VIZE_REAL_HOST_ARTIFACT_DIR: ${{ runner.temp }}/vscode-full-host
+        run: xvfb-run -a node test/run-extension-host-real.mjs
+      - name: Verify the full host used this source-built binary
+        if: matrix.client == 'vscode'
+        run: node tests/editor-conformance/server-artifact.ts scorecard "${RUNNER_TEMP}/vize-server/server.json" "${RUNNER_TEMP}/vscode-full-host/host-result.json" "$GITHUB_SHA"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() && matrix.client == 'vscode' }}
+        with:
+          name: vscode-full-authoring
+          overwrite: true
+          include-hidden-files: true
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/vscode-full-host/
+            ${{ runner.temp }}/vize-server/server.json
+            editors/vscode/.vscode-test/host-smoke-real/failure/
+            editors/vscode/.vscode-test/host-smoke/failure/
+            editors/vscode/.vscode-test/host-smoke/output-channel/
+          retention-days: 14
+
+  configuration-clients:
+    name: Project configuration ${{ matrix.client }}
+    needs: server
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        client: [vim, emacs]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: false
+          run-install: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: vize-server
+          path: ${{ runner.temp }}/vize-server
+      - name: Verify the source-built server
+        run: |
+          node tests/editor-conformance/server-artifact.ts verify "${RUNNER_TEMP}/vize-server/vize" "${RUNNER_TEMP}/vize-server/server.json" "$GITHUB_SHA"
+          chmod +x "${RUNNER_TEMP}/vize-server/vize"
+          echo "VIZE_SERVER_PATH=${RUNNER_TEMP}/vize-server/vize" >> "$GITHUB_ENV"
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install the actual client
+        env:
+          CLIENT: ${{ matrix.client }}
+        run: |
+          set -euo pipefail
+          if [ "$CLIENT" = vim ]; then
+            package=vim-nox
+          else
+            package=emacs-nox
+          fi
+          vize-ci-apt-retry sudo apt-get update
+          vize-ci-apt-retry sudo apt-get install -y "$package"
+      - name: Install pinned vim-lsp
+        if: matrix.client == 'vim'
+        env:
+          VIM_LSP_COMMIT: 474c656659b5fb51eec6770309e0211c8aa49b5b
+        run: |
+          set -euo pipefail
+          git init "${RUNNER_TEMP}/vim-lsp"
+          git -C "${RUNNER_TEMP}/vim-lsp" remote add origin https://github.com/prabirshrestha/vim-lsp.git
+          git -C "${RUNNER_TEMP}/vim-lsp" fetch --depth 1 origin "$VIM_LSP_COMMIT"
+          git -C "${RUNNER_TEMP}/vim-lsp" checkout --detach FETCH_HEAD
+          test "$(git -C "${RUNNER_TEMP}/vim-lsp" rev-parse HEAD)" = "$VIM_LSP_COMMIT"
+      - name: Exercise project configuration through the actual client
+        env:
+          CLIENT: ${{ matrix.client }}
+          VIZE_TEST_VIM_LSP_PATH: ${{ runner.temp }}/vim-lsp
+          VIZE_VIM_ARTIFACT_DIR: ${{ runner.temp }}/configuration-client
+          VIZE_EMACS_ARTIFACT_DIR: ${{ runner.temp }}/configuration-client
+        run: |
+          set -euo pipefail
+          if [ "$CLIENT" = vim ]; then
+            node tools/support/compat/vim-vize/run-config-server.ts
+          else
+            node tools/support/compat/emacs-vize/run-real-server.ts
+          fi
+          node tests/editor-conformance/server-artifact.ts host "${RUNNER_TEMP}/vize-server/server.json" "${RUNNER_TEMP}/configuration-client/receipt.json" "$GITHUB_SHA"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: configuration-${{ matrix.client }}
+          overwrite: true
+          if-no-files-found: error
+          path: ${{ runner.temp }}/configuration-client
           retention-days: 14
 
   report:

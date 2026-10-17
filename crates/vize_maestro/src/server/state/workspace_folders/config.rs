@@ -7,7 +7,12 @@ use super::{
 impl WorkspaceFolderConfig {
     #[cfg(feature = "native")]
     pub(super) fn deferred(root: PathBuf) -> Self {
+        Self::refused(root)
+    }
+
+    pub(super) fn refused(root: PathBuf) -> Self {
         Self {
+            valid: false,
             root,
             plan: Default::default(),
             scopes: Vec::new(),
@@ -68,6 +73,7 @@ impl WorkspaceFolderConfig {
             })
             .collect();
         Self {
+            valid: true,
             root,
             plan,
             scopes,
@@ -79,6 +85,13 @@ impl WorkspaceFolderConfig {
 }
 
 impl ServerState {
+    pub(in crate::server::state) fn refuse_unconfigured_linter_context(&self, root: &Path) {
+        let mut contexts = self.workspace_folder_configs.write();
+        if !contexts.iter().any(|context| context.root == root) {
+            contexts.push(WorkspaceFolderConfig::refused(root.to_path_buf()));
+        }
+    }
+
     pub(in crate::server::state) fn install_project_linter_context(
         &self,
         root: &Path,

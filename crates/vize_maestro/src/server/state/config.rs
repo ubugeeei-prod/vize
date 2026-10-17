@@ -2,6 +2,7 @@
 
 #[cfg(feature = "glyph")]
 mod formatting;
+pub(super) mod host;
 #[cfg(feature = "native")]
 mod project;
 mod read;
@@ -15,6 +16,7 @@ use vize_l0::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
 
 use super::ServerState;
 use super::features::LspConfigSection;
+use host::{LoadedLspConfig, load_lsp_config_snapshot};
 
 impl ServerState {
     /// Apply LSP initialization options sent by an editor client.
@@ -218,16 +220,62 @@ impl ServerState {
 
     /// Load workspace options from the shared Vite/TypeScript project snapshot.
     pub fn load_workspace_config(&self, dir: &Path) {
-        let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
+        let _ = self.apply_workspace_config_snapshot(dir, load_lsp_config_snapshot(Some(dir)));
+    }
+
+    pub(super) fn apply_workspace_config_snapshot(
+        &self,
+        dir: &Path,
+        loaded: LoadedLspConfig,
+    ) -> bool {
+        self.apply_workspace_snapshot(dir, loaded, true)
+    }
+
+    #[cfg(feature = "native")]
+    pub(super) fn apply_retained_workspace_config(&self, dir: &Path, loaded: LoadedLspConfig) {
+        let _ = self.apply_workspace_snapshot(dir, loaded, false);
+    }
+
+    fn apply_workspace_snapshot(
+        &self,
+        dir: &Path,
+        loaded: LoadedLspConfig,
+        refresh_tsconfig: bool,
+    ) -> bool {
+        #[cfg(feature = "native")]
+        let authored = loaded.clone();
         #[cfg(feature = "native")]
         let mut loaded = loaded;
         if !loaded.valid {
-            return;
+            self.refuse_unconfigured_linter_context(dir);
+            #[cfg(feature = "native")]
+            self.project_contexts
+                .config_reload_failed
+                .store(true, Ordering::Release);
+            return false;
         }
         #[cfg(feature = "native")]
-        if !self.apply_tsconfig_config_snapshot(dir, &mut loaded) {
-            return;
+        {
+            if refresh_tsconfig && !self.apply_tsconfig_config_snapshot(dir, &mut loaded) {
+                self.refuse_unconfigured_linter_context(dir);
+                self.project_contexts
+                    .config_reload_failed
+                    .store(true, Ordering::Release);
+                return false;
+            }
+            if !refresh_tsconfig {
+                *self.project_contexts.config_dependencies.write() =
+                    loaded.project.dependencies.clone();
+            } else {
+                *self.project_contexts.loaded_config.write() = Some(authored);
+            }
+            *self.project_contexts.applied_config.write() = Some(loaded.clone());
+            self.project_contexts
+                .config_reload_failed
+                .store(false, Ordering::Release);
         }
+        #[cfg(not(feature = "native"))]
+        let _ = refresh_tsconfig;
         self.install_project_linter_context(
             dir,
             &loaded.project.document,
@@ -240,6 +288,14 @@ impl ServerState {
         self.apply_project_formatting_default(loaded.source_path.as_deref());
         if loaded.source_path.is_none() {
             self.apply_config_features(loaded.features);
+            #[cfg(feature = "native")]
+            if let Some(tsconfig) = loaded.config.type_checker.tsconfig.as_deref() {
+                self.apply_type_checker_config(
+                    loaded.config.type_checker.clone(),
+                    loaded.request_timeout_ms,
+                    Path::new(tsconfig),
+                );
+            }
         }
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
@@ -274,11 +330,12 @@ impl ServerState {
                 &source,
             );
         }
+        true
     }
 
     /// Load LSP options from the shared Vite/TypeScript project snapshot.
     pub fn load_lsp_config(&self, dir: &Path) {
-        let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
+        let loaded = load_lsp_config_snapshot(Some(dir));
         #[cfg(feature = "native")]
         let mut loaded = loaded;
         if !loaded.valid {
@@ -286,6 +343,7 @@ impl ServerState {
         }
         #[cfg(feature = "native")]
         if !self.apply_tsconfig_config_snapshot(dir, &mut loaded) {
+            self.refuse_unconfigured_linter_context(dir);
             return;
         }
         self.apply_project_formatting_default(loaded.source_path.as_deref());
@@ -341,7 +399,7 @@ impl ServerState {
     /// Load format options from the shared project configuration.
     #[cfg(feature = "glyph")]
     pub fn load_format_config(&self, dir: &Path) {
-        let loaded = vize_carton::config::load_config_with_source(Some(dir));
+        let loaded = host::load_config_with_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
             *self.format_options.write() =
                 (format_options_from_config(&loaded.config.formatter), false);

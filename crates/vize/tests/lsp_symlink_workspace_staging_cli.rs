@@ -90,13 +90,11 @@ fn run(layout: Layout, open_other: bool, reverse: bool, original_wait: bool) {
     fixture.assert_authored_unchanged();
     if original_wait {
         // The exact reporter awaits any reply, without asserting success.
-        // Pinned tower-lsp rejects present params for a no-params request.
+        // The transport accepts the reporter's explicit null unit parameters.
         process.send(json!({ "jsonrpc": "2.0", "id": 9, "method": "shutdown", "params": null }));
         assert_eq!(
             receive(&mut process, |message| message["id"] == 9),
-            json!({ "jsonrpc": "2.0", "id": 9, "error": {
-                "code": -32602, "message": "Unexpected params: null"
-            } })
+            json!({ "jsonrpc": "2.0", "id": 9, "result": null })
         );
         process.send(json!({ "jsonrpc": "2.0", "method": "exit", "params": null }));
     } else {

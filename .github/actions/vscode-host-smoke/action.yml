@@ -210,6 +210,22 @@ runs:
         NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       run: vp run --workspace-root test:emacs-extension:headless
 
+    - name: Run real Emacs Eglot project configuration
+      shell: bash
+      env:
+        VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
+        VIZE_EMACS_ARTIFACT_DIR: ${{ runner.temp }}/emacs-native-config
+      run: vp run --workspace-root test:emacs-extension:real-server
+
+    - name: Retain complete Emacs Eglot configuration evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: emacs-native-config
+        path: ${{ runner.temp }}/emacs-native-config
+        if-no-files-found: ignore
+        retention-days: 7
+
     - name: Run the Neovim scenario against the real server
       shell: bash
       env:

@@ -2,7 +2,7 @@
 // `vize lsp` process (#3457). The VS Code extension host and the headless
 // Neovim scenario both need the exact same workspace: the `real-vue` fixture,
 // a `node_modules/vue` symlink so the type checker sees real Vue types, and a
-// `vize.config.json` that pins the native TypeScript executable instead of
+// `vite.config.mjs` that pins the native TypeScript executable instead of
 // relying on ambient discovery.
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -47,8 +47,8 @@ export function prepareRealVueWorkspace(workspacePath, { preserveExisting = fals
     "junction",
   );
   fs.writeFileSync(
-    path.join(workspacePath, "vize.config.json"),
-    `${JSON.stringify({ typeChecker: { corsaPath: resolveCorsaPath() } }, null, 2)}\n`,
+    path.join(workspacePath, "vite.config.mjs"),
+    `export default ${JSON.stringify({ vue: { typeChecker: { corsaPath: resolveCorsaPath() } } }, null, 2)};\n`,
   );
 
   return workspacePath;
@@ -94,7 +94,7 @@ export function resolveRealServerPath() {
 
 /**
  * Pin the native TypeScript executable that ships with the VS Code extension's
- * own TypeScript 7 platform package so `vize.config.json` never depends on
+ * own TypeScript 7 platform package so `vite.config.mjs` never depends on
  * ambient discovery.
  */
 export function resolveCorsaPath() {

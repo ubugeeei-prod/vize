@@ -12,18 +12,8 @@ impl ServerState {
             .read()
             .as_ref()
             .and_then(Weak::upgrade)?;
-        let boundary = self
-            .project_contexts
-            .boundary
-            .read()
-            .clone()
-            .or_else(|| self.get_workspace_root())?;
-        let context = owner
-            .project_contexts
-            .contexts
-            .lock()
-            .get(&boundary)
-            .cloned()?;
+        let key = self.project_contexts.key.read().clone()?;
+        let context = owner.project_contexts.contexts.lock().get(&key).cloned()?;
         context.navigation_for_state(self)
     }
 }

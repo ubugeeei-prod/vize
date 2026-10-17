@@ -109,6 +109,23 @@ await withPinnedFixtureWorkspace(
         workspacePath: fixture.workspaceDir,
       });
       readPinnedCreateVueHostResult(resultPath, serverPath);
+      const artifactDirectory = process.env.VIZE_REAL_HOST_ARTIFACT_DIR;
+      if (artifactDirectory) {
+        const destination = path.resolve(artifactDirectory);
+        fs.mkdirSync(destination, { recursive: true });
+        // Preserve the complete verified public result and controlled native
+        // evidence byte for byte before either temporary directory is cleaned.
+        for (const [input, output] of [
+          [resultPath, "host-result.json"],
+          [path.join(fixture.workspaceDir, "node_modules/.vize/lsp.log"), "native.log"],
+          [
+            path.join(fixture.workspaceDir, "node_modules/.vize/rich-hover.json"),
+            "rich-hover.json",
+          ],
+        ]) {
+          fs.copyFileSync(input, path.join(destination, output));
+        }
+      }
     } catch (error) {
       try {
         retainRealHostFailure(fixture.workspaceDir, path.join(testDataPath, "failure"), error);

@@ -1,4 +1,4 @@
-//! Real original notifications precede legacy filters and await boundaries.
+//! Authored notifications precede legacy filters; private outputs preserve queries.
 #![expect(
     clippy::disallowed_types,
     reason = "the real session retains its original Arc server owner"
@@ -74,7 +74,7 @@ pub(super) fn ready(session: &Session) -> ProjectQueryResult<'static, u8> {
 }
 
 #[test]
-fn module_link_target_actual_nonempty_notifications_invalidate_before_legacy_filters() {
+fn module_link_target_actual_notifications_respect_owned_outputs_before_legacy_filters() {
     for event in 0..6 {
         let mut session = session();
         let context = session.project.capture_module_link_context().unwrap();
@@ -106,12 +106,26 @@ fn module_link_target_actual_nonempty_notifications_invalidate_before_legacy_fil
         };
         assert_eq!(call(&mut session.service, input.clone()), None);
         assert_eq!(call(&mut session.service, input), None);
-        let mut published = false;
-        assert!(matches!(
-            result.publish_with_module_targets(checked, |_, _| published = true),
-            Err(ModuleTargetError::EventSuperseded)
-        ));
-        assert!(!published);
+        if event == 0 {
+            // Keep the original overlay notification as a positive ownership
+            // control: generated output cannot supersede authored operands.
+            assert_eq!(
+                result
+                    .publish_with_module_targets(checked, |value, uris| (value, uris.to_vec()))
+                    .unwrap(),
+                (
+                    7,
+                    vec![Url::from_file_path(session.root.join("child.ts")).unwrap()]
+                )
+            );
+        } else {
+            let mut published = false;
+            assert!(matches!(
+                result.publish_with_module_targets(checked, |_, _| published = true),
+                Err(ModuleTargetError::EventSuperseded)
+            ));
+            assert!(!published);
+        }
         assert_eq!(
             session
                 .state

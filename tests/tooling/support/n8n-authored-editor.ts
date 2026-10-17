@@ -44,11 +44,13 @@ export function createN8nWorkspace(corsaPath: string) {
     process.platform === "win32" ? "junction" : "dir",
   );
   fs.writeFileSync(
-    path.join(workspace, "vize.config.json"),
-    JSON.stringify({
-      lsp: { editor: true, lint: false, typecheck: true },
-      typeChecker: { corsaPath },
-    }),
+    path.join(workspace, "vite.config.mjs"),
+    `export default ${JSON.stringify({
+      vue: {
+        languageServer: { editor: true, lint: false, typecheck: true },
+        typeChecker: { corsaPath },
+      },
+    })};\n`,
   );
   fs.writeFileSync(
     path.join(workspace, "tsconfig.json"),

@@ -13,12 +13,14 @@ test("real host failure preserves full log and controlled source bytes before cl
   const destination = path.join(directory, "evidence");
   const log = Buffer.from("whole watched event\nwhole refusal stamp\n");
   const source = Buffer.from("<template>é\r\n<div>全体</div></template>\n");
+  const config = Buffer.from("export default { vue: { languageServer: { hover: false } } };\n");
   fs.mkdirSync(path.join(workspace, "node_modules", ".vize"), {
     recursive: true,
   });
   fs.mkdirSync(path.join(workspace, "src"));
   fs.writeFileSync(path.join(workspace, "node_modules", ".vize", "lsp.log"), log);
   fs.writeFileSync(path.join(workspace, "src", "Scenario.vue"), source);
+  fs.writeFileSync(path.join(workspace, "vite.config.mjs"), config);
   fs.writeFileSync(path.join(workspace, "node_modules", "unrelated-large-file"), "not evidence");
   try {
     const error = new Error("Content modified");
@@ -29,6 +31,7 @@ test("real host failure preserves full log and controlled source bytes before cl
       log,
     );
     assert.deepEqual(fs.readFileSync(path.join(destination, "src/Scenario.vue.txt")), source);
+    assert.deepEqual(fs.readFileSync(path.join(destination, "vite.config.mjs.txt")), config);
     assert.deepEqual(result.captured, [
       {
         file: "node_modules/.vize/lsp.log",
@@ -41,6 +44,12 @@ test("real host failure preserves full log and controlled source bytes before cl
         output: "src/Scenario.vue.txt",
         bytes: source.length,
         sha256: crypto.createHash("sha256").update(source).digest("hex"),
+      },
+      {
+        file: "vite.config.mjs",
+        output: "vite.config.mjs.txt",
+        bytes: config.length,
+        sha256: crypto.createHash("sha256").update(config).digest("hex"),
       },
     ]);
     assert.equal(result.error.message, "Content modified");

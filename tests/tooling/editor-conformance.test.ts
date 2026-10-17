@@ -7,6 +7,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
+import { parse as parseToml } from "@iarna/toml";
+import { userLanguages } from "../editor-conformance/drivers/helix.ts";
 
 import {
   evaluate,
@@ -18,6 +20,7 @@ import { corruptExpectation, negativeControl } from "../editor-conformance/negat
 import { loadScenario, suiteRoot } from "../editor-conformance/support/context.ts";
 import { applyTextEdits, workspaceEditsFor } from "../editor-conformance/support/document.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
+import { projectConfigDefaults } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
 
 const root = "/work/space";
 const scenario = loadScenario();
@@ -141,13 +144,13 @@ test("the judge accepts the ideal transcript and rejects every corrupted expecta
   assert.deepEqual(negativeControl(scenario, idealTranscript(), [root]), []);
 });
 
-test("initialize requires the declared disabled JSX routing hint without weakening exactness", () => {
+test("initialize requires the canonical project JSX routing hint without weakening exactness", () => {
   const expected = byId("initialize").expect as any;
-  assert.deepEqual(expected.capabilities.experimental, { vize: { jsxTypecheck: false } });
+  assert.deepEqual(expected.capabilities.experimental, { vize: { jsxTypecheck: true } });
   for (const hint of [
     undefined,
-    { vize: { jsxTypecheck: true } },
-    { vize: { jsxTypecheck: "false" } },
+    { vize: { jsxTypecheck: false } },
+    { vize: { jsxTypecheck: "true" } },
   ]) {
     const entries = idealTranscript();
     const initialize = entries.find((entry) => entry.msg?.result?.serverInfo != null)!;
@@ -287,6 +290,7 @@ test("CI runs every client at the editor-host-smoke pins and requires all four r
   assert.ok(packageExtension > lifecycle);
   assert.ok(packageExtension < steps.findIndex((step) => step.name === "Play the TS-45 scenario"));
   assert.equal(steps[packageExtension].if, "matrix.client == 'vscode'");
+  assert.ok(steps[packageExtension].run);
   assert.match(
     steps[packageExtension].run.trim(),
     /xvfb-run -a vp run --workspace-root test:vscode-extension:host-real$/u,
@@ -303,10 +307,9 @@ test("CI runs every client at the editor-host-smoke pins and requires all four r
       step.name === "Record the real server source and executable identity",
   );
   assert.match(receipt.run, /test "\$\(git rev-parse HEAD\)" = "\$\{GITHUB_SHA\}"/);
-  assert.match(
-    steps.find((step) => step.name === "Make the server executable").run,
-    /sha256sum --check vize\.sha256/,
-  );
+  const verify = steps.find((step) => step.name === "Verify the source-built server")?.run;
+  assert.ok(verify);
+  assert.match(verify, /sha256sum --check vize\.sha256/);
   assert.equal(steps[lifecycle].if, "matrix.client == 'vscode'");
   assert.equal(
     steps[lifecycle].run,
@@ -337,6 +340,35 @@ test("CI runs every client at the editor-host-smoke pins and requires all four r
   assert.equal(download?.with?.pattern, "ts45-*");
 });
 
+test("Vim and Emacs configuration cases use the verified native artifact and retain full evidence", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "editor-conformance.yml")) as any;
+  const host = workflow.jobs["configuration-clients"];
+  assert.equal(host.needs, "server");
+  assert.equal(host.strategy["fail-fast"], false);
+  assert.deepEqual(host.strategy.matrix.client, ["vim", "emacs"]);
+  const commands = host.steps.map((step: any) => step.run ?? "").join("\n");
+  assert.match(commands, /server-artifact\.ts verify/);
+  assert.match(commands, /vim-vize\/run-config-server\.ts/);
+  assert.match(commands, /emacs-vize\/run-real-server\.ts/);
+  assert.match(commands, /server-artifact\.ts host/);
+  assert.ok(!commands.includes("continue-on-error"));
+  const upload = host.steps.find((step: any) => step.uses?.startsWith("actions/upload-artifact@"));
+  assert.equal(upload.if, "always()");
+  assert.equal(upload.with["if-no-files-found"], "error");
+  assert.equal(upload.with.name, "configuration-${{ matrix.client }}");
+  const pin = host.steps.find((step: any) => step.env?.VIM_LSP_COMMIT).env.VIM_LSP_COMMIT;
+  assert.ok(readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml").includes(pin));
+  const build = workflow.jobs.server.steps;
+  assert.ok(build.some((step: any) => step.run?.includes("server-artifact.ts write")));
+  const artifact = build.find((step: any) => step.uses?.startsWith("actions/upload-artifact@"));
+  assert.ok(artifact.with.path.includes("target/ci/server.json"));
+  assert.ok(
+    workflow.jobs.conformance.steps.some((step: any) =>
+      step.run?.includes("server-artifact.ts verify"),
+    ),
+  );
+});
+
 test("every client has a driver and only Zed is a protocol replay", async () => {
   const modes: Record<string, string> = {};
   for (const client of ["helix", "neovim", "vscode", "zed"]) {
@@ -347,6 +379,42 @@ test("every client has a driver and only Zed is a protocol replay", async () => 
   const zed = JSON.parse(fs.readFileSync(`${suiteRoot}/clients/zed-1.16.1.json`, "utf8"));
   assert.match(zed.source, /^zed-industries\/zed v1\.16\.1 crates\/lsp\/src\/lsp\.rs /u);
   assert.equal(zed.clientInfo.version, "1.16.1");
+});
+
+test("current completion retains authored candidates and the complete independent Vue globals vector", () => {
+  const authored = JSON.parse(fs.readFileSync(`${suiteRoot}/expected/completion.json`, "utf8"));
+  const globals = JSON.parse(
+    readRepoFile(
+      "tests",
+      "_fixtures",
+      "differential",
+      "lsp",
+      "template-expression-globals-8015",
+      "globals.expected.json",
+    ),
+  );
+  assert.deepEqual(byId("completion").expect, [...authored, ...globals]);
+});
+
+test("Helix formatting opt-in supports absent and existing initialization option tables", () => {
+  const packaged = readRepoFile("editors", "helix", "languages.toml");
+  for (const source of [packaged, `${packaged}\n[language-server.vize.config]\nhover = false\n`]) {
+    const before = parseToml(source) as any;
+    const after = parseToml(userLanguages(source)) as any;
+    assert.deepEqual(after["language-server"].vize.config, {
+      ...before["language-server"].vize.config,
+      formatting: true,
+    });
+    assert.deepEqual(after.language, before.language);
+    delete before["language-server"].vize.config;
+    delete after["language-server"].vize.config;
+    assert.deepEqual(after, before);
+  }
+});
+
+test("Helix explicitly sends the complete scenario initialization profile", () => {
+  const configured = parseToml(userLanguages(undefined, scenario.initializationOptions)) as any;
+  assert.deepEqual(configured["language-server"].vize.config, scenario.initializationOptions);
 });
 
 function codeActionExchange(entries: Entry[]) {
@@ -410,23 +478,7 @@ test("corrupted canonical action documentation fails even when the client omits 
   (action.expect as any[])[0].diagnostics[0].codeDescription.href = "https://corrupted.test/";
   assert.deepEqual(failures(entries, corrupted), ["code-action"]);
 });
-
-test("current completion retains authored candidates and the complete independent Vue globals vector", () => {
-  const authored = JSON.parse(fs.readFileSync(`${suiteRoot}/expected/completion.json`, "utf8"));
-  const globals = JSON.parse(
-    readRepoFile(
-      "tests",
-      "_fixtures",
-      "differential",
-      "lsp",
-      "template-expression-globals-8015",
-      "globals.expected.json",
-    ),
-  );
-  assert.deepEqual(byId("completion").expect, [...authored, ...globals]);
-});
-
-test("current initialization derives only source-backed capabilities from the complete prior vector", () => {
+test("current initialization derives source-backed capabilities and canonical JSX from the complete prior vector", () => {
   const original = JSON.parse(fs.readFileSync(`${suiteRoot}/expected/initialize.json`, "utf8"));
   original.capabilities.codeActionProvider.codeActionKinds.push(
     "source.organizeImports",
@@ -434,20 +486,13 @@ test("current initialization derives only source-backed capabilities from the co
     "source.removeUnusedImports",
   );
   original.capabilities.monikerProvider = true;
+  original.capabilities.experimental.vize.jsxTypecheck =
+    projectConfigDefaults().typeChecker.jsxTypecheck;
   assert.deepEqual(byId("initialize").expect, original);
   const capabilities = readRepoFile("crates", "vize_maestro", "src", "server", "capabilities.rs");
-  assert.match(
-    capabilities,
-    /moniker_provider: features\.definition\.then_some\(OneOf::Left\(true\)\)/,
-  );
-  const kinds = readRepoFile(
-    "crates",
-    "vize_maestro",
-    "src",
-    "server",
-    "capabilities",
-    "code_action_tests.rs",
-  );
+  const moniker = /moniker_provider: features\.definition\.then_some\(OneOf::Left\(true\)\)/;
+  assert.match(capabilities, moniker);
+  const kinds = readRepoFile("crates/vize_maestro/src/server/capabilities/code_action_tests.rs");
   for (const kind of original.capabilities.codeActionProvider.codeActionKinds.slice(1)) {
     assert.ok(kinds.includes(`CodeActionKind::from("${kind}".to_owned())`));
   }

@@ -192,6 +192,7 @@ export const testAndBenchmarkTasks = defineTasks({
   "test:emacs-extension:headless": noCacheTask(
     "emacs -Q --batch -l ert -l editors/emacs/test/vize-test.el -f ert-run-tests-batch-and-exit",
   ),
+  "test:emacs-extension:real-server": noCacheTask(nodeTool("compat/emacs-vize/run-real-server")),
   "test:emacs-extension:package": noCacheTask("vp run --workspace-root package:emacs-extension"),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,

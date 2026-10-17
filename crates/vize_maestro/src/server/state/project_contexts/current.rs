@@ -94,8 +94,13 @@ impl ServerState {
                 .read()
                 .clone()
                 .or_else(|| self.get_workspace_root());
-            let context =
-                root.and_then(|root| self.project_contexts.contexts.lock().get(&root).cloned());
+            let context = root.and_then(|root| {
+                self.project_contexts
+                    .contexts
+                    .lock()
+                    .get(&root.into())
+                    .cloned()
+            });
             let Some(context) = context else {
                 return self.clone();
             };

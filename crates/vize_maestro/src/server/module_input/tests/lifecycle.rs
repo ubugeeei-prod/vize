@@ -133,3 +133,118 @@ fn module_link_actual_exit_signal_preserves_notification_and_retires_transport_l
     drop(socket);
     retired(&state, ModuleLinkRetirement::TransportEnded);
 }
+
+#[test]
+fn module_link_actual_transport_accepts_omitted_and_null_lifecycle_parameters() {
+    for explicit_null in [false, true] {
+        let (mut service, socket) = build_lsp_service();
+        initialize_disabled(&mut service);
+        let state = Arc::clone(&service.inner().state);
+        let (mut service, exit) = crate::server::with_exit_signal(service);
+        let mut shutdown = json!({"jsonrpc":"2.0","id":"eglot-shutdown","method":"shutdown"});
+        let mut notification = json!({"jsonrpc":"2.0","method":"exit"});
+        if explicit_null {
+            shutdown["params"] = serde_json::Value::Null;
+            notification["params"] = serde_json::Value::Null;
+        }
+        block_on(async {
+            futures::future::poll_fn(|cx| service.poll_ready(cx))
+                .await
+                .unwrap();
+            let response = service
+                .call(serde_json::from_value(shutdown).unwrap())
+                .await
+                .unwrap();
+            assert_eq!(
+                serde_json::to_value(response).unwrap(),
+                json!({
+                    "jsonrpc":"2.0","id":"eglot-shutdown","result":null
+                })
+            );
+            retired(&state, ModuleLinkRetirement::Shutdown);
+            futures::future::poll_fn(|cx| service.poll_ready(cx))
+                .await
+                .unwrap();
+            assert!(
+                service
+                    .call(serde_json::from_value(notification).unwrap())
+                    .await
+                    .unwrap()
+                    .is_none()
+            );
+            exit.await;
+        });
+        drop(service);
+        drop(socket);
+        retired(&state, ModuleLinkRetirement::Shutdown);
+    }
+}
+
+#[test]
+fn module_link_actual_transport_keeps_malformed_shutdown_parameters_rejected() {
+    for params in [
+        json!({}),
+        json!([]),
+        json!(false),
+        json!(42),
+        json!("invalid"),
+    ] {
+        let (mut service, socket) = build_lsp_service();
+        initialize_disabled(&mut service);
+        let state = Arc::clone(&service.inner().state);
+        let (mut service, _exit) = crate::server::with_exit_signal(service);
+        let message = vize_l0::cstr!("Unexpected params: {params}");
+        let response = block_on(async {
+            futures::future::poll_fn(|cx| service.poll_ready(cx))
+                .await
+                .unwrap();
+            service
+                .call(Request::build("shutdown").id(9).params(params).finish())
+                .await
+                .unwrap()
+        });
+        assert_eq!(
+            serde_json::to_value(response).unwrap(),
+            json!({
+                "jsonrpc":"2.0","id":9,"error":{"code":-32602,"message":message}
+            })
+        );
+        super::live(&state);
+        drop(service);
+        drop(socket);
+    }
+}
+
+#[test]
+fn module_link_actual_transport_preserves_other_requests_and_non_null_lifecycle_packets() {
+    for packet in [
+        json!({"jsonrpc":"2.0","id":"hover","method":"textDocument/hover","params":null}),
+        json!({"jsonrpc":"2.0","id":71,"method":"unknown/method","params":null}),
+        json!({"jsonrpc":"2.0","method":"unknown/notification","params":{"nested":[null,1]}}),
+        json!({"jsonrpc":"2.0","id":72,"method":"shutdown","params":{}}),
+        json!({"jsonrpc":"2.0","method":"exit","params":[]}),
+    ] {
+        let inner = tower::service_fn(|request: Request| async move {
+            Ok::<_, std::convert::Infallible>(Some(tower_lsp::jsonrpc::Response::from_ok(
+                1.into(),
+                serde_json::to_value(request).unwrap(),
+            )))
+        });
+        let (mut service, _exit) = crate::server::with_exit_signal(inner);
+        let response = block_on(async {
+            futures::future::poll_fn(|cx| service.poll_ready(cx))
+                .await
+                .unwrap();
+            service
+                .call(serde_json::from_value(packet.clone()).unwrap())
+                .await
+                .unwrap()
+        });
+        assert_eq!(
+            serde_json::to_value(response).unwrap(),
+            json!({
+                "jsonrpc":"2.0","id":1,"result":packet
+            })
+        );
+    }
+}

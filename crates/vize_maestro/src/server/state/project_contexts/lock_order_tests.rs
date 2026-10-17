@@ -72,11 +72,11 @@ fn fixture() -> (
         .project_contexts
         .contexts
         .lock()
-        .insert(root.path().to_path_buf(), context.clone());
+        .insert(root.path().to_path_buf().into(), context.clone());
     state
         .project_contexts
         .routes
-        .insert(uri.clone(), root.path().to_path_buf());
+        .insert(uri.clone(), root.path().to_path_buf().into());
     (root, state, uri, context)
 }
 

@@ -35,6 +35,7 @@ fn run() -> Result<(), String> {
         "vim/plugin/vize.vim",
         "vim/test/vize_e2e_expected.vim",
         "vim/test/vize_e2e_spec.vim",
+        "vim/test/config_project_spec.vim",
         "vim/test/vize_spec.vim",
     ];
     editor_archive::require_entries(
@@ -59,6 +60,7 @@ fn run() -> Result<(), String> {
             "vim/test/",
             "vim/test/vize_e2e_expected.vim",
             "vim/test/vize_e2e_spec.vim",
+            "vim/test/config_project_spec.vim",
             "vim/test/vize_spec.vim",
         ],
         "Vim archive",

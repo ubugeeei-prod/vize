@@ -19,10 +19,12 @@ use vize_l0::config::{
 };
 
 use super::ServerState;
+use super::config::host::load_lsp_config_snapshot;
 mod config;
 
 /// Linter context resolved for one workspace folder at registration time.
 pub(super) struct WorkspaceFolderConfig {
+    valid: bool,
     root: PathBuf,
     plan: LinterConfigPlanWithConfigRuleOptions,
     scopes: Vec<LintPlanScope>,
@@ -33,12 +35,15 @@ pub(super) struct WorkspaceFolderConfig {
 
 impl WorkspaceFolderConfig {
     pub(super) fn load(root: PathBuf) -> Self {
-        let loaded = vize_carton::config::load_project_config_with_source(Some(&root));
+        let loaded = load_lsp_config_snapshot(Some(&root));
+        if !loaded.valid {
+            return Self::refused(root);
+        }
         Self::from_project(
             root,
-            &loaded.document,
-            loaded.source_path.as_deref(),
-            loaded.project_root.as_deref(),
+            &loaded.project.document,
+            loaded.project.source_path.as_deref(),
+            loaded.project.project_root.as_deref(),
         )
     }
 
@@ -46,6 +51,9 @@ impl WorkspaceFolderConfig {
         &self,
         path: &Path,
     ) -> Option<(LinterConfig, ConfigLintRuleOptions, LinterFeatureFlags)> {
+        if !self.valid {
+            return None;
+        }
         if self
             .project_ignores
             .as_ref()
