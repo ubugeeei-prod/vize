@@ -21,7 +21,10 @@ const deliveredInitContracts = [
   "tests/tooling/release/release-smoke-init-js-manager-plans.test.ts",
   "tests/tooling/release/release-smoke-init-yarn-checkjs.test.ts",
 ];
-const installedReportedContracts = ["tests/tooling/release/release-public-vapor.test.ts"];
+const installedReportedContracts = [
+  "tests/tooling/release/release-public-gallery-readiness.test.ts",
+  "tests/tooling/release/release-public-vapor.test.ts",
+];
 const stablePatchContracts = ["tests/tooling/release/release-stable-operator.test.ts"];
 const sharedPublisherContracts = ["tests/tooling/release/release-public-shared-publisher.test.ts"];
 const installedSmokeMigrationContracts = [
