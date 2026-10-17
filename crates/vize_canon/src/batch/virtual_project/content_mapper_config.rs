@@ -73,11 +73,48 @@ impl ContentMapperTransformOptions {
 
 #[cfg(test)]
 mod tests {
-    use super::ContentMapperProjectConfiguration;
+    use super::{ContentMapperProjectConfiguration, ContentMapperTransformOptions};
+    use crate::batch::error::CorsaError;
+    use std::io::ErrorKind;
     use std::path::Path;
 
     fn load(path: &Path) -> ContentMapperProjectConfiguration {
         ContentMapperProjectConfiguration::load(path).unwrap()
+    }
+
+    fn expected_options(
+        mut options: ContentMapperTransformOptions,
+        unknown: bool,
+        fallthrough: bool,
+        css: bool,
+    ) -> ContentMapperTransformOptions {
+        options.check_unknown_props = unknown;
+        options.check_unknown_fallthrough_props = fallthrough;
+        options.strict_css_modules = css;
+        options
+    }
+
+    fn expected_watches(root: &Path, names: &[&str]) -> Vec<vize_l0::String> {
+        let mut paths: Vec<_> = names
+            .iter()
+            .map(|name| root.join(name).to_string_lossy().into_owned().into())
+            .collect();
+        paths.sort();
+        paths.dedup();
+        paths
+    }
+
+    fn expected_canonical_watch(path: &Path) -> vize_l0::String {
+        let text = path.canonicalize().unwrap().to_string_lossy().into_owned();
+        // The host returns ordinary DOS/UNC paths, not Windows verbatim paths.
+        // Form the oracle from the OS result without calling the resolver's helper.
+        #[cfg(windows)]
+        let text = text
+            .strip_prefix(r"\\?\UNC\")
+            .map(|unc| format!(r"\\{unc}"))
+            .or_else(|| text.strip_prefix(r"\\?\").map(str::to_owned))
+            .unwrap_or(text);
+        text.into()
     }
 
     #[test]
@@ -95,15 +132,23 @@ mod tests {
         let path = directory.path().join("tsconfig.json");
         std::fs::write(&path, "{}").unwrap();
         let configured = load(&path);
-        assert!(!configured.transform_options.check_unknown_props);
-        assert!(!configured.transform_options.strict_css_modules);
-        assert_eq!(configured.watched_files.len(), 1);
-        assert_eq!(configured.watched_files[0].as_str(), path.to_string_lossy());
+        assert_eq!(
+            configured.transform_options,
+            expected_options(Default::default(), false, false, false)
+        );
+        assert_eq!(
+            configured.watched_files,
+            expected_watches(directory.path(), &["tsconfig.json"])
+        );
         let inferred = load(Path::new(""));
-        assert!(inferred.transform_options.check_unknown_props);
-        assert!(!inferred.transform_options.check_unknown_fallthrough_props);
-        assert!(!inferred.transform_options.strict_css_modules);
-        assert!(inferred.watched_files.is_empty());
+        assert_eq!(
+            inferred.transform_options,
+            expected_options(Default::default(), true, false, false)
+        );
+        assert_eq!(
+            inferred.watched_files,
+            expected_watches(directory.path(), &[])
+        );
         assert_ne!(configured.config_identity, inferred.config_identity);
     }
 
@@ -136,22 +181,14 @@ mod tests {
         )
         .unwrap();
         let configuration = load(&path);
-        assert!(!configuration.transform_options.check_unknown_props);
-        assert!(
-            !configuration
-                .transform_options
-                .check_unknown_fallthrough_props
+        assert_eq!(
+            configuration.transform_options,
+            expected_options(Default::default(), false, false, false)
         );
-        assert!(!configuration.transform_options.strict_css_modules);
-        assert_eq!(configuration.watched_files.len(), 3);
-        for name in ["tsconfig.json", "left.json", "right.json"] {
-            assert!(
-                configuration
-                    .watched_files
-                    .iter()
-                    .any(|path| path.ends_with(name))
-            );
-        }
+        assert_eq!(
+            configuration.watched_files,
+            expected_watches(root, &["tsconfig.json", "left.json", "right.json"])
+        );
     }
 
     #[test]
@@ -171,31 +208,24 @@ mod tests {
         let path = root.join("tsconfig.json");
         std::fs::write(&path, r#"{"extends":"tsconfig-preset"}"#).unwrap();
         let configuration = load(&path);
-        assert!(configuration.transform_options.check_unknown_props);
-        assert!(
-            configuration
-                .transform_options
-                .check_unknown_fallthrough_props
+        assert_eq!(
+            configuration.transform_options,
+            expected_options(Default::default(), true, true, true)
         );
-        assert!(configuration.transform_options.strict_css_modules);
-        assert!(
-            configuration
-                .watched_files
-                .iter()
-                .any(|path| path.ends_with("tsconfig-preset/package.json"))
+        let mut expected = expected_watches(
+            root,
+            &[
+                "tsconfig.json",
+                "node_modules/tsconfig-preset/package.json",
+                "node_modules/tsconfig-preset/vue.json",
+            ],
         );
-        assert!(
-            configuration
-                .watched_files
-                .iter()
-                .any(|path| path.ends_with("tsconfig-preset/vue.json"))
-        );
-        assert!(
-            configuration
-                .watched_files
-                .iter()
-                .all(|path| Path::new(path.as_str()).is_absolute())
-        );
+        // Resolution observes the lexical probe, then reads its canonical target.
+        // Both are retained when the temporary directory itself has a symlink alias.
+        expected.push(expected_canonical_watch(&package.join("vue.json")));
+        expected.sort();
+        expected.dedup();
+        assert_eq!(configuration.watched_files, expected);
     }
 
     #[test]
@@ -207,15 +237,23 @@ mod tests {
         std::fs::write(&path, r#"{"extends":"./base.json"}"#).unwrap();
         std::fs::write(&base, r#"{"vueCompilerOptions":{"strictTemplates":true}}"#).unwrap();
         let before = load(&path);
-        assert!(before.transform_options.check_unknown_props);
-        assert!(!before.transform_options.check_unknown_fallthrough_props);
+        assert_eq!(
+            before.transform_options,
+            expected_options(Default::default(), true, false, false)
+        );
         assert_eq!(before.config_identity, load(&path).config_identity);
         std::fs::write(&base, r#"{"vueCompilerOptions":{"strictTemplates":true,"checkUnknownProps":false,"strictCssModules":true}}"#).unwrap();
         let after = load(&path);
-        assert!(!after.transform_options.check_unknown_props);
-        assert!(after.transform_options.strict_css_modules);
+        assert_eq!(
+            after.transform_options,
+            expected_options(Default::default(), false, false, true)
+        );
         assert_ne!(before.config_identity, after.config_identity);
         assert_eq!(before.watched_files, after.watched_files);
+        assert_eq!(
+            after.watched_files,
+            expected_watches(root, &["tsconfig.json", "base.json"])
+        );
     }
 
     #[test]
@@ -230,9 +268,14 @@ mod tests {
         .unwrap();
         std::fs::write(root.join("base.json"), r#"{"extends":"./tsconfig.json","vueCompilerOptions":{"checkUnknownProps":true,"strictCssModules":true}}"#).unwrap();
         let configuration = load(&path);
-        assert!(!configuration.transform_options.check_unknown_props);
-        assert!(configuration.transform_options.strict_css_modules);
-        assert_eq!(configuration.watched_files.len(), 2);
+        assert_eq!(
+            configuration.transform_options,
+            expected_options(Default::default(), false, false, true)
+        );
+        assert_eq!(
+            configuration.watched_files,
+            expected_watches(root, &["tsconfig.json", "base.json"])
+        );
     }
 
     #[test]
@@ -241,11 +284,32 @@ mod tests {
         let path = directory.path().join("tsconfig.json");
         std::fs::write(&path, r#"{"extends":"./base.json"}"#).unwrap();
         std::fs::write(directory.path().join("base.json"), "{ invalid JSON").unwrap();
-        let error = ContentMapperProjectConfiguration::load(&path).unwrap_err();
-        assert!(vize_l0::cstr!("{error}").contains("base.json"));
+        let CorsaError::Io(error) = ContentMapperProjectConfiguration::load(&path).unwrap_err()
+        else {
+            panic!("malformed inherited configuration must produce an IO error");
+        };
+        assert_eq!(error.kind(), ErrorKind::InvalidData);
+        assert_eq!(
+            error.to_string().as_str(),
+            vize_l0::cstr!(
+                "Invalid tsconfig '{}': JSON parse error: key must be a string at line 1 column 3",
+                directory.path().join("base.json").display()
+            )
+            .as_str()
+        );
         std::fs::remove_file(directory.path().join("base.json")).unwrap();
-        let error = ContentMapperProjectConfiguration::load(&path).unwrap_err();
-        assert!(vize_l0::cstr!("{error}").contains("base.json"));
-        assert!(vize_l0::cstr!("{error}").contains("Cannot resolve"));
+        let CorsaError::Io(error) = ContentMapperProjectConfiguration::load(&path).unwrap_err()
+        else {
+            panic!("missing inherited configuration must produce an IO error");
+        };
+        assert_eq!(error.kind(), ErrorKind::NotFound);
+        assert_eq!(
+            error.to_string().as_str(),
+            vize_l0::cstr!(
+                "Cannot resolve extended tsconfig './base.json' from '{}'",
+                path.display()
+            )
+            .as_str()
+        );
     }
 }
