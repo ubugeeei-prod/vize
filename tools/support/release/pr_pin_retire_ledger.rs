@@ -243,9 +243,10 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<(), String> {
     let identity = archive::identity(receipt)?;
     let repository = text(identity, "/repository")?;
     let head = text(identity, "/head")?;
-    let release = positive(identity, "/releaseRun")?;
+    let request = super::retire::Request::from_identity(identity)?;
+    let failure_id = request.failure.run();
     let operator = positive(identity, "/operatorRun")?;
-    if release == operator {
+    if failure_id == operator {
         return Err("Original R and operator must differ".into());
     }
     let guards = &receipt["guards"];
@@ -264,7 +265,7 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<(), String> {
         }
         expected.insert(positive(run, "/id")?, *run);
     }
-    if !expected.contains_key(&release) || expected.contains_key(&operator) {
+    if !expected.contains_key(&failure_id) || expected.contains_key(&operator) {
         return Err("Original R/operator inventory binding missing or ambiguous".into());
     }
     let observations = evidence_value["observations"]
@@ -292,16 +293,24 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<(), String> {
         } else if expected.get(&id) != Some(&run) {
             return Err("Diagnostic observation differs from full H inventory".into());
         }
-        if id == release {
-            super::run_identity(run, &source, release)?;
-            evidence::terminal_failed(run)?;
-            if run != &guards["releaseRun"]
-                || positive(run, "/run_attempt")? != positive(identity, "/releaseAttempt")?
+        if id == failure_id {
+            if !request.failure.before_release() {
+                super::run_identity(run, &source, failure_id)?;
+                evidence::terminal_failed(run)?;
+            }
+            if run != &guards[request.failure.key()]
+                || positive(run, "/run_attempt")?
+                    != positive(identity, &format!("/{}", request.failure.attempt_key()))?
             {
-                return Err("Original R/attempt differs from guard".into());
+                return Err(if request.failure.before_release() {
+                    "Original qualification/attempt differs from guard"
+                } else {
+                    "Original R/attempt differs from guard"
+                }
+                .into());
             }
         }
-        if (id == release || id == operator)
+        if (id == failure_id || id == operator)
             && (text(run, "/actor/login")? != author
                 || text(run, "/triggering_actor/login")? != author)
         {
@@ -318,7 +327,7 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<(), String> {
                 failures.insert(format!("failure/{job_id}{}", archive::log_suffix(receipt)));
             }
         }
-        if id == release {
+        if id == failure_id && !request.failure.before_release() {
             evidence::publication_jobs(
                 &jobs.iter().map(|row| (*row).clone()).collect::<Vec<_>>(),
                 &workflow(head, root)?,

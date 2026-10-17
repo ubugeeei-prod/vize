@@ -43,6 +43,7 @@ void test("the installed VRT source closure uses real strict Browser types", () 
   ];
   const additionalTargets = [
     "tests/tooling/fixtures/release/vrt-log-barrier/observer.fixture.ts",
+    "tests/tooling/release/release-public-gallery-readiness.test.ts",
     "tests/tooling/release/release-public-quick-tunnel.test.ts",
     "tests/tooling/release/release-public-trusted-vrt-color.test.ts",
     "tests/tooling/release/release-public-trusted-vrt.test.ts",
@@ -58,7 +59,7 @@ void test("the installed VRT source closure uses real strict Browser types", () 
     ),
     ...additionalTargets,
   ].sort(comparePaths);
-  assert.equal(files.length, 38);
+  assert.equal(files.length, 39);
   assert.equal(new Set(files).size, files.length);
   assert.deepEqual([...config.files].sort(comparePaths), files);
   const require = createRequire(new URL("../../docs/package.json", import.meta.url));
@@ -81,6 +82,8 @@ void test("the installed VRT source closure uses real strict Browser types", () 
     closure,
     [
       ...files.filter((file) => file.startsWith("tools/support/release/public_acceptance/")),
+      "tools/support/release/public_acceptance/a11y.ts",
+      "tools/support/release/public_acceptance/http.ts",
       "tools/support/release/public_acceptance/inputs.ts",
       "tools/support/release/public_acceptance/plan.ts",
     ]

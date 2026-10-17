@@ -66,6 +66,43 @@ static classifications, exit status and byte counts; raw stderr, credentials and
 withheld. The next driver pin and genuine cached golden advance together; fresh Actions, protected
 merge and a successful official retirement remain required.
 
+## Failure before a Release run exists
+
+The full exact-H Check runs before the operator dispatches Release. If that Check fails,
+there is no R to pass to `retire`. Use the reviewed main-only Release Operator operation
+`retire-before-release`, with the original `source_pr`, `source_head`, `source_tag`,
+`qualification_run` (Q) and `operator_run` (O). Leave `release_run` empty. Its explicit driver
+protocol is:
+
+```sh
+rust-script tools/commands/release/pr.rs retire-before-release <source-PR> <H> <tag> <Q> <original-entry>
+```
+
+Q must be the latest eligible dispatched full Check for that exact H and release branch,
+with the original maintainer's actor identities. It must have completed with failure or
+`timed_out`, retain all 19 required job identities, and contain an actual failed/timed-out job
+in its current attempt. Successful jobs carried from earlier attempts remain valid evidence;
+a wholly cancelled run or a failure confined to an earlier attempt does not qualify. The
+original O must be terminal and have relinquished its exact lease. A current retirement
+operator is admitted only by the existing authenticated main/actor/workflow context.
+
+Every capture reads complete paginated inventories of both Release-workflow runs for H and
+all workflow runs for H. Any Release run, regardless of event, status, attempt or title,
+refuses this mode. API errors, changing totals, duplicate IDs and truncated inventories also
+refuse it. The unchanged source/integration, current version, author, tag, GitHub Release,
+registry, operator and lease guards remain mandatory. These guards run before and after lease
+acquisition, during evidence capture, before archive installation and each PR closure, and
+again when the closed reservation is used for the next minor. No Release ID is invented.
+
+This path writes `vize-unpublished-retirement-v3`, with explicit
+`origin: pre-release-qualification`, positive `qualificationRun`/`qualificationAttempt`,
+and no `releaseRun` or `releaseAttempt` keys. Its complete Q/O run/job/artifact metadata and
+exact gzip failure logs use the same storage bounds and Git parent custody as the existing
+archive. Existing v1/v2 R-bearing receipts, messages and log formats remain readable unchanged.
+The archive grants no publication authority: a replacement still needs a new C/H/R and every
+fresh required gate. Older operator source without this explicit mode cannot retire a pre-R
+failure safely.
+
 ## Preservation and partial recovery
 
 The command first creates an immutable `release-retired/<tag>` archive/reservation with an exact
@@ -107,7 +144,7 @@ bodies, source objects, main version and release tags are never rewritten or del
 ## Preparing the replacement
 
 An archive name alone reserves nothing. The official pinned minor command reauthenticates its
-complete ledger, original closed source/integration, unchanged refs, original failed R/operator,
+complete ledger, original closed source/integration, unchanged refs, the original failed R/operator or explicit failed Q/operator origin,
 absent tag/Release/registry versions and absent lease. It skips each fully retired minor and chooses
 the next unreserved version. Both the frozen source and moving-main integration receive that same
 validated target before any metadata mutation. The internal target argument cannot choose an

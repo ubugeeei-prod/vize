@@ -251,9 +251,12 @@ pub(super) fn capture(
         None
     };
     let operators = evidence::no_other_operator(repository, context.as_ref(), budget, root)?;
-    let run = github::api(repository, &format!("actions/runs/{}", request.run), root)?;
-    super::run_identity(&run, &source, request.run)?;
-    evidence::terminal_failed(&run)?;
+    let failure_id = request.failure.run();
+    let run = github::api(repository, &format!("actions/runs/{failure_id}"), root)?;
+    if !request.failure.before_release() {
+        super::run_identity(&run, &source, failure_id)?;
+        evidence::terminal_failed(&run)?;
+    }
     let entry = github::api(
         repository,
         &format!("actions/runs/{}", request.operator),
@@ -263,7 +266,7 @@ pub(super) fn capture(
     pr_budget::check(budget)?;
     let (release_pages, jobs) = evidence::inventory(
         repository,
-        &format!("actions/runs/{}/jobs?filter=all", request.run),
+        &format!("actions/runs/{failure_id}/jobs?filter=all"),
         "jobs",
         budget,
         root,
@@ -275,18 +278,43 @@ pub(super) fn capture(
         budget,
         root,
     )?;
-    evidence::original_failure_jobs(&run, &jobs, &entry, &operator_jobs)?;
-    evidence::publication_jobs(
-        &jobs,
-        &metadata::text(
-            &source.candidate.head,
-            ".github/workflows/release.yml",
+    let mut guards = if request.failure.before_release() {
+        let (pages, _) = evidence::inventory(
+            repository,
+            &format!(
+                "actions/workflows/release.yml/runs?head_sha={}",
+                request.head
+            ),
+            "workflow_runs",
+            budget,
             root,
-        )?,
-    )?;
-    pr_budget::check(budget)?;
-    let identity = json!({"repository":repository,"tag":request.tag,"sourcePr":request.source,"head":request.head,"cut":source.cut,"baseVersion":source.base_version,"pin":pin,"integrationPr":source.integration,"integrationHead":integration_head,"releaseRun":request.run,"releaseAttempt":run["run_attempt"],"operatorRun":request.operator,"operatorAttempt":entry["run_attempt"]});
-    let mut guards = json!({"identity":identity,"sourcePr":source_pr,"integrationPr":integration,"releaseRun":run,"operatorRun":entry,"publicationJobs":jobs,"originalFailureJobPages":{"release":release_pages,"operator":operator_pages},"operatorInventory":operators,"mainAtGuard":main,"tagAbsent":true,"githubReleaseAbsent":true,"githubReleaseInventory":releases});
+        )?;
+        let (h_pages, _) = evidence::inventory(
+            repository,
+            &format!("actions/runs?head_sha={}", request.head),
+            "workflow_runs",
+            budget,
+            root,
+        )?;
+        let identity = json!({"repository":repository,"tag":request.tag,"sourcePr":request.source,"head":request.head,"cut":source.cut,"baseVersion":source.base_version,"pin":pin,"integrationPr":source.integration,"integrationHead":integration_head,"origin":"pre-release-qualification","qualificationRun":failure_id,"qualificationAttempt":run["run_attempt"],"operatorRun":request.operator,"operatorAttempt":entry["run_attempt"]});
+        let guards = json!({"identity":identity,"sourcePr":source_pr,"integrationPr":integration,"qualificationRun":run,"operatorRun":entry,"qualificationJobs":jobs,"originalFailureJobPages":{"qualification":release_pages,"operator":operator_pages},"releaseRunAbsence":{"pages":pages,"hRunPages":h_pages},"operatorInventory":operators,"mainAtGuard":main,"tagAbsent":true,"githubReleaseAbsent":true,"githubReleaseInventory":releases});
+        evidence::qualification_policy(&guards, root)?;
+        guards
+    } else {
+        evidence::original_failure_jobs(&run, &jobs, &entry, &operator_jobs)?;
+        evidence::publication_jobs(
+            &jobs,
+            &metadata::text(
+                &source.candidate.head,
+                ".github/workflows/release.yml",
+                root,
+            )?,
+        )?;
+        pr_budget::check(budget)?;
+        let identity = json!({"repository":repository,"tag":request.tag,"sourcePr":request.source,"head":request.head,"cut":source.cut,"baseVersion":source.base_version,"pin":pin,"integrationPr":source.integration,"integrationHead":integration_head,"releaseRun":failure_id,"releaseAttempt":run["run_attempt"],"operatorRun":request.operator,"operatorAttempt":entry["run_attempt"]});
+        let guards = json!({"identity":identity,"sourcePr":source_pr,"integrationPr":integration,"releaseRun":run,"operatorRun":entry,"publicationJobs":jobs,"originalFailureJobPages":{"release":release_pages,"operator":operator_pages},"operatorInventory":operators,"mainAtGuard":main,"tagAbsent":true,"githubReleaseAbsent":true,"githubReleaseInventory":releases});
+        guards
+    };
     if let Some(authority) = super::stable::capture(&source, &main, root)? {
         guards["stableAuthority"] = authority;
     }

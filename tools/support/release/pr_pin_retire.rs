@@ -7,12 +7,50 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
+#[derive(Clone, Copy)]
+pub(super) enum Failure {
+    Release(u64),
+    BeforeRelease(u64),
+}
+
+impl Failure {
+    pub(super) fn run(self) -> u64 {
+        match self {
+            Self::Release(id) | Self::BeforeRelease(id) => id,
+        }
+    }
+    pub(super) fn before_release(self) -> bool {
+        matches!(self, Self::BeforeRelease(_))
+    }
+    pub(super) fn key(self) -> &'static str {
+        if self.before_release() {
+            "qualificationRun"
+        } else {
+            "releaseRun"
+        }
+    }
+    pub(super) fn attempt_key(self) -> &'static str {
+        if self.before_release() {
+            "qualificationAttempt"
+        } else {
+            "releaseAttempt"
+        }
+    }
+    fn schema(self) -> &'static str {
+        if self.before_release() {
+            "vize-unpublished-retirement-v3"
+        } else {
+            "vize-unpublished-retirement-v2"
+        }
+    }
+}
+
 #[derive(Clone)]
 pub(super) struct Request {
     pub(super) source: u64,
     pub(super) head: String,
     pub(super) tag: String,
-    pub(super) run: u64,
+    pub(super) failure: Failure,
     pub(super) operator: u64,
 }
 
@@ -28,7 +66,17 @@ impl Request {
             source: positive("sourcePr")?,
             head: fields["head"].as_str().ok_or("Missing original H")?.into(),
             tag: fields["tag"].as_str().ok_or("Missing original tag")?.into(),
-            run: positive("releaseRun")?,
+            failure: match fields.get("origin") {
+                None => Failure::Release(positive("releaseRun")?),
+                Some(value)
+                    if value == "pre-release-qualification"
+                        && fields.get("releaseRun").is_none()
+                        && fields.get("releaseAttempt").is_none() =>
+                {
+                    Failure::BeforeRelease(positive("qualificationRun")?)
+                }
+                _ => return Err("Ambiguous retirement failure origin".into()),
+            },
             operator: positive("operatorRun")?,
         })
     }
@@ -71,6 +119,36 @@ pub fn retire(
     operator_run: u64,
     root: &Path,
 ) -> Result<(), String> {
+    retire_with_failure(number, head, tag, Failure::Release(run), operator_run, root)
+}
+
+pub fn retire_before_release(
+    number: u64,
+    head: &str,
+    tag: &str,
+    qualification: u64,
+    operator_run: u64,
+    root: &Path,
+) -> Result<(), String> {
+    retire_with_failure(
+        number,
+        head,
+        tag,
+        Failure::BeforeRelease(qualification),
+        operator_run,
+        root,
+    )
+}
+
+fn retire_with_failure(
+    number: u64,
+    head: &str,
+    tag: &str,
+    failure: Failure,
+    operator_run: u64,
+    root: &Path,
+) -> Result<(), String> {
+    let run = failure.run();
     let budget = pr_budget::configured()?;
     pr_budget::check(budget.as_ref())?;
     if [number, run, operator_run].contains(&0) || run == operator_run {
@@ -83,7 +161,7 @@ pub fn retire(
         source: number,
         head: head.into(),
         tag: tag.into(),
-        run,
+        failure,
         operator: operator_run,
     };
     let (source, initial) =
@@ -105,7 +183,7 @@ pub fn retire(
         archived
     } else {
         let (original_evidence, logs) =
-            evidence::collect(&source, run, operator_run, budget.as_ref(), root)?;
+            evidence::collect(&source, &request, &fresh, budget.as_ref(), root)?;
         operator.verify()?;
         let (_, final_guards) =
             guard::capture(&repository, &request, false, true, budget.as_ref(), root)?;
@@ -113,7 +191,7 @@ pub fn retire(
             return Err("Original cut changed during evidence collection".into());
         }
         let final_absence = guard::absence(&source, budget.as_ref(), root)?;
-        let receipt = json!({"schema":"vize-unpublished-retirement-v2","identity":fresh["identity"],"guards":final_guards,
+        let receipt = json!({"schema":failure.schema(),"identity":fresh["identity"],"guards":final_guards,
             "createdAtUnixSeconds":SystemTime::now().duration_since(UNIX_EPOCH).map_err(|e|e.to_string())?.as_secs(),
             "registryAbsence":final_absence,"originalEvidence":original_evidence,
             "artifactCustody":"Original Actions metadata/digests/expiry only; no permanent binary artifact body custody or reuse qualification",
@@ -179,9 +257,15 @@ pub fn retire(
     same_archive(&receipt, &closed, &absent_now)?;
     pr_budget::check(budget.as_ref())?;
     operator.verify()?;
-    println!(
-        "Retired unpublished {tag}: source #{number}, H={head}, R={run}, archive={archive_head}. Original source/pin/M refs and objects were preserved; next official minor skips this reserved version. No tag or public artifacts were changed."
-    );
+    if failure.before_release() {
+        println!(
+            "Retired unpublished pre-release {tag}: source #{number}, H={head}, Q={run}, archive={archive_head}. Original source/pin/M refs and objects were preserved; next official minor skips this reserved version. No tag or public artifacts were changed."
+        );
+    } else {
+        println!(
+            "Retired unpublished {tag}: source #{number}, H={head}, R={run}, archive={archive_head}. Original source/pin/M refs and objects were preserved; next official minor skips this reserved version. No tag or public artifacts were changed."
+        );
+    }
     Ok(())
 }
 
