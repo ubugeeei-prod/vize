@@ -154,6 +154,7 @@ fn warm_syntax_facts_do_not_freeze_missing_targets_routes_or_dependency_ownershi
     let root = directory.path().canonicalize().unwrap();
     let host = root.join("src/host.ts");
     let late = root.join("src/late.ts");
+    let manifest = root.join("node_modules/future-widget/package.json");
     let widget = root.join("node_modules/future-widget/Widget.vue");
     let nested = root.join("node_modules/future-widget/nested.ts");
     let write = |path: &std::path::Path, source: &str| {
@@ -163,10 +164,9 @@ fn warm_syntax_facts_do_not_freeze_missing_targets_routes_or_dependency_ownershi
     let source = "import { value } from './late'; import Widget from 'future-widget'; export { value, Widget };";
     write(&host, source);
     write(&root.join("tsconfig.json"), "{}");
-    write(
-        &root.join("node_modules/future-widget/package.json"),
-        r#"{"name":"future-widget","exports":"./Widget.vue"}"#,
-    );
+    // An exported `.vue` remains positive route topology even if its file is
+    // absent. Start without a manifest to exercise a true negative lookup.
+    assert!(!manifest.exists());
     let mut cached = VirtualProject::new(&root).unwrap();
     let mut uncached = VirtualProject::new(&root).unwrap();
     for project in [&mut cached, &mut uncached] {
@@ -191,10 +191,19 @@ fn warm_syntax_facts_do_not_freeze_missing_targets_routes_or_dependency_ownershi
 
     let before = run(&mut cached, &mut uncached);
     assert!(before.contains(&(vize_carton::String::from("future-widget"), false)));
+    assert!(cached.package_routes_snapshot().iter().any(|binding| {
+        binding.specifier == "future-widget"
+            && binding.route.is_none()
+            && binding.invalidation_paths.contains(&manifest)
+    }));
     assert!(cached.find_by_original(&late).is_none());
     assert!(cached.find_by_original(&widget).is_none());
 
     write(&late, "export const value = 1;");
+    write(
+        &manifest,
+        r#"{"name":"future-widget","exports":"./Widget.vue"}"#,
+    );
     write(
         &widget,
         r#"<script setup lang="ts">import { nested } from './nested';</script><template>{{ nested }}</template>"#,
@@ -203,6 +212,13 @@ fn warm_syntax_facts_do_not_freeze_missing_targets_routes_or_dependency_ownershi
     assert!(appeared.contains(&(vize_carton::String::from("future-widget"), true)));
     assert!(cached.find_by_original(&late).is_some());
     assert!(cached.find_by_original(&widget).is_some());
+    assert!(cached.package_routes_snapshot().iter().any(|binding| {
+        binding.specifier == "future-widget"
+            && binding
+                .route
+                .as_ref()
+                .is_some_and(|route| route.source_paths.contains(&widget))
+    }));
     assert!(cached.dependency_edges[&host].contains(&late));
 
     // Warm the package importer's exact bytes while its relative target is

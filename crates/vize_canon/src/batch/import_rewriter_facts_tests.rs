@@ -71,8 +71,17 @@ fn key_includes_exact_bytes_and_every_source_type_dimension() {
         SourceType::d_ts(),
         SourceType::mjs(),
         SourceType::cjs(),
-        SourceType::ts().with_unambiguous(true),
+        // ts() is already unambiguous; change only its module kind here.
+        SourceType::ts().with_module(true),
     ];
+    for (index, source_type) in source_types.iter().enumerate() {
+        for previous in &source_types[..index] {
+            assert_ne!(
+                source_type, previous,
+                "each case must exercise a distinct key"
+            );
+        }
+    }
     let mut cache = ModuleSpecifierFactsCache::default();
     for source_type in source_types {
         for _ in 0..2 {
