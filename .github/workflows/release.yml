@@ -917,11 +917,19 @@ jobs:
                 "$artifact"
             fi
           done
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Generate notes for the exact published version range
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SOURCE_SHA: ${{ inputs.expected_sha }}
+        run: node tools/support/release/github_release_notes.ts "$RELEASE_TAG_NAME" "$RELEASE_SOURCE_SHA" "$RUNNER_TEMP/release-notes.md"
       - name: Create Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
-          body_path: .github/release-notes/drop-in-scope.md
-          generate_release_notes: true
+          body_path: ${{ runner.temp }}/release-notes.md
+          generate_release_notes: false
+          target_commitish: ${{ inputs.expected_sha }}
           draft: false
           overwrite_files: true
           tag_name: ${{ inputs.tag_name }}
