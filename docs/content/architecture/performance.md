@@ -192,10 +192,11 @@ The compiler-internals work described above is measured by a per-crate microbenc
 
 **How to read these numbers.** Allocation counts are deterministic and machine-independent, so they
 are exact facts and are used as the regression ratchet. Wall times were taken on a shared
-development machine with `--quick` sampling and are **directional only** — the reference-runner
-(Blacksmith) recordings are still pending, which is why every `wall_p50_ns` and `allocs` entry in
-`docs/davinci/plan/budgets.toml` is still `0`, meaning "not yet recorded, report-only". Per-run
-result files land in `tools/benchmarks/results/davinci/` and are local artifacts, not committed baselines.
+development machine with `--quick` sampling and are **directional only** — wall-time recordings on the reference runner (Blacksmith) are still
+pending. In `docs/davinci/plan/budgets.toml`, `wall_p50_ns` and `allocs` have different meanings:
+`0` means an unrecorded baseline for wall time, but a measured zero for allocation calls.
+Allocation baselines are already recorded and enforced independently of wall-time baselines.
+Per-run result files land in `tools/benchmarks/results/davinci/` and are local artifacts, not committed baselines.
 
 Allocation calls per compile, before and after the string-and-arena work (exact, same fixtures):
 
