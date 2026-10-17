@@ -17,6 +17,7 @@ on:
       - "tests/tooling/lint-divergence*.test.*"
       - "tests/tooling/lint-baseline-script-language.test.mjs"
       - "tests/tooling/support/lint-report-parity*"
+      - "tests/tooling/_helpers/lint-report-*"
       - "tests/tooling/real-project-matrix-workflow.test.ts"
       - "tools/benchmarks/scripts/package.json"
       - "pnpm-lock.yaml"
@@ -64,6 +65,7 @@ jobs:
           tools/commands/fixtures/lint-divergence-report.ts
           tools/support/fixtures/lint_reference_coverage.ts
           tests/tooling/lint-reference-classifier.test.ts
+          tests/tooling/lint-reference-coverage-workflow.test.ts
           tests/tooling/_helpers/lint-report-rust-parity.ts
           tests/tooling/support/lint-report-parity.ts
       - name: Require actual frozen Rust and TypeScript subprocess parity
@@ -76,6 +78,7 @@ jobs:
         run: >-
           env -u GITHUB_SHA node --test
           tests/tooling/lint-reference-classifier.test.ts
+          tests/tooling/lint-reference-coverage-workflow.test.ts
           tests/tooling/lint-reference-coverage.test.mjs
           tests/tooling/lint-baseline-script-language.test.mjs
           tests/tooling/lint-divergence-processor.test.mjs
