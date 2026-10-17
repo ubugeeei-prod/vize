@@ -16,8 +16,27 @@ if vim.env.VIZE_TEST_ART_VUE_NATIVE_PARSER == "1" then
     vim.treesitter.language.get_lang("art-vue") == "art-vue",
     "preserves a loaded parser under the Art Vue language name"
   )
+  io.stdout:write("VIZE_HEADLESS_NATIVE_PARSER_PASSED\n")
   return
 end
+
+-- A required assertion must fail the same headless Lua carrier used by CI.
+-- Ex-command `+luafile ... +qa` logs Lua errors but can still exit successfully.
+local control_path = vim.fn.tempname() .. ".lua"
+local control_args = { vim.v.progpath, "--headless", "-u", "NONE", "--noplugin", "-l", control_path }
+vim.fn.writefile({ 'io.stdout:write("VIZE_HEADLESS_CONTROL_PASSED\\n")' }, control_path)
+local success_control = vim.system(control_args, { text = true }):wait(10000)
+vim.fn.writefile({ 'assert(false, "VIZE_HEADLESS_CONTROL_FAILED")' }, control_path)
+local failure_control = vim.system(control_args, { text = true }):wait(10000)
+vim.fn.delete(control_path)
+assert(
+  success_control.code == 0 and success_control.stdout:find("VIZE_HEADLESS_CONTROL_PASSED", 1, true),
+  "headless Lua success executes and exits zero"
+)
+assert(
+  failure_control.code == 1 and failure_control.stderr:find("VIZE_HEADLESS_CONTROL_FAILED", 1, true),
+  "headless Lua assertion executes and exits one"
+)
 
 local config = require("vize.config")
 
@@ -222,3 +241,5 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 vim.cmd("edit " .. vim.fn.fnameescape(vim.fn.tempname() .. ".art.vue"))
 assert(vim.bo.syntax == "custom-art", "preserves an explicit Art Vue syntax override")
+
+io.stdout:write("VIZE_HEADLESS_NORMAL_PASSED\n")

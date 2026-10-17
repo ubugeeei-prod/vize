@@ -175,7 +175,7 @@ export const testAndBenchmarkTasks = defineTasks({
   }),
   "test:zed-extension:real-server": noCacheTask(rustTool("editors/zed/run-real-server")),
   "test:nvim-extension:headless": noCacheTask(
-    "nvim --headless -u NONE --noplugin '+set runtimepath^=editors/nvim' '+luafile editors/nvim/test/vize_spec.lua' '+qa' && VIZE_TEST_ART_VUE_NATIVE_PARSER=1 nvim --headless -u NONE --noplugin '+set runtimepath^=editors/nvim' '+luafile editors/nvim/test/vize_spec.lua' '+qa'",
+    "nvim --headless -u NONE --noplugin -l editors/nvim/test/vize_spec.lua && VIZE_TEST_ART_VUE_NATIVE_PARSER=1 nvim --headless -u NONE --noplugin -l editors/nvim/test/vize_spec.lua",
   ),
   "test:nvim-extension:package": noCacheTask("vp run --workspace-root package:nvim-extension"),
   // The headless Neovim end-to-end scenario against a real `vize lsp` (#3457).
