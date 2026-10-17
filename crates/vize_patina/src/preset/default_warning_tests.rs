@@ -46,12 +46,11 @@ fn all_six_presets_emit_the_complete_authored_warning_packets() {
             } else {
                 vec![]
             };
-            let mut diagnostics = if enabled {
-                vec![case["diagnostic"].clone()]
-            } else {
-                vec![]
-            };
-            diagnostics.extend(baseline.clone());
+            // SFC diagnostics precede the script warnings appended by lint_sfc.
+            let mut diagnostics = baseline.clone();
+            if enabled {
+                diagnostics.push(case["diagnostic"].clone());
+            }
             let expected = json!({
                 "filename": filename, "error_count": 0,
                 "warning_count": diagnostics.len(), "diagnostics": diagnostics
