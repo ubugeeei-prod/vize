@@ -13,7 +13,8 @@ filter = '''(package(=vize) & binary(=lint_legacy_instance_api_cli) & (
   test(=all_original_legacy_api_controls_use_the_actual_cli_and_complete_json_formatter) |
   test(=all_template_authority_boundaries_use_the_actual_cli_and_complete_json_formatter) |
   test(=component_owned_legacy_api_values_preserve_script_warnings_and_complete_cli_packets) |
-  test(=script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_this_frontier)
+  test(=script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_this_frontier) |
+  test(=legacy_instance_cli::callback_return_ownership_keeps_all_six_whole_cli_packets)
 )) | (package(=vize_croquis) & binary(=template_semantic_reuse) &
   test(=ordinary_and_demand_semantics_keep_complete_outputs_and_observed_parse_receipts)
 )'''
