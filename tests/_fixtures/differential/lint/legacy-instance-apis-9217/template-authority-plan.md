@@ -70,6 +70,13 @@ in script are unrelated to these template scopes and keep their existing warning
 - `cli70.json`: the same 70 source/config/status/whole JSON formatter expectations,
   with 126 diagnostics. The actual source-built CLI runs every case before an
   aggregate assertion; no output is filtered or normalized.
+- `template-event-object-reference.json`: one existing original-70 event-object
+  expression receives a separate current expectation (31..41). Official Vue
+  emits and actually invokes an object-spread handler reading `_ctx.$listeners`;
+  absence of runtime warnings for event-time undefined spread is not absence of
+  that read. The full historical empty provider/native/CLI packet stays frozen,
+  and full official compiler/runtime evidence is retained. This is a provider
+  blind spot, not a suppressed native warning or an extra corpus input.
 - `template-boundaries.json`: 42 additional original-source/provider/native
   packets, historically labelled 27 admitted, five product-accuracy cases and
   ten refusals. Complete expected native diagnostics

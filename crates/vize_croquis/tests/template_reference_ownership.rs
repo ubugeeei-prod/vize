@@ -25,7 +25,7 @@ const SOURCE: &str = concat!(
     ":[key]=\"\\u0024listeners\">",
     "{{ /[/*]/.test($listeners) ? slot : outer }}",
     "<p v-for=\"($listeners, index) in list\" :title=\"$listeners\" ",
-    "@click=\"const local = slot; consume(local, $event, &#36;listeners)\"/>",
+    "@click=\"const local = slot; consume(local, $event, &#36;listeners)\"></p>",
     "<template slot-scope=\"{ local = fallback }\">",
     "{{ local }}{{ $listeners }}</template></Panel>",
 );

@@ -6,7 +6,10 @@ use vize_l0::Allocator;
 fn component_tokens(source: &str) -> (Vec<(String, u32, u32)>, Vec<TemplateReferenceGap>) {
     let allocator = Allocator::default();
     let (root, errors, syntax) = Parser::new(&allocator, source).parse_with_template_syntax_facts();
-    assert!(errors.is_empty(), "{errors:?}: {source}");
+    assert!(
+        errors.iter().all(|error| error.is_compatibility_notice()),
+        "unexpected non-compatibility parser diagnostics: {errors:?}: {source}"
+    );
     let packet = collect_template_references(&root, &syntax);
     let tokens = packet
         .references
@@ -35,6 +38,11 @@ fn complete_original_seventy_packets_keep_all_seventeen_template_contracts() {
         "../../../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/native.json"
     ))
     .unwrap();
+    let overlay: Value = serde_json::from_str(include_str!(
+        "../../../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/template-event-object-reference.json"
+    )).unwrap();
+    let corrections = overlay["originalCorrections"].as_array().unwrap();
+    assert_eq!(corrections.len(), 1);
     let mut count = 0;
     assert_eq!(authored["records"].as_array().unwrap().len(), 70);
     for case in authored["records"].as_array().unwrap() {
@@ -60,7 +68,12 @@ fn complete_original_seventy_packets_keep_all_seventeen_template_contracts() {
             .iter()
             .find(|row| row["id"] == case["id"])
             .unwrap();
-        let expected: Vec<_> = expected["messages"]
+        let messages = corrections
+            .iter()
+            .find(|row| row["id"] == case["id"])
+            .map(|correction| &correction["nativeMessages"])
+            .unwrap_or(&expected["messages"]);
+        let expected: Vec<_> = messages
             .as_array()
             .unwrap()
             .iter()

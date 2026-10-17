@@ -382,7 +382,7 @@ fn demanded_syntax_reuses_original_goals_without_changing_default_counters() {
             .collect::<Vec<_>>(),
         "reading retained syntax cannot run a parser",
     );
-    let source = "<p v-for=\"item in items\" @click=\"const local = 1; consume(local)\"/>";
+    let source = "<p v-for=\"item in items\" @click=\"const local = 1; consume(local)\"></p>";
     parse_counted(&arena, source, 2);
     profiler.clear();
     profiler.enable();
@@ -405,7 +405,7 @@ fn named_handler_expressions_keep_the_original_goals_and_counters() {
     use vize_armature::parser::{Parser, TemplateSyntax};
 
     let arena = Allocator::new();
-    let source = "<p @a=\"function(event) { use($listeners) }\" @b=\"{ ...$listeners }\" @c=\"() => use($listeners)\"/>";
+    let source = "<p @a=\"function(event) { use($listeners) }\" @b=\"{ ...$listeners }\" @c=\"() => use($listeners)\"></p>";
     let ordinary = parse_counted(&arena, source, 3);
     let profiler = global_profiler();
     profiler.clear();

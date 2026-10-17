@@ -1,0 +1,233 @@
+{
+  "schema": 1,
+  "status": "authored-native-cli-expectations-unexecuted",
+  "contract": "Exactly one existing immutable original70 control. Pinned default Vue3 compiler and actual runtime event invocation prove the component $listeners read. The independent provider historical zero packet and frozen native/CLI zero packets remain unchanged and are retained whole in proof. This approved derived correction restores the true positive at31..41; no source normalization, suppression, new oracle case or local Rust execution.",
+  "frozenInputs": [
+    {
+      "path": "independent.json",
+      "bytes": 38234,
+      "sha256": "3e04d9e772224ce65d7201d38f4785bb38904bedf27395b2b22d17715cf49a97"
+    },
+    {
+      "path": "native.json",
+      "bytes": 70986,
+      "sha256": "2f37da2c65d05654d85c68ca34f4fe9a9daafb72a16bda87b22578bbf4a97cd0"
+    },
+    {
+      "path": "cli70.json",
+      "bytes": 107945,
+      "sha256": "edd8ec3befefe73060b36a2e924f3ce760dc3a0e5bea289f04f1843297c42d04"
+    }
+  ],
+  "originalCorrections": [
+    {
+      "id": "template-event-object-expression",
+      "sourceSha256": "80e9e7ce9a301400846abdd42f7a396795e8c00a26177eab6401dee81441c20c",
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 31,
+          "end": 41,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "cliExpected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 32,
+              "endLine": 1,
+              "endColumn": 42,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "qualification": "product-accuracy-vue3-event-expression-provider-blindspot"
+    }
+  ],
+  "proof": {
+    "schema": 1,
+    "id": "template-event-object-expression",
+    "source": "<template><button @click=\"{ ...$listeners }\" /></template>",
+    "sourceSha256": "80e9e7ce9a301400846abdd42f7a396795e8c00a26177eab6401dee81441c20c",
+    "inputs": [
+      {
+        "path": "independent.json",
+        "bytes": 38234,
+        "sha256": "3e04d9e772224ce65d7201d38f4785bb38904bedf27395b2b22d17715cf49a97",
+        "originalRecord": {
+          "id": "template-event-object-expression",
+          "source": "<template><button @click=\"{ ...$listeners }\" /></template>",
+          "sourceSha256": "80e9e7ce9a301400846abdd42f7a396795e8c00a26177eab6401dee81441c20c",
+          "messages": []
+        }
+      },
+      {
+        "path": "native.json",
+        "bytes": 70986,
+        "sha256": "2f37da2c65d05654d85c68ca34f4fe9a9daafb72a16bda87b22578bbf4a97cd0",
+        "originalRecord": {
+          "id": "template-event-object-expression",
+          "sourceSha256": "80e9e7ce9a301400846abdd42f7a396795e8c00a26177eab6401dee81441c20c",
+          "messages": []
+        }
+      },
+      {
+        "path": "cli70.json",
+        "bytes": 107945,
+        "sha256": "edd8ec3befefe73060b36a2e924f3ce760dc3a0e5bea289f04f1843297c42d04",
+        "originalRecord": {
+          "id": "template-event-object-expression",
+          "sourceSha256": "80e9e7ce9a301400846abdd42f7a396795e8c00a26177eab6401dee81441c20c",
+          "nativeMessageIndices": [],
+          "status": 0,
+          "stderrBytes": [],
+          "expected": [
+            {
+              "file": "Component.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ]
+        }
+      }
+    ],
+    "provider": {
+      "eslint": "10.4.1",
+      "plugin": "10.9.2",
+      "parser": "10.4.1",
+      "scriptParser": "8.65.0",
+      "ruleSources": {
+        "no-deprecated-dollar-listeners-api": {
+          "path": "dist/rules/no-deprecated-dollar-listeners-api.js",
+          "sha256": "71af7147d1921393d1ce2173b12c47e1a053ee3b7147d98bd8d805276f07828a"
+        },
+        "no-deprecated-dollar-scopedslots-api": {
+          "path": "dist/rules/no-deprecated-dollar-scopedslots-api.js",
+          "sha256": "ca2ea0a69b107c7a0dec39fa3b120562481aadbabc5e70d3cf338e139059eed6"
+        }
+      },
+      "utilitySource": {
+        "path": "dist/utils/index.js",
+        "sha256": "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925"
+      }
+    },
+    "compilerProvider": {
+      "vue": "3.6.0-rc.9",
+      "compiler": "3.6.0-rc.9",
+      "sources": [
+        {
+          "packageName": "@vue/compiler-sfc",
+          "path": "dist/compiler-sfc.cjs.js",
+          "sha256": "16f5957f30e3356923c549a887b786d8b7beb4f6967f5952a2c1b94493c53a18"
+        },
+        {
+          "packageName": "@vue/compiler-dom",
+          "path": "dist/compiler-dom.cjs.js",
+          "sha256": "cea50c552f02adc45f5347920e20ddf7e1d77b639d898bef1dc4ad61989e0c6c"
+        },
+        {
+          "packageName": "@vue/compiler-core",
+          "path": "dist/compiler-core.cjs.js",
+          "sha256": "820601aa19727baa3de3b6eea199d6dfb547911afdb7b22d8081d3c81eff284e"
+        }
+      ]
+    },
+    "typescriptProvider": {
+      "version": "6.0.3",
+      "source": {
+        "path": "lib/typescript.js",
+        "sha256": "569177652966bd528c319171c7dd22860dbf72bde116cbc4f644f1d02bb12e39"
+      }
+    },
+    "runtimeProvider": {
+      "vue": "3.6.0-rc.9",
+      "source": {
+        "path": "dist/runtime-core.cjs.js",
+        "sha256": "1b9c48230e0ff3b381080b5c64f4e725378d22cda1838e44fad809a722701ef6"
+      }
+    },
+    "referenceMessages": [],
+    "compiler": {
+      "parseErrors": [],
+      "script": null,
+      "scriptError": {
+        "name": "Error",
+        "message": "[@vue/compiler-sfc] SFC contains no <script> tags."
+      },
+      "template": {
+        "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onClick: _cache[0] || (_cache[0] = $event => ({ ..._ctx.$listeners }))\n  }))\n}",
+        "source": "<button @click=\"{ ...$listeners }\" />",
+        "preamble": "",
+        "errors": [],
+        "tips": [],
+        "map": {
+          "version": 3,
+          "sources": ["Component.vue"],
+          "names": ["$listeners"],
+          "mappings": ";;;wBAAA,oBAAqC;IAA5B,OAAK,4CAAOA,eAAU",
+          "sourcesContent": ["<button @click=\"{ ...$listeners }\" />"]
+        }
+      }
+    },
+    "renderJavaScript": {
+      "outputText": "\"use strict\";\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.render = render;\nconst vue_1 = require(\"vue\");\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n    return ((0, vue_1.openBlock)(), (0, vue_1.createElementBlock)(\"button\", {\n        onClick: _cache[0] || (_cache[0] = $event => ({ ..._ctx.$listeners }))\n    }));\n}\n",
+      "diagnostics": []
+    },
+    "runtime": {
+      "instrumentation": "Unchanged actual pinned compiler render runs in actual pinned Vue custom renderer. Actual installed button onClick is invoked once with recorded event, then app is unmounted. No source/context/binding metadata rewrite. Handler function source and complete warnings/errors/host operations are retained.",
+      "event": {
+        "type": "click",
+        "marker": "actual-existing-control"
+      },
+      "mounted": true,
+      "invoked": true,
+      "unmounted": true,
+      "eventReturn": {
+        "type": "object",
+        "value": {}
+      },
+      "warnings": [],
+      "errors": [],
+      "operations": [
+        {
+          "operation": "createElement",
+          "tag": "button"
+        },
+        {
+          "operation": "patchProp",
+          "tag": "button",
+          "key": "onClick",
+          "previousType": "object",
+          "nextType": "function",
+          "functionSource": "$event => ({ ..._ctx.$listeners })",
+          "value": null
+        },
+        {
+          "operation": "insert",
+          "tag": "button"
+        },
+        {
+          "operation": "remove",
+          "tag": "button"
+        }
+      ]
+    },
+    "status": "proof-only-no-expectation-changes-no-Rust-execution"
+  }
+}

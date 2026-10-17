@@ -127,7 +127,7 @@ fn full_escaped_tokens_and_attribute_and_text_entities_have_authored_maps() {
 #[test]
 fn for_and_statement_handlers_keep_distinct_original_owners() {
     let arena = Allocator::new();
-    let source = "<p v-for=\"($listeners, key) in &#36;listeners\" @click=\"const x = 1; use(&#36;listeners)\"/>";
+    let source = "<p v-for=\"($listeners, key) in &#36;listeners\" @click=\"const x = 1; use(&#36;listeners)\"></p>";
     let (root, errors, facts) = Parser::new(&arena, source).parse_with_template_syntax_facts();
     assert!(errors.is_empty(), "{errors:?}");
     assert!(value(&root, 0).js_ast.is_none(), "For did not attempt Expr");
@@ -188,7 +188,7 @@ fn for_and_statement_handlers_keep_distinct_original_owners() {
 #[test]
 fn handler_expressions_preserve_functions_callbacks_objects_and_original_offsets() {
     let arena = Allocator::new();
-    let source = "<p @a=\"function(event) { use(&#36;listeners) }\" @b=\"{ ...$listeners }\" @c=\"() => use($listeners)\"/>";
+    let source = "<p @a=\"function(event) { use(&#36;listeners) }\" @b=\"{ ...$listeners }\" @c=\"() => use($listeners)\"></p>";
     let (ordinary, ordinary_errors) = Parser::new(&arena, source).parse();
     let (root, errors, facts) = Parser::new(&arena, source).parse_with_template_syntax_facts();
     assert_eq!(format!("{ordinary:?}"), format!("{root:?}"));
@@ -240,7 +240,7 @@ fn handler_expressions_preserve_functions_callbacks_objects_and_original_offsets
 #[test]
 fn legacy_parameter_roles_are_selected_only_for_semantic_hosts() {
     let arena = Allocator::new();
-    let source = "<Panel slot-scope=\"{ value = &#36;listeners }\"/><template scope=\"$listeners\"/><div scope=\"unrelated\" title=\"$listeners\"/>";
+    let source = "<Panel slot-scope=\"{ value = &#36;listeners }\"/><template scope=\"$listeners\"></template><div scope=\"unrelated\" title=\"$listeners\"></div>";
     let (root, errors, facts) = Parser::with_options(
         &arena,
         source,
@@ -285,7 +285,7 @@ fn own_and_inherited_v_pre_discard_syntax_even_before_the_pre_attribute() {
 #[test]
 fn failed_and_over_budget_goals_remain_observed_refusals() {
     let arena = Allocator::new();
-    let source = "<p v-for=\"item in\" @click=\"const x =\" :value=\"value +\"/><Panel #default=\"{ value: }\"/><template scope=\"{ value: }\"/>";
+    let source = "<p v-for=\"item in\" @click=\"const x =\" :value=\"value +\"></p><Panel #default=\"{ value: }\"/><template scope=\"{ value: }\"></template>";
     let (root, errors, facts) = Parser::with_options(
         &arena,
         source,
@@ -328,7 +328,7 @@ fn failed_and_over_budget_goals_remain_observed_refusals() {
             .iter()
             .all(|record| record.authored_span(JsSpan::new(0, 0)).is_none())
     );
-    let source = format!("<p @click=\"{}\"/>", "consume(value);".repeat(20));
+    let source = format!("<p @click=\"{}\"></p>", "consume(value);".repeat(20));
     let (_, _, facts) = Parser::new(&arena, &source).parse_with_template_syntax_facts();
     let TemplateSyntax::Handler(owner) = facts.records_for(&source).expect("source")[0].syntax()
     else {
@@ -344,7 +344,7 @@ fn failed_and_over_budget_goals_remain_observed_refusals() {
 #[test]
 fn stale_cooked_shorthand_cannot_borrow_an_unrelated_authored_map() {
     let arena = Allocator::new();
-    let source = "<p :foo-bar/>";
+    let source = "<p :foo-bar></p>";
     let (_, errors, facts) = Parser::new(&arena, source).parse_with_template_syntax_facts();
     assert!(errors.is_empty());
     let record = find(&facts, source, "fooBar");
@@ -359,7 +359,7 @@ fn stale_cooked_shorthand_cannot_borrow_an_unrelated_authored_map() {
 #[test]
 fn record_budget_refuses_the_complete_packet_instead_of_returning_a_prefix() {
     let arena = Allocator::new();
-    let source = "<p :value=\"outside\"/>".repeat(TEMPLATE_SYNTAX_RECORD_LIMIT + 1);
+    let source = "<p :value=\"outside\"></p>".repeat(TEMPLATE_SYNTAX_RECORD_LIMIT + 1);
     let (root, errors, facts) = Parser::new(&arena, &source).parse_with_template_syntax_facts();
     assert!(errors.is_empty(), "{errors:?}");
     assert_eq!(root.children.len(), TEMPLATE_SYNTAX_RECORD_LIMIT + 1);
@@ -371,7 +371,8 @@ fn record_budget_refuses_the_complete_packet_instead_of_returning_a_prefix() {
 #[test]
 fn vue3_legacy_slot_attributes_are_plain_text_without_parameter_owners() {
     let arena = Allocator::new();
-    let source = "<Child slot-scope=\"{ value = $listeners }\"/><template scope=\"$listeners\"/>";
+    let source =
+        "<Child slot-scope=\"{ value = $listeners }\"/><template scope=\"$listeners\"></template>";
     let (root, errors, facts) = Parser::new(&arena, source).parse_with_template_syntax_facts();
     assert!(errors.is_empty());
     assert!(!facts.legacy_slot_bindings_enabled());

@@ -55,6 +55,11 @@ fn authored_controls_preserve_script_warnings_and_exact_template_property_spans(
     ))
     .unwrap();
     assert_eq!(native.records.len(), corpus.records.len());
+    let overlay: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/template-event-object-reference.json"
+    )).unwrap();
+    let corrections = overlay["originalCorrections"].as_array().unwrap();
+    assert_eq!(corrections.len(), 1);
     for case in corpus.records {
         let mut expected: Vec<_> = native
             .records
@@ -63,6 +68,13 @@ fn authored_controls_preserve_script_warnings_and_exact_template_property_spans(
             .unwrap()
             .messages
             .clone();
+        if let Some(correction) = corrections.iter().find(|row| row["id"] == case.id) {
+            assert!(
+                expected.is_empty(),
+                "historical provider blind spot remains frozen"
+            );
+            expected = correction["nativeMessages"].as_array().unwrap().clone();
+        }
         assert_case(&case.id, &case.source, &mut expected);
     }
 }

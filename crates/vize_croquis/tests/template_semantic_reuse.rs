@@ -22,18 +22,18 @@ use vize_relief::{ExpressionNode, PropNode, RootNode, SimpleExpressionNode, Temp
 
 const SCRIPT: &str = "<script setup lang=\"ts\">const holder = { value: 1, $listeners: {} }; const items = [holder]; const consume = (...args: unknown[]) => args; const handler = (event: unknown) => consume(event);</script>";
 const CONTROLS: &[(&str, &str)] = &[
-    ("simple-handler", "<button @click=\"handler\"/>"),
+    ("simple-handler", "<button @click=\"handler\"></button>"),
     (
         "object-spread",
-        "<button @click=\"({ ...holder.$listeners })\"/>",
+        "<button @click=\"({ ...holder.$listeners })\"></button>",
     ),
     (
         "function-callback",
-        "<button @click=\"function named(event) { return consume(event) }\"/>",
+        "<button @click=\"function named(event) { return consume(event) }\"></button>",
     ),
     (
         "statement-body",
-        "<button @click=\"const local = holder; consume(local, $event)\"/>",
+        "<button @click=\"const local = holder; consume(local, $event)\"></button>",
     ),
     ("simple-for", "<p v-for=\"item in items\">{{ item }}</p>"),
     (
@@ -44,14 +44,14 @@ const CONTROLS: &[(&str, &str)] = &[
         "comment-rewritten-for",
         "<p v-for=\"item in items /* keep */\">{{ item }}</p>",
     ),
-    ("refused-handler", "<button @click=\"const =\"/>"),
+    ("refused-handler", "<button @click=\"const =\"></button>"),
     (
         "trailing-comment-reference",
-        "<button @click=\"handler // trailing\"/>",
+        "<button @click=\"handler // trailing\"></button>",
     ),
     (
         "trailing-comment-callback",
-        "<button @click=\"function named(event) { return consume(event) } // trailing\"/>",
+        "<button @click=\"function named(event) { return consume(event) } // trailing\"></button>",
     ),
     (
         "slot-bound-callback-for",
@@ -158,7 +158,7 @@ fn for_value<'n, 'a>(root: &'n RootNode<'a>) -> &'n SimpleExpressionNode<'a> {
 }
 
 fn check_intended_for_producer_representation() {
-    let source = "<p v-for=\"item in items\"/>";
+    let source = "<p v-for=\"item in items\"></p>";
     let allocator = Allocator::new();
     let (ordinary, errors) = Parser::new(&allocator, source).parse();
     assert!(errors.is_empty());
@@ -219,7 +219,7 @@ fn pair(id: &str, source: &str, group: &str) -> Value {
 }
 
 fn check_foreign_source_falls_back() {
-    let source = "<button @click=\"const local = 1; consume(local)\"/>";
+    let source = "<button @click=\"const local = 1; consume(local)\"></button>";
     let allocator = Allocator::new();
     let (root, errors, syntax) = Parser::new(&allocator, source).parse_with_template_syntax_facts();
     assert!(errors.is_empty());

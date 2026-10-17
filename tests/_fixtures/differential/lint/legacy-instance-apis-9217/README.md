@@ -109,3 +109,11 @@ frontier: three original normal-setup research cases retain their historical
 whole packets while a derived overlay refuses unsupported absence claims.
 Four counterlaws preserve complete script warnings. The existing 147 CLI cases
 still execute; none of these refusal records earns provider-parity credit.
+
+`template-event-object-reference.json` preserves one existing original-70 case
+whose historical provider/native packet was empty. The pinned Vue compiler
+produces `$event => ({ ..._ctx.$listeners })`, and the actual installed click
+handler is invoked in Vue. Undefined object spread and event-time lookup need
+not emit a runtime warning; they still read the removed component surface.
+A separate derived one-case native/CLI correction reports the original token at
+31..41. All original source/provider/native/CLI bytes remain frozen.

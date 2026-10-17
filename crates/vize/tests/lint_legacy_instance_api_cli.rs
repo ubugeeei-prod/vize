@@ -48,7 +48,7 @@ fn digest(bytes: &[u8]) -> String {
 
 #[test]
 fn all_original_legacy_api_controls_use_the_actual_cli_and_complete_json_formatter() {
-    let manifest: Value = serde_json::from_str(MANIFEST).unwrap();
+    let mut manifest: Value = serde_json::from_str(MANIFEST).unwrap();
     assert_eq!(manifest["schema"], "vize.lint.legacy-instance-api-cli70");
     assert_eq!(manifest["version"], 1);
     let mut originals = Vec::new();
@@ -93,6 +93,34 @@ fn all_original_legacy_api_controls_use_the_actual_cli_and_complete_json_formatt
             case["expected"][0]["messages"].as_array().unwrap().len(),
             native["messages"].as_array().unwrap().len()
         );
+    }
+    let overlay: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/template-event-object-reference.json"
+    )).unwrap();
+    for input in overlay["frozenInputs"].as_array().unwrap() {
+        let bytes =
+            fs::read(std::path::Path::new(FIXTURES).join(input["path"].as_str().unwrap())).unwrap();
+        assert_eq!(bytes.len() as u64, input["bytes"].as_u64().unwrap());
+        assert_eq!(digest(&bytes), input["sha256"].as_str().unwrap());
+    }
+    let corrections = overlay["originalCorrections"].as_array().unwrap();
+    assert_eq!(corrections.len(), 1);
+    for correction in corrections {
+        let case = manifest["cases"]
+            .as_array_mut()
+            .unwrap()
+            .iter_mut()
+            .find(|row| row["id"] == correction["id"])
+            .unwrap();
+        assert_eq!(case["sourceSha256"], correction["sourceSha256"]);
+        case["historicalExpected"] = case["expected"].clone();
+        case["historicalNativeMessageIndices"] = case["nativeMessageIndices"].clone();
+        case["expectationAuthority"] = json!("actual-vue3-event-expression-reference-overlay");
+        case["qualification"] = correction["qualification"].clone();
+        case["expected"] = correction["cliExpected"].clone();
+        case["status"] = correction["expectedStatus"].clone();
+        case["nativeMessageIndices"] =
+            json!((0..correction["nativeMessages"].as_array().unwrap().len()).collect::<Vec<_>>());
     }
     run_cli_cases(&manifest, independent, 70);
 }
@@ -506,6 +534,7 @@ fn run_cli_cases(manifest: &Value, sources: &[Value], expected_count: usize) {
                 "qualification": case["qualification"],
                 "historicalQualification": case["historicalQualification"],
                 "historicalExpected": case["historicalExpected"],
+                "historicalNativeMessageIndices": case["historicalNativeMessageIndices"],
                 "expectationAuthority": case["expectationAuthority"],
                 "qualifiedAcceptance": case["qualifiedAcceptance"],
                 "program": env!("CARGO_BIN_EXE_vize"),
