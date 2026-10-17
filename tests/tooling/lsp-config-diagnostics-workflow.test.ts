@@ -94,6 +94,48 @@ test("startup diagnostics retain the production producer and unchanged scale-one
   assert.match(steps[freshnessControls].run!, /--require-rust-tests/);
   assert.match(steps[freshnessControls].run!, /return "\$status"/);
   assert.ok(symlinkControls > completionControls);
+  const renameControls = steps.findIndex(
+    (step) => step.name === "Preserve the original atomic rename and unsafe-name refusal contract",
+  );
+  assert.ok(renameControls > completionControls);
+  assert.ok(symlinkControls > renameControls);
+  assert.equal(
+    steps[renameControls].if,
+    "${{ !cancelled() && steps.producer.outcome == 'success' }}",
+  );
+  assert.equal(
+    steps[renameControls].run,
+    "set +e\n" +
+      "cargo test --locked --profile ci -p vize --features profiling --message-format=json --test lsp_component_attribute_authority_cli library_refusal::original_emit_string_keeps_atomic_owned_updates_and_unsafe_name_refusals_without_file_writes -- --exact --nocapture > target/vize-tests/lsp-config-diagnostics/rename.stdout 2> target/vize-tests/lsp-config-diagnostics/rename.stderr\n" +
+      "status=$?\n" +
+      "printf '%s\\n' \"$status\" > target/vize-tests/lsp-config-diagnostics/rename.status\n" +
+      "node tools/support/compat/github/run-lsp-config-diagnostics.ts --retain-rename-producer\n" +
+      "retain_status=$?\n" +
+      "cat target/vize-tests/lsp-config-diagnostics/rename.stdout\n" +
+      "cat target/vize-tests/lsp-config-diagnostics/rename.stderr >&2\n" +
+      'if [ "$status" -ne 0 ]; then\n  exit "$status"\nfi\nexit "$retain_status"\n',
+  );
+  const carrier = readRepoFile("tools/support/compat/github/run-lsp-config-diagnostics.ts");
+  assert.match(
+    carrier,
+    /process\.argv\[2\] === "--retain-rename-producer"[\s\S]*?retainIntegrationProducer\(path\.join\(directory, "rename\.stdout"\), directory, "rename-test"\)/,
+  );
+  for (const sourcePath of [
+    "crates/vize_canon/src/batch/virtual_project/materialize_delta.rs",
+    "crates/vize_canon/src/corsa_bridge/source_catalog.rs",
+    "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/catalog.rs",
+    "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/prepare.rs",
+    "crates/vize_canon/src/corsa_bridge/vue_document/build/native_union_tests.rs",
+    "crates/vize/tests/lsp_component_attribute_authority_cli.rs",
+    "crates/vize/tests/lsp_library_rename_refusal_cli/original.rs",
+    "crates/vize/tests/lsp_library_rename_refusal_cli/safe_update.rs",
+    "crates/vize/tests/lsp_component_attribute_authority_cli/native_probe.rs",
+    "tests/_fixtures/differential/lsp/rename-library-refusal/8010/Toggle.vue.txt",
+    "tests/_fixtures/differential/lsp/rename-library-refusal/8010/App.vue.txt",
+  ]) {
+    assert.equal(carrier.split(JSON.stringify(sourcePath)).length - 1, 1, sourcePath);
+    assert.ok(readRepoFile(sourcePath).length > 0, sourcePath);
+  }
   assert.match(
     steps[completionControls].run!,
     /--test lsp_completion_sibling_overlay_cli -- --nocapture/,
@@ -260,6 +302,29 @@ test("the six-layout CLI receipt uses the Cargo-reported integration producer", 
       completionBytes,
     );
     assert.deepEqual(fs.readFileSync(path.join(directory, "symlink-test-vize")), bytes);
+    const renameBytes = Buffer.concat([bytes, Buffer.from([11])]);
+    fs.writeFileSync(executable, renameBytes);
+    const rename = retainIntegrationProducer(log, directory, "rename-test");
+    assert.equal(rename.schema, "vize.rename-test-producer");
+    assert.equal(rename.executable, executable);
+    assert.equal(rename.binarySha256, createHash("sha256").update(renameBytes).digest("hex"));
+    assert.deepEqual(rename.cargoArtifact, producer);
+    assert.deepEqual(fs.readFileSync(path.join(directory, "rename-test-vize")), renameBytes);
+    assert.deepEqual(
+      JSON.parse(fs.readFileSync(path.join(directory, "rename-test-producer.json"), "utf8")),
+      rename,
+    );
+    assert.deepEqual(
+      fs.readFileSync(path.join(directory, "completion-test-vize")),
+      completionBytes,
+    );
+    assert.deepEqual(fs.readFileSync(path.join(directory, "symlink-test-vize")), bytes);
+    fs.writeFileSync(log, `running 0 tests\n${JSON.stringify(producer)}\n`);
+    assert.throws(
+      () => retainIntegrationProducer(log, directory, "rename-test"),
+      /real nonzero Rust test count/,
+    );
+    assert.deepEqual(fs.readFileSync(path.join(directory, "rename-test-vize")), renameBytes);
     for (const messages of [
       [],
       [{ ...producer, target: { name: "vize_canon", kind: ["lib"] } }],
@@ -270,6 +335,11 @@ test("the six-layout CLI receipt uses the Cargo-reported integration producer", 
         `running 1 test\n${messages.map((message) => JSON.stringify(message)).join("\n")}`,
       );
       assert.throws(() => retainIntegrationProducer(log, directory), /exactly one real test CLI/);
+      assert.throws(
+        () => retainIntegrationProducer(log, directory, "rename-test"),
+        /exactly one real test CLI/,
+      );
+      assert.deepEqual(fs.readFileSync(path.join(directory, "rename-test-vize")), renameBytes);
       assert.deepEqual(fs.readFileSync(path.join(directory, "symlink-test-vize")), bytes);
     }
   } finally {

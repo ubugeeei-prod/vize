@@ -161,6 +161,8 @@ impl AliasContext {
                     )
                 })?;
             materialized_changes = current.diff(&previous);
+            source_catalog =
+                cache.bind_materialized_source_catalog(mirror.virtual_root(), &current);
             cache.set_materialized_snapshot(mirror.virtual_root().to_path_buf(), current);
             cache.record_project_member(
                 mirror.virtual_root().to_path_buf(),

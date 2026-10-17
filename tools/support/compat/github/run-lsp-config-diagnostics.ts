@@ -22,9 +22,18 @@ const sourcePaths = [
   "tests/tooling/lsp-startup-local-interactive.test.ts",
   "crates/vize/tests/lsp_symlink_workspace_staging_cli.rs",
   "crates/vize/tests/lsp_completion_sibling_overlay_cli.rs",
+  "crates/vize/tests/lsp_component_attribute_authority_cli.rs",
+  "crates/vize/tests/lsp_library_rename_refusal_cli/original.rs",
+  "crates/vize/tests/lsp_library_rename_refusal_cli/safe_update.rs",
+  "crates/vize/tests/lsp_component_attribute_authority_cli/native_probe.rs",
+  "tests/_fixtures/differential/lsp/rename-library-refusal/8010/Toggle.vue.txt",
+  "tests/_fixtures/differential/lsp/rename-library-refusal/8010/App.vue.txt",
   "crates/vize_canon/src/corsa_bridge/source_catalog.rs",
   "crates/vize_canon/src/corsa_bridge/vue_document.rs",
   "crates/vize_canon/src/corsa_bridge/vue_document/build/tests.rs",
+  "crates/vize_canon/src/corsa_bridge/vue_document/build/native_union_tests.rs",
+  "crates/vize_canon/src/batch/virtual_project/materialize_delta.rs",
+  "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/catalog.rs",
   "crates/vize/tests/support/lsp_symlink_workspace_fixture.rs",
   "crates/vize_canon/src/batch/virtual_project/materialize.rs",
   "crates/vize_canon/src/batch/virtual_project/tests/editor_union_alias_transition.rs",
@@ -230,6 +239,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       directory,
       "completion-test",
     );
+  } else if (process.argv[2] === "--retain-rename-producer") {
+    assert.equal(git("rev-parse", "HEAD"), process.env.EXPECTED_SOURCE);
+    retainIntegrationProducer(path.join(directory, "rename.stdout"), directory, "rename-test");
   } else {
     process.exitCode = runDiagnostics();
   }

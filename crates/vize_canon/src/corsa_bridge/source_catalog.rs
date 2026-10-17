@@ -17,12 +17,13 @@ type SourceFacts = FxHashMap<PathBuf, Arc<CorsaMaterializedSource>>;
 
 /// Source facts retained by one exact editor project revision.
 ///
-/// Hosts added to the same revision share this catalog. Each leaf is immutable;
-/// an overlay, disk or membership change replaces the catalog, so an in-flight
-/// query keeps the source bytes and coordinate maps it opened with.
+/// Hosts added to the same revision share mapping facts. Each leaf is immutable;
+/// changed source bytes fork those facts. Native members are captured separately
+/// after materialization, so later facts cannot change an in-flight native view.
 #[derive(Clone, Default)]
 pub struct CorsaSourceCatalog {
     sources: Arc<Mutex<SourceFacts>>,
+    native_members: Arc<Vec<Arc<CorsaMaterializedSource>>>,
 }
 
 impl CorsaSourceCatalog {
@@ -41,6 +42,25 @@ impl CorsaSourceCatalog {
         })
     }
 
+    /// Capture immutable leaves only after their complete project materialized.
+    /// Later mapping facts can grow without admitting unmaterialized members.
+    pub(in crate::corsa_bridge) fn with_native_snapshot(
+        &self,
+        snapshot: &crate::batch::virtual_project::MaterializedFileSnapshot,
+    ) -> Self {
+        let mut members = recover_lock(&self.sources)
+            .values()
+            .filter(|source| snapshot.contains_file(&source.materialized_path))
+            .cloned()
+            .collect::<Vec<_>>();
+        members
+            .sort_unstable_by(|left, right| left.materialized_path.cmp(&right.materialized_path));
+        Self {
+            sources: Arc::clone(&self.sources),
+            native_members: Arc::new(members),
+        }
+    }
+
     /// Synchronize the admitted live project, while keeping the query's own
     /// closure and projection packet unchanged. Opening a sibling's already
     /// materialized dependency later must not change the native document view.
@@ -53,17 +73,10 @@ impl CorsaSourceCatalog {
             .iter()
             .map(|(uri, _)| uri.clone())
             .collect::<FxHashSet<_>>();
-        let mut sources = recover_lock(&self.sources)
-            .values()
-            .filter(|source| {
-                source.materialized_path.starts_with(project_root)
-                    && source.mapping_kind != super::CorsaMaterializedMappingKind::Synthetic
-            })
-            .cloned()
-            .collect::<Vec<_>>();
-        sources
-            .sort_unstable_by(|left, right| left.materialized_path.cmp(&right.materialized_path));
-        for source in sources {
+        for source in self.native_members.iter().filter(|source| {
+            source.materialized_path.starts_with(project_root)
+                && source.mapping_kind != super::CorsaMaterializedMappingKind::Synthetic
+        }) {
             let uri = crate::file_uri::path_to_file_uri(&source.materialized_path);
             if opened.insert(uri.clone()) {
                 documents.push((uri, source.code.clone()));
@@ -91,6 +104,7 @@ impl CorsaSourceCatalog {
             }
             return Self {
                 sources: Arc::new(Mutex::new(refreshed)),
+                native_members: Arc::clone(&self.native_members),
             };
         }
         for source in sources {
