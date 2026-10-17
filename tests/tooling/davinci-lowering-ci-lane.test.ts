@@ -33,7 +33,7 @@ function containsCommand(command: string): boolean {
 
 test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
-  const clippyJob = workflowJobBody(workflow, "clippy-and-test");
+  const nativeJob = workflowJobBody(workflow, "rust-native-differential");
   const recipe = readRepoFile(
     ".github",
     "actions",
@@ -60,12 +60,12 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
   }
 
   assert.match(
-    clippyJob,
+    nativeJob,
     /^ {4}if: \$\{\{ github\.event_name == 'schedule' \|\| github\.event_name == 'workflow_dispatch' \}\}$/m,
-    "clippy-and-test must run on scheduled and manual Check",
+    "rust-native-differential must run on scheduled and manual Check",
   );
   assert.doesNotMatch(testReportJob, /- clippy-and-test\b/);
-  assert.match(clippyJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
+  assert.match(nativeJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
   assert.match(recipe, /run: node tools\/support\/compat\/github\/run-rust-workspace-tests\.ts/);
   assert.match(
     recipe,

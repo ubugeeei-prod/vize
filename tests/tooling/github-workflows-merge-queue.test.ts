@@ -181,7 +181,7 @@ test("queue Rust keeps affected doctests beside archive builds and the different
     rust.jobs["merge-rust-differential"].uses,
     "./.github/workflows/pr-rust-differential.yml",
   );
-  const manual = check.jobs["clippy-and-test"].steps?.find((step) => step.name === "Test");
+  const manual = check.jobs["rust-native-differential"].steps?.find((step) => step.name === "Test");
   assert.equal(manual?.uses, actionPath);
   assert.equal(manual?.with?.["workspace-already-tested"], "true");
   assert.deepEqual(check.jobs["full-rust-report"].needs, [
