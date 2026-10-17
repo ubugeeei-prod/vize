@@ -58,7 +58,7 @@ fn shared_workspace_package_native_queries_and_freshness_share_one_server() {
     link_package(fixture.project_root());
     let cold = Instant::now();
     assert_eq!(fixture.open(APP), json!([]));
-    assert_number_queries(&mut fixture, APP);
+    let number_hover = assert_number_queries(&mut fixture, APP);
     let cold_elapsed = cold.elapsed();
 
     let warm = Instant::now();
@@ -68,12 +68,17 @@ fn shared_workspace_package_native_queries_and_freshness_share_one_server() {
         assert_eq!(fixture.open_file(&uri, APP), json!([]));
         let hover =
             fixture.request_file_with("textDocument/hover", &uri, APP, "toPrecision()", json!({}));
-        assert_method(&hover, "toPrecision");
+        assert_eq!(hover, number_hover, "complete shared-consumer hover");
     }
     let warm_elapsed = warm.elapsed();
 
     let wrong_number = APP.replace("toPrecision()", "toUpperCase()");
-    assert_native_missing_method(&fixture.change(&wrong_number, 2), "number", "toUpperCase");
+    assert_native_missing_method(
+        &fixture.change(&wrong_number, 2),
+        &wrong_number,
+        "number",
+        "toUpperCase",
+    );
     assert_eq!(fixture.change(APP, 3), json!([]));
 
     // The same session must invalidate the shared package closure on a disk
@@ -81,12 +86,15 @@ fn shared_workspace_package_native_queries_and_freshness_share_one_server() {
     fixture.write_file("packages/widgets/src/value.ts", TEXT);
     let string_source = APP.replace("toPrecision()", "toUpperCase()");
     assert_eq!(fixture.change(&string_source, 4), json!([]));
-    assert_method(
-        &fixture.request("textDocument/hover", &string_source, "toUpperCase()"),
-        "toUpperCase",
-    );
+    let string_hover = fixture.request("textDocument/hover", &string_source, "toUpperCase()");
+    assert_method(&string_hover, "toUpperCase");
     let wrong_string = vize_l0::cstr!("{APP}<!-- changed package -->\n");
-    assert_native_missing_method(&fixture.change(&wrong_string, 5), "string", "toPrecision");
+    assert_native_missing_method(
+        &fixture.change(&wrong_string, 5),
+        &wrong_string,
+        "string",
+        "toPrecision",
+    );
 
     // Replacing a manifest target after deleting its old implementation must
     // retire its type and pick up the newly exported numeric source.
@@ -103,7 +111,7 @@ fn shared_workspace_package_native_queries_and_freshness_share_one_server() {
     );
     let restored = vize_l0::cstr!("{APP}<!-- replacement module -->\n");
     assert_eq!(fixture.change(&restored, 6), json!([]));
-    assert_number_queries(&mut fixture, &restored);
+    assert_eq!(assert_number_queries(&mut fixture, &restored), number_hover);
 
     // Config changes remain authoritative while the package projection is
     // warm. A paths target switches the same authored bare package spelling.
@@ -111,25 +119,27 @@ fn shared_workspace_package_native_queries_and_freshness_share_one_server() {
     fixture.write_file("tsconfig.json", r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"bundler","noEmit":true,"paths":{"widget-package":["./packages/widgets/src/text-entry.ts"]}},"include":["src/**/*.vue"]}"#);
     let configured = vize_l0::cstr!("{string_source}<!-- changed config -->\n");
     assert_eq!(fixture.change(&configured, 7), json!([]));
-    assert_method(
-        &fixture.request("textDocument/hover", &configured, "toUpperCase()"),
-        "toUpperCase",
+    assert_eq!(
+        fixture.request("textDocument/hover", &configured, "toUpperCase()"),
+        string_hover,
+        "complete string hover survives config-driven projection replacement"
     );
     fixture.write_file("tsconfig.json", CONFIG);
     let final_source = vize_l0::cstr!("{APP}<!-- restored config -->\n");
     assert_eq!(fixture.change(&final_source, 8), json!([]));
-    assert_number_queries(&mut fixture, &final_source);
+    assert_eq!(
+        assert_number_queries(&mut fixture, &final_source),
+        number_hover
+    );
     eprintln!(
         "workspace package projection: cold={cold_elapsed:?}, 12 shared consumers={warm_elapsed:?}"
     );
     fixture.shutdown();
 }
 
-fn assert_number_queries(fixture: &mut Fixture, source: &str) {
-    assert_method(
-        &fixture.request("textDocument/hover", source, "toPrecision()"),
-        "toPrecision",
-    );
+fn assert_number_queries(fixture: &mut Fixture, source: &str) -> Value {
+    let hover = fixture.request("textDocument/hover", source, "toPrecision()");
+    assert_method(&hover, "toPrecision");
     let completion = fixture.request_with(
         "textDocument/completion",
         source,
@@ -148,34 +158,56 @@ fn assert_number_queries(fixture: &mut Fixture, source: &str) {
         !items.iter().any(|item| item["label"] == "toUpperCase"),
         "{completion:#}"
     );
+    hover
 }
 
 fn assert_method(hover: &Value, name: &str) {
-    assert!(
-        hover["contents"]["value"]
-            .as_str()
-            .is_some_and(|text| text.contains(name)),
-        "{hover:#}"
+    let markdown = hover["contents"]["value"]
+        .as_str()
+        .expect("native Markdown hover");
+    let (signature, _) = markdown
+        .strip_prefix("```typescript\n")
+        .and_then(|text| text.split_once("\n```"))
+        .expect("complete native TypeScript signature fence");
+    // Signatures follow the pinned TypeScript lib.es5 declarations. Preserve
+    // the complete native documentation in the per-type session oracle above.
+    let expected = match name {
+        "toPrecision" => "(method) Number.toPrecision(precision?: number): string",
+        "toUpperCase" => "(method) String.toUpperCase(): string",
+        _ => panic!("unowned method signature: {name}"),
+    };
+    assert_eq!(signature, expected, "{hover:#}");
+    assert_eq!(
+        hover,
+        &json!({
+            "contents": {"kind": "markdown", "value": markdown},
+            "range": method_range(name)
+        })
     );
 }
 
-fn assert_native_missing_method(diagnostics: &Value, ty: &str, method: &str) {
-    let errors = diagnostics.as_array().expect("diagnostic publication");
-    assert!(
-        errors.iter().any(|diagnostic| {
-            diagnostic["source"] == "vize/types"
-                && diagnostic["code"] == 2339
-                && diagnostic["message"]
-                    .as_str()
-                    .is_some_and(|message| message.contains(ty) && message.contains(method))
-        }),
-        "{diagnostics:#}"
+fn method_range(method: &str) -> Value {
+    // Every source variant preserves the authored `value.` prefix on line 3.
+    json!({
+        "start": {"line": 2, "character": 6},
+        "end": {"line": 2, "character": 6 + method.len()}
+    })
+}
+
+fn assert_native_missing_method(diagnostics: &Value, source: &str, ty: &str, method: &str) {
+    assert_eq!(
+        project::position(source, method),
+        method_range(method)["start"]
     );
-    assert!(
-        !errors.iter().any(|diagnostic| diagnostic["message"]
-            .as_str()
-            .is_some_and(|message| message.contains("timed out"))),
-        "{diagnostics:#}"
+    assert_eq!(
+        diagnostics,
+        &json!([{
+            "code": 2339,
+            "message": vize_l0::cstr!("Property '{method}' does not exist on type '{ty}'."),
+            "range": method_range(method),
+            "severity": 1,
+            "source": "vize/types"
+        }])
     );
 }
 

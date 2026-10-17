@@ -16,6 +16,7 @@ use vize_l0::FxHashMap;
 
 use super::MaestroServer;
 
+mod preparation;
 mod retry;
 pub(super) use retry::RetainedDiagnostics;
 
@@ -225,6 +226,12 @@ fn run_worker(
                     project
                         .publish_initial_sync_diagnostics(&uri, version)
                         .await;
+                    let prepare = pending.lock().jobs.get(&uri).is_some_and(|job| {
+                        job.version == version && job.not_before > Instant::now()
+                    });
+                    if prepare {
+                        project.prepare_initial_native_document(&uri, version).await;
+                    }
                 });
                 continue;
             }

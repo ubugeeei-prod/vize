@@ -15,7 +15,13 @@ on:
       - "tests/tooling/release/**"
       - "tests/tooling/plan-release-gates.test.ts"
       - "tests/tooling/release-check-qualification-handoff.test.ts"
+      - "tests/tooling/release-check-profile.test.ts"
+      - "tests/tooling/github-workflows-full-rust.test.ts"
+      - "tests/_fixtures/ci/check-clippy-and-test.original.yml.txt"
       - "tests/tooling/support/release-preflight*"
+      - "tests/tooling/publish-npm-package*.test.ts"
+      - "tests/tooling/support/fake-npm-registry.ts"
+      - "tests/tooling/support/fake-command.ts"
   workflow_dispatch:
 permissions:
   contents: read
@@ -56,6 +62,10 @@ jobs:
           tests/tooling/release/release-preflight-workflow.test.ts
           tests/tooling/plan-release-gates.test.ts
           tests/tooling/release-check-qualification-handoff.test.ts
+          tests/tooling/release-check-profile.test.ts
+          tests/tooling/github-workflows-full-rust.test.ts
+      - name: Require exact concurrent npm publication fixture controls
+        run: node --test tests/tooling/publish-npm-package*.test.ts
       - name: Require native policy and every incomplete full qualification to fail closed
         run: |
           rust-script --test tools/commands/ci/github/release-preflight.rs

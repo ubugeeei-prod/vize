@@ -39,6 +39,14 @@ const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
 ];
 
 impl VirtualProject {
+    /// The current member's generated package probes require arbitrary extensions.
+    /// Inherited union requirements are passed separately and never become owned facts.
+    pub(crate) fn requires_arbitrary_extensions(&self) -> bool {
+        self.package_routes
+            .values()
+            .any(|binding| binding.route.is_some())
+    }
+
     pub(crate) fn tsconfig_preserves_unused_diagnostics(&self) -> bool {
         self.preserve_unused_diagnostics
     }
@@ -89,7 +97,7 @@ impl VirtualProject {
         out_dir: Option<&Path>,
         declaration_map: bool,
     ) -> CorsaResult<()> {
-        self.write_tsconfig_file_with_includes(path, out_dir, declaration_map, None)
+        self.write_tsconfig_file_with_includes(path, out_dir, declaration_map, None, false)
     }
 
     /// Write a shard config including only its virtual paths and shared stubs.
@@ -106,6 +114,7 @@ impl VirtualProject {
             None,
             false,
             Some(include_virtual_paths),
+            false,
         )?;
         Ok(config_path)
     }
@@ -116,9 +125,14 @@ impl VirtualProject {
         out_dir: Option<&Path>,
         declaration_map: bool,
         include_virtual_paths: Option<&[&Path]>,
+        preserved_arbitrary_extensions: bool,
     ) -> CorsaResult<()> {
-        let mut tsconfig =
-            self.generate_tsconfig_value(out_dir, declaration_map, include_virtual_paths)?;
+        let mut tsconfig = self.generate_tsconfig_value(
+            out_dir,
+            declaration_map,
+            include_virtual_paths,
+            preserved_arbitrary_extensions,
+        )?;
         self.write_generated_config(path, &mut tsconfig)
     }
 
@@ -127,6 +141,7 @@ impl VirtualProject {
         out_dir: Option<&Path>,
         declaration_map: bool,
         include_virtual_paths: Option<&[&Path]>,
+        preserved_arbitrary_extensions: bool,
     ) -> CorsaResult<Value> {
         let mut config = Map::new();
         let original_tsconfig = self.resolved_tsconfig_path();
@@ -166,11 +181,7 @@ impl VirtualProject {
         compiler_options.remove("composite");
         normalize_native_removed_options(&mut compiler_options);
         compiler_options.insert("allowImportingTsExtensions".into(), Value::Bool(true));
-        if self
-            .package_routes
-            .values()
-            .any(|binding| binding.route.is_some())
-        {
+        if self.requires_arbitrary_extensions() || preserved_arbitrary_extensions {
             compiler_options.insert("allowArbitraryExtensions".into(), Value::Bool(true));
         }
         if self.needs_vue_jsx_compiler_options() {

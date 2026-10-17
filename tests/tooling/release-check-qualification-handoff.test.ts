@@ -120,7 +120,7 @@ test("cold H dispatches only Check once, waits for the complete exact candidate 
   assert.deepEqual(f.writes, [
     {
       resource: "actions/workflows/check.yml/dispatches",
-      body: { ref: candidate.branch, inputs: {} },
+      body: { ref: candidate.branch, inputs: { "release-qualification": true } },
     },
   ]);
   assert.equal(f.logs.filter((line) => line.startsWith("Dispatching")).length, 1);

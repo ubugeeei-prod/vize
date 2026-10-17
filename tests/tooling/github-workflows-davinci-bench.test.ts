@@ -30,7 +30,7 @@ test("check workflow uploads Davinci allocation bench reports", () => {
   );
   const jobs = (parse(workflow) as { jobs?: Record<string, WorkflowJob> }).jobs ?? {};
   const actionSteps = (parse(action) as { runs?: { steps?: WorkflowStep[] } }).runs?.steps ?? [];
-  const steps = jobs["clippy-and-test"]?.steps ?? [];
+  const steps = jobs["rust-davinci-allocations"]?.steps ?? [];
   const gateIndex = steps.findIndex((step) => step.name === "Davinci allocation gate");
 
   assert.notEqual(gateIndex, -1);

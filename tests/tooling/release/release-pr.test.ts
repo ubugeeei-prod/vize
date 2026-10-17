@@ -187,7 +187,7 @@ test("release-only workflow validates all artifacts before promotion and preserv
     (step: { with?: Record<string, unknown> }) => step.with?.["run-install"] === true,
   );
   const packed = wasm.findIndex((step: { run?: string }) =>
-    step.run?.includes("smoke-release-install.rs npm/wasm"),
+    step.run?.includes("node tools/commands/release/npm/smoke-release-install.ts npm/wasm"),
   );
   assert.ok(
     installed >= 0 && packed > installed,

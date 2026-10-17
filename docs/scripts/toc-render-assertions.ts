@@ -78,16 +78,19 @@ export async function verifyTocPointerLayer(page: Page, device: string, output: 
       }
       const link = links.first();
       const hash = await link.getAttribute("href");
-      assert(hash?.startsWith("#"));
+      assert(
+        hash !== null && hash.startsWith("#"),
+        "Authored outline link must target a heading fragment",
+      );
       await link.click();
       await page.waitForFunction(
         (value) => decodeURIComponent(location.hash) === decodeURIComponent(value),
         hash,
       );
       await page.waitForFunction((value) => {
-        const top = document
-          .getElementById(decodeURIComponent(value.slice(1)))!
-          .getBoundingClientRect().top;
+        const target = document.getElementById(decodeURIComponent(value.slice(1)));
+        if (!target) throw new Error(`Authored outline target is missing: ${value}`);
+        const top = target.getBoundingClientRect().top;
         return top >= -1 && top < 200;
       }, hash);
       clickedHash = await page.evaluate(() => location.hash);

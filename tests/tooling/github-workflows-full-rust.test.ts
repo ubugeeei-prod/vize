@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { spawnSync } from "node:child_process";
+import path from "node:path";
 import { parse } from "yaml";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { readRepoFile, root } from "./support/github-workflows.ts";
 
 type Step = {
   name?: string;
@@ -10,6 +12,7 @@ type Step = {
   run?: string;
   with?: Record<string, unknown>;
   env?: Record<string, string>;
+  "continue-on-error"?: boolean;
 };
 type Job = {
   if?: string;
@@ -26,7 +29,13 @@ const seed = parse(readRepoFile(".github", "workflows", "rust-pr-target-seed.yml
   jobs: Record<string, Job>;
 };
 const workspace = check.jobs["full-rust-workspace"];
-const tail = check.jobs["clippy-and-test"];
+const tail = check.jobs["rust-native-differential"];
+const aggregate = check.jobs["clippy-and-test"];
+const producerNames = [
+  "rust-clippy-portability",
+  "rust-davinci-allocations",
+  "rust-native-differential",
+];
 const report = check.jobs["full-rust-report"];
 const use = (job: Job, action: string) => job.steps.find((step) => step.uses?.startsWith(action));
 
@@ -95,7 +104,8 @@ void test("independent native tail cannot hide a missing or failed workspace exe
     "${{ always() && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
   );
   assert.deepEqual(report.needs, ["full-rust-workspace", "clippy-and-test"]);
-  for (const job of [workspace, tail, report]) assert.notEqual(job["continue-on-error"], true);
+  for (const job of [workspace, tail, aggregate, report])
+    assert.notEqual(job["continue-on-error"], true);
   assert.equal(
     use(tail, "./.github/actions/test-rust-workspace-differential")?.with?.[
       "workspace-already-tested"
@@ -114,6 +124,62 @@ void test("independent native tail cannot hide a missing or failed workspace exe
     verification?.run,
     'node tools/support/compat/github/rust-workspace-inventory.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace',
   );
+});
+
+void test("the same-name Rust aggregate requires every independent producer to succeed", () => {
+  assert.deepEqual(aggregate.needs, producerNames);
+  assert.equal(
+    aggregate.if,
+    "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
+  );
+  for (const name of producerNames) {
+    const producer = check.jobs[name];
+    assert.equal(producer.needs, undefined, `${name} must start independently`);
+    assert.equal(
+      producer.if,
+      "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+    );
+    assert.equal(producer.env?.VIZE_NUXT_CONFIG_ITERATIONS, "100", name);
+    assert.notEqual(producer["continue-on-error"], true, name);
+  }
+  const step = aggregate.steps.find((candidate) =>
+    candidate.run?.includes("require-needs-success.ts"),
+  );
+  assert.ok(step);
+  assert.equal(step.run, "node tools/support/compat/github/require-needs-success.ts");
+  assert.deepEqual(step.env, { NEEDS_JSON: "${{ toJSON(needs) }}" });
+  assert.equal(step.if, undefined);
+  assert.notEqual(step["continue-on-error"], true);
+  assert.equal(
+    tail.steps.find((candidate) => candidate.name === "Test")?.env?.VIZE_TEST_REQUIRE_TSGO,
+    "1",
+  );
+  assert.equal(use(tail, "./.github/actions/retain-sfc-runtime")?.if, "${{ always() }}");
+  const succeeded = Object.fromEntries(producerNames.map((name) => [name, { result: "success" }]));
+  const execute = (needs: unknown) =>
+    spawnSync(
+      process.execPath,
+      [path.join(root, "tools/support/compat/github/require-needs-success.ts")],
+      { encoding: "utf8", env: { ...process.env, NEEDS_JSON: JSON.stringify(needs) } },
+    );
+  const success = execute(succeeded);
+  assert.ifError(success.error);
+  assert.equal(success.status, 0, success.stderr);
+  for (const name of producerNames) {
+    for (const result of ["failure", "cancelled", "skipped", "in_progress"]) {
+      const rejected = execute({ ...succeeded, [name]: { result } });
+      assert.ifError(rejected.error);
+      assert.equal(rejected.status, 1, `${name}: ${result}`);
+      assert.ok(rejected.stderr.includes(`${name}: ${result}`), rejected.stderr);
+    }
+    const missing = { ...succeeded };
+    delete missing[name];
+    // The workflow's exact needs vector is checked above; a present producer
+    // with no result must also fail the real command rather than count green.
+    const malformed = execute({ ...missing, [name]: {} });
+    assert.equal(malformed.status, 1, name);
+    assert.match(malformed.stderr, /reported no result/);
+  }
 });
 
 void test("expensive original-profile comparison is opt-in and requested parity fails closed", () => {

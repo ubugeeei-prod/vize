@@ -92,7 +92,18 @@ still pending exact-source Actions. Scoped-slots behavior is not expanded here.
 Five original Element SFCs require JSX script parsing; explicit TypeScript keeps
 its angle-assertion grammar while TSX opts into JSX.
 
-Replay with the pinned benchmark dependencies installed:
+Compiler replay dependencies belong to the test workspace. The append-only
+`template-compiler-provenance.json` distinguishes the original recorded
+compiler-core 3.5.35 source artifact from the current Vue 3.6.0-rc.9 compiler
+closure. The original capture's consumed compiler closure is unknown; the
+recorded artifact is verified as bytes and is never used by the current compiler.
+Current replays verify the actual SFC-to-DOM-to-core dependency graph and compare
+all complete compiler, erasure, and runtime observations against the unchanged
+frozen packets. Neither the historical source hashes nor expected outputs are
+rewritten.
+
+Replay with the workspace dependencies installed (the ESLint/parser providers
+remain benchmark-owned; immutable Vue and source-artifact aliases are test-owned):
 
 ```sh
 node --test tests/tooling/patina-legacy-instance-api-reference.test.mjs

@@ -325,9 +325,27 @@ void test("content-mapper L0 surface stays on the preferred physical name", () =
     (consumer) => consumer.id === "typechecker-content-mapper",
   );
   assert.ok(contentMapper);
-  assert.equal(contentMapper.surfaceCounts.l0, 15);
+  const directiveTests =
+    "crates/vize_canon/src/batch/virtual_project/content_mapper_directive_tests.rs";
+  const directiveSites = contentMapper.sites.filter((site) => site.relPath === directiveTests);
+  assert.deepEqual(
+    directiveSites.map(({ mode, surfaceId, matchedName, nameKind }) => ({
+      mode,
+      surfaceId,
+      matchedName,
+      nameKind,
+    })),
+    Array.from({ length: 2 }, () => ({
+      mode: "test",
+      surfaceId: "l0",
+      matchedName: "vize_l0",
+      nameKind: "preferred",
+    })),
+  );
+  assert.equal(contentMapper.surfaceCounts.l0 - directiveSites.length, 15);
+  assert.equal(contentMapper.surfaceCounts.l0, 17);
   assert.equal(contentMapper.nameKindCounts.compat, 0);
-  assert.equal(contentMapper.nameKindCounts.preferred, 15);
+  assert.equal(contentMapper.nameKindCounts.preferred, 17);
   assert.ok(
     contentMapper.sites
       .filter((site) => site.surfaceId === "l0")

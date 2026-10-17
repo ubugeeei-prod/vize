@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { runInNewContext } from "node:vm";
 
 import { parse } from "yaml";
 
@@ -191,7 +192,7 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.ok(successLog < loopEnd, "success log must run inside the same loop");
 });
 
-test("manual event rename qualification preserves the full default and uploads before gating", () => {
+test("manual focused campaigns preserve the full default and upload before gating", () => {
   const workflow = parse(
     readRepoFile(".github", "workflows", "content-mapper-conformance.yml"),
   ) as {
@@ -207,15 +208,64 @@ test("manual event rename qualification preserves the full default and uploads b
   };
   assert.equal(
     workflow.concurrency.group,
-    "content-mapper-${{ github.event.pull_request.number || github.ref }}${{ inputs.event-rename-only && '-event-rename' || '' }}",
+    "content-mapper-${{ github.event.pull_request.number || github.ref }}${{ inputs.directive-owners-only && '-directive-owners' || inputs.event-rename-only && '-event-rename' || '' }}",
     "a focused campaign must not cancel the full conformance campaign",
   );
   const input = workflow.on.workflow_dispatch.inputs["event-rename-only"];
   assert.equal(input.type, "boolean");
   assert.equal(input.default, false);
-  assert.equal(workflow.jobs["exact-tsgo-project"].if, "${{ !inputs.event-rename-only }}");
+  assert.deepEqual(workflow.on.workflow_dispatch.inputs["directive-owners-only"], {
+    description: "Compare genuine old/new static directive owners and standard stock LSP gates",
+    type: "boolean",
+    default: false,
+  });
+  const groups: string[] = [];
+  for (const [job, suffix, rename, owners] of [
+    ["exact-tsgo-project", "", false, false],
+    ["event-rename", "-event-rename", true, false],
+    ["directive-owners", "-directive-owners", false, true],
+  ] as const) {
+    const context = {
+      github: {
+        event_name: "workflow_dispatch",
+        event: { pull_request: {} },
+        ref: "refs/heads/main",
+      },
+      inputs: { "event-rename-only": rename, "directive-owners-only": owners },
+    };
+    const evaluate = (expression: string): unknown =>
+      runInNewContext(
+        expression
+          .replace(/^\$\{\{\s*|\s*\}\}$/gu, "")
+          .replace(/\binputs\.([a-z-]+)/gu, 'inputs["$1"]'),
+        context,
+      );
+    const group: string = workflow.concurrency.group.replace(/\$\{\{(.*?)\}\}/gu, (_, expression) =>
+      String(evaluate(expression)),
+    );
+    assert.equal(group, `content-mapper-refs/heads/main${suffix}`);
+    groups.push(group);
+    assert.deepEqual(
+      Object.entries(workflow.jobs)
+        .filter(([, candidate]) => evaluate(candidate.if))
+        .map(([name]) => name),
+      [job],
+    );
+  }
+  assert.equal(
+    new Set(groups).size,
+    3,
+    "all three campaigns must run without canceling each other",
+  );
+  assert.equal(
+    workflow.jobs["exact-tsgo-project"].if,
+    "${{ !inputs.event-rename-only && !inputs.directive-owners-only }}",
+  );
   const focused = workflow.jobs["event-rename"];
-  assert.equal(focused.if, "github.event_name == 'workflow_dispatch' && inputs.event-rename-only");
+  assert.equal(
+    focused.if,
+    "github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.directive-owners-only",
+  );
   const rust = focused.steps.find((step) => step.name === "Setup Rust");
   const pinned = /^channel = "([^"]+)"$/mu.exec(readRepoFile("rust-toolchain.toml"))?.[1];
   assert.ok(pinned);

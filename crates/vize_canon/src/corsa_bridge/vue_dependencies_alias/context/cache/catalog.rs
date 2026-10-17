@@ -34,6 +34,16 @@ impl SessionCache {
         self.project_catalogs.get(root).cloned().unwrap_or_default()
     }
 
+    pub(in crate::corsa_bridge::vue_dependencies_alias::context) fn bind_materialized_source_catalog(
+        &mut self,
+        root: &Path,
+        snapshot: &crate::batch::virtual_project::MaterializedFileSnapshot,
+    ) -> CorsaSourceCatalog {
+        let catalog = self.project_catalogs.entry(root.to_path_buf()).or_default();
+        *catalog = catalog.with_native_snapshot(snapshot);
+        catalog.clone()
+    }
+
     pub(in crate::corsa_bridge::vue_dependencies_alias::context) fn include_source_catalog(
         &mut self,
         root: &Path,

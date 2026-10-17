@@ -129,11 +129,17 @@ impl LanguageServer for MaestroServer {
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
         let server = self.for_pos(&params.text_document_position_params).await;
+        if let Some(response) = server.local_hover_response(&params)? {
+            return Ok(response);
+        }
         server.native_request(server.hover_request(params)).await
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
         let server = self.for_pos(&params.text_document_position).await;
+        if let Some(response) = server.local_completion_response(&params)? {
+            return Ok(response);
+        }
         server
             .native_request(server.completion_request(params))
             .await

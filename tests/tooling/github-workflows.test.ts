@@ -111,13 +111,7 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
 
   const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
   const nativeWorkflow = readRepoFile(".github", "workflows", "native-smoke.yml");
-  const releasePlatforms = readRepoFile(
-    "tools",
-    "commands",
-    "ci",
-    "github",
-    "release-platforms.rs",
-  );
+  const releasePlatforms = readRepoFile("tools", "support", "github", "release-platforms.ts");
 
   // check.yml runs every job on the same Linux runner — we accept either the
   // GitHub-hosted label or any Blacksmith Ubuntu SKU so changing vCPU size
@@ -128,10 +122,23 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
   assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("windows-2025")}`));
   assert.match(
     releasePlatforms,
-    new RegExp(`host:\\s*"${hostedOrBlacksmith("ubuntu-22.04-arm")}"`),
+    /host:\s*"(?:ubuntu-22\.04-arm|blacksmith-\d+vcpu-ubuntu-2204-arm)"/,
   );
   assert.match(releasePlatforms, new RegExp(`host:\\s*"${hostedOrBlacksmith("macos-15")}"`));
   assert.match(releasePlatforms, new RegExp(`host:\\s*"${hostedOrBlacksmith("windows-2025")}"`));
+  const release = readRepoFile(".github", "workflows", "release.yml");
+  assert.match(
+    workflowJobBody(release, "plan-release-platforms"),
+    /node tools\/support\/github\/release-platforms\.ts github-output/,
+  );
+  assert.match(
+    workflowJobBody(release, "build-cli"),
+    /matrix:?[\s\S]*needs\.plan-release-platforms\.outputs\.cli_matrix/,
+  );
+  assert.match(
+    workflowJobBody(release, "build-native-all"),
+    /needs\.plan-release-platforms\.outputs\.native_matrix/,
+  );
 });
 
 test("GitHub workflows use Node 24-compatible artifact downloads", () => {
@@ -262,9 +269,10 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
     // App E2E runs every row through the shared composite action.
     ".github/actions/app-e2e-row/action.yml",
     ".github/workflows/native-smoke.yml",
-    ".github/workflows/release-preflight.yml",
-    ".github/workflows/release.yml",
     ".github/workflows/tool-benchmark.yml",
+    ".github/actions/build-release-cli/action.yml",
+    ".github/actions/build-release-native/action.yml",
+    ".github/workflows/full-source-cli.yml",
   ]) {
     const file = readRepoFile(...relativePath.split("/"));
     assert.match(
@@ -273,6 +281,16 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
       `${relativePath} should install the pinned Wild linker action`,
     );
     assert.match(file, /wild-version:\s*"0\.9\.0"/);
+  }
+  const release = readRepoFile(".github", "workflows", "release.yml");
+  for (const [job, recipe] of [
+    ["build-cli", "build-release-cli"],
+    ["build-native-all", "build-release-native"],
+  ]) {
+    assert.match(
+      workflowJobBody(release, job),
+      new RegExp(`uses: \\./\\.github/actions/${recipe}`),
+    );
   }
 });
 
@@ -289,7 +307,6 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
     "build-docs.yml",
     "check.yml",
     "criterion-bench.yml",
-    "e2e.yml",
     "fuzz.yml",
     "miri.yml",
     "release-preflight.yml",
@@ -307,6 +324,19 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
       `${workflowName} should avoid network Rust cache on Linux-only Blacksmith jobs`,
     );
   }
+  const e2e = parse(readRepoFile(".github", "workflows", "e2e.yml")) as {
+    jobs: Record<string, { steps?: Array<{ uses?: string }> }>;
+  };
+  assert.ok(
+    Object.values(e2e.jobs).some((job) =>
+      job.steps?.some((step) => step.uses === "./.github/actions/app-e2e-row"),
+    ),
+    "App E2E must call its shared Rust build recipe",
+  );
+  assert.match(
+    readRepoFile(".github", "actions", "app-e2e-row", "action.yml"),
+    /uses:\s*\.\/\.github\/actions\/setup-rust-sticky-cache/,
+  );
 
   const benchmarkWorkflow = readRepoFile(".github", "workflows", "benchmark.yml");
   assert.match(benchmarkWorkflow, /uses:\s*\.\/head\/\.github\/actions\/setup-rust-sticky-cache/);
@@ -314,8 +344,12 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
   assert.match(benchmarkWorkflow, /secondary-target-path:\s*base\/target/);
   assert.doesNotMatch(benchmarkWorkflow, /Swatinem\/rust-cache/);
 
-  for (const workflowName of ["native-smoke.yml", "release.yml"]) {
-    const workflow = readRepoFile(".github", "workflows", workflowName);
+  for (const relativePath of [
+    ".github/workflows/native-smoke.yml",
+    ".github/actions/build-release-cli/action.yml",
+    ".github/actions/build-release-native/action.yml",
+  ]) {
+    const workflow = readRepoFile(...relativePath.split("/"));
     assert.match(
       workflow,
       /(?:if:\s*runner\.os == 'Linux'[\s\S]{0,240}setup-rust-sticky-cache|setup-rust-sticky-cache[\s\S]{0,240}if:\s*runner\.os == 'Linux')/,

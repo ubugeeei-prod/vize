@@ -12,7 +12,7 @@ runs:
       with:
         comparison-base: ${{ inputs.comparison-base }}
     - name: Retain and join every original whole Vue2 SFC attempt
-      if: ${{ always() }}
+      if: ${{ !cancelled() }}
       uses: ./.github/actions/test-native-vue2-scriptless-sfc
       with:
         comparison-base: ${{ inputs.comparison-base }}

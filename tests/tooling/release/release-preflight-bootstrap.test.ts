@@ -59,7 +59,7 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         workflowName: "Check",
         workflowId: "check.yml",
         ref: "v1.2.3",
-        inputs: {},
+        inputs: { "release-qualification": true },
         expectedRunName: `Check full @ ${releaseSha}`,
       },
     ],
@@ -76,8 +76,14 @@ test("Check dispatch uses the current full workflow without obsolete inputs", ()
   assert.ok(dispatch);
   const inputs = dispatch.inputs;
   assert.ok(inputs);
-  assert.deepEqual(Object.keys(inputs), ["compare-rust-test-profile"]);
+  assert.deepEqual(Object.keys(inputs), ["release-qualification", "compare-rust-test-profile"]);
   assert.equal(inputs["compare-rust-test-profile"].required, false);
+  assert.deepEqual(inputs["release-qualification"], {
+    description: "Qualify an immutable release source without repeating daily source coverage",
+    type: "boolean",
+    required: false,
+    default: false,
+  });
   const runName = workflow["run-name"];
   assert.ok(runName);
   assert.match(runName, /Check full @/);

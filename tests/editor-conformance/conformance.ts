@@ -23,7 +23,15 @@ export type Step =
   | { id: string; label: string; kind: "initialize"; expect: unknown }
   | { id: string; label: string; kind: "open"; expect: string }
   | { id: string; label: string; kind: "diagnostics"; expect: unknown[] }
-  | { id: string; label: string; kind: "request"; method: string; match: object; expect: unknown }
+  | {
+      id: string;
+      label: string;
+      kind: "request";
+      method: string;
+      match: object;
+      expect: unknown;
+      diagnosticsFromRequest?: boolean;
+    }
   | { id: string; label: string; kind: "text"; action: object; expect: string }
   | { id: string; label: string; kind: "shutdown"; expect: { exitCode: number } };
 
@@ -93,6 +101,42 @@ function matches(actual: any, pattern: any): boolean {
     return isDeepStrictEqual(actual, pattern);
   }
   return Object.entries(pattern).every(([key, value]) => matches(actual?.[key], value));
+}
+
+/** Code actions echo client diagnostics; published diagnostics remain server-owned. */
+function actionExpectation(
+  expected: any,
+  request: Message,
+  published: any[],
+): unknown[] | undefined {
+  const supplied = request.params?.context?.diagnostics;
+  if (!Array.isArray(expected) || !Array.isArray(supplied)) return undefined;
+  const actions = [];
+  for (const action of expected) {
+    if (action == null || typeof action !== "object") return undefined;
+    if (!Array.isArray(action.diagnostics)) {
+      actions.push(action);
+      continue;
+    }
+    const diagnostics = [];
+    for (const canonical of action.diagnostics) {
+      // The complete fixture diagnostic must match a real published diagnostic.
+      // This keeps every canonical field load-bearing before following its echo.
+      if (!published.some((value) => isDeepStrictEqual(value, canonical))) return undefined;
+      const echo = supplied.find(
+        (value: any) =>
+          value != null &&
+          typeof value === "object" &&
+          value.source === canonical.source &&
+          isDeepStrictEqual(value.code, canonical.code) &&
+          isDeepStrictEqual(value.range, canonical.range),
+      );
+      if (echo == null) return undefined;
+      diagnostics.push(echo);
+    }
+    actions.push({ ...action, diagnostics });
+  }
+  return actions;
 }
 
 /**
@@ -275,9 +319,32 @@ export function evaluate(scenario: Scenario, entries: Entry[], roots: string[]):
           const detail = `the server answered with an error: ${JSON.stringify(response.error)}`;
           return { pass: false, detail };
         }
-        return isDeepStrictEqual(response.result ?? null, step.expect)
+        let expected = step.expect;
+        if (step.diagnosticsFromRequest) {
+          const published =
+            line.messages
+              .slice(0, at)
+              .filter(
+                (message, index) =>
+                  line.directions[index] === "s2c" &&
+                  message.method === "textDocument/publishDiagnostics" &&
+                  message.params?.uri === uri,
+              )
+              .at(-1)?.params?.diagnostics ?? [];
+          expected =
+            step.method === "textDocument/codeAction"
+              ? actionExpectation(step.expect, line.messages[at], published)
+              : undefined;
+          if (expected === undefined)
+            return {
+              pass: false,
+              detail:
+                "action diagnostics lack their complete publication or matching request identity",
+            };
+        }
+        return isDeepStrictEqual(response.result ?? null, expected)
           ? { pass: true, detail: "", at }
-          : { pass: false, detail: mismatch(step.method, step.expect, response.result) };
+          : { pass: false, detail: mismatch(step.method, expected, response.result) };
       }
       case "text": {
         const previous = text;
