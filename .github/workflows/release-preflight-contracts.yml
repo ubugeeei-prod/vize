@@ -83,3 +83,11 @@ jobs:
           tests/tooling/release/release-pr.test.ts
           tests/tooling/release/retirement-qualification.test.ts
           tests/tooling/release/release-stable-operator.test.ts
+      - name: Require installable npm publication order and unchanged release joins
+        run: >-
+          node --test
+          tests/tooling/github-workflows-release-publish.test.ts
+          tests/tooling/github-workflows-release-build.test.ts
+          tests/tooling/github-workflows-release-smoke.test.ts
+          tests/tooling/github-workflows-release-vscode-publisher.test.ts
+          tests/tooling/release-jsr-workflow.test.ts

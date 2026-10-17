@@ -102,6 +102,28 @@ function setupVpSteps(job: ReleaseJob): NonNullable<ReleaseJob["steps"]> {
     .filter((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
 }
 
+test("release preflight executes the publication workflow laws", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "release-preflight-contracts.yml"));
+  const steps = workflow.jobs.contracts.steps as NonNullable<ReleaseJob["steps"]>;
+  const commands = steps.flatMap((step) => (step.run ? [step.run.trim().split(/\s+/)] : []));
+  assert.deepEqual(
+    commands.filter((command) =>
+      command.includes("tests/tooling/github-workflows-release-publish.test.ts"),
+    ),
+    [
+      [
+        "node",
+        "--test",
+        "tests/tooling/github-workflows-release-publish.test.ts",
+        "tests/tooling/github-workflows-release-build.test.ts",
+        "tests/tooling/github-workflows-release-smoke.test.ts",
+        "tests/tooling/github-workflows-release-vscode-publisher.test.ts",
+        "tests/tooling/release-jsr-workflow.test.ts",
+      ],
+    ],
+  );
+});
+
 test("every publication edge waits for credential-free release preflight", () => {
   const source = readRepoFile(".github", "workflows", "release.yml");
   const workflow = parse(source) as { jobs?: Record<string, ReleaseJob> };
