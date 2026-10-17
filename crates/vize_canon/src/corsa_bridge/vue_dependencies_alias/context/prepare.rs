@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use vize_carton::FxHashMap;
 
 use super::{AliasContext, PreparedAliasContext, ProjectMember, build};
+use crate::batch::ModuleSpecifierFactsCache;
 
 impl AliasContext {
     pub(in crate::corsa_bridge) fn for_host_cached(
@@ -75,12 +76,15 @@ impl AliasContext {
             fingerprint = stamped;
             context
         } else {
+            // Pure syntax facts live through build and its immediate stamp only.
+            // The owner drops before any context is materialized or stored.
+            let mut facts = ModuleSpecifierFactsCache::default();
             let mut resolver = environment.package_routes.clone();
             let build_phase = crate::corsa_bridge::preparation_trace::Phase::start(
                 "alias_build",
                 requested_sources.len(),
             );
-            let context = build::build(
+            let context = build::build_with_import_facts(
                 source_path,
                 content,
                 overlays,
@@ -91,14 +95,17 @@ impl AliasContext {
                 &mut resolver,
                 options,
                 environment,
+                &mut facts,
             )?;
             build_phase.finish();
             let stamp_phase =
                 crate::corsa_bridge::preparation_trace::Phase::start("alias_stamp", 1);
-            fingerprint.stamp(&context);
+            fingerprint.stamp_with_import_facts(&context, &mut facts);
             stamp_phase.finish();
             context
         };
+        #[cfg(test)]
+        ModuleSpecifierFactsCache::assert_no_live_preparation_facts();
         let mut cache = environment.editor_session.cache();
         if let Some(context) = cache.get(source_path, &fingerprint) {
             return Ok(PreparedAliasContext {
