@@ -13,7 +13,9 @@ const entry = `tools/commands/release/npm/smoke-release-install.${typescriptDriv
 const prefix = typescriptDriver ? [] : ["--force"];
 
 test("the release command forwards all tarballs to the fresh-project oracle", () => {
-  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-dispatch-"));
+  const temporary = fs.realpathSync.native(
+    fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-dispatch-")),
+  );
   try {
     const helpers = path.join(temporary, "tools/support/compat/npm");
     fs.mkdirSync(helpers, { recursive: true });
@@ -35,7 +37,7 @@ export function runFreshProjectInitChecks(context) {
     assert.ok(fs.statSync(tarball).isFile());
     assert.equal(tarball, fs.realpathSync.native(tarball));
   }
-  assert.equal(context.repoRoot, fs.realpathSync(process.env.VIZE_REPO_ROOT));
+  assert.equal(context.repoRoot, fs.realpathSync.native(process.env.VIZE_REPO_ROOT));
   assert.equal(context.installDir, process.cwd());
   assert.equal(context.tempDir, path.dirname(context.installDir));
   assert.equal(process.env.COREPACK_HOME, path.join(context.tempDir, "corepack"));
@@ -72,7 +74,7 @@ export function runFreshProjectInitChecks(context) {
       timeout: 180_000,
       env: {
         ...process.env,
-        VIZE_REPO_ROOT: fs.realpathSync(temporary),
+        VIZE_REPO_ROOT: fs.realpathSync.native(temporary),
         COREPACK_HOME: path.join(temporary, "stale-host-corepack"),
         CORSA_PATH: "/unrelated/host/corsa",
         CORSA_EXECUTABLE: "/unrelated/host/corsa",
@@ -92,7 +94,9 @@ export function runFreshProjectInitChecks(context) {
 });
 
 test("the release command rejects a packed CLI that accepts every broken project", () => {
-  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-oracle-"));
+  const temporary = fs.realpathSync.native(
+    fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-oracle-")),
+  );
   try {
     const packageRoot = path.join(temporary, "package");
     fs.mkdirSync(path.join(packageRoot, "bin"), { recursive: true });
