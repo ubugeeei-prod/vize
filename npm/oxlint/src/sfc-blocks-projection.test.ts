@@ -7,6 +7,7 @@ import { spawnSync } from "node:child_process";
 
 import type { NativeSfcDescriptor } from "./model.ts";
 import { projectSfcBlocks } from "./sfc-blocks.ts";
+import { captureFixtureInputs, createExternalFixtureDir } from "./test-support/fixture-dir.ts";
 
 // Independently authored bytes: <template> is10; 😀 is4UTF-8/2UTF-16;
 // <input/> is8; </template> is11. No parser participates in these controls.
@@ -31,6 +32,88 @@ const descriptor: NativeSfcDescriptor = {
   styles: [],
   customBlocks: [],
 };
+
+void test("original stock argv is ignored inside target and executes outside the repository", () => {
+  const repository = path.resolve(import.meta.dirname, "../../..");
+  const evidenceRoot = path.join(repository, "target/vize-tests");
+  fs.mkdirSync(evidenceRoot, { recursive: true });
+  const evidence = fs.mkdtempSync(
+    path.join(evidenceRoot, "original-sfc-host-7004-7005-ignore-boundary-"),
+  );
+  const ignored = fs.mkdtempSync(path.join(repository, "target/original-host-ignored-"));
+  const outside = createExternalFixtureDir();
+  const binary = path.join(repository, "node_modules/oxlint/bin/oxlint");
+  const args = [binary, "-f", "json", "input.js"];
+  const records = [];
+  try {
+    for (const [name, cwd] of [
+      ["ignored", ignored],
+      ["outside", outside],
+    ] as const) {
+      fs.writeFileSync(path.join(cwd, "input.js"), "debugger;\n");
+      fs.writeFileSync(path.join(cwd, ".oxlintrc.json"), '{"rules":{"no-debugger":"error"}}\n');
+      const directory = path.join(evidence, name);
+      const before = captureFixtureInputs(
+        cwd,
+        ["input.js", ".oxlintrc.json"],
+        path.join(directory, "before"),
+      );
+      const result = spawnSync(process.execPath, args, { cwd, timeout: 30_000 });
+      fs.writeFileSync(path.join(directory, "stdout.bin"), result.stdout);
+      fs.writeFileSync(path.join(directory, "stderr.bin"), result.stderr);
+      records.push({
+        argv: [process.execPath, ...args],
+        cwd,
+        status: result.status,
+        signal: result.signal,
+        timeoutMs: 30_000,
+        streams: captureFixtureInputs(
+          directory,
+          ["stdout.bin", "stderr.bin"],
+          path.join(directory, "streams"),
+        ),
+      });
+      fs.writeFileSync(
+        path.join(evidence, "commands.json"),
+        JSON.stringify(records, null, 2) + "\n",
+      );
+      assert.equal(result.error, undefined);
+      assert.equal(result.signal, null);
+      assert.equal(result.status, 1);
+      assert.deepEqual(
+        captureFixtureInputs(cwd, ["input.js", ".oxlintrc.json"], path.join(directory, "after")),
+        before,
+      );
+      if (name === "ignored") assert.match(result.stdout.toString(), /No files found to lint/u);
+      else {
+        const report = JSON.parse(result.stdout.toString());
+        assert.equal(report.number_of_files, 1);
+        assert.deepEqual(
+          report.diagnostics.map((row: { code: string }) => row.code),
+          ["eslint(no-debugger)"],
+        );
+      }
+    }
+  } finally {
+    fs.rmSync(ignored, { recursive: true, force: true });
+    fs.rmSync(outside, { recursive: true, force: true });
+  }
+});
+
+void test("fixture evidence refuses dependency symlinks and parent traversal", () => {
+  const root = createExternalFixtureDir();
+  try {
+    fs.writeFileSync(path.join(root, "input.vue"), "<template>😀</template>\r\n");
+    fs.symlinkSync(path.join(root, "input.vue"), path.join(root, "linked.vue"));
+    assert.throws(
+      () => captureFixtureInputs(root, ["linked.vue"], path.join(root, "archive")),
+      /regular file/u,
+    );
+    assert.throws(() => captureFixtureInputs(root, ["../outside.vue"], path.join(root, "archive")));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
 
 void test("byte geometry is projected once into complete UTF-16 content geometry", () => {
   assert.deepEqual(projectSfcBlocks(source, descriptor), [

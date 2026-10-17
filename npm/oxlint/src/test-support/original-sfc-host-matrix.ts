@@ -10,6 +10,11 @@ import { isDeepStrictEqual, parseArgs } from "node:util";
 
 import { formatPatinaMessage } from "../format.ts";
 import type { PatinaBinding, PatinaDiagnostic } from "../model.ts";
+import {
+  authenticatePublicNative,
+  captureFixtureInputs,
+  createExternalFixtureDir,
+} from "./fixture-dir.ts";
 
 interface OriginalCase {
   filename: string;
@@ -89,7 +94,11 @@ export async function runOriginalSfcHostMatrix(options: MatrixOptions): Promise<
   const binding = nativeImage.exports as PatinaBinding;
   const env = { ...process.env };
   delete env.GITHUB_ACTIONS;
+  const executionRoot = createExternalFixtureDir();
+  const projects: { cwd: string; files: string[]; evidence: string; before: unknown }[] = [];
   const receipt: Record<string, unknown> = {
+    executionRoot,
+    projects,
     expectation: options.expectation,
     hostVersion: oxlintManifest.version,
     pluginVersion: pluginManifest.version,
@@ -171,7 +180,8 @@ export async function runOriginalSfcHostMatrix(options: MatrixOptions): Promise<
   try {
     for (const original of originals) {
       assert.equal(sha256(original.source), original.sha256);
-      const cwd = path.join(options.output, "projects", original.filename);
+      const cwd = path.join(executionRoot, original.filename);
+      const evidence = path.join(options.output, "projects", original.filename);
       fs.mkdirSync(path.join(cwd, "node_modules"), { recursive: true });
       fs.symlinkSync(
         options.pluginPackage,
@@ -182,13 +192,32 @@ export async function runOriginalSfcHostMatrix(options: MatrixOptions): Promise<
       const file = path.join(cwd, original.filename);
       fs.writeFileSync(file, original.source, { flag: "wx" });
       fs.writeFileSync(path.join(cwd, ".oxlintrc.json"), original.config, { flag: "wx" });
+      const offConfig = JSON.parse(original.config) as { rules: Record<string, string> };
+      offConfig.rules[`vize/${original.rule}`] = "off";
+      fs.writeFileSync(path.join(cwd, ".disabled.json"), JSON.stringify(offConfig, null, 2) + "\n");
+      for (const variant of original.contrasts) {
+        assert.equal(sha256(variant.source), variant.sha256);
+        fs.writeFileSync(path.join(cwd, `${variant.name}.vue`), variant.source, { flag: "wx" });
+      }
+      const files = [
+        original.filename,
+        ".oxlintrc.json",
+        ".disabled.json",
+        ...original.contrasts.map((variant) => `${variant.name}.vue`),
+      ];
+      projects.push({
+        cwd,
+        files,
+        evidence,
+        before: captureFixtureInputs(cwd, files, path.join(evidence, "before")),
+      });
       const native = binding.lintPatinaSfc(original.source, {
         filename: original.filename,
         enabledRules: [original.rule],
         preset: "incremental",
       });
       fs.writeFileSync(
-        path.join(cwd, "native-reference.json"),
+        path.join(evidence, "native-reference.json"),
         JSON.stringify(native, null, 2) + "\n",
       );
       assert.deepEqual(
@@ -270,17 +299,6 @@ export async function runOriginalSfcHostMatrix(options: MatrixOptions): Promise<
           }
         }
       }
-      const offConfig = JSON.parse(original.config) as { rules: Record<string, string> };
-      offConfig.rules[`vize/${original.rule}`] = "off";
-      fs.writeFileSync(
-        path.join(cwd, ".disabled.json"),
-        JSON.stringify(offConfig, null, 2) + "\n",
-        { flag: "wx" },
-      );
-      for (const variant of original.contrasts) {
-        assert.equal(sha256(variant.source), variant.sha256);
-        fs.writeFileSync(path.join(cwd, `${variant.name}.vue`), variant.source, { flag: "wx" });
-      }
       for (const control of [
         ...original.contrasts.map((variant) => ({
           name: variant.name,
@@ -360,6 +378,23 @@ export async function runOriginalSfcHostMatrix(options: MatrixOptions): Promise<
   } catch (error) {
     failures.push({ stage: "matrix setup or native reference", error: String(error) });
   } finally {
+    for (const project of projects) {
+      try {
+        const after = captureFixtureInputs(
+          project.cwd,
+          project.files,
+          path.join(project.evidence, "after"),
+        );
+        Object.assign(project, { after });
+        assert.deepEqual(
+          after,
+          project.before,
+          "the host must retain every authored source/config byte",
+        );
+      } catch (error) {
+        failures.push({ stage: "physical input custody", cwd: project.cwd, error: String(error) });
+      }
+    }
     receipt.failures = failures;
     receipt.contractAssertionsPassed = failures.length === 0;
     receipt.directHostCapabilities = cells
@@ -381,6 +416,7 @@ export async function runOriginalSfcHostMatrix(options: MatrixOptions): Promise<
       path.join(options.output, "receipt.json"),
       JSON.stringify(receipt, null, 2) + "\n",
     );
+    fs.rmSync(executionRoot, { recursive: true, force: true });
   }
   assert.deepEqual(failures, [], `raw host evidence retained at${options.output}`);
 }
@@ -394,55 +430,6 @@ export const PUBLIC_OVERRIDE_KEYS = [
   "NAPI_RS_NATIVE_LIBRARY_PATH",
   "NAPI_RS_FORCE_WASI",
 ] as const;
-
-function authenticatePublicNative(options: MatrixOptions, imagePath: string) {
-  const root = fs.realpathSync(path.resolve(options.pluginPackage, "../.."));
-  for (const [directory, name] of [
-    [options.pluginPackage, "oxlint-plugin-vize"],
-    [options.oxlintPackage, "oxlint"],
-  ])
-    assert.equal(
-      fs.realpathSync(directory!),
-      path.join(root, "node_modules", name!),
-      "public host packages must belong to the same actual installation",
-    );
-  const relative = path.relative(root, fs.realpathSync(imagePath));
-  assert.ok(
-    !path.isAbsolute(relative) && relative.split(path.sep)[0] !== "..",
-    "public native image cannot resolve outside its installation",
-  );
-  let directory = path.dirname(imagePath);
-  while (!fs.existsSync(path.join(directory, "package.json"))) {
-    const parent = path.dirname(directory);
-    assert.notEqual(parent, directory);
-    assert.notEqual(directory, root);
-    directory = parent;
-  }
-  const bytes = fs.readFileSync(path.join(directory, "package.json"));
-  const manifest = JSON.parse(bytes.toString("utf8"));
-  assert.ok(manifest.name.startsWith("@vizejs/native-"));
-  assert.equal(manifest.version, "0.458.0");
-  const lockBytes = fs.readFileSync(path.join(root, "package-lock.json"));
-  const key = path.relative(root, directory).split(path.sep).join("/");
-  const locked = JSON.parse(lockBytes.toString("utf8")).packages[key];
-  assert.equal(locked.version, "0.458.0");
-  assert.match(locked.integrity, /^sha512-/u);
-  assert.ok(locked.resolved.startsWith("https://registry.npmjs.org/"));
-  fs.writeFileSync(path.join(options.output, "public-native-package.json"), bytes, { flag: "wx" });
-  fs.writeFileSync(path.join(options.output, "public-package-lock.json"), lockBytes, {
-    flag: "wx",
-  });
-  return {
-    root,
-    package: manifest.name,
-    version: manifest.version,
-    manifestSha256: sha256(bytes),
-    lockKey: key,
-    lockSha256: sha256(lockBytes),
-    integrity: locked.integrity,
-    resolved: locked.resolved,
-  };
-}
 
 function expectedSpan(source: string, diagnostic: PatinaDiagnostic) {
   const { start, end } = diagnostic.location;
