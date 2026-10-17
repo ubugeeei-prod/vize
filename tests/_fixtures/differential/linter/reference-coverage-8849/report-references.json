@@ -223,8 +223,8 @@
     "markdown": [
       ["False positives: 0 (0.0)\n", "False positives: 1 (1.0)\n"],
       [
-        "Patina findings outside reference coverage: 1\n",
-        "Patina findings outside reference coverage: 0\n"
+        "\nPatina findings outside reference coverage: 1\n",
+        "\nPatina findings outside reference coverage: 0\n"
       ],
       ["Budget verdict: passed\n", "Budget verdict: breached\n"],
       ["Budget passed: true\n", "Budget passed: false\n"],
@@ -238,5 +238,76 @@
       ]
     ],
     "stderr": "Lint divergence budget failed for 1 project(s):\nLint divergence budget breached for gui-for-singbox: 1 false positives exceed maxFalsePositiveCount 0\n"
+  },
+  "reviewedUnrelatedFalseNegatives": {
+    "bare-slot-shorthand": [],
+    "class-decorator-prop": [
+      {
+        "column": 16,
+        "endColumn": 40,
+        "endLine": 10,
+        "file": "src/views/home/widgets/card.vue",
+        "line": 10,
+        "message": "Attribute \"v-model\" should go before \"tag\".",
+        "ruleId": "vue/attribute-order",
+        "severity": "warning",
+        "upstreamRuleId": "vue/attributes-order"
+      },
+      {
+        "column": 13,
+        "endColumn": 48,
+        "endLine": 16,
+        "file": "src/views/home/widgets/card.vue",
+        "line": 16,
+        "message": "Attribute \"v-for\" should go before \"class\".",
+        "ruleId": "vue/attribute-order",
+        "severity": "warning",
+        "upstreamRuleId": "vue/attributes-order"
+      },
+      {
+        "column": 13,
+        "endColumn": 27,
+        "endLine": 17,
+        "file": "src/views/home/widgets/card.vue",
+        "line": 17,
+        "message": "Attribute \":key\" should go before \"class\".",
+        "ruleId": "vue/attribute-order",
+        "severity": "warning",
+        "upstreamRuleId": "vue/attributes-order"
+      },
+      {
+        "column": 29,
+        "endColumn": 33,
+        "endLine": 43,
+        "file": "src/views/home/widgets/card.vue",
+        "line": 43,
+        "message": "`slot` attributes are deprecated.",
+        "ruleId": "vue/no-deprecated-slot-attribute",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-slot-attribute"
+      },
+      {
+        "column": 29,
+        "endColumn": 46,
+        "endLine": 43,
+        "file": "src/views/home/widgets/card.vue",
+        "line": 43,
+        "message": "Attribute \"slot\" should go before \"@click.stop\".",
+        "ruleId": "vue/attribute-order",
+        "severity": "warning",
+        "upstreamRuleId": "vue/attributes-order"
+      }
+    ]
+  },
+  "reviewedUnrelatedFalseNegativesCustody": {
+    "run": 39021836053,
+    "head": "1dad07fa5e18751da310e46e9a49061a9c16aa7d",
+    "job": 117365030512,
+    "artifact": 12096594705,
+    "artifactZipSha256": "80760e1f8bb7bdeabe0b3563fa538fdd0998b31b73cda1eaa9968262801f37c0",
+    "rawFile": "102-64464696-5e25-453b-9356-6c4f2bb210a8-raw.json",
+    "rawFileSha256": "ec3e7a48fa4fc4c5cf15142143c5f2c3206c13067e06b22d7e5888afc07d99d6",
+    "report": "mobile-web-best-practice-lint-divergence.json",
+    "reportSha256": "0f445e4627562d049e41fee9569a6a0f593224c232dffcf77edbca1beecd7ab9"
   }
 }
