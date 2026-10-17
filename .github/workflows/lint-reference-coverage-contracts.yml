@@ -9,6 +9,10 @@ on:
       - "tools/support/fixtures/lint_divergence/**"
       - "tools/support/compat/fixtures/lint-divergence*"
       - "tests/_fixtures/differential/linter/reference-coverage-8849/**"
+      - "tests/_fixtures/differential/lint/**"
+      - "tests/_fixtures/patina-eslint-vue-rule-map.json"
+      - "tests/_fixtures/patina-lint-documented-divergences.json"
+      - "tests/_fixtures/vue-ecosystem-fixtures.json"
       - "tests/tooling/lint-reference-*.test.*"
       - "tests/tooling/lint-divergence*.test.*"
       - "tests/tooling/lint-baseline-script-language.test.mjs"
@@ -29,7 +33,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
         with: { toolchain: "1.99.1" }
       - uses: ./.github/actions/setup-rust-script
@@ -58,6 +64,8 @@ jobs:
           tools/commands/fixtures/lint-divergence-report.ts
           tools/support/fixtures/lint_reference_coverage.ts
           tests/tooling/lint-reference-classifier.test.ts
+          tests/tooling/_helpers/lint-report-rust-parity.ts
+          tests/tooling/support/lint-report-parity.ts
       - name: Require actual frozen Rust and TypeScript subprocess parity
         env:
           VIZE_LINT_REPORT_PARITY_DIR: ${{ runner.temp }}/lint-report-parity
