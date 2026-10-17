@@ -54,10 +54,7 @@ function needs(results: Record<string, string> = {}): Record<string, { result: s
   return Object.fromEntries(PR_JOBS.map((job) => [job, { result: results[job] ?? "success" }]));
 }
 test("obsolete main validation is cancelled when the branch advances", () => {
-  for (const candidate of [
-    workflow,
-    parse(readRepoFile(".github", "workflows", "davinci-contracts.yml")) as typeof workflow,
-  ]) {
+  for (const candidate of [workflow]) {
     assert.equal(candidate.concurrency?.["cancel-in-progress"], true);
     assert.match(
       candidate.concurrency?.group ?? "",
@@ -343,12 +340,7 @@ test("full JS qualification retains independent native builds and strictly gates
   }
 });
 test("slow suites use schedules or explicit dispatch without starting on PRs", () => {
-  const pushOrDispatch = [
-    "davinci-contracts.yml",
-    "davinci-html-content-model.yml",
-    "davinci-incremental.yml",
-    "level-moonbit.yml",
-  ];
+  const pushOrDispatch = ["davinci-html-content-model.yml", "davinci-incremental.yml"];
   const scheduledOrDispatch = [
     "benchmark.yml",
     "check-bench.yml",
@@ -375,10 +367,6 @@ test("slow suites use schedules or explicit dispatch without starting on PRs", (
     assert.equal(Object.hasOwn(events, "pull_request"), false, name);
     assert.equal(Object.hasOwn(events, "workflow_dispatch"), true, name);
     if (pushOrDispatch.includes(name)) assert.equal(Object.hasOwn(events, "push"), true, name);
-    if (name === "level-moonbit.yml") {
-      const push = events.push as { paths?: string[] };
-      assert.equal(push.paths?.includes(".github/workflows/level-moonbit.yml"), true, name);
-    }
     if (scheduledOrDispatch.includes(name))
       assert.equal(Object.hasOwn(events, "schedule"), true, name);
     if (scheduledOrDispatch.includes(name) || name === "pkg-pr-new.yml")

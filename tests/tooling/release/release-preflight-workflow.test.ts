@@ -8,7 +8,7 @@ import { parse } from "yaml";
 
 import { hostedOrBlacksmith, readRepoFile } from "../support/github-workflows.ts";
 import { createReleasePreflightVerifyOnlyFixture } from "../support/release-preflight-runner-fixture.ts";
-import { repoRoot } from "../_helpers/moonbit.ts";
+import { repoRoot } from "../_helpers/tool-commands.ts";
 
 type WorkflowStep = {
   env?: Record<string, string>;

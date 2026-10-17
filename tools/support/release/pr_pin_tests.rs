@@ -100,11 +100,22 @@ fn canonical_versions_preserve_oracles_non_version_values_and_newlines() {
         metadata::rewrite("README.md", readme, "1.2.2", "1.2.3"),
         "current 1.2.3\n<!-- benchmark:readme:start -->\nmeasured 1.2.2\n<!-- benchmark:readme:end -->\n"
     );
-    let lock = "[[package]]\nname = \"vize_guest\"\nversion = \"1.2.2\"\n\n[[package]]\nname = \"unrelated\"\nversion = \"1.2.2\"\n";
+    let lock = "[[package]]\nname = \"vize_l0\"\nversion = \"1.2.2\"\n\n[[package]]\nname = \"unrelated\"\nversion = \"1.2.2\"\n";
     assert_eq!(
         metadata::rewrite("Cargo.lock", lock, "1.2.2", "1.2.3"),
         lock.replacen("version = \"1.2.2\"", "version = \"1.2.3\"", 1)
     );
+    let historical_lock = lock.replace("vize_l0", "vize_guest");
+    for path in [
+        "examples/volt-target/Cargo.lock",
+        "davinci/vize_extension_host/tests/guests/expression-echo/Cargo.lock",
+    ] {
+        assert_eq!(
+            metadata::rewrite(path, &historical_lock, "1.2.2", "1.2.3"),
+            historical_lock.replacen("version = \"1.2.2\"", "version = \"1.2.3\"", 1),
+            "historical published integration: {path}"
+        );
+    }
     let aliased = "[workspace.dependencies]\noxc_formatter = { package = \"vize_oxc_formatter\", version = \"=1.2.2\", path = \"vendor/oxc_formatter\" }\n";
     assert_eq!(
         metadata::rewrite("Cargo.toml", aliased, "1.2.2", "1.2.3"),

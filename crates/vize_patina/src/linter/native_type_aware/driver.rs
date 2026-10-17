@@ -82,7 +82,7 @@ pub(super) fn lint_with_descriptor<'a>(
     let mut result = if let (Some((root, _, parse_errors, has_fatal)), Some(template)) =
         (template_ast.as_ref(), descriptor.template.as_ref())
     {
-        let lint_result = profile!(
+        let (lint_result, scripts) = profile!(
             "patina.type_aware.template_rules",
             linter.lint_sfc_template_root(SfcTemplateLintInput {
                 filename,
@@ -95,29 +95,33 @@ pub(super) fn lint_with_descriptor<'a>(
                 } else {
                     TemplateAnalysis::Precomputed(&analysis)
                 },
+                template_syntax: template_syntax.as_ref(),
             })
         );
         let mut parse_result =
             Linter::template_parse_lint_result(filename, template.content.len(), parse_errors);
         super::super::engine::offset_result(&mut parse_result, template.loc.start as u32);
-        Linter::merge_lint_results(parse_result, lint_result)
+        let mut result = Linter::merge_lint_results(parse_result, lint_result);
+        result.error_count += scripts.error_count;
+        result.warning_count += scripts.warning_count;
+        result.diagnostics.extend(scripts.diagnostics);
+        result
     } else {
-        LintResult {
+        let mut result = LintResult {
             filename: filename.into(),
             diagnostics: Vec::new(),
             error_count: 0,
             warning_count: 0,
-        }
+        };
+        super::super::script_rules::append_builtin_script_diagnostics(
+            linter,
+            descriptor,
+            &mut result,
+            None,
+            None,
+        );
+        result
     };
-    super::super::script_rules::append_builtin_script_diagnostics(
-        linter,
-        descriptor,
-        &mut result,
-        template_ast
-            .as_ref()
-            .and_then(|(root, offset, _, fatal)| (!*fatal).then_some((root, *offset))),
-        template_syntax.as_ref(),
-    );
     let script_block = descriptor
         .script_setup
         .as_ref()

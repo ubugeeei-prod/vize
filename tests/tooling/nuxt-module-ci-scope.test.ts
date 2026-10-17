@@ -97,7 +97,6 @@ test("merge, main and manual runs retain every extended campaign and source rece
 
 test("failed, cancelled, missing and skipped Nuxt queue results cannot pass the required report", () => {
   const needs = (result: string) => ({
-    "wit-contracts": { result: "success" },
     "nuxt-module-qualification": { result },
   });
   for (const result of ["success", "failure", "cancelled", "skipped", "unknown"]) {
@@ -112,7 +111,7 @@ test("failed, cancelled, missing and skipped Nuxt queue results cannot pass the 
     );
   }
   assert.throws(
-    () => aggregateCheckNeedsResults({ "wit-contracts": { result: "success" } }, "merge_group"),
+    () => aggregateCheckNeedsResults({}, "merge_group"),
     /missing nuxt-module-qualification/,
   );
   assert.throws(
@@ -132,7 +131,7 @@ test("failed, cancelled, missing and skipped Nuxt queue results cannot pass the 
     [needs("failure"), 1],
     [needs("cancelled"), 1],
     [needs("skipped"), 1],
-    [{ "wit-contracts": { result: "success" } }, 1],
+    [{}, 1],
   ] as const) {
     const run = spawnSync(
       process.execPath,

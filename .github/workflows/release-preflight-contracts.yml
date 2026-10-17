@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - ".github/workflows/release-preflight*.yml"
+      - ".github/workflows/release.yml"
+      - ".github/release-notes/drop-in-scope.md"
+      - "tests/tooling/drop-in-claim-scope.test.ts"
       - ".github/workflows/check.yml"
       - ".github/actions/report-full-js-qualification/**"
       - ".github/actions/setup-rust-script/**"
@@ -63,6 +66,8 @@ jobs:
           tests/tooling/plan-release-gates.test.ts
           tests/tooling/release-check-qualification-handoff.test.ts
           tests/tooling/release-check-profile.test.ts
+          tests/tooling/release/release-notes.test.ts
+          tests/tooling/drop-in-claim-scope.test.ts
           tests/tooling/github-workflows-full-rust.test.ts
       - name: Require exact concurrent npm publication fixture controls
         run: node --test tests/tooling/publish-npm-package*.test.ts

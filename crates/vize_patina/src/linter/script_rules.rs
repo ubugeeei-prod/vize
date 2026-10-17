@@ -13,7 +13,9 @@ pub(crate) mod native;
 mod prefilter;
 mod registry;
 mod sfc;
-pub(crate) use sfc::append_builtin_script_diagnostics;
+pub(crate) use sfc::{
+    append_builtin_script_diagnostics, append_builtin_script_diagnostics_with_template_context,
+};
 mod template_context;
 
 #[cfg(test)]

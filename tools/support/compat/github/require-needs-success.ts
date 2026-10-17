@@ -99,7 +99,7 @@ export function aggregateCheckNeedsResults(needs: unknown, eventName: unknown): 
       throw new TypeError("Cannot convert a Symbol value to a string");
     throw new Error(`Unsupported Check event: ${String(eventName)}`);
   }
-  const queueOnly = ["wit-contracts", "nuxt-module-qualification"];
+  const queueOnly = ["nuxt-module-qualification"];
   for (const job of queueOnly) {
     if (
       !needs ||

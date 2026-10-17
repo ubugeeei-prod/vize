@@ -142,21 +142,6 @@ test("WASM build jobs set up Node before invoking the TypeScript builders", () =
   }
 });
 
-test("setup-moonbit defines explicit Windows and Unix execution paths", () => {
-  const action = readRepoFile(".github", "actions", "setup-moonbit", "action.yml");
-
-  assert.match(action, /Cache MoonBit toolchain/);
-  assert.match(action, /uses: actions\/cache@[0-9a-f]{40}\s*# v5/);
-  assert.match(action, /Setup MSVC toolchain \(Windows\)/);
-  assert.match(action, /uses: ilammy\/msvc-dev-cmd@[0-9a-f]{40}\s*# v1/);
-  assert.match(action, /Install MoonBit \(Windows\)/);
-  assert.match(action, /if: runner\.os == 'Windows'/);
-  assert.match(action, /shell: pwsh/);
-  assert.match(action, /Install MoonBit \(Unix\)/);
-  assert.match(action, /if: runner\.os != 'Windows'/);
-  assert.match(action, /shell: bash/);
-});
-
 test("setup-rust-script pins Windows MSVC linkers before cargo install", () => {
   const action = readRepoFile(".github", "actions", "setup-rust-script", "action.yml");
   const linkerIndex = action.indexOf("Configure Windows Rust linker");
@@ -169,64 +154,6 @@ test("setup-rust-script pins Windows MSVC linkers before cargo install", () => {
   assert.match(action, /CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=rust-lld/);
   assert.match(action, /CARGO_TARGET_AARCH64_PC_WINDOWS_MSVC_LINKER=rust-lld/);
   assert.match(action, />> "\$GITHUB_ENV"/);
-});
-
-test("setup-moonbit installs the same pinned toolchain the Nix shell builds", () => {
-  const pinned = readRepoFile(".moonbit-version").trim();
-  assert.match(
-    pinned,
-    /^\d+\.\d+\.\d+\+[0-9a-f]+$/,
-    "`.moonbit-version` must hold one exact MoonBit release",
-  );
-
-  // `tools/nix/moonbit.nix` must derive the toolchain from the shared file rather
-  // than repeating it, so a bump cannot land on only one of the two consumers.
-  const moonbitModule = readRepoFile("tools", "nix", "moonbit.nix");
-  assert.match(moonbitModule, /moonbitVersion = builtins\.replaceStrings[\s\S]*?moonbit-version/);
-  assert.doesNotMatch(moonbitModule, /moonbitVersion = "/);
-
-  // CI must ask the upstream installer for that release. Falling back to
-  // `latest` is what let CI and the Nix shell drift onto different compilers.
-  const installer = readRepoFile(".github", "actions", "setup-moonbit", "install-moonbit.mjs");
-  assert.match(installer, /new URL\("\.\.\/\.\.\/\.\.\/\.moonbit-version", import\.meta\.url\)/);
-  assert.equal(
-    installer.match(/MOONBIT_INSTALL_VERSION: moonbitVersion,/g)?.length,
-    2,
-    "both the Windows and Unix installer calls must request the pinned release",
-  );
-  assert.match(installer, /installedMoonbitVersion\(\)/);
-  assert.doesNotMatch(installer, /moonbitVersion = "/);
-
-  // A restored cache from a previous pin must miss rather than win.
-  const action = readRepoFile(".github", "actions", "setup-moonbit", "action.yml");
-  assert.match(action, /key: moonbit-.*hashFiles\('\.moonbit-version',/);
-});
-
-test("setup-moonbit smoke test validates the native async process runtime", () => {
-  const installer = readRepoFile(".github", "actions", "setup-moonbit", "install-moonbit.mjs");
-
-  assert.match(installer, /function hasExistingMoonInstall\(\)/);
-  assert.match(installer, /\["run", "-q", "--target", "native", "-", "--"\]/);
-  assert.match(installer, /"moonbitlang\/async@0\.20\.1\/process"/);
-  assert.match(installer, /@process\.run/);
-});
-
-test("setup-moonbit patches Darwin secure memcpy macros before smoke testing", () => {
-  const installer = readRepoFile(".github", "actions", "setup-moonbit", "install-moonbit.mjs");
-
-  assert.match(installer, /function patchDarwinMoonbitHeader\(\)/);
-  assert.match(installer, /os\.type\(\) !== "Darwin"/);
-  assert.match(installer, /#undef memcpy/);
-  assert.match(installer, /patchDarwinMoonbitHeader\(\);\nsmokeTestMoon\(\);/);
-});
-
-test("setup-moonbit writes both command and shell shims on Windows so bash steps can resolve moon", () => {
-  const installer = readRepoFile(".github", "actions", "setup-moonbit", "install-moonbit.mjs");
-
-  assert.match(installer, /const shimMoonCmd = path\.join\(shimDir, "moon\.cmd"\);/);
-  assert.match(installer, /const shimMoonShell = path\.join\(shimDir, "moon"\);/);
-  assert.match(installer, /fs\.writeFileSync\(\s*shimMoonCmd,/);
-  assert.match(installer, /fs\.writeFileSync\(\s*shimMoonShell,/);
 });
 
 test("native smoke workflow covers host platforms before release tags", () => {

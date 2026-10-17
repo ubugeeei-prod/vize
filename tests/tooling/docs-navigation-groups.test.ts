@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { SCRIPT_BASENAMES } from "../../docs/theme/background.ts";
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 
 type Sitemap = {
   hiddenPathPatterns: RegExp[];

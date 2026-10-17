@@ -107,7 +107,6 @@ await test("selection covers pinned inputs, drivers and real producers in both c
       "tests/_fixtures/differential/lint/authored/cases.json",
       ".github/workflows/e2e.yml",
       ".github/workflows/canonical-corpus-objects.yml",
-      ".github/actions/setup-moonbit/action.yml",
     ])
       assert.equal(canonicalCorpusRequired([unread], event), false, unread);
   }
@@ -123,7 +122,6 @@ const needs = (required: string, result: string, event = "pull_request") => ({
   "pr-js-packages": { result: "success" },
   "pr-tooling-scripts": { result: "success" },
   "pr-playground-test": { result: "success" },
-  "wit-contracts": { result: event === "merge_group" ? "success" : "skipped" },
   "nuxt-module-qualification": { result: event === "merge_group" ? "success" : "skipped" },
   "canonical-corpus": { result },
 });

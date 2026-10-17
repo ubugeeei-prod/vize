@@ -74,7 +74,6 @@ await test("the canonical call path and every local action it uses select the co
   for (const unrelated of [
     ".github/workflows/e2e.yml",
     ".github/workflows/real-project-matrix.yml",
-    ".github/actions/setup-moonbit/action.yml",
     ".github/actions/install-playwright-browsers/action.yml",
   ]) {
     assert(exists(unrelated), unrelated);

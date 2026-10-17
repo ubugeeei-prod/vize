@@ -38,7 +38,6 @@ test("GitHub workflows opt JavaScript actions into Node 24", () => {
 test("GitHub workflows use the current cache action", () => {
   for (const relativePath of [
     ".github/actions/setup-rust-sticky-cache/action.yml",
-    ".github/actions/setup-moonbit/action.yml",
     ".github/workflows/benchmark.yml",
     ".github/workflows/build-docs.yml",
     ".github/workflows/check.yml",

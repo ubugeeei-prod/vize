@@ -46,7 +46,6 @@ const sourceNeeds = [
   "pr-js-packages",
   "pr-native-runtime",
   "pr-playground-test",
-  "wit-contracts",
   "nuxt-module-qualification",
   "canonical-corpus",
 ];
