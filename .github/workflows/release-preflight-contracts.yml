@@ -5,6 +5,11 @@ on:
       - ".github/workflows/release-preflight*.yml"
       - ".github/workflows/release.yml"
       - ".github/workflows/release-operator.yml"
+      - "tests/tooling/github-workflows-release-publish.test.ts"
+      - "tests/tooling/github-workflows-release-build.test.ts"
+      - "tests/tooling/github-workflows-release-smoke.test.ts"
+      - "tests/tooling/github-workflows-release-vscode-publisher.test.ts"
+      - "tests/tooling/release-jsr-workflow.test.ts"
       - ".github/release-notes/drop-in-scope.md"
       - "tests/tooling/drop-in-claim-scope.test.ts"
       - ".github/workflows/check.yml"
@@ -83,6 +88,14 @@ jobs:
         run: |
           rust-script --test tools/commands/ci/github/release-preflight.rs
           node --test tests/tooling/release/release-preflight-full-js.test.ts tests/tooling/release/legacy-check-qualification.test.ts
+      - name: Require installable npm publication order and unchanged release joins
+        run: >-
+          node --test
+          tests/tooling/github-workflows-release-publish.test.ts
+          tests/tooling/github-workflows-release-build.test.ts
+          tests/tooling/github-workflows-release-smoke.test.ts
+          tests/tooling/github-workflows-release-vscode-publisher.test.ts
+          tests/tooling/release-jsr-workflow.test.ts
       - name: Require immutable retirement source and qualification custody
         run: >-
           node --test
