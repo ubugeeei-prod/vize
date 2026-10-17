@@ -69,6 +69,12 @@ test("hosted operator keeps user authority on protected main and does not deadlo
     false,
   );
   assert.equal(dependencies.run.trim(), "vp install --frozen-lockfile");
+  const contracts = parse(readRepoFile(".github", "workflows", "release-preflight-contracts.yml"));
+  assert.ok(contracts.on.pull_request.paths.includes(".github/workflows/release-operator.yml"));
+  assert.equal(
+    contracts.jobs.contracts.steps.at(-1).run,
+    "node --test tests/tooling/release/release-pr.test.ts tests/tooling/release/retirement-qualification.test.ts",
+  );
 });
 
 test("actual pinned starter refuses stale cuts before mutation and installs the requested isolated frozen graph", () => {
