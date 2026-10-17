@@ -20,7 +20,7 @@ import { verifyPublication } from "./registry.ts";
 import { materializeVrtInputs, vrtHarness } from "./vrt_fixtures.ts";
 import { assertVrtCustody } from "./vrt_artifacts.ts";
 import { materializeLiteralVrtInputs } from "./vrt_literal.ts";
-import { prepareLspSource } from "./lsp_source.ts";
+import { assertLspSourceRoot, prepareLspSource } from "./lsp_source.ts";
 import { archiveValidatorSha256, assertInstalledLsp } from "./lsp.ts";
 import { rejectLspOverrides } from "./lsp_assets.ts";
 
@@ -200,6 +200,7 @@ export default function publicSetup(app, context) {
   const preparation = load("preparation.json");
   assert.deepEqual(preparation.source, source);
   assert.deepEqual(authority(), preparation.authority);
+  assertLspSourceRoot(preparation.lsp, { checkout: root, consumer: preparation.consumer, output });
   for (const entry of preparation.consumerSources) {
     assert.equal(
       digest(readFileSync(path.join(preparation.consumer, entry.file))),
@@ -217,7 +218,7 @@ export default function publicSetup(app, context) {
   const native = load("native.json"),
     musea = load("musea.json"),
     vrt = load("vrt.json");
-  const lsp = assertInstalledLsp(output);
+  const lsp = await assertInstalledLsp(output);
   for (const receipt of [native, musea, vrt]) {
     assert.equal(receipt.version, preparation.version);
     assert.equal(receipt.success, true);

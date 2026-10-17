@@ -187,8 +187,24 @@ async function acquireBinary(directory: string) {
   }
 }
 
+/** Retain the refusal phase and safe assertion label, never raw HTTP URLs, values or child output. */
+export function tunnelSetupRefusal(error: unknown, phase: string) {
+  const reason =
+    error instanceof assert.AssertionError && !error.generatedMessage
+      ? error.message.split("\n", 1)[0]
+      : error instanceof assert.AssertionError
+        ? `assertion ${error.operator}`
+        : error instanceof Error
+          ? error.name
+          : "unknown failure";
+  return new Error("Pinned tunnel setup refused; no executable directory is available.", {
+    cause: { phase, reason },
+  });
+}
+
 async function main() {
   let directory: string | undefined;
+  let phase = "runtime identity";
   try {
     assert.equal(process.platform, "linux");
     assert.equal(process.arch, "x64");
@@ -199,14 +215,18 @@ async function main() {
       root = await realpath(process.cwd());
     const output = await realpath(process.env.PUBLIC_OUTPUT!),
       temporary = process.env.RUNNER_TEMP!;
+    phase = "prepared publication records";
     const preparation = JSON.parse(
       await readFile(path.join(output, "preparation.json"), "utf8"),
     ) as unknown;
     const publication = JSON.parse(
       await readFile(path.join(output, "publication.json"), "utf8"),
     ) as unknown;
+    phase = "authenticated release custody";
     assertTunnelReleaseCustody(source, preparation, publication);
+    phase = "released service ancestry";
     const publishedSources = requireReleasedService(root, source.head);
+    phase = "official pinned metadata";
     const entries = await Promise.all(
       Object.entries(quickTunnelMetadata).map(
         async ([key, url]) => [key, await metadata(url)] as const,
@@ -217,8 +237,11 @@ async function main() {
       unknown
     >;
     const release = assertQuickTunnelMetadata(values);
+    phase = "private executable directory";
     directory = await createTunnelAssetDirectory(temporary, output);
+    phase = "pinned executable acquisition";
     await acquireBinary(directory);
+    phase = "acquisition receipt";
     const receipt = {
       source,
       serviceImplementation,
@@ -244,9 +267,9 @@ async function main() {
     );
     await appendFile(process.env.GITHUB_ENV!, `VRT_TUNNEL_DIRECTORY=${directory}\n`);
     console.log("Pinned static-gallery tunnel executable verified; no process launched.");
-  } catch {
+  } catch (error) {
     if (directory) await Promise.allSettled([rm(directory, { recursive: true, force: true })]);
-    throw new Error("Pinned tunnel setup refused; no executable directory is available.");
+    throw tunnelSetupRefusal(error, phase);
   }
 }
 

@@ -48,6 +48,111 @@ print(json.dumps({'package':c['workspace']['package'],'dependencies':c['workspac
   return { ...metadata, provider: { name, version: entries[0][1] } };
 }
 
+type SourceIsolation = {
+  sourceRoot: string;
+  sourceTree: string;
+  isolation: { checkout: string; consumer: string; output: string; markerSha256: string };
+};
+const ownershipFile = "source-owner.json";
+const canonicalDirectory = (directory: string) => {
+  assert.ok(path.isAbsolute(directory), "absolute actor root required");
+  const stat = fs.lstatSync(directory);
+  assert.ok(stat.isDirectory() && !stat.isSymbolicLink(), "normal actor directory required");
+  assert.equal(fs.realpathSync(directory), directory, "canonical actor root required");
+  return directory;
+};
+const contains = (parent: string, child: string) => {
+  const relative = path.relative(parent, child);
+  return (
+    relative === "" ||
+    (relative !== ".." && !relative.startsWith(".." + path.sep) && !path.isAbsolute(relative))
+  );
+};
+const overlaps = (left: string, right: string) => contains(left, right) || contains(right, left);
+
+/** Own a fresh source sibling so browser discovery sees only its authored consumer inputs. */
+export function prepareLspSourceRoot(checkout: string, consumer: string, output: string) {
+  for (const directory of [checkout, consumer, output]) canonicalDirectory(directory);
+  assert.ok(
+    !overlaps(consumer, checkout) && !overlaps(consumer, output),
+    "isolated consumer root required",
+  );
+  const sourceRoot = fs.mkdtempSync(path.join(path.dirname(consumer), "vize-public-lsp-source-"));
+  const sourceTree = path.join(sourceRoot, "lsp-source");
+  fs.mkdirSync(sourceTree);
+  const marker = Buffer.from(
+    JSON.stringify({
+      schema: "vize-public-lsp-source-owner-v1",
+      sourceRoot,
+      sourceTree,
+      checkout,
+      consumer,
+      output,
+    }) + "\n",
+  );
+  fs.writeFileSync(path.join(sourceRoot, ownershipFile), marker, { flag: "wx" });
+  const preparation = {
+    sourceRoot,
+    sourceTree,
+    isolation: { checkout, consumer, output, markerSha256: sha256(marker) },
+  };
+  assertLspSourceRoot(preparation, { checkout, consumer, output });
+  return preparation;
+}
+
+export function assertLspSourceRoot(
+  preparation: SourceIsolation,
+  expected?: { checkout: string; consumer: string; output: string },
+) {
+  const { sourceRoot, sourceTree, isolation } = preparation;
+  for (const directory of [
+    sourceRoot,
+    sourceTree,
+    isolation.checkout,
+    isolation.consumer,
+    isolation.output,
+  ])
+    canonicalDirectory(directory);
+  assert.match(path.basename(sourceRoot), /^vize-public-lsp-source-[A-Za-z0-9]+$/u);
+  assert.equal(
+    path.dirname(sourceRoot),
+    path.dirname(isolation.consumer),
+    "owned source must remain a consumer sibling",
+  );
+  assert.equal(
+    sourceTree,
+    path.join(sourceRoot, "lsp-source"),
+    "owned source tree identity changed",
+  );
+  for (const directory of [isolation.checkout, isolation.consumer, isolation.output])
+    assert.ok(
+      !overlaps(sourceRoot, directory),
+      "source actor overlaps browser/checkout/output root",
+    );
+  if (expected)
+    for (const key of ["checkout", "consumer", "output"] as const)
+      assert.equal(isolation[key], expected[key], `source owner ${key} changed`);
+  const markerPath = path.join(sourceRoot, ownershipFile);
+  assert.ok(
+    fs.lstatSync(markerPath).isFile() && !fs.lstatSync(markerPath).isSymbolicLink(),
+    "normal source ownership marker required",
+  );
+  const marker = fs.readFileSync(markerPath);
+  assert.equal(sha256(marker), isolation.markerSha256, "source ownership bytes changed");
+  assert.deepEqual(
+    JSON.parse(marker.toString()),
+    {
+      schema: "vize-public-lsp-source-owner-v1",
+      sourceRoot,
+      sourceTree,
+      checkout: isolation.checkout,
+      consumer: isolation.consumer,
+      output: isolation.output,
+    },
+    "borrowed source ownership marker",
+  );
+}
+
 /** Preserve the actual H tree; only the isolated adapter's test support is compiled. */
 export function prepareLspSource(root: string, head: string, consumer: string, output: string) {
   execFileSync(
@@ -62,14 +167,14 @@ export function prepareLspSource(root: string, head: string, consumer: string, o
     { cwd: root },
   );
   const metadata = sourceMetadata(root, head);
-  const sourceTree = path.join(consumer, "lsp-source");
+  const ownedSource = prepareLspSourceRoot(root, consumer, output);
+  const { sourceTree } = ownedSource;
   const archive = path.join(output, "lsp-source.tar");
   execFileSync(
     "git",
     ["--no-replace-objects", "archive", "--format=tar", `--output=${archive}`, head],
     { cwd: root, timeout: 30_000 },
   );
-  fs.mkdirSync(sourceTree);
   execFileSync("tar", ["-xf", archive, "-C", sourceTree], { timeout: 30_000 });
   const files = execFileSync(
     "git",
@@ -139,7 +244,7 @@ export function prepareLspSource(root: string, head: string, consumer: string, o
     path.join(consumer, "playground/node_modules/vue"),
   );
   return {
-    sourceTree,
+    ...ownedSource,
     adapter,
     metadata,
     sourceFiles,
@@ -150,6 +255,7 @@ export function prepareLspSource(root: string, head: string, consumer: string, o
 }
 
 export function assertLspSource(preparation: ReturnType<typeof prepareLspSource>) {
+  assertLspSourceRoot(preparation);
   for (const entry of preparation.sourceFiles)
     assert.equal(
       sha256(fs.readFileSync(path.join(preparation.sourceTree, entry.file))),

@@ -66,7 +66,7 @@ test("scheduled full tooling requires the original current-source CLI receipt be
   assert.deepEqual(consumer.needs, ["full-source-cli", "tooling-plan"]);
   assert.equal(
     consumer.if,
-    "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
+    "${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
   );
   const worker = consumer.steps?.find(
     (step) => step.uses === "./.github/actions/test-full-tooling",

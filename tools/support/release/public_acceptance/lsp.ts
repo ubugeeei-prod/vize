@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { publicInputs } from "./inputs.ts";
 import {
   packageProvider,
+  installedCorsaProvider,
   publicLspCli,
   rejectLspOverrides,
   versionProbe,
@@ -21,7 +22,7 @@ const validator = fileURLToPath(
   ),
 );
 export const archiveValidatorSha256 = () => sha256(fs.readFileSync(validator));
-export function assertInstalledLsp(output: string) {
+export async function assertInstalledLsp(output: string) {
   const load = (name: string) => JSON.parse(fs.readFileSync(path.join(output, name), "utf8"));
   const preparation = load("preparation.json"),
     receipt = load("lsp.json");
@@ -43,11 +44,12 @@ export function assertInstalledLsp(output: string) {
     receipt.npmLockSha256,
   );
   assert.deepEqual(
-    packageProvider(
+    await installedCorsaProvider(
       preparation.consumer,
+      preparation.version,
+      source.head,
       receipt.provider.name,
       receipt.provider.version,
-      "lib/tsgo",
     ),
     receipt.provider,
   );
@@ -100,7 +102,13 @@ async function run() {
     providerVersion,
     "published CLI declares exact H provider",
   );
-  const provider = packageProvider(consumer, name, providerVersion, "lib/tsgo");
+  const provider = await installedCorsaProvider(
+    consumer,
+    version,
+    source.head,
+    name,
+    providerVersion,
+  );
   const vue = packageProvider(consumer, "vue", "3.5.35");
   assert.equal(fs.realpathSync(path.join(consumer, "playground/node_modules/vue")), vue.directory);
   const providerProbe = versionProbe(provider.executable!);
@@ -157,7 +165,10 @@ async function run() {
   );
   assert.equal(sha256(fs.readFileSync(path.join(consumer, "package-lock.json"))), npmLockSha256);
   assert.equal(sha256(fs.readFileSync(cli.executable)), cli.executableSha256);
-  assert.deepEqual(packageProvider(consumer, name, providerVersion, "lib/tsgo"), provider);
+  assert.deepEqual(
+    await installedCorsaProvider(consumer, version, source.head, name, providerVersion),
+    provider,
+  );
   assert.deepEqual(packageProvider(consumer, "vue", "3.5.35"), vue);
   assertLspSource(preparation.lsp);
   const packets = assertAllLspPackets(
