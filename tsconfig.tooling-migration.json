@@ -92,7 +92,6 @@
     "tests/tooling/release-command-diagnostics.test.ts",
     "tests/tooling/release-command-runtime.test.ts",
     "tests/tooling/release-ordered-json.test.ts",
-    "tests/tooling/release/release-guest-locks.test.ts",
     "tests/tooling/support/publish-crates-plan.ts",
     "tests/tooling/support/publish-npm-package-dirs-failure-fixture.ts",
     "tests/tooling/support/publish-npm-package-dirs-fixture.ts",

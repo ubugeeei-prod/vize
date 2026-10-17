@@ -13,6 +13,34 @@ const bytes = read(`${directory}/successor.json`);
 assert.equal(sha(bytes), "30d630da3f38e9eb667e2097bda2b65d8e0e3b82bb5f62c61e4aead8a4cdc295");
 const manifest = JSON.parse(bytes);
 
+// #9357 (07f5645623a8d26d8909a9a53f8636682ce2192c) removed only
+// retired extension-host scheduling. Keep the original preset audit frozen;
+// restore these two exact source hunks for that audit, never for execution.
+const retiredExtensionHost = {
+  path: ".config/nextest.toml",
+  before: {
+    bytes: 5213,
+    sha256: "d7aca4d0556a5ab2a4ef81c16d022883aaf2e17ddc48de3235e9cbe028596e86",
+  },
+  after: {
+    bytes: 4801,
+    sha256: "ff231a2a36a5b1a2fafa247a79785fb7aa08b70b035a3f14392a5648880d1595",
+  },
+  hunks: [
+    {
+      before:
+        "[test-groups]\n# Guest builders share target/contract-guests. Their OnceLocks are process-local,\n# so nextest must limit the guest builds across test processes on each runner.\ncontract-guests = { max-threads = 1 }\n\n[[profile.pr.overrides]]\nfilter = 'package(=vize_extension_host)'\ntest-group = \"contract-guests\"\n\n# Full T1 has no default-filter: every ordinary workspace case remains selected.\n",
+      after: "# Full T1 has no default-filter: every ordinary workspace case remains selected.\n",
+    },
+    {
+      before:
+        '[profile.full.junit]\npath = "junit.xml"\nstore-success-output = false\nstore-failure-output = true\n\n[[profile.full.overrides]]\nfilter = \'package(=vize_extension_host)\'\ntest-group = "contract-guests"\n',
+      after:
+        '[profile.full.junit]\npath = "junit.xml"\nstore-success-output = false\nstore-failure-output = true\n',
+    },
+  ],
+};
+
 function identity(body, expected) {
   assert.equal(body.length, expected.bytes);
   assert.equal(sha(body), expected.sha256);
@@ -31,6 +59,13 @@ function inverse(row, body) {
   const before = Buffer.from(text);
   identity(before, row.before);
   return before;
+}
+
+function inverseCurrent(row, body) {
+  return inverse(
+    row,
+    row.path === retiredExtensionHost.path ? inverse(retiredExtensionHost, body) : body,
+  );
 }
 
 function inverseMembership(body) {
@@ -74,7 +109,11 @@ void test("only the exact four-preset registration and metadata edits invert to 
       "tests/_fixtures/patina-eslint-vue-rule-map.json",
     ],
   );
-  for (const row of manifest.sources) inverse(row, read(row.path));
+  assert.deepEqual(
+    manifest.sources.find((row) => row.path === retiredExtensionHost.path).after,
+    retiredExtensionHost.before,
+  );
+  for (const row of manifest.sources) inverseCurrent(row, read(row.path));
   const old = inverseMembership(read(manifest.membership.path));
   const table = JSON.parse(read(manifest.membership.path).toString().split("---\n").at(-1));
   assert.deepEqual(
@@ -105,8 +144,16 @@ void test("missing, duplicated and unrelated source edits cannot receive the fin
       body.toString().replace(hunk.after, hunk.after + hunk.after),
       body.toString() + "\n// unrelated edit\n",
     ])
-      assert.throws(() => inverse(row, Buffer.from(text)), row.path);
+      assert.throws(() => inverseCurrent(row, Buffer.from(text)), row.path);
   }
+  const retired = read(retiredExtensionHost.path).toString();
+  for (const hunk of retiredExtensionHost.hunks)
+    for (const text of [
+      retired.replace(hunk.after, hunk.before),
+      retired.replace(hunk.after, hunk.after + hunk.after),
+      retired + "\n# unrelated edit\n",
+    ])
+      assert.throws(() => inverse(retiredExtensionHost, Buffer.from(text)));
   const body = read(manifest.membership.path);
   assert.throws(() =>
     inverseMembership(Buffer.from(body.toString().replace('"essential": [', '"unknown": ['))),
