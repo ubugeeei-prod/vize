@@ -1,11 +1,44 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const require = createRequire(import.meta.url);
+const tsdownRequire = createRequire(require.resolve("tsdown/package.json"));
+const npmDir = path.join(root, "npm");
+
+function collectStrings(value: unknown, out: string[]): void {
+  if (typeof value === "string") {
+    out.push(value);
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) collectStrings(item, out);
+    return;
+  }
+
+  if (value != null && typeof value === "object") {
+    for (const item of Object.values(value)) collectStrings(item, out);
+  }
+}
+
+function isEsmPackPackage(packageDir: string): boolean {
+  const configPath = path.join(packageDir, "vite.config.ts");
+  if (!fs.existsSync(configPath)) return false;
+
+  const config = fs.readFileSync(configPath, "utf-8");
+  return config.includes('format: "esm"') && config.includes("pack:");
+}
+
+function readRepoFile(filePath: string): string {
+  return fs.readFileSync(path.join(root, filePath), "utf-8");
+}
 
 interface ExportEntry {
   default?: string;
@@ -195,5 +228,126 @@ test("all three bundler-plugin packages require Node >= 22", () => {
       /^>=?\s*22/,
       `${packageDir} engines.node ${nodeEngine} should be a >= form`,
     );
+  }
+});
+
+test("esm packed npm manifests point at mjs and d.mts outputs", () => {
+  const failures: string[] = [];
+
+  for (const entry of fs.readdirSync(npmDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+
+    const packageDir = path.join(npmDir, entry.name);
+    if (!isEsmPackPackage(packageDir)) continue;
+
+    const packageJsonPath = path.join(packageDir, "package.json");
+    if (!fs.existsSync(packageJsonPath)) continue;
+
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8")) as {
+      bin?: unknown;
+      exports?: unknown;
+      main?: unknown;
+      name?: string;
+      types?: unknown;
+    };
+
+    const publishedPaths: string[] = [];
+    collectStrings(packageJson.main, publishedPaths);
+    collectStrings(packageJson.types, publishedPaths);
+    collectStrings(packageJson.bin, publishedPaths);
+    collectStrings(packageJson.exports, publishedPaths);
+
+    for (const publishedPath of publishedPaths) {
+      if (!publishedPath.includes("dist/")) continue;
+
+      if (publishedPath.endsWith(".js") || publishedPath.endsWith(".d.ts")) {
+        failures.push(`${packageJson.name ?? entry.name}: ${publishedPath}`);
+      }
+    }
+  }
+
+  assert.deepEqual(failures, []);
+});
+
+test("vite plugin publishes TypeScript client types for Vue imports", () => {
+  const packageJson = JSON.parse(readRepoFile("npm/builder/vite/package.json")) as {
+    exports?: Record<string, { import?: string; types?: string }>;
+    files?: string[];
+    types?: string;
+  };
+  const typeEntry = readRepoFile("npm/builder/vite/index.d.mts");
+  const clientTypes = readRepoFile("npm/builder/vite/client.d.ts");
+  const files = packageJson.files ?? [];
+  assert.equal(packageJson.types, "./index.d.mts");
+  assert.deepEqual(packageJson.exports?.["."], {
+    types: "./index.d.mts",
+    import: "./dist/index.mjs",
+    default: "./dist/index.mjs",
+  });
+  assert.ok(files.includes("client.d.ts") && files.includes("index.d.mts"));
+  assert.match(typeEntry, /import "\.\/client\.d\.ts"/);
+  assert.match(typeEntry, /from "\.\/dist\/index\.mjs"/);
+  assert.match(clientTypes, /declare module "\*\.vue"/);
+});
+
+test("vite plugin type entry resolves direct Vue imports", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vite-plugin-types-"));
+  try {
+    const pluginDir = path.join(tempDir, "node_modules", "@vizejs", "vite-plugin");
+    const vueDir = path.join(tempDir, "node_modules", "vue");
+    const srcDir = path.join(tempDir, "src");
+    fs.mkdirSync(path.join(pluginDir, "dist"), { recursive: true });
+    fs.mkdirSync(vueDir, { recursive: true });
+    fs.mkdirSync(srcDir, { recursive: true });
+
+    for (const file of ["package.json", "index.d.mts", "client.d.ts"]) {
+      fs.copyFileSync(path.join(root, "npm", "builder/vite", file), path.join(pluginDir, file));
+    }
+
+    fs.writeFileSync(path.join(pluginDir, "dist", "index.mjs"), "\n");
+    fs.writeFileSync(
+      path.join(pluginDir, "dist", "index.d.mts"),
+      "declare const vize: () => unknown;\nexport { vize as default, vize };\n",
+    );
+    fs.writeFileSync(path.join(vueDir, "package.json"), '{"name":"vue","types":"./index.d.ts"}\n');
+    fs.writeFileSync(
+      path.join(vueDir, "index.d.ts"),
+      "export type DefineComponent<P = {}, B = {}, D = any> = { __props?: P; __bindings?: B; __data?: D };\n",
+    );
+    fs.writeFileSync(
+      path.join(tempDir, "tsconfig.json"),
+      JSON.stringify(
+        {
+          compilerOptions: {
+            module: "ESNext",
+            moduleResolution: "Bundler",
+            strict: true,
+            target: "ES2022",
+            types: ["@vizejs/vite-plugin"],
+          },
+          include: ["src"],
+        },
+        null,
+        2,
+      ),
+    );
+    fs.writeFileSync(path.join(srcDir, "App.vue"), "<template />\n");
+    fs.writeFileSync(path.join(srcDir, "main.ts"), 'import App from "./App.vue";\nApp;\n');
+
+    const result = spawnSync(
+      process.execPath,
+      [tsdownRequire.resolve("typescript/bin/tsc"), "-p", tempDir, "--noEmit", "--pretty", "false"],
+      {
+        encoding: "utf8",
+      },
+    );
+
+    assert.equal(
+      result.status,
+      0,
+      `${result.error?.message ?? ""}\n${result.stderr}\n${result.stdout}`.trim(),
+    );
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true });
   }
 });

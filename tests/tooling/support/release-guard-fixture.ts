@@ -84,7 +84,7 @@ export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
       "const fs = require('node:fs');",
       "const args = process.argv.slice(2);",
       "fs.appendFileSync(process.env.NODE_LOG, args.join(' ') + '\\n');",
-      "if (args[0] !== '--test' || args[1] !== 'tests/tooling/package-manifests.test.ts') process.exit(1);",
+      "if (JSON.stringify(args) !== JSON.stringify(['--test', 'tests/tooling/package-manifests.test.ts', 'tests/tooling/bundler-plugin-manifests.test.ts', 'tests/tooling/published-snapshot-publication.test.ts'])) process.exit(1);",
       "const countPath = process.env.MANIFEST_TEST_COUNT;",
       "const count = Number(fs.readFileSync(countPath, 'utf8')) + 1;",
       "fs.writeFileSync(countPath, String(count));",

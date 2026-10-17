@@ -305,7 +305,7 @@ test("release script checks manifest alignment before repository mutation", () =
     );
     assert.match(
       fixture.nodeLog,
-      /^--test tests\/tooling\/package-manifests\.test\.ts tests\/tooling\/published-snapshot-publication\.test\.ts$/m,
+      /^--test tests\/tooling\/package-manifests\.test\.ts tests\/tooling\/bundler-plugin-manifests\.test\.ts tests\/tooling\/published-snapshot-publication\.test\.ts$/m,
     );
     assert.doesNotMatch(fixture.gitLog, /^(?:add|commit|tag|push)\b/m);
     assert.equal(fs.readFileSync(fixture.cargoTomlPath, "utf8"), fixture.cargoToml);

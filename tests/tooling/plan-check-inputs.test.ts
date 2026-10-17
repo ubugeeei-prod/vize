@@ -55,6 +55,21 @@ await test("dependency and security changes always audit and check engine compat
   }
 });
 
+await test("both manifest test owners select Node compatibility without rebuilding apps", () => {
+  for (const path of [
+    "tests/tooling/package-manifests.test.ts",
+    "tests/tooling/bundler-plugin-manifests.test.ts",
+  ]) {
+    assert.deepEqual(planCheckInputs([path]), {
+      full: false,
+      rust: false,
+      dependencies: false,
+      engines: true,
+      apps: false,
+    });
+  }
+});
+
 await test("npm Vue examples select the current-source opinionated lint consumer", () => {
   for (const path of [
     "npm/compose/core/examples/virtual-list.vue",

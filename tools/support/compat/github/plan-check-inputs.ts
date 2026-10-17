@@ -23,7 +23,7 @@ export function planCheckInputs(paths: readonly string[], full = false) {
     engines:
       dependencies ||
       matches(
-        /^tools\/(?:config|commands|support)\/.*\.(?:[cm]?js|[cm]?ts)$|^tests\/tooling\/(?:node-engine-matrix|package-manifests|dependency-security-compat)\.test\./,
+        /^tools\/(?:config|commands|support)\/.*\.(?:[cm]?js|[cm]?ts)$|^tests\/tooling\/(?:node-engine-matrix|package-manifests|bundler-plugin-manifests|dependency-security-compat)\.test\./,
       ),
     apps:
       dependencies ||
