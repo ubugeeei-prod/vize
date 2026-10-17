@@ -265,24 +265,37 @@ pub(crate) fn plan_whitespace<'a>(
 
     for group in groups.get(first_group..last_group).unwrap_or_default() {
         if group.ws_only {
-            // Group neighbours are the nearest non-text children (on
-            // parser output exactly `whitespace.rs:107-113`). This is
-            // the whole rule in both comment configurations: a comment
-            // the compile preserves is a real, non-text-like neighbour,
-            // and one it drops was already absorbed into this group by
-            // `text_groups`, so it is not a neighbour at all. The four
-            // comment-edge special cases this arm used to carry were
-            // emulating the second case from inside the first, and
-            // measured against `@vue/compiler-dom` they got it wrong on
-            // the shapes `dropped_comment_text_runs` now pins.
-            let prev_is_text = group.start > lo
-                && group
+            // Preserved comments are actual neighbours. Dropped comments
+            // were absorbed into the text group above, so this rule cannot
+            // erase the space between elements around an invisible comment.
+            let prev = if group.start > lo {
+                group
                     .start
                     .checked_sub(1)
                     .and_then(|before| children.get(before))
-                    .is_some_and(text_like);
-            let next_is_text = group.end < hi && children.get(group.end).is_some_and(text_like);
-            if !prev_is_text && !next_is_text && group.has_newline {
+            } else {
+                None
+            };
+            let next = if group.end < hi {
+                children.get(group.end)
+            } else {
+                None
+            };
+            let prev_is_text = prev.is_some_and(text_like);
+            let next_is_text = next.is_some_and(text_like);
+            // Match the parser's Vue condense policy, including same-line
+            // spaces between a comment and another comment or element.
+            let beside_comment = matches!(
+                (prev, next),
+                (
+                    Some(SurfaceChild::Comment(_)),
+                    Some(SurfaceChild::Comment(_) | SurfaceChild::Element(_))
+                ) | (
+                    Some(SurfaceChild::Element(_)),
+                    Some(SurfaceChild::Comment(_))
+                )
+            );
+            if beside_comment || (!prev_is_text && !next_is_text && group.has_newline) {
                 drop_members(&mut plan, group);
             } else {
                 // The condensed space belongs on the group's first

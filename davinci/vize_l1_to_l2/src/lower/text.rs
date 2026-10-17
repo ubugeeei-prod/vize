@@ -54,7 +54,8 @@
 //! (`whitespace.rs:69-165`), over the L1 child list of every lowered
 //! region: leading/trailing whitespace-only text removed; a
 //! whitespace-only run between two non-text-like neighbours with a
-//! newline removed, condensed to one space otherwise; interior runs of
+//! newline removed; spaces adjoining a comment and another comment or element
+//! removed; condensed to one space otherwise; interior runs of
 //! the Vue alphabet `[ \t\n\f\r]` in mixed text collapsed to one space.
 //! Exemptions follow the shipped DOM configuration: `<pre>` subtrees
 //! (`is_pre_tag`, `crates/vize_atelier_dom/src/compile/stage_options.rs`).
