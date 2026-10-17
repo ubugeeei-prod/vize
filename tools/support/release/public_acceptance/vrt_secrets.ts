@@ -2,12 +2,17 @@ import assert from "node:assert/strict";
 import { fstatSync, fsyncSync, writeSync } from "node:fs";
 import { lstat, readFile, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { isAnyArrayBuffer, isArrayBufferView, isNativeError, isProxy } from "node:util/types";
 import { inventory, type Evidence } from "./vrt_artifacts.ts";
 import { sha256 } from "./vrt_fixtures.ts";
 import { scanRetained } from "./vrt_retained_scan.ts";
 
 const receiptName = "vrt-log-barrier.json";
 const schema = "vize-public-vrt-log-barrier-v1";
+// Snapshot the observer's Node formatter before any installed product executes.
+const nativeStackDescriptor = Object.getOwnPropertyDescriptor(new Error(), "stack");
+const nativePrepareStackTrace = Object.getOwnPropertyDescriptor(Error, "prepareStackTrace")?.value;
+const errorToStringDescriptor = Object.getOwnPropertyDescriptor(Error.prototype, "toString");
 
 const diagnosticPhases = [
   "observer-entry",
@@ -84,6 +89,9 @@ export class VrtSecrets {
   #tokens: Buffer[] = [];
   #writes = new Set<Promise<void>>();
   #writeFailures = 0;
+  #failureDetails: Array<{ kind: "save" | "error"; file?: string; detail: unknown }> = [];
+  #failureBytes = 0;
+  #failureTruncated = false;
   #closed = false;
   #phase: VrtPhase = "observer-entry";
 
@@ -142,8 +150,9 @@ export class VrtSecrets {
       this.#writes.add(writing);
       void writing.then(
         () => this.#writes.delete(writing),
-        () => {
+        (error: unknown) => {
           this.#writeFailures++;
+          this.#diagnose("save", error, name);
           this.#writes.delete(writing);
         },
       );
@@ -163,7 +172,90 @@ export class VrtSecrets {
     return safe;
   }
 
+  /** Private bounded evidence only; never evaluate user getters, hooks or binary payloads. */
+  #diagnose(kind: "save" | "error", error: unknown, file?: string): void {
+    if (this.#failureDetails.length >= 16 || this.#failureTruncated) {
+      this.#failureTruncated = true;
+      return;
+    }
+    try {
+      let nodes = 0;
+      const seen = new WeakSet<object>();
+      const text = (value: string) =>
+        value.length > 4096 ? "[omitted oversized string]" : this.#text(value);
+      const data = (value: object, key: string): PropertyDescriptor | undefined => {
+        let current: object | null = value;
+        for (let depth = 0; current && depth < 8; depth++) {
+          if (isProxy(current)) return {};
+          const descriptor = Object.getOwnPropertyDescriptor(current, key);
+          if (descriptor) return descriptor;
+          current = Object.getPrototypeOf(current);
+        }
+        return current ? {} : undefined;
+      };
+      const nativeStack = (value: object, descriptor: PropertyDescriptor): unknown => {
+        const prepare = data(Error, "prepareStackTrace");
+        if (
+          !isNativeError(value) ||
+          descriptor.get !== nativeStackDescriptor?.get ||
+          !nativeStackDescriptor?.get ||
+          (prepare && (!("value" in prepare) || prepare.value !== nativePrepareStackTrace)) ||
+          data(value, "toString")?.value !== errorToStringDescriptor?.value ||
+          ["name", "message"].some((key) => typeof data(value, key)?.value !== "string")
+        )
+          return { omitted: "accessor" };
+        return nativeStackDescriptor.get.call(value);
+      };
+      const snapshot = (value: unknown, depth = 0): unknown => {
+        if (++nodes > 128 || depth > 6) return { omitted: "depth-or-node-limit" };
+        if (typeof value === "string") return text(value);
+        if (value === null || typeof value === "boolean") return value;
+        if (typeof value === "number")
+          return Number.isFinite(value) ? value : { omitted: "number" };
+        if (typeof value !== "object") return { omitted: typeof value };
+        if (isProxy(value)) return { omitted: "proxy" };
+        if (isArrayBufferView(value) || isAnyArrayBuffer(value)) return { omitted: "binary" };
+        if (seen.has(value)) return { omitted: "cycle" };
+        seen.add(value);
+        const keys = Reflect.ownKeys(value);
+        return {
+          type: Array.isArray(value) ? "array" : isNativeError(value) ? "error" : "object",
+          properties: keys.slice(0, 32).map((key) => {
+            const descriptor = Object.getOwnPropertyDescriptor(value, key);
+            return {
+              name: text(typeof key === "string" ? key : String(key)),
+              value:
+                descriptor && "value" in descriptor
+                  ? snapshot(descriptor.value, depth + 1)
+                  : key === "stack" && descriptor
+                    ? snapshot(nativeStack(value, descriptor), depth + 1)
+                    : { omitted: "accessor" },
+            };
+          }),
+          ...(keys.length > 32 ? { omittedProperties: true } : {}),
+        };
+      };
+      const record = {
+        kind,
+        ...(file === undefined ? {} : { file: text(file) }),
+        detail: snapshot(error),
+      };
+      // Include pretty-print and parent indentation in the whole receipt budget.
+      const bytes =
+        Buffer.byteLength(JSON.stringify(record, null, 2).replace(/^/gm, "        ")) + 2;
+      if (this.#failureBytes + bytes > 64 * 1024) this.#failureTruncated = true;
+      else {
+        this.#failureDetails.push(record);
+        this.#failureBytes += bytes;
+      }
+    } catch {
+      // Diagnostics never replace the original rejection or interrupt owned cleanup.
+      this.#failureTruncated = true;
+    }
+  }
+
   sanitizeError(error: unknown, depth = 0): unknown {
+    if (depth === 0) this.#diagnose("error", error);
     if (this.#tokens.length === 0) return error;
     if (depth > 4) return new Error("Additional nested failure omitted");
     const message = this.#text(error instanceof Error ? error.message : String(error));
@@ -281,6 +373,10 @@ export class VrtSecrets {
           allRetainedArtifactsScanned: true,
           credentialCount: this.#tokens.length,
           retainedWriterFailures: this.#writeFailures,
+          failureDiagnostics: {
+            entries: JSON.parse(this.#text(JSON.stringify(this.#failureDetails))),
+            truncated: this.#failureTruncated,
+          },
           files: before,
           retainedOutput,
           retainedFiles,
@@ -297,6 +393,8 @@ export class VrtSecrets {
   erase(): void {
     for (const token of this.#tokens) token.fill(0);
     this.#tokens.length = 0;
+    this.#failureDetails.length = 0;
+    this.#failureBytes = 0;
     this.#closed = true;
   }
 }
