@@ -31,6 +31,7 @@ mod native_prop_names;
 mod node;
 mod patterns;
 mod ref_instances;
+mod root_owner_packets;
 mod slot_outlet_props;
 pub(crate) use slot_outlet_props::has_inferred_slots;
 mod slot_scope;
