@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
+import { RUST_TEST_COHORT_IDS } from "../../tools/support/compat/github/rust-test-cohorts.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 type Step = {
@@ -66,7 +67,7 @@ test("source planning uses Node and offline metadata before selecting affected p
   assert.equal(ciSelection?.if, "${{ steps.plan.outputs.tooling == 'true' }}");
   assert.equal(
     ciSelection?.run,
-    "node --test tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-test-archive.test.mjs tests/tooling/rust-build-evidence.test.mjs tests/tooling/release-input-scopes.test.mjs",
+    "node --test tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-test-archive.test.mjs tests/tooling/rust-build-evidence.test.mjs tests/tooling/release-input-scopes.test.mjs tests/tooling/pinned-fixture-hydration.test.ts",
   );
 });
 
@@ -321,4 +322,59 @@ test("merge Rust timing receipts remain available after workspace failure", () =
   );
   assert.equal(upload?.with?.["if-no-files-found"], "error");
   assert.equal(summary?.run, "node tools/support/compat/github/rust-test-timings.mjs");
+});
+
+test("unchanged queue gate hydrates the same pinned fixture for all five full Rust cohorts", () => {
+  const job = rust.jobs["pr-rust-shard"];
+  assert.ok(job.steps);
+  const step = job.steps.find(
+    (value) => value.name === "Hydrate the required ElementPlus projection fixture",
+  )!;
+  assert.equal(step.uses, "./.github/actions/hydrate-pinned-fixture");
+  assert.equal(
+    step.if,
+    "${{ github.event_name == 'merge_group' && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}",
+  );
+  assert.deepEqual(step.with, { fixture: "tests/_fixtures/_git/element-plus" });
+  assert.equal(step["continue-on-error"], undefined);
+  assert.deepEqual(job.needs, ["merge-rust-source"]);
+  assert.deepEqual(job.strategy, {
+    "fail-fast": false,
+    matrix: "${{ fromJSON(inputs.rust-plan).testMatrix }}",
+  });
+  assert.deepEqual(RUST_TEST_COHORT_IDS, [
+    "compiler",
+    "typechecker",
+    "language-server",
+    "lint-and-format",
+    "cli-and-integrations",
+  ]);
+  const action = parse(
+    readRepoFile(".github", "actions", "hydrate-pinned-fixture", "action.yml"),
+  ) as {
+    runs: { steps: Record<string, unknown>[] };
+  };
+  const selection = source.jobs["pr-source-plan"].steps?.find(
+    (step) => step.name === "Test CI selection when its inputs change",
+  );
+  assert.ok(selection);
+  assert.equal(selection.if, "${{ steps.plan.outputs.tooling == 'true' }}");
+  assert.equal(selection["continue-on-error"], undefined);
+  assert.deepEqual(selection.run?.split(/\s+/), [
+    "node",
+    "--test",
+    "tests/tooling/ci-iteration-plans.test.ts",
+    "tests/tooling/pr-required-rust.test.ts",
+    "tests/tooling/rust-test-cohorts.test.ts",
+    "tests/tooling/rust-test-archive.test.mjs",
+    "tests/tooling/rust-build-evidence.test.mjs",
+    "tests/tooling/release-input-scopes.test.mjs",
+    "tests/tooling/pinned-fixture-hydration.test.ts",
+  ]);
+  assert.equal(action.runs.steps.length, 1);
+  assert.equal(
+    action.runs.steps[0]!.run,
+    'node "$GITHUB_ACTION_PATH/hydrate-pinned-fixture.ts" "$GITHUB_WORKSPACE" "$FIXTURE_PATH"',
+  );
+  assert.equal(action.runs.steps[0]!["continue-on-error"], undefined);
 });
