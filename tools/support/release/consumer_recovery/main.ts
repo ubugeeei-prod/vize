@@ -12,6 +12,7 @@ import {
   files,
   verifiedRecovery,
   verifyIntegration,
+  verifyStoredIntegration,
   type Original,
 } from "./custody.ts";
 import { verifyConsumer } from "./consumer.ts";
@@ -21,6 +22,7 @@ import {
   assertFresh,
   consumerAttempt,
   identity,
+  integrationIdentity,
   object,
   positive,
   repository,
@@ -118,9 +120,17 @@ if (operation === "prepare" || operation === "finalize") {
       admission(live),
     );
     save(output, "publication-after.json", publication);
+    const integration = verifyIntegration(publication.github, expected);
+    save(output, "integration-after.json", integration);
     same(
-      verifyIntegration(publication.github, expected),
-      load(path.join(output, "integration.json")),
+      integrationIdentity(integration),
+      integrationIdentity(
+        verifyStoredIntegration(
+          object(publication.github),
+          expected,
+          load(path.join(output, "integration.json")),
+        ),
+      ),
       "original signed integration changed",
     );
     const receipt = {
@@ -166,6 +176,11 @@ if (operation === "prepare" || operation === "finalize") {
   const proof = await verifiedRecovery(expected, source.recoveryRun);
   const publication = await verifyPublication(derivePublicationPlan(root, source.head), source);
   const integration = verifyIntegration(publication.github, expected);
+  same(
+    integrationIdentity(integration),
+    integrationIdentity(proof.integration),
+    "delivery changed during verification",
+  );
   assert.ok(destination, "verification evidence output required");
   mkdirSync(destination, { recursive: false });
   save(destination, "verified.json", {

@@ -53,6 +53,100 @@ export function integrationReference(tag: unknown, source: unknown): number {
   same(tag, `#${canonical}`, "source/tag integration receipt mismatch");
   return number;
 }
+/** Compare authenticated delivery authority while retaining complete API responses separately. */
+export function integrationIdentity(value: unknown) {
+  const snapshot = object(value);
+  const integration = object(snapshot.integration);
+  const merge = object(snapshot.merge);
+  const commit = object(merge.commit);
+  const verification = object(commit.verification);
+  const text = (value: unknown): string => {
+    assert.ok(typeof value === "string" && value.length > 0, "nonempty authority field required");
+    return value;
+  };
+  const hash = (value: unknown): string => {
+    const result = text(value);
+    assert.match(result, /^[0-9a-f]{40}$/, "full authority SHA required");
+    return result;
+  };
+  const number = (value: unknown) => {
+    assert.ok(typeof value === "number", "numeric API identity required");
+    return positive(value);
+  };
+  const repo = (value: unknown) => {
+    const record = object(value);
+    same(record.full_name, repository, "foreign delivery repository");
+    return { id: number(record.id), full_name: text(record.full_name) };
+  };
+  const side = (value: unknown) => {
+    const record = object(value);
+    return { sha: hash(record.sha), ref: text(record.ref), repo: repo(record.repo) };
+  };
+  const body = text(integration.body);
+  const markers = ["source", "head", "cut", "tag"].map((name) => {
+    const key = `vize-release-pin-${name}`;
+    const matches = body.match(new RegExp(`<!-- ${key}: [^>\\r\\n]+ -->`, "g")) ?? [];
+    same(matches.length, 1, `unique canonical ${key} required`);
+    same((body.match(new RegExp(`<!--\\s*${key}\\s*:`, "g")) ?? []).length, 1, `ambiguous ${key}`);
+    return matches[0];
+  });
+  same(integration.merged, true, "merged delivery required");
+  same(verification.verified, true, "signed delivery required");
+  same(verification.reason, "valid", "valid delivery signature required");
+  const sha = hash(merge.sha);
+  same(integration.merge_commit_sha, sha, "delivery PR/merge identity mismatch");
+  assert.ok(Array.isArray(merge.parents) && merge.parents.length > 0, "delivery parents required");
+  const runs = object(snapshot.gates).workflow_runs;
+  assert.ok(Array.isArray(runs), "delivery Check observations required");
+  const checks = runs
+    .map(object)
+    .filter((run) => run.head_sha === sha && run.event === "push" && run.head_branch === "main")
+    .map((run) => {
+      same(run.path, ".github/workflows/check.yml", "delivery Check workflow mismatch");
+      return {
+        id: number(run.id),
+        workflow_id: number(run.workflow_id),
+        path: run.path,
+        head_sha: hash(run.head_sha),
+        head_branch: run.head_branch,
+        event: run.event,
+        run_attempt: number(run.run_attempt),
+        status: text(run.status),
+        conclusion: text(run.conclusion),
+        repository: repo(run.repository),
+        head_repository: repo(run.head_repository),
+      };
+    })
+    .sort((left, right) => left.id - right.id);
+  assert.ok(
+    checks.some((run) => run.status === "completed" && run.conclusion === "success"),
+    "successful exact original delivery Check required",
+  );
+  same(new Set(checks.map((run) => run.id)).size, checks.length, "duplicate delivery Check");
+  return {
+    integration: {
+      id: number(integration.id),
+      number: number(integration.number),
+      merged: integration.merged,
+      merge_commit_sha: sha,
+      head: side(integration.head),
+      base: side(integration.base),
+      markers,
+    },
+    merge: {
+      sha,
+      tree: hash(object(commit.tree).sha),
+      parents: merge.parents.map((parent) => hash(object(parent).sha)),
+      verification: {
+        verified: verification.verified,
+        reason: verification.reason,
+        signature: text(verification.signature),
+        payload: text(verification.payload),
+      },
+    },
+    checks,
+  };
+}
 export function failureLogArguments(id: unknown) {
   return [
     "api",
