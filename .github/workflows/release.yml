@@ -897,28 +897,12 @@ jobs:
               ( cd "$(dirname "$artifact")" && sha256sum "$(basename "$artifact")" ) > "${artifact}.sha256"
             fi
           done
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Sign release artifacts (keyless)
         env:
           COSIGN_YES: "true"
-        run: |
-          for artifact in \
-            cli-artifacts/*.tar.gz \
-            cli-artifacts/*.zip \
-            editor-extension-artifacts/editors/vscode/dist/*.vsix \
-            editor-extension-artifacts/*.tar.gz \
-            vize-${RELEASE_TAG_NAME}-cyclonedx.sbom.json \
-            vize-${RELEASE_TAG_NAME}-spdx.sbom.json; do
-            if [ -f "$artifact" ]; then
-              echo "Signing $artifact"
-              cosign sign-blob --yes \
-                --bundle "${artifact}.cosign.bundle" \
-                --output-certificate "${artifact}.pem" \
-                --output-signature "${artifact}.sig" \
-                "$artifact"
-            fi
-          done
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
+        run: node tools/support/release/sign_release_artifacts.ts "$RELEASE_TAG_NAME"
       - name: Generate notes for the exact published version range
         env:
           GH_TOKEN: ${{ github.token }}
