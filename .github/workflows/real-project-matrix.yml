@@ -248,7 +248,7 @@ jobs:
         env:
           LINT_DIVERGENCE_MODE: ${{ inputs.lint_divergence_mode || 'enforce' }}
         run: |
-          rust-script tools/commands/fixtures/lint-divergence-report.rs \
+          node tools/commands/fixtures/lint-divergence-report.ts \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
             --measure-coverage-gap \

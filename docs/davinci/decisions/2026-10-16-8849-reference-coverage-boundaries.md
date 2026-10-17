@@ -114,3 +114,21 @@ reference as real subprocesses, retains complete reports and raw process packets
 and checks the TypeScript successor against every original report contract. The
 runtime identity and elapsed measurements remain explicitly distinguished; no
 historical source result is promoted into current native or full Matrix credit.
+
+## Executed migration qualification
+
+The authored successor `fb7fae15a684b898aa77eb6418af5368258e3c32` passed
+[the complete frozen Rust/TypeScript contract run](https://github.com/ubugeeei-prod/vize/actions/runs/39022257417):
+13 real subprocess comparisons, including the five ignore/glob boundary vectors,
+complete original/proposed reports, raw numeric identity, all reviewed findings,
+and the explicitly bounded measured-files correction. The subsequent reference
+controls passed 50 tests; their one existing native integration test requires
+`VIZE_TEST_BIN` and was not executed by that source-only carrier.
+
+The production Matrix now invokes the TypeScript entry with the same arguments,
+environment, timeout, budgets and report-presence checks. Its help names the Node
+entry. The superseded Rust command and its unused surface module are retired from
+the current tree; their whole bytes remain authenticated by the two Git references
+above and are executed by the contract carrier. Final exact-head qualification
+continues to run both references after this promotion. This is report migration
+evidence, not a new native product result or a complete Matrix campaign.

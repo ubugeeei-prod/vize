@@ -17,7 +17,7 @@ export interface Args {
   vizeBin: string | null;
 }
 export const help = [
-  "Usage: rust-script tools/commands/fixtures/lint-divergence-report.rs [options]",
+  "Usage: node tools/commands/fixtures/lint-divergence-report.ts [options]",
   "",
   "Classify vize lint against eslint-plugin-vue over the pinned real projects.",
   "",
