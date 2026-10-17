@@ -39,7 +39,7 @@ impl TemplateComponentBindings {
             "$scopedSlots" => 1,
             _ => return false,
         };
-        !self.unknown[index] && !self.has_authored_value(name)
+        self.unknown.get(index).is_some_and(|unknown| !*unknown) && !self.has_authored_value(name)
     }
 
     fn refuse(&mut self) {

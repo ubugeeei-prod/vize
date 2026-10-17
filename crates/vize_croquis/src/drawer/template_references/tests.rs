@@ -204,6 +204,7 @@ fn if_branch_keeps_original_condition_key_and_child_owners() {
     use vize_l0::{Box, Vec as ArenaVec};
     use vize_relief::{IfBranchNode, IfNode, PropNode, TemplateChildNode};
     let allocator = Allocator::default();
+    let arena = &allocator;
     let source = "<div v-if=\"$listeners\" :key=\"$listeners\">{{ $listeners }}</div>";
     let (mut root, errors, syntax) =
         Parser::new(&allocator, source).parse_with_template_syntax_facts();
@@ -215,7 +216,7 @@ fn if_branch_keeps_original_condition_key_and_child_owners() {
     let mut key = None;
     // Move the genuine original nodes through the structural If conversion;
     // no expression, source map, span or retained AST is manufactured here.
-    for mut property in std::mem::replace(&mut element.props, ArenaVec::new_in(&allocator)) {
+    for mut property in std::mem::replace(&mut element.props, ArenaVec::new_in(&arena)) {
         match &mut property {
             PropNode::Directive(directive) if directive.name == "if" => {
                 condition = directive.exp.take();
@@ -228,11 +229,11 @@ fn if_branch_keeps_original_condition_key_and_child_owners() {
     }
     let mut branch = IfBranchNode::new(&allocator, condition, element.loc.clone());
     branch.user_key = key;
-    branch.children = std::mem::replace(&mut element.children, ArenaVec::new_in(&allocator));
+    branch.children = std::mem::replace(&mut element.children, ArenaVec::new_in(&arena));
     let mut conditional = IfNode::new(&allocator, element.loc.clone());
     conditional.branches.push(branch);
     root.children
-        .push(TemplateChildNode::If(Box::new_in(conditional, &allocator)));
+        .push(TemplateChildNode::If(Box::new_in(conditional, &arena)));
     let packet = collect_template_references(&root, &syntax);
     let expected: Vec<_> = source
         .match_indices("$listeners")
