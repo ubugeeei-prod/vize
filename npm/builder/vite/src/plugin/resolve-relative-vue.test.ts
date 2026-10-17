@@ -5,6 +5,7 @@ import path from "node:path";
 
 import type { VizePluginState } from "./state.ts";
 import { resolveIdHook } from "./resolve.ts";
+import { loadHook } from "./load.ts";
 import { toPluginVisibleVirtualId } from "../virtual.ts";
 
 const testRoot = fs.mkdtempSync(
@@ -167,9 +168,36 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   writeFixtureFile(source, "<template><p>Hello</p></template>");
   const state = createState(projectRoot);
   const context = { resolve: async () => null };
+  const legacyId = source + "?vue&vize-ssr&t=123";
+  const directLegacy = loadHook(createState(projectRoot), legacyId);
+  const resolvedLegacy = expectResolvedId(await resolveIdHook(context, state, legacyId));
+  const resolvedLegacyLoad = loadHook(createState(projectRoot), resolvedLegacy);
+  assert.ok(directLegacy && resolvedLegacyLoad);
+  const legacyCode = typeof directLegacy === "string" ? directLegacy : directLegacy.code;
+  const resolvedLegacyCode =
+    typeof resolvedLegacyLoad === "string" ? resolvedLegacyLoad : resolvedLegacyLoad.code;
+  assert.match(
+    legacyCode,
+    /ssrRender/,
+    "the native compiler must produce the real legacy SSR module",
+  );
+  assert.equal(
+    resolvedLegacyCode,
+    legacyCode,
+    "Resolve then load must retain the complete native SSR output when only the legacy query selects SSR",
+  );
+  const directClient = loadHook(createState(projectRoot), toPluginVisibleVirtualId(source));
+  assert.ok(directClient);
+  const clientCode = typeof directClient === "string" ? directClient : directClient.code;
+  assert.notEqual(
+    clientCode,
+    legacyCode,
+    "the genuine client and SSR compilations must be distinguishable",
+  );
+  assert.doesNotMatch(clientCode, /ssrRender/);
   for (const ssr of [false, true]) {
     for (const suffix of ["?vue&vize", "?vue&vize&used=true", "?vue&vize-ssr&t=123"]) {
-      const expected = toPluginVisibleVirtualId(source, ssr, suffix);
+      const expected = ssr ? toPluginVisibleVirtualId(source, true, suffix) : source + suffix;
       for (const id of ["/src/Hello.vue" + suffix, source + suffix, "/@fs" + source + suffix]) {
         assert.equal(
           expectResolvedId(await resolveIdHook(context, state, id, undefined, { ssr })),

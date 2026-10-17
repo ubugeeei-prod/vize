@@ -823,7 +823,9 @@ export async function resolveIdHook(
     if (isDependencyScan) {
       return resolvedPath;
     }
-    return toPluginVisibleVirtualId(resolvedPath, isSsrRequest, request.querySuffix);
+    return isSsrRequest
+      ? toPluginVisibleVirtualId(resolvedPath, true, request.querySuffix)
+      : `${resolvedPath}${request.querySuffix}`;
   }
 
   // Skip all virtual module IDs
