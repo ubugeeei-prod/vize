@@ -55,7 +55,11 @@ pub(super) fn reference(tag: &str) -> String {
 pub(super) fn identity(receipt: &Value) -> Result<&Value, String> {
     if !matches!(
         receipt["schema"].as_str(),
-        Some("vize-unpublished-retirement-v1" | "vize-unpublished-retirement-v2")
+        Some(
+            "vize-unpublished-retirement-v1"
+                | "vize-unpublished-retirement-v2"
+                | "vize-unpublished-retirement-v3"
+        )
     ) {
         return Err("Unknown immutable retirement schema".into());
     }
@@ -67,12 +71,27 @@ pub(super) fn identity(receipt: &Value) -> Result<&Value, String> {
         super::super::pr_contract::sha(identity[key].as_str().ok_or("Missing retirement SHA")?)?;
     }
     super::super::pr_contract::tag(identity["tag"].as_str().ok_or("Missing retirement tag")?)?;
+    let before_release = receipt["schema"] == "vize-unpublished-retirement-v3";
+    if before_release
+        && (identity["origin"] != "pre-release-qualification"
+            || identity.get("releaseRun").is_some()
+            || identity.get("releaseAttempt").is_some())
+    {
+        return Err(
+            "Pre-release retirement requires its explicit origin and no Release identity".into(),
+        );
+    }
+    let proof = if before_release {
+        ["qualificationRun", "qualificationAttempt"]
+    } else {
+        ["releaseRun", "releaseAttempt"]
+    };
     for key in [
         "sourcePr",
         "integrationPr",
-        "releaseRun",
+        proof[0],
         "operatorRun",
-        "releaseAttempt",
+        proof[1],
         "operatorAttempt",
     ] {
         if identity[key].as_u64().is_none_or(|n| n == 0) {
@@ -83,7 +102,10 @@ pub(super) fn identity(receipt: &Value) -> Result<&Value, String> {
 }
 
 pub(super) fn log_suffix(receipt: &Value) -> &'static str {
-    if receipt["schema"] == "vize-unpublished-retirement-v2" {
+    if matches!(
+        receipt["schema"].as_str(),
+        Some("vize-unpublished-retirement-v2" | "vize-unpublished-retirement-v3")
+    ) {
         ".log.gz"
     } else {
         ".log"
@@ -250,12 +272,21 @@ pub(super) fn install_authorized(
             .as_bytes(),
         root,
     )?;
-    let message = format!(
-        "Vize retired unpublished release {tag}\n\nSource-PR: #{}\nSource-head: {}\nRelease-run: {}\nOriginal objects and artifact metadata remain diagnostic evidence only.",
-        fields["sourcePr"],
-        fields["head"].as_str().unwrap(),
-        fields["releaseRun"]
-    );
+    let message = if receipt["schema"] == "vize-unpublished-retirement-v3" {
+        format!(
+            "Vize retired unpublished pre-release qualification {tag}\n\nSource-PR: #{}\nSource-head: {}\nQualification-run: {}\nOriginal objects and artifact metadata remain diagnostic evidence only.",
+            fields["sourcePr"],
+            fields["head"].as_str().unwrap(),
+            fields["qualificationRun"]
+        )
+    } else {
+        format!(
+            "Vize retired unpublished release {tag}\n\nSource-PR: #{}\nSource-head: {}\nRelease-run: {}\nOriginal objects and artifact metadata remain diagnostic evidence only.",
+            fields["sourcePr"],
+            fields["head"].as_str().unwrap(),
+            fields["releaseRun"]
+        )
+    };
     let head = github::git(
         &[
             "commit-tree",
