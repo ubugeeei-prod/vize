@@ -95,10 +95,12 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { fetch-depth: 2 }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
+          version: latest
           node-version-file: "package.json"
           cache: true
+          cache-save: false
           run-install: false
       - name: Guard legacy crate deletion
         if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
