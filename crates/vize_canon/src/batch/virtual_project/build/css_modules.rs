@@ -291,8 +291,9 @@ fn collect_classes_from_selector_prelude(
 
     let mut index = 0usize;
     let mut local = true;
-    // Each function keeps its outer mode and its own initial mode: commas
-    // reset bare `:global`/`:local` only within that selector list.
+    // Functions restore the surrounding scope when they close. A bare global
+    // scope survives commas inside a selector function; only a top-level comma
+    // starts a fresh local selector.
     let mut functions = Vec::new();
     let mut attribute_depth = 0usize;
     while let Some(&byte) = trimmed.get(index) {
@@ -312,16 +313,16 @@ fn collect_classes_from_selector_prelude(
             if let Some((keyword, mode)) = scope {
                 index += keyword.len();
                 if trimmed.get(index) == Some(&b'(') {
-                    functions.push((local, mode));
+                    functions.push(local);
                     index += 1;
                 }
                 local = mode;
                 continue;
             }
             match byte {
-                b'(' => functions.push((local, local)),
-                b')' => local = functions.pop()?.0,
-                b',' => local = functions.last().map_or(true, |&(_, initial)| initial),
+                b'(' => functions.push(local),
+                b')' => local = functions.pop()?,
+                b',' if functions.is_empty() => local = true,
                 b'.' if local
                     && trimmed
                         .get(index + 1)
