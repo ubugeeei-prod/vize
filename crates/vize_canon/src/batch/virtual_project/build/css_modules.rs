@@ -305,7 +305,9 @@ fn collect_classes_from_selector_prelude(
             let scope = [(b":global".as_slice(), false), (b":local".as_slice(), true)]
                 .into_iter()
                 .find(|(keyword, _)| {
-                    trimmed[index..].starts_with(keyword)
+                    trimmed
+                        .get(index..)
+                        .is_some_and(|rest| rest.starts_with(keyword))
                         && trimmed
                             .get(index + keyword.len())
                             .is_none_or(|&next| next == b'(' || next.is_ascii_whitespace())
