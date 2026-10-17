@@ -138,10 +138,10 @@ const chartComponent = { template: '<div />' }
 fn setup_css_module_names_do_not_gain_an_implicit_template_declaration() {
     use crate::virtual_ts::{TemplateGlobal, types::CSS_MODULE_GLOBAL_MARKER};
 
-    for (name, initializer) in [
-        ("$style", "useCssModule()"),
-        ("tokens", "useCssModule('tokens')"),
-        ("$style", "{ own: 'authored' }"),
+    for (name, initializer, uses_css_module) in [
+        ("$style", "useCssModule()", true),
+        ("tokens", "useCssModule('tokens')", true),
+        ("$style", "{ own: 'authored' }", false),
     ] {
         let script =
             format!("import {{ useCssModule }} from 'vue';\nconst {name} = {initializer};");
@@ -181,21 +181,38 @@ fn setup_css_module_names_do_not_gain_an_implicit_template_declaration() {
                 "{}",
                 output.code
             );
-            assert!(
-                output.code.contains("type __VizeStyleModules"),
-                "{}",
-                output.code
-            );
-            let expected = if typed {
-                r#"{ "active": string; }"#
+            if uses_css_module {
+                assert!(
+                    output.code.contains("type __VizeStyleModules"),
+                    "{}",
+                    output.code
+                );
+                let expected = if typed {
+                    r#"{ "active": string; }"#
+                } else {
+                    "Record<string, string>"
+                };
+                assert!(
+                    output.code.contains(&format!("\"{name}\": {expected};")),
+                    "{}",
+                    output.code
+                );
             } else {
-                "Record<string, string>"
-            };
-            assert!(
-                output.code.contains(&format!("\"{name}\": {expected};")),
-                "{}",
-                output.code
-            );
+                // The unused useCssModule import requests no helper. The
+                // authored object still owns this template binding.
+                assert!(
+                    output
+                        .code
+                        .contains(&format!("const {name} = {initializer};")),
+                    "{}",
+                    output.code
+                );
+                assert!(
+                    !output.code.contains("type __VizeStyleModules"),
+                    "{}",
+                    output.code
+                );
+            }
         }
     }
 }
