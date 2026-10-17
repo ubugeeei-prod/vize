@@ -58,7 +58,7 @@ function parseArgs(argv: readonly string[]): Options {
   }
   if (!options.packageDirs.length)
     throw new Error(
-      "Usage: rust-script tools/commands/release/npm/smoke-release-install.rs [--prepare-manifests] [--runtime-checks] [--content-mapper-checks] [--keep-temp] <package-dir>...",
+      "Usage: node tools/commands/release/npm/smoke-release-install.ts [--prepare-manifests] [--runtime-checks] [--content-mapper-checks] [--keep-temp] <package-dir>...",
     );
   return options;
 }

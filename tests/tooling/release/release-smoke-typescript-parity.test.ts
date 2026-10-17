@@ -270,7 +270,26 @@ for (const fixture of fixtures) {
       const typescript = observe(fixture, "typescript", temporary);
       assert.equal(rust.status, fixture.status, JSON.stringify(rust));
       assert.equal(typescript.status, fixture.status, JSON.stringify(typescript));
-      assert.deepEqual(typescript, rust);
+      if (fixture.name === "usage") {
+        const options =
+          " [--prepare-manifests] [--runtime-checks] [--content-mapper-checks] [--keep-temp] <package-dir>...\n";
+        assert.equal(
+          rust.stderr,
+          `Usage: rust-script tools/commands/release/npm/smoke-release-install.rs${options}`,
+        );
+        assert.equal(
+          typescript.stderr,
+          `Usage: node tools/commands/release/npm/smoke-release-install.ts${options}`,
+        );
+        console.log(
+          JSON.stringify({
+            kind: "intentional-usage-successor",
+            rust: rust.stderr,
+            typescript: typescript.stderr,
+          }),
+        );
+        assert.deepEqual({ ...typescript, stderr: rust.stderr }, rust);
+      } else assert.deepEqual(typescript, rust);
       assert.deepEqual(commandNames(rust.calls), fixture.expectedCommands);
       for (const number of fixture.expectedPreparedNumbers ?? []) {
         assert.ok(rust.manifestBytes[0].includes(number), `Rust must retain exact ${number}`);
@@ -399,8 +418,7 @@ function observe(fixture: Fixture, driver: "rust" | "typescript", temporary: str
   };
 }
 
-// The executed port retains the complete independently authored reference scripts,
-// in addition to the installed-runtime controls in the Actions carrier.
+// Retain complete reference scripts alongside the installed-runtime controls.
 test("native and fresh-init oracle scripts retain every original Rust byte", () => {
   const rust = fs.readFileSync(entry + ".rs", "utf8");
   const initSource = fs.readFileSync(

@@ -13,6 +13,9 @@ on:
       - "tools/support/compat/npm/smoke-*"
       - "tests/tooling/release/release-smoke-*"
       - "tests/tooling/support/release-smoke-*"
+      - "tests/tooling/github-workflows-release-build.test.ts"
+      - "tests/tooling/github-workflows-release-smoke.test.ts"
+      - "tests/tooling/release/release-pr.test.ts"
       - "tests/tooling/native-build-token.test.ts"
       - "tests/tooling/native-binding-identity.test.ts"
   workflow_dispatch:
@@ -67,6 +70,11 @@ jobs:
         env:
           VIZE_RELEASE_SMOKE_DRIVER: typescript
         run: node --test tests/tooling/release/release-smoke-install.test.ts tests/tooling/release/release-smoke-runtime-oracle.test.ts tests/tooling/release/release-smoke-typescript-runtime.test.ts
+      - name: Require release caller and fresh-project workflow wiring
+        shell: bash
+        run: |
+          node --test tests/tooling/github-workflows-release-build.test.ts tests/tooling/github-workflows-release-smoke.test.ts tests/tooling/release/release-smoke-init-fresh.test.ts
+          node --test --test-name-pattern='^release-only workflow validates all artifacts before promotion and preserves normal PR cost$' tests/tooling/release/release-pr.test.ts
       - name: Retain compiled-reference source and image custody with raw compiler output
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
