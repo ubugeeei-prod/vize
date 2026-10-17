@@ -11,7 +11,10 @@ use vize_l0::dialect::VueDialect;
 use vize_l0::{Allocator, ToCompactString, profile};
 
 impl Linter {
-    pub(crate) fn lint_sfc_template_root<'a>(&self, input: SfcTemplateLintInput<'a>) -> LintResult {
+    pub(crate) fn lint_sfc_template_root<'a>(
+        &self,
+        input: SfcTemplateLintInput<'a>,
+    ) -> (LintResult, LintResult) {
         let mut scripts = empty_lint_result(input.filename);
         let valid_template = !matches!(&input.analysis, TemplateAnalysis::Disabled);
         let lint = self.lint_template_root_with_finish(
@@ -41,7 +44,7 @@ impl Linter {
                 }
             },
         );
-        Self::merge_lint_results(lint, scripts)
+        (lint, scripts)
     }
 
     fn lint_sfc_with_descriptor<'a>(
@@ -116,7 +119,7 @@ impl Linter {
         let mut parse_result =
             Self::template_parse_lint_result(filename, template.content.len(), &parse_errors);
         offset_result(&mut parse_result, template.loc.start as u32);
-        let lint_result = self.lint_sfc_template_root(SfcTemplateLintInput {
+        let (lint_result, scripts) = self.lint_sfc_template_root(SfcTemplateLintInput {
             filename,
             template,
             allocator: &allocator,
@@ -133,6 +136,9 @@ impl Linter {
         });
 
         let mut result = Self::merge_lint_results(parse_result, lint_result);
+        result.error_count += scripts.error_count;
+        result.warning_count += scripts.warning_count;
+        result.diagnostics.extend(scripts.diagnostics);
         drop(template_profile);
         if super::super::css_rules::has_active_builtin_css_rules(self) {
             super::super::css_rules::append_builtin_css_diagnostics(
