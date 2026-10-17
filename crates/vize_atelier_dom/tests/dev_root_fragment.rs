@@ -31,7 +31,10 @@ fn comment_root_fragments_keep_attribute_fallthrough_and_real_siblings() {
                 },
             )
         });
-        assert!(errors.is_empty(), "{name}: {errors:?}");
+        assert!(
+            errors.iter().all(|error| error.is_compatibility_notice()),
+            "{name}: {errors:?}",
+        );
         let dev_root = PatchFlags::STABLE_FRAGMENT | PatchFlags::DEV_ROOT_FRAGMENT;
         let flag = cstr!(
             "{} /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */",

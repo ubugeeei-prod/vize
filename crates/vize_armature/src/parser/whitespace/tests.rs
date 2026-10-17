@@ -230,10 +230,10 @@ fn vue2_preserve_reports_the_preserve_strategy_and_restores_scope() {
 #[test]
 fn comment_adjacent_condense_removes_spaces_but_preserve_keeps_them() {
     for source in [
-        "<!--a--> <div/>",
-        "<div/> <!--a-->",
+        "<!--a--> <div></div>",
+        "<div></div> <!--a-->",
         "<!--a--> <!--b-->",
-        "<!--a-->\t<div/>",
+        "<!--a-->\t<div></div>",
     ] {
         for (strategy, expected) in [
             (WhitespaceStrategy::Condense, 2),
@@ -253,7 +253,7 @@ fn comment_adjacent_condense_removes_spaces_but_preserve_keeps_them() {
 fn comment_adjacency_keeps_meaningful_unicode_text_and_pre_content() {
     for text in ["hello", "\u{00a0}", "\u{0085}", "\u{2003}"] {
         let arena = Allocator::new();
-        let source = vize_l0::cstr!("<!--a-->{text}<div/>");
+        let source = vize_l0::cstr!("<!--a-->{text}<div></div>");
         let (root, errors) = crate::parse_with_options(&arena, &source, ParserOptions::default());
         assert!(errors.is_empty(), "{errors:?}");
         assert_eq!(root.children.len(), 3);
@@ -265,7 +265,7 @@ fn comment_adjacency_keeps_meaningful_unicode_text_and_pre_content() {
     let arena = Allocator::new();
     let (root, errors) = crate::parse_with_options(
         &arena,
-        "<pre><!--a--> <i/> <!--b--></pre>",
+        "<pre><!--a--> <i></i> <!--b--></pre>",
         ParserOptions {
             is_pre_tag: |tag| tag == "pre",
             ..ParserOptions::default()
