@@ -36,6 +36,7 @@ type Job = {
   outputs?: Record<string, string>;
   steps?: Array<{
     name?: string;
+    "continue-on-error"?: boolean;
     if?: string;
     run?: string;
     env?: Record<string, string>;
@@ -104,10 +105,40 @@ test("source gates cover iteration events while full qualification runs on sched
     workflow.jobs?.["semver-checks"]?.if,
     "${{ github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')) }}",
   );
+  const reportSteps = workflow.jobs?.["test-report"]?.steps ?? [];
+  const aggregate = reportSteps.find((step) => step.name === "Require every needed job to succeed");
+  const select = reportSteps.find(
+    (step) => step.name === "Re-select the current integration before the required final gate",
+  );
+  const final = reportSteps.find(
+    (step) =>
+      step.name === "Freshly verify the same exact qualification at the required final gate",
+  );
+  const custody = reportSteps.find(
+    (step) => step.name === "Retain the required final qualification observations",
+  );
+  assert.ok(aggregate && select && final && custody);
   assert.equal(
-    workflow.jobs?.["test-report"]?.steps?.at(-1)?.run,
+    aggregate.run,
     "node tools/support/compat/github/require-needs-success.ts --check-report",
   );
+  assert.ok(reportSteps.indexOf(aggregate) < reportSteps.indexOf(select));
+  assert.ok(reportSteps.indexOf(select) < reportSteps.indexOf(final));
+  assert.equal(select.if, "${{ github.event_name == 'merge_group' }}");
+  assert.equal(select.run, "node tools/support/compat/github/release-integration-event.ts");
+  assert.equal(final.if, "${{ github.event_name == 'merge_group' }}");
+  assert.ok(
+    final.run?.includes(
+      'integration-release.ts --verify < "$directory/qualification.json" > "$directory/final-qualification.json"',
+    ),
+  );
+  for (const step of [aggregate, select, final]) assert.equal(step["continue-on-error"], undefined);
+  assert.equal(reportSteps.at(-2), final);
+  assert.equal(reportSteps.at(-1), custody);
+  assert.equal(custody.if, "${{ always() && github.event_name == 'merge_group' }}");
+  assert.equal(custody.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
+  assert.equal(custody.with?.path, "${{ runner.temp }}/vize-release-integration-final/");
+  assert.equal(custody.with?.["if-no-files-found"], "error");
   const commands = (job: string) =>
     (workflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
   const checkSteps = workflow.jobs?.["check-js"]?.steps ?? [];
@@ -372,4 +403,92 @@ test("slow suites use schedules or explicit dispatch without starting on PRs", (
     if (scheduledOrDispatch.includes(name) || name === "pkg-pr-new.yml")
       assert.equal(Object.hasOwn(events, "push"), false, name);
   }
+});
+
+test("release candidate readiness joins all seven original gates before promotion without a cycle", () => {
+  const release = parse(readRepoFile(".github/workflows/release.yml")) as {
+    jobs: Record<string, Job>;
+  };
+  const expected = {
+    name: "Release candidate ready",
+    needs: [
+      "candidate-preflight",
+      "build-cli",
+      "build-editor-extensions",
+      "build-release-packages",
+      "build-wasm-package",
+      "build-native-all",
+      "smoke-release-packages",
+    ],
+    "runs-on": "ubuntu-24.04",
+    "timeout-minutes": 5,
+    steps: [{ run: 'echo "All release artifacts and preflight gates passed for this candidate."' }],
+  };
+  const assertReady = (jobs: Record<string, Job>) => {
+    assert.deepEqual(jobs["candidate-ready"], expected);
+    const seen = new Set<string>();
+    const visit = (name: string, pending = new Set<string>()) => {
+      assert.ok(!pending.has(name), "release readiness dependency cycle");
+      assert.doesNotMatch(
+        name,
+        /^(release-preflight|release-npm-|release-crates|release-jsr|create-github-release)/,
+      );
+      const job = jobs[name];
+      assert.ok(job, name);
+      assert.notEqual(job.uses, "./.github/workflows/release-promotion.yml");
+      const dependencies = typeof job.needs === "string" ? [job.needs] : (job.needs ?? []);
+      for (const dependency of dependencies) visit(dependency, new Set([...pending, name]));
+      seen.add(name);
+    };
+    visit("candidate-ready");
+    assert.deepEqual(
+      [...seen].sort(),
+      [...expected.needs, "candidate-ready", "candidate", "plan-release-platforms"].sort(),
+    );
+    assert.equal(jobs["candidate-preflight"].uses, "./.github/workflows/release-preflight.yml");
+    assert.equal(jobs["release-preflight"].needs, "candidate-ready");
+  };
+  assertReady(release.jobs);
+  for (const name of expected.needs) {
+    const changed = structuredClone(release.jobs);
+    changed["candidate-ready"].needs = expected.needs.filter((value) => value !== name);
+    assert.throws(() => assertReady(changed));
+  }
+  for (const dependency of [
+    "release-preflight",
+    "candidate-ready",
+    "release-npm-cli",
+    "create-github-release",
+  ]) {
+    const changed = structuredClone(release.jobs);
+    changed.candidate.needs = dependency;
+    assert.throws(() => assertReady(changed));
+  }
+  const preflight = parse(readRepoFile(".github/workflows/release-preflight.yml"));
+  assert.equal(preflight.jobs.verify.needs, "wait-check");
+  assert.ok(
+    preflight.jobs["wait-check"].steps.some((step: { run?: string }) =>
+      step.run?.includes("main.ts --wait-existing"),
+    ),
+  );
+  assert.ok(
+    preflight.jobs.verify.steps.some(
+      (step: { run?: string }) =>
+        step.run === "node tools/support/compat/github/release-preflight.ts --verify-only",
+    ),
+  );
+  const catalog = parse(readRepoFile(".github/workflows/release-integration-catalog.yml"));
+  const wait = catalog.jobs["release-integration-catalog"].steps.find(
+    (step: { id?: string }) => step.id === "qualification",
+  );
+  const q =
+    'integration.ts --wait < "$directory/candidate-context.json" > "$directory/qualification-q.json"';
+  const r =
+    'integration-release.ts --wait < "$directory/qualification-q.json" > "$directory/qualification.json"';
+  assert.ok(wait.run.includes(q) && wait.run.includes(r));
+  assert.ok(wait.run.indexOf(q) < wait.run.indexOf(r));
+  assert.doesNotMatch(
+    workflow.jobs?.["test-report"]?.steps?.at(-2)?.run ?? "",
+    /rust-script|cargo |--wait/,
+  );
 });

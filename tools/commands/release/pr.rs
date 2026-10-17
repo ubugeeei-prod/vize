@@ -7,7 +7,7 @@
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: release-check-qualification-overlap-v18.
+//! Driver source pin: release-integration-qualification-overlap-v19.
 
 #[path = "../../support/release/pr_budget.rs"]
 mod pr_budget;
@@ -32,6 +32,70 @@ mod pr_watch;
 #[path = "../../support/release/pr_tests.rs"]
 mod tests;
 
+/// A bounded stdin adapter for the same readiness authority used by promotion.
+/// The catalog authenticates R first; the final report rechecks the whole job.
+fn readiness_receipt(input: impl std::io::Read) -> Result<serde_json::Value, String> {
+    use std::io::Read;
+    const LIMIT: u64 = 2_097_152;
+    let mut bytes = Vec::new();
+    input
+        .take(LIMIT + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|e| e.to_string())?;
+    if bytes.len() as u64 > LIMIT {
+        return Err("Release readiness inventory exceeds the bounded input".into());
+    }
+    let jobs: Vec<serde_json::Value> = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+    if !pr_contract::ready_job(&jobs)? {
+        return Ok(serde_json::json!({"ready":false}));
+    }
+    let ready = jobs
+        .iter()
+        .find(|job| job["name"] == "Release candidate ready")
+        .ok_or("Accepted readiness omitted its actual job")?;
+    Ok(serde_json::json!({"ready":true,"readyJob":ready}))
+}
+
+#[cfg(test)]
+mod readiness_tests {
+    use super::readiness_receipt;
+    use serde_json::json;
+
+    #[test]
+    fn original_rust_readiness_adapter_preserves_pending_complete_packets_and_every_failure() {
+        let ready = json!({"id":9,"run_id":7,"run_attempt":2,"head_sha":"1111111111111111111111111111111111111111","name":"Release candidate ready","status":"completed","conclusion":"success","steps":[{"name":"original","conclusion":"success"}],"future":{"field":"preserved"}});
+        let evaluate = |jobs| readiness_receipt(serde_json::to_vec(&jobs).unwrap().as_slice());
+        assert_eq!(
+            evaluate(json!([ready.clone()])).unwrap(),
+            json!({"ready":true,"readyJob":ready})
+        );
+        assert_eq!(evaluate(json!([])).unwrap(), json!({"ready":false}));
+        for status in ["queued", "in_progress", "waiting"] {
+            let mut pending = ready.clone();
+            pending["status"] = json!(status);
+            pending["conclusion"] = json!(null);
+            assert_eq!(evaluate(json!([pending])).unwrap(), json!({"ready":false}));
+        }
+        for conclusion in [
+            "failure",
+            "cancelled",
+            "skipped",
+            "timed_out",
+            "neutral",
+            "unknown",
+        ] {
+            let mut bad = ready.clone();
+            bad["conclusion"] = json!(conclusion);
+            assert!(evaluate(json!([bad])).is_err(), "{conclusion}");
+        }
+        assert!(evaluate(json!([ready.clone(), ready])).is_err());
+        for input in [b"".as_slice(), b"null", b"{}", b"[", b"[] trailing"] {
+            assert!(readiness_receipt(input).is_err());
+        }
+        assert!(readiness_receipt(vec![b' '; 2_097_153].as_slice()).is_err());
+    }
+}
+
 fn main() -> std::process::ExitCode {
     match run() {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -51,6 +115,11 @@ fn run() -> Result<(), String> {
         .collect::<Vec<_>>()
         .as_slice()
     {
+        ["check-release-readiness"] => {
+            let receipt = readiness_receipt(std::io::stdin().lock())?;
+            println!("{receipt}");
+            Ok(())
+        }
         ["rewrite-workspace-lock", old, new] => pr_pin::rewrite_workspace_lock(old, new, &root),
         ["verify-producer-metadata", frozen] => pr_pin::verify_producer_metadata(frozen, &root),
         ["start", bump] => pr_start::start(bump, &root),
@@ -105,7 +174,7 @@ fn run() -> Result<(), String> {
             }
         }
         _ => Err(
-            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | retire <source PR> <H> <tag> <R> <original operator run> | retire-before-release <source PR> <H> <tag> <Q> <original operator run> | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run> | verify-integration-candidate <integration PR> <candidate SHA> <base SHA> <integration head SHA> | check-integration-candidate <integration PR> | verify-producer-metadata <frozen-directory>"
+            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | retire <source PR> <H> <tag> <R> <original operator run> | retire-before-release <source PR> <H> <tag> <Q> <original operator run> | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run> | verify-integration-candidate <integration PR> <candidate SHA> <base SHA> <integration head SHA> | check-integration-candidate <integration PR> | check-release-readiness | verify-producer-metadata <frozen-directory>"
                 .into(),
         ),
     }

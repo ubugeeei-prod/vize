@@ -425,7 +425,24 @@ test("release workflow publishes npm packages after their npm dependencies", () 
   assert.ok(nuxtNeeds.includes("release-npm-cli"));
   assert.ok(nuxtNeeds.includes("release-npm-vite-plugin"));
   assert.ok(nuxtNeeds.includes("release-npm-vite-plugin-musea"));
-  assert.ok(nuxtNeeds.includes("release-npm-musea-nuxt"));
+  assert.ok(vitePluginNeeds.includes("release-npm-unplugin"));
+  assert.ok(
+    releaseWorkflowNeeds("release-npm-vite-plugin-musea").includes("release-npm-vite-plugin"),
+  );
+  const nuxtPackage = JSON.parse(readRepoFile("npm/framework/nuxt/package.json"));
+  assert.equal(nuxtPackage.dependencies["@vizejs/musea-nuxt"], undefined);
+  assert.equal(nuxtNeeds.includes("release-npm-musea-nuxt"), false);
+
+  const filename = "tests/tooling/package-manifests.test.ts";
+  const contracts = parse(readRepoFile(".github/workflows/release-preflight-contracts.yml"));
+  assert.ok(contracts.on.pull_request.paths.includes(filename));
+  const steps = contracts.jobs.contracts.steps as Array<{ run?: string }>;
+  assert.ok(
+    steps.some((step) => {
+      const [command, flag, ...files] = step.run?.trim().split(/\s+/) ?? [];
+      return command === "node" && flag === "--test" && files.includes(filename);
+    }),
+  );
 });
 
 test("editor extension manifests keep expected defaults and version alignment", () => {

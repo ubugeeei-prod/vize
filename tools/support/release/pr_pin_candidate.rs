@@ -4,7 +4,7 @@ use super::{Source, marker, metadata, source};
 use serde_json::{Value, json};
 use std::{env, fs, path::Path};
 
-fn integration_fields(
+pub(super) fn integration_fields(
     pr: &Value,
     repository: &str,
     number: u64,
@@ -224,12 +224,8 @@ fn verify(
     let (source_number, source_head, cut, tag) =
         integration_fields(&pr, &repository, number, head)?;
     let canonical = super::body::generated(source_number, &cut, &source_head, &tag);
-    super::body::qualify(
-        pr_contract::field(&pr, "/body")?,
-        &canonical,
-        &repository,
-        number,
-    )?;
+    let integration_body = pr_contract::field(&pr, "/body")?;
+    super::body::qualify(integration_body, &canonical, &repository, number)?;
     let remote = github::git(
         &[
             "ls-remote",
@@ -288,7 +284,7 @@ fn verify(
     projection(&source, candidate, base, root)?;
     println!(
         "{}",
-        json!({"integration":number,"source":source_number,"H":source_head,"C":cut,"tag":tag,"candidate":candidate,"base":base,"integrationHead":head,"event":if queue {"merge_group"} else {"pull_request"},"catalogEqual":source.stable.is_none(),"catalogAuthority":if source.stable.is_some(){"stable-C-to-H"}else{"main-integration"},"metadataExact":true})
+        json!({"integration":number,"source":source_number,"H":source_head,"C":cut,"tag":tag,"candidate":candidate,"base":base,"integrationHead":head,"integrationBody":integration_body,"event":if queue {"merge_group"} else {"pull_request"},"catalogEqual":source.stable.is_none(),"catalogAuthority":if source.stable.is_some(){"stable-C-to-H"}else{"main-integration"},"metadataExact":true})
     );
     Ok(())
 }

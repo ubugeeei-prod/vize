@@ -117,6 +117,11 @@ export async function observeTrustedInstalledVrt(
             records,
             assertRunning,
           });
+          // The preview checks return to the gallery home route. Enter the
+          // actual component's VRT tab before exercising its connection form.
+          await selectLiteral(page, "Controls", build, galleryUrl);
+          await page.getByRole("button", { name: "VRT", exact: true }).click();
+          await page.getByRole("textbox", { name: "VRT endpoint", exact: true }).waitFor();
           phase = "denied-loopback";
           expected.deniedSession(session.endpoint);
           assert.equal(await loopbackPermission(page, cdp, "denied"), "denied");

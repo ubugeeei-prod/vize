@@ -15,10 +15,12 @@ const CODESMITH_END: &str = "\n<!-- /codesmith:footer -->";
 const CODERABBIT: &str = "\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n\n## Summary by CodeRabbit\n\n";
 const CODERABBIT_END: &str =
     "\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->";
+const LEGACY_POLICY: &str = "The maintainer owns protected queue admission; this command never auto-merges this PR or writes main. Admit this integration only after immutable H/R qualification has succeeded: all required H checks, all five full H gates, every release build, and full preflight must be terminal green.";
+const QUEUE_POLICY: &str = "The official fresh minor operator may request protected queue checks under its exact versioned lease and original absolute deadline; ordinary required PR checks still govern actual queue admission. Required integration checks must freshly authenticate the existing exact-H full qualification and every required job, plus the original Release candidate-ready join of every build and full preflight, before merge. Legacy commands and resumes retain serial admission. Tag creation and publication still require all original H checks, every release build, full preflight, and the actual signed protected integration merge. This command never writes main directly.";
 
 pub(super) fn generated(source_number: u64, cut: &str, source_head: &str, tag: &str) -> String {
     format!(
-        "Integrate only generated {} version metadata into moving main. Source PR #{} remains an immutable draft receipt at H={}. The maintainer owns protected queue admission; this command never auto-merges this PR or writes main. Admit this integration only after immutable H/R qualification has succeeded: all required H checks, all five full H gates, every release build, and full preflight must be terminal green. Actual delivery is checked against its final first parent, not the initial base.\n\n<!-- vize-release-pin-source: {} -->\n<!-- vize-release-pin-cut: {} -->\n<!-- vize-release-pin-head: {} -->\n<!-- vize-release-pin-tag: {} -->\n",
+        "Integrate only generated {} version metadata into moving main. Source PR #{} remains an immutable draft receipt at H={}. {QUEUE_POLICY} Actual delivery is checked against its final first parent, not the initial base.\n\n<!-- vize-release-pin-source: {} -->\n<!-- vize-release-pin-cut: {} -->\n<!-- vize-release-pin-head: {} -->\n<!-- vize-release-pin-tag: {} -->\n",
         tag, source_number, source_head, source_number, cut, source_head, tag
     )
 }
@@ -136,8 +138,12 @@ pub(super) fn qualify(
     repository: &str,
     number: u64,
 ) -> Result<Vec<&'static str>, String> {
+    // Immutable older H retains its exact original body and serial bytecode.
+    // This recognizes one complete old canonical form, never arbitrary prose.
+    let legacy = canonical.replacen(QUEUE_POLICY, LEGACY_POLICY, 1);
     let mut rest = raw
         .strip_prefix(canonical)
+        .or_else(|| raw.strip_prefix(&legacy))
         .ok_or("Integration generated policy or pin fields changed")?;
     let mut seen = Vec::new();
     while !rest.is_empty() {

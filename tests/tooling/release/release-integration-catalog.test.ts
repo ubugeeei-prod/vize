@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { parse } from "yaml";
 
 import {
@@ -120,12 +124,19 @@ test("required Check report consumes the always-running catalog gate without all
   assert.equal(wrapper.uses, "./.github/workflows/release-integration-catalog.yml");
   assert.equal(wrapper.if, gate.if);
   assert.deepEqual(wrapper.permissions, gate.permissions);
-  assert.deepEqual(catalogWorkflow.on, { workflow_call: null });
+  assert.deepEqual(Object.keys(catalogWorkflow.on.workflow_call.outputs).sort(), [
+    "integration",
+    "qualification",
+  ]);
   assert.equal(
     gate.if,
     "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
   );
-  assert.deepEqual(gate.permissions, { contents: "read", "pull-requests": "read" });
+  assert.deepEqual(gate.permissions, {
+    contents: "read",
+    "pull-requests": "read",
+    actions: "read",
+  });
   assert.ok(workflow.jobs["test-report"].needs.includes("release-integration-catalog"));
   const named = (name: string) => {
     const matches = gate.steps.filter((step: { name?: string }) => step.name === name);
@@ -148,17 +159,26 @@ test("required Check report consumes the always-running catalog gate without all
   for (const step of gate.steps.filter(
     (step: object) =>
       ![initialCheckout, select, snapshot].includes(step) &&
+      !("id" in step && step.id === "qualification") &&
       !("uses" in step && String(step.uses).startsWith("actions/setup-node@")),
   )) {
     assert.equal(step.if, "${{ steps.candidate.outputs.integration != '' }}");
   }
   assert.equal(history.with["fetch-depth"], 0);
-  assert.equal(
-    authentication.run,
-    'rust-script tools/commands/release/pr.rs check-integration-candidate "$INTEGRATION_PR"',
+  assert.ok(
+    authentication.run.includes(
+      'rust-script tools/commands/release/pr.rs check-integration-candidate "$INTEGRATION_PR" > "$directory/candidate-context.json"',
+    ),
   );
   for (const result of ["failure", "cancelled", "skipped"]) {
-    assert.equal(aggregateNeedsResults({ "release-integration-catalog": { result } }).exitCode, 1);
+    assert.equal(
+      aggregateNeedsResults({
+        "release-integration-catalog": { result },
+        "ordinary-candidate": { result: "success" },
+        "auxiliary-q-check": { result: "success" },
+      }).exitCode,
+      1,
+    );
   }
   assert.equal(
     aggregateNeedsResults({ "release-integration-catalog": { result: "success" } }).exitCode,
@@ -187,8 +207,12 @@ test("integration body snapshots survive qualification refusal without running f
     "if-no-files-found": "error",
     "retention-days": 30,
   });
-  assert.equal(gate["timeout-minutes"], 10);
-  assert.deepEqual(gate.permissions, { contents: "read", "pull-requests": "read" });
+  assert.equal(gate["timeout-minutes"], 60);
+  assert.deepEqual(gate.permissions, {
+    contents: "read",
+    "pull-requests": "read",
+    actions: "read",
+  });
 });
 
 test("pinned source detects main merges, changed custody and malformed markers before qualification", () => {
@@ -253,4 +277,217 @@ test("pinned source detects main merges, changed custody and malformed markers b
       repository,
     ),
   );
+});
+
+const mergeGroup = "${{ github.event_name == 'merge_group' }}";
+const originalNeeds = [
+  "iteration-plan",
+  "fmt-rust",
+  "check-js",
+  "security-audit",
+  "node-engine-compat",
+  "check-vize-apps",
+  "pr-source-checks",
+  "instruction-counts",
+  "level-dependency-direction",
+  "release-integration-catalog",
+];
+
+function qualificationWorkflows() {
+  return {
+    check: parse(readRepoFile(".github", "workflows", "check.yml")),
+    catalog: parse(readRepoFile(".github", "workflows", "release-integration-catalog.yml")),
+  };
+}
+
+function assertRequiredQualification({
+  check,
+  catalog,
+}: ReturnType<typeof qualificationWorkflows>) {
+  const wrapper = check.jobs["release-integration-catalog"];
+  const gate = catalog.jobs["release-integration-catalog"];
+  const report = check.jobs["test-report"];
+  const permissions = { contents: "read", "pull-requests": "read", actions: "read" };
+  for (const value of [
+    wrapper.permissions,
+    gate.permissions,
+    catalog.permissions,
+    report.permissions,
+  ]) {
+    assert.deepEqual(value, permissions);
+  }
+  assert.deepEqual(report.needs, originalNeeds);
+  assert.equal(
+    report.if,
+    "${{ always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}",
+  );
+  assert.equal(gate["timeout-minutes"], 60);
+  assert.deepEqual(gate.outputs, {
+    integration: "${{ steps.candidate.outputs.integration }}",
+    qualification: "${{ steps.qualification.outputs.qualification }}",
+  });
+  for (const name of ["integration", "qualification"]) {
+    assert.equal(
+      catalog.on.workflow_call.outputs[name].value,
+      `\${{ jobs.release-integration-catalog.outputs.${name} }}`,
+    );
+  }
+  const auth = gate.steps.find((step: { name?: string }) =>
+    step.name?.startsWith("Authenticate metadata"),
+  );
+  const wait = gate.steps.find((step: { id?: string }) => step.id === "qualification");
+  assert.ok(gate.steps.indexOf(auth) < gate.steps.indexOf(wait));
+  assert.equal(auth.if, "${{ steps.candidate.outputs.integration != '' }}");
+  assert.equal(
+    wait.if,
+    "${{ github.event_name == 'merge_group' && steps.candidate.outputs.integration != '' }}",
+  );
+  assert.ok(
+    auth.run.includes(
+      'check-integration-candidate "$INTEGRATION_PR" > "$directory/candidate-context.json"',
+    ),
+  );
+  assert.ok(
+    wait.run.includes(
+      'integration.ts --wait < "$directory/candidate-context.json" > "$directory/qualification-q.json"',
+    ),
+  );
+  assert.ok(wait.run.includes("Buffer.byteLength(raw) <= 16384"));
+  assert.ok(wait.run.includes("fs.appendFileSync(process.env.GITHUB_OUTPUT"));
+  assert.equal(
+    wait.env.VIZE_RELEASE_INTEGRATION_EVIDENCE,
+    "${{ runner.temp }}/vize-release-integration-catalog/qualification-observations.jsonl",
+  );
+  const original = report.steps.find(
+    (step: { name?: string }) => step.name === "Require every needed job to succeed",
+  );
+  const select = report.steps.find((step: { id?: string }) => step.id === "final-candidate");
+  const verify = report.steps.find((step: { name?: string }) =>
+    step.name?.startsWith("Freshly verify"),
+  );
+  assert.equal(
+    original.run,
+    "node tools/support/compat/github/require-needs-success.ts --check-report",
+  );
+  assert.equal(original.env.NEEDS_JSON, "${{ toJSON(needs) }}");
+  assert.ok(report.steps.indexOf(original) < report.steps.indexOf(select));
+  assert.ok(report.steps.indexOf(select) < report.steps.indexOf(verify));
+  assert.equal(select.run, "node tools/support/compat/github/release-integration-event.ts");
+  for (const step of [auth, wait, original, select, verify]) {
+    assert.equal(step["continue-on-error"], undefined);
+  }
+  assert.equal(select.if, mergeGroup);
+  assert.equal(verify.if, mergeGroup);
+  assert.equal(verify.env.CURRENT_INTEGRATION, "${{ steps.final-candidate.outputs.integration }}");
+  assert.equal(
+    verify.env.CATALOG_INTEGRATION,
+    "${{ needs.release-integration-catalog.outputs.integration }}",
+  );
+  assert.equal(
+    verify.env.QUALIFICATION_JSON,
+    "${{ needs.release-integration-catalog.outputs.qualification }}",
+  );
+  assert.ok(verify.run.includes("assert.equal(selected, catalog"));
+  assert.ok(verify.run.includes("assert.equal(raw, ''"));
+  assert.ok(verify.run.includes("raw.length > 0 && Buffer.byteLength(raw) <= 16384"));
+  assert.ok(
+    verify.run.includes(
+      'integration-release.ts --verify < "$directory/qualification.json" > "$directory/final-qualification.json"',
+    ),
+  );
+  assert.equal(report.steps.at(-2), verify);
+  const retained = report.steps.at(-1);
+  assert.equal(retained.if, "${{ always() && github.event_name == 'merge_group' }}");
+  assert.equal(retained.with.path, "${{ runner.temp }}/vize-release-integration-final/");
+  assert.equal(retained.with["if-no-files-found"], "error");
+  for (const step of [...gate.steps, ...report.steps]) {
+    assert.ok(!String(step.uses).includes("download-artifact"));
+    assert.ok(!/gh (?:workflow run|run rerun)|--dispatch|--rerun/.test(step.run ?? ""));
+  }
+}
+
+test("required queue report freshly verifies the same-run exact Q after every original dependency", () => {
+  assertRequiredQualification(qualificationWorkflows());
+});
+
+test("required Q wiring refuses advisory gates, missing context, stale receipt routes and write permissions", () => {
+  const mutations = [
+    (w: ReturnType<typeof qualificationWorkflows>) => w.check.jobs["test-report"].needs.pop(),
+    (w: ReturnType<typeof qualificationWorkflows>) =>
+      (w.check.jobs["test-report"].permissions.actions = "write"),
+    (w: ReturnType<typeof qualificationWorkflows>) =>
+      (w.check.jobs["release-integration-catalog"].permissions.actions = "write"),
+    (w: ReturnType<typeof qualificationWorkflows>) =>
+      (w.catalog.jobs["release-integration-catalog"].outputs.qualification =
+        "${{ inputs.qualification }}"),
+    (w: ReturnType<typeof qualificationWorkflows>) =>
+      (w.catalog.jobs["release-integration-catalog"].steps.find(
+        (s: { id?: string }) => s.id === "qualification",
+      ).if = "${{ always() }}"),
+    (w: ReturnType<typeof qualificationWorkflows>) =>
+      (w.check.jobs["test-report"].steps.find(
+        (s: { id?: string }) => s.id === "final-candidate",
+      ).if = "${{ false }}"),
+    (w: ReturnType<typeof qualificationWorkflows>) =>
+      (w.check.jobs["test-report"].steps.at(-2)["continue-on-error"] = true),
+    (w: ReturnType<typeof qualificationWorkflows>) =>
+      (w.check.jobs["test-report"].steps.at(-2).env.QUALIFICATION_JSON =
+        "${{ inputs.qualification }}"),
+    (w: ReturnType<typeof qualificationWorkflows>) =>
+      (w.check.jobs["test-report"].steps.at(-2).run = 'echo "previous Q was green"'),
+    (w: ReturnType<typeof qualificationWorkflows>) =>
+      w.check.jobs["test-report"].steps.push({
+        uses: "actions/download-artifact@any",
+        with: { name: "qualification" },
+      }),
+  ];
+  for (const mutate of mutations) {
+    const workflows = qualificationWorkflows();
+    mutate(workflows);
+    assert.throws(() => assertRequiredQualification(workflows));
+  }
+});
+
+test("the actual final context guard accepts ordinary emptiness and refuses lost official authority", () => {
+  const workflow = qualificationWorkflows();
+  const verify = workflow.check.jobs["test-report"].steps.at(-2);
+  const guard = verify.run.split("<<'NODE'\n")[1].split("\nNODE")[0];
+  const directory = mkdtempSync(join(tmpdir(), "vize-required-q-context-"));
+  const run = (selected: string, catalog: string, receipt: string) =>
+    execFileSync(process.execPath, ["--input-type=module"], {
+      input: guard,
+      env: {
+        ...process.env,
+        RUNNER_TEMP: directory,
+        CURRENT_INTEGRATION: selected,
+        CATALOG_INTEGRATION: catalog,
+        QUALIFICATION_JSON: receipt,
+      },
+      stdio: "pipe",
+    });
+  try {
+    // Production creates this directory before executing the inline guard.
+    mkdirSync(join(directory, "vize-release-integration-final"));
+    run("", "", "");
+    for (const values of [
+      ["99", "", "{}"],
+      ["", "99", "{}"],
+      ["99", "98", "{}"],
+      ["99", "99", ""],
+      ["", "", "{}"],
+      ["99", "99", "null"],
+      ["99", "99", "[]"],
+      ["99", "99", "{"],
+      ["99", "99", " ".repeat(16385)],
+    ])
+      assert.throws(() => run(...(values as [string, string, string])));
+    // This is transport only: the mandatory --verify authenticates the receipt afterward.
+    run("99", "99", '{"qualified":true}');
+    assert.equal(
+      readFileSync(join(directory, "vize-release-integration-final/qualification.json"), "utf8"),
+      '{"qualified":true}',
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
