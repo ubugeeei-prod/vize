@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import type { Browser, BrowserContext, CDPSession, Page } from "playwright";
 import type { Evidence } from "./vrt_artifacts.ts";
 import type { VrtFixture } from "./vrt_fixtures.ts";
-import { hostedPath, staticVrtHost } from "./vrt_host.ts";
+import { awaitHostedGallery, hostedPath, staticVrtHost } from "./vrt_host.ts";
 import type { VrtPhase, VrtSecrets } from "./vrt_secrets.ts";
 import { startPublishedVrtSession } from "./vrt_service_process.ts";
 import { writeQuickTunnelConfig } from "./vrt_tunnel.ts";
@@ -64,6 +64,7 @@ export async function withTrustedVrtSurface(
     "owned-empty-config": "trusted-cleanup-config",
   } as const satisfies Record<string, VrtPhase>;
   let acquiring: keyof typeof acquisitionPhases | undefined;
+  let checkingGallery = false;
   let failed = false;
   let failure: unknown;
   const cleanupErrors: Error[] = [];
@@ -120,6 +121,15 @@ export async function withTrustedVrtSurface(
     acquiring = undefined;
     const galleryUrl = `${owned.tunnel.origin}${hostedPath}`;
     owned.tunnel.assertRunning();
+    checkingGallery = true;
+    input.secrets.stage("trusted-gallery-readiness");
+    await awaitHostedGallery(
+      galleryUrl,
+      await readFile(path.join(input.directory, "gallery/vrt/api/static.json")),
+    );
+    input.secrets.report("trusted-gallery-readiness", "passed");
+    checkingGallery = false;
+    owned.tunnel.assertRunning();
     acquiring = "published-loopback-session";
     owned.session = await startPublishedVrtSession(input.fixture, galleryUrl, input.secrets);
     acquiring = undefined;
@@ -143,7 +153,13 @@ export async function withTrustedVrtSurface(
     await observe({ page, cdp: owned.cdp, galleryUrl, session, assertRunning });
     assertRunning();
   } catch (error) {
-    input.secrets.failed(acquiring ? acquisitionPhases[acquiring] : "trusted-observation");
+    input.secrets.failed(
+      acquiring
+        ? acquisitionPhases[acquiring]
+        : checkingGallery
+          ? "trusted-gallery-readiness"
+          : "trusted-observation",
+    );
     failed = true;
     failure = input.secrets.sanitizeError(error);
   } finally {

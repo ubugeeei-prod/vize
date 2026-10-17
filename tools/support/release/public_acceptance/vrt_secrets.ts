@@ -22,6 +22,7 @@ const diagnosticPhases = [
   "trusted-config-task",
   "trusted-static-host",
   "trusted-tunnel",
+  "trusted-gallery-readiness",
   "trusted-session",
   "trusted-browser-context",
   "trusted-cdp",
