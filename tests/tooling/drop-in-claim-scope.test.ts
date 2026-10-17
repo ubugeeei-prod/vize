@@ -107,21 +107,23 @@ test("the philosophy page defers to the documented drop-in boundary", () => {
   assert.match(philosophy, /\]\(\.\/guide\/vite-plugin\.md#drop-in-scope\)/u);
 });
 
-test("release notes lead with the drop-in scope", () => {
+test("release notes retain the evergreen drop-in scope before the explicit version range", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const createRelease = workflow.slice(workflow.indexOf("name: Create Release"));
   assert.notEqual(createRelease, "", "the release workflow must create a GitHub release");
 
   const inputs = createRelease.slice(0, createRelease.indexOf("files:"));
-  const bodyPath = /body_path: (\S+)/u.exec(inputs);
-  assert.ok(bodyPath, "the release body must be authored, not only generated");
+  assert.match(inputs, /body_path: \$\{\{ runner\.temp \}\}\/release-notes\.md/u);
   assert.match(
     inputs,
-    /generate_release_notes: true/u,
-    "the authored body prepends the generated notes",
+    /generate_release_notes: false/u,
+    "the action must not append another implicitly selected historical range",
   );
 
-  const body = readRepoFile(...bodyPath[1].split("/"));
+  const generator = readRepoFile("tools", "support", "release", "github_release_notes.ts");
+  assert.ok(generator.includes("`${scope.trim()}\\n\\n${result.body.trim()}\\n`"));
+  const body = readRepoFile(".github", "release-notes", "drop-in-scope.md");
+  assert.doesNotMatch(body, /0\.\d+\.\d+|^## (?!Drop-in scope$)/mu);
   assert.match(body, /drop-in replacement for `@vitejs\/plugin-vue` on \*\*Vue 3 SFCs\*\*/u);
   assert.match(body, /incubating and opt-in/u);
   assert.match(body, /outside the drop-in claim/u);
