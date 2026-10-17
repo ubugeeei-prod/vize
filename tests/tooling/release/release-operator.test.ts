@@ -73,7 +73,7 @@ test("hosted operator keeps user authority on protected main and does not deadlo
   assert.ok(contracts.on.pull_request.paths.includes(".github/workflows/release-operator.yml"));
   assert.equal(
     contracts.jobs.contracts.steps.at(-1).run,
-    "node --test tests/tooling/release/release-pr.test.ts tests/tooling/release/retirement-qualification.test.ts",
+    "node --test tests/tooling/release/release-pr.test.ts tests/tooling/release/retirement-qualification.test.ts tests/tooling/release/release-stable-operator.test.ts",
   );
 });
 

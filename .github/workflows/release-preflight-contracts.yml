@@ -81,3 +81,4 @@ jobs:
           node --test
           tests/tooling/release/release-pr.test.ts
           tests/tooling/release/retirement-qualification.test.ts
+          tests/tooling/release/release-stable-operator.test.ts
