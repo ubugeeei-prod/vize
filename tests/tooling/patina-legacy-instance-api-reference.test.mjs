@@ -17,6 +17,52 @@ const json = (file) => JSON.parse(fs.readFileSync(path.join(fixture, file), "utf
 const compressed = (file) => JSON.parse(gunzipSync(fs.readFileSync(path.join(fixture, file))));
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
+await test("callback-return overlay preserves original ownership and all six complete CLI contracts", () => {
+  const overlay = json("callback-return-ownership-cli.json");
+  assert.equal(overlay.schema, "vize.lint.callback-return-ownership-cli");
+  for (const input of overlay.frozenInputs) {
+    const bytes = fs.readFileSync(path.join(fixture, input.path));
+    assert.equal(bytes.length, input.bytes);
+    assert.equal(hash(bytes), input.sha256);
+  }
+  const source = compressed("originals/sources.json.gz").find(
+    (row) => row.project === "cube-ui" && row.path === "example/components/select/select.vue",
+  );
+  assert.equal(overlay.sources[0].id, "original-pinned-cube-ui");
+  assert.equal(overlay.sources[0].source, source.source);
+  const audit = compressed("provenance.json.gz").audit;
+  assert.equal(audit.rows.length, 239);
+  assert.deepEqual(
+    audit.rows.slice(42, 46).map((row) => row.classification),
+    Array(4).fill(overlay.historical.selectedClassification),
+  );
+  assert.deepEqual(overlay.historical.selectedAuditIndices, [42, 43, 44, 45]);
+  assert.deepEqual(
+    overlay.cases.map((row) => row.expected[0].messages.length),
+    [4, 1, 1, 1, 1, 0],
+  );
+  const baseline = json("cli70.json");
+  for (const key of ["config", "configBytes", "configSha256", "argv"])
+    assert.deepEqual(overlay[key], baseline[key]);
+  const provider = compressed("originals/independent.json.gz").records.find(
+    (row) => row.sourceSha256 === source.sha256,
+  );
+  assert.deepEqual(provider.messages, []);
+  assert.deepEqual(provider.messages, overlay.historical.unchangedProviderMessages);
+  for (const [index, row] of overlay.sources.entries()) {
+    assert.equal(hash(row.source), row.sourceSha256);
+    const contract = overlay.cases[index];
+    assert.equal(contract.id, row.id);
+    assert.equal(contract.sourceSha256, row.sourceSha256);
+    assert.deepEqual(contract.stderrBytes, []);
+    assert.equal(contract.status, index === 5 ? 0 : 1);
+  }
+  assert.deepEqual(
+    overlay.cases[0].expected[0].messages.map((m) => [m.line, m.column, m.endLine, m.endColumn]),
+    [72, 73, 74, 75].map((line) => [line, 19, line, 22]),
+  );
+});
+
 await test("legacy instance API packets preserve every pinned original source and complete reference finding", () => {
   const authored = json("independent.json");
   const original = compressed("originals/independent.json.gz");
