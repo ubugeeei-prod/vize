@@ -5,12 +5,12 @@ import path from "node:path";
 import { test } from "node:test";
 import {
   admitOriginal,
-  annotatedIntegrationPr,
   fixture,
   sha256,
   assertFresh,
   consumerAttempt,
   failureLogArguments,
+  integrationReference,
   object,
   roles,
   recoveryRunIdentity,
@@ -25,7 +25,10 @@ import {
   commandPlan,
   verifyConsumer,
 } from "../../tools/support/release/consumer_recovery/consumer.ts";
-import { policyFiles } from "../../tools/support/release/consumer_recovery/custody.ts";
+import {
+  policyFiles,
+  verifyIntegration,
+} from "../../tools/support/release/consumer_recovery/custody.ts";
 import {
   captureCommand,
   effectiveDenoConfig,
@@ -51,6 +54,89 @@ const retained: Snapshot = JSON.parse(
 );
 const admit = (packet: Snapshot) =>
   admitOriginal(packet.identity, packet.run, packet.jobs, packet.failed, packet.log, packet.blobs);
+
+test("actual retained official tag #PR and source marker PR authenticate the same signed delivery", () => {
+  const packet = JSON.parse(
+    readFileSync(
+      new URL("../_fixtures/release/consumer-recovery-integration.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const field = (name: string) =>
+    packet.github.annotation
+      .split("\n")
+      .find((line: string) => line.startsWith(`${name}: `))
+      .slice(name.length + 2);
+  const marker = packet.sourceBody.match(/<!-- vize-release-integration: ([1-9][0-9]*) -->/)[1];
+  assert.equal(marker, packet.github.integrationPr);
+  assert.equal(integrationReference(field("Integration-PR"), marker), 9197);
+  const { integration, merge, gates } = packet;
+  const responses: Record<string, Json> = {
+    "pulls/9197": integration,
+    [`commits/${field("Integration-merge")}`]: merge,
+    [`actions/workflows/check.yml/runs?head_sha=${field("Protected-candidate")}&per_page=100`]:
+      gates,
+  };
+  const read = (endpoint: string) => {
+    assert.ok(Object.hasOwn(responses, endpoint), `unexpected custody request ${endpoint}`);
+    return responses[endpoint];
+  };
+  assert.deepEqual(verifyIntegration(packet.github, retained.identity, read), {
+    integration,
+    merge,
+    gates,
+  });
+  assert.throws(
+    () =>
+      verifyIntegration(
+        {
+          ...packet.github,
+          annotation: packet.github.annotation.replace(
+            "Integration-PR: #9197",
+            "Integration-PR: 9197",
+          ),
+        },
+        retained.identity,
+        read,
+      ),
+    /canonical tag PR/,
+  );
+  merge.commit.verification.verified = false;
+  assert.throws(() => verifyIntegration(packet.github, retained.identity, read), /signed merge/);
+  merge.commit.verification.verified = true;
+  for (const run of gates.workflow_runs) run.conclusion = "failure";
+  assert.throws(
+    () => verifyIntegration(packet.github, retained.identity, read),
+    /successful exact original delivery Check/,
+  );
+});
+
+test("tag and source PR references reject malformed, hybrid and unsafe identities without normalization", () => {
+  for (const invalid of [
+    "",
+    "0",
+    "09197",
+    "9197 ",
+    " 9197",
+    "9197\n",
+    "9197\r\n",
+    "+9197",
+    "9197.0",
+    "9.197e3",
+    "9197/9198",
+    "9197abc",
+    "９１９７",
+    "9007199254740992",
+  ]) {
+    assert.throws(() => integrationReference(`#${invalid}`, invalid), invalid);
+    assert.throws(() => integrationReference(`#${invalid}`, "9197"), invalid);
+    assert.throws(() => integrationReference("#9197", invalid), invalid);
+  }
+  for (const source of [9197, null, {}, ["9197"], "#9197"])
+    assert.throws(() => integrationReference("#9197", source));
+  for (const tag of [9197, null, {}, ["#9197"], "9197", "##9197", "#9198"])
+    assert.throws(() => integrationReference(tag, "9197"));
+});
 
 test("complete raw GitHub logs explicitly retain ANSI bytes before fingerprint normalization", () => {
   assert.deepEqual(failureLogArguments(117254411511), [
@@ -429,7 +515,7 @@ test("recovery is an explicit read-only official operation; ordinary resume rema
 test("actual immutable tag Integration-PR annotation keeps its # prefix while parsing one positive identity", () => {
   // Exact field from annotated tag 46536212e8e1a16492f9e196d84908286170d57b.
   const annotation = "Integration-PR: #9197";
-  assert.equal(annotatedIntegrationPr(annotation.slice("Integration-PR: ".length)), 9197);
+  assert.equal(integrationReference(annotation.slice("Integration-PR: ".length), "9197"), 9197);
   assert.equal(annotation, "Integration-PR: #9197", "never rewrite retained annotation bytes");
   for (const value of [
     "9197",
@@ -441,7 +527,7 @@ test("actual immutable tag Integration-PR annotation keeps its # prefix while pa
     "#9197 trailing",
     "#9007199254740992",
   ])
-    assert.throws(() => annotatedIntegrationPr(value));
+    assert.throws(() => integrationReference(value, "9197"));
 });
 
 test("recovery policy binds the complete local import and materialized public harness closure", () => {

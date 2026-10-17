@@ -139,8 +139,8 @@ impl<'a> RouteDiscovery<'a> {
 pub(super) fn package_specifiers_from_frontier(
     project: &VirtualProject,
     scanned: &mut vize_carton::FxHashSet<PathBuf>,
+    facts: &mut crate::batch::ModuleSpecifierFactsCache,
 ) -> Vec<CompactString> {
-    let rewriter = crate::batch::ImportRewriter::new();
     let mut specifiers = project
         .virtual_files_sorted()
         .into_iter()
@@ -155,7 +155,7 @@ pub(super) fn package_specifiers_from_frontier(
             } else {
                 oxc_span::SourceType::ts()
             };
-            rewriter.collect_all_specifiers(&file.content, source_type)
+            facts.collect_all_specifiers(&file.content, source_type)
         })
         .filter(|specifier| {
             !specifier.starts_with('.') && !Path::new(specifier.as_str()).is_absolute()

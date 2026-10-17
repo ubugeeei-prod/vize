@@ -31,6 +31,7 @@ use vize_carton::cstr;
 use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
 
 use crate::batch::error::CorsaResult;
+use crate::batch::import_rewriter::ModuleSpecifierFactsCache;
 
 use super::VirtualProject;
 use super::setup_props::RuntimePropResolveCache;
@@ -68,7 +69,13 @@ impl VirtualProject {
         &mut self,
         sources: &[PathBuf],
     ) -> CorsaResult<()> {
-        self.register_reachable_dependencies_inner(Some(sources), &FxHashMap::default(), &[], None)
+        self.register_reachable_dependencies_inner(
+            Some(sources),
+            &FxHashMap::default(),
+            &[],
+            None,
+            None,
+        )
     }
 
     /// The same walk, with unsaved editor buffers standing in for their on-disk
@@ -83,9 +90,10 @@ impl VirtualProject {
         &mut self,
         overlays: &FxHashMap<PathBuf, &str>,
     ) -> CorsaResult<()> {
-        self.register_reachable_dependencies_inner(None, overlays, &[], None)
+        self.register_reachable_dependencies_inner(None, overlays, &[], None, None)
     }
 
+    #[cfg(test)]
     pub(crate) fn register_reachable_dependencies_with_package_resolver(
         &mut self,
         overlays: &FxHashMap<PathBuf, &str>,
@@ -97,6 +105,25 @@ impl VirtualProject {
             overlays,
             workspace_package_specifiers,
             Some(package_resolver),
+            None,
+        )
+    }
+
+    /// Share only immutable syntax facts across one preparation's walks.
+    /// Resolution, registration and edge replacement still run on every walk.
+    pub(crate) fn register_reachable_dependencies_with_import_facts(
+        &mut self,
+        overlays: &FxHashMap<PathBuf, &str>,
+        workspace_package_specifiers: &[CompactString],
+        package_resolver: PackageResolver<'_>,
+        facts: &mut ModuleSpecifierFactsCache,
+    ) -> CorsaResult<()> {
+        self.register_reachable_dependencies_inner(
+            None,
+            overlays,
+            workspace_package_specifiers,
+            Some(package_resolver),
+            Some(facts),
         )
     }
 
@@ -106,6 +133,7 @@ impl VirtualProject {
         overlays: &FxHashMap<PathBuf, &str>,
         workspace_package_specifiers: &[CompactString],
         mut package_resolver: Option<PackageResolver<'_>>,
+        mut facts: Option<&mut ModuleSpecifierFactsCache>,
     ) -> CorsaResult<()> {
         // One walk owns one immutable set of imported type facts, just like
         // register_paths_with_content. Reachable SFCs often share the same
@@ -230,9 +258,13 @@ impl VirtualProject {
             } else {
                 SourceType::ts()
             };
-            let specifiers = self
-                .rewriter()
-                .collect_all_specifier_occurrences(&virtual_content, source_type)
+            let occurrences = match facts.as_deref_mut() {
+                Some(facts) => facts.collect_occurrences(&virtual_content, source_type),
+                None => self
+                    .rewriter()
+                    .collect_all_specifier_occurrences(&virtual_content, source_type),
+            };
+            let specifiers = occurrences
                 .into_iter()
                 .map(|(specifier, mode)| (specifier, mode, false))
                 .chain(

@@ -41,6 +41,18 @@ export function positive(value: unknown): number {
   );
   return Number(value);
 }
+export function integrationReference(tag: unknown, source: unknown): number {
+  assert.ok(typeof tag === "string" && /^#[1-9][0-9]*$/.test(tag), "canonical tag PR required");
+  assert.ok(
+    typeof source === "string" && /^[1-9][0-9]*$/.test(source),
+    "canonical source PR marker required",
+  );
+  const number = positive(source);
+  const canonical = String(number);
+  same(source, canonical, "canonical source PR marker required");
+  same(tag, `#${canonical}`, "source/tag integration receipt mismatch");
+  return number;
+}
 export function failureLogArguments(id: unknown) {
   return [
     "api",
@@ -239,12 +251,4 @@ export function reviewedPolicy(sha: string, compare: Json, commit: Json) {
   const verification = object(object(commit.commit).verification);
   same(verification.verified, true, "policy commit signature required");
   same(verification.reason, "valid", "valid policy commit signature required");
-}
-
-/** The immutable tag keeps the original # prefix; normalize only its parsed identity. */
-export function annotatedIntegrationPr(value: unknown): number {
-  assert.equal(typeof value, "string");
-  const match = /^#([1-9][0-9]*)$/.exec(String(value));
-  assert.ok(match, "one anchored annotated #<positive PR> required");
-  return positive(match[1]);
 }

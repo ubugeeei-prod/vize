@@ -10,7 +10,9 @@ use std::path::Path;
 
 use oxc_span::SourceType;
 
-use super::import_rewriter::{ImportRewriter, RewriteResult, rewrite_relative_vue_specifier};
+use super::import_rewriter::{
+    ImportRewriter, ModuleSpecifierFactsCache, RewriteResult, rewrite_relative_vue_specifier,
+};
 
 /// Resolver consulted before the generic relative/package rewrite.
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
@@ -45,36 +47,61 @@ impl ImportRewriter {
         preserve_missing_vue_diagnostics: bool,
     ) -> RewriteResult {
         self.rewrite_with(source, source_type, |path, mode| {
-            if path.starts_with("./") || path.starts_with("../") {
-                return alias_resolver(path, mode)
-                    .map(Into::into)
-                    .or_else(|| {
-                        self.rewrite_module_specifier_with_missing_vue_policy(
-                            path,
-                            source_dir,
-                            preserve_missing_vue_diagnostics,
-                            true,
-                        )
-                    })
-                    .or_else(|| {
-                        source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir))
-                    });
-            }
-            // A resolvable alias wins over the generic `.vue` → `.vue.ts`
-            // rewrite: `is_rewritable_vue_specifier` also matches `@/Foo.vue`
-            // and `~/Foo.vue`, so rewriting first would emit `@/Foo.vue.ts` and
-            // leave the alias prefix unresolved in the generated module.
-            alias_resolver(path, mode)
-                .map(Into::into)
-                .or_else(|| {
-                    self.rewrite_module_specifier_with_missing_vue_policy(
-                        path,
-                        source_dir,
-                        preserve_missing_vue_diagnostics,
-                        true,
-                    )
-                })
-                .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
+            self.rewrite_alias_specifier(
+                path,
+                mode,
+                source_dir,
+                alias_resolver,
+                preserve_missing_vue_diagnostics,
+            )
         })
+    }
+
+    pub(crate) fn rewrite_with_alias_resolver_and_missing_vue_policy_cached(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        source_dir: Option<&Path>,
+        alias_resolver: AliasSpecifierResolver<'_>,
+        preserve_missing_vue_diagnostics: bool,
+        cache: &mut ModuleSpecifierFactsCache,
+    ) -> RewriteResult {
+        self.rewrite_with_cached(
+            source,
+            source_type,
+            |path, mode| {
+                self.rewrite_alias_specifier(
+                    path,
+                    mode,
+                    source_dir,
+                    alias_resolver,
+                    preserve_missing_vue_diagnostics,
+                )
+            },
+            cache,
+        )
+    }
+
+    fn rewrite_alias_specifier(
+        &self,
+        path: &str,
+        mode: crate::PackageResolutionMode,
+        source_dir: Option<&Path>,
+        alias_resolver: AliasSpecifierResolver<'_>,
+        preserve_missing_vue_diagnostics: bool,
+    ) -> Option<vize_carton::String> {
+        // Resolve on every rewrite, including every repeated literal. Only
+        // syntactic facts are shared; graph and filesystem state may change.
+        alias_resolver(path, mode)
+            .map(Into::into)
+            .or_else(|| {
+                self.rewrite_module_specifier_with_missing_vue_policy(
+                    path,
+                    source_dir,
+                    preserve_missing_vue_diagnostics,
+                    true,
+                )
+            })
+            .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
     }
 }
