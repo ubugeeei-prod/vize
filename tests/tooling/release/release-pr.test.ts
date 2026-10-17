@@ -136,6 +136,8 @@ test("public release CLI forwards pinned start, resume and retirement through it
 
 test("release promotion rejects stale main and immutable tag conflicts atomically", () => {
   const result = spawnSync("rust-script", ["--test", script], { encoding: "utf8" });
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
   assert.equal(result.status, 0, `${result.error ?? ""}\n${result.stdout}\n${result.stderr}`);
   assert.match(result.stdout, /\b[1-9]\d* passed; 0 failed/);
   assert.match(result.stdout, /normal_cached_driver_module_changes_require_new_entry_source_pin/);

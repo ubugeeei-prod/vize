@@ -183,7 +183,8 @@ fn expired_original_budget_uses_actual_watch_finish_to_withdraw_only_acquired_en
         &repo.work,
     )
     .unwrap();
-    let source = source(&head, &cut);
+    let mut source = source(&head, &cut);
+    source.integration = 43;
     let budget = Budget::new(Duration::from_secs(5));
     let deadline = budget.child_allowance().unwrap().1;
     let operator = lock::Operator::compensation_fixture(&source, deadline, &repo.work).unwrap();
