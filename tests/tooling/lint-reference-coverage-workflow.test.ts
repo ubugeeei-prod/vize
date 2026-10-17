@@ -28,6 +28,7 @@ const sources = [
   "tools/support/fixtures/lint_reference_coverage.ts",
   "tools/support/fixtures/lint_divergence/selection.ts",
   "tests/tooling/_helpers/lint-report-rust-parity.ts",
+  "tests/tooling/_helpers/lint-report-schema.ts",
   "tests/tooling/support/lint-report-parity.ts",
   "tests/_fixtures/differential/linter/reference-coverage-8849/report-references.json",
   "tests/tooling/lint-reference-coverage-workflow.test.ts",
