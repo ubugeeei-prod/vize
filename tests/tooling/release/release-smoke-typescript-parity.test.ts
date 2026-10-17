@@ -5,6 +5,10 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import {
+  NATIVE_RUNTIME_SCRIPT,
+  INIT_SCRIPT,
+} from "../../../tools/support/release/smoke_release_install/runtime.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const entry = path.join(root, "tools/commands/release/npm/smoke-release-install");
@@ -401,3 +405,19 @@ if (argv[0] === "pack") {
   throw new Error("unexpected npm command " + JSON.stringify(argv));
 }
 `;
+
+// The executed port retains the complete independently authored reference scripts,
+// in addition to the installed-runtime controls in the Actions carrier.
+test("native and fresh-init oracle scripts retain every original Rust byte", () => {
+  const rust = fs.readFileSync(entry + ".rs", "utf8");
+  const native = /r#"(\nconst required = require\("@vizejs\/native"\);[\s\S]*?)"#/.exec(rust)?.[1];
+  const initSource = fs.readFileSync(
+    path.join(root, "tools/support/release/npm_smoke_init.rs"),
+    "utf8",
+  );
+  const init = /const SCRIPT: &str = r#"([\s\S]*?)"#;/.exec(initSource)?.[1];
+  assert.ok(native);
+  assert.ok(init);
+  assert.equal(NATIVE_RUNTIME_SCRIPT, native);
+  assert.equal(INIT_SCRIPT, init);
+});

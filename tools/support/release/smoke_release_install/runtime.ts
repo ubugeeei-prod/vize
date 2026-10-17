@@ -22,7 +22,7 @@ export const RUNTIME_PEER_DEPENDENCIES = {
 };
 
 // These complete scripts retain the original Rust command's child-process bytes.
-const NATIVE_RUNTIME_SCRIPT = `
+export const NATIVE_RUNTIME_SCRIPT = `
 const required = require("@vizejs/native");
 (async () => {
   const imported = await import("@vizejs/native");
@@ -39,7 +39,7 @@ const required = require("@vizejs/native");
   }
 })().catch((error) => { console.error(error); process.exit(1); });
 `;
-const INIT_SCRIPT = `
+export const INIT_SCRIPT = `
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 const context = JSON.parse(process.argv[1]);
