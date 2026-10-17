@@ -8,6 +8,7 @@ on:
       - "tests/tooling/release-public-a11y.test.ts"
       - "tests/tooling/release-public-vrt-diagnostics.test.ts"
       - "tests/tooling/release-public-corsa-provider.test.ts"
+      - "tests/tooling/release-public-event-rename.test.ts"
       - "tests/tooling/release-public-lsp-lifecycle.test.ts"
       - "tests/tooling/release/release-public-*.test.ts"
       - "tests/_fixtures/release/public-corsa-resolver.json"
@@ -33,6 +34,7 @@ jobs:
       - name: Verify installed resolver, source, lifecycle, accessibility and tunnel actors
         run: >-
           node --test tests/tooling/release-public-corsa-provider.test.ts
+          tests/tooling/release-public-event-rename.test.ts
           tests/tooling/release-public-lsp-lifecycle.test.ts
           tests/tooling/release-public-a11y.test.ts
           tests/tooling/release-public-vrt-diagnostics.test.ts

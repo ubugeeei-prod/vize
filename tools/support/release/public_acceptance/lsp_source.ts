@@ -11,6 +11,19 @@ export const atomicTarget = "lsp_component_attribute_authority_cli";
 export const atomicTest =
   "library_refusal::original_emit_string_keeps_atomic_owned_updates_and_unsafe_name_refusals_without_file_writes";
 export const supportTargets = [...targets, atomicTarget];
+export function supportDependencyVersions(
+  dependencies: Record<string, string | { version: string }>,
+) {
+  return Object.fromEntries(
+    ["serde_json", "tempfile", "sha2", "lsp-types", "url"].map((name) => {
+      const value = dependencies[name];
+      assert.ok(value, `support dependency absent from H workspace: ${name}`);
+      const version = typeof value === "string" ? value : value.version;
+      assert.match(version, /^=\d+\.\d+\.\d+$/u);
+      return [name, version];
+    }),
+  );
+}
 export const corpus = "tests/_fixtures/differential/lsp/event-rename/4075/";
 const prefixes = [
   ...targets.flatMap((name) => [`crates/vize/tests/${name}.rs`, `crates/vize/tests/${name}/`]),
@@ -248,12 +261,9 @@ export function prepareLspSource(root: string, head: string, consumer: string, o
   fs.mkdirSync(adapter, { recursive: true });
   const quote = (text: string) => JSON.stringify(text);
   const p = metadata.package;
-  const dependencies = ["serde_json", "tempfile", "sha2", "lsp-types"].map((name) => {
-    const value = metadata.dependencies[name];
-    const version = typeof value === "string" ? value : value.version;
-    assert.match(version, /^=\d+\.\d+\.\d+$/u);
-    return `${name} = ${quote(version)}`;
-  });
+  const dependencies = Object.entries(supportDependencyVersions(metadata.dependencies)).map(
+    ([name, version]) => `${name} = ${quote(version)}`,
+  );
   const manifest =
     `[workspace]\n[package]\nname = "vize_public_lsp_contracts"\nversion = ${quote(p.version)}\nedition = ${quote(p.edition)}\nrust-version = ${quote(p["rust-version"])}\nautobins = false\nautolib = false\nautotests = false\n[dependencies]\n${dependencies.join("\n")}\nvize_carton = { path = ${quote(path.join(sourceTree, "crates/vize_carton"))} }\nvize_l0 = { path = ${quote(path.join(sourceTree, "davinci/vize_l0"))} }\n` +
     supportTargets
