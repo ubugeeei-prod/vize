@@ -172,6 +172,7 @@ test("CI runs both headless editor specs", () => {
   assert.equal(headless.if, "matrix.client == 'neovim'");
   assert.ok(headless.run);
   const commands = headless.run.split("\n").map((line) => line.trim());
+  let previousCommand = -1;
   for (const command of [
     "set -euo pipefail",
     'PATH="$(dirname "${VIZE_TEST_NVIM_PATH}"):$PATH"',
@@ -181,7 +182,12 @@ test("CI runs both headless editor specs", () => {
     "nvim --version | head -1",
     "vp run --workspace-root test:nvim-extension:headless",
   ]) {
-    assert.ok(commands.includes(command), `pinned headless carrier requires: ${command}`);
+    const commandAt = commands.indexOf(command);
+    assert.ok(
+      commandAt > previousCommand,
+      `pinned headless carrier requires this order: ${command}`,
+    );
+    previousCommand = commandAt;
   }
   assert.match(action, /vp run --workspace-root test:nvim-extension:headless/);
   assert.match(action, /vp run --workspace-root test:vim-extension:headless/);
