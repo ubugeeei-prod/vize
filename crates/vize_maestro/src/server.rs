@@ -254,6 +254,21 @@ where
     }
 
     fn call(&mut self, request: Request) -> Self::Future {
+        // Eglot represents the absent parameters of these unit-valued LSP
+        // methods as JSON null. Keep tower-lsp's lifecycle handlers while
+        // accepting that equivalent representation at the transport boundary.
+        let request = if matches!(request.method(), "shutdown" | "exit")
+            && request.params().is_some_and(serde_json::Value::is_null)
+        {
+            let (method, id, _) = request.into_parts();
+            let builder = Request::build(method);
+            match id {
+                Some(id) => builder.id(id).finish(),
+                None => builder.finish(),
+            }
+        } else {
+            request
+        };
         let is_exit = request.method() == "exit";
         let response = self.inner.call(request);
         let exit_sender = self.exit_sender.clone();

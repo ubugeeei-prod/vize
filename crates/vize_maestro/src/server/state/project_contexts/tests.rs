@@ -290,7 +290,7 @@ fn a_pending_config_import_never_locks_siblings_or_admits_a_retired_generation()
         .project_contexts
         .contexts
         .lock()
-        .get(&package)
+        .get(&package.clone().into())
         .unwrap()
         .clone();
     std::fs::write(

@@ -26,7 +26,6 @@ exports.runExistingConfigSmoke = async function runExistingConfigSmoke() {
     "jsconfig.json",
     "packages/app/tsconfig.app.json",
     "packages/app/vite.config.ts",
-    "vize.config.json",
   ]) {
     await prepareConfiguredFakeServer({ logPath, serverPath });
     const uri = vscode.Uri.file(path.join(root, filename));
@@ -109,7 +108,7 @@ exports.runExistingConfigSmoke = async function runExistingConfigSmoke() {
 async function runExistingConfigurationContentChangeSmoke() {
   const { logPath, serverPath } = getFakeServer();
   const root = getWorkspaceFolder().uri.fsPath;
-  for (const filename of ["vite.config.ts", "vize.config.json", "packages/app/tsconfig.app.json"]) {
+  for (const filename of ["vite.config.ts", "vite.config.mjs", "packages/app/tsconfig.app.json"]) {
     await prepareConfiguredFakeServer({ logPath, serverPath });
     const uri = vscode.Uri.file(path.join(root, filename));
     await vscode.workspace.fs.createDirectory(vscode.Uri.file(path.dirname(uri.fsPath)));

@@ -91,16 +91,69 @@ call writefile([
       \ 'function! lsp#register_server(config) abort',
       \ '  let g:vize_test_registered_server = a:config',
       \ 'endfunction',
+      \ 'function! lsp#get_server_status(name) abort',
+      \ '  return get(g:vize_test_status, a:name, "unknown server")',
+      \ 'endfunction',
+      \ 'function! lsp#get_server_root_uri(name) abort',
+      \ '  return g:vize_test_root_uri',
+      \ 'endfunction',
+      \ 'function! lsp#notification(name, request) abort',
+      \ '  call add(g:vize_test_saved_events, {"server":a:name,"request":a:request})',
+      \ '  return 0',
+      \ 'endfunction',
       \ ], s:lsp_stub_root . '/autoload/lsp.vim')
 execute 'set runtimepath^=' . fnameescape(s:lsp_stub_root)
 command! LspStatus echo 'stub'
 call vize#setup({'profile': 'lint'})
 call assert_equal('vize', g:vize_test_registered_server.name)
 call assert_equal({'lint': v:true}, g:vize_test_registered_server.initialization_options)
+" Unit transport boundary: another running server never receives Vize saves.
+call mkdir(s:lsp_stub_root . '/autoload/lsp', 'p')
+call writefile([
+      \ 'function! lsp#utils#uri_to_path(uri) abort',
+      \ '  return substitute(a:uri, "^file://", "", "")',
+      \ 'endfunction',
+      \ 'function! lsp#utils#path_to_uri(path) abort',
+      \ '  return "file://" . a:path',
+      \ 'endfunction',
+      \ ], s:lsp_stub_root . '/autoload/lsp/utils.vim')
+call writefile([
+      \ 'function! lsp#callbag#pipe(...) abort',
+      \ '  return 0',
+      \ 'endfunction',
+      \ 'function! lsp#callbag#subscribe(...) abort',
+      \ '  return 0',
+      \ 'endfunction',
+      \ ], s:lsp_stub_root . '/autoload/lsp/callbag.vim')
+let s:save_root = tempname()
+call mkdir(s:save_root, 'p')
+let s:helper = s:save_root . '/policy.mjs'
+call writefile(['export default {};'],s:helper)
+let g:vize_test_status = {'vize':'exited','other':'running'}
+let g:vize_test_root_uri = 'file://' . s:save_root
+let g:vize_test_saved_events = []
+call assert_equal(0,vize#notify_config_saved(s:helper))
+call assert_equal([],g:vize_test_saved_events)
+let g:vize_test_status.vize = 'running'
+call assert_equal(0,vize#notify_config_saved(s:save_root . '-foreign/policy.mjs'))
+call assert_equal(0,vize#notify_config_saved(s:save_root . '/App.vue'))
+call assert_equal([],g:vize_test_saved_events)
+runtime plugin/vize.vim
+execute 'edit ' . fnameescape(s:helper)
+write
+call assert_equal([{'server':'vize','request':{
+      \ 'method':'workspace/didChangeWatchedFiles',
+      \ 'params':{'changes':[{'uri':'file://' . fnamemodify(s:helper,':p'),'type':2}]},
+      \ }}],g:vize_test_saved_events)
+let g:vize_test_status.vize = 'exited'
+write
+call assert_equal(1,len(g:vize_test_saved_events),'inactive Vize save is ignored')
+call delete(s:save_root,'rf')
 delcommand LspStatus
 execute 'set runtimepath-=' . fnameescape(s:lsp_stub_root)
 call delete(s:lsp_stub_root, 'rf')
 unlet g:vize_test_registered_server
+unlet g:vize_test_status g:vize_test_root_uri g:vize_test_saved_events
 
 try
   call vize#profile('missing')

@@ -1,10 +1,11 @@
 // Real Helix (pinned in CI) in a pseudo-terminal, driven by keystrokes: the
 // packaged `editors/helix/languages.toml` is the user's languages.toml (plus
-// the formatting opt-in every client makes for this scenario), `vize` resolves
+// the explicit initialization profile shared by this scenario), `vize` resolves
 // through PATH as the package expects, and every request is one Helix builds
 // from its own cursor, selection, menu and prompt. The driver waits on the tap
 // transcript between keystrokes; it never reads a response itself.
 import { spawn, spawnSync } from "node:child_process";
+import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
@@ -19,10 +20,33 @@ import {
   type DriverContext,
 } from "../support/context.ts";
 import { answeredRequest, readTranscript, waitForTranscript } from "../support/transcript.ts";
+import type { Position, Range } from "../support/document.ts";
 
 const hx = process.env.VIZE_TEST_HELIX_PATH ?? "hx";
 const ESC = "\x1b";
 const ENTER = "\r";
+
+function assertPosition(value: unknown): asserts value is Position {
+  assert.ok(value !== null && typeof value === "object" && "line" in value && "character" in value);
+  for (const coordinate of [value.line, value.character]) {
+    assert.ok(typeof coordinate === "number" && Number.isInteger(coordinate) && coordinate >= 0);
+  }
+}
+
+function matchPosition(match: object): Position {
+  assert.ok("position" in match);
+  assertPosition(match.position);
+  return match.position;
+}
+
+function matchRange(match: object): Range {
+  assert.ok("range" in match);
+  const value = match.range;
+  assert.ok(value !== null && typeof value === "object" && "start" in value && "end" in value);
+  assertPosition(value.start);
+  assertPosition(value.end);
+  return { start: value.start, end: value.end };
+}
 
 function version(): string {
   const output = spawnSync(hx, ["--version"], { encoding: "utf8" }).stdout ?? "";
@@ -54,23 +78,28 @@ function visibleText(raw: string): string {
   return text.replace(/ {2,}/gu, " ");
 }
 
-/** The packaged languages.toml with `formatting = true` added to the server config table. */
-function userLanguages(): string {
-  const packaged = fs.readFileSync(
-    path.join(repoRoot, "editors", "helix", "languages.toml"),
-    "utf8",
-  );
+/** Add the scenario's explicit initialization options to the packaged server config. */
+export function userLanguages(
+  packaged = fs.readFileSync(path.join(repoRoot, "editors", "helix", "languages.toml"), "utf8"),
+  initializationOptions: object = { formatting: true },
+): string {
   const table = "[language-server.vize.config]\n";
-  if (!packaged.includes(table))
-    throw new Error("editors/helix/languages.toml lost its config table");
-  return packaged.replace(table, `${table}formatting = true\n`);
+  const overrides = Object.entries(initializationOptions)
+    .map(([key, value]) => `${JSON.stringify(key)} = ${JSON.stringify(value)}\n`)
+    .join("");
+  return packaged.includes(table)
+    ? packaged.replace(table, `${table}${overrides}`)
+    : `${packaged}\n${table}${overrides}`;
 }
 
 async function run(context: DriverContext): Promise<void> {
   const { scenario } = context;
   const config = path.join(context.scratch, "config");
   fs.mkdirSync(path.join(config, "helix"), { recursive: true });
-  fs.writeFileSync(path.join(config, "helix", "languages.toml"), userLanguages());
+  fs.writeFileSync(
+    path.join(config, "helix", "languages.toml"),
+    userLanguages(undefined, scenario.initializationOptions),
+  );
   // Completion only when asked (C-x), no signature/inlay requests racing the scenario.
   fs.writeFileSync(
     path.join(config, "helix", "config.toml"),
@@ -138,27 +167,27 @@ async function run(context: DriverContext): Promise<void> {
     await settle(0, "diagnostics-open");
 
     let mark = transcriptLength(context);
-    await goto(step(scenario, "hover", "request").match.position);
+    await goto(matchPosition(step(scenario, "hover", "request").match));
     await keys(" k");
     await answered("textDocument/hover", mark);
     await keys(ESC);
 
     mark = transcriptLength(context);
-    await goto(step(scenario, "completion", "request").match.position);
+    await goto(matchPosition(step(scenario, "completion", "request").match));
     await keys("i\x18");
     await answered("textDocument/completion", mark);
     await keys(ESC);
     await keys(ESC);
 
     mark = transcriptLength(context);
-    await goto(step(scenario, "definition", "request").match.position);
+    await goto(matchPosition(step(scenario, "definition", "request").match));
     await keys("gd");
     await answered("textDocument/definition", mark);
     await sleep(500);
     await keys("\x0f"); // C-o: back to the scenario document
 
     mark = transcriptLength(context);
-    const range = step(scenario, "code-action", "request").match.range;
+    const range = matchRange(step(scenario, "code-action", "request").match);
     await goto(range.start);
     await keys(" a");
     await answered("textDocument/codeAction", mark);
@@ -180,8 +209,9 @@ async function run(context: DriverContext): Promise<void> {
     await settle(mark, "diagnostics-edit");
 
     const rename = step(scenario, "rename", "request").match;
+    assert.ok("newName" in rename && typeof rename.newName === "string");
     mark = transcriptLength(context);
-    await goto(rename.position);
+    await goto(matchPosition(rename));
     await keys(" r");
     await answered("textDocument/prepareRename", mark);
     await sleep(500);

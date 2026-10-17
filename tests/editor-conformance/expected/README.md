@@ -6,11 +6,11 @@ as the prior complete vectors. Every other scenario expectation is unchanged.
 
 The current initialization vector derives from the original vector by adding the
 three source-action kinds required by
-`crates/vize_maestro/src/server/capabilities/code_action_tests.rs` and the moniker
-provider advertised in `crates/vize_maestro/src/server/capabilities.rs`.
-The existing main fixture retains its disabled JSX routing hint. Unlike the
-canonical Vite configuration fixture on the configuration migration branch, this
-fixture does not select that branch's enabled JSX checking default.
+`crates/vize_maestro/src/server/capabilities/code_action_tests.rs`, the moniker
+provider advertised in `crates/vize_maestro/src/server/capabilities.rs`, and the
+enabled JSX routing hint from `projectConfigDefaults` in
+`crates/vize_carton/src/config/loader/vite-runtime.mjs`. The shared real Vue
+workspace selects this default through its canonical `vite.config.mjs`.
 
 The current completion vector retains both original authored candidates first,
 then appends the complete independent vector from
@@ -19,16 +19,23 @@ then appends the complete independent vector from
 instance members and Vue expression global allowlist. No candidates or fields
 are removed from the comparison.
 
-Both derived vectors matched the complete actual Neovim, Zed, and Helix responses
+All fields in these canonical Vite vectors matched the recorded Neovim, Zed, and
+VS Code responses in [Editor conformance run 38936651085](https://github.com/ubugeeei-prod/vize/actions/runs/38936651085)
+at commit `37be818f1699a83675a79a6d35056f70ce9c13f8`. This records equality for
+that fixture and source; it does not qualify a later combined commit.
+
+The prior main fixture retained a disabled JSX routing hint. Its
+[complete initialization vector](https://github.com/ubugeeei-prod/vize/blob/ee7f8575c7e0476ac70a545bffa372b6b65270f6/tests/editor-conformance/expected/initialize-current.json)
+and completion vector matched the complete actual Neovim, Zed, and Helix responses
 in [Editor conformance run 38999187468](https://github.com/ubugeeei-prod/vize/actions/runs/38999187468)
-at main-based commit `d8f46f463efb0de5b1bbf0de653d855e5b26331d`.
-This establishes equality for initialization and completion; the original
-expectations failed those two steps in that run. It does not claim that the
-updated scenario has already passed a new editor run. The judge continues to
-reject corrupted expectations, including a missing, enabled, or incorrectly
-typed JSX routing hint for this fixture. Rejudging the original 58-entry Helix
-transcript with these vectors passes all 16 steps and rejects all 16 corrupted
-expectations; that replay is not a new native editor run.
+at main-based commit `d8f46f463efb0de5b1bbf0de653d855e5b26331d`. The original
+expectations failed initialization and completion in that run. Rejudging its
+original 58-entry Helix transcript with those vectors passed all 16 steps and
+rejected all 16 corrupted expectations; that replay is not a new native editor run.
+
+The judge still compares complete responses and rejects every corrupted scenario
+expectation, including a missing, false, or incorrectly typed JSX routing hint
+for the current canonical Vite fixture.
 
 Code-action diagnostics use the scenario's explicit `diagnosticsFromRequest`
 contract. Each complete canonical diagnostic must first match a server-published

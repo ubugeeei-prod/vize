@@ -80,6 +80,39 @@ function! vize#setup(...) abort
   return l:config
 endfunction
 
+" vim-lsp does not advertise dynamic file watching. Forward saved project
+" configuration/helper buffers through its actual notification transport.
+function! vize#notify_config_saved(file) abort
+  if !exists('*lsp#get_server_status') || lsp#get_server_status('vize') !=# 'running'
+    return 0
+  endif
+  if a:file !~? '\.\%(jsonc\?\|[jt]sx\?\|[cm][jt]s\)$'
+    return 0
+  endif
+  let l:root_uri = lsp#get_server_root_uri('vize')
+  if l:root_uri !~# '^file:'
+    return 0
+  endif
+  let l:root = s:physical_path(lsp#utils#uri_to_path(l:root_uri))
+  let l:file = s:physical_path(a:file)
+  if stridx(l:file, substitute(l:root, '/\+$', '', '') . '/') != 0
+    return 0
+  endif
+  call lsp#callbag#pipe(
+        \ lsp#notification('vize', {
+        \   'method': 'workspace/didChangeWatchedFiles',
+        \   'params': {'changes': [{'uri': lsp#utils#path_to_uri(fnamemodify(a:file, ':p')), 'type': 2}]},
+        \ }),
+        \ lsp#callbag#subscribe({}),
+        \ )
+  return 1
+endfunction
+
+function! s:physical_path(path) abort
+  let l:path = substitute(resolve(fnamemodify(a:path, ':p')), '\\', '/', 'g')
+  return has('win32') || has('win64') ? tolower(l:path) : l:path
+endfunction
+
 function! s:assert_string_list(name, value) abort
   if type(a:value) != v:t_list || empty(a:value)
     throw 'vize.' . a:name . ' must be a non-empty list'

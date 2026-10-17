@@ -79,6 +79,16 @@ fn run() -> Result<(), String> {
     }
     let _ = fs::remove_dir_all(&session);
     println!("vim real-server scenario passed");
+    let configuration = Command::new("node")
+        .arg(repo.join("tools/support/compat/vim-vize/run-config-server.ts"))
+        .current_dir(&repo)
+        .env("VIZE_SERVER_PATH", &server_path)
+        .stdin(Stdio::null())
+        .status()
+        .map_err(|error| format!("failed to run Vim configuration scenario: {error}"))?;
+    if !configuration.success() {
+        return Err("Vim configuration scenario failed".to_string());
+    }
     Ok(())
 }
 

@@ -188,3 +188,57 @@ test("applied module context retains only its exact reviewed host ProjectModel i
     assert.match(withoutHostRuntimeReferences(declaration, foreign), forbiddenCartonStorage);
   }
 });
+
+test("one private snapshot facade exposes only the four reviewed Carton host APIs", () => {
+  const file = "crates/vize_maestro/src/server/state/config/host.rs";
+  const symbols = [
+    "LoadedLspConfig",
+    "ProjectModel",
+    "load_config_with_source",
+    "load_lsp_config_snapshot",
+  ];
+  const declarations = symbols.map(
+    (symbol) => `pub(in crate::server::state) use vize_carton::config::${symbol};`,
+  );
+  for (const path of [file, file.replaceAll("/", "\\")]) {
+    assert.doesNotMatch(
+      withoutHostRuntimeReferences(declarations.join("\n"), path),
+      forbiddenCartonStorage,
+    );
+    for (const unreviewed of [
+      "use vize_carton::String;",
+      "pub(in crate::server::state) use vize_carton::config::TypeCheckerConfig;",
+      "pub(in crate::server::state) use vize_carton::config::*;",
+      "pub(in crate::server::state) use vize_carton::config::{LoadedLspConfig, String};",
+      "pub(in crate::server::state) use vize_carton::config::LoadedLspConfig as CopiedSnapshot;",
+      "pub use vize_carton::config::LoadedLspConfig;",
+      "vize_carton::config::load_lsp_config_snapshot(None)",
+    ]) {
+      assert.match(
+        withoutHostRuntimeReferences(`${declarations.join("\n")}\n${unreviewed}`, path),
+        forbiddenCartonStorage,
+      );
+    }
+  }
+  const consumers = [
+    ...hostFiles,
+    "crates/vize_maestro/src/server/state/config/project.rs",
+    "crates/vize_maestro/src/server/state/project_contexts.rs",
+    "crates/vize_maestro/src/server/state/project_contexts/registry.rs",
+    "crates/vize_maestro/src/server/state/project_contexts/references.rs",
+    "davinci/vize_l0/src/config.rs",
+    "davinci/vize_l1/src/config.rs",
+    `${file}.other`,
+  ];
+  for (const consumer of consumers) {
+    for (const declaration of declarations) {
+      assert.match(withoutHostRuntimeReferences(declaration, consumer), forbiddenCartonStorage);
+    }
+    for (const symbol of ["LoadedLspConfig", "ProjectModel"]) {
+      assert.match(
+        withoutHostRuntimeReferences(`use vize_carton::config::${symbol};`, consumer),
+        forbiddenCartonStorage,
+      );
+    }
+  }
+});

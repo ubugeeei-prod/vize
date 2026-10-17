@@ -171,7 +171,7 @@ pub struct ServerState {
     /// Per-workspace-folder linter contexts for true multi-root sessions
     /// (#3240). Empty for clients that only send `rootUri`.
     workspace_folder_configs: RwLock<Vec<workspace_folders::WorkspaceFolderConfig>>,
-    /// Formatting options (loaded from vize.config.json)
+    /// Formatting options loaded from the shared Vite project configuration.
     #[cfg(feature = "glyph")]
     format_options: RwLock<(vize_glyph::FormatOptions, bool)>,
     /// Corsa bridge for native TypeScript language features. Lazily

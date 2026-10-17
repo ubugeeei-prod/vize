@@ -41,6 +41,28 @@ impl ServerState {
                 .iter()
                 .any(|dependency| changed_paths.contains(&physical_path(dependency)))
         };
+        let mut tracked = self
+            .project_contexts
+            .config_dependencies
+            .read()
+            .iter()
+            .map(|path| physical_path(path))
+            .collect::<Vec<_>>();
+        for state in self.cached_project_states() {
+            tracked.extend(
+                state
+                    .project_contexts
+                    .config_dependencies
+                    .read()
+                    .iter()
+                    .map(|path| physical_path(path)),
+            );
+        }
+        let untracked_markers = config_paths
+            .iter()
+            .filter(|path| !tracked.contains(path))
+            .copied()
+            .collect::<Vec<_>>();
         let dependency_affected = self
             .cached_project_states()
             .iter()
@@ -50,6 +72,7 @@ impl ServerState {
             return Vec::new();
         }
         let _change = self.project_routing_change();
+        *self.project_contexts.reference_ownership.lock() = Default::default();
         let mut contexts = self.project_contexts.contexts.lock();
         let mut retired = Vec::new();
         let mut affected = contexts
@@ -58,9 +81,9 @@ impl ServerState {
                 context
                     .initialized_state()
                     .is_some_and(|state| dependency_changed(&state))
-                    || config_paths
+                    || untracked_markers
                         .iter()
-                        .any(|path| path.starts_with(physical_path(root)))
+                        .any(|path| path.starts_with(physical_path(&root.root)))
             })
             .map(|(root, _)| root.clone())
             .collect::<Vec<_>>();
@@ -78,13 +101,36 @@ impl ServerState {
         {
             self.project_contexts.retired.store(true, Ordering::Release);
             primary_retired = true;
-            if !affected.contains(&root) {
-                affected.push(root);
+            if !affected.contains(&root.clone().into()) {
+                affected.push(root.into());
             }
         }
+        let base_roots = affected
+            .iter()
+            .filter(|key| key.tsconfig.is_none())
+            .map(|key| key.root.clone())
+            .collect::<Vec<_>>();
+        let pending = contexts
+            .iter()
+            .filter(|(key, context)| {
+                key.tsconfig.is_some()
+                    && base_roots.contains(&key.root)
+                    && context.initialized_state().is_none()
+            })
+            .map(|(key, _)| key.clone())
+            .collect::<Vec<_>>();
+        affected.extend(pending);
         for root in &affected {
-            let replacement = Arc::new(registry::ProjectContext::new(root.clone()));
-            if let Some(previous) = contexts.insert(root.clone(), replacement) {
+            let replacement = contexts
+                .get(root)
+                .map(|context| context.replacement())
+                .unwrap_or_else(|| {
+                    registry::ProjectContext::with_previous(
+                        root.clone(),
+                        self.retained_configuration(),
+                    )
+                });
+            if let Some(previous) = contexts.insert(root.clone(), Arc::new(replacement)) {
                 previous.mark_retired();
                 retired.push(previous);
             }
@@ -102,7 +148,7 @@ impl ServerState {
                     .filter(|path| {
                         affected
                             .iter()
-                            .any(|root| path.starts_with(physical_path(root)))
+                            .any(|root| path.starts_with(physical_path(&root.root)))
                             || config_paths.iter().any(|config| {
                                 config
                                     .parent()
@@ -124,12 +170,13 @@ impl ServerState {
                     .routes
                     .get(uri)
                     .is_some_and(|previous| {
-                        self.is_primary_boundary(&previous)
+                        previous.tsconfig.is_none()
+                            && self.is_primary_boundary(&previous.root)
                             && uri
                                 .to_file_path()
                                 .ok()
                                 .and_then(|path| self.document_context_root(&path))
-                                .is_some_and(|current| current != *previous)
+                                .is_some_and(|current| current != previous.root)
                     })
             })
             .map(|(uri, _)| uri.clone())

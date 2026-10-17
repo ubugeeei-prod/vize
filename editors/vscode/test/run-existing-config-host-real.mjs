@@ -14,7 +14,7 @@ export async function runExistingConfigHostScenarios(runCommand, options) {
     const extensionsPath = path.join(directory, "extensions");
     try {
       prepareRealVueWorkspace(workspacePath);
-      fs.rmSync(path.join(workspacePath, "vize.config.json"));
+      fs.rmSync(path.join(workspacePath, "vite.config.mjs"));
       fs.writeFileSync(
         path.join(workspacePath, "src/Formatting.vue"),
         '<script setup lang="ts">const count=1</script><template><div>{{count}}</div></template>\n',
@@ -28,7 +28,7 @@ export async function runExistingConfigHostScenarios(runCommand, options) {
         // startup profile, while unrelated server defaults remain enabled.
         fs.writeFileSync(
           path.join(workspacePath, "vite.config.ts"),
-          `export default ${JSON.stringify({ vize: { lsp: { hover: false } } })};\n`,
+          `export default ${JSON.stringify({ vue: { languageServer: { hover: false } } })};\n`,
         );
       }
       await runPackagedExtensionHost(runCommand, {

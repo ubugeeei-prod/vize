@@ -1,5 +1,5 @@
 //! Shared initialization, bounded work, and canceled-owner lifetime controls.
-use super::{Arc, pool, tests::fixture};
+use super::{Arc, Url, pool, tests::fixture};
 use futures::Future;
 use std::{
     sync::atomic::{AtomicUsize, Ordering},
@@ -85,4 +85,34 @@ fn queued_config_work_stays_bounded_and_all_jobs_finish() {
     assert_eq!(results, (0..48).map(Some).collect::<Vec<_>>());
     assert!(peak.load(Ordering::SeqCst) <= 2);
     assert_eq!(active.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn document_selection_terminates_after_the_primary_owner_is_shut_down() {
+    let (directory, owner, _, _) = super::tests::fixture();
+    owner.retire_project_contexts();
+    let state = owner.clone();
+    let uri = Url::from_file_path(directory.path().join("App.vue")).unwrap();
+    let (sender, receiver) = std::sync::mpsc::channel();
+    let worker = std::thread::spawn(move || {
+        sender
+            .send(crate::runtime::block_on(
+                state.document_project_state_async(&uri),
+            ))
+            .unwrap()
+    });
+    let completed = receiver.recv_timeout(std::time::Duration::from_secs(3));
+    if completed.is_err() {
+        // Release a regressed routing loop so the test does not strand a worker.
+        owner
+            .project_contexts
+            .retired
+            .store(false, Ordering::Release);
+    }
+    assert!(
+        completed
+            .expect("shutdown must stop foreground routing")
+            .is_none()
+    );
+    worker.join().unwrap();
 }

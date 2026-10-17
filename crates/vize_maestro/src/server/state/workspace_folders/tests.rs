@@ -151,3 +151,63 @@ fn workspace_folder_changes_select_only_open_documents_under_changed_roots() {
     assert_eq!(selected, vec![affected]);
     let _ = std::fs::remove_dir_all(parent);
 }
+
+#[test]
+fn invalid_project_configuration_refuses_lint_without_borrowing_a_sibling_policy() {
+    let parent = tempfile::tempdir().unwrap();
+    let valid = folder_with_config(
+        parent.path(),
+        "valid",
+        r#"{"linter":{"rules":{"a11y/alt-text":"off"}}}"#,
+    );
+    let invalid = parent.path().join("invalid");
+    std::fs::create_dir_all(&invalid).unwrap();
+    std::fs::write(
+        invalid.join("vite.config.mjs"),
+        "export default { vue: { formatter: { printWidth: 'invalid' } } };",
+    )
+    .unwrap();
+    let state = ServerState::new();
+    state.set_workspace_folders(vec![valid.clone(), invalid.clone()]);
+    assert!(
+        state
+            .linter_settings_for_uri(&Url::from_file_path(invalid.join("App.vue")).unwrap())
+            .is_none()
+    );
+    let (config, _, _) = state
+        .linter_settings_for_uri(&Url::from_file_path(valid.join("App.vue")).unwrap())
+        .unwrap();
+    assert_eq!(
+        config.rules.get("a11y/alt-text"),
+        Some(&LintRuleSeverity::Off)
+    );
+}
+
+#[test]
+fn invalid_native_project_initialization_refuses_lint_until_valid_configuration_is_loaded() {
+    let project = tempfile::tempdir().unwrap();
+    let config = project.path().join("vite.config.mjs");
+    std::fs::write(&config, "throw new Error('invalid configuration');").unwrap();
+    let state = ServerState::new();
+    let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();
+    state.load_workspace_config(project.path());
+    assert!(state.linter_settings_for_uri(&uri).is_none());
+    std::fs::write(
+        &config,
+        "export default { vue: { linter: { rules: { 'a11y/alt-text': 'off' } } } };",
+    )
+    .unwrap();
+    state.load_workspace_config(project.path());
+    let (loaded, _, _) = state.linter_settings_for_uri(&uri).unwrap();
+    assert_eq!(
+        loaded.rules.get("a11y/alt-text"),
+        Some(&LintRuleSeverity::Off)
+    );
+    std::fs::write(&config, "throw new Error('invalid edit');").unwrap();
+    state.load_workspace_config(project.path());
+    let (retained, _, _) = state.linter_settings_for_uri(&uri).unwrap();
+    assert_eq!(
+        retained.rules.get("a11y/alt-text"),
+        Some(&LintRuleSeverity::Off)
+    );
+}

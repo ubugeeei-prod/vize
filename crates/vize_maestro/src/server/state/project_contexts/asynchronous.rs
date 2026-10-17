@@ -19,11 +19,29 @@ impl ServerState {
             .and_then(Weak::upgrade);
         let root = owner.as_ref().unwrap_or(self);
         loop {
-            let Some(context) = root.document_project_context(uri) else {
-                return owner;
+            if root.project_routing_shutting_down() {
+                return None;
+            }
+            let state = match root.document_project_context(uri) {
+                Some(context) => match context.initialize_async(root).await {
+                    Some(state) => state,
+                    None => continue,
+                },
+                None => root.clone(),
             };
-            if let Some(state) = context.initialize_async(root).await {
-                return Some(state);
+            if state.project_context_retired() {
+                continue;
+            }
+            let reference = root.document_reference_context(uri, &state);
+            if let Some(reference) = reference {
+                if let Some(state) = reference.initialize_async(root).await {
+                    return Some(state);
+                }
+            } else {
+                if state.project_context_retired() {
+                    continue;
+                }
+                return (!Arc::ptr_eq(&state, self)).then_some(state);
             }
         }
     }
@@ -50,7 +68,7 @@ impl ServerState {
                 root.project_contexts
                     .contexts
                     .lock()
-                    .get(&boundary)
+                    .get(&boundary.into())
                     .cloned()
             });
             let Some(context) = context else {

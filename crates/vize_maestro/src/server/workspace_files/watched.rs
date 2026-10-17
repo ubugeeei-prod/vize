@@ -13,9 +13,18 @@ pub(super) async fn did_change_watched_files(
     params: &DidChangeWatchedFilesParams,
 ) {
     #[cfg(feature = "native")]
-    let reconfigured = server
-        .state
-        .observe_project_config_events(&user_watched_file_events(&params.changes));
+    super::super::native_requests::trace_watched_file_events(params);
+    // Filter before routing, navigation, or native request stamps can move.
+    // Output written under our cache must not feed back into authored inputs.
+    #[cfg(feature = "native")]
+    let params = &DidChangeWatchedFilesParams {
+        changes: user_watched_file_events(&params.changes),
+    };
+    if params.changes.is_empty() {
+        return;
+    }
+    #[cfg(feature = "native")]
+    let reconfigured = server.state.observe_project_config_events(&params.changes);
     #[cfg(all(feature = "native", feature = "experimental-source-navigation"))]
     if server.state.project_context_retired()
         && let Some(navigation) = &server.navigation
@@ -41,21 +50,16 @@ pub(super) async fn did_change_watched_files(
 }
 
 async fn did_change_in_context(server: &MaestroServer, params: &DidChangeWatchedFilesParams) {
-    #[cfg(feature = "native")]
-    super::super::native_requests::trace_watched_file_events(params);
     #[cfg(feature = "experimental-source-navigation")]
     server
         .state
         .observe_module_target_file_events(!params.changes.is_empty());
     #[cfg(feature = "native")]
     {
-        let changes = user_watched_file_events(&params.changes);
-        if changes.is_empty() {
-            return;
-        }
-        server.state.observe_workspace_project_file_events(&changes);
+        let changes = &params.changes;
+        server.state.observe_workspace_project_file_events(changes);
         server.state.invalidate_component_interfaces();
-        if changes_invalidate_disk_project_state(&server.state, &changes) {
+        if changes_invalidate_disk_project_state(&server.state, changes) {
             invalidate_corsa_disk_state(&server.state);
         }
         // Any watched change can affect an open importer; declaration changes
@@ -92,16 +96,37 @@ async fn did_change_in_context(server: &MaestroServer, params: &DidChangeWatched
 pub(super) fn user_watched_file_events(changes: &[FileEvent]) -> Vec<FileEvent> {
     changes
         .iter()
-        .filter(|change| !is_internal_corsa_overlay_uri(&change.uri))
+        .filter(|change| !is_internal_output_uri(&change.uri))
         .cloned()
         .collect()
 }
 
 #[cfg(feature = "native")]
-fn is_internal_corsa_overlay_uri(uri: &Url) -> bool {
-    let path = uri.path();
-    path.contains("/node_modules/.vize/corsa-overlay/")
-        || path.ends_with("/node_modules/.vize/corsa-overlay")
+fn is_internal_output_uri(uri: &Url) -> bool {
+    let Ok(path) = uri.to_file_path() else {
+        return false;
+    };
+    if is_internal_output_path(&path) {
+        return true;
+    }
+    // Clients can watch a symlink alias, including a newly created or deleted
+    // child. Resolve its nearest existing ancestor without requiring the child
+    // itself to exist. Keep the authored spelling check above as well.
+    for ancestor in path.ancestors() {
+        if let Ok(physical) = ancestor.canonicalize()
+            && let Ok(relative) = path.strip_prefix(ancestor)
+        {
+            return is_internal_output_path(&physical.join(relative));
+        }
+    }
+    false
+}
+
+#[cfg(feature = "native")]
+fn is_internal_output_path(path: &std::path::Path) -> bool {
+    path.components()
+        .zip(path.components().skip(1))
+        .any(|(parent, child)| parent.as_os_str() == "node_modules" && child.as_os_str() == ".vize")
 }
 
 /// Whether watched changes moved project state the type checker only sees on disk.

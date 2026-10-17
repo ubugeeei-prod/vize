@@ -93,7 +93,8 @@ test("the real-server fixture can preserve a pinned oracle while adding its harn
     assert.equal(fs.readFileSync(pinnedPath, "utf8"), "<template>pinned</template>\n");
     assert.ok(fs.existsSync(path.join(workspacePath, "src", "App.vue")));
     assert.ok(fs.existsSync(path.join(workspacePath, ".vscode", "settings.json")));
-    assert.ok(fs.existsSync(path.join(workspacePath, "vize.config.json")));
+    assert.ok(fs.existsSync(path.join(workspacePath, "vite.config.mjs")));
+    assert.equal(fs.existsSync(path.join(workspacePath, "vize.config.json")), false);
     assert.ok(fs.lstatSync(path.join(workspacePath, "node_modules", "vue")).isSymbolicLink());
     assert.equal(
       JSON.parse(fs.readFileSync(path.join(workspacePath, "tsconfig.json"), "utf-8"))

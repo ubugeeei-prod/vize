@@ -20,7 +20,8 @@ const files = [
   "src/ContractChild.vue",
   "src/ContractHost.vue",
   "template/bare/typescript/src/App.vue",
-  "vize.config.json",
+  "vite.config.mjs",
+  "vite.config.ts",
   "tsconfig.json",
   ".vscode/settings.json",
 ];

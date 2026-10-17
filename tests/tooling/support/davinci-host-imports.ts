@@ -11,19 +11,27 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
   if (file === "crates/vize/src/config.rs") {
     storage = storage.replace(/^pub use vize_carton::config::\*;$/gmu, "host_config_facade");
   }
+  if (file === "crates/vize_maestro/src/server/state/config/host.rs") {
+    // Snapshot identity and filesystem ownership stay in Carton. Only this
+    // private facade can expose the reviewed host APIs to state consumers.
+    storage = storage.replace(
+      /^pub\(in crate::server::state\) use vize_carton::config::(?:LoadedLspConfig|ProjectModel|load_config_with_source|load_lsp_config_snapshot);$/gmu,
+      "host_config_snapshot_facade",
+    );
+  }
   if (file === "crates/vize_maestro/src/server/state/config.rs") {
     storage = storage.replace(
-      /\bvize_carton::config::\s*(?:load_lsp_config_snapshot|load_config_with_source)\b/gu,
+      /\bvize_carton::config::\s*(?:load_lsp_config_snapshot|load_config_with_source)\b(?=\s*\()/gu,
       "host_config_loader",
     );
   }
   if (file === "crates/vize_maestro/src/server/state/workspace_folders.rs") {
     storage = storage.replace(
-      /\bvize_carton::config::\s*load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source\b/gu,
+      /\bvize_carton::config::\s*load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source\b(?=\s*\()/gu,
       "host_config_loader",
     );
     storage = storage.replace(
-      /(?<![\p{ID_Continue}])vize_carton::config::\s*load_project_config_with_source(?![\p{ID_Continue}])/gu,
+      /(?<![\p{ID_Continue}])vize_carton::config::\s*load_project_config_with_source(?![\p{ID_Continue}])(?=\s*\()/gu,
       "host_config_loader",
     );
     storage = storage.replace(

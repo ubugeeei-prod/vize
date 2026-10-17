@@ -83,7 +83,7 @@ test("rich host custody preserves the whole completion API result before Markdow
       position: { line: 0, character: 23 },
       itemResolveCount: 16,
     });
-    assert.deepEqual(packet.publicDocumentation, [
+    const expectedDocumentation: readonly Record<string, unknown>[] = [
       { label: "total" },
       {
         label: "formatTotal",
@@ -95,7 +95,8 @@ test("rich host custody preserves the whole completion API result before Markdow
         supportHtml: false,
         baseUri: "file:///project/docs/",
       },
-    ]);
+    ];
+    assert.deepEqual(packet.publicDocumentation, expectedDocumentation);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

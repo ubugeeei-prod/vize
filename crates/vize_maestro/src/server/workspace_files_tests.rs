@@ -180,3 +180,214 @@ fn closed_vue_content_changes_invalidate_the_cached_disk_project_state() {
         &[changed(closed_uri)]
     ));
 }
+
+#[test]
+fn output_filter_keeps_authored_and_neighboring_paths() {
+    for name in [
+        "node_modules/.vize/rich-hover.json",
+        "node_modules/.vize/completion.json",
+        "node_modules/.vize/corsa-overlay/tsconfig.json",
+        "node_modules/.vize",
+        ".vize/policy.json",
+        "node_modules/.vize-other/package.json",
+        "node_modules/example/package.json",
+    ] {
+        let root = tempfile::tempdir().unwrap();
+        let event = FileEvent {
+            uri: Url::from_file_path(root.path().join(name)).unwrap(),
+            typ: FileChangeType::CHANGED,
+        };
+        assert_eq!(
+            user_watched_file_events(std::slice::from_ref(&event)),
+            if name.starts_with("node_modules/.vize/") || name == "node_modules/.vize" {
+                vec![]
+            } else {
+                vec![event]
+            },
+            "{name}"
+        );
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn output_filter_checks_authored_and_physical_symlink_paths_for_absent_children() {
+    let root = tempfile::tempdir().unwrap();
+    let cache = root.path().join("node_modules/.vize");
+    std::fs::create_dir_all(&cache).unwrap();
+    let alias = root.path().join("generated");
+    std::os::unix::fs::symlink(&cache, &alias).unwrap();
+    let authored = root.path().join(".vize");
+    std::fs::create_dir(&authored).unwrap();
+    // The authored path inside the owned output tree also remains excluded
+    // when a symlink points from it to a directory outside that tree.
+    std::os::unix::fs::symlink(&authored, cache.join("linked")).unwrap();
+    for typ in [FileChangeType::CREATED, FileChangeType::DELETED] {
+        for path in [
+            alias.join("missing/output.json"),
+            cache.join("linked/new.json"),
+        ] {
+            assert!(
+                user_watched_file_events(&[FileEvent {
+                    uri: Url::from_file_path(path).unwrap(),
+                    typ,
+                }])
+                .is_empty()
+            );
+        }
+        assert_eq!(
+            user_watched_file_events(&[FileEvent {
+                uri: Url::from_file_path(authored.join("new.json")).unwrap(),
+                typ,
+            }])
+            .len(),
+            1
+        );
+    }
+}
+
+fn watched_project() -> std::io::Result<(
+    tempfile::TempDir,
+    tower_lsp::LspService<super::MaestroServer>,
+    Url,
+)> {
+    let root = tempfile::tempdir()?;
+    let package = root.path().join("package");
+    std::fs::create_dir_all(package.join(".vize"))?;
+    for (name, content) in [
+        ("package.json", "{}"),
+        (
+            "vite.config.mjs",
+            "import vue from './policy.mjs'; export default { vue };",
+        ),
+        (
+            "policy.mjs",
+            "export default { languageServer: { hover: false, lint: false, ecosystem: false, typecheck: true } };",
+        ),
+        (
+            "tsconfig.json",
+            r#"{"extends":"./.vize/options.json","include":["*.vue"]}"#,
+        ),
+        (
+            ".vize/options.json",
+            r#"{"vueCompilerOptions":{"target":2.7}}"#,
+        ),
+        (
+            "App.vue",
+            "<script setup>const total = 1</script><template>{{ total }}</template>",
+        ),
+    ] {
+        std::fs::write(package.join(name), content)?;
+    }
+    let (service, _socket) = tower_lsp::LspService::new(super::MaestroServer::new);
+    service.inner().state.set_workspace_root(root.path().into());
+    service
+        .inner()
+        .state
+        .set_workspace_folders(vec![root.path().into()]);
+    let uri = Url::from_file_path(package.join("App.vue"))
+        .map_err(|()| std::io::Error::other("watched project path must form a file URI"))?;
+    Ok((root, service, uri))
+}
+
+#[test]
+fn owned_json_notification_preserves_pending_semantic_response_and_project_generation() {
+    use futures::{FutureExt, channel::oneshot};
+    use tower_lsp::LanguageServer;
+    use tower_lsp::lsp_types::{DidChangeWatchedFilesParams, SemanticTokensParams};
+
+    let (root, service, uri) = watched_project().unwrap();
+    let server = service.inner();
+    let state = server.state.document_project_state(&uri).unwrap();
+    let source = std::fs::read_to_string(uri.to_file_path().unwrap()).unwrap();
+    state
+        .documents
+        .open(uri.clone(), source.clone(), 7, "vue".into());
+    state.update_virtual_docs(&uri, &source);
+    let project = server.with_project_state(state.clone());
+    let params: SemanticTokensParams = serde_json::from_value(serde_json::json!({
+        "textDocument": {"uri": uri}
+    }))
+    .unwrap();
+    let expected = crate::runtime::block_on(project.semantic_tokens_full(params)).unwrap();
+    assert!(expected.is_some());
+    let generation = server.state.project_routing_generation();
+    let stamp = state.corsa_request_stamp();
+    let (release, held) = oneshot::channel();
+    let mut response = Box::pin(project.native_request(async {
+        held.await.unwrap();
+        Ok(expected.clone())
+    }));
+    assert!(response.as_mut().now_or_never().is_none());
+    crate::runtime::block_on(
+        server.did_change_watched_files(DidChangeWatchedFilesParams {
+            changes: vec![FileEvent {
+                uri: Url::from_file_path(root.path().join("node_modules/.vize/rich-hover.json"))
+                    .unwrap(),
+                typ: FileChangeType::CHANGED,
+            }],
+        }),
+    );
+    assert!(stamp.is_current(&state));
+    assert_eq!(server.state.project_routing_generation(), generation);
+    assert!(std::ptr::eq(
+        state.as_ref(),
+        server.state.document_project_state(&uri).unwrap().as_ref()
+    ));
+    assert_eq!(state.documents.version(&uri), Some(7));
+    assert_eq!(state.documents.text(&uri).as_deref(), Some(source.as_str()));
+    release.send(()).unwrap();
+    assert_eq!(crate::runtime::block_on(response).unwrap(), expected);
+}
+
+#[test]
+fn helper_tsconfig_and_authored_dot_vize_json_notifications_still_reconfigure() {
+    use tower_lsp::LanguageServer;
+    use tower_lsp::lsp_types::DidChangeWatchedFilesParams;
+
+    for (name, content) in [
+        (
+            "policy.mjs",
+            "export default { languageServer: { hover: true, lint: false, ecosystem: false, typecheck: true } };",
+        ),
+        (
+            "tsconfig.json",
+            r#"{"vueCompilerOptions":{"target":3.5},"include":["*.vue"]}"#,
+        ),
+        (
+            ".vize/options.json",
+            r#"{"vueCompilerOptions":{"target":3.5}}"#,
+        ),
+    ] {
+        let (root, service, uri) = watched_project().unwrap();
+        let server = service.inner();
+        let previous = server.state.document_project_state(&uri).unwrap();
+        let stamp = previous.corsa_request_stamp();
+        let generation = server.state.project_routing_generation();
+        let path = root.path().join("package").join(name);
+        std::fs::write(&path, content).unwrap();
+        crate::runtime::block_on(
+            server.did_change_watched_files(DidChangeWatchedFilesParams {
+                changes: vec![FileEvent {
+                    uri: Url::from_file_path(path).unwrap(),
+                    typ: FileChangeType::CHANGED,
+                }],
+            }),
+        );
+        let current = server.state.document_project_state(&uri).unwrap();
+        assert!(!stamp.is_current(&previous), "{name}");
+        assert!(!std::ptr::eq(previous.as_ref(), current.as_ref()), "{name}");
+        assert!(
+            server.state.project_routing_generation() > generation,
+            "{name}"
+        );
+        if name == "policy.mjs" {
+            assert!(current.lsp_features().hover);
+        } else {
+            assert_eq!(
+                current.type_checker_vue_version(),
+                vize_l0::config::VueVersion::V3
+            );
+        }
+    }
+}

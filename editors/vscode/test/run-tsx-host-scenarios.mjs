@@ -54,10 +54,15 @@ function prepareWorkspace(workspacePath, serverPath, enabled) {
     "typescript.validate.enable": false,
     "javascript.validate.enable": false,
   });
-  writeJson(workspacePath, "vize.config.json", {
-    lsp: { editor: true, typecheck: true, lint: true },
-    typeChecker: { corsaPath: resolveCorsaPath(), jsxTypecheck: enabled },
-  });
+  fs.writeFileSync(
+    path.join(workspacePath, "vite.config.mjs"),
+    `export default ${JSON.stringify({
+      vue: {
+        languageServer: { editor: true, typecheck: true, lint: true },
+        typeChecker: { corsaPath: resolveCorsaPath(), jsxTypecheck: enabled },
+      },
+    })};\n`,
+  );
   writeJson(workspacePath, "tsconfig.json", {
     compilerOptions: {
       allowJs: true,

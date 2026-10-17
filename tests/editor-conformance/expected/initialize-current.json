@@ -55,7 +55,7 @@
     "documentSymbolProvider": true,
     "experimental": {
       "vize": {
-        "jsxTypecheck": false
+        "jsxTypecheck": true
       }
     },
     "foldingRangeProvider": true,
