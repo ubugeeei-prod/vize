@@ -8,6 +8,10 @@ on:
       rust-plan:
         type: string
         required: true
+      run-source-contracts:
+        type: boolean
+        required: false
+        default: true
 permissions:
   contents: read
 env:
@@ -152,6 +156,15 @@ jobs:
         with:
           key: nextest-ci
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+        if: ${{ inputs.run-source-contracts }}
+      - name: Require current-tree source, API and reviewed-doc contracts
+        if: ${{ inputs.run-source-contracts }}
+        run: >-
+          node --test --test-concurrency=1
+          tests/tooling/davinci-assertion-lint.test.ts
+          tests/tooling/davinci-consumer-migration-surfaces.test.mjs
+          tests/tooling/docs-reviewed-translations.test.ts
       - name: Materialize affected Rust plan
         run: node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
       - name: Select Clippy and doctest runtime envelope

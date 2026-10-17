@@ -125,10 +125,25 @@ void test("Japanese Content Mapper review survives regeneration with every whole
   assert.equal(retained.get(path), japanese, "regeneration retains the complete authored review");
   const fences = (source: string) =>
     [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm)].map((match) => match[0]);
-  assert.deepEqual(fences(japanese), fences(english), "all five full runnable examples remain");
-  const digest = createHash("sha256")
-    .update(JSON.stringify(fences(japanese)))
-    .digest("hex");
+  const reviewedRecipes = fences(japanese);
+  assert.deepEqual(reviewedRecipes, fences(english), "all six full runnable examples agree");
+  assert.equal(reviewedRecipes.length, 6);
+  const originalRecipes = [...reviewedRecipes];
+  assert.deepEqual(
+    originalRecipes.splice(4, 1),
+    [
+      `\`\`\`json
+{
+  "vueCompilerOptions": {
+    "checkUnknownProps": true,
+    "strictCssModules": true
+  }
+}
+\`\`\``,
+    ],
+    "only the reviewed top-level Vue options recipe succeeds the five original recipes",
+  );
+  const digest = createHash("sha256").update(JSON.stringify(originalRecipes)).digest("hex");
   assert.equal(digest, "8940b963ebe24b35e139a63098e85a348de702114d24b7d243b4497cf01ffcea");
   const links = (source: string) =>
     [...source.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]);

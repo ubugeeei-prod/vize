@@ -68,6 +68,7 @@ jobs:
           tests/tooling/release-check-qualification-handoff.test.ts
           tests/tooling/release-check-profile.test.ts
           tests/tooling/release/release-notes.test.ts
+          tests/tooling/release/release-signing.test.ts
           tests/tooling/drop-in-claim-scope.test.ts
           tests/tooling/github-workflows-full-rust.test.ts
       - name: Require exact concurrent npm publication fixture controls
