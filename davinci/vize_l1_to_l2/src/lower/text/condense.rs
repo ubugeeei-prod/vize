@@ -55,6 +55,24 @@ fn text_like(child: &SurfaceChild<'_>) -> bool {
     }
 }
 
+/// Vue condense removes a whitespace-only gap at these preserved-comment
+/// boundaries, whether read by the compiler or an authored-surface consumer.
+pub(super) fn beside_comment(
+    prev: Option<&SurfaceChild<'_>>,
+    next: Option<&SurfaceChild<'_>>,
+) -> bool {
+    matches!(
+        (prev, next),
+        (
+            Some(SurfaceChild::Comment(_)),
+            Some(SurfaceChild::Comment(_) | SurfaceChild::Element(_))
+        ) | (
+            Some(SurfaceChild::Element(_)),
+            Some(SurfaceChild::Comment(_))
+        )
+    )
+}
+
 /// Collapse every maximal run of the alphabet in mixed text to one
 /// space; `None` when the text already satisfies the strategy
 /// (`whitespace.rs:22-61` — the untouched node keeps borrowing the
@@ -285,17 +303,7 @@ pub(crate) fn plan_whitespace<'a>(
             let next_is_text = next.is_some_and(text_like);
             // Match the parser's Vue condense policy, including same-line
             // spaces between a comment and another comment or element.
-            let beside_comment = matches!(
-                (prev, next),
-                (
-                    Some(SurfaceChild::Comment(_)),
-                    Some(SurfaceChild::Comment(_) | SurfaceChild::Element(_))
-                ) | (
-                    Some(SurfaceChild::Element(_)),
-                    Some(SurfaceChild::Comment(_))
-                )
-            );
-            if beside_comment || (!prev_is_text && !next_is_text && group.has_newline) {
+            if beside_comment(prev, next) || (!prev_is_text && !next_is_text && group.has_newline) {
                 drop_members(&mut plan, group);
             } else {
                 // The condensed space belongs on the group's first

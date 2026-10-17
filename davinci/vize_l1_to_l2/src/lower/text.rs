@@ -93,7 +93,7 @@ mod condense;
 mod leading_newline;
 mod run;
 
-pub use branch_gap::branch_gap_text;
+pub use branch_gap::{branch_gap_text, branch_gap_text_at};
 pub(crate) use condense::{TextAction, plan_whitespace, suppresses_condense};
 use condense::{collapse_fused, extends_run};
 use leading_newline::normalize_special_text;
