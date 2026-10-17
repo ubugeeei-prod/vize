@@ -133,3 +133,139 @@ void test("missing original native guard or changed whole oracle cannot pass", (
 void test("a red or absent LSP transaction does not block the independent observations or seal success", () => {
   independentPublicObservationLaw();
 });
+
+void test("all 160 declaration-origin definitions require the whole authored source target", () => {
+  type Json = ReturnType<typeof JSON.parse>;
+  const literal = JSON.parse(
+    fs.readFileSync(
+      path.join(
+        root,
+        "tests/_fixtures/differential/lsp/event-rename/4075/bound-emitter/cases.json.txt",
+      ),
+      "utf8",
+    ),
+  );
+  const names = ["Child.vue", "Parent.vue", "Other.vue"];
+  const uris = Object.fromEntries(
+    [...names, "NativeGuard.vue"].map((file) => [file, `file:///inert/${file}`]),
+  );
+  const publication = (file: string, version: number, diagnostics: unknown[] = []) => ({
+    jsonrpc: "2.0",
+    method: "textDocument/publishDiagnostics",
+    params: { uri: uris[file], version, diagnostics },
+  });
+  const reply = (id: number, result: unknown) => ({ jsonrpc: "2.0", id, result });
+  let declarationCursors = 0;
+  for (const oracle of literal.cases) {
+    // Inert refusal fixtures use only pre-query source contracts, never captured replies.
+    const invalid = publication("NativeGuard.vue", 1, [
+      {
+        range: { start: { line: 1, character: 6 }, end: { line: 1, character: 17 } },
+        severity: 1,
+        code: 2322,
+        source: "vize/types",
+        message: "Type 'string' is not assignable to type 'number'.",
+      },
+    ]);
+    const repaired = publication("NativeGuard.vue", 2);
+    const installed = (version: number) =>
+      names.map((file) => ({
+        file,
+        text: oracle.completeGoldenFiles[file],
+        disk: oracle.completeGoldenFiles[file],
+        version,
+        diagnostics: publication(file, version),
+      }));
+    const references = oracle.fullReferences.map((site: Json) => ({
+      uri: uris[site.file],
+      range: site.range,
+    }));
+    const changes: Record<string, Json[]> = {};
+    for (const edit of oracle.fullEdits)
+      (changes[uris[edit.file]] ??= []).push({ range: edit.range, newText: edit.newText });
+    const site = oracle.definitionFromAllParentAndCallPositions[0];
+    assert.equal(site.file, "Child.vue");
+    assert.equal(site.range.start.line, site.range.end.line);
+    const line = oracle.sources[site.file].split(/\r?\n/u)[site.range.start.line];
+    assert.equal(line.slice(site.range.start.character, site.range.end.character), "saveItem");
+    for (let index = 0; index < 8; index++)
+      assert.deepEqual(oracle.queries[index], {
+        file: site.file,
+        position: { ...site.range.start, character: site.range.start.character + index },
+      });
+    const definition = { uri: uris[site.file], range: site.range };
+    const queries = oracle.queries.map((query: Json, index: number) => ({
+      query,
+      referencesReply: reply(2 + index * 3, references),
+      renameReply: reply(4 + index * 3, { changes }),
+      definitionContracted: true,
+      allowedWholeDefinitionResponses: [
+        reply(3 + index * 3, definition),
+        reply(3 + index * 3, [definition]),
+      ],
+    }));
+    const allowed = [
+      invalid,
+      repaired,
+      ...names.flatMap((file) => [1, 2, 3].map((version) => publication(file, version))),
+    ];
+    const packet = {
+      oracle,
+      allDefinitionOriginsContracted: true,
+      expected: {
+        queries,
+        selectedApplicationQueryIndex: 0,
+        version2: installed(2),
+        independentVersion3: installed(3),
+        allDefinitionOriginsContracted: true,
+        allowedWholeDiagnosticPublications: allowed,
+      },
+      actual: {
+        nativeGuard: {
+          invalidDiagnostics: invalid,
+          repairedDiagnostics: repaired,
+          expectedInvalid: invalid,
+        },
+        initialDiagnostics: names.map((file) => publication(file, 1)),
+        originalDiskAfterQueries: names.map((file) => ({ file, text: oracle.sources[file] })),
+        applicationError: null,
+        selectedApplicationQueryIndex: 0,
+        appliedFiles: installed(2),
+        independentGoldenFiles: installed(3),
+        allDiagnosticPublications: allowed,
+        observations: queries.map(({ allowedWholeDefinitionResponses, ...query }: Json) => ({
+          ...query,
+          definitionReply: allowedWholeDefinitionResponses[0],
+        })),
+      },
+    };
+    assert.doesNotThrow(() => assertWholeCase(packet, oracle, uris, false));
+    for (let index = 0; index < 8; index++) {
+      const observation = packet.actual.observations[index];
+      const original = observation.definitionReply;
+      for (const result of [
+        null,
+        [],
+        { ...definition, uri: "file:///inert/Child.vue.ts" },
+        { ...definition, range: { ...definition.range, end: definition.range.start } },
+        { ...definition, extra: true },
+      ]) {
+        observation.definitionReply = reply(3 + index * 3, result);
+        assert.throws(
+          () => assertWholeCase(packet, oracle, uris, false),
+          /whole contracted definition response/u,
+        );
+      }
+      observation.definitionReply = queries[index].allowedWholeDefinitionResponses[1];
+      assert.doesNotThrow(() => assertWholeCase(packet, oracle, uris, false));
+      observation.definitionReply = original;
+      observation.definitionContracted = false;
+      assert.throws(() => assertWholeCase(packet, oracle, uris, false));
+      observation.definitionContracted = true;
+      declarationCursors++;
+    }
+    packet.allDefinitionOriginsContracted = false;
+    assert.throws(() => assertWholeCase(packet, oracle, uris, false));
+  }
+  assert.equal(declarationCursors, 160);
+});

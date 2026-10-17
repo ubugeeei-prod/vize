@@ -1,5 +1,6 @@
-//! Validate SFC attribute names with tokenizer callbacks before any backend
-//! can lower a repeated structural directive into nested control flow.
+//! Validate complete SFC header identities before structural lowering.
+//! Reuse the actual DOM surface where admitted; retain the callback preflight
+//! for unsupported observations, actual compatibility entries and SSR.
 
 use vize_armature::tokenizer::{Callbacks, QuoteType, Tokenizer};
 use vize_atelier_core::{CompilerError, CompilerErrorWithSource, ErrorCode, SourceLocation};
@@ -45,7 +46,11 @@ struct DuplicateCollector<'a> {
 }
 
 pub(super) fn reject_duplicate_props(template: &SfcTemplateBlock) -> Result<(), SfcError> {
-    let errors: Vec<_> = find_duplicate_props(&template.content)
+    reject_spans(template, find_duplicate_props(&template.content))
+}
+
+fn reject_spans(template: &SfcTemplateBlock, spans: Vec<SourceLocation>) -> Result<(), SfcError> {
+    let errors: Vec<_> = spans
         .into_iter()
         .map(|span| CompilerError::new(ErrorCode::DuplicateAttribute, Some(span)))
         .collect();
@@ -151,6 +156,93 @@ impl<'a> Callbacks for &mut DuplicateCollector<'a> {
     fn on_processing_instruction(&mut self, _start: usize, _end: usize) {}
     fn on_end(&mut self) {}
     fn on_error(&mut self, _code: ErrorCode, _index: usize) {}
+}
+
+mod surface;
+
+/// The SFC caller alone owns the complete fatal diagnostic and exact-once state.
+pub(super) struct Preflight<'t, 'a> {
+    template: &'t SfcTemplateBlock<'a>,
+    enabled: bool,
+    native_in_tag_comments: bool,
+    result: Option<Result<(), SfcError>>,
+    #[cfg(test)]
+    native_calls: usize,
+    #[cfg(test)]
+    retained_calls: usize,
+}
+impl<'t, 'a> Preflight<'t, 'a> {
+    pub(super) fn new(
+        template: &'t SfcTemplateBlock<'a>,
+        enabled: bool,
+        native_in_tag_comments: bool,
+    ) -> Self {
+        Self {
+            template,
+            enabled,
+            native_in_tag_comments,
+            result: None,
+            #[cfg(test)]
+            native_calls: 0,
+            #[cfg(test)]
+            retained_calls: 0,
+        }
+    }
+    fn retained(&mut self) -> Result<(), SfcError> {
+        #[cfg(test)]
+        {
+            self.retained_calls += 1;
+        }
+        reject_duplicate_props(self.template)
+    }
+    pub(super) fn finish(mut self) -> Result<(), SfcError> {
+        match self.result.take() {
+            Some(result) => result,
+            None if self.enabled => self.retained(),
+            None => Ok(()),
+        }
+    }
+}
+impl vize_l1_to_l2::SurfacePreflight for Preflight<'_, '_> {
+    fn check(
+        &mut self,
+        surface: Option<(&vize_l1::SurfaceTree<'_>, &[vize_l1::SurfaceError])>,
+    ) -> bool {
+        if self.result.is_none() {
+            self.result = Some(if !self.enabled {
+                Ok(())
+            } else if let Some((tree, errors)) = surface {
+                #[cfg(test)]
+                {
+                    self.native_calls += 1;
+                }
+                // The retained callback always uses default comment policy.
+                // A comment-aware native tree cannot supply those facts.
+                match (!self.native_in_tag_comments
+                    && core::ptr::eq(tree.source, self.template.content.as_ref()))
+                .then(|| surface::find_in_surface(tree, errors))
+                .flatten()
+                {
+                    Some(spans) => reject_spans(self.template, spans),
+                    None => self.retained(),
+                }
+            } else {
+                self.retained()
+            });
+        }
+        self.result.as_ref().is_some_and(Result::is_ok)
+    }
+}
+
+#[cfg(test)]
+mod preflight_tests;
+
+#[cfg(all(test, feature = "legacy-dom-differential"))]
+mod whole_parity;
+
+#[cfg(all(test, feature = "legacy-dom-differential"))]
+pub(super) fn original_preflight_requested() -> bool {
+    whole_parity::original_preflight_requested()
 }
 
 #[cfg(test)]

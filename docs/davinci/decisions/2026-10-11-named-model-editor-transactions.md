@@ -227,3 +227,32 @@ multiple complete messages and malformed-frame controls protect this boundary.
 Do not filter or reinterpret the old artifact. Exact new-source Actions and fresh
 whole process captures must qualify the corrected observer before claiming strict
 transport success. Native provider stderr/lifetime observations are separate.
+
+## Declaration-origin definition contract strengthening
+
+The first pinned run above retained eight declaration-origin definitions per bound
+context without asserting their target. An independent contract was frozen before
+inspecting those 160 replies: locate `saveItem` in each literal `defineEmits` form,
+convert its physical LF/CRLF source span to UTF-16, and require every name cursor
+to resolve to that same authored Child.vue declaration. This cross-checks the
+existing independently authored parent/call target without changing corpus bytes.
+The closed pre-observation contract SHA256 is
+`b77c825716988270d133b54e7455575ec63ed7106b1fdfc058f294d85e5cb1d6`;
+its unchanged bound corpus SHA256 is
+`1e548804413bd7bc623333a559213a8089a9c4ff04181219e32b82301b5ab462`.
+Only after freezing that contract were the immutable run's 160 whole replies
+compared; all matched. This does not retroactively strengthen its old assertions
+or repair its strict transport failure.
+
+Pinned TypeScript [`getDeclarationsFromLocation` and `createDefinitionLocations`](https://github.com/microsoft/TypeScript/blob/d6c4afddb2c55f4a9dea7b59293a99a8fdea1799/tsc/internal/ls/definition.go)
+select a symbol's declaration name. Vue's quoted event declaration forms also
+have an authored framework identity; a stock string literal's null result does
+not authorize a null Vue bridge result. The Rust producer and public whole-case
+verifier now require all 660 bound definitions, using the existing exact Location
+or one-element Location[] envelopes. Null, empty, generated URI, altered range,
+extra fields and an uncontracted flag are refusal controls at every one of the
+160 declaration cursors. New captures advertise all origins as contracted and
+report 660 contracted / zero uncontracted definitions. Those future counts are
+qualified only by a new exact-source whole 32-context execution and strict
+transport audit. #4075 still requires its complete issue criteria; this assertion
+strengthening and the older semantic observation alone do not close it.

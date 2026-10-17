@@ -168,7 +168,7 @@ exec "$NODE" -e 'const fs=require("node:fs"),assert=require("node:assert/strict"
       FAIL: failure,
       REQUIRE_HYDRATION: ["program", "sfc-project", "navigation"].includes(lane) ? "1" : "0",
       RUST_PLAN_JSON: JSON.stringify({
-        packages: ["vize_maestro", "vize_l1_to_l2", "vize_atelier_ssr"],
+        packages: ["vize_maestro", "vize_l1_to_l2", "vize_atelier_ssr", "vize_atelier_sfc"],
       }),
     };
     delete env.VIZE_TEST_DISABLE_TSGO;
@@ -195,6 +195,8 @@ await test("selected sibling lanes keep pinned hydration, oracle environments an
     ["program", "fixture-hydration"],
     ["program", "source_folding::tests::"],
     ["lowering", "davinci_dom_corpus"],
+    ["sfc", "no-such-command"],
+    ["sfc", "compile_template::duplicates::"],
     ["ssr", "no-such-command"],
     ["ssr", "vue_ssr_render"],
     ["navigation", "server::native_navigation::"],
@@ -222,6 +224,27 @@ await test("selected sibling lanes keep pinned hydration, oracle environments an
         assert.equal(calls.length, 0, "no feature gate runs after hydration failure");
       else if (failure !== "no-such-command")
         assert(calls.at(-1).args.includes(failure), "no later command runs after failure");
+      if (lane === "sfc") {
+        const gate = calls.find((call) => call.args.includes("compile_template::duplicates::"));
+        assert(
+          gate,
+          "feature-enabled duplicate preflight unit laws execute in the existing SFC lane",
+        );
+        assert.deepEqual(gate.args, [
+          "test",
+          "--locked",
+          "-p",
+          "vize_atelier_sfc",
+          "--features",
+          "legacy-dom-differential",
+          "--lib",
+          "compile_template::duplicates::",
+          "--",
+          "--nocapture",
+        ]);
+        if (failure === "no-such-command")
+          assert(calls.at(-1).args.includes("vapor_runtime_contracts"));
+      }
       if (lane === "ssr") {
         assert.equal(calls[0].corpus, f.cwd);
         assert(calls.at(-1).args.includes("vue_ssr_render"));
