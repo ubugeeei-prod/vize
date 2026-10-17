@@ -36,6 +36,8 @@ mod integration;
 pub(super) mod lock;
 #[path = "pr_pin_metadata.rs"]
 mod metadata;
+#[path = "pr_pin_queue.rs"]
+mod queue;
 pub use metadata::rewrite_workspace_lock;
 #[path = "pr_pin_producer_metadata.rs"]
 mod producer_metadata;

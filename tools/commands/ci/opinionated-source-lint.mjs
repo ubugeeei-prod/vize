@@ -1,18 +1,10 @@
 import { spawnSync } from "node:child_process";
+import {
+  isOpinionatedSourceInput,
+  opinionatedSourceRoots,
+} from "../../support/github/opinionated-source-inputs.ts";
 
-const sourceRoots = [
-  "npm/",
-  "docs/theme/",
-  "playground/src/",
-  "examples/vite-musea/src/",
-  "examples/html-conformance/src/",
-];
-// Fixture sources intentionally violate rules; ordinary test code stays in scope.
-const excludedDirectories = new Set(["__fixtures__", "__snapshots__", "fixtures"]);
-const sourceExtension = /\.(?:vue|html?|[cm]?[jt]sx?)$/;
-const fixtureFile = /\.fixture\.(?:vue|html?|[cm]?[jt]sx?)$/;
-
-const tracked = spawnSync("git", ["ls-files", "-z", "--", ...sourceRoots], {
+const tracked = spawnSync("git", ["ls-files", "-z", "--", ...opinionatedSourceRoots], {
   encoding: "utf8",
   maxBuffer: 16 * 1024 * 1024,
 });
@@ -21,15 +13,7 @@ if (tracked.error || tracked.status !== 0) {
   process.exit(1);
 }
 
-const files = tracked.stdout
-  .split("\0")
-  .filter(
-    (file) =>
-      file &&
-      sourceExtension.test(file) &&
-      !fixtureFile.test(file) &&
-      !file.split("/").some((part) => excludedDirectories.has(part)),
-  );
+const files = tracked.stdout.split("\0").filter(isOpinionatedSourceInput);
 
 if (process.argv.includes("--list-files")) {
   console.log(files.join("\n"));

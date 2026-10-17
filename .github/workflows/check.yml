@@ -68,7 +68,7 @@ jobs:
     uses: ./.github/workflows/level-dependencies.yml
   release-integration-catalog:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
-    permissions: { contents: read, pull-requests: read }
+    permissions: { contents: read, pull-requests: read, actions: read }
     uses: ./.github/workflows/release-integration-catalog.yml
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -238,7 +238,7 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check package engine matrix
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
-        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts tests/tooling/dependency-security-compat.test.mjs tests/tooling/comparison-base.test.ts tests/tooling/plan-source-checks.test.ts tests/tooling/plan-check-inputs.test.ts tests/tooling/warning-budget.test.ts tests/tooling/npm-audit-command.test.ts
+        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts tests/tooling/bundler-plugin-manifests.test.ts tests/tooling/dependency-security-compat.test.mjs tests/tooling/comparison-base.test.ts tests/tooling/plan-source-checks.test.ts tests/tooling/plan-check-inputs.test.ts tests/tooling/warning-budget.test.ts tests/tooling/npm-audit-command.test.ts
       - name: Report unchanged inputs
         if: ${{ needs.iteration-plan.outputs.engines != 'true' }}
         run: echo 'engines inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
@@ -801,6 +801,8 @@ jobs:
       - release-integration-catalog
     permissions:
       contents: read
+      pull-requests: read
+      actions: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -808,3 +810,50 @@ jobs:
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
         run: node tools/support/compat/github/require-needs-success.ts --check-report
+      - name: Re-select the current integration before the required final gate
+        id: final-candidate
+        if: ${{ github.event_name == 'merge_group' }}
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: node tools/support/compat/github/release-integration-event.ts
+      - name: Freshly verify the same exact qualification at the required final gate
+        if: ${{ github.event_name == 'merge_group' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT_INTEGRATION: ${{ steps.final-candidate.outputs.integration }}
+          CATALOG_INTEGRATION: ${{ needs.release-integration-catalog.outputs.integration }}
+          QUALIFICATION_JSON: ${{ needs.release-integration-catalog.outputs.qualification }}
+          VIZE_RELEASE_INTEGRATION_EVIDENCE: ${{ runner.temp }}/vize-release-integration-final/qualification-observations.jsonl
+        run: |
+          directory="$RUNNER_TEMP/vize-release-integration-final"
+          mkdir -p "$directory"
+          cp "$GITHUB_EVENT_PATH" "$directory/event.json"
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const selected = process.env.CURRENT_INTEGRATION ?? '';
+          const catalog = process.env.CATALOG_INTEGRATION ?? '';
+          const raw = process.env.QUALIFICATION_JSON ?? '';
+          const directory = `${process.env.RUNNER_TEMP}/vize-release-integration-final`;
+          fs.writeFileSync(`${directory}/selection.json`, JSON.stringify({ selected, catalog, candidate: process.env.GITHUB_SHA }));
+          fs.writeFileSync(`${directory}/qualification.json`, raw);
+          assert.equal(selected, catalog, 'catalog selection is absent or changed');
+          if (selected === '') {
+            assert.equal(raw, '', 'ordinary queue candidate cannot carry integration authority');
+          } else {
+            assert.match(selected, /^[1-9]\d*$/);
+            assert.ok(raw.length > 0 && Buffer.byteLength(raw) <= 16384, 'selected integration needs its bounded same-run qualification');
+            const receipt = JSON.parse(raw);
+            assert.ok(receipt && typeof receipt === 'object' && !Array.isArray(receipt));
+          }
+          NODE
+          if [ -n "$CURRENT_INTEGRATION" ]; then
+            node tools/support/release/qualify_check/integration-release.ts --verify < "$directory/qualification.json" > "$directory/final-qualification.json"
+          fi
+      - name: Retain the required final qualification observations
+        if: ${{ always() && github.event_name == 'merge_group' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-integration-final-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vize-release-integration-final/
+          if-no-files-found: error
+          retention-days: 30

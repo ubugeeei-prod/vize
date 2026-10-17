@@ -34,5 +34,6 @@ test("check workflow runs declared Node engine compatibility matrix", () => {
     testStep?.run ?? "",
     /node --test tests\/tooling\/node-engine-matrix\.test\.ts tests\/tooling\/package-manifests\.test\.ts/,
   );
+  assert.ok(testStep?.run?.split(/\s+/).includes("tests/tooling/bundler-plugin-manifests.test.ts"));
   assert.doesNotMatch(job, /vscode-typescript-vue-plugin\.test\.ts/);
 });

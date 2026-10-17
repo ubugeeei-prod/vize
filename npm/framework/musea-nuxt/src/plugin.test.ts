@@ -30,7 +30,7 @@ void test("Nuxt Musea plugin resolves Nuxt virtual imports to mock modules", asy
 
   const importsCode = await plugin.load.call(null, importsId, { ssr: false });
   assert.equal(typeof importsCode, "string");
-  assert.match(importsCode, /export \* from '.+auto-imports\.js';/);
+  assert.match(importsCode, /export \* from "@vizejs\/musea-nuxt\/auto-imports";/);
   assert.match(importsCode, /configureNuxtMuseaMocks\(_config\);/);
   assert.match(importsCode, /"path":"\/mock"/);
   assert.match(importsCode, /"ready":true/);

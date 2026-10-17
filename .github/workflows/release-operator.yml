@@ -106,6 +106,7 @@ jobs:
           RELEASE_ORIGINAL_OPERATOR_RUN: ${{ inputs.operator_run }}
           RELEASE_CONSUMER_RECOVERY_RUN: ${{ inputs.consumer_recovery_run }}
           VIZE_RELEASE_OPERATOR_TIMEOUT_SECONDS: "14400"
+          VIZE_RELEASE_INTEGRATION_QUEUE_EVIDENCE: ${{ runner.temp }}/release-integration-queue/responses.jsonl
           VIZE_RELEASE_EXPECTED_CUT_SHA: ${{ (inputs.operation == 'start' || inputs.operation == 'patch') && github.sha || '' }}
         run: |
           set -euo pipefail
@@ -174,4 +175,12 @@ jobs:
           name: verified-consumer-recovery-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/verified-consumer-recovery
           if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve exact owned integration queue responses
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-integration-queue-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-integration-queue
+          if-no-files-found: ignore
           retention-days: 30

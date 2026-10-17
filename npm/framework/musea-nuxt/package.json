@@ -30,6 +30,10 @@
     ".": {
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.mts"
+    },
+    "./auto-imports": {
+      "import": "./dist/auto-imports.mjs",
+      "types": "./dist/auto-imports.d.mts"
     }
   },
   "publishConfig": {

@@ -500,6 +500,7 @@ jobs:
         build-release-packages,
         release-npm-native,
         release-npm-cli,
+        release-npm-unplugin,
         smoke-release-packages,
         release-preflight,
       ]
@@ -596,7 +597,7 @@ jobs:
   release-npm-plugin-sdk:
     name: Release @vizejs/plugin-sdk to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
+    needs: [build-release-packages, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions: { contents: read, id-token: write }
@@ -657,7 +658,14 @@ jobs:
   release-npm-vite-plugin-musea:
     name: Release @vizejs/vite-plugin-musea to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
+    needs:
+      [
+        build-release-packages,
+        release-npm-native,
+        release-npm-vite-plugin,
+        smoke-release-packages,
+        release-preflight,
+      ]
     timeout-minutes: 15
     environment: npm
     permissions: { contents: read, id-token: write }
@@ -687,7 +695,7 @@ jobs:
   release-npm-musea-nuxt:
     name: Release @vizejs/musea-nuxt to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
+    needs: [build-release-packages, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions: { contents: read, id-token: write }
@@ -725,7 +733,6 @@ jobs:
         release-npm-vite-plugin,
         release-npm-oxlint-plugin,
         release-npm-vite-plugin-musea,
-        release-npm-musea-nuxt,
         release-npm-nuxt-lint-config,
         release-npm-cli,
         smoke-release-packages,
