@@ -226,3 +226,60 @@ fn vue2_preserve_reports_the_preserve_strategy_and_restores_scope() {
         assert!(!crate::parser::current_vue2_preserve());
     });
 }
+
+#[test]
+fn comment_adjacent_condense_removes_spaces_but_preserve_keeps_them() {
+    for source in [
+        "<!--a--> <div/>",
+        "<div/> <!--a-->",
+        "<!--a--> <!--b-->",
+        "<!--a-->\t<div/>",
+    ] {
+        for (strategy, expected) in [
+            (WhitespaceStrategy::Condense, 2),
+            (WhitespaceStrategy::Preserve, 3),
+        ] {
+            let arena = Allocator::new();
+            let (root, errors) = crate::parser::with_whitespace_strategy(strategy, || {
+                crate::parse_with_options(&arena, source, ParserOptions::default())
+            });
+            assert!(errors.is_empty(), "{source}: {errors:?}");
+            assert_eq!(root.children.len(), expected, "{source}: {strategy:?}");
+        }
+    }
+}
+
+#[test]
+fn comment_adjacency_keeps_meaningful_unicode_text_and_pre_content() {
+    for text in ["hello", "\u{00a0}", "\u{0085}", "\u{2003}"] {
+        let arena = Allocator::new();
+        let source = vize_l0::cstr!("<!--a-->{text}<div/>");
+        let (root, errors) = crate::parse_with_options(&arena, &source, ParserOptions::default());
+        assert!(errors.is_empty(), "{errors:?}");
+        assert_eq!(root.children.len(), 3);
+        let TemplateChildNode::Text(node) = &root.children[1] else {
+            panic!("meaningful text must remain a real sibling");
+        };
+        assert_eq!(node.content, text);
+    }
+    let arena = Allocator::new();
+    let (root, errors) = crate::parse_with_options(
+        &arena,
+        "<pre><!--a--> <i/> <!--b--></pre>",
+        ParserOptions {
+            is_pre_tag: |tag| tag == "pre",
+            ..ParserOptions::default()
+        },
+    );
+    assert!(errors.is_empty(), "{errors:?}");
+    let TemplateChildNode::Element(pre) = &root.children[0] else {
+        panic!("expected pre");
+    };
+    assert_eq!(pre.children.len(), 5);
+    for index in [1, 3] {
+        let TemplateChildNode::Text(text) = &pre.children[index] else {
+            panic!("pre whitespace must stay verbatim");
+        };
+        assert_eq!(text.content, " ");
+    }
+}

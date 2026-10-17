@@ -1,18 +1,20 @@
 //! Patch-flag comment emission (`8 /* PROPS */`, `16 /* FULL_PROPS */`, …).
 
-use vize_l0::ToCompactString;
+use vize_l0::{PatchFlags, ToCompactString};
 
 use super::EmitCx;
 
-const PATCH_NAMES: [(i32, &str); 8] = [
+const PATCH_NAMES: [(i32, &str); 10] = [
     (1, "TEXT"),
     (2, "CLASS"),
     (4, "STYLE"),
     (8, "PROPS"),
     (16, "FULL_PROPS"),
     (32, "NEED_HYDRATION"),
+    (PatchFlags::STABLE_FRAGMENT.bits(), "STABLE_FRAGMENT"),
     (512, "NEED_PATCH"),
     (1024, "DYNAMIC_SLOTS"),
+    (PatchFlags::DEV_ROOT_FRAGMENT.bits(), "DEV_ROOT_FRAGMENT"),
 ];
 
 pub(super) fn emit_patch_flag(cx: &mut EmitCx<'_>, flag: i32) {
