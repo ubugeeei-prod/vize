@@ -385,6 +385,65 @@ test("archived observation and re-read full-H identity changes refuse offline re
   assert.throws(() => assertPreReleaseQualification(changedRun), /observation identity differs/);
 });
 
+test("every guard and original H row needs unambiguous classification and ordering metadata", () => {
+  const invalidFields: Array<[string, unknown]> = [
+    ...["path", "event", "head_branch", "display_title"].flatMap((field) =>
+      [undefined, null, 1, {}, [], ""].map((value): [string, unknown] => [field, value]),
+    ),
+    ...[undefined, null, "", "not a date", 1, {}].map((value): [string, unknown] => [
+      "run_started_at",
+      value,
+    ]),
+  ];
+  for (const location of ["guard", "original"] as const) {
+    for (const [field, invalid] of invalidFields) {
+      const value = receipt();
+      for (const pages of [
+        value.guards.releaseRunAbsence.hRunPages,
+        value.originalEvidence.HRunPages,
+      ]) {
+        pages[0].workflow_runs.push({
+          ...run(21),
+          path: "dynamic/github-code-quality/codeql",
+          event: "dynamic",
+        });
+        pages[0].total_count = 2;
+      }
+      const pages =
+        location === "guard"
+          ? value.guards.releaseRunAbsence.hRunPages
+          : value.originalEvidence.HRunPages;
+      const extra = pages[0].workflow_runs[1] as Record<string, unknown>;
+      if (invalid === undefined) delete extra[field];
+      else extra[field] = invalid;
+      assert.throws(
+        () => assertPreReleaseQualification(value),
+        /all H.*(?:string required|finite ordering timestamp)/,
+        `${location} ${field}: ${JSON.stringify(invalid)}`,
+      );
+    }
+  }
+  for (const path of [
+    "dynamic/github-code-quality/codeql",
+    ".github/workflows/future policy 日本語.yaml",
+  ]) {
+    for (const fallback of ["created_at", "updated_at"]) {
+      const value = guards();
+      const extra = { ...run(21), path, event: "dynamic" };
+      Object.assign(extra, { run_started_at: null, [fallback]: "2026-10-17T02:00:00Z" });
+      value.releaseRunAbsence.hRunPages[0].workflow_runs.push(extra);
+      value.releaseRunAbsence.hRunPages[0].total_count = 2;
+      assert.doesNotThrow(() => assertPreReleaseQualification(value));
+    }
+  }
+  const invalidPreferred = guards();
+  Object.assign(invalidPreferred.releaseRunAbsence.hRunPages[0].workflow_runs[0], {
+    run_started_at: "invalid",
+    created_at: "2026-10-17T01:00:00Z",
+  });
+  assert.throws(() => assertPreReleaseQualification(invalidPreferred), /finite ordering timestamp/);
+});
+
 test("CLI is silent on valid JSON and returns full errors for invalid evidence/arguments", () => {
   const success = cli(receipt());
   assert.equal(success.status, 0, success.stderr);

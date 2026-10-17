@@ -139,8 +139,20 @@ function hRuns(value: unknown, repository: string, head: string, label: string):
   for (const row of rows) {
     own(row, repository, label);
     requireValue(row.head_sha === head, `${label} foreign H`);
+    const path = text(row.path, `${label} workflow path`);
+    // GitHub also emits dynamic/* paths; retain its identity rather than resolving filenames.
+    for (const field of ["event", "head_branch", "display_title"])
+      text(row[field], `${label} ${field}`);
+    const started = text(
+      row.run_started_at ?? row.created_at ?? row.updated_at,
+      `${label} ordering timestamp`,
+    );
     requireValue(
-      row.path !== ".github/workflows/release.yml",
+      Number.isFinite(Date.parse(started)),
+      `${label} finite ordering timestamp required`,
+    );
+    requireValue(
+      path !== ".github/workflows/release.yml",
       `${label} Release run forbids pre-release retirement`,
     );
   }
