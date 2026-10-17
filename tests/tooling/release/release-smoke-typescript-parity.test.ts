@@ -421,3 +421,44 @@ test("native and fresh-init oracle scripts retain every original Rust byte", () 
   assert.equal(NATIVE_RUNTIME_SCRIPT, native);
   assert.equal(INIT_SCRIPT, init);
 });
+
+// Parser-engine diagnostics are retained as raw evidence, not rewritten into
+// false byte parity. Both runtimes must refuse the same malformed input before
+// invoking npm and keep the package path and failure context in their output.
+test("both drivers refuse malformed JSON before npm and retain native parser diagnostics", () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-json-refusal-"));
+  try {
+    for (const source of ["", '{"name":', '{"name":"unfinished', '{"name":"x",}']) {
+      const directory = path.join(temporary, "package");
+      fs.mkdirSync(directory, { recursive: true });
+      const manifest = path.join(directory, "package.json");
+      fs.writeFileSync(manifest, source);
+      const observations = [];
+      for (const driver of ["rust", "typescript"]) {
+        const result = spawnSync(
+          driver === "rust" ? "rust-script" : process.execPath,
+          [entry + (driver === "rust" ? ".rs" : ".ts"), directory],
+          {
+            cwd: root,
+            encoding: "utf8",
+            env: { ...process.env, NPM_BIN: path.join(temporary, "must-not-run-npm") },
+          },
+        );
+        assert.ifError(result.error);
+        assert.equal(result.status, 1);
+        assert.equal(result.stdout, "");
+        assert.ok(result.stderr.startsWith(`cannot parse JSON ${manifest}: `), result.stderr);
+        assert.ok(result.stderr.endsWith("\n"));
+        observations.push({
+          driver,
+          status: result.status,
+          stdout: result.stdout,
+          stderr: result.stderr,
+        });
+      }
+      console.log(JSON.stringify({ kind: "native-json-refusal", source, observations }));
+    }
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
