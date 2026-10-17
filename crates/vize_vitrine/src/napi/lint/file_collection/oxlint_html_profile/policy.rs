@@ -142,20 +142,38 @@ pub(super) fn explicit_custom_excluded(
         || custom.matched(target, false).is_ignore())
 }
 
-fn configure(builder: &mut WalkBuilder, has_vcs_boundary: bool) -> &mut WalkBuilder {
+fn configure(builder: &mut WalkBuilder, selection: &Selection) -> Result<(), Refusal> {
     builder
         .hidden(false)
         .ignore(false)
         .git_global(false)
         .git_ignore(true)
         .parents(true)
-        .git_exclude(true)
-        .require_git(has_vcs_boundary)
+        .git_exclude(false)
+        .require_git(selection.has_vcs_boundary)
+        .current_dir(&selection.repository);
+    // The locked ignore resolver assumes a commondir file and mishandles a
+    // relative gitdir. Supply the already owned authority through its explicit
+    // matcher instead; custom and repository Gitignore rules retain precedence.
+    if let Some(source) = selection
+        .sources
+        .iter()
+        .find(|source| source.role == SourceRole::GitInfoExclude && source.bytes.is_some())
+        && let Some(error) = builder.add_ignore(&source.path)
+    {
+        return Err(Refusal {
+            kind: RefusalKind::IgnoreSyntax,
+            path: source.path.clone(),
+            details: error.to_compact_string(),
+            original_bytes: source.bytes.clone(),
+        });
+    }
+    Ok(())
 }
 
 pub(super) fn vcs_root_excluded(selection: &Selection) -> Result<bool, Refusal> {
     let mut builder = WalkBuilder::new(&selection.repository);
-    configure(&mut builder, selection.has_vcs_boundary);
+    configure(&mut builder, selection)?;
     let Some(mut matcher) = builder.build_matchers().pop() else {
         return Err(Refusal::new(
             RefusalKind::Internal,
@@ -214,7 +232,8 @@ pub(super) fn walk_originals(
             builder.overrides(overrides);
         }
     }
-    configure(&mut builder, selection.has_vcs_boundary).follow_links(true);
+    configure(&mut builder, selection)?;
+    builder.follow_links(true);
     let refusal = Arc::new(Mutex::new(None));
     let observed = Arc::clone(&refusal);
     let repository = selection.repository.clone();

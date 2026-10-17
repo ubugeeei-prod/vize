@@ -12,6 +12,7 @@ use std::path::{Path, PathBuf};
 use vize_l0::{String, ToCompactString};
 
 mod envelope;
+mod git_metadata;
 mod policy;
 #[cfg(test)]
 mod tests;
@@ -68,6 +69,7 @@ pub(crate) enum SourceRole {
     GitIgnore,
     GitInfoExclude,
     CustomIgnore,
+    GitMetadata,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -157,7 +159,7 @@ impl Refusal {
 
 /// One existing literal target and explicit regular JSON in cwd. The 1.78/1.86
 /// profiles require a regular Git marker; 1.81 also owns the no-VCS parent chain.
-/// No config discovery, inherited/override configs, symlinks, linked/JJ/nested
+/// No config discovery, inherited/override configs, symlinks, JJ/nested
 /// repositories, outside-cwd roots, non-POSIX/non-UTF8 paths, or wildcard targets.
 /// This returns HTML custody only; it does not produce any lint diagnostic packet.
 pub(crate) fn select(request: Request<'_>) -> Result<Selection, Refusal> {
@@ -193,10 +195,15 @@ pub(crate) fn select_with_root_decoder<T>(
         custom_ignore_filename: request.custom_ignore_filename.to_compact_string(),
         root_decision: RootDecision::Eligible,
         originals: Vec::new(),
-        sources: Vec::new(),
+        sources: admitted.git_sources,
     };
     let (config, plan) = policy::root_config(&request, &mut selection, decode)?;
-    envelope::record_ancestors(&request, &admitted.target, &mut selection)?;
+    envelope::record_ancestors(
+        &request,
+        &admitted.target,
+        admitted.git_common.as_deref(),
+        &mut selection,
+    )?;
     let overrides = policy::cli_overrides(&request)?;
     if !admitted.is_dir
         && policy::explicit_custom_excluded(&request, &selection.target, &overrides)?

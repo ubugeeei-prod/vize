@@ -13,6 +13,7 @@ use sha2::{Digest, Sha256};
 use super::{HostProfile, Origin, Request, Selection, SourceRole, select};
 
 mod custody;
+mod git_metadata;
 mod setup;
 use setup::{setup, source_bytes};
 
