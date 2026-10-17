@@ -3,7 +3,8 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { resolveBundledCorsaRuntime } from "../../../../npm/cli/src/corsa-runtime.ts";
 import { unpackPublicArchive } from "../../../../tests/performance/support/warm-type-backed-public-archives.ts";
 import { publicReader } from "./http.ts";
 import { rejectOverrides } from "./installed.ts";
@@ -92,14 +93,20 @@ export async function installedCorsaProvider(
     sha256(readRawBlob(root, head, sourceFile)),
     "installed launcher resolver must match frozen H source",
   );
-  // Node refuses direct TS imports under node_modules. Strip only authenticated source;
-  // the explicit packageRoot below keeps resolution anchored to the installed CLI.
+  // Both actors may inspect these bytes. Only the reviewed checkout implementation
+  // executes: installed code must never run inside the credentialed finalizer.
+  const trusted = fs.readFileSync(
+    fileURLToPath(new URL("../../../../npm/cli/src/corsa-runtime.ts", import.meta.url)),
+  );
+  assert.equal(
+    moduleSha256,
+    sha256(trusted),
+    "frozen installed resolver must match the reviewed trusted resolver contract",
+  );
   const javascript = Buffer.from(
     stripTypeScriptTypes(source.toString(), { sourceUrl: pathToFileURL(module).href }),
   );
-  const runtime = await import(`data:text/javascript;base64,${javascript.toString("base64")}`);
-  assert.equal(typeof runtime.resolveBundledCorsaRuntime, "function", "shipped resolver required");
-  const selected: unknown = runtime.resolveBundledCorsaRuntime({
+  const selected: unknown = resolveBundledCorsaRuntime({
     packageRoot: cli.directory,
     platform: process.platform,
     arch: process.arch,
@@ -116,6 +123,25 @@ export async function installedCorsaProvider(
     executableSha256: sha256(fs.readFileSync(executable)),
     resolver: { cli, module, moduleSha256, javascriptSha256: sha256(javascript), sourceFile, head },
   };
+}
+/** Trusted finalizer rechecks every captured field without importing installed code. */
+export async function assertInstalledCorsaProvider(
+  consumer: string,
+  cliVersion: string,
+  head: string,
+  observed: Awaited<ReturnType<typeof installedCorsaProvider>>,
+  root = process.cwd(),
+) {
+  const current = await installedCorsaProvider(
+    consumer,
+    cliVersion,
+    head,
+    observed.name,
+    observed.version,
+    root,
+  );
+  assert.deepEqual(current, observed, "installed Corsa provider observation changed");
+  return current;
 }
 export function versionProbe(executable: string) {
   const result = spawnSync(executable, ["--version"], { timeout: 30_000, maxBuffer: 1024 * 1024 });

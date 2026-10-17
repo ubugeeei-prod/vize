@@ -6,6 +6,7 @@ import { publicInputs } from "./inputs.ts";
 import {
   packageProvider,
   installedCorsaProvider,
+  assertInstalledCorsaProvider,
   publicLspCli,
   rejectLspOverrides,
   versionProbe,
@@ -43,14 +44,10 @@ export async function assertInstalledLsp(output: string) {
     sha256(fs.readFileSync(path.join(preparation.consumer, "package-lock.json"))),
     receipt.npmLockSha256,
   );
-  assert.deepEqual(
-    await installedCorsaProvider(
-      preparation.consumer,
-      preparation.version,
-      source.head,
-      receipt.provider.name,
-      receipt.provider.version,
-    ),
+  await assertInstalledCorsaProvider(
+    preparation.consumer,
+    preparation.version,
+    source.head,
     receipt.provider,
   );
   assert.deepEqual(packageProvider(preparation.consumer, "vue", "3.5.35"), receipt.vue);

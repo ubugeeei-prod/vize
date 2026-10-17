@@ -2,6 +2,7 @@ name: Public acceptance actor contracts
 on:
   pull_request:
     paths:
+      - "npm/cli/src/corsa-runtime.ts"
       - ".github/workflows/release-public-acceptance-contracts.yml"
       - "tools/support/release/public_acceptance/**"
       - "tests/tooling/release-public-corsa-provider.test.ts"
