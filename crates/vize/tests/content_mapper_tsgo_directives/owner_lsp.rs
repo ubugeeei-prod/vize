@@ -79,7 +79,7 @@ fn run_session(
     let comp_uri = rpc::file_uri(&comp);
     let root_uri = rpc::file_uri(project.path());
     let source = owners::source(newline, prefix, "bad", "wrong");
-    let calibration = source.replace(&cstr!("<!-- @vue-expect-error -->{newline}"), "");
+    let calibration = source.replace(cstr!("<!-- @vue-expect-error -->{newline}").as_str(), "");
     std::fs::write(&path, &calibration).unwrap();
     std::fs::write(retained.join("OwnerComp.vue"), owners::COMPONENT).unwrap();
     let stop = AtomicBool::new(false);
@@ -178,7 +178,8 @@ fn run_session(
             let mut previous_version = opened.version;
             let repaired = owners::source(newline, prefix, "ok", "correct");
             let no_child = repaired.replace("value.bad", "value");
-            let removed = no_child.replace(&cstr!("<!-- @vue-expect-error -->{newline}"), "");
+            let removed =
+                no_child.replace(cstr!("<!-- @vue-expect-error -->{newline}").as_str(), "");
             let orphan = removed.replace(
                 "</template>",
                 &cstr!("<!-- @vue-expect-error -->{newline}</template>"),
