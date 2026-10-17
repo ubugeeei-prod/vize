@@ -20,6 +20,8 @@ import {
 import {
   assertRequiredWorkflowJobs,
   requiredReleaseWorkflows,
+  requiredWorkflowJobNames,
+  summarizeRequiredWorkflowJobFailures,
   selectRequiredWorkflowRuns,
   workflowRequiresJobEvidence,
 } from "./release-preflight-evidence.mjs";
@@ -31,6 +33,14 @@ import { releaseTypecheckParityEnforced } from "./release-preflight-typecheck-ev
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const releasePackageRoots = ["editors", "npm"];
+
+function workflowRunId(run: Record<string, unknown>): number {
+  const id = run.id;
+  if (typeof id !== "number" || !Number.isSafeInteger(id) || id <= 0) {
+    throw new Error("Release workflow run ID must be a positive exact integer");
+  }
+  return id;
+}
 
 function runGit(args: string[], acceptedExitCodes: number[] = [0], cwd: string = root) {
   const result = spawnSync("git", args, {
@@ -351,9 +361,7 @@ export async function verifyReleasePreflight(
     baseSha,
   });
   let selectedRuns;
-  if (requiredReleaseWorkflows.length === 0) {
-    selectedRuns = new Map();
-  } else if (bootstrap) {
+  if (bootstrap) {
     let previousWaitState = "";
     selectedRuns = await bootstrapRequiredWorkflowRuns({
       sha,
@@ -370,6 +378,25 @@ export async function verifyReleasePreflight(
           method: "POST",
           body: { ref: plan.ref, inputs: plan.inputs },
         });
+      },
+      requiredJobFailure: async (workflowName, run) => {
+        const jobs = await githubApiPages({
+          apiUrl,
+          repository,
+          token,
+          resource: `actions/runs/${workflowRunId(run)}/jobs`,
+          collection: "jobs",
+        });
+        const required = new Set(requiredWorkflowJobNames(workflowName, run));
+        return jobs.some(
+          (job) =>
+            typeof job.name === "string" &&
+            required.has(job.name) &&
+            job.status === "completed" &&
+            job.conclusion !== "success",
+        )
+          ? summarizeRequiredWorkflowJobFailures(workflowName, jobs, run)
+          : undefined;
       },
       onWait: ({ missing, pending }) => {
         const state = JSON.stringify({ missing, pending });
@@ -407,7 +434,7 @@ export async function verifyReleasePreflight(
           apiUrl,
           repository,
           token,
-          resource: `actions/runs/${run.id}/jobs`,
+          resource: `actions/runs/${workflowRunId(run)}/jobs`,
           collection: "jobs",
         });
         assertRequiredWorkflowJobs(workflowName, jobs, run);

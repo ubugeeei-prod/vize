@@ -10,7 +10,7 @@ export function successfulReleaseRun(name: string, id: number) {
   return {
     id,
     name,
-    display_title: `${name} release evidence`,
+    display_title: name === "Check" ? `Check full @ ${releaseSha}` : `${name} release evidence`,
     path: evidence.path,
     event: evidence.events[0],
     head_branch: ["push", "schedule"].includes(evidence.events[0]) ? "main" : "v1.2.3",

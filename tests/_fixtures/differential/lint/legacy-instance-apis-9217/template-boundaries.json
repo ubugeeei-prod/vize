@@ -1,0 +1,1200 @@
+{
+  "schema": 1,
+  "contract": "Additional original-source template authority boundaries. Qualified records compare complete provider and native contracts; product-accuracy records preserve exact reference blind spots with independent compiler/TS erasure evidence; refusal records preserve complete provider packets and deliberately unqualified native coverage, never parity credit.",
+  "provider": {
+    "eslint": "10.4.1",
+    "plugin": "10.9.2",
+    "parser": "10.4.1",
+    "scriptParser": "8.65.0",
+    "utilitySource": {
+      "path": "dist/utils/index.js",
+      "sha256": "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925"
+    },
+    "ruleSources": {
+      "no-deprecated-dollar-listeners-api": {
+        "path": "dist/rules/no-deprecated-dollar-listeners-api.js",
+        "sha256": "71af7147d1921393d1ce2173b12c47e1a053ee3b7147d98bd8d805276f07828a"
+      },
+      "no-deprecated-events-api": {
+        "path": "dist/rules/no-deprecated-events-api.js",
+        "sha256": "0917bbed3679ac4157935635e66d8dc87c99b87a12bf2877356cd6417204d235"
+      }
+    }
+  },
+  "original70Sha256": "3e04d9e772224ce65d7201d38f4785bb38904bedf27395b2b22d17715cf49a97",
+  "compilerProvider": {
+    "vue": "3.6.0-rc.9",
+    "compiler": "3.6.0-rc.9",
+    "typescript": "6.0.3",
+    "sources": [
+      {
+        "packageName": "@vue/compiler-dom",
+        "path": "dist/compiler-dom.cjs.js",
+        "sha256": "cea50c552f02adc45f5347920e20ddf7e1d77b639d898bef1dc4ad61989e0c6c"
+      },
+      {
+        "packageName": "@vue/compiler-core",
+        "path": "dist/compiler-core.cjs.js",
+        "sha256": "820601aa19727baa3de3b6eea199d6dfb547911afdb7b22d8081d3c81eff284e"
+      }
+    ]
+  },
+  "syntaxProof": [
+    {
+      "id": "if-before-alias",
+      "sourceSha256": "595f77d4ba58bd17a269c240bf19908481ed7a0ede6fde87204fffa3a412f6f8",
+      "code": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, createCommentVNode as _createCommentVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_ctx.$listeners)\n    ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(_ctx.rows, ($listeners) => {\n        return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($listeners), 1 /* TEXT */))\n      }), 256 /* UNKEYED_FRAGMENT */))\n    : _createCommentVNode(\"v-if\", true)\n}",
+      "preamble": "",
+      "map": null,
+      "diagnostics": [],
+      "typescriptOutput": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, createCommentVNode as _createCommentVNode } from \"vue\";\nexport function render(_ctx, _cache) {\n    return (_ctx.$listeners)\n        ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(_ctx.rows, ($listeners) => {\n            return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($listeners), 1 /* TEXT */));\n        }), 256 /* UNKEYED_FRAGMENT */))\n        : _createCommentVNode(\"v-if\", true);\n}\n",
+      "typescriptDiagnostics": []
+    },
+    {
+      "id": "for-collection-before-alias",
+      "sourceSha256": "4f05248adcf03306d15fc057186cf92c7502bc3d756f5a896f5097f1e38dea23",
+      "code": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.$listeners, ($listeners) => {\n    return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($listeners), 1 /* TEXT */))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+      "preamble": "",
+      "map": null,
+      "diagnostics": [],
+      "typescriptOutput": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from \"vue\";\nexport function render(_ctx, _cache) {\n    return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.$listeners, ($listeners) => {\n        return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString($listeners), 1 /* TEXT */));\n    }), 256 /* UNKEYED_FRAGMENT */));\n}\n",
+      "typescriptDiagnostics": []
+    },
+    {
+      "id": "slot-attrs-outside-props",
+      "sourceSha256": "80cf94e25218d47f883d13df709ab05d9b0f5edea150e96682ce9942f4a20fe5",
+      "code": "import { toDisplayString as _toDisplayString, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, withCtx as _withCtx, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  const _component_Child = _resolveComponent(\"Child\")\n\n  return (_openBlock(), _createBlock(_component_Child, { value: _ctx.$listeners }, {\n    default: _withCtx(({ $listeners }) => [\n      _createTextVNode(_toDisplayString($listeners), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }, 8 /* PROPS */, [\"value\"]))\n}",
+      "preamble": "",
+      "map": null,
+      "diagnostics": [],
+      "typescriptOutput": "import { toDisplayString as _toDisplayString, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, withCtx as _withCtx, openBlock as _openBlock, createBlock as _createBlock } from \"vue\";\nexport function render(_ctx, _cache) {\n    const _component_Child = _resolveComponent(\"Child\");\n    return (_openBlock(), _createBlock(_component_Child, { value: _ctx.$listeners }, {\n        default: _withCtx(({ $listeners }) => [\n            _createTextVNode(_toDisplayString($listeners), 1 /* TEXT */)\n        ]),\n        _: 1 /* STABLE */\n    }, 8 /* PROPS */, [\"value\"]));\n}\n",
+      "typescriptDiagnostics": []
+    },
+    {
+      "id": "slot-argument-before-props",
+      "sourceSha256": "a1c6dbea7a392ea36dc5d189be37c423ea572e0b7c4dbc3a2878768e8709c55c",
+      "code": "import { toDisplayString as _toDisplayString, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, withCtx as _withCtx, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  const _component_Child = _resolveComponent(\"Child\")\n\n  return (_openBlock(), _createBlock(_component_Child, null, {\n    [_ctx.$listeners]: _withCtx(({ $listeners }) => [\n      _createTextVNode(_toDisplayString($listeners), 1 /* TEXT */)\n    ]),\n    _: 2 /* DYNAMIC */\n  }, 1024 /* DYNAMIC_SLOTS */))\n}",
+      "preamble": "",
+      "map": null,
+      "diagnostics": [],
+      "typescriptOutput": "import { toDisplayString as _toDisplayString, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, withCtx as _withCtx, openBlock as _openBlock, createBlock as _createBlock } from \"vue\";\nexport function render(_ctx, _cache) {\n    const _component_Child = _resolveComponent(\"Child\");\n    return (_openBlock(), _createBlock(_component_Child, null, {\n        [_ctx.$listeners]: _withCtx(({ $listeners }) => [\n            _createTextVNode(_toDisplayString($listeners), 1 /* TEXT */)\n        ]),\n        _: 2 /* DYNAMIC */\n    }, 1024 /* DYNAMIC_SLOTS */));\n}\n",
+      "typescriptDiagnostics": []
+    },
+    {
+      "id": "type-only-and-value",
+      "sourceSha256": "3a42a525797e314af0b5816737f2cc9a9fef30afe75d14d72eece365b57d01d7",
+      "code": "import { toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return _toDisplayString(_ctx.value as $listeners) + _toDisplayString(_ctx.$listeners as unknown)\n}",
+      "preamble": "",
+      "map": null,
+      "diagnostics": [],
+      "typescriptOutput": "import { toDisplayString as _toDisplayString } from \"vue\";\nexport function render(_ctx, _cache) {\n    return _toDisplayString(_ctx.value) + _toDisplayString(_ctx.$listeners);\n}\n",
+      "typescriptDiagnostics": []
+    }
+  ],
+  "records": [
+    {
+      "id": "interpolation-entity",
+      "qualification": "qualified",
+      "source": "<template>{{ &#36;listeners }}</template>",
+      "sourceSha256": "009c16afdf1c2055cdd833d0cd3748bc9426533ea805c9278a79124a7c6a22c3",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 14,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 28
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 13,
+          "end": 27,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "attribute-entity",
+      "qualification": "qualified",
+      "source": "<template><Child v-on=\"&#36;listeners\"/></template>",
+      "sourceSha256": "6f055c6eb317fe933909c3d7996cdd1be81635f0de8e4c4c164249d7298ede8b",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 24,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 38
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 23,
+          "end": 37,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "entity-before-token",
+      "qualification": "qualified",
+      "source": "<template><Child v-on=\"'&amp;' && &#36;listeners\"/></template>",
+      "sourceSha256": "f8d6763355adbb7c327f86d76a6d0ddbe8894f926e0c2e1177644a32365ec178",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 35,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 49
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 34,
+          "end": 48,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "unicode-before-token",
+      "qualification": "qualified",
+      "source": "<template><Child :value=\"'雪🚀' && $listeners\"/></template>",
+      "sourceSha256": "29f6af10b58a34802cde27fe4706859102752b1b8591a1e9284c87c2ceeb4b57",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 35,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 45
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 38,
+          "end": 48,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "escaped-dollar",
+      "qualification": "qualified",
+      "source": "<template><Child v-on=\"\\u0024listeners\"/></template>",
+      "sourceSha256": "5ac2cefac4aadbd59c96b3e89496a62478d4b097cc0985111bf026ab7c77e4f0",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 24,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 39
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 23,
+          "end": 38,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "if-condition",
+      "qualification": "qualified",
+      "source": "<template><div v-if=\"$listeners\">ok</div><div v-else-if=\"$listeners\">later</div></template>",
+      "sourceSha256": "9a4510622ef4ef8dcdedb7b97a94d9fbcf1671f20ce79a2d8967b5a3ac05ac71",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 22,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 32
+        },
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 58,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 68
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 21,
+          "end": 31,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 57,
+          "end": 67,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "if-key",
+      "qualification": "qualified",
+      "source": "<template><div v-if=\"ok\" :key=\"$listeners\"/></template>",
+      "sourceSha256": "5605bc4d305075816be740ca57661275fa5edc52d8d72b3b0220118a0666eeca",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 32,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 42
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 31,
+          "end": 41,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "if-before-alias",
+      "qualification": "product-accuracy",
+      "source": "<template><div v-if=\"$listeners\" v-for=\"$listeners in rows\">{{ $listeners }}</div></template>",
+      "sourceSha256": "595f77d4ba58bd17a269c240bf19908481ed7a0ede6fde87204fffa3a412f6f8",
+      "messages": [],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 21,
+          "end": 31,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false,
+      "nativePolicyReason": "Vue 3 evaluates same-element v-if before its v-for aliases exist. The pinned reference template binder incorrectly extends the alias over the condition."
+    },
+    {
+      "id": "for-collection-before-alias",
+      "qualification": "product-accuracy",
+      "source": "<template><div v-for=\"$listeners in $listeners\">{{ $listeners }}</div></template>",
+      "sourceSha256": "4f05248adcf03306d15fc057186cf92c7502bc3d756f5a896f5097f1e38dea23",
+      "messages": [],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 36,
+          "end": 46,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false,
+      "nativePolicyReason": "The Vue list collection executes in the incoming component scope; aliases exist only inside the render-list callback. The pinned reference incorrectly resolves the collection against its own alias."
+    },
+    {
+      "id": "for-destructured-alias",
+      "qualification": "qualified",
+      "source": "<template><div v-for=\"{ handlers: $listeners } in rows\">{{ $listeners }}</div>{{ $listeners }}</template>",
+      "sourceSha256": "6d650ef4f8c909dc60853b9983857c3ddb1fa3237ed225428bdff4b5b724c4f5",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 82,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 92
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 81,
+          "end": 91,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "for-default-reference",
+      "qualification": "qualified",
+      "source": "<template><div v-for=\"{ handlers = $listeners } in rows\">{{ handlers }}</div></template>",
+      "sourceSha256": "806286310c6714e872b2b1f3a64aa114d71193ff430541771165794dc41ee757",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 36,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 46
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 35,
+          "end": 45,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "for-entity-alias",
+      "qualification": "qualified",
+      "source": "<template><div v-for=\"&#36;listeners in rows\">{{ $listeners }}</div>{{ $listeners }}</template>",
+      "sourceSha256": "d2d30ce2f8482667462bcbeac04e237eb579b0f5fde223931c0d736a2b82a3af",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 72,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 82
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 71,
+          "end": 81,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "slot-entity-alias",
+      "qualification": "qualified",
+      "source": "<template><Child v-slot=\"{ &#36;listeners }\">{{ $listeners }}</Child>{{ $listeners }}</template>",
+      "sourceSha256": "9844fabc3939f1e81a3bf6e1fb45d5efaf334df9fce488eea0e1188a5c7c9f60",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 73,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 83
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 72,
+          "end": 82,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "slot-escaped-alias",
+      "qualification": "qualified",
+      "source": "<template><Child v-slot=\"{ \\u0024listeners }\">{{ $listeners }}</Child>{{ $listeners }}</template>",
+      "sourceSha256": "d84e9ef73cb280d94c4d1fe9a9411f848318f334b34d38d936d3052b4937a522",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 74,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 84
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 73,
+          "end": 83,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "slot-default-reference",
+      "qualification": "qualified",
+      "source": "<template><Child v-slot=\"{ handlers = $listeners }\">{{ handlers }}</Child></template>",
+      "sourceSha256": "078737a16a84bff89863006b42568e406eeaf5aa88d25f88a770bd86977e1130",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 39,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 49
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 38,
+          "end": 48,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "slot-default-local",
+      "qualification": "qualified",
+      "source": "<template><Child v-slot=\"{ $listeners = $listeners }\">{{ $listeners }}</Child></template>",
+      "sourceSha256": "d53b19650641dc95351cc306e0783af17b7d156f76ee6670df97108417a2474b",
+      "messages": [],
+      "nativeMessages": [],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "slot-computed-key",
+      "qualification": "qualified",
+      "source": "<template><Child v-slot=\"{ [$listeners]: handlers }\">{{ handlers }}</Child></template>",
+      "sourceSha256": "40698833d0ed961c9ece86f8306b43aaa6fe9c4c017f92b2b0a9e85a516c8663",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 29,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 39
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 28,
+          "end": 38,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "slot-attrs-outside-props",
+      "qualification": "product-accuracy",
+      "source": "<template><Child v-slot=\"{ $listeners }\" :value=\"$listeners\">{{ $listeners }}</Child></template>",
+      "sourceSha256": "80cf94e25218d47f883d13df709ab05d9b0f5edea150e96682ce9942f4a20fe5",
+      "messages": [],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 49,
+          "end": 59,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false,
+      "nativePolicyReason": "Component attributes execute in the incoming scope; slot parameters only bind the child slot function. The pinned reference incorrectly extends the slot parameter over sibling attributes."
+    },
+    {
+      "id": "slot-argument-before-props",
+      "qualification": "product-accuracy",
+      "source": "<template><Child v-slot:[$listeners]=\"{ $listeners }\">{{ $listeners }}</Child></template>",
+      "sourceSha256": "a1c6dbea7a392ea36dc5d189be37c423ea572e0b7c4dbc3a2878768e8709c55c",
+      "messages": [],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 25,
+          "end": 35,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false,
+      "nativePolicyReason": "The dynamic slot name executes outside the slot function parameters. The pinned reference incorrectly extends those parameters over the slot-name expression."
+    },
+    {
+      "id": "legacy-slot-scope",
+      "qualification": "qualified",
+      "source": "<template><Child slot-scope=\"$listeners\">{{ $listeners }}</Child>{{ $listeners }}</template>",
+      "sourceSha256": "6da0e616fc13ecff0ac7730462a94a8c26df515164f18a40b0102f719d2dd88b",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 69,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 79
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 68,
+          "end": 78,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "legacy-template-scope",
+      "qualification": "qualified",
+      "source": "<template><template scope=\"$listeners\">{{ $listeners }}</template>{{ $listeners }}</template>",
+      "sourceSha256": "7ab12af404ccbbca86e6405c507c5ec63992394b7d57efedd0da84bf3b83e5df",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 70,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 80
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 69,
+          "end": 79,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "legacy-entity-scope",
+      "qualification": "qualified",
+      "source": "<template><Child slot-scope=\"{ &#36;listeners }\">{{ $listeners }}</Child>{{ $listeners }}</template>",
+      "sourceSha256": "d2b08aaf8e2388b6edba97385d6a3483ab38ba9ee853c341e3620fbe98762ec6",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 77,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 87
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 76,
+          "end": 86,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "legacy-default-reference",
+      "qualification": "qualified",
+      "source": "<template><Child slot-scope=\"{ handlers = $listeners }\">{{ handlers }}</Child></template>",
+      "sourceSha256": "b373952c088b7d250ffb8cfa3112d772975f1889249ed41e2a4dfba9ed54505f",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 43,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 53
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 42,
+          "end": 52,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "callback-default-reference",
+      "qualification": "qualified",
+      "source": "<template>{{ ((value = $listeners) => value)() }}</template>",
+      "sourceSha256": "bfb8a905040df6263f10584d9092355bfd1db525ef19eeccd015390e0a8ff3d8",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 24,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 34
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 23,
+          "end": 33,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "callback-local-and-outer",
+      "qualification": "qualified",
+      "source": "<template>{{ (() => { const $listeners = local; return $listeners })() }}{{ $listeners }}</template>",
+      "sourceSha256": "61044db5d95ee384b7a8d80b92bf18d79c38f86b78434251b10c40e9d42b2233",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 77,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 87
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 76,
+          "end": 86,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "handler-block-local",
+      "qualification": "qualified",
+      "source": "<template><button @click=\"{ const $listeners = local; use($listeners) }; use($listeners)\"/></template>",
+      "sourceSha256": "7cdb642642e47d131713c923a7ada1bd03b6c29a60f6251f434d3891aad01e4c",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 78,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 88
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 77,
+          "end": 87,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "handler-entity",
+      "qualification": "qualified",
+      "source": "<template><button @click=\"use(&#36;listeners); use($listeners)\"/></template>",
+      "sourceSha256": "e24442e12d84494b691a7e1e7743c16e71c7d90dd524e3eaf09bc7772cc5cba4",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 31,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 45
+        },
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 52,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 62
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 30,
+          "end": 44,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 51,
+          "end": 61,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "handler-return",
+      "qualification": "qualified",
+      "source": "<template><button @click=\"return $listeners\"/></template>",
+      "sourceSha256": "482fd6a2bdc678aed5bac26e1675a9b0a4b4c22e95320981a258bbe02d513ce9",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 34,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 44
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 33,
+          "end": 43,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "nonreferences",
+      "qualification": "qualified",
+      "source": "<template><div title=\"$listeners\">{{ \"$listeners\" }}{{ /$listeners/.test(text) }}{{ obj.$listeners }}</div></template>",
+      "sourceSha256": "3e5d7e7428777591217ce3a6b9e3a040faedf8d42a35b4173f77c78261fba7e7",
+      "messages": [],
+      "nativeMessages": [],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "type-only-and-value",
+      "qualification": "product-accuracy",
+      "source": "<template>{{ value as $listeners }}{{ $listeners as unknown }}</template>",
+      "sourceSha256": "3a42a525797e314af0b5816737f2cc9a9fef30afe75d14d72eece365b57d01d7",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 23,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 33
+        },
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 39,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 49
+        }
+      ],
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 38,
+          "end": 48,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "expectedReferenceGap": false,
+      "nativePolicyReason": "A TypeScript assertion type is erased and is not a runtime property reference. Preserve the actual value read and do not report its type-only names."
+    },
+    {
+      "id": "own-v-pre-after-attrs",
+      "qualification": "qualified",
+      "source": "<template><Child v-on=\"$listeners\" slot-scope=\"$listeners\" v-pre>{{ $listeners }}</Child></template>",
+      "sourceSha256": "742d7295d8d493bf59cf81f01de528e6eb892310e1efa9d8df97d9fb6a2899da",
+      "messages": [],
+      "nativeMessages": [],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "inherited-v-pre",
+      "qualification": "qualified",
+      "source": "<template><div v-pre><Child v-on=\"$listeners\" slot-scope=\"$listeners\">{{ $listeners }}</Child></div></template>",
+      "sourceSha256": "6591181fc000e1c8f73101ad4ef2f7c53c86efc0a4c01a384470e5e497657e7f",
+      "messages": [],
+      "nativeMessages": [],
+      "expectedReferenceGap": false
+    },
+    {
+      "id": "failed-modern-slot",
+      "qualification": "refusal",
+      "source": "<template><Child v-slot=\"{ $listeners } broken\">{{ $listeners }}</Child></template>",
+      "sourceSha256": "2f7f259508bc90397d7f39a02075b8190bcab2c838028123a16c41ba93b4da6d",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 52,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 62
+        }
+      ],
+      "nativeMessages": [],
+      "expectedReferenceGap": true
+    },
+    {
+      "id": "failed-legacy-slot",
+      "qualification": "refusal",
+      "source": "<template><Child slot-scope=\"{ $listeners } broken\">{{ $listeners }}</Child></template>",
+      "sourceSha256": "ea1938b1d3aecfab62c5bf672b09128ef0807595a9dad04e0875b86cfc4ab302",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 56,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 66
+        }
+      ],
+      "nativeMessages": [],
+      "expectedReferenceGap": true
+    },
+    {
+      "id": "malformed-expression",
+      "qualification": "refusal",
+      "source": "<template>{{ $listeners + ) }}</template>",
+      "sourceSha256": "a83e6a51913557463ba2cef0fe05b8a6f1de07a348c5073b7417d999bc2f848d",
+      "messages": [],
+      "nativeMessages": [],
+      "expectedReferenceGap": true
+    },
+    {
+      "id": "handler-eval",
+      "qualification": "refusal",
+      "source": "<template><button @click=\"use($listeners); eval(source)\"/></template>",
+      "sourceSha256": "be80d428fb76ae0d35a551836ca5bece3585ec9929b99df6edcccdb3c8a99df2",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 31,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 41
+        }
+      ],
+      "nativeMessages": [],
+      "expectedReferenceGap": true
+    },
+    {
+      "id": "handler-unit-refusal",
+      "qualification": "refusal",
+      "source": "<template><button @click=\"use(x);use(x);use(x);use(x);use(x);use(x);use(x);use(x);use(x);use(x);use(x);use(x);use($listeners)\"/></template>",
+      "sourceSha256": "5b403c97315d74728a4616317facdbb304ca16d38fbdb715dbd7af5b37853142",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 115,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 125
+        }
+      ],
+      "nativeMessages": [],
+      "expectedReferenceGap": true
+    },
+    {
+      "id": "for-unit-refusal",
+      "qualification": "refusal",
+      "source": "<template><div v-for=\"row in [item,item,item,item,item,item,item,item,item,item,item,item,item,item,item,item,item,item,item,item,item,item,item,item,$listeners]\">{{ row }}</div></template>",
+      "sourceSha256": "779c30caf2476522bbfb5384d639b25599dac5cd3c6d34adc7918044773d5f7c",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 151,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 161
+        }
+      ],
+      "nativeMessages": [],
+      "expectedReferenceGap": true
+    },
+    {
+      "id": "legacy-unit-refusal",
+      "qualification": "refusal",
+      "source": "<template><Child slot-scope=\"{ local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, local10, local11, local12, local13, local14, local15, local16, local17, local18, local19 }\">{{ $listeners }}</Child></template>",
+      "sourceSha256": "b45b38134937417bf437172289bd595439ee09605af5fac5f8a18212e7cc26da",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 207,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 217
+        }
+      ],
+      "nativeMessages": [],
+      "expectedReferenceGap": true
+    },
+    {
+      "id": "expression-depth-refusal",
+      "qualification": "refusal",
+      "source": "<template>{{ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!$listeners }}</template>",
+      "sourceSha256": "748a9446b4447c7e8438d0910e5128c8454b9174ba52173ef160e6c463a0146e",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 94,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 104
+        }
+      ],
+      "nativeMessages": [],
+      "expectedReferenceGap": true
+    },
+    {
+      "id": "template-depth-refusal",
+      "qualification": "refusal",
+      "source": "<template><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div>{{ $listeners }}</div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></template>",
+      "sourceSha256": "ca77af76373f2d4d6c1b921810fb5895923925927bfc26d0bb63fe11f043f2d0",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 364,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 374
+        }
+      ],
+      "nativeMessages": [],
+      "expectedReferenceGap": true
+    },
+    {
+      "id": "template-width-refusal",
+      "qualification": "refusal",
+      "source": "<template>{{ $listeners }}<i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></template>",
+      "sourceSha256": "763e84a1c6eea1f57369d26103d4bb7f7032f5de806be8f8dcc410196bb1426a",
+      "messages": [
+        {
+          "ruleId": "vue/no-deprecated-dollar-listeners-api",
+          "severity": 2,
+          "message": "The `$listeners` is deprecated.",
+          "line": 1,
+          "column": 14,
+          "messageId": "deprecated",
+          "endLine": 1,
+          "endColumn": 24
+        }
+      ],
+      "nativeMessages": [],
+      "expectedReferenceGap": true
+    }
+  ]
+}

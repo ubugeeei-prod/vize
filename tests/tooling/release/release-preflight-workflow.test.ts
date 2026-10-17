@@ -1,8 +1,14 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
 import { hostedOrBlacksmith, readRepoFile } from "../support/github-workflows.ts";
+import { createReleasePreflightVerifyOnlyFixture } from "../support/release-preflight-runner-fixture.ts";
+import { repoRoot } from "../_helpers/moonbit.ts";
 
 type WorkflowStep = {
   env?: Record<string, string>;
@@ -30,7 +36,7 @@ test("reusable release preflight verifies evidence and crate plans without regis
 
   assert.ok(Object.hasOwn(workflow.on ?? {}, "workflow_call"));
   assert.deepEqual(workflow.permissions, {
-    actions: "write",
+    actions: "read",
     contents: "read",
     issues: "read",
     "pull-requests": "read",
@@ -43,7 +49,7 @@ test("reusable release preflight verifies evidence and crate plans without regis
   assert.match(verify["runs-on"] ?? "", new RegExp(`^${hostedOrBlacksmith("ubuntu-24.04")}$`));
   assert.equal(verify["timeout-minutes"], 10);
   assert.deepEqual(verify.permissions, {
-    actions: "write",
+    actions: "read",
     contents: "read",
     issues: "read",
     "pull-requests": "read",
@@ -59,8 +65,12 @@ test("reusable release preflight verifies evidence and crate plans without regis
     "package-manager-cache": false,
   });
   const verification = verify.steps?.find((step) => step.run != null);
-  assert.equal(verification?.run, "node tools/support/compat/github/release-preflight.ts");
-  assert.equal(verification?.env?.GITHUB_TOKEN, "${{ github.token }}");
+  assert.ok(verification);
+  assert.equal(
+    verification.run,
+    "node tools/support/compat/github/release-preflight.ts --verify-only",
+  );
+  assert.equal(verification.env?.GITHUB_TOKEN, "${{ github.token }}");
 
   const crateValidation = workflow.jobs?.["validate-crates"];
   assert.ok(crateValidation);
@@ -92,4 +102,55 @@ test("reusable release preflight verifies evidence and crate plans without regis
   assert.equal(stickyCache.with?.["cache-key-suffix"], "${{ runner.os }}-${{ runner.arch }}");
 
   assert.doesNotMatch(source, /environment:|id-token:\s*write|secrets\.|crates-io-auth-action/);
+});
+
+test("both new-run paths finish shared qualification before publication dispatch", () => {
+  for (const [file, lookup] of [
+    ["pr_pin_runs.rs", "if let Some(id) = find()?"],
+    ["pr_watch.rs", "if let Some(id) = find_run("],
+  ] as const) {
+    const source = readRepoFile("tools", "support", "release", file);
+    const reuse = source.indexOf(lookup);
+    const qualify = source.indexOf("pr_ci::qualify_check(");
+    const dispatch = source.indexOf('"workflow",', qualify);
+    assert.ok(reuse >= 0 && qualify > reuse && dispatch > qualify, file);
+    assert.match(source.slice(reuse, qualify), /return Ok\(/);
+    assert.match(source.slice(qualify, dispatch), /operator\.verify\(\)\?/);
+  }
+  const shared = readRepoFile("tools", "support", "release", "pr_ci.rs");
+  assert.match(shared, /tools\/support\/release\/qualify_check\/main\.ts/);
+  assert.match(shared, /pr_budget::child_command\(&mut qualification, budget\)/);
+  assert.match(shared, /if !status\.success\(\)/);
+});
+
+test("actual publication verify-only refuses absent Check without dispatching cold qualification", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "vize-release-read-only-preflight-"));
+  try {
+    const fixture = createReleasePreflightVerifyOnlyFixture(root, {
+      mutateRuns(runs) {
+        runs.length = 0;
+      },
+    });
+    const result = spawnSync(
+      process.execPath,
+      ["tools/support/compat/github/release-preflight.ts", "--verify-only"],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+        timeout: 10_000,
+        env: {
+          ...process.env,
+          PATH: `${fixture.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+          ...fixture.env,
+        },
+      },
+    );
+    assert.ifError(result.error);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Check: missing workflow_dispatch run/);
+    assert.doesNotMatch(result.stderr, /Unexpected preflight network request|Failed to dispatch/);
+    assert.doesNotMatch(result.stdout, /Dispatching|Release preflight passed/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

@@ -1,0 +1,185 @@
+{
+  "schema": 1,
+  "contract": "Bounded normal-script completeness refusal only. No alias/factory/other option inference, parser, or recursive walker. Original30 and whole native/CLI bytes remain unchanged; preserve all historical SCRIPT warnings. These observations are refusal frontier, not provider-parity or proved local binding acceptance.",
+  "frozenInputs": [
+    {
+      "path": "template-component-bindings.json",
+      "bytes": 293436,
+      "sha256": "cd86d2f4344879ce047f6c43b1aa13011d3e17106b29789f0e89f6701411701b"
+    },
+    {
+      "path": "template-component-bindings-native.json",
+      "bytes": 12010,
+      "sha256": "a3be95dacfd7193457c763b28bea6cc0e25524516a89a6944e488dfa4eb72198"
+    },
+    {
+      "path": "template-component-bindings-cli.json",
+      "bytes": 17370,
+      "sha256": "03f6a57d845f1ae7b73b0f1d431da6c4f21cba0f077bd6d8a8c276448be463cc"
+    }
+  ],
+  "corrections": [
+    {
+      "id": "listeners-explicit-setup-options-alias",
+      "sourceSha256": "2f564dd53ae7f4d4166cc3a91febad6df10ef2867a0024c8c60c52ae9e196ed4",
+      "qualification": "refusal-unresolved-normal-setup-authority",
+      "historicalNativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 152,
+          "end": 162,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "nativeMessages": [],
+      "retainedHistoricalMessageIndices": [],
+      "cliExpected": [
+        {
+          "file": "Component.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0
+    },
+    {
+      "id": "listeners-explicit-setup-returned-object-alias",
+      "sourceSha256": "dccbaa9e2600c22d0bcc9828bc7057f8d275d9f4161305b12586607718b86f3b",
+      "qualification": "refusal-unresolved-normal-setup-authority",
+      "historicalNativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 121,
+          "end": 131,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "nativeMessages": [],
+      "retainedHistoricalMessageIndices": [],
+      "cliExpected": [
+        {
+          "file": "Component.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0
+    },
+    {
+      "id": "listeners-foreign-factory-wrapper",
+      "sourceSha256": "ddcc8bab474a4a20f00ce450c97239270764d67d2798575d4476509df504f72b",
+      "qualification": "refusal-unresolved-normal-setup-authority",
+      "historicalNativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 162,
+          "end": 172,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "nativeMessages": [],
+      "retainedHistoricalMessageIndices": [],
+      "cliExpected": [
+        {
+          "file": "Component.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0
+    }
+  ],
+  "counterlaws": [
+    {
+      "id": "normal-setup-identifier-return",
+      "qualification": "refusal-unresolved-normal-setup-authority",
+      "source": "<script>export default { setup() { const exposed = { $listeners: {} }; return exposed }, created() { this.$listeners } }</script><template><Child v-on=\"$listeners\"/></template>",
+      "sourceSha256": "614c89ed0fab6327b2c0178a93124046d17d322da405e8aba4118953387bd7dc",
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 106,
+          "end": 116,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "contract": "Template authority remains Unknown; the historical script this.$listeners warning is retained in full."
+    },
+    {
+      "id": "normal-setup-spread-return",
+      "qualification": "refusal-unresolved-normal-setup-authority",
+      "source": "<script>const exposed = { $listeners: {} }; export default { setup() { return { ...exposed } }, created() { this.$listeners } }</script><template><Child v-on=\"$listeners\"/></template>",
+      "sourceSha256": "d4d04b90a4962fa0a2609ebbd1d297da12625cfa18fa5b91bd31c99c31706975",
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 113,
+          "end": 123,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "contract": "Template authority remains Unknown; the historical script this.$listeners warning is retained in full."
+    },
+    {
+      "id": "normal-setup-computed-return",
+      "qualification": "refusal-unresolved-normal-setup-authority",
+      "source": "<script>export default { setup() { return { ['$listeners']: {} } }, created() { this.$listeners } }</script><template><Child v-on=\"$listeners\"/></template>",
+      "sourceSha256": "fd1eeb5f99740c3b604fd9a90570467fe6a9e01237c86e0d11b621ffdd9ef950",
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 85,
+          "end": 95,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "contract": "Template authority remains Unknown; the historical script this.$listeners warning is retained in full."
+    },
+    {
+      "id": "normal-setup-factory-export",
+      "qualification": "refusal-unresolved-normal-setup-authority",
+      "source": "<script>import { defineComponent } from 'vue'; export default defineComponent({ setup() { return { $listeners: {} } }, created() { this.$listeners } })</script><template><Child v-on=\"$listeners\"/></template>",
+      "sourceSha256": "65c38265661c88800321bf17220c7fe802b8ce5470a22bcb59e8b50a68107839",
+      "nativeMessages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 136,
+          "end": 146,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "contract": "Template authority remains Unknown; the historical script this.$listeners warning is retained in full."
+    }
+  ]
+}

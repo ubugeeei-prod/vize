@@ -35,7 +35,22 @@ test("required workflow selection fails closed for missing, stale, red, or wrong
     requiredReleaseWorkflows,
   );
 
-  assert.doesNotThrow(() => selectRequiredWorkflowRuns([], releaseSha));
+  assert.deepEqual(requiredReleaseWorkflows, ["Check"]);
+  assert.throws(() => selectRequiredWorkflowRuns([], releaseSha), /Check: missing/);
+  for (const patch of [
+    { head_sha: "b".repeat(40) },
+    { path: ".github/workflows/foreign.yml" },
+    { event: "pull_request" },
+    { conclusion: "failure" },
+    { conclusion: "skipped" },
+    { conclusion: "cancelled" },
+    { status: "in_progress", conclusion: null },
+  ]) {
+    assert.throws(
+      () => selectRequiredWorkflowRuns([{ ...greenRuns[0], ...patch }], releaseSha),
+      /Check:/,
+    );
+  }
 });
 
 test("release evidence ignores a failed optional Benchmark run", () => {
@@ -61,13 +76,32 @@ test("release Check job evidence covers the exact SemVer matrix in Rust and JS",
   const crates = semverJob?.strategy?.matrix?.crate;
   assert.ok(crates);
   assert.equal(crates.length, 12);
-  assert.deepEqual(requiredWorkflowJobNames("Check"), [
+  const fullJobs = [
     "test-scripts",
     "test-js-packages",
     "build-js-packages",
     "full-js-report",
-    ...crates.map((name) => `cargo-semver-checks (${name})`),
-  ]);
+    "Full Rust workspace and doctests",
+    "clippy-and-test",
+    "full-rust-report",
+  ];
+  assert.deepEqual(
+    requiredWorkflowJobNames("Check", { event: "workflow_dispatch", head_branch: "main" }),
+    fullJobs,
+  );
+  assert.deepEqual(
+    requiredWorkflowJobNames("Check", { event: "workflow_dispatch", head_branch: "v0.458.0" }),
+    [
+      "test-scripts",
+      "test-js-packages",
+      "build-js-packages",
+      "full-js-report",
+      "Full Rust workspace and doctests",
+      "clippy-and-test",
+      "full-rust-report",
+      ...crates.map((name) => `cargo-semver-checks (${name})`),
+    ],
+  );
 
   const rust = readRepoFile("tools", "commands", "ci", "github", "release-preflight.rs");
   const rustCrateBlock = rust.match(
@@ -91,8 +125,9 @@ test("newest matching run wins across cancellation, reruns, and concurrent runs"
     run_started_at: "2026-07-12T00:51:00Z",
     conclusion: "cancelled",
   };
-  assert.doesNotThrow(() =>
-    selectRequiredWorkflowRuns([...greenRuns, olderSuccess, newerCancellation], releaseSha),
+  assert.throws(
+    () => selectRequiredWorkflowRuns([...greenRuns, olderSuccess, newerCancellation], releaseSha),
+    /cancelled/,
   );
 
   const rerunSuccess = {
@@ -120,7 +155,7 @@ test("newest matching run wins across cancellation, reruns, and concurrent runs"
 
 test("release full JS jobs reject missing, duplicate, unfinished and unsuccessful qualification", () => {
   const jobs = requiredWorkflowJobNames("Check").map(successfulReleaseJob);
-  for (const name of ["test-js-packages", "build-js-packages", "full-js-report"]) {
+  for (const name of requiredWorkflowJobNames("Check")) {
     const original = jobs.find((job) => job.name === name);
     assert.ok(original);
     for (const variant of [
@@ -138,23 +173,24 @@ test("release full JS jobs reject missing, duplicate, unfinished and unsuccessfu
 });
 
 test("matrix-sensitive release gates require every successful job", () => {
-  const checkJobs = requiredWorkflowJobNames("Check").map(successfulReleaseJob);
-  assert.doesNotThrow(() => assertRequiredWorkflowJobs("Check", checkJobs));
+  const releaseRun = successfulReleaseRun("Check", 1);
+  const checkJobs = requiredWorkflowJobNames("Check", releaseRun).map(successfulReleaseJob);
+  assert.doesNotThrow(() => assertRequiredWorkflowJobs("Check", checkJobs, releaseRun));
   assert.throws(() => assertRequiredWorkflowJobs("Check", []), /test-scripts/);
   const semverName = "cargo-semver-checks (vize_armature)";
   const withoutSemver = checkJobs.filter((job) => job.name !== semverName);
   assert.throws(
-    () => assertRequiredWorkflowJobs("Check", withoutSemver),
+    () => assertRequiredWorkflowJobs("Check", withoutSemver, releaseRun),
     /cargo-semver-checks \(vize_armature\) job; found 0/,
   );
   assert.equal(
-    summarizeRequiredWorkflowJobFailures("Check", withoutSemver),
+    summarizeRequiredWorkflowJobFailures("Check", withoutSemver, releaseRun),
     `required jobs: ${semverName}=missing`,
   );
   for (const conclusion of ["skipped", "failure"]) {
     const jobs = checkJobs.map((job) => (job.name === semverName ? { ...job, conclusion } : job));
     assert.throws(
-      () => assertRequiredWorkflowJobs("Check", jobs),
+      () => assertRequiredWorkflowJobs("Check", jobs, releaseRun),
       new RegExp(`cargo-semver-checks \\(vize_armature\\) is completed/${conclusion}`),
     );
   }
@@ -222,8 +258,8 @@ test("matrix-sensitive release gates require every successful job", () => {
   );
 });
 
-test("a cancelled Check does not block publication", () => {
-  assert.doesNotThrow(() =>
+test("a cancelled Check blocks publication", () => {
+  assert.throws(() =>
     selectRequiredWorkflowRuns(
       [{ ...successfulReleaseRun("Check", 1), conclusion: "cancelled" }],
       releaseSha,

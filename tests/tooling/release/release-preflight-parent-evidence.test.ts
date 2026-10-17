@@ -100,7 +100,10 @@ test("a version-only release dispatches Check at the tag", async () => {
       `Real Project Matrix release-gated @ ${parentSha}`,
     ),
   ];
-  const fullCheck = greenRun(".github/workflows/check.yml", tagSha, `Check full @ ${tagSha}`);
+  const fullCheck = {
+    ...greenRun(".github/workflows/check.yml", tagSha, `Check full @ ${tagSha}`),
+    head_branch: "v0.350.1",
+  };
   const tagMiri = greenRun(".github/workflows/miri.yml", tagSha, `Miri @ ${tagSha}`);
   const tagDocs = greenRun(".github/workflows/build-docs.yml", tagSha, `Docs build @ ${tagSha}`);
   const dispatched: string[] = [];
@@ -116,8 +119,8 @@ test("a version-only release dispatches Check at the tag", async () => {
     timeoutMs: 0,
     sleep: async () => {},
   });
-  assert.deepEqual(dispatched, []);
-  assert.equal(selected.size, 0);
+  assert.deepEqual(dispatched, ["Check"]);
+  assert.equal(selected.get("Check"), fullCheck);
 });
 
 test("without the reuse the same parent evidence does not satisfy the gates", async () => {
@@ -127,16 +130,18 @@ test("without the reuse the same parent evidence does not satisfy the gates", as
     baseSha: parentSha,
   });
   const dispatched: string[] = [];
-  const selected = await bootstrapRequiredWorkflowRuns({
-    sha: tagSha,
-    dispatchPlans: plans,
-    listRuns: async () => [greenRun(".github/workflows/check.yml", parentSha, "Check", "push")],
-    dispatchWorkflow: async (plan: { workflowName: string }) =>
-      void dispatched.push(plan.workflowName),
-    now: () => 0,
-    timeoutMs: 0,
-    sleep: async () => {},
-  });
-  assert.deepEqual(dispatched, []);
-  assert.equal(selected.size, 0);
+  await assert.rejects(
+    bootstrapRequiredWorkflowRuns({
+      sha: tagSha,
+      dispatchPlans: plans,
+      listRuns: async () => [greenRun(".github/workflows/check.yml", parentSha, "Check", "push")],
+      dispatchWorkflow: async (plan: { workflowName: string }) =>
+        void dispatched.push(plan.workflowName),
+      now: () => 0,
+      timeoutMs: 0,
+      sleep: async () => {},
+    }),
+    /Check: missing/,
+  );
+  assert.deepEqual(dispatched, ["Check"]);
 });

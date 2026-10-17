@@ -8,6 +8,7 @@
 mod callbacks;
 mod slot_props;
 
+pub(in crate::drawer) use callbacks::classify_retained_event_handler;
 pub use callbacks::{
     EventHandlerExpression, classify_event_handler, extract_inline_callback_params,
 };

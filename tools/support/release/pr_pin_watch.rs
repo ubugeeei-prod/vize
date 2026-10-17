@@ -21,7 +21,7 @@ pub(super) fn watch(
     if github::tag_target(tag, root)?.is_none() {
         dispatch::retire_legacy(&initial, operator, root)?;
     }
-    let id = runs::find_or_dispatch(&initial, budget, root)?;
+    let id = runs::find_or_dispatch(&initial, operator, budget, root)?;
     let initial_run = github::api(repository, &format!("actions/runs/{id}"), root)?;
     run_identity(&initial_run, &initial, id)?;
     // Only an explicit resume of an already failed immutable R retries it.

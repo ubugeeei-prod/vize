@@ -84,6 +84,12 @@ impl<'a> Parser<'a> {
             // Check for pre tags
             let is_pre = (self.options.is_pre_tag)(element.tag);
             let has_v_pre = v_pre_ordinal.is_some();
+            if has_v_pre {
+                self.discard_frozen_template_syntax(
+                    tag_start.saturating_sub(1) as u32,
+                    (end + 1) as u32,
+                );
+            }
 
             // When v-pre is on this element, convert all directives (except v-pre itself)
             // back to raw attribute nodes, since v-pre means "skip compilation"

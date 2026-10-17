@@ -243,6 +243,22 @@ impl<'a> Parser<'a> {
         // Vue 2 keeps the last value of a repeated attribute (its attrs map is
         // overwritten); Vue 3 keeps the first.
         let replace_earlier = self.options.dialect.is_legacy();
+        if self.template_syntax_facts.is_some()
+            && replace_earlier
+            && (attr.name == "slot-scope"
+                || (attr.name == "scope"
+                    && self
+                        .current_element
+                        .as_ref()
+                        .is_some_and(|element| element.tag == "template")))
+            && let Some(value) = attr_node.value.as_ref()
+        {
+            self.retain_special_template_syntax(
+                value.content,
+                value.loc.span,
+                super::TemplateSyntaxRole::LegacySlot,
+            );
+        }
         if let Some(ref mut current) = self.current_element {
             if replace_earlier {
                 current.props.retain(|prop| {
@@ -313,6 +329,7 @@ impl<'a> Parser<'a> {
             if is_dynamic {
                 arg_expr.const_type = ConstantType::NotConstant;
                 self.retain_expression_ast(&mut arg_expr, arg_start, arg_end);
+                self.record_expression_syntax(&arg_expr, false, false, false);
             }
             let arg_boxed = Box::new_in(arg_expr, &self.allocator);
             dir_node.arg = Some(ExpressionNode::Simple(arg_boxed));
@@ -341,7 +358,13 @@ impl<'a> Parser<'a> {
             let exp_loc = self.create_loc(v_start, v_end);
             let content = self.freeze_value(&v_content, v_start, v_end);
             let mut exp_node = SimpleExpressionNode::new(content, false, exp_loc);
-            self.retain_value_ast(&mut exp_node, v_start, v_end, dir_node.name);
+            self.retain_value_ast(
+                &mut exp_node,
+                v_start,
+                v_end,
+                dir_node.name,
+                dir_node.name == "on" && dir_node.arg.is_some(),
+            );
             let exp_boxed = Box::new_in(exp_node, &self.allocator);
             dir_node.exp = Some(ExpressionNode::Simple(exp_boxed));
         } else if let Some((camelized, s_start, s_end)) = shorthand_exp {
@@ -349,6 +372,7 @@ impl<'a> Parser<'a> {
             let exp_loc = self.create_loc(s_start, s_end);
             let mut exp_node = SimpleExpressionNode::new(camelized, false, exp_loc);
             self.retain_expression_ast(&mut exp_node, s_start, s_end);
+            self.record_expression_syntax(&exp_node, false, false, false);
             let exp_boxed = Box::new_in(exp_node, &self.allocator);
             dir_node.exp = Some(ExpressionNode::Simple(exp_boxed));
             dir_node.shorthand = true;

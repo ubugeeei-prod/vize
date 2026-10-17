@@ -25,6 +25,7 @@ pub(super) struct DescriptorObservation<'a> {
     pub(super) occurrences: Option<&'a mut Option<BindingOccurrences>>,
     pub(super) module_exports:
         Option<&'a mut Option<Vec<vize_croquis::script_parser::AuthoredModuleExport>>>,
+    pub(super) template_semantic_reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 }
 
 pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
@@ -39,6 +40,7 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
     let DescriptorObservation {
         occurrences,
         module_exports,
+        template_semantic_reuse,
     } = observation;
     let drawer_options = options.analyzer_options;
     let script_analyzed = drawer_options.analyze_script
@@ -77,6 +79,11 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
         }
     }
     let drawer = Drawer::with_summary(drawer_options, summary, script_analyzed);
+    let drawer = if let Some(reuse) = template_semantic_reuse {
+        drawer.with_template_semantic_reuse(reuse)
+    } else {
+        drawer
+    };
     let drawer = if let Some(packet) = packet.take() {
         drawer.with_binding_occurrence_packet(packet)
     } else {

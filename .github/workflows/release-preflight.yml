@@ -8,7 +8,7 @@ on:
       pinned: { type: boolean, required: false, default: false }
 
 permissions:
-  actions: write
+  actions: read
   contents: read
   issues: read
   pull-requests: read
@@ -22,7 +22,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     permissions:
-      actions: write
+      actions: read
       contents: read
       issues: read
       pull-requests: read
@@ -42,7 +42,7 @@ jobs:
           RELEASE_PR_NUMBER: ${{ inputs.release_pr }}
           RELEASE_TAG_NAME: ${{ inputs.tag_name }}
           RELEASE_PINNED: ${{ inputs.pinned }}
-        run: node tools/support/compat/github/release-preflight.ts
+        run: node tools/support/compat/github/release-preflight.ts --verify-only
 
   validate-crates:
     name: Validate crates.io publish plan

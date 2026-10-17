@@ -1,0 +1,62 @@
+name: Release preflight contracts
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/release-preflight*.yml"
+      - ".github/workflows/check.yml"
+      - ".github/actions/report-full-js-qualification/**"
+      - ".github/actions/setup-rust-script/**"
+      - "tools/commands/ci/github/release-preflight.rs"
+      - "tools/commands/release/pr.rs"
+      - "tools/support/common.rs"
+      - "tools/support/release/**"
+      - "tools/support/compat/github/release-preflight*"
+      - "tools/support/compat/github/require-needs-success.ts"
+      - "tests/tooling/release/**"
+      - "tests/tooling/plan-release-gates.test.ts"
+      - "tests/tooling/release-check-qualification-handoff.test.ts"
+      - "tests/tooling/support/release-preflight*"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: release-preflight-contracts-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  contracts:
+    name: Native and JavaScript release preflight contracts
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.1" }
+      - uses: ./.github/actions/setup-rust-script
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: |
+            ~/.cache/rust-script
+            ~/.cargo/registry
+          key: release-preflight-tool-${{ runner.os }}-${{ runner.arch }}-1.99.1-${{ hashFiles('tools/commands/ci/github/release-preflight.rs', 'tools/commands/release/pr.rs', 'tools/support/release/*.rs', 'tools/support/common.rs', 'tests/_fixtures/tooling/release/**') }}
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: true }
+      - name: Require JavaScript policy, exact-source evidence and actual CLI refusals
+        run: >-
+          node --test
+          tests/tooling/release/release-preflight-evidence.test.ts
+          tests/tooling/release/release-preflight-bootstrap.test.ts
+          tests/tooling/release/release-preflight-bootstrap-budget.test.ts
+          tests/tooling/release/release-preflight-parent-evidence.test.ts
+          tests/tooling/release/release-preflight-runner.test.ts
+          tests/tooling/release/release-operator.test.ts
+          tests/tooling/release/release-preflight-workflow.test.ts
+          tests/tooling/plan-release-gates.test.ts
+          tests/tooling/release-check-qualification-handoff.test.ts
+      - name: Require native policy and every incomplete full qualification to fail closed
+        run: |
+          rust-script --test tools/commands/ci/github/release-preflight.rs
+          node --test tests/tooling/release/release-preflight-full-js.test.ts tests/tooling/release/legacy-check-qualification.test.ts

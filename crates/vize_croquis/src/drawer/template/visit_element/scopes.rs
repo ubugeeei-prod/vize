@@ -17,13 +17,16 @@ pub(super) struct SlotScopeInfo {
     pub(super) offset: u32,
 }
 
-pub(super) type ForScopeInfo = (
-    VForScopeAliases,
-    SmallVec<[(CompactString, u32); 4]>,
-    Option<u32>,
-    u32,
-    u32,
-);
+pub(super) struct ForScopeInfo {
+    pub(super) aliases: VForScopeAliases,
+    pub(super) alias_offsets: SmallVec<[(CompactString, u32); 4]>,
+    pub(super) source_offset: Option<u32>,
+    pub(super) start: u32,
+    pub(super) end: u32,
+    // Original collection names, separate from the global text-keyed cache and
+    // occurrence/editor coordinate witnesses. `None` preserves every fallback.
+    pub(super) source_identifiers: Option<Vec<CompactString>>,
+}
 
 /// petite-vue `v-scope` info: introduced (name, key_offset) bindings plus the
 /// element subtree span the bindings are visible across.
@@ -108,7 +111,15 @@ impl Drawer {
         key_expression: Option<CompactString>,
         scope_vars: &mut Vec<CompactString>,
     ) -> usize {
-        let Some((aliases, alias_offsets, source_offset, start, end)) = for_scope else {
+        let Some(ForScopeInfo {
+            aliases,
+            alias_offsets,
+            source_offset,
+            start,
+            end,
+            source_identifiers,
+        }) = for_scope
+        else {
             return 0;
         };
 
@@ -119,19 +130,36 @@ impl Drawer {
         }
 
         if self.checks_binding_reads() {
-            self.mark_v_for_source_scope_refs(aliases.source.as_str());
+            if let Some(names) = source_identifiers.as_ref() {
+                for name in names {
+                    self.croquis.scopes.mark_used(name.as_str());
+                }
+            } else {
+                self.mark_v_for_source_scope_refs(aliases.source.as_str());
+            }
         }
         // Generic slot props are not yet instantiated from sibling bindings. Mapping a
         // callback that consumes one would expose a Vize-only implicit-any diagnostic.
-        let source_has_slot_bound_callback = aliases.source.contains("=>")
-            && extract_identifiers_oxc(aliases.source.as_str())
-                .iter()
-                .any(|name| {
-                    self.croquis
-                        .scopes
-                        .lookup(name.as_str())
-                        .is_some_and(|(scope, _)| scope.kind == ScopeKind::VSlot)
-                });
+        let fallback_names;
+        let source_names = if aliases.source.contains("=>") {
+            Some(match source_identifiers.as_deref() {
+                Some(names) => names,
+                None => {
+                    fallback_names = extract_identifiers_oxc(aliases.source.as_str());
+                    &fallback_names
+                }
+            })
+        } else {
+            None
+        };
+        let source_has_slot_bound_callback = source_names.is_some_and(|names| {
+            names.iter().any(|name| {
+                self.croquis
+                    .scopes
+                    .lookup(name.as_str())
+                    .is_some_and(|(scope, _)| scope.kind == ScopeKind::VSlot)
+            })
+        });
 
         let scope_id = self.croquis.scopes.enter_v_for_scope(
             VForScopeData {

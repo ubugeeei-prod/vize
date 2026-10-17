@@ -1,0 +1,456 @@
+{
+  "schema": "vize.lint.template-component-bindings-cli",
+  "version": 1,
+  "origin": {
+    "status": "authored-static-unexecuted",
+    "scope": "All 15 explicit primary-listeners controls from 30 complete source/provider/compiler observations. Complete public CLI packets preserve existing script warnings. All 15 scopedSlots observations remain research only. Actual native/CLI Actions execution is required.",
+    "inputs": [
+      {
+        "path": "template-component-bindings.json",
+        "bytes": 293436,
+        "sha256": "cd86d2f4344879ce047f6c43b1aa13011d3e17106b29789f0e89f6701411701b"
+      },
+      {
+        "path": "template-component-bindings-native.json",
+        "bytes": 12010,
+        "sha256": "a3be95dacfd7193457c763b28bea6cc0e25524516a89a6944e488dfa4eb72198"
+      }
+    ],
+    "order": "Native source-order diagnostics match actual CLI aggregate::compare_diagnostic; tests do not sort or filter actual output."
+  },
+  "projection": {
+    "contract": "Explicit primary-listeners projection of all30 complete provider/compiler observations; scopedSlots controls are retained as unrepaired research and never acceptance credit. Source rows are selected by the listed immutable IDs, not by filtering actual diagnostics.",
+    "primaryIds": [
+      "listeners-script-setup-const",
+      "listeners-script-setup-local-alias",
+      "listeners-script-setup-import-alias",
+      "listeners-explicit-setup-shorthand",
+      "listeners-explicit-setup-renamed-property",
+      "listeners-explicit-setup-options-alias",
+      "listeners-explicit-setup-returned-object-alias",
+      "listeners-setup-unreturned-local",
+      "listeners-setup-renamed-away",
+      "listeners-foreign-options-object",
+      "listeners-plain-script-declaration",
+      "listeners-nested-script-setup-object",
+      "listeners-undefined-component",
+      "listeners-script-setup-undefined",
+      "listeners-foreign-factory-wrapper"
+    ],
+    "researchOnlyIds": [
+      "scopedSlots-script-setup-const",
+      "scopedSlots-script-setup-local-alias",
+      "scopedSlots-script-setup-import-alias",
+      "scopedSlots-explicit-setup-shorthand",
+      "scopedSlots-explicit-setup-renamed-property",
+      "scopedSlots-explicit-setup-options-alias",
+      "scopedSlots-explicit-setup-returned-object-alias",
+      "scopedSlots-setup-unreturned-local",
+      "scopedSlots-setup-renamed-away",
+      "scopedSlots-foreign-options-object",
+      "scopedSlots-plain-script-declaration",
+      "scopedSlots-nested-script-setup-object",
+      "scopedSlots-undefined-component",
+      "scopedSlots-script-setup-undefined",
+      "scopedSlots-foreign-factory-wrapper"
+    ]
+  },
+  "config": "{\n  \"linter\": {\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\",\n      \"script/no-deprecated-events-api\": \"error\"\n    }\n  }\n}\n",
+  "configBytes": 181,
+  "configSha256": "4e2ede559677781cb54d2d584dc859032eea8d5f26aae6c397ef766596f2d997",
+  "argv": [
+    "lint",
+    "Component.vue",
+    "--config",
+    "vize.config.json",
+    "--format",
+    "json",
+    "--help-level",
+    "full"
+  ],
+  "cases": [
+    {
+      "id": "listeners-script-setup-const",
+      "sourceSha256": "61adae597d99fdfe90a00e493d02ffabeb3d185510eef23d0d2f6e7ac9feda87",
+      "ownerExpectation": "setup-owned",
+      "nativeMessageIndices": [],
+      "status": 0,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-script-setup-local-alias",
+      "sourceSha256": "05a9c0fd434ec1afdf238b11b6bba0d73d733246cc202659a9af25bac3c43ec4",
+      "ownerExpectation": "setup-owned",
+      "nativeMessageIndices": [],
+      "status": 0,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-script-setup-import-alias",
+      "sourceSha256": "b8f504af55d5141e7efd2604cd0f34062fa9186b896d81947459aa8f2d0e2912",
+      "ownerExpectation": "setup-owned",
+      "nativeMessageIndices": [],
+      "status": 0,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-explicit-setup-shorthand",
+      "sourceSha256": "9b338f8d9bea4d1cc601b7ac3da7a2a3bdd415383417295e3f292142939b1227",
+      "ownerExpectation": "setup-owned",
+      "nativeMessageIndices": [0],
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 68,
+              "endLine": 1,
+              "endColumn": 78,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-explicit-setup-renamed-property",
+      "sourceSha256": "699c32421aff911008c21941f659ae64a8104a2875e18425efad374f44215fdd",
+      "ownerExpectation": "setup-owned",
+      "nativeMessageIndices": [],
+      "status": 0,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-explicit-setup-options-alias",
+      "sourceSha256": "2f564dd53ae7f4d4166cc3a91febad6df10ef2867a0024c8c60c52ae9e196ed4",
+      "ownerExpectation": "component-options-alias-research",
+      "nativeMessageIndices": [0],
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 153,
+              "endLine": 1,
+              "endColumn": 163,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-explicit-setup-returned-object-alias",
+      "sourceSha256": "dccbaa9e2600c22d0bcc9828bc7057f8d275d9f4161305b12586607718b86f3b",
+      "ownerExpectation": "returned-object-alias-research",
+      "nativeMessageIndices": [0],
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 122,
+              "endLine": 1,
+              "endColumn": 132,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-setup-unreturned-local",
+      "sourceSha256": "bc56d6c47737e263b3a42d3c9946fe537a8c28c4c51656506331913635915805",
+      "ownerExpectation": "component-context",
+      "nativeMessageIndices": [0],
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 104,
+              "endLine": 1,
+              "endColumn": 114,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-setup-renamed-away",
+      "sourceSha256": "bf681546b6c746e863cb87909f7fc56bf3eacd2417a383e42c55f85e70df920f",
+      "ownerExpectation": "component-context",
+      "nativeMessageIndices": [0, 1],
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 78,
+              "endLine": 1,
+              "endColumn": 88,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            },
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 126,
+              "endLine": 1,
+              "endColumn": 136,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 2,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-foreign-options-object",
+      "sourceSha256": "f56077c1978a8fb7565c92aad7acdb38282a7209b466981ea67cc3238613cf8f",
+      "ownerExpectation": "component-context",
+      "nativeMessageIndices": [0],
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 117,
+              "endLine": 1,
+              "endColumn": 127,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-plain-script-declaration",
+      "sourceSha256": "78c5fe7725ee1a7ccae4c6aba01b5a759005e1408ca499b7b09ea17b18fd7eba",
+      "ownerExpectation": "component-context",
+      "nativeMessageIndices": [0],
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 81,
+              "endLine": 1,
+              "endColumn": 91,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-nested-script-setup-object",
+      "sourceSha256": "68dded0eebbc06373a74fa1ba7e872f08cc78637d4779583b642b24f7fad0225",
+      "ownerExpectation": "component-context",
+      "nativeMessageIndices": [0],
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 81,
+              "endLine": 1,
+              "endColumn": 91,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-undefined-component",
+      "sourceSha256": "256411da6ee5e973479c2b8dfc3065f59d7f40df24ed692f42dde46390a64b78",
+      "ownerExpectation": "component-context",
+      "nativeMessageIndices": [0],
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 58,
+              "endLine": 1,
+              "endColumn": 68,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-script-setup-undefined",
+      "sourceSha256": "e2b99cd2b602ca00a05f23680cbe42105c9ba1d5bbc543756855b7637c8dcc57",
+      "ownerExpectation": "component-context",
+      "nativeMessageIndices": [0],
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 67,
+              "endLine": 1,
+              "endColumn": 77,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "listeners-foreign-factory-wrapper",
+      "sourceSha256": "ddcc8bab474a4a20f00ce450c97239270764d67d2798575d4476509df504f72b",
+      "ownerExpectation": "foreign-factory-research",
+      "nativeMessageIndices": [0],
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 1,
+              "column": 163,
+              "endLine": 1,
+              "endColumn": 173,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    }
+  ]
+}

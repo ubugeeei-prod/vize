@@ -10,11 +10,13 @@ on:
       - "tools/support/release/windows_hover_acceptance.ts"
       - "tests/tooling/release-consumer-recovery.test.ts"
       - "tests/tooling/release-consumer-archive.test.ts"
+      - "tests/tooling/release-consumer-integration.test.ts"
       - "tests/tooling/windows-hover-public-identity.test.ts"
       - "tests/tooling/release/release-operator.test.ts"
       - "tests/_fixtures/release/consumer-recovery.json"
       - "tests/_fixtures/release/consumer-recovery-integration.json"
       - "tsconfig.consumer-recovery.json"
+      - "tests/_fixtures/release/consumer-recovery-integration-drift.json"
   workflow_dispatch:
     inputs:
       cut: { description: Official source before versioning C, required: true, type: string }
@@ -51,7 +53,7 @@ jobs:
         run: node tools/support/typescript/check-project.ts tsconfig.consumer-recovery.json
       - name: Verify admission, installed acceptance and original consumer contracts
         run: |
-          node --test tests/tooling/release-consumer-recovery.test.ts tests/tooling/release-consumer-archive.test.ts tests/tooling/windows-hover-public-identity.test.ts tests/tooling/release/release-public-acceptance.test.ts tests/tooling/release-jsr-workflow.test.ts
+          node --test tests/tooling/release-consumer-recovery.test.ts tests/tooling/release-consumer-archive.test.ts tests/tooling/release-consumer-integration.test.ts tests/tooling/windows-hover-public-identity.test.ts tests/tooling/release/release-public-acceptance.test.ts tests/tooling/release-jsr-workflow.test.ts
           node --test --test-name-pattern=hosted tests/tooling/release/release-operator.test.ts
       - if: github.event_name == 'pull_request'
         uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2

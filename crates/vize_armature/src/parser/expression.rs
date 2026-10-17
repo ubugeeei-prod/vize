@@ -41,17 +41,47 @@ const EXPR_SOURCE_TYPE: SourceType = SourceType::ts();
 
 impl<'a> Parser<'a> {
     pub(super) fn retain_value_ast(
-        &self,
+        &mut self,
         node: &mut SimpleExpressionNode<'a>,
         start: usize,
         end: usize,
         directive: &str,
+        named_handler: bool,
     ) {
+        if self.template_syntax_facts.is_some() && !self.in_v_pre {
+            if named_handler {
+                // Preserve the existing complete expression, its coordinate
+                // system and consumers. Only a failed expression selects the
+                // distinct statement-body owner; a callback or object value
+                // must not become a different grammar's failed statement.
+                self.retain_expression_ast(node, start, end);
+                if node.js_ast.and_then(RetainedJsAst::as_expression).is_some() {
+                    self.record_handler_expression_syntax(node);
+                } else {
+                    self.retain_special_template_syntax(
+                        node.content,
+                        node.loc.span,
+                        super::TemplateSyntaxRole::Handler,
+                    );
+                }
+                return;
+            }
+            if directive == "for"
+                && self.retain_special_template_syntax(
+                    node.content,
+                    node.loc.span,
+                    super::TemplateSyntaxRole::For,
+                )
+            {
+                return;
+            }
+        }
         if directive == "slot" {
             self.retain_slot_parameters_ast(node, start, end);
         } else {
             self.retain_expression_ast(node, start, end);
         }
+        self.record_expression_syntax(node, true, false, directive == "slot");
     }
 
     /// Attach the parse-once retained AST to a freshly built non-static

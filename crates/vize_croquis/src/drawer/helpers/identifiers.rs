@@ -11,8 +11,85 @@ mod comments;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod token_tests;
+
+/// An identifier token in its producer-owned AST coordinate system.
+///
+/// `name` is cooked JavaScript; `span` includes the entire authored token,
+/// including escapes. Consumers must use the producer's coordinate witness
+/// when mapping this span back into a template.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RetainedIdentifierRef {
+    pub name: CompactString,
+    pub span: oxc_span::Span,
+}
+
+/// Bindings declared by parameters and value references escaping those bindings.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RetainedParameterRefs {
+    pub bindings: Vec<RetainedIdentifierRef>,
+    pub references: Vec<RetainedIdentifierRef>,
+}
+
+/// Read only declarations from an actual retained binding pattern.
+///
+/// Names are cooked and spans retain the complete original AST tokens. No
+/// source is parsed; computed keys and default initializers are not read.
+/// A shared depth-64/node-4096 collector budget refuses the complete result
+/// rather than exposing partial declarations. This does not prove that a
+/// declaration belongs to script setup; callers must retain that owner.
+pub fn retained_binding_declarations(
+    pattern: &oxc_ast::ast::BindingPattern<'_>,
+) -> Option<Vec<RetainedIdentifierRef>> {
+    ast::walk::retained::binding_declarations(pattern)
+}
+
+/// Read complete value references from the expression's own retained AST.
+///
+/// This demand-only path never parses source or falls back. Unsupported syntax,
+/// eval, or a shared depth-64/node-4096 budget refusal discards every partial
+/// fact. Type-only names are excluded. The ordinary compiler walk is unchanged.
+pub fn retained_expression_refs(
+    expression: &JsExpression<'_>,
+) -> Option<Vec<RetainedIdentifierRef>> {
+    ast::walk::retained::expression_refs(expression.ast)
+}
+
+/// Read bindings and escaping value references from actual retained parameters.
+/// The same bounded, all-or-nothing contract as [`retained_expression_refs`]
+/// applies; no synthetic function or parameter wrapper is parsed here.
+pub fn retained_parameter_refs(
+    parameters: &oxc_ast::ast::FormalParameters<'_>,
+) -> Option<RetainedParameterRefs> {
+    ast::walk::retained::parameter_refs(parameters)
+}
+
+/// Read escaping value references from an actual retained handler body.
+///
+/// Blocks, if branches, variable declarations, expressions, return and throw
+/// are supported. Other statements (including loops, try, switch, function and
+/// class declarations) explicitly refuse the entire result.
+pub fn retained_handler_refs(
+    body: &oxc_ast::ast::FunctionBody<'_>,
+) -> Option<Vec<RetainedIdentifierRef>> {
+    ast::walk::retained::handler_refs(body)
+}
 
 pub use comments::strip_js_comments;
+
+/// The historical name-only walk, authorized only for an unchanged original
+/// analysis view. Demand-only semantic reuse must not reparse or populate the
+/// global expression/occurrence caches with a different coordinate witness.
+pub(in crate::drawer) fn legacy_retained_identifier_names(
+    expression: &JsExpression<'_>,
+) -> Option<Vec<CompactString>> {
+    matches!(
+        strip_js_comments(expression.raw),
+        std::borrow::Cow::Borrowed(_)
+    )
+    .then(|| ast::extract_identifiers_retained_ast(expression.ast))
+}
 
 /// Demand-only reads, or `None` when syntax or eval prevents a sound conclusion.
 #[doc(hidden)]

@@ -21,7 +21,10 @@ pub use module_exports::{
     analyze_sfc_descriptor_with_empty_module_exports, analyze_sfc_descriptor_with_module_exports,
     descriptor_module_sources_are_known,
 };
-pub use occurrences::analyze_sfc_descriptor_with_occurrences;
+pub use occurrences::{
+    analyze_sfc_descriptor_with_occurrences,
+    analyze_sfc_descriptor_with_occurrences_and_template_reuse,
+};
 pub use resolved::{
     merge_resolved_props_into_croquis, merge_resolved_props_into_croquis_with_sources,
 };
@@ -146,6 +149,34 @@ pub fn analyze_sfc_descriptor(
 ) -> Croquis {
     analyze_sfc_descriptor_with_context_impl(descriptor, template_ast, options, false, false, false)
         .croquis
+}
+
+/// Reuse separately authenticated original template roles for a demanded lint
+/// consumer. Ordinary descriptor callers retain their existing allocation path.
+#[doc(hidden)]
+pub fn analyze_sfc_descriptor_with_template_reuse(
+    descriptor: &SfcDescriptor<'_>,
+    template_ast: Option<&RootNode<'_>>,
+    options: SfcCroquisOptions,
+    reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
+) -> Croquis {
+    analyze_sfc_descriptor_resolved_impl::<false>(
+        descriptor,
+        template_ast,
+        options,
+        DescriptorAnalysisMode {
+            options_api: false,
+            legacy_vue2: false,
+            include_script_content: false,
+        },
+        None,
+        None,
+        DescriptorObservation {
+            template_semantic_reuse: reuse,
+            ..Default::default()
+        },
+    )
+    .croquis
 }
 
 /// Analyze an SFC descriptor and return matching script content/offset metadata.

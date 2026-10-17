@@ -16,6 +16,19 @@ const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 await test("legacy instance API packets preserve every pinned original source and complete reference finding", () => {
   const authored = json("independent.json");
   const original = compressed("originals/independent.json.gz");
+  const boundaries = json("template-boundaries.json");
+  assert.equal(boundaries.records.length, 42);
+  assert.deepEqual(boundaries.provider, authored.provider);
+  assert.equal(
+    boundaries.original70Sha256,
+    hash(fs.readFileSync(path.join(fixture, "independent.json"))),
+  );
+  assert.deepEqual(
+    ["qualified", "product-accuracy", "refusal"].map(
+      (kind) => boundaries.records.filter((row) => row.qualification === kind).length,
+    ),
+    [27, 5, 10],
+  );
   const sources = compressed("originals/sources.json.gz");
   const manifest = json("originals/manifest.json");
   const requireProvider = createRequire(
@@ -191,7 +204,7 @@ await test("legacy instance API packets preserve every pinned original source an
     classified[row.classification] = (classified[row.classification] ?? 0) + 1;
   }
   assert.deepEqual(classified, provenance.audit.counts);
-  for (const row of [...authored.records, ...original.records]) {
+  for (const row of [...authored.records, ...original.records, ...boundaries.records]) {
     const source =
       row.source ??
       sources.find((item) => item.project === row.project && item.path === row.path)?.source;
@@ -203,6 +216,77 @@ await test("legacy instance API packets preserve every pinned original source an
       row.id ?? `${row.project}/${row.path}`,
     );
     assert.ok(row.messages.every((message) => message.fatal !== true));
+  }
+});
+
+await test("original Vue compiler scope and TS erasure preserve explicit reference blind spots", () => {
+  const boundaries = json("template-boundaries.json");
+  const requireVue = createRequire(
+    process.env.VIZE_LEGACY_API_VUE_MANIFEST ??
+      path.join(root, "tools/benchmarks/scripts/package.json"),
+  );
+  const compiler = requireVue("@vue/compiler-dom");
+  const typescript = requireVue("typescript");
+  assert.equal(requireVue("vue/package.json").version, boundaries.compilerProvider.vue);
+  assert.equal(
+    requireVue("@vue/compiler-dom/package.json").version,
+    boundaries.compilerProvider.compiler,
+  );
+  assert.equal(typescript.version, boundaries.compilerProvider.typescript);
+  for (const source of boundaries.compilerProvider.sources) {
+    const directory = path.dirname(requireVue.resolve(`${source.packageName}/package.json`));
+    assert.equal(hash(fs.readFileSync(path.join(directory, source.path))), source.sha256);
+  }
+  assert.equal(boundaries.syntaxProof.length, 5);
+  for (const expected of boundaries.syntaxProof) {
+    const original = boundaries.records.find((record) => record.id === expected.id);
+    assert.equal(original.qualification, "product-accuracy");
+    assert.ok(original.nativePolicyReason.length > 80);
+    assert.equal(expected.sourceSha256, hash(original.source));
+    const diagnostics = [];
+    const compiled = compiler.compile(original.source.slice(10, -11), {
+      mode: "module",
+      prefixIdentifiers: true,
+      expressionPlugins: ["typescript"],
+      onError(error) {
+        diagnostics.push({
+          name: error.name,
+          message: error.message,
+          code: error.code,
+          loc: error.loc,
+        });
+      },
+    });
+    const erased = typescript.transpileModule(compiled.code, {
+      compilerOptions: {
+        target: typescript.ScriptTarget.ES2022,
+        module: typescript.ModuleKind.ESNext,
+      },
+      reportDiagnostics: true,
+    });
+    assert.deepEqual(
+      {
+        id: original.id,
+        sourceSha256: hash(original.source),
+        code: compiled.code,
+        preamble: compiled.preamble ?? "",
+        map: compiled.map ?? null,
+        diagnostics,
+        typescriptOutput: erased.outputText,
+        typescriptDiagnostics: (erased.diagnostics ?? []).map((diagnostic) => ({
+          code: diagnostic.code,
+          category: diagnostic.category,
+          start: diagnostic.start ?? null,
+          length: diagnostic.length ?? null,
+          messageText: diagnostic.messageText,
+        })),
+      },
+      expected,
+      original.id,
+    );
+    assert.match(erased.outputText, /_ctx\.\$listeners/);
+    assert.deepEqual(expected.diagnostics, []);
+    assert.deepEqual(expected.typescriptDiagnostics, []);
   }
 });
 

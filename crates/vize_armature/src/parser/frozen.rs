@@ -39,7 +39,8 @@ impl<'a> Parser<'a> {
         FrozenElements<'a>,
     ) {
         self.frozen_elements = Some(Vec::new_in(&self.allocator));
-        self.parse_inner()
+        let (root, errors, frozen, _) = self.parse_inner();
+        (root, errors, frozen)
     }
 
     pub(in crate::parser) fn record_frozen_element(&mut self, span: Span, frozen: bool) {
@@ -54,15 +55,20 @@ impl<'a> Parser<'a> {
         RootNode<'a>,
         std::vec::Vec<CompilerError>,
         FrozenElements<'a>,
+        Option<super::TemplateSyntaxFacts<'a>>,
     ) {
         let source = self.source;
+        let syntax = self
+            .template_syntax_facts
+            .take()
+            .map(|capture| super::TemplateSyntaxFacts::new(source, capture));
         let spans = self
             .frozen_elements
             .take()
             .map(Vec::into_arena_slice)
             .unwrap_or(&[]);
         let (root, errors) = self.into_result();
-        (root, errors, FrozenElements::new(source, spans))
+        (root, errors, FrozenElements::new(source, spans), syntax)
     }
 }
 

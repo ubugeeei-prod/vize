@@ -65,7 +65,9 @@ impl<'a> TemplateRuleEnv<'a> {
     }
 }
 
-pub(crate) use rule_sets::{TemplateRuleEnv, analyze_descriptor_for_lint};
+pub(crate) use rule_sets::{
+    TemplateRuleEnv, analyze_descriptor_for_lint, analyze_descriptor_for_lint_with_reuse,
+};
 
 impl Linter {
     fn template_rule_count_for_source(

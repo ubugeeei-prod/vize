@@ -8,7 +8,7 @@ use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::super::slot_names::slot_argument_name;
 use super::bounds::element_subtree_end;
-use super::scopes::ElementDirectiveState;
+use super::scopes::{ElementDirectiveState, ForScopeInfo};
 use super::v_for_scope::{v_for_alias_declaration_offsets, v_for_source_offset};
 
 impl Drawer {
@@ -50,13 +50,18 @@ impl Drawer {
                             let source_offset =
                                 v_for_source_offset(exp, &aliases, &self.template_source);
                             let end = *subtree_end.get_or_insert_with(|| element_subtree_end(el));
-                            state.for_scope = Some((
+                            let source_identifiers =
+                                self.template_semantic_reuse.as_ref().and_then(|reuse| {
+                                    reuse.for_collection_names(exp, aliases.source.as_str())
+                                });
+                            state.for_scope = Some(ForScopeInfo {
                                 aliases,
                                 alias_offsets,
                                 source_offset,
-                                el.loc.span.start,
+                                start: el.loc.span.start,
                                 end,
-                            ));
+                                source_identifiers,
+                            });
                         }
                     }
                 } else if dir.name == "bind" {

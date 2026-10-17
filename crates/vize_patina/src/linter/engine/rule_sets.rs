@@ -112,6 +112,16 @@ pub(crate) fn analyze_descriptor_for_lint(
     unused: bool,
     derived: bool,
 ) -> Croquis {
+    analyze_descriptor_for_lint_with_reuse(descriptor, template_ast, unused, derived, None)
+}
+
+pub(crate) fn analyze_descriptor_for_lint_with_reuse(
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    template_ast: Option<&RootNode<'_>>,
+    unused: bool,
+    derived: bool,
+    reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
+) -> Croquis {
     let options = SfcCroquisOptions::lint_demand();
     let options = if unused {
         options.with_unused_bindings()
@@ -123,7 +133,16 @@ pub(crate) fn analyze_descriptor_for_lint(
     } else {
         options
     };
-    analyze_sfc_descriptor(descriptor, template_ast, options)
+    if reuse.is_some() {
+        vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_template_reuse(
+            descriptor,
+            template_ast,
+            options,
+            reuse,
+        )
+    } else {
+        analyze_sfc_descriptor(descriptor, template_ast, options)
+    }
 }
 
 /// Request positive authored reads within the existing single descriptor draw.
@@ -132,6 +151,7 @@ pub(super) fn analyze_descriptor_for_component_reads(
     template_ast: Option<&RootNode<'_>>,
     unused: bool,
     derived: bool,
+    reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> Croquis {
     if descriptor.script_setup.as_ref().is_none_or(|script| {
         script.src.is_some()
@@ -140,7 +160,13 @@ pub(super) fn analyze_descriptor_for_component_reads(
                 .as_deref()
                 .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
     }) {
-        return analyze_descriptor_for_lint(descriptor, template_ast, unused, derived);
+        return analyze_descriptor_for_lint_with_reuse(
+            descriptor,
+            template_ast,
+            unused,
+            derived,
+            reuse,
+        );
     }
     let options = SfcCroquisOptions::lint_demand();
     let options = if unused {
@@ -153,11 +179,13 @@ pub(super) fn analyze_descriptor_for_component_reads(
     } else {
         options
     };
-    let (mut analysis, packet) = vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_occurrences(
-        descriptor,
-        template_ast,
-        options,
-    );
+    let (mut analysis, packet) =
+        vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_occurrences_and_template_reuse(
+            descriptor,
+            template_ast,
+            options,
+            reuse,
+        );
     let component_reads = analysis.croquis.authored_component_reads_are_qualified();
     // Preserve the complete editor refusal separately from independently
     // source-witnessed positive reads admitted by the original SFC wrapper.

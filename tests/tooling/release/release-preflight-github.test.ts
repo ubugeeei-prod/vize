@@ -90,8 +90,9 @@ test("GitHub API pagination keeps exact query filters and reads every page", asy
     collection: "workflow_runs",
     query: { head_sha: "a".repeat(40) },
     fetchImpl: async (url) => {
-      urls.push(String(url));
-      const page = new URL(String(url)).searchParams.get("page");
+      const requested = new URL(url instanceof Request ? url.url : url);
+      urls.push(requested.href);
+      const page = requested.searchParams.get("page");
       const workflowRuns =
         page === "1" ? Array.from({ length: 100 }, (_, id) => ({ id })) : [{ id: 100 }];
       return new Response(JSON.stringify({ workflow_runs: workflowRuns }), { status: 200 });

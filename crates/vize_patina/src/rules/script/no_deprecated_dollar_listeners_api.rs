@@ -12,8 +12,8 @@
 //!
 //! Built-in Vue 3 presets enable this migration rule; Vue 2 presets leave it off.
 //!
-//! Parent #9222 diagnoses script accesses only. The template lines below show
-//! migration examples; template diagnostics remain unqualified in Draft #9251.
+//! Template reads use original syntax, authored ranges and proven lexical scopes.
+//! Proven setup values are separate; refusal proves nothing. Script coverage is unchanged.
 //!
 //! ## Examples
 //!
@@ -42,7 +42,7 @@
 //! <template><Child v-bind="$attrs" /></template>
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, ScriptTemplateRule};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{IdentifierReference, Program, StaticMemberExpression};
 use oxc_ast_visit::{
@@ -75,6 +75,10 @@ impl ScriptRule for NoDeprecatedDollarListenersApi {
     #[inline]
     fn uses_ast(&self) -> bool {
         true
+    }
+
+    fn template_check(&self) -> Option<&dyn ScriptTemplateRule> {
+        Some(self)
     }
 
     #[inline]
@@ -122,6 +126,30 @@ impl NoDeprecatedDollarListenersApiVisitor<'_> {
         let end = self.offset as u32 + span.end;
         self.result
             .add_diagnostic(LintDiagnostic::error(META.name, MESSAGE, start, end).with_help(HELP));
+    }
+}
+
+impl ScriptTemplateRule for NoDeprecatedDollarListenersApi {
+    fn check_template(
+        &self,
+        references: &vize_croquis::drawer::TemplateReferences,
+        component_bindings: &super::TemplateComponentBindings,
+        offset: u32,
+        result: &mut ScriptLintResult,
+    ) {
+        for reference in references.references() {
+            if reference.name != DOLLAR_LISTENERS
+                || reference.owner != vize_croquis::drawer::TemplateReferenceOwner::ComponentContext
+                || !component_bindings.can_report_component_reference(DOLLAR_LISTENERS)
+            {
+                continue;
+            }
+            let span = reference.span;
+            result.add_diagnostic(
+                LintDiagnostic::error(META.name, MESSAGE, offset + span.start, offset + span.end)
+                    .with_help(HELP),
+            );
+        }
     }
 }
 

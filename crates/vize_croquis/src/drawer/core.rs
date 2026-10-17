@@ -51,6 +51,7 @@ pub struct Drawer {
     pub(crate) ident_cache: FxHashMap<CompactString, Vec<CompactString>>,
     pub(super) occurrence_capture: Option<Box<super::occurrences::OccurrenceCapture>>,
     pub(super) module_export_capture: Option<crate::script_parser::ModuleExportCapture>,
+    pub(super) template_semantic_reuse: Option<Box<super::TemplateSemanticReuse>>,
 }
 
 impl Drawer {
@@ -83,6 +84,7 @@ impl Drawer {
             ident_cache: FxHashMap::default(),
             occurrence_capture: None,
             module_export_capture: None,
+            template_semantic_reuse: None,
         }
     }
 
@@ -109,6 +111,7 @@ impl Drawer {
             ident_cache: FxHashMap::default(),
             occurrence_capture: None,
             module_export_capture: None,
+            template_semantic_reuse: None,
         };
         match packet {
             Some(packet) => drawer.with_binding_occurrence_packet(packet),

@@ -324,6 +324,108 @@ fn original_slot_producer_retains_roles_diagnostics_and_exact_attempt_counts() {
     unsupported_tail_retains_a_refusal_after_one_attempt();
     guards_preserve_refused_slot_role_without_a_parser_attempt();
     roles_and_byte_identical_clones_remain_explicit();
+    demanded_syntax_reuses_original_goals_without_changing_default_counters();
+    named_handler_expressions_keep_the_original_goals_and_counters();
     costs::check();
     global_profiler().clear();
+}
+
+fn demanded_syntax_reuses_original_goals_without_changing_default_counters() {
+    use vize_armature::parser::{Parser, TemplateSyntax};
+
+    let arena = Allocator::new();
+    let source = "<Panel :value=\"$listeners\" v-slot=\"{ value = fallback }\"/>";
+    let ordinary = parse_counted(&arena, source, 2);
+    let profiler = global_profiler();
+    profiler.clear();
+    profiler.enable();
+    let (root, errors, facts) = Parser::new(&arena, source).parse_with_template_syntax_facts();
+    profiler.disable();
+    assert!(errors.is_empty(), "{errors:?}");
+    assert_eq!(format!("{ordinary:?}"), format!("{root:?}"));
+    let counters = profiler.counter_snapshot();
+    let parsed = counters
+        .iter()
+        .find(|(name, _)| *name == "davinci.expr.parses")
+        .expect("both original goals");
+    assert_eq!(parsed.1.total, 2);
+    assert_eq!(parsed.1.samples, 2);
+    profiler.enable();
+    for _ in 0..8 {
+        for record in facts.records_for(root.source).expect("complete source") {
+            assert!(
+                facts
+                    .syntax_for(root.source, record.span(), record.cooked())
+                    .is_some()
+            );
+            match record.syntax() {
+                TemplateSyntax::Expression(Some(js)) => {
+                    assert!(record.authored_span(js.ast.span()).is_some());
+                }
+                TemplateSyntax::Slot(Some(js)) => {
+                    assert!(js.as_slot_parameters().expect("slot role").is_ok());
+                }
+                _ => panic!("original admitted goals"),
+            }
+        }
+    }
+    profiler.disable();
+    assert_eq!(
+        profiler
+            .counter_snapshot()
+            .iter()
+            .map(|(name, metrics)| (*name, metrics.samples, metrics.total))
+            .collect::<Vec<_>>(),
+        counters
+            .iter()
+            .map(|(name, metrics)| (*name, metrics.samples, metrics.total))
+            .collect::<Vec<_>>(),
+        "reading retained syntax cannot run a parser",
+    );
+    let source = "<p v-for=\"item in items\" @click=\"const local = 1; consume(local)\"></p>";
+    parse_counted(&arena, source, 2);
+    profiler.clear();
+    profiler.enable();
+    let (_, errors, facts) = Parser::new(&arena, source).parse_with_template_syntax_facts();
+    profiler.disable();
+    assert!(errors.is_empty());
+    assert_eq!(facts.records_for(source).expect("native goals").len(), 2);
+    let counters = profiler.counter_snapshot();
+    let original = counters
+        .iter()
+        .find(|(name, _)| *name == "davinci.expr.parses")
+        .expect("one original failed statement-expression trial");
+    assert_eq!(original.1.samples, 1);
+    assert_eq!(original.1.total, 1);
+    // This is the producer counter only: native owner goals and existing
+    // downstream Croquis parses require their separate full-lint accounting.
+}
+
+fn named_handler_expressions_keep_the_original_goals_and_counters() {
+    use vize_armature::parser::{Parser, TemplateSyntax};
+
+    let arena = Allocator::new();
+    let source = "<p @a=\"function(event) { use($listeners) }\" @b=\"{ ...$listeners }\" @c=\"() => use($listeners)\"></p>";
+    let ordinary = parse_counted(&arena, source, 3);
+    let profiler = global_profiler();
+    profiler.clear();
+    profiler.enable();
+    let (root, errors, facts) = Parser::new(&arena, source).parse_with_template_syntax_facts();
+    profiler.disable();
+    assert!(errors.is_empty());
+    assert_eq!(format!("{ordinary:?}"), format!("{root:?}"));
+    let counters = profiler.counter_snapshot();
+    let original = counters
+        .iter()
+        .find(|(name, _)| *name == "davinci.expr.parses")
+        .expect("three unchanged original goals");
+    assert_eq!(original.1.samples, 3);
+    assert_eq!(original.1.total, 3);
+    assert!(
+        facts
+            .records_for(source)
+            .expect("source")
+            .iter()
+            .all(|record| matches!(record.syntax(), TemplateSyntax::HandlerExpression(_)))
+    );
 }

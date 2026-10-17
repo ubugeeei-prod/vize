@@ -9,7 +9,15 @@ import { repoRoot } from "../_helpers/moonbit.ts";
 import { createReleasePreflightVerifyOnlyFixture } from "../support/release-preflight-runner-fixture.ts";
 
 test("actual Rust verify-only refuses incomplete full JS qualification", () => {
-  for (const jobName of ["test-js-packages", "build-js-packages", "full-js-report"]) {
+  for (const jobName of [
+    "test-scripts",
+    "test-js-packages",
+    "build-js-packages",
+    "full-js-report",
+    "Full Rust workspace and doctests",
+    "clippy-and-test",
+    "full-rust-report",
+  ]) {
     for (const variant of [
       "missing",
       "duplicate",
@@ -48,9 +56,9 @@ test("actual Rust verify-only refuses incomplete full JS qualification", () => {
           },
         );
         assert.ifError(result.error);
-        assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-        assert.match(result.stdout, /Release preflight passed/);
-        assert.doesNotMatch(result.stderr, new RegExp(jobName));
+        assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
+        assert.doesNotMatch(result.stdout, /Release preflight passed/);
+        assert.match(result.stderr, new RegExp(jobName));
       } finally {
         fs.rmSync(tempDir, { recursive: true, force: true });
       }

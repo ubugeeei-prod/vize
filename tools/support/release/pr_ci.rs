@@ -1,9 +1,13 @@
-use super::{pr_contract, pr_github as github};
+use super::{
+    pr_budget::{self, Budget},
+    pr_contract, pr_github as github,
+};
 use std::{
     env,
     fs::OpenOptions,
     io::Write,
     path::Path,
+    process::{Command, Stdio},
     thread::sleep,
     time::{Duration, Instant},
 };
@@ -117,4 +121,35 @@ pub fn wait_for_promotion_pinned(
     root: &Path,
 ) -> Result<(), String> {
     super::pr_pin::wait_for_promotion(number, head, tag, root)
+}
+
+/// Complete source CI before starting the separately bounded publication workflow.
+pub(super) fn qualify_check(
+    repository: &str,
+    branch: &str,
+    head: &str,
+    cut: &str,
+    budget: Option<&Budget>,
+    root: &Path,
+) -> Result<(), String> {
+    pr_budget::check(budget)?;
+    let mut qualification = Command::new("node");
+    qualification
+        .args([
+            "tools/support/release/qualify_check/main.ts",
+            repository,
+            branch,
+            head,
+            cut,
+        ])
+        .current_dir(root)
+        .stdin(Stdio::null());
+    pr_budget::child_command(&mut qualification, budget)?;
+    let status = qualification
+        .status()
+        .map_err(|error| format!("Could not start exact-source Check qualification: {error}"))?;
+    if !status.success() {
+        return Err("Exact-source full Check qualification failed; no Release was dispatched. Preserve the source and its Check evidence.".into());
+    }
+    pr_budget::check(budget)
 }

@@ -1,0 +1,392 @@
+{
+  "schema": 1,
+  "status": "authored-static-unexecuted",
+  "contract": "Whole native expectations for primary20 declaration-form controls;10 actual setup value forms suppress bare template reads only. Historical script references remain, including function-local/parameter uses and setup shorthand return plus SCRIPT this member. The template-this frontier is wholeclean OBSERVATION ONLY, with no qualified acceptance credit and no new template-this diagnostic. All20 scopedSlots controls are research only. Actual Rust/CLI Actions execution is required; nothing was captured from local Rust execution.",
+  "inputs": [
+    {
+      "path": "template-component-declaration-bindings.json",
+      "bytes": 426707,
+      "sha256": "20773dbd9198c737693fc532a9eec4ab3009c5c155bee6bcb31d851df91232fe"
+    }
+  ],
+  "projection": {
+    "contract": "Explicit source-ID projection of all40 complete provider/compiler observations. All20 scopedSlots rows remain unrepaired research. The primary20 include one template-this observation-only frontier: its native zero earns NO qualified acceptance credit. No actual diagnostics are filtered or normalized.",
+    "primaryIds": [
+      "listeners-setup-let",
+      "listeners-setup-var",
+      "listeners-setup-object-pattern",
+      "listeners-setup-array-pattern",
+      "listeners-setup-object-rest",
+      "listeners-setup-array-rest",
+      "listeners-setup-object-default",
+      "listeners-setup-array-default",
+      "listeners-setup-function",
+      "listeners-setup-class",
+      "listeners-block-local",
+      "listeners-function-local",
+      "listeners-function-parameter",
+      "listeners-declare-const",
+      "listeners-declare-let",
+      "listeners-type-alias",
+      "listeners-interface",
+      "listeners-type-import",
+      "listeners-script-this-contrast",
+      "listeners-template-this-frontier"
+    ],
+    "researchOnlyIds": [
+      "scopedSlots-setup-let",
+      "scopedSlots-setup-var",
+      "scopedSlots-setup-object-pattern",
+      "scopedSlots-setup-array-pattern",
+      "scopedSlots-setup-object-rest",
+      "scopedSlots-setup-array-rest",
+      "scopedSlots-setup-object-default",
+      "scopedSlots-setup-array-default",
+      "scopedSlots-setup-function",
+      "scopedSlots-setup-class",
+      "scopedSlots-block-local",
+      "scopedSlots-function-local",
+      "scopedSlots-function-parameter",
+      "scopedSlots-declare-const",
+      "scopedSlots-declare-let",
+      "scopedSlots-type-alias",
+      "scopedSlots-interface",
+      "scopedSlots-type-import",
+      "scopedSlots-script-this-contrast",
+      "scopedSlots-template-this-frontier"
+    ],
+    "qualifiedAcceptanceIds": [
+      "listeners-setup-let",
+      "listeners-setup-var",
+      "listeners-setup-object-pattern",
+      "listeners-setup-array-pattern",
+      "listeners-setup-object-rest",
+      "listeners-setup-array-rest",
+      "listeners-setup-object-default",
+      "listeners-setup-array-default",
+      "listeners-setup-function",
+      "listeners-setup-class",
+      "listeners-block-local",
+      "listeners-function-local",
+      "listeners-function-parameter",
+      "listeners-declare-const",
+      "listeners-declare-let",
+      "listeners-type-alias",
+      "listeners-interface",
+      "listeners-type-import",
+      "listeners-script-this-contrast"
+    ],
+    "observationOnlyIds": ["listeners-template-this-frontier"]
+  },
+  "records": [
+    {
+      "id": "listeners-setup-let",
+      "sourceSha256": "40572a6f55774f12ad2d7fde4662124957e0950a42d078b9e695bb11106537e6",
+      "ownerExpectation": "setup-owned",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": [],
+      "messages": []
+    },
+    {
+      "id": "listeners-setup-var",
+      "sourceSha256": "8314f5af4c22c702df069d7ad1bab6422c64b11a2108d9fea9d8c9438ae3d897",
+      "ownerExpectation": "setup-owned",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": [],
+      "messages": []
+    },
+    {
+      "id": "listeners-setup-object-pattern",
+      "sourceSha256": "f25a4ebbca8861b8f0b243f4650d9c6705ca17143adaacf22f2c4b8043f4588c",
+      "ownerExpectation": "setup-owned",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": [],
+      "messages": []
+    },
+    {
+      "id": "listeners-setup-array-pattern",
+      "sourceSha256": "918f3ff89da65678c44fc3fe9e128292239be42e002fa6f7111b904a371e5861",
+      "ownerExpectation": "setup-owned",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": [],
+      "messages": []
+    },
+    {
+      "id": "listeners-setup-object-rest",
+      "sourceSha256": "1774adadaa88b1f215d8040feb362f92c7d56ac87d5edc1ecd474d3d09358bd3",
+      "ownerExpectation": "setup-owned",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": [],
+      "messages": []
+    },
+    {
+      "id": "listeners-setup-array-rest",
+      "sourceSha256": "ef8a37a5c6ebc2d3932bac1324be30dd49f54102c6e426c3b0ef99e85510e9cc",
+      "ownerExpectation": "setup-owned",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": [],
+      "messages": []
+    },
+    {
+      "id": "listeners-setup-object-default",
+      "sourceSha256": "71066ce31778a635dad195e6d307046dd97e9eac37a3b5f21bb2fb55a4cbaf4a",
+      "ownerExpectation": "setup-owned",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": [],
+      "messages": []
+    },
+    {
+      "id": "listeners-setup-array-default",
+      "sourceSha256": "43768f3f872e0200d1f1644ec2a1ce5776a81ca0b94a218148ae23ce4313bc6f",
+      "ownerExpectation": "setup-owned",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": [],
+      "messages": []
+    },
+    {
+      "id": "listeners-setup-function",
+      "sourceSha256": "1fbf5579433d2723f95c5e9bc5161cfce66f8f3c440facdeecf1294cd540b14e",
+      "ownerExpectation": "setup-owned",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": [],
+      "messages": []
+    },
+    {
+      "id": "listeners-setup-class",
+      "sourceSha256": "f14548f5977f498932c9a3dcec9087a44776b687961876b0d2e78cbf2403221c",
+      "ownerExpectation": "setup-owned",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": [],
+      "messages": []
+    },
+    {
+      "id": "listeners-block-local",
+      "sourceSha256": "0a929a69f47553a4cea65f65425bd2ed09e19c4e7496544e82bf4bbe39ab6383",
+      "ownerExpectation": "component-context",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": ["template-component-context"],
+      "messages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 81,
+          "end": 91,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "listeners-function-local",
+      "sourceSha256": "914a36edc180fd20e751f2e9099056dd53f4fe4134214ba023576c8f335760e6",
+      "ownerExpectation": "component-context",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": ["historical-script-reference", "template-component-context"],
+      "messages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 73,
+          "end": 83,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 117,
+          "end": 127,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "listeners-function-parameter",
+      "sourceSha256": "db0c085659a3e354e9776d328d94f5c86500e9990be08569d772389d6c72566c",
+      "ownerExpectation": "component-context",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": ["historical-script-reference", "template-component-context"],
+      "messages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 69,
+          "end": 79,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 113,
+          "end": 123,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "listeners-declare-const",
+      "sourceSha256": "fa5d313127a0d54b6fc7f50be4e271634eb12acde3118184aee70b7ba778b3f4",
+      "ownerExpectation": "type-only-erasure",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": ["template-component-context"],
+      "messages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 105,
+          "end": 115,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "listeners-declare-let",
+      "sourceSha256": "13b4118f6190a0a6335b28e283ddf24178f017bf3912f98f44e11d9935937844",
+      "ownerExpectation": "type-only-erasure",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": ["template-component-context"],
+      "messages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 103,
+          "end": 113,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "listeners-type-alias",
+      "sourceSha256": "3b11cb4d8eaee1a9b738b3b9bc25fd86178e76252cf17006b07ab496f673268c",
+      "ownerExpectation": "type-only-erasure",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": ["template-component-context"],
+      "messages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 97,
+          "end": 107,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "listeners-interface",
+      "sourceSha256": "36a001323d3bf6b5d14237da4de8cad608c048ba68a989cbdecd91c23a9365e3",
+      "ownerExpectation": "type-only-erasure",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": ["template-component-context"],
+      "messages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 95,
+          "end": 105,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "listeners-type-import",
+      "sourceSha256": "716687e1ded4f96d2973a51f406ba4b411ab8c7cb1bdd829fb0df918172559fa",
+      "ownerExpectation": "type-only-erasure",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": ["template-component-context"],
+      "messages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 109,
+          "end": 119,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "listeners-script-this-contrast",
+      "sourceSha256": "b0c7aebd67cf07f66d19553d965454d476f496bca088f05d9c145959f6be76bb",
+      "ownerExpectation": "setup-owned-template-script-member-unchanged",
+      "qualification": "qualified-primary-listeners",
+      "qualifiedAcceptance": true,
+      "messageOrigins": ["historical-script-reference", "historical-script-reference"],
+      "messages": [
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 67,
+          "end": 77,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "ruleId": "script/no-deprecated-dollar-listeners-api",
+          "start": 100,
+          "end": 110,
+          "severity": "error",
+          "message": "$listeners was removed in Vue 3 and merged into $attrs",
+          "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API).",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    },
+    {
+      "id": "listeners-template-this-frontier",
+      "sourceSha256": "b4ebf15371ac9c50797f42bafbe17d152a097c19bca1a33df29dc958fadbc88a",
+      "ownerExpectation": "bare-setup-owned-template-this-unqualified",
+      "qualification": "observation-only-template-this-frontier",
+      "qualifiedAcceptance": false,
+      "messageOrigins": [],
+      "messages": []
+    }
+  ]
+}

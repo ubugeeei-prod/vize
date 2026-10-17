@@ -24,6 +24,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     descriptor: &SfcDescriptor<'a>,
     result: &mut LintResult,
     template_ast: Option<(&vize_relief::RootNode<'_>, u32)>,
+    template_syntax: Option<&vize_armature::parser::TemplateSyntaxFacts<'_>>,
 ) {
     let registered_scripts = registered_sfc::has_active(linter);
     if (linter.script_rules.is_empty() || !has_active_builtin_script_rules(linter))
@@ -31,10 +32,41 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     {
         return;
     }
+    let template_references = template_ast
+        .zip(template_syntax)
+        .filter(|((root, offset), _)| {
+            descriptor.template.as_ref().is_some_and(|template| {
+                *offset == template.loc.start as u32
+                    && core::ptr::eq(root.source, template.content.as_ref())
+            })
+        })
+        .map(|((root, offset), syntax)| {
+            (
+                vize_croquis::drawer::collect_template_references(root, syntax),
+                offset,
+            )
+        });
+    // Resolve actual configured capabilities once. Script-bearing SFCs defer
+    // emission until the existing clean script parses can positively witness a
+    // component binding; scriptless/early returns still run the capability.
+    let append_template =
+        |result: &mut LintResult, bindings: &crate::rules::script::TemplateComponentBindings| {
+            let Some((references, offset)) = &template_references else {
+                return;
+            };
+            for entry in active_builtin_script_rule_entries(linter, true) {
+                if let Some(rule) = resolved_rule(linter, entry).template_check() {
+                    let mut lint = ScriptLintResult::default();
+                    rule.check_template(references, bindings, *offset, &mut lint);
+                    merge_script_result(linter, result, lint);
+                }
+            }
+        };
     // A template-only SFC has no script callback to carry this native rule.
     // Reuse the validated template AST before script-only byte prefilters; no
     // empty program, extra parse or configured namesake is admitted here.
     if descriptor.script.is_none() && descriptor.script_setup.is_none() {
+        append_template(result, &Default::default());
         if template_context::descriptor_needs_template_ast(
             linter,
             descriptor,
@@ -54,6 +86,12 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         && has_only_active_ecosystem_script_rules(linter)
         && !descriptor_scripts_may_match_ecosystem_rule(descriptor)
     {
+        append_template(
+            result,
+            &crate::rules::script::TemplateComponentBindings::from_parsed_sfc(
+                descriptor, None, None,
+            ),
+        );
         return;
     }
     let vapor_component = linter.vapor_mode
@@ -173,6 +211,22 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                 .parse()
             )
         });
+    let needs_component_bindings = template_references.as_ref().is_some_and(|(references, _)| {
+        references.references().iter().any(|reference| {
+            reference.owner == vize_croquis::drawer::TemplateReferenceOwner::ComponentContext
+                && matches!(reference.name.as_str(), "$listeners" | "$scopedSlots")
+        })
+    });
+    let component_bindings = if needs_component_bindings {
+        crate::rules::script::TemplateComponentBindings::from_parsed_sfc(
+            descriptor,
+            script_setup_parsed.as_ref(),
+            script_parsed.as_ref(),
+        )
+    } else {
+        Default::default()
+    };
+    append_template(result, &component_bindings);
     let emits_module = match (inline_emits_blocks, script_source, script_parsed.as_ref()) {
         (false, _, _) => EmitsModuleScript::Unavailable,
         (true, None, _) => EmitsModuleScript::Absent,

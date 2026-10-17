@@ -31,12 +31,15 @@ export async function readCanonicalJobs(options: Options, run: Run) {
   const workers = checks
     .filter((check) => /(?:^| \/ )canonical observer \(([^)]+)\)$/.test(check.name ?? ""))
     .map((check) => {
-      assert(Number.isSafeInteger(check.id) && check.id > 0, "Invalid canonical check ID");
-      assert(!ids.has(check.id), "Duplicate canonical check ID");
-      ids.add(check.id);
+      const checkId = check.id;
+      if (typeof checkId !== "number" || !Number.isSafeInteger(checkId) || checkId <= 0) {
+        throw new Error("Invalid canonical check ID");
+      }
+      assert(!ids.has(checkId), "Duplicate canonical check ID");
+      ids.add(checkId);
       assert.equal(check.check_suite?.id, run.check_suite_id, "Foreign canonical check suite");
       assert.equal(check.head_sha, run.head_sha, "Foreign canonical check head");
-      const checkUrl = `${options.apiUrl}/repos/${options.repository}/check-runs/${check.id}`;
+      const checkUrl = `${options.apiUrl}/repos/${options.repository}/check-runs/${checkId}`;
       assert.equal(check.url, checkUrl, "Foreign canonical check URL");
       const details = new URL(check.details_url);
       const prefix = `/${options.repository}/actions/runs/${run.id}/job/`;
