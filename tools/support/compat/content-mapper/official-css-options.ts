@@ -43,7 +43,9 @@ const writeJson = (file: string, value: unknown) =>
 const cleanEnv = Object.fromEntries(
   Object.entries(process.env).filter(
     ([key]) =>
-      !/^(?:VIZE_|CORSA_|TSGO_)/u.test(key) && key !== "NODE_PATH" && key !== "NODE_OPTIONS",
+      !/^(?:VIZE_|CORSA_|TSGO_|NAPI_RS_)/u.test(key) &&
+      key !== "NODE_PATH" &&
+      key !== "NODE_OPTIONS",
   ),
 );
 
@@ -213,7 +215,7 @@ function install(directory: string, dependencies: Record<string, string>, eviden
   );
   return directory;
 }
-async function installedIdentity(directory: string, output: string) {
+export async function installedIdentity(directory: string, output: string) {
   const require = createRequire(path.join(directory, "package.json"));
   const records = ["typescript", "vue", "vize", "@vizejs/native"].map((name) => {
     const file = path.join(directory, "node_modules", name, "package.json");
@@ -231,6 +233,19 @@ async function installedIdentity(directory: string, output: string) {
   });
   assert.equal(records[0].version, fixture.typescript);
   assert.equal(records[1].version, fixture.vue);
+  const cliManifest = JSON.parse(
+    fs.readFileSync(path.join(directory, "node_modules/vize/package.json"), "utf8"),
+  );
+  const mapperExec = cliManifest.typescript.contentMapper.exec;
+  assert.deepEqual(mapperExec, ["node", "./bin/vize", "content-mapper"]);
+  const cli = fs.realpathSync.native(path.join(directory, "node_modules/vize", mapperExec[1]));
+  const nativeEntry = fs.realpathSync.native(require.resolve("@vizejs/native"));
+  const cliNativeEntry = fs.realpathSync.native(createRequire(cli).resolve("@vizejs/native"));
+  assert.equal(
+    cliNativeEntry,
+    nativeEntry,
+    "official mapper CLI must resolve the candidate native wrapper",
+  );
   const typescript = path.dirname(require.resolve("typescript/package.json"));
   const getExePath = (await import(pathToFileURL(path.join(typescript, "lib/getExePath.js")).href))
     .default as () => string;
@@ -260,10 +275,35 @@ async function installedIdentity(directory: string, output: string) {
   const images = JSON.parse(probe.stdoutText) as string[];
   const nativeImages = images.filter((file) => path.basename(file).startsWith("vize-vitrine."));
   assert.equal(nativeImages.length, 1);
+  const nativeImage = fs.realpathSync.native(nativeImages[0]);
+  const target = /^vize-vitrine\.([a-z0-9-]+)\.node$/u.exec(path.basename(nativeImage));
+  assert.ok(target, "loaded image must identify its platform package");
+  const platformName = `@vizejs/native-${target[1]}`;
+  const nativeRequire = createRequire(cliNativeEntry);
+  const platformImage = fs.realpathSync.native(nativeRequire.resolve(platformName));
+  assert.equal(
+    platformImage,
+    nativeImage,
+    "CLI native wrapper must resolve the loaded platform image",
+  );
+  const platformManifest = nativeRequire.resolve(`${platformName}/package.json`);
+  const platform = JSON.parse(fs.readFileSync(platformManifest, "utf8"));
+  assert.equal(platform.name, platformName);
+  assert.equal(
+    platform.version,
+    records.find((record) => record.name === "@vizejs/native")!.version,
+  );
+  fs.copyFileSync(platformManifest, path.join(output, "manifests", "vize-platform.json"));
   const packet = {
     packages: records,
+    mapper: { exec: mapperExec, cli: identity(cli), nativeEntry: identity(cliNativeEntry) },
+    platform: {
+      name: platformName,
+      manifest: identity(platformManifest),
+      image: identity(platformImage),
+    },
     compiler: identity(compiler),
-    nativeImage: identity(nativeImages[0]),
+    nativeImage: identity(nativeImage),
     lock: identity(path.join(directory, "package-lock.json")),
     qualification:
       "Actual installed module resolution and loaded image; no OS child PID or loader instrumentation claim",

@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 
 import { parse } from "yaml";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import { installedIdentity } from "../../tools/support/compat/content-mapper/official-css-options.ts";
 
 const UPSTREAM_SHA = "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799";
 const CONTENT_MAPPER_PROTOCOL_COMMAND =
@@ -309,6 +313,19 @@ test("official TypeScript acceptance keeps the reported host and complete instal
     "github.event_name == 'workflow_dispatch' && inputs.official-css-options-only",
   );
   assert.equal(job["timeout-minutes"], 15);
+  const setup = job.steps.find((step) => step.name === "Setup pinned Node and Vite Plus")!;
+  assert.equal(setup.uses, "voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af");
+  assert.deepEqual(setup.with, {
+    version: "latest",
+    "node-version-file": "package.json",
+    cache: true,
+    "cache-save": false,
+    "run-install": false,
+  });
+  assert.equal(
+    job.steps.some((step) => step.uses === "./.github/actions/cache-vp-bootstrap"),
+    false,
+  );
   const admission = job.steps.find(
     (step) => step.name === "Authenticate source and recipe before any build",
   )!.run!;
@@ -346,6 +363,51 @@ test("official TypeScript acceptance keeps the reported host and complete instal
   assert.match(source, /"--ignore-scripts"/u);
   assert.match(source, /refuse overwriting previous campaign evidence/u);
   assert.doesNotMatch(source, /CORSA_PATH\s*=|VIZE_LSP_BIN\s*=|\|\| true/u);
+});
+
+test("official mapper admission refuses an alternate executable or a nested native wrapper before loading", async () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "official-mapper-resolution-"));
+  try {
+    for (const scenario of ["exec", "nested-native"]) {
+      const directory = path.join(temporary, scenario);
+      fs.mkdirSync(directory);
+      fs.writeFileSync(path.join(directory, "package.json"), "{}");
+      const manifests = {
+        typescript: { version: "7.1.0-dev.20261017.1" },
+        vue: { version: "3.5.20" },
+        vize: {
+          version: "0.458.0",
+          typescript: {
+            contentMapper: {
+              exec: ["node", scenario === "exec" ? "./other" : "./bin/vize", "content-mapper"],
+            },
+          },
+        },
+        "@vizejs/native": { version: "0.458.0" },
+      };
+      for (const [name, manifest] of Object.entries(manifests)) {
+        const packageRoot = path.join(directory, "node_modules", name);
+        fs.mkdirSync(packageRoot, { recursive: true });
+        fs.writeFileSync(path.join(packageRoot, "package.json"), JSON.stringify(manifest));
+        fs.writeFileSync(path.join(packageRoot, "index.js"), "");
+      }
+      const cliRoot = path.join(directory, "node_modules/vize");
+      fs.mkdirSync(path.join(cliRoot, "bin"));
+      fs.writeFileSync(path.join(cliRoot, "bin/vize"), "");
+      if (scenario === "nested-native") {
+        const nested = path.join(cliRoot, "node_modules/@vizejs/native");
+        fs.mkdirSync(nested, { recursive: true });
+        fs.writeFileSync(path.join(nested, "index.js"), "");
+      }
+      await assert.rejects(
+        installedIdentity(directory, path.join(directory, "evidence")),
+        scenario === "exec" ? /deep-equal/u : /CLI must resolve the candidate native wrapper/u,
+      );
+      assert.equal(fs.existsSync(path.join(directory, "evidence/native-load")), false);
+    }
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
 });
 
 test("official-host fixtures preserve every original reported input and referenced owner contrast", () => {

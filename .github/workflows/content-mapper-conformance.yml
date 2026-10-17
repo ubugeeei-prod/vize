@@ -375,12 +375,13 @@ jobs:
             tests/_fixtures/content-mapper/escaton-css-options.json \
             .github/workflows/content-mapper-conformance.yml \
             > "$RUNNER_TEMP/official-css-source/inputs.sha256"
-      - uses: ./.github/actions/cache-vp-bootstrap
       - name: Setup pinned Node and Vite Plus
-        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
+          version: latest
           node-version-file: "package.json"
-          cache: false
+          cache: true
+          cache-save: false
           run-install: false
       - name: Setup repository Rust toolchain
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
