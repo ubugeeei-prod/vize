@@ -121,7 +121,8 @@ jobs:
         if: matrix.client == 'neovim'
         run: |
           set -euo pipefail
-          export PATH="$(dirname "${VIZE_TEST_NVIM_PATH}"):$PATH"
+          PATH="$(dirname "${VIZE_TEST_NVIM_PATH}"):$PATH"
+          export PATH
           test "$(command -v nvim)" = "${VIZE_TEST_NVIM_PATH}"
           command -v nvim
           nvim --version | head -1

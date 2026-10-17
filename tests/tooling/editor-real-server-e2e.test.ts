@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
@@ -148,14 +149,40 @@ test("CI runs both headless editor specs", () => {
     "nvim --headless -u NONE --noplugin -l editors/nvim/test/vize_spec.lua && VIZE_TEST_ART_VUE_NATIVE_PARSER=1 nvim --headless -u NONE --noplugin -l editors/nvim/test/vize_spec.lua",
     "both complete Lua suites must propagate assertion failures to CI",
   );
-  const conformance = readRepoFile(".github", "workflows", "editor-conformance.yml");
-  const pinnedAt = conformance.indexOf("- name: Install pinned Neovim");
-  const headlessAt = conformance.indexOf("- name: Exercise both packaged Neovim headless suites");
-  assert.ok(pinnedAt >= 0 && headlessAt > pinnedAt, "headless suites consume the pinned editor");
-  assert.match(
-    conformance.slice(headlessAt),
-    /^- name: Exercise both packaged Neovim headless suites\n        if: matrix.client == 'neovim'\n        run: \|\n          set -euo pipefail\n          export PATH="\$\(dirname "\$\{VIZE_TEST_NVIM_PATH\}"\):\$PATH"\n          test "\$\(command -v nvim\)" = "\$\{VIZE_TEST_NVIM_PATH\}"\n          command -v nvim\n          nvim --version \| head -1\n          vp run --workspace-root test:nvim-extension:headless\n/,
+  const conformance = parse(readRepoFile(".github", "workflows", "editor-conformance.yml")) as {
+    jobs: {
+      conformance: { steps: Array<{ if?: string; run?: string; env?: Record<string, string> }> };
+    };
+  };
+  const steps = conformance.jobs.conformance.steps;
+  const pinnedAt = steps.findIndex((step) => step.env?.NVIM_VERSION !== undefined);
+  const headlessSteps = steps
+    .map((step, index) => ({ ...step, index }))
+    .filter((step) => step.run?.includes("vp run --workspace-root test:nvim-extension:headless"));
+  assert.equal(
+    headlessSteps.length,
+    1,
+    "exactly one conformance step executes both headless suites",
   );
+  const headless = headlessSteps[0];
+  assert.ok(
+    pinnedAt >= 0 && headless.index > pinnedAt,
+    "headless suites consume the pinned editor",
+  );
+  assert.equal(headless.if, "matrix.client == 'neovim'");
+  assert.ok(headless.run);
+  const commands = headless.run.split("\n").map((line) => line.trim());
+  for (const command of [
+    "set -euo pipefail",
+    'PATH="$(dirname "${VIZE_TEST_NVIM_PATH}"):$PATH"',
+    "export PATH",
+    'test "$(command -v nvim)" = "${VIZE_TEST_NVIM_PATH}"',
+    "command -v nvim",
+    "nvim --version | head -1",
+    "vp run --workspace-root test:nvim-extension:headless",
+  ]) {
+    assert.ok(commands.includes(command), `pinned headless carrier requires: ${command}`);
+  }
   assert.match(action, /vp run --workspace-root test:nvim-extension:headless/);
   assert.match(action, /vp run --workspace-root test:vim-extension:headless/);
   assert.match(action, /command -v vim/);
