@@ -18,6 +18,11 @@ on:
         required: false
         default: ""
         type: string
+      qualification_deadline:
+        description: Original absolute full-Check qualification deadline in Unix milliseconds
+        required: false
+        default: ""
+        type: string
       pinned:
         description: Publish an immutable source cut after a protected version integration
         required: false
@@ -356,12 +361,13 @@ jobs:
             npm/plugin-sdk
   candidate-preflight:
     needs: candidate
-    permissions: { actions: write, contents: read, issues: read, pull-requests: read }
+    permissions: { actions: read, contents: read, issues: read, pull-requests: read }
     uses: ./.github/workflows/release-preflight.yml
     with:
       release_pr: ${{ inputs.release_pr }}
       tag_name: ${{ inputs.tag_name }}
       pinned: ${{ inputs.pinned }}
+      qualification_deadline: ${{ inputs.qualification_deadline }}
   candidate-ready:
     name: Release candidate ready
     needs:
