@@ -21,7 +21,10 @@ const deliveredInitContracts = [
   "tests/tooling/release/release-smoke-init-js-manager-plans.test.ts",
   "tests/tooling/release/release-smoke-init-yarn-checkjs.test.ts",
 ];
-const installedReportedContracts = ["tests/tooling/release/release-public-vapor.test.ts"];
+const installedReportedContracts = [
+  "tests/tooling/release/release-public-gallery-readiness.test.ts",
+  "tests/tooling/release/release-public-vapor.test.ts",
+];
 const stablePatchContracts = ["tests/tooling/release/release-stable-operator.test.ts"];
 const sharedPublisherContracts = ["tests/tooling/release/release-public-shared-publisher.test.ts"];
 const installedSmokeMigrationContracts = [
@@ -51,8 +54,8 @@ const installedHttpsContracts = [
 void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
   const historicalUnscoped = [
     "tests/tooling/release/legacy-check-qualification.test.ts",
-    "tests/tooling/release/release-guest-locks.test.ts",
     "tests/tooling/release/release-integration-catalog.test.ts",
+    "tests/tooling/release/release-notes.test.ts",
     "tests/tooling/release/release-preflight-full-js.test.ts",
     "tests/tooling/release/release-public-native-invocation.test.ts",
     "tests/tooling/release/release-smoke-init-fresh.test.ts",
@@ -67,6 +70,7 @@ void test("audited release contracts have complete imports and leave unresolved 
     ...stablePatchContracts,
     ...sharedPublisherContracts,
     ...installedSmokeMigrationContracts,
+    "tests/tooling/release/retirement-qualification.test.ts",
   ].sort();
   const inventory = [...scoped, ...expectedUnscoped].sort();
   assert.equal(new Set(inventory).size, inventory.length, "contracts belong to exactly one scope");

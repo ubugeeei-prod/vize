@@ -139,6 +139,13 @@ test("release promotion rejects stale main and immutable tag conflicts atomicall
   assert.equal(result.status, 0, `${result.error ?? ""}\n${result.stdout}\n${result.stderr}`);
   assert.match(result.stdout, /\b[1-9]\d* passed; 0 failed/);
   assert.match(result.stdout, /normal_cached_driver_module_changes_require_new_entry_source_pin/);
+  for (const law of [
+    "legacy_archive_receipts_logs_and_commit_messages_remain_byte_exact",
+    "pre_release_archive_roundtrips_whole_q_custody_and_actual_binary_failure_bytes",
+    "qualification_archive_replays_actual_source_policy_and_preserves_typed_failure_origin",
+  ]) {
+    assert.ok(result.stdout.includes(law), `actual Rust driver must execute ${law}`);
+  }
 });
 
 test("release-only workflow validates all artifacts before promotion and preserves normal PR cost", () => {

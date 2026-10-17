@@ -1,3 +1,7 @@
+use oxc_allocator::Allocator;
+use oxc_ast::ast::Expression;
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SourceType};
 use vize_carton::{String, append};
 use vize_croquis::{
     Scope, ScopeData, TemplateExpression, VForScopeData, drawer::extract_identifiers_oxc,
@@ -134,33 +138,38 @@ fn trim_v_for_alias_guard_prefix(guard: String, data: &VForScopeData) -> Option<
 }
 
 pub(super) fn split_guard_terms(guard: &str) -> Vec<&str> {
-    let bytes = guard.as_bytes();
-    let mut terms = Vec::new();
-    let mut depth = 0i32;
-    let mut start = 0usize;
-    let mut index = 0usize;
-
-    while let Some(&byte) = bytes.get(index) {
-        match byte {
-            b'(' | b'[' | b'{' => depth += 1,
-            b')' | b']' | b'}' => depth -= 1,
-            b'&' if depth == 0
-                && bytes.get(index + 1) == Some(&b'&')
-                && crate::text_scan::byte_before(bytes, index) == Some(b' ')
-                && bytes.get(index + 2) == Some(&b' ') =>
-            {
-                terms.push(guard.get(start..index - 1).unwrap_or_default().trim());
-                index += 3;
-                start = index;
-                continue;
-            }
-            _ => {}
-        }
-        index += 1;
+    // Generated guards wrap each authored condition in parentheses. Preserve
+    // those nodes: only the outer generated conjunction joins branch terms.
+    // A byte-depth scan can split inside strings, comments, regexes or templates.
+    let allocator = Allocator::default();
+    let Ok(expression) = Parser::new(&allocator, guard, SourceType::ts()).parse_expression() else {
+        return vec![guard];
+    };
+    // This parser API can accept a valid prefix without consuming trailing
+    // tokens. Never discard them (or outside comments) when opening guards.
+    let span = expression.span();
+    if guard.get(span.start as usize..span.end as usize) != Some(guard.trim()) {
+        return vec![guard];
     }
-
-    terms.push(guard.get(start..).unwrap_or_default().trim());
+    let mut terms = Vec::new();
+    collect_guard_terms(&expression, guard, &mut terms);
     terms
+}
+
+fn collect_guard_terms<'s>(expression: &Expression<'_>, source: &'s str, terms: &mut Vec<&'s str>) {
+    if let Expression::LogicalExpression(logical) = expression
+        && logical.operator.is_and()
+    {
+        collect_guard_terms(&logical.left, source, terms);
+        collect_guard_terms(&logical.right, source, terms);
+    } else {
+        let span = expression.span();
+        terms.push(
+            source
+                .get(span.start as usize..span.end as usize)
+                .unwrap_or(source),
+        );
+    }
 }
 
 fn v_for_aliases(data: &VForScopeData) -> Vec<&str> {
@@ -186,7 +195,34 @@ fn references_any_alias(term: &str, aliases: &[&str]) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{callback_vif_guard, remove_enclosing_vif_guard_prefix};
+    use super::{callback_vif_guard, remove_enclosing_vif_guard_prefix, split_guard_terms};
+
+    #[test]
+    fn branch_boundaries_come_from_parsed_expressions() {
+        for condition in [
+            "(item.kind === ') && (')",
+            r#"(item.kind === ") && (")"#,
+            "(item.kind === `) && ${'('}`)",
+            "(/\\) && \\(/.test(item.kind))",
+            "(item.kind /* ) && ( */ === 'a')",
+            "(item.kind // ) && (\n === 'a')",
+            "(ready && enabled)",
+            "((item as { kind: string }).kind === 'a')",
+            "((item satisfies { kind: string }).kind === 'a')",
+        ] {
+            let mut guard = vize_carton::String::from("(parent) && ");
+            guard.push_str(condition);
+            assert_eq!(split_guard_terms(guard.as_str()), ["(parent)", condition]);
+        }
+        for guard in [
+            "(parent) && (",
+            "(parent) && (ready) trailing",
+            "(parent) && (ready) // retained outside comment",
+            "/* retained outside comment */ (parent) && (ready)",
+        ] {
+            assert_eq!(split_guard_terms(guard), [guard]);
+        }
+    }
 
     #[test]
     fn callback_guard_keeps_positive_narrowing_terms() {

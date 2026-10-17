@@ -11,8 +11,10 @@
 //! The blocks of one emission pass are written back to back, so a block that
 //! follows its predecessor directly is folded into it instead: the same guard
 //! reopens the block, and the next branch of the same chain becomes
-//! `else if (<chain base> && <own condition>)`. That is the shape `vue-tsc`
-//! emits: each condition appears once and narrowing flows through the chain.
+//! `else if (<own condition>)` inside one enclosing `if (<chain base>)`.
+//! The enclosing guard must be factored out: the false branch of `P && A`
+//! followed by `P` does not let TypeScript recover `!A`. Each condition still
+//! appears once and sibling exclusions flow through the inner chain.
 
 use std::cell::RefCell;
 
@@ -59,24 +61,27 @@ pub(crate) fn append_chained_vif_guard_open(
         Some(previous) if follows_directly(&previous, ts, indent) => {
             match continuation(&previous.terms, &terms) {
                 Some(Continuation::SameBranch) => {
-                    reopen(ts, indent, previous.closed_at);
+                    reopen(
+                        ts,
+                        indent,
+                        previous.closed_at,
+                        closing_blocks(&previous.base),
+                    );
                     previous.base
                 }
                 Some(Continuation::NextBranch(own)) => {
-                    let condition: Vec<&str> = previous
-                        .base
-                        .iter()
-                        .map(String::as_str)
-                        .chain(own.iter().map(String::as_str))
-                        .collect();
+                    if !previous.base.is_empty() {
+                        // Keep the previous branch closed, but reopen its enclosing guard.
+                        reopen(ts, indent, previous.closed_at, 1);
+                    }
                     append!(
                         *ts,
                         "{indent}// @ts-ignore {purpose}; authored v-if checks own diagnostics.\n"
                     );
-                    if condition.is_empty() {
+                    if own.is_empty() {
                         append!(*ts, "{indent}else {{\n");
                     } else {
-                        let condition = condition.join(" && ");
+                        let condition = own.join(" && ");
                         append!(*ts, "{indent}else if ({condition}) {{\n");
                     }
                     previous.base
@@ -95,6 +100,9 @@ pub(crate) fn append_chained_vif_guard_close(ts: &mut String, indent: &str) {
     let Some(open) = OPEN.with(|open| open.borrow_mut().take()) else {
         return;
     };
+    if !open.base.is_empty() {
+        append!(*ts, "{indent}}}\n");
+    }
     CLOSED.with(|closed| {
         *closed.borrow_mut() = Some(ClosedGuard {
             closed_at: ts.len(),
@@ -112,11 +120,21 @@ fn open_fresh(
     purpose: &str,
     terms: &[String],
 ) -> Vec<String> {
-    append_ignored_vif_guard_open(ts, indent, guard, purpose);
-    terms
-        .split_last()
-        .map(|(_, base)| base.to_vec())
-        .unwrap_or_default()
+    let Some((last, base)) = terms.split_last() else {
+        append_ignored_vif_guard_open(ts, indent, guard, purpose);
+        return Vec::new();
+    };
+    if base.is_empty() {
+        append_ignored_vif_guard_open(ts, indent, guard, purpose);
+    } else {
+        append_ignored_vif_guard_open(ts, indent, &base.join(" && "), purpose);
+        append_ignored_vif_guard_open(ts, indent, last, purpose);
+    }
+    base.to_vec()
+}
+
+fn closing_blocks(base: &[String]) -> usize {
+    if base.is_empty() { 1 } else { 2 }
 }
 
 /// Whether `ts` still ends with the closing brace of `previous`, followed by
@@ -124,13 +142,17 @@ fn open_fresh(
 /// writes one buffer at a time, so the thread-local record cannot describe a
 /// different buffer that happens to end the same way.
 fn follows_directly(previous: &ClosedGuard, ts: &String, indent: &str) -> bool {
-    let close_len = indent.len() + 2;
+    let close_len = (indent.len() + 2) * closing_blocks(&previous.base);
     let closing = previous
         .closed_at
         .checked_sub(close_len)
         .and_then(|start| ts.get(start..previous.closed_at));
     previous.indent == indent
-        && closing.is_some_and(|closing| closing.trim() == "}" && closing.starts_with(indent))
+        && closing.is_some_and(|closing| {
+            closing
+                .lines()
+                .all(|line| line.strip_prefix(indent) == Some("}"))
+        })
         && ts.get(previous.closed_at..).is_some_and(|between| {
             between.lines().all(|line| {
                 let line = line.trim();
@@ -141,9 +163,9 @@ fn follows_directly(previous: &ClosedGuard, ts: &String, indent: &str) -> bool {
 
 /// Drop the closing brace written by the previous close, keeping any comment
 /// lines written after it so they move into the reopened block.
-fn reopen(ts: &mut String, indent: &str, closed_at: usize) {
+fn reopen(ts: &mut String, indent: &str, closed_at: usize, blocks: usize) {
     let between = String::from(ts.get(closed_at..).unwrap_or_default());
-    let close_len = indent.len() + 2;
+    let close_len = (indent.len() + 2) * blocks;
     ts.truncate(closed_at.saturating_sub(close_len));
     ts.push_str(between.as_str());
 }
@@ -212,22 +234,122 @@ mod tests {
     }
 
     #[test]
-    fn an_enclosing_guard_stays_on_every_branch() {
-        let ts = emit(&["(p) && (a)", "(p) && !(a) && (b)", "(p) && !(a) && !(b)"]);
-        let conditions: Vec<&str> = ts
+    fn an_enclosing_guard_is_factored_outside_the_sibling_chain() {
+        let ts = emit(&[
+            "(p) && (a)",
+            "(p) && (a)",
+            "(p) && !(a) && (b)",
+            "(p) && !(a) && (b)",
+            "(p) && !(a) && !(b)",
+        ]);
+        assert_eq!(
+            ts.as_str(),
+            concat!(
+                "  // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n",
+                "  if ((p)) {\n",
+                "  // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n",
+                "  if ((a)) {\n",
+                "    void check0;\n",
+                "    void check1;\n",
+                "  }\n",
+                "  // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n",
+                "  else if ((b)) {\n",
+                "    void check2;\n",
+                "    void check3;\n",
+                "  }\n",
+                "  // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n",
+                "  else {\n",
+                "    void check4;\n",
+                "  }\n",
+                "  }\n",
+            )
+        );
+    }
+
+    #[test]
+    fn quoted_delimiters_do_not_split_an_authored_condition() {
+        assert_eq!(
+            emit(&["(ready) && (item.kind === ') && (')"]).as_str(),
+            concat!(
+                "  // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n",
+                "  if ((ready)) {\n",
+                "  // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n",
+                "  if ((item.kind === ') && (')) {\n",
+                "    void check0;\n",
+                "  }\n",
+                "  }\n",
+            )
+        );
+    }
+
+    #[test]
+    fn reopening_nested_branches_preserves_every_prior_body_offset() {
+        let mut ts = String::from("");
+        let mut mappings = Vec::new();
+        for guard in [
+            "!(hidden) && (ready && enabled) && (a)",
+            "!(hidden) && (ready && enabled) && (a)",
+            "!(hidden) && (ready && enabled) && !(a) && (b)",
+            "!(hidden) && (ready && enabled) && !(a) && !(b)",
+        ] {
+            ts.push_str("  // @vize-map: prop -> 1:2\n");
+            append_chained_vif_guard_open(&mut ts, "  ", guard, "Inference-only guard");
+            let start = ts.len();
+            ts.push_str("    void mapped;\n");
+            mappings.push(start..ts.len());
+            append_chained_vif_guard_close(&mut ts, "  ");
+        }
+        for mapping in mappings {
+            assert_eq!(ts.get(mapping), Some("    void mapped;\n"));
+        }
+        let conditions: Vec<_> = ts
             .lines()
-            .filter(|line| line.contains("if ("))
-            .map(str::trim)
+            .filter(|line| !line.contains("//") && !line.contains("void"))
             .collect();
         assert_eq!(
             conditions,
             [
-                "if ((p) && (a)) {",
-                "else if ((p) && (b)) {",
-                "else if ((p)) {"
-            ],
-            "{ts}"
+                "  if (!(hidden) && (ready && enabled)) {",
+                "  if ((a)) {",
+                "  }",
+                "  else if ((b)) {",
+                "  }",
+                "  else {",
+                "  }",
+                "  }",
+            ]
         );
+    }
+
+    #[test]
+    fn one_hundred_eighty_nested_siblings_emit_each_condition_once() {
+        let mut prefix = String::from("(parent)");
+        let mut guards = Vec::new();
+        let mut expected = vec![String::from("if ((parent)) {")];
+        for index in 0..180 {
+            let mut guard = prefix.clone();
+            append!(guard, " && (branch{index})");
+            guards.push(guard);
+            append!(prefix, " && !(branch{index})");
+            let mut condition = String::from(if index == 0 { "if" } else { "else if" });
+            append!(condition, " ((branch{index})) {{");
+            expected.push(condition);
+        }
+        guards.push(prefix);
+        expected.push(String::from("else {"));
+        let ts = emit(&guards.iter().map(String::as_str).collect::<Vec<_>>());
+        let conditions: Vec<_> = ts
+            .lines()
+            .filter(|line| line.contains("if (") || line.trim() == "else {")
+            .map(str::trim)
+            .collect();
+        assert_eq!(
+            conditions,
+            expected.iter().map(String::as_str).collect::<Vec<_>>()
+        );
+        assert_eq!(ts.matches("void check").count(), 181);
+        assert_eq!(ts.matches('{').count(), 182);
+        assert_eq!(ts.matches('}').count(), 182);
     }
 
     #[test]
