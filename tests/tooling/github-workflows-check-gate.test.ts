@@ -89,7 +89,7 @@ test("source gates cover iteration events while full qualification runs on sched
     assert.equal(
       workflow.jobs?.[job]?.if,
       job === "test-scripts"
-        ? "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+        ? "${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
         : "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
     );
   }
@@ -285,7 +285,7 @@ test("full JS qualification retains independent native builds and strictly gates
   assert.ok(report.runs.steps.indexOf(setup) < report.runs.steps.indexOf(gate));
   const testJob = workflow.jobs?.["test-js-packages"];
   const history = testJob?.steps?.find((step) => step.name === "Test JS packages");
-  assert.equal(history?.if, "${{ always() }}");
+  assert.equal(history?.if, "${{ !cancelled() }}");
   assert.equal(history?.uses, "./.github/actions/test-js-packages-with-history");
   assert.equal(history?.run, undefined);
   for (const job of [testJob, workflow.jobs?.["build-js-packages"]]) {

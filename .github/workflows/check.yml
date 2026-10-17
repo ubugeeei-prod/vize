@@ -266,7 +266,7 @@ jobs:
   test-scripts:
     name: Tooling (${{ matrix.name }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }} # Preserve native evidence when the producer fails.
+    if: ${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }} # Preserve independent checks after producer failure; stop superseded runs.
     timeout-minutes: 30
     needs: [full-source-cli, tooling-plan]
     strategy: { fail-fast: false, matrix: "${{ fromJSON(needs.tooling-plan.outputs.matrix) }}" }
@@ -365,7 +365,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup-js-package-tests
       - name: Test JS packages
-        if: ${{ always() }}
+        if: ${{ !cancelled() }}
         uses: ./.github/actions/test-js-packages-with-history
   full-js-report:
     name: full-js-report

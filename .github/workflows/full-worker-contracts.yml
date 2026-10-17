@@ -1,0 +1,45 @@
+name: Full worker cancellation contracts
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/full-worker-contracts.yml"
+      - ".github/workflows/check.yml"
+      - ".github/workflows/full-tooling-plan.yml"
+      - ".github/actions/test-full-tooling/**"
+      - ".github/actions/test-native-js-setup/**"
+      - ".github/actions/test-native-attribute-values-7502/**"
+      - ".github/actions/test-native-selected-sfc-dom/**"
+      - ".github/actions/report-full-js-qualification/**"
+      - "tests/tooling/github-workflows-full-tooling-gate.test.mjs"
+      - "tests/tooling/github-source-cli-workflow.test.ts"
+      - "tests/tooling/github-workflows-check-gate.test.ts"
+      - "tests/tooling/github-workflows-tooling-receipts.test.ts"
+      - "tools/support/compat/github/require-needs-success.ts"
+      - "tools/support/compat/github/plan-tooling-tests.mjs"
+      - "tools/support/compat/github/tooling-test-shards.ts"
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: full-worker-contracts-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env: { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
+jobs:
+  contracts:
+    name: Full worker cancellation and retained evidence
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - name: Install frozen contract tooling
+        run: vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts
+      - name: Require cancellation, failed-producer, inventory and retained-evidence contracts
+        run: >-
+          node --test
+          tests/tooling/github-workflows-full-tooling-gate.test.mjs
+          tests/tooling/github-source-cli-workflow.test.ts
+          tests/tooling/github-workflows-check-gate.test.ts
+          tests/tooling/github-workflows-tooling-receipts.test.ts
