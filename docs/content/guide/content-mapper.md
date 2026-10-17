@@ -78,14 +78,30 @@ A mapper entry accepts an `options` object:
 }
 ```
 
-| Option       | Default | Purpose                                                       |
-| ------------ | ------- | ------------------------------------------------------------- |
-| `optionsApi` | `true`  | Resolve Vue Options API instance bindings inside templates    |
+| Option       | Default | Purpose                                                    |
+| ------------ | ------- | ---------------------------------------------------------- |
+| `optionsApi` | `true`  | Resolve Vue Options API instance bindings inside templates |
 
 Invalid options never fail the build: Vize reports them as option diagnostics positioned inside
 your tsconfig (`vize1`–`vize3`) and continues with defaults. Vize also declares a dependency on
 the project's `noUnusedLocals` compiler option, so unused-local reporting inside `<script setup>`
 follows each project's own configuration.
+
+Vue checks belong in the selected tsconfig's top-level `vueCompilerOptions`:
+
+```json
+{
+  "vueCompilerOptions": {
+    "checkUnknownProps": true,
+    "strictCssModules": true
+  }
+}
+```
+
+These options follow the existing tsconfig `extends` chain. `checkUnknownProps` defaults to
+`strictTemplates` (otherwise `false`); an explicit `false` overrides that fallback.
+`strictCssModules` defaults to `false`. Vize reports the configuration dependencies to the
+TypeScript host so it can invalidate transformed files when an inherited setting changes.
 
 ## Template Directives
 
@@ -126,12 +142,12 @@ source. This qualifies that exact host; it does not establish support in every p
 
 Diagnostic codes reported under the `vize` source:
 
-| Code    | Meaning                                             |
-| ------- | ---------------------------------------------------- |
-| `vize1` | Mapper options value is not an object                |
-| `vize2` | Unknown mapper option                                |
-| `vize3` | Mapper option has the wrong type                     |
-| `vize4` | Unused `@vue-expect-error` directive                 |
+| Code    | Meaning                               |
+| ------- | ------------------------------------- |
+| `vize1` | Mapper options value is not an object |
+| `vize2` | Unknown mapper option                 |
+| `vize3` | Mapper option has the wrong type      |
+| `vize4` | Unused `@vue-expect-error` directive  |
 
 ## Limitations
 

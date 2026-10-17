@@ -14,6 +14,7 @@ mod jsx_files;
 mod remap;
 mod vue_alias;
 mod vue_compiler_options;
+pub(super) use vue_compiler_options::snapshot_vue_compiler_options;
 
 use jsx_files::compiler_option_enabled;
 use std::path::{Path, PathBuf};
