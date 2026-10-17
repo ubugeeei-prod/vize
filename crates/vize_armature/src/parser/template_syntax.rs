@@ -215,6 +215,7 @@ impl<'a> Parser<'a> {
         true
     }
 
+    #[inline]
     pub(in crate::parser) fn record_expression_syntax(
         &mut self,
         node: &SimpleExpressionNode<'a>,
@@ -222,6 +223,9 @@ impl<'a> Parser<'a> {
         interpolation: bool,
         slot: bool,
     ) {
+        if self.template_syntax_facts.is_none() {
+            return;
+        }
         let role = if slot {
             TemplateSyntaxRole::Slot
         } else {
@@ -230,10 +234,14 @@ impl<'a> Parser<'a> {
         self.record_retained_template_syntax(node, attribute, interpolation, role);
     }
 
+    #[inline]
     pub(in crate::parser) fn record_handler_expression_syntax(
         &mut self,
         node: &SimpleExpressionNode<'a>,
     ) {
+        if self.template_syntax_facts.is_none() {
+            return;
+        }
         self.record_retained_template_syntax(
             node,
             true,

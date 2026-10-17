@@ -243,15 +243,14 @@ impl<'a> Parser<'a> {
         // Vue 2 keeps the last value of a repeated attribute (its attrs map is
         // overwritten); Vue 3 keeps the first.
         let replace_earlier = self.options.dialect.is_legacy();
-        let legacy_slot = attr.name == "slot-scope"
-            || (attr.name == "scope"
-                && self
-                    .current_element
-                    .as_ref()
-                    .is_some_and(|element| element.tag == "template"));
         if self.template_syntax_facts.is_some()
-            && self.options.dialect.is_legacy()
-            && legacy_slot
+            && replace_earlier
+            && (attr.name == "slot-scope"
+                || (attr.name == "scope"
+                    && self
+                        .current_element
+                        .as_ref()
+                        .is_some_and(|element| element.tag == "template")))
             && let Some(value) = attr_node.value.as_ref()
         {
             self.retain_special_template_syntax(
