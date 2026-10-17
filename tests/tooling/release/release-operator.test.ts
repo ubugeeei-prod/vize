@@ -343,3 +343,43 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("new publication runs wait for full Check outside the bounded verify-only preflight", () => {
+  const runs = readRepoFile("tools", "support", "release", "pr_pin_runs.rs");
+  const watcher = readRepoFile("tools", "support", "release", "pr_pin_watch.rs");
+  const shared = readRepoFile("tools", "support", "release", "pr_ci.rs");
+  const existing = runs.indexOf("if let Some(id) = find()?");
+  const qualify = runs.indexOf("pr_ci::qualify_check(");
+  const authenticate = runs.indexOf("let current = super::source(");
+  const recheckRun = runs.indexOf("if let Some(id) = find()?", existing + 1);
+  const dispatch = runs.indexOf('"workflow",');
+  assert.ok(
+    existing >= 0 &&
+      qualify > existing &&
+      authenticate > qualify &&
+      recheckRun > authenticate &&
+      dispatch > recheckRun,
+  );
+  assert.match(runs.slice(existing, qualify), /return Ok\(id\)/);
+  const child = runs.slice(qualify, authenticate);
+  assert.match(child, /&candidate\.repository/);
+  assert.match(child, /&candidate\.branch/);
+  assert.match(child, /&candidate\.head/);
+  assert.match(child, /&source\.cut/);
+  assert.match(shared, /pr_budget::child_command\(&mut qualification, budget\)/);
+  assert.match(shared, /if !status\.success\(\)/);
+  assert.match(child, /operator\.verify\(\)\?/);
+  const final = runs.slice(authenticate, dispatch);
+  assert.match(final, /current\.cut != source\.cut/);
+  assert.match(final, /current\.base_version != source\.base_version/);
+  assert.match(final, /current\.integration != source\.integration/);
+  assert.match(final, /tag_target\(&candidate\.tag, root\)/);
+  assert.match(final, /operator\.verify\(\)\?/);
+  assert.match(watcher, /runs::find_or_dispatch\(&initial, operator, budget, root\)/);
+  const preflight = parse(readRepoFile(".github", "workflows", "release-preflight.yml"));
+  assert.equal(preflight.jobs.verify["timeout-minutes"], 10);
+  assert.equal(
+    preflight.jobs.verify.steps.at(-1).run,
+    "node tools/support/compat/github/release-preflight.ts --verify-only",
+  );
+});

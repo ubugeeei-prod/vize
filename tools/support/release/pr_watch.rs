@@ -1,4 +1,7 @@
-use super::{pr_ci, pr_contract, pr_github as github, pr_promote};
+use super::{
+    pr_budget::{self, Budget},
+    pr_ci, pr_contract, pr_github as github, pr_promote,
+};
 use serde_json::Value;
 use std::{
     path::Path,
@@ -17,10 +20,13 @@ pub fn release(
     root: &Path,
 ) -> Result<(), String> {
     let started = Instant::now();
+    let budget =
+        pr_budget::configured()?.unwrap_or_else(|| Budget::new(Duration::from_secs(28_800)));
     let mut run_id: Option<u64> = None;
     let mut attempted_resume = false;
     let mut promoted = false;
     loop {
+        budget.check()?;
         operator.verify()?;
         let pr = github::protect_release_pr(repository, number, root)?;
         let head = github::git(&["rev-parse", "HEAD"], root)?;
@@ -63,15 +69,22 @@ pub fn release(
         let id = match run_id {
             Some(id) => id,
             None => {
-                let id = find_or_dispatch(
+                let Some(id) = find_or_dispatch(
                     repository,
                     number,
                     tag,
                     &head,
                     &candidate.branch,
                     candidate.merged,
+                    operator,
+                    &budget,
                     root,
-                )?;
+                )?
+                else {
+                    // Preserve the normal source refresh path when qualification
+                    // observed a newer main or branch head. No stale R was created.
+                    continue;
+                };
                 println!("Release validation: https://github.com/{repository}/actions/runs/{id}");
                 run_id = Some(id);
                 id
@@ -161,18 +174,20 @@ pub fn sync_head(branch: &str, expected: &str, root: &Path) -> Result<bool, Stri
     Ok(true)
 }
 
-fn find_or_dispatch(
+pub(super) fn find_or_dispatch(
     repository: &str,
     number: u64,
     tag: &str,
     head: &str,
     branch: &str,
     merged: bool,
+    operator: &super::pr_pin::lock::Operator,
+    budget: &Budget,
     root: &Path,
-) -> Result<u64, String> {
+) -> Result<Option<u64>, String> {
     let title = format!("Release {tag} PR #{number} @ {head}");
     if let Some(id) = find_run(repository, head, &title, root)? {
-        return Ok(id);
+        return Ok(Some(id));
     }
     if merged {
         return Err(
@@ -180,6 +195,55 @@ fn find_or_dispatch(
                 .into(),
         );
     }
+    let cut = github::parent(head, root)?;
+    budget.check()?;
+    operator.verify()?;
+    let qualified = pr_ci::qualify_check(repository, branch, head, &cut, Some(budget), root);
+    budget.check()?;
+    operator.verify()?;
+    let pr = github::api(repository, &format!("pulls/{number}"), root)?;
+    if pr_contract::field(&pr, "/head/sha")? != head
+        || pr_contract::field(&pr, "/head/ref")? != branch
+        || pr.get("merged").and_then(Value::as_bool) == Some(true)
+        || github::git(&["rev-parse", "HEAD"], root)? != head
+        || github::git(
+            &[
+                "ls-remote",
+                "--heads",
+                "origin",
+                &format!("refs/heads/{branch}"),
+            ],
+            root,
+        )?
+        .split_whitespace()
+        .next()
+            != Some(head)
+    {
+        return Ok(None);
+    }
+    let candidate = github::candidate(repository, number, head, tag, false, root)?;
+    let main = github::fetch_main(root)?;
+    if github::parent(head, root)? != cut || main != cut || candidate.base != main {
+        return Ok(None);
+    }
+    if candidate.number != number
+        || candidate.branch != branch
+        || format!("v{}", github::version(root)?) != tag
+    {
+        return Err(
+            "The release candidate identity or version changed during Check qualification.".into(),
+        );
+    }
+    if github::tag_target(tag, root)?.is_some() {
+        return Ok(None);
+    }
+    qualified?;
+    // Another observer may have discovered a valid R while source CI ran.
+    if let Some(id) = find_run(repository, head, &title, root)? {
+        return Ok(Some(id));
+    }
+    budget.check()?;
+    operator.verify()?;
     github::output(
         "gh",
         &[
@@ -200,9 +264,9 @@ fn find_or_dispatch(
         root,
     )?;
     for _ in 0..30 {
-        sleep(Duration::from_secs(2));
+        budget.sleep(Duration::from_secs(2))?;
         if let Some(id) = find_run(repository, head, &title, root)? {
-            return Ok(id);
+            return Ok(Some(id));
         }
     }
     Err("Release workflow dispatch did not produce an identifiable run.".into())

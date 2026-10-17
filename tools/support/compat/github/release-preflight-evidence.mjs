@@ -4,7 +4,7 @@ import { realProjectJobNamesAtRevision } from "./real-project-matrix-plan.ts";
  * Check is the release gate. Fuzz, Miri, Real Project Matrix, and Docs build
  * keep their own schedules and are not required to publish.
  */
-export const requiredReleaseWorkflows = [];
+export const requiredReleaseWorkflows = ["Check"];
 
 export const requiredReleaseWorkflowEvidence = new Map([
   ["Check", { path: ".github/workflows/check.yml", events: ["workflow_dispatch"] }],
@@ -84,7 +84,9 @@ const requiredJobNames = new Map([
       "test-js-packages",
       "build-js-packages",
       "full-js-report",
-      ...requiredSemverCrates.map((name) => `cargo-semver-checks (${name})`),
+      "Full Rust workspace and doctests",
+      "clippy-and-test",
+      "full-rust-report",
     ],
   ],
   ["Benchmark", ["pr-benchmark-budget"]],
@@ -114,7 +116,16 @@ export function requiredWorkflowJobNames(workflowName, run, repoRoot) {
   if (workflowName === "Real Project Matrix") {
     return realProjectJobNamesAtRevision(run?.head_sha, repoRoot);
   }
-  return requiredJobNames.get(workflowName) ?? [];
+  const names = requiredJobNames.get(workflowName) ?? [];
+  // Match check.yml: main-source full runs intentionally skip release API checks.
+  if (
+    workflowName === "Check" &&
+    run?.event === "workflow_dispatch" &&
+    /^(?:release\/v|v)/.test(run.head_branch ?? "")
+  ) {
+    return [...names, ...requiredSemverCrates.map((name) => `cargo-semver-checks (${name})`)];
+  }
+  return names;
 }
 
 function compareRuns(left, right) {

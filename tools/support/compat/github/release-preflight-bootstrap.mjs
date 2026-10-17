@@ -18,7 +18,16 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
     throw new Error("Release base SHA must differ from the release head SHA");
   if (!ref) throw new Error("Release dispatch ref is required");
 
-  return [];
+  return [
+    {
+      workflowName: "Check",
+      workflowId: "check.yml",
+      ref,
+      inputs: {},
+      expectedRunName: `Check full @ ${headSha}`,
+      acceptsScheduledEvidence: false,
+    },
+  ];
 }
 
 export function releaseGateRunQualifiers(dispatchPlans, evidenceShas = new Map()) {
@@ -29,11 +38,12 @@ export function releaseGateRunQualifiers(dispatchPlans, evidenceShas = new Map()
       return [
         plan.workflowName,
         (run) =>
-          (plan.acceptsScheduledEvidence === true && run.event === "schedule") ||
-          run.display_title === plan.expectedRunName ||
-          (run.event === "workflow_dispatch" &&
-            reusableShas.includes(run.head_sha) &&
-            run.display_title === `${titlePrefix}${run.head_sha}`),
+          (plan.workflowName !== "Check" || run.head_branch === plan.ref) &&
+          ((plan.acceptsScheduledEvidence === true && run.event === "schedule") ||
+            run.display_title === plan.expectedRunName ||
+            (run.event === "workflow_dispatch" &&
+              reusableShas.includes(run.head_sha) &&
+              run.display_title === `${titlePrefix}${run.head_sha}`)),
       ];
     }),
   );
@@ -50,11 +60,11 @@ export async function bootstrapRequiredWorkflowRuns({
   evidenceShas = new Map(),
   sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
   now = Date.now,
-  // Real Project Matrix is a release gate again, so the wait budget covers its
-  // full 22-shard run and still fails before the workflow-level 360 minute cap.
+  // Wait for full Check qualification before publication; optional campaigns do not gate it.
   timeoutMs = 345 * 60 * 1000,
   pollIntervalMs = 15_000,
   onWait = () => {},
+  requiredJobFailure = async () => undefined,
 }) {
   const qualifiers = releaseGateRunQualifiers(dispatchPlans, evidenceShas);
   let runs = await listRuns();
@@ -88,6 +98,7 @@ export async function bootstrapRequiredWorkflowRuns({
     const missing = [];
     const pending = [];
     let failed = false;
+    const jobFailureSummaries = new Map();
     for (const workflowName of requiredReleaseWorkflows) {
       const run = latestRequiredWorkflowRun(
         runs,
@@ -96,8 +107,13 @@ export async function bootstrapRequiredWorkflowRuns({
         qualifiers.get(workflowName),
       );
       if (run == null) missing.push(workflowName);
-      else if (run.status !== "completed") pending.push(workflowName);
-      else if (run.conclusion !== "success") failed = true;
+      else if (run.status !== "completed") {
+        const detail = await requiredJobFailure(workflowName, run);
+        if (detail) {
+          failed = true;
+          jobFailureSummaries.set(workflowName, detail);
+        } else pending.push(workflowName);
+      } else if (run.conclusion !== "success") failed = true;
     }
 
     if (failed || (missing.length === 0 && pending.length === 0)) {
@@ -107,6 +123,7 @@ export async function bootstrapRequiredWorkflowRuns({
         requiredReleaseWorkflows,
         qualifiers,
         evidenceShas,
+        jobFailureSummaries,
       );
     }
     if (now() >= deadline) {
@@ -117,6 +134,7 @@ export async function bootstrapRequiredWorkflowRuns({
           requiredReleaseWorkflows,
           qualifiers,
           evidenceShas,
+          jobFailureSummaries,
         );
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);

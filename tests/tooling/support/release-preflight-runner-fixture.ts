@@ -48,7 +48,7 @@ export function createReleasePreflightVerifyOnlyFixture(
     ...artifact,
     created_at: "2026-07-12T00:06:40Z",
   }));
-  const jobs = releaseWorkflowJobs();
+  const jobs = releaseWorkflowJobs(tag);
   jobs[106] = jobs[106].map((job, shard) => ({
     ...job,
     id: 2_000 + shard,
@@ -85,9 +85,19 @@ export function createReleasePreflightVerifyOnlyFixture(
   fs.writeFileSync(
     fetchMock,
     [
+      "import fs from 'node:fs';",
+      "const read = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));",
+      "const log = (file, value) => { if (file) fs.appendFileSync(file, `${value}\\n`); };",
       "globalThis.fetch = async (input) => {",
       "  const url = new URL(String(input));",
       "  if (url.hostname === 'api.github.test' && url.pathname.endsWith('/issues')) return Response.json([]);",
+      "  if (url.hostname === 'api.github.test' && url.pathname.endsWith('/actions/runs')) {",
+      "    if (process.env.TEST_REJECT_RUNS_AFTER_JOB_REQUEST === '1' && process.env.TEST_JOBS_REQUEST_LOG && fs.existsSync(process.env.TEST_JOBS_REQUEST_LOG)) throw new Error('polled after failed job');",
+      "    log(process.env.TEST_RUNS_REQUEST_LOG, url.href);",
+      "    return Response.json({workflow_runs: read(process.env.TEST_RUNS_FILE)});",
+      "  }",
+      "  const jobs = url.pathname.match(/\\/actions\\/runs\\/(\\d+)\\/jobs$/);",
+      "  if (url.hostname === 'api.github.test' && jobs) { log(process.env.TEST_JOBS_REQUEST_LOG, jobs[1]); return Response.json({jobs: read(process.env.TEST_JOBS_FILE)[jobs[1]] ?? []}); }",
       "  throw new Error(`Unexpected preflight network request: ${url}`);",
       "};",
     ].join("\n"),
@@ -182,10 +192,10 @@ function releaseWorkflowRuns(tag: string) {
   ];
 }
 
-function releaseWorkflowJobs() {
+function releaseWorkflowJobs(tag: string) {
   return Object.fromEntries(
     [
-      [101, requiredWorkflowJobNames("Check")],
+      [101, requiredWorkflowJobNames("Check", { event: "workflow_dispatch", head_branch: tag })],
       [102, ["pr-benchmark-budget"]],
       [
         103,

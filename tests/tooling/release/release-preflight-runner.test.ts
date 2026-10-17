@@ -274,7 +274,7 @@ test("verify-only mode accepts flat job evidence returned by pagination", () => 
   }
 });
 
-test("verify-only mode does not consult candidate SemVer jobs", () => {
+test("verify-only mode refuses incomplete candidate SemVer jobs", () => {
   const jobName = "cargo-semver-checks (vize_armature)";
   for (const conclusion of ["missing", "skipped", "failure"] as const) {
     const tempDir = fs.mkdtempSync(path.join(tmpdir(), `vize-release-semver-${conclusion}-`));
@@ -303,9 +303,9 @@ test("verify-only mode does not consult candidate SemVer jobs", () => {
         },
       );
       assert.ifError(result.error);
-      assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-      assert.match(result.stdout, /Release preflight passed/);
-      assert.doesNotMatch(result.stderr, /cargo-semver-checks/);
+      assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
+      assert.doesNotMatch(result.stdout, /Release preflight passed/);
+      assert.match(result.stderr, /cargo-semver-checks/);
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
@@ -382,7 +382,7 @@ test("verify-only mode ignores a cancelled Real Project Matrix", () => {
   }
 });
 
-test("bootstrap mode does not wait on an in-progress Check", () => {
+test("bootstrap mode fails promptly on a terminal required job in an in-progress Check", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-red-pending-check-"));
   try {
     const jobsRequestLog = path.join(tempDir, "jobs-request.log");
@@ -429,9 +429,11 @@ test("bootstrap mode does not wait on an in-progress Check", () => {
     );
 
     assert.ifError(result.error);
-    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    assert.match(result.stdout, /Release preflight passed/);
-    assert.equal(fs.existsSync(jobsRequestLog), false);
+    assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
+    assert.doesNotMatch(result.stdout, /Release preflight passed/);
+    assert.match(result.stderr, /test-scripts=completed\/failure/);
+    assert.equal(fs.existsSync(jobsRequestLog), true);
+    assert.deepEqual(fs.readFileSync(jobsRequestLog, "utf8").trim().split("\n"), ["101"]);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }

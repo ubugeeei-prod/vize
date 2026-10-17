@@ -1,14 +1,15 @@
 //! Find or dispatch only the exact immutable source run.
 use super::super::{
     pr_budget::{self, Budget},
-    pr_github as github,
+    pr_ci, pr_github as github,
 };
-use super::{Source, delivery, run_identity};
+use super::{Source, delivery, lock, run_identity};
 use serde_json::Value;
 use std::path::Path;
 
 pub(super) fn find_or_dispatch(
     source: &Source,
+    operator: &lock::Operator,
     budget: Option<&Budget>,
     root: &Path,
 ) -> Result<u64, String> {
@@ -47,7 +48,43 @@ pub(super) fn find_or_dispatch(
     if let Some(id) = find()? {
         return Ok(id);
     }
+    // Full source qualification is outside the publication workflow's ten-minute
+    // preflight. Existing immutable R resumes above retain their original evidence.
+    operator.verify()?;
+    pr_ci::qualify_check(
+        &candidate.repository,
+        &candidate.branch,
+        &candidate.head,
+        &source.cut,
+        budget,
+        root,
+    )?;
     pr_budget::check(budget)?;
+    operator.verify()?;
+    let current = super::source(
+        &candidate.repository,
+        candidate.number,
+        &candidate.head,
+        &candidate.tag,
+        false,
+        root,
+    )?;
+    if current.cut != source.cut
+        || current.base_version != source.base_version
+        || current.integration != source.integration
+    {
+        return Err("The immutable source receipt changed during Check qualification.".into());
+    }
+    if github::tag_target(&candidate.tag, root)?.is_some() {
+        return Err("The release tag appeared during Check qualification; inspect the retained source and Release before resuming.".into());
+    }
+    // A concurrent observer may have found the same R while Check was running.
+    // Never create another publication run after the blocking qualification.
+    if let Some(id) = find()? {
+        return Ok(id);
+    }
+    pr_budget::check(budget)?;
+    operator.verify()?;
     github::output(
         "gh",
         &[

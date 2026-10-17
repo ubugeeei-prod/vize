@@ -42,7 +42,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-const REQUIRED_RELEASE_WORKFLOWS: &[&str] = &[];
+const REQUIRED_RELEASE_WORKFLOWS: &[&str] = &["Check"];
 // Keep in sync with check.yml's semver-checks matrix. A skipped matrix must
 // never count as a validated release candidate.
 const REQUIRED_SEMVER_CRATES: &[&str] = &[
@@ -362,8 +362,14 @@ fn create_release_gate_dispatch_plans(
     if ref_name.is_empty() {
         return Err("Release dispatch ref is required".to_string());
     }
-    let _ = (ref_name, head_sha);
-    Ok(vec![])
+    Ok(vec![DispatchPlan {
+        workflow_name: "Check",
+        workflow_id: "check.yml",
+        ref_name: ref_name.to_string(),
+        inputs: json!({}),
+        expected_run_name: format!("Check full @ {head_sha}"),
+        accepts_scheduled_evidence: false,
+    }])
 }
 
 fn list_runs_for_evidence(
@@ -771,6 +777,12 @@ fn matches_evidence(run: &Value, evidence: &WorkflowEvidence) -> bool {
 }
 
 fn qualifies_run(run: &Value, plan: &DispatchPlan, accepted_shas: &[String]) -> bool {
+    // A main-source Check skips the release/tag SemVer matrix and cannot prove a cut.
+    if plan.workflow_name == "Check"
+        && run.get("head_branch").and_then(Value::as_str) != Some(plan.ref_name.as_str())
+    {
+        return false;
+    }
     if plan.accepts_scheduled_evidence
         && run.get("event").and_then(Value::as_str) == Some("schedule")
     {

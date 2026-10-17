@@ -6,20 +6,31 @@ fn required_workflow_job_names(workflow_name: &str, run: &Value) -> Result<Vec<S
         return matrix_selection::matrix_job_names(run, &repo_root()?);
     }
     Ok(match workflow_name {
-        "Check" => [
-            "test-scripts",
-            "test-js-packages",
-            "build-js-packages",
-            "full-js-report",
-        ]
-        .into_iter()
-        .map(str::to_string)
-        .chain(
-            REQUIRED_SEMVER_CRATES
-                .iter()
-                .map(|crate_name| format!("cargo-semver-checks ({crate_name})")),
-        )
-        .collect(),
+        "Check" => {
+            let mut names = [
+                "test-scripts",
+                "test-js-packages",
+                "build-js-packages",
+                "full-js-report",
+                "Full Rust workspace and doctests",
+                "clippy-and-test",
+                "full-rust-report",
+            ]
+            .into_iter()
+            .map(str::to_string)
+            .collect::<Vec<_>>();
+            let branch = run.get("head_branch").and_then(Value::as_str).unwrap_or("");
+            if run.get("event").and_then(Value::as_str) == Some("workflow_dispatch")
+                && (branch.starts_with("release/v") || branch.starts_with('v'))
+            {
+                names.extend(
+                    REQUIRED_SEMVER_CRATES
+                        .iter()
+                        .map(|crate_name| format!("cargo-semver-checks ({crate_name})")),
+                );
+            }
+            names
+        }
         "Benchmark" => vec!["pr-benchmark-budget".to_string()],
         "Fuzz" => vec![
             "Fuzz sfc_parse".to_string(),
