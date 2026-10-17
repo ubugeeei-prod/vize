@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { captureProjectCommand } from "./project-command-capture.mjs";
+import {
+  originalSfcSourceCommand,
+  assertOriginalSfcSourceMatrix,
+} from "./mixed-directory-8507-qualification.mjs";
 
 void test("same actual command/argv/cwd/env/stdin retains complete binary and UTF8 results", async (t) => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-command-capture-"));
@@ -179,3 +184,217 @@ catch {process.exitCode=1;}finally{clearInterval(timer);}
       assert.ok(state.status === 1 || state.stdout.trim().startsWith("Z"));
     }
   });
+
+// Authored regular-file controls exercise authority/refusal only: no fake addon
+// is loaded and these laws cannot confer actual host or native acceptance.
+function sourceMatrixAuthority(t) {
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-same-host-authority-")));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
+  const file = (name, bytes) => {
+    const physical = path.join(root, name);
+    fs.writeFileSync(physical, bytes);
+    return { path: physical, bytes: Buffer.byteLength(bytes), sha256: digest(bytes) };
+  };
+  const native = file("source.node", "authored source image control\0");
+  const plugin = file("plugin.mjs", "// authored plugin control\n");
+  const manifest = file("host-package.json", '{"name":"oxlint","version":"1.86.0"}\n');
+  const stream = file("stdout.bin", "whole output 日本語\0\n");
+  const names = [
+    { name: "List.vue", contrasts: ["keyed"] },
+    { name: "EmptyScript.vue", contrasts: ["keyed"] },
+    { name: "TplOnly.vue", contrasts: ["keyed"] },
+    { name: "MyPicker.vue", contrasts: ["first-corrected", "second-corrected", "both-corrected"] },
+  ].flatMap(({ name, contrasts }) =>
+    ["direct", "wrapper"].flatMap((host) =>
+      ["original-default", "json", ...contrasts, "rule-disabled"].map(
+        (mode) => `${name}-${host}-${mode}`,
+      ),
+    ),
+  );
+  assert.equal(names.length, 36);
+  const cells = names.map((name) => ({ name, stdout: stream, stderr: stream }));
+  const projects = [
+    {
+      files: ["List.vue", ".oxlintrc.json"],
+      evidence: path.join(root, "inputs"),
+      before: [
+        {
+          filename: ".oxlintrc.json",
+          archiveFilename: "1-.oxlintrc.json",
+          bytes: 3,
+          sha256: digest("{}\n"),
+        },
+      ],
+    },
+  ];
+  projects[0].after = structuredClone(projects[0].before);
+  for (const phase of ["before", "after"]) {
+    fs.mkdirSync(path.join(projects[0].evidence, phase), { recursive: true });
+    fs.writeFileSync(path.join(projects[0].evidence, phase, "1-.oxlintrc.json"), "{}\n");
+  }
+  const packet = { path: "authored immutable originals.json", sha256: digest("original controls") };
+  const baseline = { hostVersion: "1.86.0", manifests: [{}, manifest], cells, projects, packet };
+  return {
+    root,
+    plugin,
+    binary: native.path,
+    receipt: { source: { head: "a".repeat(40) }, frozen: { sha256: native.sha256 } },
+    baseline,
+    matrix: {
+      ...structuredClone(baseline),
+      expectation: "candidate",
+      contractAssertionsPassed: true,
+      failures: [],
+      pluginVersion: "0.463.0",
+      plugin: structuredClone(plugin),
+      native,
+    },
+    version: "0.463.0",
+  };
+}
+
+void test("source command isolates overrides and uses the one existing host/addon without install or copy", async (t) => {
+  const fixture = sourceMatrixAuthority(t);
+  const environment = {
+    GITHUB_SHA: fixture.receipt.source.head,
+    GITHUB_ACTIONS: "true",
+    PATH: process.env.PATH,
+    NODE_OPTIONS: "--require=/foreign.cjs",
+    NODE_PATH: "/foreign",
+    NAPI_RS_FORCE_WASI: "true",
+    NAPI_RS_NATIVE_LIBRARY_PATH: "/foreign.node",
+    VIZE_OXLINT_NATIVE_CUSTODY: "/foreign.json",
+    VIZE_OXLINT_TEST_ENTRYPOINT: "/foreign-oxlint",
+    VIZE_PREFER_WORKSPACE_BINDING: "0",
+  };
+  const input = {
+    ...fixture,
+    packageDir: "/source/npm/oxlint",
+    installation: fixture.root,
+    output: path.join(fixture.root, "candidate-1.86"),
+    environment,
+  };
+  const actual = originalSfcSourceCommand(input);
+  assert.deepEqual(actual.args, [
+    "/source/npm/oxlint/src/test-support/original-sfc-host-matrix.ts",
+    "--plugin-package",
+    "/source/npm/oxlint",
+    "--oxlint-package",
+    path.join(fixture.root, "node_modules/oxlint"),
+    "--output",
+    input.output,
+    "--expectation",
+    "candidate",
+  ]);
+  assert.equal(actual.command, process.execPath);
+  assert.equal(actual.options.cwd, fixture.root);
+  assert.equal(actual.options.timeout, 180000);
+  assert.equal(actual.options.maxBuffer, 64 * 1024 * 1024);
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(actual.options.env).filter(
+        ([key]) => key.startsWith("NAPI_") || key.startsWith("VIZE_") || key.startsWith("NODE_"),
+      ),
+    ),
+    {
+      NAPI_RS_NATIVE_LIBRARY_PATH: fixture.binary,
+      VIZE_PREFER_WORKSPACE_BINDING: "1",
+    },
+  );
+  assert.equal(actual.options.env.GITHUB_ACTIONS, undefined);
+  assert.equal(environment.NODE_OPTIONS, "--require=/foreign.cjs");
+  const observed = await captureProjectCommand(
+    process.execPath,
+    [
+      "-e",
+      "process.stdout.write(JSON.stringify([process.cwd(),process.env.NAPI_RS_NATIVE_LIBRARY_PATH,process.env.VIZE_PREFER_WORKSPACE_BINDING,process.env.NODE_OPTIONS??null]));process.stderr.write('whole stderr\\n');",
+    ],
+    actual.options,
+  );
+  assert.equal(observed.status, 0);
+  assert.deepEqual(JSON.parse(observed.stdout), [fixture.root, fixture.binary, "1", null]);
+  assert.equal(observed.stderr.toString(), "whole stderr\n");
+  assert.throws(() =>
+    originalSfcSourceCommand({
+      ...input,
+      environment: { ...environment, GITHUB_SHA: "b".repeat(40) },
+    }),
+  );
+  fs.appendFileSync(fixture.binary, "changed");
+  assert.throws(() => originalSfcSourceCommand(input));
+});
+
+void test("same-host source receipt binds all36 cells, provider, source image and original input packet", (t) => {
+  const fixture = sourceMatrixAuthority(t);
+  assertOriginalSfcSourceMatrix(fixture);
+  const mutations = [
+    (row) => {
+      row.matrix.hostVersion = "1.78.0";
+    },
+    (row) => {
+      row.matrix.manifests[1].path = row.plugin.path;
+    },
+    (row) => {
+      row.matrix.manifests[1].sha256 = "0".repeat(64);
+    },
+    (row) => {
+      row.matrix.native.path = row.plugin.path;
+    },
+    (row) => {
+      row.matrix.native.sha256 = "0".repeat(64);
+    },
+    (row) => {
+      row.matrix.plugin.path = row.binary;
+    },
+    (row) => {
+      row.matrix.plugin.sha256 = "0".repeat(64);
+    },
+    (row) => {
+      row.matrix.pluginVersion = "0.458.0";
+    },
+    (row) => {
+      row.matrix.expectation = "public-0.458";
+    },
+    (row) => {
+      row.matrix.contractAssertionsPassed = false;
+    },
+    (row) => {
+      row.matrix.failures = [{ stage: "native reference" }];
+    },
+    (row) => {
+      row.matrix.cells.pop();
+    },
+    (row) => {
+      row.matrix.cells[1].name = row.matrix.cells[0].name;
+    },
+    (row) => {
+      row.matrix.cells[0].stdout.bytes++;
+    },
+    (row) => {
+      row.matrix.packet.sha256 = "0".repeat(64);
+    },
+    (row) => {
+      row.matrix.projects[0].after[0].sha256 = "0".repeat(64);
+    },
+  ];
+  for (const [index, mutate] of mutations.entries()) {
+    const changed = structuredClone(fixture);
+    mutate(changed);
+    assert.throws(() => assertOriginalSfcSourceMatrix(changed), `mutation${index}`);
+  }
+  const copied = path.join(fixture.root, "copied.node");
+  fs.copyFileSync(fixture.binary, copied);
+  assert.throws(() =>
+    assertOriginalSfcSourceMatrix({
+      ...fixture,
+      matrix: { ...fixture.matrix, native: { ...fixture.matrix.native, path: copied } },
+    }),
+  );
+  const archived = path.join(fixture.matrix.projects[0].evidence, "after/1-.oxlintrc.json");
+  fs.writeFileSync(archived, "[]\n");
+  assert.throws(() => assertOriginalSfcSourceMatrix(fixture));
+  fs.writeFileSync(archived, "{}\n");
+  fs.appendFileSync(fixture.matrix.cells[0].stdout.path, "whole-output tail mutation");
+  assert.throws(() => assertOriginalSfcSourceMatrix(fixture));
+});

@@ -115,10 +115,12 @@ export async function qualifyMixedDirectory8507({ root, packageDir, artifacts, r
     };
     invocation.phase = "original-sfc-public-baseline";
     save();
-    // The candidate is already exercised by the package test suite. Install
-    // this historical public comparison once per qualification, never per test.
+    // Keep the existing workspace-host candidate and install this historical
+    // public comparison once. Its same host is then reused for the source matrix.
     qualified.originalSfcPublicBaseline = await qualifyOriginalSfcPublicBaseline({
       packageDir,
+      receipt,
+      binary,
       output: path.join(output, "original-sfc-7004-7005"),
     });
   } catch (error) {
@@ -152,9 +154,11 @@ export async function qualifyMixedDirectory8507({ root, packageDir, artifacts, r
   return qualified;
 }
 
-async function qualifyOriginalSfcPublicBaseline({ packageDir, output }) {
+async function qualifyOriginalSfcPublicBaseline({ packageDir, output, receipt, binary }) {
   const started = performance.now();
-  let completed = false;
+  let completed = false,
+    publicElapsedMs = null,
+    sourceStarted = null;
   fs.mkdirSync(output);
   const installation = fs.realpathSync(
     fs.mkdtempSync(path.join(os.tmpdir(), "vize-original-sfc-before-")),
@@ -260,29 +264,189 @@ async function qualifyOriginalSfcPublicBaseline({ packageDir, output }) {
     );
     assert.equal(hash(fs.readFileSync(matrix.native.path)), matrix.native.sha256);
     assert.deepEqual(inventory(), before, "the whole installed provider must remain unchanged");
+    publicElapsedMs = performance.now() - started;
+    sourceStarted = performance.now();
+    // A fresh candidate child uses the identical installed host after the untouched
+    // public baseline. Reuse the already authenticated staged addon, without
+    // another install, native build, stage copy or public-provider mutation.
+    const sourceOutput = path.join(output, "candidate-1.86");
+    fs.mkdirSync(sourceOutput);
+    const sourceManifest = JSON.parse(fs.readFileSync(path.join(packageDir, "package.json")));
+    const sourceFiles = [
+      "package.json",
+      sourceManifest.main,
+      sourceManifest.bin["oxlint-vize"],
+      "dist/cli.mjs",
+    ].map((file) => {
+      const physical = fs.realpathSync(path.resolve(packageDir, file));
+      return { path: physical, sha256: hash(fs.readFileSync(physical)) };
+    });
+    const sourceCommand = originalSfcSourceCommand({
+      packageDir,
+      installation,
+      output: sourceOutput,
+      receipt,
+      binary,
+    });
+    const sourceResult = await captureProjectCommand(
+      sourceCommand.command,
+      sourceCommand.args,
+      sourceCommand.options,
+    );
+    fs.writeFileSync(
+      path.join(sourceOutput, "process.json"),
+      JSON.stringify(
+        {
+          command: sourceCommand.command,
+          args: sourceCommand.args,
+          cwd: sourceCommand.options.cwd,
+          environment: Object.fromEntries(
+            PUBLIC_OVERRIDE_KEYS.map((key) => [key, sourceCommand.options.env[key] ?? null]),
+          ),
+          source: receipt.source,
+          sourceFiles,
+          binary: { path: fs.realpathSync(binary), sha256: receipt.frozen.sha256 },
+          status: sourceResult.status,
+          signal: sourceResult.signal,
+          error: errorPacket(sourceResult.error),
+          stdoutBytes: Array.from(sourceResult.stdout ?? []),
+          stderrBytes: Array.from(sourceResult.stderr ?? []),
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    assert.equal(sourceResult.error, undefined);
+    assert.equal(sourceResult.signal, null);
+    assert.equal(sourceResult.status, 0);
+    const sourceMatrix = JSON.parse(fs.readFileSync(path.join(sourceOutput, "receipt.json")));
+    assertOriginalSfcSourceMatrix({
+      matrix: sourceMatrix,
+      baseline: matrix,
+      receipt,
+      binary,
+      plugin: sourceFiles[1],
+      version: sourceManifest.version,
+    });
+    for (const file of sourceFiles) assert.equal(hash(fs.readFileSync(file.path)), file.sha256);
+    assert.deepEqual(
+      inventory(),
+      before,
+      "the same installed host/public provider must remain unchanged",
+    );
     completed = true;
     return {
       provider,
       matrix: path.join(output, "matrix/receipt.json"),
+      sameHostSourceMatrix: path.join(sourceOutput, "receipt.json"),
+      source: receipt.source,
+      sourceBinarySha256: receipt.frozen.sha256,
       scope:
-        "historical public comparison only; direct-host capability remains separately observed",
+        "same-host public/source comparison; direct-host capability remains separately observed",
     };
   } finally {
     // All raw receipts/locks/manifests/inputs/whole-file inventory are retained
     // under the existing always-upload artifact, including matrix failure.
-    fs.rmSync(installation, { recursive: true, force: true });
+    try {
+      fs.writeFileSync(
+        path.join(output, "installed-files-after.json"),
+        JSON.stringify(inventory(), null, 2) + "\n",
+      );
+    } finally {
+      fs.rmSync(installation, { recursive: true, force: true });
+    }
     fs.writeFileSync(
       path.join(output, "baseline-invocation.json"),
       JSON.stringify(
         {
           completed,
           elapsedMs: performance.now() - started,
+          publicElapsedMs,
+          sourceElapsedMs: sourceStarted === null ? null : performance.now() - sourceStarted,
           scope:
-            "one actual public install, full matrix, whole provider checks and owned cleanup; historical comparison only",
+            "one public install, public/source full matrices on the same1.86 host, whole provider checks and owned cleanup; no direct-host completion claim",
         },
         null,
         2,
       ) + "\n",
     );
   }
+}
+
+/** Selected source authority is explicit; ambient overrides cannot authorize it. */
+export function originalSfcSourceCommand({
+  packageDir,
+  installation,
+  output,
+  receipt,
+  binary,
+  environment = process.env,
+}) {
+  assert.equal(receipt.source.head, environment.GITHUB_SHA);
+  assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
+  const env = plainHostEnvironment(environment);
+  for (const key of PUBLIC_OVERRIDE_KEYS) delete env[key];
+  env.NAPI_RS_NATIVE_LIBRARY_PATH = fs.realpathSync(binary);
+  env.VIZE_PREFER_WORKSPACE_BINDING = "1";
+  return {
+    command: process.execPath,
+    args: [
+      path.join(packageDir, "src/test-support/original-sfc-host-matrix.ts"),
+      "--plugin-package",
+      packageDir,
+      "--oxlint-package",
+      path.join(installation, "node_modules/oxlint"),
+      "--output",
+      output,
+      "--expectation",
+      "candidate",
+    ],
+    options: { cwd: installation, env, timeout: 180_000, maxBuffer: 64 * 1024 * 1024 },
+  };
+}
+
+/** Source and public receipts must describe the same host and every original cell. */
+export function assertOriginalSfcSourceMatrix({
+  matrix,
+  baseline,
+  receipt,
+  binary,
+  plugin,
+  version,
+}) {
+  assert.equal(matrix.expectation, "candidate");
+  assert.equal(matrix.contractAssertionsPassed, true);
+  assert.deepEqual(matrix.failures, []);
+  assert.equal(baseline.hostVersion, "1.86.0");
+  assert.equal(matrix.hostVersion, baseline.hostVersion);
+  assert.deepEqual(matrix.manifests[1], baseline.manifests[1]);
+  assert.equal(hash(fs.readFileSync(matrix.manifests[1].path)), matrix.manifests[1].sha256);
+  assert.equal(matrix.pluginVersion, version);
+  assert.equal(fs.realpathSync(matrix.plugin.path), plugin.path);
+  assert.equal(matrix.plugin.sha256, plugin.sha256);
+  assert.equal(fs.realpathSync(matrix.native.path), fs.realpathSync(binary));
+  assert.equal(matrix.native.sha256, receipt.frozen.sha256);
+  assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
+  assert.deepEqual(
+    matrix.cells.map((cell) => cell.name).sort(),
+    baseline.cells.map((cell) => cell.name).sort(),
+  );
+  for (const cell of matrix.cells)
+    for (const stream of [cell.stdout, cell.stderr]) {
+      const raw = fs.readFileSync(stream.path);
+      assert.equal(raw.length, stream.bytes);
+      assert.equal(hash(raw), stream.sha256);
+    }
+  for (const project of matrix.projects)
+    for (const phase of ["before", "after"])
+      for (const input of project[phase]) {
+        const raw = fs.readFileSync(path.join(project.evidence, phase, input.archiveFilename));
+        assert.equal(raw.length, input.bytes);
+        assert.equal(hash(raw), input.sha256);
+      }
+  assert.deepEqual(matrix.packet, baseline.packet);
+  assert.deepEqual(
+    matrix.projects.map(({ files, before, after }) => ({ files, before, after })),
+    baseline.projects.map(({ files, before, after }) => ({ files, before, after })),
+  );
 }
