@@ -5,7 +5,7 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 

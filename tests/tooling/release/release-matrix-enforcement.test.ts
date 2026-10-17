@@ -7,7 +7,7 @@ import { test } from "node:test";
 import vm from "node:vm";
 import { parse } from "yaml";
 
-import { repoRoot } from "../_helpers/moonbit.ts";
+import { repoRoot } from "../_helpers/tool-commands.ts";
 import {
   realProjectArtifacts,
   shardEntries,

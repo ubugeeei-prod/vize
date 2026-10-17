@@ -9,7 +9,7 @@ import { Script } from "node:vm";
 
 import { buildDocsBackgroundScript, SCRIPT_BASENAMES } from "../../docs/theme/background.ts";
 import { renderReferenceDocs } from "../../npm/ui/scripts/generate-reference-docs.ts";
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 
 type LocaleStrings = {
   labels: Record<string, string>;

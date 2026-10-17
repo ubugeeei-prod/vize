@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { repoRoot } from "../_helpers/moonbit.ts";
+import { repoRoot } from "../_helpers/tool-commands.ts";
 import { createReleasePreflightVerifyOnlyFixture } from "./release-preflight-runner-fixture.ts";
 
 /** Runs the actual Rust release preflight over the full 22-archive fixture. */

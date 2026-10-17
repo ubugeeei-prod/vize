@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 import { CATALOGUE_SOURCES } from "../../docs/scripts/materialize-content.ts";
 import { defaultNavigationRenderRoutes } from "../../docs/scripts/navigation-render-routes.ts";
 import { createRenderJobs } from "../../docs/scripts/navigation-render-concurrency.ts";

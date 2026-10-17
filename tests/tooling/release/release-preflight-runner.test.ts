@@ -12,7 +12,7 @@ import {
   verifyReleaseTarget,
 } from "../../../tools/support/compat/github/release-preflight.mjs";
 import { workspaceVersionFromCargoToml } from "../../../tools/support/compat/github/release-preflight-core.mjs";
-import { repoRoot } from "../_helpers/moonbit.ts";
+import { repoRoot } from "../_helpers/tool-commands.ts";
 import { mutateDivergence } from "../_helpers/release-preflight-matrix-evidence-fixture.ts";
 import { writeFakeCommand } from "../support/fake-command.ts";
 import { createReleasePreflightVerifyOnlyFixture } from "../support/release-preflight-runner-fixture.ts";

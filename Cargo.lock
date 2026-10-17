@@ -331,9 +331,6 @@ name = "bumpalo"
 version = "3.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
-dependencies = [
- "allocator-api2",
-]
 
 [[package]]
 name = "bytecheck"
@@ -784,15 +781,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "crc32fast"
-version = "1.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01a7799fd6b852db0e61728dde9a204c423b44d689dbd432522543614b490e78"
-dependencies = [
- "cfg-if",
-]
-
-[[package]]
 name = "criterion"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1071,9 +1059,9 @@ version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1dd6dbb5841937940781866fa1281a1ff7bd3bf827091440879f9994983d5c2"
 dependencies = [
- "block-buffer 0.12.1",
+ "block-buffer",
  "const-oid",
- "crypto-common 0.2.2",
+ "crypto-common",
 ]
 
 [[package]]
@@ -1464,8 +1452,6 @@ dependencies = [
  "allocator-api2",
  "equivalent",
  "foldhash",
- "serde",
- "serde_core",
 ]
 
 [[package]]
@@ -2199,9 +2185,6 @@ version = "0.39.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2e5a6c098c7a3b6547378093f5cc30bc54fd361ce711e05293a5cc589562739b"
 dependencies = [
- "crc32fast",
- "hashbrown 0.17.1",
- "indexmap",
  "memchr",
 ]
 
@@ -3368,10 +3351,6 @@ name = "semver"
 version = "1.0.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a7852d02fc848982e0c167ef163aaff9cd91dc640ba85e263cb1ce46fae51cd"
-dependencies = [
- "serde",
- "serde_core",
-]
 
 [[package]]
 name = "seq-macro"
@@ -3490,8 +3469,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "47d7069beb7d6ac7b9acd1039986e73443f24234f41074da099d6f994ac9ad19"
 dependencies = [
  "cfg-if",
- "cpufeatures 0.3.1",
- "digest 0.11.3",
+ "cpufeatures",
+ "digest",
 ]
 
 [[package]]
@@ -4163,7 +4142,7 @@ dependencies = [
  "rayon",
  "serde",
  "serde_json",
- "sha2 0.11.1",
+ "sha2",
  "similar",
  "tempfile",
  "unicode-width",
@@ -4318,7 +4297,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "sha2 0.11.1",
+ "sha2",
  "tempfile",
  "thiserror 2.0.21",
  "toml",
@@ -4430,7 +4409,7 @@ dependencies = [
  "rayon",
  "serde",
  "serde_json",
- "sha2 0.11.1",
+ "sha2",
  "tempfile",
  "thiserror 2.0.21",
  "tracing",
@@ -4562,7 +4541,7 @@ dependencies = [
  "globset",
  "serde",
  "serde_json",
- "sha2 0.11.1",
+ "sha2",
  "tempfile",
  "vize_armature",
  "vize_croquis",
@@ -4609,7 +4588,7 @@ dependencies = [
  "oxc_span",
  "serde",
  "serde_json",
- "sha2 0.11.1",
+ "sha2",
  "thiserror 2.0.21",
  "unicode-width",
  "vize_atelier_sfc",
@@ -4709,7 +4688,7 @@ dependencies = [
  "oxc_syntax",
  "oxc_transformer",
  "serde_json",
- "sha2 0.11.1",
+ "sha2",
  "smallvec",
  "toml",
  "vize_atelier_core",
@@ -4841,7 +4820,7 @@ dependencies = [
  "ropey",
  "serde",
  "serde_json",
- "sha2 0.11.1",
+ "sha2",
  "tempfile",
  "tower",
  "tower-lsp",
@@ -4873,9 +4852,9 @@ dependencies = [
  "insta",
  "serde",
  "serde_json",
- "sha2 0.11.1",
+ "sha2",
  "vize_l0",
- "wit-parser 0.259.0",
+ "wit-parser",
 ]
 
 [[package]]
@@ -5045,7 +5024,7 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
- "sha2 0.11.1",
+ "sha2",
  "tempfile",
  "vize",
  "vize_atelier_core",
@@ -5116,7 +5095,7 @@ version = "1.0.4+wasi-0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b67efb37e106e55ce722a510d6b5f9c17f083e5fc79afc2badeb12cc313d9487"
 dependencies = [
- "wit-bindgen 0.57.1",
+ "wit-bindgen",
 ]
 
 [[package]]
@@ -5162,18 +5141,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23f0c9c52aa7cd7d77769a4cfe2a9adb1b331f489a41d912ce14513d5ab995c6"
 dependencies = [
  "unicode-ident",
-]
-
-[[package]]
-name = "wasmparser"
-version = "0.259.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f7c12eac7bb587801590f6a67ff0bc84d0748513864b71108e4b311cc3df694"
-dependencies = [
- "bitflags 2.13.2",
- "hashbrown 0.17.1",
- "indexmap",
- "semver",
 ]
 
 [[package]]
@@ -5394,11 +5361,7 @@ dependencies = [
  "indexmap",
  "log",
  "semver",
- "serde",
- "serde_derive",
- "serde_json",
  "unicode-ident",
- "wasmparser 0.259.0",
 ]
 
 [[package]]

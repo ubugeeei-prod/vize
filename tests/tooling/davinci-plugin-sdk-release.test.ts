@@ -7,7 +7,7 @@ import { parse } from "yaml";
 
 import { validateReleaseJobs } from "../../tools/support/compat/github/npm-bootstrap-contract.mjs";
 import { bootstrapJobContract } from "../../tools/support/compat/github/npm-bootstrap-packages.mjs";
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 import { requiredSuccessfulReleaseJobs } from "../../tools/support/compat/github/npm-bootstrap-contract.mjs";
 import { runRepositoryGuardFixture } from "./support/release-guard-fixture.ts";
