@@ -291,7 +291,7 @@ test("new scope and whole historical witnesses are finite and complete", () => {
     ),
   );
 });
-test("both current formatter callers compose only with the whole historical closure", () => {
+test("formatter caller custody separates historical provider qualification from finite config migration", () => {
   const raw = fs.readFileSync(path.join(root, receiptCurrentWitness.file));
   assert.equal(sha256(raw), receiptCurrentWitness.sha256);
   const current: { sourceRevision: string; files: { file: string; before: PublishedBody }[] } =
@@ -310,6 +310,46 @@ test("both current formatter callers compose only with the whole historical clos
     }),
   );
   assert.deepEqual([...bodies.keys()], Object.keys(receiptCurrentCallerDigests));
+  const typedBodies = new Map(
+    [...bodies].map(([file, bytes]) => [
+      file,
+      bytes.toString("utf8").replaceAll("build-receipt.mjs", "build-receipt.ts"),
+    ]),
+  );
+  // Canonical config carriers are a separate migration from the historical
+  // provider move. Bind every other current caller byte to the frozen witness.
+  const carrierEdits = {
+    "tests/tooling/formatter-sole-child-width-semantics.test.mjs": [
+      ['"vize.config.json"', '"vite.config.mjs"', 1],
+      [
+        "Buffer.from(`${JSON.stringify({ formatter: fixture.options })}\\n`)",
+        "Buffer.from(vueConfigFixtureSource({ formatter: fixture.options }))",
+        1,
+      ],
+    ],
+    "tests/tooling/formatter-sole-child-vue-history.test.mjs": [
+      ['"vize.config.json"', '"vite.config.mjs"', 2],
+      [
+        "Buffer.from(fixture.config.content)",
+        "Buffer.from(vueConfigFixtureSource(fixture.config.content))",
+        1,
+      ],
+    ],
+  } as const;
+  for (const [file, edits] of Object.entries(carrierEdits)) {
+    let expected = typedBodies.get(file)!;
+    for (const [from, to, count] of edits) {
+      assert.equal(expected.split(from).length - 1, count, `${file}: finite carrier anchor`);
+      expected = expected.replaceAll(from, to);
+    }
+    expected =
+      'import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";\n' + expected;
+    assert.equal(
+      fs.readFileSync(path.join(root, file), "utf8"),
+      expected,
+      `${file}: complete source, native input/output oracles and command counts stay unchanged`,
+    );
+  }
   const paths = [...bodies.keys(), receiptCurrentWitness.file];
   const files = [...changed, ...paths];
   const currentRead: ReceiptExtensionReader = (side, file) => {
@@ -317,7 +357,7 @@ test("both current formatter callers compose only with the whole historical clos
     if (side === "after" && file === companion) return fs.readFileSync(path.join(root, companion));
     const bytes = bodies.get(file);
     if (!bytes) return read(side, file);
-    return side === "before" ? bytes : fs.readFileSync(path.join(root, file));
+    return side === "before" ? bytes : typedBodies.get(file)!;
   };
   const prior = String(read("after", companion));
   assert.equal(String(currentRead("after", companion)), prior + receiptCurrentCallerAppendix);
@@ -328,6 +368,15 @@ test("both current formatter callers compose only with the whole historical clos
   assert.equal(result.completeCallers, 73);
   assert.equal(result.additionalCurrentCallers, 2);
   assert.equal(result.qualifiedFinitePaths.length, 87 + 3);
+  assert.equal(
+    qualifyCurrent((side, file) =>
+      side === "after" && bodies.has(file)
+        ? fs.readFileSync(path.join(root, file))
+        : currentRead(side, file),
+    ),
+    null,
+    "config migration must not gain the historical provider-only qualification",
+  );
   for (const file of paths) {
     const omitted = files.filter((name) => name !== file);
     assert.equal(qualifyCurrent(currentRead, omitted), null, file);

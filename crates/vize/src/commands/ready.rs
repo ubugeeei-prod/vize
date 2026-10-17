@@ -268,14 +268,14 @@ mod tests {
     #[test]
     fn check_uses_project_inputs_when_config_declares_tsconfig() {
         let project = tempfile::tempdir().unwrap();
-        let config_path = project.path().join("vize.config.json");
+        let config_path = project.path().join("vite.config.mjs");
         std::fs::write(
             &config_path,
-            r#"{
+            r#"export default { vue: {
   "typeChecker": {
     "tsconfig": "tsconfig.vize.json"
   }
-}"#,
+} };"#,
         )
         .unwrap();
 

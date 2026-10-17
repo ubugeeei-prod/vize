@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import {
   projectViteConfigSource,
+  resolveViteConfigExport,
   vueConfigOptions,
 } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
 
@@ -117,6 +118,7 @@ test("canonical namespaces refuse unknown roots, entries, native fields and mism
     { entries: [{ lib: { dir: "scoped" } }] },
     { entries: [{ unknown: true }] },
     { entries: [{ version: "4" }] },
+    { entries: [{ extends: "./old.json" }] },
     { entries: [{ files: [undefined] }] },
     { lib: { registries: { invalidNamespace: "npm:somewhere" } } },
     { lib: { registries: { "@team": { dir: "components" } } } },
@@ -182,21 +184,21 @@ test("all documented canonical native sections accept their original field value
   });
 });
 
-test("canonical validation never invokes legacy or Vite hooks and legacy unknown shapes stay permissive", async () => {
+test("retired namespaces fail without invoking any legacy or Vite hooks", async () => {
   let calls = 0;
   const vize = () => {
     calls++;
     return {};
   };
   assert.equal(vueConfigOptions({ vize }), undefined);
-  await assert.rejects(projectViteConfigSource({ vue: { compiler: false }, vize }), TypeError);
+  await assert.rejects(
+    projectViteConfigSource({ vue: { compiler: false }, vize }),
+    /vize: configuration is no longer supported/,
+  );
   assert.equal(calls, 0);
-  assert.deepEqual(
-    await projectViteConfigSource({ vize: { packageLocalUnknown: { active: true } } }),
-    {
-      typeChecker: { jsxTypecheck: true },
-      packageLocalUnknown: { active: true },
-    },
+  await assert.rejects(
+    projectViteConfigSource({ vize: { packageLocalUnknown: { active: true } } }),
+    /move Vue settings to vue:/,
   );
   assert.equal(calls, 0);
 });
@@ -243,11 +245,11 @@ test("canonical entries admit only real native linter scopes while all other nat
         return {};
       },
     }),
-    /vue\.entries\[0\]: unknown option version/u,
+    /vize: configuration is no longer supported/u,
   );
   assert.equal(callbacks, 0);
 
-  // Narrowing canonical admission does not reinterpret old flat/scoped ingress.
+  // Preserve the old fixture as history; retired ingress now requires migration.
   const original = await readFile(
     new URL(
       "../_fixtures/differential/config/vue-options/original-vite-runtime.mjs.fixture",
@@ -256,7 +258,8 @@ test("canonical entries admit only real native linter scopes while all other nat
   );
   const legacy = await import("data:text/javascript;base64," + original.toString("base64"));
   const old = { vize: { entries: [{ ...scoped, ...rootOptions, unknownScopedOwner: true }] } };
-  assert.deepEqual(await projectViteConfigSource(old), await legacy.resolveViteConfigExport(old));
+  assert.ok(await legacy.resolveViteConfigExport(old));
+  await assert.rejects(projectViteConfigSource(old), /move Vue settings to vue:/);
 });
 
 test("new public numeric Vue 0.10 ingress projects native enums and respects canonical version leaves", async () => {
@@ -312,4 +315,88 @@ test("new public numeric Vue 0.10 ingress projects native enums and respects can
       .vueVersion,
     "2",
   );
+});
+
+test("evaluated fluent output retains native policy without evaluating Vite plugins or tasks again", async () => {
+  const source = {
+    vue: { musea: { include: ["stories/*.art.vue"] }, formatter: { singleQuote: true } },
+  };
+  const processed = {
+    plugins: [
+      () => {
+        throw new Error("plugin evaluated");
+      },
+    ],
+    [Symbol.for("@vizejs/vite-plugin/vite-plus/source")]: source,
+  };
+  assert.deepEqual(await resolveViteConfigExport(processed), await resolveViteConfigExport(source));
+});
+
+test("every native language-server boolean survives canonical projection, including crossFile opt-outs", async () => {
+  const model = await readFile(
+    new URL("../../davinci/vize_l0/src/config/model/language_server.rs", import.meta.url),
+    "utf8",
+  );
+  const fields = [...model.matchAll(/pub ([a-z_]+): Option<bool>/gu)].map((match) =>
+    match[1].replace(/_([a-z])/gu, (_, letter) => letter.toUpperCase()),
+  );
+  assert.ok(fields.includes("crossFile"));
+  assert.ok(fields.includes("ecosystem"));
+  assert.ok(fields.includes("signatureHelp"));
+  for (const enabled of [true, false]) {
+    const languageServer = Object.fromEntries(fields.map((field) => [field, enabled]));
+    assert.deepEqual(await projectViteConfigSource({ vue: { languageServer } }), {
+      typeChecker: { jsxTypecheck: true },
+      languageServer,
+    });
+  }
+  await assert.rejects(
+    projectViteConfigSource({ vue: { languageServer: { crossFileAnalysis: true } } }),
+    /vue\.languageServer: unknown option crossFileAnalysis/u,
+  );
+});
+
+test("canonical lint preset names match the native parser, including accepted aliases", async () => {
+  const native = await readFile(
+    new URL("../../crates/vize_patina/src/preset.rs", import.meta.url),
+    "utf8",
+  );
+  const parse = /pub fn parse\(value: &str\) -> Option<Self> \{([\s\S]*?)\n    \}/u.exec(native);
+  assert.ok(parse);
+  const accepted = [...parse[1].matchAll(/"([^"]+)"/gu)].map((match) => match[1]);
+  assert.ok(accepted.includes("happy-path"));
+  assert.ok(accepted.includes("recommended"));
+  assert.ok(accepted.includes("all"));
+  const schema = JSON.parse(
+    await readFile(
+      new URL("../../npm/cli/schemas/vize.config.schema.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  assert.deepEqual(
+    schema.definitions.LinterConfig.properties.preset.enum.toSorted(),
+    accepted.toSorted(),
+  );
+  const generated = await readFile(
+    new URL("../../npm/cli/src/types/generated.ts", import.meta.url),
+    "utf8",
+  );
+  const presetType = /export interface LinterConfig \{[\s\S]*?\bpreset\?:\s*([\s\S]*?);/u.exec(
+    generated,
+  );
+  assert.ok(presetType);
+  assert.deepEqual(
+    [...presetType[1].matchAll(/"([^"]+)"/gu)].map((match) => match[1]).toSorted(),
+    accepted.toSorted(),
+  );
+  for (const preset of accepted) {
+    const result = await projectViteConfigSource({ vue: { linter: { preset } } });
+    assert.deepEqual(result.linter, { preset });
+  }
+  for (const preset of ["", "Recommended", "essentials", "not-a-preset"]) {
+    await assert.rejects(
+      projectViteConfigSource({ vue: { linter: { preset } } }),
+      /vue\.linter\.preset: unsupported native option value/u,
+    );
+  }
 });

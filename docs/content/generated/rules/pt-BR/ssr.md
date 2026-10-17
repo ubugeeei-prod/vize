@@ -32,8 +32,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ssr/no-browser-globals-in-ssr": "warn"
@@ -97,8 +97,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ssr/no-hydration-mismatch": "warn"

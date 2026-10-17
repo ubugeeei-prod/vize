@@ -61,7 +61,9 @@ pub fn run(mut args: LintArgs) {
         .unwrap_or(cwd.as_path());
     let config = loaded_config.config;
     if !linter_enabled {
-        eprintln!("[vize] Skipping lint because linter.enabled is false in vize.config.");
+        eprintln!(
+            "[vize] Skipping lint because linter.enabled is false in vite.config.* vue settings."
+        );
         return;
     }
     let configured_corsa_path = config

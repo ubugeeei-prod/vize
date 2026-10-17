@@ -200,10 +200,26 @@
           "type": "boolean"
         },
         "preset": {
-          "description": "Built-in lint preset",
+          "description": "Built-in lint preset (happy-path is the recommended canonical name; native aliases are accepted)",
           "default": "happy-path",
           "type": "string",
-          "enum": ["happy-path", "opinionated", "essential", "incremental", "ecosystem", "nuxt"]
+          "enum": [
+            "general-recommended",
+            "general_recommended",
+            "generalRecommended",
+            "happy-path",
+            "happy_path",
+            "happy",
+            "default",
+            "recommended",
+            "opinionated",
+            "strict",
+            "all",
+            "essential",
+            "incremental",
+            "ecosystem",
+            "nuxt"
+          ]
         },
         "typeAware": {
           "description": "Enable native type-aware lint rules from the active lint configuration",
@@ -922,6 +938,10 @@
           "description": "Enable Vue ecosystem lint and editor helpers",
           "type": "boolean"
         },
+        "crossFile": {
+          "description": "Enable workspace-wide cross-file diagnostic groups (disabled by default)",
+          "type": "boolean"
+        },
         "legacyVue2": {
           "description": "Enable Vue 2.7 / Nuxt 2 editor and type-checking compatibility",
           "type": "boolean"
@@ -1234,20 +1254,6 @@
             "type": "string"
           }
         },
-        "extends": {
-          "description": "Base config files or presets to compose",
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
-        },
         "dialect": {
           "description": "Vue dialect profile for standalone HTML documents; when absent the dialect is detected structurally per document",
           "type": "string",
@@ -1330,20 +1336,6 @@
       "items": {
         "type": "string"
       }
-    },
-    "extends": {
-      "description": "Base config files or presets to compose",
-      "oneOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      ]
     },
     "dialect": {
       "description": "Vue dialect profile for standalone HTML documents; when absent the dialect is detected structurally per document",

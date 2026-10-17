@@ -25,7 +25,7 @@ title: 分析诊断
 ## 诊断家族
 
 铜绿规则是单排绒毛规则。它们使用诸如`vue/require-v-for-key`和
-由`vize.config.*`、CLI、JavaScript API 和 Oxlint 桥接器配置。
+由 `vite.config.*` 中的 `vue.linter`、CLI、JavaScript API 和 Oxlint 桥接器配置。
 
 跨文件诊断使用`vize:croquis/cf/*`代码。它们由
 `vize lint --cross-file` Vize会建立项目图，以便比较供应商与

@@ -19,14 +19,29 @@ use super::model::{
 /// declaration-order rules without another parse or serialization roundtrip.
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(transparent)]
-pub struct ConfigDocument(RawVizeConfig);
+pub struct ConfigDocument(RawVizeConfig, #[serde(skip)] Vec<crate::String>);
 
 impl ConfigDocument {
     /// Defaults for projects without dedicated Vize configuration.
     ///
     /// Keep `Default` unchanged for existing dedicated configuration files.
     pub fn project_defaults() -> Self {
-        Self(RawVizeConfig::project_defaults())
+        Self(RawVizeConfig::project_defaults(), Vec::new())
+    }
+
+    /// Files read by the host while evaluating this snapshot.
+    ///
+    /// Host metadata is never accepted from authored configuration values.
+    pub fn config_dependencies(&self) -> &[crate::String] {
+        &self.1
+    }
+
+    /// Retain host-observed dependencies without changing configuration semantics.
+    pub fn set_config_dependencies(
+        &mut self,
+        dependencies: impl IntoIterator<Item = impl Into<crate::String>>,
+    ) {
+        self.1 = dependencies.into_iter().map(Into::into).collect();
     }
 
     /// Project identity supplied by the Vite host projection.

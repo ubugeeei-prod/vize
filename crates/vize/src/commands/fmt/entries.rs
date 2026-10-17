@@ -19,7 +19,19 @@ pub(super) fn resolve_patterns(
     snapshot: &config::LoadedFormatterSnapshot,
 ) -> ResolvedFmtPatterns {
     let explicit = !args.patterns.is_empty();
-    let values = if explicit && snapshot.project_root.is_some() {
+    // An authored Vite root must not redirect a missing explicit cwd input.
+    // Entry-relative fallback still applies when both tools share that root.
+    let scoped_fallback = snapshot.project_root.as_deref().is_none_or(|root| {
+        std::env::current_dir()
+            .ok()
+            .and_then(|cwd| {
+                std::fs::canonicalize(root)
+                    .ok()
+                    .zip(std::fs::canonicalize(cwd).ok())
+            })
+            .is_some_and(|(project, invocation)| project == invocation)
+    });
+    let values = if explicit && !scoped_fallback {
         compact_patterns(&args.patterns)
     } else if explicit {
         load_fmt_entry_file_set(snapshot)
@@ -233,10 +245,17 @@ fn strip_prefix_text(path: &Path, base: &Path) -> Option<String> {
 }
 
 fn join_pattern(base: &Path, pattern: &str) -> String {
-    if pattern == "." {
-        return normalize_path_text(base);
+    let path = if pattern == "." {
+        base.to_path_buf()
+    } else {
+        base.join(pattern)
+    };
+    if let Ok(cwd) = std::env::current_dir()
+        && let Ok(relative) = path.strip_prefix(&cwd)
+    {
+        return normalize_path_text(relative);
     }
-    normalize_path_text(&base.join(pattern))
+    normalize_path_text(&path)
 }
 
 fn normalize_pattern_text(pattern: &str) -> String {

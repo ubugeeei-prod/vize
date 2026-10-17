@@ -5,14 +5,14 @@ Keep these settings in configuration when the CLI and Vite+ tasks should follow 
 For a first run and the available command options, see [linting with the CLI](./cli.md#lint).
 To understand the cross-file reports, see [component trees and complexity](./cross-file-complexity.md).
 
-Use the same native lint settings from `vize.config.*` or the Vite+ integration:
+Keep native lint settings in `vue.linter` in `vite.config.*`; Vite+ task overrides can use `lint.vue`:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
   lint: {
-    vize: {
+    vue: {
       preset: "opinionated",
       crossFile: true,
       strictReactivity: true,
@@ -24,7 +24,7 @@ export default defineConfig({
 });
 ```
 
-In `vize.config.*`, put these keys in `linter`. `crossFileTree` and
+For settings shared with CLI and editor, put these keys in `vue.linter`. `crossFileTree` and
 `crossFileComplexity` also enable cross-file analysis. Cross-file checks operate
 on the files selected for a native CLI run. The strict-reactivity switch enables
 `type/no-reactivity-loss` for both CLI and editor diagnostics; explicit rule
@@ -35,6 +35,6 @@ CLI opt-in flags remain available for direct `vize lint` invocation, and
 configured lint settings. An absent warning limit permits warnings; `0` fails
 when any warning remains. Negative limits are invalid.
 
-Vite+ lint tasks accept paths and `--fix`. Put native-only flags in `lint.vize`
+Vite+ lint tasks accept paths and `--fix`. Put native-only flags in `lint.vue`
 instead of passing them through to Oxlint. For example, `vp run lint -- src`
 runs both linters with their own configuration.

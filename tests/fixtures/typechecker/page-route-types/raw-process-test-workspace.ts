@@ -16,7 +16,7 @@ export function temporary(t: TestContext): string {
 }
 
 /** Only owned source files and Node stubs; no upstream archive, CLI or provider preparation. */
-export function fakeFixture(t: TestContext) {
+export function fakeFixture(t: TestContext, options: { activeConfig?: boolean } = {}) {
   const workspaceDir = temporary(t);
   const fixture: PinnedFixtureWorkspace = {
     entry: {
@@ -43,21 +43,30 @@ export function fakeFixture(t: TestContext) {
   fixture.write(PAGE_PATH, source);
   fixture.write(ROUTES_PATH, routes);
   fixture.write("tsconfig.json", `${JSON.stringify({ include: [PAGE_PATH, ROUTES_PATH] })}\r\n`);
-  fixture.write("vize.config.json", '{ "owned": true }\r\n');
+  fixture.write("vize.config.json.fixture", '{ "owned": true }\r\n');
+  if (options.activeConfig !== false)
+    fixture.write("vite.config.mjs", 'export default { vue: { owned: "carrier" } };\r\n');
   const configuration = [
     "tsconfig.json",
-    "vize.config.json",
+    "vize.config.json.fixture",
     `${PLAYGROUND}/compiler-options.json`,
+    "vite.config.mjs",
   ];
   fixture.write(configuration[2], "owned inherited configuration\r\n");
   const before = new Map(
     [PAGE_PATH, ROUTES_PATH, ...configuration].map(
-      (file) => [file, fs.readFileSync(fixture.resolve(file))] as const,
+      (file) =>
+        [
+          file,
+          fs.existsSync(fixture.resolve(file)) ? fs.readFileSync(fixture.resolve(file)) : null,
+        ] as const,
     ),
   );
   function assertRestored() {
-    for (const [file, bytes] of before)
-      assert.deepEqual(fs.readFileSync(fixture.resolve(file)), bytes);
+    for (const [file, bytes] of before) {
+      if (bytes === null) assert.equal(fs.existsSync(fixture.resolve(file)), false);
+      else assert.deepEqual(fs.readFileSync(fixture.resolve(file)), bytes);
+    }
     assert.equal(fs.existsSync(fixture.resolve("project-root-map.d.ts")), false);
   }
   function stub(body: string) {

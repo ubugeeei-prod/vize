@@ -60,8 +60,8 @@ export function generateRulePages({
       overviewIntroduction[ja ? "ja" : "en"],
       "",
       ja
-        ? "Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lint.vize.rules` に指定します。`vp run lint` で Vize と Oxlint の lint を実行します。"
-        : "With Vite+, import `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `lint.vize.rules`, and run `vp run lint` for Vize and Oxlint diagnostics.",
+        ? "Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue.linter.rules` に指定します。`vp run lint` で Vize と Oxlint の lint を実行します。"
+        : "With Vite+, import `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `vue.linter.rules`, and run `vp run lint` for Vize and Oxlint diagnostics.",
       "",
       ja
         ? "既定の重大度は実装で定められた値です。プロジェクトでは `off` / `warn` / `error` に変更できます。オプションは[ルールのオプション](./options.md)、複数ファイルの検査は[ファイル間ルール](./cross-file.md)を参照してください。"
@@ -189,8 +189,8 @@ function detail(rule: RuleMetadata, example: RuleExample, ja: boolean) {
     'import { defineConfig } from "@vizejs/vite-plugin/vite-plus";',
     "",
     "export default defineConfig({",
-    "  lint: {",
-    `    vize: ${JSON.stringify(config, null, 2).split("\n").join("\n    ")},`,
+    "  vue: {",
+    `    linter: ${JSON.stringify(config, null, 2).split("\n").join("\n    ")},`,
     "  },",
     "});",
     "```",

@@ -20,8 +20,8 @@ Options API の props / data / computed などのキー重複を検出します�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-dupe-keys": "error"

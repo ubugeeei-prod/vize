@@ -36,7 +36,7 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   const nvimConfig = fs.readFileSync(path.join(root, "editors/nvim/lua/vize/config.lua"), "utf-8");
   assert.match(nvimConfig, /cmd = \{ "vize", "lsp" \}/);
   assert.match(nvimConfig, /filetypes = \{ "vue", "art-vue" \}/);
-  assert.match(nvimConfig, /init_options = profiles\.recommended/);
+  assert.match(nvimConfig, /init_options = vim\.empty_dict\(\)/);
   assert.match(nvimConfig, /lint = \{\s*lint = true,\s*\}/);
   assert.match(nvimConfig, /off = \{\}/);
   assert.match(nvimConfig, /editor = true/);
@@ -47,7 +47,7 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   const vimConfig = fs.readFileSync(path.join(root, "editors/vim/autoload/vize.vim"), "utf-8");
   assert.match(vimConfig, /'cmd': \['vize', 'lsp'\]/);
   assert.match(vimConfig, /'allowlist': \['vue', 'art-vue'\]/);
-  assert.match(vimConfig, /'initialization_options': s:profiles\.recommended/);
+  assert.match(vimConfig, /'initialization_options': \{\}/);
   assert.match(vimConfig, /'lint': \{'lint': v:true\}/);
   assert.match(vimConfig, /'off': \{\}/);
   assert.match(vimConfig, /'editor': v:true/);
@@ -58,16 +58,13 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   const helixConfig = fs.readFileSync(path.join(root, "editors/helix/languages.toml"), "utf-8");
   assert.match(helixConfig, /\[language-server\.vize\][\s\S]*command = "vize"/);
   assert.match(helixConfig, /\[language-server\.vize\][\s\S]*args = \["lsp"\]/);
-  assert.match(helixConfig, /\[language-server\.vize\.config\][\s\S]*editor = true/);
-  assert.match(helixConfig, /\[language-server\.vize\.config\][\s\S]*ecosystem = true/);
-  assert.match(helixConfig, /\[language-server\.vize\.config\][\s\S]*lint = true/);
-  assert.match(helixConfig, /\[language-server\.vize\.config\][\s\S]*typecheck = true/);
+  assert.doesNotMatch(helixConfig, /\[language-server\.vize\.config\]/);
   assert.match(helixConfig, /name = "vue"[\s\S]*language-servers = \["vize"\]/);
   assert.match(helixConfig, /name = "art-vue"[\s\S]*language-id = "art-vue"/);
 
   const emacsConfig = fs.readFileSync(path.join(root, "editors/emacs/vize.el"), "utf-8");
   assert.match(emacsConfig, /defcustom vize-eglot-command '\("vize" "lsp"\)/);
-  assert.match(emacsConfig, /defcustom vize-eglot-profile 'recommended/);
+  assert.match(emacsConfig, /defcustom vize-eglot-profile nil/);
   assert.match(emacsConfig, /vue-mode vue-ts-mode web-mode vize-vue-mode vize-art-vue-mode/);
   assert.match(emacsConfig, /\(lint \. \(:lint t\)\)/);
   assert.match(emacsConfig, /\(off \. nil\)/);
@@ -81,13 +78,11 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   const zedSource = fs.readFileSync(path.join(root, "editors/zed/src/lib.rs"), "utf-8");
   assert.match(zedSource, /const SERVER_BINARY: &'static str = "vize"/);
   assert.match(zedSource, /unwrap_or_else\(\|\| vec!\["lsp"\.to_string\(\)\]\)/);
-  assert.match(zedSource, /recommended_initialization_options/);
+  assert.match(zedSource, /settings\.initialization_options/);
+  assert.doesNotMatch(zedSource, /read_text_file/);
   const zedProfile = fs.readFileSync(
     path.join(root, "editors/zed/src/initialization_options.rs"),
     "utf-8",
   );
-  assert.match(zedProfile, /"editor": true/);
-  assert.match(zedProfile, /"ecosystem": true/);
-  assert.match(zedProfile, /"lint": true/);
-  assert.match(zedProfile, /"typecheck": true/);
+  assert.match(zedProfile, /explicit\.unwrap_or_else\(\|\| serde_json::json!\(\{\}\)\)/);
 });

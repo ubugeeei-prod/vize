@@ -211,8 +211,8 @@ mod tests {
         let state = ServerState::new();
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(
-            dir.path().join("vize.config.json"),
-            r#"{ "formatter": { "singleQuote": true } }"#,
+            dir.path().join("vite.config.mjs"),
+            r#"export default { vue: { "formatter": { "singleQuote": true } } };"#,
         )
         .unwrap();
         state.load_workspace_config(dir.path());

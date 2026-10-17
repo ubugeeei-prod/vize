@@ -48,7 +48,7 @@ void test("the public VRT entrypoint discovers mjs and evaluates its shared conf
     appendFileSync(${JSON.stringify(marker)}, "evaluation\\n");
     export default {
       root: "gallery",
-      vize: { musea: { include: ["stories/**/*.art.vue"], vrt: { threshold: 0 } } },
+      vue: { musea: { include: ["stories/**/*.art.vue"], vrt: { threshold: 0 } } },
     };
   `,
   );

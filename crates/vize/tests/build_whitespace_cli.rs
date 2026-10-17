@@ -8,6 +8,8 @@
     reason = "whole CLI fixtures use std strings"
 )]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use serde::Serialize;
 use std::{fs, path::Path, process::Command};
 use vize_atelier_core::{WhitespaceStrategy, parser::with_whitespace_mode};
@@ -25,26 +27,36 @@ const TYPESCRIPT: &str = include_str!(
 #[test]
 fn build_config_whitespace_reaches_client_ssr_and_vapor_whole_outputs() {
     for (config_name, explicit, no_config, config, preserve) in [
-        ("vize.config.json", false, false, JSON, true),
-        ("vize.config.ts", false, false, TYPESCRIPT, true),
+        ("vite.config.mjs", false, false, JSON, true),
+        ("vite.config.ts", false, false, TYPESCRIPT, true),
         ("explicit.json", true, false, JSON, true),
-        ("explicit.ts", true, false, TYPESCRIPT, true),
-        ("vize.config.json", false, true, JSON, false),
+        ("vite.config.mts", true, false, TYPESCRIPT, true),
+        ("vite.config.mjs", false, true, JSON, false),
         (
-            "vize.config.json",
+            "vite.config.mjs",
             false,
             false,
             r#"{"compiler":{"whitespace":"condense"}}"#,
             false,
         ),
         (
-            "vize.config.json",
-            false,
+            "explicit-unknown.json",
+            true,
             false,
             r#"{"compiler":{"whitespace":"unknown"}}"#,
             false,
         ),
     ] {
+        let config = if config_name.ends_with(".json") {
+            config.to_owned()
+        } else if let Some(native) = config.strip_prefix("export default ") {
+            format!(
+                "export default {{ vue: {} }};\n",
+                native.trim().trim_end_matches(';')
+            )
+        } else {
+            vite_config::source(config)
+        };
         for (ssr, vapor) in [(false, false), (true, false), (false, true)] {
             let expected = compiler_code(SOURCE, "App.vue", preserve, false, ssr, vapor);
             let condensed = compiler_code(SOURCE, "App.vue", false, false, ssr, vapor);
@@ -56,7 +68,7 @@ fn build_config_whitespace_reaches_client_ssr_and_vapor_whole_outputs() {
             for format in ["js", "json", "stats"] {
                 let project = tempfile::tempdir().unwrap();
                 fs::write(project.path().join("App.vue"), SOURCE).unwrap();
-                fs::write(project.path().join(config_name), config).unwrap();
+                fs::write(project.path().join(config_name), &config).unwrap();
                 let output = run(
                     project.path(),
                     config_name,
@@ -131,13 +143,13 @@ fn configured_vue2_line_breaks_keep_the_existing_scoped_api_behavior() {
         let project = tempfile::tempdir().unwrap();
         fs::write(project.path().join("App.vue"), source).unwrap();
         fs::write(
-            project.path().join("vize.config.json"),
-            r#"{"compiler":{"whitespace":"vue2-line-breaks"}}"#,
+            project.path().join("vite.config.mjs"),
+            vite_config::source(r#"{"compiler":{"whitespace":"vue2-line-breaks"}}"#),
         )
         .unwrap();
         let output = run(
             project.path(),
-            "vize.config.json",
+            "vite.config.mjs",
             false,
             false,
             "js",
@@ -158,13 +170,13 @@ fn whitespace_and_vapor_from_the_same_config_both_apply() {
     let project = tempfile::tempdir().unwrap();
     fs::write(project.path().join("App.vue"), SOURCE).unwrap();
     fs::write(
-        project.path().join("vize.config.json"),
-        r#"{"compiler":{"whitespace":"preserve","vapor":true}}"#,
+        project.path().join("vite.config.mjs"),
+        vite_config::source(r#"{"compiler":{"whitespace":"preserve","vapor":true}}"#),
     )
     .unwrap();
     let output = run(
         project.path(),
-        "vize.config.json",
+        "vite.config.mjs",
         false,
         false,
         "js",

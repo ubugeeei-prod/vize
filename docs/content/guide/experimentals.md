@@ -23,18 +23,20 @@ diagnostics, direct API entry points, implementation boundaries, and deferred sy
 Prefer the recommended camelCase names in new TypeScript config:
 
 ```ts
-import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  experimentals: {
-    patternedTemplate: true, inTagComment: true,
-    selfComponent: true, strictSlotChildren: true,
-    serverScript: false, vapor: null, jsxVapor: {},
+  vue: {
+    experimentals: {
+      patternedTemplate: true, inTagComment: true,
+      selfComponent: true, strictSlotChildren: true,
+      serverScript: false, vapor: null, jsxVapor: {},
+    },
   },
 });
 ```
 
-For JSON and Pkl config, the same values are accepted. Use `{}` only when you want to enable the feature while leaving room for future nested options:
+The same option values can be represented as JSON data inside a shared JavaScript object. Use `{}` only when you want to enable the feature while leaving room for future nested options:
 
 ```json
 {
@@ -46,6 +48,8 @@ For JSON and Pkl config, the same values are accepted. Use `{}` only when you wa
   }
 }
 ```
+
+> Historical migration example: PKL configuration has been removed and is not loaded. Move the same values into the JavaScript object above.
 
 ```pkl
 amends "node_modules/vize/pkl/vize.pkl"
@@ -72,11 +76,11 @@ Each key is a switch:
 
 Missing keys, `false`, and `null` are off. `true` and `{}` are on.
 
-Typed TypeScript and Pkl config should use only `true`, `false`, `null`, or `{}`. The config loader treats other present non-`false` and non-`null` JSON values as enabled for compatibility, but that is not the documented public shape.
+Typed TypeScript configuration should use only `true`, `false`, `null`, or `{}`. The config loader treats other present non-`false` and non-`null` JSON values as enabled for compatibility, but that is not the documented public shape.
 
 ## Precedence
 
-Shared `vize.config.*` values are the default for tools that load project config. Direct Vite plugin options win over shared config, including explicit opt-outs:
+Shared `vue.experimentals` in `vite.config.*` values are the default for tools that load project config. Direct Vite plugin options win over shared config, including explicit opt-outs:
 
 ```ts
 import { defineConfig } from "vite";
@@ -138,8 +142,10 @@ Enable `patternedTemplate` to parse `v-match` containers and direct `v-when` bra
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    patternedTemplate: true,
+  vue: {
+    experimentals: {
+      patternedTemplate: true,
+    },
   },
 });
 ```
@@ -191,8 +197,10 @@ Enable `inTagComment` to parse compile-time-only `//` comments inside opening ta
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    inTagComment: true,
+  vue: {
+    experimentals: {
+      inTagComment: true,
+    },
   },
 });
 ```
@@ -223,8 +231,10 @@ Enable `selfComponent` to reserve the exact `<Self>` tag for recursive component
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    selfComponent: true,
+  vue: {
+    experimentals: {
+      selfComponent: true,
+    },
   },
 });
 ```
@@ -262,8 +272,10 @@ Enable `strictSlotChildren` to add virtual-TypeScript checks for slot children f
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    strictSlotChildren: true,
+  vue: {
+    experimentals: {
+      strictSlotChildren: true,
+    },
   },
 });
 ```
@@ -306,8 +318,10 @@ Enable `serverScript` only for hosts that explicitly test the server-script comp
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    serverScript: true,
+  vue: {
+    experimentals: {
+      serverScript: true,
+    },
   },
 });
 ```
@@ -320,8 +334,10 @@ Enable `vapor` to route SFC compilation through experimental Vapor backend suppo
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    vapor: true,
+  vue: {
+    experimentals: {
+      vapor: true,
+    },
   },
 });
 ```
@@ -334,8 +350,10 @@ Enable `jsxVapor` to default JSX and TSX files to Vapor output when stable `comp
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    jsxVapor: true,
+  vue: {
+    experimentals: {
+      jsxVapor: true,
+    },
   },
 });
 ```

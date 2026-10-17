@@ -91,8 +91,12 @@ fn signature_help_handler_routes_an_authored_vue_position() {
         )
         .unwrap();
         std::fs::write(
-            root.path().join("vize.config.json"),
-            serde_json::json!({"typeChecker":{"corsaPath":corsa_path}}).to_string(),
+            root.path().join("vite.config.mjs"),
+            vize_l0::cstr!(
+                "export default {{ vue: {} }};",
+                serde_json::json!({"typeChecker":{"corsaPath":corsa_path}})
+            )
+            .as_bytes(),
         )
         .unwrap();
 

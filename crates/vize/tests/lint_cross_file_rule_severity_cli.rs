@@ -3,6 +3,8 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
@@ -27,7 +29,7 @@ fn hash(bytes: &[u8]) -> String {
         .collect()
 }
 
-fn write(root: &Path, path: &str, bytes: &[u8]) {
+fn write(root: &Path, path: &str, bytes: impl AsRef<[u8]>) {
     let file = root.join(path);
     fs::create_dir_all(file.parent().unwrap()).unwrap();
     fs::write(file, bytes).unwrap();
@@ -155,8 +157,8 @@ fn configured_cross_file_findings_keep_complete_reports_and_input_bytes() {
                 paths.push(path.to_owned());
             }
             let config = fs::read(corpus.join(case["config"].as_str().unwrap())).unwrap();
-            write(root, "vize.config.json", &config);
-            paths.push("vize.config.json".into());
+            write(root, "vite.config.mjs", vite_config::source(&config));
+            paths.push("vite.config.mjs".into());
             paths.sort();
             let before = inputs(root, &paths);
             let original = fs::read_to_string(corpus.join("original-command.txt")).unwrap();
@@ -176,6 +178,7 @@ fn configured_cross_file_findings_keep_complete_reports_and_input_bytes() {
                     "src/**/*.ts"
                 ]
             );
+            args[2] = "vite.config.mjs".into();
             args.extend([
                 "--format".into(),
                 format.into(),
@@ -240,8 +243,8 @@ fn configured_cross_file_findings_keep_complete_reports_and_input_bytes() {
                 );
             }
             assert_eq!(
-                fs::read(root.join("vize.config.json")).unwrap(),
-                config,
+                fs::read(root.join("vite.config.mjs")).unwrap(),
+                vite_config::source(&config).as_bytes(),
                 "{name}: unchanged config"
             );
             assert_eq!(before, after, "{name}/{format}: whole input custody");

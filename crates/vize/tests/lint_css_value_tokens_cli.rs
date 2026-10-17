@@ -1,5 +1,7 @@
 //! Original four-rule command, complete JSON reports, and retained raw process outcomes.
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{fs, path::Path, process::Command};
@@ -63,7 +65,7 @@ fn original_command_and_all_css_vectors_keep_whole_public_reports() {
     }
     let project = tempfile::tempdir().unwrap();
     let root = project.path();
-    fs::write(root.join("vize.config.json"), CONFIG).unwrap();
+    fs::write(root.join("vite.config.mjs"), vite_config::source(CONFIG)).unwrap();
     let profile = std::env::var("NEXTEST_PROFILE").unwrap_or_else(|_| "full".into());
     let captures = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../target/nextest")
@@ -118,8 +120,8 @@ fn original_command_and_all_css_vectors_keep_whole_public_reports() {
         }
         assert_eq!(fs::read(root.join(filename)).unwrap(), source.as_bytes());
         assert_eq!(
-            fs::read(root.join("vize.config.json")).unwrap(),
-            CONFIG.as_bytes()
+            fs::read(root.join("vite.config.mjs")).unwrap(),
+            vite_config::source(CONFIG).as_bytes()
         );
         fs::remove_file(root.join(filename)).unwrap();
     }

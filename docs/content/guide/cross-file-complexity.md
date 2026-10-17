@@ -295,12 +295,10 @@ Enable it in your [Vite+ configuration](/guide/vite-plus), then run `vp run lint
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  lint: {
-    vize: {
-      rules: {
-        "vue/max-template-complexity": "warn",
-      },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/max-template-complexity": "warn",
     },
   },
 });

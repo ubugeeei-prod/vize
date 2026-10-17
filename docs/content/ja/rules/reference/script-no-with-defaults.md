@@ -20,8 +20,8 @@ Vue 3.5 以降の props 分割代入の既定値を勧めます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-with-defaults": "warn"

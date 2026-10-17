@@ -61,6 +61,7 @@ test("the Helix scenario pins complete responses for every advertised feature", 
     "textDocument/completion",
     "textDocument/hover",
     "textDocument/codeAction",
+    "textDocument/formatting",
     "textDocument/semanticTokens/full",
     "textDocument/rename",
   ]) {
@@ -73,14 +74,12 @@ test("the Helix scenario pins complete responses for every advertised feature", 
   assert.match(contract, /assert_json_eq\(&code_actions, expected_code_actions\(&uri\)/);
   assert.match(contract, /assert_json_eq\([\s\S]*"semantic tokens"/);
   assert.match(contract, /assert_json_eq\(&rename, expected_rename\(&uri\)/);
-  assert.match(scenario, /run_editor_contract\(&repo, "helix", false\)/);
-  assert.doesNotMatch(scenario, /textDocument\/formatting/);
+  assert.match(scenario, /run_editor_contract\(&repo, "helix"\)/);
+  assert.match(contract, /assert_json_eq\(&response, expected_formatting\(\)/);
   assert.doesNotMatch(contract, /\.includes\(|\.contains\(/);
 
-  // This is the exact config Helix sends. Formatting is intentionally absent,
-  // so the scenario verifies only the capabilities the package advertises.
+  // Helix sends no feature overrides, so formatting follows server project defaults.
   assert.match(scenario, /common::read_text\(repo\.join\("editors\/helix\/languages\.toml"\)\)/);
-  assert.match(scenario, /"editor = true"/);
-  assert.match(scenario, /"typecheck = true"/);
-  assert.match(contract, /document_formatting_provider\.is_some_and/);
+  assert.match(contract, /let options = json!\(\{\}\)/);
+  assert.match(contract, /document_formatting_provider != Some\(&Value::Bool\(true\)\)/);
 });

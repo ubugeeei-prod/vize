@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { currentConfigExample } from "./docs-config-successor.ts";
 import { sha256 } from "../lint-default-correctness-reference.mjs";
 
 export const codeFences = (source) =>
@@ -118,7 +119,7 @@ export function createFenceVerifier(root) {
     assert.ok([entry.path, entry.englishPath].includes(filename));
     assert.deepEqual(
       fences,
-      successor.afterCodeFences,
+      successor.afterCodeFences.map(currentConfigExample),
       filename + ": complete source-authored private example successor",
     );
     return true;

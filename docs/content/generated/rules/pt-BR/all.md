@@ -8,7 +8,7 @@ Use este índice para encontrar o objetivo de uma regra, as configurações padr
 
 As 66 entradas de projeto levam aos arquivos compartilhados completos e aos exemplos incorretos e corretos na página de regras entre arquivos. Os 60 códigos do analisador mantêm seus limites reais: 19 códigos da CLI (18 pares de fontes validados e um projeto ilustrativo com seu grafo reativo preservado), 16 códigos experimentais do analisador Rust que essa etapa da CLI não emite individualmente e 25 contratos sem produtor atual. Configurar um ID não ativa um produtor indisponível.
 
-A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os códigos exibidos como `vize:croquis/cf/*` usam `croquis/cf/*` em `lint.vize.rules` (omita `vize:`). Diagnósticos de informação ou sugestão tornam-se avisos da CLI. As localizações relacionadas explicam a relação entre a origem e o consumidor.
+A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os códigos exibidos como `vize:croquis/cf/*` usam `croquis/cf/*` em `vue.linter.rules` (omita `vize:`). Diagnósticos de informação ou sugestão tornam-se avisos da CLI. As localizações relacionadas explicam a relação entre a origem e o consumidor.
 
 <span id="todas-as-regras-de-pátina"></span>
 <span id="categorias"></span>

@@ -13,9 +13,13 @@ use tower_lsp::lsp_types::{FileChangeType, FileEvent};
 fn retired_unstamped_lint_and_empty_packets_cannot_publish_or_update_hover_cache() {
     for lint in [true, false] {
         let mut fixture = fixture(false);
-        let config = fixture.root.path().join("vize.config.json");
-        let old_config = json!({"lsp":{"typecheck":false,"lint":lint,"ecosystem":false},"linter":{"preset":"essential","rules":{"a11y/alt-text":"error"}}});
-        std::fs::write(&config, old_config.to_string()).unwrap();
+        let config = fixture.root.path().join("vite.config.mjs");
+        let old_config = json!({"languageServer":{"typecheck":false,"lint":lint,"ecosystem":false},"linter":{"preset":"essential","rules":{"a11y/alt-text":"error"}}});
+        std::fs::write(
+            &config,
+            vize_l0::cstr!("export default {{ vue: {} }};", old_config).as_bytes(),
+        )
+        .unwrap();
         let old = fixture.service.inner();
         old.state.load_workspace_config(fixture.root.path());
         change(
@@ -32,7 +36,11 @@ fn retired_unstamped_lint_and_empty_packets_cannot_publish_or_update_hover_cache
         assert_eq!(!stale.diagnostics.is_empty(), lint);
         std::fs::write(
             &config,
-            json!({"lsp":{"typecheck":false,"lint":false,"ecosystem":false}}).to_string(),
+            vize_l0::cstr!(
+                "export default {{ vue: {} }};",
+                json!({"languageServer":{"typecheck":false,"lint":false,"ecosystem":false}})
+            )
+            .as_bytes(),
         )
         .unwrap();
         let affected = old.state.observe_project_config_events(&[FileEvent {
@@ -67,7 +75,7 @@ fn retired_unstamped_lint_and_empty_packets_cannot_publish_or_update_hover_cache
 fn bulk_requests_refuse_a_changed_project_generation_without_borrowing_retired_primary() {
     let fixture = fixture(false);
     let server = fixture.service.inner();
-    let config = Url::from_file_path(fixture.root.path().join("vize.config.json")).unwrap();
+    let config = Url::from_file_path(fixture.root.path().join("vite.config.mjs")).unwrap();
     let result = futures::executor::block_on(server.project_request(async {
         server.state.observe_project_config_events(&[FileEvent {
             uri: config,

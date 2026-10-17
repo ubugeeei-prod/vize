@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -43,8 +44,8 @@ test("vize lsp maps textDocument/signatureHelp from authored SFC template calls"
   const testRootDir = path.join(testOutputRoot, "lsp-signature-help-capability");
   fs.mkdirSync(testRootDir, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
-  fs.writeFileSync(
-    path.join(workspaceDir, "vize.config.json"),
+  writeVueConfigFixture(
+    workspaceDir,
     JSON.stringify(
       {
         lsp: {
@@ -59,7 +60,6 @@ test("vize lsp maps textDocument/signatureHelp from authored SFC template calls"
       null,
       2,
     ),
-    "utf8",
   );
   fs.writeFileSync(
     path.join(workspaceDir, "tsconfig.json"),

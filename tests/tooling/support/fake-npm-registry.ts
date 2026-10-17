@@ -1,4 +1,4 @@
-import { writeFakeCommand } from "./fake-command.ts";
+import { fakeJsonStateTransaction, writeFakeCommand } from "./fake-command.ts";
 
 export function writeFakeNpmRegistry(binDir: string): void {
   writeFakeCommand(
@@ -10,22 +10,22 @@ export function writeFakeNpmRegistry(binDir: string): void {
       "const name = decodeURIComponent(new URL(url).pathname.split('/')[1]);",
       "const version = process.env.NPM_FAKE_VERSION;",
       "const statePath = process.env.NPM_FAKE_STATE_PATH;",
-      "const state = statePath && fs.existsSync(statePath)",
-      "  ? JSON.parse(fs.readFileSync(statePath, 'utf8'))",
-      "  : {};",
+      fakeJsonStateTransaction,
       "if (process.env.NPM_FAKE_URL_LOG) {",
       "  fs.appendFileSync(process.env.NPM_FAKE_URL_LOG, `${url}\\n`);",
       "}",
       "const exactVersion = url.includes(`/${version}?`);",
-      "if (exactVersion) state.versionChecks = (state.versionChecks || 0) + 1;",
-      "else state.tagChecks = (state.tagChecks || 0) + 1;",
-      "if (statePath && fs.existsSync(statePath)) {",
-      "  fs.writeFileSync(statePath, JSON.stringify(state));",
-      "}",
+      "const update = (state) => {",
+      "  if (exactVersion) state.versionChecks = (state.versionChecks || 0) + 1;",
+      "  else state.tagChecks = (state.tagChecks || 0) + 1;",
+      "};",
+      "const state = statePath && fs.existsSync(statePath)",
+      "  ? mutateFakeJsonState(statePath, update) : {};",
+      "if (!statePath || !fs.existsSync(statePath)) update(state);",
       "const visible = process.env.NPM_FAKE_ALWAYS_VISIBLE === '1'",
       "  || state.published === true || state.published?.[name] === version",
       "  || state.versionVisible",
-      "  || (state.publishCalls === 1 && state.versionChecks >= 3);",
+      "  || (state.publishCalls === 1 && (!exactVersion || state.versionChecks >= 3));",
       "if (!visible) {",
       "  process.stdout.write('{}VIZE_HTTP_STATUS:404');",
       "  process.exit(0);",

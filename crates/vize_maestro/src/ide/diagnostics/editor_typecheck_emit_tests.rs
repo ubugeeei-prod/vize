@@ -100,7 +100,7 @@ fn original_emit_preserves_complete_editor_diagnostics_and_typed_hover() {
             std::fs::write(capture.join("editor-tsconfig.json"), CONFIG).unwrap();
             std::fs::write(capture.join("editor-runtime.json"), serde_json::json!({ "nativeBinary": corsa, "workingDirectory": project.path(), "timeoutMs": 30_000 }).to_string()).unwrap();
             for file in [
-                "vize.config.json",
+                "vite.config.mjs",
                 "node_modules/vue/package.json",
                 "node_modules/vue/index.d.ts",
             ] {

@@ -3,7 +3,7 @@ use vize_carton::config::{VueVersion, load_config_and_linter_with_lint_features_
 #[test]
 fn linter_features_read_compiler_compatibility_vue_version() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r#"{ "compiler": { "compatibility": { "vueVersion": "2" } } }"#,
@@ -20,7 +20,7 @@ fn linter_features_read_compiler_compatibility_vue_version() {
 #[test]
 fn linter_features_read_explicit_compiler_vapor_false() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(&config_path, r#"{ "compiler": { "vapor": false } }"#).unwrap();
 
     let (_, _, linter_features) =
@@ -32,7 +32,7 @@ fn linter_features_read_explicit_compiler_vapor_false() {
 #[test]
 fn linter_features_read_experimental_vapor() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(&config_path, r#"{ "experimentals": { "vapor": {} } }"#).unwrap();
 
     let (_, _, linter_features) =
@@ -44,7 +44,7 @@ fn linter_features_read_experimental_vapor() {
 #[test]
 fn linter_features_read_legacy_vue2_flags() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(&config_path, r#"{ "typeChecker": { "legacyVue2": true } }"#).unwrap();
 
     let (loaded, _, linter_features) =

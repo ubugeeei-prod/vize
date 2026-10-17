@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { test } from "node:test";
+import { inlineVuePluginFixtureOptions } from "./support/vue-config-fixture.ts";
+import { projectViteConfigSource } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
 
 const directory = new URL(
   "../_fixtures/differential/compiler/nuxt-compiler-defaults/",
@@ -68,4 +70,46 @@ await test("authored complete render matrix distinguishes inherited defaults fro
   }
   assert.equal(corpus.referenceAuthority.limits.fullNuxtGenerate, false);
   assert.equal(corpus.referenceAuthority.limits.nativeMigrationCredit, false);
+});
+
+await test("the current Nuxt probe carries every authored scoped compiler policy through inline plugin config", async () => {
+  const original = bytes("vize.config.json.txt");
+  const frozen = Buffer.from(original);
+  for (const scenario of corpus.scenarios) {
+    const authored = structuredClone(scenario);
+    const document = scenario.config === "original" ? original : scenario.config;
+    const options = inlineVuePluginFixtureOptions(scenario.module, document);
+    assert.deepEqual(options, {
+      ...scenario.module,
+      ...(document === null
+        ? {}
+        : { config: document === original ? JSON.parse(original) : document }),
+    });
+    assert.deepEqual(scenario, authored);
+  }
+  const originalOptions = inlineVuePluginFixtureOptions({}, original);
+  assert.deepEqual(originalOptions.config, {
+    compiler: { whitespace: "preserve" },
+    entries: [
+      {
+        files: ["app/components/tight/**", "node_modules/**"],
+        compiler: { whitespace: "condense" },
+      },
+    ],
+  });
+  // This fixture must use the existing per-file JavaScript compiler API. The
+  // native canonical schema must continue to reject unsupported compiler scopes.
+  await assert.rejects(
+    projectViteConfigSource({ vue: originalOptions.config }),
+    /vue\.entries\[0\]: unknown option compiler/u,
+  );
+  assert.deepEqual(original, frozen);
+  assert.deepEqual(bytes("vize.config.json.txt"), frozen);
+  const activeProbe = fs.readFileSync(
+    new URL("../../tools/support/compat/nuxt/compiler-defaults-probe.mjs", import.meta.url),
+    "utf8",
+  );
+  assert.ok(activeProbe.includes("inlineVuePluginFixtureOptions(scenario.module, shared)"));
+  assert.ok(activeProbe.includes("vize: { compiler, lint: false, checker: false, musea: false }"));
+  assert.ok(!activeProbe.includes('const configFile = path.join(project, "vize.config.json")'));
 });

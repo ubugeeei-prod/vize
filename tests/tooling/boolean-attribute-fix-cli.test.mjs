@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -47,10 +48,11 @@ await test("source CLI applies the reported boolean edit once with complete unch
         : Buffer.from(
             JSON.stringify({ linter: { preset: "incremental", rules: { [RULE]: "warn" } } }) + "\n",
           );
-      fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+      const configFile = writeVueConfigFixture(directory, config);
+      const configSource = vueConfigFixtureSource(config);
       fs.writeFileSync(path.join(directory, entry.filename), entry.source);
       for (let pass = 0; pass < 4; pass++) {
-        const args = [
+        const originalArgs = [
           "lint",
           "-c",
           "vize.config.json",
@@ -63,6 +65,9 @@ await test("source CLI applies the reported boolean edit once with complete unch
           ...(pass ? ["--fix"] : []),
           entry.filename,
         ];
+        const args = originalArgs.map((arg) =>
+          arg === "vize.config.json" ? path.basename(configFile) : arg,
+        );
         const run = spawnSync(cli, args, {
           cwd: directory,
           env: process.env,
@@ -76,6 +81,12 @@ await test("source CLI applies the reported boolean edit once with complete unch
           originalRules: entry.originalRules,
           pass,
           argv: args,
+          originalArgv: originalArgs,
+          configuration: {
+            file: path.basename(configFile),
+            text: configSource,
+            sha256: sha256(configSource),
+          },
           config: { text: config.toString("utf8"), sha256: sha256(config) },
           status: run.status,
           signal: run.signal,
@@ -106,10 +117,7 @@ await test("source CLI applies the reported boolean edit once with complete unch
         observation.actual = JSON.parse(observation.stdout);
         persist();
         assert.deepEqual(observation.actual, expected);
-        assert.equal(
-          fs.readFileSync(path.join(directory, "vize.config.json")).equals(config),
-          true,
-        );
+        assert.equal(fs.readFileSync(configFile, "utf8"), configSource);
       }
       fs.unlinkSync(path.join(directory, entry.filename));
     }

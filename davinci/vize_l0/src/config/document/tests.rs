@@ -2,6 +2,23 @@ use super::ConfigDocument;
 use crate::config::{LintRuleSeverity, VueVersion};
 
 #[test]
+fn document_retains_only_host_observed_dependency_paths() {
+    let mut document: ConfigDocument =
+        serde_json::from_str(r#"{"configDependencies":["authored.ts"],"compiler":{"vapor":true}}"#)
+            .unwrap();
+    assert!(document.config_dependencies().is_empty());
+    document.set_config_dependencies([
+        "/project/vite.config.ts".to_owned(),
+        "/project/日本語/🎨.ts".to_owned(),
+    ]);
+    assert_eq!(
+        document.config_dependencies(),
+        ["/project/vite.config.ts", "/project/日本語/🎨.ts"]
+    );
+    assert_eq!(document.compiler_vapor(), Some(true));
+}
+
+#[test]
 fn document_projects_only_documented_compiler_whitespace_modes() {
     for (json, expected) in [
         (r#"{}"#, None),

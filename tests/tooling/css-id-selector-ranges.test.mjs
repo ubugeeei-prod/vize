@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -33,7 +34,7 @@ await test("source-built CLI locates every original and authored CSS ID selector
   const persist = () => fs.writeFileSync(output, JSON.stringify(evidence, null, 2) + "\n");
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-id-ranges-"));
   try {
-    fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+    writeVueConfigFixture(directory, config);
     for (const entry of manifest.cases) {
       const source = fs.readFileSync(path.join(fixture, entry.source));
       assert.equal(source.length, entry.bytes);

@@ -20,8 +20,8 @@ const result = { rows: [1, 2] }
 fn enabled_state() -> (tempfile::TempDir, ServerState) {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
-        project.path().join("vize.config.json"),
-        r#"{"experimentals":{"patternedTemplate":true}}"#,
+        project.path().join("vite.config.mjs"),
+        r#"export default { vue: {"experimentals":{"patternedTemplate":true}} };"#,
     )
     .unwrap();
     let state = ServerState::new();

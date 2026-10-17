@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -41,11 +42,12 @@ await test("source CLI retains complete original slot findings, fixed files and 
       const config = entry.originalRules
         ? loaded.originals.find((input) => input.file.endsWith("/vize.config.json")).text
         : JSON.stringify({ linter: { preset: "incremental", rules: { [RULE]: "warn" } } }) + "\n";
-      fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+      const configFile = writeVueConfigFixture(directory, config);
+      const configSource = vueConfigFixtureSource(config);
       fs.writeFileSync(path.join(directory, entry.filename), entry.source);
       for (let pass = 0; pass < 4; pass++) {
         const input = fs.readFileSync(path.join(directory, entry.filename));
-        const args = [
+        const originalArgs = [
           "lint",
           "-c",
           "vize.config.json",
@@ -58,6 +60,9 @@ await test("source CLI retains complete original slot findings, fixed files and 
           ...(pass === 1 || pass === 3 ? ["--fix"] : []),
           entry.filename,
         ];
+        const args = originalArgs.map((arg) =>
+          arg === "vize.config.json" ? path.basename(configFile) : arg,
+        );
         const run = spawnSync(cli, args, {
           cwd: directory,
           env: process.env,
@@ -71,6 +76,12 @@ await test("source CLI retains complete original slot findings, fixed files and 
           originalRules: entry.originalRules,
           pass,
           argv: args,
+          originalArgv: originalArgs,
+          configuration: {
+            file: path.basename(configFile),
+            text: configSource,
+            sha256: sha256(configSource),
+          },
           input: { text: input.toString("utf8"), bytes: input.length, sha256: sha256(input) },
           config: { text: config, bytes: Buffer.byteLength(config), sha256: sha256(config) },
           status: run.status,
@@ -102,7 +113,7 @@ await test("source CLI retains complete original slot findings, fixed files and 
         observation.actual = JSON.parse(observation.stdout);
         persist();
         assert.deepEqual(observation.actual, expected);
-        assert.equal(fs.readFileSync(path.join(directory, "vize.config.json"), "utf8"), config);
+        assert.equal(fs.readFileSync(configFile, "utf8"), configSource);
       }
       fs.unlinkSync(path.join(directory, entry.filename));
     }

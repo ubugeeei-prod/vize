@@ -58,10 +58,10 @@ vp run fmt:check
 - [JSR から JavaScript API を使う](./guide/jsr.md)。Node・Deno・Bun で利用できます。
 
 > [!NOTE]
-> Vize 0.457.0 のネイティブ CLI は Vite の共通設定を読み込めます。`init` も専用の Vize 設定ファイルを作らずに導入できます。共通設定を利用する場合は、CLI・Vite 連携・エディター拡張機能を更新してください。設定の検索順序・優先順位と、任意の専用形式は[リファレンス](./guide/configuration-reference.md)を参照してください。
+> CLI・Vite 連携・エディターは `vite.config.*` の `vue:` 設定を共有し、`tsconfig.json` の TypeScript プロジェクト設定と `vueCompilerOptions` を利用します。専用の `vize.config.*` ファイルとトップレベルの `vize:` 設定は廃止されました。移行方法は[設定ガイド](./guide/configuration.md)を参照してください。
 
 ## Vite+ なしで利用する
 
-[単独 CLI](./guide/cli.md)では `vize lint`・`vize fmt`・`vize check` を実行できます。対象パッケージのルートから実行し、TypeScript のプロジェクト設定は `tsconfig.json` に残します。ネイティブコマンドも `vite.config.*` のトップレベルの `vize` 設定を共有できます。検索規則と現在の範囲は [CLI の設定](./guide/configuration.md#standalone-cli)を参照してください。
+[単独 CLI](./guide/cli.md)では `vize lint`・`vize fmt`・`vize check` を実行できます。対象パッケージのルートから実行し、TypeScript のプロジェクト設定は `tsconfig.json` に残します。ネイティブコマンドも `vite.config.*` のトップレベルの `vue` 設定を共有できます。検索規則と現在の範囲は [CLI の設定](./guide/configuration.md#standalone-cli)を参照してください。
 
 対話形式で導入する場合は、`vpx vize init --dry-run` で変更予定を確認し、`vpx vize init` で機能を選びます。[プロジェクトの初期設定](./guide/init.md)に、プロジェクトの検出方法と、設定を自動編集できない場合の対応をまとめています。init は既存のプロジェクト設定と既定値を使い、専用の Vize 設定ファイルは作成しません。

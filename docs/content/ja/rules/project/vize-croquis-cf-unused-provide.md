@@ -15,8 +15,8 @@ provide したキーが一度も inject されていません。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/unused-provide": "warn" },
     },
   },

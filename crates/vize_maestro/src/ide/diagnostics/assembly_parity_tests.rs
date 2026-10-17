@@ -122,7 +122,7 @@ fn cli_and_editor_assemble_identical_diagnostics_for_one_sfc() {
     state.load_workspace_config(&root);
     let fixture_configuration = serde_json::json!({
         "tsconfig":std::fs::read_to_string(root.join("tsconfig.json")).expect("original tsconfig"),
-        "vize_config":std::fs::read_to_string(root.join("vize.config.json")).expect("original config"),
+        "vize_config":std::fs::read_to_string(root.join("vite.config.mjs")).expect("original config"),
         "vue_package":std::fs::read_to_string(root.join("node_modules/vue/package.json")).expect("fixture Vue package")
     });
     let _custody = super::assembly_parity_custody::observe(&state, &uri);

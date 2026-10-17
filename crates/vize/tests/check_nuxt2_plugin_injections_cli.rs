@@ -4,6 +4,9 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[cfg(feature = "legacy")]
+#[path = "support/vite_config.rs"]
+mod vite_config;
 
 use std::{
     path::{Path, PathBuf},
@@ -127,7 +130,7 @@ fn check_nuxt2_false_positive_fixture_matrix() {
             "components",
             "pages",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--tsconfig",
             "tsconfig.json",
             "--format",
@@ -173,7 +176,7 @@ fn check_nuxt2_false_positive_fixture_matrix() {
 #[cfg(feature = "legacy")]
 const FALSE_POSITIVE_FIXTURES: &[(&str, &str)] = &[
     (
-        "vize.config.json",
+        "vite.config.mjs",
         include_str!("fixtures/nuxt2_false_positive/vize.config.json"),
     ),
     (
@@ -221,7 +224,11 @@ const FALSE_POSITIVE_FIXTURES: &[(&str, &str)] = &[
 #[cfg(feature = "legacy")]
 fn write_false_positive_fixture(project_root: &Path) {
     for (path, contents) in FALSE_POSITIVE_FIXTURES {
-        write_file(project_root, path, contents);
+        if *path == "vite.config.mjs" {
+            write_file(project_root, path, &vite_config::source(contents));
+        } else {
+            write_file(project_root, path, contents);
+        }
     }
 }
 

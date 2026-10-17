@@ -16,7 +16,7 @@ typealias JsxMode = "vdom" | "vapor"
 typealias JsxCompat = "native" | "babel"
 typealias ScriptExt = "ts" | "js"
 typealias RuleSeverity = "off" | "warn" | "error"
-typealias LintPreset = "happy-path" | "opinionated" | "essential" | "incremental" | "ecosystem" | "nuxt"
+typealias LintPreset = "general-recommended" | "general_recommended" | "generalRecommended" | "happy-path" | "happy_path" | "happy" | "default" | "recommended" | "opinionated" | "strict" | "all" | "essential" | "incremental" | "ecosystem" | "nuxt"
 typealias TemplateComponentNameCasing = "PascalCase" | "kebab-case"
 typealias CustomEventNameCasing = "camelCase" | "kebab-case"
 typealias HtmlSelfClosingStyle = "always" | "never" | "any"
@@ -24,7 +24,6 @@ typealias HyphenationStyle = "always" | "never"
 typealias TrailingComma = "all" | "none" | "es5"
 typealias FilterPattern = String | Listing<String>
 typealias GlobalTypeValue = String | GlobalTypeDeclaration
-typealias ConfigExtends = String | Listing<String>
 class CompilerCompatibilityConfig {
   vueVersion: ("3" | "2.7" | "2" | "1" | "0.11" | "0.10")? = null
   hostCompiler: Boolean? = null
@@ -253,6 +252,8 @@ class LspConfig {
   typecheck: Boolean? = null
   editor: Boolean? = null
   ecosystem: Boolean? = null
+  /// Enable workspace-wide cross-file diagnostic groups (disabled by default).
+  crossFile: Boolean? = null
   legacyVue2: Boolean? = null
   completion: Boolean? = null
   signatureHelp: Boolean? = null
@@ -318,7 +319,6 @@ class ConfigEntry {
   basePath: String? = null
   files: Listing<String>? = null
   ignores: Listing<String>? = null
-  `extends`: ConfigExtends? = null
   compiler: CompilerConfig?
   experimentals: ExperimentalsConfig?
   vite: VitePluginConfig?
@@ -336,7 +336,6 @@ name: String? = null
 basePath: String? = null
 files: Listing<String>? = null
 ignores: Listing<String>? = null
-`extends`: ConfigExtends? = null
 compiler: CompilerConfig?
 experimentals: ExperimentalsConfig?
 vite: VitePluginConfig?

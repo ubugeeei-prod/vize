@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -50,9 +51,9 @@ test("source LSP selects each same-range original diagnostic and preserves valid
   try {
     fs.mkdirSync(path.dirname(file));
     fs.writeFileSync(file, source);
-    fs.copyFileSync(
-      path.join(fixture, "vize.config.json"),
-      path.join(workspace, "vize.config.json"),
+    writeVueConfigFixture(
+      workspace,
+      fs.readFileSync(path.join(fixture, "vize.config.json"), "utf8"),
     );
     const argv = ["lint", "src/App.vue", "--format", "json"];
     const cli = spawnSync(binary, argv, { cwd: workspace });

@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -58,8 +59,8 @@ void test("actual CLI retains complete Vue filter and bitwise history semantics"
     const project = path.join(scratch, fixture.id);
     fs.mkdirSync(project);
     const file = path.join(project, "App.vue");
-    const configPath = path.join(project, "vize.config.json");
-    const config = Buffer.from(fixture.config.content);
+    const configPath = path.join(project, "vite.config.mjs");
+    const config = Buffer.from(vueConfigFixtureSource(fixture.config.content));
     fs.writeFileSync(file, fixture.input.content);
     fs.writeFileSync(configPath, config);
     const row = { id: fixture.id, commands: [] };
@@ -68,7 +69,7 @@ void test("actual CLI retains complete Vue filter and bitwise history semantics"
     for (const [pass, mode] of ["--check", "--write", "--write", "--write", "--check"].entries()) {
       const changed = pass < 2 && fixture.input.content !== fixture.expected;
       const expected = pass === 0 ? fixture.input.content : fixture.expected;
-      const args = ["fmt", "--config", "vize.config.json", mode, "App.vue"];
+      const args = ["fmt", "--config", "vite.config.mjs", mode, "App.vue"];
       const output = spawnSync(binary, args, { cwd: project, timeout: 60000 });
       const command = {
         args,

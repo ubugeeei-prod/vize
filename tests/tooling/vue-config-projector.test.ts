@@ -19,7 +19,7 @@ assert.equal(
 const legacy = await import("data:text/javascript;base64," + original.toString("base64"));
 const root = resolve("/tmp/vize-vue-config-original");
 
-test("whole original legacy settings and array vectors remain literal without canonical Vue options", async () => {
+test("retired legacy settings and array vectors refuse while original source authority stays frozen", async () => {
   const cases = [
     {},
     { vize: { unknownOwner: { enabled: false }, vue: { version: "2.7" } } },
@@ -48,14 +48,21 @@ test("whole original legacy settings and array vectors remain literal without ca
     { vize: { vite: { include: /\.vue$/ }, entries: [{ files: ["src/**"] }] } },
   ];
   for (const source of cases) {
-    assert.deepEqual(
-      await resolveViteConfigExport(source, undefined, root),
-      await legacy.resolveViteConfigExport(source, undefined, root),
-    );
+    // Preserve the complete original vectors and immutable observer above.
+    // Their retired carrier must refuse rather than regain a silent fallback.
+    const original = await legacy.resolveViteConfigExport(source, undefined, root);
+    if (Object.hasOwn(source, "vize")) {
+      await assert.rejects(
+        resolveViteConfigExport(source, undefined, root),
+        /vize:.*no longer supported/,
+      );
+    } else {
+      assert.deepEqual(await resolveViteConfigExport(source, undefined, root), original);
+    }
   }
 });
 
-test("already evaluated projection invokes only one legacy callback with the exact supplied environment", async () => {
+test("already evaluated projection does not repeat the source callback or change its environment", async () => {
   const seen = [];
   const env = Object.freeze({
     mode: "production",
@@ -63,15 +70,18 @@ test("already evaluated projection invokes only one legacy callback with the exa
     isSsrBuild: true,
     isPreview: true,
   });
-  const source = {
-    vue: { typeChecker: { enabled: false } },
-    async vize(actual) {
-      seen.push(actual);
-      return { typeChecker: { strict: true }, formatter: { singleQuote: true } };
-    },
+  const factory = async (actual) => {
+    seen.push(actual);
+    return {
+      vue: {
+        typeChecker: { strict: true, enabled: false },
+        formatter: { singleQuote: true },
+      },
+    };
   };
+  const source = await factory(env);
   assert.equal(vueConfigOptions(source), source.vue);
-  assert.deepEqual(seen, []);
+  assert.deepEqual(seen, [env]);
   assert.deepEqual(await projectViteConfigSource(source, env), {
     typeChecker: { jsxTypecheck: true, strict: true, enabled: false },
     formatter: { singleQuote: true },
@@ -88,10 +98,9 @@ test("Vite export mapping preserves the original whole environment and evaluates
     const factory = async (actual) => {
       seen.push(actual);
       return {
-        vue: { languageServer: { enabled: false } },
-        vize: async (shared) => {
-          seen.push(shared);
-          return { formatter: { singleQuote: false } };
+        vue: {
+          languageServer: { enabled: false },
+          formatter: { singleQuote: false },
         },
       };
     };
@@ -100,20 +109,16 @@ test("Vite export mapping preserves the original whole environment and evaluates
       formatter: { singleQuote: false },
       languageServer: { enabled: false },
     });
-    assert.deepEqual(seen, [expected, expected]);
-    assert.equal(seen[0], seen[1]);
+    assert.deepEqual(seen, [expected]);
     assert.equal(env.command, command);
     seen.length = 0;
     await projectViteConfigSource(
       {
-        vize: (actual) => {
-          seen.push(actual);
-          return {};
-        },
+        vue: {},
       },
       env,
     );
-    assert.deepEqual(seen, [expected]);
+    assert.deepEqual(seen, []);
   }
 });
 
@@ -133,37 +138,39 @@ test("object and Promise exports agree, callbacks reject, and native projection 
     }),
     (actual) => actual === error,
   );
+  let retiredCalls = 0;
   await assert.rejects(
     projectViteConfigSource({
       vize: async () => {
+        retiredCalls++;
         throw error;
       },
     }),
-    (actual) => actual === error,
+    /vize:.*no longer supported/,
   );
+  assert.equal(retiredCalls, 0);
   assert.equal(source.plugins[0], plugin);
   assert.equal(source.pack.hooks, fail);
 });
 
 test("canonical false leaves and replacement arrays override only explicitly supplied native settings", async () => {
-  const source = {
-    vize: {
-      typeChecker: { enabled: true, strict: true },
-      languageServer: { enabled: true, lint: true },
-      globalTypes: { Old: "string", Shared: "number" },
-      formatter: {
-        singleQuote: true,
-        attributeGroups: [["old"]],
-        sortImports: { groups: ["type"] },
-      },
-    },
-    vue: {
-      typeChecker: { enabled: false, strict: undefined },
-      languageServer: { enabled: false },
-      globalTypes: { Shared: "boolean" },
-      formatter: { singleQuote: false, attributeGroups: [], sortImports: false },
+  const base = {
+    typeChecker: { enabled: true, strict: true },
+    languageServer: { enabled: true, lint: true },
+    globalTypes: { Old: "string", Shared: "number" },
+    formatter: {
+      singleQuote: true,
+      attributeGroups: [["old"]],
+      sortImports: { groups: ["type"] },
     },
   };
+  const own = {
+    typeChecker: { enabled: false, strict: undefined },
+    languageServer: { enabled: false },
+    globalTypes: { Shared: "boolean" },
+    formatter: { singleQuote: false, attributeGroups: [], sortImports: false },
+  };
+  const source = { vue: mergeVueConfigOptions(base, own) };
   const before = structuredClone(source);
   assert.deepEqual(await projectViteConfigSource(source), {
     typeChecker: { jsxTypecheck: true, enabled: false, strict: true },
@@ -179,10 +186,7 @@ test("canonical dialect and scoped entries project to strict native fields witho
     await projectViteConfigSource(
       {
         root: "app",
-        vize: {
-          entries: [{ files: ["old/**"] }],
-          compiler: { compatibility: { vueVersion: "3" } },
-        },
+        compiler: { vueVersion: 3 },
         vue: {
           version: "2.7",
           files: ["src/*.vue"],
@@ -228,33 +232,36 @@ test("canonical dialect and scoped entries project to strict native fields witho
   );
 });
 
-test("explicit canonical scoped vectors replace legacy vectors and preserve whole unscoped globals", async () => {
-  const legacyEntries = [
-    { name: "global", globalTypes: { Shared: "number" }, formatter: { tabWidth: 2 } },
-    { files: [], formatter: { tabWidth: 4 } },
-    { basePath: "old", files: ["*.vue"] },
-    { ignores: ["old/**"] },
-  ];
+test("explicit canonical scoped vectors replace inherited vectors and preserve whole unscoped globals", async () => {
+  const global = { name: "global", globalTypes: { Shared: "number" }, formatter: { tabWidth: 2 } };
+  const retiredScopedFormatter = { files: [], formatter: { tabWidth: 4 } };
+  assert.throws(
+    () => mergeVueConfigOptions({ entries: [retiredScopedFormatter] }, {}),
+    /unknown option formatter/,
+  );
+  const entries = [{ files: [] }, { basePath: "old", files: ["*.vue"] }, { ignores: ["old/**"] }];
   const vue = {
     formatter: { singleQuote: true },
     entries: [{ files: ["new/**"], linter: { rules: { "vue/no-v-html": "warn" } } }],
   };
-  assert.deepEqual(await projectViteConfigSource({ vize: legacyEntries, vue }), [
-    { typeChecker: { jsxTypecheck: true } },
-    legacyEntries[0],
-    { formatter: { singleQuote: true } },
-    { files: ["new/**"], linter: { rules: { "vue/no-v-html": "warn" } } },
-  ]);
-  assert.deepEqual(await projectViteConfigSource({ vize: legacyEntries, vue: { entries: [] } }), [
-    { typeChecker: { jsxTypecheck: true } },
-    legacyEntries[0],
-    {},
-  ]);
-  assert.deepEqual(await projectViteConfigSource({ vize: legacyEntries, vue: {} }), [
-    { typeChecker: { jsxTypecheck: true } },
-    ...legacyEntries,
-    {},
-  ]);
+  const base = { ...global, entries };
+  const project = (own) => projectViteConfigSource({ vue: mergeVueConfigOptions(base, own) });
+  assert.deepEqual(await project(vue), {
+    typeChecker: { jsxTypecheck: true },
+    ...global,
+    formatter: { tabWidth: 2, singleQuote: true },
+    entries: vue.entries,
+  });
+  assert.deepEqual(await project({ entries: [] }), {
+    typeChecker: { jsxTypecheck: true },
+    ...global,
+    entries: [],
+  });
+  assert.deepEqual(await project({}), {
+    typeChecker: { jsxTypecheck: true },
+    ...global,
+    entries,
+  });
 });
 
 test("shared canonical composition preserves explicit false and replaces all ordered array leaves", async () => {
@@ -279,8 +286,7 @@ test("shared canonical composition preserves explicit false and replaces all ord
   assert.equal(mergeVueConfigOptions(undefined, undefined), undefined);
   assert.deepEqual(
     await resolveViteConfigExport({
-      extends: { vue: base },
-      vue: own,
+      vue: mergeVueConfigOptions(base, own),
     }),
     {
       typeChecker: { jsxTypecheck: true, enabled: false, strict: true },
@@ -290,38 +296,44 @@ test("shared canonical composition preserves explicit false and replaces all ord
   );
 });
 
-test("source envelopes retain canonical settings through extends while cycle refusals remain", async () => {
+test("source envelopes retain composed canonical settings while retired extends and cycles refuse", async () => {
   let calls = 0;
   const wrapped = Object.assign(
     () => {
       throw new Error("factory must not run");
     },
     {
-      [Symbol.for("@vizejs/vite-plugin/vite-plus/source")]: {
-        extends: async () => {
-          calls++;
-          return { vue: { formatter: { tabWidth: 4 }, files: ["base/**"] } };
-        },
-        vue: { formatter: { singleQuote: true } },
+      [Symbol.for("@vizejs/vite-plugin/vite-plus/source")]: async () => {
+        calls++;
+        return {
+          vue: mergeVueConfigOptions(
+            { formatter: { tabWidth: 4 }, files: ["base/**"] },
+            { formatter: { singleQuote: true } },
+          ),
+        };
       },
     },
   );
-  assert.deepEqual(await resolveViteConfigExport({ extends: wrapped, vue: undefined }), {
+  assert.deepEqual(await resolveViteConfigExport(wrapped), {
     typeChecker: { jsxTypecheck: true },
     files: ["base/**"],
     formatter: { tabWidth: 4, singleQuote: true },
   });
   assert.equal(calls, 1);
+  await assert.rejects(resolveViteConfigExport({ extends: wrapped }), /Custom config extends/);
+  assert.equal(calls, 1, "retired inheritance never evaluates its source");
   const cyclic = {};
-  cyclic.extends = cyclic;
-  await assert.rejects(resolveViteConfigExport(cyclic), /Circular extends/);
+  cyclic[Symbol.for("@vizejs/vite-plugin/vite-plus/source")] = cyclic;
+  await assert.rejects(resolveViteConfigExport(cyclic), /Circular Vue configuration source/);
 });
 
 test("canonical dynamic native maps preserve own prototype-shaped names without mutation", async () => {
   const vue = JSON.parse(
     '{"globalTypes":{"constructor":"boolean","__proto__":"number"},"linter":{"rules":{"__proto__":"warn"}}}',
   );
-  const result = await projectViteConfigSource({ vize: { globalTypes: { Other: "string" } }, vue });
+  const result = await projectViteConfigSource({
+    vue: mergeVueConfigOptions({ globalTypes: { Other: "string" } }, vue),
+  });
   assert.deepEqual(result, {
     typeChecker: { jsxTypecheck: true },
     globalTypes: JSON.parse('{"Other":"string","constructor":"boolean","__proto__":"number"}'),

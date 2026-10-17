@@ -20,8 +20,8 @@ ARIA role が必要とする属性を指定します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "a11y/role-has-required-aria-props": "warn"

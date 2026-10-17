@@ -1,5 +1,8 @@
 #![cfg(feature = "glyph")]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use std::{fs, process::Command};
 
 #[test]
@@ -24,11 +27,15 @@ fn fmt_uses_explicit_project_vue_version_and_no_config_retains_vue3() {
     for (source, config, expected) in cases {
         let project = tempfile::tempdir().unwrap();
         fs::write(project.path().join("App.vue"), source).unwrap();
-        fs::write(project.path().join("vize.config.json"), config).unwrap();
+        fs::write(
+            project.path().join("vite.config.mjs"),
+            vite_config::source(config),
+        )
+        .unwrap();
         for _ in 0..3 {
             let output = Command::new(env!("CARGO_BIN_EXE_vize"))
                 .current_dir(project.path())
-                .args(["fmt", "--config", "vize.config.json", "--write", "App.vue"])
+                .args(["fmt", "--config", "vite.config.mjs", "--write", "App.vue"])
                 .output()
                 .unwrap();
             assert!(output.status.success(), "{:?}", output);
@@ -39,7 +46,11 @@ fn fmt_uses_explicit_project_vue_version_and_no_config_retains_vue3() {
     let project = tempfile::tempdir().unwrap();
     let (source, config, _) = cases[1];
     fs::write(project.path().join("App.vue"), source).unwrap();
-    fs::write(project.path().join("vize.config.json"), config).unwrap();
+    fs::write(
+        project.path().join("vite.config.mjs"),
+        vite_config::source(config),
+    )
+    .unwrap();
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(project.path())
         .args(["fmt", "--no-config", "--write", "App.vue"])

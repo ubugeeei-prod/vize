@@ -1,6 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { lspWorkspace } from "../../../differential/lsp-workspace.ts";
 import { BUILD_RECIPE } from "../../../differential/build-receipt.ts";
 import { sha256 } from "../../../differential/harness.mjs";
 import {
@@ -129,6 +130,7 @@ export function referenceReport(
     },
     rows: loaded.cases.map((fixture) => {
       const observation = referenceObservation(fixture);
+      const mapping = lspWorkspace(fixture).mapping;
       return {
         id: fixture.id,
         legacy: {
@@ -136,6 +138,11 @@ export function referenceReport(
           verdict: "matched-reference",
           comparator: "complete-jsonrpc-response",
           observation,
+          workspace: {
+            mapping,
+            before: structuredClone(mapping.files),
+            after: structuredClone(mapping.files),
+          },
           responses: inspectLspObservation(fixture, observation),
         },
         native: { state: "unsupported", reason: NATIVE_REASON },

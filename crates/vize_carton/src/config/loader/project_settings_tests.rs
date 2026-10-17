@@ -9,11 +9,11 @@ fn native_vite_settings_use_the_same_projection_as_public_js() {
         project.path().join("vite.config.mjs"),
         r#"
         export default {
-            vize: { languageServer: { formatting: false }, typeChecker: { jsxTypecheck: false } },
+            vue: { languageServer: { formatting: false }, typeChecker: { jsxTypecheck: false } },
             compiler: { whitespace: "preserve", vueVersion: 2.7 },
             typecheck: { tsconfig: "tsconfig.app.json" },
-            lint: { vize: { preset: "essential" } },
-            fmt: { vize: { printWidth: 90, singleQuote: true } },
+            lint: { vue: { preset: "essential" } },
+            fmt: { vue: { printWidth: 90, singleQuote: true } },
         };
     "#,
     )
@@ -40,23 +40,23 @@ fn native_vite_settings_use_the_same_projection_as_public_js() {
 }
 
 #[test]
-fn dedicated_config_precedes_vite_and_preserves_existing_defaults() {
+fn vite_config_precedes_retired_dedicated_files_and_preserves_project_defaults() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
         project.path().join("vite.config.mjs"),
-        "export default { fmt: { vize: { singleQuote: true } } };",
+        "export default { vue: { formatter: { singleQuote: true } } };",
     )
     .unwrap();
     let fresh = load_config_with_features_and_source(Some(project.path()));
     assert!(fresh.config.formatter.single_quote);
     assert!(fresh.features.type_checker_jsx_typecheck);
     std::fs::write(project.path().join("vize.config.json"), "{}").unwrap();
-    let compatible = load_config_with_features_and_source(Some(project.path()));
-    assert!(!compatible.config.formatter.single_quote);
-    assert!(!compatible.features.type_checker_jsx_typecheck);
+    let loaded = load_config_with_features_and_source(Some(project.path()));
+    assert!(loaded.config.formatter.single_quote);
+    assert!(loaded.features.type_checker_jsx_typecheck);
     assert_eq!(
-        compatible.source_path.unwrap(),
-        project.path().join("vize.config.json")
+        loaded.source_path.unwrap(),
+        project.path().join("vite.config.mjs")
     );
 }
 
@@ -65,7 +65,7 @@ fn malformed_vite_settings_fail_closed_before_formatter_writes() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
         project.path().join("vite.config.mjs"),
-        "export default { fmt: { vize: { tabWidth: 'wrong' } } };",
+        "export default { fmt: { vue: { tabWidth: 'wrong' } } };",
     )
     .unwrap();
     let error = try_load_formatter_snapshot(Some(project.path())).unwrap_err();
@@ -106,7 +106,7 @@ fn project_snapshot_resolves_vite_root_paths_from_one_evaluation() {
         r#"import { appendFileSync } from 'node:fs';
         export default () => {
             appendFileSync(new URL('.evaluations', import.meta.url), 'once');
-            return {root:'app',vize:{
+            return {root:'app',vue:{
                 typeChecker:{tsconfig:'tsconfig.json'}, ignores:['src/Ignored.vue'],
                 entries:[{files:['src/*.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]
             }};
@@ -137,23 +137,29 @@ fn project_snapshot_resolves_vite_root_paths_from_one_evaluation() {
     );
 
     std::fs::write(
-        project.path().join("vize.config.json"),
+        project.path().join("serialized-config.json"),
         "{\"projectRoot\":42,\"__vizeProjectRoot\":42}",
     )
     .unwrap();
-    let dedicated = super::try_load_project_config_with_source(Some(project.path())).unwrap();
+    let dedicated = super::try_load_project_config_with_source(Some(
+        &project.path().join("serialized-config.json"),
+    ))
+    .unwrap();
     assert_eq!(dedicated.project_root, None);
     assert_eq!(
         dedicated.source_path,
-        Some(project.path().join("vize.config.json"))
+        Some(project.path().join("serialized-config.json"))
     );
 
     std::fs::write(
-        project.path().join("vize.config.json"),
+        project.path().join("serialized-config.json"),
         r#"{"__vizeProjectRoot":"untrusted","ignores":["src/Ignored.vue"]}"#,
     )
     .unwrap();
-    let dedicated = super::try_load_project_config_with_source(Some(project.path())).unwrap();
+    let dedicated = super::try_load_project_config_with_source(Some(
+        &project.path().join("serialized-config.json"),
+    ))
+    .unwrap();
     assert_eq!(dedicated.document.project_root(), None);
     assert_eq!(
         dedicated
@@ -167,9 +173,9 @@ fn project_snapshot_resolves_vite_root_paths_from_one_evaluation() {
 }
 
 #[test]
-fn native_array_projection_retains_global_settings_and_ordered_root_scopes() {
+fn native_projection_retains_global_settings_and_ordered_root_scopes() {
     let project = tempfile::tempdir().unwrap();
-    std::fs::write(project.path().join("vite.config.mjs"), "export default {root:'app',vize:[{__vizeProjectRoot:'decoy',formatter:{singleQuote:true},linter:{preset:'essential'}},{basePath:'ui',files:['*.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]};").unwrap();
+    std::fs::write(project.path().join("vite.config.mjs"), "export default {root:'app',vue:{formatter:{singleQuote:true},linter:{preset:'essential'},entries:[{basePath:'ui',files:['*.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]}};").unwrap();
     let loaded = super::try_load_project_config_with_source(Some(project.path())).unwrap();
     let root = project.path().canonicalize().unwrap().join("app");
     assert_eq!(loaded.project_root.as_deref(), Some(root.as_path()));
@@ -191,7 +197,7 @@ fn editor_snapshot_keeps_lint_scopes_and_paths_from_one_host_evaluation() {
         r#"import { appendFileSync } from 'node:fs';
         export default () => {
             appendFileSync(new URL('.evaluations', import.meta.url), 'once');
-            return {root:'app',vize:{
+            return {root:'app',vue:{
                 typeChecker:{tsconfig:'tsconfig.json'}, ignores:['src/Ignored.vue'],
                 entries:[{files:['src/*.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]
             }};
@@ -229,14 +235,14 @@ fn editor_snapshot_keeps_lint_scopes_and_paths_from_one_host_evaluation() {
 }
 
 #[test]
-fn editor_snapshot_preserves_dedicated_relative_tsconfig_values() {
+fn editor_snapshot_preserves_explicit_serialized_relative_tsconfig_values() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
-        project.path().join("vize.config.json"),
+        project.path().join("serialized-config.json"),
         r#"{"typeChecker":{"tsconfig":"tsconfig.app.json","jsxTypecheck":false}}"#,
     )
     .unwrap();
-    let loaded = load_lsp_config_snapshot(Some(project.path()));
+    let loaded = load_lsp_config_snapshot(Some(&project.path().join("serialized-config.json")));
     assert_eq!(
         (
             loaded.valid,
@@ -266,7 +272,7 @@ fn empty_editor_workspace_is_valid_without_weakening_explicit_cli_selection() {
     assert_eq!(
         super::try_load_project_config_with_source(Some(project.path())).unwrap_err(),
         format!(
-            "no vize config file found under {}",
+            "no Vite config file found under {}",
             project.path().display()
         )
     );
@@ -297,7 +303,7 @@ fn empty_editor_directory_retains_fresh_defaults_and_strict_cli_checks() {
     assert_eq!(
         super::load_raw_config_checked(Some(project.path())).err(),
         Some(format!(
-            "no vize config file found under {}",
+            "no Vite config file found under {}",
             project.path().display()
         ))
     );

@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -101,15 +102,11 @@ test("vize check --no-config bypasses validation of an invalid -c path", () => {
   });
 });
 
-test("vize check skips and exits 0 when typeChecker.enabled is false (JSON config)", () => {
+test("vize check skips and exits 0 when typeChecker.enabled is false (shared Vite config)", () => {
   withWorkspace((dir) => {
     fs.writeFileSync(path.join(dir, "a.vue"), "<template><p /></template>\n", "utf8");
-    // JSON config (not .ts) so it resolves without a JS runtime in the temp dir.
-    fs.writeFileSync(
-      path.join(dir, "vize.config.json"),
-      JSON.stringify({ typeChecker: { enabled: false } }),
-      "utf8",
-    );
+    // A plain Vite module needs no project-local transpiler dependency.
+    writeVueConfigFixture(dir, JSON.stringify({ typeChecker: { enabled: false } }));
     const result = runCheck(["a.vue", "--corsa-path", "/nonexistent"], dir);
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
     assert.match(

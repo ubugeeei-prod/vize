@@ -9,6 +9,8 @@ mod corsa_requirement;
 #[path = "lint_unchecked_indexed_access_cli/support.rs"]
 mod support;
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use serde_json::{Value, json};
 use std::{fs, path::Path, process::Command};
 use vize_patina::{HelpLevel, Linter, Severity};
@@ -108,9 +110,13 @@ fn authored_index_access_options_reach_native_boolean_types_and_complete_cli_rep
         let source = read(&corpus, case["source"].as_str().unwrap());
         let config = read(&corpus, case["vizeConfig"].as_str().unwrap());
         support::write(&project, filename, source.as_bytes());
-        support::write(&project, "vize.config.json", config.as_bytes());
+        support::write(
+            &project,
+            "vite.config.mjs",
+            vite_config::source(config.as_bytes()).as_bytes(),
+        );
         support::write(&project, "package.json", b"{\"type\":\"module\"}\n");
-        let mut inputs = vec![filename, "vize.config.json", "package.json"];
+        let mut inputs = vec![filename, "vite.config.mjs", "package.json"];
         for file in case["configFiles"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
             support::write(

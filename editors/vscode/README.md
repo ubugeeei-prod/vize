@@ -58,12 +58,12 @@ Open a Vue file in an existing Vite or TypeScript project to start Vize automati
 are required. The project defaults enable lint diagnostics, type checking, editor assistance,
 ecosystem helpers, and formatting. Explicit `vize.enable: false` always keeps the extension disabled.
 
-Configure project features through the top-level `vize` settings in your Vite config, for example:
+Configure project features through the top-level `vue` settings in your Vite config, for example:
 
 ```ts
 export default {
-  vize: {
-    lsp: {
+  vue: {
+    languageServer: {
       hover: false,
       formatting: false,
     },
@@ -72,10 +72,14 @@ export default {
 ```
 
 Explicit VS Code feature settings override project settings. Settings left unset preserve the
-project configuration and its defaults. Existing dedicated Vize configs retain their precedence
-and feature behavior, including opt-in formatting. The extension also detects project config
-files inside monorepo packages; open packages as separate workspace folders when they need
-different language-server configurations.
+project configuration and its defaults. The extension discovers Vite and TypeScript configurations
+inside monorepo packages. Each open document uses its nearest project configuration, and the
+language server reloads imported configuration helpers and TypeScript project settings when they
+change. `vize.config.*` files are retired; move Vue settings to `vite.config.*` or the standard
+`vueCompilerOptions` in `tsconfig.json`.
+
+The native server evaluates Vite configuration with the project's installed Vite. Projects without
+Vite require Node.js 22.15 or newer so imported configuration files can be tracked and refreshed.
 
 For workspaces without a project config, setting only `vize.enable: true` uses the recommended
 diagnostics, editor, and ecosystem profile. The setup commands apply that profile to the workspace
@@ -165,20 +169,10 @@ apply to `*.art.vue` documents.
 ### Vue TSX and JSX
 
 Opening a `.tsx` or `.jsx` file activates the extension, including in a workspace containing
-no Vue SFCs. Enable Vue JSX checking in the project's `vize.config.json`:
-
-```json
-{
-  "lsp": { "editor": true, "typecheck": true },
-  "typeChecker": { "jsxTypecheck": true }
-}
-```
-
-The same `typeChecker.jsxTypecheck` option works in Pkl configuration. It enables type
-diagnostics, completion, hover, and navigation through the native TypeScript backend.
-Leave it off for React projects: JSX documents are then withheld from the Vize server.
-Restart the server after changing the project configuration. Older servers that do not
-advertise JSX support also leave JSX documents with their existing language service.
+no Vue SFCs. Vue JSX checking is enabled for Vite and TypeScript projects. Configure
+`vue.typeChecker.jsxTypecheck: false` in `vite.config.*` when JSX belongs to another framework.
+Type diagnostics, completion, hover, and navigation use the native TypeScript backend.
+Older servers that do not advertise JSX support leave JSX documents with their existing language service.
 
 ## Commands
 

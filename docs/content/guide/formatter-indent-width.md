@@ -2,20 +2,20 @@
 
 Choose the indentation width that matches your project. Space or tab settings change the layout around template content; authored raw text stays intact.
 
-Check [shared formatter configuration and current release availability](./configuration.md)
-before choosing where to put these settings.
+Keep shared options in `vue.formatter` in `vite.config.*`; the CLI and editor read the same settings. See [Configuration](./configuration.md).
 
 ## Configure indentation
 
 `tabWidth` controls the number of spaces per indentation level. Its default is
 `2`. Set it in the existing formatter configuration:
 
-```json
-{
-  "formatter": {
-    "tabWidth": 3
-  }
-}
+```ts
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  formatter: { tabWidth: 3 },
+});
 ```
 
 For `<template><p>hello</p></template>`, this produces:

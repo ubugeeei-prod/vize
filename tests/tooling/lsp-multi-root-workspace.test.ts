@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -21,7 +22,7 @@ import { LspSession } from "./support/lsp/session.ts";
 //       per-document versions stay monotonic), and
 //   (c) answer definition/hover for documents of both roots.
 // Both roots carry their own tsconfig.json; root B additionally ships a
-// vize.config.json that turns `vue/require-v-for-key` off, so identical file
+// vite.config.mjs that turns `vue/require-v-for-key` off, so identical file
 // contents produce a lint diagnostic in root A but none in root B. That
 // asymmetry is what proves the configuration contexts are actually separate.
 
@@ -69,11 +70,7 @@ function createRoot(
   );
 
   if (options.disableVForKeyRule) {
-    fs.writeFileSync(
-      path.join(dir, "vize.config.json"),
-      JSON.stringify({ linter: { rules: { [V_FOR_KEY_RULE]: "off" } } }),
-      "utf8",
-    );
+    writeVueConfigFixture(dir, JSON.stringify({ linter: { rules: { [V_FOR_KEY_RULE]: "off" } } }));
   }
 
   const filePath = path.join(dir, "List.vue");
@@ -126,7 +123,7 @@ test("vize lsp resolves per-root config and navigation across two workspace fold
       );
       assert.ok(
         !hasVForKeyDiagnostic(publishB),
-        `root B disables ${V_FOR_KEY_RULE} in its own vize.config.json: ${JSON.stringify(
+        `root B disables ${V_FOR_KEY_RULE} in its own vite.config.mjs: ${JSON.stringify(
           publishB.diagnostics,
         )}`,
       );

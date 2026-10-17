@@ -2,6 +2,8 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{fs, path::Path, process::Command};
 
 fn write_project_file(root: &Path, path: &str, content: &str) {
@@ -69,8 +71,9 @@ fn lint_runs_explicit_musea_rules_for_art_files() {
 
     write_project_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "incremental",
     "rules": {
@@ -79,6 +82,7 @@ fn lint_runs_explicit_musea_rules_for_art_files() {
     }
   }
 }"#,
+        ),
     );
 
     let configured_output = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -86,7 +90,7 @@ fn lint_runs_explicit_musea_rules_for_art_files() {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "--max-warnings",
@@ -148,8 +152,9 @@ fn lint_runs_configured_musea_design_token_rule_for_art_styles() {
     let project_root = tempfile::tempdir().unwrap();
     write_project_file(
         project_root.path(),
-        "vize.config.json",
-        r##"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r##"{
   "linter": {
     "preset": "incremental",
     "ruleOptions": {
@@ -164,6 +169,7 @@ fn lint_runs_configured_musea_design_token_rule_for_art_styles() {
     }
   }
 }"##,
+        ),
     );
     write_project_file(
         project_root.path(),
@@ -185,7 +191,7 @@ fn lint_runs_configured_musea_design_token_rule_for_art_styles() {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "--max-warnings",

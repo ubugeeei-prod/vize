@@ -159,9 +159,9 @@ pub fn capture(root: &Path, vue: &Path, corsa: &Path, case: &str) -> Result<Opti
             std::fs::copy(directory.join(name), output)?;
         }
     }
-    let configuration = root.join("apps/web/vize.config.json");
+    let configuration = root.join("apps/web/vite.config.mjs");
     if configuration.is_file() {
-        std::fs::copy(configuration, target.join("vize.config.json"))?;
+        std::fs::copy(configuration, target.join("vite.config.mjs"))?;
     }
     std::fs::write(
         target.join("runtime.json"),

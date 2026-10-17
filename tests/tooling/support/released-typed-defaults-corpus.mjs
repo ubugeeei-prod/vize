@@ -9,6 +9,7 @@ import {
 } from "../../../tools/support/release/typed_defaults/custody.mjs";
 import {
   originals,
+  originalSourcePaths,
   typedDirectory,
 } from "../../../tools/support/release/typed_defaults/fixtures.mjs";
 
@@ -32,9 +33,10 @@ export function corpusFixture() {
     });
   }
   for (const [name, hash] of Object.entries(originals)) {
-    const bytes = fs.readFileSync(path.join(root, name));
+    const sourcePath = originalSourcePaths[name] ?? name;
+    const bytes = fs.readFileSync(path.join(root, sourcePath));
     assert.equal(sha256(bytes), hash, `authored control bytes changed: ${name}`);
-    add(name, bytes);
+    add(sourcePath, bytes);
     if (!name.endsWith("cases.json")) continue;
     for (const entry of JSON.parse(bytes).cases) {
       const filename = `${path.dirname(name)}/${entry.filename}.fixture`;

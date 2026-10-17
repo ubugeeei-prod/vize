@@ -20,8 +20,8 @@ Vue コンパイラーが予約した識別子の宣言を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-reserved-identifiers": "error"

@@ -4,8 +4,11 @@ import path from "node:path";
 export const VIZE_CONFIG_FILES = [
   "vize.config.pkl",
   "vize.config.ts",
+  "vize.config.mts",
+  "vize.config.cts",
   "vize.config.js",
   "vize.config.mjs",
+  "vize.config.cjs",
   "vize.config.json",
 ] as const;
 
@@ -178,4 +181,15 @@ function isJsonObject(value: unknown): value is JsonObject {
 
 function isNodeError(value: unknown): value is NodeJS.ErrnoException {
   return value instanceof Error;
+}
+
+/** Preserve removed config files, but do not present an unusable project as ready. */
+export function requireSharedConfig(root: string, viteConfigs: readonly string[]): void {
+  const dedicated = VIZE_CONFIG_FILES.find((name) => fs.existsSync(path.join(root, name)));
+  if (dedicated !== undefined && viteConfigs.length === 0) {
+    throw new Error(
+      `${dedicated} is no longer supported; move Vue settings to vue: in vite.config.* ` +
+        "and TypeScript settings to tsconfig.json (vueCompilerOptions). The existing file was left unchanged.",
+    );
+  }
 }

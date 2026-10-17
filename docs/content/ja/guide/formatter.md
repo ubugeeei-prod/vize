@@ -91,22 +91,20 @@ const label = computed(() => `${props.title} (${props.count ?? 0})`);
 
 ## スタイルを設定する
 
-Vite+ のプロジェクトでは、`vite.config.ts` の `fmt.vize` にオプションを書きます。
+Vite+ のプロジェクトでは、`vite.config.ts` の `vue.formatter` にオプションを書きます。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  fmt: {
-    vize: {
-      printWidth: 100,
-      singleQuote: true,
-    },
+export default defineConfig({}).withVue({
+  formatter: {
+    printWidth: 100,
+    singleQuote: true,
   },
 });
 ```
 
-`fmt.ignorePatterns` は両方のフォーマッタに適用されます。`fmt.vize: false` を指定すると、`.vue` ファイルも Oxfmt に任せます。単独の CLI やエディターが同じ設定をどこから読むかは、[設定](./configuration.md)を参照してください。
+`fmt.ignorePatterns` は両方のフォーマッタに適用されます。`.vue` ファイルも Oxfmt に任せるには、`vue.formatter` を省略し、`fmt.vue: false` を指定します。明示した `vue.formatter` はタスクの制御設定より優先されます。単独の CLI やエディターが同じ設定をどこから読むかは、[設定](./configuration.md)を参照してください。
 
 同じオプションは CLI のフラグでも指定できます。
 
@@ -135,12 +133,14 @@ export default defineConfig({
 Vize の出力は Prettier や Oxfmt とほぼ同じですが、いくつかの既定値は意図して変えています。Prettier と同じように属性やブロックを書いた順に残すには、並べ替えを無効にします。
 
 ```ts
-fmt: {
-  vize: {
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  formatter: {
     sortAttributes: false,
     sortBlocks: false,
   },
-},
+});
 ```
 
 コマンドラインでは、`vize fmt --preset prettier` でこれらの設定に加えて次の動作をまとめて指定できます。

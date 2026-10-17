@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "../../tooling/support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -295,10 +296,7 @@ function createWorkspace(label: string, corsaPath: string): string {
     symlink(vueNamespace, path.join(workspaceDir, "node_modules/@vue"));
   }
 
-  fs.writeFileSync(
-    path.join(workspaceDir, "vize.config.json"),
-    JSON.stringify({ typeChecker: { corsaPath } }, null, 2),
-  );
+  writeVueConfigFixture(workspaceDir, { typeChecker: { corsaPath } });
   fs.writeFileSync(
     path.join(workspaceDir, "package.json"),
     JSON.stringify({ name: `ref-unwrap-${label}`, private: true, type: "module" }),

@@ -301,8 +301,12 @@ test("pkg.pr.new workflow publishes built npm packages from the lockfile", () =>
     rustScriptInstallIndex < buildIndex,
     "rust-script must be installed before package builds",
   );
-  assert.match(job, /rustup toolchain install 1\.99\.1 --profile minimal --no-self-update/);
-  assert.match(job, /rustup default 1\.99\.1/);
+  const rustChannel = /^channel = "([^"]+)"$/m.exec(readRepoFile("rust-toolchain.toml"))?.[1];
+  assert.ok(rustChannel, "repository must pin its Rust toolchain");
+  assert.ok(
+    job.includes(`rustup toolchain install ${rustChannel} --profile minimal --no-self-update`),
+  );
+  assert.ok(job.includes(`rustup default ${rustChannel}\n`));
   assert.match(job, /grep -Eq '\(\^\|\[\[:space:\]\]\)0\\\.34\\\.0\(\[\[:space:\]\]\|\$\)'/);
   assert.match(job, /cargo install rust-script --version 0\.34\.0 --locked/);
   assert.match(job, /vp run --workspace-root build:packages/);

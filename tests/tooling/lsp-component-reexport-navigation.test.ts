@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -52,7 +53,7 @@ test("component definition and prop hovers survive re-exported barrel and packag
     fs.mkdirSync(componentsDir, { recursive: true });
     fs.mkdirSync(packageDir, { recursive: true });
     fs.writeFileSync(path.join(workspaceDir, "tsconfig.json"), JSON.stringify({}));
-    fs.writeFileSync(path.join(workspaceDir, "vize.config.json"), JSON.stringify({}));
+    writeVueConfigFixture(workspaceDir, JSON.stringify({}));
 
     const appPath = path.join(srcDir, "App.vue");
     const barrelChildPath = path.join(componentsDir, "BarrelChild.vue");

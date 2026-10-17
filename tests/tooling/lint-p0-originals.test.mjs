@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -211,7 +212,7 @@ await test("source-built lint preserves complete original P0 findings with nativ
         },
         typeChecker: { corsaPath: native },
       };
-      fs.writeFileSync(path.join(directory, "vize.config.json"), JSON.stringify(config));
+      writeVueConfigFixture(directory, config);
       const modes = entry.rule === references ? [[], ["--type-aware"]] : [[]];
       for (const mode of modes) {
         const run = capture(

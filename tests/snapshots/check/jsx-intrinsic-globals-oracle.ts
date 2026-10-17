@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "../../tooling/support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -21,7 +22,7 @@ test("Vue JSX intrinsic globals stay present while component props remain strict
     const srcDir = path.join(workspaceDir, "src");
     fs.mkdirSync(srcDir, { recursive: true });
     symlinkVueTypes(workspaceDir);
-    writeJson(path.join(workspaceDir, "vize.config.json"), {
+    writeVueConfigFixture(workspaceDir, {
       typeChecker: { corsaPath, jsxTypecheck: true },
     });
     writeJson(path.join(workspaceDir, "tsconfig.json"), {

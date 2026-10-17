@@ -130,24 +130,21 @@ review the formatter diff before changing CI. Formatting writes files;
 
 ## Migrate standalone config into Vite+
 
-CLI and editor workflows can share the top-level `vize` settings in
-`vite.config.*`; see [configuration and release availability](./configuration.md).
-For Vite+ integration tasks, move these settings into the tool sections:
+Move native settings from `vize.config.*` or top-level `vize:` to `vue:` in your
+existing Vite configuration. Keep TypeScript strictness and `vueCompilerOptions`
+in `tsconfig.json`, including standard `extends` and `references`.
 
-```ts annotate="remove:1,5,6,7;add:2,8,9,10"
-import { defineConfig } from "vize";
+```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+const vpConfig = { server: { port: 3000 } };
+
+export default defineConfig(vpConfig).withVue({
   linter: { preset: "essential" },
   formatter: { printWidth: 100 },
-  typeChecker: { strict: true },
-  lint: { vize: { preset: "essential" } },
-  fmt: { vize: { printWidth: 100 } },
-  typecheck: { strict: true },
 });
 ```
 
-Move the settings, not just the import: the field names differ. Keep an existing
-dedicated config only when you still need its separate format or precedence.
-See [Configuration](./configuration.md) for the canonical location per integration.
+The CLI and editor read the same Vite and TypeScript project settings. Remove the
+old dedicated file after verifying the migration; dedicated files and Vize-specific
+`extends` are no longer supported. See [Configuration](./configuration.md).

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
+import type { BenchmarkConfigContract } from "../../tooling/support/benchmark-config-contract.ts";
 import { offsetToPosition } from "../../tooling/support/lsp/assertions.ts";
 import { QueryRecorder } from "./warm-type-backed-measure.ts";
 import { nativeIdentities, retireNative } from "./warm-type-backed-processes.ts";
@@ -21,6 +22,7 @@ export async function controls(
   workspace: string,
   source: string,
   runtime: ReturnType<typeof runtimeIdentity>,
+  configContract: BenchmarkConfigContract,
 ) {
   const session = recorder.session;
   const uri = pathToFileURL(path.join(workspace, "src/c/Comp0.vue")).href;
@@ -198,7 +200,7 @@ export async function controls(
     await sweep("reopened-host");
   });
 
-  const other = generateWorkspace(`${workspace}-other`, runtime, 20);
+  const other = generateWorkspace(`${workspace}-other`, runtime, configContract, 20);
   inputs.push({ name: "cross-root-original20", ...other });
   await step("cross-root", async () => {
     session.notify("workspace/didChangeWorkspaceFolders", {

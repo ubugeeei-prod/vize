@@ -6,8 +6,10 @@ import type { PlannedFile } from "./config.js";
 const VITE_CONFIG_FILES = [
   "vite.config.ts",
   "vite.config.mts",
+  "vite.config.cts",
   "vite.config.js",
   "vite.config.mjs",
+  "vite.config.cjs",
 ] as const;
 
 const VITE_PLUS_LINT_IMPORT = 'import { createVizeLintConfig } from "oxlint-plugin-vize";\n';

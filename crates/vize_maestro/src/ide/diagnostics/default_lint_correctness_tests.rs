@@ -19,8 +19,8 @@ fn configless_ecosystem_and_recommended_editor_lint_share_complete_defaults() {
         let root = tempfile::tempdir().unwrap();
         if explicit {
             std::fs::write(
-                root.path().join("vize.config.json"),
-                r#"{"linter":{"preset":"recommended"}}"#,
+                root.path().join("vite.config.mjs"),
+                r#"export default { vue: {"linter":{"preset":"recommended"}} };"#,
             )
             .unwrap();
         }
@@ -61,8 +61,12 @@ fn editor_explicit_off_preserves_the_complete_existing_baseline() {
         .map(|name| (name.as_str().unwrap().to_owned(), json!("off")))
         .collect();
     std::fs::write(
-        root.path().join("vize.config.json"),
-        json!({"linter":{"rules":rules}}).to_string(),
+        root.path().join("vite.config.mjs"),
+        vize_l0::cstr!(
+            "export default {{ vue: {} }};",
+            json!({"linter":{"rules":rules}})
+        )
+        .as_bytes(),
     )
     .unwrap();
     let state = ServerState::new();
@@ -93,8 +97,8 @@ fn configured_editor_vue_versions_preserve_whole_existing_baselines() {
         let version = version.as_str().unwrap();
         let root = tempfile::tempdir().unwrap();
         std::fs::write(
-            root.path().join("vize.config.json"),
-            json!({"vue":{"version":version}}).to_string(),
+            root.path().join("vite.config.mjs"),
+            vize_l0::cstr!("export default {{ vue: {} }};", json!({"version":version})).as_bytes(),
         )
         .unwrap();
         let state = ServerState::new();
@@ -139,13 +143,13 @@ fn editor_vue_version_is_owned_by_the_matching_folder_and_global_fallback() {
         std::fs::create_dir(root).unwrap();
     }
     std::fs::write(
-        roots[0].join("vize.config.json"),
-        r#"{"vue":{"version":"2.7"}}"#,
+        roots[0].join("vite.config.mjs"),
+        r#"export default { vue: {"version":"2.7"} };"#,
     )
     .unwrap();
     std::fs::write(
-        roots[1].join("vize.config.json"),
-        r#"{"vue":{"version":"3"}}"#,
+        roots[1].join("vite.config.mjs"),
+        r#"export default { vue: {"version":"3"} };"#,
     )
     .unwrap();
     let folders: Vec<_> = roots[..3]

@@ -104,7 +104,7 @@ src/App.vue
 
    export default defineConfig({
      lint: {
-       vize: {
+       vue: {
          rules: {
            "a11y/alt-text": "error",
            "vue/require-v-for-key": "off",
@@ -136,7 +136,7 @@ src/App.vue
 | Type-aware       | `type/*`                | `vize lint --type-aware`, using the TypeScript checker                   |
 | Musea and CSS    | `musea/*`               | Any lint run that parses Musea art blocks or style content               |
 
-Single-file rules come from Patina, Vize's linter. They can be configured from the Vite+ config, the shared `vize.config.*`, the CLI, the JavaScript API and the Oxlint plugin.
+Single-file rules come from Patina, Vize's linter. They can be configured from the Vite+ config, the shared `vue:` section in `vite.config.*`, the CLI, the JavaScript API and the Oxlint plugin.
 
 Cross-file diagnostics compare providers with injectors, track duplicated IDs and spot reactivity hazards across component boundaries. See [Cross-file Complexity](./cross-file-complexity.md) for the reports they produce.
 

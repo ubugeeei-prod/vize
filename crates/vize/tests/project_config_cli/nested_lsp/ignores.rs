@@ -2,7 +2,7 @@
 use super::{SOURCE, Value, cstr, file_uri, finish, fixture, initialize, json, native, write};
 
 const IMAGE: &str = "<template>\n  <img src=\"x\" />\n</template>\n";
-const CONFIG: &str = r#"export default {root:'src',vize:{ignores:['generated/**','!generated/KeepItem.vue','pages/\\[id\\].vue'],linter:{preset:'essential',rules:{'a11y/alt-text':'error'}},lsp:{lint:true,typecheck:false}}};"#;
+const CONFIG: &str = r#"export default {root:'src',vue:{ignores:['generated/**','!generated/KeepItem.vue','pages/\\[id\\].vue'],linter:{preset:'essential',rules:{'a11y/alt-text':'error'}},languageServer:{lint:true,typecheck:false}}};"#;
 
 fn alt_text() -> Value {
     json!([{
@@ -82,8 +82,8 @@ fn ignored_open_sources_keep_native_types_while_lint_exclusions_and_negation_app
             "lint:true",
         )
         .replace(
-            "vize:{",
-            "vize:{ignores:['generated/**','!generated/KeepItem.vue'],linter:{preset:'essential',rules:{'a11y/alt-text':'error'}},",
+            "vue:{",
+            "vue:{ignores:['generated/**','!generated/KeepItem.vue'],linter:{preset:'essential',rules:{'a11y/alt-text':'error'}},",
         );
     std::fs::write(path, settings).unwrap();
     let source = SOURCE.replace("VALUE_TYPE", "string").replace(

@@ -20,8 +20,8 @@ defineProps の深い分割代入を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deep-destructure-in-props": "warn"

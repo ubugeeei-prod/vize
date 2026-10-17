@@ -38,8 +38,8 @@ title: "Vapor 规则"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-get-current-instance": "error"
@@ -101,8 +101,8 @@ const appConfig = inject("app-config");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-next-tick": "error"
@@ -166,8 +166,8 @@ onMounted(() => { input.value?.focus(); });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-options-api": "error"
@@ -231,8 +231,8 @@ const count = ref(0);
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "vapor/no-inline-template": "error"
@@ -298,8 +298,8 @@ LegacyCard 为子标记使用 inline-template 属性。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "vapor/no-vue-lifecycle-events": "error"
@@ -367,8 +367,8 @@ onMounted(() => {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "vapor/prefer-static-class": "warn"
@@ -432,8 +432,8 @@ class 绑定对常量字符串求值，但类名并不会改变。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "vapor/require-vapor-attribute": "warn"

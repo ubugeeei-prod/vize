@@ -192,7 +192,10 @@ void test("exceptions and interrupts remove native config and stop subsequent to
 
 void test("check --fix routes fixes only to lint and format and loads existing shared config", async () => {
   await project(async () => {
-    writeFileSync("vize.config.json", JSON.stringify({ formatter: { singleQuote: true } }));
+    writeFileSync(
+      "vite.config.mjs",
+      "export default { vue: { formatter: { singleQuote: true } } }",
+    );
     const calls: string[][] = [];
     await runTools(
       "check",
@@ -254,7 +257,7 @@ void test("lint rejects native-only flags before invoking either checker", async
         },
       ),
       {
-        message: `Vize ${task} tasks accept paths and --fix. Put native tool options in lint.vize.`,
+        message: `Vize ${task} tasks accept paths and --fix. Put native tool options in lint.vue.`,
       },
     );
     assert.deepEqual(calls, []);

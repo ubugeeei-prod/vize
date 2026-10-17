@@ -9,7 +9,7 @@ fn vite_root_global_ignore_negation_and_escapes_reach_lint_discovery() {
     let (output, report) = lint_report(root, &[]);
     assert_eq!(output.status.code(), Some(1), "{output:?}");
     assert_eq!(report, oracle!("lint-ignore-syntax.json"));
-    assert_configuration(root, IGNORE_SETTINGS, false, None);
+    assert_configuration(root, &IGNORE_SETTINGS, false, None);
 }
 
 #[cfg(feature = "glyph")]
@@ -19,7 +19,7 @@ fn vite_root_global_ignore_negation_and_escapes_reach_formatter_discovery() {
     let root = project.path();
     assert_success(&run(root, &["fmt", "--write"]));
     assert_eq!(inventory(root), oracle!("fmt-ignore-syntax.json"));
-    assert_configuration(root, IGNORE_SETTINGS, false, None);
+    assert_configuration(root, &IGNORE_SETTINGS, false, None);
 }
 
 #[test]
@@ -46,5 +46,5 @@ fn vite_root_global_ignore_negation_and_escapes_reach_check_programs() {
     normalize_report(root, &mut report);
     assert_eq!(output.status.code(), Some(1), "{output:?}");
     assert_eq!(report, oracle!("check-ignore-syntax.json"));
-    assert_configuration(root, IGNORE_SETTINGS, false, None);
+    assert_configuration(root, &IGNORE_SETTINGS, false, None);
 }

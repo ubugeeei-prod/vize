@@ -77,10 +77,14 @@ impl Fixture {
             .expect("actual Vue link");
         std::fs::write(root.join("tsconfig.json"), CONFIG).expect("original tsconfig");
         let flags = json!({"lint":true,"typecheck":true,"hover":true,"crossFile":true});
-        let config = json!({"typeChecker":{"corsaPath":runtime},"lsp":flags});
+        let config = json!({"typeChecker":{"corsaPath":runtime},"languageServer":flags});
         std::fs::write(
-            root.join("vize.config.json"),
-            serde_json::to_vec(&config).expect("config JSON"),
+            root.join("vite.config.mjs"),
+            vize_l0::cstr!(
+                "export default {{ vue: {} }};",
+                serde_json::to_string(&config).expect("config JSON")
+            )
+            .as_bytes(),
         )
         .expect("config");
         for (name, source) in [("Toggle.vue", toggle), ("App.vue", app)] {

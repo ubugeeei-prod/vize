@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "../vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -66,13 +67,10 @@ export class PatternSession {
         include: ["*.vue"],
       }),
     );
-    fs.writeFileSync(
-      path.join(this.directory, "vize.config.json"),
-      JSON.stringify({
-        experimentals: { patternedTemplate: true },
-        lsp: { editor: true, typecheck: true, lint: false },
-      }),
-    );
+    writeVueConfigFixture(this.directory, {
+      experimentals: { patternedTemplate: true },
+      lsp: { editor: true, typecheck: true, lint: false },
+    });
     fs.writeFileSync(this.file, "<template />");
     await this.session.initialize(this.directory, { editor: true, typecheck: true, lint: false });
   }

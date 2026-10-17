@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -74,13 +75,12 @@ test("script hover describes re-exported and package SFC component contracts", a
     fs.mkdirSync(componentsDir, { recursive: true });
     fs.mkdirSync(packageDir, { recursive: true });
     linkVuePackage(workspaceDir);
-    fs.writeFileSync(
-      path.join(workspaceDir, "vize.config.json"),
+    writeVueConfigFixture(
+      workspaceDir,
       JSON.stringify({
         lsp: { hover: true, lint: false, typecheck: true },
         typeChecker: { corsaPath },
       }),
-      "utf8",
     );
     fs.writeFileSync(
       path.join(workspaceDir, "tsconfig.json"),

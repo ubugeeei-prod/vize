@@ -39,8 +39,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "html/deprecated-attr": "warn"
@@ -99,8 +99,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "html/deprecated-element": "warn"
@@ -160,8 +160,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "html/id-duplication": "error"
@@ -225,8 +225,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "html/no-consecutive-br": "warn"
@@ -287,8 +287,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "html/no-dupe-style-properties": "warn"
@@ -350,8 +350,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "html/no-duplicate-class": "warn"
@@ -411,8 +411,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "html/no-duplicate-dt": "warn"
@@ -481,8 +481,8 @@ Options: Consultez les [options typées et leurs valeurs par défaut](/rules/opt
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "html/no-empty-palpable-content": "warn"
@@ -546,8 +546,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "html/require-datetime": "warn"

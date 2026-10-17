@@ -11,7 +11,7 @@ use std::{
 fn concurrent_async_targets_reuse_one_config_generation_without_starting_corsa() {
     let (root, owner, a, _) = fixture();
     let package = root.path().join("packages/a");
-    std::fs::write(package.join("vite.config.mjs"), "import {appendFileSync} from 'node:fs'; appendFileSync(new URL('./evaluations',import.meta.url),'1'); export default {vize:{lsp:{hover:false}}};").unwrap();
+    std::fs::write(package.join("vite.config.mjs"), "import {appendFileSync} from 'node:fs'; appendFileSync(new URL('./evaluations',import.meta.url),'1'); export default {vue:{languageServer:{hover:false}}};").unwrap();
     let states = futures::executor::block_on(futures::future::join_all(
         (0..8).map(|_| owner.document_project_state_async(&a)),
     ));
@@ -37,7 +37,7 @@ fn concurrent_async_targets_reuse_one_config_generation_without_starting_corsa()
 fn canceled_pending_initializer_has_no_registry_or_owner_cycle_after_shutdown() {
     let (root, owner, a, _) = fixture();
     let package = root.path().join("packages/a");
-    std::fs::write(package.join("vite.config.mjs"), "import {existsSync,writeFileSync} from 'node:fs'; writeFileSync(new URL('./started',import.meta.url),'1'); while(!existsSync(new URL('./release',import.meta.url))) await new Promise(r=>setTimeout(r,10)); export default {vize:{lsp:{hover:false}}};").unwrap();
+    std::fs::write(package.join("vite.config.mjs"), "import {existsSync,writeFileSync} from 'node:fs'; writeFileSync(new URL('./started',import.meta.url),'1'); while(!existsSync(new URL('./release',import.meta.url))) await new Promise(r=>setTimeout(r,10)); export default {vue:{languageServer:{hover:false}}};").unwrap();
     {
         let request = owner.document_project_state_async(&a);
         futures::pin_mut!(request);

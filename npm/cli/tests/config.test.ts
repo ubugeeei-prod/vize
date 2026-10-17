@@ -7,17 +7,17 @@ import { test } from "vite-plus/test";
 
 import { loadConfig } from "../src/config.ts";
 
-test("loads TypeScript config self-imports without a root vize dependency", async () => {
+test("loads TypeScript Vite config self-imports without a root vize dependency", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-config-self-import-"));
   fs.writeFileSync(
-    path.join(root, "vize.config.ts"),
+    path.join(root, "vite.config.ts"),
     `import { defineConfig } from "vize";
 
-export default defineConfig({
+export default { vue: defineConfig({
   vite: {
     scanPatterns: ["src/**/*.vue"],
   },
-});
+}) };
 `,
   );
 

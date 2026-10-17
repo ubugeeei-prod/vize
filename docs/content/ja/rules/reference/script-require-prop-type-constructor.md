@@ -20,8 +20,8 @@ prop の type に文字列ではなくコンストラクターを指定します
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-prop-type-constructor": "error"

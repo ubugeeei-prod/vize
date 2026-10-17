@@ -4,6 +4,8 @@ import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { test } from "node:test";
 
+import { currentConfigExample } from "./support/docs-config-successor.ts";
+
 const root = resolve(import.meta.dirname, "../..");
 const require = createRequire(new URL("../../docs/package.json", import.meta.url));
 const native = createRequire(require.resolve("@ox-content/vite-plugin"))("@ox-content/napi");
@@ -21,7 +23,11 @@ void test("Japanese compiler guides retain all original complete examples and in
     const english = read(`docs/content/guide/${name}.md`);
     const fences = (source: string) =>
       [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```$/gm)].map((match) => match[0]);
-    assert.deepEqual(fences(japanese), page.fences, `${name}: every original recipe stays whole`);
+    assert.deepEqual(
+      fences(japanese),
+      page.fences.map(currentConfigExample),
+      `${name}: every original recipe stays whole`,
+    );
     assert.deepEqual(
       fences(japanese),
       fences(english),
@@ -67,8 +73,9 @@ void test("Babel compatibility prose follows the original compiler and corpus co
 void test("reviewed JSX guidance keeps fresh defaults, dedicated compatibility and React opt-out", () => {
   const japanese = read("docs/content/ja/guide/jsx.md");
   const english = read("docs/content/guide/jsx.md");
-  assert.match(japanese, /専用の `vize\.config\.\*` がないプロジェクト[^\n]*既定で\*\*有効/);
-  assert.match(japanese, /専用設定がある場合、`typeChecker\.jsxTypecheck`[^\n]*`false`/);
+  assert.match(japanese, /Vue JSX の型チェックはプロジェクトの既定値で\*\*有効/);
+  assert.match(japanese, /`vite\.config\.\*` の `vue\.typeChecker\.jsxTypecheck`/);
+  assert.doesNotMatch(japanese, /専用設定がある場合/);
   assert.match(japanese, /既定値のリリース検証は未完了/);
   assert.match(japanese, /エディターでも Vue JSX の型チェックを明示的に無効/);
   assert.doesNotMatch(

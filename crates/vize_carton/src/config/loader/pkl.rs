@@ -41,11 +41,12 @@ impl std::error::Error for PklError {
 /// Evaluate a PKL config and deserialize it into the raw config model.
 pub(super) fn parse_pkl_config(path: &Path) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
     let json = evaluate_pkl_config(path)?;
-    if super::extends::mentions_extends(&json) {
-        return super::parse::document_from_json(&json, path);
-    }
-    serde_json::from_slice::<ConfigDocument>(&json)
-        .map_err(|error| Box::new(PklError::Json(error)) as Box<dyn std::error::Error>)
+    super::parse::document_from_json(&json, path).map_err(|error| {
+        match error.downcast::<serde_json::Error>() {
+            Ok(error) => Box::new(PklError::Json(*error)) as Box<dyn std::error::Error>,
+            Err(error) => error,
+        }
+    })
 }
 
 /// Evaluate a PKL config to JSON, trying project-local binaries first.

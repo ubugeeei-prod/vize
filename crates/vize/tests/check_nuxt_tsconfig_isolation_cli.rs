@@ -10,6 +10,8 @@ mod nuxt_cli;
 mod nuxt_fifo;
 #[path = "support/nuxt_stress.rs"]
 mod nuxt_stress;
+#[path = "support/vite_config.rs"]
+mod vite_config;
 
 #[cfg(unix)]
 #[path = "check_nuxt_tsconfig_isolation_cli/barrier.rs"]
@@ -28,6 +30,7 @@ mod unix {
         corsa_requirement,
         nuxt_cli::resolve_test_corsa_path,
         nuxt_stress::required_iterations,
+        vite_config,
     };
 
     #[test]
@@ -122,7 +125,10 @@ mod unix {
         } else {
             r#"{ "vue": { "version": "3" }, "typeChecker": { "optionsApi": true } }"#
         };
-        write(&root.join("vize.config.json"), vize_config);
+        write(
+            &root.join("vite.config.mjs"),
+            &vite_config::source(vize_config),
+        );
         if name == "alpha" {
             write(
                 &root.join(".nuxt/tsconfig.json"),
@@ -277,7 +283,7 @@ mod unix {
                 .arg("--tsconfig")
                 .arg(spelling.join("tsconfig.json"))
                 .arg("--config")
-                .arg(spelling.join("vize.config.json"))
+                .arg(spelling.join("vite.config.mjs"))
                 .args(["--format", "json", "--servers", "1"])
                 .output()
                 .unwrap();

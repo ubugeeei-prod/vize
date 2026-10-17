@@ -102,8 +102,8 @@ title: "类型与脚本规则"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/component-options-name-casing": "error"
@@ -167,8 +167,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/custom-event-name-casing": "error"
@@ -230,8 +230,8 @@ emit('myEvent')
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/define-emits-declaration": "warn"
@@ -293,8 +293,8 @@ emit("change", 1);
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/define-macros-order": "warn"
@@ -360,8 +360,8 @@ defineSlots<{ default(props: {}): any }>()
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/define-props-declaration": "warn"
@@ -423,8 +423,8 @@ console.log(props.title);
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/define-props-destructuring": "warn"
@@ -484,8 +484,8 @@ const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-arrow-functions-in-watch": "error"
@@ -565,8 +565,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-async-in-computed": "error"
@@ -640,8 +640,8 @@ watch(query, async (value, _oldValue, onCleanup) => {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-boolean-default": "warn"
@@ -717,8 +717,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deep-destructure-in-props": "warn"
@@ -780,8 +780,8 @@ const userName = computed(() => props.user.name);
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-data-object-declaration": "error"
@@ -850,8 +850,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-destroyed-lifecycle": "error"
@@ -911,8 +911,8 @@ export default { beforeUnmount() { clearTimeout(this.timer); } };
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-dollar-listeners-api": "error"
@@ -983,8 +983,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-dollar-scopedslots-api": "error"
@@ -1048,8 +1048,8 @@ render($slots.default)
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-events-api": "error"
@@ -1123,8 +1123,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-props-default-this": "error"
@@ -1216,8 +1216,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-dupe-keys": "error"
@@ -1296,8 +1296,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-duplicate-attr-inheritance": "warn"
@@ -1355,8 +1355,8 @@ vp run lint
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-export-in-script-setup": "error"
@@ -1416,8 +1416,8 @@ const count = 1;
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-get-current-instance": "error"
@@ -1479,8 +1479,8 @@ const appConfig = inject("app-config");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-import-compiler-macros": "error"
@@ -1543,8 +1543,8 @@ const emit = defineEmits<{ save: [id: number] }>();
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-internal-imports": "error"
@@ -1605,8 +1605,8 @@ import { ref, computed } from 'vue'
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-multiple-slot-args": "warn"
@@ -1672,8 +1672,8 @@ slots.default()
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-next-tick": "error"
@@ -1737,8 +1737,8 @@ onMounted(() => { input.value?.focus(); });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-options-api": "error"
@@ -1802,8 +1802,8 @@ const count = ref(0);
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-potential-component-option-typo": "error"
@@ -1863,8 +1863,8 @@ export default { methods: { save() {} } };
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-reactive-destructure": "warn"
@@ -1928,8 +1928,8 @@ const { count, name } = toRefs(state);
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-ref-as-operand": "error"
@@ -1993,8 +1993,8 @@ const next = count.value + 1;
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-required-prop-with-default": "error"
@@ -2054,8 +2054,8 @@ export default { props: { title: { type: String, default: "Untitled" } } };
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-reserved-identifiers": "error"
@@ -2119,8 +2119,8 @@ const componentData = {};
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-reserved-keys": "error"
@@ -2180,8 +2180,8 @@ export default { data() { return { elementLabel: "custom" }; } };
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-reserved-props": "error"
@@ -2255,8 +2255,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-restricted-globals": "error"
@@ -2325,8 +2325,8 @@ viewStorage.write('view.scroll', String(window.scrollY))
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-restricted-members": "error"
@@ -2396,8 +2396,8 @@ const token = authStorage.read("token");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-side-effects-in-computed-properties": "error"
@@ -2482,8 +2482,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-top-level-ref-in-script": "error"
@@ -2570,8 +2570,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-unstable-nested-components": "warn"
@@ -2634,8 +2634,8 @@ export default { setup() { return { Child }; } };
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-unused-emit-declarations": "warn"
@@ -2698,8 +2698,8 @@ emit('change')
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-use-computed-property-like-method": "error"
@@ -2759,8 +2759,8 @@ export default { computed: { total() { return 3; } }, methods: { log() { console
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-with-defaults": "warn"
@@ -2822,8 +2822,8 @@ const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string 
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-computed": "warn"
@@ -2888,8 +2888,8 @@ const doubled = computed(() => count.value * 2);
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-define-options": "warn"
@@ -2953,8 +2953,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-import-from-vue": "warn"
@@ -3016,8 +3016,8 @@ import { isString } from '@vue/shared'
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-ref-over-reactive": "warn"
@@ -3090,8 +3090,8 @@ const userAge = ref(20)
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-use-attrs": "warn"
@@ -3152,8 +3152,8 @@ export default { setup() { const attrs = useAttrs(); console.log(attrs.class); }
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-use-id": "warn"
@@ -3216,8 +3216,8 @@ const id = useId();
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-use-slots": "warn"
@@ -3286,8 +3286,8 @@ export default defineComponent({
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-use-template-ref": "warn"
@@ -3359,8 +3359,8 @@ const error = ref(null)
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-default-prop": "error"
@@ -3432,8 +3432,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-explicit-emits": "warn"
@@ -3495,8 +3495,8 @@ emit("save");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-explicit-slots": "warn"
@@ -3558,8 +3558,8 @@ const slots = useSlots()
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-function-return-type": "warn"
@@ -3631,8 +3631,8 @@ function greet(name: string): string {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-prop-type-constructor": "error"
@@ -3705,8 +3705,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-prop-types": "error"
@@ -3780,8 +3780,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-symbol-provide": "warn"
@@ -3853,8 +3853,8 @@ const user = inject(UserKey)
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-typed-object-prop": "warn"
@@ -3919,8 +3919,8 @@ const props = defineProps({
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-typed-ref": "warn"
@@ -3988,8 +3988,8 @@ const c = ref(0)          // inferred Ref<number>
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-valid-default-prop": "error"
@@ -4064,8 +4064,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/return-in-computed-property": "error"
@@ -4129,8 +4129,8 @@ const total = computed(() => { return 1 + 2; });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/return-in-emits-validator": "error"
@@ -4190,8 +4190,8 @@ export default { emits: { submit: (payload: unknown) => { return payload != null
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/valid-define-emits": "error"
@@ -4251,8 +4251,8 @@ defineEmits<{ save: [] }>();
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/valid-define-options": "error"
@@ -4315,8 +4315,8 @@ defineOptions({ name: 'Foo', inheritAttrs: false })
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/valid-define-props": "error"
@@ -4376,8 +4376,8 @@ defineProps<{ title: string }>();
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/valid-next-tick": "warn"
@@ -4441,8 +4441,8 @@ await nextTick();
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/no-floating-promises": "warn"
@@ -4507,8 +4507,8 @@ void save();
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/no-reactivity-loss": "warn"
@@ -4575,8 +4575,8 @@ const count = toRef(state, "count");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/no-unsafe-template-binding": "warn"
@@ -4641,8 +4641,8 @@ const value: string = "Hello";
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/require-typed-emits": "warn"
@@ -4705,8 +4705,8 @@ defineEmits<{ save: [] }>();
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/require-typed-props": "warn"
@@ -4771,8 +4771,8 @@ defineProps<{ title: string }>();
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/strict-boolean-expressions": "warn"

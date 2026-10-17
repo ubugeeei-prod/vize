@@ -18,12 +18,8 @@ test("helix languages.toml registers the vize language server with the lsp comma
   assert.match(config, /^command = "vize"$/m);
   assert.match(config, /^args = \["lsp"\]$/m);
 
-  // Server-level config enables the recommended editor profile.
-  assert.match(config, /^\[language-server\.vize\.config\]$/m);
-  assert.match(config, /^editor = true$/m);
-  assert.match(config, /^ecosystem = true$/m);
-  assert.match(config, /^lint = true$/m);
-  assert.match(config, /^typecheck = true$/m);
+  // The server owns project discovery and feature defaults.
+  assert.doesNotMatch(config, /^\[language-server\.vize\.config\]$/m);
 });
 
 test("helix languages.toml declares the vue language wired to the vize server", () => {
@@ -53,15 +49,25 @@ test("helix languages.toml declares the art-vue language with a glob file-type",
   assert.match(artEntry, /^language-servers = \["vize"\]$/m);
 });
 
-test("helix languages.toml root markers cover vize config, package.json and .git", () => {
+test("helix languages.toml root markers cover Vite, TypeScript, package.json and .git", () => {
   const config = readRepoFile("editors/helix/languages.toml");
 
   // Both language entries declare the same set of project root markers via `roots`.
   const rootsLines = config.match(/^roots = \[[^\]]*\]$/gm) ?? [];
   assert.equal(rootsLines.length, 2, "both vue and art-vue entries must declare roots");
   for (const roots of rootsLines) {
-    assert.match(roots, /"vize\.config\.pkl"/);
-    assert.match(roots, /"vize\.config\.json"/);
+    for (const name of [
+      "vite.config.ts",
+      "vite.config.js",
+      "vite.config.mts",
+      "vite.config.mjs",
+      "vite.config.cts",
+      "vite.config.cjs",
+      "tsconfig.json",
+    ]) {
+      assert.ok(roots.includes(`"${name}"`));
+    }
+    assert.doesNotMatch(roots, /vize\.config/);
     assert.match(roots, /"package\.json"/);
     assert.match(roots, /"\.git"/);
   }

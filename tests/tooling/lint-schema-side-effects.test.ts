@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -41,18 +42,19 @@ type Scenario = {
   explicit?: boolean;
   noConfig?: boolean;
   nested?: boolean;
-  generate?: boolean;
   seed?: "stale" | "current";
   obstruction?: "dependencies-file" | "dependencies-link" | "cache-link" | "schema-link";
   check?: boolean;
-  parseError?: string;
+  retired?: boolean;
 };
 const scenarios: Scenario[] = [
+  { id: "retired-discovery-refused", config: {}, retired: true },
+  { id: "retired-explicit-refused", config: {}, retired: true, explicit: true },
   { id: "original-no-config", noConfig: true },
   { id: "default-no-config-file" },
-  { id: "implicit-json", config: {} },
-  { id: "explicit-json", config: {}, explicit: true },
-  { id: "installed-plain-json", config: {}, installed: true },
+  { id: "implicit-vite", config: {} },
+  { id: "explicit-vite", config: {}, explicit: true },
+  { id: "installed-plain-vite", config: {}, installed: true },
   { id: "explicit-reference-uninstalled", config: { $schema: localSchema }, explicit: true },
   { id: "implicit-reference-uninstalled", config: { $schema: localSchema } },
   {
@@ -60,27 +62,23 @@ const scenarios: Scenario[] = [
     config: { $schema: localSchema },
     installed: true,
     explicit: true,
-    generate: true,
   },
   {
     id: "implicit-reference-installed",
     config: { $schema: `./${localSchema}` },
     installed: true,
-    generate: true,
   },
   {
     id: "stale-schema",
     config: { $schema: localSchema },
     installed: true,
     seed: "stale",
-    generate: true,
   },
   {
     id: "current-schema",
     config: { $schema: localSchema },
     installed: true,
     seed: "current",
-    generate: true,
   },
   {
     id: "no-config-ignores-reference",
@@ -96,10 +94,9 @@ const scenarios: Scenario[] = [
   },
   { id: "other-local-reference", config: { $schema: "custom.schema.json" }, installed: true },
   {
-    id: "nonstring-reference",
+    id: "nonstring-vite-metadata",
     config: { $schema: true },
     installed: true,
-    parseError: "invalid type: boolean `true`, expected a string at line 2 column 17",
   },
   {
     id: "relocated-config",
@@ -107,7 +104,6 @@ const scenarios: Scenario[] = [
     installed: true,
     explicit: true,
     nested: true,
-    generate: true,
   },
   ...(["dependencies-file", "dependencies-link", "cache-link", "schema-link"] as const).map(
     (obstruction) => ({
@@ -128,11 +124,10 @@ const scenarios: Scenario[] = [
     check: true,
     config: { $schema: localSchema, typeChecker: { enabled: false } },
     installed: true,
-    generate: true,
   },
 ];
 
-test("source CLI preserves original lint output and only materializes explicitly authored installed schemas", () => {
+test("source CLI preserves lint output without schema side effects and refuses retired configuration", () => {
   const build = expectedBuildIdentity(root);
   const binary = path.join(root, build.binaryPath);
   const receipt = JSON.parse(fs.readFileSync(`${binary}.differential-build.json`, "utf8"));
@@ -168,9 +163,15 @@ test("source CLI preserves original lint output and only materializes explicitly
         fs.writeFileSync(path.join(outside, "vize.config.schema.json"), "external stale schema\n");
         const configDir = scenario.nested ? path.join(cwd, "config") : cwd;
         fs.mkdirSync(configDir, { recursive: true });
-        const configPath = path.join(configDir, "vize.config.json");
-        if (scenario.config)
-          fs.writeFileSync(configPath, `${JSON.stringify(scenario.config, null, 2)}\n`);
+        const configPath = path.join(
+          configDir,
+          scenario.retired ? "vize.config.json" : "vite.config.mjs",
+        );
+        if (scenario.config) {
+          if (scenario.retired)
+            fs.writeFileSync(configPath, `${JSON.stringify(scenario.config, null, 2)}\n`);
+          else writeVueConfigFixture(configDir, scenario.config);
+        }
         const dependencies = path.join(configDir, "node_modules");
         const schema = path.join(configDir, localSchema);
         if (scenario.obstruction === "dependencies-file")
@@ -229,22 +230,31 @@ test("source CLI preserves original lint output and only materializes explicitly
           assert.equal(row.signal, null, scenario.id);
           assert.equal(
             row.status,
-            scenario.parseError ? 2 : 0,
+            scenario.retired || scenario.obstruction === "dependencies-file" ? 2 : 0,
             `${scenario.id}: ${row.stdout}${row.stderr}`,
           );
           assert.deepEqual(Buffer.from(row.stdout), result.stdout);
           assert.deepEqual(Buffer.from(row.stderr), result.stderr);
-          if (scenario.parseError) {
+          if (scenario.retired) {
             assert.equal(row.stdout, "");
+            const context = scenario.explicit
+              ? `failed to parse ${path.relative(cwd, configPath)}: `
+              : "";
             assert.equal(
               row.stderr,
-              `\x1b[31mError:\x1b[0m failed to parse ${configPath}: ${scenario.parseError}\n`,
+              `\x1b[31mError:\x1b[0m ${context}vize.config.* is no longer supported; move Vue settings to vue: in vite.config.* and TypeScript settings to tsconfig.json\n`,
             );
+          } else if (scenario.obstruction === "dependencies-file") {
+            // A malformed nearest dependency root cannot supply a Vite runtime.
+            // Its refusal must remain read-only, including the external sentinel.
+            assert.equal(row.stdout, "");
+            assert.match(row.stderr, /ENOTDIR: not a directory/);
+            assert.ok(row.stderr.includes(path.join(configDir, "node_modules/vite")));
           } else if (scenario.check) {
             assert.equal(row.stdout, "");
             assert.equal(
               row.stderr,
-              "[vize] Skipping check because typeChecker.enabled is false in vize.config.\n",
+              "[vize] Skipping check because typeChecker.enabled is false in vite.config.* vue settings.\n",
             );
           } else {
             assert.equal(row.stderr, "");
@@ -260,36 +270,16 @@ test("source CLI preserves original lint output and only materializes explicitly
             );
           }
           assert.deepEqual(row.externalAfter, externalBefore, `${scenario.id}: external mutation`);
-          if (scenario.generate) {
-            assert.deepEqual(fs.readFileSync(schema), schemaBytes);
-            const expected = before.filter(
-              (entry) => entry.path !== path.relative(cwd, schema).split(path.sep).join("/"),
-            );
-            const cache = path.relative(cwd, path.dirname(schema)).split(path.sep).join("/");
-            if (!expected.some((entry) => entry.path === cache))
-              expected.push({ path: cache, kind: "directory" });
-            expected.push({
-              path: `${cache}/vize.config.schema.json`,
-              kind: "file",
-              bytes: [...schemaBytes],
-              sha256: sha256(schemaBytes),
-            });
-            expected.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
-            assert.deepEqual(row.after, expected, `${scenario.id}: unexpected mutation`);
-            if (initialRevision !== null)
-              assert.equal(
-                fs.statSync(schema, { bigint: true }).mtimeNs.toString(),
-                initialRevision,
-              );
-          } else
-            assert.deepEqual(row.after, before, `${scenario.id}: read-only command mutated tree`);
+          assert.deepEqual(row.after, before, `${scenario.id}: read-only command mutated tree`);
+          if (initialRevision !== null)
+            assert.equal(fs.statSync(schema, { bigint: true }).mtimeNs.toString(), initialRevision);
         }
       } finally {
         fs.rmSync(cwd, { recursive: true, force: true });
         fs.rmSync(outside, { recursive: true, force: true });
       }
     }
-    assert.equal(rows.length, 44);
+    assert.equal(rows.length, 48);
     record.status = "PASS";
   } catch (error) {
     record.status = "FAIL";

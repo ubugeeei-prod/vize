@@ -20,8 +20,8 @@ Nuxt の内部リンクに NuxtLink を使います。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/nuxt-prefer-nuxt-link": "warn"

@@ -24,8 +24,8 @@ typeAware とこのルールを明示的に有効にします。既定では nul
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/strict-boolean-expressions": "warn"

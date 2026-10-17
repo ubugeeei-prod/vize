@@ -15,7 +15,7 @@ title: 型ルールのオプション
 
 ## `type/strict-boolean-expressions`
 
-Vite+ では、次のように `lint.vize.typeAware` と `lint.vize.rules` を設定してください。
+Vite+ では、次のように `vue.linter.typeAware` と `vue.linter.rules` を設定してください。
 このルールは、どのプリセットにも含まれていません。
 スタンドアロン設定では `linter.rules` と `linter.ruleOptions` に同じ設定を置きます。
 ネイティブの型チェック用コードは、すでに厳密な型チェックを使っています。
@@ -24,8 +24,8 @@ Vite+ では、次のように `lint.vize.typeAware` と `lint.vize.rules` を�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       typeAware: true,
       rules: {
         "type/strict-boolean-expressions": "error",

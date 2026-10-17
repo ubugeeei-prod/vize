@@ -20,8 +20,8 @@ Vue 3 で $slots に統合された $scopedSlots を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-dollar-scopedslots-api": "error"

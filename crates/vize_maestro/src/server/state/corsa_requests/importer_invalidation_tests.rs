@@ -30,8 +30,8 @@ fn fixture_with_declaration(declaration_name: &str) -> Fixture {
     let root = tempfile::tempdir().unwrap();
     file(
         root.path(),
-        "vize.config.json",
-        r#"{"lsp":{"lint":false,"typecheck":false}}"#,
+        "vite.config.mjs",
+        r#"export default { vue: {"languageServer":{"lint":false,"typecheck":false}} };"#,
     );
     for package in ["vendor", "left", "right", "idle"] {
         file(root.path(), &vize_l0::cstr!("{package}/package.json"), "{}");

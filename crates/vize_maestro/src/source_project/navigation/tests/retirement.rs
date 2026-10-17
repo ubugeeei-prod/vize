@@ -35,8 +35,8 @@ impl futures::task::ArcWake for RetirementWake {
 #[test]
 fn primary_marker_retirement_refuses_ready_source_and_module_publication_before_drain() {
     let root = tempfile::tempdir().unwrap();
-    let config = root.path().join("vize.config.json");
-    std::fs::write(&config, "{}").unwrap();
+    let config = root.path().join("vite.config.mjs");
+    std::fs::write(&config, "export default { vue: {} };").unwrap();
     let state = Arc::new(ServerState::new());
     state.set_workspace_root(root.path().to_path_buf());
     state.load_workspace_config(root.path());

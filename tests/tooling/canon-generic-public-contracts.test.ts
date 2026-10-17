@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -11,10 +12,7 @@ test(
   async () => {
     const directory = workspace("generic-public-contract-");
     try {
-      fs.writeFileSync(
-        path.join(directory, "vize.config.json"),
-        JSON.stringify({ typeChecker: { jsxTypecheck: true } }),
-      );
+      writeVueConfigFixture(directory, JSON.stringify({ typeChecker: { jsxTypecheck: true } }));
       fs.writeFileSync(
         path.join(directory, "tsconfig.json"),
         JSON.stringify({

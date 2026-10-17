@@ -9,12 +9,19 @@ use std::path::Path;
 
 use crate::config::ConfigDocument;
 
-use super::{extends, js::parse_js_config, pkl};
+use super::{
+    discovery::{CONFIG_MIGRATION, is_retired_config},
+    js::parse_js_config,
+    pkl,
+};
 
 /// Parse a single config file path without discovery fallback.
 pub(super) fn parse_raw_config_file(
     path: &Path,
 ) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    if is_retired_config(path) {
+        return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, CONFIG_MIGRATION).into());
+    }
     let mut config = match path.extension().and_then(|ext| ext.to_str()) {
         Some("pkl") => pkl::parse_pkl_config(path)?,
         Some("ts" | "js" | "mjs" | "cjs" | "mts" | "cts") => parse_js_config(path)?,
@@ -25,7 +32,7 @@ pub(super) fn parse_raw_config_file(
         _ => return Ok(ConfigDocument::default()),
     };
 
-    if !super::CONFIG_FILE_NAMES[5..]
+    if !super::CONFIG_FILE_NAMES
         .iter()
         .any(|name| path.file_name().is_some_and(|file| file == *name))
     {
@@ -34,20 +41,38 @@ pub(super) fn parse_raw_config_file(
     Ok(config)
 }
 
-/// Deserialize one evaluated config, composing its `extends` chain first.
+/// Deserialize one evaluated native payload, refusing retired custom inheritance.
 ///
 /// Every format shares this deserializer; keeping a separate str reader would
-/// instantiate the entire model twice. Configs without `extends` skip the
+/// instantiate the entire model twice. Payloads without `extends` skip the
 /// intermediate JSON value.
 pub(super) fn document_from_json(
     json: &[u8],
-    path: &Path,
+    _path: &Path,
 ) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
-    if !extends::mentions_extends(json) {
-        return Ok(serde_json::from_slice::<ConfigDocument>(json)?);
+    // Internal serialized native payloads remain supported, but never load a
+    // second custom inheritance graph beside TypeScript's own project model.
+    if json
+        .windows(b"\"extends\"".len())
+        .any(|part| part == b"\"extends\"")
+    {
+        let value: serde_json::Value = serde_json::from_slice(json)?;
+        let has_extends = |value: &serde_json::Value| {
+            value
+                .as_object()
+                .is_some_and(|object| object.contains_key("extends"))
+        };
+        let entries = value
+            .get("entries")
+            .and_then(serde_json::Value::as_array)
+            .or_else(|| value.as_array());
+        if has_extends(&value) || entries.is_some_and(|entries| entries.iter().any(has_extends)) {
+            return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput,
+                "Custom config extends is no longer supported; use defineConfig(vpConfig).withVue(vueConfig); standard tsconfig extends remains supported").into());
+        }
+        return Ok(serde_json::from_value::<ConfigDocument>(value)?);
     }
-    let composed = extends::compose(serde_json::from_slice(json)?, path)?;
-    Ok(serde_json::from_value::<ConfigDocument>(composed)?)
+    Ok(serde_json::from_slice::<ConfigDocument>(json)?)
 }
 
 /// Parse a discovered candidate and map recoverable failures to `None`.
@@ -85,7 +110,7 @@ mod tests {
     #[test]
     fn json_config_preserves_unicode_and_escaped_strings() {
         let directory = tempfile::tempdir().unwrap();
-        let path = directory.path().join("vize.config.json");
+        let path = directory.path().join("serialized-config.json");
         std::fs::write(
             &path,
             r#"{
@@ -115,7 +140,7 @@ mod tests {
     #[test]
     fn json_config_rejects_invalid_utf8_before_deserialization() {
         let directory = tempfile::tempdir().unwrap();
-        let path = directory.path().join("vize.config.json");
+        let path = directory.path().join("serialized-config.json");
         std::fs::write(&path, b"{\"basePath\":\"\xff\"}").unwrap();
 
         let error = parse_raw_config_file(&path).unwrap_err();
@@ -126,7 +151,7 @@ mod tests {
     #[test]
     fn json_config_preserves_trailing_input_error_location() {
         let directory = tempfile::tempdir().unwrap();
-        let path = directory.path().join("vize.config.json");
+        let path = directory.path().join("serialized-config.json");
         std::fs::write(&path, "{}\r\n\r\n[]").unwrap();
 
         let error = parse_raw_config_file(&path).unwrap_err();

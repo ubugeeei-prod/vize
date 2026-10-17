@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { inlineVuePluginFixtureOptions } from "../../../../tests/tooling/support/vue-config-fixture.ts";
 import { verifyNuxtSourceBindingEvents } from "./source-binding.mjs";
 
 const [project, artifacts, inputs, version, scenarioId] = process.argv.slice(2);
@@ -26,7 +27,6 @@ const json = (directory, name, value) =>
   );
 const sources = corpus.paths.map((name) => path.join(project, name));
 const sourceRoot = path.join(project, "app");
-const configFile = path.join(project, "vize.config.json");
 const originalConfig = fs.readFileSync(path.join(inputs, "vize.config.json.txt"));
 const originalNuxt = fs.readFileSync(path.join(project, "nuxt.config.ts"));
 
@@ -125,14 +125,12 @@ const results = (events) =>
 for (const scenario of selected) {
   const directory = path.join(artifacts, scenario.id);
   fs.mkdirSync(directory);
-  if (scenario.config === null) fs.rmSync(configFile, { force: true });
-  else
-    fs.writeFileSync(
-      configFile,
-      scenario.config === "original"
-        ? originalConfig
-        : JSON.stringify(scenario.config, null, 2) + "\n",
-    );
+  // Scoped compiler entries belong to the JavaScript plugin API. Canonical
+  // Vue entries expose native lint scopes; do not claim compiler scopes there.
+  const shared = scenario.config === "original" ? originalConfig : scenario.config;
+  const compiler = inlineVuePluginFixtureOptions(scenario.module, shared);
+  assert.equal(fs.existsSync(path.join(project, "vize.config.json")), false);
+  json(directory, "inline-plugin-config.json", compiler);
   if (scenario.forward) process.env.FORWARD = "1";
   else delete process.env.FORWARD;
   let nuxt;
@@ -145,7 +143,7 @@ for (const scenario of selected) {
         ...(scenario.nuxtWhitespace
           ? { vue: { compilerOptions: { whitespace: scenario.nuxtWhitespace } } }
           : {}),
-        vize: { compiler: scenario.module, lint: false, checker: false, musea: false },
+        vize: { compiler, lint: false, checker: false, musea: false },
       },
     });
     assert.equal(nuxt.options.rootDir, project);

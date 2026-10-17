@@ -6,6 +6,10 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  writeBenchmarkConfig,
+  type BenchmarkConfigContract,
+} from "../../tooling/support/benchmark-config-contract.ts";
 import { runtimeGraph } from "./warm-type-backed-runtime.ts";
 
 export const driverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -13,7 +17,7 @@ export const fixtureRoot = path.join(
   driverRoot,
   "tests/_fixtures/differential/lsp/warm-type-backed-requests",
 );
-export const sha256 = (bytes: Buffer | string): string =>
+export const sha256 = (bytes: Uint8Array | string): string =>
   createHash("sha256").update(bytes).digest("hex");
 
 export function git(repoRoot: string, args: string[]): string {
@@ -95,6 +99,7 @@ export function runtimeIdentity() {
 export function generateWorkspace(
   workspace: string,
   runtime: ReturnType<typeof runtimeIdentity>,
+  configContract: BenchmarkConfigContract,
   files: 20 | 400 = 400,
 ) {
   inputAuthority();
@@ -104,9 +109,14 @@ export function generateWorkspace(
   // absolute path for both sides. The original generator itself is unchanged.
   fs.rmSync(workspace, { recursive: true, force: true });
   fs.mkdirSync(workspace, { recursive: true });
-  for (const file of ["gen.mjs", "package.json", "tsconfig.json", "vize.config.json"]) {
+  for (const file of ["gen.mjs", "package.json", "tsconfig.json"]) {
     fs.copyFileSync(path.join(fixtureRoot, file), path.join(workspace, file));
   }
+  const configuration = writeBenchmarkConfig(
+    workspace,
+    fs.readFileSync(path.join(fixtureRoot, "vize.config.json")),
+    configContract,
+  );
   const generated = spawnSync(process.execPath, [path.join(workspace, "gen.mjs"), String(files)], {
     encoding: "utf8",
   });
@@ -139,6 +149,7 @@ export function generateWorkspace(
   fs.symlinkSync(runtime.executable, path.join(modules, ".bin/tsgo"));
   return {
     source,
+    configuration,
     sourceSha256: sha256(JSON.stringify(source)),
     generatorProcess: generated,
     workspace,

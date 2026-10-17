@@ -18,7 +18,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixtures = path.join(root, "tests/_fixtures/davinci-fpfn");
@@ -81,7 +81,7 @@ test("seeding is deterministic: a second run is byte-identical", () => {
   }
 });
 
-test("identity assertion measures current recall exactly (class a 0/3, class b 4/4)", () => {
+test("identity assertion measures current recall exactly (class a 0/3, class b 4/4)", async () => {
   const reportPath = path.join(seedOut, "assert-report.json");
   const result = runTool(seedTool, ["--assert", "--out", seedOut, "--report", reportPath]);
   assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
@@ -89,6 +89,14 @@ test("identity assertion measures current recall exactly (class a 0/3, class b 4
     readJson(reportPath),
     readJson(path.join(expectedDir, "assert-report.json")),
   );
+  for (const tree of ["original", "seeded"]) {
+    const generated = path.join(seedOut, "class-b", tree, "vite.config.mjs");
+    const source = (await import(pathToFileURL(generated).href)).default;
+    assert.deepEqual(source, {
+      vue: { linter: { rules: { "vue/no-unused-setup-bindings": "warn" } } },
+    });
+    assert.equal(fs.existsSync(path.join(path.dirname(generated), "vize.config.json")), false);
+  }
 });
 
 // --- assertion-mechanism self-tests (synthetic lint JSON hooks) -------------
@@ -298,4 +306,32 @@ test("suppression telemetry reports the mapped FP candidate and the unmapped nam
     "scope-proof: files-scanned=4 suppression-comments=2 named=2 bare=0 " +
       "rules-mapped=127 mapped-seen=1 unmapped-seen=1 fp-candidates=1",
   );
+});
+
+// This exercises the JavaScript compatibility writer with synthetic diagnostic
+// hooks. The real current-recall oracle above retains its unchanged 0/3 + 4/4 law.
+test("compatibility seeded assertion carries the same opt-in policy through canonical Vite", async () => {
+  const { assertSeededTree } =
+    await import("../../tools/support/compat/davinci/lib/fpfn-seed-assert.mjs");
+  const { baseline, seeded } = syntheticTrees();
+  const baselineLintJson = path.join(seedOut, "compatibility-baseline.json");
+  const seededLintJson = path.join(seedOut, "compatibility-seeded.json");
+  fs.writeFileSync(baselineLintJson, JSON.stringify(baseline));
+  fs.writeFileSync(seededLintJson, JSON.stringify(seeded));
+  const report = assertSeededTree({
+    manifest: readJson(path.join(seedOut, "manifest.json")),
+    outDir: seedOut,
+    hooks: { baselineLintJson, seededLintJson },
+  });
+  assert.equal(report.verdict, "pass");
+  assert.equal(report.classB.expected, 4);
+  assert.equal(report.classB.detected, 4);
+  assert.deepEqual(report.classB.misses, []);
+  for (const tree of ["original", "seeded"]) {
+    const config = path.join(seedOut, "class-b", tree, "vite.config.mjs");
+    assert.deepEqual((await import(pathToFileURL(config).href)).default, {
+      vue: { linter: { rules: { "vue/no-unused-setup-bindings": "warn" } } },
+    });
+    assert.equal(fs.existsSync(path.join(path.dirname(config), "vize.config.json")), false);
+  }
 });

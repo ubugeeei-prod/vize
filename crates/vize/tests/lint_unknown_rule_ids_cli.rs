@@ -1,6 +1,8 @@
 //! Complete CLI configuration contracts for the original unknown-rule report.
 #![cfg(test)]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use serde_json::{Value, json};
 use std::{error::Error, fs, path::Path, process::Command};
 use vize_l0::cstr;
@@ -14,7 +16,7 @@ const CONFIG: &[u8] = include_bytes!(
 const CORPUS: &[u8] =
     include_bytes!("../../../tests/_fixtures/differential/linter/unknown-rule-ids/corpus.json");
 
-fn write(root: &Path, path: &str, bytes: &[u8]) -> TestResult {
+fn write(root: &Path, path: &str, bytes: impl AsRef<[u8]>) -> TestResult {
     let file = root.join(path);
     let parent = file.parent().ok_or("fixture file needs a parent")?;
     fs::create_dir_all(parent)?;
@@ -53,7 +55,7 @@ fn json_result(root: &Path, args: &[&str], expected: &Value) -> TestResult {
 fn original_report_names_all_unknown_ids_before_lint_or_fix() -> TestResult {
     let root = tempfile::tempdir()?;
     write(root.path(), "MyText.vue", SOURCE)?;
-    write(root.path(), "vize.config.json", CONFIG)?;
+    write(root.path(), "vite.config.mjs", vite_config::source(CONFIG))?;
     let corpus = serde_json::from_slice::<Value>(CORPUS)?;
     let expected = corpus
         .get("originalExpected")
@@ -100,8 +102,8 @@ fn unknown_root_and_unmatched_custom_entry_ids_reject_every_severity() -> TestRe
         let config = json!({"linter": {"preset": "incremental", "rules": {"vue/no-inline-styles": severity}}});
         write(
             root.path(),
-            "vize.config.json",
-            &serde_json::to_vec(&config)?,
+            "vite.config.mjs",
+            vite_config::source(serde_json::to_vec(&config)?),
         )?;
         error(
             root.path(),
@@ -117,8 +119,8 @@ fn unknown_root_and_unmatched_custom_entry_ids_reject_every_severity() -> TestRe
         });
         write(
             root.path(),
-            "vize.config.json",
-            &serde_json::to_vec(&config)?,
+            "vite.config.mjs",
+            vite_config::source(serde_json::to_vec(&config)?),
         )?;
         error(
             root.path(),
@@ -143,8 +145,8 @@ fn overwritten_entry_ids_are_still_validated_in_sorted_declaration_scope() -> Te
     });
     write(
         root.path(),
-        "vize.config.json",
-        &serde_json::to_vec(&config)?,
+        "vite.config.mjs",
+        vite_config::source(serde_json::to_vec(&config)?),
     )?;
     error(
         root.path(),
@@ -158,7 +160,7 @@ fn overwritten_entry_ids_are_still_validated_in_sorted_declaration_scope() -> Te
 fn no_config_ignores_the_invalid_document_without_changing_default_execution() -> TestResult {
     let root = tempfile::tempdir()?;
     write(root.path(), "MyText.vue", SOURCE)?;
-    write(root.path(), "vize.config.json", CONFIG)?;
+    write(root.path(), "vite.config.mjs", vite_config::source(CONFIG))?;
     let corpus = serde_json::from_slice::<Value>(CORPUS)?;
     json_result(
         root.path(),
@@ -205,8 +207,8 @@ fn actual_registered_families_and_generated_category_markers_remain_valid() -> T
         });
         write(
             root.path(),
-            "vize.config.json",
-            &serde_json::to_vec(&config)?,
+            "vite.config.mjs",
+            vite_config::source(serde_json::to_vec(&config)?),
         )?;
         // Override only the execution preset, keeping recognition independent of it.
         json_result(
@@ -242,8 +244,8 @@ fn corrected_root_and_custom_entry_rules_preserve_the_complete_warning() -> Test
     ] {
         write(
             root.path(),
-            "vize.config.json",
-            &serde_json::to_vec(&config)?,
+            "vite.config.mjs",
+            vite_config::source(serde_json::to_vec(&config)?),
         )?;
         let output = run(
             root.path(),

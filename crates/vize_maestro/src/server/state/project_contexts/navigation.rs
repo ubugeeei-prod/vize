@@ -41,9 +41,17 @@ mod tests {
         let root = tempfile::tempdir().unwrap();
         let package = root.path().join("package");
         std::fs::create_dir_all(&package).unwrap();
-        std::fs::write(root.path().join("vize.config.json"), "{}").unwrap();
+        std::fs::write(
+            root.path().join("vite.config.mjs"),
+            "export default { vue: {} };",
+        )
+        .unwrap();
         std::fs::write(package.join("package.json"), "{}").unwrap();
-        std::fs::write(package.join("vize.config.json"), "{}").unwrap();
+        std::fs::write(
+            package.join("vite.config.mjs"),
+            "export default { vue: {} };",
+        )
+        .unwrap();
         let owner = Arc::new(ServerState::new());
         owner.set_workspace_root(root.path().to_path_buf());
         owner.set_workspace_folders(vec![root.path().to_path_buf()]);

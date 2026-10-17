@@ -14,21 +14,15 @@ test("Vite functions receive serve/build while the authored workflow environment
     const viteEnv = { ...env, command: command === "build" ? "build" : "serve" };
     const resolved = await resolveViteConfigExport((actual: unknown) => {
       seen.push(actual);
-      return {
-        vize: (shared: unknown) => {
-          seen.push(shared);
-          return { linter: { rules: { "vue/require-v-for-key": "error" } } };
-        },
-      };
+      return { vue: { linter: { rules: { "vue/require-v-for-key": "error" } } } };
     }, env);
     assert.deepEqual(resolved, {
       typeChecker: { jsxTypecheck: true },
       linter: { rules: { "vue/require-v-for-key": "error" } },
     });
-    assert.deepEqual(seen, [viteEnv, viteEnv]);
+    assert.deepEqual(seen, [viteEnv]);
     if (command === "serve" || command === "build") {
       assert.equal(seen[0], env);
-      assert.equal(seen[1], env);
     }
     assert.deepEqual(env, { command, mode: "production", isSsrBuild: true });
   }
@@ -36,15 +30,15 @@ test("Vite functions receive serve/build while the authored workflow environment
 
 test("Vite settings retain shared values, overrides and explicit feature disables", async () => {
   const source = {
-    vize: {
+    vue: {
       typeChecker: { jsxTypecheck: false },
-      lint: { preset: "essential" },
+      linter: { preset: "essential" },
       languageServer: { formatting: false },
     },
     compiler: { vueVersion: 2.7, whitespace: "preserve" },
     typecheck: { strict: true },
-    lint: { vize: { rules: { "a11y/img-alt": "error" }, helpLevel: "short" } },
-    fmt: { printWidth: 90, vize: { singleQuote: true, tabWidth: 4 } },
+    lint: { vue: { rules: { "a11y/img-alt": "error" }, helpLevel: "short" } },
+    fmt: { printWidth: 90, vue: { singleQuote: true, tabWidth: 4 } },
   };
   const original = JSON.stringify(source);
   assert.deepEqual(await resolveViteConfigExport(source), {
@@ -64,8 +58,7 @@ test("Vite+ source resolution never starts plugins or generated tasks", async ()
     },
     {
       [Symbol.for("@vizejs/vite-plugin/vite-plus/source")]: async () => ({
-        extends: Promise.resolve({ fmt: { vize: { printWidth: 100, singleQuote: true } } }),
-        fmt: { vize: { tabWidth: 4 } },
+        fmt: { vue: { printWidth: 100, singleQuote: true, tabWidth: 4 } },
         typecheck: false,
       }),
     },
@@ -77,25 +70,30 @@ test("Vite+ source resolution never starts plugins or generated tasks", async ()
 });
 
 test("Vite source cycles fail explicitly and preserve scoped entries and RegExp values", async () => {
-  const cyclic: { extends?: unknown } = {};
-  cyclic.extends = cyclic;
-  await assert.rejects(resolveViteConfigExport(cyclic), /Circular extends/);
+  const cyclic = Object.assign(() => ({}), {
+    [Symbol.for("@vizejs/vite-plugin/vite-plus/source")]: undefined as unknown,
+  });
+  cyclic[Symbol.for("@vizejs/vite-plugin/vite-plus/source")] = cyclic;
+  await assert.rejects(resolveViteConfigExport(cyclic), /Circular Vue configuration source/);
+  await assert.rejects(resolveViteConfigExport({ extends: {} }), /Custom config extends/);
   const include = /\.vue$/;
-  const entries = [{ files: ["packages/app/**/*.vue"], formatter: { tabWidth: 4 } }];
-  const resolved = (await resolveViteConfigExport({ vize: { vite: { include }, entries } })) as {
-    vite: { include: RegExp };
-    entries: unknown[];
-  };
-  assert.equal(resolved.vite.include, include);
+  const entries = [
+    { files: ["packages/app/**/*.vue"], linter: { rules: { "vue/no-v-html": "error" } } },
+  ];
+  const resolved = (await resolveViteConfigExport({
+    plugins: [{ name: "retain", include }],
+    vue: { entries },
+  })) as { entries: unknown[] };
   assert.deepEqual(resolved.entries, entries);
+  assert.equal(include.source, "\\.vue$");
 });
 
-test("canonical discovery reads Vite TypeScript settings and keeps dedicated precedence", async () => {
+test("canonical discovery reads Vite TypeScript settings and a stale dedicated file cannot override it", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vite-project-"));
   try {
     fs.writeFileSync(
       path.join(root, "vite.config.ts"),
-      `export default { vize: { formatter: { singleQuote: true } } } satisfies Record<string, unknown>;`,
+      `export default { vue: { formatter: { singleQuote: true } } } satisfies Record<string, unknown>;`,
     );
     assert.equal((await loadConfig(root))?.formatter.singleQuote, true);
     assert.equal(await loadConfig(root, { viteConfig: false }), null);
@@ -103,7 +101,7 @@ test("canonical discovery reads Vite TypeScript settings and keeps dedicated pre
       path.join(root, "vize.config.json"),
       JSON.stringify({ formatter: { singleQuote: false } }),
     );
-    assert.equal((await loadConfig(root))?.formatter.singleQuote, false);
+    assert.equal((await loadConfig(root))?.formatter.singleQuote, true);
     assert.equal(
       (await loadConfig(root, { configFile: "vite.config.ts" }))?.formatter.singleQuote,
       true,
@@ -118,7 +116,7 @@ test("automatic discovery stops at an unconfigured monorepo package boundary", a
   try {
     fs.writeFileSync(
       path.join(root, "vite.config.mjs"),
-      `export default { vize: { formatter: { tabWidth: 8 } } };`,
+      `export default { vue: { formatter: { tabWidth: 8 } } };`,
     );
     const first = path.join(root, "packages/first");
     const second = path.join(root, "packages/second");
@@ -128,7 +126,7 @@ test("automatic discovery stops at an unconfigured monorepo package boundary", a
     fs.writeFileSync(path.join(second, "tsconfig.json"), "{}");
     fs.writeFileSync(
       path.join(first, "vite.config.mjs"),
-      `export default { fmt: { vize: { tabWidth: 4 } } };`,
+      `export default { fmt: { vue: { tabWidth: 4 } } };`,
     );
     assert.equal(
       (await loadConfig(path.join(first, "src"), { mode: "auto" }))?.formatter.tabWidth,
@@ -145,7 +143,7 @@ test("Vite root projects scoped paths while preserving global entries and author
   const root = path.join(os.tmpdir(), "vize-vite-root-fixture");
   const source = {
     root: "app",
-    vize: {
+    vue: {
       files: ["src/**/*.vue"],
       ignores: ["src/Ignored.vue", "!src/Keep.vue", String.raw`src/\[id\].vue`],
       typeChecker: { tsconfig: "tsconfig.json", corsaPath: "tools/corsa" },
@@ -178,21 +176,50 @@ test("Vite root projects scoped paths while preserving global entries and author
   });
   assert.equal(JSON.stringify(source), original);
 
-  const entries = await resolveViteConfigExport(
+  const projected = await resolveViteConfigExport(
     {
       root: "app",
-      vize: [
-        { __vizeProjectRoot: "decoy", formatter: { singleQuote: true } },
-        { files: ["src/*.vue"] },
-      ],
+      __vizeProjectRoot: "decoy",
+      vue: { formatter: { singleQuote: true }, entries: [{ files: ["src/*.vue"] }] },
     },
     undefined,
     root,
   );
-  assert.deepEqual(entries, [
-    { __vizeProjectRoot: path.join(root, "app"), typeChecker: { jsxTypecheck: true } },
-    { __vizeProjectRoot: "decoy", formatter: { singleQuote: true } },
-    { basePath: path.join(root, "app"), files: ["src/*.vue"] },
-    { __vizeProjectRoot: path.join(root, "app") },
-  ]);
+  assert.deepEqual(projected, {
+    __vizeProjectRoot: path.join(root, "app"),
+    typeChecker: { jsxTypecheck: true },
+    formatter: { singleQuote: true },
+    entries: [{ basePath: path.join(root, "app"), files: ["src/*.vue"] }],
+  });
+  await assert.rejects(resolveViteConfigExport({ vize: [] }), /move Vue settings to vue:/);
+});
+
+test("retired files and namespaces fail before evaluating callbacks while tsconfig-only projects stay config-free", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vue-config-migration-"));
+  try {
+    fs.writeFileSync(
+      path.join(root, "tsconfig.json"),
+      '{"vueCompilerOptions":{"strictTemplates":true}}',
+    );
+    assert.equal(await loadConfig(root), null);
+    fs.writeFileSync(path.join(root, "vize.config.json"), "{}");
+    await assert.rejects(loadConfig(root), /move Vue settings to vue:/);
+    await assert.rejects(
+      loadConfig(root, { configFile: "vize.config.json" }),
+      /no longer supported/,
+    );
+    let evaluated = false;
+    await assert.rejects(
+      resolveViteConfigExport({
+        vize() {
+          evaluated = true;
+          return {};
+        },
+      }),
+      /move Vue settings to vue:/,
+    );
+    assert.equal(evaluated, false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });

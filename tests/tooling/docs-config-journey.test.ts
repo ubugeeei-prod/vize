@@ -4,6 +4,13 @@ import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { test } from "node:test";
+import {
+  configRecipe,
+  nativeOptions,
+  includesOptions,
+  retiredPklOptions,
+} from "./support/docs-config-semantics.ts";
+import { currentConfigExample } from "./support/docs-config-successor.ts";
 import { renderReferenceDocs } from "../../npm/ui/scripts/generate-reference-docs.ts";
 
 const root = resolve(import.meta.dirname, "../..");
@@ -16,6 +23,22 @@ const original = JSON.parse(
 ) as { base: string; documents: OriginalDocument[] };
 const fences = (source: string): string[] =>
   Array.from(source.matchAll(/```[^\n]*\n([\s\S]*?)\n```/g), (match) => match[1] ?? "");
+const successor = JSON.parse(
+  readFileSync(
+    resolve(import.meta.dirname, "fixtures/docs-config-current-successors.json"),
+    "utf8",
+  ),
+) as {
+  originalSha256: string;
+  recipes: {
+    index: number;
+    originalCodeSha256: string;
+    code: string;
+    additionalCode?: string[];
+    ownership: string;
+  }[];
+  workflow: string;
+};
 let generated: Map<string, string> | undefined;
 
 function sourceFor(file: string): string | undefined {
@@ -52,7 +75,17 @@ void test("configuration reorganization retains every original native heading ta
   assert.equal(total, 172);
 });
 
-void test("relocated configuration references retain all complete original code examples", () => {
+void test("configuration references preserve every complete archived recipe through explicit successors", () => {
+  assert.equal(
+    createHash("sha256")
+      .update(readFileSync(resolve(import.meta.dirname, "fixtures/docs-config-journey.json")))
+      .digest("hex"),
+    successor.originalSha256,
+  );
+  assert.deepEqual(
+    successor.recipes.map((recipe) => recipe.index),
+    Array.from({ length: 14 }, (_, i) => i),
+  );
   let count = 0;
   for (const document of original.documents.filter((item) => item.code.length > 0)) {
     const directory = dirname(document.file);
@@ -60,8 +93,16 @@ void test("relocated configuration references retain all complete original code 
       (name) => fences(render(`${directory}/${name}.md`).source),
     );
     assert.equal(document.code.length, 14, document.file);
-    for (const code of document.code) {
-      assert.ok(retained.includes(code), `${document.file}: complete original example`);
+    for (const [index, code] of document.code.entries()) {
+      const current = successor.recipes[index];
+      assert.equal(createHash("sha256").update(code).digest("hex"), current.originalCodeSha256);
+      assert.ok(current.ownership.length > 0);
+      for (const packet of [current.code, ...(current.additionalCode ?? [])]) {
+        assert.ok(
+          retained.includes(packet),
+          `${document.file}: complete successor for original example ${index}`,
+        );
+      }
       count += 1;
     }
   }
@@ -78,17 +119,34 @@ void test("every locale publishes the same complete Vite setup and native config
     assert.deepEqual(fences(startup.source), recipes, locale);
     assert.deepEqual(fences(config.source), configuration, locale);
     assert.match(config.source, /`tsconfig\.json`/);
-    assert.match(config.source, /`vize\.entries`/);
-    assert.match(config.source, /`--config`/);
+    assert.match(config.source, /`vueCompilerOptions`/);
+    assert.match(config.source, /defineConfig\(vpConfig\)\.withVue/);
+    assert.match(config.source, /`--tsconfig`/);
     assert.doesNotMatch(config.html, /<strong>\s*<code>vize\.config/);
-    assert.ok(startup.source.includes("> [!NOTE]"), `${locale}: publication scope stays visible`);
-    assert.ok(config.source.includes("> [!NOTE]"), `${locale}: publication scope stays visible`);
+    const startupNote = startup.source.match(/^> \[!NOTE\]\n(> .+)$/m)?.[1];
+    assert.ok(startupNote, `${locale}: publication scope stays visible`);
+    for (const option of [
+      "`vue:`",
+      "`vite.config.*`",
+      "`tsconfig.json`",
+      "`vueCompilerOptions`",
+      "`vize.config.*`",
+      "`vize:`",
+    ]) {
+      assert.ok(startupNote.includes(option), `${locale}: startup migration explains ${option}`);
+    }
+    assert.ok(config.source.includes("> [!NOTE]"), `${locale}: migration scope stays visible`);
+    assert.match(config.source, /`vize\.config\.\*`/);
     for (const document of [startup, config]) {
-      assert.match(document.source, /Vize 0\.457\.0/, `${locale}: released setup baseline`);
+      assert.doesNotMatch(
+        document.source,
+        /0\.457\.0/,
+        `${locale}: configuration migration must not claim the released setup baseline`,
+      );
       assert.doesNotMatch(
         document.source,
         /next release|次(?:の|回)リリース|prochaine version|próxima versão|下一个版本/u,
-        `${locale}: released configuration is no longer described as pending`,
+        `${locale}: configuration instructions remain concrete`,
       );
     }
   }
@@ -139,12 +197,13 @@ void test("library and Musea shared examples keep the same native scope in every
     const library = render(`${prefix}lib-pull.md`);
     assert.equal(shared(library.source, "lib"), lib, locale);
     assert.match(library.source, /`vite\.config\.mjs`/);
-    assert.match(library.source, /`vize\.lib`/);
-    assert.match(library.source, /`vize\.config\.json`/);
+    assert.match(library.source, /`vue\.lib`/);
+    assert.match(library.source, /`lib`/);
+    assert.doesNotMatch(library.source, /writes?[^\n]*`vize\.config/);
   }
 });
 
-void test("the complete original dedicated workflow recipe remains in both detailed references", () => {
+void test("the archived dedicated workflow has a complete canonical successor in both references", () => {
   const retained = JSON.parse(
     readFileSync(
       resolve(import.meta.dirname, "fixtures/docs-workflow-dedicated-config.json"),
@@ -156,8 +215,84 @@ void test("the complete original dedicated workflow recipe remains in both detai
   assert.equal(retained.code.split("\n").length, 18);
   for (const locale of ["", "ja/"]) {
     const reference = render(`docs/content/${locale}guide/configuration-reference.md`);
-    assert.equal(fences(reference.source).filter((code) => code === retained.code).length, 1);
+    assert.equal(fences(reference.source).filter((code) => code === successor.workflow).length, 1);
     const workflow = render(`docs/content/${locale}guide/workflows.md`);
     assert.ok(fences(workflow.source).some((code) => code.includes("// vite.config.ts")));
   }
+});
+
+void test("canonical recipe successors retain complete option values and actual package ownership", () => {
+  const archived = original.documents.find((document) => document.code.length > 0)!.code;
+  const envs = [
+    { command: "serve", mode: "development", isSsrBuild: false },
+    { command: "build", mode: "production", isSsrBuild: true },
+  ];
+  for (const env of envs) {
+    assert.deepEqual(
+      configRecipe(successor.recipes[0].code, env).vue,
+      nativeOptions(configRecipe(archived[0], env)),
+      `dynamic config: ${env.command}/${env.mode}/SSR=${env.isSsrBuild}`,
+    );
+    for (const index of [4, 6, 9, 10, 11, 12]) {
+      const current = configRecipe(successor.recipes[index].code, env);
+      const before = nativeOptions(configRecipe(archived[index], env));
+      includesOptions(index === 4 ? current : current.vue, before, `recipe ${index}`);
+    }
+    // The gallery setting keeps its plugin owner; discovery/VRT stay shared.
+    const gallery = configRecipe(successor.recipes[13].code, env);
+    const beforeGallery = configRecipe(archived[13], env).musea as Record<string, unknown>;
+    const { storybookCompat, ...shared } = beforeGallery;
+    assert.deepEqual(gallery.vue, { musea: shared });
+    assert.deepEqual(gallery.plugins, [{ musea: { storybookCompat } }]);
+    const currentWorkflow = configRecipe(successor.workflow, env).vue;
+    const oldWorkflow = JSON.parse(
+      readFileSync(
+        resolve(import.meta.dirname, "fixtures/docs-workflow-dedicated-config.json"),
+        "utf8",
+      ),
+    ) as { code: string };
+    assert.deepEqual(currentWorkflow, configRecipe(oldWorkflow.code, env));
+  }
+  const env = envs[0];
+  const legacyProjects = configRecipe(archived[1], env);
+  const projects = [successor.recipes[1].code, ...successor.recipes[1].additionalCode!];
+  const entries = legacyProjects.entries as Record<string, unknown>[];
+  for (const [index, source] of projects.entries()) {
+    const { basePath, ...settings } = entries[index];
+    assert.ok(source.startsWith(`// ${String(basePath)}/vite.config.ts`));
+    assert.deepEqual(configRecipe(source, env).vue, {
+      ...settings,
+      formatter: { ...(legacyProjects.formatter as object), ...(settings.formatter as object) },
+    });
+  }
+  includesOptions(
+    configRecipe(successor.recipes[3].code, env).vue,
+    nativeOptions(configRecipe(archived[3], env)),
+    "retired JSON values",
+  );
+  const { entries: pklEntries, ...pklShared } = retiredPklOptions(archived[2]);
+  includesOptions(
+    configRecipe(successor.recipes[2].code, env).vue,
+    pklShared,
+    "retired PKL values",
+  );
+  const [{ basePath, ...pklWeb }] = pklEntries as Record<string, unknown>[];
+  assert.ok(
+    successor.recipes[2].additionalCode![0].startsWith(`// ${String(basePath)}/vite.config.ts`),
+  );
+  includesOptions(configRecipe(successor.recipes[2].additionalCode![0], env).vue, pklWeb);
+  for (const index of [5, 7]) assert.equal(successor.recipes[index].code, archived[index]);
+  assert.equal(
+    successor.recipes[8].code.split("\n").slice(1).join("\n"),
+    archived[8].split("\n").slice(1).join("\n"),
+  );
+});
+
+void test("config succession preserves Nuxt module and Oxlint settings namespaces", () => {
+  for (const source of [
+    'export default defineNuxtConfig({\n  modules: ["@vizejs/nuxt"],\n  vize: { compiler: true },\n});',
+    'export default defineConfig({\n  settings: {\n    vize: { nativePath: "./native.node" },\n  },\n});',
+    "export default {\n  vize: { compiler: true },\n};",
+  ])
+    assert.equal(currentConfigExample(source), source);
 });

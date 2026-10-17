@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -84,9 +85,9 @@ await test("sole hugged interpolations share their parent layout on all three pa
         }
         const file = path.join(temporary, fixture.filename);
         fs.writeFileSync(file, fixture.input);
-        const config = Buffer.from(fixture.config);
+        const config = Buffer.from(vueConfigFixtureSource(fixture.config));
         assert.deepEqual(JSON.parse(fixture.config), { formatter: fixture.options });
-        fs.writeFileSync(path.join(temporary, "vize.config.json"), config);
+        fs.writeFileSync(path.join(temporary, "vite.config.mjs"), config);
         const row = { id: fixture.id, fixture, attempts: [], diagnostics: [], qualified: false };
         report.rows.push(row);
         const reference = wrapped.rows.find((item) => item.id === fixture.id);
@@ -142,7 +143,7 @@ await test("sole hugged interpolations share their parent layout on all three pa
             throw error;
           }
           persist();
-          assert.deepEqual(fs.readFileSync(path.join(temporary, "vize.config.json")), config);
+          assert.deepEqual(fs.readFileSync(path.join(temporary, "vite.config.mjs")), config);
           assert.equal(capture.error, null);
           assert.equal(capture.signal, null);
           assert.equal(capture.status, oracle.status);

@@ -4,8 +4,8 @@ use super::{DiagnosticService, NumberOrString, Url, sources, state_with_lsp_diag
 fn diagnostics_follow_scoped_rules_and_global_ignores() {
     let root = tempfile::tempdir().unwrap();
     std::fs::write(
-        root.path().join("vize.config.json"),
-        r#"{"entries":[{"files":["src/legacy/**/*.vue"],"linter":{"rules":{"vue/permitted-contents":"off"}}}],"ignores":["src/generated/**"]}"#,
+        root.path().join("vite.config.mjs"),
+        r#"export default { vue: {"entries":[{"files":["src/legacy/**/*.vue"],"linter":{"rules":{"vue/permitted-contents":"off"}}}],"ignores":["src/generated/**"]} };"#,
     )
     .unwrap();
     let state = state_with_lsp_diagnostics(true, false);

@@ -42,12 +42,12 @@ développeurs puissent isoler la mise en forme, le lint, la vérification de typ
 
 ## Configurer une fois
 
-Pour modifier les valeurs par défaut, ajoutez les options natives à l'objet `vize` à la racine de votre `vite.config.*` existant. Le [guide de configuration](./configuration.md) décrit la recherche, la disponibilité par version et les formats dédiés facultatifs.
+Pour modifier les valeurs par défaut, ajoutez les options natives à l’objet `vue` à la racine de votre `vite.config.*` existant. Le [guide de configuration](./configuration.md) décrit la recherche et la migration depuis les anciens formats dédiés.
 
 ```ts
 // vite.config.ts
 export default {
-  vize: {
+  vue: {
     formatter: {
       printWidth: 100,
     },
@@ -56,7 +56,6 @@ export default {
     },
     typeChecker: {
       enabled: true,
-      strict: true,
       tsconfig: "tsconfig.json",
     },
     vite: {
@@ -66,8 +65,7 @@ export default {
 };
 ```
 
-Voir [Configuration](./configuration.md) pour les entrées monorepo plates, PKL, JSON, les options du compilateur et
-détails sur la résolution des types Vue.
+Placez `strict` dans `compilerOptions` et les options de templates Vue dans `vueCompilerOptions` de `tsconfig.json`. Voir [Configuration](./configuration.md) pour les périmètres de lint, les options du compilateur et la résolution des types Vue.
 
 ## Format
 

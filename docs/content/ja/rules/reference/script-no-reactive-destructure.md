@@ -20,8 +20,8 @@ reactive オブジェクトを分割代入し、リアクティビティを失�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-reactive-destructure": "warn"

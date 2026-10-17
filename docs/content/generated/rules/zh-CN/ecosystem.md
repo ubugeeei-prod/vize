@@ -43,8 +43,8 @@ title: "生态系统规则"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/nuxt-prefer-nuxt-link": "warn"
@@ -104,8 +104,8 @@ NuxtLink 通过 Nuxt 路由处理相同的内部目标。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/pinia-prefer-store-to-refs": "warn"
@@ -168,8 +168,8 @@ SFC 的唯一根链接可能从父组件属性继承目标。此示例使用嵌�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/router-link-require-to": "error"
@@ -229,8 +229,8 @@ vp run lint
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/void-link-require-href": "error"
@@ -298,8 +298,8 @@ import { Link } from "@void/vue";
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/void-link-valid-method": "warn"
@@ -367,8 +367,8 @@ import { Link } from "@void/vue";
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-i18n-no-missing-key": "warn"
@@ -432,8 +432,8 @@ RouterLink 优先使用具名路由对象，而不是静态路径字符串
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-router-prefer-named-link": "warn"
@@ -493,8 +493,8 @@ Vue Router 编程式导航优先使用具名路由对象
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-router-prefer-named-push": "warn"
@@ -554,8 +554,8 @@ router.push({ name: "settings" });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-test-utils-no-html-snapshot": "warn"
@@ -615,8 +615,8 @@ expect(wrapper.text()).toContain("Saved");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/no-nuxt-config-test-key": "error"
@@ -676,8 +676,8 @@ export default defineNuxtConfig({});
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/no-page-meta-runtime-values": "error"
@@ -737,8 +737,8 @@ definePageMeta({ validate: () => Boolean(useRoute().params.id) });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/nuxt-config-keys-order": "error"
@@ -798,8 +798,8 @@ export default defineNuxtConfig({ modules: [], ssr: true });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/prefer-import-meta": "error"

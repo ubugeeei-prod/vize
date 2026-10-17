@@ -12,6 +12,7 @@ import {
 import { InstalledAliasSession } from "../installed-alias-replay/protocol.ts";
 import { auditEventGuard, observeEventGuard, type EventGuardRecord } from "./runner-guard.ts";
 import { loadReplayCases, publicDomLibrary, type ControllerRecord } from "./runner-scopes.ts";
+import { writeVueConfigFixture } from "../../vue-config-fixture.ts";
 
 type ReplayOptions = {
   authority: VizePublicRegistryInstallAuthority;
@@ -83,7 +84,7 @@ export async function replayInstalledEventSlotScopes(options: ReplayOptions) {
     assert.equal(fs.realpathSync(vueLink), options.vuePath);
     const scope = testCase.prepare(projectRoot);
     fs.writeFileSync(path.join(projectRoot, "tsconfig.json"), scope.tsconfig);
-    fs.writeFileSync(path.join(projectRoot, "vize.config.json"), JSON.stringify(scope.vizeConfig));
+    writeVueConfigFixture(projectRoot, JSON.stringify(scope.vizeConfig));
     for (const file of scope.files) {
       assert.ok(!path.isAbsolute(file.file) && !file.file.split(/[\\/]/u).includes(".."));
       const target = path.join(projectRoot, file.file);

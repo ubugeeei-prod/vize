@@ -1,4 +1,7 @@
 #![cfg(test)]
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use std::path::Path;
 
 use serde_json::json;
@@ -172,8 +175,8 @@ fn write_project_config(project_root: &Path, corsa_path: &Path) {
         },
     });
     std::fs::write(
-        project_root.join("vize.config.json"),
-        serde_json::to_vec_pretty(&config).unwrap(),
+        project_root.join("vite.config.mjs"),
+        vite_config::source(serde_json::to_vec_pretty(&config).unwrap()),
     )
     .unwrap();
 }

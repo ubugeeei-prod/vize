@@ -6,7 +6,7 @@ import { resolveConfigExport } from "../config.ts";
 import { runTools } from "./runner.ts";
 import { taskConfigKey, type ConfigWithVizeTasks } from "./types.ts";
 
-void test("lint.vize carries execution settings through native config without forwarding them to Oxlint", async () => {
+void test("lint.vue carries execution settings through native config without forwarding them to Oxlint", async () => {
   const linter = {
     preset: "opinionated" as const,
     crossFile: true,
@@ -16,7 +16,7 @@ void test("lint.vize carries execution settings through native config without fo
     maxWarnings: 0,
   };
   const resolved = await defineConfig(
-    { lint: { vize: linter } },
+    { lint: { vue: linter } },
     { plugin: false, tasks: false },
   )({ command: "build", mode: "production" });
   const metadata = (resolved as ConfigWithVizeTasks)[taskConfigKey]!;

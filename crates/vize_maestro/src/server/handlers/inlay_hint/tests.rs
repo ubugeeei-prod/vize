@@ -182,11 +182,15 @@ fn disabled_checker_keeps_proven_builtin_facts_without_guessing_computed_types()
 fn unavailable_checker_keeps_known_builtin_without_rendering_computed_placeholders() {
     let root = tempfile::tempdir().unwrap();
     std::fs::write(
-        root.path().join("vize.config.json"),
-        serde_json::to_vec(
-            &json!({"typeChecker":{"corsaPath":root.path().join("missing-native")}}),
+        root.path().join("vite.config.mjs"),
+        vize_l0::cstr!(
+            "export default {{ vue: {} }};",
+            serde_json::to_string(
+                &json!({"typeChecker":{"corsaPath":root.path().join("missing-native")}}),
+            )
+            .unwrap()
         )
-        .unwrap(),
+        .as_bytes(),
     )
     .unwrap();
     let (mut service, socket) = build_lsp_service();

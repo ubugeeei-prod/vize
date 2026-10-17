@@ -20,8 +20,8 @@ Options API の computed getter 内の副作用を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-side-effects-in-computed-properties": "error"

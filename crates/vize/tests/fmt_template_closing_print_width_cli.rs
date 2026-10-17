@@ -2,6 +2,9 @@
 #![cfg(feature = "glyph")]
 #![expect(clippy::disallowed_macros, reason = "whole expected CLI streams")]
 #![expect(clippy::disallowed_types, reason = "filesystem and process fixtures")]
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use std::{fs, process::Command};
 
 #[test]
@@ -18,7 +21,8 @@ fn independent_closing_grammar_keeps_three_writes_then_check() {
         let input = project.path().join("App.vue");
         let config =
             serde_json::to_vec(&serde_json::json!({"formatter": case["options"]})).unwrap();
-        let config_path = project.path().join("vize.config.json");
+        let config = vite_config::source(config).into_bytes();
+        let config_path = project.path().join("vite.config.mjs");
         fs::write(&input, original).unwrap();
         fs::write(&config_path, &config).unwrap();
         for (pass, flag) in ["--check", "--write", "--write", "--write", "--check"]

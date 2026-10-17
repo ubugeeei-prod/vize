@@ -35,7 +35,11 @@ fn file(root: &Path, name: &str, source: &str) -> Url {
 
 fn fixture(name: &str, source: &'static str, cross_owner: bool) -> Fixture {
     let root = tempfile::tempdir().unwrap();
-    file(root.path(), "vize.config.json", "{}");
+    file(
+        root.path(),
+        "vite.config.mjs",
+        "export default { vue: {} };",
+    );
     if cross_owner {
         for package in ["vendor", "left", "idle"] {
             file(root.path(), &cstr!("{package}/package.json"), "{}");

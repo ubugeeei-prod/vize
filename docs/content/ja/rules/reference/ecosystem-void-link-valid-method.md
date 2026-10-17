@@ -20,8 +20,8 @@ Void Vue の Link に有効な静的 method を指定します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/void-link-valid-method": "warn"

@@ -20,8 +20,8 @@ title: "a11y/no-role-presentation-on-focusable"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "a11y/no-role-presentation-on-focusable": "error"

@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { writeVueConfigFixture } from "../tooling/support/vue-config-fixture.ts";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -26,6 +27,10 @@ export type PinnedFixtureWorkspace = {
   read(relativePath: string): string;
   resolve(relativePath: string): string;
   write(relativePath: string, content: string): void;
+  writeVueConfig(
+    document: Parameters<typeof writeVueConfigFixture>[1],
+    relativeDirectory?: string,
+  ): void;
 };
 
 type PinnedFixtureOptions = {
@@ -82,6 +87,11 @@ export async function withPinnedFixtureWorkspace<T>(
     },
     resolve(relativePath) {
       return resolveInside(workspaceDir, relativePath);
+    },
+    writeVueConfig(document, relativeDirectory = ".") {
+      const directory = resolveInside(workspaceDir, relativeDirectory);
+      fs.mkdirSync(directory, { recursive: true });
+      writeVueConfigFixture(directory, document);
     },
     write(relativePath, content) {
       const filePath = resolveInside(workspaceDir, relativePath);

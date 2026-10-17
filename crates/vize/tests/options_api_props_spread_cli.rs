@@ -5,6 +5,8 @@
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "support/vite_config.rs"]
+mod vite_config;
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -76,7 +78,7 @@ fn check_legacy_vue2_options_api_prop_type_matrix_cli() {
             "check",
             "src/App.vue",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--tsconfig",
             "tsconfig.json",
             "--format",
@@ -193,13 +195,15 @@ fn create_prop_type_matrix_project() -> PathBuf {
     std::fs::create_dir_all(project_root.join("src")).unwrap();
     link_workspace_node_modules(&project_root);
     std::fs::write(
-        project_root.join("vize.config.json"),
-        r#"{
+        project_root.join("vite.config.mjs"),
+        vite_config::source(
+            r#"{
   "vue": { "version": "2.7" },
   "typeChecker": {
     "legacyVue2": true
   }
 }"#,
+        ),
     )
     .unwrap();
     std::fs::write(

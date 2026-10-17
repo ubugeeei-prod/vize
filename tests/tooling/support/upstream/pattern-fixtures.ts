@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "../vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
@@ -68,10 +69,5 @@ export function writePatternProject(directory: string, sources: Map<string, stri
       include: ["patterned-templates/**/*", "tsc/**/*"],
     }),
   );
-  fs.writeFileSync(
-    path.join(directory, "vize.config.json"),
-    JSON.stringify({
-      experimentals: { patternedTemplate: true },
-    }),
-  );
+  writeVueConfigFixture(directory, { experimentals: { patternedTemplate: true } });
 }

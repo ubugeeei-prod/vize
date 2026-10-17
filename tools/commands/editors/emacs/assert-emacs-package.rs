@@ -71,7 +71,7 @@ fn run() -> Result<(), String> {
     for (source, needle) in [
         (&vize_el, "lexical-binding: t"),
         (&vize_el, r#"defcustom vize-eglot-command '("vize" "lsp")"#),
-        (&vize_el, "defcustom vize-eglot-profile 'recommended"),
+        (&vize_el, "defcustom vize-eglot-profile nil"),
         (
             &vize_el,
             "recommended . (:editor t :ecosystem t :lint t :typecheck t)",

@@ -98,13 +98,18 @@ const e2eSpecLua = readTextEntry(entryMap, "nvim/test/vize_e2e_spec.lua");
 
 assert.match(configLua, /cmd = \{ "vize", "lsp" \}/);
 assert.match(configLua, /filetypes = \{ "vue", "art-vue" \}/);
-assert.match(
-  configLua,
-  /root_markers = \{ "vize\.config\.pkl", "vize\.config\.json", "package\.json", "\.git" \}/,
-);
+for (const marker of [
+  "vite.config.ts",
+  "vite.config.js",
+  "tsconfig.json",
+  "package.json",
+  ".git",
+]) {
+  assert.ok(configLua.includes(`"${marker}"`));
+}
 assert.match(configLua, /lint = true/);
 assert.match(configLua, /recommended = \{/);
-assert.match(configLua, /init_options = profiles\.recommended/);
+assert.match(configLua, /init_options = vim\.empty_dict\(\)/);
 assert.match(configLua, /assert_list\("cmd"/);
 assert.match(initLua, /vim\.lsp\.config\("vize", resolved\)/);
 assert.match(initLua, /vim\.lsp\.enable\("vize"\)/);

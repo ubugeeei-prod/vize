@@ -1,6 +1,8 @@
 #![cfg(test)]
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "support/vite_config.rs"]
+mod vite_config;
 
 use std::{
     path::{Path, PathBuf},
@@ -19,8 +21,9 @@ fn check_nuxt2_compiler_compat_warning_does_not_suggest_nuxi_prepare() {
     write_file(&project_root, "nuxt.config.ts", "export default {};\n");
     write_file(
         &project_root,
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "compiler": {
     "compatibility": {
       "vueVersion": "2",
@@ -32,6 +35,7 @@ fn check_nuxt2_compiler_compat_warning_does_not_suggest_nuxi_prepare() {
   }
 }
 "#,
+        ),
     );
     write_file(
         &project_root,
@@ -68,7 +72,7 @@ export default {
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
         .env("CORSA_PATH", corsa_path)
-        .args(["check", "--config", "vize.config.json", "--format", "json"])
+        .args(["check", "--config", "vite.config.mjs", "--format", "json"])
         .output()
         .unwrap();
 

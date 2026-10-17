@@ -67,11 +67,8 @@ test("the Zed real-server scenario pins complete extension-contract responses", 
   assert.match(contract, /assert_json_eq\(&rename, expected_rename\(&uri\)/);
   assert.doesNotMatch(contract, /\.includes\(|\.contains\(/);
 
-  // These are the exact recommended defaults returned by the extension. The
-  // scenario then opts into formatting through the same initialization option
-  // available to Zed users, matching the established Neovim scenario.
-  assert.match(scenario, /run_editor_contract\(&common::repo_root\(\)\?, "zed", true\)/);
-  assert.match(contract, /"editor": true/);
-  assert.match(contract, /"typecheck": true/);
-  assert.match(contract, /options\["formatting"\] = json!\(true\)/);
+  // The packaged adapter sends no feature overrides; the server discovers project settings.
+  assert.match(scenario, /run_editor_contract\(&common::repo_root\(\)\?, "zed"\)/);
+  assert.match(contract, /let options = json!\(\{\}\)/);
+  assert.doesNotMatch(contract, /options\["formatting"\]/);
 });

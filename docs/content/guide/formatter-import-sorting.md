@@ -2,37 +2,35 @@
 
 Sort Vue script imports consistently with the rest of a Vite+ project. Use this when you want stable import groups, while keeping side-effect initialization order unless you deliberately opt in.
 
-Check [shared formatter configuration and current release availability](./configuration.md)
-before choosing where to put these settings.
+Keep shared options in `vue.formatter` in `vite.config.*`; the CLI and editor read the same settings. See [Configuration](./configuration.md).
 
 ## Configure import sorting
 
-Enable import sorting with `fmt.vize.sortImports` in your existing Vite+ configuration:
+Enable import sorting with `vue.formatter.sortImports` in your existing Vite+ configuration:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  fmt: {
-    vize: {
-      sortImports: {
-        internalPattern: ["@/", "~/"],
-        groups: ["builtin", "external", "internal", ["parent", "sibling", "index"]],
-        newlinesBetween: true,
-        order: "asc",
-      },
+export default defineConfig({}).withVue({
+  formatter: {
+    sortImports: {
+      internalPattern: ["@/", "~/"],
+      groups: ["builtin", "external", "internal", ["parent", "sibling", "index"]],
+      newlinesBetween: true,
+      order: "asc",
     },
   },
 });
 ```
 
-An empty object selects Oxfmt's default groups and sorting policy. Omit the
-option or set it to `false` to preserve authored import order. Both `<script>`
+An empty object selects Oxfmt's default groups and sorting policy. Set the
+option to `false` to preserve authored import order. Omitting it also preserves
+the order when no shared `fmt.sortImports` policy is configured. Both `<script>`
 and `<script setup>`, including JSX/TSX blocks, use the native Oxc import sorter.
 Direct `vize fmt` applies the same policy to standalone JS/TS/JSX/TSX files.
 
 Vite+ shares `fmt.sortImports` with Vue formatting automatically. Set
-`fmt.vize.sortImports` to override it, including `false` to disable sorting only
+`vue.formatter.sortImports` to override it, including `false` to disable sorting only
 for Vue. Oxfmt still receives its original setting.
 
 Supported options are `groups`, `customGroups`, `internalPattern`, `order`,
@@ -61,4 +59,4 @@ modes across CLI, editor, Node and WASM formatting.
 
 For space and tab indentation, see [Indentation width](./formatter-indent-width.md).
 
-For CLI/editor sharing and optional dedicated settings, see [Configuration](./configuration.md), including the current release availability.
+The CLI and editor read the same `vue.formatter` settings from `vite.config.*`. See [Configuration](./configuration.md) for discovery and migration from removed dedicated configuration files.

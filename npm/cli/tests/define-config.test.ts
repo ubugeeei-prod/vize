@@ -115,9 +115,12 @@ await assert.rejects(resolveConfigExport({ linter: { enabled: true } }), {
   });
 });
 
-test("installed JSON config loading keeps native normalization failures visible", () => {
+test("installed canonical Vite config keeps native normalization failures visible", () => {
   withInstalledConfig((directory, loads) => {
-    fs.writeFileSync(path.join(directory, "vize.config.json"), '{"linter":{"enabled":true}}');
+    fs.writeFileSync(
+      path.join(directory, "vite.config.mjs"),
+      "export default {vue:{linter:{enabled:true}}};",
+    );
     execute(
       directory,
       `import assert from "node:assert/strict";
@@ -129,11 +132,11 @@ await assert.rejects(loadConfig(process.cwd()), (error) => error.message.endsWit
   });
 });
 
-test("installed TypeScript config loading still requires its native transformer", () => {
+test("installed TypeScript Vite config loading still requires its native transformer", () => {
   withInstalledConfig((directory, loads) => {
     fs.writeFileSync(
-      path.join(directory, "vize.config.ts"),
-      "export default { linter: { enabled: true } };\n",
+      path.join(directory, "vite.config.ts"),
+      "export default { vue: { linter: { enabled: true } } };\n",
     );
     execute(
       directory,
@@ -146,4 +149,29 @@ await assert.rejects(loadConfig(process.cwd()), {
     );
     assert.equal(fs.readFileSync(loads, "utf8"), "oxc-transform\n");
   });
+});
+
+test("installed retired config files report migration without loading native bindings", () => {
+  for (const extension of ["json", "ts", "mjs"]) {
+    withInstalledConfig((directory, loads) => {
+      const file = `vize.config.${extension}`;
+      fs.writeFileSync(
+        path.join(directory, file),
+        extension === "json" ? "{}" : "export default {};",
+      );
+      execute(
+        directory,
+        `import assert from "node:assert/strict";
+import { loadConfig } from "vize/config";
+await assert.rejects(loadConfig(process.cwd()), /vize\\.config\\.\\* is no longer supported/);
+await assert.rejects(loadConfig(process.cwd(), {configFile:${JSON.stringify(file)}}), /vize\\.config\\.\\* is no longer supported/);
+`,
+      );
+      assert.equal(
+        fs.existsSync(loads),
+        false,
+        "retired files must fail before either native binding",
+      );
+    });
+  }
 });

@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -51,7 +52,7 @@ void test("original root comments retain whole attachment bytes and CLI fixed po
       };
       const configured = Object.keys(config.formatter).length > 0;
       if (configured)
-        fs.writeFileSync(path.join(directory, "vize.config.json"), `${JSON.stringify(config)}\n`);
+        fs.writeFileSync(path.join(directory, "vite.config.mjs"), vueConfigFixtureSource(config));
       if (fixture.existingHistoryId) {
         for (const original of [fixture.existingInput, fixture.existingExpected]) {
           assert.equal(sha256(fs.readFileSync(path.join(root, original.path))), original.sha256);
@@ -70,7 +71,7 @@ void test("original root comments retain whole attachment bytes and CLI fixed po
           "fmt",
           mode,
           fixture.file,
-          ...(configured ? ["--config", "vize.config.json"] : ["--no-config"]),
+          ...(configured ? ["--config", "vite.config.mjs"] : ["--no-config"]),
         ];
         const before = fs.readFileSync(file);
         const result = spawnSync(path.join(root, identity.binaryPath), argv, {

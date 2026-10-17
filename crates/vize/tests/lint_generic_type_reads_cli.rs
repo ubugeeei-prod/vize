@@ -1,3 +1,5 @@
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use serde_json::{Value, json};
 use std::{
     fs,
@@ -47,8 +49,8 @@ fn unchanged(root: &Path, source: &str) {
     );
     assert_eq!(fs::read(root.join("src/kind.ts")).unwrap(), KIND.as_bytes());
     assert_eq!(
-        fs::read(root.join("vize.config.json")).unwrap(),
-        CONFIG.as_bytes()
+        fs::read(root.join("vite.config.mjs")).unwrap(),
+        vite_config::source(CONFIG).as_bytes()
     );
 }
 
@@ -58,14 +60,15 @@ fn original_exact_argv_and_all_whole_configured_json_vectors_are_checked() {
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path();
     fs::create_dir(root.join("src")).unwrap();
-    fs::write(root.join("vize.config.json"), CONFIG).unwrap();
+    fs::write(root.join("vite.config.mjs"), vite_config::source(CONFIG)).unwrap();
     fs::write(root.join("src/kind.ts"), KIND).unwrap();
     fs::write(root.join("src/kind-picker.vue"), ORIGINAL).unwrap();
-    let original_args: Vec<_> = COMMAND.split_whitespace().skip(1).collect();
+    let mut original_args: Vec<_> = COMMAND.split_whitespace().skip(1).collect();
     assert_eq!(
         original_args,
         ["lint", "-c", "vize.config.json", "src/kind-picker.vue"]
     );
+    original_args[2] = "vite.config.mjs";
     invoke(root, &original_args, "whole-original-command");
     unchanged(root, ORIGINAL);
     let cases = corpus["cases"].as_array().unwrap();
@@ -78,7 +81,7 @@ fn original_exact_argv_and_all_whole_configured_json_vectors_are_checked() {
             &[
                 "lint",
                 "-c",
-                "vize.config.json",
+                "vite.config.mjs",
                 "--format",
                 "json",
                 "src/kind-picker.vue",
@@ -96,7 +99,7 @@ fn unused_rule_remains_opt_in_and_original_fixture_bytes_are_literal() {
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path();
     fs::create_dir(root.join("src")).unwrap();
-    fs::write(root.join("vize.config.json"), CONFIG).unwrap();
+    fs::write(root.join("vite.config.mjs"), vite_config::source(CONFIG)).unwrap();
     fs::write(root.join("src/kind.ts"), KIND).unwrap();
     let corpus: Value = serde_json::from_str(CASES).unwrap();
     let source = corpus["cases"]

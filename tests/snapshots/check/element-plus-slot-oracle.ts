@@ -55,8 +55,7 @@ test("Element Plus badge slot contracts stay exact across editor revisions", asy
       fixture.write("node_modules/@element-plus/icons-vue/index.d.ts", iconDeclaration);
       fixture.write("element-plus-global.d.ts", globalComponentsDeclaration);
       fixture.write("tsconfig.json", `${JSON.stringify(tsconfig, null, 2)}\n`);
-      fixture.write(
-        "vize.config.json",
+      fixture.writeVueConfig(
         `${JSON.stringify(
           {
             lsp: { completion: true, editor: true, hover: true, lint: false, typecheck: true },

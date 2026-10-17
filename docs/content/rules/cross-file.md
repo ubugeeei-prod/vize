@@ -8,7 +8,7 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 
 This page shows all 66 project examples with their complete Bad and Good versions and the files both versions share. Use the shared files with both. Of the 60 diagnostic codes, the CLI reports 19 today (18 verified against source examples and one shown with an illustrative project), 16 exist only in the experimental Rust analyzer and are not reported individually by the CLI, and 25 are specified but nothing produces them yet. Configuring an ID does not turn on a check that is not available.
 
-The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `vize:croquis/cf/*` codes use `croquis/cf/*` in `lint.vize.rules` (omit `vize:`). Information/hint diagnostics become CLI warnings. Related locations explain the source/consumer relationship.
+The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `vize:croquis/cf/*` codes use `croquis/cf/*` in `vue.linter.rules` (omit `vize:`). Information/hint diagnostics become CLI warnings. Related locations explain the source/consumer relationship.
 
 <span id="project-specific-lint-ids"></span>
 <span id="published-analyzer-codes"></span>

@@ -1,6 +1,8 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -41,13 +43,16 @@ fn lint_honors_config_ignores_for_directory_inputs() {
     let project_root = temp_project_dir("directory-ignores");
     write_project_file(
         &project_root,
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "ignores": [
+    "vite.config.mjs",
     "design-system/**",
     "node_modules/**"
   ]
 }"#,
+        ),
     );
     write_project_file(
         &project_root,
@@ -73,7 +78,7 @@ const ignored = true
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
-        .args(["lint", "--config", "vize.config.json", "."])
+        .args(["lint", "--config", "vite.config.mjs", "."])
         .output()
         .unwrap();
 
@@ -91,16 +96,17 @@ fn lint_uses_entry_preset_unless_cli_preset_overrides() {
     let project_root = temp_project_dir("entry-preset");
     write_project_file(
         &project_root,
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "entries": [
     {
-      "name": "app",
       "files": ["src/**/*.vue"],
       "linter": { "preset": "incremental" }
     }
   ]
 }"#,
+        ),
     );
     write_project_file(
         &project_root,
@@ -117,7 +123,7 @@ const noop = () => {}
 
     let configured = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
-        .args(["lint", "--config", "vize.config.json", "src/App.vue"])
+        .args(["lint", "--config", "vite.config.mjs", "src/App.vue"])
         .output()
         .unwrap();
     assert!(
@@ -134,7 +140,7 @@ const noop = () => {}
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--preset",
             "ecosystem",
             "--max-warnings",
@@ -171,8 +177,8 @@ const items = [{ id: 1, name: 'One' }]
     write_project_file(&project_root, "src/App.vue", sfc);
     write_project_file(
         &project_root,
-        "vize.config.json",
-        r#"{ "vue": { "version": "2" } }"#,
+        "vite.config.mjs",
+        &vite_config::source(r#"{ "vue": { "version": "2" } }"#),
     );
 
     let vue3 = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -186,7 +192,7 @@ const items = [{ id: 1, name: 'One' }]
 
     let vue2 = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
-        .args(["lint", "--config", "vize.config.json", "src/App.vue"])
+        .args(["lint", "--config", "vite.config.mjs", "src/App.vue"])
         .output()
         .unwrap();
     assert!(
@@ -215,13 +221,13 @@ const items = [{ id: 1, name: 'One' }]
     write_project_file(&project_root, "src/App.vue", sfc);
     write_project_file(
         &project_root,
-        "vize.config.json",
-        r#"{ "compiler": { "compatibility": { "vueVersion": "2" } } }"#,
+        "vite.config.mjs",
+        &vite_config::source(r#"{ "compiler": { "compatibility": { "vueVersion": "2" } } }"#),
     );
 
     let compat_vue2 = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
-        .args(["lint", "--config", "vize.config.json", "src/App.vue"])
+        .args(["lint", "--config", "vite.config.mjs", "src/App.vue"])
         .output()
         .unwrap();
     assert!(
@@ -233,12 +239,12 @@ const items = [{ id: 1, name: 'One' }]
 
     write_project_file(
         &project_root,
-        "vize.config.json",
-        r#"{ "typeChecker": { "legacyVue2": true } }"#,
+        "vite.config.mjs",
+        &vite_config::source(r#"{ "typeChecker": { "legacyVue2": true } }"#),
     );
     let legacy_vue2 = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
-        .args(["lint", "--config", "vize.config.json", "src/App.vue"])
+        .args(["lint", "--config", "vite.config.mjs", "src/App.vue"])
         .output()
         .unwrap();
     assert!(
@@ -298,11 +304,13 @@ await nextTick()
     write_project_file(&project_root, "src/Dialog.vue", sfc);
     write_project_file(
         &project_root,
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "compiler": { "vapor": false },
   "linter": { "preset": "nuxt" }
 }"#,
+        ),
     );
 
     let nuxt_default = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -319,7 +327,7 @@ await nextTick()
 
     let non_vapor = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
-        .args(["lint", "--config", "vize.config.json", "src/Dialog.vue"])
+        .args(["lint", "--config", "vite.config.mjs", "src/Dialog.vue"])
         .output()
         .unwrap();
     assert!(

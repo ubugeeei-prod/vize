@@ -62,7 +62,7 @@ test("vue-element-admin data-key-only rename keeps every published range inside 
       symlinkVueTypes(fixture.workspaceDir);
       fixture.write("src/api/remote-search.d.ts", remoteSearchDeclaration);
       fixture.write("tsconfig.json", json(tsconfig));
-      fixture.write("vize.config.json", json(config(corsaPath)));
+      fixture.writeVueConfig(json(config(corsaPath)));
 
       const source = fixture.read(sourcePath);
       const sourceUri = pathToFileURL(fixture.resolve(sourcePath)).href;

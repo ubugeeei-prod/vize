@@ -1,5 +1,8 @@
 //! Full configured CLI streams, source preservation and three writes for #7876.
 #![cfg(feature = "glyph")]
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use std::{error::Error, fs, path::Path, process::Command};
 
 #[test]
@@ -22,8 +25,10 @@ fn original_and_control_cli_commands_match_complete_streams_and_bytes() -> Resul
         let file = project.path().join("Example.vue");
         fs::write(&file, &input)?;
         fs::write(
-            project.path().join("vize.config.json"),
-            serde_json::to_vec(&serde_json::json!({"formatter":case["options"]}))?,
+            project.path().join("vite.config.mjs"),
+            vite_config::source(serde_json::to_vec(
+                &serde_json::json!({"formatter":case["options"]}),
+            )?),
         )?;
         for (pass, mode) in ["--check", "--write", "--write", "--write", "--check"]
             .into_iter()

@@ -6,6 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { globalCorpus, root, sha256 } from "./css-global-ownership-reference.mjs";
+import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 await test("source CLI preserves foreign and potentially local global ownership reports", () => {
   const { source, cases } = globalCorpus();
@@ -40,11 +41,15 @@ await test("source CLI preserves foreign and potentially local global ownership 
       stdout: actual.stdout ?? "",
       stderr: actual.stderr ?? "",
     };
+    const carrier = {
+      text: fs.readFileSync(path.join(directory, "vite.config.mjs"), "utf8"),
+      expected: vueConfigFixtureSource(configText),
+    };
     const after = {
       source: fs.readFileSync(path.join(directory, row.filename), "utf8"),
-      config: fs.readFileSync(path.join(directory, "vize.config.json"), "utf8"),
+      config: fs.readFileSync(path.join(directory, "vize.config.json.fixture"), "utf8"),
     };
-    evidence.observations.push({ id, before, after, expected, raw });
+    evidence.observations.push({ id, before, after, carrier, expected, raw });
     persist();
     assert.equal(raw.error, null, id);
     assert.equal(raw.signal, null, id);
@@ -52,13 +57,15 @@ await test("source CLI preserves foreign and potentially local global ownership 
     assert.equal(raw.stderr, "", id);
     assert.equal(before.source, row.source, id);
     assert.deepEqual(after, { source: row.source, config: configText }, id);
+    assert.equal(carrier.text, carrier.expected, id);
     return raw;
   };
   try {
     fs.writeFileSync(path.join(directory, ".git"), "authored fixture workspace boundary\n");
     for (const row of cases) {
       fs.writeFileSync(path.join(directory, row.filename), row.source);
-      fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+      fs.writeFileSync(path.join(directory, "vize.config.json.fixture"), config);
+      writeVueConfigFixture(directory, config);
       const args = ["lint", "-f", "json", "--locale", "en", "--help-level", "full", row.filename];
       for (let pass = 0; pass < 3; pass++) {
         const raw = run(row, `${row.id}-json-${pass}`, args, config, row.expectedCli);
@@ -82,7 +89,8 @@ await test("source CLI preserves foreign and potentially local global ownership 
       const off = JSON.stringify({
         linter: { preset: "incremental", rules: { "css/no-display-none": "off" } },
       });
-      fs.writeFileSync(path.join(directory, "vize.config.json"), off);
+      fs.writeFileSync(path.join(directory, "vize.config.json.fixture"), off);
+      writeVueConfigFixture(directory, off);
       const expected = [{ file: row.filename, messages: [], errorCount: 0, warningCount: 0 }];
       assert.deepEqual(
         JSON.parse(run(row, row.id + "-off", args, off, expected).stdout),

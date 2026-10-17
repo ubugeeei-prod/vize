@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -19,7 +20,7 @@ import {
 // Capability-advertisement suite for `vize lsp`.
 //
 // These tests inspect ONLY the `initialize` result: no document features and no
-// corsa are exercised. Fresh project policy, dedicated configuration and the
+// corsa are exercised. Fresh project policy, shared Vue configuration and the
 // initialization options determine the complete result. The smoke suite asserts
 // a handful of default providers (`hoverProvider`, `definitionProvider`, `referencesProvider`,
 // `semanticTokensProvider.range`, `completionProvider.triggerCharacters` has
@@ -90,12 +91,16 @@ test("vize lsp advertises the exact measured auto-insertion extension only when 
   );
 });
 
-test("vize lsp preserves the complete historical default for dedicated empty configuration", async () => {
+test("vize lsp preserves the historical compiler mode through canonical Vue configuration", async () => {
   await withCapabilities(
-    "dedicated-empty",
+    "canonical-historical-mode",
     { editor: true, lint: true },
     (_capabilities, packet) => assertInitializePacket(packet, EDITOR_BUNDLE_CAPABILITIES),
-    (workspaceDir) => fs.writeFileSync(path.join(workspaceDir, "vize.config.json"), "{}\n"),
+    (workspaceDir) =>
+      writeVueConfigFixture(workspaceDir, {
+        languageServer: { formatting: false },
+        typeChecker: { jsxTypecheck: false },
+      }),
   );
 });
 
@@ -107,7 +112,7 @@ test("vize lsp honors complete explicit-false Vite and initialization controls",
     (workspaceDir) =>
       fs.writeFileSync(
         path.join(workspaceDir, "vite.config.mjs"),
-        "export default { vize: { languageServer: { formatting: false }, typeChecker: { jsxTypecheck: false } } };\n",
+        "export default { vue: { languageServer: { formatting: false }, typeChecker: { jsxTypecheck: false } } };\n",
       ),
   );
   await withCapabilities(

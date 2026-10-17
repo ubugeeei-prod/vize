@@ -45,6 +45,19 @@ pub use model::{
     PackageRouteMetrics, PackageRouteSource,
 };
 
+/// Read an installed package's manifest using the same importer-scoped lookup
+/// as package routes, including workspace self references and pnpm links.
+#[cfg(feature = "native")]
+pub(crate) fn installed_package_manifest(
+    importer_dir: &Path,
+    package: &str,
+) -> Option<(PathBuf, Value)> {
+    let mut cache = PackageSearchCache::default();
+    let root = find_package_root(importer_dir, package, &mut Vec::new(), &mut cache)?;
+    let manifest = read_manifest(&root, &mut cache)?;
+    Some((root.join("package.json"), manifest))
+}
+
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub struct PackageSourceOptions {
     include_javascript: bool,

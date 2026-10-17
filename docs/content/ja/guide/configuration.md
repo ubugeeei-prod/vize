@@ -1,66 +1,94 @@
 ---
 title: 設定
-description: 既存の Vite 設定と TypeScript プロジェクトで Vize を設定する。
+description: 既存の Vite 設定と TypeScript プロジェクトで Vue の設定を共有します。
 ---
 
 <!-- Reviewed translation; source: guide/configuration.md -->
 
 # 設定
 
-Vize の設定は `vite.config.ts` に、TypeScript のプロジェクト設定は `tsconfig.json` にまとめます。既定の設定で使う場合、専用の Vize 設定ファイルは不要です。
+Vue ツールの設定は `vite.config.*` の `vue:` に、TypeScript の設定は
+`tsconfig.json` にまとめます。CLI、Vite 連携、エディタ拡張は、同じプロジェクト設定を
+読みます。Vize 専用の設定ファイルは不要です。
 
-> [!NOTE]
-> Vize 0.457.0 のネイティブ CLI は Vite の共通設定を読み込めます。`init` も専用の Vize 設定ファイルを作らずに導入できます。共通設定を利用する場合は、CLI・Vite 連携・エディター拡張機能を更新してください。設定の検索順序・優先順位と、任意の専用形式は[リファレンス](./configuration-reference.md)を参照してください。
+<span id="vite-の設定"></span>
+<span id="導入する機能を選ぶ"></span>
 
-## Vite+ の設定
+実際の設定例は[共有 Vue 設定](./vue-configuration.md)を参照してください。
+
+## 既存の Vite+ 設定を使う
+
+Vize のヘルパーに既存の設定を渡します。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+const vpConfig = {
+  server: { port: 3000 },
+};
+
+const vueConfig = {
   compiler: { sourceMap: true },
-  lint: { vize: { preset: "essential" } },
-  fmt: { vize: { printWidth: 100 } },
-  typecheck: { strict: true },
-});
+  linter: { preset: "essential" },
+  formatter: { printWidth: 100 },
+};
+
+export default defineConfig(vpConfig).withVue(vueConfig);
 ```
 
-| 設定場所 | 対象 | 実行 |
-| --- | --- | --- |
-| `compiler` | Vue のコンパイル | `vp dev`, `vp build` |
-| `lint.vize` | Vue の lint ルール | `vp run lint` |
-| `fmt.vize` | Vue のフォーマット | `vp run fmt:check` |
-| `typecheck` | Vue の型チェック | `vp run typecheck` |
-| `pack.vize` | ライブラリの型宣言 | `vp run pack` |
+`withVue` は既存の Vite+ オプション、プラグイン、フックを保ちます。
+オブジェクト、設定関数、Promise、async 関数を使えます。
+`vue: { ... }` を直接書く方法も同じです。パス、スコープ、設定の合成については
+[Vue の設定を共有する](./vue-configuration.md)を参照してください。
 
-まとめて検査するには `vp run check` を使います。組み込みの `vp check`・`vp lint`・`vp fmt` は Vite+ 自身の動作を維持します。既存スクリプトがある場合、生成タスクは `vize:<名前>` になります。[タスク名と上書き](./vite-plus.md#tasks)を参照してください。
+<span id="typescript-and-vue-template-checking"></span>
 
-## ルールを1つ変更する
 
-Vue のルールは `lint.vize.rules`、Oxlint のルールは `lint.rules` に指定します。[ルールのオプション](../rules/options.md)で設定値を、[ルール一覧](../rules/all.md)で具体例を確認できます。
+## TypeScript と Vue テンプレートの型チェック
 
-```ts
-export default defineConfig({
-  lint: {
-    vize: { rules: { "vue/no-v-html": "error" } },
-    rules: { "no-debugger": "error" },
+標準の `extends` と `references` を含め、既存の TypeScript プロジェクトを使います。
+Vue テンプレートのコンパイラ設定は `vueCompilerOptions` に記述します。
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "jsx": "preserve"
   },
-});
+  "vueCompilerOptions": {
+    "strictTemplates": true
+  },
+  "include": ["src/**/*"]
+}
 ```
+
+`vue-tsc` を使っているプロジェクトも、その TypeScript 設定を保ったまま移行できます。
+TypeScript の厳密さは `compilerOptions`、Vue 固有の設定は `vueCompilerOptions` に置きます。
+対応するオプションと Vize 側での上書きは[リファレンス](./configuration-reference.md)を
+参照してください。
+
+<span id="ルールを1つ変更する"></span>
 
 <span id="lint-rule-options"></span>
 
 ### ルールのオプション
 
-[ルールのオプション](../rules/options.md)に、設定オブジェクトの型と悪い例・良い例をまとめています。未対応のオプション名は拒否されます。
+ルールを変更するには `vue.linter.rules` を使います。ルールごとのオプションは[ルールのオプション](../rules/options.md)を参照してください。
 
-## 導入する機能を選ぶ
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-`compiler`・`typecheck`・`lint.vize`・`fmt.vize` を `false` にすると、その機能を無効にできます。Vue は Vize、その他のファイルは Oxfmt がフォーマットします。[担当範囲と重複の扱い](./vite-plus.md#lint-and-formatter-ownership)も確認してください。
+export default defineConfig({
+  lint: { rules: { "no-debugger": "error" } },
+}).withVue({
+  linter: { rules: { "vue/no-v-html": "error" } },
+});
+```
 
 ## 通常の Vite
 
-コンパイルにはプラグインを使い、CLI やエディターと共有する設定はトップレベルの `vize` に置きます。プラグインの import で Vite の設定の型も追加されます。
+既存の Vite 設定を保ち、Vue のコンパイルプラグインを置き換えます。
 
 ```ts
 import { defineConfig } from "vite";
@@ -68,37 +96,53 @@ import vize from "@vizejs/vite-plugin";
 
 export default defineConfig({
   plugins: [vize()],
-  vize: {
+  vue: {
     linter: { preset: "essential" },
     formatter: { printWidth: 100 },
-    typeChecker: { strict: true },
   },
 });
 ```
 
+<span id="単独-cli"></span>
 <span id="standalone-cli"></span>
 
-## 単独 CLI
+## CLI とエディタ
 
-`vize` をインストールし、対象パッケージのルートから実行します。CLI も `vite.config.*` と TypeScript プロジェクトを読み込みます。Vite+ の `compiler`・`typecheck`・`lint.vize`・`fmt.vize` もネイティブコマンド用に変換されます。トップレベルの `vize` に明示した設定は、この変換より優先されます。
+対象パッケージのルートでコマンドを実行します。エディタは選択したワークスペース内で
+文書の所属プロジェクトを解決し、Vite と TypeScript の設定を読みます。
+モノレポでも各パッケージの `tsconfig.json`、参照、Vite 設定を保ちます。
+TypeScript プロジェクトを明示的に選ぶ場合は `--tsconfig` を使ってください。
 
 ```bash
-vp install -D vize
 vp exec vize check
+vp exec vize lint src
+vp exec vize fmt --check src
 ```
 
-CLI の設定の検索は、最も近い `package.json`・`tsconfig.json`・`jsconfig.json` のあるディレクトリで止まります。モノリポジトリでは対象パッケージから実行するか `vize.entries` を使い、エディターのワークスペースフォルダーも明示してください。
+Vite 設定内のネイティブの相対パスは、選択された Vite の `root` を基準にします。
+相対指定の `root` 自体は設定ファイルのディレクトリから解決します。
+CLI に直接渡したファイル名と `--tsconfig` は、コマンド実行時のディレクトリを基準にします。
+CLI のフラグと明示的なエディタの機能スイッチは、共有設定を上書きします。
 
-エディターは、選択したワークスペースの範囲内で、ファイルごとに最も近いプロジェクトのルートを選びます。`package.json`・`tsconfig*.json`・`jsconfig.json`・`vite.config.*`・`vize.config.*` のあるディレクトリがルートになります。そこに Vite・Vize の設定がなければ、新規プロジェクトの既定値を使います。たとえば `package/src/tsconfig.json` があれば、`package/src` を独立したプロジェクトとして扱います。設定を読み込めなければ、従来のエディターの既定値を維持します。CLI で `--config` を明示した場合、指定したファイルがない、または読み込めないときはエラーになります。
+## 廃止された設定を移行する
 
-Vite 設定を使い、入力引数なしで `build`・`lint`・`fmt`・`check` を実行すると、選択した Vite の `root` が対象になります。相対指定の `root` は設定ファイルのディレクトリを基準に解決します。Vite の `typeChecker` 内のパスとスコープの `basePath` はその root を基準にし、専用設定内のパスは従来どおり設定ファイルのディレクトリを基準にします。CLI へ明示するファイル・glob・`--tsconfig` は、コマンドを実行したディレクトリが基準です。
+`vize.config.*` とトップレベルの `vize:` は廃止しました。
+ネイティブの設定を `vite.config.*` の `vue:` へ、TypeScript プロジェクトの設定を
+`tsconfig.json` へ移してください。移行して動作を確認してから、専用設定ファイルを削除します。
+Vite 設定と同じ場所に残った専用ファイルは読みません。専用設定しかないプロジェクトでは
+移行エラーになります。`vize init` と `vize setup` は元のファイルを保ち、移行先を案内します。
 
-ツール間で共有する除外パターンは、CLI のファイル検索とエディターの lint 対象に適用されます。除外したファイルでも、エディターで開けば構文・型の診断やコードナビゲーションを利用できます。`!` で対象に戻す指定も含め、パターンは記述した順に評価されます。
+Vize 独自の `extends` はありません。共有する通常の JavaScript オブジェクトを import し、
+`defineConfig(vpConfig).withVue(vueConfig)` に渡してください。
+TypeScript 標準の `extends` とプロジェクトの `references` は引き続き使えます。
 
-## 専用設定ファイルを使う場合
+個別のオプションは[Vue の設定を共有する](./vue-configuration.md)、
+[設定リファレンス](./configuration-reference.md)、
+[コンパイラのリファレンス](./compiler-configuration-reference.md)を参照してください。
 
-既存の `vize.config.*` も使えます。同じディレクトリでは Vite の設定より優先されます。CLI の `--config` でファイルを明示できます。プラグインに直接渡したオプションやエディターで明示した機能の設定は、共通設定より優先されます。`config: false` でプラグインの自動読み込みを無効にできます。
+<span id="詳細リファレンス"></span>
 
-## 詳細リファレンス
+追加の機能は[Experimentals](./experimentals.md)を参照してください。
 
-[共通設定のリファレンス](./configuration-reference.md)に、検索規則、専用の TypeScript・JSON・PKL 設定、スコープ別の設定、Vue の型解決、LSP・Musea の設定をまとめています。コンパイラの設定と構文は[コンパイラのリファレンス](./compiler-configuration-reference.md)、実験的な機能は [Experimentals](./experimentals.md)を参照してください。
+> [!NOTE]
+> CLI とエディターは既存の Vite・TypeScript プロジェクト設定を読み込みます。廃止された専用設定は移行してから削除してください。

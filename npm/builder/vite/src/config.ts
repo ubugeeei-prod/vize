@@ -1,7 +1,10 @@
 import type { ResolvedVizeConfig } from "./types.ts";
 import type { ConfigEnv, LoadConfigOptions, UserConfigExport } from "./types.ts";
 import { createRequire } from "node:module";
-import { resolveViteConfigExport as projectViteConfigExport } from "../../../cli/src/config/vite-runtime.mjs";
+import {
+  VITE_CONFIG_FILE_NAMES,
+  resolveViteConfigExport as projectViteConfigExport,
+} from "../../../cli/src/config/vite-runtime.mjs";
 
 /**
  * Shared Vize configuration helpers for the Vite plugin package.
@@ -15,13 +18,7 @@ type VizeConfigModule = typeof import("vize/config");
 
 const require = createRequire(import.meta.url);
 
-export const CONFIG_FILE_NAMES = [
-  "vize.config.pkl",
-  "vize.config.ts",
-  "vize.config.js",
-  "vize.config.mjs",
-  "vize.config.json",
-] as const;
+export const CONFIG_FILE_NAMES = VITE_CONFIG_FILE_NAMES;
 
 let vizeConfigModulePromise: Promise<VizeConfigModule> | null = null;
 

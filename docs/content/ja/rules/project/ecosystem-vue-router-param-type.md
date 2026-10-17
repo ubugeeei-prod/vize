@@ -17,8 +17,8 @@ postId は繰り返しパラメーターではないため配列を渡せませ�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-param-type": "warn" },
     },
   },

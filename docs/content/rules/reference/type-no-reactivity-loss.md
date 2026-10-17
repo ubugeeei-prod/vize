@@ -22,8 +22,8 @@ Type-aware checks use the native Corsa runtime and the TypeScript project. `type
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/no-reactivity-loss": "warn"

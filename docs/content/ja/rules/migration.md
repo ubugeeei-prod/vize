@@ -6,14 +6,14 @@ title: ESLint ルール移行対応表
 
 コミットされた対応記録は 252 件で、対応付け 127 件、意図的な差異 2 件、未実装 123 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
-Vite+ の設定では Vize のルールを `lint.vize.rules` に指定します。Oxlint の JS / TS ルールは `lint.rules` に残します。ESLint の配列形式をそのまま移さず、重大度と型付き `ruleOptions` を分けて指定します。
+Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します。Oxlint の JS / TS ルールは `lint.rules` に残します。ESLint の配列形式をそのまま移さず、重大度と型付き `ruleOptions` を分けて指定します。
 
 ```ts annotate="remove:1,2;add:3,4,5,6"
  import vue from "eslint-plugin-vue";
  export default [{ plugins: { vue }, rules: { "vue/attributes-order": "warn" } }];
  import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
  export default defineConfig({
-   lint: { vize: { rules: { "vue/attribute-order": "warn" } } },
+   vue: { linter: { rules: { "vue/attribute-order": "warn" } } },
  });
 ```
 

@@ -20,8 +20,8 @@ defineEmits を型による宣言形式に揃えます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/define-emits-declaration": "warn"

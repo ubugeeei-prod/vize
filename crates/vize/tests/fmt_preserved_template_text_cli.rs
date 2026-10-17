@@ -1,4 +1,11 @@
 #![cfg(feature = "glyph")]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "historical JavaScript config carrier"
+)]
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use std::{fs, process::Command};
 
 const SOURCE: &str = include_str!(
@@ -14,13 +21,19 @@ const TS: &str = include_str!(
 #[test]
 fn discovered_and_explicit_compiler_whitespace_survives_three_cli_writes() {
     for (config_name, config, explicit) in [
-        ("vize.config.json", JSON, false),
-        ("vize.config.ts", TS, false),
-        ("explicit.json", JSON, true),
-        ("explicit.ts", TS, true),
+        ("vite.config.mjs", JSON, false),
+        ("vite.config.mjs", TS, false),
+        ("vite.config.mts", JSON, true),
+        ("vite.config.ts", TS, true),
     ] {
         let project = tempfile::tempdir().unwrap();
-        fs::write(project.path().join(config_name), config).unwrap();
+        let config = if let Some(native) = config.strip_prefix("export default ") {
+            let native = native.trim().trim_end_matches(';');
+            format!("export default {{ vue: {native} }};\n")
+        } else {
+            vite_config::source(config)
+        };
+        fs::write(project.path().join(config_name), &config).unwrap();
         fs::write(project.path().join("App.vue"), SOURCE).unwrap();
         for mode in ["--check", "--write", "--write", "--write", "--check"] {
             let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
@@ -52,7 +65,11 @@ fn no_config_and_explicit_condense_keep_the_existing_formatter() {
         } else {
             "{\"compiler\":{\"whitespace\":\"condense\"}}\n"
         };
-        fs::write(project.path().join("vize.config.json"), config).unwrap();
+        fs::write(
+            project.path().join("vite.config.mjs"),
+            vite_config::source(config),
+        )
+        .unwrap();
         fs::write(project.path().join("App.vue"), SOURCE).unwrap();
         let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
         command.current_dir(project.path()).arg("fmt");

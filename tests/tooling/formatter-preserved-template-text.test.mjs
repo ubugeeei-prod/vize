@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -26,8 +27,8 @@ void test("source CLI preserves runtime text while formatting attributes", async
   const project = fs.mkdtempSync(path.join(os.tmpdir(), "vize-preserved-template-text-"));
   t.after(() => fs.rmSync(project, { recursive: true, force: true }));
   fs.writeFileSync(
-    path.join(project, "vize.config.json"),
-    fs.readFileSync(path.join(fixtureRoot, "vize.config.json")),
+    path.join(project, "vite.config.mjs"),
+    vueConfigFixtureSource(fs.readFileSync(path.join(fixtureRoot, "vize.config.json"), "utf8")),
   );
   const cases = [
     {

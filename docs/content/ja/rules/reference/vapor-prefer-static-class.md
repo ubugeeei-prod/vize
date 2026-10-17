@@ -20,8 +20,8 @@ title: "vapor/prefer-static-class"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "vapor/prefer-static-class": "warn"

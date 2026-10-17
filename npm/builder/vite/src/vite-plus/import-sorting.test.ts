@@ -82,10 +82,10 @@ void test("Vite+ shares Oxfmt import sorting with native Vue formatting", async 
   assert.ok(result.fmt?.ignorePatterns?.includes("**/*.vue"));
 });
 
-void test("explicit fmt.vize sorting overrides inherited Oxfmt settings, including false", async () => {
+void test("explicit fmt.vue sorting overrides inherited Oxfmt settings, including false", async () => {
   for (const override of [false, { order: "desc" as const }] as const) {
     const result = await defineConfig(
-      { fmt: { sortImports: { order: "asc" }, vize: { sortImports: override } } },
+      { fmt: { sortImports: { order: "asc" }, vue: { sortImports: override } } },
       { plugin: false, tasks: false },
     )({ command: "build", mode: "production" });
     const metadata = (result as ConfigWithVizeTasks)[taskConfigKey]!;

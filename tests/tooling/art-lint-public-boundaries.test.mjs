@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -191,7 +192,7 @@ await test("original Art bindings remain correct through CLI, source NAPI and Ox
                 rules: Object.fromEntries(row.rules.map((name) => [name, "warn"])),
               },
             });
-      fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+      writeVueConfigFixture(directory, config);
       if (row.service.diagnostics.length === 0) {
         const plain = run("vize-original-plain", path.join(root, build.binaryPath), [
           "lint",
@@ -285,12 +286,9 @@ await test("original Art bindings remain correct through CLI, source NAPI and Ox
     // Preserve the SSR comment's exact two-file invocation as well as isolated rows.
     for (const row of rows.slice(1, 3))
       fs.writeFileSync(path.join(directory, row.filename), row.source);
-    fs.writeFileSync(
-      path.join(directory, "vize.config.json"),
-      JSON.stringify({
-        linter: { preset: "incremental", rules: { "ssr/no-browser-globals-in-ssr": "warn" } },
-      }),
-    );
+    writeVueConfigFixture(directory, {
+      linter: { preset: "incremental", rules: { "ssr/no-browser-globals-in-ssr": "warn" } },
+    });
     const pair = run("vize-original-ssr-pair", path.join(root, build.binaryPath), [
       "lint",
       "-f",

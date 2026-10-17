@@ -49,29 +49,52 @@ fn pinned_originals_and_minimal_cases_match_complete_native_packets() {
         ) {
             // vue-eslint-parser splits the type union before the TS parser.
             // Keep #7911's native correctness: this pipe is in type grammar.
-            let (whole_input, union_start, union_end) = if case["id"] == "typescript-assertion" {
-                (
+            let (expected_source, file_path, line, column, end_column) = match case["id"]
+                .as_str()
+                .unwrap()
+            {
+                "typescript-assertion" => (
                     r#"<template><CodeEditor :type="activeScript.script_type as 'JavaScript' | 'CSS'" /></template>"#,
-                    29,
-                    77,
-                )
-            } else {
-                (
+                    "owned/minimal/typescript-assertion.vue",
+                    1,
+                    30,
+                    78,
+                ),
+                _ => (
                     include_str!(
                         "fixtures/deprecated-diagnostic-spans/originals/frappe-builder/frontend/src/components/PageClientScriptManager.vue"
                     ),
-                    3814,
-                    3862,
-                )
+                    "owned/frontend/src/components/PageClientScriptManager.vue",
+                    117,
+                    12,
+                    60,
+                ),
             };
-            assert_eq!(source, whole_input, "complete original TS-assertion input");
+            assert_eq!(source, expected_source);
             assert_eq!(
-                source.get(union_start..union_end),
-                Some("activeScript.script_type as 'JavaScript' | 'CSS'"),
-                "the exact source-owned span is a type union, not a filter"
+                packet,
+                &serde_json::json!({
+                    "filePath": file_path,
+                    "messages": [{
+                        "ruleId": "vue/no-deprecated-filter",
+                        "severity": 2,
+                        "message": "Filters are deprecated.",
+                        "line": line,
+                        "column": column,
+                        "messageId": "noDeprecatedFilter",
+                        "endLine": line,
+                        "endColumn": end_column,
+                    }],
+                    "suppressedMessages": [],
+                    "errorCount": 1,
+                    "fatalErrorCount": 0,
+                    "warningCount": 0,
+                    "fixableErrorCount": 0,
+                    "fixableWarningCount": 0,
+                    "source": expected_source,
+                    "usedDeprecatedRules": [],
+                })
             );
-            assert_eq!(packet["errorCount"], 1);
-            assert_eq!(packet["messages"][0]["ruleId"], "vue/no-deprecated-filter");
             let actual = linter.lint_sfc(source, filename);
             let expected = LintResult {
                 filename: filename.into(),

@@ -38,14 +38,11 @@ pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> Build
             host_compiler: None,
         };
     }
-    let loaded = if config.is_some() {
+    let loaded =
         crate::config::try_load_project_config_with_source(config).unwrap_or_else(|error| {
             eprintln!("\x1b[31mError:\x1b[0m {error}");
             std::process::exit(1);
-        })
-    } else {
-        crate::config::load_project_config_with_source(config)
-    };
+        });
     let document = loaded.document;
     let features = document.clone().into_config_and_features().1;
     BuildConfigSettings {

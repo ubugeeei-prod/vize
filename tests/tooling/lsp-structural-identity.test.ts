@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -22,8 +23,8 @@ test(
         `#!${process.execPath}\nrequire('node:fs').writeFileSync(${JSON.stringify(marker)}, 'started'); process.exit(99);\n`,
         { mode: 0o755 },
       );
-      fs.writeFileSync(
-        path.join(workspace, "vize.config.json"),
+      writeVueConfigFixture(
+        workspace,
         JSON.stringify({
           typeChecker: { corsaPath: runtime },
           lsp: { editor: true, lint: false, typecheck: false, crossFile: false },

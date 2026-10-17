@@ -2,17 +2,16 @@
 
 Choose JSX attribute quotes independently of ordinary JavaScript strings. Use this for JSX/TSX code, including Vue script blocks, when the two kinds of strings need different conventions.
 
-Check [shared formatter configuration and current release availability](./configuration.md)
-before choosing where to put these settings.
+Keep shared options in `vue.formatter` in `vite.config.*`; the CLI and editor read the same settings. See [Configuration](./configuration.md).
 
 ## Configure JSX quotes
 
-Set `formatter.jsxSingleQuote` to prefer single quotes in JSX/TSX attributes:
+Set `vue.formatter.jsxSingleQuote` to prefer single quotes in JSX/TSX attributes:
 
 ```ts
-import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   formatter: { singleQuote: false, jsxSingleQuote: true },
 });
 ```

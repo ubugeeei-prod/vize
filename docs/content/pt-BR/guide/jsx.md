@@ -188,10 +188,10 @@ componentes individuais podem sobrepor-se.
 ou `"vapor"` e o padrão é `"vdom"`.
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   compiler: {
     // Default every .jsx/.tsx component to Vapor output.
     jsxMode: "vapor",
@@ -225,7 +225,7 @@ const Classic = () => {
 Como cada componente é roteado independentemente, um **único arquivo pode misturar ambos os backends**:
 
 ```tsx
-// vize.config: { compiler: { jsxMode: "vapor" } }
+// vite.config.ts: vue: { compiler: { jsxMode: "vapor" } }
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -366,10 +366,10 @@ Está desligado por padrão de propósito: um repositório pode conter arquivos 
 tipo como Vue JSX.
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   typeChecker: {
     enabled: true,
     jsxTypecheck: true,

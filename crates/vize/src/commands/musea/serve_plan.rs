@@ -13,7 +13,7 @@ pub(super) struct ServePlan {
 pub(super) fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePlan, String> {
     if let Some(stories) = &args.stories {
         return Err(cstr!(
-            "vize musea: --stories is not supported by the Vite-backed serve entrypoint yet (got {}). Configure Musea include patterns in vize.config.ts instead.",
+            "vize musea: --stories is not supported by the Vite-backed serve entrypoint yet (got {}). Configure Musea include patterns in vue.musea in vite.config.* instead.",
             stories.display()
         ));
     }

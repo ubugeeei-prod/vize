@@ -33,8 +33,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "petite-vue/no-unsupported-directive": "error"
@@ -101,8 +101,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "petite-vue/valid-v-effect": "error"
@@ -169,8 +169,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "petite-vue/valid-v-scope": "error"

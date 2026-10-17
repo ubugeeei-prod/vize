@@ -50,7 +50,7 @@ describe("Vue 2 filter build snapshots (compiler)", () => {
           "build",
           "src/**/*.vue",
           "--config",
-          "vize.config.json",
+          "vite.config.mjs",
           "-o",
           outDir,
           "--continue-on-error",

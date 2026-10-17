@@ -17,9 +17,13 @@ runs:
     - name: Install JS dependencies
       shell: bash
       run: vp install --frozen-lockfile --prefer-offline
+    - name: Build public Vue config APIs
+      shell: bash
+      # Pack the checked-in sources directly; CLI build hooks also regenerate rule types.
+      run: (cd npm/cli && vp pack) && (cd npm/builder/vite && vp pack)
     - name: Build vize CLI
       shell: bash
-      run: (cd npm/cli && vp pack) && cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts
+      run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts
     - name: Install vize CLI
       shell: bash
       run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize

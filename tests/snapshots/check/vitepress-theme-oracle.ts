@@ -49,8 +49,7 @@ test("VitePress theme exports refresh exact template diagnostics", async () => {
       fixture.write("node_modules/vitepress/index.d.ts", vitepressDeclaration);
       fixture.write(themeDeclarationPath, themeDeclaration);
       fixture.write("tsconfig.json", json(tsconfig));
-      fixture.write(
-        "vize.config.json",
+      fixture.writeVueConfig(
         json({
           lsp: { completion: true, editor: true, hover: true, lint: false, typecheck: true },
           typeChecker: { corsaPath },

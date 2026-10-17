@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -21,11 +22,7 @@ test("vize lsp anchors fallthrough attribute diagnostics on the authored templat
   try {
     const sourceDir = path.join(workspaceDir, "src");
     fs.mkdirSync(sourceDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(workspaceDir, "vize.config.json"),
-      JSON.stringify({ lsp: { lint: false, typecheck: true } }),
-      "utf8",
-    );
+    writeVueConfigFixture(workspaceDir, JSON.stringify({ lsp: { lint: false, typecheck: true } }));
     await session.initialize(workspaceDir, { editor: true, lint: false, typecheck: true });
 
     const multiRoot = `<script setup lang="ts">
@@ -135,10 +132,9 @@ test("vize lsp publishes and clears fallthrough attribute diagnostics", async (t
     } else {
       linkVuePackage(workspaceDir, vuePackage);
     }
-    fs.writeFileSync(
-      path.join(workspaceDir, "vize.config.json"),
+    writeVueConfigFixture(
+      workspaceDir,
       JSON.stringify({ lsp: { lint: false, typecheck: true }, typeChecker: { corsaPath } }),
-      "utf8",
     );
     fs.writeFileSync(
       path.join(workspaceDir, "tsconfig.json"),

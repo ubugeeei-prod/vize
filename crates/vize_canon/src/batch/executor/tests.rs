@@ -285,7 +285,7 @@ fn classifies_check_failures() {
 
 #[test]
 fn fallback_notice_is_observable_once_and_silenceable() {
-    use super::fallback::{FallbackCause, FallbackStep, fallback_reason, fallback_stderr_notice};
+    use super::fallback::{FallbackCause, FallbackStep, fallback_stderr_notice};
 
     let _fallback_guard = super::fallback::FALLBACK_TEST_LOCK
         .lock()

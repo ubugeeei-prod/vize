@@ -5,6 +5,9 @@
 // Each integration target uses a different subset of this shared fixture.
 #![expect(dead_code, reason = "read via Debug snapshots")]
 
+#[path = "vite_config.rs"]
+mod vite_config;
+
 use super::lsp_process::{LspProcess, file_uri};
 use serde_json::{Value, json};
 use std::path::Path;
@@ -135,13 +138,13 @@ impl Fixture {
             "include": ["*.vue"]
         }"#).unwrap();
         std::fs::write(
-            project.path().join("vize.config.json"),
-            serde_json::to_vec(&json!({
+            project.path().join("vite.config.mjs"),
+            vite_config::source(serde_json::to_vec(&json!({
                 "experimentals": { "patternedTemplate": enabled },
                 "typeChecker": { "corsaPath": runtime, "checkFallthroughAttrs": false, "optionsApi": options_api },
-                "lsp": { "lint": false, "typecheck": true, "hover": true, "crossFile": cross_file }
+                "languageServer": { "lint": false, "typecheck": true, "hover": true, "crossFile": cross_file }
             }))
-            .unwrap(),
+            .unwrap()),
         )
         .unwrap();
         let path = project.path().join(files.0);

@@ -154,8 +154,7 @@ test("create-vue linter reports and repairs one exact HTML quote edit", async ()
   await withPinnedFixtureWorkspace(
     { fixtureId: "create-vue", includePaths: [appPath] },
     async (fixture) => {
-      fixture.write(
-        "vize.config.json",
+      fixture.writeVueConfig(
         `${JSON.stringify(
           {
             linter: {
@@ -318,8 +317,7 @@ test("create-vue clean, broken, and repaired patches agree across check and LSP"
           2,
         )}\n`,
       );
-      fixture.write(
-        "vize.config.json",
+      fixture.writeVueConfig(
         `${JSON.stringify(
           {
             lsp: { completion: true, editor: true, hover: true, lint: false, typecheck: true },

@@ -292,12 +292,10 @@ own のルールは **サイクロマティック 11 または認知的 16 を�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  lint: {
-    vize: {
-      rules: {
-        "vue/max-template-complexity": "warn",
-      },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/max-template-complexity": "warn",
     },
   },
 });

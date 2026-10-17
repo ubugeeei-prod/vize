@@ -52,7 +52,10 @@ export function prepareAliasCase(directory, item, kind, vuePackageDir) {
       2,
     )}\n`,
   );
-  writeFileSync(join(root, "vize.config.json"), '{"typeChecker":{"jsxTypecheck":true}}\n');
+  writeFileSync(
+    join(root, "vite.config.mjs"),
+    "export default { vue: { typeChecker: { jsxTypecheck: true } } };\n",
+  );
   return { root, app, manifest: corpusManifest(root) };
 }
 

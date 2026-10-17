@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import fs from "node:fs";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { promisify } from "node:util";
 
 import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
+import { writeFakeNpmRegistry } from "./support/fake-npm-registry.ts";
 
 const versionUrl = "https://registry.npmjs.org/%40vizejs%2Fexample/1.2.3-beta.1";
 const metadataUrl = "https://registry.npmjs.org/%40vizejs%2Fexample";
@@ -56,6 +59,78 @@ test("registry publication trace preserves phases and both exact parallel probes
   };
   for (const [name, events] of Object.entries(invalidTraces)) {
     assert.throws(() => assertPublicationTrace(events), assert.AssertionError, name);
+  }
+});
+
+test("parallel registry provider probes preserve every counter and expose only whole JSON state", async () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "release-registry-state-"));
+  const statePath = path.join(directory, "state.json");
+  let reader: ReturnType<typeof setInterval> | undefined;
+  try {
+    writeFakeNpmRegistry(directory);
+    writeFileSync(statePath, JSON.stringify({ published: true, versionChecks: 0, tagChecks: 0 }));
+    const readErrors: unknown[] = [];
+    let reads = 0;
+    reader = setInterval(() => {
+      try {
+        JSON.parse(fs.readFileSync(statePath, "utf8"));
+        reads++;
+      } catch (error) {
+        readErrors.push(error);
+      }
+    }, 1);
+    const name = "@vizejs/example";
+    const version = "1.2.3";
+    const results = await Promise.allSettled(
+      Array.from({ length: 24 }, (_, index) => {
+        const url = `https://registry.npmjs.org/%40vizejs%2Fexample${index % 2 ? "" : `/${version}`}?probe=${index}`;
+        return promisify(execFile)(process.execPath, [path.join(directory, "curl"), url], {
+          env: { ...process.env, NPM_FAKE_STATE_PATH: statePath, NPM_FAKE_VERSION: version },
+        });
+      }),
+    );
+    clearInterval(reader);
+    reader = undefined;
+    for (const [index, result] of results.entries()) {
+      assert.equal(result.status, "fulfilled", `probe ${index} failed`);
+      if (result.status !== "fulfilled") continue;
+      const body =
+        index % 2
+          ? { name, "dist-tags": { latest: version, beta: version, rc: version } }
+          : { name, version };
+      assert.equal(result.value.stdout, `${JSON.stringify(body)}VIZE_HTTP_STATUS:200`);
+      assert.equal(result.value.stderr, "");
+    }
+    assert.ok(reads > 0);
+    assert.deepEqual(readErrors, []);
+    assert.deepEqual(JSON.parse(fs.readFileSync(statePath, "utf8")), {
+      published: true,
+      versionChecks: 12,
+      tagChecks: 12,
+    });
+    // A tag probe finishing first must not borrow the version probe's counter
+    // update to decide its own response. Exact version visibility is separate.
+    writeFileSync(statePath, JSON.stringify({ publishCalls: 1, versionChecks: 2, tagChecks: 0 }));
+    const tagFirst = await promisify(execFile)(
+      process.execPath,
+      [
+        path.join(directory, "curl"),
+        "https://registry.npmjs.org/%40vizejs%2Fexample?probe=tag-first",
+      ],
+      { env: { ...process.env, NPM_FAKE_STATE_PATH: statePath, NPM_FAKE_VERSION: version } },
+    );
+    assert.equal(
+      tagFirst.stdout,
+      `${JSON.stringify({ name, "dist-tags": { latest: version, beta: version, rc: version } })}VIZE_HTTP_STATUS:200`,
+    );
+    assert.deepEqual(JSON.parse(fs.readFileSync(statePath, "utf8")), {
+      publishCalls: 1,
+      versionChecks: 2,
+      tagChecks: 1,
+    });
+  } finally {
+    if (reader !== undefined) clearInterval(reader);
+    rmSync(directory, { recursive: true, force: true });
   }
 });
 

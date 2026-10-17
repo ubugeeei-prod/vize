@@ -25,7 +25,7 @@ Mauvais/Bon.
 ## Familles diagnostiques
 
 Les règles de patine sont des règles de peluches en file indienne. Ils utilisent des noms tels que `vue/require-v-for-key` et peuvent être configurés
-depuis `vize.config.*`, la ligne de cli, l’API JavaScript et le pont Oxlint.
+depuis la section `vue:` de `vite.config.*`, la ligne de cli, l’API JavaScript et le pont Oxlint.
 
 Les diagnostics croisés utilisent des codes `vize:croquis/cf/*`. Ils sont émis par
 `vize lint --cross-file` après que Vize ait construit un graphe de projet, afin de comparer les fournisseurs avec des injecteurs de

@@ -81,7 +81,7 @@ export function loadSortingConfigManifest(root, manifestPath = SORTING_CONFIG_MA
         assert(!exactLiterals.has(literal), "duplicate original malformed configuration");
         exactLiterals.add(literal);
       }
-      assertOriginalSortingConfig(fixture, owner, initialFiles);
+      assertOriginalSortingConfig(fixture, owner, initialFiles, root);
     }
     assert.equal(typeof fixture.scriptBody, "boolean");
     const source = fixture.scriptBody
@@ -119,9 +119,58 @@ export function loadSortingConfigManifest(root, manifestPath = SORTING_CONFIG_MA
       );
       return { ...step, stdout, stderr, expectedFiles };
     });
-    return { ...fixture, initialFiles, steps };
+    const original = { ...fixture, initialFiles, steps };
+    return { ...original, execution: explicitSerializationPlan(original) };
   });
   return { manifest, manifestSha256: sha256(raw), cases };
+}
+
+// These frozen packets test the internal native serialization parser. They do
+// not exercise canonical Vue validation or retired-file discovery. Keep every
+// historical byte/argv and add a separate, explicit parser carrier whose only
+// identity change is declared here. Actual process streams are never rewritten.
+function explicitSerializationPlan(fixture) {
+  const identities = Object.keys(fixture.initialFiles)
+    .filter((file) => /^vize\.config\.(json|mjs)$/.test(file))
+    .map((historical) => ({
+      historical,
+      current: historical.replace("vize.config.", "serialized-config."),
+    }));
+  assert.equal(identities.length, 1, "one explicit native parser carrier is required");
+  const [{ historical, current }] = identities;
+  const addCarrier = (files) => {
+    assert(!Object.hasOwn(files, current), "parser carrier identity collides");
+    return { ...files, [current]: files[historical] };
+  };
+  return {
+    authority: {
+      kind: "explicit-native-serialization-parser",
+      canonicalVueValidation: false,
+      identities,
+      historicalArgv: fixture.steps.map(({ argv }) => [...argv]),
+    },
+    initialFiles: addCarrier(fixture.initialFiles),
+    steps: fixture.steps.map((step) => {
+      const argv = step.argv.map((arg) => (arg === historical ? current : arg));
+      const selectsRelativeCarrier = !argv.includes("--no-config") && !argv.includes("--config");
+      if (selectsRelativeCarrier) argv.splice(1, 0, "--config", current);
+      let stderr = step.stderr.toString().replaceAll(historical, current);
+      // Discovery supplied an absolute path in the retained source law. The
+      // explicit current argv supplies a relative one; checked::parse displays
+      // that exact argument. Keep the complete serde message and coordinates.
+      if (selectsRelativeCarrier)
+        stderr = stderr.replace(
+          `failed to parse {{workspace}}/${current}:`,
+          `failed to parse ${current}:`,
+        );
+      return {
+        ...step,
+        argv,
+        stderr: Buffer.from(stderr),
+        expectedFiles: addCarrier(step.expectedFiles),
+      };
+    }),
+  };
 }
 
 function observation(bytes) {
@@ -174,8 +223,14 @@ export function validateSortingConfigReport(loaded, report, build) {
   for (const row of report.rows) {
     assert(!seen.has(row.id), "duplicate configuration result");
     seen.add(row.id);
-    const fixture = loaded.cases.find(({ id }) => id === row.id);
-    assert(fixture, "unplanned configuration result");
+    const original = loaded.cases.find(({ id }) => id === row.id);
+    assert(original, "unplanned configuration result");
+    const fixture = original.execution;
+    assert.deepEqual(
+      row.executionAuthority,
+      fixture.authority,
+      "parser transport authority changed",
+    );
     assert(path.isAbsolute(row.workspace));
     if (row.initialFiles === null) {
       assert.equal(row.state, "failed");
@@ -265,9 +320,11 @@ export function runSortingConfigPack({
   validateBuildReceipt(receipt, build);
   const loaded = loadSortingConfigManifest(repoRoot, manifestPath);
   const rows = loaded.cases.map((fixture) => {
+    const execution = fixture.execution;
     const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "formatter-sorting-config-"));
     const row = {
       id: fixture.id,
+      executionAuthority: execution.authority,
       workspace,
       initialFiles: null,
       state: "matched-reference",
@@ -275,12 +332,12 @@ export function runSortingConfigPack({
       passes: [],
     };
     try {
-      for (const [file, bytes] of Object.entries(fixture.initialFiles)) {
+      for (const [file, bytes] of Object.entries(execution.initialFiles)) {
         fs.mkdirSync(path.dirname(path.join(workspace, file)), { recursive: true });
         fs.writeFileSync(path.join(workspace, file), bytes);
       }
       row.initialFiles = snapshot(workspace);
-      for (const step of fixture.steps) {
+      for (const step of execution.steps) {
         const inputFiles = snapshot(workspace);
         const result = spawnSync(binaryPath, step.argv, {
           cwd: workspace,

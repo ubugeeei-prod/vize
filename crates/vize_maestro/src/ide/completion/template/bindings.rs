@@ -301,7 +301,11 @@ mod options_api_tests {
         } else {
             r#"{ "typeChecker": { "optionsApi": false } }"#
         };
-        std::fs::write(dir.path().join("vize.config.json"), config).unwrap();
+        std::fs::write(
+            dir.path().join("vite.config.mjs"),
+            vize_l0::cstr!("export default {{ vue: {} }};", config).as_bytes(),
+        )
+        .unwrap();
         state.load_workspace_config(dir.path());
         let uri = Url::parse("file:///comp.vue").unwrap();
         state.documents.open(

@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -101,10 +102,7 @@ await test(
     let session: LspSession | undefined;
     try {
       fs.writeFileSync(file, original);
-      fs.copyFileSync(
-        path.join(fixture, "vize.config.json"),
-        path.join(workspace, "vize.config.json"),
-      );
+      writeVueConfigFixture(workspace, read("vize.config.json"));
       for (const preset of [[], ["--no-config", "--preset", "nuxt"]]) {
         const expected = [
           { file: "WidthLabel.vue", messages: jsonMessages, errorCount: 0, warningCount: 3 },
@@ -174,7 +172,7 @@ await test(
       for (const preset of ["incremental", "nuxt"]) {
         const config = JSON.parse(read("vize.config.json"));
         config.linter.preset = preset;
-        fs.writeFileSync(path.join(workspace, "vize.config.json"), JSON.stringify(config));
+        writeVueConfigFixture(workspace, config);
         session = new LspSession();
         rows.push({
           method: "initialize",

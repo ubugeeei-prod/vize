@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -61,14 +62,16 @@ await test("source-built lint matches complete original and configured content-d
     };
   };
   try {
-    for (const row of source.inputs)
-      fs.copyFileSync(path.join(fixture, row.file), path.join(directory, row.path));
+    for (const row of source.inputs) {
+      if (row.path !== "vize.config.json")
+        fs.copyFileSync(path.join(fixture, row.file), path.join(directory, row.path));
+    }
     fs.copyFileSync(
       path.join(fixture, "Controls.vue.fixture"),
       path.join(directory, "Controls.vue"),
     );
     for (const scenario of references.scenarios) {
-      fs.writeFileSync(path.join(directory, "vize.config.json"), JSON.stringify(scenario.config));
+      writeVueConfigFixture(directory, scenario.config);
       for (let pass = 0; pass < 3; pass++) {
         const raw = run([
           "lint",
@@ -99,10 +102,11 @@ await test("source-built lint matches complete original and configured content-d
         assert.deepEqual(JSON.parse(raw.stdout), scenario.expectedCli, scenario.id);
       }
     }
-    // Run the literal reported command against its untouched original config.
-    fs.copyFileSync(
-      path.join(fixture, "vize.config.json.fixture"),
-      path.join(directory, "vize.config.json"),
+    // Preserve the original config bytes in custody and execute its equivalent
+    // canonical carrier through the same reported lint command.
+    writeVueConfigFixture(
+      directory,
+      fs.readFileSync(path.join(fixture, "vize.config.json.fixture"), "utf8"),
     );
     const plain = run(["lint", "-f", "plain", "--help-level", "none", "Notice.vue"]);
     evidence.reportedPlain = plain;

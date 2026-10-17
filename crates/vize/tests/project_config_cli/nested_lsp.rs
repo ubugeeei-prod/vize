@@ -19,9 +19,11 @@ const TSCONFIG: &str = include_str!(
 );
 
 fn settings(hover: bool, single_quote: bool, runtime: Option<&str>) -> String {
+    let provider = runtime
+        .map(|path| cstr!("corsaPath:{},", serde_json::to_string(path).unwrap()))
+        .unwrap_or_default();
     cstr!(
-        "import {{appendFileSync}} from 'node:fs'; appendFileSync(new URL('./config-evaluations.txt', import.meta.url), '1'); export default {{vize:{{formatter:{{singleQuote:{single_quote}}},typeChecker:{{tsconfig:'config/tsconfig.app.json',runtimePath:{}}},lsp:{{hover:{hover},lint:false,typecheck:{}}}}}}};",
-        serde_json::to_string(&runtime).unwrap(),
+        "import {{appendFileSync}} from 'node:fs'; appendFileSync(new URL('./config-evaluations.txt', import.meta.url), '1'); export default {{vue:{{formatter:{{singleQuote:{single_quote}}},typeChecker:{{tsconfig:'config/tsconfig.app.json',{provider}}},languageServer:{{hover:{hover},lint:false,typecheck:{}}}}}}};",
         runtime.is_some()
     ).into()
 }
@@ -48,7 +50,7 @@ fn fixture(runtime: Option<&str>) -> tempfile::TempDir {
         let settings = settings(hover, quotes, runtime);
         let settings = if name == "a" {
             settings
-                .replace("export default {vize:", "export default {root:'src',vize:")
+                .replace("export default {vue:", "export default {root:'src',vue:")
                 .replace("tsconfig:'config/", "tsconfig:'../config/")
         } else {
             settings

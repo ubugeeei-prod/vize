@@ -59,11 +59,11 @@ Appliquez les corrections avec `vp run check -- --fix`. Utilisez `vp run` pour l
 Les guides qui ne sont pas encore traduits s'ouvrent en anglais.
 
 > [!NOTE]
-> Vize 0.457.0 prend en charge la configuration Vite partagée dans la CLI native et `init` sans fichier Vize dédié. Mettez à jour la CLI, l’intégration Vite et l’extension de l’éditeur pour utiliser ce parcours. La [référence](./guide/configuration-reference.md) décrit la découverte, les priorités et les formats dédiés facultatifs.
+> La CLI, l’intégration Vite et l’éditeur partagent les réglages `vue:` dans `vite.config.*` et utilisent le projet TypeScript et les `vueCompilerOptions` de `tsconfig.json`. Les fichiers dédiés `vize.config.*` et les réglages `vize:` à la racine ne sont plus pris en charge ; consultez le [guide de configuration](./guide/configuration.md) pour migrer.
 
 ## Utiliser Vize sans Vite+
 
-La [CLI autonome](./guide/cli.md) fournit `vize lint`, `vize fmt` et `vize check`. Lancez-les depuis la racine du paquet ciblé et gardez le projet TypeScript dans `tsconfig.json`. Les commandes natives peuvent partager l'objet `vize` à la racine de `vite.config.*` ; consultez la [configuration CLI](./guide/configuration.md#standalone-cli) pour la recherche et ses limites actuelles.
+La [CLI autonome](./guide/cli.md) fournit `vize lint`, `vize fmt` et `vize check`. Lancez-les depuis la racine du paquet ciblé et gardez le projet TypeScript dans `tsconfig.json`. Les commandes natives peuvent partager l'objet `vue` à la racine de `vite.config.*` ; consultez la [configuration CLI](./guide/configuration.md#standalone-cli) pour la recherche et ses limites actuelles.
 
 Prévisualisez l'installation interactive avec `vpx vize init --dry-run`, puis lancez `vpx vize init` pour choisir les fonctions. Le [guide d'installation](/guide/init.md) décrit la détection et les limites d'édition. Init utilise les réglages du projet et les valeurs par défaut, sans créer de configuration Vize dédiée.
 

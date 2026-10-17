@@ -20,8 +20,8 @@ title: "html/no-consecutive-br"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "html/no-consecutive-br": "warn"

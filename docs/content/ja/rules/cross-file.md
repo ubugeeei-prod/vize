@@ -8,7 +8,7 @@ title: "ファイル間ルール"
 
 全 66 件のプロジェクトの例について、共通ファイルと、省略のない悪い例・良い例をこのページにまとめています。共通ファイルは両方で使用します。解析器の 60 件の診断コードには、CLI の 19 件（検証済みのソース例 18 件と、参照関係を保持したリアクティブなグラフを含む説明用プロジェクト 1 件）、CLI が個別には生成しない実験的な Rust 解析器の 16 件、現在は診断を生成する処理のない契約 25 件があります。ID を設定しても、未対応の診断処理は有効になりません。
 
-公開 CLI では `vize lint --cross-file` で同じ処理を使用できます。表示される `vize:croquis/cf/*` コードは、`lint.vize.rules` では `croquis/cf/*` と設定します（`vize:` を省略）。information/hint の診断は CLI では warning になります。関連箇所は生成元と利用側の関係を説明します。
+公開 CLI では `vize lint --cross-file` で同じ処理を使用できます。表示される `vize:croquis/cf/*` コードは、`vue.linter.rules` では `croquis/cf/*` と設定します（`vize:` を省略）。information/hint の診断は CLI では warning になります。関連箇所は生成元と利用側の関係を説明します。
 
 <span id="プロジェクト固有の-lint-id"></span>
 <span id="公開-analyzer-コード"></span>

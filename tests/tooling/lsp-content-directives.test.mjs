@@ -9,6 +9,7 @@ import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 import { root } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 await test("genuine source-built LSP applies exact configured content directives and preserves whole findings", async () => {
   const fixture = path.join(root, "crates/vize_patina/tests/fixtures/issue-8018");
@@ -45,9 +46,14 @@ await test("genuine source-built LSP applies exact configured content directives
       path.join(workspace, "Controls.vue"),
     );
     for (const scenario of reference.scenarios) {
-      fs.writeFileSync(path.join(workspace, "vize.config.json"), JSON.stringify(scenario.config));
+      const configPath = writeVueConfigFixture(workspace, scenario.config);
       session = new LspSession();
-      const observation = { id: scenario.id, config: scenario.config, publications: [] };
+      const observation = {
+        id: scenario.id,
+        config: scenario.config,
+        carrier: { path: path.basename(configPath), source: fs.readFileSync(configPath, "utf8") },
+        publications: [],
+      };
       evidence.sessions.push(observation);
       persist();
       try {
@@ -93,13 +99,12 @@ await test("genuine source-built LSP applies exact configured content directives
       }
     }
     for (const row of manifest.inputs) {
-      if (row.path !== "vize.config.json")
-        assert.equal(
-          createHash("sha256")
-            .update(fs.readFileSync(path.join(workspace, row.path)))
-            .digest("hex"),
-          row.sha256,
-        );
+      assert.equal(
+        createHash("sha256")
+          .update(fs.readFileSync(path.join(workspace, row.path)))
+          .digest("hex"),
+        row.sha256,
+      );
     }
   } finally {
     try {

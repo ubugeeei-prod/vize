@@ -15,7 +15,7 @@ import {
   extraOverrides,
   reportOptions,
 } from "../../tools/support/release/lint_reports/custody.mjs";
-import { verifyReportPacket } from "../../tools/support/release/lint_reports/observe.mjs";
+import { verifyReportPacket } from "../../tools/support/release/lint_reports/observe.ts";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const source = new Map(
   Object.keys(pins).map((name) => [name, fs.readFileSync(path.join(root, name))]),

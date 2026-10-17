@@ -20,8 +20,8 @@ dl 内の dt の名前重複を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "html/no-duplicate-dt": "warn"

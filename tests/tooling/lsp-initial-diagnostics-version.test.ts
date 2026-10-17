@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -17,15 +18,14 @@ test("initial sync diagnostics publish before terminal versioned diagnostics", a
   const session = new LspSession();
 
   try {
-    fs.writeFileSync(
-      path.join(workspaceDir, "vize.config.json"),
+    writeVueConfigFixture(
+      workspaceDir,
       JSON.stringify({
         lsp: { lint: true, typecheck: true },
         typeChecker: {
           corsaPath: "./vize-missing-corsa-for-initial-sync-diagnostics",
         },
       }),
-      "utf8",
     );
     await session.initialize(workspaceDir, {
       editor: true,

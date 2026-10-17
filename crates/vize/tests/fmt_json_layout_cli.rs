@@ -5,6 +5,9 @@
 )]
 #![expect(clippy::disallowed_types, reason = "CLI fixtures use standard strings")]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use serde::Deserialize;
 use std::{fs, path::Path, process::Command};
 
@@ -29,7 +32,7 @@ fn fmt(root: &Path, case: &Case, mode: &str) -> std::process::Output {
     if case.options.is_null() {
         command.arg("--no-config");
     } else {
-        command.args(["--config", "vize.config.json"]);
+        command.args(["--config", "vite.config.mjs"]);
     }
     command.arg(&case.file).output().unwrap()
 }
@@ -46,8 +49,8 @@ fn json_layout_corpus_has_correct_check_write_and_second_check_behavior() {
         fs::write(&file, &case.source).unwrap();
         let config = serde_json::json!({ "formatter": case.options });
         fs::write(
-            project.path().join("vize.config.json"),
-            serde_json::to_vec(&config).unwrap(),
+            project.path().join("vite.config.mjs"),
+            vite_config::source(serde_json::to_vec(&config).unwrap()),
         )
         .unwrap();
 

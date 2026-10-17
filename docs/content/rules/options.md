@@ -4,7 +4,7 @@ title: Rule Options
 
 # Rule Options
 
-With Vite+, configure `lint.vize.ruleOptions` in `vite.config.ts` and run `vp run lint`. The standalone compatibility config uses the same values under `linter.ruleOptions`.
+With Vite+, configure `vue.linter.ruleOptions` in `vite.config.ts` and run `vp run lint`. The standalone compatibility config uses the same values under `linter.ruleOptions`.
 
 `linter.ruleOptions` holds typed project-local settings for rules that accept options. Unknown
 option fields are rejected, and later matching config entries replace the full option object for the
@@ -146,8 +146,8 @@ For components supplied by application plugins or Musea `previewSetup`, configur
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "rules": {
         "vue/require-component-registration": "warn"
       },

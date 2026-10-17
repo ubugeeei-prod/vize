@@ -15,8 +15,8 @@ inject した値が、競合し得る async タスクから変更されていま
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/injected-async-mutation-race": "warn" },
     },
   },

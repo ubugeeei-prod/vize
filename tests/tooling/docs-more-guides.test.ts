@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { originalConfigDocument } from "./support/docs-config-archive.ts";
+import { currentFormatterExample } from "./support/docs-config-successor.ts";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -202,15 +204,35 @@ test("formatter guide regeneration keeps all original recipes, tokens and locali
       `${slug}: entire reviewed input`,
     );
     assert.equal(
-      digest(fences(english).join("\n")),
+      digest(fences(originalConfigDocument(`docs/content${route}.md`)).join("\n")),
       fenceDigest,
       `${slug}: frozen original complete recipes`,
     );
+    assert.deepEqual(
+      fences(english),
+      fences(originalConfigDocument(`docs/content${route}.md`)).map(currentFormatterExample),
+      `${slug}: complete migrated recipes preserve every original option`,
+    );
     assert.deepEqual(fences(japanese), fences(english), `${slug}: byte-exact translated recipes`);
     assert.equal(
-      digest(JSON.stringify(tokens(english))),
+      digest(JSON.stringify(tokens(originalConfigDocument(`docs/content${route}.md`)))),
       tokenDigest,
       `${slug}: frozen original inline contracts`,
+    );
+    assert.deepEqual(
+      tokens(english),
+      [
+        ...new Set([
+          ...tokens(originalConfigDocument(`docs/content${route}.md`)).map((token) =>
+            token
+              .replace(/^fmt\.vize\./, "vue.formatter.")
+              .replace(/^formatter\.jsxSingleQuote$/, "vue.formatter.jsxSingleQuote"),
+          ),
+          "vue.formatter",
+          "vite.config.*",
+        ]),
+      ].sort(),
+      `${slug}: every original inline option and the canonical discovery path`,
     );
     assert.deepEqual(
       tokens(japanese),

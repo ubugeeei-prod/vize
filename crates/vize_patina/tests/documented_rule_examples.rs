@@ -115,15 +115,138 @@ fn verify_examples(type_aware: bool) {
 }
 
 fn configuration(page: &str) -> Value {
-    let text = page
-        .split_once("    vize: ")
-        .expect("Vite+ lint configuration")
-        .1;
-    serde_json::Deserializer::from_str(text)
-        .into_iter::<Value>()
-        .next()
-        .expect("first configuration value")
-        .expect("literal configuration object")
+    parse_configuration(page).expect("canonical authored Vite+ lint configuration")
+}
+
+fn parse_configuration(page: &str) -> Result<Value, &'static str> {
+    // Notes can contain other configuration examples. Execute only the authored
+    // configuration section, including the explicitly unsupported SFC rules.
+    let sections: Vec<_> = page
+        .split("\n## ")
+        .filter_map(|section| {
+            section
+                .strip_prefix("Configuration (Vite+)\n\n")
+                .or_else(|| section.strip_prefix("Configured ID (currently no SFC finding)\n\n"))
+        })
+        .collect();
+    let [section] = sections.as_slice() else {
+        return Err("exactly one authored configuration section");
+    };
+    let block = section
+        .strip_prefix("```ts\n")
+        .and_then(|text| text.split_once("\n```").map(|(code, _)| code))
+        .ok_or("complete TypeScript configuration fence")?;
+    let body = block
+        .strip_prefix("import { defineConfig } from \"@vizejs/vite-plugin/vite-plus\";\n\n")
+        .ok_or("canonical Vite+ defineConfig import")?;
+    let text = if let Some(text) =
+        body.strip_prefix("export default defineConfig({}).withVue({\n  linter: ")
+    {
+        text.strip_suffix(",\n});")
+    } else {
+        body.strip_prefix("export default defineConfig({\n  vue: {\n    linter: ")
+            .and_then(|text| text.strip_suffix(",\n  },\n});"))
+    }
+    .ok_or("canonical Vue linter configuration envelope")?;
+    let config: Value =
+        serde_json::from_str(text).map_err(|_| "literal JSON linter configuration")?;
+    if !config.is_object() {
+        return Err("linter configuration object");
+    }
+    Ok(config)
+}
+
+#[test]
+fn authored_configuration_preserves_options_and_ignores_note_examples() {
+    let config = serde_json::json!({
+        "preset": "incremental",
+        "rules": { "vue/valid-v-on": "error" },
+        "typeAware": true,
+        "ruleOptions": {
+            "vue/valid-v-on": { "modifiers": ["custom"] },
+            "vue/valid-v-slot": { "allowModifiers": true },
+            "vue/require-component-registration": { "globals": ["KnownWidget"] },
+            "script/no-restricted-members": {
+                "members": [{ "object": "window", "property": "alert" }]
+            }
+        }
+    });
+    for fluent in [false, true] {
+        let page = configuration_page(&config, fluent);
+        assert_eq!(configuration(&page), config);
+        let with_note = format!("\n## Notes\n\n```ts\n  linter: {{}}\n```\n{page}");
+        assert_eq!(configuration(&with_note), config);
+        assert_eq!(
+            configuration(&page.replace(
+                "Configuration (Vite+)",
+                "Configured ID (currently no SFC finding)"
+            )),
+            config
+        );
+    }
+}
+
+#[test]
+fn authored_configuration_rejects_missing_ambiguous_and_nonliteral_settings() {
+    let page = configuration_page(&serde_json::json!({ "rules": {} }), true);
+    for malformed in [
+        page.replace("Configuration (Vite+)", "Notes"),
+        format!("{page}{page}"),
+        page.replace("  linter: ", "  vize: "),
+        page.replace("/vite-plus", "/other"),
+        page.replace("{\"rules\":{}}", "[]"),
+        page.replace("{\"rules\":{}}", "settings"),
+        page.replace("{\"rules\":{}}", "{\"rules\":{}} trailing"),
+        page.replace("\n});", "\n}"),
+        page.replace("\n```\n", "\n"),
+    ] {
+        assert!(parse_configuration(&malformed).is_err(), "{malformed}");
+    }
+    let native = configuration_page(&serde_json::json!({ "rules": {} }), false);
+    assert!(parse_configuration(&native.replace("  vue: ", "  vize: ")).is_err());
+}
+
+#[test]
+fn authored_modifier_options_reach_the_real_rule_instances() {
+    let rule = "vue/valid-v-on";
+    let page = std::fs::read_to_string(reference_root().join("vue-valid-v-on.md"))
+        .expect("authored modifier configuration");
+    let config = configuration(&page);
+    assert_eq!(
+        config["ruleOptions"][rule]["modifiers"],
+        serde_json::json!(["custom"])
+    );
+    for (rule, source, options) in [
+        (rule, r#"<div @click.custom="handler" />"#, config),
+        (
+            "vue/valid-v-slot",
+            r#"<v-data-table><template v-slot:item.memo="{ item }">{{ item.memo }}</template></v-data-table>"#,
+            configuration(&configuration_page(
+                &serde_json::json!({ "ruleOptions": { "vue/valid-v-slot": { "allowModifiers": true } } }),
+                true,
+            )),
+        ),
+    ] {
+        for (settings, expected) in [(&options, false), (&serde_json::json!({}), true)] {
+            let result = configure(rule, settings).lint_template(source, "Example.vue");
+            assert_eq!(
+                result.diagnostics.iter().any(|d| d.rule_name == rule),
+                expected,
+                "{rule}"
+            );
+        }
+    }
+}
+
+fn configuration_page(config: &Value, fluent: bool) -> std::string::String {
+    let body = if fluent {
+        format!("export default defineConfig({{}}).withVue({{\n  linter: {config},\n}});")
+    } else {
+        format!("export default defineConfig({{\n  vue: {{\n    linter: {config},\n  }},\n}});")
+    };
+    format!(
+        "\n## Configuration (Vite+)\n\n```ts\nimport {{ defineConfig }} from \"@vizejs/vite-plugin/vite-plus\";\n\n{body}\n```\n"
+    )
 }
 
 fn configure(rule: &str, config: &Value) -> Linter {
@@ -131,6 +254,21 @@ fn configure(rule: &str, config: &Value) -> Linter {
         .with_additional_rules(vec![rule.into()])
         .with_type_aware_lint(config["typeAware"].as_bool().unwrap_or(false));
     let options = &config["ruleOptions"][rule];
+    if rule == "vue/valid-v-on"
+        && let Some(modifiers) = options["modifiers"].as_array()
+    {
+        linter = linter.with_valid_v_on_modifiers(
+            modifiers
+                .iter()
+                .map(|name| name.as_str().expect("custom modifier name").into())
+                .collect(),
+        );
+    }
+    if rule == "vue/valid-v-slot"
+        && let Some(allow) = options["allowModifiers"].as_bool()
+    {
+        linter = linter.with_valid_v_slot_allow_modifiers(allow);
+    }
     if let Some(members) = options["members"].as_array() {
         linter = linter.with_restricted_members(
             members

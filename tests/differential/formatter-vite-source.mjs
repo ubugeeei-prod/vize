@@ -117,28 +117,47 @@ export function viteConfigurationPlans(root) {
     options: { ...integration, check: true, lint: true, fmt: true },
   });
   return cases.map((fixture) => {
-    const rootConfig = { formatter: fixture.formatter };
-    let originalEntry = rootConfig;
-    if (fixture.base) {
-      originalEntry = {
-        typeChecker: { strict: true },
-        linter: { preset: "essential", rules: { "vue/no-v-html": "error" } },
-        formatter: fixture.formatter,
-      };
-      Object.assign(rootConfig, originalEntry, {
-        compiler: {},
-        vite: {},
-        languageServer: {},
-        musea: {},
-        globalTypes: {},
-      });
-    }
+    const rootConfig = {
+      typeChecker: { jsxTypecheck: true, ...(fixture.base ? { strict: true } : {}) },
+      ...(fixture.base
+        ? { linter: { preset: "essential", rules: { "vue/no-v-html": "error" } } }
+        : {}),
+      formatter: fixture.formatter,
+    };
     return {
       ...fixture,
       integration,
-      native: { ...rootConfig, entries: [{ ...rootConfig }, { ...originalEntry }] },
+      native: { ...rootConfig, entries: [{ ...rootConfig }] },
       public: { ...fixture.vp, plugins: [], pack: undefined, run: undefined },
       input: `<script setup lang="ts">\n${fixture.script}</script>\n`,
     };
   });
+}
+
+/** Translate the pinned old spelling without changing its historical vectors. */
+export function migrateViteConfigSource(input) {
+  const source = structuredClone(input);
+  delete source.extends;
+  if (source.vize) {
+    const { lint, ...shared } = source.vize;
+    if (lint !== undefined) source.lint = { vize: lint, ...source.lint };
+    if (Object.keys(shared).length) source.vue = shared;
+    delete source.vize;
+  }
+  for (const name of ["lint", "fmt"]) {
+    if (source[name] && Object.hasOwn(source[name], "vize")) {
+      const { vize, ...tool } = source[name];
+      source[name] = { ...tool, vue: vize };
+    }
+  }
+  return source;
+}
+
+/** Native normalization retains the authored project root in its single root entry. */
+export function expectedViteNativeConfig(fixture, workspace) {
+  return {
+    ...fixture.native,
+    __vizeProjectRoot: workspace,
+    entries: fixture.native.entries.map((entry) => ({ ...entry, __vizeProjectRoot: workspace })),
+  };
 }

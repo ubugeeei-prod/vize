@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -43,30 +44,36 @@ void test("#7880 source-built CLI renders complete original DOM/SSR output like 
   const variants = [
     {
       name: "json-auto",
-      file: "vize.config.json",
+      file: "vite.config.mjs",
       explicit: false,
       noConfig: false,
       preserve: true,
     },
-    { name: "ts-auto", file: "vize.config.ts", explicit: false, noConfig: false, preserve: true },
+    { name: "ts-auto", file: "vite.config.ts", explicit: false, noConfig: false, preserve: true },
     {
       name: "json-explicit",
-      file: "explicit.json",
+      file: "vite.config.mjs",
       explicit: true,
       noConfig: false,
       preserve: true,
     },
-    { name: "ts-explicit", file: "explicit.ts", explicit: true, noConfig: false, preserve: true },
+    {
+      name: "ts-explicit",
+      file: "vite.config.mts",
+      explicit: true,
+      noConfig: false,
+      preserve: true,
+    },
     {
       name: "no-config",
-      file: "vize.config.json",
+      file: "vite.config.mjs",
       explicit: false,
       noConfig: true,
       preserve: false,
     },
     {
       name: "condense",
-      file: "vize.config.json",
+      file: "vite.config.mjs",
       explicit: false,
       noConfig: false,
       preserve: false,
@@ -78,16 +85,22 @@ void test("#7880 source-built CLI renders complete original DOM/SSR output like 
         const project = fs.mkdtempSync(path.join(os.tmpdir(), "vize-whitespace-7880-"));
         try {
           fs.writeFileSync(path.join(project, "App.vue"), source);
-          const config =
+          const originalConfig =
             variant.name === "condense"
               ? '{"compiler":{"whitespace":"condense"}}'
               : fs.readFileSync(
                   new URL(
-                    variant.file.endsWith(".ts") ? "vize.config.ts.txt" : "vize.config.json.txt",
+                    variant.name.startsWith("ts-") ? "vize.config.ts.txt" : "vize.config.json.txt",
                     corpus,
                   ),
                   "utf8",
                 );
+          // Replay the original policy through a canonical Vite carrier while
+          // retaining the archived config bytes in the complete observation.
+          const document = variant.name.startsWith("ts-")
+            ? (await import(`data:text/javascript,${encodeURIComponent(originalConfig)}`)).default
+            : JSON.parse(originalConfig);
+          const config = vueConfigFixtureSource(document);
           fs.writeFileSync(path.join(project, variant.file), config);
           const args = ["build", "--slow-threshold", "600000", "-o", "out", "App.vue"];
           if (variant.explicit) args.push("--config", variant.file);
@@ -109,6 +122,7 @@ void test("#7880 source-built CLI renders complete original DOM/SSR output like 
             args,
             cwd: project,
             source,
+            originalConfig,
             config,
             status: processResult.status,
             signal: processResult.signal,

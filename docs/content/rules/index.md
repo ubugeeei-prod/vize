@@ -8,7 +8,7 @@ title: Rules
 examples on the same page. Each pair explains why the Bad example triggers a finding and how the
 Good example changes it. Use the index to jump to a rule without opening another page.
 
-With Vite+, use `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `lint.vize`,
+With Vite+, use `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `vue.linter`,
 and run `vp run lint` for Vize and Oxlint. Existing script-name collisions use `vp run vize:lint`.
 Built-in `vp lint` uses its own upstream checker.
 
@@ -16,7 +16,7 @@ Built-in `vp lint` uses its own upstream checker.
 
 - [All lint rules](./all.md): searchable catalogue with every purpose, scope, configuration,
   and full Bad/Good example pair inline.
-- [Rule Options](./options.md): typed `lint.vize.ruleOptions` shapes, defaults, replacement
+- [Rule Options](./options.md): typed `vue.linter.ruleOptions` shapes, defaults, replacement
   behavior, and examples for every configurable rule.
 - [ESLint migration map](./migration.md): mapped names, differences, unsupported rules, and
   literal Vite+ configuration changes.

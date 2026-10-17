@@ -4,6 +4,8 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "support/vite_config.rs"]
+mod vite_config;
 
 use std::{path::Path, process::Command};
 
@@ -18,12 +20,14 @@ fn check_config_entry_ignores_explicit_inputs() {
         "entry-ignore-explicit-check",
         &[
             (
-                "vize.config.json",
-                r#"{
+                "vite.config.mjs",
+                &vite_config::source(
+                    r#"{
   "entries": [
-    { "name": "app", "files": ["src/**/*.vue"], "ignores": ["src/Ignored.vue"] }
+    { "files": ["src/**/*.vue"], "ignores": ["src/Ignored.vue"] }
   ]
 }"#,
+                ),
             ),
             (
                 "src/Ignored.vue",
@@ -41,7 +45,7 @@ const count: string = 0;
         .args([
             "check",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "src/Ignored.vue",
             "--format",
             "json",
@@ -74,7 +78,7 @@ fn check_config_entry_ignores_default_and_explicit_path_matrix() {
     let project_root = create_cli_project(
         "entry-ignore-path-matrix",
         &[
-            ("vize.config.json", "{}"),
+            ("vite.config.mjs", "export default { vue: {} };"),
             (
                 "src/App.vue",
                 r#"<script setup lang="ts">
@@ -109,25 +113,24 @@ const count: string = 0;
     let absolute_ignored_json =
         serde_json::to_string(absolute_ignored.to_string_lossy().as_ref()).unwrap();
     std::fs::write(
-        project_root.join("vize.config.json"),
-        format!(
+        project_root.join("vite.config.mjs"),
+        vite_config::source(format!(
             r#"{{
   "entries": [
     {{
-      "name": "app",
       "files": ["src/**/*.vue"],
       "ignores": [{absolute_ignored_json}, "src/RelativeIgnored.vue", "src\\WindowsIgnored.vue"]
     }}
   ]
 }}"#
-        ),
+        )),
     )
     .unwrap();
 
     let all = run_check_json(
         &project_root,
         &corsa_path,
-        &["check", "--config", "vize.config.json", "--format", "json"],
+        &["check", "--config", "vite.config.mjs", "--format", "json"],
     );
     assert_json_files(&all, &[("src/App.vue", 0)]);
     assert_eq!(all["errorCount"], 0);
@@ -144,7 +147,7 @@ const count: string = 0;
             &[
                 "check",
                 "--config",
-                "vize.config.json",
+                "vite.config.mjs",
                 ignored_input.as_str(),
                 "--format",
                 "json",

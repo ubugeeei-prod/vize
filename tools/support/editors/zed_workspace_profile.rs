@@ -31,6 +31,17 @@ pub fn run(repo_root: &Path) -> Result<(), String> {
         .ok_or_else(|| "historical no-config baseline is missing".to_string())?;
     cases[index] = policy["currentDefault"].clone();
     cases.push(policy["explicitFormattingFalse"].clone());
+    let mut nested = cases
+        .iter()
+        .find(|case| case["id"] == "project-default")
+        .ok_or("project-default fixture is missing")?
+        .clone();
+    nested["id"] = json!("nested-project-default");
+    nested["projectDirectory"] = json!("packages/app");
+    // Root defaults advertise hover, while the nested project's authored setting disables it.
+    nested["hoverProvider"] = json!(true);
+    nested["hoverProviderPresent"] = json!(true);
+    cases.push(nested);
     let root = std::env::temp_dir().join(format!(
         "vize-zed-profile-{}-{}",
         std::process::id(),
@@ -47,8 +58,7 @@ pub fn run(repo_root: &Path) -> Result<(), String> {
             let workspace = root.join(id);
             editor_e2e::prepare_real_vue_workspace(&workspace, false)?;
             // This helper-created runtime config is not part of either report.
-            fs::remove_file(workspace.join("vize.config.json"))
-                .map_err(|error| error.to_string())?;
+            fs::remove_file(workspace.join("vite.config.js")).map_err(|error| error.to_string())?;
             let runtime = editor_e2e::resolve_corsa_path(repo_root)?;
             let runtime_link = workspace.join("node_modules/.bin/tsgo");
             fs::create_dir_all(runtime_link.parent().unwrap())
@@ -58,11 +68,32 @@ pub fn run(repo_root: &Path) -> Result<(), String> {
             #[cfg(windows)]
             fs::copy(runtime, workspace.join("node_modules/.bin/tsgo.exe"))
                 .map_err(|error| error.to_string())?;
+            let project = case["projectDirectory"]
+                .as_str()
+                .map(|directory| workspace.join(directory))
+                .unwrap_or_else(|| workspace.clone());
+            fs::create_dir_all(project.join("src")).map_err(|error| error.to_string())?;
+            if project != workspace {
+                fs::copy(
+                    workspace.join("tsconfig.json"),
+                    project.join("tsconfig.json"),
+                )
+                .map_err(|error| error.to_string())?;
+                fs::write(project.join("package.json"), "{\"type\":\"module\"}\n")
+                    .map_err(|error| error.to_string())?;
+            }
             let config = match case["config"].as_str() {
                 Some(filename) => {
                     let config = fs::read_to_string(fixture.join(filename))
                         .map_err(|error| error.to_string())?;
-                    fs::write(workspace.join("vize.config.ts"), &config)
+                    // Retain the reported option object verbatim inside the canonical Vue key.
+                    let options = config
+                        .strip_prefix("export default ")
+                        .ok_or("authored config must export its options")?
+                        .trim()
+                        .trim_end_matches(';');
+                    let config = format!("export default {{ vue: {options} }};\n");
+                    fs::write(project.join("vite.config.ts"), &config)
                         .map_err(|error| error.to_string())?;
                     Some(config)
                 }
@@ -70,13 +101,12 @@ pub fn run(repo_root: &Path) -> Result<(), String> {
             };
             let source = fs::read_to_string(fixture.join("Profile.vue.txt"))
                 .map_err(|error| error.to_string())?;
-            let document = workspace.join("src/Profile.vue");
+            let document = project.join("src/Profile.vue");
             fs::write(&document, &source).map_err(|error| error.to_string())?;
             let options = initialization_options::initialization_options(
                 case.get("explicit")
                     .filter(|value| !value.is_null())
                     .cloned(),
-                |filename| fs::read_to_string(workspace.join(filename)).is_ok(),
             );
             assert_json_eq(&options, case["initializationOptions"].clone(), id)?;
             let uri = file_url(&document)?;

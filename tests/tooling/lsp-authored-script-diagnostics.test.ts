@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -34,10 +35,9 @@ test("vize lsp publishes authored script setup diagnostics without template usag
     } else {
       linkVuePackage(workspaceDir, vuePackage);
     }
-    fs.writeFileSync(
-      path.join(workspaceDir, "vize.config.json"),
+    writeVueConfigFixture(
+      workspaceDir,
       JSON.stringify({ lsp: { lint: false, typecheck: true }, typeChecker: { corsaPath } }),
-      "utf8",
     );
     fs.writeFileSync(
       path.join(workspaceDir, "tsconfig.json"),

@@ -199,8 +199,9 @@ void test("public plugin config resolution applies compiler entries to productio
     resolve: { alias: [] },
   } as unknown as ResolvedConfig;
   async function output(config: ResolvedVizeConfig, filename: string, ssr: boolean) {
-    fs.writeFileSync(path.join(root, "vize.config.json"), JSON.stringify(config));
-    const plugin = vize({ root }).find((candidate) => candidate.name === "vite-plugin-vize")!;
+    const plugin = vize({ root, config }).find(
+      (candidate) => candidate.name === "vite-plugin-vize",
+    )!;
     const resolve =
       typeof plugin.configResolved === "function"
         ? plugin.configResolved

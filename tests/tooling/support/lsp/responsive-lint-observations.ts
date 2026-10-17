@@ -11,6 +11,7 @@ import type { PublishDiagnosticsParams } from "./protocol.ts";
 import { LspSession } from "./session.ts";
 import type { BoundLspSession, PublishedSessionBinding } from "./session-process.ts";
 import { NativeDiagnosticsGate } from "./responsive-lint-native-gate.ts";
+import { vueConfigFixtureSource, writeVueConfigFixture } from "../vue-config-fixture.ts";
 
 const fixtureRoot = path.join(
   root,
@@ -62,6 +63,13 @@ async function run(
   const gates: NativeDiagnosticsGate[] = [];
   let initialization: unknown;
   const notifications: { elapsedMs: number; params: unknown }[] = [];
+  const originalConfig = files.get(corpus.originalConfig)!;
+  const configCarrier = {
+    path: "vite.config.mjs",
+    original: originalConfig.toString("utf8"),
+    originalSha256: sha256(originalConfig),
+    source: vueConfigFixtureSource(originalConfig),
+  };
   const rows: {
     version: number;
     source: string;
@@ -74,7 +82,7 @@ async function run(
     if (published) assert.equal(published.binding.published?.authority, "published-release");
     fs.mkdirSync(path.dirname(file));
     fs.writeFileSync(file, files.get(corpus.originalSource)!);
-    fs.writeFileSync(path.join(directory, "vize.config.json"), files.get(corpus.originalConfig)!);
+    writeVueConfigFixture(directory, originalConfig);
     fs.writeFileSync(path.join(directory, "tsconfig.json"), files.get(corpus.runtimeConfig)!);
     session = new LspSession(published?.binding);
     session.notificationObservers.push((method, params) => {
@@ -181,11 +189,12 @@ async function run(
       });
     }
     assert.deepEqual(fs.readFileSync(file), files.get(corpus.originalSource)!);
-    assert.deepEqual(
-      fs.readFileSync(path.join(directory, "vize.config.json")),
-      files.get(corpus.originalConfig)!,
+    assert.equal(
+      fs.readFileSync(path.join(directory, configCarrier.path), "utf8"),
+      configCarrier.source,
     );
     return {
+      configCarrier,
       initialization,
       initial,
       uri,
@@ -223,6 +232,7 @@ async function run(
       JSON.stringify(
         {
           sourceHash,
+          configCarrier,
           initialization,
           uri,
           rows,

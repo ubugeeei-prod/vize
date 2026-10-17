@@ -8,12 +8,11 @@ title: 编译器配置参考
 
 ## 编译器选项
 
-这些选项属于`compiler`。它们是基于模式支持的，并通过`defineConfig`共享;不是
-每一次积分都会消耗所有领域。
+这些选项属于 `vite.config.*` 的 `vue.compiler`，也可以通过 `defineConfig(vpConfig).withVue(vueConfig)` 设置。并非所有集成都使用每个选项。
 
-| 选项                | 价值观                               | 常见用途                                |
-| ------------------- | ------------------------------------ | --------------------------------------- | ------------ |
-| `sourceMap`         | `boolean`                            | 在 Vite 插件                            | 中启用源映射 |
+| 选项                | 类型                                 | 常见用途                                |
+| ------------------- | ------------------------------------ | --------------------------------------- |
+| `sourceMap`         | `boolean`                            | 在 Vite 插件中启用源映射                 |
 | `ssr`               | `boolean`                            | 在不依赖Vite的SSR构建标志时编译为SSR    |
 | `vapor`             | `boolean`                            | 启用蒸汽模式编译                        |
 | `jsxMode`           | `"vdom"`或`"vapor"`                  | `.jsx`/`.tsx`组件的默认输出后端         |
@@ -95,10 +94,10 @@ Vize 将 `.jsx`/`.tsx` Vue 组件编译为 Virtual DOM 或
 默认**用于未明确选择加入的组件;默认是`"vdom"`。
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "@vizejs/vite-plugin";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   compiler: {
     // Default every .jsx/.tsx component to Vapor output.
     jsxMode: "vapor",
@@ -132,7 +131,7 @@ const Classic = () => {
 由于每个组件独立路由，**单个模块可以混合两个后端**：
 
 ```tsx
-// vize.config: { compiler: { jsxMode: "vapor" } }
+// vite.config.ts : vue: { compiler: { jsxMode: "vapor" } }
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -161,12 +160,15 @@ export const LegacyWidget = () => {
 
 ## Vue方言
 
-`dialect` 选择 Vue 方言配置文件用于独立的 HTML 文档（`.html`/`.htm`）：
+`vue.dialect` 为独立 HTML 文档（`.html`/`.htm`）选择 Vue 方言：
 
-```json
-{
-  "dialect": "petite-vue"
-}
+```ts
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  dialect: "petite-vue",
+});
 ```
 
 - `"vue"`将独立HTML文档视为普通的Vue从CDN翻译的文档。

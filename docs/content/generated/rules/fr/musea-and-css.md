@@ -48,8 +48,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/no-display-none": "warn"
@@ -115,8 +115,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/no-hardcoded-values": "warn"
@@ -182,8 +182,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/no-id-selectors": "warn"
@@ -247,8 +247,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/no-important": "warn"
@@ -312,8 +312,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/no-utility-classes": "warn"
@@ -375,8 +375,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/no-v-bind-performance": "warn"
@@ -438,8 +438,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/prefer-logical-properties": "warn"
@@ -503,8 +503,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/prefer-nested-selectors": "warn"
@@ -564,8 +564,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/prefer-slotted": "warn"
@@ -625,8 +625,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/require-font-display": "warn"
@@ -693,8 +693,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "musea/no-empty-variant": "warn"
@@ -758,8 +758,8 @@ Nécessite un fichier .art.vue et l’inventaire des tokens présenté ci-dessou
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "musea/prefer-design-tokens": "warn"
@@ -844,8 +844,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "musea/require-component": "warn"
@@ -909,8 +909,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "musea/require-title": "error"
@@ -974,8 +974,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "musea/unique-variant-names": "error"
@@ -1037,8 +1037,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "musea/valid-variant": "error"

@@ -2,6 +2,8 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{fs, path::Path, process::Command};
 
 fn project() -> tempfile::TempDir {
@@ -12,8 +14,8 @@ fn project() -> tempfile::TempDir {
     )
     .unwrap();
     fs::write(
-        project.path().join("vize.config.json"),
-        r#"{"linter":{"enabled":false},"typeChecker":{"enabled":false}}"#,
+        project.path().join("vite.config.mjs"),
+        vite_config::source(r#"{"linter":{"enabled":false},"typeChecker":{"enabled":false}}"#),
     )
     .unwrap();
     project
@@ -23,7 +25,7 @@ fn ready(root: &Path, pattern: &str) -> Command {
     let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
     command
         .current_dir(root)
-        .args(["ready", "--config", "vize.config.json", pattern])
+        .args(["ready", "--config", "vite.config.mjs", pattern])
         .env_remove("FORCE_COLOR")
         .env_remove("CLICOLOR_FORCE")
         .env_remove("FRESCO_INTERACTIVE")
@@ -36,8 +38,10 @@ fn ready(root: &Path, pattern: &str) -> Command {
 
 const FMT: &str =
     "Found 1 file(s)\nReformatted: App.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n";
-const LINT: &str = "[vize] Skipping lint because linter.enabled is false in vize.config.\n";
-const CHECK: &str = "[vize] Skipping check because typeChecker.enabled is false in vize.config.\n";
+const LINT: &str =
+    "[vize] Skipping lint because linter.enabled is false in vite.config.* vue settings.\n";
+const CHECK: &str =
+    "[vize] Skipping check because typeChecker.enabled is false in vite.config.* vue settings.\n";
 const BUILT: &str = "Built: App.vue -> ./dist/App.js\n";
 const BUILD: &str = "\x1b[32m✓ 1 file compiled in <elapsed>s\x1b[0m\n";
 const MISSING: &str = "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found matching the patterns\n";

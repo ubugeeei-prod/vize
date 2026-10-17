@@ -5,16 +5,16 @@
 JSX 属性の引用符を、通常の JavaScript 文字列とは別に選びます。
 JSX/TSX のコードや Vue のスクリプトブロックで、文字列と属性に異なる規則を使いたいときに設定します。
 
-設定の置き場所を選ぶ前に、[CLI・エディタとの共有方法と現在のリリースで使える設定](./configuration.md)を確認してください。
+共通の設定は `vite.config.*` の `vue.formatter` に置きます。CLI とエディターは同じ設定を読み込みます。[Vue 設定ガイド](./configuration.md)を参照してください。
 
 ## JSX の引用符を設定する
 
-`formatter.jsxSingleQuote` を指定すると、JSX/TSX 属性でシングルクォートを優先できます。
+`vue.formatter.jsxSingleQuote` を指定すると、JSX/TSX 属性でシングルクォートを優先できます。
 
 ```ts
-import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   formatter: { singleQuote: false, jsxSingleQuote: true },
 });
 ```

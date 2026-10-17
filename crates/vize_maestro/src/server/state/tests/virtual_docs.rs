@@ -303,8 +303,7 @@ fn update_virtual_docs_removes_cache_after_art_parse_failure() {
 }
 
 #[test]
-#[ignore = "requires pkl runtime installed"]
-fn load_lsp_config_from_pkl() {
+fn retired_pkl_config_does_not_change_editor_features() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vize.config.pkl"),
@@ -313,7 +312,10 @@ fn load_lsp_config_from_pkl() {
     .unwrap();
 
     let state = ServerState::new();
+    state.apply_lsp_initialization_options(Some(
+        &serde_json::json!({"lint": false, "typecheck": false}),
+    ));
     state.load_lsp_config(dir.path());
-    assert!(state.is_lsp_lint_enabled());
-    assert!(state.is_lsp_typecheck_enabled());
+    assert!(!state.is_lsp_lint_enabled());
+    assert!(!state.is_lsp_typecheck_enabled());
 }

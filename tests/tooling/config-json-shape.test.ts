@@ -9,16 +9,16 @@ import { loadConfig } from "../../npm/cli/src/config.ts";
 type JsonConfigResult = Awaited<ReturnType<typeof loadConfig>>;
 
 /**
- * Write `content` as `vize.config.json` inside a fresh temp dir, load it through
- * the public config API in `root` mode, then clean up. The loader reads the file
+ * Write `content` as `serialized-config.json` inside a fresh temp dir, select it
+ * explicitly through the generic config API, then clean up. The loader reads the file
  * and routes JSON through parseJsonConfig -> normalizeLoadedConfig, so this
  * exercises the real JSON-shape normalization path.
  */
 async function loadJsonConfig(content: string): Promise<JsonConfigResult> {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-config-json-shape-"));
   try {
-    fs.writeFileSync(path.join(tempDir, "vize.config.json"), content);
-    return await loadConfig(tempDir, { mode: "root" });
+    fs.writeFileSync(path.join(tempDir, "serialized-config.json"), content);
+    return await loadConfig(tempDir, { configFile: "serialized-config.json" });
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true });
   }

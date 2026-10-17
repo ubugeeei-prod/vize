@@ -22,8 +22,8 @@ This example configures window.localStorage. The rule has no default deny list; 
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-restricted-members": "error"

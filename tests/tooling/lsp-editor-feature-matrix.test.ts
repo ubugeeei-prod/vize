@@ -257,17 +257,17 @@ test("explicit configuration detection respects global workspace and folder scop
   assert.equal(hasExplicitConfigurationValue(new FakeConfig({}), "enable"), false);
 });
 
-test("workspace lsp config filenames include every CLI-discovered vize config", () => {
+test("workspace config discovery uses the shared native project sources", () => {
   assert.deepEqual(WORKSPACE_LSP_CONFIG_FILES, [
-    "vize.config.pkl",
-    "vize.config.ts",
-    "vize.config.js",
-    "vize.config.mjs",
-    "vize.config.json",
+    "vite.config.ts",
+    "vite.config.mts",
+    "vite.config.cts",
+    "vite.config.js",
+    "vite.config.mjs",
+    "vite.config.cjs",
+    "tsconfig.json",
+    "jsconfig.json",
   ]);
-  const extension = readRepoFile("editors/vscode/src/extension.ts");
-  assert.match(extension, /WORKSPACE_LSP_CONFIG_FILES/);
-  assert.doesNotMatch(extension, /\["vize\.config\.pkl", "vize\.config\.json"\]/);
 });
 
 test("start condition mirrors VS Code workspace lsp fallback rules", () => {

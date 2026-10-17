@@ -9,12 +9,7 @@
     "id": "no-config-current-default",
     "config": null,
     "explicit": null,
-    "initializationOptions": {
-      "editor": true,
-      "ecosystem": true,
-      "lint": true,
-      "typecheck": true
-    },
+    "initializationOptions": {},
     "hoverProvider": true,
     "formattingProvider": true,
     "hover": {

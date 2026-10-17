@@ -20,8 +20,8 @@ slot や子コンポーネントに対する scoped CSS のセレクターを検
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/prefer-slotted": "warn"

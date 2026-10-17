@@ -25,7 +25,7 @@ Ruim/Bom.
 ## Famílias Diagnosticadas
 
 As regras de pátina são regras de fiapos em fila única. Eles usam nomes como `vue/require-v-for-key` e podem ser configurados
-a partir de `vize.config.*`, da linha de cli, da API JavaScript e da ponte Oxlint.
+a partir de `vue.linter` em `vite.config.*`, da CLI, da API JavaScript e da ponte Oxlint.
 
 Diagnósticos entre arquivos usam códigos `vize:croquis/cf/*`. Eles são emitidos por
 `vize lint --cross-file` após o Vize construir um grafo de projeto, para que possam comparar provedores com injetores de

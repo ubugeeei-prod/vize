@@ -32,7 +32,7 @@ package.json にスクリプトを登録すると、ローカルと CI で同じ
     "vize:fmt": "vize fmt --check src",
     "vize:fmt:fix": "vize fmt --write src",
     "vize:lint": "vize lint --preset happy-path --max-warnings 0 src",
-    "vize:check": "vize check src",
+    "vize:check": "vize check",
     "vize:build": "vize build src",
     "vize:ready": "vize ready src"
   }
@@ -46,12 +46,12 @@ package.json にスクリプトを登録すると、ローカルと CI で同じ
 
 ## 共通の設定を用意する
 
-既定値を変更する場合は、既存の `vite.config.*` のトップレベルの `vize` にネイティブ設定を追加します。検索規則、次回リリースの対応状況、必要な場合に使える専用形式は[設定ガイド](./configuration.md)を参照してください。
+既定値を変更する場合は、既存の `vite.config.*` のトップレベルの `vue` にネイティブ設定を追加します。設定の共有と移行方法は[設定ガイド](./configuration.md)を参照してください。
 
 ```ts
 // vite.config.ts
 export default {
-  vize: {
+  vue: {
     formatter: {
       printWidth: 100,
     },
@@ -70,7 +70,7 @@ export default {
 };
 ```
 
-フラットなモノリポジトリエントリ、PKL、JSON、コンパイラオプション、Vue の型解決の
+スコープ付き Lint、TypeScript プロジェクト設定、コンパイラオプション、Vue の型解決の
 詳細については、[設定](./configuration.md)を参照してください。
 
 ## フォーマット

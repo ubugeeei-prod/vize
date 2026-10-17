@@ -22,8 +22,8 @@ Options API の emits validator に戻り値を用意します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/return-in-emits-validator": "error"

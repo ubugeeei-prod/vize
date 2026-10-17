@@ -8,7 +8,7 @@ Chaque règle présente sur cette page son objectif, sa configuration et ses exe
 
 Les 66 exemples de projets réunissent ici les fichiers communs et les exemples complets Mauvais et Bon. Utilisez les fichiers communs des deux côtés. Les 60 codes d’analyse conservent leurs limites réelles : 19 codes CLI (18 paires de sources qualifiées et un projet illustratif avec son graphe réactif conservé), 16 codes de l’analyseur Rust expérimental que cette passe CLI n’émet pas individuellement, et 25 contrats sans producteur actuel. Configurer un identifiant n’active pas un producteur indisponible.
 
-Le CLI public expose la même passe avec `vize lint --cross-file`. Les codes affichés `vize:croquis/cf/*` utilisent `croquis/cf/*` dans `lint.vize.rules` (sans `vize:`). Les diagnostics de niveau information/hint deviennent des avertissements CLI. Les emplacements associés expliquent la relation entre la source et le consommateur.
+Le CLI public expose la même passe avec `vize lint --cross-file`. Les codes affichés `vize:croquis/cf/*` utilisent `croquis/cf/*` dans `vue.linter.rules` (sans `vize:`). Les diagnostics de niveau information/hint deviennent des avertissements CLI. Les emplacements associés expliquent la relation entre la source et le consommateur.
 
 <span id="règles-croisées"></span>
 <span id="orientation-de-mise-en-œuvre"></span>

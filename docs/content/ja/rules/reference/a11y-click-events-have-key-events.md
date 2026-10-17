@@ -22,8 +22,8 @@ title: "a11y/click-events-have-key-events"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "a11y/click-events-have-key-events": "warn"

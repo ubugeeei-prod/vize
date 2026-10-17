@@ -1,6 +1,8 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -57,8 +59,8 @@ const title = 'legacy'
     );
     write_project_file(
         &project_root,
-        "vize.config.json",
-        r#"{ "compiler": { "compatibility": { "vueVersion": "2.7" } } }"#,
+        "vite.config.mjs",
+        &vite_config::source(r#"{ "compiler": { "compatibility": { "vueVersion": "2.7" } } }"#),
     );
 
     let vue3 = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -80,7 +82,7 @@ const title = 'legacy'
             "--preset",
             "nuxt",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "src/App.vue",
         ])
         .output()
@@ -116,11 +118,8 @@ withDefaults(defineProps<Props>(), { height: '' })
     );
     write_project_file(
         &project_root,
-        "vize.config.ts",
-        r#"export default {
-  compatibility: { vueVersion: '2.7' }
-}
-"#,
+        "config.json",
+        r#"{ "compatibility": { "vueVersion": "2.7" } }"#,
     );
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -130,7 +129,7 @@ withDefaults(defineProps<Props>(), { height: '' })
             "--preset",
             "opinionated",
             "--config",
-            "vize.config.ts",
+            "config.json",
             "src/DataCard.vue",
         ])
         .output()

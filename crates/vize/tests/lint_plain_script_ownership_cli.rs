@@ -1,3 +1,5 @@
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use serde_json::{Value, json};
 use std::{
     fs,
@@ -40,8 +42,8 @@ fn invoke(root: &Path, args: &[&str], id: &str) -> Output {
 fn unchanged(root: &Path, filename: &str, source: &str) {
     assert_eq!(fs::read(root.join(filename)).unwrap(), source.as_bytes());
     assert_eq!(
-        fs::read(root.join("vize.config.json")).unwrap(),
-        CONFIG.as_bytes()
+        fs::read(root.join("vite.config.mjs")).unwrap(),
+        vite_config::source(CONFIG).as_bytes()
     );
 }
 
@@ -51,7 +53,7 @@ fn exact_original_argv_and_complete_ts_js_sfc_json_vectors_are_checked() {
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path();
     fs::create_dir(root.join("src")).unwrap();
-    fs::write(root.join("vize.config.json"), CONFIG).unwrap();
+    fs::write(root.join("vite.config.mjs"), vite_config::source(CONFIG)).unwrap();
     fs::write(root.join("src/config.ts"), ORIGINAL).unwrap();
     let original_args: Vec<_> = COMMAND.split_whitespace().skip(1).collect();
     assert_eq!(original_args, ["lint", "src"]);

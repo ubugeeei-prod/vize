@@ -8,9 +8,6 @@ Keep native Vue settings in the `vue` section of `vite.config.ts`. The compiler,
 CLI and editor use the same native option names. Start with the
 [Vite+ integration](./vite-plus.md) to run build, check, lint and format tasks.
 
-This API is prepared for the next minor release. Existing published versions
-retain the configuration described in [Configuration](./configuration.md).
-
 ## One configuration
 
 ```ts
@@ -31,7 +28,7 @@ export default defineConfig({
 
 `vue` uses the native `compiler`, `typeChecker`, `linter`, `formatter`,
 `languageServer`, `globalTypes`, `files`, `ignores`, `basePath` and `lib` members.
-It also accepts `version` and `entries`. Compiler and formatter sections contain
+It also accepts `version`, `vite`, `musea`, `experimentals`, `dialect`, `name` and `entries`. Compiler and formatter sections contain
 options; they do not have an `enabled` member. Typechecker, linter and language
 server sections retain their native `enabled` flag. Unknown canonical members
 produce an error.
@@ -39,21 +36,21 @@ produce an error.
 ## Keep an existing Vite+ configuration
 
 ```ts
-import { defineConfig } from "vite-plus";
-import { withVue } from "@vizejs/vite-plugin/vite-plus";
-import vpConfig from "./vite.base.ts";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default withVue(
-  { compiler: { sourceMap: true }, formatter: { singleQuote: true } },
-  defineConfig(vpConfig),
-);
+const vpConfig = { server: { port: 3000 } };
+const vueConfig = {
+  compiler: { sourceMap: true },
+  formatter: { singleQuote: true },
+};
+
+export default defineConfig(vpConfig).withVue(vueConfig);
 ```
 
-`withVue({}, defineConfig(vpConfig))` is the minimal form. The first argument is
-Vue settings; the second is the existing Vite+ export. Objects, promises,
-configuration functions and async functions are supported. The existing export
-receives Vite's environment when it is evaluated. Existing plugins, hooks and
-Vite+ fields stay with that export, and Vite+ plugin injection runs once.
+The helper accepts the existing Vite+ object, promise, function or async function.
+It forwards Vite's environment to configuration functions and preserves plugins,
+hooks and Vite+ fields. Vue plugin injection runs once. Reuse ordinary imported
+objects; a Vize-specific config file or `extends` is unnecessary.
 
 ## Paths and scopes
 
@@ -83,20 +80,18 @@ Canonical entries currently accept only `basePath`, `files`, `ignores` and
 entry is an error. The CLI's scoped linter policy retains its existing behavior.
 Per-file editor scope support and additional scoped sections remain unfinished.
 
+## TypeScript project settings
+
+Keep TypeScript `compilerOptions`, standard `extends` and `references` in the
+existing TypeScript project. Put Vue template options such as `strictTemplates`
+in its `vueCompilerOptions`; the CLI and editor use this project configuration.
+See [Configuration](./configuration.md#typescript-and-vue-template-checking).
+
 ## Migrate existing settings
 
-Move native settings from the top-level `vize` section to `vue`; use
-`typeChecker`, `linter` and `formatter` instead of Vite+ task spellings such as
-`typecheck`, `lint.vize` and `fmt.vize`. Existing legacy ingress remains accepted.
-The former config-first `withVue(config)` alias becomes options-first; use
-`defineConfig(config)` or the retained `withVize(config)` for the old call shape.
-Explicit canonical leaves take precedence over legacy settings in the same
-selected Vite source. Unspecified leaves are inherited, arrays are replaced,
-and `false` remains `false`.
-
-An existing dedicated `vize.config.*` still wins during native CLI/editor file
-discovery. The Vite+ helper uses its selected configuration without mixing in an
-unselected dedicated file. To share canonical settings with native commands,
-keep them in the selected Vite configuration. See the
-[dedicated configuration reference](./configuration-reference.md) for existing
-formats and explicit file selection.
+Move top-level `vize:` and dedicated `vize.config.*` native settings into `vue:`.
+Use `typeChecker`, `linter` and `formatter` for Vue tools. Vite+ task extensions
+use `typecheck`, `lint.vue`, `fmt.vue` and `pack.vue`. The removed dedicated config
+formats and Vize-specific `extends` are no longer loaded. Preserve reusable
+settings as ordinary imported JavaScript objects. Keep TypeScript options in
+`tsconfig.json`, including `vueCompilerOptions`.

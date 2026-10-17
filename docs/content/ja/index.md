@@ -44,7 +44,7 @@ features:
 
 まず[はじめる](./getting-started.md)の手順で導入し、[移行ガイド](./guide/migration.md)に沿って
 Vue コンパイラを置き換えます。CI を切り替える前に、検査結果を見比べてください。
-Vite+、CLI、言語サーバーで使う共通設定は `vite.config.ts` に、TypeScript の設定は `tsconfig.json` にまとめます。既存の `vize.config.ts` も引き続き使えます。設定の検索順序と優先順位は[設定ガイド](./guide/configuration.md)を参照してください。
+Vite+、CLI、言語サーバーで使う共通設定は `vite.config.ts` に、TypeScript の設定は `tsconfig.json` にまとめます。Vue 固有の設定は `vue:` に置き、CLI とエディタ拡張で共有します。設定の検索順序と優先順位は[設定ガイド](./guide/configuration.md)を参照してください。
 
 Vize は開発中です。既知の制限は[サポート状況](./stability.md)にまとめています。導入する前に、
 自分のプロジェクトで診断とビルド出力を見比べてください。

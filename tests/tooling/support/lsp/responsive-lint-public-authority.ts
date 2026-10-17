@@ -46,6 +46,7 @@ const records = [
 ];
 export const driverFiles = [
   "tests/tooling/lsp-responsive-lint-diagnostics.test.ts",
+  "tests/tooling/support/vue-config-fixture.ts",
   ...[
     "responsive-lint-observations",
     "responsive-lint-native-gate",

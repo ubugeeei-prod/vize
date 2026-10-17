@@ -107,7 +107,7 @@ Pulled files keep the registry layout (`families/form/rating/rating.vue`,
 between items keep working without any rewriting. The directory is chosen by:
 
 1. `--dir <dir>` (must stay inside the project),
-2. shared `vize.lib` settings in your existing Vite configuration,
+2. shared `vue.lib` settings in your existing Vite configuration,
 3. the registry default: `src/components/vize` (ui) and `src/composables/vize` (composable).
 
 ```ts
@@ -115,7 +115,7 @@ between items keep working without any rewriting. The directory is chosen by:
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  vize: {
+  vue: {
     lib: {
       uiDir: "src/ui/vendor",
       composableDir: "src/composables/vendor",
@@ -126,7 +126,7 @@ export default defineConfig({
 });
 ```
 
-An existing dedicated `lib` section remains supported with the precedence described in [Configuration](./configuration.md).
+Move a removed dedicated `lib` section to `vue.lib`; see [Configuration](./configuration.md).
 
 Once a kind has been pulled into a directory, later pulls of that kind reuse it; a conflicting
 `--dir` is rejected instead of splitting the dependency graph.
@@ -142,12 +142,11 @@ vize lib init             # write it
 ```
 
 `init` detects the source directory (`src/`, or `app/` for Nuxt 4 projects) and TypeScript, then
-writes `vize.lib.uiDir` / `vize.lib.composableDir` in a new `vite.config.mjs` when no
+writes `vue.lib.uiDir` / `vue.lib.composableDir` in a new `vite.config.mjs` when no
 configuration exists. An existing Vite configuration is preserved; `init` prints
-a `vize.lib` snippet when settings still need to be added. Existing dedicated
-configuration users retain the same behavior: `init` appends `lib` to
-`vize.config.json` and prints a snippet for code or Pkl configurations. An existing
-`lib` section is kept; `--force` can replace it in a dedicated JSON configuration.
+a `vue.lib` snippet when settings still need to be added. An existing
+`lib` section is kept; `--force` prints a replacement snippet without modifying
+user-owned JavaScript or TypeScript configuration.
 When `tsconfig.json` lacks
 `allowImportingTsExtensions`, `init` says so: pulled sources import siblings as `./x.ts`.
 

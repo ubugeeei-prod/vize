@@ -47,7 +47,7 @@ init は既存の設定を保ちながら編集し、専用の Vize 設定ファ
   package manager: pnpm
   language:        TypeScript (tsconfig.json)
   lint command:    vp lint
-  vize config:     none
+  Vue settings:    vue: in vite.config.*
   oxlint config:   none
 ```
 

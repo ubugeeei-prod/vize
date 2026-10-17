@@ -342,12 +342,7 @@ Il utilise Musea pour développer et documenter les composants et garde le compi
 
 ## Dépannage
 
-- **Configuration Pkl avec pnpm :** `@vizejs/nuxt` dépend de `vize`, qui fournit le `vize.pkl` par défaut. Avec pnpm, ce fichier peut ne pas se trouver dans `node_modules/vize`. Installez `vize` directement si vous utilisez une configuration Pkl :
-
-  ```bash
-  vp install vize
-  ```
-
+- **Migration d’une configuration dédiée :** les fichiers `vize.config.*` ne sont plus pris en charge. Placez les réglages natifs dans `vue:` de la configuration Vite et conservez les options TypeScript dans `tsconfig.json` ; voir [Configuration](../guide/configuration.md). La clé `vize` du module dans `nuxt.config.ts` reste propre à l’intégration Nuxt.
 - **Un `lint.configFile` personnalisé est ignoré :** le fichier doit se trouver dans `lint.rootDir` ou dans l’un de ses répertoires parents. Une configuration placée dans `.nuxt/` ne peut pas appliquer les exclusions du projet d’Oxlint.
 - **Liens de ressources dans le HTML SSR de développement :** `dev.stylesheetLinks` conserve les liens de ressources Nuxt valides encodés en URL, comme `%40fs/` et les chemins `assets/` encodés, et supprime les liens qui contiennent des octets nuls ou une traversée de chemin une fois décodés.
 

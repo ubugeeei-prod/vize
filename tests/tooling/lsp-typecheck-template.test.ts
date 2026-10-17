@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -34,8 +35,8 @@ test("vize lsp typecheck keeps DOM libs and template diagnostics", async (t) => 
     } else {
       linkVuePackage(workspaceDir, vuePackage);
     }
-    fs.writeFileSync(
-      path.join(workspaceDir, "vize.config.json"),
+    writeVueConfigFixture(
+      workspaceDir,
       JSON.stringify(
         {
           lsp: {
@@ -50,7 +51,6 @@ test("vize lsp typecheck keeps DOM libs and template diagnostics", async (t) => 
         null,
         2,
       ),
-      "utf8",
     );
     fs.writeFileSync(
       path.join(workspaceDir, "tsconfig.json"),
@@ -155,10 +155,9 @@ test("vize lsp publishes and clears exact parent diagnostics after child prop ed
     } else {
       linkVuePackage(workspaceDir, vuePackage);
     }
-    fs.writeFileSync(
-      path.join(workspaceDir, "vize.config.json"),
+    writeVueConfigFixture(
+      workspaceDir,
       JSON.stringify({ lsp: { lint: false, typecheck: true }, typeChecker: { corsaPath } }),
-      "utf8",
     );
     fs.writeFileSync(
       path.join(workspaceDir, "tsconfig.json"),

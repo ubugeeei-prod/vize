@@ -15,8 +15,8 @@ reactive な束縛を再代入すると、ただの値に置き換わります�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/reassignment-breaks-reactivity": "warn" },
     },
   },

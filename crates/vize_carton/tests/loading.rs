@@ -12,7 +12,7 @@ use vize_carton::config::{
 #[test]
 fn loads_pkl_defaults() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.pkl");
+    let config_path = dir.path().join("serialized-config.pkl");
     install_pkl_modules(dir.path());
     std::fs::write(
         &config_path,
@@ -34,7 +34,7 @@ typeChecker {
     )
     .unwrap();
 
-    let config = load_config(Some(dir.path()));
+    let config = load_config(Some(&config_path));
 
     insta::assert_snapshot!(serde_json::to_string_pretty(&config).unwrap());
 }
@@ -42,7 +42,7 @@ typeChecker {
 #[test]
 fn loads_pkl_top_level_and_entry_ignores() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.pkl");
+    let config_path = dir.path().join("serialized-config.pkl");
     install_pkl_modules(dir.path());
     std::fs::write(
         &config_path,
@@ -81,7 +81,7 @@ entries = new Listing {
 fn loads_json_type_checker_settings() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
+        dir.path().join("serialized-config.json"),
         r#"{
           "typeChecker": {
             "strict": true,
@@ -95,7 +95,7 @@ fn loads_json_type_checker_settings() {
     )
     .unwrap();
 
-    let config = load_config(Some(dir.path()));
+    let config = load_config(Some(&dir.path().join("serialized-config.json")));
 
     insta::assert_snapshot!(serde_json::to_string_pretty(&config).unwrap());
 }
@@ -104,7 +104,7 @@ fn loads_json_type_checker_settings() {
 fn loads_json_legacy_vue2_feature_flags() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
+        dir.path().join("serialized-config.json"),
         r#"{
           "typeChecker": {
             "legacyVue2": true
@@ -116,7 +116,8 @@ fn loads_json_legacy_vue2_feature_flags() {
     )
     .unwrap();
 
-    let loaded = load_config_with_features_and_source(Some(dir.path()));
+    let loaded =
+        load_config_with_features_and_source(Some(&dir.path().join("serialized-config.json")));
 
     assert!(loaded.features.type_checker_legacy_vue2);
     assert_eq!(loaded.features.language_server_legacy_vue2, Some(true));
@@ -127,7 +128,7 @@ fn loads_json_legacy_vue2_feature_flags() {
 fn loads_json_vue_version_dialect() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
+        dir.path().join("serialized-config.json"),
         r#"{
           "vue": {
             "version": "0.10"
@@ -136,7 +137,8 @@ fn loads_json_vue_version_dialect() {
     )
     .unwrap();
 
-    let loaded = load_config_with_features_and_source(Some(dir.path()));
+    let loaded =
+        load_config_with_features_and_source(Some(&dir.path().join("serialized-config.json")));
 
     assert_eq!(loaded.features.vue_version, Some(VueVersion::V0_10));
 }
@@ -144,9 +146,10 @@ fn loads_json_vue_version_dialect() {
 #[test]
 fn vue_version_defaults_to_unset() {
     let dir = tempfile::tempdir().unwrap();
-    std::fs::write(dir.path().join("vize.config.json"), r#"{}"#).unwrap();
+    std::fs::write(dir.path().join("serialized-config.json"), r#"{}"#).unwrap();
 
-    let loaded = load_config_with_features_and_source(Some(dir.path()));
+    let loaded =
+        load_config_with_features_and_source(Some(&dir.path().join("serialized-config.json")));
 
     assert_eq!(loaded.features.vue_version, None);
 }
@@ -154,7 +157,7 @@ fn vue_version_defaults_to_unset() {
 #[test]
 fn rejects_ambiguous_vue_version() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r#"{
@@ -170,16 +173,17 @@ fn rejects_ambiguous_vue_version() {
     assert!(error.contains("ambiguous"), "{error}");
     assert!(error.contains("0.10") && error.contains("0.11"), "{error}");
 
-    // Auto-discovery warns and falls back to defaults: it must never resolve
-    // an ambiguous selector to some 0.x line.
-    let loaded = load_config_with_features_and_source(Some(dir.path()));
+    // The non-throwing serialized reader warns and falls back to defaults;
+    // it must never resolve an ambiguous selector to some 0.x line.
+    let loaded =
+        load_config_with_features_and_source(Some(&dir.path().join("serialized-config.json")));
     assert_eq!(loaded.features.vue_version, None);
 }
 
 #[test]
 fn rejects_unquoted_vue_version_numbers() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r#"{
@@ -198,7 +202,7 @@ fn rejects_unquoted_vue_version_numbers() {
 fn loads_legacy_json_lsp_alias() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
+        dir.path().join("serialized-config.json"),
         r#"{
           "lsp": {
             "completion": false,
@@ -208,7 +212,7 @@ fn loads_legacy_json_lsp_alias() {
     )
     .unwrap();
 
-    let config = load_config(Some(dir.path()));
+    let config = load_config(Some(&dir.path().join("serialized-config.json")));
 
     insta::assert_snapshot!(serde_json::to_string_pretty(&config).unwrap());
 }
@@ -239,7 +243,7 @@ fn copy_dir_recursive(source: &std::path::Path, target: &std::path::Path) {
 fn loads_legacy_json_aliases() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
+        dir.path().join("serialized-config.json"),
         r#"{
           "fmt": {
             "singleQuote": true
@@ -251,7 +255,7 @@ fn loads_legacy_json_aliases() {
     )
     .unwrap();
 
-    let config = load_config(Some(dir.path()));
+    let config = load_config(Some(&dir.path().join("serialized-config.json")));
 
     insta::assert_snapshot!(serde_json::to_string_pretty(&config).unwrap());
 }
@@ -259,7 +263,7 @@ fn loads_legacy_json_aliases() {
 #[test]
 fn loads_legacy_pkl_lsp_alias() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.pkl");
+    let config_path = dir.path().join("serialized-config.pkl");
     install_pkl_modules(dir.path());
     std::fs::write(
         &config_path,
@@ -274,15 +278,15 @@ lsp {
     )
     .unwrap();
 
-    let config = load_config(Some(dir.path()));
+    let config = load_config(Some(&config_path));
 
     insta::assert_snapshot!(serde_json::to_string_pretty(&config).unwrap());
 }
 
 #[test]
-fn invalid_pkl_config_does_not_fall_back_to_json() {
+fn invalid_explicit_pkl_config_does_not_fall_back_to_json() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.pkl");
+    let config_path = dir.path().join("serialized-config.pkl");
     install_pkl_modules(dir.path());
     std::fs::write(
         &config_path,
@@ -296,16 +300,40 @@ formatter {
     )
     .unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
+        dir.path().join("serialized-config.json"),
         r#"{ "formatter": { "singleQuote": true } }"#,
     )
     .unwrap();
 
-    let loaded = load_config_with_source(Some(dir.path()));
+    let loaded = load_config_with_source(Some(&config_path));
 
     assert_eq!(loaded.source_path.as_deref(), Some(config_path.as_path()));
     assert!(
         !loaded.config.formatter.single_quote,
-        "invalid higher-priority pkl config must not silently fall back to json",
+        "invalid explicitly selected pkl must not silently fall back to sibling json",
     );
+}
+
+#[test]
+fn discovers_canonical_vite_vue_settings_and_preserves_source_identity() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("vite.config.mjs");
+    std::fs::write(
+        &path,
+        r#"export default {vue:{
+            version:"0.10",
+            formatter:{singleQuote:true,printWidth:88},
+            languageServer:{completion:false},
+            typeChecker:{strict:true,jsxTypecheck:false}
+        }};"#,
+    )
+    .unwrap();
+    let loaded = load_config_with_features_and_source(Some(dir.path()));
+    assert_eq!(loaded.source_path.as_deref(), Some(path.as_path()));
+    assert_eq!(loaded.features.vue_version, Some(VueVersion::V0_10));
+    assert!(loaded.config.formatter.single_quote);
+    assert_eq!(loaded.config.formatter.print_width, 88);
+    assert_eq!(loaded.config.language_server.completion, Some(false));
+    assert!(loaded.config.type_checker.strict);
+    assert!(!loaded.features.type_checker_jsx_typecheck);
 }

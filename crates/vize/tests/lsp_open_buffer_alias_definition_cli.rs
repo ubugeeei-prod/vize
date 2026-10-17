@@ -12,6 +12,9 @@
     reason = "test failures include authored phase names"
 )]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use std::{fs, path::Path};
 
 use serde_json::{Value, json};
@@ -63,7 +66,11 @@ fn assert_contracts(corpus: &Path, manifest: &Value, newline: &str) {
             .replace('\n', newline)
     };
     fs::write(root.join("tsconfig.json"), input("tsconfig.json.txt")).unwrap();
-    fs::write(root.join("vize.config.json"), input("vize.config.json.txt")).unwrap();
+    fs::write(
+        root.join("vite.config.mjs"),
+        vite_config::source(input("vize.config.json.txt")),
+    )
+    .unwrap();
     let target = root.join(manifest["targetRuntimePath"].as_str().unwrap());
     let preferred = root.join(manifest["preferredRuntimePath"].as_str().unwrap());
     fs::create_dir_all(target.parent().unwrap()).unwrap();

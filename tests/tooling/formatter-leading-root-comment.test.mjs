@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -87,8 +88,8 @@ void test("whole Habitica input and first-root attachment controls reach strict 
         fs.writeFileSync(file, fixture.source);
         if (fixture.eol)
           fs.writeFileSync(
-            path.join(directory, "vize.config.json"),
-            `${JSON.stringify({ formatter: { endOfLine: fixture.eol } })}\n`,
+            path.join(directory, "vite.config.mjs"),
+            vueConfigFixtureSource({ formatter: { endOfLine: fixture.eol } }),
           );
         const row = { id: fixture.id, original: fixture.source, attempts: [], diagnostics: [] };
         report.rows.push(row);
@@ -99,7 +100,7 @@ void test("whole Habitica input and first-root attachment controls reach strict 
           const argv = [
             "fmt",
             mode,
-            ...(fixture.eol ? ["--config", "vize.config.json"] : ["--no-config"]),
+            ...(fixture.eol ? ["--config", "vite.config.mjs"] : ["--no-config"]),
             fixture.file,
           ];
           const before = fs.readFileSync(file);

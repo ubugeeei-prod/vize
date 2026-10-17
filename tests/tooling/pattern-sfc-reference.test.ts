@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 // The single-file-component contract of the patterned-template reference
 // implementation (vuejs/core#15531, `packages/compiler-sfc/__tests__/vMatch.spec.ts`),
 // run through the real CLI: a `v-match` on the SFC's own `<template>` block is
@@ -73,8 +74,8 @@ test("an invalid root header is one error at the directive", async () => {
   const directory = workspace("pattern-sfc-");
   try {
     fs.mkdirSync(path.join(directory, "src"));
-    fs.writeFileSync(
-      path.join(directory, "vize.config.json"),
+    writeVueConfigFixture(
+      directory,
       JSON.stringify({ experimentals: { patternedTemplate: true } }),
     );
     // The checker refuses to borrow the repository's own project for this directory.

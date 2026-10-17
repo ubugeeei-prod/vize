@@ -26,6 +26,7 @@ pub(super) struct ProjectContexts {
     generation: AtomicU64,
     routing_changes: AtomicUsize,
     boundary: RwLock<Option<PathBuf>>,
+    pub(super) config_dependencies: RwLock<Vec<PathBuf>>,
     contexts: Mutex<FxHashMap<PathBuf, Arc<registry::ProjectContext>>>,
     routes: DashMap<Url, PathBuf>,
     initialization_options: RwLock<Option<serde_json::Value>>,
@@ -292,8 +293,7 @@ fn is_config_marker(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| {
-            name.starts_with("vize.config.")
-                || name.starts_with("vite.config.")
+            name.starts_with("vite.config.")
                 || (name.starts_with("tsconfig") && name.ends_with(".json"))
                 || name == "package.json"
                 || name == "jsconfig.json"
@@ -304,6 +304,8 @@ fn is_config_marker(path: &Path) -> bool {
 mod async_tests;
 mod asynchronous;
 mod capabilities;
+#[cfg(test)]
+mod config_dependencies;
 mod current;
 #[cfg(test)]
 mod lock_order_tests;

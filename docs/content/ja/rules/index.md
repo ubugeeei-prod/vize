@@ -7,7 +7,7 @@ title: ルール
 [全ルール](./all.md)に、各ルールの目的、既定の重大度、適用範囲、設定、悪い例・良い例と理由をまとめています。
 ページを移動せずに比較でき、一覧から必要なルールへ直接移動できます。英語と日本語で同じコード例を使っています。
 
-Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lint.vize` に設定します。
+Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue.linter` に設定します。
 `vp run lint` で Vize と Oxlint の検査を実行します。既存の同名 script がある場合は
 `vp run vize:lint` を使ってください。組み込みの `vp lint` は Vite+ 自身の検査です。
 

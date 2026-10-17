@@ -11,6 +11,7 @@ import {
   setupDirectory,
   setupMerge,
   setupOriginals,
+  setupOriginalSourcePaths,
   setupScenarios,
 } from "../../tools/support/release/typed_defaults/setup_emits.mjs";
 import { originalScenarios } from "../../tools/support/release/typed_defaults/contracts.mjs";
@@ -41,9 +42,10 @@ function setupFixture() {
     });
   }
   for (const [name, hash] of Object.entries(setupOriginals)) {
-    const bytes = fs.readFileSync(path.join(root, name));
+    const sourcePath = setupOriginalSourcePaths[name] ?? name;
+    const bytes = fs.readFileSync(path.join(root, sourcePath));
     assert.equal(sha256(bytes), hash);
-    add(name, bytes);
+    add(sourcePath, bytes);
   }
   const corpus = JSON.parse(fs.readFileSync(path.join(root, setupDirectory, "cases.json")));
   for (const entry of corpus.cases) {
@@ -67,6 +69,11 @@ await test("separate setup357 refuses whole-vector mutation and preserves origin
   const fixtures = await loadSetupFixtures(source.head, temporary(t), source.read, source.treeSha);
   assert.equal(fixtures.authorities.length, 55);
   assert(fixtures.authorities.every((entry) => entry.source === source.head));
+  const observerRole = "tests/tooling/lint-setup-emits-returns.test.mjs";
+  assert.equal(
+    fixtures.authorities.find((entry) => entry.path === observerRole).sourcePath,
+    setupOriginalSourcePaths[observerRole],
+  );
   assert.equal(setupScenarios(fixtures).length, 357);
   const original = corpusFixture();
   const legacy = await loadFixtures(original.head, temporary(t), original.read, original.treeSha);
@@ -133,6 +140,24 @@ await test("separate setup357 refuses whole-vector mutation and preserves origin
 
 await test("installed setup fixtures require complete H tree and original regular Git blobs", async (t) => {
   for (const [name, mutate] of [
+    [
+      "changed archived original observer",
+      (v) => {
+        const sourcePath =
+          setupOriginalSourcePaths["tests/tooling/lint-setup-emits-returns.test.mjs"];
+        const entry = v.tree.tree.find((entry) => entry.path === sourcePath);
+        const row = v.rows.get(`${apiRoot}/git/blobs/${entry.sha}`);
+        const bytes = Buffer.from(Buffer.from(row.content, "base64").toString() + "\n");
+        const sha = gitBlob(bytes);
+        entry.sha = sha;
+        v.rows.set(`${apiRoot}/git/blobs/${sha}`, {
+          sha,
+          encoding: "base64",
+          size: bytes.length,
+          content: bytes.toString("base64"),
+        });
+      },
+    ],
     [
       "foreign tree",
       (v) => {

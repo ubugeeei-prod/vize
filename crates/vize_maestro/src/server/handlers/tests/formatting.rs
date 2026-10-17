@@ -107,8 +107,15 @@ fn vue2_project_formatting_preserves_filter_names_for_document_range_and_on_type
         let service = server_with(&uri, source, "vue");
         let server = service.inner();
         let project = tempfile::tempdir().unwrap();
-        std::fs::write(project.path().join("vize.config.json"),
-            serde_json::json!({"vue": {"version": version}, "languageServer": {"formatting": true}}).to_string()).unwrap();
+        std::fs::write(
+            project.path().join("vite.config.mjs"),
+            vize_l0::cstr!(
+                "export default {{ vue: {} }};",
+                serde_json::json!({"version":version, "languageServer": {"formatting": true}})
+            )
+            .as_bytes(),
+        )
+        .unwrap();
         server.state.load_workspace_config(project.path());
 
         let edits = futures::executor::block_on(server.formatting(formatting_params(uri.clone())))
@@ -150,9 +157,7 @@ fn vue2_project_formatting_preserves_filter_names_for_document_range_and_on_type
 }
 
 #[test]
-fn formatting_handlers_are_gated_off_by_default() {
-    // `formatting` is opt-in, so a server that was never told to format must
-    // answer all three commands with "no provider here".
+fn formatting_handlers_are_gated_off_without_project_configuration() {
     let uri = Url::parse("file:///App.vue").unwrap();
     let (service, _socket) = LspService::new(MaestroServer::new);
     let server = service.inner();

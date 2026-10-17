@@ -4,12 +4,7 @@ runtime autoload/vize.vim
 let s:defaults = vize#normalize({})
 call assert_equal(['vize', 'lsp'], s:defaults.cmd)
 call assert_equal(['vue', 'art-vue'], s:defaults.allowlist)
-call assert_equal({
-      \ 'editor': v:true,
-      \ 'ecosystem': v:true,
-      \ 'lint': v:true,
-      \ 'typecheck': v:true,
-      \ }, s:defaults.initialization_options)
+call assert_equal({}, s:defaults.initialization_options)
 
 let s:recommended = vize#normalize({'profile': 'recommended'})
 call assert_equal({
@@ -67,14 +62,9 @@ call assert_equal(['vue', 'art-vue'], s:mutable_allowlist_config.allowlist)
 
 let s:default_config_nested_copy = vize#default_config()
 let s:default_config_nested_copy.initialization_options.editor = v:false
-call assert_equal({
-      \ 'editor': v:true,
-      \ 'ecosystem': v:true,
-      \ 'lint': v:true,
-      \ 'typecheck': v:true,
-      \ }, vize#default_config().initialization_options)
+call assert_equal({}, vize#default_config().initialization_options)
 
-let s:lsp_config = vize#vim_lsp_config({'profile': 'off'})
+let s:lsp_config = vize#vim_lsp_config()
 call assert_equal('vize', s:lsp_config.name)
 call assert_equal(['vue', 'art-vue'], s:lsp_config.allowlist)
 call assert_equal({}, s:lsp_config.initialization_options)

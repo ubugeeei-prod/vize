@@ -22,8 +22,8 @@ The watcher must only derive the destination. Editable copies and callbacks with
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-computed": "warn"

@@ -13,7 +13,7 @@ function toPosixPath(value: string): string {
   return value.split(path.sep).join("/");
 }
 
-test("defineConfig accepts the documented vue.version section", () => {
+test("native defineConfig accepts serialized vue.version sections", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-config-types-"));
 
   try {
@@ -40,14 +40,14 @@ test("defineConfig accepts the documented vue.version section", () => {
             typeRoots: [path.join(root, "node_modules", "@types")],
             types: ["node"],
           },
-          include: ["vize.config.ts"],
+          include: ["serialized-config.ts"],
         },
         null,
         2,
       ),
     );
     fs.writeFileSync(
-      path.join(tempDir, "vize.config.ts"),
+      path.join(tempDir, "serialized-config.ts"),
       [
         'import { defineConfig, type UserConfigInput } from "vize";',
         "",

@@ -188,10 +188,10 @@ composants individuels peuvent le surpasser.
 ou `"vapor"` et passe par défaut à `"vdom"`.
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   compiler: {
     // Default every .jsx/.tsx component to Vapor output.
     jsxMode: "vapor",
@@ -225,7 +225,7 @@ const Classic = () => {
 Comme chaque composant est routé indépendamment, un **seul fichier peut mélanger les deux backends** :
 
 ```tsx
-// vize.config: { compiler: { jsxMode: "vapor" } }
+// vite.config.ts : vue: { compiler: { jsxMode: "vapor" } }
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -366,10 +366,10 @@ Il est désactivé par défaut volontairement : un dépôt peut contenir des fic
 vérifiés en tant que JSX Vue.
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   typeChecker: {
     enabled: true,
     jsxTypecheck: true,

@@ -4,7 +4,7 @@
 //! project's installed `node_modules/@vizejs/<pkg>/registry/registry.json`,
 //! then (for an explicit version, or when not installed) `npm pack` + `tar`.
 //!
-//! Third-party sources (`@ns`) come from `lib.registries` in vize.config: a
+//! Third-party sources (`@ns`) come from `vue.lib.registries` in vite.config: a
 //! local path, `npm:<package>[@range]` (installed first, else `npm pack`), or
 //! an `https://` URL of a `registry.json` (fetched with curl).
 
@@ -285,7 +285,7 @@ impl Resolver {
             Source::Namespace(name) => {
                 let namespace = self.namespaces.get(name.as_str()).ok_or_else(|| {
                     LibError::new(cstr!(
-                        "unknown registry namespace {name}; add it to lib.registries in vize.config"
+                        "unknown registry namespace {name}; add it to vue.lib.registries in vite.config"
                     ))
                 })?;
                 match &namespace.origin {

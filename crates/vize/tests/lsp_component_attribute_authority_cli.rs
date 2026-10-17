@@ -6,6 +6,9 @@
 
 #[path = "support/lsp_process.rs"]
 mod lsp_process;
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use lsp_process::{LspProcess, file_uri};
 use serde_json::{Value, json};
 use std::path::Path;
@@ -102,12 +105,16 @@ impl Fixture {
         #[cfg(windows)]
         std::os::windows::fs::symlink_dir(&vue, modules.join("vue")).unwrap();
         std::fs::write(
-            project.path().join("vize.config.json"),
-            serde_json::to_vec(&json!({
-                "typeChecker": { "corsaPath": runtime },
-                "lsp": { "lint": true, "typecheck": true, "hover": true, "crossFile": true }
-            }))
-            .unwrap(),
+            project.path().join("vite.config.mjs"),
+            vite_config::source(
+                serde_json::to_vec(&json!({
+                    // Preserve this historical SFC-only control's effective mode;
+                    // canonical Vite projects now enable JSX checking by default.
+                    "typeChecker": { "corsaPath": runtime, "jsxTypecheck": false },
+                    "lsp": { "lint": true, "typecheck": true, "hover": true, "crossFile": true }
+                }))
+                .unwrap(),
+            ),
         )
         .unwrap();
         let mut lsp = LspProcess::spawn(project.path());

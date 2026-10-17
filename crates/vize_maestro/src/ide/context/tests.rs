@@ -289,8 +289,8 @@ fn non_script_blocks_keep_their_existing_boundaries() {
 fn root_pattern_requests_share_subject_classification_and_completion_insertion_points() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
-        project.path().join("vize.config.json"),
-        r#"{"experimentals":{"patternedTemplate":true}}"#,
+        project.path().join("vite.config.mjs"),
+        r#"export default { vue: {"experimentals":{"patternedTemplate":true}} };"#,
     )
     .unwrap();
     let enabled = ServerState::new();

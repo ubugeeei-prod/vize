@@ -20,8 +20,8 @@ Options API のキーに Vue の予約名を使う箇所を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-reserved-keys": "error"

@@ -102,6 +102,7 @@ impl VirtualProject {
             project.resolve_tsconfig_preserves_unused_diagnostics();
         project.source_policy = project.resolve_source_file_policy();
         project.alias_rewrite_policy = project.resolve_alias_rewrite_policy();
+        project.refresh_vue_compiler_options();
         Ok(project)
     }
 

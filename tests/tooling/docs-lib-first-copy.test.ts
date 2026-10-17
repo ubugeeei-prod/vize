@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { originalConfigDocument } from "./support/docs-config-archive.ts";
+import { currentConfigExample } from "./support/docs-config-successor.ts";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -33,7 +35,13 @@ await test("first-copy guides preserve every original byte and every native book
     assert.ok(renderedMoreGuideRoutes.includes(route), `${route}: actual native reading campaign`);
     assert.equal([...source.matchAll(section)].length, 1);
     const restored = source.replace(section, "");
-    assert.equal(sha(restored), document.sha256, document.path);
+    const archived = originalConfigDocument(document.path);
+    assert.equal(sha(archived), document.sha256, `${document.path}: complete original document`);
+    assert.deepEqual(
+      fences(restored),
+      fences(archived).map(currentConfigExample),
+      `${document.path}: complete current recipes retain the original registry and CLI payloads`,
+    );
     assert.equal(fences(restored).length, 8);
     assert.equal(fences(source).length, 10);
     const rendered = native.transform(source, {});

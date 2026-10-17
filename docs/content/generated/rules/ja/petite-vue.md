@@ -33,8 +33,8 @@ petite-vue が対応しないディレクティブを検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "petite-vue/no-unsupported-directive": "error"
@@ -101,8 +101,8 @@ v-effect に空でない式を指定します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "petite-vue/valid-v-effect": "error"
@@ -169,8 +169,8 @@ v-scope に値を指定する場合は、オブジェクトリテラルにしま
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "petite-vue/valid-v-scope": "error"

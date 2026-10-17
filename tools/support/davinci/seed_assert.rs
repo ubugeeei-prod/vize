@@ -214,10 +214,13 @@ fn assert_unused(
                 .collect()
         } else {
             let cwd = plane.join(tree);
-            let config = cwd.join("vize.config.json");
-            common::write_json_pretty(
+            let config = cwd.join("vite.config.mjs");
+            common::write_text(
                 &config,
-                &serde_json::json!({"linter": {"rules": {CLASS_B_RULE: "warn"}}}),
+                &format!(
+                    "export default {};\n",
+                    serde_json::json!({"vue": {"linter": {"rules": {CLASS_B_RULE: "warn"}}}})
+                ),
             )?;
             let cli = cli.ok_or("vize cli is required")?;
             let output = Command::new(&cli.command)

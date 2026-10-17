@@ -20,8 +20,8 @@ title: "css/prefer-logical-properties"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/prefer-logical-properties": "warn"

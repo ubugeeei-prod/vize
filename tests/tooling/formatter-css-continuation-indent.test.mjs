@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -79,8 +80,8 @@ await test("public CSS continuation indentation is a configured-unit fixed point
         );
         const file = path.join(temporary, fixture.filename);
         fs.writeFileSync(file, fixture.input);
-        const config = Buffer.from(JSON.stringify({ formatter: fixture.options }) + "\n");
-        fs.writeFileSync(path.join(temporary, "vize.config.json"), config);
+        const config = Buffer.from(vueConfigFixtureSource({ formatter: fixture.options }));
+        fs.writeFileSync(path.join(temporary, "vite.config.mjs"), config);
         const row = {
           id: fixture.id,
           fixture,
@@ -106,7 +107,7 @@ await test("public CSS continuation indentation is a configured-unit fixed point
           const args = [
             "fmt",
             oracle.mode,
-            ...(fixture.options.endOfLine ? ["--config", "vize.config.json"] : ["--no-config"]),
+            ...(fixture.options.endOfLine ? ["--config", "vite.config.mjs"] : ["--no-config"]),
           ];
           if (fixture.options.tabWidth) args.push("--tab-width", `${fixture.options.tabWidth}`);
           if (fixture.options.useTabs) args.push("--use-tabs");
@@ -141,7 +142,7 @@ await test("public CSS continuation indentation is a configured-unit fixed point
             throw error;
           }
           persist();
-          assert.deepEqual(fs.readFileSync(path.join(temporary, "vize.config.json")), config);
+          assert.deepEqual(fs.readFileSync(path.join(temporary, "vite.config.mjs")), config);
           assert.equal(capture.error, null);
           assert.equal(capture.signal, null);
           assert.equal(capture.status, oracle.status);

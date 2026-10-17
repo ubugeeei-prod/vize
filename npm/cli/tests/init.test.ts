@@ -276,7 +276,7 @@ test("a non-TTY stdin without --yes refuses to prompt instead of hanging", async
   package manager: pnpm
   language:        TypeScript (tsconfig.json)
   lint command:    vp lint
-  vize config:     none
+  Vue settings:    vue: in vite.config.*
   oxlint config:   none
 [vize init] stdin is not a TTY, so init will not prompt.
 [vize init] pass --yes with the features you want, for example:

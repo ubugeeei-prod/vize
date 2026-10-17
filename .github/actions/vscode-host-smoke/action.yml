@@ -45,11 +45,14 @@ runs:
     - name: Install pinned Zed extension CLI
       shell: bash
       env:
+        # The pinned 167 MB asset takes about 150s at the observed CI throughput.
+        VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS: "180"
         ZED_EXTENSION_CLI_SHA: 9ee3c503a4bbbc6b4a0f8a789acca4871d773223
         ZED_EXTENSION_CLI_SHA256: a6fca5ef11ff23f0ef8b03bd2453270591c9fc6c03700c3c92017e5082ada757
       run: |
         set -euo pipefail
-        bash .github/actions/vscode-host-smoke/download-artifact.sh \
+        timeout --signal=TERM --kill-after=10s 300s \
+          bash .github/actions/vscode-host-smoke/download-artifact.sh \
           "https://zed-extension-cli.nyc3.digitaloceanspaces.com/${ZED_EXTENSION_CLI_SHA}/x86_64-unknown-linux-gnu/zed-extension" \
           "${RUNNER_TEMP}/zed-extension" "${ZED_EXTENSION_CLI_SHA256}"
         chmod +x "${RUNNER_TEMP}/zed-extension"

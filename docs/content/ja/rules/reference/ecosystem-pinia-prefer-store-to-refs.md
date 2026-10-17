@@ -20,8 +20,8 @@ Pinia store の分割代入に storeToRefs() を使います。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/pinia-prefer-store-to-refs": "warn"

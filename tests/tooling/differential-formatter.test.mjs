@@ -10,6 +10,7 @@ import { FORMATTER_ARGV, loadFormatterManifest, sha256 } from "../differential/m
 import {
   assertProcessSucceeded,
   formatterAttempt,
+  formatterInvocation,
   runFormatterPack,
   validateFormatterReport,
 } from "../differential/formatter.mjs";
@@ -58,12 +59,7 @@ function referenceReport() {
     rows: loaded.cases.map((fixture) => ({
       id: fixture.id,
       legacy: {
-        ...(fixture.config.length
-          ? {
-              argv: [...fixture.argv],
-              config: fixture.config.map(({ path, sha256 }) => ({ path, sha256 })),
-            }
-          : {}),
+        ...formatterInvocation(fixture),
         state: "completed",
         verdict: "matched-reference",
         passes: [1, 2, 3].map((pass) =>
@@ -177,7 +173,7 @@ void test("configured formatter cases reject implicit versions, config paths and
     fs.writeFileSync(file, JSON.stringify(manifest));
     assert.throws(() => loadFormatterManifest(file), /explicit Vue version/);
   });
-  for (const field of ["argv", "config"]) {
+  for (const field of ["argv", "config", "originalArgv", "originalConfig"]) {
     const report = referenceReport();
     const index = loaded.cases.findIndex((fixture) => fixture.config.length);
     report.rows[index].legacy[field].pop();
@@ -341,5 +337,36 @@ void test("formatter differential rejects stale source/build and forged executab
     const report = referenceReport();
     mutate(report);
     assert.throws(() => validateFormatterReport(loaded, report, unitBuild));
+  }
+});
+
+void test("explicit native renderer-control mapping preserves raw archives and rejects forged transports", () => {
+  const fixture = loaded.cases.find((item) => item.config.length);
+  const mapping = formatterInvocation(fixture);
+  assert.equal(mapping.configurationMapping, "raw-native-json-explicit-carrier-v1");
+  assert.deepEqual(mapping.originalArgv, fixture.argv);
+  assert.equal(mapping.originalConfig[0].path, "vize.config.json");
+  assert.equal(mapping.config[0].path, "serialized-config.json");
+  assert.equal(mapping.config[0].sha256, sha256(fixture.config[0].bytes));
+  for (const mutate of [
+    (row) => {
+      row.argv = [...fixture.argv];
+    },
+    (row) => {
+      row.config[0].sha256 = "0".repeat(64);
+    },
+    (row) => {
+      row.originalConfig[0].path = "serialized-config.json";
+    },
+    (row) => {
+      row.configurationMapping = "canonical-vite";
+    },
+    (row) => {
+      delete row.configurationMapping;
+    },
+  ]) {
+    const report = referenceReport();
+    mutate(report.rows.find((row) => row.id === fixture.id).legacy);
+    assert.throws(() => validateFormatterReport(loaded, report, unitBuild), /invocation mapping/);
   }
 });

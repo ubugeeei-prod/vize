@@ -72,7 +72,7 @@ Les fichiers copiés conservent la disposition du registre (`families/form/ratin
 éléments continuent de fonctionner sans réécriture. Le répertoire est choisi par :
 
 1. `--dir <dir>` (doit rester dans le projet),
-2. les options partagées `vize.lib` de votre configuration Vite existante,
+2. les options partagées `vue.lib` de votre configuration Vite existante,
 3. la valeur par défaut du registre : `src/components/vize` (ui) et `src/composables/vize` (composable).
 
 ```ts
@@ -80,7 +80,7 @@ Les fichiers copiés conservent la disposition du registre (`families/form/ratin
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  vize: {
+  vue: {
     lib: {
       uiDir: "src/ui/vendor",
       composableDir: "src/composables/vendor",
@@ -91,7 +91,7 @@ export default defineConfig({
 });
 ```
 
-Une section `lib` dans une configuration dédiée reste prise en charge ; voir la priorité et la disponibilité actuelle dans [Configuration](./configuration.md).
+Les fichiers dédiés ne sont plus pris en charge. Migrez leur section `lib` vers `vue.lib` dans la configuration Vite ; consultez [Configuration](./configuration.md).
 
 Une fois un type copié dans un répertoire, les copies suivantes de ce type le réutilisent ; un `--dir`
 contradictoire est refusé plutôt que de scinder le graphe de dépendances.
@@ -106,9 +106,9 @@ vize lib init --dry-run   # affiche la structure détectée et la modification d
 vize lib init             # l'écrit
 ```
 
-`init` détecte le répertoire source (`src/`, ou `app/` avec Nuxt 4) et TypeScript. En l'absence de configuration, il écrit `vize.lib.uiDir` et `vize.lib.composableDir` dans un nouveau `vite.config.mjs`. Il ne modifie jamais une configuration Vite existante : si des options restent à ajouter, il affiche un extrait `vize.lib`.
+`init` détecte le répertoire source (`src/`, ou `app/` avec Nuxt 4) et TypeScript. En l'absence de configuration, il écrit `vue.lib.uiDir` et `vue.lib.composableDir` dans un nouveau `vite.config.mjs`. Il ne modifie jamais une configuration Vite existante : si des options restent à ajouter, il affiche un extrait `vue.lib`.
 
-Les configurations dédiées gardent leur comportement : ajout de `lib` dans `vize.config.json`, ou affichage d'un extrait pour les fichiers de code et Pkl. Une section `lib` existante est conservée ; `--force` peut la remplacer dans une configuration JSON dédiée. Si `tsconfig.json` ne contient pas `allowImportingTsExtensions`, `init` le signale : les sources importent leurs voisines sous la forme `./x.ts`.
+`init` préserve les anciennes configurations dédiées et explique comment déplacer leurs réglages vers `vue.lib`. Il ne crée aucun fichier dédié. Si `tsconfig.json` ne contient pas `allowImportingTsExtensions`, il le signale : les sources importent leurs voisines sous la forme `./x.ts`.
 
 ## Vérifier les mises à jour : `outdated`
 

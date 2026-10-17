@@ -12,7 +12,7 @@ fn watch_root(lsp: &mut LspProcess, root: &Path) {
     write(
         root,
         "vite.config.mjs",
-        "export default {vize:{lsp:{lint:false,typecheck:false,workspaceSymbols:true,fileRename:true}}};",
+        "export default {vue:{languageServer:{lint:false,typecheck:false,workspaceSymbols:true,fileRename:true}}};",
     );
     lsp.send(json!({"jsonrpc":"2.0","method":"workspace/didChangeWatchedFiles","params":{"changes":[{"uri":file_uri(&root.join("vite.config.mjs")),"type":2}]}}));
     let (mut a_seen, mut b_seen) = (false, false);
@@ -36,7 +36,7 @@ fn workspace_symbols_and_alias_file_edits_preserve_package_flags_after_primary_r
     write(
         root,
         "vite.config.mjs",
-        "export default {vize:{lsp:{lint:false,typecheck:false,workspaceSymbols:false,fileRename:false}}};",
+        "export default {vue:{languageServer:{lint:false,typecheck:false,workspaceSymbols:false,fileRename:false}}};",
     );
     let a = root.join("packages/a/vite.config.mjs");
     let authored = std::fs::read_to_string(&a).unwrap().replace(
@@ -110,7 +110,7 @@ fn cross_package_file_rename_delete_and_create_refresh_native_buffers_after_prim
     write(
         &root,
         "vite.config.mjs",
-        "export default {vize:{lsp:{lint:false,typecheck:false}}};",
+        "export default {vue:{languageServer:{lint:false,typecheck:false}}};",
     );
     let mut lsp = initialize(&root, Value::Null);
     for name in ["a", "b"] {

@@ -20,8 +20,8 @@ definePageMeta の即時評価部分で実行時コンテキストを使う箇�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/no-page-meta-runtime-values": "error"

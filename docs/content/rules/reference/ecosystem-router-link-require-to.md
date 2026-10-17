@@ -22,8 +22,8 @@ A single SFC root link may inherit its target from parent attributes. This examp
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/router-link-require-to": "error"

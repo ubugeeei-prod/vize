@@ -20,8 +20,8 @@ provide / inject のキーに衝突しにくい Symbol を使います。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-symbol-provide": "warn"

@@ -47,8 +47,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/no-display-none": "warn"
@@ -114,8 +114,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/no-hardcoded-values": "warn"
@@ -181,8 +181,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/no-id-selectors": "warn"
@@ -246,8 +246,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/no-important": "warn"
@@ -311,8 +311,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/no-utility-classes": "warn"
@@ -374,8 +374,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/no-v-bind-performance": "warn"
@@ -437,8 +437,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/prefer-logical-properties": "warn"
@@ -502,8 +502,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/prefer-nested-selectors": "warn"
@@ -563,8 +563,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/prefer-slotted": "warn"
@@ -624,8 +624,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "css/require-font-display": "warn"
@@ -692,8 +692,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "musea/no-empty-variant": "warn"
@@ -757,8 +757,8 @@ Exige um arquivo .art.vue e o inventário de tokens mostrado abaixo. Não infere
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "musea/prefer-design-tokens": "warn"
@@ -843,8 +843,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "musea/require-component": "warn"
@@ -908,8 +908,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "musea/require-title": "error"
@@ -973,8 +973,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "musea/unique-variant-names": "error"
@@ -1036,8 +1036,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "musea/valid-variant": "error"

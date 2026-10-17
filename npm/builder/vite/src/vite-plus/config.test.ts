@@ -21,14 +21,11 @@ void test("defineConfig composes async Vite+ and native config without mutating 
   const result = await defineConfig(
     async (context) => {
       assert.equal(context.mode, "production");
-      return { ...source, vize: config };
+      return { ...source, vue: config };
     },
     { plugin: false, tasks: false },
   )(env);
-  assert.ok(
-    !("vize" in result),
-    "native configuration is not forwarded as an unknown Vite+ option",
-  );
+  assert.ok(!("vue" in result), "native configuration is not forwarded as an unknown Vite+ option");
   assert.deepEqual(result.plugins, [plugin]);
   assert.equal(result.lint?.rules?.["vue/valid-define-props"], "warn");
   assert.equal(result.lint?.rules?.["vue/no-export-in-script-setup"], "off");
@@ -134,57 +131,27 @@ void test("each consumer's Vite+ selects the available overlap rules", async () 
   }
 });
 
-void test("extends merges native sections and Vite+ options with deterministic alias precedence", async () => {
-  const base = defineConfig({
-    compiler: false,
-    server: { port: 4321 },
-    vize: { lint: { preset: "essential", typecheck: true } },
-    fmt: { vize: { singleQuote: true }, printWidth: 90 },
-  });
-  const own: VueConfigObject = {
-    extends: [base, Promise.resolve({ server: { host: true } })],
-    lint: { vize: { typecheck: false, rules: { "vue/no-v-html": "error" } } },
-    typecheck: { strict: true },
-    fmt: { vize: { tabWidth: 4 } },
-  };
-  const result = await defineConfig(own, { tasks: false })(env);
-  assert.equal(result.server?.port, 4321);
-  assert.equal(result.server?.host, true);
-  assert.equal(result.fmt?.printWidth, 90);
-  for (const key of ["vize", "compiler", "typecheck", "extends"]) assert.ok(!(key in result));
-  assert.ok(!("vize" in result.lint!));
-  assert.ok(!("vize" in result.fmt!));
-  const metadata = (result as ConfigWithVizeTasks)[taskConfigKey]!;
-  assert.equal(metadata.lintTypecheck, false);
-  const native = await resolveConfigExport(metadata.config!);
-  assert.equal(native.linter?.preset, "essential");
-  assert.equal(native.linter?.rules?.["vue/no-v-html"], "error");
-  assert.equal(native.formatter?.singleQuote, true);
-  assert.equal(native.formatter?.tabWidth, 4);
-  assert.equal(native.typeChecker?.strict, true);
-  assert.equal(
-    own.lint?.vize && typeof own.lint.vize === "object" && own.lint.vize.typecheck,
-    false,
+void test("config extends reports the drop-in migration instead of composing another config", async () => {
+  const source = { extends: { server: { port: 4321 } }, server: { host: true } };
+  await assert.rejects(
+    defineConfig(source as VueConfigObject, { plugin: false })(env),
+    /extends is no longer supported.*defineConfig\(vpConfig\)\.withVue\(vueConfig\)/,
   );
-  const cyclic: VueConfigObject = {};
-  cyclic.extends = cyclic;
-  await assert.rejects(defineConfig(cyclic, { plugin: false })(env), /Circular extends/);
+  assert.deepEqual(source, { extends: { server: { port: 4321 } }, server: { host: true } });
 });
 
-void test("either lint typecheck spelling enables one native checker, and false opts out", async () => {
-  for (const source of [
-    { lint: { vize: { typecheck: true } } },
-    { vize: { lint: { typecheck: true } } },
-  ]) {
-    const result = await defineConfig(source, { plugin: false, tasks: false })(env);
-    assert.equal((result as ConfigWithVizeTasks)[taskConfigKey]?.lintTypecheck, true);
-  }
+void test("lint.vue typecheck enables one native checker, and false opts out", async () => {
+  const checked = await defineConfig(
+    { lint: { vue: { typecheck: true } } },
+    { plugin: false, tasks: false },
+  )(env);
+  assert.equal((checked as ConfigWithVizeTasks)[taskConfigKey]?.lintTypecheck, true);
   const result = await defineConfig(
     {
       compiler: false,
       typecheck: false,
-      lint: { vize: false },
-      fmt: { vize: false },
+      lint: { vue: false },
+      fmt: { vue: false },
     },
     { tasks: false },
   )(env);
@@ -201,9 +168,9 @@ void test("either lint typecheck spelling enables one native checker, and false 
 void test("native lint presentation and shared format ignores reach only their owning tasks", async () => {
   const source = {
     lint: {
-      vize: { preset: "happy-path" as const, locale: "ja" as const, helpLevel: "short" as const },
+      vue: { preset: "happy-path" as const, locale: "ja" as const, helpLevel: "short" as const },
     },
-    fmt: { vize: { singleQuote: false }, ignorePatterns: ["generated/**"] },
+    fmt: { vue: { singleQuote: false }, ignorePatterns: ["generated/**"] },
   };
   const result = await defineConfig(source, { plugin: false, tasks: false })(env);
   const metadata = (result as ConfigWithVizeTasks)[taskConfigKey]!;
@@ -215,4 +182,18 @@ void test("native lint presentation and shared format ignores reach only their o
   assert.ok(!("helpLevel" in (result.lint ?? {})));
   assert.deepEqual((await resolveConfigExport(metadata.config!)).linter, { preset: "happy-path" });
   assert.deepEqual(source.fmt.ignorePatterns, ["generated/**"]);
+});
+
+void test("legacy vize config keys report an explicit Vue migration", async () => {
+  for (const source of [
+    { vize: {} },
+    { lint: { vize: {} } },
+    { fmt: { vize: {} } },
+    { pack: { vize: {} } },
+  ]) {
+    await assert.rejects(
+      defineConfig(source as VueConfigObject, { plugin: false, tasks: false })(env),
+      /(?:vize: configuration is no longer supported|pack.vize config option was removed)/,
+    );
+  }
 });

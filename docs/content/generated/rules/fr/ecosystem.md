@@ -43,8 +43,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/nuxt-prefer-nuxt-link": "warn"
@@ -104,8 +104,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/pinia-prefer-store-to-refs": "warn"
@@ -168,8 +168,8 @@ Un lien constituant l’unique racine d’un SFC peut hériter de sa destination
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/router-link-require-to": "error"
@@ -229,8 +229,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/void-link-require-href": "error"
@@ -298,8 +298,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/void-link-valid-method": "warn"
@@ -367,8 +367,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-i18n-no-missing-key": "warn"
@@ -432,8 +432,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-router-prefer-named-link": "warn"
@@ -493,8 +493,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-router-prefer-named-push": "warn"
@@ -554,8 +554,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-test-utils-no-html-snapshot": "warn"
@@ -615,8 +615,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/no-nuxt-config-test-key": "error"
@@ -676,8 +676,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/no-page-meta-runtime-values": "error"
@@ -737,8 +737,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/nuxt-config-keys-order": "error"
@@ -798,8 +798,8 @@ Options: Aucune option propre à la règle. La gravité et le choix des prérég
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/prefer-import-meta": "error"

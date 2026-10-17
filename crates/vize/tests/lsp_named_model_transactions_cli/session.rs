@@ -2,6 +2,9 @@
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
+#[path = "../support/vite_config.rs"]
+mod vite_config;
+
 use super::{
     FILES, check,
     lsp_process::{LspProcess, file_uri},
@@ -52,11 +55,11 @@ impl Session {
         #[cfg(windows)]
         std::os::windows::fs::symlink_dir(&vue, project.path().join("node_modules/vue")).unwrap();
         std::fs::write(project.path().join("tsconfig.json"), TSCONFIG).unwrap();
-        std::fs::write(project.path().join("vize.config.json"), serde_json::to_vec(&json!({
+        std::fs::write(project.path().join("vite.config.mjs"), vite_config::source(serde_json::to_vec(&json!({
             "experimentals":{"patternedTemplate":false},
             "typeChecker":{"corsaPath":runtime,"checkFallthroughAttrs":false,"optionsApi":false},
             "lsp":{"lint":false,"typecheck":true,"hover":true,"crossFile":true},
-        })).unwrap()).unwrap();
+        })).unwrap())).unwrap();
         for name in FILES {
             std::fs::write(
                 project.path().join("src").join(name),
@@ -231,7 +234,7 @@ impl Session {
         let packet = json!({"context":context,"sourceSha":std::env::var("SOURCE_SHA").ok(),
             "cliBinary":env!("CARGO_BIN_EXE_vize"),"requireTsgo":std::env::var("VIZE_TEST_REQUIRE_TSGO").ok(),
             "disableTsgo":std::env::var("VIZE_TEST_DISABLE_TSGO").ok(),"oracle":oracle,"expected":expected,"actual":actual,
-            "tsconfig":TSCONFIG,"vizeConfig":std::fs::read_to_string(self.project.path().join("vize.config.json")).unwrap(),
+            "tsconfig":TSCONFIG,"vizeConfig":std::fs::read_to_string(self.project.path().join("vite.config.mjs")).unwrap(),
             "rawTraceDir":self.lsp.trace_dir(),"allDefinitionOriginsContracted":true});
         std::fs::write(
             root.join(self.project.path().file_name().unwrap())

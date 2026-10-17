@@ -47,16 +47,16 @@ fn load_format_config_no_file() {
 fn load_format_config_from_file() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{
-                "fmt": {
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: {
+                "formatter": {
                     "printWidth": 80,
                     "tabWidth": 4,
                     "useTabs": true,
                     "semi": false,
                     "singleQuote": true
                 }
-            }"#,
+            } };"#,
     )
     .unwrap();
 
@@ -75,8 +75,8 @@ fn load_format_config_from_file() {
 fn load_format_config_partial() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{ "fmt": { "printWidth": 120 } }"#,
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: { "formatter": { "printWidth": 120 } } };"#,
     )
     .unwrap();
 
@@ -91,26 +91,30 @@ fn load_format_config_partial() {
 
 #[cfg(feature = "glyph")]
 #[test]
-fn load_format_config_no_fmt_section() {
+fn load_format_config_no_formatter_section() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{ "check": { "globals": ["$t"] } }"#,
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: { "check": { "globals": ["$t"] } } };"#,
     )
     .unwrap();
 
     let state = ServerState::new();
     state.load_format_config(dir.path());
-    // no fmt section → options remain default
+    // no formatter section → options remain default
     let opts = state.get_format_options();
     assert_eq!(opts.print_width, 100);
 }
 
 #[cfg(feature = "glyph")]
 #[test]
-fn load_format_config_invalid_json() {
+fn load_format_config_invalid_module() {
     let dir = tempfile::tempdir().unwrap();
-    std::fs::write(dir.path().join("vize.config.json"), "not valid json").unwrap();
+    std::fs::write(
+        dir.path().join("vite.config.mjs"),
+        "export default { vue: not valid json };",
+    )
+    .unwrap();
 
     let state = ServerState::new();
     state.load_format_config(dir.path());
@@ -135,19 +139,19 @@ fn lsp_features_enable_non_opinionated_defaults() {
 }
 
 #[test]
-fn load_lsp_config_from_json() {
+fn load_lsp_config_from_vite() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{
-                "lsp": {
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: {
+                "languageServer": {
                     "lint": true,
                     "typecheck": true,
                     "editor": true,
                     "signatureHelp": false,
                     "formatting": false
                 }
-            }"#,
+            } };"#,
     )
     .unwrap();
 
@@ -167,8 +171,8 @@ fn load_lsp_config_from_json() {
 fn load_lsp_config_updates_type_checker_config() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: {
                 "typeChecker": {
                     "strict": true,
                     "checkProps": false,
@@ -176,7 +180,7 @@ fn load_lsp_config_updates_type_checker_config() {
                     "tsconfig": "tsconfig.app.json",
                     "corsaPath": "./node_modules/.bin/corsa"
                 }
-            }"#,
+            } };"#,
     )
     .unwrap();
 
@@ -186,8 +190,14 @@ fn load_lsp_config_updates_type_checker_config() {
     assert!(config.strict);
     assert!(!config.check_props);
     assert!(!config.check_emits);
-    assert_eq!(config.tsconfig.as_deref(), Some("tsconfig.app.json"));
-    assert_eq!(config.runtime_path(), Some("./node_modules/.bin/corsa"));
+    assert_eq!(
+        config.tsconfig.as_deref(),
+        dir.path().join("tsconfig.app.json").to_str(),
+    );
+    assert_eq!(
+        config.runtime_path(),
+        dir.path().join("node_modules/.bin/corsa").to_str(),
+    );
 }
 
 #[test]
@@ -204,8 +214,8 @@ fn options_api_enabled_by_default() {
 fn type_checker_options_api_opt_out_from_config() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{ "typeChecker": { "optionsApi": false } }"#,
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: { "typeChecker": { "optionsApi": false } } };"#,
     )
     .unwrap();
 
@@ -221,8 +231,8 @@ fn type_checker_options_api_opt_out_from_config() {
 fn type_checker_options_api_explicit_opt_in_from_config() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{ "typeChecker": { "optionsApi": true } }"#,
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: { "typeChecker": { "optionsApi": true } } };"#,
     )
     .unwrap();
 
@@ -238,8 +248,8 @@ fn type_checker_options_api_explicit_opt_in_from_config() {
 fn legacy_vue2_config_implies_options_api() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{ "typeChecker": { "legacyVue2": true } }"#,
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: { "typeChecker": { "legacyVue2": true } } };"#,
     )
     .unwrap();
 
@@ -268,8 +278,8 @@ fn jsx_typecheck_defaults_off() {
 fn jsx_typecheck_config_opts_in() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{ "typeChecker": { "jsxTypecheck": true } }"#,
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: { "typeChecker": { "jsxTypecheck": true } } };"#,
     )
     .unwrap();
 
@@ -285,15 +295,15 @@ fn jsx_typecheck_config_opts_in() {
 fn load_lsp_config_updates_linter_config() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: {
                 "linter": {
                     "preset": "opinionated",
                     "rules": {
                         "vue/prop-name-casing": "off"
                     }
                 }
-            }"#,
+            } };"#,
     )
     .unwrap();
 
@@ -305,9 +315,13 @@ fn load_lsp_config_updates_linter_config() {
 }
 
 #[test]
-fn load_lsp_config_invalid_json_keeps_default() {
+fn load_lsp_config_invalid_module_keeps_default() {
     let dir = tempfile::tempdir().unwrap();
-    std::fs::write(dir.path().join("vize.config.json"), "not valid json").unwrap();
+    std::fs::write(
+        dir.path().join("vite.config.mjs"),
+        "export default { vue: not valid json };",
+    )
+    .unwrap();
 
     let state = ServerState::new();
     state.load_lsp_config(dir.path());

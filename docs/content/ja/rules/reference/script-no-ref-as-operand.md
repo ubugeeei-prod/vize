@@ -20,8 +20,8 @@ ref を演算の値として使う際に .value を参照します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-ref-as-operand": "error"

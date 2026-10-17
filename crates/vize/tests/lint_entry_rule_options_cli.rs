@@ -2,6 +2,8 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{fs, path::Path, process::Command};
 
 fn write_file(root: &Path, path: &str, content: &str) {
@@ -36,8 +38,9 @@ fn entry_rule_options_enable_project_local_rules_for_matching_files() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "incremental"
   },
@@ -60,6 +63,7 @@ fn entry_rule_options_enable_project_local_rules_for_matching_files() {
     }
   ]
 }"#,
+        ),
     );
     write_session_storage_sfc(project_root.path(), "src/admin/App.vue");
     write_session_storage_sfc(project_root.path(), "src/public/App.vue");
@@ -69,7 +73,7 @@ fn entry_rule_options_enable_project_local_rules_for_matching_files() {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/admin/App.vue",

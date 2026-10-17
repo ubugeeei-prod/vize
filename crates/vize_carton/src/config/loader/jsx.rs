@@ -22,7 +22,7 @@ mod tests {
     #[test]
     fn load_compiler_jsx_mode_reads_jsx_mode_key() {
         let dir = tempfile::tempdir().unwrap();
-        let config_path = dir.path().join("vize.config.json");
+        let config_path = dir.path().join("serialized-config.json");
         std::fs::write(&config_path, r#"{ "compiler": { "jsxMode": "vapor" } }"#).unwrap();
 
         assert_eq!(
@@ -37,7 +37,7 @@ mod tests {
     #[test]
     fn load_compiler_jsx_mode_reads_vdom() {
         let dir = tempfile::tempdir().unwrap();
-        let config_path = dir.path().join("vize.config.json");
+        let config_path = dir.path().join("serialized-config.json");
         std::fs::write(&config_path, r#"{ "compiler": { "jsxMode": "vdom" } }"#).unwrap();
 
         assert_eq!(
@@ -48,7 +48,7 @@ mod tests {
     #[test]
     fn load_compiler_jsx_mode_defaults_to_unset() {
         let dir = tempfile::tempdir().unwrap();
-        let config_path = dir.path().join("vize.config.json");
+        let config_path = dir.path().join("serialized-config.json");
         std::fs::write(&config_path, r#"{ "formatter": { "singleQuote": true } }"#).unwrap();
 
         // No `compiler.jsxMode` key → absent (the JSX entry points treat this as VDOM).
@@ -57,7 +57,7 @@ mod tests {
     #[test]
     fn load_compiler_jsx_compat_reads_babel_key() {
         let dir = tempfile::tempdir().unwrap();
-        let config_path = dir.path().join("vize.config.json");
+        let config_path = dir.path().join("serialized-config.json");
         std::fs::write(&config_path, r#"{ "compiler": { "jsxCompat": "babel" } }"#).unwrap();
 
         assert_eq!(
@@ -72,7 +72,7 @@ mod tests {
     #[test]
     fn load_compiler_jsx_compat_reads_native() {
         let dir = tempfile::tempdir().unwrap();
-        let config_path = dir.path().join("vize.config.json");
+        let config_path = dir.path().join("serialized-config.json");
         std::fs::write(&config_path, r#"{ "compiler": { "jsxCompat": "native" } }"#).unwrap();
 
         assert_eq!(
@@ -83,7 +83,7 @@ mod tests {
     #[test]
     fn load_compiler_jsx_compat_defaults_to_unset() {
         let dir = tempfile::tempdir().unwrap();
-        let config_path = dir.path().join("vize.config.json");
+        let config_path = dir.path().join("serialized-config.json");
         std::fs::write(&config_path, r#"{ "compiler": { "jsxMode": "vdom" } }"#).unwrap();
 
         // No `compiler.jsxCompat` key → absent, which the JSX entry points treat as

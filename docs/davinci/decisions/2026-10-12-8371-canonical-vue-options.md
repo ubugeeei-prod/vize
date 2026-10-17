@@ -1,5 +1,9 @@
 # Canonical Vue configuration (#8371)
 
+The current public configuration policy is recorded in
+[the October 17 decision](./2026-10-17-8371-vite-tsconfig-editor-config.md).
+The dedicated-file and legacy-namespace behavior below is historical.
+
 The requested public form is defineConfig({ vue: {} }) and the drop-in form
 withVue({}, defineConfig(vpConfig)). Keep package names and the existing native
 compiler/typeChecker/linter/formatter/languageServer/version/scopes vocabulary.

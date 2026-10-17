@@ -15,8 +15,8 @@ reactive な計算が互いに循環して依存しています。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/circular-reactive-dependency": "warn" },
     },
   },

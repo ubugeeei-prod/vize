@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "../vue-config-fixture.ts";
 // Compile patterned-template SFCs with the real CLI and run them against the
 // installed Vue runtime: client render, server render and hydration.
 import assert from "node:assert/strict";
@@ -42,10 +43,7 @@ export function buildPatternComponents(
     options.runtime ? code.replaceAll(/(from\s*)(["'])vue\2/g, `$1"${options.runtime}"`) : code;
   const directory = workspace("pattern-runtime-");
   fs.mkdirSync(path.join(directory, "src"));
-  fs.writeFileSync(
-    path.join(directory, "vize.config.json"),
-    JSON.stringify({ experimentals: { patternedTemplate: true } }),
-  );
+  writeVueConfigFixture(directory, { experimentals: { patternedTemplate: true } });
   for (const [file, source] of Object.entries(components)) {
     fs.writeFileSync(path.join(directory, "src", file), source);
   }

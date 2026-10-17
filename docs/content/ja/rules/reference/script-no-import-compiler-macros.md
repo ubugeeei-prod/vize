@@ -20,8 +20,8 @@ title: "script/no-import-compiler-macros"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-import-compiler-macros": "error"

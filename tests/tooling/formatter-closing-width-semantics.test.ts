@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 
 interface StockIdentity {
   version: string;
@@ -192,8 +193,8 @@ void test("actual closing CLI preserves thirteen whole stock DOM/text/SSR/event 
     fs.mkdirSync(project);
     const filename = "App.vue";
     const file = path.join(project, filename);
-    const configPath = path.join(project, "vize.config.json");
-    const config = Buffer.from(`${JSON.stringify({ formatter: fixture.options })}\n`);
+    const configPath = path.join(project, "vite.config.mjs");
+    const config = Buffer.from(vueConfigFixtureSource({ formatter: fixture.options }));
     fs.writeFileSync(configPath, config);
     fs.writeFileSync(file, fixture.input);
     for (const [pass, mode] of ["--check", "--write", "--write", "--write", "--check"].entries()) {

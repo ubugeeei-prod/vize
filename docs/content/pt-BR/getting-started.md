@@ -59,11 +59,11 @@ Aplique correções com `vp run check -- --fix`. Use `vp run` para as tarefas ge
 Os guias que ainda não foram traduzidos abrem em inglês.
 
 > [!NOTE]
-> O Vize 0.457.0 oferece configuração Vite compartilhada na CLI nativa e `init` sem arquivo Vize específico. Atualize a CLI, a integração Vite e a extensão do editor para usar esse fluxo. A [referência](./guide/configuration-reference.md) descreve a descoberta, a precedência e os formatos específicos opcionais.
+> A CLI, a integração Vite e o editor compartilham as opções `vue:` do `vite.config.*` e usam o projeto TypeScript e as `vueCompilerOptions` do `tsconfig.json`. Arquivos específicos `vize.config.*` e o objeto `vize:` no nível superior foram removidos; veja como migrar no [guia de configuração](./guide/configuration.md).
 
 ## Usar o Vize sem Vite+
 
-A [CLI independente](./guide/cli.md) oferece `vize lint`, `vize fmt` e `vize check`. Execute na raiz do pacote de destino e mantenha o projeto TypeScript em `tsconfig.json`. Os comandos nativos podem compartilhar o objeto `vize` no nível superior de `vite.config.*`; veja a [configuração da CLI](./guide/configuration.md#standalone-cli) para a busca e seus limites atuais.
+A [CLI independente](./guide/cli.md) oferece `vize lint`, `vize fmt` e `vize check`. Execute na raiz do pacote de destino e mantenha o projeto TypeScript em `tsconfig.json`. Os comandos nativos podem compartilhar a seção `vue:` do `vite.config.*`; veja a [configuração da CLI](./guide/configuration.md#standalone-cli) para a busca e seus limites atuais.
 
 Confira o plano interativo com `vpx vize init --dry-run` e execute `vpx vize init` para escolher os recursos. O [guia de configuração inicial](/guide/init.md) explica a detecção e os limites de edição. O init usa as opções do projeto e os valores padrão, sem criar uma configuração específica do Vize.
 

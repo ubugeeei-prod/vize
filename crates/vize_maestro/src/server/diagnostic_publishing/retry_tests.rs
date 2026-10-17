@@ -1,6 +1,5 @@
 //! Actual publishing survives unrelated revisions and cancelled collection.
 #![expect(
-    clippy::disallowed_methods,
     clippy::unwrap_used,
     clippy::indexing_slicing,
     reason = "whole process and LSP notification fixture"
@@ -72,7 +71,7 @@ fn fixture(held: bool) -> Fixture {
         .unwrap();
         std::fs::set_permissions(&backend, std::fs::Permissions::from_mode(0o755)).unwrap();
     }
-    std::fs::write(root.path().join("vize.config.json"), json!({"lsp":{"typecheck":true,"lint":false,"ecosystem":false},"typeChecker":{"corsaPath":backend,"lspRequestTimeoutMs":60_000}}).to_string()).unwrap();
+    std::fs::write(root.path().join("vite.config.mjs"), vize_l0::cstr!("export default {{ vue: {} }};", json!({"languageServer":{"typecheck":true,"lint":false,"ecosystem":false},"typeChecker":{"corsaPath":backend,"lspRequestTimeoutMs":60_000}})).as_bytes()).unwrap();
     let (mut service, socket) = LspService::new(MaestroServer::new);
     let request: Request = serde_json::from_value(json!({"jsonrpc":"2.0","id":8012,"method":"initialize","params":{"rootUri":Url::from_file_path(root.path()).unwrap(),"capabilities":{}}})).unwrap();
     let response = futures::executor::block_on(async {

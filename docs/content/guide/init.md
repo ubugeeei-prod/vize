@@ -40,7 +40,7 @@ directory or a missing lockfile before any file is touched:
   package manager: pnpm
   language:        TypeScript (tsconfig.json)
   lint command:    vp lint
-  vize config:     none
+  Vue settings:    vue: in vite.config.*
   oxlint config:   none
 ```
 

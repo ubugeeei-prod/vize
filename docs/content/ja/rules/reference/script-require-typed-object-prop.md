@@ -20,8 +20,8 @@ Object / Array の prop に具体的な型を指定します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-typed-object-prop": "warn"

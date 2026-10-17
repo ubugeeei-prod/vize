@@ -111,8 +111,7 @@ export declare function Prop(options?: object): PropertyDecorator;
       include: ["src/**/*.d.ts", CARD_PATH],
     }),
   );
-  fixture.write(
-    "vize.config.json",
+  fixture.writeVueConfig(
     json({
       compiler: { compatibility: { vueVersion: "2" } },
       typeChecker: { corsaPath, legacyVue2: true },

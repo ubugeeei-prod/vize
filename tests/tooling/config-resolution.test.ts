@@ -19,7 +19,7 @@ function withTempDir<T>(prefix: string, run: (dir: string) => Promise<T>): Promi
 
 test("loadConfig with mode 'none' ignores any present config", async () => {
   await withTempDir("vize-config-none-", async (dir) => {
-    fs.writeFileSync(path.join(dir, "vize.config.json"), '{ "formatter": { "lineWidth": 1 } }');
+    fs.writeFileSync(path.join(dir, "vite.config.mjs"), 'throw new Error("config must not load");');
     const config = await loadConfig(dir, { mode: "none" });
     assert.equal(config, null);
   });
@@ -29,10 +29,13 @@ test("loadConfig with mode 'auto' resolves a config from an ancestor directory",
   await withTempDir("vize-config-auto-", async (dir) => {
     const nested = path.join(dir, "packages", "app", "src");
     fs.mkdirSync(nested, { recursive: true });
-    fs.writeFileSync(path.join(dir, "vize.config.json"), '{ "formatter": { "lineWidth": 7 } }');
+    fs.writeFileSync(
+      path.join(dir, "vite.config.mjs"),
+      "export default {vue:{formatter:{printWidth:7}}};",
+    );
 
     const auto = await loadConfig(nested, { mode: "auto" });
-    assert.equal(auto?.formatter?.lineWidth, 7);
+    assert.equal(auto?.formatter?.printWidth, 7);
 
     // 'root' must only look in the starting directory, so the ancestor config
     // is invisible from the nested directory.
@@ -62,44 +65,59 @@ test("loadConfig returns null for a missing explicit configFile", async () => {
   });
 });
 
+test("Vite custom extends rejects before loading invalid inherited JSON", async () => {
+  await withTempDir("vize-config-retired-extends-", async (dir) => {
+    fs.writeFileSync(path.join(dir, "inherited.json"), "{ invalid inherited JSON");
+    fs.writeFileSync(
+      path.join(dir, "vite.config.mjs"),
+      'export default {extends:"./inherited.json",vue:{formatter:{printWidth:88}}};',
+    );
+    await assert.rejects(loadConfig(dir), /Custom config extends is no longer supported/);
+  });
+});
+
 test("loadConfig prefers higher-priority config formats when several coexist", async () => {
   await withTempDir("vize-config-precedence-", async (dir) => {
-    // .ts wins over .mjs wins over .json (matching CONFIG_FILE_NAMES order,
-    // excluding .pkl which needs an external runtime).
-    fs.writeFileSync(path.join(dir, "vize.config.json"), '{ "formatter": { "lineWidth": 80 } }');
+    // Vite's .ts wins over .js, which wins over .mjs. Generic serialized JSON
+    // remains available only through an explicit configFile.
     fs.writeFileSync(
-      path.join(dir, "vize.config.mjs"),
-      "export default { formatter: { lineWidth: 99 } }\n",
+      path.join(dir, "vite.config.mjs"),
+      "export default { vue: { formatter: { printWidth: 99 } } }\n",
     );
     const mjsWins = await loadConfig(dir, { mode: "root" });
-    assert.equal(mjsWins?.formatter?.lineWidth, 99, ".mjs should win over .json");
+    assert.equal(mjsWins?.formatter?.printWidth, 99);
+    fs.writeFileSync(
+      path.join(dir, "vite.config.js"),
+      "module.exports={vue:{formatter:{printWidth:80}}};",
+    );
+    assert.equal((await loadConfig(dir))?.formatter?.printWidth, 80, ".js should win over .mjs");
 
     fs.writeFileSync(
-      path.join(dir, "vize.config.ts"),
-      "export default { formatter: { lineWidth: 55 } }\n",
+      path.join(dir, "vite.config.ts"),
+      "export default { vue: { formatter: { printWidth: 55 } } }\n",
     );
     const tsWins = await loadConfig(dir, { mode: "root" });
-    assert.equal(tsWins?.formatter?.lineWidth, 55, ".ts should win over .mjs");
+    assert.equal(tsWins?.formatter?.printWidth, 55, ".ts should win over .js and .mjs");
   });
 });
 
 test("loadConfig loads ESM .mjs and CommonJS .js config files", async () => {
   await withTempDir("vize-config-mjs-", async (dir) => {
     fs.writeFileSync(
-      path.join(dir, "vize.config.mjs"),
-      "export default { formatter: { lineWidth: 91 } }\n",
+      path.join(dir, "vite.config.mjs"),
+      "export default { vue: { formatter: { printWidth: 91 } } }\n",
     );
     const esm = await loadConfig(dir, { mode: "root" });
-    assert.equal(esm?.formatter?.lineWidth, 91);
+    assert.equal(esm?.formatter?.printWidth, 91);
   });
 
   await withTempDir("vize-config-cjs-", async (dir) => {
     fs.writeFileSync(
-      path.join(dir, "vize.config.js"),
-      "module.exports = { formatter: { lineWidth: 33 } }\n",
+      path.join(dir, "vite.config.js"),
+      "module.exports = { vue: { formatter: { printWidth: 33 } } }\n",
     );
     const cjs = await loadConfig(dir, { mode: "root" });
-    assert.equal(cjs?.formatter?.lineWidth, 33);
+    assert.equal(cjs?.formatter?.printWidth, 33);
   });
 });
 

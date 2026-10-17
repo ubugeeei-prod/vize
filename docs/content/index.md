@@ -45,7 +45,7 @@ features:
 Start with [Getting Started](./getting-started.md), then use the
 [migration guide](./guide/migration.md) to replace your Vue compiler and compare
 checks before changing CI. Vite+ projects keep integration settings in
-`vite.config.ts`; standalone CLI and LSP workflows can use `vize.config.ts`.
+`vite.config.ts`; standalone CLI and LSP workflows read the same `vue:` settings and `tsconfig.json`.
 
 Vize is under active development. The [support status](./stability.md) describes
 known limits; compare diagnostics and build output on your own project before adoption.

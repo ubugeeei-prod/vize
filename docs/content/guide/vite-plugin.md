@@ -96,11 +96,20 @@ For Vite Plus projects, keep the Vite Plus client type and append the plugin pac
 
 ## Shared native settings
 
-For Vite+, use the integration helper's `compiler` field. For ordinary Vite, use direct plugin options. Put native CLI/editor settings in the same Vite config's top-level `vize` object; see [Configuration](./configuration.md) for supported syntax, discovery and release availability. Existing dedicated formats remain an optional reference path.
+For Vite+, keep your existing config and add native Vue settings with
+`defineConfig(vpConfig).withVue(vueConfig)` from `@vizejs/vite-plugin/vite-plus`.
+For ordinary Vite, put those settings in the same config's top-level `vue:` object
+and retain `plugins: [vize()]`. The CLI and editor read the same project settings.
+
+Keep TypeScript `compilerOptions`, standard `extends` and `references` in
+`tsconfig.json`; Vue template options belong in `vueCompilerOptions`.
+Dedicated `vize.config.*` files and top-level `vize:` settings are retired.
+See [Configuration](./configuration.md) for migration and
+[Shared Vue configuration](./vue-configuration.md) for scoped entries.
 
 ## Compiler Options
 
-Direct options passed to `vize()` take precedence, followed by inline `config`, then discovered project settings and defaults. A dedicated `vize.config.*` takes priority over Vite config in the same directory. `config: false` opts out of automatic discovery.
+Direct options passed to `vize()` take precedence, followed by inline `config`, then discovered project settings and defaults. Use `vue:` in the Vite configuration; dedicated `vize.config.*` files are no longer supported. `config: false` opts out of automatic discovery.
 
 ```ts
 vize({
@@ -118,20 +127,20 @@ vize({
 | Option                 | Where to set it                                         | Description                                                                                                                                     |
 | ---------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `vueVersion`           | `vize({ vueVersion })`                                  | Set `0.11`, `1`, `2`, or `"legacy"` to run in non-invasive legacy Vue compatibility mode and leave SFC compilation to the host compiler.        |
-| `sourceMap`            | `compiler.sourceMap` or `vize({ sourceMap })`           | Generate source maps whose `sources` name the authored `.vue` file. Defaults to development on, production off unless `build.sourcemap` is set. |
-| `ssr`                  | `compiler.ssr` or `vize({ ssr })`                       | Force SSR compilation when Vite's SSR build flag is not enough.                                                                                 |
-| `vapor`                | `compiler.vapor` or `vize({ vapor })`                   | Compile templates through the Vapor backend.                                                                                                    |
-| `jsxMode`              | `compiler.jsxMode` or `vize({ jsxMode })`               | Default output backend (`"vdom"` / `"vapor"`) for `.jsx`/`.tsx` components. Per-component `"use vue:*"` directives override it.                 |
-| `customRenderer`       | `compiler.customRenderer` or `vize({ customRenderer })` | Treat lowercase non-HTML tags as custom renderer elements. Does not match PascalCase tags such as `<TresMesh>`.                                 |
-| `customElements`       | `compiler.customElements` or `vize({ customElements })` | Tag patterns compiled as custom elements instead of Vue components. Use `["Tres*"]` for TresJS PascalCase renderer tags.                        |
-| `templateSyntax`       | `compiler.templateSyntax` or `vize({ templateSyntax })` | Choose `"standard"`, `"strict"`, or `"quirks"` template syntax handling.                                                                        |
-| `whitespace`           | `compiler.whitespace`, `vize({ whitespace })`, or `template.compilerOptions.whitespace` | Use Vue's `"condense"` (default) or `"preserve"` template whitespace mode. Vize also accepts `"vue2-line-breaks"` through its own compiler/Vite option to keep a newline after text or interpolation when Vue 3 would condense it to one space. This is a narrow migration mode, not full Vue 2 whitespace behavior. For Vue 2.7 `whitespace: "preserve"` output (as used by Vue 2, vue-loader 15 and Nuxt 2), use `"vue2-preserve"`: whitespace next to text and interpolations is kept as written, and whitespace-only runs between elements become one space. |
+| `sourceMap`            | `vue.compiler.sourceMap` or `vize({ sourceMap })`           | Generate source maps whose `sources` name the authored `.vue` file. Defaults to development on, production off unless `build.sourcemap` is set. |
+| `ssr`                  | `vue.compiler.ssr` or `vize({ ssr })`                       | Force SSR compilation when Vite's SSR build flag is not enough.                                                                                 |
+| `vapor`                | `vue.compiler.vapor` or `vize({ vapor })`                   | Compile templates through the Vapor backend.                                                                                                    |
+| `jsxMode`              | `vue.compiler.jsxMode` or `vize({ jsxMode })`               | Default output backend (`"vdom"` / `"vapor"`) for `.jsx`/`.tsx` components. Per-component `"use vue:*"` directives override it.                 |
+| `customRenderer`       | `vue.compiler.customRenderer` or `vize({ customRenderer })` | Treat lowercase non-HTML tags as custom renderer elements. Does not match PascalCase tags such as `<TresMesh>`.                                 |
+| `customElements`       | `vue.compiler.customElements` or `vize({ customElements })` | Tag patterns compiled as custom elements instead of Vue components. Use `["Tres*"]` for TresJS PascalCase renderer tags.                        |
+| `templateSyntax`       | `vue.compiler.templateSyntax` or `vize({ templateSyntax })` | Choose `"standard"`, `"strict"`, or `"quirks"` template syntax handling.                                                                        |
+| `whitespace`           | `vue.compiler.whitespace`, `vize({ whitespace })`, or `template.compilerOptions.whitespace` | Use Vue's `"condense"` (default) or `"preserve"` template whitespace mode. Vize also accepts `"vue2-line-breaks"` through its own compiler/Vite option to keep a newline after text or interpolation when Vue 3 would condense it to one space. This is a narrow migration mode, not full Vue 2 whitespace behavior. For Vue 2.7 `whitespace: "preserve"` output (as used by Vue 2, vue-loader 15 and Nuxt 2), use `"vue2-preserve"`: whitespace next to text and interpolations is kept as written, and whitespace-only runs between elements become one space. |
 | `template.compilerOptions.comments` | `vize({ template: { compilerOptions: { comments } } })` | Preserve authored template comments in development by default and omit them in production. Set `true` or `false` to override either default. Direct native calls use `templateComments` and default to `false`. |
-| `experimentals`        | top-level `experimentals` or `vize({ experimentals })`  | Fully opt-in Vue RFC and backend experiments. Missing keys, `false`, and `null` are off.                                                        |
-| `include`              | `vite.include` or `vize({ include })`                   | Files that the plugin should compile.                                                                                                           |
-| `exclude`              | `vite.exclude` or `vize({ exclude })`                   | Files that the plugin should ignore.                                                                                                            |
-| `scanPatterns`         | `vite.scanPatterns` or `vize({ scanPatterns })`         | Glob patterns used for startup pre-compilation.                                                                                                 |
-| `ignorePatterns`       | `vite.ignorePatterns` or `vize({ ignorePatterns })`     | Glob patterns skipped during startup pre-compilation.                                                                                           |
+| `experimentals`        | `vue.experimentals` or `vize({ experimentals })`  | Fully opt-in Vue RFC and backend experiments. Missing keys, `false`, and `null` are off.                                                        |
+| `include`              | `vue.vite.include` or `vize({ include })`                   | Files that the plugin should compile.                                                                                                           |
+| `exclude`              | `vue.vite.exclude` or `vize({ exclude })`                   | Files that the plugin should ignore.                                                                                                            |
+| `scanPatterns`         | `vue.vite.scanPatterns` or `vize({ scanPatterns })`         | Glob patterns used for startup pre-compilation.                                                                                                 |
+| `ignorePatterns`       | `vue.vite.ignorePatterns` or `vize({ ignorePatterns })`     | Glob patterns skipped during startup pre-compilation.                                                                                           |
 | `configMode`           | `vize({ configMode })`                                  | Use `"root"`, `"auto"`, or `false` for shared config loading.                                                                                   |
 | `configFile`           | `vize({ configFile })`                                  | Load a specific config file.                                                                                                                    |
 | `config`               | `vize({ config })`                                      | Inline shared config for Vite Plus runtime settings.                                                                                            |

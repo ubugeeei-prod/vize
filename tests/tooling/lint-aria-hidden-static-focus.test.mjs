@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -91,7 +92,7 @@ await test("source CLI preserves the original static non-focusable controls and 
     const config = fs.readFileSync(path.join(fixture, "vize.config.json"), "utf8");
     assert.equal(originalIssue.match(/```vue\n([\s\S]*?)```/)[1], original);
     assert.equal(originalIssue.match(/```json\n([\s\S]*?)```/)[1], config);
-    fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+    writeVueConfigFixture(directory, config);
     const build = expectedBuildIdentity(root);
     const receipt = JSON.parse(
       fs.readFileSync(path.join(root, build.binaryPath + ".differential-build.json"), "utf8"),

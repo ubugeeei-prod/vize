@@ -26,15 +26,10 @@ fn run() -> Result<(), String> {
         "[language-server.vize]",
         "command = \"vize\"",
         "args = [\"lsp\"]",
-        "[language-server.vize.config]",
-        "editor = true",
-        "ecosystem = true",
-        "lint = true",
-        "typecheck = true",
     ] {
         if !languages.contains(needle) {
             return Err(format!("Helix languages.toml missing {needle}"));
         }
     }
-    lsp_smoke::run_editor_contract(&repo, "helix", false)
+    lsp_smoke::run_editor_contract(&repo, "helix")
 }

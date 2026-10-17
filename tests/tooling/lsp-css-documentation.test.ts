@@ -12,12 +12,12 @@ import { root } from "./support/lsp/paths.ts";
 
 await test("ordinary CSS completion/resolve/hover uses static docs without typechecking", async () => {
   const binary = path.join(root, "target/ci", process.platform === "win32" ? "vize.exe" : "vize");
-  const observations = await observeCss(binary, true, true);
+  const { observations, configuration } = await observeCss(binary, true, true);
   const output = path.join(root, "target/differential/css-documentation-observations.json");
   fs.mkdirSync(path.dirname(output), { recursive: true });
   fs.writeFileSync(
     output,
-    `${JSON.stringify({ binary, scope: "actual stdio latency observations; no instruction/allocation or speedup claim", observations }, null, 2)}\n`,
+    `${JSON.stringify({ binary, configuration, scope: "actual stdio latency observations; no instruction/allocation or speedup claim", observations }, null, 2)}\n`,
   );
   const client = await cssSession(binary, true, false);
   try {

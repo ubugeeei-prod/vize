@@ -1,66 +1,77 @@
 ---
 title: 配置
-description: 通过现有的 Vite 配置和 TypeScript 项目共享 Vize 设置。
+description: 通过现有的 Vite 配置和 TypeScript 项目共享 Vue 工具设置。
 ---
 
 <!-- Reviewed translation; source: guide/configuration.md -->
 
 # 配置
 
-将 Vize 设置放在 `vite.config.ts` 中，将 TypeScript 项目设置保留在 `tsconfig.json` 中。使用默认设置时，无需额外的 Vize 配置文件。
+将 Vue 工具设置放在 `vite.config.*` 的 `vue:` 中，将 TypeScript 项目设置保留在 `tsconfig.json` 中。CLI、Vite 集成和编辑器扩展读取这些项目文件，无需专用的 Vize 配置。
 
-> [!NOTE]
-> Vize 0.457.0 的原生 CLI 支持读取共享 Vite 配置，`init` 也无需创建专用 Vize 配置文件。使用共享配置时，请更新 CLI、Vite 集成和编辑器扩展。[参考文档](./configuration-reference.md)介绍配置查找、优先级和可选的专用格式。
+## 保留现有的 Vite+ 配置
 
-## Vite+ 配置
+使用 Vize 的辅助函数包装现有配置：
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+const vpConfig = {
+  server: { port: 3000 },
+};
+
+const vueConfig = {
+  compiler: { sourceMap: true },
+  linter: { preset: "essential" },
+  formatter: { printWidth: 100 },
+};
+
+export default defineConfig(vpConfig).withVue(vueConfig);
+```
+
+`withVue` 保留现有的 Vite+ 选项、插件和钩子，支持配置对象、函数、Promise 和异步函数。也可以直接在配置中写 `vue: { ... }`。路径、作用域和配置组合详见[共享 Vue 配置](/guide/vue-configuration.md)（英文）。
+
+## TypeScript 和 Vue 模板检查
+
+保留现有的 TypeScript 项目，包括标准的 `extends` 和 `references`。Vue 模板编译选项放在 `vueCompilerOptions` 中：
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "jsx": "preserve"
+  },
+  "vueCompilerOptions": {
+    "strictTemplates": true
+  },
+  "include": ["src/**/*"]
+}
+```
+
+使用 `vue-tsc` 的现有项目可以保留原有布局。TypeScript 的严格性由 `compilerOptions` 决定，Vue 专用选项属于 `vueCompilerOptions`。支持的选项和显式 Vize 覆盖设置详见[配置参考](./configuration-reference.md)。
+
+<span id="lint-rule-options"></span>
+
+## 修改 lint 规则
+
+Vue 规则放在 `vue.linter.rules` 中，Oxlint 规则保留在 `lint.rules` 中。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  compiler: { sourceMap: true },
-  lint: { vize: { preset: "essential" } },
-  fmt: { vize: { printWidth: 100 } },
-  typecheck: { strict: true },
+  lint: { rules: { "no-debugger": "error" } },
+}).withVue({
+  linter: { rules: { "vue/no-v-html": "error" } },
 });
 ```
 
-| 位置 | 用途 | 命令 |
-| --- | --- | --- |
-| `compiler` | Vue 编译 | `vp dev`, `vp build` |
-| `lint.vize` | Vue lint 规则 | `vp run lint` |
-| `fmt.vize` | Vue 格式化 | `vp run fmt:check` |
-| `typecheck` | Vue 类型检查 | `vp run typecheck` |
-| `pack.vize` | 库类型声明 | `vp run pack` |
-
-使用 `vp run check` 运行组合的 Vize 任务。内置的 `vp check`、`vp lint` 和 `vp fmt` 保持 Vite+ 自身的行为。已有脚本可能使生成的任务改名为 `vize:<名称>`；请参阅[任务名称和覆盖设置](/guide/vite-plus.md#tasks)。
-
-## 修改一条规则
-
-Vue 规则放在 `lint.vize.rules` 中，Oxlint 规则放在 `lint.rules` 中。[规则选项](/rules/options.md)介绍参数，[规则目录](../rules/all.md)提供完整示例。
-
-```ts
-export default defineConfig({
-  lint: {
-    vize: { rules: { "vue/no-v-html": "error" } },
-    rules: { "no-debugger": "error" },
-  },
-});
-```
-
-<span id="lint-rule-options"></span>
-
-### Lint 规则选项
-
-[规则选项](/rules/options.md)列出了配置对象的类型以及错误和正确示例（英文）。不支持的选项字段会被拒绝。
-
-## 选择启用的功能
-
-将 `compiler`、`typecheck`、`lint.vize` 或 `fmt.vize` 设为 `false` 即可禁用对应功能。Vize 格式化 Vue 文件，Oxfmt 处理其他文件。请参阅[职责划分和冲突处理](/guide/vite-plus.md#lint-and-formatter-ownership)。
+[规则选项](/rules/options.md)介绍参数，[规则目录](../rules/all.md)提供问题和修正示例。不支持的选项字段会被拒绝。
 
 ## 普通 Vite
 
-使用插件进行编译，并在顶层 `vize` 对象中配置 CLI 和编辑器共用的设置。导入插件也会添加 Vite 配置的类型定义。
+保留现有的 Vite 配置，并替换 Vue 编译插件：
 
 ```ts
 import { defineConfig } from "vite";
@@ -68,34 +79,34 @@ import vize from "@vizejs/vite-plugin";
 
 export default defineConfig({
   plugins: [vize()],
-  vize: {
+  vue: {
     linter: { preset: "essential" },
     formatter: { printWidth: 100 },
-    typeChecker: { strict: true },
   },
 });
 ```
 
 <span id="standalone-cli"></span>
 
-## 独立 CLI
+## CLI 和编辑器
 
-安装 `vize` 后，从目标包的根目录运行命令。CLI 也会读取 `vite.config.*` 和 TypeScript 项目。Vite+ 的 `compiler`、`typecheck`、`lint.vize` 和 `fmt.vize` 设置也会转换为原生命令的配置。顶层 `vize` 中显式设置的原生选项优先于转换结果。
+从目标包的根目录运行命令。编辑器在选定工作区内解析每个文档所属的项目，并读取其 Vite 和 TypeScript 设置。Monorepo 中的各个包保留自己的 `tsconfig.json`、项目引用和 Vite 配置。使用 `--tsconfig` 可以显式选择其他 TypeScript 项目。
 
 ```bash
-vp install -D vize
 vp exec vize check
+vp exec vize lint src
+vp exec vize fmt --check src
 ```
 
-配置搜索会在最近的 `package.json`、`tsconfig.json` 或 `jsconfig.json` 所在目录停止。在 monorepo 中，请从目标包运行命令或使用 `vize.entries`，并显式选择编辑器的工作区文件夹。按文档自动发现嵌套 Vite 配置仍在开发中。
+Vite 配置中的原生相对路径以选定的 Vite `root` 为基准；相对 `root` 从配置文件目录解析。显式 CLI 文件参数和 `--tsconfig` 仍以执行命令的目录为基准。CLI 功能标志和编辑器中显式设置的功能开关优先于共享设置。
 
-使用 Vite 配置时，不带输入参数的 `build`、`lint`、`fmt` 和 `check` 以选定的 Vite `root` 为目标。相对 `root` 从配置文件目录解析。Vite 中的 `typeChecker` 路径和作用域 `basePath` 以该 root 为基准；专用配置中的路径仍以配置文件目录为基准。显式传给 CLI 的文件、glob 和 `--tsconfig` 仍以执行命令的目录为基准。
+共享的全局忽略模式将文件排除在 CLI 文件搜索和编辑器 lint 之外。被忽略的文件在编辑器中打开后，仍可获得语法、类型和导航诊断。模式的顺序和含义，包括 `!` 否定模式，都会保留。
 
-共享的全局忽略模式会将文件排除在 CLI 文件搜索和编辑器 lint 之外。被忽略的文件在编辑器中打开后，仍可获得语法、类型和导航诊断。模式的顺序和含义，包括 `!` 否定模式，都会保留。
+## 迁移已移除的配置
 
-## 可选的专用配置
+`vize.config.*` 和顶层 `vize:` 配置已不再受支持。将原生设置移到 `vite.config.*` 的 `vue:` 中，将 TypeScript 项目选项移到 `tsconfig.json` 中。迁移并检查结果后，再移除专用配置文件。与 Vite 配置并存的旧专用文件会被忽略；只有专用配置的项目会收到迁移错误。`vize init` 和 `vize setup` 会保留原文件并说明迁移方式。
 
-已有的 `vize.config.*` 仍受支持，且优先于同目录的 Vite 配置。CLI 的 `--config` 可显式选择文件。直接传给插件的选项和编辑器中显式设置的功能优先于共享设置；`config: false` 禁用插件的自动配置加载。
+不再提供 Vize 专用的 `extends`。要复用设置，请导入普通 JavaScript 对象，并传给 `defineConfig(vpConfig).withVue(vueConfig)`。标准 TypeScript `extends` 和项目 `references` 继续有效。
 
 <span id="配置文件"></span>
 <span id="typescript-配置"></span>
@@ -115,5 +126,7 @@ vp exec vize check
 
 ## 详细参考
 
-[共享配置参考](./configuration-reference.md)介绍文件发现、专用 TypeScript/JSON/PKL 格式、分范围配置、Vue 类型解析和 LSP/Musea 设置。编译选项和语法模式请参阅[编译器参考](./compiler-configuration-reference.md)，需显式启用的功能请参阅[实验性功能](/guide/experimentals.md)。
+[共享配置参考](./configuration-reference.md)介绍文件发现、作用域、Vue 类型解析以及 LSP/Musea 设置。编译选项和语法模式请参阅[编译器参考](./compiler-configuration-reference.md)，需显式启用的功能请参阅[实验性功能](/guide/experimentals.md)。
 
+> [!NOTE]
+> CLI 和编辑器读取现有的 Vite 与 TypeScript 项目文件。删除旧专用配置文件之前，请先迁移其中的设置。

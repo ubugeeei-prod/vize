@@ -1,6 +1,8 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -211,12 +213,12 @@ fn build_respects_configured_template_syntax_quirks() {
     let project_root = temp_project_dir("configured-template-syntax-quirks");
     write_project_file(
         &project_root,
-        "vize.config.ts",
-        r#"export default {
+        "vite.config.mjs",
+        r#"export default { vue: {
   compiler: {
     templateSyntax: "quirks",
   },
-}
+} }
 "#,
     );
     write_project_file(
@@ -263,8 +265,9 @@ fn build_rejects_legacy_vue_without_host_compiler() {
     let project_root = temp_project_dir("legacy-vue-without-host-compiler");
     write_project_file(
         &project_root,
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "compiler": {
     "compatibility": {
       "vueVersion": "2.7",
@@ -273,6 +276,7 @@ fn build_rejects_legacy_vue_without_host_compiler() {
   }
 }
 "#,
+        ),
     );
     write_project_file(
         &project_root,

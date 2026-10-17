@@ -85,13 +85,16 @@ impl ServerState {
         document: &ConfigDocument,
         source_path: Option<&Path>,
         project_root: Option<&Path>,
+        features: vize_l0::config::ConfigFeatureFlags,
     ) {
-        let context = WorkspaceFolderConfig::from_project(
+        let mut context = WorkspaceFolderConfig::from_project(
             root.to_path_buf(),
             document,
             source_path,
             project_root,
         );
+        context.features =
+            LinterFeatureFlags::from_config_features(features, None, document.compiler_vapor());
         let mut contexts = self.workspace_folder_configs.write();
         contexts.retain(|context| context.root != root);
         contexts.push(context);

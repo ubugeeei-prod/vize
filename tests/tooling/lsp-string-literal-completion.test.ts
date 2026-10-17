@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -111,10 +112,7 @@ await test("original literal unions keep complete native candidates, resolution 
     const resolvedRuntime = fs.realpathSync(runtime);
     const runtimeHash = hash(fs.readFileSync(resolvedRuntime));
     const runtimeConfig = { typeChecker: { corsaPath: resolvedRuntime } };
-    fs.writeFileSync(
-      path.join(workspace, "vize.config.json"),
-      `${JSON.stringify(runtimeConfig)}\n`,
-    );
+    writeVueConfigFixture(workspace, `${JSON.stringify(runtimeConfig)}\n`);
     record({
       kind: "bootstrap",
       vue: file(vue, "package.json"),

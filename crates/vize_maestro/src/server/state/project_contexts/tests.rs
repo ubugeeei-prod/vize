@@ -17,7 +17,7 @@ pub(super) fn fixture() -> (tempfile::TempDir, Arc<ServerState>, Url, Url) {
         std::fs::write(path.join("package.json"), "{}").unwrap();
         std::fs::write(
             path.join("vite.config.mjs"),
-            cstr!("export default {{vize:{{lsp:{{hover:{hover}}}}}}};").as_bytes(),
+            cstr!("export default {{vue:{{languageServer:{{hover:{hover}}}}}}};").as_bytes(),
         )
         .unwrap();
     }
@@ -88,7 +88,11 @@ fn configuration_change_retires_only_the_affected_cached_project() {
     let old_b = state.document_project_state(&b).unwrap();
     let before_reload = old_a.corsa_request_stamp();
     let config = fixture.path().join("packages/a/vite.config.mjs");
-    std::fs::write(&config, "export default {vize:{lsp:{hover:true}}};").unwrap();
+    std::fs::write(
+        &config,
+        "export default {vue:{languageServer:{hover:true}}};",
+    )
+    .unwrap();
     state.observe_project_config_events(&[FileEvent {
         uri: Url::from_file_path(config).unwrap(),
         typ: FileChangeType::CHANGED,
@@ -142,7 +146,7 @@ fn vite_source_root_honors_host_projected_checker_paths() {
     let package = fixture.path().join("packages/a");
     std::fs::write(
         package.join("vite.config.mjs"),
-        "export default {root:'src',vize:{typeChecker:{tsconfig:'../config/tsconfig.app.json'}}};",
+        "export default {root:'src',vue:{typeChecker:{tsconfig:'../config/tsconfig.app.json'}}};",
     )
     .unwrap();
     let context = state.document_project_state(&a).unwrap();
@@ -165,16 +169,16 @@ fn vite_source_root_honors_host_projected_checker_paths() {
 }
 
 #[test]
-fn dedicated_package_policy_remains_opt_in_and_explicit_options_still_win() {
+fn vite_package_policy_uses_project_defaults_and_explicit_options_still_win() {
     let (project, state, a, _b) = fixture();
     std::fs::write(
-        project.path().join("packages/a/vize.config.json"),
-        r#"{"languageServer":{"hover":true}}"#,
+        project.path().join("packages/a/vite.config.mjs"),
+        r#"export default { vue: {"languageServer":{"hover":true}} };"#,
     )
     .unwrap();
     let context = state.document_project_state(&a).unwrap();
     assert!(context.lsp_features().hover);
-    assert!(!context.lsp_features().formatting);
+    assert!(context.lsp_features().formatting);
     let (_fixture, state, a, _b) = fixture();
     state.apply_lsp_initialization_options(Some(&serde_json::json!({"hover":true})));
     assert!(
@@ -257,7 +261,7 @@ fn a_pending_config_import_never_locks_siblings_or_admits_a_retired_generation()
     let (fixture, state, a, b) = fixture();
     let package = fixture.path().join("packages/a");
     let config = package.join("vite.config.mjs");
-    std::fs::write(&config, "import {writeFileSync, existsSync} from 'node:fs';\nwriteFileSync(new URL('./started', import.meta.url), '1');\nwhile (!existsSync(new URL('./release', import.meta.url))) await new Promise(r => setTimeout(r, 10));\nexport default {vize:{lsp:{hover:false}}};").unwrap();
+    std::fs::write(&config, "import {writeFileSync, existsSync} from 'node:fs';\nwriteFileSync(new URL('./started', import.meta.url), '1');\nwhile (!existsSync(new URL('./release', import.meta.url))) await new Promise(r => setTimeout(r, 10));\nexport default {vue:{languageServer:{hover:false}}};").unwrap();
     let a_owner = state.clone();
     let a_worker = std::thread::spawn(move || a_owner.document_project_state(&a).unwrap());
     let deadline = Instant::now() + Duration::from_secs(5);
@@ -289,7 +293,11 @@ fn a_pending_config_import_never_locks_siblings_or_admits_a_retired_generation()
         .get(&package)
         .unwrap()
         .clone();
-    std::fs::write(&config, "export default {vize:{lsp:{hover:true}}};").unwrap();
+    std::fs::write(
+        &config,
+        "export default {vue:{languageServer:{hover:true}}};",
+    )
+    .unwrap();
     state.observe_project_config_events(&[FileEvent {
         uri: Url::from_file_path(config).unwrap(),
         typ: FileChangeType::CHANGED,
@@ -306,7 +314,7 @@ fn initializing_multiple_editor_folders_does_not_import_unused_packages() {
     let (fixture, state, a, _b) = fixture();
     let folders = ["a", "b"].map(|name| {
         let package = fixture.path().join("packages").join(name);
-        std::fs::write(package.join("vite.config.mjs"), "import {appendFileSync} from 'node:fs'; appendFileSync(new URL('./evaluations', import.meta.url), '1'); export default {vize:{lsp:{hover:true}}};").unwrap();
+        std::fs::write(package.join("vite.config.mjs"), "import {appendFileSync} from 'node:fs'; appendFileSync(new URL('./evaluations', import.meta.url), '1'); export default {vue:{languageServer:{hover:true}}};").unwrap();
         WorkspaceFolder { uri: Url::from_file_path(package).unwrap(), name: name.into() }
     });
     state.load_workspace_config(fixture.path());
@@ -333,7 +341,11 @@ fn initializing_multiple_editor_folders_does_not_import_unused_packages() {
 #[test]
 fn malformed_workspace_config_keeps_the_complete_historical_feature_defaults() {
     let dir = tempfile::tempdir().expect("workspace");
-    std::fs::write(dir.path().join("vize.config.json"), "not valid json").expect("config");
+    std::fs::write(
+        dir.path().join("vite.config.mjs"),
+        "export default { vue: not valid json };",
+    )
+    .expect("config");
     let state = super::ServerState::new();
     state.load_workspace_config(dir.path());
     assert_eq!(

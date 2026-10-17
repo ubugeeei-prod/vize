@@ -33,6 +33,40 @@ test("both VS Code host suites run after a bounded pinned editor download", () =
   assert.match(step, /VIZE_TEST_VSCODE_VERSION: "1\.107\.1"/);
 });
 
+test("the large pinned Zed asset gets a scoped transfer budget with a hard total bound", () => {
+  const action = readFileSync(path.join(path.dirname(script), "action.yml"), "utf8");
+  const step = action
+    .split("- name: Install pinned Zed extension CLI")[1]
+    .split(/\n {4}- name: /)[0];
+  assert.match(step, /VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS: "180"/);
+  assert.match(step, /timeout --signal=TERM --kill-after=10s 300s/);
+  assert.match(step, /ZED_EXTENSION_CLI_SHA: [a-f0-9]{40}/);
+  assert.match(step, /ZED_EXTENSION_CLI_SHA256: [a-f0-9]{64}/);
+  for (const name of ["Install pinned Helix", "Install Neovim"]) {
+    const other = action.split(`- name: ${name}`)[1].split(/\n {4}- name: /)[0];
+    assert.doesNotMatch(other, /VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS/);
+  }
+});
+
+test(
+  "editor download accepts a slower verified body within its configured budget",
+  options,
+  async (t) => {
+    const fixture = await serverFixture(t, (response) => {
+      response.writeHead(200);
+      response.write(content.slice(0, 1));
+      setTimeout(() => response.end(content.slice(1)), 1_250);
+    });
+    const result = await download(fixture, checksum, {
+      VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS: "2",
+      VIZE_EDITOR_DOWNLOAD_RETRY_SECONDS: "1",
+    });
+    assert.equal(result.code, 0, result.stderr);
+    assert.equal(readFileSync(fixture.destination, "utf8"), content);
+    assert.deepEqual(readdirSync(fixture.directory), ["editor"]);
+  },
+);
+
 test(
   "editor download retries a failed transport before publishing verified bytes",
   options,

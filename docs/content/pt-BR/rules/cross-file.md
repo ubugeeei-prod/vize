@@ -8,7 +8,7 @@ Cada regra desta categoria reúne nesta página sua finalidade, configuração e
 
 As verificações de projeto precisam do grafo completo de componentes analisados. Esta página reúne a finalidade, a configuração, os arquivos compartilhados e os exemplos incorreto e correto completos de cada entrada; use os arquivos compartilhados nos dois exemplos. Os 60 códigos publicados têm limites de suporte distintos: 19 pertencem à etapa da CLI, com 18 pares de código-fonte qualificados e um projeto Vue ilustrativo acompanhado de seu grafo de fluxo reativo; 16 têm produtores experimentais no analisador Rust, mas não são emitidos individualmente por essa etapa; 25 são contratos publicados sem produtor atual de diagnósticos. Os seis IDs de regras específicas de projeto são apresentados separadamente. Ativar um ID não ativa um produtor indisponível. As notas de cada exemplo preservam as limitações de fatos de código-fonte, a qualificação por grafo e as dependências específicas de versão.
 
-A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os códigos exibidos como `vize:croquis/cf/*` usam `croquis/cf/*` em `lint.vize.rules` (omita `vize:`). Diagnósticos de informação ou sugestão tornam-se avisos da CLI. As localizações relacionadas explicam a relação entre a origem e o consumidor.
+A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os códigos exibidos como `vize:croquis/cf/*` usam `croquis/cf/*` em `vue.linter.rules` (omita `vize:`). Diagnósticos de informação ou sugestão tornam-se avisos da CLI. As localizações relacionadas explicam a relação entre a origem e o consumidor.
 
 <span id="regras-de-arquivo-cruzado"></span>
 <span id="direção-de-implementação"></span>

@@ -22,10 +22,10 @@ async function withTempConfig<T>(
 
 test("lsp alias is rewritten to languageServer in resolved config", async () => {
   await withTempConfig(
-    "vize.config.json",
+    "serialized-config.json",
     JSON.stringify({ lsp: { enabled: true, hover: false } }),
     async (dir) => {
-      const config = await loadConfig(dir, { mode: "root" });
+      const config = await loadConfig(dir, { configFile: "serialized-config.json" });
       assert.ok(config);
       assert.deepEqual(config.languageServer, { enabled: true, hover: false });
       assert.equal("lsp" in config, false);
@@ -40,10 +40,10 @@ test("lsp alias is rewritten to languageServer in resolved config", async () => 
 
 test("when both lsp and languageServer present, languageServer wins and lsp is dropped", async () => {
   await withTempConfig(
-    "vize.config.json",
+    "serialized-config.json",
     JSON.stringify({ lsp: { enabled: false }, languageServer: { enabled: true } }),
     async (dir) => {
-      const config = await loadConfig(dir, { mode: "root" });
+      const config = await loadConfig(dir, { configFile: "serialized-config.json" });
       assert.ok(config);
       assert.deepEqual(config.languageServer, { enabled: true });
       assert.equal("lsp" in config, false);
@@ -53,13 +53,13 @@ test("when both lsp and languageServer present, languageServer wins and lsp is d
 
 test("array config preserves entry order and metadata (monorepo entries)", async () => {
   await withTempConfig(
-    "vize.config.json",
+    "serialized-config.json",
     JSON.stringify([
       { name: "a", files: ["a/**"], formatter: { printWidth: 1 } },
       { name: "b", files: ["b/**"], formatter: { printWidth: 2 } },
     ]),
     async (dir) => {
-      const config = await loadConfig(dir, { mode: "root" });
+      const config = await loadConfig(dir, { configFile: "serialized-config.json" });
       assert.ok(config);
       assert.ok(config.entries);
       assert.equal(config.entries.length, 2);
@@ -74,13 +74,13 @@ test("array config preserves entry order and metadata (monorepo entries)", async
 
 test("array config: a global entry (no basePath/files/ignores) merges into resolved root", async () => {
   await withTempConfig(
-    "vize.config.json",
+    "serialized-config.json",
     JSON.stringify([
       { formatter: { printWidth: 50 }, linter: { enabled: true } },
       { name: "scoped", files: ["src/**"], formatter: { printWidth: 80 } },
     ]),
     async (dir) => {
-      const config = await loadConfig(dir, { mode: "root" });
+      const config = await loadConfig(dir, { configFile: "serialized-config.json" });
       assert.ok(config);
       assert.equal(config.formatter?.printWidth, 50);
       assert.equal(config.linter?.enabled, true);
@@ -93,13 +93,13 @@ test("array config: a global entry (no basePath/files/ignores) merges into resol
 
 test("object config with explicit entries: root becomes entries[0], explicit entries follow", async () => {
   await withTempConfig(
-    "vize.config.json",
+    "serialized-config.json",
     JSON.stringify({
       formatter: { printWidth: 10 },
       entries: [{ name: "pkg-a", basePath: "packages/a", formatter: { printWidth: 20 } }],
     }),
     async (dir) => {
-      const config = await loadConfig(dir, { mode: "root" });
+      const config = await loadConfig(dir, { configFile: "serialized-config.json" });
       assert.ok(config);
       assert.equal(config.formatter?.printWidth, 10);
       assert.ok(config.entries);
@@ -111,9 +111,9 @@ test("object config with explicit entries: root becomes entries[0], explicit ent
   );
 });
 
-test("function-style .ts config that returns an array produces monorepo entries", async () => {
+test("explicit serialized native function config returning an array produces monorepo entries", async () => {
   await withTempConfig(
-    "vize.config.ts",
+    "serialized-config.ts",
     [
       "export default () => ([",
       "  { name: 'x', files: ['x/**'], formatter: { printWidth: 1 } },",
@@ -122,7 +122,7 @@ test("function-style .ts config that returns an array produces monorepo entries"
       "",
     ].join("\n"),
     async (dir) => {
-      const config = await loadConfig(dir, { mode: "root" });
+      const config = await loadConfig(dir, { configFile: "serialized-config.ts" });
       assert.ok(config);
       assert.ok(config.entries);
       assert.equal(config.entries.length, 2);

@@ -20,8 +20,8 @@ marquee や blink などの注意をそらす要素を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "a11y/no-distracting-elements": "warn"

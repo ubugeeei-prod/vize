@@ -65,7 +65,7 @@ pub fn capture<const N: usize>(
         "disableTsgo":std::env::var("VIZE_TEST_DISABLE_TSGO").ok(),
         "initialFiles":files.iter().map(|(name,text)|json!({"file":name,"text":text})).collect::<Vec<_>>(),
         "tsconfig":fixture.read_file("tsconfig.json"),
-        "vizeConfig":fixture.read_file("vize.config.json"),
+        "vizeConfig":fixture.read_file("vite.config.mjs"),
         "expected":expected,"actual":actual,
     });
     std::fs::write(

@@ -20,27 +20,49 @@ impl ServerState {
             .iter()
             .map(|root| physical_path(root))
             .collect::<Vec<_>>();
-        let config_paths = changes
+        let changed_paths = changes
             .iter()
             .filter_map(|event| event.uri.to_file_path().ok())
-            .filter(|path| is_config_marker(path) && !excluded_config_path(path, &roots))
             .map(|path| physical_path(&path))
-            .filter(|path| !excluded_config_path(path, &physical_roots))
             .collect::<Vec<_>>();
-        if config_paths.is_empty() {
+        let marker_paths = changes
+            .iter()
+            .filter_map(|event| event.uri.to_file_path().ok())
+            .filter(|path| !excluded_config_path(path, &roots))
+            .map(|path| physical_path(&path))
+            .filter(|path| is_config_marker(path) && !excluded_config_path(path, &physical_roots))
+            .collect::<Vec<_>>();
+        let config_paths = marker_paths.iter().collect::<Vec<_>>();
+        let dependency_changed = |state: &ServerState| {
+            state
+                .project_contexts
+                .config_dependencies
+                .read()
+                .iter()
+                .any(|dependency| changed_paths.contains(&physical_path(dependency)))
+        };
+        let dependency_affected = self
+            .cached_project_states()
+            .iter()
+            .any(|state| dependency_changed(state))
+            || dependency_changed(self);
+        if config_paths.is_empty() && !dependency_affected {
             return Vec::new();
         }
         let _change = self.project_routing_change();
         let mut contexts = self.project_contexts.contexts.lock();
         let mut retired = Vec::new();
         let mut affected = contexts
-            .keys()
-            .filter(|root| {
-                config_paths
-                    .iter()
-                    .any(|path| path.starts_with(physical_path(root)))
+            .iter()
+            .filter(|(root, context)| {
+                context
+                    .initialized_state()
+                    .is_some_and(|state| dependency_changed(&state))
+                    || config_paths
+                        .iter()
+                        .any(|path| path.starts_with(physical_path(root)))
             })
-            .cloned()
+            .map(|(root, _)| root.clone())
             .collect::<Vec<_>>();
         let mut primary_retired = false;
         if let Some(root) = self
@@ -49,9 +71,10 @@ impl ServerState {
             .read()
             .clone()
             .or_else(|| self.get_workspace_root())
-            && config_paths
-                .iter()
-                .any(|path| path.parent() == Some(physical_path(&root).as_path()))
+            && (dependency_changed(self)
+                || config_paths
+                    .iter()
+                    .any(|path| path.parent() == Some(physical_path(&root).as_path())))
         {
             self.project_contexts.retired.store(true, Ordering::Release);
             primary_retired = true;

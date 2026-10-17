@@ -66,7 +66,7 @@ export function witness(
   const generated = ["Page.vue.ts", "messages.ts", "tsconfig.json"].map((name) =>
     file(path.join(mirror, name), record),
   );
-  const authored = ["Page.vue", "messages.ts", "tsconfig.json", "vize.config.json"].map((name) =>
+  const authored = ["Page.vue", "messages.ts", "tsconfig.json", "vite.config.mjs"].map((name) =>
     file(path.join(root, name), record),
   );
   record({

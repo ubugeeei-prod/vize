@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -87,8 +88,8 @@ void test("all four unchanged real project sources reach a whole formatter fixed
         fs.writeFileSync(file, fixture.source);
         if (fixture.eol) {
           fs.writeFileSync(
-            path.join(directory, "vize.config.json"),
-            `${JSON.stringify({ formatter: { endOfLine: fixture.eol } })}\n`,
+            path.join(directory, "vite.config.mjs"),
+            vueConfigFixtureSource({ formatter: { endOfLine: fixture.eol } }),
           );
         }
         const row = {
@@ -114,7 +115,7 @@ void test("all four unchanged real project sources reach a whole formatter fixed
           const argv = [
             "fmt",
             mode,
-            ...(fixture.eol ? ["--config", "vize.config.json"] : ["--no-config"]),
+            ...(fixture.eol ? ["--config", "vite.config.mjs"] : ["--no-config"]),
             path.relative(directory, file),
           ];
           const before = fs.readFileSync(file);

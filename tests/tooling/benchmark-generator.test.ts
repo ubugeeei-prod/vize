@@ -3,7 +3,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { pathToFileURL } from "node:url";
 
+import { resolveViteConfigExport } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
+
+import { prepareTypecheckDir } from "../../tools/benchmarks/scripts/compare-tools-typecheck.mjs";
 import { generateCorpus, SFC_TEMPLATES } from "../../tools/benchmarks/scripts/generate.mjs";
 
 function withTempDir(fn) {
@@ -75,7 +79,7 @@ test("benchmark generator writes a diversified unique SFC corpus", () => {
     for (const requiredFile of [
       "tsconfig.json",
       "eslint.config.mjs",
-      "vize.config.json",
+      "vite.config.mjs",
       "main.ts",
       "index.html",
     ]) {
@@ -108,8 +112,7 @@ export default [
 `,
     );
 
-    const vizeConfig = JSON.parse(fs.readFileSync(path.join(dir, "vize.config.json"), "utf8"));
-    assert.equal(vizeConfig.typeChecker.checkTemplateBindings, true);
+    assert.equal(fs.existsSync(path.join(dir, "vize.config.json")), false);
 
     const viteEntry = fs.readFileSync(path.join(dir, "main.ts"), "utf8");
     assert.match(viteEntry, /import Component0000 from '\.\/Component0000\.vue'/);
@@ -171,4 +174,74 @@ test("benchmark generator output is deterministic for the same count", () => {
       }
     });
   });
+});
+
+test("generated benchmark Vite settings retain the complete native policy through real module loading", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-shared-config-"));
+  try {
+    generateCorpus({ fileCount: 2, benchDir: dir, log: () => {} });
+    const { default: exported } = await import(
+      pathToFileURL(path.join(dir, "vite.config.mjs")).href
+    );
+    const native = {
+      linter: { preset: "ecosystem", rules: { "vue/prop-name-casing": "off" } },
+      typeChecker: {
+        jsxTypecheck: false,
+        checkProps: true,
+        checkTemplateBindings: true,
+        checkEmits: true,
+      },
+    };
+    assert.deepEqual(exported, { vue: native });
+    const { __vizeProjectRoot: root, ...projected } = await resolveViteConfigExport(
+      exported,
+      undefined,
+      dir,
+    );
+    assert.equal(root, dir);
+    assert.deepEqual(projected, {
+      ...native,
+      typeChecker: native.typeChecker,
+    });
+    assert.equal(fs.existsSync(path.join(dir, "vize.config.json")), false);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("timed typecheck directories carry the generated Vue policy and preserve the TypeScript project", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-shared-check-"));
+  try {
+    const inputDir = path.join(dir, "input");
+    generateCorpus({ fileCount: 2, benchDir: inputDir, log: () => {} });
+    const files = ["Component0000.vue", "Component0001.vue"];
+    const output = prepareTypecheckDir({
+      inputDir,
+      files,
+      workRoot: path.join(dir, "work"),
+      copySelectedFiles(from, to, members, extra) {
+        assert.deepEqual(extra, ["vite.config.mjs"]);
+        fs.mkdirSync(to, { recursive: true });
+        for (const filename of [...members, ...extra])
+          fs.copyFileSync(path.join(from, filename), path.join(to, filename));
+      },
+    });
+    for (const file of [...files, "vite.config.mjs"])
+      assert.deepEqual(
+        fs.readFileSync(path.join(output, file)),
+        fs.readFileSync(path.join(inputDir, file)),
+      );
+    const tsconfig = JSON.parse(fs.readFileSync(path.join(output, "tsconfig.json"), "utf8"));
+    assert.equal(path.resolve(output, tsconfig.extends), path.join(inputDir, "tsconfig.json"));
+    assert.deepEqual(tsconfig.include, files);
+    assert.deepEqual(tsconfig.vueCompilerOptions, { strictTemplates: true });
+    const { default: source } = await import(
+      pathToFileURL(path.join(output, "vite.config.mjs")).href
+    );
+    const configured = await resolveViteConfigExport(source, undefined, output);
+    assert.equal(configured.typeChecker.checkTemplateBindings, true);
+    assert.equal(configured.linter.preset, "ecosystem");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

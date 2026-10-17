@@ -1,4 +1,6 @@
 #![cfg(test)]
+#[path = "vite_config.rs"]
+mod vite_config;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -25,8 +27,8 @@ impl JsxCheckProject {
         std::fs::create_dir_all(root.join("src")).unwrap();
         link_workspace_vue(&root).unwrap();
         std::fs::write(
-            root.join("vize.config.json"),
-            r#"{ "typeChecker": { "jsxTypecheck": true } }"#,
+            root.join("vite.config.mjs"),
+            vite_config::source(r#"{ "typeChecker": { "jsxTypecheck": true } }"#),
         )
         .unwrap();
         std::fs::write(

@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -115,8 +116,8 @@ test("source-built LSP applies the CLI's per-project Pinia availability policy",
     // Existing explicit rule disabling must still win when Pinia is available.
     fs.writeFileSync(path.join(pinia, "package.json"), '{"name":"pinia","version":"3.0.4"}');
     fs.writeFileSync(path.join(workspace, "src/store.ts"), reference.piniaStore);
-    fs.writeFileSync(
-      path.join(workspace, "vize.config.json"),
+    writeVueConfigFixture(
+      workspace,
       JSON.stringify({
         linter: { rules: { "ecosystem/pinia-prefer-store-to-refs": "off" } },
       }),

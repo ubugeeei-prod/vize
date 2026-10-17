@@ -8,6 +8,7 @@ import { type PinnedFixtureWorkspace } from "../../../_helpers/realworld-patch.t
 import { type CommandResult, type VizeCheckResult } from "../../../_helpers/realworld-typecheck.ts";
 import { offsetToPosition } from "../../../tooling/support/lsp/assertions.ts";
 import type { LspDiagnostic } from "../../../tooling/support/lsp/protocol.ts";
+import { writeVueConfigFixture } from "../../../tooling/support/vue-config-fixture.ts";
 import { preparePublishedProvider } from "./provider.ts";
 import { comparePageDiagnostics, type DiagnosticRenderCase } from "./diagnostic-rendering.ts";
 
@@ -107,20 +108,20 @@ export function configure(
     config.include = [sourcePath, ROUTES_PATH, "project-root-map.d.ts"];
   }
   fixture.write("tsconfig.json", json(config));
-  fixture.write(
-    "vize.config.json",
-    json({
-      lsp: {
-        completion: true,
-        editor: true,
-        ecosystem: false,
-        hover: true,
-        lint: false,
-        typecheck: true,
-      },
-      typeChecker: { corsaPath },
-    }),
-  );
+  const nativeConfig = json({
+    lsp: {
+      completion: true,
+      editor: true,
+      ecosystem: false,
+      hover: true,
+      lint: false,
+      typecheck: true,
+    },
+    typeChecker: { corsaPath },
+  });
+  // Retain the original native vector separately from the active Vite carrier.
+  fixture.write("vize.config.json.fixture", nativeConfig);
+  writeVueConfigFixture(fixture.workspaceDir, nativeConfig);
 }
 
 export function sourceRange(source: string, expected: ErrorSpec) {

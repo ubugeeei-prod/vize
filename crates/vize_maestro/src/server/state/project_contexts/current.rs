@@ -134,8 +134,12 @@ mod tests {
     #[test]
     fn primary_replacement_is_lazy_unique_and_respects_explicit_options() {
         let root = tempfile::tempdir().unwrap();
-        let config = root.path().join("vize.config.json");
-        std::fs::write(&config, r#"{"lsp":{"fileRename":false}}"#).unwrap();
+        let config = root.path().join("vite.config.mjs");
+        std::fs::write(
+            &config,
+            r#"export default { vue: {"languageServer":{"fileRename":false}} };"#,
+        )
+        .unwrap();
         let owner = Arc::new(ServerState::new());
         owner.set_workspace_root(root.path().to_path_buf());
         owner.load_workspace_config(root.path());
@@ -145,7 +149,7 @@ mod tests {
         let generation = owner.project_routing_generation();
         std::fs::write(
             &config,
-            r#"{"lsp":{"fileRename":true,"workspaceSymbols":true}}"#,
+            r#"export default { vue: {"languageServer":{"fileRename":true,"workspaceSymbols":true}} };"#,
         )
         .unwrap();
         owner.observe_project_config_events(&[FileEvent {

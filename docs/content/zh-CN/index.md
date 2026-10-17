@@ -30,7 +30,7 @@ features:
     details: 浏览concrete Vue、HTML、SSR、Vapor、Musea、类型感知和跨文件诊断，包含好坏的和好的例子。
     link: zh-CN/rules/index.md
   - title: 共享配置
-    details: 配置编译器选项、Vite 扫描、lint 预设、类型检查、格式化、LSP 功能和 Musea from from `vize.config.*`。
+    details: 在 `vite.config.*` 的 `vue:` 中共享编译器、lint、格式化、LSP 和 Musea 设置，并在 `tsconfig.json` 中配置类型检查。
     link: zh-CN/guide/configuration.md
   - title: 原生类型检查
     details: "`vize:check`包脚本通过`vize_canon`和 Corsa 项目会话运行，由 `corsa-bind` 支持，使 Vue 识别的诊断保持在本地路径上。"

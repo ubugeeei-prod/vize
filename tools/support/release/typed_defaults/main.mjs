@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { authenticate, consumerPaths, githubReader, optionsFrom, sha256 } from "./custody.mjs";
 import { acquireDistribution, assertLoadedBinary } from "./distribution.mjs";
 import { loadFixtures } from "./fixtures.mjs";
-import { observe } from "./observe.mjs";
+import { observe } from "./observe.ts";
 import { assertStableFix, assertStableOfficial } from "./post_observation.mjs";
 import { originalContracts, originalObservers, originalScenarios } from "./contracts.mjs";
 import {

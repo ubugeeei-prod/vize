@@ -1,6 +1,8 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{fs, path::Path, process::Command};
 
 fn write_file(root: &Path, path: &str, content: &str) {
@@ -35,8 +37,9 @@ fn lint_config_style_category_disables_builtin_css_rules() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "opinionated",
     "categories": {
@@ -44,6 +47,7 @@ fn lint_config_style_category_disables_builtin_css_rules() {
     }
   }
 }"#,
+        ),
     );
     write_button_sfc(project_root.path());
 
@@ -52,7 +56,7 @@ fn lint_config_style_category_disables_builtin_css_rules() {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/Button.vue",
@@ -80,8 +84,9 @@ fn lint_config_style_category_severity_applies_to_builtin_css_rules() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "opinionated",
     "categories": {
@@ -89,6 +94,7 @@ fn lint_config_style_category_severity_applies_to_builtin_css_rules() {
     }
   }
 }"#,
+        ),
     );
     write_button_sfc(project_root.path());
 
@@ -97,7 +103,7 @@ fn lint_config_style_category_severity_applies_to_builtin_css_rules() {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/Button.vue",

@@ -57,8 +57,8 @@ test("packed defineConfig runs native and Vite+ tools using the consumer's insta
       `import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 export default defineConfig({
   plugins: [{ name: "vite:vue", transform() { throw new Error("Old Vue compiler must be replaced"); } }],
-  lint: { ignorePatterns: ["dist/**", "library/**"], vize: { preset: "essential", rules: { "vue/no-v-html": "error" } }, rules: { "no-debugger": "error" } },
-  fmt: { ignorePatterns: ["dist/**", "library/**"], vize: { singleQuote: true } },
+  lint: { ignorePatterns: ["dist/**", "library/**"], vue: { preset: "essential", rules: { "vue/no-v-html": "error" } }, rules: { "no-debugger": "error" } },
+  fmt: { ignorePatterns: ["dist/**", "library/**"], vue: { singleQuote: true } },
 });
 `,
     );
@@ -130,7 +130,7 @@ export default defineConfig({
       original.replace(
         "export default defineConfig({",
         `export default defineConfig({
-      pack: { entry: ["entry.ts"], outDir: "library", format: ["esm"], vize: { dts: true, declarationMap: true, sourcemap: true } },`,
+      pack: { entry: ["entry.ts"], outDir: "library", format: ["esm"], vue: { dts: true, declarationMap: true, sourcemap: true } },`,
       ),
     );
     run(directory, ["run", "pack"]);
@@ -179,12 +179,12 @@ function checkConsumerTypes(directory: string, write: (name: string, value: stri
     `import { defineConfig as defineVpConfig } from "vite-plus";
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 declare module "vite-plus" { interface UserConfig { futureOption?: { enabled: boolean }; } }
-export default defineVpConfig(defineConfig({ futureOption: { enabled: true }, lint: { vize: { preset: "essential", typecheck: true } } }));
-defineConfig({ compiler: { sourceMap: true }, typecheck: { strict: true }, pack: [{ vize: { declarationMap: true } }], fmt: { vize: { singleQuote: true } } });
+export default defineVpConfig(defineConfig({ futureOption: { enabled: true }, lint: { vue: { preset: "essential", typecheck: true } } }));
+defineConfig({ compiler: { sourceMap: true }, typecheck: { strict: true }, pack: [{ vue: { declarationMap: true } }], fmt: { vue: { singleQuote: true } } });
 // @ts-expect-error Consumer Vite+ owns this option's type.
 defineConfig({ futureOption: { enabled: "wrong" } });
 // @ts-expect-error Native Vize configuration remains typed.
-defineConfig({ lint: { vize: { preset: "unknown-preset" } } });
+defineConfig({ lint: { vue: { preset: "unknown-preset" } } });
 `,
   );
   const tsc = path.join(path.dirname(require.resolve("typescript/package.json")), "bin/tsc");

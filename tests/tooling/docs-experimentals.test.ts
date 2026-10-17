@@ -100,7 +100,7 @@ test("experimentals docs fully describe experimental opt-in flags", () => {
   assert.match(experimentals, /Missing keys, `false`, and `null` are off/);
   assert.match(experimentals, /Direct Vite plugin\s+options win over shared config/);
   assert.match(experimentals, /Do not set a recommended flag and its alias at the same time/);
-  assert.match(experimentals, /Typed TypeScript and Pkl config should use/);
+  assert.match(experimentals, /Typed TypeScript configuration should use/);
   assert.match(
     experimentals,
     /\| `strictSlotChildren` \| Emits virtual TypeScript child assertions/,

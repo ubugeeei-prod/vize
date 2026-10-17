@@ -67,14 +67,14 @@ Vize 的跨文件复杂度报告是 Croquis 生成的项目图摘要。它本身
 增加复杂度最多的五个结构。
 
 由于上限是 p95，大约每二十个真实组件中就有一个超出上限。因此没有任何预设启用这条规则，是否启用由
-项目决定。在 `lint.vize.rules` 中写上规则名即可启用：
+项目决定。在 `vue.linter.rules` 中写上规则名即可启用：
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       rules: {
         "vue/max-template-complexity": "warn",
       },

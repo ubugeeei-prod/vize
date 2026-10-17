@@ -2,17 +2,21 @@
 command = "vize"
 args = ["lsp"]
 
-[language-server.vize.config]
-editor = true
-ecosystem = true
-lint = true
-typecheck = true
-
 [[language]]
 name = "vue"
 scope = "source.vue"
 file-types = ["vue"]
-roots = ["vize.config.pkl", "vize.config.json", "package.json", ".git"]
+roots = [
+  "vite.config.ts",
+  "vite.config.js",
+  "vite.config.mts",
+  "vite.config.mjs",
+  "vite.config.cts",
+  "vite.config.cjs",
+  "tsconfig.json",
+  "package.json",
+  ".git",
+]
 language-servers = ["vize"]
 
 [[language]]
@@ -20,5 +24,15 @@ name = "art-vue"
 language-id = "art-vue"
 scope = "source.art-vue"
 file-types = [{ glob = "*.art.vue" }]
-roots = ["vize.config.pkl", "vize.config.json", "package.json", ".git"]
+roots = [
+  "vite.config.ts",
+  "vite.config.js",
+  "vite.config.mts",
+  "vite.config.mjs",
+  "vite.config.cts",
+  "vite.config.cjs",
+  "tsconfig.json",
+  "package.json",
+  ".git",
+]
 language-servers = ["vize"]

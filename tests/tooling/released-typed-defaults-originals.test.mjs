@@ -11,6 +11,7 @@ import {
 } from "../../tools/support/release/typed_defaults/return_prefilter.mjs";
 import {
   loadFixtures,
+  originalSourcePaths,
   typedDirectory,
 } from "../../tools/support/release/typed_defaults/fixtures.mjs";
 import {
@@ -61,10 +62,19 @@ await test("immutable H source must retain every authored fixture and all 51 n8n
     ).length,
     1,
   );
+  const observerRole = "tests/tooling/lint-return-prefilter.test.mjs";
+  assert.equal(
+    fixtures.authorities.find((entry) => entry.path === observerRole).sourcePath,
+    originalSourcePaths[observerRole],
+  );
   const vectors = originalScenarios(fixtures);
   assert.equal(vectors.length, 280);
   assert.equal(returnScenarios(fixtures).length, 112);
   const mutations = [
+    [
+      "changed archived original observer",
+      (f) => substitute(f, originalSourcePaths[observerRole], (text) => text + "\n"),
+    ],
     [
       "wrong source tree",
       (f) => {

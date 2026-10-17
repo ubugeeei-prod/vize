@@ -5,6 +5,12 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { resolveVizeLaunchCommand } from "./launch.ts";
 import { LspSession } from "./session.ts";
+import {
+  qualifyBenchmarkConfig,
+  assertBenchmarkContractBinary,
+  writeBenchmarkConfig,
+  type BenchmarkConfigContract,
+} from "../benchmark-config-contract.ts";
 
 type Item = Record<string, unknown> & { label: string };
 type Scenario = {
@@ -123,7 +129,22 @@ async function timed(session: LspSession, method: string, params: unknown, sampl
   return { samplesMs, result, responseBytes: Buffer.byteLength(JSON.stringify(result)) };
 }
 
-export async function cssSession(binary: string, sourceRequired: boolean, lazy: boolean) {
+export async function cssSession(
+  binary: string,
+  sourceRequired: boolean,
+  lazy: boolean,
+  qualified?: BenchmarkConfigContract,
+) {
+  // CLI qualification finishes before the constructor starts capture or a server.
+  const contract = qualified ?? qualifyBenchmarkConfig(binary);
+  assertBenchmarkContractBinary(contract, binary);
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-docs-"));
+  const configuration = writeBenchmarkConfig(
+    workspace,
+    JSON.stringify({ lsp: { completion: true, hover: true, typecheck: false, lint: false } }),
+    contract,
+  );
+  const uri = pathToFileURL(path.join(workspace, "App.vue")).href;
   const oldBinary = process.env.VIZE_LSP_BIN;
   const oldRequired = process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD;
   let session: LspSession;
@@ -133,18 +154,15 @@ export async function cssSession(binary: string, sourceRequired: boolean, lazy: 
     const command = resolveVizeLaunchCommand(undefined, binary, { required: sourceRequired });
     assert.equal(command[0], binary, "CSS observation must use the requested executable");
     session = new LspSession();
+  } catch (error) {
+    fs.rmSync(workspace, { recursive: true, force: true });
+    throw error;
   } finally {
     if (oldBinary === undefined) delete process.env.VIZE_LSP_BIN;
     else process.env.VIZE_LSP_BIN = oldBinary;
     if (oldRequired === undefined) delete process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD;
     else process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD = oldRequired;
   }
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-docs-"));
-  fs.writeFileSync(
-    path.join(workspace, "vize.config.json"),
-    JSON.stringify({ lsp: { completion: true, hover: true, typecheck: false, lint: false } }),
-  );
-  const uri = pathToFileURL(path.join(workspace, "App.vue")).href;
   try {
     await session.request("initialize", {
       processId: process.pid,
@@ -177,6 +195,7 @@ export async function cssSession(binary: string, sourceRequired: boolean, lazy: 
   return {
     session,
     uri,
+    configuration,
     open(source: string, version: number) {
       if (version === 1)
         session.notify("textDocument/didOpen", {
@@ -205,8 +224,9 @@ export async function observeCss(
   assertProduct: boolean,
   samples = 20,
   lazy = true,
-): Promise<CssObservation[]> {
-  const client = await cssSession(binary, sourceRequired, lazy);
+  qualified?: BenchmarkConfigContract,
+) {
+  const client = await cssSession(binary, sourceRequired, lazy, qualified);
   const observations: CssObservation[] = [];
   let version = 0;
   try {
@@ -282,7 +302,7 @@ export async function observeCss(
       !client.session.stderrText.includes("Corsa initialization failed"),
       "CSS must not initialize a checker",
     );
-    return observations;
+    return { observations, configuration: client.configuration };
   } finally {
     await client.close();
   }

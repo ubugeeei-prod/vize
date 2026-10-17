@@ -114,7 +114,7 @@ function bundlerOffer(detection: ProjectDetection): FeatureOffer {
 }
 
 function fmtOffer(detection: ProjectDetection): FeatureOffer {
-  const configured = detection.vizeConfig !== null && "vize:fmt" in detection.scripts;
+  const configured = "vize:fmt" in detection.scripts;
   return {
     id: "fmt",
     label: "fmt (vize fmt)",
@@ -126,10 +126,7 @@ function fmtOffer(detection: ProjectDetection): FeatureOffer {
 }
 
 function typecheckOffer(detection: ProjectDetection): FeatureOffer {
-  const configured =
-    detection.tsconfig !== null &&
-    detection.vizeConfig !== null &&
-    "vize:check" in detection.scripts;
+  const configured = detection.tsconfig !== null && "vize:check" in detection.scripts;
   return {
     id: "typecheck",
     label: "typecheck (vize check)",

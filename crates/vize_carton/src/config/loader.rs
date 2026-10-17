@@ -15,7 +15,6 @@ pub use formatter::{
 mod discovery;
 #[cfg(test)]
 mod experimental_tests;
-mod extends;
 #[cfg(test)]
 mod extends_tests;
 mod js;
@@ -89,7 +88,7 @@ struct LoadedRawConfig {
 impl LoadedRawConfig {
     fn project_root(&self) -> Option<PathBuf> {
         let path = self.source_path.as_deref()?;
-        if !CONFIG_FILE_NAMES[5..]
+        if !CONFIG_FILE_NAMES
             .iter()
             .any(|name| path.file_name().is_some_and(|file| file == *name))
         {
@@ -103,6 +102,8 @@ impl LoadedRawConfig {
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct LoadedProjectConfig {
+    /// Actual files read by the host evaluation, including imported helpers.
+    pub dependencies: Vec<PathBuf>,
     pub document: ConfigDocument,
     pub source_path: Option<PathBuf>,
     pub project_root: Option<PathBuf>,
@@ -110,6 +111,13 @@ pub struct LoadedProjectConfig {
 
 pub fn load_project_config_with_source(path: Option<&Path>) -> LoadedProjectConfig {
     project_config_snapshot(load_raw_config_with_source(path))
+}
+
+/// Load one project root without requiring a Vite file, but reject invalid or retired settings.
+pub fn try_load_project_config_from_root(
+    root: &Path,
+) -> Result<LoadedProjectConfig, std::string::String> {
+    checked::load_raw_editor_config_checked(Some(root)).map(project_config_snapshot)
 }
 
 /// Reject malformed discovered or explicitly selected project configuration.
@@ -122,6 +130,12 @@ pub fn try_load_project_config_with_source(
 fn project_config_snapshot(loaded: LoadedRawConfig) -> LoadedProjectConfig {
     let project_root = loaded.project_root();
     LoadedProjectConfig {
+        dependencies: loaded
+            .config
+            .config_dependencies()
+            .iter()
+            .map(|dependency| PathBuf::from(dependency.as_str()))
+            .collect(),
         document: loaded.config,
         source_path: loaded.source_path,
         project_root,
@@ -144,25 +158,8 @@ pub fn validate_explicit_config_path(path: &Path) -> Result<(), std::string::Str
         return Err(crate::cstr!("config file not found: {display}").into());
     }
 
-    if path.is_file() {
-        return parse_raw_config_file(path)
-            .map(|_| ())
-            .map_err(|error| crate::cstr!("failed to parse {display}: {error}").into());
-    }
-
-    if path.is_dir() {
-        for file_name in CONFIG_FILE_NAMES {
-            let candidate = path.join(file_name);
-            if candidate.exists() {
-                let candidate_display = candidate.display();
-                return parse_raw_config_file(&candidate)
-                    .map(|_| ())
-                    .map_err(|error| {
-                        crate::cstr!("failed to parse {candidate_display}: {error}").into()
-                    });
-            }
-        }
-        return Err(crate::cstr!("no vize config file found under {display}").into());
+    if path.is_file() || path.is_dir() {
+        return load_raw_config_checked(Some(path)).map(|_| ());
     }
 
     Err(crate::cstr!("config path is neither a file nor a directory: {display}").into())

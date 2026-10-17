@@ -22,10 +22,11 @@ const snapshot = (files) =>
 // from the source-built mandatory T1 execution, with a real build receipt.
 function synthetic(loaded) {
   const rows = loaded.cases.map((fixture) => {
+    const execution = fixture.execution;
     const workspace = path.join(os.tmpdir(), "formatter-config-contract");
-    const initialFiles = snapshot(fixture.initialFiles);
+    const initialFiles = snapshot(execution.initialFiles);
     let previous = initialFiles;
-    const passes = fixture.steps.map((step) => {
+    const passes = execution.steps.map((step) => {
       const outputFiles = snapshot(step.expectedFiles);
       const pass = {
         argv: step.argv,
@@ -43,6 +44,7 @@ function synthetic(loaded) {
     });
     return {
       id: fixture.id,
+      executionAuthority: execution.authority,
       workspace,
       initialFiles,
       state: "matched-reference",
@@ -101,6 +103,37 @@ void test("configuration history binds complete author input, process outputs an
     formatter: { sortImports: {} },
     entries: [{ basePath: "nested", files: ["*.vue"], ignores: ["Ignored.vue"] }],
   });
+  assert.deepEqual(effect.execution.authority, {
+    kind: "explicit-native-serialization-parser",
+    canonicalVueValidation: false,
+    identities: [{ historical: "vize.config.mjs", current: "serialized-config.mjs" }],
+    historicalArgv: [["fmt", "--config", "vize.config.mjs", "--write", "*.vue"]],
+  });
+  assert.deepEqual(effect.execution.steps[0].argv, [
+    "fmt",
+    "--config",
+    "serialized-config.mjs",
+    "--write",
+    "*.vue",
+  ]);
+  assert(
+    effect.execution.initialFiles["serialized-config.mjs"].equals(
+      effect.initialFiles["vize.config.mjs"],
+    ),
+  );
+  const configured = loaded.cases[0];
+  assert.deepEqual(configured.steps[0].argv, ["fmt", "--check", "UserCard.vue"]);
+  assert.deepEqual(configured.execution.steps[0].argv, [
+    "fmt",
+    "--config",
+    "serialized-config.json",
+    "--check",
+    "UserCard.vue",
+  ]);
+  assert.deepEqual(
+    loaded.cases[2].execution.steps.map(({ argv }) => argv),
+    loaded.cases[2].steps.map(({ argv }) => argv),
+  );
 });
 
 void test("configuration result admission rejects lost raw bytes, skipped steps and forged effects", () => {
@@ -108,6 +141,12 @@ void test("configuration result admission rejects lost raw bytes, skipped steps 
   for (const mutate of [
     (report) => {
       report.rows.pop();
+    },
+    (report) => {
+      report.rows[0].executionAuthority.canonicalVueValidation = true;
+    },
+    (report) => {
+      report.rows[0].executionAuthority.identities[0].current = "vite.config.mjs";
     },
     (report) => {
       report.rows[1].id = report.rows[0].id;
@@ -212,13 +251,19 @@ void test("a failed output snapshot retains the complete already-executed proces
     signal: null,
   };
   assert.throws(() =>
-    recordSortingConfigProcess(row, loaded.cases[0].steps[0], row.initialFiles, result, () => {
-      throw new Error("unreadable generated output");
-    }),
+    recordSortingConfigProcess(
+      row,
+      loaded.cases[0].execution.steps[0],
+      row.initialFiles,
+      result,
+      () => {
+        throw new Error("unreadable generated output");
+      },
+    ),
   );
   assert.equal(row.passes.length, 1);
   assert.deepEqual(row.passes[0], {
-    argv: loaded.cases[0].steps[0].argv,
+    argv: loaded.cases[0].execution.steps[0].argv,
     inputFiles: row.initialFiles,
     outputFiles: null,
     outputSnapshotError: { kind: "FileSnapshotError", message: "unreadable generated output" },

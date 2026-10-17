@@ -20,8 +20,8 @@ scoped slot 関数に複数の引数を渡す箇所を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-multiple-slot-args": "warn"

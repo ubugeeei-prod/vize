@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -98,7 +99,7 @@ await test("source CLI reruns current ref reads and retains real snapshot/deferr
       path.join(directory, "node_modules"),
       process.platform === "win32" ? "junction" : "dir",
     );
-    fs.writeFileSync(path.join(directory, "vize.config.json"), read("vize.config.json.txt"));
+    writeVueConfigFixture(directory, read("vize.config.json.txt"));
     fs.writeFileSync(path.join(directory, "tsconfig.json"), read("tsconfig.json.txt"));
     for (const scenario of [
       { id: "original", source: original, expectedSnapshotAndSpreadWarnings: 0 },

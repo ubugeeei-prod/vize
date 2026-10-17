@@ -79,7 +79,7 @@ pub(super) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
         "src/App.vue",
         "src/MySwitch.vue",
         "tsconfig.json",
-        "vize.config.json",
+        "vite.config.mjs",
         "node_modules/vize-event-fixture/package.json",
     ]
     .into_iter()

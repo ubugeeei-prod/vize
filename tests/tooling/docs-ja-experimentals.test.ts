@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { originalConfigDocument } from "./support/docs-config-archive.ts";
+import { currentConfigExample } from "./support/docs-config-successor.ts";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -16,10 +18,16 @@ void test("Japanese experimentals guide retains complete recipes, syntax and pub
   const fences = (source: string) =>
     [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```/gm)].map((match) => match[0]);
   const digest = (source: string) => createHash("sha256").update(source).digest("hex");
+  const archived = originalConfigDocument(`docs/content/ja/${path}`);
+  assert.deepEqual(
+    fences(japanese),
+    fences(archived).map(currentConfigExample),
+    "all complete successor recipes preserve the original values",
+  );
   // All seventeen complete examples at signed main 1d988f6bcac8 are retained.
   assert.equal(fences(japanese).length, 17);
   assert.equal(
-    digest(fences(japanese).join("\n")),
+    digest(fences(archived).join("\n")),
     "1d8014b7305aadbb35a77e021fceda68c537da1828f5f7a56d29877c01391d78",
   );
   assert.deepEqual(fences(japanese), fences(english));
@@ -47,7 +55,7 @@ void test("Japanese experimentals guide retains complete recipes, syntax and pub
     "all switch and compatibility rows remain",
   );
 
-  const prose = japanese.replace(/^```[^\n]*\n[\s\S]*?^```/gm, "");
+  const prose = archived.replace(/^```[^\n]*\n[\s\S]*?^```/gm, "");
   const inline = [
     ...new Set(
       [...prose.matchAll(/(?<!`)`([^`\n]+)`(?!`)/g)].map((match) =>
@@ -60,6 +68,23 @@ void test("Japanese experimentals guide retains complete recipes, syntax and pub
     digest(JSON.stringify(inline)),
     "461c9b4225bc82001766a34433622208044089d885cec4e67c76b30eb6ebd541",
     "every original public syntax, field, value and compatibility name remains",
+  );
+  const currentInline = [
+    ...new Set(
+      [
+        ...japanese.replace(/^```[^\n]*\n[\s\S]*?^```/gm, "").matchAll(/(?<!`)`([^`\n]+)`(?!`)/g),
+      ].map((match) => match[1].replaceAll("\\|", "|")),
+    ),
+  ].sort();
+  assert.deepEqual(
+    currentInline,
+    [
+      ...new Set([
+        ...inline.map((token) => (token === "vize.config.*" ? "vite.config.*" : token)),
+        "vue.experimentals",
+      ]),
+    ].sort(),
+    "all original public syntax and the canonical shared experimental namespace",
   );
   for (const id of [
     "experimentals",

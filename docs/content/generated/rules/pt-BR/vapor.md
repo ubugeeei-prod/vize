@@ -37,8 +37,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-get-current-instance": "error"
@@ -100,8 +100,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-next-tick": "error"
@@ -165,8 +165,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-options-api": "error"
@@ -230,8 +230,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "vapor/no-inline-template": "error"
@@ -297,8 +297,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "vapor/no-vue-lifecycle-events": "error"
@@ -366,8 +366,8 @@ Opções: Sem opções específicas da regra. A severidade e a seleção de pred
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "vapor/prefer-static-class": "warn"
@@ -431,8 +431,8 @@ Esta regra é um marcador provisório com callback vazio. Adicionar vapor seleci
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "vapor/require-vapor-attribute": "warn"

@@ -5,13 +5,7 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type LintPreset =
-  | "happy-path"
-  | "opinionated"
-  | "essential"
-  | "incremental"
-  | "ecosystem"
-  | "nuxt";
+export type LintPreset = NonNullable<LinterConfig["preset"]>;
 
 export type RuleSeverity = "off" | "warn" | "error";
 
@@ -42,10 +36,6 @@ export interface VizeConfig {
    * Glob patterns this config excludes
    */
   ignores?: string[];
-  /**
-   * Base config files or presets to compose
-   */
-  extends?: string | string[];
   /**
    * Vue dialect profile for standalone HTML documents; when absent the dialect is detected structurally per document
    */
@@ -200,9 +190,24 @@ export interface LinterConfig {
    */
   enabled?: boolean;
   /**
-   * Built-in lint preset
+   * Built-in lint preset (happy-path is the recommended canonical name; native aliases are accepted)
    */
-  preset?: "happy-path" | "opinionated" | "essential" | "incremental" | "ecosystem" | "nuxt";
+  preset?:
+    | "general-recommended"
+    | "general_recommended"
+    | "generalRecommended"
+    | "happy-path"
+    | "happy_path"
+    | "happy"
+    | "default"
+    | "recommended"
+    | "opinionated"
+    | "strict"
+    | "all"
+    | "essential"
+    | "incremental"
+    | "ecosystem"
+    | "nuxt";
   /**
    * Enable native type-aware lint rules from the active lint configuration
    */
@@ -552,6 +557,10 @@ export interface LanguageServerConfig {
    */
   ecosystem?: boolean;
   /**
+   * Enable workspace-wide cross-file diagnostic groups (disabled by default)
+   */
+  crossFile?: boolean;
+  /**
    * Enable Vue 2.7 / Nuxt 2 editor and type-checking compatibility
    */
   legacyVue2?: boolean;
@@ -792,10 +801,6 @@ export interface VizeConfigEntry {
    * Glob patterns this entry excludes
    */
   ignores?: string[];
-  /**
-   * Base config files or presets to compose
-   */
-  extends?: string | string[];
   /**
    * Vue dialect profile for standalone HTML documents; when absent the dialect is detected structurally per document
    */

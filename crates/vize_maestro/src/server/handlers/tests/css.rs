@@ -55,12 +55,12 @@ fn css_language_server_handlers_complete_hover_and_resolve_without_starting_miss
             let missing = project.path().join("definitely-missing-corsa-css-control");
             assert!(!missing.exists());
             std::fs::write(
-                project.path().join("vize.config.json"),
-                serde_json::to_vec(&serde_json::json!({
+                project.path().join("vite.config.mjs"),
+                vize_l0::cstr!("export default {{ vue: {} }};", serde_json::to_string(&serde_json::json!({
                     "typeChecker": { "corsaPath": missing },
-                    "lsp": { "completion": true, "hover": true, "typecheck": true, "lint": false }
+                    "languageServer": { "completion": true, "hover": true, "typecheck": true, "lint": false }
                 }))
-                .unwrap(),
+                .unwrap()).as_bytes(),
             )
             .unwrap();
             let capabilities = if lazy {

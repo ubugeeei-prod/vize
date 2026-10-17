@@ -774,8 +774,8 @@ export default [
 `;
   writeFileSync(join(benchDir, "eslint.config.mjs"), eslintConfig);
   writeLog("Generated eslint.config.mjs");
-  // Generate vize.config.json so benchmark runs cover shared config loading.
-  const vizeConfig = {
+  // Keep benchmark tool policy in a standard Vite config shared with native commands.
+  const vueConfig = {
     linter: {
       preset: "ecosystem",
       rules: {
@@ -783,13 +783,18 @@ export default [
       },
     },
     typeChecker: {
+      // Preserve the previous benchmark config's standalone JSX opt-in boundary.
+      jsxTypecheck: false,
       checkProps: true,
       checkTemplateBindings: true,
       checkEmits: true,
     },
   };
-  writeFileSync(join(benchDir, "vize.config.json"), `${JSON.stringify(vizeConfig, null, 2)}\n`);
-  writeLog("Generated vize.config.json");
+  writeFileSync(
+    join(benchDir, "vite.config.mjs"),
+    `export default ${JSON.stringify({ vue: vueConfig }, null, 2)};\n`,
+  );
+  writeLog("Generated vite.config.mjs");
 
   // Generate vite entry file for vite-plugin benchmark
   const viteEntryImports = [];

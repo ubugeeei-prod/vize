@@ -6,12 +6,20 @@
  */
 import { PROJECT_SHAPES } from "./smoke-release-init-shapes.mjs";
 
+function sharedDetection(detect) {
+  return (manager) =>
+    detect(manager).map((line) =>
+      line.startsWith("  vize config:") ? "  Vue settings:    vue: in vite.config.*" : line,
+    );
+}
+
 function configFreeShape(shape) {
   const javascript = shape.id === "vite-vue-js-checkjs";
   const { "vize.config.ts": historicalConfig, ...expectedFiles } = shape.expectedFiles;
   if (historicalConfig === undefined) throw new Error(`${shape.id}: missing historical config`);
   return {
     ...shape,
+    detection: sharedDetection(shape.detection),
     features: [
       shape.features[0],
       shape.features[1],
@@ -27,10 +35,10 @@ function configFreeShape(shape) {
           `  package manager: ${manager.detectedPackageManager}`,
           "  language:        TypeScript (tsconfig.json)",
           "  lint command:    oxlint",
-          "  vize config:     none",
+          "  Vue settings:    vue: in vite.config.*",
           "  oxlint config:   none",
         ]
-      : shape.detection,
+      : sharedDetection(shape.detection),
     reconfiguredFeatures: [
       shape.reconfiguredFeatures[0],
       shape.reconfiguredFeatures[1],

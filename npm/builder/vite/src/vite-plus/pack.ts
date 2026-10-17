@@ -16,7 +16,10 @@ export async function configurePack(
       input.map(async (entry) => (await configurePack(entry, compiler, metadata)) as Pack),
     );
   }
-  const { vize: native, ...pack } = input;
+  if ("vize" in input) {
+    throw new Error("The pack.vize config option was removed. Use pack.vue instead.");
+  }
+  const { vue: native, ...pack } = input;
   if (native === false) return pack;
   const sourcemap = native?.sourcemap ?? pack.sourcemap;
   const plugins = Array.isArray(pack.plugins)

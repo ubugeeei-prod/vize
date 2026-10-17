@@ -32,3 +32,21 @@ ancestry. The unchanged original contract checks run independently before the
 additional suite. Hosted exact-head checks, protected merge, successful official
 publication and an actual post-merge observer run are still required. This
 bounded public packet suite does not close broader #8090 ecosystem/Matrix gaps.
+
+## Canonical configuration migration
+
+Current source consumers execute ordinary `vite.config.mjs` Vue settings. Frozen
+native documents, whole diagnostic vectors, original observer digests, and signed
+release receipts retain their original bytes and meaning. The active return and
+setup-emits test runners can therefore migrate without becoming the historical
+observer authority.
+
+The original observers are retained as non-executable
+`return-prefilter-8090/original-return-observer.mjs.txt` and
+`setup-emits-6097/original-setup-emits-observer.mjs.txt` in their existing fixture
+namespaces. Release fixture loaders authenticate these blobs in the new immutable
+source tree against the existing observer hashes. Authority records keep the
+original `tests/tooling` role in `path` and identify the archived blob in
+`sourcePath`; the new receipt records both. Existing source cuts, receipts,
+observer hashes, and vector hashes are unchanged. Current executions separately
+retain the original native configuration and the canonical Vite carrier they ran.

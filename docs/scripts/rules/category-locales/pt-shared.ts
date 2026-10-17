@@ -36,8 +36,8 @@ export const portugueseShared: Record<string, string> = {
   "Contract only; no current producer": "Apenas contrato; sem produtor atual",
   "Rust analyzer; CLI uses a different surface or disables this pass":
     "Analisador Rust; a CLI usa outra interface ou desativa esta etapa",
-  "The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `vize:croquis/cf/*` codes use `croquis/cf/*` in `lint.vize.rules` (omit `vize:`). Information/hint diagnostics become CLI warnings. Related locations explain the source/consumer relationship.":
-    "A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os códigos exibidos como `vize:croquis/cf/*` usam `croquis/cf/*` em `lint.vize.rules` (omita `vize:`). Diagnósticos de informação ou sugestão tornam-se avisos da CLI. As localizações relacionadas explicam a relação entre a origem e o consumidor.",
+  "The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `vize:croquis/cf/*` codes use `croquis/cf/*` in `vue.linter.rules` (omit `vize:`). Information/hint diagnostics become CLI warnings. Related locations explain the source/consumer relationship.":
+    "A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os códigos exibidos como `vize:croquis/cf/*` usam `croquis/cf/*` em `vue.linter.rules` (omita `vize:`). Diagnósticos de informação ou sugestão tornam-se avisos da CLI. As localizações relacionadas explicam a relação entre a origem e o consumidor.",
   "A single SFC root link may inherit its target from parent attributes. This example uses a nested link, whose target must be explicit.":
     "Um link que seja a única raiz de um SFC pode herdar seu target dos atributos do pai. Este exemplo usa um link aninhado, cujo target deve ser explícito.",
   "Checks non-interactive elements without an interactive role. Native buttons and elements with an interactive ARIA role are outside this rule's finding.":

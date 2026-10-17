@@ -15,8 +15,8 @@ import した子コンポーネントの要素を合成して HTML の入れ子�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "html/cross-component-nesting": "warn" },
     },
   },

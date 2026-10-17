@@ -3,6 +3,8 @@
 mod corsa_requirement;
 #[path = "support/nuxt_cli.rs"]
 mod nuxt_cli;
+#[path = "support/vite_config.rs"]
+mod vite_config;
 
 use std::{path::Path, process::Command};
 
@@ -27,8 +29,8 @@ fn configured_pattern_check_distinguishes_errors_warnings_and_flag_off() {
     );
     write(
         root,
-        "vize.config.json",
-        r#"{"experimentals":{"patternedTemplate":true}}"#,
+        "vite.config.mjs",
+        &vite_config::source(r#"{"experimentals":{"patternedTemplate":true}}"#),
     );
     write(
         root,
@@ -73,8 +75,8 @@ fn configured_pattern_check_distinguishes_errors_warnings_and_flag_off() {
     write(root, "src/App.vue", source);
     write(
         root,
-        "vize.config.json",
-        r#"{"experimentals":{"patternedTemplate":false}}"#,
+        "vite.config.mjs",
+        &vite_config::source(r#"{"experimentals":{"patternedTemplate":false}}"#),
     );
     let (success, result) = check();
     assert!(!success, "{result}");

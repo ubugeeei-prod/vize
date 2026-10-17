@@ -145,7 +145,7 @@ test("a TypeScript project without a config gets a strict minimum scaffold", asy
   assert.deepEqual(result.plan?.addedScripts, ["vize:check"]);
 });
 
-test("a missing tsconfig is added without rewriting an existing Vize config", async () => {
+test("a missing tsconfig is added while an unused dedicated config is preserved", async () => {
   const root = temporaryProject("existing-vize-config-without-tsconfig");
   writeManifest(root, {
     name: "fixture",
@@ -156,6 +156,7 @@ test("a missing tsconfig is added without rewriting an existing Vize config", as
   });
   const existingConfig = `export default { typeChecker: { strict: false } };\n`;
   write(root, "vize.config.ts", existingConfig);
+  write(root, "vite.config.mjs", "export default { vue: {} };\n");
 
   const result = await runInit(root, [
     "--yes",
@@ -175,7 +176,8 @@ test("a missing tsconfig is added without rewriting an existing Vize config", as
     {
       id: "typecheck",
       outcome: "configured",
-      detail: "writes tsconfig.json; vize.config.ts already exists and was left unchanged",
+      detail:
+        "writes tsconfig.json; vize.config.ts is no longer read; move settings to vue: in vite.config.*",
       snippet: null,
     },
   );

@@ -15,8 +15,8 @@ reactive な状態が async 境界を越え、古い値が見えることがあ�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/async-boundary": "warn" },
     },
   },

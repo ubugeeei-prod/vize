@@ -51,6 +51,7 @@ const requiredFiles = [
   "zed/languages/art-vue/outline.scm",
   "zed/languages/art-vue/overrides.scm",
   "zed/src/lib.rs",
+  "zed/src/initialization_options.rs",
 ];
 
 for (const name of requiredFiles) {
@@ -70,7 +71,7 @@ const allowedEntries = [
   /^zed\/languages\/art-vue\/(?:brackets|config|highlights|indents|injections|outline|overrides)\.scm$/,
   /^zed\/languages\/art-vue\/config\.toml$/,
   /^zed\/src\/$/,
-  /^zed\/src\/lib\.rs$/,
+  /^zed\/src\/(?:lib|initialization_options)\.rs$/,
 ];
 
 for (const name of entryNames) {
@@ -100,6 +101,7 @@ const workspaceVersion = readWorkspaceVersion();
 const extensionToml = readTextEntry(entryMap, "zed/extension.toml");
 const cargoToml = readTextEntry(entryMap, "zed/Cargo.toml");
 const libRs = readTextEntry(entryMap, "zed/src/lib.rs");
+const profileRs = readTextEntry(entryMap, "zed/src/initialization_options.rs");
 const artVueConfig = readTextEntry(entryMap, "zed/languages/art-vue/config.toml");
 const injections = readTextEntry(entryMap, "zed/languages/art-vue/injections.scm");
 const highlights = readTextEntry(entryMap, "zed/languages/art-vue/highlights.scm");
@@ -130,11 +132,8 @@ assert.match(libRs, /const SERVER_BINARY: &'static str = "vize";/);
 assert.match(libRs, /worktree\.which\(Self::SERVER_BINARY\)/);
 assert.match(libRs, /unwrap_or_else\(\|\| vec!\["lsp"\.to_string\(\)\]\)/);
 assert.match(libRs, /language_server_initialization_options/);
-assert.match(libRs, /recommended_initialization_options/);
-assert.match(libRs, /"editor": true/);
-assert.match(libRs, /"ecosystem": true/);
-assert.match(libRs, /"lint": true/);
-assert.match(libRs, /"typecheck": true/);
+assert.match(libRs, /settings\.initialization_options/);
+assert.match(profileRs, /explicit\.unwrap_or_else\(\|\| serde_json::json!\(\{\}\)\)/);
 assert.match(libRs, /language_server_workspace_configuration/);
 assert.match(libRs, /zed::register_extension!\(VizeExtension\);/);
 

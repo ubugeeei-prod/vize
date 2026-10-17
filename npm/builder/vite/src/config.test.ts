@@ -70,7 +70,7 @@ const inlineConfig = {
 };
 
 assert.equal(defineConfig(inlineConfig), inlineConfig, "defineConfig should remain identity");
-assert.ok(CONFIG_FILES.includes("vize.config.ts"), "config file names should stay exported");
+assert.ok(CONFIG_FILES.includes("vite.config.ts"), "Vite config file names should stay exported");
 assert.ok(
   VIZE_CONFIG_JSON_SCHEMA_PATH.endsWith("vize.config.schema.json"),
   "JSON schema path should resolve through the exported vize schema subpath",

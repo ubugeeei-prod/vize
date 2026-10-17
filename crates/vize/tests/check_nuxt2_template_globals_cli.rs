@@ -3,6 +3,8 @@
 
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "support/vite_config.rs"]
+mod vite_config;
 
 use std::{
     path::{Path, PathBuf},
@@ -21,8 +23,8 @@ fn check_legacy_nuxt2_template_fetch_state_and_route_globals() {
     std::fs::create_dir_all(project_root.join("src")).unwrap();
     std::fs::write(project_root.join("nuxt.config.ts"), "export default {}\n").unwrap();
     std::fs::write(
-        project_root.join("vize.config.json"),
-        r#"{ "typeChecker": { "legacyVue2": true } }"#,
+        project_root.join("vite.config.mjs"),
+        vite_config::source(r#"{ "typeChecker": { "legacyVue2": true } }"#),
     )
     .unwrap();
     std::fs::write(

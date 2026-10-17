@@ -20,8 +20,8 @@ title: "html/deprecated-attr"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "html/deprecated-attr": "warn"

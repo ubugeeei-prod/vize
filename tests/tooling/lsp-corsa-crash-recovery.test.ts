@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -188,10 +189,9 @@ test("vize lsp recovers typecheck diagnostics after the Corsa backend is killed"
 `,
       "utf8",
     );
-    fs.writeFileSync(
-      path.join(workspaceDir, "vize.config.json"),
+    writeVueConfigFixture(
+      workspaceDir,
       JSON.stringify({ lsp: { lint: false, typecheck: true }, typeChecker: { corsaPath } }),
-      "utf8",
     );
     fs.writeFileSync(
       path.join(workspaceDir, "tsconfig.json"),

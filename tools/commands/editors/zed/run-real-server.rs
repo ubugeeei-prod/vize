@@ -22,6 +22,6 @@ fn main() -> ExitCode {
 }
 
 fn run() -> Result<(), String> {
-    lsp_smoke::run_editor_contract(&common::repo_root()?, "zed", true)?;
+    lsp_smoke::run_editor_contract(&common::repo_root()?, "zed")?;
     workspace_profile::run(&common::repo_root()?)
 }

@@ -20,8 +20,8 @@ label を対象のフォーム部品と関連付けます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "a11y/label-has-for": "warn"

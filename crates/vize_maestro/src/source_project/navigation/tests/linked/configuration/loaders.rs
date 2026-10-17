@@ -6,14 +6,18 @@ use vize_l0::config::{VueDialect, VueVersion};
 
 fn config(source: &str) -> tempfile::TempDir {
     let dir = tempfile::tempdir().unwrap();
-    std::fs::write(dir.path().join("vize.config.json"), source).unwrap();
+    std::fs::write(
+        dir.path().join("vite.config.mjs"),
+        vize_l0::cstr!("export default {{ vue: {} }};", source).as_bytes(),
+    )
+    .unwrap();
     dir
 }
 
 #[test]
 fn actual_vue_version_loader_aba_revokes_pending_original_names_publication() {
-    let changed = config(r#"{"vue":{"version":"2.7"}}"#);
-    let restored = config(r#"{"vue":{"version":"3"}}"#);
+    let changed = config(r#"{"version":"2.7"}"#);
+    let restored = config(r#"{"version":"3"}"#);
     parser_aba(|state| {
         state.load_lsp_config(changed.path());
         state.load_lsp_config(restored.path());
@@ -85,10 +89,10 @@ fn linked_identity_changes_when_either_actual_route_input_changes_while_route_is
 #[test]
 fn both_real_config_loaders_capture_only_complete_actual_parser_and_route_transactions() {
     let first = config(
-        r#"{"vue":{"version":"3"},"dialect":"vue","languageServer":{"rename":true,"legacyVue2":false},"experimentals":{"patternedTemplate":false}}"#,
+        r#"{"version":"3","dialect":"vue","languageServer":{"rename":true,"legacyVue2":false},"experimentals":{"patternedTemplate":false}}"#,
     );
     let second = config(
-        r#"{"vue":{"version":"2.7"},"dialect":"petite-vue","languageServer":{"rename":false,"legacyVue2":true},"experimentals":{"patternedTemplate":true}}"#,
+        r#"{"version":"2.7","dialect":"petite-vue","languageServer":{"rename":false,"legacyVue2":true},"experimentals":{"patternedTemplate":true}}"#,
     );
     for load in [
         ServerState::load_lsp_config,

@@ -28,7 +28,7 @@ Prefer named scripts over one-off commands so local and CI runs share the same e
     "vize:fmt": "vize fmt --check src",
     "vize:fmt:fix": "vize fmt --write src",
     "vize:lint": "vize lint --preset happy-path --max-warnings 0 src",
-    "vize:check": "vize check src",
+    "vize:check": "vize check",
     "vize:build": "vize build src",
     "vize:ready": "vize ready src"
   }
@@ -40,12 +40,12 @@ developers can isolate formatting, lint, type-checking, and compiler failures.
 
 ## Configure Once
 
-When defaults are not enough, add native options to the top-level `vize` object in your existing `vite.config.*`. See [Configuration](./configuration.md) for discovery, current release availability, and optional dedicated formats.
+When defaults are not enough, add native options to the top-level `vue` object in your existing `vite.config.*`. See [Configuration](./configuration.md) for shared discovery and migration.
 
 ```ts
 // vite.config.ts
 export default {
-  vize: {
+  vue: {
     formatter: {
       printWidth: 100,
     },
@@ -64,7 +64,7 @@ export default {
 };
 ```
 
-See [Configuration](./configuration.md) for flat monorepo entries, PKL, JSON, compiler options, and
+See [Configuration](./configuration.md) for scoped lint entries, TypeScript project options, compiler options, and
 Vue type resolution details.
 
 ## Format

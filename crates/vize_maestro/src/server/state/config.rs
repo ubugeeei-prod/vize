@@ -2,6 +2,8 @@
 
 #[cfg(feature = "glyph")]
 mod formatting;
+#[cfg(feature = "native")]
+mod project;
 mod read;
 #[cfg(feature = "glyph")]
 use formatting::format_options_from_config;
@@ -214,10 +216,16 @@ impl ServerState {
         tracing::info!("Loaded LSP config from {}: {:?}", source, features);
     }
 
-    /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
+    /// Load workspace options from the shared Vite/TypeScript project snapshot.
     pub fn load_workspace_config(&self, dir: &Path) {
         let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
+        #[cfg(feature = "native")]
+        let mut loaded = loaded;
         if !loaded.valid {
+            return;
+        }
+        #[cfg(feature = "native")]
+        if !self.apply_tsconfig_config_snapshot(dir, &mut loaded) {
             return;
         }
         self.install_project_linter_context(
@@ -225,6 +233,7 @@ impl ServerState {
             &loaded.project.document,
             loaded.project.source_path.as_deref(),
             loaded.project.project_root.as_deref(),
+            loaded.features,
         );
         #[cfg(feature = "native")]
         self.apply_project_path_identity(dir, loaded.project.project_root.as_deref());
@@ -267,10 +276,16 @@ impl ServerState {
         }
     }
 
-    /// Load LSP options from `vize.config.pkl` (preferred) or `vize.config.json`.
+    /// Load LSP options from the shared Vite/TypeScript project snapshot.
     pub fn load_lsp_config(&self, dir: &Path) {
         let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
+        #[cfg(feature = "native")]
+        let mut loaded = loaded;
         if !loaded.valid {
+            return;
+        }
+        #[cfg(feature = "native")]
+        if !self.apply_tsconfig_config_snapshot(dir, &mut loaded) {
             return;
         }
         self.apply_project_formatting_default(loaded.source_path.as_deref());
@@ -300,23 +315,14 @@ impl ServerState {
         }
     }
 
-    // Keep dedicated-config users' opt-in formatting behavior. Fresh projects
-    // expose the formatter alongside the existing recommended editor profile;
-    // authored project and editor switches are applied afterwards.
-    fn apply_project_formatting_default(&self, source: Option<&Path>) {
-        let dedicated = source
-            .and_then(Path::file_name)
-            .and_then(|name| name.to_str())
-            .is_some_and(|name| name.starts_with("vize.config."));
-        if !dedicated {
-            self.apply_lsp_config(
-                LspConfigSection::from(vize_l0::config::LanguageServerConfig {
-                    formatting: Some(true),
-                    ..Default::default()
-                }),
-                "project defaults",
-            );
-        }
+    fn apply_project_formatting_default(&self, _source: Option<&Path>) {
+        self.apply_lsp_config(
+            LspConfigSection::from(vize_l0::config::LanguageServerConfig {
+                formatting: Some(true),
+                ..Default::default()
+            }),
+            "project defaults",
+        );
     }
 
     /// Get a clone of the current format options.
@@ -332,7 +338,7 @@ impl ServerState {
         self.format_options.read().clone()
     }
 
-    /// Load format options from `vize.config.json` in the given directory.
+    /// Load format options from the shared project configuration.
     #[cfg(feature = "glyph")]
     pub fn load_format_config(&self, dir: &Path) {
         let loaded = vize_carton::config::load_config_with_source(Some(dir));

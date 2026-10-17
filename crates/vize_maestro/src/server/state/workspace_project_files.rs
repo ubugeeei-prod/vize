@@ -58,10 +58,6 @@ fn read_sources(uris: &[Url], retired: &[PathBuf]) -> Vec<(Url, std::string::Str
 }
 
 impl ServerState {
-    pub(crate) fn project_source_watcher_enabled(&self) -> bool {
-        self.is_lsp_typecheck_enabled() || self.lsp_features().workspace_symbols
-    }
-
     pub(crate) fn observe_workspace_project_file_events(&self, events: &[FileEvent]) {
         for event in events {
             if event.typ != FileChangeType::CHANGED

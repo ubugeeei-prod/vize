@@ -10,12 +10,12 @@ use super::super::MaestroServer;
 fn did_open_defers_without_publishing_an_empty_terminal_result() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
-        project.path().join("vize.config.json"),
-        r#"{
+        project.path().join("vite.config.mjs"),
+        r#"export default { vue: {
             "typeChecker": {
                 "corsaPath": "./vize-missing-corsa-for-deferred-diagnostics"
             }
-        }"#,
+        } };"#,
     )
     .unwrap();
 

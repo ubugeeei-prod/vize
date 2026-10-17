@@ -73,12 +73,7 @@ const parsed = toml.parse(languagesToml);
 
 assert.equal(parsed["language-server"].vize.command, "vize");
 assert.deepEqual(parsed["language-server"].vize.args, ["lsp"]);
-assert.deepEqual(parsed["language-server"].vize.config, {
-  editor: true,
-  ecosystem: true,
-  lint: true,
-  typecheck: true,
-});
+assert.equal(parsed["language-server"].vize.config, undefined);
 
 const languages = new Map(parsed.language.map((language) => [language.name, language]));
 assertLanguage(languages.get("vue"), {
@@ -95,11 +90,7 @@ assertLanguage(languages.get("art-vue"), {
 assert.match(languagesToml, /^\[language-server\.vize\]$/m);
 assert.match(languagesToml, /^command = "vize"$/m);
 assert.match(languagesToml, /^args = \["lsp"\]$/m);
-assert.match(languagesToml, /^\[language-server\.vize\.config\]$/m);
-assert.match(languagesToml, /^editor = true$/m);
-assert.match(languagesToml, /^ecosystem = true$/m);
-assert.match(languagesToml, /^lint = true$/m);
-assert.match(languagesToml, /^typecheck = true$/m);
+assert.doesNotMatch(languagesToml, /^\[language-server\.vize\.config\]$/m);
 assert.match(languagesToml, /^file-types = \[\{ glob = "\*\.art\.vue" \}\]$/m);
 
 console.log(
@@ -111,7 +102,17 @@ function assertLanguage(language, expected) {
   assert.equal(language.scope, expected.scope);
   assert.equal(language["language-id"], expected.languageId);
   assert.deepEqual(language["file-types"], expected.fileTypes);
-  assert.deepEqual(language.roots, ["vize.config.pkl", "vize.config.json", "package.json", ".git"]);
+  assert.deepEqual(language.roots, [
+    "vite.config.ts",
+    "vite.config.js",
+    "vite.config.mts",
+    "vite.config.mjs",
+    "vite.config.cts",
+    "vite.config.cjs",
+    "tsconfig.json",
+    "package.json",
+    ".git",
+  ]);
   assert.deepEqual(language["language-servers"], ["vize"]);
 }
 

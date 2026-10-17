@@ -15,8 +15,8 @@ provide した値が reactive ではないため、子孫は更新を観測で�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/non-reactive-provide": "warn" },
     },
   },

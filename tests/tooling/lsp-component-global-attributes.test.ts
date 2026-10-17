@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -82,7 +83,7 @@ await test("component tags keep complete common attributes through real stdio an
     assert.ok(runtime, "actual pinned native runtime is mandatory without skip");
     const physicalRuntime = fs.realpathSync(runtime);
     const config = { typeChecker: { corsaPath: physicalRuntime } };
-    fs.writeFileSync(path.join(workspace, "vize.config.json"), `${JSON.stringify(config)}\n`);
+    writeVueConfigFixture(workspace, `${JSON.stringify(config)}\n`);
     record({
       kind: "bootstrap",
       config,
