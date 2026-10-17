@@ -28,7 +28,7 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   assert.match(benchmarkJob, /contents:\s*read/);
   assert.doesNotMatch(benchmarkJob, /contents:\s*write/);
   assert.doesNotMatch(benchmarkJob, /issues:\s*write/);
-  assert.match(benchmarkJob, /uses:\s*\.\/\.github\/actions\/setup-moonbit/);
+  assert.doesNotMatch(benchmarkJob, /uses:\s*\.\/\.github\/actions\/setup-moonbit/);
   const rustScriptSetupIndex = benchmarkJob.indexOf("uses: ./.github/actions/setup-rust-script");
   const vitePluginBuildIndex = benchmarkJob.indexOf(
     "run: vp run --workspace-root build:vite-plugin",

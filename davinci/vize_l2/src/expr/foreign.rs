@@ -1,8 +1,8 @@
 //! [`ForeignExpr`] - the non-JS expression dialect payload.
 //!
-//! First-party expression dialects construct these payloads during L1→L2
-//! lowering. The MoonBit implementation supplies the capability answers and
-//! preserves exact source spans without invoking the JavaScript parser.
+//! Retained neutral-IR payload for opaque expression dialects and historical
+//! folio codecs. No non-JavaScript authoring dialect is currently shipped.
+//! Source spans remain exact without invoking the JavaScript parser.
 
 use vize_l0::{Span, Vec};
 
@@ -20,15 +20,15 @@ pub struct ForeignFact<'a> {
 /// tables.
 #[derive(Debug)]
 pub struct ForeignExpr<'a> {
-    /// The dialect id (`"moonbit"`-style: a non-empty lowercase word;
-    /// the phase-6 dialect registry owns the vocabulary).
+    /// The dialect id (a non-empty lowercase word;
+    /// the producer owns the vocabulary).
     pub dialect: &'a str,
     /// The exact authored text, opaque to the core.
     pub source: &'a str,
     /// The authored range of `source` in the compiled file.
     pub span: Span,
     /// The dialect's side tables, riding as opaque fact rows. The core
-    /// never reads them; the phase-6 dialect contract owns their
+    /// never reads them; the producing dialect owns their
     /// vocabulary **and their folio spelling** - until it exists, the
     /// folio payload is dialect + source + span only (the P2-5b
     /// contract's list), so a value carrying facts does not round-trip

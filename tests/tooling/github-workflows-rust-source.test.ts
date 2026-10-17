@@ -57,7 +57,7 @@ void test("required source reports include selected product gates and mandatory 
       `${name} is a required product gate`,
     );
   }
-  for (const name of ["pr-source-plan", "wit-contracts", "canonical-corpus"])
+  for (const name of ["pr-source-plan", "canonical-corpus"])
     assert.ok(needs(source.jobs["source-report"]).includes(name), name);
   assert.equal(source.jobs["pr-rust-source"].uses, "./.github/workflows/pr-rust-checks.yml");
   assert.equal(source.jobs["pr-rust-source"].with?.["run-rust"], true);

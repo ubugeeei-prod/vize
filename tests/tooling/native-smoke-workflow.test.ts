@@ -176,7 +176,6 @@ void test("only the real selected producer runs the token laws while default qua
     ).msvc_arch,
     "arm64",
   );
-  assert.match(readRepoFile(".github", "actions", "setup-moonbit", "action.yml"), /arch: amd64/u);
 });
 
 void test("the actual default native producer executes only its unchanged NAPI and Node recipes", () => {
@@ -245,11 +244,6 @@ void test("the actual default native producer executes only its unchanged NAPI a
     ".github/actions/setup-runtime-package-managers/action.yml",
   ])
     assert.doesNotMatch(readRepoFile(file), /\bmoon(?:c|bit)?\b|MOON_(?:HOME|BIN)/u, file);
-  const dialect = readRepoFile("davinci/vize_dialect_moonbit/Cargo.toml");
-  const features = dialect.match(/^\[features\]\n([\s\S]*?)(?=^\[)/mu)?.[1];
-  assert.ok(features, "dialect feature declarations must be inspected");
-  assert.match(features, /moonc = \["dep:sha2"\]/u);
-  assert.doesNotMatch(features, /^default\s*=/mu);
   const selectedLaws = readRepoFile("tests/tooling/native-build-token.test.ts");
   assert.equal([...selectedLaws.matchAll(/^void test\("/gmu)].length, 3);
   for (const law of [
@@ -258,9 +252,6 @@ void test("the actual default native producer executes only its unchanged NAPI a
     "production build environment preserves inheritance and overrides old tokens",
   ])
     assert.ok(selectedLaws.includes(`void test("${law}"`));
-  const dedicated = readRepoFile(".github", "workflows", "level-moonbit.yml");
-  assert.match(dedicated, /uses: \.\/\.github\/actions\/setup-moonbit/u);
-  assert.match(dedicated, /cargo test -p vize_dialect_moonbit --features moonc/u);
 });
 
 void test("all transitive local normal and build dependencies keep Moon out of default native builds", () => {

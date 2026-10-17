@@ -69,8 +69,6 @@ pub mod css;
 pub mod dialect;
 pub mod edit;
 pub mod embed;
-#[cfg(feature = "moonbit")]
-pub mod lang;
 pub mod markup;
 pub mod parse;
 pub mod pug;

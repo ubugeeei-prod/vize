@@ -41,6 +41,8 @@ pub(super) fn rewrite(path: &str, content: &str, old: &str, new: &str) -> String
                 "editors/vscode/package.json" | "editors/vscode-art/package.json"
             ));
     let readme = path == "README.md" || (path.starts_with("npm/") && path.ends_with("/README.md"));
+    // Old published integrations remain auditable after the experimental SDK
+    // is removed. These historical paths grant no current producer or runtime.
     let cargo_lock = path == "Cargo.lock"
         || path == "editors/zed/Cargo.lock"
         || path == "examples/volt-target/Cargo.lock"
@@ -160,7 +162,7 @@ pub(super) fn rewrite(path: &str, content: &str, old: &str, new: &str) -> String
         .join("\n")
 }
 
-/// Standalone SDK locks share the same byte-exact authority as integration.
+/// Workspace locks share the same byte-exact authority as integration.
 /// The pin verifier accepts only this textual bump. `cargo update --workspace`
 /// also rewrites unrelated packages, so the integration would not match.
 pub fn rewrite_workspace_lock(old: &str, new: &str, root: &Path) -> Result<(), String> {
@@ -175,28 +177,6 @@ pub fn rewrite_workspace_lock(old: &str, new: &str, root: &Path) -> Result<(), S
     if after == before {
         return Err("Cargo.lock contained no workspace version to rewrite.".into());
     }
-    std::fs::write(file, after).map_err(|error| error.to_string())
-}
-
-pub fn rewrite_guest_lock(path: &str, old: &str, new: &str, root: &Path) -> Result<(), String> {
-    if !matches!(
-        path,
-        "davinci/vize_extension_host/tests/guests/expression-echo/Cargo.lock"
-            | "davinci/vize_extension_host/tests/guests/output-echo/Cargo.lock"
-            | "davinci/vize_extension_host/tests/guests/typed-expression-echo/Cargo.lock"
-            | "examples/volt-target/Cargo.lock"
-    ) {
-        return Err("Not a standalone in-tree SDK lockfile.".into());
-    }
-    let file = root.join(path);
-    let before = std::fs::read_to_string(&file).map_err(|error| error.to_string())?;
-    let expected = format!("name = \"vize_guest\"\nversion = \"{old}\"");
-    if old == new || before.matches(&expected).count() != 1 {
-        return Err(format!(
-            "{path} must contain one vize_guest at the original version."
-        ));
-    }
-    let after = rewrite(path, &before, old, new);
     std::fs::write(file, after).map_err(|error| error.to_string())
 }
 

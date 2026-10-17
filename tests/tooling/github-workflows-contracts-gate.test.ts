@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -20,7 +22,6 @@ type Workflow = {
 };
 const check = parse(readRepoFile(".github/workflows/check.yml")) as Workflow;
 const source = parse(readRepoFile(".github/workflows/pr-source-checks.yml")) as Workflow;
-const contracts = parse(readRepoFile(".github/workflows/davinci-contracts.yml")) as Workflow;
 const topPrior = [
   "iteration-plan",
   "fmt-rust",
@@ -40,13 +41,12 @@ const prior = [
   "pr-native-runtime",
   "pr-playground-test",
 ];
-const needs = (wit = "success") => ({
+const needs = (qualification = "success") => ({
   ...Object.fromEntries(prior.map((job) => [job, { result: "success" }])),
-  "wit-contracts": { result: wit },
-  "nuxt-module-qualification": { result: "success" },
+  "nuxt-module-qualification": { result: qualification },
 });
 
-test("one parallel reusable WIT lane gates merge groups without adding a PR build", () => {
+test("retiring the WIT lane preserves the required source report and existing Check controls", () => {
   assert.equal(Object.hasOwn(check.jobs, "wit-contracts"), false);
   assert.deepEqual(check.jobs["pr-source-checks"], {
     name: "PR source checks",
@@ -55,14 +55,9 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
     uses: "./.github/workflows/pr-source-checks.yml",
   });
   assert.deepEqual(source.on, { workflow_call: null });
-  assert.deepEqual(source.jobs["wit-contracts"], {
-    name: "Guest contracts",
-    if: "${{ github.event_name == 'merge_group' }}",
-    uses: "./.github/workflows/davinci-contracts.yml",
-  });
+  assert.equal(Object.hasOwn(source.jobs, "wit-contracts"), false);
   assert.deepEqual(source.jobs["source-report"].needs, [
     ...prior,
-    "wit-contracts",
     "nuxt-module-qualification",
     "canonical-corpus",
   ]);
@@ -83,28 +78,16 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
     check.jobs["test-report"].steps?.at(-1)?.run,
     "node tools/support/compat/github/require-needs-success.ts --check-report",
   );
-  assert.equal(Object.hasOwn(contracts.on, "workflow_call"), true);
-  assert.equal(Object.hasOwn(contracts.on, "push"), true);
-  assert.equal(Object.hasOwn(contracts.on, "workflow_dispatch"), true);
-  assert.equal(Object.hasOwn(contracts.on, "merge_group"), false);
-  assert.equal(Object.hasOwn(contracts.on, "pull_request"), false);
-  assert.deepEqual(contracts.permissions, { contents: "read" });
   assert.deepEqual(check.permissions, { contents: "read" });
   assert.deepEqual(source.permissions, { contents: "read" });
-  assert.equal(contracts.jobs["wit-contract"].if, undefined);
-  assert.equal(contracts.concurrency["cancel-in-progress"], true);
   assert.equal(check.concurrency["cancel-in-progress"], true);
-  assert.equal(
-    contracts.concurrency.group,
-    "davinci-contracts-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}",
-  );
   assert.equal(
     check.concurrency.group,
     "check-v3-${{ github.workflow }}-${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('full-{0}', github.sha) || (github.event.pull_request.number || github.ref) }}",
   );
 });
 
-test("failed, skipped and absent nested WIT results poison the existing required report", () => {
+test("failed, skipped and absent nested qualification results poison the existing required report", () => {
   const outer = (sourceResult: string) =>
     aggregateNeedsResults({
       ...Object.fromEntries(topPrior.map((job) => [job, { result: "success" }])),
@@ -115,7 +98,7 @@ test("failed, skipped and absent nested WIT results poison the existing required
     assert.equal(inner.exitCode, 1);
     assert.equal(outer(inner.exitCode === 0 ? "success" : "failure").exitCode, 1);
   }
-  for (const rows of [{}, { ...needs(), "wit-contracts": {} }]) {
+  for (const rows of [{}, { ...needs(), "nuxt-module-qualification": {} }]) {
     assert.throws(() => aggregateCheckNeedsResults(rows, "merge_group"));
     assert.equal(outer("failure").exitCode, 1);
   }
@@ -152,10 +135,10 @@ test("queue refusals, absent results and unknown events fail closed", () => {
     assert.equal(aggregateCheckNeedsResults(needs(result), "merge_group").exitCode, 1);
   }
   for (const event of ["merge_group", "pull_request", "push", "schedule", "workflow_dispatch"]) {
-    assert.throws(() => aggregateCheckNeedsResults({}, event), /missing wit-contracts/);
+    assert.throws(() => aggregateCheckNeedsResults({}, event), /missing nuxt-module-qualification/);
     assert.throws(
-      () => aggregateCheckNeedsResults({ ...needs(), "wit-contracts": {} }, event),
-      /wit-contracts reported no result/,
+      () => aggregateCheckNeedsResults({ ...needs(), "nuxt-module-qualification": {} }, event),
+      /nuxt-module-qualification reported no result/,
     );
   }
   for (const event of [undefined, "", "workflow_call", "pull_request_target", "unknown"]) {
@@ -182,4 +165,25 @@ test("the actual Check CLI fails queue omissions while the shared strict mode st
   assert.equal(run([], "pull_request", { old: { result: "success" } }).status, 0);
   assert.equal(run([], "pull_request", { old: { result: "skipped" } }).status, 1);
   assert.equal(run(["--unknown"], "pull_request", needs()).status, 1);
+});
+
+test("retired experimental dialect runtimes and bootstrap have no active filesystem surface", () => {
+  for (const relative of [
+    "davinci/vize_extension_contract",
+    "davinci/vize_extension_host",
+    "davinci/vize_guest",
+    "davinci/vize_dialect_moonbit",
+    "davinci/vize_l0/src/extension",
+    "davinci/vize_l1/src/lang.rs",
+    "davinci/vize_l2/src/lang/moonbit",
+    "npm/extension-sdk",
+    "examples/volt-target",
+    ".github/workflows/davinci-contracts.yml",
+    ".github/workflows/level-moonbit.yml",
+    ".github/actions/setup-moonbit",
+    ".moonbit-version",
+    "tools/nix/moonbit.nix",
+  ]) {
+    assert.equal(fs.existsSync(path.join(root, relative)), false, relative);
+  }
 });

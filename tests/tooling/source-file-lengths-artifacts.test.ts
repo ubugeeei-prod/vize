@@ -14,7 +14,7 @@ function git(cwd: string, ...args: string[]) {
   return result.stdout.trim();
 }
 
-test("only canonical released contract artifacts are exempt from source length", () => {
+test("retired contract artifacts have no source length exemption", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-artifacts-"));
   try {
     git(cwd, "init", "-q");
@@ -36,7 +36,7 @@ test("only canonical released contract artifacts are exempt from source length",
         encoding: "utf8",
       });
     write(artifact);
-    assert.equal(run().status, 0);
+    assert.equal(run().status, 1);
 
     const controls = [
       "crates/other/versions/vize-contracts@0.1.3.json",
@@ -53,7 +53,9 @@ test("only canonical released contract artifacts are exempt from source length",
       [
         "| Lines | Base | Reason | Path |",
         "| ---: | ---: | --- | --- |",
-        ...controls.toSorted().map((file) => `| 501 | - | new file exceeds limit | \`${file}\` |`),
+        ...[artifact, ...controls]
+          .toSorted()
+          .map((file) => `| 501 | - | new file exceeds limit | \`${file}\` |`),
       ].join("\n"),
     );
   } finally {

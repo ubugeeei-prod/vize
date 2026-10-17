@@ -1,5 +1,10 @@
 # Davinci — Architecture
 
+> **Scope update (2026-10-17):** the experimental MoonBit dialect, guest SDK
+> and external component host described in older sections have been removed.
+> These sections are historical design context, not current implementation
+> commitments. See the [scope decision](./decisions/2026-10-17-vue-toolchain-scope.md). Vue compiler and editor quality takes priority.
+
 > [!NOTE]
 > This is the design-phase architecture. Stage contracts are stable; new
 > implementation code uses the short stage aliases recorded in

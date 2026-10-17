@@ -1,7 +1,0 @@
-{"$message_type":"diagnostic","level":"error","error_code":4091,"path":"vize/sfc/Typed.vue.mbt","loc":"3:15-3:28","message":"The type @moonbitlang/core/ref.Ref[Int] has no field missing.","context":""}
-{"$message_type":"diagnostic","level":"error","error_code":4014,"path":"vize/sfc/Typed.vue.mbt","loc":"7:15-7:24","message":"Expr Type Mismatch\n        has type : Int\n        wanted   : Bool","context":""}
-{"$message_type":"diagnostic","level":"error","error_code":4014,"path":"vize/sfc/Typed.vue.mbt","loc":"11:15-11:24","message":"Expr Type Mismatch\n        has type : Int\n        wanted   : String","context":""}
-{"$message_type":"diagnostic","level":"error","error_code":4014,"path":"vize/sfc/Typed.vue.mbt","loc":"15:13-15:22","message":"Expr Type Mismatch\n        has type : () -> String\n        wanted   : () -> Unit","context":""}
-{"$message_type":"diagnostic","level":"error","error_code":4014,"path":"vize/sfc/Typed.vue.mbt","loc":"19:20-19:31","message":"Expr Type Mismatch\n        has type : String\n        wanted   : Unit","context":""}
-{"$message_type":"diagnostic","level":"error","error_code":4080,"path":"vize/sfc/Typed.vue.mbt","loc":"23:15-23:27","message":"This function has type () -> String, which requires 0 arguments, but is given 1 arguments.","context":""}
-{"$message_type":"diagnostic","level":"error","error_code":4021,"path":"vize/sfc/Typed.vue.mbt","loc":"27:15-27:19","message":"The value identifier item is unbound.","context":""}
