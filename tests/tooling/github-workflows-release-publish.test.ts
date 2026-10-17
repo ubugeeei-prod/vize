@@ -104,23 +104,22 @@ function setupVpSteps(job: ReleaseJob): NonNullable<ReleaseJob["steps"]> {
 
 test("release preflight executes the publication workflow laws", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "release-preflight-contracts.yml"));
+  const files = [
+    "tests/tooling/github-workflows-release-publish.test.ts",
+    "tests/tooling/github-workflows-release-build.test.ts",
+    "tests/tooling/github-workflows-release-smoke.test.ts",
+    "tests/tooling/github-workflows-release-vscode-publisher.test.ts",
+    "tests/tooling/release-jsr-workflow.test.ts",
+  ];
+  assert.deepEqual(
+    files.filter((file) => workflow.on.pull_request.paths.includes(file)),
+    files,
+  );
   const steps = workflow.jobs.contracts.steps as NonNullable<ReleaseJob["steps"]>;
   const commands = steps.flatMap((step) => (step.run ? [step.run.trim().split(/\s+/)] : []));
   assert.deepEqual(
-    commands.filter((command) =>
-      command.includes("tests/tooling/github-workflows-release-publish.test.ts"),
-    ),
-    [
-      [
-        "node",
-        "--test",
-        "tests/tooling/github-workflows-release-publish.test.ts",
-        "tests/tooling/github-workflows-release-build.test.ts",
-        "tests/tooling/github-workflows-release-smoke.test.ts",
-        "tests/tooling/github-workflows-release-vscode-publisher.test.ts",
-        "tests/tooling/release-jsr-workflow.test.ts",
-      ],
-    ],
+    commands.filter((command) => command.includes(files[0])),
+    [["node", "--test", ...files]],
   );
 });
 
