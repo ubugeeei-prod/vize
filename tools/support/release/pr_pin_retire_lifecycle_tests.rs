@@ -1,7 +1,8 @@
 use super::super::pr_github as github;
 use super::{
-    lock, retire_archive as archive, retire_evidence as evidence, retire_tests::fixture,
-    tests::Repo,
+    lock, metadata, retire, retire_archive as archive, retire_evidence as evidence,
+    retire_log_storage as storage, retire_prequalification_archive_tests::prequalification_fixture,
+    retire_source, retire_tests::fixture, tests::Repo,
 };
 use serde_json::json;
 use std::collections::BTreeMap;
@@ -165,4 +166,176 @@ fn expired_retirement_loops_return_naturally_and_drop_only_their_own_lease() {
                 .is_none()
         );
     }
+}
+
+fn sync_qualification_run(receipt: &mut serde_json::Value, run: serde_json::Value) {
+    receipt["guards"]["qualificationRun"] = run.clone();
+    receipt["guards"]["releaseRunAbsence"]["hRunPages"][0]["workflow_runs"][0] = run.clone();
+    receipt["originalEvidence"]["HRunPages"][0]["workflow_runs"][0] = run.clone();
+    receipt["originalEvidence"]["observations"][0]["run"] = run;
+}
+
+fn sync_qualification_jobs(receipt: &mut serde_json::Value, jobs: Vec<serde_json::Value>) {
+    let pages = json!([{"total_count":jobs.len(),"jobs":jobs}]);
+    receipt["guards"]["qualificationJobs"] = json!(jobs);
+    receipt["guards"]["originalFailureJobPages"]["qualification"] = pages.clone();
+    receipt["originalEvidence"]["observations"][0]["jobPages"] = pages;
+}
+
+#[test]
+fn qualification_archive_replays_actual_source_policy_and_preserves_typed_failure_origin() {
+    let repo = Repo::new();
+    let (mut receipt, head, _, _) = prequalification_fixture(&repo);
+    let raw = b"whole actual inert Q failure\xff\x00\r\n\n";
+    receipt["originalEvidence"]["failureLogEncoding"] = json!("gzip");
+    receipt["originalEvidence"]["failureLogSources"] = json!({
+        "failure/123.log.gz":{"oid":storage::blob_identity(raw, &repo.work).unwrap(),"bytes":raw.len()}
+    });
+    let logs = BTreeMap::from([("failure/123.log.gz".into(), storage::gzip(raw).unwrap())]);
+    let before = github::git(&["ls-remote", "--refs", "origin"], &repo.work).unwrap();
+    let source = retire_source::validate(&receipt, &repo.work).unwrap();
+    assert_eq!(source.candidate.head, head);
+    let request = retire::Request::from_identity(archive::identity(&receipt).unwrap()).unwrap();
+    assert!(matches!(request.failure, retire::Failure::BeforeRelease(8)));
+    assert_eq!(request.failure.key(), "qualificationRun");
+    assert_eq!(request.failure.attempt_key(), "qualificationAttempt");
+    assert_eq!(request.operator, 6);
+    let legacy_repo = Repo::new();
+    let (legacy, _, _, _) = fixture(&legacy_repo);
+    let legacy_request =
+        retire::Request::from_identity(archive::identity(&legacy).unwrap()).unwrap();
+    assert!(matches!(
+        legacy_request.failure,
+        retire::Failure::Release(7)
+    ));
+    for (key, value) in [
+        ("origin", json!("release")),
+        ("origin", serde_json::Value::Null),
+        ("qualificationRun", json!(0)),
+        ("releaseRun", json!(0)),
+        ("releaseRun", serde_json::Value::Null),
+        ("releaseAttempt", json!(1)),
+    ] {
+        let mut fields = receipt["identity"].clone();
+        fields[key] = value;
+        assert!(retire::Request::from_identity(&fields).is_err(), "{key}");
+        assert_eq!(
+            github::git(&["ls-remote", "--refs", "origin"], &repo.work).unwrap(),
+            before
+        );
+    }
+    let mut mutations = Vec::new();
+    for (status, conclusion) in [
+        ("completed", json!("success")),
+        ("completed", json!("cancelled")),
+        ("in_progress", serde_json::Value::Null),
+    ] {
+        let mut bad = receipt.clone();
+        let mut run = bad["guards"]["qualificationRun"].clone();
+        run["status"] = json!(status);
+        run["conclusion"] = conclusion;
+        sync_qualification_run(&mut bad, run);
+        mutations.push(bad);
+    }
+    let mut missing = receipt.clone();
+    let mut jobs = missing["guards"]["qualificationJobs"]
+        .as_array()
+        .unwrap()
+        .clone();
+    jobs.pop();
+    sync_qualification_jobs(&mut missing, jobs);
+    mutations.push(missing);
+    let mut historical = receipt.clone();
+    historical["identity"]["qualificationAttempt"] = json!(2);
+    historical["guards"]["identity"] = historical["identity"].clone();
+    let mut run = historical["guards"]["qualificationRun"].clone();
+    run["run_attempt"] = json!(2);
+    sync_qualification_run(&mut historical, run);
+    let mut jobs = historical["guards"]["qualificationJobs"]
+        .as_array()
+        .unwrap()
+        .clone();
+    let current = jobs
+        .iter()
+        .enumerate()
+        .map(|(index, job)| {
+            let mut job = job.clone();
+            job["id"] = json!(5000 + index);
+            job["run_attempt"] = json!(2);
+            job["conclusion"] = json!("success");
+            job
+        })
+        .collect::<Vec<_>>();
+    jobs.extend(current);
+    sync_qualification_jobs(&mut historical, jobs);
+    let error = retire_source::validate(&historical, &repo.work).unwrap_err();
+    assert!(error.contains("current Q attempt"), "{error}");
+    mutations.push(historical);
+    for pages in [
+        json!([]),
+        json!([{"total_count":1,"workflow_runs":[]}]),
+        json!([{"total_count":0,"workflow_runs":[],"message":"Bad credentials"}]),
+    ] {
+        let mut bad = receipt.clone();
+        bad["guards"]["releaseRunAbsence"]["pages"] = pages;
+        mutations.push(bad);
+    }
+    let q = receipt["guards"]["qualificationRun"].clone();
+    let mut duplicate = receipt.clone();
+    duplicate["guards"]["releaseRunAbsence"]["hRunPages"] =
+        json!([{"total_count":2,"workflow_runs":[q,q]}]);
+    mutations.push(duplicate);
+    let mut rows = vec![q.clone()];
+    for id in 2000..2099 {
+        let mut diagnostic = q.clone();
+        diagnostic["id"] = json!(id);
+        diagnostic["display_title"] = json!("unrelated diagnostic");
+        rows.push(diagnostic);
+    }
+    let mut any_release = q;
+    any_release["id"] = json!(9999);
+    any_release["path"] = json!(".github/workflows/release.yml");
+    any_release["event"] = json!("pull_request");
+    any_release["display_title"] = json!("unrelated title");
+    any_release["conclusion"] = json!("success");
+    let mut page_two = receipt.clone();
+    page_two["guards"]["releaseRunAbsence"]["hRunPages"] = json!([
+        {"total_count":101,"workflow_runs":rows},{"total_count":101,"workflow_runs":[any_release]}
+    ]);
+    let error = retire_source::validate(&page_two, &repo.work).unwrap_err();
+    assert!(error.contains("Release run forbids"), "{error}");
+    mutations.push(page_two);
+    for bad in mutations {
+        assert!(retire_source::validate(&bad, &repo.work).is_err());
+        assert!(archive::install(bad, &logs, &repo.work).is_err());
+        assert_eq!(
+            github::git(&["ls-remote", "--refs", "origin"], &repo.work).unwrap(),
+            before
+        );
+    }
+    let archived = archive::install(receipt, &logs, &repo.work).unwrap();
+    let (_, saved) = archive::read("v0.8.0", &repo.work).unwrap().unwrap();
+    assert_eq!(
+        retire_source::validate(&saved, &repo.work)
+            .unwrap()
+            .candidate
+            .head,
+        head
+    );
+    let stored = metadata::bytes(
+        &["show", &format!("{archived}:failure/123.log.gz")],
+        &repo.work,
+    )
+    .unwrap();
+    assert_eq!(storage::decode(&stored, raw.len()).unwrap(), raw);
+    for row in before.lines() {
+        assert!(
+            github::git(&["ls-remote", "--refs", "origin"], &repo.work)
+                .unwrap()
+                .lines()
+                .any(|actual| actual == row)
+        );
+    }
+    assert!(retire::reject_resume("v0.8.0", &repo.work).is_err());
+    assert_eq!(github::tag_target("v0.8.0", &repo.work).unwrap(), None);
 }
