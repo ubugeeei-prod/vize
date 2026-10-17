@@ -371,19 +371,23 @@ void test("only an explicit label observes the frozen original failure; mandator
   const action = parse(
     readFileSync(join(root, ".github/actions/test-js-packages-with-history/action.yml"), "utf8"),
   );
-  assert.equal(action.runs.steps[0].if, "${{ success() && job.status == 'success' }}");
+  const full = action.runs.steps.find((step) => step.name === "Test JS packages");
+  const qualification = action.runs.steps.find(
+    (step) => step.id === "original-project-qualification",
+  );
+  const cleanup = action.runs.steps.find(
+    (step) => step.name === "Clean completed original project staging after evidence upload",
+  );
+  const fault = action.runs.steps.find(
+    (step) => step.name === "Preserve bounded JS native fault diagnostics",
+  );
+  assert.equal(full.if, "${{ success() && job.status == 'success' && inputs.partition == 'all' }}");
   assert.equal(
-    action.runs.steps[0].run,
+    full.run,
     "node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root test:js",
   );
-  assert.equal(action.runs.steps[1].run, "node npm/oxlint/scripts/check-project-transport.mjs");
-  assert.equal(
-    action.runs.steps[5].run,
-    "node npm/oxlint/scripts/project-native-staging.ts --cleanup",
-  );
-  assert.equal(action.runs.steps[6].if, "${{ always() }}");
-  assert.equal(
-    action.runs.steps[6].with.path,
-    "${{ runner.temp }}/js-native-fault-evidence-*/**/*.json",
-  );
+  assert.equal(qualification.run, "node npm/oxlint/scripts/check-project-transport.mjs");
+  assert.equal(cleanup.run, "node npm/oxlint/scripts/project-native-staging.ts --cleanup");
+  assert.equal(fault.if, "${{ always() }}");
+  assert.equal(fault.with.path, "${{ runner.temp }}/js-native-fault-evidence-*/**/*.json");
 });

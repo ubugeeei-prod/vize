@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -12,6 +12,7 @@ import { testedPackages } from "../../tools/config/vite-plus/task-inputs.ts";
 import { testedPackageGroups } from "../../tools/config/vite-plus/tested-package-groups.ts";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 import { jsInstallFilters } from "../../tools/support/compat/github/install-js-checks.ts";
+import { aggregateFullJsPackageResults } from "../../tools/support/compat/github/require-needs-success.ts";
 import {
   planAffectedJs,
   readJsWorkspace,
@@ -35,7 +36,12 @@ type Step = {
   env?: Record<string, string>;
   with?: Record<string, unknown>;
 };
-type Job = { strategy?: { matrix?: string }; steps?: Step[] };
+type Job = {
+  strategy?: { matrix?: string | { group: string[] }; "fail-fast"?: boolean };
+  steps?: Step[];
+  if?: string;
+  needs?: string[];
+};
 
 const jsChecks = parse(readRepoFile(".github", "workflows", "pr-js-checks.yml")) as {
   jobs: Record<string, Job>;
@@ -129,6 +135,90 @@ void test("each group holds its tested dependencies or builds their test bundles
   }
 });
 
+void test("full qualification runs the complete existing partition independently of project replay", () => {
+  const packages = check.jobs["full-js-package-tests"];
+  const original = check.jobs["full-js-original-project"];
+  assert.deepEqual(packages.strategy, {
+    "fail-fast": false,
+    matrix: { group: testedPackageGroups.map(({ name }) => name) },
+  });
+  const full = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}";
+  for (const worker of [packages, original]) {
+    assert.equal(worker.if, full);
+    assert.equal(worker.needs, undefined, "neither worker waits for the other");
+    assert.deepEqual(
+      worker.steps?.map(({ uses, if: condition, with: options }) => ({ uses, condition, options })),
+      [
+        {
+          uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          condition: undefined,
+          options: undefined,
+        },
+        {
+          uses: "./.github/actions/setup-js-package-tests",
+          condition: undefined,
+          options: undefined,
+        },
+        {
+          uses: "./.github/actions/test-js-packages-with-history",
+          condition: "${{ !cancelled() }}",
+          options: { partition: worker === packages ? "${{ matrix.group }}" : "original-project" },
+        },
+      ],
+    );
+  }
+  const gate = check.jobs["test-js-packages"];
+  assert.equal(
+    gate.if,
+    "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
+  );
+  assert.deepEqual(gate.needs, ["full-js-package-tests", "full-js-original-project"]);
+  const report = gate.steps?.at(-1);
+  assert.equal(
+    report?.run,
+    "node tools/support/compat/github/require-needs-success.ts --full-js-packages",
+  );
+  assert.deepEqual(report?.env, { NEEDS_JSON: "${{ toJSON(needs) }}" });
+});
+
+void test("the stable full JS gate refuses every incomplete or unsuccessful upstream", () => {
+  const keys = ["full-js-package-tests", "full-js-original-project"];
+  const green = Object.fromEntries(keys.map((key) => [key, { result: "success" }]));
+  assert.deepEqual(aggregateFullJsPackageResults(green), {
+    exitCode: 0,
+    message:
+      "test-report gate: all 2 needed jobs are accounted for. 2 succeeded; 0 skipped on a pull request by design.",
+  });
+  for (const key of keys) {
+    for (const result of ["failure", "cancelled", "skipped", "pending", "neutral"])
+      assert.equal(aggregateFullJsPackageResults({ ...green, [key]: { result } }).exitCode, 1);
+    assert.throws(
+      () => aggregateFullJsPackageResults({ ...green, [key]: {} }),
+      /reported no result/,
+    );
+    assert.throws(
+      () => aggregateFullJsPackageResults({ ...green, [key]: null }),
+      /reported no result/,
+    );
+    assert.throws(() => aggregateFullJsPackageResults({ [key]: green[key] }), /requires exactly/);
+  }
+  for (const input of [null, [], {}, "success", { ...green, omitted: { result: "success" } }])
+    assert.throws(() => aggregateFullJsPackageResults(input), /requires exactly/);
+  const executable = path.join(root, "tools/support/compat/github/require-needs-success.ts");
+  for (const [needs, status] of [
+    [green, 0],
+    [{ ...green, "full-js-package-tests": { result: "failure" } }, 1],
+  ] as const) {
+    const actual = spawnSync(process.execPath, [executable, "--full-js-packages"], {
+      env: { ...process.env, NEEDS_JSON: JSON.stringify(needs) },
+      encoding: "utf8",
+      timeout: 10_000,
+    });
+    assert.equal(actual.status, status, actual.stderr);
+    assert.equal(actual.error, undefined);
+  }
+});
+
 void test("group tasks keep the full set's preparation, wrapper, order and concurrency", () => {
   const full = command("test:js");
   const filters = testedPackages.map((pkg) => ` --filter '${pkg}'`).join("");
@@ -182,7 +272,7 @@ void test("PR CI runs each affected group once and keeps qualification and confo
   assert.equal(cacheKey(jsChecks.jobs["pr-oxlint-project-qualification"]), "test-js-packages");
   assert.equal(cacheKey(jsChecks.jobs["pr-js-package-conformance"]), "build-js-packages");
   assert.ok(
-    check.jobs["test-js-packages"].steps?.some(
+    check.jobs["full-js-package-tests"].steps?.some(
       (step) => step.uses === "./.github/actions/setup-js-package-tests",
     ),
   );
