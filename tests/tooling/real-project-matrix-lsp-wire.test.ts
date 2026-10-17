@@ -33,6 +33,20 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   matrixJob.strategy.matrix = original.jobs["real-project-matrix"].strategy.matrix;
   const steps = current.jobs["real-project-matrix"].steps;
   const oldSteps = original.jobs["real-project-matrix"].steps;
+  // The report successor passed both immutable Rust references in run 39022693865.
+  // Accept only the complete historical or qualified Node step, then invert
+  // that one executable before the unchanged whole-workflow comparison.
+  const lint = steps.find((step) => step.id === "lint_divergence");
+  const oldLint = oldSteps.find((step) => step.id === "lint_divergence");
+  assert.ok(lint && oldLint);
+  const rustCommand = "rust-script tools/commands/fixtures/lint-divergence-report.rs";
+  const nodeCommand = "node tools/commands/fixtures/lint-divergence-report.ts";
+  assert.equal(oldLint.run.split(rustCommand).length, 2);
+  const nodeRun = oldLint.run.replace(rustCommand, nodeCommand);
+  assert.ok([oldLint.run, nodeRun].includes(lint.run));
+  assert.deepEqual(lint, { ...oldLint, run: lint.run });
+  lint.run = oldLint.run;
+
   const lsp = steps.find((step) => step.id === "lsp");
   const oldLsp = oldSteps.find((step) => step.id === "lsp");
   assert.ok(lsp && oldLsp);
