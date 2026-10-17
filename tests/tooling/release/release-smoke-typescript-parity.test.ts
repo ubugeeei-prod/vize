@@ -366,16 +366,25 @@ function observe(fixture: Fixture, driver: "rust" | "typescript", temporary: str
 // in addition to the installed-runtime controls in the Actions carrier.
 test("native and fresh-init oracle scripts retain every original Rust byte", () => {
   const rust = fs.readFileSync(entry + ".rs", "utf8");
-  const native = /r#"(\nconst required = require\("@vizejs\/native"\);[\s\S]*?)"#/.exec(rust)?.[1];
   const initSource = fs.readFileSync(
     path.join(root, "tools/support/release/npm_smoke_init.rs"),
     "utf8",
   );
-  const init = /const SCRIPT: &str = r#"([\s\S]*?)"#;/.exec(initSource)?.[1];
-  assert.ok(native);
-  assert.ok(init);
-  assert.equal(NATIVE_RUNTIME_SCRIPT, native);
-  assert.equal(INIT_SCRIPT, init);
+  // Rust preprocesses CRLF into LF before tokenizing string literals:
+  // https://doc.rust-lang.org/reference/tokens.html#string-literals
+  // Compare the complete literal value for both checkout line-ending policies.
+  for (const windowsCheckout of [false, true]) {
+    const literalSource = (source: string) =>
+      (windowsCheckout ? source.replace(/\r?\n/g, "\r\n") : source).replaceAll("\r\n", "\n");
+    const native = /r#"(\nconst required = require\("@vizejs\/native"\);[\s\S]*?)"#/.exec(
+      literalSource(rust),
+    )?.[1];
+    const init = /const SCRIPT: &str = r#"([\s\S]*?)"#;/.exec(literalSource(initSource))?.[1];
+    assert.ok(native);
+    assert.ok(init);
+    assert.equal(NATIVE_RUNTIME_SCRIPT, native);
+    assert.equal(INIT_SCRIPT, init);
+  }
 });
 
 // Parser-engine diagnostics are retained as raw evidence, not rewritten into
