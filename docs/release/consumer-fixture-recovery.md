@@ -36,6 +36,7 @@ existing approved configuration contains scoped Vize exclusions.
 1. Review and merge this policy normally. Dispatch **Public release consumer recovery** from
    `main`, supplying exact C/H/tag/source-PR/original-R/latest-attempt identities. This workflow
    reads registries; it cannot publish, change a tag, rerun R or close a PR.
+   Its admission contracts run in pull requests and must pass again before live qualification.
 2. Admission retains the complete original failure log, job inventory, source bytes, artifact
    identities, signed integration evidence and fresh public registry archive observations.
 3. All six original contracts execute in fresh projects outside the checkout: Node 22 and 24 on

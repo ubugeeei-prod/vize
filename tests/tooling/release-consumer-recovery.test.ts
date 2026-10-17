@@ -8,6 +8,7 @@ import {
   object,
   roles,
   recoveryRunIdentity,
+  reviewedPolicy,
   type Identity,
   type Json,
 } from "../../tools/support/release/consumer_recovery/policy.ts";
@@ -245,6 +246,31 @@ test("Unix and Windows replay their actual installed npm entry points and retain
   }
 });
 
+test("unreviewed, foreign or unsigned replacement source cannot provide policy authority", () => {
+  const sha = "a".repeat(40);
+  const compare = {
+    status: "ahead",
+    behind_by: 0,
+    base_commit: { sha },
+    merge_base_commit: { sha },
+  };
+  const commit = { sha, commit: { verification: { verified: true, reason: "valid" } } };
+  assert.doesNotThrow(() => reviewedPolicy(sha, compare, commit));
+  for (const replacement of [
+    { status: "diverged" },
+    { behind_by: 1 },
+    { base_commit: { sha: "b".repeat(40) } },
+    { merge_base_commit: { sha: "b".repeat(40) } },
+  ])
+    assert.throws(() => reviewedPolicy(sha, { ...compare, ...replacement }, commit));
+  for (const replacement of [
+    { sha: "b".repeat(40) },
+    { commit: { verification: { verified: false, reason: "unsigned" } } },
+    { commit: { verification: { verified: true, reason: "invalid" } } },
+  ])
+    assert.throws(() => reviewedPolicy(sha, compare, { ...commit, ...replacement }));
+});
+
 test("normal installed acceptance still refuses failed R with no explicit signed recovery", async () => {
   const { identity: source } = retained;
   const sourcePr = {
@@ -284,7 +310,13 @@ test("recovery is an explicit read-only official operation; ordinary resume rema
   const file = (name: string) =>
     readFileSync(new URL(`../../.github/workflows/${name}`, import.meta.url), "utf8");
   const recovery = YAML.parse(file("release-consumer-recovery.yml"));
-  assert.deepEqual(Object.keys(recovery.jobs).sort(), ["consumer", "finalize", "prepare"]);
+  assert.deepEqual(Object.keys(recovery.jobs).sort(), [
+    "consumer",
+    "contracts",
+    "finalize",
+    "prepare",
+  ]);
+  assert.equal(recovery.jobs.prepare.needs, "contracts");
   assert.equal(recovery.jobs.consumer.strategy.matrix.include.length, 6);
   assert.equal(recovery.jobs.prepare.if, "github.ref == 'refs/heads/main'");
   const operator = YAML.parse(file("release-operator.yml"));

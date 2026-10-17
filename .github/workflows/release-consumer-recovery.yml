@@ -1,5 +1,15 @@
 name: Public release consumer recovery
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/release-consumer-recovery.yml"
+      - ".github/workflows/release-operator.yml"
+      - ".github/workflows/release-public-acceptance.yml"
+      - "tools/support/release/consumer_recovery/**"
+      - "tools/support/release/public_acceptance/**"
+      - "tests/tooling/release-consumer-recovery.test.ts"
+      - "tests/tooling/release/release-operator.test.ts"
+      - "tests/_fixtures/release/consumer-recovery.json"
   workflow_dispatch:
     inputs:
       cut: { description: Official source before versioning C, required: true, type: string }
@@ -11,7 +21,7 @@ on:
         { description: Exact completed failed Release attempt, required: true, type: string }
 permissions: { contents: read, actions: read }
 concurrency:
-  group: release-consumer-recovery-${{ inputs.release_run }}-${{ inputs.release_attempt }}
+  group: release-consumer-recovery-${{ github.event.pull_request.number || format('{0}-{1}', inputs.release_run, inputs.release_attempt) }}
   cancel-in-progress: false
 env:
   PUBLIC_CUT: ${{ inputs.cut }}
@@ -21,8 +31,24 @@ env:
   PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
   PUBLIC_RELEASE_ATTEMPT: ${{ inputs.release_attempt }}
 jobs:
+  contracts:
+    name: Consumer recovery admission contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, run-install: false }
+      - name: Install frozen test tooling
+        run: vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts
+      - name: Verify admission, installed acceptance and original consumer contracts
+        run: |
+          node --test tests/tooling/release-consumer-recovery.test.ts tests/tooling/release/release-public-acceptance.test.ts tests/tooling/release-jsr-workflow.test.ts
+          node --test --test-name-pattern=hosted tests/tooling/release/release-operator.test.ts
   prepare:
     name: Admit frozen consumer failure
+    needs: contracts
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 15

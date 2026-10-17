@@ -203,3 +203,18 @@ export function consumerAttempt(run: unknown, id: string, attempt: number, sha: 
     "reused consumer run/attempt or unverified policy source",
   );
 }
+
+export function reviewedPolicy(sha: string, compare: Json, commit: Json) {
+  assert.match(sha, /^[0-9a-f]{40}$/);
+  assert.ok(
+    ["ahead", "identical"].includes(String(compare.status)),
+    "policy must be on reviewed main",
+  );
+  same(compare.behind_by, 0, "foreign policy source");
+  same(object(compare.base_commit).sha, sha, "policy comparison base mismatch");
+  same(object(compare.merge_base_commit).sha, sha, "policy is not an ancestor of current main");
+  same(commit.sha, sha, "policy commit identity mismatch");
+  const verification = object(object(commit.commit).verification);
+  same(verification.verified, true, "policy commit signature required");
+  same(verification.reason, "valid", "valid policy commit signature required");
+}

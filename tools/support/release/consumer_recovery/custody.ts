@@ -15,6 +15,7 @@ import {
   positive,
   repository,
   recoveryRunIdentity,
+  reviewedPolicy,
   roles,
   same,
   sha256,
@@ -72,15 +73,8 @@ export function authority(sha: string) {
 export function policyOnMain(sha: string) {
   assert.match(sha, /^[0-9a-f]{40}$/);
   const compare = api(`compare/${sha}...main`);
-  assert.ok(
-    ["ahead", "identical"].includes(String(compare.status)),
-    "policy must be on reviewed main",
-  );
-  same(compare.behind_by, 0, "foreign policy source");
   const commit = api(`commits/${sha}`);
-  const verification = object(object(commit.commit).verification);
-  same(verification.verified, true, "policy commit signature required");
-  same(verification.reason, "valid", "valid policy commit signature required");
+  reviewedPolicy(sha, compare, commit);
   return authority(sha);
 }
 export interface Original extends Json {
@@ -265,11 +259,12 @@ export async function verifiedRecovery(
   const policySha = String(run.head_sha);
   const policyAuthority = policyOnMain(policySha);
   const jobs = await pages(`actions/runs/${recoveryRun}/jobs?filter=latest`, "jobs");
-  same(jobs.length, 8, "prepare, six consumers and signed finalizer required");
+  same(jobs.length, 9, "admission contracts, prepare, six consumers and signed finalizer required");
   same(
     jobs.map((job) => job.name).sort(compareText),
     [
       "Admit frozen consumer failure",
+      "Consumer recovery admission contracts",
       "Sign consumer replacement receipt",
       ...roles.map((role) => `Replay ${role}`),
     ].sort(),
