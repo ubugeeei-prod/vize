@@ -92,7 +92,9 @@ export function runPatina(
   if (output.error) throw new Error(`vize lint failed to run: ${output.error.message}`);
   const status = exitStatus(output.status);
   if (status !== 0 && status !== 1)
-    throw new Error(`vize lint exited with unsupported status ${status}: ${output.stderr}`);
+    throw new Error(
+      `vize lint exited with unsupported status ${status}: ${output.stderr.toString("utf8")}`,
+    );
   let envelope: Json;
   try {
     envelope = parseOutput(output.stdout);
@@ -159,7 +161,7 @@ export function runEslintBaseline(
   if (output.error) throw new Error(`eslint baseline failed to start: ${output.error.message}`);
   if (output.status !== 0)
     throw new Error(
-      `eslint baseline exited ${exitStatus(output.status)}:\n${output.stdout}${output.stderr}`,
+      `eslint baseline exited ${exitStatus(output.status)}:\n${output.stdout.toString("utf8")}${output.stderr.toString("utf8")}`,
     );
   let parsed: Json;
   try {
