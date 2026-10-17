@@ -13,6 +13,7 @@ on:
       - "tests/tooling/windows-hover-public-identity.test.ts"
       - "tests/tooling/release/release-operator.test.ts"
       - "tests/_fixtures/release/consumer-recovery.json"
+      - "tests/_fixtures/release/consumer-recovery-integration.json"
   workflow_dispatch:
     inputs:
       cut: { description: Official source before versioning C, required: true, type: string }

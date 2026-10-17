@@ -14,6 +14,7 @@ import {
   consumerAttempt,
   fixture,
   failureLogArguments,
+  integrationReference,
   object,
   positive,
   repository,
@@ -184,7 +185,7 @@ export async function collectOriginal(expected: Identity, policySha: string): Pr
   same(api(`actions/runs/${expected.run}`), run, "R changed during original collection");
   return original;
 }
-export function verifyIntegration(github: Json, expected: Identity) {
+export function verifyIntegration(github: Json, expected: Identity, read = api) {
   const lines = String(github.annotation).split(/\r?\n/);
   const field = (key: string) => {
     const values = lines
@@ -201,12 +202,8 @@ export function verifyIntegration(github: Json, expected: Identity) {
     field("Integration-merge"),
     "original protected candidate must be actual signed delivery",
   );
-  same(
-    field("Integration-PR"),
-    String(github.integrationPr),
-    "source/tag integration receipt mismatch",
-  );
-  const integration = api(`pulls/${positive(field("Integration-PR"))}`);
+  const integrationPr = integrationReference(field("Integration-PR"), github.integrationPr);
+  const integration = read(`pulls/${integrationPr}`);
   same(integration.merged, true, "original integration must be merged");
   same(object(integration.head).sha, field("Integration-head"), "integration head mismatch");
   same(integration.merge_commit_sha, field("Integration-merge"), "integration merge mismatch");
@@ -231,7 +228,7 @@ export function verifyIntegration(github: Json, expected: Identity) {
       `ambiguous original integration marker ${key}`,
     );
   }
-  const merge = api(`commits/${field("Integration-merge")}`);
+  const merge = read(`commits/${field("Integration-merge")}`);
   const verification = object(object(merge.commit).verification);
   same(verification.verified, true, "original signed merge required");
   same(verification.reason, "valid", "original merge signature invalid");
@@ -240,7 +237,7 @@ export function verifyIntegration(github: Json, expected: Identity) {
     [field("Integration-parent")],
     "original integration parent mismatch",
   );
-  const gates = api(
+  const gates = read(
     `actions/workflows/check.yml/runs?head_sha=${field("Protected-candidate")}&per_page=100`,
   );
   assert.ok(

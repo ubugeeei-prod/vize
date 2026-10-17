@@ -1,0 +1,78 @@
+{
+  "evidence": {
+    "run": 38989035900,
+    "attempt": 1,
+    "job": 117267235454,
+    "artifact": 12084840167,
+    "artifactDigest": "sha256:a61023e5a3c66ed3a455ad397f7ef2d70a2024c944ce3a70e546295a03957db9",
+    "publicationSha256": "cad129ca2e6d743725beacb4cbf107dad4108450856942acc52027c4bd803706",
+    "originalSha256": "c286c54f6c2418b5aa5e1570e467a035b570ee24a90de224ccc5d5cf5f87df03",
+    "integrationSha256": "fbe58dec025ed6abfde2945191dc05c16ee89fcebfd32467e1155ce5eb2db133",
+    "mergeSha256": "b60c8d847fa2d45021eeca4a67eba587c351095637d5f53a78aa4e2f3ef69274",
+    "gatesSha256": "d48d5cfa80e190114140f8f14da34aa38f63699e67ab0c392b39820c9c4be795"
+  },
+  "github": {
+    "tagObject": "46536212e8e1a16492f9e196d84908286170d57b",
+    "target": "03882089eff75664abe99ba71868e33739496b01",
+    "releaseId": 414307189,
+    "targetCommitish": "main",
+    "publishedAt": "2026-10-15T21:48:48Z",
+    "runStatus": "completed",
+    "runConclusion": "failure",
+    "runTitle": "Pinned Release v0.457.0 PR #9196 @ 03882089eff75664abe99ba71868e33739496b01",
+    "annotation": "Release v0.457.0\n\nRelease-Mode: pinned\nRelease-PR: #9196\nValidated-run: 38805261385\nValidated-head: 03882089eff75664abe99ba71868e33739496b01\nValidated-base: 014bd42cacdf3d026fb75162cfa80dce76d78315\nIntegration-PR: #9197\nIntegration-head: 2c8a83c6858e8e46424ce578b5cfa7a0b1dbeafb\nIntegration-merge: b4be3b70977b80a689c8e5ada62d05283e86b868\nIntegration-parent: 014bd42cacdf3d026fb75162cfa80dce76d78315\nProtected-candidate: b4be3b70977b80a689c8e5ada62d05283e86b868\n",
+    "sourceState": "open",
+    "integrationPr": "9197"
+  },
+  "sourceBody": "## Release v0.457.0\n\nImmutable source receipt C=014bd42cacdf3d026fb75162cfa80dce76d78315, H=03882089eff75664abe99ba71868e33739496b01. Full exact-H checks, release preflight, and all build artifacts qualify this cut. Ordinary main merges continue.\n\nThe separate version integration PR enters the protected queue under maintainer control. The official --pin command verifies actual signed delivery, identical registry closure, and every generated version byte, then creates only an annotated tag at H. This source PR stays draft and is never merged; close it only after successful external publication verification.\n\nResume: `vp run release --resume <PR> --pin`\n\n<!-- vize-release-bump: minor -->\n<!-- vize-release-base-version: 0.456.0 -->\n<!-- vize-release-pin: immutable-v1 -->\n<!-- vize-release-pin-cut: 014bd42cacdf3d026fb75162cfa80dce76d78315 -->\n<!-- vize-release-pin-head: 03882089eff75664abe99ba71868e33739496b01 -->\n<!-- vize-release-integration: 9197 -->\n",
+  "integration": {
+    "merged": true,
+    "head": {
+      "sha": "2c8a83c6858e8e46424ce578b5cfa7a0b1dbeafb",
+      "repo": {
+        "full_name": "ubugeeei-prod/vize"
+      }
+    },
+    "base": {
+      "ref": "main",
+      "repo": {
+        "full_name": "ubugeeei-prod/vize"
+      }
+    },
+    "merge_commit_sha": "b4be3b70977b80a689c8e5ada62d05283e86b868",
+    "body": "Integrate only generated v0.457.0 version metadata into moving main. Source PR #9196 remains an immutable draft receipt at H=03882089eff75664abe99ba71868e33739496b01. The maintainer owns protected queue admission; this command never auto-merges this PR or writes main. Admit this integration only after immutable H/R qualification has succeeded: all required H checks, all five full H gates, every release build, and full preflight must be terminal green. Actual delivery is checked against its final first parent, not the initial base.\n\n<!-- vize-release-pin-source: 9196 -->\n<!-- vize-release-pin-cut: 014bd42cacdf3d026fb75162cfa80dce76d78315 -->\n<!-- vize-release-pin-head: 03882089eff75664abe99ba71868e33739496b01 -->\n<!-- vize-release-pin-tag: v0.457.0 -->\n\n<!-- codesmith:footer -->\n---\n<a href=\"https://app.blacksmith.sh/ubugeeei-prod/codesmith/vize/pr/9197?autoLogin=true&ref=codesmith_pr_footer\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://pr-comments-assets.blacksmith.sh/codesmith/view-with-codesmith-dark-v3.svg\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://pr-comments-assets.blacksmith.sh/codesmith/view-with-codesmith-light-v3.svg\"><img alt=\"View with [code]smith\" src=\"https://pr-comments-assets.blacksmith.sh/codesmith/view-with-codesmith-dark-v3.svg\"></picture></a> <a href=\"https://backend.blacksmith.sh/track/enable-autofix?expires=1794689452&installation_model_id=422833&pr_number=9197&ref=codesmith_pr_footer&repository=ubugeeei-prod%2Fvize&return_to=https%3A%2F%2Fgithub.com%2Fubugeeei-prod%2Fvize%2Fpull%2F9197&signature=45ca1339e8a8811f33dc171825d9c814cee95d773899c554a394c81c85b9fc5e\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://pr-comments-assets.blacksmith.sh/codesmith/autofix-with-codesmith-dark.svg\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://pr-comments-assets.blacksmith.sh/codesmith/autofix-with-codesmith-light.svg\"><img alt=\"Autofix with [code]smith\" src=\"https://pr-comments-assets.blacksmith.sh/codesmith/autofix-with-codesmith-dark.svg\"></picture></a>\n<sup>Need help on this PR? Tag <code>@codesmith-bot</code> with what you need.</sup>\n\n<!-- codesmith:autofix:disabled -->\n<!-- /codesmith:footer -->\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n\n## Summary by CodeRabbit\n\n* **Release**\n  * Updated the Vize ecosystem packages and editor extensions to version **0.457.0**, including platform-specific native packages.\n* **Documentation**\n  * Updated the plugin execution requirements to specify `@vizejs/native` **0.457.0 or newer**.\n\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->"
+  },
+  "merge": {
+    "commit": {
+      "verification": {
+        "verified": true,
+        "reason": "valid"
+      }
+    },
+    "parents": [
+      {
+        "sha": "014bd42cacdf3d026fb75162cfa80dce76d78315"
+      }
+    ]
+  },
+  "gates": {
+    "workflow_runs": [
+      {
+        "id": 38871318436,
+        "head_sha": "b4be3b70977b80a689c8e5ada62d05283e86b868",
+        "event": "schedule",
+        "head_branch": "main",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 38808071557,
+        "head_sha": "b4be3b70977b80a689c8e5ada62d05283e86b868",
+        "event": "push",
+        "head_branch": "main",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  }
+}

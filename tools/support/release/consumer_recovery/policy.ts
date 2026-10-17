@@ -41,6 +41,18 @@ export function positive(value: unknown): number {
   );
   return Number(value);
 }
+export function integrationReference(tag: unknown, source: unknown): number {
+  assert.ok(typeof tag === "string" && /^#[1-9][0-9]*$/.test(tag), "canonical tag PR required");
+  assert.ok(
+    typeof source === "string" && /^[1-9][0-9]*$/.test(source),
+    "canonical source PR marker required",
+  );
+  const number = positive(source);
+  const canonical = String(number);
+  same(source, canonical, "canonical source PR marker required");
+  same(tag, `#${canonical}`, "source/tag integration receipt mismatch");
+  return number;
+}
 export function failureLogArguments(id: unknown) {
   return [
     "api",
