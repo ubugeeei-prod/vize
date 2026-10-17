@@ -12,6 +12,7 @@
   "include": [],
   "files": [
     "tests/tooling/release/release-public-quick-tunnel.test.ts",
+    "tests/tooling/release/release-public-gallery-readiness.test.ts",
     "tools/support/release/public_acceptance/vrt_tunnel_setup.ts",
     "tools/support/release/public_acceptance/vrt_tunnel_metadata.ts",
     "tools/support/release/public_acceptance/vrt_api.ts",

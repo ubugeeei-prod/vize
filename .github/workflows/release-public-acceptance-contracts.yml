@@ -40,4 +40,5 @@ jobs:
           tests/tooling/release/release-public-vrt-log-barrier.test.ts
           tests/tooling/release/release-public-vrt-upload-refusal.test.ts
           tests/tooling/release/release-public-quick-tunnel.test.ts
+          tests/tooling/release/release-public-gallery-readiness.test.ts
           tests/tooling/release/release-public-vrt-tunnel-inputs.test.ts
