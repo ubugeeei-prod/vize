@@ -193,7 +193,7 @@ async function runProjectHost({ packageDir, artifacts, binary, version, types, t
         const linkedCapture = path.join(output, "linked-worktree-html.json");
         run(
           process.execPath,
-          ["--test", "src/git-worktree-html.test.ts"],
+          ["--test", "src/cli/html-custody.test.ts", "src/git-worktree-html.test.ts"],
           {
             cwd: packageDir,
             env: {
