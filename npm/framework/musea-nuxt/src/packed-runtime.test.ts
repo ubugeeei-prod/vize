@@ -42,8 +42,7 @@ void test("packed Nuxt mocks share their runtime through generated modules and r
       "dist/index.mjs",
       "dist/index.d.mts",
       "dist/auto-imports.mjs",
-      "dist/context.mjs",
-      "dist/mocks/components.mjs",
+      "dist/auto-imports.d.mts",
     ])
       assert.ok(files.includes(filename), `${filename} is in the actual tarball`);
 
@@ -78,8 +77,8 @@ void test("packed Nuxt mocks share their runtime through generated modules and r
   }
 });
 
-// Run in the fresh consumer: no source imports, workspace aliases, loader hooks,
-// externals overrides, or replacement modules participate in these assertions.
+// Run in the fresh consumer without source imports, workspace aliases, loader
+// hooks or replacement modules. Default SSR runs before explicit policy controls.
 const consumerScript = String.raw`
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -116,7 +115,7 @@ async function generated(request, filename) {
   const targets = [...source.matchAll(/from ("(?:[^"\\]|\\.)*")/g)].map((match) => JSON.parse(match[1]));
   assert.ok(targets.length > 0);
   for (const target of targets) {
-    const filename = fileURLToPath(target);
+    const filename = fileURLToPath(import.meta.resolve(target));
     assert.ok(filename.startsWith(packageRoot + path.sep));
     assert.ok(before.has(filename), "generated import exists in the installed tarball: " + target);
   }
@@ -171,6 +170,15 @@ assert.equal(client.verify(), "/from-vite");
 await build({ ...base, build: { ssr: entry, outDir: "server", minify: false, rollupOptions: { output: { entryFileNames: "entry.mjs" } } } });
 const server = await import(pathToFileURL(path.join(root, "server/entry.mjs")).href);
 assert.equal(server.verify(), "/from-vite");
+// Explicit package policy must agree for the public entry and its runtime subpath.
+for (const [directory, ssr] of [
+  ["server-external", { external: ["@vizejs/musea-nuxt"] }],
+  ["server-no-external", { noExternal: ["@vizejs/musea-nuxt"] }],
+]) {
+  await build({ ...base, ssr, build: { ssr: entry, outDir: directory, minify: false, rollupOptions: { output: { entryFileNames: "entry.mjs" } } } });
+  const controlled = await import(pathToFileURL(path.join(root, directory, "entry.mjs")).href);
+  assert.equal(controlled.verify(), "/from-vite");
+}
 for (const [filename, bytes] of before) assert.deepEqual(fs.readFileSync(filename), bytes, filename);
 const providers = Object.fromEntries(["vite", "vue", "vue-router"].map((name) => [name, JSON.parse(fs.readFileSync(path.join(root, "node_modules", name, "package.json"), "utf8")).version]));
 console.log(JSON.stringify({ direct: true, client: true, ssr: true, providers }));

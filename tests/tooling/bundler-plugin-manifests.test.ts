@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -52,6 +53,36 @@ function leadingMajor(pin: string): number {
   assert.ok(match, `expected a leading major number in catalog pin "${pin}"`);
   return Number(match[1]);
 }
+
+test("Musea Nuxt exposes one runtime subpath under its public package identity", () => {
+  const manifest = readManifest("framework/musea-nuxt");
+  assert.equal(manifest.name, "@vizejs/musea-nuxt");
+  assert.deepEqual(manifest.exports, {
+    ".": { import: "./dist/index.mjs", types: "./dist/index.d.mts" },
+    "./auto-imports": {
+      import: "./dist/auto-imports.mjs",
+      types: "./dist/auto-imports.d.mts",
+    },
+  });
+  const owner = path.join(root, "npm/framework/musea-nuxt");
+  // Node resolves the actual authored package's self-reference, even before build.
+  // Artifact existence and all shared state are checked by the packed consumer.
+  const resolved = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        "--input-type=module",
+        "--eval",
+        'console.log(JSON.stringify([import.meta.resolve("@vizejs/musea-nuxt"), import.meta.resolve("@vizejs/musea-nuxt/auto-imports")]))',
+      ],
+      { cwd: owner, encoding: "utf8" },
+    ),
+  ) as string[];
+  assert.deepEqual(resolved, [
+    pathToFileURL(path.join(owner, "dist/index.mjs")).href,
+    pathToFileURL(path.join(owner, "dist/auto-imports.mjs")).href,
+  ]);
+});
 
 test("@vizejs/unplugin exposes per-bundler subpath entries with jiti-safe webpack", () => {
   const manifest = readManifest("builder/unplugin");

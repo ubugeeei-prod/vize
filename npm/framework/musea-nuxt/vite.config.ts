@@ -15,8 +15,6 @@ export default defineConfig({
     entry: {
       index: "src/index.ts",
       "auto-imports": "src/auto-imports.ts",
-      context: "src/context.ts",
-      "mocks/components": "src/mocks/components.ts",
     },
     format: "esm",
     dts: true,
