@@ -103,3 +103,9 @@ For separately installed dependencies, set `VIZE_LEGACY_API_PROVIDER_MANIFEST`,
 `VIZE_LEGACY_API_SCRIPT_PARSER_MANIFEST` and `VIZE_LEGACY_API_VUE_MANIFEST` to their
 package manifests. Versions and implementation hashes are verified; providers
 are never silently substituted.
+
+`template-normal-setup-refusals.json` adds a separate bounded completeness
+frontier: three original normal-setup research cases retain their historical
+whole packets while a derived overlay refuses unsupported absence claims.
+Four counterlaws preserve complete script warnings. The existing 147 CLI cases
+still execute; none of these refusal records earns provider-parity credit.

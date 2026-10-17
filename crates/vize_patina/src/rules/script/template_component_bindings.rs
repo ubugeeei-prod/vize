@@ -4,6 +4,8 @@
 //! A private constructor prevents a caller-authored name list from becoming
 //! component ownership. Ordinary module locals and factory names prove nothing.
 
+mod completeness;
+
 use oxc_ast::ast::{
     ExportDefaultDeclarationKind, ImportDeclarationSpecifier, ImportOrExportKind, Statement,
     VariableDeclarationKind,
@@ -136,9 +138,16 @@ impl TemplateComponentBindings {
                 }
             }
         }
+        if descriptor.script_setup.is_none()
+            && let Some((_, parsed)) = clean_block(descriptor.script.as_ref(), script)
+            && !completeness::normal_setup_is_complete(&parsed.program)
+        {
+            result.refuse();
+        }
         // A script-setup compile replaces the normal setup function. Its
         // presence cannot authenticate an unexecuted sibling's return keys.
         if descriptor.script_setup.is_none()
+            && !result.unknown.iter().any(|unknown| *unknown)
             && let Some((block, parsed)) = clean_block(descriptor.script.as_ref(), script)
             && parsed.program.body.iter().any(|statement| {
                 matches!(statement, Statement::ExportDefaultDeclaration(export)
@@ -333,6 +342,28 @@ mod tests {
             );
             let bindings =
                 TemplateComponentBindings::from_parsed_sfc(&descriptor, Some(&parsed), None);
+            assert!(
+                !bindings.can_report_component_reference("$listeners"),
+                "{}",
+                case["id"]
+            );
+        }
+    }
+    #[test]
+    fn normal_setup_counterlaws_refuse_absence_without_new_inference() {
+        let overlay: Value = serde_json::from_str(include_str!(
+            "../../../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/template-normal-setup-refusals.json"
+        )).unwrap();
+        for case in overlay["counterlaws"].as_array().unwrap() {
+            let descriptor =
+                vize_atelier_sfc::parse_sfc(case["source"].as_str().unwrap(), Default::default())
+                    .unwrap();
+            let arena = Allocator::default();
+            let block = descriptor.script.as_ref().unwrap();
+            let parsed = Parser::new(&arena, &block.content, SourceType::ts()).parse();
+            assert!(!parsed.panicked && parsed.diagnostics.is_empty());
+            let bindings =
+                TemplateComponentBindings::from_parsed_sfc(&descriptor, None, Some(&parsed));
             assert!(
                 !bindings.can_report_component_reference("$listeners"),
                 "{}",

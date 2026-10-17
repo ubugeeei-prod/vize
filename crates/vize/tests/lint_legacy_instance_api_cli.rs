@@ -172,7 +172,7 @@ fn all_template_authority_boundaries_use_the_actual_cli_and_complete_json_format
 
 #[test]
 fn component_owned_legacy_api_values_preserve_script_warnings_and_complete_cli_packets() {
-    let manifest: Value = serde_json::from_str(COMPONENT_BINDINGS_MANIFEST).unwrap();
+    let mut manifest: Value = serde_json::from_str(COMPONENT_BINDINGS_MANIFEST).unwrap();
     assert_eq!(
         manifest["schema"],
         "vize.lint.template-component-bindings-cli"
@@ -254,6 +254,33 @@ fn component_owned_legacy_api_values_preserve_script_warnings_and_complete_cli_p
             case["expected"][0]["messages"].as_array().unwrap().len(),
             native["messages"].as_array().unwrap().len()
         );
+    }
+    let overlay: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/template-normal-setup-refusals.json"
+    )).unwrap();
+    for input in overlay["frozenInputs"].as_array().unwrap() {
+        let bytes =
+            fs::read(std::path::Path::new(FIXTURES).join(input["path"].as_str().unwrap())).unwrap();
+        assert_eq!(bytes.len() as u64, input["bytes"].as_u64().unwrap());
+        assert_eq!(digest(&bytes), input["sha256"].as_str().unwrap());
+    }
+    let corrections = overlay["corrections"].as_array().unwrap();
+    assert_eq!(corrections.len(), 3);
+    for correction in corrections {
+        let case = manifest["cases"]
+            .as_array_mut()
+            .unwrap()
+            .iter_mut()
+            .find(|row| row["id"] == correction["id"])
+            .unwrap();
+        assert_eq!(case["sourceSha256"], correction["sourceSha256"]);
+        case["historicalExpected"] = case["expected"].clone();
+        case["historicalQualification"] = case["ownerExpectation"].clone();
+        case["expectationAuthority"] = json!("bounded-normal-setup-refusal-overlay");
+        case["qualification"] = correction["qualification"].clone();
+        case["expected"] = correction["cliExpected"].clone();
+        case["status"] = correction["expectedStatus"].clone();
+        case["nativeMessageIndices"] = correction["retainedHistoricalMessageIndices"].clone();
     }
     run_cli_cases(&manifest, &source_projection, 15);
 }

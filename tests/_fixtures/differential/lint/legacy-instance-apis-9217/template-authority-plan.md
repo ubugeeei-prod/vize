@@ -176,6 +176,21 @@ script warnings remain independent. Clean fully inspected blocks and scriptless
 components can still establish the next component lookup. No iteration cap
 silently truncates the binding inventory.
 
+
+Normal-script absence also requires a bounded shallow completeness guard over
+the same clean Program. Only a direct default options object with static option
+keys and a flat setup body returning a direct static-key object can establish
+complete returned keys. Aliases, factories, computed/spread keys, branches,
+duplicate setup options and unsupported bodies remain Unknown. Other exposure
+or inheritance groups (`data`, `methods`, `computed`, `props`, `inject`, `mixins`,
+`extends`) conservatively refuse this small bridge; it does not resolve them.
+There is no recursive control-flow walk or additional parser. The shared
+OptionsDescriptor remains the sole positive-key source, after completeness.
+`template-normal-setup-refusals.json` preserves three historical research packets
+through a separate refusal overlay and adds four source/native counterlaws. Each
+counterlaw retains the full script `this.$listeners` warning while declining to
+invent template binding absence. Refusal is not provider-parity acceptance.
+
 This evidence is constructed only when an actual retained component-context
 identifier needs it, after the same existing script parses, with no rule-local
 parser or full-file receiver exemption. Scriptless and prefilter exits retain

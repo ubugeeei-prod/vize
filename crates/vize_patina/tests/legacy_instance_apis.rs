@@ -118,13 +118,35 @@ fn positive_component_bindings_exempt_only_template_values_and_keep_script_warni
         15,
         "scopedSlots remains explicit research"
     );
+    let overlay: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/template-normal-setup-refusals.json"
+    )).unwrap();
+    let corrections = overlay["corrections"].as_array().unwrap();
+    assert_eq!(corrections.len(), 3);
     for mut packet in native.records {
+        if let Some(correction) = corrections.iter().find(|row| row["id"] == packet.id) {
+            assert_eq!(
+                correction["historicalNativeMessages"].as_array().unwrap(),
+                &packet.messages
+            );
+            packet.messages = correction["nativeMessages"].as_array().unwrap().clone();
+        }
         let case = corpus
             .records
             .iter()
             .find(|case| case.id == packet.id)
             .unwrap();
         assert_case(&case.id, &case.source, &mut packet.messages);
+    }
+    let counterlaws = overlay["counterlaws"].as_array().unwrap();
+    assert_eq!(counterlaws.len(), 4);
+    for case in counterlaws {
+        let mut expected = case["nativeMessages"].as_array().unwrap().clone();
+        assert_case(
+            case["id"].as_str().unwrap(),
+            case["source"].as_str().unwrap(),
+            &mut expected,
+        );
     }
 }
 
