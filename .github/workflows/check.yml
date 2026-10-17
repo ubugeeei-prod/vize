@@ -185,11 +185,13 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
         with:
+          version: latest
           node-version-file: "package.json"
           cache: true
+          cache-save: false
           run-install: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
@@ -223,11 +225,13 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
         with:
+          version: latest
           node-version: ${{ matrix.node-version }}
           cache: true
+          cache-save: false
           run-install: false
       - name: Install JS dependencies
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
