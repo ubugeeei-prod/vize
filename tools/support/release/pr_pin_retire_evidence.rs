@@ -5,7 +5,12 @@ use super::super::{
 };
 use super::{Source, run_identity};
 use serde_json::{Value, json};
-use std::{collections::BTreeMap, path::Path};
+use std::{
+    collections::BTreeMap,
+    io::Write,
+    path::Path,
+    process::{Command, Stdio},
+};
 #[path = "pr_pin_retire_logs.rs"]
 mod logs;
 
@@ -225,14 +230,53 @@ pub(super) fn publication_jobs(jobs: &[Value], workflow: &str) -> Result<(), Str
     Ok(())
 }
 
+/// Execute the same pure TypeScript policy for live snapshots and archived replay.
+pub(super) fn qualification_policy(value: &Value, root: &Path) -> Result<(), String> {
+    let bytes = serde_json::to_vec(value).map_err(|e| e.to_string())?;
+    if bytes.len() > super::retire_archive::MAX_BYTES {
+        return Err("Qualification evidence exceeds the existing archive bound".into());
+    }
+    let mut command = Command::new("node");
+    command
+        .arg(root.join("tools/support/release/retirement_qualification.ts"))
+        .current_dir(root)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    let budget = pr_budget::configured()?;
+    pr_budget::child_command(&mut command, budget.as_ref())?;
+    let mut child = command
+        .spawn()
+        .map_err(|e| format!("Could not start qualification policy: {e}"))?;
+    let write = child
+        .stdin
+        .take()
+        .ok_or("Missing qualification policy stdin")?
+        .write_all(&bytes);
+    let output = child.wait_with_output().map_err(|e| e.to_string())?;
+    write.map_err(|e| e.to_string())?;
+    if !output.status.success() {
+        return Err(format!(
+            "Pre-release qualification evidence refused: {}",
+            String::from_utf8_lossy(&output.stderr)
+        ));
+    }
+    if !output.stdout.is_empty() {
+        return Err("Qualification policy emitted unexpected output".into());
+    }
+    Ok(())
+}
+
 pub(super) fn collect(
     source: &Source,
-    run_id: u64,
-    operator_id: u64,
+    request: &super::retire::Request,
+    guards: &Value,
     budget: Option<&Budget>,
     root: &Path,
 ) -> Result<(Value, BTreeMap<String, Vec<u8>>), String> {
     let repository = &source.candidate.repository;
+    let run_id = request.failure.run();
+    let operator_id = request.operator;
     let (run_pages, mut runs) = inventory(
         repository,
         &format!("actions/runs?head_sha={}", source.candidate.head),
@@ -251,8 +295,15 @@ pub(super) fn collect(
     }
     pr_budget::check(budget)?;
     let original_run = github::api(repository, &format!("actions/runs/{run_id}"), root)?;
-    run_identity(&original_run, source, run_id)?;
-    terminal_failed(&original_run)?;
+    if request.failure.before_release() {
+        qualification_policy(guards, root)?;
+        if original_run != guards["qualificationRun"] {
+            return Err("Original qualification changed during evidence collection".into());
+        }
+    } else {
+        run_identity(&original_run, source, run_id)?;
+        terminal_failed(&original_run)?;
+    }
     if !runs.iter().any(|run| run["id"].as_u64() == Some(run_id)) {
         return Err("Original R is absent from H workflow inventory".into());
     }
@@ -275,7 +326,7 @@ pub(super) fn collect(
             budget,
             root,
         )?;
-        if id == run_id {
+        if id == run_id && !request.failure.before_release() {
             publication_jobs(
                 &jobs,
                 &super::metadata::text(

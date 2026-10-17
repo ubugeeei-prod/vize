@@ -7,7 +7,7 @@
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: release-bot-envelope-variants-v16.
+//! Driver source pin: release-pre-qualification-retirement-v17.
 
 #[path = "../../support/release/pr_budget.rs"]
 mod pr_budget;
@@ -60,6 +60,14 @@ fn run() -> Result<(), String> {
             number.parse().map_err(|_| "Invalid original source PR number")?, head, tag,
             run.parse().map_err(|_| "Invalid original Release run number")?,
             operator.parse().map_err(|_| "Invalid original operator run number")?, &root),
+        ["retire-before-release", number, head, tag, qualification, operator] => pr_pin::retire_before_release(
+            number.parse().map_err(|_| "Invalid source PR number")?,
+            head,
+            tag,
+            qualification.parse().map_err(|_| "Invalid qualification run")?,
+            operator.parse().map_err(|_| "Invalid original operator run")?,
+            &root,
+        ),
         ["validate-preparation-target", bump, base, target] => pr_pin::validate_preparation_target(bump, base, target, &root),
         ["resume", number] => {
             pr_start::resume(number.parse().map_err(|_| "Invalid PR number")?, &root)
@@ -97,7 +105,7 @@ fn run() -> Result<(), String> {
             }
         }
         _ => Err(
-            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | retire <source PR> <H> <tag> <R> <original operator run> | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run> | verify-integration-candidate <integration PR> <candidate SHA> <base SHA> <integration head SHA> | check-integration-candidate <integration PR> | verify-producer-metadata <frozen-directory>"
+            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | retire <source PR> <H> <tag> <R> <original operator run> | retire-before-release <source PR> <H> <tag> <Q> <original operator run> | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run> | verify-integration-candidate <integration PR> <candidate SHA> <base SHA> <integration head SHA> | check-integration-candidate <integration PR> | verify-producer-metadata <frozen-directory>"
                 .into(),
         ),
     }
