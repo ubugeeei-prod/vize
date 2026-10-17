@@ -5,6 +5,7 @@ use std::collections::BTreeSet;
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, Documentation, MarkupContent, MarkupKind,
 };
+use vize_canon::css_classes::authored_local_css_classes;
 
 use crate::ide::IdeContext;
 
@@ -20,16 +21,18 @@ pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<Compl
     let descriptor = ctx.descriptor()?;
     let mut classes = BTreeSet::new();
     for style in descriptor.styles.iter() {
-        let attrs = &style.attrs;
-        if !attrs.contains_key("module") {
+        if style.module.as_deref() != Some("$style")
+            || style.src.is_some()
+            || style
+                .lang
+                .as_deref()
+                .is_some_and(|language| !language.eq_ignore_ascii_case("css"))
+        {
             continue;
         }
-        for class in extract_css_class_names(&style.content) {
-            classes.insert(class);
+        if let Some(names) = authored_local_css_classes(&style.content) {
+            classes.extend(names);
         }
-    }
-    if classes.is_empty() {
-        return None;
     }
     Some(
         classes
@@ -37,7 +40,7 @@ pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<Compl
             .map(|name| {
                 #[expect(clippy::disallowed_macros, reason = "tower-lsp payload fields take std `String`, which `cstr!` does not produce")]
                 CompletionItem {
-                    label: name.clone(),
+                    label: name.to_string(),
                     kind: Some(CompletionItemKind::FIELD),
                     detail: Some("CSS module class".to_string()),
                     documentation: Some(Documentation::MarkupContent(MarkupContent {
@@ -50,39 +53,4 @@ pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<Compl
             })
             .collect(),
     )
-}
-
-/// Extract class selector names from raw CSS content. Approximate but good
-/// enough for completion — matches `.identifier` outside attribute selectors.
-fn extract_css_class_names(css: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let bytes = css.as_bytes();
-    let mut i = 0;
-    while let Some(&byte) = bytes.get(i) {
-        if byte == b'.' && bytes.get(i + 1).is_some_and(u8::is_ascii_alphabetic) {
-            let start = i + 1;
-            let mut end = start;
-            while bytes
-                .get(end)
-                .is_some_and(|&next| is_class_ident_byte(next))
-            {
-                end += 1;
-            }
-            if end > start
-                && let Some(class) = css.get(start..end)
-            {
-                out.push(class.to_string());
-                i = end;
-                continue;
-            }
-        }
-        i += 1;
-    }
-    out.sort();
-    out.dedup();
-    out
-}
-
-fn is_class_ident_byte(b: u8) -> bool {
-    b.is_ascii_alphanumeric() || b == b'-' || b == b'_'
 }
