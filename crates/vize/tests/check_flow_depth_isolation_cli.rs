@@ -123,7 +123,10 @@ defineProps<{ item: Item; ready: boolean }>()
 "#;
 
 fn sha256(bytes: &[u8]) -> String {
-    format!("{:x}", Sha256::digest(bytes))
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
 }
 
 /// Use the installed Vue package through ordinary ancestor resolution. Keep the
