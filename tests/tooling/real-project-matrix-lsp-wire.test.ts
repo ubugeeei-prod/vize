@@ -99,5 +99,16 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     /'enforced' \|\|[\s\S]*'release-gated'\) \|\| 'observational' \}\} @ \$\{\{ github\.sha \}\}$/,
   );
   current["run-name"] = original["run-name"];
+  // Retire only the unused compiler bootstrap; keep the archived workflow whole.
+  const moon = "./.github/actions/setup-moonbit";
+  const moonIndex = oldSteps.findIndex((step) => step.uses === moon);
+  assert.equal(oldSteps.filter((step) => step.uses === moon).length, 1);
+  assert.deepEqual(oldSteps[moonIndex], { uses: moon });
+  assert.equal(
+    steps.some((step) => step.uses === moon),
+    false,
+  );
+  assert.deepEqual(steps[moonIndex], oldSteps[moonIndex + 1]);
+  steps.splice(moonIndex, 0, oldSteps[moonIndex]);
   assert.deepEqual(current, original);
 });
