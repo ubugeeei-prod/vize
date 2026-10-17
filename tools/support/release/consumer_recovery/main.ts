@@ -15,6 +15,8 @@ import {
   type Original,
 } from "./custody.ts";
 import { verifyConsumer } from "./consumer.ts";
+import { assertOracleFiles } from "./oracles.ts";
+import { revalidatePublicArchives, type InstalledArchive } from "./archive.ts";
 import {
   assertFresh,
   consumerAttempt,
@@ -78,6 +80,15 @@ if (operation === "prepare" || operation === "finalize") {
       const file = path.join(output, "consumers", role, "consumer.json");
       const packet = load(file);
       verifyConsumer(packet, original);
+      assertOracleFiles(path.dirname(file), original.policy, role === "deno-linux");
+      save(
+        output,
+        `revalidated-${role}.json`,
+        await revalidatePublicArchives(
+          packet.packages as InstalledArchive[],
+          object(object(packet.installed).native) as { path: string; sha256: string },
+        ),
+      );
       same(packet.role, role, "consumer role substitution");
       consumerAttempt(
         packet.run,
@@ -88,7 +99,18 @@ if (operation === "prepare" || operation === "finalize") {
       consumers.push({ role, sha256: sha256(readFileSync(file)) });
     }
     const live = await collectOriginal(expected, policySha);
-    for (const key of ["policy", "run", "jobs", "failed", "log", "blobs", "artifacts"])
+    for (const key of [
+      "policy",
+      "run",
+      "jobs",
+      "failed",
+      "log",
+      "logIdentity",
+      "blobs",
+      "artifacts",
+      "pin",
+      "sourceReceipt",
+    ])
       same(original[key], live[key], `original ${key} changed during fresh consumers`);
     const publication = await verifyPublication(
       derivePublicationPlan(root, expected.head),

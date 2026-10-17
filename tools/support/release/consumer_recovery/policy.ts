@@ -41,6 +41,13 @@ export function positive(value: unknown): number {
   );
   return Number(value);
 }
+export function failureLogArguments(id: unknown) {
+  return [
+    "api",
+    "--allow-escape-sequences",
+    `repos/${repository}/actions/jobs/${positive(id)}/logs`,
+  ];
+}
 export interface Identity {
   cut: string;
   head: string;

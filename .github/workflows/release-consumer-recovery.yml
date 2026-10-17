@@ -7,7 +7,10 @@ on:
       - ".github/workflows/release-public-acceptance.yml"
       - "tools/support/release/consumer_recovery/**"
       - "tools/support/release/public_acceptance/**"
+      - "tools/support/release/windows_hover_acceptance.ts"
       - "tests/tooling/release-consumer-recovery.test.ts"
+      - "tests/tooling/release-consumer-archive.test.ts"
+      - "tests/tooling/windows-hover-public-identity.test.ts"
       - "tests/tooling/release/release-operator.test.ts"
       - "tests/_fixtures/release/consumer-recovery.json"
   workflow_dispatch:
@@ -44,7 +47,7 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts
       - name: Verify admission, installed acceptance and original consumer contracts
         run: |
-          node --test tests/tooling/release-consumer-recovery.test.ts tests/tooling/release/release-public-acceptance.test.ts tests/tooling/release-jsr-workflow.test.ts
+          node --test tests/tooling/release-consumer-recovery.test.ts tests/tooling/release-consumer-archive.test.ts tests/tooling/windows-hover-public-identity.test.ts tests/tooling/release/release-public-acceptance.test.ts tests/tooling/release-jsr-workflow.test.ts
           node --test --test-name-pattern=hosted tests/tooling/release/release-operator.test.ts
   prepare:
     name: Admit frozen consumer failure
@@ -64,7 +67,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: recovery-original
+          name: recovery-original-${{ github.run_attempt }}
           path: ${{ runner.temp }}/recovery
           if-no-files-found: error
           retention-days: 30
@@ -102,7 +105,7 @@ jobs:
         with: { bun-version: "1.3.14" }
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: recovery-original
+          name: recovery-original-${{ github.run_attempt }}
           path: ${{ runner.temp }}/recovery-original
       - name: Replay the original consumer against the public tuple
         env: { RECOVERY_ROLE: "${{ matrix.role }}" }
@@ -113,7 +116,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: consumer-recovery-${{ matrix.role }}
+          name: consumer-recovery-${{ matrix.role }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/recovery-consumer
           if-no-files-found: error
           retention-days: 30
@@ -131,18 +134,18 @@ jobs:
         with: { node-version: "24", package-manager-cache: false }
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: recovery-original
+          name: recovery-original-${{ github.run_attempt }}
           path: ${{ runner.temp }}/recovery
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: consumer-recovery-*
+          pattern: consumer-recovery-*-${{ github.run_attempt }}
           path: ${{ runner.temp }}/recovery/consumers
       - name: Arrange complete or partial consumer packets
         if: always()
         shell: bash
         run: |
           for role in node22-linux node24-linux node24-macos node24-windows deno-linux bun-linux; do
-            directory="$RUNNER_TEMP/recovery/consumers/consumer-recovery-$role"
+            directory="$RUNNER_TEMP/recovery/consumers/consumer-recovery-$role-$GITHUB_RUN_ATTEMPT"
             if [ -d "$directory" ]; then
               mv "$directory" "$RUNNER_TEMP/recovery/consumers/$role"
             fi

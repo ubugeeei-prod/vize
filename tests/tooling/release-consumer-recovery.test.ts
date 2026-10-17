@@ -1,14 +1,18 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import {
   admitOriginal,
   assertFresh,
   consumerAttempt,
+  failureLogArguments,
   object,
   roles,
   recoveryRunIdentity,
   reviewedPolicy,
+  sha256,
   type Identity,
   type Json,
 } from "../../tools/support/release/consumer_recovery/policy.ts";
@@ -16,6 +20,11 @@ import { publicInputs } from "../../tools/support/release/public_acceptance/inpu
 import { verifyGithub } from "../../tools/support/release/public_acceptance/github.ts";
 import YAML from "yaml";
 import { commandPlan } from "../../tools/support/release/consumer_recovery/consumer.ts";
+import {
+  assertOracleFiles,
+  custodyProbe,
+  verifyOracleHashes,
+} from "../../tools/support/release/consumer_recovery/oracles.ts";
 
 type Snapshot = {
   identity: Identity;
@@ -30,6 +39,61 @@ const retained: Snapshot = JSON.parse(
 );
 const admit = (packet: Snapshot) =>
   admitOriginal(packet.identity, packet.run, packet.jobs, packet.failed, packet.log, packet.blobs);
+
+test("complete raw GitHub logs explicitly retain ANSI bytes before fingerprint normalization", () => {
+  assert.deepEqual(failureLogArguments(117254411511), [
+    "api",
+    "--allow-escape-sequences",
+    "repos/ubugeeei-prod/vize/actions/jobs/117254411511/logs",
+  ]);
+  assert.ok(
+    retained.log.includes(String.fromCharCode(27)),
+    "primary incident retains original escape bytes",
+  );
+  const before = Buffer.from(retained.log);
+  admit(retained);
+  assert.deepEqual(
+    Buffer.from(retained.log),
+    before,
+    "fingerprint matching must not rewrite custody bytes",
+  );
+  for (const id of ["", "1;false", "001", -1]) assert.throws(() => failureLogArguments(id));
+});
+
+test("installation or invocation side effects and forged retained oracle claims refuse qualification", () => {
+  const directory = mkdtempSync(path.join(os.tmpdir(), "vize-consumer-oracle-"));
+  const bytes = {
+    "consumer.ts": String(retained.blobs.consumerSha256),
+    "deno.json": String(retained.blobs.denoConfigSha256),
+    "custody.ts": custodyProbe,
+  };
+  const policy = {
+    consumerSha256: sha256(bytes["consumer.ts"]),
+    denoConfigSha256: sha256(bytes["deno.json"]),
+    custodyProbeSha256: sha256(custodyProbe),
+  };
+  try {
+    for (const [name, source] of Object.entries(bytes))
+      writeFileSync(path.join(directory, name), source);
+    const before = assertOracleFiles(directory, policy, true);
+    assert.doesNotThrow(() => verifyOracleHashes(before, policy, true));
+    for (const [name, source] of Object.entries(bytes)) {
+      writeFileSync(
+        path.join(directory, name),
+        source + "\n// installer or consumer changed oracle\n",
+      );
+      // Packet claims can remain identical to the expected hashes; actual retained bytes still refuse.
+      assert.throws(() => assertOracleFiles(directory, policy, true));
+      writeFileSync(path.join(directory, name), source);
+    }
+    assert.throws(() =>
+      verifyOracleHashes({ ...before, "consumer.ts": "f".repeat(64) }, policy, true),
+    );
+    assert.deepEqual(assertOracleFiles(directory, policy, true), before);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 test("actual retained frozen source and 56 effective jobs admit only the known Deno fixture failure", () => {
   const admitted = admit(retained);
@@ -317,6 +381,21 @@ test("recovery is an explicit read-only official operation; ordinary resume rema
     "prepare",
   ]);
   assert.equal(recovery.jobs.prepare.needs, "contracts");
+  for (const job of Object.values(recovery.jobs)) {
+    for (const step of object(job).steps as Record<string, unknown>[]) {
+      if (String(step.uses).startsWith("actions/upload-artifact@"))
+        assert.ok(
+          String(object(step.with).name).includes("${{ github.run_attempt }}"),
+          "every producer isolates its actual attempt",
+        );
+    }
+  }
+  assert.ok(
+    recovery.jobs.finalize.steps.some(
+      (step: { with?: { pattern?: string } }) =>
+        step.with?.pattern === "consumer-recovery-*-${{ github.run_attempt }}",
+    ),
+  );
   assert.equal(recovery.jobs.consumer.strategy.matrix.include.length, 6);
   assert.equal(recovery.jobs.prepare.if, "github.ref == 'refs/heads/main'");
   const operator = YAML.parse(file("release-operator.yml"));

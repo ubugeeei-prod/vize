@@ -27,16 +27,29 @@ export function verifyPackageIdentity(
   statementValue: unknown,
   installedValue: unknown,
 ) {
-  const metadata = object(metadataValue),
-    statement = object(statementValue);
+  const metadata = object(metadataValue);
   const installed = object(installedValue),
     dist = object(metadata.dist);
-  assert.equal(metadata.name, name);
-  assert.equal(metadata.version, version);
   assert.equal(installed.version, version);
   assert.equal(installed.link, undefined);
   assert.equal(installed.integrity, dist.integrity);
   assert.equal(installed.resolved, dist.tarball);
+  return verifyRegistrySource(name, version, head, metadataValue, statementValue);
+}
+
+/** Public registry/source metadata only. Callers separately authenticate actual installed bytes. */
+export function verifyRegistrySource(
+  name: string,
+  version: string,
+  head: string,
+  metadataValue: unknown,
+  statementValue: unknown,
+) {
+  const metadata = object(metadataValue),
+    statement = object(statementValue);
+  const dist = object(metadata.dist);
+  assert.equal(metadata.name, name);
+  assert.equal(metadata.version, version);
   assert.ok(typeof dist.tarball === "string");
   assert.equal(new URL(dist.tarball).origin, "https://registry.npmjs.org");
   assert.ok(typeof dist.integrity === "string");
