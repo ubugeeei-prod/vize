@@ -235,6 +235,7 @@ fn normalized_if_branch_keys_and_for_nodes_preserve_wrapper_ownership() {
         "branch-array-true",
     ] {
         let allocator = Allocator::default();
+        let allocator = &allocator;
         let source = if kind.contains("or-true") {
             r#"<KeepAlive><div v-show="opened"><Panel :key="true || visible" /></div></KeepAlive>"#
         } else if kind.contains("array-true") {
@@ -250,7 +251,7 @@ fn normalized_if_branch_keys_and_for_nodes_preserve_wrapper_ownership() {
         } else {
             r#"<KeepAlive><div v-show="opened"><Panel :key="identity" /></div></KeepAlive>"#
         };
-        let (mut root, errors) = vize_armature::Parser::new(&allocator, source).parse();
+        let (mut root, errors) = vize_armature::Parser::new(allocator, source).parse();
         assert!(errors.is_empty());
         let TemplateChildNode::Element(keep_alive) = root.children.first_mut().unwrap() else {
             panic!()
@@ -294,7 +295,7 @@ fn normalized_if_branch_keys_and_for_nodes_preserve_wrapper_ownership() {
             ))
         } else {
             let mut branch = IfBranchNode::new(
-                &allocator,
+                allocator,
                 (kind != "branch-key").then(condition),
                 loc.clone(),
             );
@@ -305,13 +306,13 @@ fn normalized_if_branch_keys_and_for_nodes_preserve_wrapper_ownership() {
             if kind.starts_with("branch") && kind != "branch-key" {
                 TemplateChildNode::IfBranch(Box::new_in(branch, &allocator))
             } else {
-                let mut node = IfNode::new(&allocator, loc.clone());
+                let mut node = IfNode::new(allocator, loc.clone());
                 node.branches.push(branch);
                 TemplateChildNode::If(Box::new_in(node, &allocator))
             }
         };
         wrapper.children.push(node);
-        let mut ctx = crate::context::LintContext::new(&allocator, source, "test.vue");
+        let mut ctx = crate::context::LintContext::new(allocator, source, "test.vue");
         ctx.current_rule = "vue/no-non-component-keep-alive-child";
         super::check_children(&mut ctx, &keep_alive.children);
         assert_eq!(
@@ -383,7 +384,8 @@ fn normalized_conditional_chains_keep_constant_truth_and_prior_unknown_ownership
     }) {
         let source = case["source"].as_str().unwrap();
         let allocator = Allocator::default();
-        let (mut root, errors) = vize_armature::Parser::new(&allocator, source).parse();
+        let allocator = &allocator;
+        let (mut root, errors) = vize_armature::Parser::new(allocator, source).parse();
         assert!(errors.is_empty());
         let TemplateChildNode::Element(keep_alive) = root.children.first_mut().unwrap() else {
             panic!()
@@ -391,7 +393,7 @@ fn normalized_conditional_chains_keep_constant_truth_and_prior_unknown_ownership
         let TemplateChildNode::Element(wrapper) = keep_alive.children.first_mut().unwrap() else {
             panic!()
         };
-        let mut node = IfNode::new(&allocator, wrapper.loc.clone());
+        let mut node = IfNode::new(allocator, wrapper.loc.clone());
         let conditional_children = if case["id"] == "ancestor-key-before-constant-true" {
             let TemplateChildNode::Element(section) = wrapper.children.first_mut().unwrap() else {
                 panic!()
@@ -416,7 +418,7 @@ fn normalized_conditional_chains_keep_constant_truth_and_prior_unknown_ownership
             let PropNode::Directive(mut dir) = element.props.remove(index) else {
                 panic!()
             };
-            let mut branch = IfBranchNode::new(&allocator, dir.exp.take(), element.loc.clone());
+            let mut branch = IfBranchNode::new(allocator, dir.exp.take(), element.loc.clone());
             if case["id"] == "component-key-with-constant-true" {
                 branch.user_key = Some(element.props.pop().unwrap());
             }
@@ -424,7 +426,7 @@ fn normalized_conditional_chains_keep_constant_truth_and_prior_unknown_ownership
             node.branches.push(branch);
         }
         conditional_children.push(TemplateChildNode::If(Box::new_in(node, &allocator)));
-        let mut ctx = crate::context::LintContext::new(&allocator, source, "test.vue");
+        let mut ctx = crate::context::LintContext::new(allocator, source, "test.vue");
         ctx.current_rule = "vue/no-non-component-keep-alive-child";
         super::check_children(&mut ctx, &keep_alive.children);
         let expected = if case["warning"].as_bool().unwrap() {
