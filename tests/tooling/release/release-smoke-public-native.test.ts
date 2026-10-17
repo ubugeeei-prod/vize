@@ -77,7 +77,14 @@ test(
         );
         const directory = path.join(temporary, `package-${index}`);
         fs.mkdirSync(directory);
-        runCommand("tar", ["-xzf", archive, "--strip-components=1", "-C", directory], temporary);
+        // Git for Windows supplies GNU tar, whose absolute C: archive syntax
+        // denotes a remote host. Both paths stay relative to this fresh cwd;
+        // extraction still uses the exact independently SRI-verified archive.
+        runCommand(
+          "tar",
+          ["-xzf", entry.filename, "--strip-components=1", "-C", path.basename(directory)],
+          temporary,
+        );
         const manifest = object(
           JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8")),
         );
