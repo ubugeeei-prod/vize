@@ -278,8 +278,15 @@ function observe(fixture: Fixture, driver: "rust" | "typescript", temporary: str
     );
     return packageDir;
   });
-  const npm = path.join(directory, "fake-npm.cjs");
-  fs.writeFileSync(npm, `#!${process.execPath}\n${fakeNpm}`, { mode: 0o755 });
+  const npmPeer = path.join(directory, "fake-npm.cjs");
+  fs.writeFileSync(npmPeer, `#!${process.execPath}\n${fakeNpm}`, { mode: 0o755 });
+  const npm = process.platform === "win32" ? path.join(directory, "fake-npm.cmd") : npmPeer;
+  if (process.platform === "win32") {
+    fs.writeFileSync(
+      npm,
+      `@echo off\r\n"${process.execPath}" "${npmPeer}" %*\r\nexit /b %errorlevel%\r\n`,
+    );
+  }
   const argv = fixture.args?.map((arg) =>
     arg === "$MISSING" ? path.join(directory, "missing") : arg,
   ) ?? [
