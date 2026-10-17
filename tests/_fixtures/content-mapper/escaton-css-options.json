@@ -39,7 +39,7 @@
       },
       "baselineCodes": [],
       "expectedCodes": [2353],
-      "expectedTerms": ["'typo'"],
+      "expectedTerms": ["'\"typo\"'"],
       "baselineTerms": []
     },
     {
@@ -157,7 +157,7 @@
         "App.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\"\n</script>\n<template><Child :count=\"1\" :typo=\"2\" /></template>\n"
       },
       "codes": [2353],
-      "terms": ["'typo'"]
+      "terms": ["'\"typo\"'"]
     },
     {
       "name": "declared-prop-type-error-still-reported",
@@ -191,7 +191,7 @@
         "tsconfig.base.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true, \"strictCssModules\": true, \"checkUnknownProps\": true}\n}\n"
       },
       "codes": [2353],
-      "terms": ["'typo'"]
+      "terms": ["'\"typo\"'"]
     },
     {
       "name": "setup-binding-preserves-other-implicit-module",
@@ -251,7 +251,7 @@
       },
       "codes": [2353, 2339],
       "build": true,
-      "terms": ["'typo'", "'missing'"]
+      "terms": ["'\"typo\"'", "'missing'"]
     }
   ]
 }
