@@ -67,6 +67,12 @@ jobs:
           tests/tooling/plan-release-gates.test.ts
           tests/tooling/release-check-qualification-handoff.test.ts
           tests/tooling/release-check-profile.test.ts
+          tests/tooling/release/release-integration-qualification.test.ts
+          tests/tooling/release/release-integration-http.test.ts
+          tests/tooling/release/release-integration-release.test.ts
+          tests/tooling/release/release-integration-catalog.test.ts
+          tests/tooling/github-workflows-check-gate.test.ts
+          tests/tooling/github-workflows-contracts-gate.test.ts
           tests/tooling/release/release-notes.test.ts
           tests/tooling/release/release-signing.test.ts
           tests/tooling/drop-in-claim-scope.test.ts
