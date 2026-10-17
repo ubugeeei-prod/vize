@@ -9,14 +9,15 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use oxc_allocator::GetAllocator;
+use oxc_allocator::{CloneIn, GetAllocator};
 use oxc_ast::{
     ast::{Expression, IdentifierReference},
     builder::{AstBuilder, GetAstBuilder},
 };
+use oxc_ast_visit::VisitMut;
 use oxc_ecmascript::{
     GlobalContext, ToBoolean,
-    constant_evaluation::{ConstantEvaluation, ConstantEvaluationCtx},
+    constant_evaluation::{ConstantEvaluation, ConstantEvaluationCtx, IsLiteralValue},
     side_effects::{MayHaveSideEffects, MayHaveSideEffectsContext, PropertyReadSideEffects},
 };
 use vize_l0::is_native_tag;
@@ -320,6 +321,14 @@ impl<'a> GetAstBuilder<'a> for ConstantContext<'a> {
 
 impl<'a> ConstantEvaluationCtx<'a> for ConstantContext<'a> {}
 
+struct OpaqueReferences;
+
+impl<'a> VisitMut<'a> for OpaqueReferences {
+    fn visit_identifier_reference(&mut self, reference: &mut IdentifierReference<'a>) {
+        reference.name = "__vize_unknown_reference".into();
+    }
+}
+
 fn constant_truthiness<'a>(
     expression: &ExpressionNode<'a>,
     context: &ConstantContext<'a>,
@@ -331,15 +340,28 @@ fn constant_truthiness<'a>(
         .js_ast
         .filter(|ast| ast.raw == simple.content)?
         .as_expression()?;
-    let expression = retained.ast.get_inner_expression();
-    if expression.may_have_side_effects(context) {
+    let ast = retained.ast.get_inner_expression();
+    if ast.may_have_side_effects(context) {
         return None;
     }
-    // Pinned OXC deliberately skips BinaryExpression's boolean target. Its
-    // ordinary constant value is still authoritative (e.g. 0 === 1).
-    expression
-        .evaluate_value_to_boolean(context)
-        .or_else(|| expression.evaluate_value(context)?.to_boolean(context))
+    // Pinned OXC's equality fallback recognizes NaN by name without consulting
+    // scope. Isolate evaluation from every authored reference name; preserve the
+    // retained AST and let OXC prove short circuits such as true || visible.
+    // Literal values need no clone or reference normalization.
+    // TODO: Remove normalization once pinned OXC equality honors GlobalContext;
+    // retain the local-shadowing controls.
+    let mut opaque;
+    let ast = if ast.is_literal_value(false, context) {
+        ast
+    } else {
+        opaque = ast.clone_in(context.allocator());
+        OpaqueReferences.visit_expression(&mut opaque);
+        &opaque
+    };
+    ast.evaluate_value_to_boolean(context).or_else(|| {
+        // Pinned OXC deliberately skips BinaryExpression's boolean target.
+        ast.evaluate_value(context)?.to_boolean(context)
+    })
 }
 
 fn key_can_change(prop: &PropNode<'_>) -> bool {

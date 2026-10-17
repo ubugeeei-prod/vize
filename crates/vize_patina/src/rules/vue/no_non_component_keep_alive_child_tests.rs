@@ -154,6 +154,16 @@ fn changing_descendant_identity_reports_the_whole_wrapper_packet() {
         r#"<component v-if="Number(view) === 0" :is="view" />"#,
         r#"<component v-if="settings.enabled === 0" :is="view" />"#,
         r#"<component v-if="NaN === 0" :is="view" />"#,
+        r#"<component v-if="undefined === 0" :is="view" />"#,
+        r#"<component v-if="Infinity === 0" :is="view" />"#,
+        r#"<component v-if="!(NaN === 0)" :is="view" />"#,
+        r#"<component v-if="NaN === 0 || visible" :is="view" />"#,
+        r#"<component v-if="0 === NaN" :is="view" />"#,
+        r#"<component v-if="NaN !== 0" :is="view" />"#,
+        r#"<component v-if="true && (NaN === 0)" :is="view" />"#,
+        r#"<component v-if="false || (NaN === 0)" :is="view" />"#,
+        r#"<component v-if="visible ? NaN === 0 : NaN === 1" :is="view" />"#,
+        r#"<component v-if="local === 0" :is="view" />"#,
     ] {
         let source = vize_l0::cstr!(r#"<KeepAlive><div v-show="opened">{body}</div></KeepAlive>"#);
         assert_eq!(
@@ -177,6 +187,7 @@ fn static_identity_and_component_owned_visibility_keep_whole_clean_packets() {
         r#"<component :is="`Panel`" />"#,
         r#"<component :is="true ? 'Panel' : 'Other'" />"#,
         r#"<Panel v-if="true" />"#,
+        r#"<Panel v-if="true || (NaN === 0)" />"#,
         r#"<component v-if="false" :is="view" /><Panel v-else />"#,
         r#"<Panel v-if="true" /><component v-else :is="view" />"#,
         r#"<Panel v-if="'fixed'" /><component v-else-if="visible" :is="view" />"#,
@@ -254,10 +265,14 @@ fn normalized_if_branch_keys_and_for_nodes_preserve_wrapper_ownership() {
         "branch-or-true",
         "if-array-true",
         "branch-array-true",
+        "if-shadowed",
+        "branch-shadowed",
     ] {
         let allocator = Allocator::default();
         let allocator = &allocator;
-        let source = if kind.contains("or-true") {
+        let source = if kind.contains("shadowed") {
+            r#"<KeepAlive><div v-show="opened"><Panel :key="true && (NaN === 0)" /></div></KeepAlive>"#
+        } else if kind.contains("or-true") {
             r#"<KeepAlive><div v-show="opened"><Panel :key="true || visible" /></div></KeepAlive>"#
         } else if kind.contains("array-true") {
             r#"<KeepAlive><div v-show="opened"><Panel :key="[]" /></div></KeepAlive>"#
