@@ -74,8 +74,31 @@ fn template_authority_boundaries_preserve_whole_diagnostics_and_explicit_refusal
     ))
     .unwrap();
     assert_eq!(corpus.records.len(), 42);
+    let overlay: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/template-authority-review-corrections.json"
+    )).unwrap();
+    assert_eq!(overlay["legacyCorrections"].as_array().unwrap().len(), 6);
     for mut case in corpus.records {
+        if let Some(correction) = overlay["legacyCorrections"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|row| row["id"] == case.id)
+        {
+            assert_eq!(correction["source"], case.source);
+            case.native_messages = correction["nativeMessages"].as_array().unwrap().clone();
+        }
         assert_case(&case.id, &case.source, &mut case.native_messages);
+    }
+    let guards = overlay["guardRecords"].as_array().unwrap();
+    assert_eq!(guards.len(), 4);
+    for case in guards {
+        let mut expected = case["nativeMessages"].as_array().unwrap().clone();
+        assert_case(
+            case["id"].as_str().unwrap(),
+            case["source"].as_str().unwrap(),
+            &mut expected,
+        );
     }
 }
 

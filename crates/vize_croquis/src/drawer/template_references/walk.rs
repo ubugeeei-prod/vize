@@ -133,8 +133,9 @@ impl Capture<'_, '_> {
                     self.record(value)
                 }
                 PropNode::Attribute(attribute)
-                    if attribute.name == "slot-scope"
-                        || (attribute.name == "scope" && element.tag == "template") =>
+                    if self.syntax.legacy_slot_bindings_enabled()
+                        && (attribute.name == "slot-scope"
+                            || (attribute.name == "scope" && element.tag == "template")) =>
                 {
                     let Some(value) = &attribute.value else {
                         continue;

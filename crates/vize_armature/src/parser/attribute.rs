@@ -250,6 +250,7 @@ impl<'a> Parser<'a> {
                     .as_ref()
                     .is_some_and(|element| element.tag == "template"));
         if self.template_syntax_facts.is_some()
+            && self.options.dialect.is_legacy()
             && legacy_slot
             && let Some(value) = attr_node.value.as_ref()
         {

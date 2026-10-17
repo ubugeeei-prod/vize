@@ -140,7 +140,7 @@ impl ScriptTemplateRule for NoDeprecatedDollarListenersApi {
         for reference in references.references() {
             if reference.name != DOLLAR_LISTENERS
                 || reference.owner != vize_croquis::drawer::TemplateReferenceOwner::ComponentContext
-                || component_bindings.has_authored_value(DOLLAR_LISTENERS)
+                || !component_bindings.can_report_component_reference(DOLLAR_LISTENERS)
             {
                 continue;
             }

@@ -65,9 +65,15 @@ which documents the remaining distinction the broad script rule cannot prove.
 The child retains the intended scriptless/dual-script, loop, slot, escaped-name,
 dynamic-argument and handler behavior. Its canonical replacement consumes the
 original retained grammar owners and authored entity ranges, with bounded
-lexical evidence for modern/legacy slots, collection ordering and If conditions.
-`template-boundaries.json` adds 42 whole packets: 27 admitted, five independently
-proved provider blind spots, and ten explicit refusals. `cli70.json` and
+lexical evidence for modern slots, collection ordering and If conditions. Legacy
+slot attributes are scopes only with an explicit Vue 2 dialect; default Vue 3
+keeps them as unevaluated plain attributes. A separate review-correction overlay
+retains the six original historical legacy expectations and adds actual Vue 3
+compiler/runtime proof and current native/CLI expectations without rewriting them.
+`template-boundaries.json` retains 42 historical whole packets, originally labelled
+27 admitted, five provider blind spots and ten refusals. The current Vue 3
+overlay corrects these derived labels to 23 admitted, 11 product-accuracy cases
+and eight refusals. `cli70.json` and
 `template-cli.json` preserve all 112 source/config/status/formatter packets.
 The remaining refusal frontier and qualification requirements are recorded in
 `template-authority-plan.md`; no synthetic consumer reparsing is accepted.

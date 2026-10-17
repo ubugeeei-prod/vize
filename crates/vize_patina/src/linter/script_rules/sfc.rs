@@ -86,7 +86,12 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         && has_only_active_ecosystem_script_rules(linter)
         && !descriptor_scripts_may_match_ecosystem_rule(descriptor)
     {
-        append_template(result, &Default::default());
+        append_template(
+            result,
+            &crate::rules::script::TemplateComponentBindings::from_parsed_sfc(
+                descriptor, None, None,
+            ),
+        );
         return;
     }
     let vapor_component = linter.vapor_mode

@@ -18,6 +18,7 @@ const TEMPLATE_SYNTAX_RECORD_LIMIT: usize = 4096;
 pub(super) struct TemplateSyntaxCapture<'a> {
     records: std::vec::Vec<TemplateSyntaxRecord<'a>>,
     complete: bool,
+    legacy_slot_bindings: bool,
 }
 
 /// The actual grammar selected by the original attribute/interpolation callback.
@@ -110,6 +111,7 @@ pub struct TemplateSyntaxFacts<'a> {
     source: &'a str,
     records: std::vec::Vec<TemplateSyntaxRecord<'a>>,
     complete: bool,
+    legacy_slot_bindings: bool,
 }
 
 impl<'a> TemplateSyntaxFacts<'a> {
@@ -117,13 +119,20 @@ impl<'a> TemplateSyntaxFacts<'a> {
         let TemplateSyntaxCapture {
             mut records,
             complete,
+            legacy_slot_bindings,
         } = capture;
         records.sort_unstable_by_key(|record| (record.span.start, record.span.end));
         Self {
             source,
             records,
             complete,
+            legacy_slot_bindings,
         }
+    }
+
+    /// Dialect selected by the original producer, never inferred from attributes.
+    pub fn legacy_slot_bindings_enabled(&self) -> bool {
+        self.legacy_slot_bindings
     }
 
     /// A truncated or undemanded packet cannot authorize any conclusion.
@@ -169,6 +178,7 @@ impl<'a> Parser<'a> {
         self.template_syntax_facts = Some(TemplateSyntaxCapture {
             records: std::vec::Vec::new(),
             complete: true,
+            legacy_slot_bindings: self.options.dialect.is_legacy(),
         });
         let (root, errors, _, syntax) = self.parse_inner();
         // Capture is armed above. If an internal early-return ever loses it,
@@ -177,6 +187,7 @@ impl<'a> Parser<'a> {
             source: root.source,
             records: std::vec::Vec::new(),
             complete: false,
+            legacy_slot_bindings: false,
         });
         (root, errors, syntax)
     }

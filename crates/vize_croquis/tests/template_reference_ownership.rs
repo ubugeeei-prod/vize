@@ -198,7 +198,15 @@ fn collection_keeps_original_owners_and_never_reenters_expression_parsing() {
     profiler.clear();
     profiler.enable();
     let allocator = Allocator::new();
-    let (root, errors, facts) = Parser::new(&allocator, SOURCE).parse_with_template_syntax_facts();
+    let (root, errors, facts) = Parser::with_options(
+        &allocator,
+        SOURCE,
+        vize_relief::options::ParserOptions {
+            dialect: vize_l0::config::VueVersion::V2,
+            ..Default::default()
+        },
+    )
+    .parse_with_template_syntax_facts();
     profiler.disable();
     assert!(errors.is_empty(), "{errors:?}");
     assert!(core::ptr::eq(root.source, SOURCE));

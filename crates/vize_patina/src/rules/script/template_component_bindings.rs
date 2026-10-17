@@ -26,9 +26,24 @@ struct AuthoredValue {
 #[derive(Debug, Default)]
 pub struct TemplateComponentBindings {
     values: Vec<AuthoredValue>,
+    unknown: [bool; 2],
 }
 
 impl TemplateComponentBindings {
+    /// Refused inspection is not evidence that component lookup is next.
+    pub fn can_report_component_reference(&self, name: &str) -> bool {
+        let index = match name {
+            "$listeners" => 0,
+            "$scopedSlots" => 1,
+            _ => return false,
+        };
+        !self.unknown[index] && !self.has_authored_value(name)
+    }
+
+    fn refuse(&mut self) {
+        self.unknown = [true; 2];
+    }
+
     pub fn has_authored_value(&self, name: &str) -> bool {
         self.values
             .iter()
@@ -41,6 +56,14 @@ impl TemplateComponentBindings {
         script: Option<&ParserReturn<'_>>,
     ) -> Self {
         let mut result = Self::default();
+        for (block, parsed) in [
+            (descriptor.script_setup.as_ref(), setup),
+            (descriptor.script.as_ref(), script),
+        ] {
+            if block.is_some() && clean_block(block, parsed).is_none() {
+                result.refuse();
+            }
+        }
         if let Some((block, parsed)) = clean_block(descriptor.script_setup.as_ref(), setup) {
             for statement in &parsed.program.body {
                 match statement {
@@ -52,13 +75,19 @@ impl TemplateComponentBindings {
                                 | VariableDeclarationKind::Var
                         ) && !declaration.declare =>
                     {
-                        for declarator in declaration.declarations.iter().take(MAX_DECLARATIONS) {
+                        if declaration.declarations.len() > MAX_DECLARATIONS {
+                            result.refuse();
+                            continue;
+                        }
+                        for declarator in &declaration.declarations {
                             if let Some(bindings) =
                                 vize_croquis::drawer::retained_binding_declarations(&declarator.id)
                             {
                                 for binding in bindings {
                                     result.record(block, binding.name.as_str(), binding.span);
                                 }
+                            } else {
+                                result.refuse();
                             }
                         }
                     }
@@ -77,12 +106,15 @@ impl TemplateComponentBindings {
                     Statement::ImportDeclaration(declaration)
                         if declaration.import_kind == ImportOrExportKind::Value =>
                     {
-                        for specifier in declaration
+                        if declaration
                             .specifiers
-                            .iter()
-                            .flatten()
-                            .take(MAX_DECLARATIONS)
+                            .as_ref()
+                            .is_some_and(|items| items.len() > MAX_DECLARATIONS)
                         {
+                            result.refuse();
+                            continue;
+                        }
+                        for specifier in declaration.specifiers.iter().flatten() {
                             let binding = match specifier {
                                 ImportDeclarationSpecifier::ImportSpecifier(specifier)
                                     if specifier.import_kind == ImportOrExportKind::Value =>
@@ -135,6 +167,12 @@ impl TemplateComponentBindings {
                 .get(span.start as usize..span.end as usize)
                 .is_none()
         {
+            if name == "$listeners" {
+                self.unknown[0] = true;
+            }
+            if name == "$scopedSlots" {
+                self.unknown[1] = true;
+            }
             return;
         }
         self.values.push(AuthoredValue {
@@ -240,5 +278,66 @@ mod tests {
         let parsed = Parser::new(&arena, &copied, SourceType::ts()).parse();
         let bindings = TemplateComponentBindings::from_parsed_sfc(&descriptor, Some(&parsed), None);
         assert!(!bindings.has_authored_value("$listeners"));
+        assert!(!bindings.can_report_component_reference("$listeners"));
+    }
+
+    #[test]
+    fn unavailable_script_authority_is_not_absence() {
+        for source in [
+            "<script setup>const $listeners = {}</script><template>{{ $listeners }}</template>",
+            "<script setup src=\"./setup.ts\"/><template>{{ $listeners }}</template>",
+            "<script lang=\"custom\">unknown</script><template>{{ $listeners }}</template>",
+        ] {
+            let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+            let bindings = TemplateComponentBindings::from_parsed_sfc(&descriptor, None, None);
+            assert!(
+                !bindings.can_report_component_reference("$listeners"),
+                "{source}"
+            );
+            assert!(
+                !bindings.can_report_component_reference("$scopedSlots"),
+                "{source}"
+            );
+        }
+        assert!(TemplateComponentBindings::default().can_report_component_reference("$listeners"));
+    }
+    #[test]
+    fn parse_failure_does_not_authorize_a_template_warning() {
+        let source = "<script setup>const $listeners = {}; const broken = </script><template>{{ $listeners }}</template>";
+        let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+        let arena = Allocator::default();
+        let block = descriptor.script_setup.as_ref().unwrap();
+        let parsed = Parser::new(&arena, &block.content, SourceType::ts()).parse();
+        assert!(parsed.panicked || !parsed.diagnostics.is_empty());
+        let bindings = TemplateComponentBindings::from_parsed_sfc(&descriptor, Some(&parsed), None);
+        assert!(!bindings.can_report_component_reference("$listeners"));
+    }
+    #[test]
+    fn over_budget_setup_declarations_retain_unknown_authority() {
+        let overlay: Value = serde_json::from_str(include_str!(
+            "../../../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/template-authority-review-corrections.json"
+        )).unwrap();
+        let guards = overlay["guardRecords"].as_array().unwrap();
+        assert_eq!(guards.len(), 4);
+        for case in guards {
+            let descriptor =
+                vize_atelier_sfc::parse_sfc(case["source"].as_str().unwrap(), Default::default())
+                    .unwrap();
+            let arena = Allocator::default();
+            let block = descriptor.script_setup.as_ref().unwrap();
+            let parsed = Parser::new(&arena, &block.content, SourceType::ts()).parse();
+            assert!(
+                !parsed.panicked && parsed.diagnostics.is_empty(),
+                "{}",
+                case["id"]
+            );
+            let bindings =
+                TemplateComponentBindings::from_parsed_sfc(&descriptor, Some(&parsed), None);
+            assert!(
+                !bindings.can_report_component_reference("$listeners"),
+                "{}",
+                case["id"]
+            );
+        }
     }
 }

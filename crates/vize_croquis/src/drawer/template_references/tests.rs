@@ -113,7 +113,17 @@ fn whole_boundary_packets_preserve_physical_tokens_and_explicit_refusals() {
     )).unwrap();
     let cases = corpus["records"].as_array().unwrap();
     assert_eq!(cases.len(), 42);
-    for case in cases {
+    let overlay: Value = serde_json::from_str(include_str!(
+        "../../../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/template-authority-review-corrections.json"
+    )).unwrap();
+    let corrections = overlay["legacyCorrections"].as_array().unwrap();
+    assert_eq!(corrections.len(), 6);
+    for historical in cases {
+        let case = corrections
+            .iter()
+            .find(|row| row["id"] == historical["id"])
+            .unwrap_or(historical);
+        assert_eq!(case["source"], historical["source"]);
         let source = case["source"].as_str().unwrap();
         let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
         let template = descriptor.template.unwrap();
@@ -141,7 +151,11 @@ fn whole_boundary_packets_preserve_physical_tokens_and_explicit_refusals() {
         assert_eq!(actual, expected, "{}; gaps={gaps:?}", case["id"]);
         assert_eq!(
             !gaps.is_empty(),
-            case["expectedReferenceGap"].as_bool().unwrap(),
+            case.get("nativeGap")
+                .or_else(|| case.get("expectedReferenceGap"))
+                .unwrap()
+                .as_bool()
+                .unwrap(),
             "{}; gaps={gaps:?}",
             case["id"]
         );

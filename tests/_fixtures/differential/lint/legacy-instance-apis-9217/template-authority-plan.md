@@ -12,7 +12,7 @@ This child remains Draft until exact-source native/CLI CI and source review pass
 original Armature attribute/interpolation callbacks. Ordinary `parse()` retains
 no sidecar records. Existing Relief expression and modern slot roots are borrowed
 by exact pointer; no expression or slot is reparsed. Selected `v-for`, named
-`v-on`, and legacy slot parameter goals retain genuine L1 `NativeForHead`,
+`v-on`, and explicitly selected Vue 2 legacy slot parameter goals retain genuine L1 `NativeForHead`,
 `RetainedHandlerBody`, and `RetainedSlotParams` owners. For selection replaces the ordinary whole-head expression attempt. Named handlers
 preserve every successful original Expr AST (including function/object values);
 only a failed Expr selects the actual statement-body owner. That second goal is
@@ -38,7 +38,10 @@ callback parameters and block declarations. Type-only identifiers are excluded.
 Collections and conditions are read before same-element loop aliases. Dynamic
 slot names and ordinary attributes are read before slot props; slot declarations
 scope only the children. Raw directives, retained `If` branch conditions/user
-keys, modern slots, legacy `slot-scope`, and legacy `<template scope>` are covered.
+keys and modern slots are covered. Legacy `slot-scope` and `<template scope>`
+are parameter scopes only when the original producer explicitly selects a Vue 2
+dialect. Default Vue 3 treats these as plain static attributes: their strings do
+not execute, and child identifiers still resolve in component context.
 Patina runs the actual configured rule capability before script-only prefilters,
 including scriptless SFCs, and consumes only witnessed component-context value
 reads. Historical script receiver/reference coverage is unchanged.
@@ -68,10 +71,22 @@ in script are unrelated to these template scopes and keep their existing warning
   with 126 diagnostics. The actual source-built CLI runs every case before an
   aggregate assertion; no output is filtered or normalized.
 - `template-boundaries.json`: 42 additional original-source/provider/native
-  packets: 27 admitted cases, five independently justified product-accuracy
-  cases, and ten explicit refusal cases. Complete expected native diagnostics
+  packets, historically labelled 27 admitted, five product-accuracy cases and
+  ten refusals. Complete expected native diagnostics
   include severity, message, help, labels, fix, and physical UTF-8 byte ranges.
-- `template-cli.json`: all 42 complete CLI packets, including the refusal cases.
+- `template-cli.json`: all 42 historical complete CLI packets, including the refusal cases.
+  The six legacy-attribute cases preserve their historical ESLint-derived labels;
+  `template-authority-review-corrections.json` supplies a separate current Vue 3
+  overlay, complete compiler/runtime proof and corrected whole native/CLI packets.
+  These six cases are provider blind spots, not qualified lexical-scope parity.
+  The derived current inventory is 23 admitted, 11 product-accuracy cases and eight
+  refusals; the historical 27/5/10 labels remain byte-for-byte in the original.
+  The compressed proof preserves complete official compiler/runtime observations;
+  Rust embeds only the smaller authored-source/whole-expectation overlay.
+- Four additional setup-guard sources prove actual compiler `$setup` bindings past
+  statement, declarator and pattern budgets. Refusal remains Unknown and adds no
+  new template warning. They run through the whole native Linter in both presets;
+  they do not replace any of the 147 existing real-CLI observations.
   Clean native output for a refusal is not acceptance/parity credit; its packet
   must also retain an explicit Croquis coverage gap.
 
@@ -152,6 +167,14 @@ supply that authority. For normal scripts, only a direct default-export object
 can supply the existing shared OptionsDescriptor's `Setup` return-key records.
 Factory spelling and broad `bindings.contains(name)` never qualify a component.
 A normal setup return is not admitted when a script-setup block replaces it.
+
+Inspection authority also retains Unknown for each target surface. A missing,
+external, custom-language, erroneous or source-mismatched script parse, too many
+statements/declarators/import specifiers, or a refused binding-pattern walk does
+not establish absence. Such a surface cannot authorize a new template warning;
+script warnings remain independent. Clean fully inspected blocks and scriptless
+components can still establish the next component lookup. No iteration cap
+silently truncates the binding inventory.
 
 This evidence is constructed only when an actual retained component-context
 identifier needs it, after the same existing script parses, with no rule-local

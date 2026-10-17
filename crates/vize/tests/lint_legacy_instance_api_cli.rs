@@ -96,7 +96,7 @@ fn all_original_legacy_api_controls_use_the_actual_cli_and_complete_json_formatt
 
 #[test]
 fn all_template_authority_boundaries_use_the_actual_cli_and_complete_json_formatter() {
-    let manifest: Value = serde_json::from_str(TEMPLATE_MANIFEST).unwrap();
+    let mut manifest: Value = serde_json::from_str(TEMPLATE_MANIFEST).unwrap();
     assert_eq!(
         manifest["schema"],
         "vize.lint.legacy-template-authority-cli"
@@ -134,6 +134,38 @@ fn all_template_authority_boundaries_use_the_actual_cli_and_complete_json_format
             case["expected"][0]["messages"].as_array().unwrap().len(),
             source["nativeMessages"].as_array().unwrap().len(),
         );
+    }
+    let overlay: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/template-authority-review-corrections.json"
+    )).unwrap();
+    assert_eq!(overlay["frozenInput"]["sha256"], digest(&bytes));
+    assert_eq!(
+        overlay["frozenCliInput"]["sha256"],
+        digest(TEMPLATE_MANIFEST.as_bytes())
+    );
+    let corrections = overlay["legacyCorrections"].as_array().unwrap();
+    assert_eq!(corrections.len(), 6);
+    for correction in corrections {
+        let source = sources
+            .iter()
+            .find(|row| row["id"] == correction["id"])
+            .unwrap();
+        assert_eq!(source["source"], correction["source"]);
+        assert_eq!(source["sourceSha256"], correction["sourceSha256"]);
+        let case = manifest["cases"]
+            .as_array_mut()
+            .unwrap()
+            .iter_mut()
+            .find(|row| row["id"] == correction["id"])
+            .unwrap();
+        case["historicalExpected"] = case["expected"].clone();
+        case["historicalQualification"] = case["qualification"].clone();
+        case["expectationAuthority"] = json!("actual-vue3-plain-legacy-attribute-overlay");
+        case["qualification"] = json!("product-accuracy-vue3-provider-blindspot");
+        case["expected"] = correction["cliExpected"].clone();
+        case["status"] = correction["expectedStatus"].clone();
+        case["nativeMessageIndices"] =
+            json!((0..correction["nativeMessages"].as_array().unwrap().len()).collect::<Vec<_>>());
     }
     run_cli_cases(&manifest, sources, 42);
 }
@@ -442,6 +474,9 @@ fn run_cli_cases(manifest: &Value, sources: &[Value], expected_count: usize) {
                 "suite": manifest["schema"],
                 "case": id,
                 "qualification": case["qualification"],
+                "historicalQualification": case["historicalQualification"],
+                "historicalExpected": case["historicalExpected"],
+                "expectationAuthority": case["expectationAuthority"],
                 "qualifiedAcceptance": case["qualifiedAcceptance"],
                 "program": env!("CARGO_BIN_EXE_vize"),
                 "actualCwd": directory,

@@ -241,7 +241,15 @@ fn handler_expressions_preserve_functions_callbacks_objects_and_original_offsets
 fn legacy_parameter_roles_are_selected_only_for_semantic_hosts() {
     let arena = Allocator::new();
     let source = "<Panel slot-scope=\"{ value = &#36;listeners }\"/><template scope=\"$listeners\"/><div scope=\"unrelated\" title=\"$listeners\"/>";
-    let (root, errors, facts) = Parser::new(&arena, source).parse_with_template_syntax_facts();
+    let (root, errors, facts) = Parser::with_options(
+        &arena,
+        source,
+        vize_relief::options::ParserOptions {
+            dialect: vize_l0::config::VueVersion::V2,
+            ..Default::default()
+        },
+    )
+    .parse_with_template_syntax_facts();
     assert!(errors.is_empty(), "{errors:?}");
     let records = facts.records_for(root.source).expect("source");
     assert_eq!(records.len(), 2);
@@ -278,7 +286,15 @@ fn own_and_inherited_v_pre_discard_syntax_even_before_the_pre_attribute() {
 fn failed_and_over_budget_goals_remain_observed_refusals() {
     let arena = Allocator::new();
     let source = "<p v-for=\"item in\" @click=\"const x =\" :value=\"value +\"/><Panel #default=\"{ value: }\"/><template scope=\"{ value: }\"/>";
-    let (root, errors, facts) = Parser::new(&arena, source).parse_with_template_syntax_facts();
+    let (root, errors, facts) = Parser::with_options(
+        &arena,
+        source,
+        vize_relief::options::ParserOptions {
+            dialect: vize_l0::config::VueVersion::V2,
+            ..Default::default()
+        },
+    )
+    .parse_with_template_syntax_facts();
     assert!(errors.is_empty(), "{errors:?}");
     assert_eq!(facts.records_for(root.source).expect("source").len(), 5);
     assert!(
@@ -350,4 +366,14 @@ fn record_budget_refuses_the_complete_packet_instead_of_returning_a_prefix() {
     assert!(!facts.is_complete_for(root.source));
     assert!(facts.records_for(root.source).is_none());
     assert!(facts.records.is_empty(), "discard all partial observations");
+}
+
+#[test]
+fn vue3_legacy_slot_attributes_are_plain_text_without_parameter_owners() {
+    let arena = Allocator::new();
+    let source = "<Child slot-scope=\"{ value = $listeners }\"/><template scope=\"$listeners\"/>";
+    let (root, errors, facts) = Parser::new(&arena, source).parse_with_template_syntax_facts();
+    assert!(errors.is_empty());
+    assert!(!facts.legacy_slot_bindings_enabled());
+    assert!(facts.records_for(root.source).unwrap().is_empty());
 }
