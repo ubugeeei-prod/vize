@@ -10,45 +10,29 @@ export const command = "tools/commands/fixtures/lint-divergence-report";
 export const contractDirectory = "tests/_fixtures/differential/linter/reference-coverage-8849";
 export const originalRef = "49545646fde08ade1000c4a33b38c9dd1ac4fb99";
 export const updatedRef = "7421901d05ac2e252636dd8ee426e8783255378d";
-const common = [
-  [
-    "tools/support/common.rs",
-    "c23e55a197a410a899082875ffc34e4478573d855f3463ec8ebc6780644eb497",
-    8265,
-  ],
-  [
-    "tools/support/lint_divergence_surface.rs",
-    "ccb05dcaabf1285f66f524276d3ab1744739c2c1cb2679691c51efb87f2ea30e",
-    4194,
-  ],
-] as const;
-const sources = {
-  original: {
-    ref: originalRef,
-    files: [
-      ...common,
-      [`${command}.rs`, "d5ab4a8f86edcaf6934f518991d68ded8bbc50e3e1cb83217395b14faff02f5a", 68133],
-    ],
-  },
-  updated: {
-    ref: updatedRef,
-    files: [
-      ...common,
-      [`${command}.rs`, "e46b782949303b4f91132eed7f16e9cd65d3182fcbe6e21019a54752de370622", 72562],
-      [
-        "tools/support/lint_reference_coverage.rs",
-        "47a62d566061d742810d79a0d7cbf4fccf6fab226e6e1e50fb71df8ca5e540db",
-        3268,
-      ],
-      [
-        `${contractDirectory}/contract.json`,
-        "ca146c3cf3e6e64484956d3eeef959fb04b68c0f59fd3d945f5e6c4df826e955",
-        2885,
-      ],
-    ],
-  },
-} as const;
-export type Oracle = keyof typeof sources;
+export type Oracle = "original" | "updated";
+interface Source {
+  ref: string;
+  files: [string, string, number][];
+}
+export const referenceFixtures = JSON.parse(
+  fs.readFileSync(
+    new URL(
+      "../../_fixtures/differential/linter/reference-coverage-8849/report-references.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+) as Record<Oracle, Source> & {
+  fakeVizeSource: string;
+  invalidArguments: string[][];
+  parserVectors: { token: string; reason: string; js: string }[];
+  missingModernPaths: string[][];
+  seams: Record<string, unknown>;
+};
+const sources = { original: referenceFixtures.original, updated: referenceFixtures.updated };
+assert.equal(sources.original.ref, originalRef);
+assert.equal(sources.updated.ref, updatedRef);
 type Fields = Record<string, unknown>;
 interface Finding extends Fields {
   file: string;
@@ -95,7 +79,11 @@ interface IndexReport extends BaseReport {
   schema: "vize.fixtureLintDivergenceIndex";
   projects: Record<string, number>[];
 }
-type Report = ProjectReport | IndexReport;
+interface OriginalProjectReport extends Omit<ProjectReport, "raw" | "divergence"> {
+  divergence: Omit<Divergence, "referenceCoverageExpectations">;
+}
+type Report = ProjectReport | OriginalProjectReport | IndexReport;
+export type ReportSource = Oracle | "typescript";
 interface ProcessCapture {
   argv: string[];
   cwd: string;
@@ -110,21 +98,37 @@ export function object(value: unknown): Fields {
   assert.ok(value !== null && typeof value === "object" && !Array.isArray(value));
   return value as Fields;
 }
-function reportValue(value: unknown): Report {
+function reportValue(value: unknown, source: ReportSource): Report {
+  assert.ok(["original", "updated", "typescript"].includes(source));
   const row = object(value);
   assert.equal(typeof row.schema, "string");
-  object(row.evidence);
+  assert.equal(
+    object(object(row.evidence).runtime).name,
+    source === "typescript" ? "node" : "rust-script",
+  );
   object(row.budget);
   if (row.schema === "vize.fixtureLintDivergenceRun") {
     object(row.baseline);
-    object(row.raw);
-    object(row.divergence);
+    const divergence = object(row.divergence),
+      baseline = object(row.baseline);
     object(row.files);
-    object(object(row.divergence).summary);
-    assert.ok(Array.isArray(object(row.raw).patinaResults));
-    assert.ok(Array.isArray(object(row.raw).patinaFindings));
-    assert.ok(Array.isArray(object(row.raw).eslintResults));
-    assert.ok(Array.isArray(object(row.divergence).referenceCoverageExpectations));
+    const summary = object(divergence.summary);
+    if (source === "original") {
+      for (const [owner, key] of [
+        [row, "raw"],
+        [baseline, "runtimeVersions"],
+        [divergence, "referenceCoverageExpectations"],
+        [summary, "referenceCoverageIntegrityErrorCount"],
+      ] as const)
+        assert.equal(Object.hasOwn(owner, key), false, `original must not contain ${key}`);
+    } else {
+      const raw = object(row.raw);
+      object(baseline.runtimeVersions);
+      for (const key of ["patinaResults", "patinaFindings", "eslintResults"])
+        assert.ok(Array.isArray(raw[key]));
+      assert.ok(Array.isArray(divergence.referenceCoverageExpectations));
+      assert.equal(typeof summary.referenceCoverageIntegrityErrorCount, "number");
+    }
   } else {
     assert.equal(row.schema, "vize.fixtureLintDivergenceIndex");
     assert.ok(Array.isArray(row.projects));
@@ -133,7 +137,9 @@ function reportValue(value: unknown): Report {
 }
 export function reportFile(result: Result, name: string): ProjectReport {
   const value = result.files[name];
-  assert.ok(typeof value === "object" && value.schema === "vize.fixtureLintDivergenceRun");
+  assert.ok(
+    typeof value === "object" && value.schema === "vize.fixtureLintDivergenceRun" && "raw" in value,
+  );
   return value;
 }
 export function indexFile(result: Result): IndexReport {
@@ -154,7 +160,7 @@ export function evidenceDirectory() {
   fs.mkdirSync(directory, { recursive: true });
   return directory;
 }
-function parseReport(text: string): Report {
+export function parseReport(text: string, source: ReportSource): Report {
   return reportValue(
     JSON.parse(text, (_key: string, value: unknown, context?: { source?: string }) => {
       if (
@@ -167,6 +173,13 @@ function parseReport(text: string): Report {
       }
       return value;
     }) as unknown,
+    source,
+  );
+}
+export function writeSeamReceipt() {
+  fs.writeFileSync(
+    path.join(evidenceDirectory(), "finite-successor-seams.json"),
+    JSON.stringify(referenceFixtures.seams, null, 2) + "\n",
   );
 }
 export function materializeFrozenReporters() {
@@ -205,79 +218,20 @@ export function materializeFrozenReporters() {
     throw error;
   }
 }
-export function fixture() {
-  fs.mkdirSync(path.join(root, "target"), { recursive: true });
-  const directory = fs.mkdtempSync(path.join(root, "target", "lint-report-parity-"));
-  const output = path.join(directory, "output");
-  const transcript = path.join(directory, "processes.jsonl");
-  const response = path.join(directory, "response.json");
-  const binary = path.join(directory, "fake-vize.mjs");
-  const registry = path.join(directory, "registry.json");
-  fs.writeFileSync(
-    binary,
-    [
-      "#!/usr/bin/env node",
-      'import fs from "node:fs";',
-      `const response = JSON.parse(fs.readFileSync(${JSON.stringify(response)}, "utf8"));`,
-      "const stdin = fs.readFileSync(0);",
-      "const stdout = response.stdout ?? JSON.stringify(response.results);",
-      'const stderr = response.stderr ?? "";',
-      `fs.appendFileSync(${JSON.stringify(transcript)}, JSON.stringify({`,
-      "  argv: process.argv.slice(2), cwd: process.cwd(), lang: process.env.LANG,",
-      '  lcAll: process.env.LC_ALL, stdin: stdin.toString("base64"),',
-      '  stdout: Buffer.from(stdout).toString("base64"), stderr: Buffer.from(stderr).toString("base64"),',
-      "  status: response.status ?? 0,",
-      '}) + "\\n");',
-      "process.stdout.write(stdout); process.stderr.write(stderr); process.exitCode = response.status ?? 0;",
-      "",
-    ].join("\n"),
-  );
-  fs.chmodSync(binary, 0o755);
-  const project = (id = "parity", extra: Fields = {}) => ({
-    id,
-    revision: "0".repeat(40),
-    fixturePath: path.relative(root, directory),
-    vueGlobs: ["App.vue"],
-    coverage: ["linter"],
-    ...extra,
-  });
-  const write = (file: string, contents: string) => {
-    fs.mkdirSync(path.dirname(path.join(directory, file)), { recursive: true });
-    fs.writeFileSync(path.join(directory, file), contents);
-  };
-  write("App.vue", "<template><div /></template>\n");
-  const configure = (
-    projects = [project()],
-    value: Fields = { results: [{ file: "App.vue", messages: [] }] },
-  ) => {
-    fs.writeFileSync(registry, JSON.stringify({ projects }));
-    fs.writeFileSync(response, JSON.stringify(value));
-  };
-  configure();
-  return {
-    directory,
-    output,
-    transcript,
-    binary,
-    project,
-    write,
-    configure,
-    args: [
-      "--registry",
-      registry,
-      "--output-dir",
-      output,
-      "--vize-bin",
-      binary,
-      "--timeout-ms",
-      "30000",
-    ],
-    clean: () => fs.rmSync(directory, { recursive: true, force: true }),
-  };
+export interface Fixture {
+  directory: string;
+  output: string;
+  transcript: string;
+  args: string[];
 }
-export type Fixture = ReturnType<typeof fixture>;
 let measurement = 0;
-export function runReporter(input: Fixture, source: string, args = input.args, rust = false) {
+export function runReporter(
+  input: Fixture,
+  source: string,
+  args = input.args,
+  sourceVersion: ReportSource = "typescript",
+) {
+  const rust = sourceVersion !== "typescript";
   fs.rmSync(input.output, { recursive: true, force: true });
   fs.rmSync(input.transcript, { force: true });
   const result = spawnSync(rust ? "rust-script" : process.execPath, [source, ...args], {
@@ -287,6 +241,34 @@ export function runReporter(input: Fixture, source: string, args = input.args, r
     maxBuffer: 8 * 1024 * 1024,
     env: { ...process.env, VIZE_REPO_ROOT: root, LANG: "C", LC_ALL: "C" },
   });
+  const retainedFiles = Object.fromEntries(
+    fs.existsSync(input.output)
+      ? fs
+          .readdirSync(input.output)
+          .map((name) => [name, fs.readFileSync(path.join(input.output, name)).toString("base64")])
+      : [],
+  );
+  fs.writeFileSync(
+    path.join(evidenceDirectory(), `${String(++measurement).padStart(3, "0")}-raw.json`),
+    JSON.stringify(
+      {
+        source,
+        sourceVersion,
+        args,
+        status: result.status,
+        signal: result.signal,
+        error: result.error?.message,
+        stdout: result.stdout,
+        stderr: result.stderr,
+        filesBase64: retainedFiles,
+        transcriptBase64: fs.existsSync(input.transcript)
+          ? fs.readFileSync(input.transcript).toString("base64")
+          : null,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
   assert.equal(result.error, undefined, result.error?.message);
   assert.equal(result.signal, null, `reporter terminated by ${result.signal}`);
   const files: Record<string, Report | string> = {};
@@ -310,7 +292,6 @@ export function runReporter(input: Fixture, source: string, args = input.args, r
         }
         rawUnknownTokens[name] = { keys, tokens };
       }
-      files[name] = name.endsWith(".json") ? parseReport(text) : text;
     }
   }
   const processes = fs.existsSync(input.transcript)
@@ -336,17 +317,8 @@ export function runReporter(input: Fixture, source: string, args = input.args, r
     files,
     rawUnknownTokens,
   };
-  fs.writeFileSync(
-    path.join(
-      evidenceDirectory(),
-      `${String(++measurement).padStart(3, "0")}-${rust ? "rust" : "node"}.json`,
-    ),
-    JSON.stringify(
-      { source, args, ...captured, rawFiles },
-      (_key, value) => (typeof value === "bigint" ? { exactIntegerToken: String(value) } : value),
-      2,
-    ) + "\n",
-  );
+  for (const [name, text] of Object.entries(rawFiles))
+    files[name] = name.endsWith(".json") ? parseReport(text, sourceVersion) : text;
   for (const process of processes) {
     assert.equal(process.stdin, "");
     assert.equal(process.lang, "C");
@@ -461,7 +433,11 @@ export function assertParity(expected: Result, actual: Result, oracle: Oracle) {
   }
   for (const [file, artifact] of Object.entries(actual.files)) {
     if (!file.endsWith("-lint-divergence.json")) continue;
-    assert.ok(typeof artifact === "object" && artifact.schema === "vize.fixtureLintDivergenceRun");
+    assert.ok(
+      typeof artifact === "object" &&
+        artifact.schema === "vize.fixtureLintDivergenceRun" &&
+        "raw" in artifact,
+    );
     assertDigest(artifact.divergence);
     if (oracle === "original") {
       removeOriginalAdditions(artifact);

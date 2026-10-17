@@ -1,0 +1,102 @@
+{
+  "original": {
+    "ref": "49545646fde08ade1000c4a33b38c9dd1ac4fb99",
+    "files": [
+      [
+        "tools/support/common.rs",
+        "c23e55a197a410a899082875ffc34e4478573d855f3463ec8ebc6780644eb497",
+        8265
+      ],
+      [
+        "tools/support/lint_divergence_surface.rs",
+        "ccb05dcaabf1285f66f524276d3ab1744739c2c1cb2679691c51efb87f2ea30e",
+        4194
+      ],
+      [
+        "tools/commands/fixtures/lint-divergence-report.rs",
+        "d5ab4a8f86edcaf6934f518991d68ded8bbc50e3e1cb83217395b14faff02f5a",
+        68133
+      ]
+    ]
+  },
+  "updated": {
+    "ref": "7421901d05ac2e252636dd8ee426e8783255378d",
+    "files": [
+      [
+        "tools/support/common.rs",
+        "c23e55a197a410a899082875ffc34e4478573d855f3463ec8ebc6780644eb497",
+        8265
+      ],
+      [
+        "tools/support/lint_divergence_surface.rs",
+        "ccb05dcaabf1285f66f524276d3ab1744739c2c1cb2679691c51efb87f2ea30e",
+        4194
+      ],
+      [
+        "tools/commands/fixtures/lint-divergence-report.rs",
+        "e46b782949303b4f91132eed7f16e9cd65d3182fcbe6e21019a54752de370622",
+        72562
+      ],
+      [
+        "tools/support/lint_reference_coverage.rs",
+        "47a62d566061d742810d79a0d7cbf4fccf6fab226e6e1e50fb71df8ca5e540db",
+        3268
+      ],
+      [
+        "tests/_fixtures/differential/linter/reference-coverage-8849/contract.json",
+        "ca146c3cf3e6e64484956d3eeef959fb04b68c0f59fd3d945f5e6c4df826e955",
+        2885
+      ]
+    ]
+  },
+  "fakeVizeSource": "#!/usr/bin/env node\nimport fs from \"node:fs\";\nconst response = JSON.parse(fs.readFileSync(new URL(\"./response.json\", import.meta.url), \"utf8\"));\nconst stdin = fs.readFileSync(0);\nconst stdout = response.stdout ?? JSON.stringify(response.results);\nconst stderr = response.stderr ?? \"\";\nfs.appendFileSync(new URL(\"./processes.jsonl\", import.meta.url), JSON.stringify({ argv: process.argv.slice(2), cwd: process.cwd(), lang: process.env.LANG, lcAll: process.env.LC_ALL, stdin: stdin.toString(\"base64\"), stdout: Buffer.from(stdout).toString(\"base64\"), stderr: Buffer.from(stderr).toString(\"base64\"), status: response.status ?? 0 }) + \"\\n\");\nprocess.stdout.write(stdout); process.stderr.write(stderr); process.exitCode = response.status ?? 0;\n",
+  "invalidArguments": [
+    ["--help"],
+    ["-h"],
+    ["--unknown"],
+    ["--registry"],
+    ["--budget-mode", "silently-ignore"],
+    ["--shard-count", "0"],
+    ["--shard-index", "-1"],
+    ["--timeout-ms", "0"],
+    ["--shard-count", "2", "--shard-index", "2"]
+  ],
+  "parserVectors": [
+    {
+      "token": "1e309",
+      "reason": "number out of range",
+      "js": "JSON number is out of range"
+    },
+    {
+      "token": "\"\\ud800\"",
+      "reason": "unexpected end of hex escape",
+      "js": "JSON strings must contain valid Unicode scalar values"
+    }
+  ],
+  "missingModernPaths": [
+    ["raw"],
+    ["baseline", "runtimeVersions"],
+    ["divergence", "referenceCoverageExpectations"],
+    ["divergence", "summary", "referenceCoverageIntegrityErrorCount"],
+    ["schema"]
+  ],
+  "seams": {
+    "runtime": "Exact Rust/Node name and version; machine/source unchanged",
+    "usage": "Only exact Rust/Node first header; rest/newlines unchanged",
+    "duration": "Safe monotonic baseline milliseconds in [0, 240000]",
+    "originalAdditions": "Asserted8849 raw/runtime/expectations, exact Markdown and independently bound digests",
+    "parserDiagnostics": [
+      {
+        "token": "1e309",
+        "reason": "number out of range",
+        "js": "JSON number is out of range"
+      },
+      {
+        "token": "\"\\ud800\"",
+        "reason": "unexpected end of hex escape",
+        "js": "JSON strings must contain valid Unicode scalar values"
+      }
+    ],
+    "membership": "Full explicit exempt-to-scored correction; zero budgets unchanged"
+  }
+}

@@ -1,3 +1,4 @@
+import { gunzipSync } from "node:zlib";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -8,80 +9,142 @@ import {
   command,
   contractDirectory,
   evidenceDirectory,
-  fixture,
   materializeFrozenReporters,
+  writeSeamReceipt,
+  parseReport,
+  referenceFixtures,
   reportFile,
   indexFile,
   object,
   root,
   runReporter,
-  type Fixture,
   type Oracle,
 } from "../_helpers/lint-report-rust-parity.ts";
-
-// Dedicated source qualification: explicitly run this file in Actions with the
-// two immutable refs fetched and rust-script installed. No skip or MJS oracle.
+function fixture() {
+  fs.mkdirSync(path.join(root, "target"), { recursive: true });
+  const directory = fs.mkdtempSync(path.join(root, "target", "lint-report-parity-"));
+  const output = path.join(directory, "output");
+  const transcript = path.join(directory, "processes.jsonl");
+  const response = path.join(directory, "response.json");
+  const binary = path.join(directory, "fake-vize.mjs");
+  const registry = path.join(directory, "registry.json");
+  fs.writeFileSync(binary, referenceFixtures.fakeVizeSource);
+  fs.chmodSync(binary, 0o755);
+  const project = (id = "parity", extra: Record<string, unknown> = {}) => ({
+    id,
+    revision: "0".repeat(40),
+    fixturePath: path.relative(root, directory),
+    vueGlobs: ["App.vue"],
+    coverage: ["linter"],
+    ...extra,
+  });
+  const write = (file: string, contents: string) => {
+    fs.mkdirSync(path.dirname(path.join(directory, file)), { recursive: true });
+    fs.writeFileSync(path.join(directory, file), contents);
+  };
+  write("App.vue", "<template><div /></template>\n");
+  const configure = (
+    projects = [project()],
+    value: Record<string, unknown> = { results: [{ file: "App.vue", messages: [] }] },
+  ) => {
+    fs.writeFileSync(registry, JSON.stringify({ projects }));
+    fs.writeFileSync(response, JSON.stringify(value));
+  };
+  configure();
+  return {
+    directory,
+    output,
+    transcript,
+    binary,
+    project,
+    write,
+    configure,
+    args: [
+      "--registry",
+      registry,
+      "--output-dir",
+      output,
+      "--vize-bin",
+      binary,
+      "--timeout-ms",
+      "30000",
+    ],
+    clean: () => fs.rmSync(directory, { recursive: true, force: true }),
+  };
+}
+type Fixture = ReturnType<typeof fixture>;
 let frozen: ReturnType<typeof materializeFrozenReporters>;
 before(() => {
   frozen = materializeFrozenReporters();
-  fs.writeFileSync(
-    path.join(evidenceDirectory(), "finite-successor-seams.json"),
-    JSON.stringify(
-      {
-        runtime:
-          "Exact rustc --version versus exact Node process.version; machine and source identity unchanged",
-        usage: "Only exact Rust/Node canonical first header; all remaining help bytes unchanged",
-        durationMs:
-          "Each baseline duration is a safe integer in [0, 240000]; only this monotonic measurement is removed",
-        originalAdditions:
-          "Only independently asserted #8849 runtimeVersions/raw/reference expectations and exact Markdown additions; both digest preimages checked",
-        parserDiagnostics: [
-          {
-            vector: "1e309, including duplicate raw:0 shadow",
-            rust: "number out of range at exact source line/column",
-            node: "JSON number is out of range",
-          },
-          {
-            vector: "unpaired high Unicode surrogate, including duplicate raw:0 shadow",
-            rust: "unexpected end of hex escape at exact source line/column",
-            node: "JSON strings must contain valid Unicode scalar values",
-          },
-        ],
-        membershipFix:
-          "Updated frozen Rust wrongly exempts a known but unmeasured foreign finding; TS must score it and breach unchanged zero budget",
-      },
-      null,
-      2,
-    ) + "\n",
-  );
+  writeSeamReceipt();
 });
 after(() => frozen?.clean());
 const nodeCommand = path.join(root, `${command}.ts`);
-
 function compare(input: Fixture, args = input.args, oracles: Oracle[] = ["original", "updated"]) {
   const successor = runReporter(input, nodeCommand, args);
   for (const oracle of oracles) {
-    const measured = runReporter(input, frozen.paths[oracle], args, true);
+    const measured = runReporter(input, frozen.paths[oracle], args, oracle);
     assertParity(measured, successor, oracle);
   }
   return successor;
 }
-
+test("source-bound schema custody accepts complete legacy packets and strictly checks modern reports", () => {
+  const input = fixture();
+  try {
+    for (const name of ["gui-for-singbox", "mobile-web-best-practice"]) {
+      const text = gunzipSync(
+        fs.readFileSync(path.join(root, contractDirectory, `${name}-lint-divergence.json.gz`)),
+      ).toString();
+      assert.equal(parseReport(text, "original").schema, "vize.fixtureLintDivergenceRun");
+      for (const mode of ["updated", "typescript"] as const)
+        assert.throws(() => parseReport(text, mode));
+    }
+    const actual = runReporter(input, nodeCommand, [
+      ...input.args,
+      "--preset",
+      "no-rules",
+      "--budget-mode",
+      "record-only",
+    ]);
+    assert.equal(actual.status, 0, actual.stderr);
+    const text = fs.readFileSync(path.join(input.output, "parity-lint-divergence.json"), "utf8");
+    parseReport(text, "typescript");
+    for (const mode of ["original", "updated"] as const)
+      assert.throws(() => parseReport(text, mode));
+    for (const ownerKeys of referenceFixtures.missingModernPaths) {
+      const value: unknown = JSON.parse(text);
+      let owner = object(value);
+      for (const key of ownerKeys.slice(0, -1)) owner = object(owner[key]);
+      delete owner[ownerKeys.at(-1)!];
+      assert.throws(() => parseReport(JSON.stringify(value), "typescript"));
+    }
+    assert.throws(() => Reflect.apply(parseReport, undefined, [text, "legacy"]));
+    const previous = new Set(fs.readdirSync(evidenceDirectory()));
+    input.write(
+      "invalid.mjs",
+      `import fs from 'node:fs';fs.mkdirSync(${JSON.stringify(input.output)},{recursive:true});fs.writeFileSync(${JSON.stringify(path.join(input.output, "bad.json"))},'{}');`,
+    );
+    assert.throws(() => runReporter(input, path.join(input.directory, "invalid.mjs")));
+    const retained = fs
+      .readdirSync(evidenceDirectory())
+      .find((name) => !previous.has(name) && name.endsWith("-raw.json"));
+    assert.ok(retained);
+    const custody = object(
+      JSON.parse(fs.readFileSync(path.join(evidenceDirectory(), retained), "utf8")) as unknown,
+    );
+    assert.equal(
+      Buffer.from(String(object(custody.filesBase64)["bad.json"]), "base64").toString(),
+      "{}",
+    );
+    assert.equal(custody.status, 0);
+  } finally {
+    input.clean();
+  }
+});
 test("complete CLI help and argument refusals match both frozen actual Rust commands", () => {
   const input = fixture();
   try {
-    const cases = [
-      ["--help"],
-      ["-h"],
-      ["--unknown"],
-      ["--registry"],
-      ["--budget-mode", "silently-ignore"],
-      ["--shard-count", "0"],
-      ["--shard-index", "-1"],
-      ["--timeout-ms", "0"],
-      ["--shard-count", "2", "--shard-index", "2"],
-    ];
-    for (const args of cases) {
+    for (const args of referenceFixtures.invalidArguments) {
       const result = compare(input, args);
       assert.equal(result.status, args[0] === "--help" || args[0] === "-h" ? 0 : 1);
       assert.deepEqual(result.files, {});
@@ -91,7 +154,6 @@ test("complete CLI help and argument refusals match both frozen actual Rust comm
     input.clean();
   }
 });
-
 test("complete reports preserve deterministic ignore, rule, raw process and shard behavior", () => {
   const input = fixture();
   try {
@@ -106,6 +168,8 @@ test("complete reports preserve deterministic ignore, rule, raw process and shar
       ...input.args,
       "--preset",
       "no-rules",
+      "--budget-mode",
+      "record-only",
       "--shard-count",
       "2",
       "--shard-index",
@@ -131,8 +195,7 @@ test("complete reports preserve deterministic ignore, rule, raw process and shar
       comparedCount: 1,
       expectedCount: null,
     });
-    assert.equal(indexFile(result).budget.passed, true);
-    // .ignore overrides .gitignore; the nested .ignore re-includes one input.
+    assert.equal(indexFile(result).budget.passed, false);
     input.write(".ignore", "!generated/\ngenerated/*\n");
     input.write("generated/.ignore", "!Keep.vue\n");
     input.write("generated/Keep.vue", "<template><span /></template>\n");
@@ -142,7 +205,13 @@ test("complete reports preserve deterministic ignore, rule, raw process and shar
         { file: "generated/Keep.vue", messages: [] },
       ],
     });
-    const nested = compare(input, [...input.args, "--preset", "no-rules"]);
+    const nested = compare(input, [
+      ...input.args,
+      "--preset",
+      "no-rules",
+      "--budget-mode",
+      "record-only",
+    ]);
     assert.equal(nested.status, 0, nested.stderr);
     assert.deepEqual(reportFile(nested, "nested-lint-divergence.json").files, {
       comparedCount: 2,
@@ -153,7 +222,6 @@ test("complete reports preserve deterministic ignore, rule, raw process and shar
     input.clean();
   }
 });
-
 test("actual pinned ESLint mapped diagnostics preserve full reports, breached budgets and warnings", () => {
   const input = fixture();
   try {
@@ -173,7 +241,6 @@ test("actual pinned ESLint mapped diagnostics preserve full reports, breached bu
     input.clean();
   }
 });
-
 test("raw fatal ESLint diagnostics including source remain complete and unusable", () => {
   const input = fixture();
   try {
@@ -191,7 +258,6 @@ test("raw fatal ESLint diagnostics including source remain complete and unusable
     input.clean();
   }
 });
-
 test("u64 diagnostic ranges and arbitrary raw i64/u64 keys retain every source digit", () => {
   const input = fixture();
   try {
@@ -216,7 +282,6 @@ test("u64 diagnostic ranges and arbitrary raw i64/u64 keys retain every source d
     input.clean();
   }
 });
-
 test("zero input requires an explicit integer zero and preserves all refusal side effects", () => {
   const input = fixture();
   try {
@@ -246,7 +311,6 @@ test("zero input requires an explicit integer zero and preserves all refusal sid
     input.clean();
   }
 });
-
 test("unselected, unhydrated and missing native envelopes keep complete refusal behavior", () => {
   const input = fixture();
   try {
@@ -291,22 +355,13 @@ test("unselected, unhydrated and missing native envelopes keep complete refusal 
     input.clean();
   }
 });
-
 test("named invalid JSON scalar vectors refuse before artifacts, including shadowed duplicate keys", () => {
   const input = fixture();
   try {
     // Only these parser diagnostics are host-specific. Ordinary CLI, validation
     // and budget errors above retain complete byte-for-byte stderr parity.
     const prefix = "vize lint produced invalid JSON: ";
-    const vectors = [
-      { token: "1e309", reason: "number out of range", js: "JSON number is out of range" },
-      {
-        token: '"\\ud800"',
-        reason: "unexpected end of hex escape",
-        js: "JSON strings must contain valid Unicode scalar values",
-      },
-    ];
-    for (const vector of vectors) {
+    for (const vector of referenceFixtures.parserVectors) {
       for (const shadowed of [false, true]) {
         const stdout = `[{"file":"App.vue","messages":[],"raw":${vector.token}${shadowed ? ',"raw":0' : ""}}]`;
         const column = stdout.indexOf(vector.token) + vector.token.length;
@@ -318,7 +373,7 @@ test("named invalid JSON scalar vectors refuse before artifacts, including shado
         assert.equal(successor.stderr, `${prefix}${vector.js}\n`);
         assert.equal(Buffer.from(successor.processes[0].stdout, "base64").toString(), stdout);
         for (const oracle of ["original", "updated"] as Oracle[]) {
-          const measured = runReporter(input, frozen.paths[oracle], input.args, true);
+          const measured = runReporter(input, frozen.paths[oracle], input.args, oracle);
           assert.equal(measured.status, 1);
           assert.deepEqual(measured.files, {});
           assert.equal(measured.stdout, "");
@@ -331,7 +386,6 @@ test("named invalid JSON scalar vectors refuse before artifacts, including shado
     input.clean();
   }
 });
-
 interface ReviewedCase {
   id: string;
   project: string;
@@ -387,7 +441,6 @@ for (const entry of reviewed) {
     }
   });
 }
-
 test("unmeasured foreign reviewed source is scored: explicit correction to updated Rust membership bug", () => {
   const input = fixture();
   try {
@@ -400,7 +453,7 @@ test("unmeasured foreign reviewed source is scored: explicit correction to updat
     input.configure([input.project(entry.project, { revision: entry.revision })], {
       results: [{ file, messages: [message] }],
     });
-    const old = runReporter(input, frozen.paths.updated, input.args, true);
+    const old = runReporter(input, frozen.paths.updated, input.args, "updated");
     const actual = runReporter(input, nodeCommand);
     assert.equal(old.status, 0, old.stderr);
     assert.equal(actual.status, 1, actual.stderr);
