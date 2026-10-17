@@ -46,8 +46,18 @@ export function createPackedGalleryHttpObserver(context: PackedGalleryHttpContex
     const status = response.status();
     const priorOwner = status === 304 ? owners.get(response.url()) : undefined;
     const work = (async () => {
-      const headers = await response.allHeaders();
-      const requestHeaders = await response.request().allHeaders();
+      // Admit the original body before metadata IPC yields to document/iframe navigation.
+      // Settle its result immediately, then retain metadata even when that body is unavailable.
+      const [captured, headers, requestHeaders] = await Promise.all([
+        status === 200
+          ? response.body().then(
+              (body) => ({ body }),
+              (error: unknown) => ({ error }),
+            )
+          : undefined,
+        response.allHeaders(),
+        response.request().allHeaders(),
+      ]);
       const record: PackedGalleryHttpRecord = {
         url: response.url(),
         status,
@@ -79,7 +89,9 @@ export function createPackedGalleryHttpObserver(context: PackedGalleryHttpContex
         };
         return;
       }
-      const body = await response.body();
+      assert.ok(captured);
+      if ("error" in captured) throw captured.error;
+      const body = captured.body;
       const digest = sha256(body);
       await mkdir(path.join(caseOutput, "http-bodies"), { recursive: true });
       await writeFile(path.join(caseOutput, "http-bodies", `${digest}.bin`), body);
