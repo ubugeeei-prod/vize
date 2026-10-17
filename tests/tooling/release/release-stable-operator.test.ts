@@ -10,7 +10,11 @@ import { readRepoFile } from "../support/github-workflows.ts";
 
 const invocation = parse(
   readRepoFile(".github", "workflows", "release-operator.yml"),
-).jobs.operator.steps.at(-1);
+).jobs.operator.steps.find(
+  (step: { name?: string }) =>
+    step.name === "Authorize the existing maintainer user and invoke the public release command",
+);
+assert.ok(invocation, "the authorized public release invocation must exist");
 
 test("the actual stable entry binds exact policy/C and refuses injection or mixed protocols before invoking the publisher", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-stable-entry-"));
@@ -55,6 +59,7 @@ test("the actual stable entry binds exact policy/C and refuses injection or mixe
         RELEASE_SOURCE_TAG: "",
         RELEASE_RUN: "",
         RELEASE_ORIGINAL_OPERATOR_RUN: "",
+        RELEASE_CONSUMER_RECOVERY_RUN: "",
         ...patch,
       },
     });
@@ -69,7 +74,7 @@ test("the actual stable entry binds exact policy/C and refuses injection or mixe
       cut,
     ]);
     fs.rmSync(capture);
-    for (const patch of [
+    const rejectedInputs: Record<string, string>[] = [
       { RELEASE_SOURCE_CUT: "" },
       { RELEASE_SOURCE_CUT: "main" },
       { RELEASE_SOURCE_CUT: `${cut};touch injected` },
@@ -79,10 +84,12 @@ test("the actual stable entry binds exact policy/C and refuses injection or mixe
       { RELEASE_SOURCE_TAG: "v0.443.1" },
       { RELEASE_RUN: "123" },
       { RELEASE_ORIGINAL_OPERATOR_RUN: "123" },
+      { RELEASE_CONSUMER_RECOVERY_RUN: "123" },
       { RELEASE_OPERATION: "start" },
       { RELEASE_OPERATION: "resume", RELEASE_SOURCE_PR: "8541" },
       { RELEASE_OPERATION: "retire", RELEASE_SOURCE_PR: "8541" },
-    ]) {
+    ];
+    for (const patch of rejectedInputs) {
       const refusal = run(patch);
       assert.notEqual(refusal.status, 0, JSON.stringify(patch));
       assert.equal(fs.existsSync(capture), false, JSON.stringify(patch));

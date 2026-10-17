@@ -272,8 +272,12 @@ fn editor_union_rejects_conflicting_internal_alias_identity_without_touching_tar
         link.virtual_dir.clone(),
         project.virtual_root().join("packages/c"),
     )]);
-    let result =
-        project.materialize_editor_union(&vize_carton::FxHashSet::default(), &preserved, &[]);
+    let result = project.materialize_editor_union(
+        &vize_carton::FxHashSet::default(),
+        &preserved,
+        &[],
+        false,
+    );
     assert!(
         result
             .unwrap_err()

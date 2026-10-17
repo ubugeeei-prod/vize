@@ -60,6 +60,15 @@ impl CorsaRequestScope<'_> {
 }
 
 impl ServerState {
+    /// Background preparation never queues ahead of an active native request.
+    pub(crate) fn try_corsa_request_scope(&self) -> Option<CorsaRequestScope<'_>> {
+        Some(CorsaRequestScope {
+            state: self,
+            _guard: self.corsa_request_lock.try_lock()?,
+            stamp: self.corsa_request_stamp(),
+        })
+    }
+
     /// Acquire inside the cancellable handler, before taking source snapshots.
     /// Syntax-only requests, notifications, cancellation and shutdown do not
     /// acquire this lock. No synchronous map/config guard survives acquisition.

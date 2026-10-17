@@ -421,6 +421,24 @@ fn script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_
         .collect();
     let cases = manifest["cases"].as_array().unwrap();
     assert_eq!(cases.len(), 20);
+    let accepted_ids: Vec<_> = cases
+        .iter()
+        .filter(|case| case["qualifiedAcceptance"] == true)
+        .map(|case| case["id"].clone())
+        .collect();
+    let observation_ids: Vec<_> = cases
+        .iter()
+        .filter(|case| case["qualifiedAcceptance"] == false)
+        .map(|case| case["id"].clone())
+        .collect();
+    assert_eq!(
+        accepted_ids, *qualified,
+        "complete authored acceptance projection"
+    );
+    assert_eq!(
+        observation_ids, *observation,
+        "complete authored observation projection"
+    );
     for (((case, source), native), id) in cases
         .iter()
         .zip(&source_projection)
@@ -442,7 +460,6 @@ fn script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_
             );
             assert_eq!(case["expected"][0]["messages"], json!([]));
         } else {
-            assert!(qualified.contains(id));
             assert_eq!(case["qualifiedAcceptance"], true);
             assert_eq!(case["qualification"], "qualified-primary-listeners");
         }

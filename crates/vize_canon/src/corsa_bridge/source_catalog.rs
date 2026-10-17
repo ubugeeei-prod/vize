@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use vize_carton::FxHashMap;
+use vize_l0::{FxHashSet, String};
 
 use super::CorsaMaterializedSource;
 use super::vue_dependencies_alias::recover_lock;
@@ -38,6 +39,36 @@ impl CorsaSourceCatalog {
                 .get(&vize_carton::path::canonicalize_non_verbatim(path))
                 .cloned()
         })
+    }
+
+    /// Synchronize the admitted live project, while keeping the query's own
+    /// closure and projection packet unchanged. Opening a sibling's already
+    /// materialized dependency later must not change the native document view.
+    pub(in crate::corsa_bridge) fn extend_native_project_documents(
+        &self,
+        project_root: &Path,
+        documents: &mut Vec<(String, String)>,
+    ) {
+        let mut opened = documents
+            .iter()
+            .map(|(uri, _)| uri.clone())
+            .collect::<FxHashSet<_>>();
+        let mut sources = recover_lock(&self.sources)
+            .values()
+            .filter(|source| {
+                source.materialized_path.starts_with(project_root)
+                    && source.mapping_kind != super::CorsaMaterializedMappingKind::Synthetic
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        sources
+            .sort_unstable_by(|left, right| left.materialized_path.cmp(&right.materialized_path));
+        for source in sources {
+            let uri = crate::file_uri::path_to_file_uri(&source.materialized_path);
+            if opened.insert(uri.clone()) {
+                documents.push((uri, source.code.clone()));
+            }
+        }
     }
 
     pub(in crate::corsa_bridge) fn include(&self, sources: Vec<CorsaMaterializedSource>) -> Self {

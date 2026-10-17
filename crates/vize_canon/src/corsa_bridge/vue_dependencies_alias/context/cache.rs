@@ -37,6 +37,15 @@ pub(super) struct ProjectMember {
     pub(super) query_paths: Vec<PathBuf>,
     pub(super) stamps: Vec<crate::package_route::stamp::InputStamp>,
     pub(super) overlay_identity: u64,
+    pub(super) requires_arbitrary_extensions: bool,
+}
+
+#[derive(Default)]
+pub(super) struct ProjectUnion {
+    pub(super) files: vize_carton::FxHashSet<PathBuf>,
+    pub(super) package_links: FxHashMap<PathBuf, PathBuf>,
+    pub(super) query_paths: Vec<PathBuf>,
+    pub(super) requires_arbitrary_extensions: bool,
 }
 
 struct CachedContext {
@@ -155,11 +164,7 @@ impl SessionCache {
         virtual_root: &Path,
         current_source: &Path,
         overlay_identity: u64,
-    ) -> (
-        vize_carton::FxHashSet<PathBuf>,
-        vize_carton::FxHashMap<PathBuf, PathBuf>,
-        Vec<PathBuf>,
-    ) {
+    ) -> ProjectUnion {
         if let Some(members) = self.project_members.get_mut(virtual_root) {
             members.retain(|_, member| {
                 member.overlay_identity == overlay_identity
@@ -169,18 +174,17 @@ impl SessionCache {
                         .all(crate::package_route::stamp::InputStamp::is_current)
             });
         }
-        let mut files = vize_carton::FxHashSet::default();
-        let mut package_links: vize_carton::FxHashMap<PathBuf, PathBuf> =
-            vize_carton::FxHashMap::default();
-        let mut query_paths = Vec::new();
+        let mut union = ProjectUnion::default();
         if let Some(members) = self.project_members.get(virtual_root) {
             for (source_path, member) in members {
                 if source_path == current_source {
                     continue;
                 }
-                files.extend(member.expected_files.iter().cloned());
+                union.files.extend(member.expected_files.iter().cloned());
+                union.requires_arbitrary_extensions |= member.requires_arbitrary_extensions;
                 for (path, target) in &member.package_links {
-                    package_links
+                    union
+                        .package_links
                         .entry(path.clone())
                         .and_modify(|current| {
                             if target < current {
@@ -189,12 +193,12 @@ impl SessionCache {
                         })
                         .or_insert_with(|| target.clone());
                 }
-                query_paths.extend(member.query_paths.iter().cloned());
+                union.query_paths.extend(member.query_paths.iter().cloned());
             }
         }
-        query_paths.sort();
-        query_paths.dedup();
-        (files, package_links, query_paths)
+        union.query_paths.sort();
+        union.query_paths.dedup();
+        union
     }
 
     pub(super) fn record_project_member(

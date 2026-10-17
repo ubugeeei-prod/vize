@@ -38,8 +38,10 @@ mod tests {
             let Err(FormatError::StyleFormatError(message)) = result else {
                 panic!("engine panic must become a style formatting error");
             };
-            assert!(message.contains("lightningcss panic"));
-            assert!(message.contains("#3295"));
+            assert_eq!(
+                message,
+                "the CSS engine hit an internal defect (upstream lightningcss panic; see vize issue #3295)"
+            );
             assert_eq!(catch(|| 42).unwrap(), 42);
         }
     }

@@ -4,9 +4,7 @@
 //! collection. Refusal unwinds with `None`; partially collected facts never
 //! escape. AST spans are copied, never reconstructed from cooked name lengths.
 
-#[path = "retained_assignments.rs"]
 mod assignments;
-#[path = "retained_scopes.rs"]
 mod scopes;
 
 use oxc_ast::ast::{

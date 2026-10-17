@@ -48,10 +48,25 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Build vize CLI
         run: cargo build --profile ci -p vize
+      - name: Record the real server source and executable identity
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          {
+            echo "producer=$(git rev-parse HEAD)"
+            echo 'recipe=cargo build --profile ci -p vize'
+            rustc --version --verbose
+            cargo --version
+            sha256sum rust-toolchain.toml Cargo.lock target/ci/vize
+          } > target/ci/vize-producer.txt
+          (cd target/ci && sha256sum vize > vize.sha256)
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: vize-server
-          path: target/ci/vize
+          path: |
+            target/ci/vize
+            target/ci/vize.sha256
+            target/ci/vize-producer.txt
           retention-days: 1
 
   conformance:
@@ -82,6 +97,9 @@ jobs:
           path: ${{ runner.temp }}/vize-server
       - name: Make the server executable
         run: |
+          set -euo pipefail
+          (cd "${RUNNER_TEMP}/vize-server" && sha256sum --check vize.sha256)
+          grep -Fx "producer=${GITHUB_SHA}" "${RUNNER_TEMP}/vize-server/vize-producer.txt"
           chmod +x "${RUNNER_TEMP}/vize-server/vize"
           echo "VIZE_SERVER_PATH=${RUNNER_TEMP}/vize-server/vize" >> "$GITHUB_ENV"
 
@@ -130,7 +148,7 @@ jobs:
       - name: Stabilize Ubuntu package archive
         if: matrix.client == 'vscode'
         uses: ./.github/actions/setup-ubuntu-archive
-      - name: Prepare pinned VS Code and the packaged extension
+      - name: Prepare pinned VS Code
         if: matrix.client == 'vscode'
         env:
           VIZE_TEST_VSCODE_VERSION: "1.107.1"
@@ -141,7 +159,46 @@ jobs:
             vize-ci-apt-retry sudo apt-get install -y xvfb
           fi
           timeout --signal=TERM --kill-after=10s 300s vp run --workspace-root test:vscode-extension:download
-          vp run --workspace-root test:vscode-extension:vsix
+
+      - name: Exercise existing VS Code configuration and lifecycle contracts
+        if: matrix.client == 'vscode'
+        env:
+          VIZE_TEST_VSCODE_VERSION: "1.107.1"
+        run: xvfb-run -a vp run --workspace-root test:vscode-extension:host
+      - name: Hydrate pinned create-vue fixture for the original real host suite
+        if: matrix.client == 'vscode'
+        run: |
+          git submodule update --init --force --depth 1 -- tests/_fixtures/_git/create-vue
+          test "$(git rev-parse HEAD:tests/_fixtures/_git/create-vue)" = \
+            "$(git -C tests/_fixtures/_git/create-vue rev-parse HEAD)"
+      - name: Exercise original real VS Code authoring contracts
+        if: matrix.client == 'vscode'
+        env:
+          VIZE_TEST_VSCODE_VERSION: "1.107.1"
+          VIZE_LSP_TRACE_NATIVE_SCOPE: "1"
+          VIZE_RICH_CUSTODY_OUTPUT: ${{ runner.temp }}/rich-host-evidence/public-api.json
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/rich-host-evidence"
+          cp "${RUNNER_TEMP}/vize-server/vize-producer.txt" "${RUNNER_TEMP}/rich-host-evidence/"
+          sha256sum "${VIZE_SERVER_PATH}" > "${RUNNER_TEMP}/rich-host-evidence/consumed-server.sha256"
+          git rev-parse HEAD > "${RUNNER_TEMP}/rich-host-evidence/harness-sha.txt"
+          xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
+      - name: Retain VS Code configuration and lifecycle evidence
+        if: ${{ always() && matrix.client == 'vscode' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vscode-configuration-lifecycle
+          path: |
+            ${{ runner.temp }}/rich-host-evidence/
+            editors/vscode/.vscode-test/host-smoke-real/failure/
+            editors/vscode/.vscode-test/host-smoke/failure/
+            editors/vscode/.vscode-test/host-smoke/output-channel/
+            editors/vscode/.vscode-test/host-smoke/fake-server/events.jsonl
+            editors/vscode/.vscode-test/host-smoke/fake-server/existing-config-events/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Play the TS-45 scenario
         env:

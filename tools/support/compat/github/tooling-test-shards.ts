@@ -1,4 +1,16 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+export function toolingTestFiles(cwd = fileURLToPath(new URL("../../../../", import.meta.url))) {
+  return ["tests/tooling", "tests/tooling/davinci", "tests/tooling/release"]
+    .flatMap((directory) =>
+      readdirSync(join(cwd, directory))
+        .filter((name) => /\.test\.(?:ts|mjs)$/.test(name))
+        .map((name) => `${directory}/${name}`),
+    )
+    .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
+}
 
 // Partition the selected PR files or the complete merge suite. Actions runners own separate
 // checkouts; every runner still executes its own files serially. Measured timings only decide
@@ -189,10 +201,12 @@ export function toolingShardMatrix(plan: ToolingShardPlan) {
     include: shards.map(({ files }, index) => {
       // Name the worker after its costliest actual file. Display labels never
       // participate in packing or in the numeric coordinates used by workers.
-      const primary = files.toSorted(
-        (left, right) =>
-          estimateToolingTestMs(plan.tier, right) - estimateToolingTestMs(plan.tier, left),
-      )[0];
+      const primary = files
+        .slice()
+        .sort(
+          (left, right) =>
+            estimateToolingTestMs(plan.tier, right) - estimateToolingTestMs(plan.tier, left),
+        )[0];
       const name = primary
         ? primary.replace(/^tests\/tooling\//, "").replace(/\.test\.(?:ts|mjs)$/, "") +
           (files.length > 1 ? ` + ${files.length - 1} files` : "")

@@ -137,20 +137,24 @@ impl AliasContext {
             let expected_files = mirror.expected_materialized_files();
             let package_links = mirror.desired_package_links();
             let member_query_paths = mirror.editor_query_paths(&source_path);
-            let (preserved_files, preserved_package_links, mut query_paths) = cache
-                .project_union_snapshot(
-                    mirror.virtual_root(),
-                    &source_path,
-                    fingerprint.overlay_identity(),
-                );
-            query_paths.extend(member_query_paths.iter().cloned());
+            let mut union = cache.project_union_snapshot(
+                mirror.virtual_root(),
+                &source_path,
+                fingerprint.overlay_identity(),
+            );
+            union.query_paths.extend(member_query_paths.iter().cloned());
             if !source_catalog.shares_revision_with(&previous_catalog) {
-                source_catalog.retain_live_files(&expected_files, &preserved_files);
+                source_catalog.retain_live_files(&expected_files, &union.files);
             }
-            query_paths.sort();
-            query_paths.dedup();
+            union.query_paths.sort();
+            union.query_paths.dedup();
             let current = mirror
-                .materialize_editor_union(&preserved_files, &preserved_package_links, &query_paths)
+                .materialize_editor_union(
+                    &union.files,
+                    &union.package_links,
+                    &union.query_paths,
+                    union.requires_arbitrary_extensions,
+                )
                 .map_err(|error| {
                     super::super::super::types::CorsaBridgeError::CommunicationError(
                         vize_carton::cstr!("Failed to materialize Canon project union: {error}"),
@@ -168,6 +172,7 @@ impl AliasContext {
                     query_paths: member_query_paths,
                     stamps: fingerprint.input_stamps(),
                     overlay_identity: fingerprint.overlay_identity(),
+                    requires_arbitrary_extensions: mirror.requires_arbitrary_extensions(),
                 },
             );
         }

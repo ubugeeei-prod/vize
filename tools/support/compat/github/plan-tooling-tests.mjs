@@ -1,11 +1,4 @@
-import {
-  appendFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  writeFileSync,
-} from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, matchesGlob, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { cacheInputs } from "../../../config/vite-plus/task-inputs.ts";
@@ -14,7 +7,12 @@ import {
   toolingTestScopes,
 } from "../../../config/vite-plus/tooling-test-scopes.ts";
 import { changedPaths } from "./plan-source-checks.ts";
-import { toolingLeadSteps, toolingShardMatrix, toolingShards } from "./tooling-test-shards.ts";
+import {
+  toolingLeadSteps,
+  toolingShardMatrix,
+  toolingShards,
+  toolingTestFiles,
+} from "./tooling-test-shards.ts";
 import { nativeSetupCaptureRequired, toolingChecksRequired } from "./native-setup-capture.mjs";
 import { nativeSsrCaptureRequired } from "./native-ssr-capture.mjs";
 import { nativeScopedCaptureRequired } from "./native-scoped-capture.mjs";
@@ -26,15 +24,7 @@ const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const globalInputs = [...cacheInputs.workspace, "pnpm-workspace.yaml"];
 const matchesAny = (path, patterns) => patterns.some((pattern) => matchesGlob(path, pattern));
 
-export function toolingTestFiles(cwd = root) {
-  return ["tests/tooling", "tests/tooling/davinci", "tests/tooling/release"]
-    .flatMap((directory) =>
-      readdirSync(join(cwd, directory))
-        .filter((name) => /\.test\.(?:ts|mjs)$/.test(name))
-        .map((name) => `${directory}/${name}`),
-    )
-    .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
-}
+export { toolingTestFiles };
 
 // Add every literal local import, including transitive helpers, to the input
 // set. Unresolved imports restore broad inputs rather than making a skip safe.
