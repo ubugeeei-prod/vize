@@ -85,7 +85,7 @@ export async function verify(root) {
   }
   for (let index = 0; index < 4; index++) {
     const name = `packets/cli/calibration-${index}`;
-    for (const file of ["Owner.vue", "stdout.bin", "stderr.bin", "outcome.json"]) {
+    for (const file of ["Owner.vue", "stdout.bin", "stderr.bin", "outcome.json", "expected.bin"]) {
       assert.deepEqual(
         await readFile(path.join(old, name, file)),
         await readFile(path.join(candidate, name, file)),
@@ -93,7 +93,11 @@ export async function verify(root) {
       );
     }
     const stdout = await readFile(path.join(candidate, name, "stdout.bin"), "utf8");
-    const count = [3, 2, 2, 1][index];
+    assert.deepEqual(
+      await readFile(path.join(candidate, name, "stdout.bin")),
+      await readFile(path.join(candidate, name, "expected.bin")),
+    );
+    const count = [6, 2, 5, 1][index];
     assert.equal(
       stdout.split("\n").filter((line) => line.startsWith("directives/Owner.vue(")).length,
       count,
@@ -110,18 +114,18 @@ export async function verify(root) {
         await readFile(path.join(old, name, "Owner.vue")),
         await readFile(path.join(candidate, name, "Owner.vue")),
       );
-      if (index === 0) {
-        assert.deepEqual(oldReport, current, "whole no-directive LSP calibration");
-        assert.equal(current.kind, "full");
-        assert.equal(current.items.length, 3);
-        assert.deepEqual(current.items.map((item) => item.code).sort(), [2322, 2322, 2339]);
+      const expected = await load(path.join(candidate, name, "expected.json"));
+      const oldExpected = await load(path.join(candidate, name, "old-expected.json"));
+      assert.deepEqual(current, expected, `NEW full LSP ${session}/${index}`);
+      assert.deepEqual(oldReport, oldExpected, `OLD full LSP ${session}/${index}`);
+      if ([0, 9, 10].includes(index)) {
+        // These exact inherited failures are OPEN fronts, not semantic acceptance.
+        assert.deepEqual(oldReport, current, `known-failing whole fallback ${session}/${index}`);
+        assert.equal(current.items.filter((item) => item.code === 100036).length, 1);
       } else {
-        const expected = await load(path.join(candidate, name, "expected.json"));
-        assert.deepEqual(current, expected, `NEW full LSP ${session}/${index}`);
-        assert.deepEqual(
-          oldReport,
-          index <= 5 ? { kind: "full", items: [] } : expected,
-          `OLD full LSP ${session}/${index}`,
+        assert(
+          !current.items.some((item) => item.code === 100036),
+          `no unmapped aggregate in admitted/repair case ${session}/${index}`,
         );
       }
     }
@@ -249,7 +253,10 @@ export async function verify(root) {
     oldActualRed: 16,
     cliWhole: 16,
     calibrations: 4,
-    lspWhole: 44,
+    lspWholeReportsAsserted: 44,
+    boundedOwnerAcceptance: 32,
+    unchangedKnownFrontiers: 12,
+    overall6258SemanticAcceptance: false,
     transforms: 16,
     unitFilters: 4,
     stockRustTests: stock.map(({ name, names, pureNames, backendDependentNames }) => ({

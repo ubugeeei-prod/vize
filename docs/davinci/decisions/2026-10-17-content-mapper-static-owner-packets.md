@@ -101,8 +101,49 @@ counted separately from backend-dependent tests; no invented "41 tests" count or
 new stock wire capture is claimed. Neither default full/event commands nor their
 provider pins, deadlines or SDK are changed.
 
-These Rust and backend controls are authored, not execution evidence. Source
-Actions, an unchanged pinned-backend baseline/candidate comparison with all raw
-packets, standard LSP edit qualification, protected checks and actual delivery
-remain required. Native or standard CLI ownership is not inferred from a range
+The controls were initially authored without backend execution. The observed
+run and corrected qualification boundary are recorded below; protected checks
+and actual delivery remain required. Native or standard CLI ownership is not inferred from a range
 unit test, a skipped backend test or a successful process with missing packets.
+
+## Observed qualification and corrected boundary
+
+The first exact-backend run [38989978044](https://github.com/ubugeeei-prod/vize/actions/runs/38989978044)
+used old `8d3ca7bbc544ec1d8cf8e275cc758037c5289237` and candidate
+`9d1e13d7053c89361f6a0e4a837964d3bd3fa795`, with unchanged upstream
+`d6c4afddb2c55f4a9dea7b59293a99a8fdea1799`. It failed its original strict
+qualification. Preserve that failure; a revised contract is not a retroactive
+passing execution. Complete observations are in artifact `12084234305` (ZIP
+SHA-256 `a8096542d10c9833b8a43ad685395d7bdca0d1e39e429ab3067fa1e642b9286b`).
+
+All 16 old CLI cases actually lost the child; all 16 candidate CLI cases matched
+the authored whole output. All wire spans, kinds/features and generated-line
+multiplicities survived relocation. These fixtures serialize no semantic links;
+the six executed Canon tests separately exercise nonempty internal link/subspan
+controls. The five existing stock selectors actually ran 14 named Rust tests
+(10 backend-dependent and four helper/fake-peer laws), with authenticated provider
+aliases and no environment-based skips.
+
+The no-directive calibration premise of one diagnostic per error intent was
+wrong. The complete unchanged fallback counts are **6 / 2 / 5 / 1**, rather than
+3 / 2 / 2 / 1. Bad static `id` is checked by two real event-inference calls (for
+`save` and `missing`) at virtual lines 157 and 190, plus two mapped prop checks.
+The inference errors are unmapped. The wrong known `save` handler and child each
+supply their independent errors. Every calibration message, continuation, unmapped
+note and ordering is frozen in full, and must remain byte-identical OLD/NEW.
+
+Every editor report also contains two legitimate TS6133 severity-4 suggestions
+for the empty handler parameters. The full expected packets explicitly retain
+these source ranges, messages and severity; diagnostics are never filtered.
+Across four newline/prefix sessions, states 1–8 provide **32 bounded owner/repair
+reports**: full exact packets, child/unused behavior and no TS100036 aggregate.
+States 0 (no directive), 9 (ignore) and 10 (skip) provide **12 known-failing
+fallback reports**, not semantic acceptance. Freeze their complete OLD/NEW
+packets, including leaked bad-id diagnostics and the real zero-range TS100036
+aggregate. These inherited inference/mapping fronts remain open under #6258.
+
+The result receipt therefore distinguishes `boundedOwnerAcceptance: 32` and
+`unchangedKnownFrontiers: 12`, with `overall6258SemanticAcceptance: false`.
+The original plan, raw failed receipt and observations remain evidence; only the
+reviewed qualification expectations change. A further exact execution and normal
+protected delivery are required before this bounded fix is accepted.

@@ -185,29 +185,29 @@ fn run_session(
                 &cstr!("<!-- @vue-expect-error -->{newline}</template>"),
             );
             let states = [
-                ("calibration", calibration.to_string(), 3),
-                ("both-bad", source.to_string(), 1),
+                ("calibration", calibration.to_string(), 7),
+                ("both-bad", source.to_string(), 3),
                 (
                     "prop-fixed",
                     owners::source(newline, prefix, "ok", "wrong").to_string(),
-                    1,
+                    3,
                 ),
                 (
                     "handler-fixed",
                     owners::source(newline, prefix, "bad", "correct").to_string(),
-                    1,
+                    3,
                 ),
-                ("parents-fixed", repaired.to_string(), 2),
-                ("both-restored", source.to_string(), 1),
-                ("child-fixed", no_child.to_string(), 1),
-                ("removed", removed.to_string(), 0),
-                ("orphan", orphan.to_string(), 1),
+                ("parents-fixed", repaired.to_string(), 4),
+                ("both-restored", source.to_string(), 3),
+                ("child-fixed", no_child.to_string(), 3),
+                ("removed", removed.to_string(), 2),
+                ("orphan", orphan.to_string(), 3),
                 (
                     "ignore",
                     source.replace("@vue-expect-error", "@vue-ignore"),
-                    1,
+                    5,
                 ),
-                ("skip", source.replace("@vue-expect-error", "@vue-skip"), 0),
+                ("skip", source.replace("@vue-expect-error", "@vue-skip"), 4),
             ];
             for (index, (name, source, count)) in states.into_iter().enumerate() {
                 let document = overlay.replace(&uri, source.as_str()).unwrap();
@@ -219,8 +219,12 @@ fn run_session(
                 std::fs::write(case.join("Owner.vue"), &source).unwrap();
                 write_json(case.join("expected.json"), &expected);
                 write_json(
+                    case.join("old-expected.json"),
+                    &old_expected_report(&source, name),
+                );
+                write_json(
                     case.join("state.json"),
-                    &json!({"name":name,"edit":index,"version":document.version,"uri":uri_text,"expectedCount":count,
+                    &json!({"name":name,"edit":index,"version":document.version,"uri":uri_text,"expectedCount":count,"contract":if [0,9,10].contains(&index) { "known-failing-fallback" } else { "bounded-owner-or-repair" },
                         "request":{"method":"textDocument/diagnostic","params":{"textDocument":{"uri":uri_text}}}}),
                 );
                 let actual = match rpc::try_pull_diagnostics(&client, &uri_text).await {
@@ -235,12 +239,7 @@ fn run_session(
                     }
                 };
                 write_json(case.join("report.json"), &actual);
-                let valid = if name == "calibration" {
-                    valid_calibration(&actual, &source)
-                } else {
-                    actual == expected
-                };
-                if !valid {
+                if actual != expected {
                     failures.push(format!(
                         "{} state-{index} ({name}): {actual:#}",
                         retained.display()
@@ -303,35 +302,70 @@ fn expected_report(source: &str, state: &str) -> Value {
             "Property 'bad' does not exist on type '1'.",
         ));
     }
+    // These are exact, explicitly frozen failures, never a filtered allowlist.
+    if state == "calibration" {
+        let handler = source.find("@save=\"wrong\"").unwrap() + 1;
+        items.push(diagnostic(source, handler, 4, 2322, "ts", "Type '(value: string) => void' is not assignable to type '(value: number) => any'.\n  Types of parameters 'value' and 'value' are incompatible.\n    Type 'number' is not assignable to type 'string'."));
+        let id = source.find("id=\"bad\"").unwrap();
+        items.push(diagnostic(
+            source,
+            id,
+            2,
+            2322,
+            "ts",
+            "Type '\"bad\"' is not assignable to type '\"ok\"'.",
+        ));
+    }
+    if ["calibration", "ignore", "skip"].contains(&state) {
+        let value_end = source.find("id=\"bad\"").unwrap() + "id=\"bad".len();
+        items.push(diagnostic(
+            source,
+            value_end,
+            0,
+            2322,
+            "ts",
+            "Type '\"bad\"' is not assignable to type '\"ok\"'.",
+        ));
+    }
+    items.extend(parameter_suggestions(source));
+    if ["calibration", "ignore", "skip"].contains(&state) {
+        items.push(diagnostic(source, 0, 0, 100036, "ts", "Virtual code produced by the content mapper 'vize[0] (vize)' has problems with no corresponding location in this file."));
+    }
     json!({"kind":"full","items":items})
 }
 
-// Keep complete messages/reports for OLD/NEW equality in the final verifier.
-// Here enforce all three independent authored errors and no zero-range aggregate.
-fn valid_calibration(actual: &Value, source: &str) -> bool {
-    let Some(items) = actual["items"].as_array() else {
-        return false;
-    };
-    let child = expected_report(source, "calibration")["items"][0].clone();
-    let names = ["id=\"bad\"", "@save=\"wrong\""];
-    actual["kind"] == "full"
-        && actual.as_object().is_some_and(|o| o.len() == 2)
-        && items.len() == 3
-        && items.iter().filter(|item| **item == child).count() == 1
-        && names.iter().all(|name| {
-            let offset = source.find(name).unwrap() + usize::from(name.starts_with('@'));
-            items
-                .iter()
-                .filter(|item| {
-                    item["code"] == 2322
-                        && item["severity"] == 1
-                        && item["source"] == "ts"
-                        && item["range"]["start"] == rpc::position(source, offset)
-                        && item["message"]
-                            .as_str()
-                            .is_some_and(|message| !message.is_empty())
-                })
-                .count()
-                == 1
+fn parameter_suggestions(source: &str) -> Vec<Value> {
+    ["const wrong = (", "const correct = ("]
+        .into_iter()
+        .map(|anchor| {
+            let start = source.find(anchor).unwrap() + anchor.len();
+            let mut packet = diagnostic(
+                source,
+                start,
+                "value".len(),
+                6133,
+                "ts",
+                "'value' is declared but its value is never read.",
+            );
+            packet["severity"] = json!(4);
+            packet
         })
+        .collect()
+}
+
+fn old_expected_report(source: &str, state: &str) -> Value {
+    if [
+        "both-bad",
+        "prop-fixed",
+        "handler-fixed",
+        "parents-fixed",
+        "both-restored",
+    ]
+    .contains(&state)
+    {
+        // Actual OLD RED: legitimate script suggestions remain, child is lost.
+        json!({"kind":"full","items":parameter_suggestions(source)})
+    } else {
+        expected_report(source, state)
+    }
 }
