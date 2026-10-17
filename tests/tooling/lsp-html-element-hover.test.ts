@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -39,8 +40,8 @@ const rows = JSON.parse(reference("controls.expected.json").toString("utf8")) as
 const source = fixture.files[0].bytes.toString("utf8");
 const binary = path.join(root, "target/ci", process.platform === "win32" ? "vize.exe" : "vize");
 function configure(workspace: string, typecheck: boolean, corsaPath?: string): void {
-  fs.writeFileSync(
-    path.join(workspace, "vize.config.json"),
+  writeVueConfigFixture(
+    workspace,
     JSON.stringify({
       lsp: { hover: true, lint: false, typecheck },
       ...(corsaPath ? { typeChecker: { corsaPath } } : {}),

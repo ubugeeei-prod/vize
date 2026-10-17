@@ -9,7 +9,12 @@ import {
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
 } from "../../npm/native/scripts/formatter-history-build.mjs";
-import { viteConfigurationPlans, originalViteSources } from "./formatter-vite-source.mjs";
+import {
+  viteConfigurationPlans,
+  originalViteSources,
+  migrateViteConfigSource,
+  expectedViteNativeConfig,
+} from "./formatter-vite-source.mjs";
 import {
   qualifyPublicCore,
   expectedPublic,
@@ -53,7 +58,8 @@ export async function runPublicViteFormatter(root) {
     await import("../../npm/builder/vite/src/vite-plus/runner.ts");
   const { relocateTaskConfig } =
     await import("../../npm/builder/vite/src/vite-plus/config-paths.ts");
-  const { taskConfigKey } = await import("../../npm/builder/vite/src/vite-plus/types.ts");
+  const { sourceConfigKey, taskConfigKey } =
+    await import("../../npm/builder/vite/src/vite-plus/types.ts");
   assert.equal(fs.realpathSync(nativeBinary()), fs.realpathSync(launcher));
   const rootRequire = createRequire(path.join(root, "package.json"));
   const reference = rootRequire("oxfmt");
@@ -107,20 +113,36 @@ export async function runPublicViteFormatter(root) {
       report.publicCore ??= qualifyPublicCore(row.consumerPeer, lock);
       fs.writeFileSync("UserCard.vue", fixture.input);
       row.initialFiles = snapshot(workspace);
-      const source = structuredClone(fixture.source);
-      if (fixture.base)
-        source.extends = [
-          defineConfig(structuredClone(fixture.base)),
-          Promise.resolve(structuredClone(fixture.promisedBase)),
-        ];
+      const { mergeConfig } = require("vite-plus");
+      const source = fixture.base
+        ? mergeConfig(
+            mergeConfig(
+              migrateViteConfigSource(fixture.base),
+              migrateViteConfigSource(fixture.promisedBase),
+            ),
+            migrateViteConfigSource(fixture.source),
+          )
+        : migrateViteConfigSource(fixture.source);
+      row.migratedInput = completeConfig(source);
+      const expectedNative = expectedViteNativeConfig(fixture, workspace);
       row.originalInput = {
         source: fixture.source,
         base: fixture.base ?? null,
         promisedBase: fixture.promisedBase ?? null,
         integration: fixture.integration,
       };
+      if (fixture.base) {
+        await assert.rejects(
+          defineConfig(
+            { ...fixture.source, extends: [fixture.base, fixture.promisedBase] },
+            fixture.integration,
+          )({ command: "build", mode: "production" }),
+          /Custom config extends is no longer supported/,
+        );
+        row.retiredInheritance = { rejected: true, replacement: "consumer Vite+ mergeConfig" };
+      }
       const vp = await defineConfig(
-        source,
+        fixture.base ? Promise.resolve(source) : source,
         fixture.integration,
       )({ command: "build", mode: "production" });
       const originalPublic = observePublic(vp);
@@ -134,17 +156,18 @@ export async function runPublicViteFormatter(root) {
       assert.deepEqual(row.publicComparison.actual, row.publicComparison.expected);
       assert.deepEqual(
         Reflect.ownKeys(vp).filter((key) => typeof key === "symbol"),
-        [taskConfigKey],
+        [sourceConfigKey, taskConfigKey],
       );
+      assert.equal(vp[sourceConfigKey], source);
       assertMetadata(metadata, fixture, row);
       const resolved = await resolveConfigExport(metadata.config, env);
       row.independentResolution = {
         env,
         config: completeConfig(resolved),
-        expected: completeConfig(fixture.native),
+        expected: completeConfig(expectedNative),
       };
       row.publicAfterResolution = publicIdentity(vp, originalPublic);
-      assert.deepEqual(resolved, fixture.native);
+      assert.deepEqual(resolved, expectedNative);
       const transported = JSON.stringify(relocateTaskConfig(resolved, workspace));
       const oracle = await reference.format("control.ts", fixture.script, fixture.formatter);
       row.referenceResult = oracle;

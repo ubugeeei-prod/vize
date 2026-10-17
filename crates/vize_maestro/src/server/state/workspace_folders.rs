@@ -4,7 +4,7 @@
 //! root (rootUri, or the first folder) initializes the primary owner. Native
 //! document requests use isolated lazy project owners, while capabilities
 //! cover the session's composite roots. Each folder gets its own linter context:
-//! a folder that ships its own `vize.config.*` uses that config, and a
+//! a folder that ships its own `vite.config.*` uses that config, and a
 //! folder without one uses the built-in defaults (never a sibling folder's
 //! config, which would make behavior depend on folder order). Documents
 //! outside every folder fall back to the process-wide settings.

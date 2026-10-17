@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -48,7 +49,7 @@ await test("runtime props preserve whole scoped original packets and full minima
           "--preset",
           "incremental",
           "--config",
-          "vize.config.json",
+          "vite.config.mjs",
           "--locale",
           "en",
           "--help-level",
@@ -82,7 +83,7 @@ await test("runtime props preserve whole scoped original packets and full minima
           config,
           argv: [
             "lint",
-            ...(config ? ["--config", "vize.config.json"] : ["--no-config"]),
+            ...(config ? ["--config", "vite.config.mjs"] : ["--no-config"]),
             ...(preset ? ["--preset", preset] : []),
             "--format",
             "json",
@@ -129,9 +130,9 @@ await test("runtime props preserve whole scoped original packets and full minima
       assert.equal(sha256(bytes), entry.sourceSha256);
       const file = path.join(directory, entry.filename);
       fs.writeFileSync(file, bytes);
-      if (route.config !== null)
-        fs.writeFileSync(path.join(directory, "vize.config.json"), route.config);
-      const run = spawnSync(path.join(root, build.binaryPath), route.argv, {
+      if (route.config !== null) writeVueConfigFixture(directory, route.config);
+      const argv = route.argv.map((arg) => (arg === "vize.config.json" ? "vite.config.mjs" : arg));
+      const run = spawnSync(path.join(root, build.binaryPath), argv, {
         cwd: directory,
         env: process.env,
         encoding: "utf8",
@@ -144,7 +145,8 @@ await test("runtime props preserve whole scoped original packets and full minima
         route: route.id,
         source: fs.readFileSync(file, "utf8"),
         sourceSha256: sha256(fs.readFileSync(file)),
-        argv: route.argv,
+        argv,
+        originalArgv: route.argv,
         config: route.config,
         expected: route.afterCliPacket,
         expectedStatus: route.afterStatus,

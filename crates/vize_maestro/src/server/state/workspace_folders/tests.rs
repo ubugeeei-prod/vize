@@ -39,7 +39,11 @@ fn scoped_rules_and_global_ignores_match_document_paths() {
 fn folder_with_config(parent: &std::path::Path, name: &str, config: &str) -> std::path::PathBuf {
     let dir = parent.join(name);
     std::fs::create_dir_all(&dir).unwrap();
-    std::fs::write(dir.join("vize.config.json"), config).unwrap();
+    std::fs::write(
+        dir.join("vite.config.mjs"),
+        vize_l0::cstr!("export default {{ vue: {} }};", config).as_bytes(),
+    )
+    .unwrap();
     dir
 }
 

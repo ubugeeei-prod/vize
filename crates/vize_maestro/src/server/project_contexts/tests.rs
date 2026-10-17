@@ -40,13 +40,17 @@ fn file(root: &Path, name: &str, source: &str) -> FixtureResult<Url> {
 
 fn fixture() -> FixtureResult<Fixture> {
     let root = tempfile::tempdir()?;
-    file(root.path(), "vize.config.json", "{}")?;
+    file(
+        root.path(),
+        "vite.config.mjs",
+        "export default { vue: {} };",
+    )?;
     for package in ["a", "b"] {
         file(root.path(), &cstr!("packages/{package}/package.json"), "{}")?;
         file(
             root.path(),
-            &cstr!("packages/{package}/vize.config.json"),
-            "{}",
+            &cstr!("packages/{package}/vite.config.mjs"),
+            "export default { vue: {} };",
         )?;
     }
     let (service, socket) = LspService::new(|client| {
@@ -210,8 +214,8 @@ fn watcher_retires_old_navigation_and_preserves_the_unaffected_owner_cache() {
         .unwrap();
     let config = file(
         fixture.root.path(),
-        "packages/a/vize.config.json",
-        r#"{"lsp":{"hover":false}}"#,
+        "packages/a/vite.config.mjs",
+        r#"export default { vue: {"languageServer":{"hover":false}} };"#,
     )
     .unwrap();
     server.state.observe_project_config_events(&[FileEvent {
@@ -298,8 +302,8 @@ fn primary_configuration_replacement_refuses_retained_owner_and_drains_its_worke
     );
     let config = file(
         fixture.root.path(),
-        "vize.config.json",
-        r#"{"lsp":{"hover":false}}"#,
+        "vite.config.mjs",
+        r#"export default { vue: {"languageServer":{"hover":false}} };"#,
     )
     .unwrap();
     // Marking occurs in the registry; publication/admission refuse immediately,

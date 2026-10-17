@@ -359,7 +359,9 @@ mod pinia_availability_tests;
 #[cfg(test)]
 mod valid_v_on_options_tests {
     use super::apply_rule_options;
-    use vize_patina::{LintDiagnostic, LintResult, Linter, RuleRegistry, rules::vue::ValidVOn};
+    use vize_patina::{
+        HelpLevel, LintDiagnostic, LintResult, Linter, Locale, RuleRegistry, rules::vue::ValidVOn,
+    };
 
     #[test]
     fn lsp_custom_modifiers_reach_the_configured_rule() {
@@ -367,7 +369,9 @@ mod valid_v_on_options_tests {
             serde_json::from_str(r#"{"vue/valid-v-on":{"modifiers":["custom"]}}"#).unwrap();
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(ValidVOn));
-        let linter = apply_rule_options(Linter::with_registry(registry), &options, false);
+        let linter = apply_rule_options(Linter::with_registry(registry), &options, false)
+            .with_locale(Locale::En)
+            .with_help_level(HelpLevel::Full);
         let result = linter.lint_template(
             r#"<div @click.custom="handler" @click.unknown="handler" />"#,
             "test.vue",

@@ -171,7 +171,7 @@ function verifyRecipes(root, docs, e2e) {
   assert.equal(example.scripts.build, "pnpm check && vp build --config vite.app.config.ts");
   assert.equal(
     example.scripts.check,
-    "cargo run --quiet --target-dir ../../.docs-example-target --manifest-path ../../Cargo.toml -p vize -- check && vp check src vite.config.ts vite.app.config.ts vite.ui-gallery.config.ts vize.config.ts vite.globals.config.ts musea.preview.ts playwright.config.ts",
+    "cargo run --quiet --target-dir ../../.docs-example-target --manifest-path ../../Cargo.toml -p vize -- check && vp check src vite.config.ts vite.app.config.ts vite.ui-gallery.config.ts vite.globals.config.ts musea.preview.ts playwright.config.ts",
   );
   const source = read(root, "npm/native/scripts/formatter-history-ci-build.mjs");
   const commands = [...source.matchAll(/export const ciBuildCommand = (\[[\s\S]*?\]);/g)];

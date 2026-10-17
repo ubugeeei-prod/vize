@@ -1,3 +1,5 @@
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use serde_json::{Value, json};
 use std::{
     fs,
@@ -39,8 +41,8 @@ fn invoke(root: &Path, args: &[&str], id: &str) -> Output {
 fn unchanged(root: &Path, filename: &str, source: &str) {
     assert_eq!(fs::read(root.join(filename)).unwrap(), source.as_bytes());
     assert_eq!(
-        fs::read(root.join("vize.config.json")).unwrap(),
-        CONFIG.as_bytes()
+        fs::read(root.join("vite.config.mjs")).unwrap(),
+        vite_config::source(CONFIG).as_bytes()
     );
 }
 
@@ -49,7 +51,7 @@ fn original_argv_and_complete_comment_string_real_call_vectors_are_checked() {
     let corpus: Value = serde_json::from_str(CASES).unwrap();
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path();
-    fs::write(root.join("vize.config.json"), CONFIG).unwrap();
+    fs::write(root.join("vite.config.mjs"), vite_config::source(CONFIG)).unwrap();
     fs::write(root.join("MyNotes.vue"), ORIGINAL).unwrap();
     let original_args: Vec<_> = COMMAND.split_whitespace().skip(1).collect();
     assert_eq!(

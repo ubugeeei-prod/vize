@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
+import { vueConfigFixtureSource, writeVueConfigFixture } from "./vue-config-fixture.ts";
 
 const RULES = ["script/return-in-computed-property", "script/return-in-emits-validator"];
 const OLD_NEEDLES = ["=> {", "=>{", "function", "get("];
@@ -56,10 +57,11 @@ export function observeReturnPrefilterCost({ binary, directory, persist }) {
   assert.equal(typeof persist, "function");
   const executable = path.resolve(binary);
   const workspace = fs.mkdtempSync(path.join(directory, "return-prefilter-cost-"));
-  const configFile = "return-disabled.config.json";
+  const configFile = "vite.config.mjs";
   const configSource =
     JSON.stringify({ linter: { rules: Object.fromEntries(RULES.map((rule) => [rule, "off"])) } }) +
     "\n";
+  const configCarrierSource = vueConfigFixtureSource(configSource);
   const packet = {
     schema: "vize.lint.return-prefilter-controlled-cost",
     version: 1,
@@ -99,9 +101,12 @@ export function observeReturnPrefilterCost({ binary, directory, persist }) {
       disabled: {
         argv: ["-c", configFile],
         file: configFile,
-        source: configSource,
-        bytes: Buffer.byteLength(configSource),
-        sha256: sha256(configSource),
+        source: configCarrierSource,
+        bytes: Buffer.byteLength(configCarrierSource),
+        sha256: sha256(configCarrierSource),
+        nativeSource: configSource,
+        nativeBytes: Buffer.byteLength(configSource),
+        nativeSha256: sha256(configSource),
         disabledRules: RULES,
       },
     },
@@ -110,7 +115,7 @@ export function observeReturnPrefilterCost({ binary, directory, persist }) {
   };
   persist(packet);
   try {
-    fs.writeFileSync(path.join(workspace, configFile), configSource, { flag: "wx" });
+    assert.equal(writeVueConfigFixture(workspace, configSource), path.join(workspace, configFile));
     for (let index = 0; index < FILE_COUNT; index++) {
       const file = `ReturnScan${String(index).padStart(2, "0")}.vue`;
       const variant = index % packet.workload.variants.length;
@@ -148,7 +153,7 @@ export function observeReturnPrefilterCost({ binary, directory, persist }) {
       }
       assert.deepEqual(
         fs.readFileSync(path.join(workspace, configFile)),
-        Buffer.from(configSource),
+        Buffer.from(configCarrierSource),
       );
     };
     let output;

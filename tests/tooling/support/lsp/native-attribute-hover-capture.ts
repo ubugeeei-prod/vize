@@ -9,6 +9,7 @@ import { readPinnedArtifact, sha256 } from "../../../differential/harness.mjs";
 import { errorText, hasCapabilities } from "../../../differential/lsp-types.ts";
 import { LspWire } from "../../../differential/lsp-wire.ts";
 import { resolveTypecheckRuntime } from "../typecheck-dependency.ts";
+import { vueConfigFixtureSource } from "../vue-config-fixture.ts";
 import type { HoverCapture, HoverCorpus, HoverSession } from "./native-attribute-hover-contract.ts";
 
 function fileIdentity(file: string) {
@@ -48,6 +49,44 @@ export function hoverProviders(root: string) {
   };
 }
 
+/** Keep the generated native policy as evidence beside its current Vite carrier. */
+export function nativeAttributeWorkspace(
+  fixtureRoot: string,
+  corpus: HoverCorpus,
+  session: HoverSession,
+  runtimePath: string,
+) {
+  const original = Buffer.from(
+    `${JSON.stringify({
+      lsp: corpus.initialization.options,
+      typeChecker: { corsaPath: runtimePath },
+    })}\n`,
+  );
+  const carrier = Buffer.from(vueConfigFixtureSource(original));
+  return {
+    files: {
+      "Field.vue": readPinnedArtifact(fixtureRoot, session.file),
+      "tsconfig.json": readPinnedArtifact(fixtureRoot, corpus.config),
+      "package.json": Buffer.from('{"private":true,"type":"module"}\n'),
+      "vize.config.json.fixture": original,
+      "vite.config.mjs": carrier,
+    },
+    configuration: {
+      original: {
+        name: "vize.config.json",
+        sha256: sha256(original),
+        bytesBase64: original.toString("base64"),
+      },
+      evidence: "vize.config.json.fixture",
+      current: {
+        name: "vite.config.mjs",
+        sha256: sha256(carrier),
+        bytesBase64: carrier.toString("base64"),
+      },
+    },
+  };
+}
+
 export async function captureNativeAttributeSession(
   binary: string,
   fixtureRoot: string,
@@ -58,17 +97,12 @@ export async function captureNativeAttributeSession(
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-native-attribute-7993-"));
   const rootUri = pathToFileURL(workspace).href;
   const uri = pathToFileURL(path.join(workspace, "Field.vue")).href;
-  const files = {
-    "Field.vue": readPinnedArtifact(fixtureRoot, session.file),
-    "tsconfig.json": readPinnedArtifact(fixtureRoot, corpus.config),
-    "package.json": Buffer.from('{"private":true,"type":"module"}\n'),
-    "vize.config.json": Buffer.from(
-      `${JSON.stringify({
-        lsp: corpus.initialization.options,
-        typeChecker: { corsaPath: providers.runtime.path },
-      })}\n`,
-    ),
-  };
+  const { files, configuration } = nativeAttributeWorkspace(
+    fixtureRoot,
+    corpus,
+    session,
+    providers.runtime.path,
+  );
   const responses: HoverCapture["responses"] = [];
   const failures: string[] = [];
   let wire: LspWire | undefined;
@@ -155,6 +189,7 @@ export async function captureNativeAttributeSession(
     initialization,
     diagnostics,
     serverProcessId: wire?.child.pid ?? null,
+    configuration,
     physicalFiles: Object.entries(files).map(([name, bytes]) => ({
       name,
       bytes: bytes.length,

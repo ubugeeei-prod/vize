@@ -44,8 +44,8 @@ fn module_link_mutation_unwind_retires_before_gate_release() {
     // Actual legacy config assignment still runs after this sticky retirement.
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{"typeChecker":{"lspRequestTimeoutMs":91000}}"#,
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: {"typeChecker":{"lspRequestTimeoutMs":91000}} };"#,
     )
     .unwrap();
     state.load_lsp_config(dir.path());
@@ -67,10 +67,10 @@ fn module_link_retirement_is_sticky_and_generation_overflow_keeps_legacy_apply()
     let state = ServerState::new();
     state.module_links.write().generation = u64::MAX;
     let dir = tempfile::tempdir().unwrap();
-    let path = dir.path().join("vize.config.json");
+    let path = dir.path().join("vite.config.mjs");
     std::fs::write(
         &path,
-        r#"{"typeChecker":{"strict":true,"lspRequestTimeoutMs":91000}}"#,
+        r#"export default { vue: {"typeChecker":{"strict":true,"lspRequestTimeoutMs":91000}} };"#,
     )
     .unwrap();
     state.load_workspace_config(dir.path());

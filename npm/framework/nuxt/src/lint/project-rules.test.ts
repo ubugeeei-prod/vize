@@ -40,7 +40,7 @@ void test("Vite shared lint settings work without a dedicated Vize config", asyn
   await writeFile(
     path.join(root, "vite.config.mjs"),
     `
-    export default { vize: { linter: { preset: "essential", typeAware: true,
+    export default { vue: { linter: { preset: "essential", typeAware: true,
       rules: { "vize/vue/require-v-for-key": "off" }
     } } };
   `,
@@ -54,13 +54,13 @@ void test("Vite shared lint settings work without a dedicated Vize config", asyn
   assert.deepEqual(rules, { "vue/require-v-for-key": "off", "vue/no-array-index-key": "error" });
 });
 
-void test("Nuxt Vite config functions receive serve and dedicated functions retain lint", async (t) => {
+void test("Nuxt Vite factories receive serve and retired files cannot override them", async (t) => {
   const root = await temporaryRoot(t, "vize-nuxt-config-command-");
   await writeFile(
     path.join(root, "vite.config.mjs"),
     `export default ({ command, mode }) => {
       if (command !== "serve" || mode !== "development") throw new Error("invalid Vite env");
-      return { vize: { linter: { rules: { "vue/require-v-for-key": "error" } } } };
+      return { vue: { linter: { rules: { "vue/require-v-for-key": "error" } } } };
     };`,
   );
   assert.deepEqual(await readProjectLintRules(root, unexpectedPreset), {
@@ -74,18 +74,23 @@ void test("Nuxt Vite config functions receive serve and dedicated functions reta
     };`,
   );
   assert.deepEqual(await readProjectLintRules(root, unexpectedPreset), {
-    "vue/require-v-for-key": "warn",
+    "vue/require-v-for-key": "error",
   });
+  await rm(path.join(root, "vite.config.mjs"));
+  await assert.rejects(
+    readProjectLintRules(root, unexpectedPreset),
+    /vize\.config\.\* is no longer supported/,
+  );
 });
 
-void test("Nuxt reads nearest shared settings in a monorepo and preserves dedicated precedence", async (t) => {
+void test("Nuxt reads nearest Vue settings and refuses retired config fallback in a monorepo", async (t) => {
   const root = await temporaryRoot(t, "vize-nuxt-project-rules-monorepo-");
   const app = path.join(root, "packages/app");
   await mkdir(app, { recursive: true });
   await writeFile(
     path.join(root, "vite.config.mjs"),
     `
-    export default { vize: { linter: { rules: { "vue/require-v-for-key": "error" } } } };
+    export default { vue: { linter: { rules: { "vue/require-v-for-key": "error" } } } };
   `,
   );
   assert.deepEqual(await readProjectLintRules(app, unexpectedPreset), {
@@ -94,7 +99,7 @@ void test("Nuxt reads nearest shared settings in a monorepo and preserves dedica
   await writeFile(
     path.join(app, "vite.config.mjs"),
     `
-    export default { vize: { linter: { rules: { "vue/require-v-for-key": "warn" } } } };
+    export default { vue: { linter: { rules: { "vue/require-v-for-key": "warn" } } } };
   `,
   );
   assert.deepEqual(await readProjectLintRules(app, unexpectedPreset), {
@@ -107,21 +112,28 @@ void test("Nuxt reads nearest shared settings in a monorepo and preserves dedica
     }),
   );
   assert.deepEqual(await readProjectLintRules(app, unexpectedPreset), {
-    "vue/require-v-for-key": "off",
+    "vue/require-v-for-key": "warn",
   });
+  await rm(path.join(app, "vite.config.mjs"));
+  await assert.rejects(
+    readProjectLintRules(app, unexpectedPreset),
+    /vize\.config\.\* is no longer supported/,
+  );
 });
 
 void test("an essential preset is expanded and explicit rules win", async (t) => {
   const root = await temporaryRoot(t, "vize-nuxt-project-rules-essential-");
   await writeFile(
-    path.join(root, "vize.config.json"),
-    JSON.stringify({
-      linter: {
-        preset: "essential",
-        typeAware: true,
-        rules: { "vue/require-v-for-key": "off", "vize/a11y/anchor-is-valid": "error" },
+    path.join(root, "vite.config.mjs"),
+    `export default ${JSON.stringify({
+      vue: {
+        linter: {
+          preset: "essential",
+          typeAware: true,
+          rules: { "vue/require-v-for-key": "off", "vize/a11y/anchor-is-valid": "error" },
+        },
       },
-    }),
+    })};`,
   );
   const seen: Array<{ preset: VizeRuleConfigPreset; typeAware: boolean }> = [];
 
@@ -141,10 +153,12 @@ void test("an essential preset is expanded and explicit rules win", async (t) =>
 void test("incremental keeps explicit rules and does not load a preset", async (t) => {
   const root = await temporaryRoot(t, "vize-nuxt-project-rules-incremental-");
   await writeFile(
-    path.join(root, "vize.config.json"),
-    JSON.stringify({
-      linter: { preset: "incremental", rules: { "vue/require-v-for-key": "error" } },
-    }),
+    path.join(root, "vite.config.mjs"),
+    `export default ${JSON.stringify({
+      vue: {
+        linter: { preset: "incremental", rules: { "vue/require-v-for-key": "error" } },
+      },
+    })};`,
   );
 
   const rules = await readProjectLintRules(root, unexpectedPreset);
@@ -174,7 +188,7 @@ function unexpectedPreset(): Promise<ProjectLintRules> {
   throw new Error("preset loader should not run");
 }
 
-await test("Nuxt's public config consumer reads the whole original helper-import Vite project", async (t) => {
+await test("Nuxt's public config consumer reads canonical helpers and rejects unchanged historical config", async (t) => {
   const root = await temporaryRoot(t, "vize-nuxt-original-vite-module-");
   const original = JSON.parse(
     await readFile(
@@ -185,9 +199,6 @@ await test("Nuxt's public config consumer reads the whole original helper-import
       "utf8",
     ),
   ) as { files: Record<string, string>; rules: ProjectLintRules };
-  for (const [name, source] of Object.entries(original.files)) {
-    await writeFile(path.join(root, name), source);
-  }
   const require = createRequire(import.meta.url);
   assert.equal(path.basename(require.resolve("vize/config")), "config.mjs");
   await mkdir(path.join(root, "node_modules"));
@@ -196,8 +207,30 @@ await test("Nuxt's public config consumer reads the whole original helper-import
     path.join(root, "node_modules/vite"),
     "junction",
   );
+  const current = {
+    ...original.files,
+    "vite.config.ts": "import { settings } from './settings';\nexport default { vue: settings };\n",
+  };
+  for (const [name, source] of Object.entries(current))
+    await writeFile(path.join(root, name), source);
   assert.deepEqual(await readProjectLintRules(root, unexpectedPreset), original.rules);
-  for (const [name, source] of Object.entries(original.files)) {
+  for (const [name, source] of Object.entries(current)) {
     assert.equal(await readFile(path.join(root, name), "utf8"), source);
+  }
+  const historical = await temporaryRoot(t, "vize-nuxt-historical-vite-module-");
+  for (const [name, source] of Object.entries(original.files))
+    await writeFile(path.join(historical, name), source);
+  await mkdir(path.join(historical, "node_modules"));
+  await symlink(
+    path.dirname(require.resolve("vite/package.json")),
+    path.join(historical, "node_modules/vite"),
+    "junction",
+  );
+  await assert.rejects(
+    readProjectLintRules(historical, unexpectedPreset),
+    /vize: configuration is no longer supported/,
+  );
+  for (const [name, source] of Object.entries(original.files)) {
+    assert.equal(await readFile(path.join(historical, name), "utf8"), source);
   }
 });

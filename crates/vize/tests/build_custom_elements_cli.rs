@@ -1,4 +1,6 @@
 #![cfg(test)]
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -146,13 +148,15 @@ fn custom_elements_config_compiles_matched_pascal_case_tags_as_elements() {
     let project_root = temp_project_dir("custom-elements-config");
     write_project_file(
         &project_root,
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "compiler": {
     "customElements": ["Tres*"]
   }
 }
 "#,
+        ),
     );
     let js = build_js(&project_root, &[]);
     assert_eq!(

@@ -2,7 +2,7 @@
 use super::{
     RULE, STRICT,
     lsp_process::{LspProcess, file_uri},
-    project,
+    project, read_native_config, vite_config,
 };
 use serde_json::{Value, json};
 use std::fs;
@@ -16,14 +16,13 @@ fn native_boolean_rule_options_and_severity_reach_the_lsp() {
     ) else {
         return;
     };
-    let config_path = project.path().join("vize.config.json");
-    let mut config: Value =
-        serde_json::from_slice(&fs::read(&config_path).expect("config")).expect("JSON");
+    let config_path = project.path().join("vite.config.mjs");
+    let mut config: Value = read_native_config(&config_path);
     config["linter"]["rules"][RULE] = json!("warn");
-    config["lsp"] = json!({ "lint": true, "typecheck": false, "ecosystem": false });
+    config["languageServer"] = json!({ "lint": true, "typecheck": false, "ecosystem": false });
     fs::write(
         config_path,
-        serde_json::to_vec(&config).expect("LSP config"),
+        vite_config::source(serde_json::to_vec(&config).expect("LSP config")),
     )
     .expect("config");
     let uri = file_uri(&project.path().join("App.vue"));

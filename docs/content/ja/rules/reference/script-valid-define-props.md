@@ -20,8 +20,8 @@ defineProps の重複や型と実行時引数の併用を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/valid-define-props": "error"

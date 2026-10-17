@@ -5,9 +5,79 @@ import path from "node:path";
 import { assertLoadedBinary } from "./distribution.mjs";
 import { sha256 } from "./custody.mjs";
 import { inputObservation, verifyPacket } from "./packet.mjs";
+import { serializeFailure } from "./observation.ts";
+import type {
+  BinaryMember,
+  Distribution,
+  InputObservation,
+  Observation,
+  PacketResult,
+  SerializedFailure,
+} from "./observation.ts";
+import {
+  vueConfigFixtureSource,
+  writeVueConfigFixture,
+} from "../../../../tests/tooling/support/vue-config-fixture.ts";
 
-export function observePackets(fixtures, distribution, consumer, output) {
-  const observations = [];
+export interface TypedEntry {
+  id: string;
+  filename: string;
+  source: string;
+  [field: string]: unknown;
+}
+
+export interface TypedFinding {
+  severity: string;
+  [field: string]: unknown;
+}
+
+export interface TypedScenario {
+  entry: TypedEntry;
+  preset: string | null;
+  config: string | null;
+  findings: TypedFinding[];
+  suite: string;
+}
+
+export interface TypedFixtures {
+  vectors: TypedScenario[];
+  wholeJson(entry: TypedEntry, findings: TypedFinding[]): unknown;
+}
+
+interface TypedPacket extends PacketResult {
+  index: number;
+  suite: string;
+  id: string;
+  argv: string[];
+  cwd: string;
+  preset: string | null;
+  config: string | null;
+  binary: BinaryMember;
+  input: InputObservation;
+  configuration: InputObservation | null;
+  vueConfiguration: InputObservation | null;
+  status: number | null;
+  signal: NodeJS.Signals | null;
+  error: SerializedFailure | null;
+  stdout: string;
+  stderr: string;
+  raw: {
+    stdoutBase64: string;
+    stdoutSha256: string;
+    stderrBase64: string;
+    stderrSha256: string;
+  };
+  expected: unknown;
+  expectedStatus: number;
+}
+
+export function observePackets(
+  fixtures: TypedFixtures,
+  distribution: Distribution,
+  consumer: string,
+  output: string,
+): Observation[] {
+  const observations: Observation[] = [];
   const packets = path.join(output, "packets");
   fs.mkdirSync(packets);
   for (const [index, scenario] of fixtures.vectors.entries()) {
@@ -15,12 +85,17 @@ export function observePackets(fixtures, distribution, consumer, output) {
     const directory = path.join(consumer, "cases", String(index).padStart(3, "0"));
     fs.mkdirSync(directory, { recursive: true });
     const filename = path.join(directory, entry.filename);
-    const configFile = path.join(directory, "vize.config.json");
+    const configFile = path.join(directory, "vize.config.json.fixture");
+    const vueConfig = config ? vueConfigFixtureSource(config) : null;
     fs.writeFileSync(filename, entry.source, { flag: "wx" });
-    if (config) fs.writeFileSync(configFile, config, { flag: "wx" });
+    if (config) {
+      // Retain the original bytes and hash separately from the active carrier.
+      fs.writeFileSync(configFile, config, { flag: "wx" });
+      writeVueConfigFixture(directory, config);
+    }
     const argv = [
       "lint",
-      ...(config ? ["-c", "vize.config.json"] : ["--no-config"]),
+      ...(config ? ["-c", "vite.config.mjs"] : ["--no-config"]),
       ...(preset ? ["--preset", preset] : []),
       "--format",
       "json",
@@ -39,7 +114,7 @@ export function observePackets(fixtures, distribution, consumer, output) {
     });
     const stdout = run.stdout ?? Buffer.alloc(0),
       stderr = run.stderr ?? Buffer.alloc(0);
-    const packet = {
+    const packet: TypedPacket = {
       index,
       suite,
       id: entry.id,
@@ -50,6 +125,10 @@ export function observePackets(fixtures, distribution, consumer, output) {
       binary: distribution.member,
       input: inputObservation(filename, entry.source),
       configuration: config ? inputObservation(configFile, config) : null,
+      vueConfiguration:
+        vueConfig !== null
+          ? inputObservation(path.join(directory, "vite.config.mjs"), vueConfig)
+          : null,
       status: run.status,
       signal: run.signal,
       error: run.error ? { name: run.error.name, message: run.error.message } : null,
@@ -66,11 +145,16 @@ export function observePackets(fixtures, distribution, consumer, output) {
     };
     try {
       verifyPacket(packet, stdout, stderr);
+      if (packet.vueConfiguration) {
+        assert.equal(packet.vueConfiguration.readError, null, "Vue carrier disappeared");
+        assert.equal(packet.vueConfiguration.afterText, packet.vueConfiguration.text);
+        assert.equal(packet.vueConfiguration.afterSha256, packet.vueConfiguration.sha256);
+      }
       assertLoadedBinary(distribution.member.binary, distribution.member, consumer);
       packet.passed = true;
     } catch (error) {
       packet.passed = false;
-      packet.failure = { name: error.name, message: error.message };
+      packet.failure = serializeFailure(error);
     }
     const name = `${String(index).padStart(3, "0")}-${suite}-${entry.id}.json`;
     const bytes = Buffer.from(`${JSON.stringify(packet, null, 2)}\n`);
@@ -81,7 +165,7 @@ export function observePackets(fixtures, distribution, consumer, output) {
       id: entry.id,
       packet: `packets/${name}`,
       sha256: sha256(bytes),
-      passed: packet.passed,
+      passed: packet.passed === true,
     });
     fs.writeFileSync(
       path.join(output, "observations.json"),
@@ -97,7 +181,12 @@ export function observePackets(fixtures, distribution, consumer, output) {
 }
 
 /** Original 392-packet contract remains mandatory for the existing workflow. */
-export function observe(fixtures, distribution, consumer, output) {
+export function observe(
+  fixtures: TypedFixtures,
+  distribution: Distribution,
+  consumer: string,
+  output: string,
+): Observation[] {
   const observations = observePackets(fixtures, distribution, consumer, output);
   assert.equal(observations.length, 392);
   assert.equal(observations.filter((entry) => entry.suite === "typed").length, 56);

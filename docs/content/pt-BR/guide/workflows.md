@@ -42,12 +42,12 @@ desenvolvedores possam isolar falhas de formatação, lint, verificação de tip
 
 ## Configurar uma vez
 
-Para alterar os valores padrão, adicione as opções nativas ao objeto `vize` no nível superior do `vite.config.*` existente. O [guia de configuração](./configuration.md) descreve a busca, a disponibilidade por versão e os formatos específicos opcionais.
+Para alterar os valores padrão, adicione as opções nativas a `vue:` no `vite.config.*` existente. O [guia de configuração](./configuration.md) descreve a descoberta e a migração.
 
 ```ts
 // vite.config.ts
 export default {
-  vize: {
+  vue: {
     formatter: {
       printWidth: 100,
     },
@@ -66,8 +66,7 @@ export default {
 };
 ```
 
-Veja [Configuration](./configuration.md) para entradas monorepo planas, PKL, JSON, opções de compilador e detalhes
-resolução de tipos Vue.
+Veja [Configuração](./configuration.md) para escopos em monorepos, opções do compilador e resolução de tipos Vue.
 
 ## Formato
 

@@ -4,6 +4,9 @@
 #[path = "support/lsp_process.rs"]
 mod lsp_process;
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::time::{Duration, Instant};
@@ -44,12 +47,14 @@ fn workspace(root: &Path) {
     .unwrap();
     std::fs::set_permissions(&backend, std::fs::Permissions::from_mode(0o755)).unwrap();
     std::fs::write(
-        root.join("vize.config.json"),
-        json!({
-            "lsp": { "lint": false, "typecheck": true },
-            "typeChecker": { "corsaPath": backend },
-        })
-        .to_string(),
+        root.join("vite.config.mjs"),
+        vite_config::source(
+            json!({
+                "lsp": { "lint": false, "typecheck": true },
+                "typeChecker": { "corsaPath": backend },
+            })
+            .to_string(),
+        ),
     )
     .unwrap();
 }

@@ -20,8 +20,8 @@ Vapor では未対応の、要素ごとに指定する @vue:* ライフサイク
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "vapor/no-vue-lifecycle-events": "error"

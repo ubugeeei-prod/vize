@@ -59,11 +59,11 @@ vp run fmt:check
 尚未翻译的指南链接指向英文版。
 
 > [!NOTE]
-> Vize 0.457.0 的原生 CLI 支持读取共享 Vite 配置，`init` 也无需创建专用 Vize 配置文件。使用共享配置时，请更新 CLI、Vite 集成和编辑器扩展。[参考文档](./guide/configuration-reference.md)介绍配置查找、优先级和可选的专用格式。
+> CLI、Vite 集成和编辑器共享 `vite.config.*` 的 `vue:` 设置，并使用 `tsconfig.json` 中的 TypeScript 项目与 `vueCompilerOptions`。专用 `vize.config.*` 和顶层 `vize:` 配置已移除；迁移方式见[配置指南](./guide/configuration.md)。
 
 ## 不使用 Vite+ 的场景
 
-[独立 CLI](./guide/cli.md)提供 `vize lint`、`vize fmt` 和 `vize check`。从目标包的根目录运行，并将 TypeScript 项目保留在 `tsconfig.json` 中。原生命令也可以共享 `vite.config.*` 顶层的 `vize` 设置；搜索规则和当前限制请参阅 [CLI 配置](./guide/configuration.md#standalone-cli)。
+[独立 CLI](./guide/cli.md)提供 `vize lint`、`vize fmt` 和 `vize check`。从目标包的根目录运行，并将 TypeScript 项目保留在 `tsconfig.json` 中。原生命令也可以共享 `vite.config.*` 中的 `vue:` 设置；搜索规则和当前限制请参阅 [CLI 配置](./guide/configuration.md#standalone-cli)。
 
 先用 `vpx vize init --dry-run` 预览交互式设置，再运行 `vpx vize init` 选择功能。[项目设置](/guide/init.md)介绍检测和编辑限制。init 使用项目设置和默认值，不会创建专用的 Vize 配置文件。
 

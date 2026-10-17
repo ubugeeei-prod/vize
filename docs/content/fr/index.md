@@ -30,7 +30,7 @@ features:
     details: Parcourez Concrete Vue, HTML, SSR, Vapor, Musea, typ-aware, et croisez les diagnostics avec des bons et mauvais exemples.
     link: fr/rules/index.md
   - title: Configuration partagée
-    details: Configurez les options du compilateur, le scan Vite, les préréglages de lint, la vérification de type, la mise en forme, les fonctionnalités LSP et Musea de `vize.config.*`.
+    details: Configurez les options du compilateur, le scan Vite, les préréglages de lint, la vérification de type, la mise en forme, les fonctionnalités LSP et Musea depuis `vue:` dans `vite.config.*` et les options TypeScript dans `tsconfig.json`.
     link: fr/guide/configuration.md
   - title: Vérification de type native
     details: |

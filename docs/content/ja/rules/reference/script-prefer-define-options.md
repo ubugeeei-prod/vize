@@ -20,8 +20,8 @@ name / inheritAttrs だけの通常 script を defineOptions() にまとめま�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-define-options": "warn"

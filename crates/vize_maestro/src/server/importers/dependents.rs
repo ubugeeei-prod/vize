@@ -60,8 +60,8 @@ mod tests {
         std::fs::write(&unrelated, "<template />\n").unwrap();
         std::fs::write(&jsx, "import './direct.ts'\n").unwrap();
         std::fs::write(
-            dir.path().join("vize.config.json"),
-            r#"{ "typeChecker": { "jsxTypecheck": true } }"#,
+            dir.path().join("vite.config.mjs"),
+            r#"export default { vue: { "typeChecker": { "jsxTypecheck": true } } };"#,
         )
         .unwrap();
 

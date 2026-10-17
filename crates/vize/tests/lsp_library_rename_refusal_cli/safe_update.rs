@@ -282,7 +282,7 @@ pub(super) fn capture_with_witness(
             "diagnosticWitness":diagnostic_witness,"publicationSequences":fixture.publication_sequences,
             "cliBinary":env!("CARGO_BIN_EXE_vize"),"requireTsgo":std::env::var("VIZE_TEST_REQUIRE_TSGO").ok(),"disableTsgo":std::env::var("VIZE_TEST_DISABLE_TSGO").ok(),
             "runtime":fixture.runtime,"tsconfig":std::fs::read_to_string(fixture.project.path().join("tsconfig.json")).unwrap(),
-            "vizeConfig":std::fs::read_to_string(fixture.project.path().join("vize.config.json")).unwrap()});
+            "vizeConfig":std::fs::read_to_string(fixture.project.path().join("vite.config.mjs")).unwrap()});
         std::fs::write(
             root.join(fixture.project.path().file_name().unwrap())
                 .with_extension("json"),

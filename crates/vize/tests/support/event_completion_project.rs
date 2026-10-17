@@ -5,6 +5,9 @@
     reason = "wire fixtures use std strings and protocol JSON"
 )]
 
+#[path = "vite_config.rs"]
+mod vite_config;
+
 use std::path::Path;
 
 use serde_json::{Value, json};
@@ -63,8 +66,8 @@ impl Project {
         let mut config: Value = serde_json::from_str(original_config).unwrap();
         config["typeChecker"] = json!({ "corsaPath": runtime, "checkFallthroughAttrs": false });
         std::fs::write(
-            root.path().join("vize.config.json"),
-            serde_json::to_vec(&config).unwrap(),
+            root.path().join("vite.config.mjs"),
+            vite_config::source(serde_json::to_vec(&config).unwrap()),
         )
         .unwrap();
         let profile = std::env::var("NEXTEST_PROFILE").unwrap_or_else(|_| "full".into());
@@ -203,8 +206,11 @@ impl Project {
             );
         }
         assert_eq!(
-            std::fs::read(self.root.path().join("vize.config.json")).unwrap(),
-            serde_json::to_vec(&self.receipt["inputs"]["runtimeConfig"]).unwrap()
+            std::fs::read(self.root.path().join("vite.config.mjs")).unwrap(),
+            vite_config::source(
+                serde_json::to_vec(&self.receipt["inputs"]["runtimeConfig"]).unwrap()
+            )
+            .as_bytes()
         );
         let root = self.root.path().to_path_buf();
         let observed = witness::observe(&root, |receipt| {

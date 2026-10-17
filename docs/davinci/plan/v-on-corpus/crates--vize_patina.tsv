@@ -63,6 +63,7 @@ crates/vize_patina/src/rules/vue/valid_v_on/tests.rs	@click.custom.stop
 crates/vize_patina/src/rules/vue/valid_v_on/tests.rs	@click.Custom
 crates/vize_patina/src/rules/vue/valid_v_on/tests.rs	@click.custom
 crates/vize_patina/src/rules/vue/valid_v_on/tests.rs	@click.custom
+crates/vize_patina/tests/documented_rule_examples.rs	@click.custom
 crates/vize_patina/tests/fixtures/deprecated-diagnostic-spans/originals/habitica/website/client/src/components/admin/admin-panel/user-support/cronAndAuth.vue	@submit.prevent
 crates/vize_patina/tests/fixtures/deprecated-diagnostic-spans/originals/habitica/website/client/src/components/admin/admin-panel/user-support/itemsOwned.vue	@submit.prevent
 crates/vize_patina/tests/fixtures/deprecated-diagnostic-spans/originals/habitica/website/client/src/components/groups/group.vue	@keyup.enter

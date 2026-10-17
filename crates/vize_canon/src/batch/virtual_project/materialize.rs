@@ -354,7 +354,7 @@ impl VirtualProject {
     /// The configs whose contents govern this project's alias map: the
     /// anchored tsconfig plus, for a solution-style shell, everything it
     /// references (#3923 cache invalidation).
-    pub(crate) fn governing_config_paths(&self) -> Vec<PathBuf> {
+    pub fn governing_config_paths(&self) -> Vec<PathBuf> {
         let Some(anchored) = self.resolved_tsconfig_path() else {
             return Vec::new();
         };
@@ -367,6 +367,7 @@ impl VirtualProject {
             if let Ok(flattened) = self.load_compiler_options_flattened(Some(&config)) {
                 paths.extend(flattened.input_paths);
             }
+            paths.extend(self.vue_target_manifest_path(&config));
         }
         paths.sort();
         paths.dedup();

@@ -68,8 +68,8 @@ fn pulls_from_a_local_namespace_registry() {
     let project = Project::new();
     acme(&project.path("registries/acme"));
     project.write(
-        "vize.config.json",
-        r#"{ "lib": { "registries": { "@acme": { "source": "./registries/acme", "dir": "src/acme" } } } }"#,
+        "vite.config.mjs",
+        r#"export default { vue: { "lib": { "registries": { "@acme": { "source": "./registries/acme", "dir": "src/acme" } } } } };"#,
     );
 
     let listed = project.json(&[], &["--offline", "list", "--kind", "@acme"]);
@@ -95,8 +95,8 @@ fn rejects_unknown_namespaces_and_invalid_third_party_registries() {
     let project = Project::new();
     acme(&project.path("registries/acme"));
     project.write(
-        "vize.config.json",
-        r#"{ "lib": { "registries": { "@acme": "./registries/acme" } } }"#,
+        "vite.config.mjs",
+        r#"export default { vue: { "lib": { "registries": { "@acme": "./registries/acme" } } } };"#,
     );
     let unknown = project
         .run(&["--offline", "pull", "@other/button"])
@@ -150,16 +150,18 @@ fn rejects_unknown_namespaces_and_invalid_third_party_registries() {
 
     let bad_key = Project::new();
     bad_key.write(
-        "vize.config.json",
-        r#"{ "lib": { "registries": { "acme": "./x" } } }"#,
+        "vite.config.mjs",
+        r#"export default { vue: { "lib": { "registries": { "acme": "./x" } } } };"#,
     );
+    let invalid_name = bad_key.run(&["list"]).unwrap_err();
     assert!(
-        bad_key
-            .run(&["list"])
-            .unwrap_err()
+        invalid_name
             .message()
-            .contains("must be an @namespace")
+            .contains("vue.lib.registries: invalid native option name acme"),
+        "{invalid_name}"
     );
+    assert!(!bad_key.path("vize-lib.lock.json").exists());
+    assert!(!bad_key.path("src").exists());
 }
 
 #[test]
@@ -178,8 +180,8 @@ fn namespaced_items_cannot_overwrite_files_owned_by_other_items() {
         )],
     );
     project.write(
-        "vize.config.json",
-        r#"{ "lib": { "registries": { "@evil": { "source": "./registries/evil", "dir": "src/components/vize" } } } }"#,
+        "vite.config.mjs",
+        r#"export default { vue: { "lib": { "registries": { "@evil": { "source": "./registries/evil", "dir": "src/components/vize" } } } } };"#,
     );
     project.run_with(&["ui"], &["pull", "ui:id"]).unwrap();
 
@@ -209,8 +211,8 @@ fn namespaced_items_cannot_overwrite_files_owned_by_other_items() {
         )],
     );
     fresh.write(
-        "vize.config.json",
-        r#"{ "lib": { "registries": { "@evil": { "source": "./registries/evil", "dir": "src/components/vize" } } } }"#,
+        "vite.config.mjs",
+        r#"export default { vue: { "lib": { "registries": { "@evil": { "source": "./registries/evil", "dir": "src/components/vize" } } } } };"#,
     );
     let error = fresh
         .run_with(&["ui"], &["pull", "ui:id", "@evil/id", "--overwrite"])
@@ -255,11 +257,11 @@ fn pulls_from_npm_and_https_namespaces_with_verified_hashes() {
         ),
     );
     project.write(
-        "vize.config.json",
-        r#"{ "lib": { "registries": {
+        "vite.config.mjs",
+        r#"export default { vue: { "lib": { "registries": {
             "@npmco": { "source": "npm:@acme/ui@1.0.0", "dir": "src/npmco" },
             "@web": { "source": "https://acme.test/r/registry.json", "dir": "src/web" }
-        } } }"#,
+        } } } };"#,
     );
 
     project

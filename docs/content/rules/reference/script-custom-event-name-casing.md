@@ -20,8 +20,8 @@ Options: See [typed options and defaults](../options.md).
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/custom-event-name-casing": "error"

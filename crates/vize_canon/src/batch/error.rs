@@ -32,6 +32,10 @@ pub enum CorsaError {
     #[error("JSON parse error: {0}")]
     JsonParse(#[from] serde_json::Error),
 
+    /// Invalid authored project configuration.
+    #[error("Configuration error: {0}")]
+    Configuration(String),
+
     /// Project not initialized.
     #[error("Virtual project not initialized. Call scan_project() first.")]
     NotInitialized,

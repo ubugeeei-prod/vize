@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 await test("public Vue imports preserve whole CLI packets and safe final file bytes", () => {
@@ -121,10 +122,11 @@ await test("public Vue imports preserve whole CLI packets and safe final file by
       assert.equal(bytes.toString("utf8"), entry.source);
       assert.equal(sha256(bytes), entry.sourceSha256);
       fs.writeFileSync(filename, bytes);
-      if (config) fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+      const configSource = config ? vueConfigFixtureSource(config) : null;
+      const configFile = config ? writeVueConfigFixture(directory, config) : null;
       const argv = [
         "lint",
-        ...(config ? ["-c", "vize.config.json"] : ["--no-config"]),
+        ...(configFile ? ["-c", path.basename(configFile)] : ["--no-config"]),
         ...(preset ? ["--preset", preset] : []),
         "--format",
         "json",
@@ -147,6 +149,7 @@ await test("public Vue imports preserve whole CLI packets and safe final file by
         kind,
         argv,
         config,
+        configSource,
         input: { source: entry.source, sha256: sha256(bytes) },
         expected: wholeJson({ ...entry, source: finalSource }, findings),
         expectedStatus: findings.some((finding) => finding.severity === "error") ? 1 : 0,
@@ -172,7 +175,10 @@ await test("public Vue imports preserve whole CLI packets and safe final file by
       assert.deepEqual(observed.actual, observed.expected, entry.id + " / " + kind);
       assert.equal(observed.finalSource, observed.expectedFinalSource, entry.id + " / " + kind);
       assert.equal(observed.finalSourceSha256, sha256(finalSource));
-      if (config) fs.unlinkSync(path.join(directory, "vize.config.json"));
+      if (configFile) {
+        assert.equal(fs.readFileSync(configFile, "utf8"), configSource);
+        fs.unlinkSync(configFile);
+      }
       fs.unlinkSync(filename);
     }
     assert.equal(evidence.runs.length, 63);

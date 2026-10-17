@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -58,7 +59,7 @@ await test("whole original utility-class reports exclude literal CSS tokens", as
   const persist = () => fs.writeFileSync(output, JSON.stringify(evidence, null, 2) + "\n");
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-utility-tokens-"));
   try {
-    fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+    writeVueConfigFixture(directory, config);
     for (const entry of manifest.cases) {
       await t.test(entry.id, () => {
         const source = fs.readFileSync(path.join(fixture, entry.source));
@@ -118,7 +119,10 @@ await test("whole original utility-class reports exclude literal CSS tokens", as
               assert.equal(stdout, expected.plain, entry.id);
             }
             assert.deepEqual(fs.readFileSync(physical), source);
-            assert.deepEqual(fs.readFileSync(path.join(directory, "vize.config.json")), config);
+            assert.equal(
+              fs.readFileSync(path.join(directory, "vite.config.mjs"), "utf8"),
+              vueConfigFixtureSource(config),
+            );
             evidence.cliQualified++;
             persist();
           }

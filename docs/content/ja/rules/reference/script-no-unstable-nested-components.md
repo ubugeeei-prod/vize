@@ -20,8 +20,8 @@ setup / render 内で毎回コンポーネントを定義する箇所を検出�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-unstable-nested-components": "warn"

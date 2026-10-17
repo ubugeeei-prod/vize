@@ -9,16 +9,19 @@ const read = (name) => readFileSync(new URL(name, root), "utf8");
 const hash = (source) => createHash("sha256").update(source).digest("hex");
 const archive = "tests/_fixtures/differential/config/vue-namespace/source-custody/";
 
-void test("the complete original package cases survive the explicit options-first API succession", () => {
+void test("the original archives remain pinned while active package cases follow the fluent API", () => {
   const config = read(archive + "original-vite-plus-config.test.ts.fixture");
   assert.equal(hash(config), "82570d354aa7cfb9300bca05be49e7bd451694beea019b635cac1ccb7c8056a4");
-  assert.equal(
-    read("npm/builder/vite/src/vite-plus/config.test.ts"),
-    config.replace(
-      "assert.equal(withVue, defineConfig);",
-      "assert.notEqual(withVue, defineConfig);",
-    ),
-  );
+  const currentConfig = read("npm/builder/vite/src/vite-plus/config.test.ts");
+  for (const title of [
+    "defineConfig composes async Vite+ and native config without mutating either input",
+    "tool ownership and conflict defaults can be disabled independently",
+    "defineConfig installs its compiler and preserves caller plugins",
+    "generated tasks preserve existing scripts and tasks, and reject ambiguous renames",
+    "config extends reports the drop-in migration instead of composing another config",
+    "legacy vize config keys report an explicit Vue migration",
+  ])
+    assert.ok(currentConfig.includes(`test("${title}"`), title);
   const packed = read(archive + "original-vite-plus-fast-path.test.ts.fixture");
   assert.equal(hash(packed), "2e50572dce23541ce29d219e6a8eefe46c440d80acae92f0ab6c1f0664082b6b");
   const addedImport =
@@ -32,7 +35,8 @@ void test("the complete original package cases survive the explicit options-firs
   const current = read("tests/tooling/vite-plus-fast-path.test.ts");
   assert.equal(current.split(addedImport).length, 2);
   assert.equal(current.split(addedCall).length, 2);
-  assert.equal(current.replace(addedImport, "").replace(addedCall, ""), packed);
+  const migratedPacked = packed.replaceAll("vize: {", "vue: {");
+  assert.equal(current.replace(addedImport, "").replace(addedCall, ""), migratedPacked);
 
   const dialect = read(archive + "original-vue-version-index.test.ts.fixture");
   assert.equal(hash(dialect), "6e97eb6a6af314856b7cd16395544c34a839eb7eac9bd651d110fafe5580aeaf");
@@ -67,6 +71,6 @@ void test("the complete authored bilingual recipes and relative destinations agr
   assert.match(japanese, /<!-- Reviewed translation; source: guide\/vue-configuration\.md -->/);
   for (const source of [english, japanese]) {
     assert.match(source, /`basePath`.*`files`.*`ignores`.*`linter`/s);
-    assert.match(source, /withVue\(\{\}, defineConfig\(vpConfig\)\)/);
+    assert.match(source, /defineConfig\(vpConfig\)\.withVue\(vueConfig\)/);
   }
 });

@@ -7,6 +7,8 @@
     reason = "CLI fixture diagnostics use format"
 )]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use serde::Deserialize;
 use std::{fs, path::Path, process::Command};
 
@@ -35,7 +37,12 @@ fn invoke(root: &Path, format: &str, inputs: &[String]) -> std::process::Output 
 }
 
 fn preserve_inputs(root: &Path, inputs: &[String], config: &[u8]) {
-    assert_eq!(fs::read(root.join("vize.config.json")).unwrap(), config);
+    let (name, expected) = if root.join("vite.config.mjs").is_file() {
+        ("vite.config.mjs", vite_config::source(config).into_bytes())
+    } else {
+        ("config.json", config.to_vec())
+    };
+    assert_eq!(fs::read(root.join(name)).unwrap(), expected);
     for input in inputs {
         assert_eq!(
             fs::read(root.join(input)).unwrap(),
@@ -57,7 +64,11 @@ fn complete_original_props_styles_match_cli_config_plain_and_json() {
     for case in cases {
         let root = tempfile::tempdir().unwrap();
         let config = fs::read(fixtures().join(&case.config)).unwrap();
-        fs::write(root.path().join("vize.config.json"), &config).unwrap();
+        fs::write(
+            root.path().join("vite.config.mjs"),
+            vite_config::source(&config),
+        )
+        .unwrap();
         for input in &case.inputs {
             fs::copy(
                 fixtures().join(format!("{input}.txt")),
@@ -126,7 +137,7 @@ fn invalid_props_modes_fail_closed_before_linting_the_original_inputs() {
         config["linter"]["ruleOptions"] =
             serde_json::json!({ "script/define-props-destructuring": options });
         let config = serde_json::to_vec_pretty(&config).unwrap();
-        fs::write(root.path().join("vize.config.json"), &config).unwrap();
+        fs::write(root.path().join("config.json"), &config).unwrap();
         let inputs = vec!["MyBadgeA.vue".into(), "MyBadgeB.vue".into()];
         for input in &inputs {
             fs::copy(
@@ -141,7 +152,7 @@ fn invalid_props_modes_fail_closed_before_linting_the_original_inputs() {
                 .args([
                     "lint",
                     "--config",
-                    "vize.config.json",
+                    "config.json",
                     "-f",
                     "json",
                     "--help-level",
@@ -155,7 +166,7 @@ fn invalid_props_modes_fail_closed_before_linting_the_original_inputs() {
             let stderr = String::from_utf8(output.stderr).unwrap();
             assert_eq!(
                 stderr,
-                format!("\u{1b}[31mError:\u{1b}[0m failed to parse vize.config.json: {expected}\n")
+                format!("\u{1b}[31mError:\u{1b}[0m failed to parse config.json: {expected}\n")
             );
             preserve_inputs(root.path(), &inputs, &config);
         }

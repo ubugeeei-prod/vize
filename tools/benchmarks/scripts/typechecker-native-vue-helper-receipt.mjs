@@ -4,6 +4,8 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { pathToFileURL } from "node:url";
+import { resolveViteConfigExport } from "../../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
 
 const root = process.env.VIZE_VUE_HELPER_CAPTURE;
 assert(root, "the required native helper capture is absent");
@@ -81,7 +83,10 @@ for (const name of cases) {
     assert(readFileSync(join(directory, "packages", pkg, manifest.types)).length > 0);
   }
   if (name.startsWith("editor-")) {
-    const configured = json(join(directory, "vize.config.json"));
+    const { default: exported } = await import(
+      pathToFileURL(join(directory, "vite.config.mjs")).href
+    );
+    const configured = await resolveViteConfigExport(exported, undefined, directory);
     assert.equal(realpathSync(configured.typeChecker.corsaPath), nativeBinary);
     for (const file of ["App", "Counter", "Toggle", "Toggle-valid"]) {
       const result = json(join(directory, file + ".diagnostics.json"));

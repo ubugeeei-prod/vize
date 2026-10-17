@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { readPinnedArtifact, sha256 } from "../differential/harness.mjs";
 import { root } from "./support/lsp/paths.ts";
+import { originalVueConfigFixtureSource } from "./support/vue-config-source-custody.ts";
 import {
   SESSION_CANDIDATES,
   parseSessionCandidates,
@@ -36,7 +37,12 @@ test("source-origin catalog retains eight response candidates and two safety con
   );
   for (const candidate of candidates) {
     assert.equal(
-      sha256(fs.readFileSync(path.join(root, candidate.current.path))),
+      sha256(
+        originalVueConfigFixtureSource(
+          candidate.current.path,
+          fs.readFileSync(path.join(root, candidate.current.path)),
+        ),
+      ),
       candidate.current.sha256,
     );
   }
@@ -67,6 +73,34 @@ test("actual caller hash and selected test line are both required for historical
       .candidates.length,
     0,
   );
+});
+
+test("reviewed configuration carriers preserve whole source pins and reject unrelated source edits", () => {
+  const owners = [
+    "tests/tooling/lsp-workspace-folder-changes.test.ts",
+    "tests/tooling/lsp-initial-diagnostics-version.test.ts",
+  ];
+  for (const file of owners) {
+    const candidate = candidates.find((row) => row.current.path === file)!;
+    const bytes = fs.readFileSync(path.join(root, file));
+    const original = originalVueConfigFixtureSource(file, bytes);
+    assert.equal(sha256(original), candidate.current.sha256);
+    assert.notEqual(sha256(bytes), candidate.current.sha256);
+    assert.equal(
+      sha256(originalVueConfigFixtureSource(file, Buffer.from(original))),
+      candidate.current.sha256,
+    );
+    for (const source of [
+      bytes.toString() + "\n",
+      bytes.toString().replace("new LspSession()", "new LspSession(undefined)"),
+    ]) {
+      assert.notEqual(source, bytes.toString());
+      assert.notEqual(
+        sha256(originalVueConfigFixtureSource(file, Buffer.from(source))),
+        candidate.current.sha256,
+      );
+    }
+  }
 });
 
 test("one initial-diagnostic execution can associate two source histories without duplicate launch credit", () => {

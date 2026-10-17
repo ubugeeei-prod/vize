@@ -1,6 +1,8 @@
 #![cfg(test)]
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "support/vite_config.rs"]
+mod vite_config;
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -50,8 +52,8 @@ fn required_slot_callback_types_preserve_complete_native_cli_packets() {
         std::fs::write(project.join("Child.vue"), &child).unwrap();
         std::fs::write(project.join("Consumer.tsx"), &consumer).unwrap();
         std::fs::write(
-            project.join("vize.config.json"),
-            r#"{"typeChecker":{"jsxTypecheck":true}}"#,
+            project.join("vite.config.mjs"),
+            vite_config::source(r#"{"typeChecker":{"jsxTypecheck":true}}"#),
         )
         .unwrap();
         std::fs::write(
@@ -143,9 +145,11 @@ fn unchanged_inferred_slot_oracle_passes_with_explicit_jsx() {
     for name in &files {
         std::fs::copy(fixture.join(format!("{name}.txt")), project.join(name)).unwrap();
     }
-    for name in ["tsconfig.json", "vize.config.json"] {
-        std::fs::copy(fixture.join(name), project.join(name)).unwrap();
-    }
+    std::fs::copy(fixture.join("tsconfig.json"), project.join("tsconfig.json")).unwrap();
+    vite_config::write(
+        &project,
+        std::fs::read(fixture.join("vize.config.json")).unwrap(),
+    );
     let result = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project)
         .args([
@@ -231,9 +235,11 @@ fn unchanged_nested_slot_body_preserves_complete_native_cli_packets() {
         };
         let input_path = project.join("src/AfsStepperDialog.stories.tsx");
         std::fs::write(&input_path, &input).unwrap();
-        for file in ["tsconfig.json", "vize.config.json"] {
-            std::fs::copy(fixture.join(file), project.join(file)).unwrap();
-        }
+        std::fs::copy(fixture.join("tsconfig.json"), project.join("tsconfig.json")).unwrap();
+        vite_config::write(
+            &project,
+            std::fs::read(fixture.join("vize.config.json")).unwrap(),
+        );
         let result = Command::new(env!("CARGO_BIN_EXE_vize"))
             .current_dir(&project)
             .args([
@@ -298,9 +304,11 @@ fn nested_raw_and_structural_native_callbacks_keep_whole_packets() {
         );
         let input = std::fs::read(source.join("App.tsx.txt")).unwrap();
         std::fs::write(project.join("App.tsx"), &input).unwrap();
-        for file in ["tsconfig.json", "vize.config.json"] {
-            std::fs::copy(source.join(file), project.join(file)).unwrap();
-        }
+        std::fs::copy(source.join("tsconfig.json"), project.join("tsconfig.json")).unwrap();
+        vite_config::write(
+            &project,
+            std::fs::read(source.join("vize.config.json")).unwrap(),
+        );
         let result = Command::new(env!("CARGO_BIN_EXE_vize"))
             .current_dir(&project)
             .args([

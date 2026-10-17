@@ -20,8 +20,8 @@ emit するカスタムイベント名を指定した形式に揃えます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/custom-event-name-casing": "error"

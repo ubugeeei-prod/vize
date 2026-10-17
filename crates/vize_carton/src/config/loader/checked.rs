@@ -3,9 +3,9 @@ use std::path::{Path, PathBuf};
 
 use super::{
     LoadedRawConfig,
-    discovery::{CONFIG_FILE_NAMES, search_directories},
+    discovery::{CONFIG_FILE_NAMES, CONFIG_MIGRATION, has_retired_config, search_directories},
     parse::parse_raw_config_file,
-    pkl, project_defaults,
+    project_defaults,
 };
 
 pub(super) fn load_raw_config_checked(
@@ -47,16 +47,6 @@ fn load_raw_checked(
                         source_path: Some(candidate),
                     });
                 }
-                Err(error)
-                    if path.is_none()
-                        && candidate.extension().is_some_and(|ext| ext == "pkl")
-                        && pkl::is_process_error_box(error.as_ref()) =>
-                {
-                    eprintln!(
-                        "Warning: Failed to evaluate {}: {error}",
-                        candidate.display()
-                    );
-                }
                 Err(error) => {
                     return Err(
                         crate::cstr!("failed to parse {}: {error}", candidate.display()).into(),
@@ -64,9 +54,12 @@ fn load_raw_checked(
                 }
             }
         }
+        if has_retired_config(&directory) {
+            return Err(CONFIG_MIGRATION.into());
+        }
     }
     if path.is_some() && require_explicit_config {
-        return Err(crate::cstr!("no vize config file found under {}", base.display()).into());
+        return Err(crate::cstr!("no Vite config file found under {}", base.display()).into());
     }
     Ok(LoadedRawConfig {
         config: project_defaults(),

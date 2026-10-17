@@ -121,14 +121,14 @@ fn active_native_typecheck_advertises_fresh_jsx_without_an_opt_in_flag() {
 fn fresh_formatting_without_an_authored_switch_returns_the_complete_edit_packet() {
     let project = project();
     let root = project.path();
-    let settings = include_str!(
+    let settings = support::canonical_settings(include_str!(
         "../../../../tests/_fixtures/differential/config/project-settings-8371/no-authored-formatting.vite.config.mjs.txt"
-    );
+    ));
     assert_eq!(
         settings,
         support::SETTINGS.replace("formatting: true, ", "")
     );
-    write(root, "vite.config.mjs", settings);
+    write(root, "vite.config.mjs", &settings);
     let uri = file_uri(&root.join("Quotes.vue"));
     let mut lsp = LspProcess::spawn(root);
     lsp.send(

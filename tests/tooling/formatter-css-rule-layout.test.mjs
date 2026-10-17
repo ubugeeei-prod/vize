@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -96,8 +97,8 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
         );
         const file = path.join(temporary, fixture.filename);
         fs.writeFileSync(file, input);
-        const config = Buffer.from(JSON.stringify({ formatter: fixture.options ?? {} }) + "\n");
-        fs.writeFileSync(path.join(temporary, "vize.config.json"), config);
+        const config = Buffer.from(vueConfigFixtureSource({ formatter: fixture.options ?? {} }));
+        fs.writeFileSync(path.join(temporary, "vite.config.mjs"), config);
         const row = {
           id: fixture.id,
           fixture,
@@ -130,7 +131,7 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
           const args = [
             "fmt",
             mode,
-            ...(fixture.options ? ["--config", "vize.config.json"] : ["--no-config"]),
+            ...(fixture.options ? ["--config", "vite.config.mjs"] : ["--no-config"]),
             fixture.filename,
           ];
           const before = fs.readFileSync(file);
@@ -182,7 +183,7 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
             Buffer.from(oracle.stderr),
             "complete stderr",
           );
-          assert.deepEqual(fs.readFileSync(path.join(temporary, "vize.config.json")), config);
+          assert.deepEqual(fs.readFileSync(path.join(temporary, "vite.config.mjs")), config);
           return { capture, before, after };
         };
         const check = invoke("--check");

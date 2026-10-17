@@ -9,7 +9,7 @@ import { assertStableFix, assertStableOfficial } from "../typed_defaults/post_ob
 import { authenticateReports, reportOptions } from "./custody.mjs";
 import { loadFixtures } from "./fixtures.mjs";
 import { installDependencies } from "./dependencies.mjs";
-import { observeReports } from "./observe.mjs";
+import { observeReports } from "./observe.ts";
 
 const checkout = fs.realpathSync(fileURLToPath(new URL("../../../../", import.meta.url)));
 const options = reportOptions(process.env);

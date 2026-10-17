@@ -66,13 +66,13 @@ Para projetos Vite Plus, mantenha o tipo cliente Vite Plus e anexe o pacote de p
 
 ## Compartilhar as opções nativas
 
-No Vite+, use o campo `compiler` da integração. No Vite convencional, use as opções diretas do plugin. Coloque as opções nativas da CLI e do editor no objeto `vize` do nível superior do mesmo arquivo Vite; o [guia de configuração](./configuration.md) descreve a sintaxe, a busca e a disponibilidade por versão. Os formatos específicos continuam opcionais.
+Coloque as opções nativas compartilhadas em `vue:` no `vite.config.*`. No Vite+, use `defineConfig(vpConfig).withVue(vueConfig)` para preservar a configuração existente. No Vite convencional, também é possível passar opções diretas ao plugin. A CLI e o editor leem as mesmas opções Vue; veja a sintaxe e a descoberta no [guia de configuração](./configuration.md).
 
 <span id="compiler-options"></span>
 
 ## Opções do compilador
 
-As opções diretas de `vize()` têm prioridade, seguidas de `config` inline, das opções descobertas do projeto e dos valores padrão. Um `vize.config.*` tem prioridade sobre Vite no mesmo diretório. `config: false` desativa a busca automática.
+As opções diretas de `vize()` têm prioridade, seguidas de `config` inline, das opções descobertas do projeto e dos valores padrão. Use `vue:` na configuração Vite; arquivos específicos `vize.config.*` não são mais aceitos. `config: false` desativa a busca automática.
 
 ```ts
 vize({

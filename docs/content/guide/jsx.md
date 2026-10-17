@@ -182,13 +182,15 @@ individual components can override it.
 or `"vapor"` and defaults to `"vdom"`.
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  compiler: {
-    // Default every .jsx/.tsx component to Vapor output.
-    jsxMode: "vapor",
+  vue: {
+    compiler: {
+      // Default every .jsx/.tsx component to Vapor output.
+      jsxMode: "vapor",
+    },
   },
 });
 ```
@@ -219,7 +221,7 @@ const Classic = () => {
 Because each component is routed independently, a **single file can mix both backends**:
 
 ```tsx
-// vize.config: { compiler: { jsxMode: "vapor" } }
+// vite.config.ts: { vue: { compiler: { jsxMode: "vapor" } } }
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -355,17 +357,19 @@ vize fmt src --write
 
 ## Type-checking
 
-Projects without dedicated `vize.config.*` use the proposed **enabled** Vue JSX default; dedicated configs retain `typeChecker.jsxTypecheck: false` unless enabled.
+Project defaults enable Vue JSX checking; configure `vue.typeChecker.jsxTypecheck` in `vite.config.*` to override it.
 Release qualification of the fresh default remains pending. For mixed React projects, [explicitly disable Vue JSX checking](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md#react-owned-projects); Vue SFC checking remains available.
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  typeChecker: {
-    enabled: true,
-    jsxTypecheck: true,
+  vue: {
+    typeChecker: {
+      enabled: true,
+      jsxTypecheck: true,
+    },
   },
 });
 ```

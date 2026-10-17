@@ -153,8 +153,8 @@ destructured bindings instead. Vue 3.5 preserves reactivity when destructuring p
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       preset: "incremental",
       rules: { "script/define-props-destructuring": "warn" },
       ruleOptions: { "script/define-props-destructuring": { destructure: "only-when-assigned" } },
@@ -187,4 +187,4 @@ When migrating from ESLint, use the Vize rule ID and typed options separately:
  ruleOptions: { "script/define-props-destructuring": { destructure: "always" } }
 ```
 
-Place the added entries inside `lint.vize` in the Vite+ config above.
+Place the added entries inside `vue.linter` in the Vite+ config above.

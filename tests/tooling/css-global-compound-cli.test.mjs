@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -48,7 +49,7 @@ await test("source CLI preserves whole compound global ownership and refusal rep
     persist();
     const after = {
       source: fs.readFileSync(path.join(directory, row.filename), "utf8"),
-      config: fs.readFileSync(path.join(directory, "vize.config.json"), "utf8"),
+      config: fs.readFileSync(path.join(directory, "vite.config.mjs"), "utf8"),
     };
     observation.after = after;
     persist();
@@ -57,7 +58,7 @@ await test("source CLI preserves whole compound global ownership and refusal rep
     assert.equal(raw.status, 0, JSON.stringify(raw));
     assert.equal(raw.stderr, "", id);
     assert.equal(before.source, row.source, id);
-    assert.deepEqual(after, { source: row.source, config: configText }, id);
+    assert.deepEqual(after, { source: row.source, config: vueConfigFixtureSource(configText) }, id);
     return raw;
   };
   try {
@@ -69,7 +70,7 @@ await test("source CLI preserves whole compound global ownership and refusal rep
       for (const row of rows) {
         const id = prefix + row.id;
         fs.writeFileSync(path.join(directory, row.filename), row.source);
-        fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+        writeVueConfigFixture(directory, config);
         const args = ["lint", "-f", "json", "--locale", "en", "--help-level", "full", row.filename];
         for (let pass = 0; pass < 3; pass++) {
           const raw = run(row, `${id}-json-${pass}`, args, config, row.expectedCli);
@@ -93,7 +94,7 @@ await test("source CLI preserves whole compound global ownership and refusal rep
         const offConfig = JSON.parse(config);
         offConfig.linter.rules["css/no-display-none"] = "off";
         const off = JSON.stringify(offConfig);
-        fs.writeFileSync(path.join(directory, "vize.config.json"), off);
+        writeVueConfigFixture(directory, off);
         const expected = [{ file: row.filename, messages: [], errorCount: 0, warningCount: 0 }];
         assert.deepEqual(
           JSON.parse(run(row, id + "-off", args, off, expected).stdout),

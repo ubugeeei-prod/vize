@@ -71,7 +71,7 @@ test("vue-element-admin compiler lowers legacy slot scopes and filters determini
   await withPinnedFixtureWorkspace(
     { fixtureId: "vue-element-admin", includePaths: [sourcePath] },
     async (fixture) => {
-      fixture.write("vize.config.json", json({ compiler: { compatibility: { vueVersion: "2" } } }));
+      fixture.writeVueConfig(json({ compiler: { compatibility: { vueVersion: "2" } } }));
 
       const source = fixture.read(sourcePath);
       const first = runVizeBuild(fixture.workspaceDir, sourcePath, ".vize-compiler-first");
@@ -146,8 +146,7 @@ test("vue-element-admin linter reports and repairs one exact legacy SFC edit", a
   await withPinnedFixtureWorkspace(
     { fixtureId: "vue-element-admin", includePaths: [sourcePath] },
     async (fixture) => {
-      fixture.write(
-        "vize.config.json",
+      fixture.writeVueConfig(
         json({
           compiler: { compatibility: { vueVersion: "2" } },
           linter: {
@@ -200,7 +199,7 @@ test("vue-element-admin formatter converges and repairs one exact legacy SFC edi
   await withPinnedFixtureWorkspace(
     { fixtureId: "vue-element-admin", includePaths: [sourcePath] },
     async (fixture) => {
-      fixture.write("vize.config.json", json({ compiler: { compatibility: { vueVersion: "2" } } }));
+      fixture.writeVueConfig(json({ compiler: { compatibility: { vueVersion: "2" } } }));
 
       const pinnedSource = fixture.read(sourcePath);
       const sourceMode = fs.statSync(fixture.resolve(sourcePath)).mode & 0o777;
@@ -284,8 +283,7 @@ test("vue-element-admin legacy slot scopes recover exact CLI diagnostics", async
       symlinkVueTypes(fixture.workspaceDir);
       fixture.write("src/api/remote-search.d.ts", remoteSearchDeclaration);
       fixture.write("tsconfig.json", json(tsconfig));
-      fixture.write(
-        "vize.config.json",
+      fixture.writeVueConfig(
         json({
           compiler: { compatibility: { vueVersion: "2" } },
           globalTypes: { toThousandFilter: "any" },

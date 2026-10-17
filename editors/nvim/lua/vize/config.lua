@@ -17,8 +17,18 @@ local default_config = {
   autostart = true,
   cmd = { "vize", "lsp" },
   filetypes = { "vue", "art-vue" },
-  init_options = profiles.recommended,
-  root_markers = { "vize.config.pkl", "vize.config.json", "package.json", ".git" },
+  init_options = vim.empty_dict(),
+  root_markers = {
+    "vite.config.ts",
+    "vite.config.js",
+    "vite.config.mts",
+    "vite.config.mjs",
+    "vite.config.cts",
+    "vite.config.cjs",
+    "tsconfig.json",
+    "package.json",
+    ".git",
+  },
   settings = {},
 }
 

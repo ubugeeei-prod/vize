@@ -4,6 +4,8 @@
 mod corsa_path;
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "support/vite_config.rs"]
+mod vite_config;
 
 use std::{
     path::{Path, PathBuf},
@@ -40,6 +42,8 @@ struct Run {
     output: Result<Output, String>,
     before: Value,
     after: Value,
+    carrier_before: Vec<u8>,
+    carrier_after: Vec<u8>,
 }
 
 fn digest(bytes: &[u8]) -> String {
@@ -87,12 +91,21 @@ fn source_sha(workspace: &Path) -> String {
     sha.into()
 }
 
+fn project_input_path(root: &Path, name: &str) -> PathBuf {
+    // Preserve frozen configuration bytes outside retired config discovery.
+    root.join(if name == "vize.config.json" {
+        "authored-vue-settings.json"
+    } else {
+        name
+    })
+}
+
 fn input_manifest(root: &Path, names: &[String]) -> Value {
     json!(
         names
             .iter()
             .map(|name| {
-                let bytes = std::fs::read(root.join(name.as_str())).unwrap();
+                let bytes = std::fs::read(project_input_path(root, name)).unwrap();
                 json!({"file":name,"bytes":bytes.len(),"sha256":digest(&bytes)})
             })
             .collect::<Vec<_>>()
@@ -212,9 +225,13 @@ fn selected_aliases_keep_all_authored_cli_packets_and_cold_repairs() {
         std::fs::create_dir(saved.join("inputs")).unwrap();
         for name in &matrix.input_files {
             let bytes = std::fs::read(fixture.join(case.id.as_str()).join(name.as_str())).unwrap();
-            std::fs::write(project.join(name.as_str()), &bytes).unwrap();
+            std::fs::write(project_input_path(&project, name), &bytes).unwrap();
             std::fs::write(saved.join("inputs").join(name.as_str()), &bytes).unwrap();
         }
+        let config = std::fs::read(project_input_path(&project, "vize.config.json")).unwrap();
+        let carrier = vite_config::write(&project, &config);
+        let carrier_before = vite_config::source(&config).into_bytes();
+        assert_eq!(std::fs::read(&carrier).unwrap(), carrier_before);
         let project = project.canonicalize().unwrap();
         let before = input_manifest(&project, &matrix.input_files);
         write_json(&saved.join("inputs-before.json"), &before);
@@ -246,11 +263,14 @@ fn selected_aliases_keep_all_authored_cli_packets_and_cold_repairs() {
                 child.wait_with_output().map_err(|error| cstr!("{error}"))
             });
         let after = input_manifest(&project, &matrix.input_files);
+        let carrier_after = std::fs::read(&carrier).unwrap();
         write_json(&saved.join("inputs-after.json"), &after);
         let mut record = json!({
             "id":case.id,"repairOf":case.repair_of,"cwd":project,"pid":pid,
             "argv":[cli,"check","App.tsx","--quiet","--format","json","--corsa-path",native],
             "authority":authority,"inputBefore":before,"inputAfter":after,
+            "carrier":{"file":"vite.config.mjs", "source":std::str::from_utf8(&carrier_before).unwrap(),
+                "beforeSha256":digest(&carrier_before),"afterSha256":digest(&carrier_after)},
             "expectedStdoutSha256":digest(expected.as_bytes()),
             "fixtureExpectedSha256":digest(template.as_bytes())
         });
@@ -278,6 +298,8 @@ fn selected_aliases_keep_all_authored_cli_packets_and_cold_repairs() {
             output,
             before,
             after,
+            carrier_before,
+            carrier_after,
         });
     }
 
@@ -289,6 +311,9 @@ fn selected_aliases_keep_all_authored_cli_packets_and_cold_repairs() {
             .collect::<Vec<_>>());
         if run.before != frozen || run.after != run.before {
             failures.push(cstr!("{}: authored input bytes changed", run.id));
+        }
+        if run.carrier_before != run.carrier_after {
+            failures.push(cstr!("{}: canonical configuration bytes changed", run.id));
         }
         match &run.output {
             Ok(output) => {

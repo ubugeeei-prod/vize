@@ -6,7 +6,7 @@ title: All lint rules
 
 Use this index to find a rule's purpose, default settings, and owning group. The group pages contain the explanations, configuration, complete Bad/Good examples, and current support limits. Existing rule and example links remain usable here.
 
-With Vite+, import `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `lint.vize.rules`, and run `vp run lint` for Vize and Oxlint diagnostics.
+With Vite+, import `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `vue.linter.rules`, and run `vp run lint` for Vize and Oxlint diagnostics.
 
 Severity is the implementation default; override it with `off`, `warn`, or `error`. See [Rule Options](./options.md) for rule-option support and [Cross-file rules](./cross-file.md) for project-graph findings.
 

@@ -1,6 +1,9 @@
 //! Configured public CLI observes complete directive quote-layout bytes (#7876).
 #![cfg(feature = "glyph")]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use std::{error::Error, fs, path::Path, process::Command};
 
 #[path = "../../../tests/support/formatter_continuation_reference.rs"]
@@ -39,8 +42,10 @@ fn configured_check_write_and_second_check_match_complete_reference_bytes()
         let file = root.join("Example.vue");
         fs::write(&file, &input)?;
         fs::write(
-            root.join("vize.config.json"),
-            serde_json::to_vec(&serde_json::json!({ "formatter": case["options"] }))?,
+            root.join("vite.config.mjs"),
+            vite_config::source(serde_json::to_vec(
+                &serde_json::json!({ "formatter": case["options"] }),
+            )?),
         )?;
         let checked = fmt(root, &["--check", "Example.vue"])?;
         assert_eq!(

@@ -22,7 +22,7 @@ title: 実験機能リファレンス
 
 | 設定を渡す場所                                                               | 受け取る値                                                    | 値を解決する主体                     | 注意点                                                                                                |
 | ---------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| `vize.config.*`                                                              | `experimentals: { ... }` の有効・無効を表す値                 | 設定ローダー                         | npm コマンド、`vize check`、LSP セッション、プロジェクト設定を読む Vite プラグインの共通の既定値      |
+| `vite.config.*` の `vue.experimentals`                                                              | `experimentals: { ... }` の有効・無効を表す値                 | 設定ローダー                         | npm コマンド、`vize check`、LSP セッション、プロジェクト設定を読む Vite プラグインの共通の既定値      |
 | `vize({ experimentals })`                                                    | 上と同じ有効・無効を表す値                                    | Vite プラグインのオプション解決処理  | 直接指定した値が共通設定より優先される。`false` と `null` で、そのプラグインだけ無効にできる          |
 | `vize({ vapor })`, `vize({ jsxMode })`, `compiler.vapor`, `compiler.jsxMode` | 安定版のコンパイラオプション                                  | コンパイラのオプション解決処理       | これらの設定が `experimentals.vapor` と `experimentals.jsxVapor` による代替の出力先選択より優先される |
 | `compile`, `compileVapor`, `parseTemplate`                                   | `CompilerOptions` の `experimental*` 真偽値                   | 呼び出し元                           | 別名、`{}` の設定オブジェクト、共通設定の優先順位は解釈しない                                         |
@@ -113,11 +113,13 @@ compileSfcBatchWithResults(files, {
 共通設定で、一つの RFC 提案だけを有効にする例:
 
 ```ts
-import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  experimentals: {
-    inTagComment: true,
+  vue: {
+    experimentals: {
+      inTagComment: true,
+    },
   },
 });
 ```

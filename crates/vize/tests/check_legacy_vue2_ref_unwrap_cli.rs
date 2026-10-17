@@ -1,6 +1,8 @@
 #![cfg(test)]
 #![cfg(feature = "legacy")]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -78,8 +80,8 @@ fn create_project() -> PathBuf {
     )
     .unwrap();
     std::fs::write(
-        project_root.join("vize.config.json"),
-        r#"{ "compiler": { "compatibility": { "vueVersion": "2.7" } } }"#,
+        project_root.join("vite.config.mjs"),
+        vite_config::source(r#"{ "compiler": { "compatibility": { "vueVersion": "2.7" } } }"#),
     )
     .unwrap();
     std::fs::write(

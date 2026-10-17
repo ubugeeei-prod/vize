@@ -20,8 +20,8 @@ Vue Router のプログラムによる移動に名前付きルートを使いま
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-router-prefer-named-push": "warn"

@@ -22,8 +22,7 @@ Installez `vp` une fois depuis le [Vite+ install guide](https://viteplus.dev/gui
 vp install -D @vizejs/vite-plugin
 ```
 
-Ajoutez `vize` comme dépendance directe uniquement si votre projet importe des assistants de configuration partagés depuis `"vize"`
-ou expose des scripts de paquets tels que `vize:lint` et `vize:check`.
+Ajoutez `vize` comme dépendance directe si votre projet expose des scripts tels que `vize:lint` et `vize:check`. L’assistant de configuration vient de `@vizejs/vite-plugin/vite-plus`.
 
 ## Usage de base
 
@@ -66,13 +65,13 @@ Pour les projets Vite Plus, gardez le type de client Vite Plus et ajoutez le pac
 
 ## Partager les réglages natifs
 
-Pour Vite+, utilisez le champ `compiler` de l'intégration. Pour Vite classique, utilisez les options directes du plugin. Placez les réglages CLI/éditeur natifs dans l'objet `vize` à la racine du même fichier Vite ; le [guide de configuration](./configuration.md) décrit la syntaxe, la recherche et la disponibilité par version. Les formats dédiés restent facultatifs.
+Placez les réglages partagés sous `vue:` dans `vite.config.*`. Avec Vite+, utilisez `defineConfig(vpConfig).withVue(vueConfig)` depuis `@vizejs/vite-plugin/vite-plus`. Les options du compilateur se placent sous `vue.compiler` ; les réglages TypeScript restent dans `compilerOptions` et les options de templates dans `vueCompilerOptions` de `tsconfig.json`. Le [guide de configuration](./configuration.md) décrit la recherche et la migration.
 
 <span id="compiler-options"></span>
 
 ## Options du compilateur
 
-Les options directes de `vize()` ont priorité, suivies de `config` en ligne, des réglages du projet découverts et des valeurs par défaut. Un `vize.config.*` a priorité sur Vite dans le même répertoire. `config: false` désactive la recherche automatique.
+Les options directes de `vize()` ont priorité, suivies de `config` en ligne, des réglages du projet découverts et des valeurs par défaut. Utilisez `vue:` dans la configuration Vite ; les fichiers dédiés `vize.config.*` ne sont plus pris en charge. `config: false` désactive la recherche automatique.
 
 ```ts
 vize({
@@ -90,17 +89,17 @@ vize({
 | Option                 | Où le placer                                            | Description                                                                                                                                 |
 | ---------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `vueVersion`           | `vize({ vueVersion })`                                  | Réglez `0.11`, `1`, `2`ou `"legacy"` pour exécuter en mode compatibilité Vue non invasif et laissez la compilation SFC au compilateur hôte. |
-| `sourceMap`            | `compiler.sourceMap` ou `vize({ sourceMap })`           | Générez des cartes sources. Par défaut, développement activé, production désactivée.                                                        |
-| `ssr`                  | `compiler.ssr` ou `vize({ ssr })`                       | Force la compilation SSR quand le drapeau de compilation SSR de Vite ne suffit pas.                                                         |
-| `vapor`                | `compiler.vapor` ou `vize({ vapor })`                   | Compile les modèles via le backend Vapor.                                                                                                   |
-| `jsxMode`              | `compiler.jsxMode` ou `vize({ jsxMode })`               | Backend de sortie par défaut (`"vdom"` / `"vapor"`) pour `.jsx`/`.tsx` composants. Les directives `"use vue:*"` par composant l’emportent.  |
-| `customRenderer`       | `compiler.customRenderer` ou `vize({ customRenderer })` | Considérez les balises minuscules non HTML comme des éléments de rendu personnalisés. Ne correspond pas aux balises PascalCase telles que `<TresMesh>`. |
-| `customElements`       | `compiler.customElements` ou `vize({ customElements })` | Motifs de balises compilés comme éléments personnalisés. Utilisez `["Tres*"]` pour les balises PascalCase TresJS.                            |
-| `templateSyntax`       | `compiler.templateSyntax` ou `vize({ templateSyntax })` | Choisissez `"standard"`, `"strict"`ou `"quirks"` gestion de la syntaxe du modèle.                                                           |
-| `include`              | `vite.include` ou `vize({ include })`                   | Des fichiers que le plugin devrait compiler.                                                                                                |
-| `exclude`              | `vite.exclude` ou `vize({ exclude })`                   | Des fichiers que le plugin devrait ignorer.                                                                                                 |
-| `scanPatterns`         | `vite.scanPatterns` ou `vize({ scanPatterns })`         | Des motifs glob utilisés pour la précompilation au démarrage.                                                                               |
-| `ignorePatterns`       | `vite.ignorePatterns` ou `vize({ ignorePatterns })`     | Les motifs glob étaient sautés lors de la précompilation au démarrage.                                                                      |
+| `sourceMap`            | `vue.compiler.sourceMap` ou `vize({ sourceMap })`           | Générez des cartes sources. Par défaut, développement activé, production désactivée.                                                        |
+| `ssr`                  | `vue.compiler.ssr` ou `vize({ ssr })`                       | Force la compilation SSR quand le drapeau de compilation SSR de Vite ne suffit pas.                                                         |
+| `vapor`                | `vue.compiler.vapor` ou `vize({ vapor })`                   | Compile les modèles via le backend Vapor.                                                                                                   |
+| `jsxMode`              | `vue.compiler.jsxMode` ou `vize({ jsxMode })`               | Backend de sortie par défaut (`"vdom"` / `"vapor"`) pour `.jsx`/`.tsx` composants. Les directives `"use vue:*"` par composant l’emportent.  |
+| `customRenderer`       | `vue.compiler.customRenderer` ou `vize({ customRenderer })` | Considérez les balises minuscules non HTML comme des éléments de rendu personnalisés. Ne correspond pas aux balises PascalCase telles que `<TresMesh>`. |
+| `customElements`       | `vue.compiler.customElements` ou `vize({ customElements })` | Motifs de balises compilés comme éléments personnalisés. Utilisez `["Tres*"]` pour les balises PascalCase TresJS.                            |
+| `templateSyntax`       | `vue.compiler.templateSyntax` ou `vize({ templateSyntax })` | Choisissez `"standard"`, `"strict"`ou `"quirks"` gestion de la syntaxe du modèle.                                                           |
+| `include`              | `vue.vite.include` ou `vize({ include })`                   | Des fichiers que le plugin devrait compiler.                                                                                                |
+| `exclude`              | `vue.vite.exclude` ou `vize({ exclude })`                   | Des fichiers que le plugin devrait ignorer.                                                                                                 |
+| `scanPatterns`         | `vue.vite.scanPatterns` ou `vize({ scanPatterns })`         | Des motifs glob utilisés pour la précompilation au démarrage.                                                                               |
+| `ignorePatterns`       | `vue.vite.ignorePatterns` ou `vize({ ignorePatterns })`     | Les motifs glob étaient sautés lors de la précompilation au démarrage.                                                                      |
 | `configMode`           | `vize({ configMode })`                                  | Utilisez `"root"`, `"auto"`ou `false` pour le chargement de configuration partagé.                                                          |
 | `configFile`           | `vize({ configFile })`                                  | Chargez un fichier de configuration spécifique.                                                                                             |
 | `config`               | `vize({ config })`                                      | Configuration partagée en ligne pour les paramètres d’exécution de Vite Plus.                                                               |

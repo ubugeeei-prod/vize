@@ -30,12 +30,86 @@ const fixture = path.join(root, "tests/_fixtures/differential/lint/slot-paramete
 const read = (file: string) => JSON.parse(fs.readFileSync(path.join(fixture, file), "utf8"));
 const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 
+interface SourceTransition {
+  path: string;
+  originalSha256: string;
+  currentSha256: string;
+  originalBase64: string;
+  edits: { kind: string; offset: number; before: string; after: string }[];
+}
+const transitionBytes = fs.readFileSync(
+  path.join(fixture, "canonical-config-source-transitions.json"),
+);
+assert.equal(
+  sha256(transitionBytes),
+  "2c5a8b6b9c34e2e14ae53bae247a747600ad0b92a53f0da9605f107c8c116be2",
+);
+const transitions: { schema: string; records: SourceTransition[] } = JSON.parse(
+  transitionBytes.toString(),
+);
+assert.equal(transitions.schema, "vize.slot-options-canonical-config-source-transitions-v1");
+assert.deepEqual(
+  transitions.records.map(({ path: file }) => file),
+  [
+    "tests/tooling/support/n8n-slot-options-acceptance.ts",
+    "tests/tooling/support/n8n-installed-slot-options-acceptance.ts",
+  ],
+);
+
+// The old manifest remains authority for the whole original source. A finite
+// reviewed import/config-carrier transition binds its active counterpart;
+// none of its vectors, invocations or complete output qualifications change.
+function preservedSource(
+  transition: SourceTransition,
+  current: Buffer,
+  originalDigest: string,
+): Buffer {
+  const original = Buffer.from(transition.originalBase64, "base64");
+  assert.equal(transition.originalSha256, originalDigest);
+  assert.equal(sha256(original), originalDigest);
+  assert.equal(sha256(current), transition.currentSha256);
+  assert.deepEqual(
+    transition.edits.map(({ kind }) => kind),
+    ["canonical-helper-import", "canonical-config-carrier"],
+  );
+  const [helper, carrier] = transition.edits;
+  assert.equal(helper.before, "");
+  assert.equal(
+    helper.after,
+    'import { nativeConfigToVueOptions, vueConfigFixtureSource } from "./vue-config-fixture.ts";\n',
+  );
+  const text = original.toString("utf8");
+  assert.deepEqual(Buffer.from(text), original);
+  const start = text.indexOf("const configSource =");
+  const end = text.indexOf("const custody:");
+  assert.ok(start > 0 && end > start);
+  assert.equal(carrier.offset, Buffer.byteLength(text.slice(0, start)));
+  assert.equal(carrier.before, text.slice(start, end));
+  assert.ok(helper.offset < carrier.offset);
+  let composed = original;
+  for (const edit of transition.edits.toReversed()) {
+    assert.ok(Number.isSafeInteger(edit.offset) && edit.offset >= 0);
+    const removed = Buffer.from(edit.before);
+    assert.deepEqual(composed.subarray(edit.offset, edit.offset + removed.length), removed);
+    composed = Buffer.concat([
+      composed.subarray(0, edit.offset),
+      Buffer.from(edit.after),
+      composed.subarray(edit.offset + removed.length),
+    ]);
+  }
+  assert.deepEqual(composed, current, "active helper must equal the complete reviewed counterpart");
+  return original;
+}
+
 await test("parameter vectors keep authored coordinates, reference differences and original bytes", () => {
   const controls = read("controls.json");
   const consumers = read("consumers.json");
   const golden = read("independent.json");
   for (const [file, digest] of Object.entries(controls.preservedOriginalInputs)) {
-    assert.equal(sha256(fs.readFileSync(path.join(root, file))), digest, file);
+    const current = fs.readFileSync(path.join(root, file));
+    const transition = transitions.records.find((record) => record.path === file);
+    const original = transition ? preservedSource(transition, current, digest as string) : current;
+    assert.equal(sha256(original), digest, file);
   }
   const original = JSON.parse(
     fs.readFileSync(
@@ -140,6 +214,54 @@ await test("parameter vectors keep authored coordinates, reference differences a
     [...differences].sort(),
     controls.referenceDifferences.map((d: Input) => d.id).sort(),
   );
+});
+
+await test("canonical config source counterparts reject lost edits, changed originals and unrelated live drift", () => {
+  const controls = read("controls.json");
+  for (const transition of transitions.records) {
+    const live = fs.readFileSync(path.join(root, transition.path));
+    const expected = controls.preservedOriginalInputs[transition.path];
+    for (const mutate of [
+      (row: SourceTransition) => {
+        row.originalBase64 = Buffer.from("foreign original").toString("base64");
+      },
+      (row: SourceTransition) => {
+        row.originalSha256 = "0".repeat(64);
+      },
+      (row: SourceTransition) => {
+        row.currentSha256 = "0".repeat(64);
+      },
+      (row: SourceTransition) => {
+        row.edits.pop();
+      },
+      (row: SourceTransition) => {
+        row.edits.reverse();
+      },
+      (row: SourceTransition) => {
+        row.edits[1].offset++;
+      },
+      (row: SourceTransition) => {
+        row.edits[1].before += "foreign";
+      },
+      (row: SourceTransition) => {
+        row.edits[1].after += "\n// foreign\n";
+      },
+    ]) {
+      const changed = structuredClone(transition);
+      mutate(changed);
+      assert.throws(() => preservedSource(changed, live, expected));
+    }
+    assert.throws(() =>
+      preservedSource(transition, Buffer.concat([live, Buffer.from("\nforeign")]), expected),
+    );
+    const foreign = Buffer.concat([live, Buffer.from("\nforeign")]);
+    const rehashed = structuredClone(transition);
+    rehashed.currentSha256 = sha256(foreign);
+    assert.throws(
+      () => preservedSource(rehashed, foreign, expected),
+      "a new hash cannot authorize unrelated source edits",
+    );
+  }
 });
 
 await test("whole parameter goals preserve both policies and complete pinned official Vue packets", async () => {

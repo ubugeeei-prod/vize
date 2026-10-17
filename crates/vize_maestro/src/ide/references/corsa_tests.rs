@@ -27,7 +27,7 @@ fn patterned_references_and_rename_fail_closed_without_a_checker() {
     crate::runtime::block_on(async {
         let project = tempfile::tempdir().unwrap();
         fs::write(
-            project.path().join("vize.config.json"),
+            project.path().join("vite.config.mjs"),
             r#"{"experimentals":{"patternedTemplate":true}}"#,
         )
         .unwrap();
@@ -137,7 +137,7 @@ function unrelated() { const shared = 0; return shared }
         state.set_workspace_root(project.path().to_path_buf());
         if patterned {
             fs::write(
-                project.path().join("vize.config.json"),
+                project.path().join("vite.config.mjs"),
                 r#"{"experimentals":{"patternedTemplate":true}}"#,
             )
             .unwrap();

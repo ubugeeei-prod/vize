@@ -7,7 +7,7 @@ local ruleSeverityEnum: JsonSchema = new JsonSchema {
 }
 local lintPresetEnum: JsonSchema = new JsonSchema {
   type = "string"
-  enum = new Listing { "happy-path"; "opinionated"; "essential"; "incremental"; "ecosystem"; "nuxt" }
+  enum = new Listing { "general-recommended"; "general_recommended"; "generalRecommended"; "happy-path"; "happy_path"; "happy"; "default"; "recommended"; "opinionated"; "strict"; "all"; "essential"; "incremental"; "ecosystem"; "nuxt" }
 }
 linterConfigDef: JsonSchema = new JsonSchema {
   type = "object"
@@ -20,7 +20,7 @@ linterConfigDef: JsonSchema = new JsonSchema {
     ["preset"] = new JsonSchema {
       type = lintPresetEnum.type
       enum = lintPresetEnum.enum
-      description = "Built-in lint preset"
+      description = "Built-in lint preset (happy-path is the recommended canonical name; native aliases are accepted)"
       default = "happy-path"
     }
     ["typeAware"] = new JsonSchema {

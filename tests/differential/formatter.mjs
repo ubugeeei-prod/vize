@@ -10,6 +10,26 @@ import { runPlannedCases, validateResultEnvelope } from "./harness.mjs";
 import { expressionWidthReference } from "./formatter-expression-width-reference.mjs";
 import { soleChildWidthCliReference } from "./formatter-sole-child-width-reference.mjs";
 
+/** Keep archived roles immutable while declaring the exact current CLI transport. */
+export function formatterInvocation(fixture) {
+  if (!fixture.config.length) return {};
+  const originalConfig = fixture.config.map(({ path, sha256 }) => ({ path, sha256 }));
+  assert.equal(originalConfig.length, 1);
+  const originalArgv = [...fixture.argv];
+  const config = originalConfig.map((file) => ({ ...file, path: "serialized-config.json" }));
+  const argv = [...originalArgv];
+  const option = argv.indexOf("--config");
+  assert(option >= 0 && argv[option + 1] === originalConfig[0].path);
+  argv[option + 1] = config[0].path;
+  return {
+    originalArgv,
+    originalConfig,
+    argv,
+    config,
+    configurationMapping: "raw-native-json-explicit-carrier-v1",
+  };
+}
+
 export function assertProcessSucceeded(result) {
   if (result.error) throw result.error;
   assert.equal(result.signal, null, `formatter terminated by ${result.signal}`);
@@ -80,11 +100,14 @@ export function validateFormatterReport(loaded, report, expectedBuild) {
     assert.equal(row.comparison.reason, "native formatter adapter unavailable");
     assert(["completed", "failed"].includes(row.legacy.state));
     if (fixture.config.length) {
-      assert.deepEqual(row.legacy.argv, fixture.argv, "configured invocation is required");
-      assert.deepEqual(
-        row.legacy.config,
-        fixture.config.map(({ path, sha256 }) => ({ path, sha256 })),
-      );
+      const invocation = formatterInvocation(fixture);
+      for (const [field, expected] of Object.entries(invocation)) {
+        assert.deepEqual(
+          row.legacy[field],
+          expected,
+          `configured invocation mapping changed: ${field}`,
+        );
+      }
     }
     assert(Array.isArray(row.legacy.passes) && row.legacy.passes.length <= 3);
     let previous = fixture.input;
@@ -171,22 +194,20 @@ function runFormatterCase(fixture, binaryPath, binaryFailure) {
     comparison: { state: "not-compared", reason: "native formatter adapter unavailable" },
     ...(fixture.currentReference ? { currentReference: fixture.currentReference } : {}),
   };
-  if (fixture.config.length) {
-    row.legacy.argv = [...fixture.argv];
-    row.legacy.config = fixture.config.map(({ path, sha256 }) => ({ path, sha256 }));
-  }
+  const invocation = formatterInvocation(fixture);
+  Object.assign(row.legacy, invocation);
   let workspace;
   try {
     if (binaryFailure) throw new Error(binaryFailure);
     workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-differential-formatter-"));
     const entry = path.join(workspace, "App.vue");
     fs.writeFileSync(entry, fixture.input);
-    for (const file of fixture.config) {
-      fs.writeFileSync(path.join(workspace, file.path), file.bytes);
+    for (const [index, file] of fixture.config.entries()) {
+      fs.writeFileSync(path.join(workspace, invocation.config[index].path), file.bytes);
     }
     for (let pass = 1; pass <= 3; pass += 1) {
       const input = fs.readFileSync(entry);
-      const result = spawnSync(binaryPath, fixture.argv, {
+      const result = spawnSync(binaryPath, invocation.argv ?? fixture.argv, {
         cwd: workspace,
         timeout: 30_000,
         maxBuffer: 4 * 1024 * 1024,
@@ -201,6 +222,13 @@ function runFormatterCase(fixture, binaryPath, binaryFailure) {
         fixture.currentExpected,
       );
       row.legacy.passes.push(observation);
+      for (const [index, file] of fixture.config.entries()) {
+        assert.deepEqual(
+          fs.readFileSync(path.join(workspace, invocation.config[index].path)),
+          file.bytes,
+          "explicit renderer-control carrier must preserve every original native JSON byte",
+        );
+      }
       assertProcessSucceeded(result);
       assert(output, "formatter removed the entry file");
       row.legacy.state = "completed";

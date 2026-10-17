@@ -29,18 +29,20 @@ RFC ごとの診断、直接呼び出せる API、実装の制限、未対応の
 新しい TypeScript 設定では、推奨する camelCase の名前を使ってください。
 
 ```ts
-import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  experimentals: {
-    patternedTemplate: true, inTagComment: true,
-    selfComponent: true, strictSlotChildren: true,
-    serverScript: false, vapor: null, jsxVapor: {},
+  vue: {
+    experimentals: {
+      patternedTemplate: true, inTagComment: true,
+      selfComponent: true, strictSlotChildren: true,
+      serverScript: false, vapor: null, jsxVapor: {},
+    },
   },
 });
 ```
 
-JSON と Pkl でも同じ値を指定できます。
+共有する JavaScript オブジェクト内の JSON データでも同じ値を使えます。
 `{}` は機能を有効にする値です。将来、機能ごとの設定項目を追加できるよう、オブジェクトの形式を残したい場合に使います。
 
 ```json
@@ -53,6 +55,8 @@ JSON と Pkl でも同じ値を指定できます。
   }
 }
 ```
+
+> 移行用の旧形式の例です。PKL 設定は廃止され、読み込まれません。同じ値を上の JavaScript オブジェクトへ移してください。
 
 ```pkl
 amends "node_modules/vize/pkl/vize.pkl"
@@ -80,12 +84,12 @@ experimentals {
 | `{}` | 有効。将来、機能ごとの設定項目を追加できるオブジェクト形式です。 |
 
 キーの省略、`false`、`null` は無効、`true` と `{}` は有効です。
-型付きの TypeScript と Pkl の設定では、この四つの値だけを使ってください。
+TypeScript の型付き設定では、この四つの値だけを使ってください。
 互換性のため、設定の読み込み処理は JSON に存在する `false` と `null` 以外の値も有効とみなしますが、この形式は推奨していません。
 
 ## 優先順位
 
-共有の `vize.config.*` は、プロジェクト設定を読み込むツールの既定値になります。
+共有の `vite.config.*` の `vue.experimentals` は、プロジェクト設定を読み込むツールの既定値になります。
 Vite プラグインに直接渡したオプションは、共有設定より優先します。
 明示的に無効にする指定も、共有設定を上書きします。
 
@@ -156,8 +160,10 @@ API ごとの対応範囲、最小の検証例、低レベルのネイティブ 
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    patternedTemplate: true,
+  vue: {
+    experimentals: {
+      patternedTemplate: true,
+    },
   },
 });
 ```
@@ -220,8 +226,10 @@ Canon は、機能を有効にすると、分岐ごとの型の絞り込み、�
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    inTagComment: true,
+  vue: {
+    experimentals: {
+      inTagComment: true,
+    },
   },
 });
 ```
@@ -261,8 +269,10 @@ Vize は元のテキストを、ツール向けにテンプレートのルート
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    selfComponent: true,
+  vue: {
+    experimentals: {
+      selfComponent: true,
+    },
   },
 });
 ```
@@ -308,8 +318,10 @@ TypeScript（Monaco）を有効にすると、生成した子要素の型が診�
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    strictSlotChildren: true,
+  vue: {
+    experimentals: {
+      strictSlotChildren: true,
+    },
   },
 });
 ```
@@ -359,8 +371,10 @@ Vue テンプレートをコンパイルするだけのビルドでは、検査�
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    serverScript: true,
+  vue: {
+    experimentals: {
+      serverScript: true,
+    },
   },
 });
 ```
@@ -377,8 +391,10 @@ export default defineConfig({
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    vapor: true,
+  vue: {
+    experimentals: {
+      vapor: true,
+    },
   },
 });
 ```
@@ -394,8 +410,10 @@ Vapor をプロジェクトの通常のビルド方式として使う場合は�
 
 ```ts
 export default defineConfig({
-  experimentals: {
-    jsxVapor: true,
+  vue: {
+    experimentals: {
+      jsxVapor: true,
+    },
   },
 });
 ```

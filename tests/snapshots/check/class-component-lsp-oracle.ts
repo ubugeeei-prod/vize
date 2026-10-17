@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "../../tooling/support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -250,10 +251,7 @@ function createWorkspace(corsaPath: string): string {
       include: ["src/**/*.vue"],
     }),
   );
-  fs.writeFileSync(
-    path.join(workspaceDir, "vize.config.json"),
-    json({ typeChecker: { corsaPath } }),
-  );
+  writeVueConfigFixture(workspaceDir, { typeChecker: { corsaPath } });
   return workspaceDir;
 }
 

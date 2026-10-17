@@ -6,7 +6,6 @@ import type {
   LinterConfig,
   TypeCheckerConfig,
   VueOptions,
-  UserConfig as NativeConfig,
 } from "../../../../cli/src/types/index.ts";
 
 export type { VueOptions, VueOptionsEntry } from "../../../../cli/src/types/index.ts";
@@ -37,7 +36,7 @@ export interface VizePackOptions {
 }
 type WithPack<T> = T extends (infer Item)[]
   ? WithPack<Item>[]
-  : T & { vize?: VizePackOptions | false };
+  : T & { vue?: VizePackOptions | false; vize?: never };
 /**
  * Vite and Vite+ both accept a named plugin (including nested async options),
  * but their full Plugin hook types can come from different Vite installations.
@@ -53,21 +52,14 @@ export type CompatiblePluginOption =
 type WithCompatiblePlugins<T> = Omit<T, "plugins"> & {
   plugins?: CompatiblePluginOption[];
 };
-export type VizeSharedConfig = NativeConfig & {
-  /** Alias of lint.vize; lint.vize takes precedence when both are provided. */
-  lint?: VizeLintOptions | boolean;
-};
 export interface VueIntegrationConfig {
   /** Shared native Vue policy. */
   vue?: VueOptions;
-  extends?: VueConfig | VueConfig[];
   compiler?: VizeCompilerOptions | false;
   typecheck?: TypeCheckerConfig | boolean;
-  lint?: UserConfig["lint"] & { vize?: VizeLintOptions | boolean };
-  fmt?: UserConfig["fmt"] & { vize?: FormatterConfig | boolean };
+  lint?: UserConfig["lint"] & { vue?: VizeLintOptions | boolean; vize?: never };
+  fmt?: UserConfig["fmt"] & { vue?: FormatterConfig | boolean; vize?: never };
   pack?: WithPack<NonNullable<UserConfig["pack"]>>;
-  /** Shared native settings, including scopes, globals and editor settings. */
-  vize?: VizeSharedConfig | UserConfigExport;
 }
 type WithVize<T> = T extends (...args: infer Args) => infer Result
   ? (...args: Args) => WithVize<Result>
@@ -110,7 +102,11 @@ export interface VizeTaskConfig {
   lintHelpLevel?: VizeLintOptions["helpLevel"];
   fmtIgnorePatterns?: string[];
 }
-export type VizePlusConfigFactory = (env: ConfigEnv) => Promise<UserConfig>;
+export interface VizePlusConfigFactory {
+  (env: ConfigEnv): Promise<ConfigWithVizeTasks>;
+  /** Configure native Vue tooling without changing the existing Vite+ export. */
+  withVue(vue: VueOptions): VizePlusConfigFactory;
+}
 export const sourceConfigKey = Symbol.for("@vizejs/vite-plugin/vite-plus/source");
 export const taskConfigKey = Symbol.for("@vizejs/vite-plugin/vite-plus");
 export type ConfigWithVizeTasks = UserConfig & { [taskConfigKey]?: VizeTaskConfig };

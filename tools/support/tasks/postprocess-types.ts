@@ -82,7 +82,7 @@ export function postprocessGeneratedTypes(input: string): string {
   const marker = "regenerate this file.\n */\n";
   const typeAliases =
     "\n" +
-    'export type LintPreset = "happy-path" | "opinionated" | "essential" | "incremental" | "ecosystem" | "nuxt";\n' +
+    'export type LintPreset = NonNullable<LinterConfig["preset"]>;\n' +
     "\n" +
     'export type RuleSeverity = "off" | "warn" | "error";\n' +
     "\n" +

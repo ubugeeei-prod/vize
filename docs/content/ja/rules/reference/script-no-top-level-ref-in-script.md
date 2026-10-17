@@ -20,8 +20,8 @@ title: "script/no-top-level-ref-in-script"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-top-level-ref-in-script": "error"

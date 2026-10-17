@@ -1,6 +1,8 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{fs, path::Path, process::Command};
 
 fn write_file(root: &Path, path: &str, content: &str) {
@@ -24,14 +26,16 @@ fn lint_config_can_enable_undefined_template_refs() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "rules": {
       "vue/no-undefined-refs": "warn"
     }
   }
 }"#,
+        ),
     );
     write_file(
         project_root.path(),
@@ -50,7 +54,7 @@ const known = 1
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/App.vue",

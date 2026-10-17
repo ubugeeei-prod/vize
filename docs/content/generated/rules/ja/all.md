@@ -6,7 +6,7 @@ title: 全 lint ルール
 
 ルールの目的、既定の設定、所属するカテゴリを探すための一覧です。説明・設定・完全な悪い例と良い例・現在の対応範囲は、各カテゴリのページで確認できます。この一覧の既存のルール・例へのリンクも引き続き使用できます。
 
-Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lint.vize.rules` に指定します。`vp run lint` で Vize と Oxlint の lint を実行します。
+Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue.linter.rules` に指定します。`vp run lint` で Vize と Oxlint の lint を実行します。
 
 既定の重大度は実装で定められた値です。プロジェクトでは `off` / `warn` / `error` に変更できます。オプションは[ルールのオプション](./options.md)、複数ファイルの検査は[ファイル間ルール](./cross-file.md)を参照してください。
 

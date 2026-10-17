@@ -2,14 +2,35 @@ use super::ServerState;
 use vize_l0::config::TypeCheckerConfig;
 
 #[test]
-fn native_checker_snapshot_retains_raw_values_and_separate_origin_on_reload() {
+fn native_checker_snapshot_retains_resolved_values_and_separate_origin_on_reload() {
     let directory = tempfile::tempdir().unwrap();
-    let config_path = directory.path().join("vize.config.json");
+    let config_path = directory.path().join("vite.config.mjs");
     let config = TypeCheckerConfig {
         strict: true,
-        tsconfig: Some("app/tsconfig.json".into()),
-        tsgo_path: Some("tools/corsa".into()),
-        globals_file: Some("globals.d.ts".into()),
+        tsconfig: Some(
+            directory
+                .path()
+                .join("app/tsconfig.json")
+                .to_str()
+                .unwrap()
+                .into(),
+        ),
+        tsgo_path: Some(
+            directory
+                .path()
+                .join("tools/corsa")
+                .to_str()
+                .unwrap()
+                .into(),
+        ),
+        globals_file: Some(
+            directory
+                .path()
+                .join("globals.d.ts")
+                .to_str()
+                .unwrap()
+                .into(),
+        ),
         servers: Some(2),
         ..TypeCheckerConfig::default()
     };
@@ -22,13 +43,13 @@ fn native_checker_snapshot_retains_raw_values_and_separate_origin_on_reload() {
             state.native_checker_settings(),
             (TypeCheckerConfig::default(), 60_000, None)
         );
-        std::fs::write(&config_path, r#"{"typeChecker":{"strict":true,"tsconfig":"app/tsconfig.json","corsaPath":"tools/corsa","globalsFile":"globals.d.ts","servers":2,"lspRequestTimeoutMs":91000}}"#).unwrap();
+        std::fs::write(&config_path, r#"export default { vue: {"typeChecker":{"strict":true,"tsconfig":"app/tsconfig.json","corsaPath":"tools/corsa","globalsFile":"globals.d.ts","servers":2,"lspRequestTimeoutMs":91000}} };"#).unwrap();
         load(&state, directory.path());
         assert_eq!(
             state.native_checker_settings(),
             (config.clone(), 91_000, Some(config_path.clone()))
         );
-        std::fs::write(&config_path, "{}").unwrap();
+        std::fs::write(&config_path, "export default { vue: {} };").unwrap();
         load(&state, directory.path());
         assert_eq!(
             state.native_checker_settings(),
@@ -51,7 +72,7 @@ fn concurrent_native_checker_reads_keep_values_timeout_and_origin_together() {
             ..TypeCheckerConfig::default()
         },
         91_000,
-        std::path::PathBuf::from("first/vize.config.json"),
+        std::path::PathBuf::from("first/vite.config.mjs"),
     );
     let second = (
         TypeCheckerConfig {
@@ -60,7 +81,7 @@ fn concurrent_native_checker_reads_keep_values_timeout_and_origin_together() {
             ..TypeCheckerConfig::default()
         },
         92_000,
-        std::path::PathBuf::from("second/vize.config.json"),
+        std::path::PathBuf::from("second/vite.config.mjs"),
     );
     state.install_type_checker_snapshot(first.0.clone(), first.1, &first.2);
     std::thread::scope(|scope| {

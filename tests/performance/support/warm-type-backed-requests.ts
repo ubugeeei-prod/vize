@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import { qualifyBenchmarkConfig } from "../../tooling/support/benchmark-config-contract.ts";
 import { LspSession } from "../../tooling/support/lsp/session.ts";
 import type { PublishedSessionBinding } from "../../tooling/support/lsp/session-process.ts";
 import { decodeFrames } from "../../differential/lsp-wire.ts";
@@ -41,11 +42,16 @@ export async function runSide(
   coldStart = false,
 ) {
   const binary = published?.binary ?? path.join(repoRoot, "target/ci/vize");
+  // Probe this exact binary before capture, startup timing, or priming begins.
+  const configContract = qualifyBenchmarkConfig(
+    binary,
+    path.join(output, "config-qualification.json"),
+  );
   const captureRoot =
     published?.captureRoot ?? path.join(repoRoot, "target/differential/lsp-sessions");
   fs.mkdirSync(captureRoot, { recursive: true });
   const previous = fs.readdirSync(captureRoot);
-  const inputs = generateWorkspace(workspace, runtime);
+  const inputs = generateWorkspace(workspace, runtime, configContract);
   const source = inputs.source["src/c/Comp0.vue"];
   const uri = pathToFileURL(path.join(workspace, "src/c/Comp0.vue")).href;
   let session: LspSession | undefined;
@@ -87,7 +93,7 @@ export async function runSide(
         remember(error);
       }
     }
-    changedInputs = await controls(recorder, workspace, source, runtime);
+    changedInputs = await controls(recorder, workspace, source, runtime, configContract);
   } catch (error) {
     remember(error);
   } finally {

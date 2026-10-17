@@ -2,6 +2,8 @@
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "support/vite_config.rs"]
+mod vite_config;
 
 use std::{
     path::{Path, PathBuf},
@@ -100,8 +102,8 @@ fn check_tsx_intrinsic_elements_with_experimental_jsx_vapor() {
     std::fs::create_dir_all(project_root.join("src")).unwrap();
     link_workspace_vue(&project_root).unwrap();
     std::fs::write(
-        project_root.join("vize.config.json"),
-        r#"{ "experimentals": { "jsxVapor": {} } }"#,
+        project_root.join("vite.config.mjs"),
+        vite_config::source(r#"{ "experimentals": { "jsxVapor": {} } }"#),
     )
     .unwrap();
     std::fs::write(
@@ -184,8 +186,8 @@ fn check_tsx_vapor_keeps_script_type_errors() {
         return;
     }
     std::fs::write(
-        project_root.join("vize.config.json"),
-        r#"{ "experimentals": { "jsxVapor": {} } }"#,
+        project_root.join("vite.config.mjs"),
+        vite_config::source(r#"{ "experimentals": { "jsxVapor": {} } }"#),
     )
     .unwrap();
     std::fs::write(

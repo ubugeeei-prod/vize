@@ -20,8 +20,11 @@ mod tests {
 
     fn flags_for(config: &str) -> Option<bool> {
         let dir = tempfile::tempdir().unwrap();
-        std::fs::write(dir.path().join("vize.config.json"), config).unwrap();
-        load_language_server_unstable_flags(Some(dir.path())).signature_help
+        // The serialized native API retains the legacy alias contract; project
+        // Vite configuration accepts only the canonical languageServer section.
+        let path = dir.path().join("serialized-config.json");
+        std::fs::write(&path, config).unwrap();
+        load_language_server_unstable_flags(Some(&path)).signature_help
     }
 
     #[test]

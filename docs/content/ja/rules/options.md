@@ -7,7 +7,7 @@ title: ルールのオプション
 <!-- Type-aware reference: [型ルールのオプション](./options-type.md) -->
 
 ルールの判定方法をプロジェクトに合わせたいときに、このページを使ってください。
-Vite+ では `vite.config.ts` の `lint.vize.ruleOptions` に指定し、`vp run lint` で検査します。
+Vite+ では `vite.config.ts` の `vue.linter.ruleOptions` に指定し、`vp run lint` で検査します。
 単独で使う互換設定では、同じ内容を `linter.ruleOptions` に指定します。
 
 `linter.ruleOptions` には、オプションを受け取るルールの設定をプロジェクトごとに指定します。
@@ -538,8 +538,8 @@ Vuetify のデータテーブルなど、ドットを含むスロット名を使
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       rules: { "vue/valid-v-slot": "error" },
       ruleOptions: { "vue/valid-v-slot": { allowModifiers: true } },
     },
@@ -627,8 +627,8 @@ export default defineConfig({
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       rules: { "script/define-props-destructuring": "warn" },
       ruleOptions: { "script/define-props-destructuring": { destructure: "only-when-assigned" } },
     },
@@ -653,7 +653,7 @@ const { size = "md" } = defineProps<{ size?: string }>();
 ```
 
 ESLint からの移行では、ルール名とオプションの指定位置を変更します。
-追加する `rules` と `ruleOptions` は、上記の `lint.vize` に指定してください。
+追加する `rules` と `ruleOptions` は、上記の `vue.linter` に指定してください。
 
 ```ts annotate="remove:1;add:2,3"
  rules: { "vue/define-props-destructuring": ["warn", "always"] }
@@ -671,8 +671,8 @@ PascalCase と kebab-case の表記を許可し、正規表現は解釈しませ
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "rules": {
         "vue/require-component-registration": "warn"
       },

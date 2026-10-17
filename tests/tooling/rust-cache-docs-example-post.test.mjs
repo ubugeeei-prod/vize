@@ -111,7 +111,7 @@ await test("docs examples use separate primary and secondary target directories"
   assert.equal(scripts.build, "pnpm check && vp build --config vite.app.config.ts");
   assert.equal(
     scripts.check,
-    "cargo run --quiet --target-dir ../../.docs-example-target --manifest-path ../../Cargo.toml -p vize -- check && vp check src vite.config.ts vite.app.config.ts vite.ui-gallery.config.ts vize.config.ts vite.globals.config.ts musea.preview.ts playwright.config.ts",
+    "cargo run --quiet --target-dir ../../.docs-example-target --manifest-path ../../Cargo.toml -p vize -- check && vp check src vite.config.ts vite.app.config.ts vite.ui-gallery.config.ts vite.globals.config.ts musea.preview.ts playwright.config.ts",
   );
 });
 

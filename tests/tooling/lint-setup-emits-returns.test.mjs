@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 await test("setup emits validators preserve compiler ownership and complete CLI packets", () => {
@@ -61,10 +62,11 @@ await test("setup emits validators preserve compiler ownership and complete CLI 
       assert.equal(bytes.toString("utf8"), entry.source);
       assert.equal(sha256(bytes), entry.sourceSha256);
       fs.writeFileSync(file, bytes);
-      if (config) fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+      const configSource = config ? vueConfigFixtureSource(config) : null;
+      const configFile = config ? writeVueConfigFixture(directory, config) : null;
       const argv = [
         "lint",
-        ...(config ? ["-c", "vize.config.json"] : ["--no-config"]),
+        ...(configFile ? ["-c", path.basename(configFile)] : ["--no-config"]),
         ...(preset ? ["--preset", preset] : []),
         "--format",
         "json",
@@ -85,6 +87,7 @@ await test("setup emits validators preserve compiler ownership and complete CLI 
         id: entry.id,
         argv,
         config,
+        configSource,
         status: run.status,
         signal: run.signal,
         error: run.error ? { name: run.error.name, message: run.error.message } : null,
@@ -109,9 +112,9 @@ await test("setup emits validators preserve compiler ownership and complete CLI 
       assert.deepEqual(observed.actual, observed.expected, entry.id);
       assert.equal(observed.input.text, entry.source);
       assert.equal(observed.input.sha256, entry.sourceSha256);
-      if (config) {
-        assert.equal(fs.readFileSync(path.join(directory, "vize.config.json"), "utf8"), config);
-        fs.unlinkSync(path.join(directory, "vize.config.json"));
+      if (configFile) {
+        assert.equal(fs.readFileSync(configFile, "utf8"), configSource);
+        fs.unlinkSync(configFile);
       }
       fs.unlinkSync(file);
     }

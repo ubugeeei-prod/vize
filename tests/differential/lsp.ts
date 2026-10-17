@@ -9,6 +9,7 @@ import { assertExactRows, sha256 } from "./harness.mjs";
 import { initializeCapabilities, loadLspManifest, NATIVE_REASON } from "./lsp-manifest.ts";
 import { inspectLspObservation, validateLspReport } from "./lsp-report.ts";
 import { LspWire } from "./lsp-wire.ts";
+import { lspWorkspace, observeLspWorkspace } from "./lsp-workspace.ts";
 import {
   errorText,
   hasCapabilities,
@@ -35,15 +36,18 @@ async function runLspCase(
   let workspace;
   let wire;
   try {
+    const active = lspWorkspace(fixture);
+    row.legacy.workspace = { mapping: active.mapping };
     if (binaryFailure) throw new Error(binaryFailure);
     assert(typeof binaryPath === "string");
     workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-differential-lsp-"));
-    for (const file of fixture.files) {
+    for (const file of active.files) {
       const destination = path.join(workspace, file.runtimePath);
       fs.mkdirSync(path.dirname(destination), { recursive: true });
       fs.writeFileSync(destination, file.bytes);
     }
     workspace = fs.realpathSync(workspace);
+    row.legacy.workspace.before = observeLspWorkspace(workspace, active.mapping);
     const workspaceUri = pathToFileURL(workspace).href;
     const entryUri = pathToFileURL(path.join(workspace, fixture.entry)).href;
     wire = new LspWire(binaryPath, ["lsp"], workspace);
@@ -80,6 +84,7 @@ async function runLspCase(
       });
     }
     await wire.finish();
+    row.legacy.workspace.after = observeLspWorkspace(workspace, active.mapping);
     row.legacy.observation = { ...wire.observation(), workspaceUri };
     for (const stream of ["client", "server"] as const) {
       row.legacy.observation[`${stream}WireSha256`] = sha256(

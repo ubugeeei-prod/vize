@@ -22,8 +22,8 @@ title: "type/no-floating-promises"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/no-floating-promises": "warn"

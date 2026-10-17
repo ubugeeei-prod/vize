@@ -10,9 +10,6 @@ title: Vue の設定を共有する
 CLI、エディタで同じオプション名を使えます。ビルド、型チェック、Lint、整形を
 まとめて実行するには、[Vite+ 連携](./vite-plus.md)から始めてください。
 
-この API は次のマイナーリリースに向けた変更です。現在公開されているバージョンでは、
-[設定ガイド](./configuration.md)にある方法を使ってください。
-
 ## 設定を一つにまとめる
 
 ```ts
@@ -33,27 +30,28 @@ export default defineConfig({
 
 `vue` では、ネイティブの `compiler`、`typeChecker`、`linter`、`formatter`、
 `languageServer`、`globalTypes`、`files`、`ignores`、`basePath`、`lib` を使います。
-`version` と `entries` も指定できます。コンパイラと整形のセクションには
+`version`、`vite`、`musea`、`experimentals`、`dialect`、`name`、`entries` も指定できます。コンパイラと整形のセクションには
 `enabled` はありません。型チェッカー、Linter、言語サーバーでは、ネイティブと
 同じ `enabled` を使えます。未知のキーを canonical な `vue` に置くとエラーになります。
 
 ## 既存の Vite+ 設定を使う
 
 ```ts
-import { defineConfig } from "vite-plus";
-import { withVue } from "@vizejs/vite-plugin/vite-plus";
-import vpConfig from "./vite.base.ts";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default withVue(
-  { compiler: { sourceMap: true }, formatter: { singleQuote: true } },
-  defineConfig(vpConfig),
-);
+const vpConfig = { server: { port: 3000 } };
+const vueConfig = {
+  compiler: { sourceMap: true },
+  formatter: { singleQuote: true },
+};
+
+export default defineConfig(vpConfig).withVue(vueConfig);
 ```
 
-最小の形は `withVue({}, defineConfig(vpConfig))` です。第1引数に Vue の設定、
-第2引数に既存の Vite+ 設定を渡します。オブジェクト、Promise、設定関数、async 関数を
-使えます。既存の設定関数には、評価時に Vite の環境が渡されます。既存のプラグイン、
-フック、Vite+ のフィールドを保ち、Vite+ のプラグイン注入は1回だけ実行します。
+既存の Vite+ オブジェクト、Promise、設定関数、async 関数をそのまま渡せます。
+設定関数には Vite の環境を渡し、プラグイン、フック、Vite+ のフィールドを保ちます。
+Vue プラグインの注入は1回だけ実行します。通常の JavaScript オブジェクトを import して
+共有できるため、Vize 専用の設定ファイルや独自の `extends` は不要です。
 
 ## パスとスコープ
 
@@ -83,18 +81,18 @@ canonical な entry に置けるのは、現在 `basePath`、`files`、`ignores`
 CLI のスコープ付き Lint は従来の動作を保ちます。エディタでのファイル単位のスコープ適用と、
 ほかのセクションのスコープ対応は未完了です。
 
+## TypeScript プロジェクトの設定
+
+TypeScript の `compilerOptions`、標準の `extends`、`references` は既存の
+TypeScript プロジェクトに置きます。`strictTemplates` などの Vue テンプレート設定は
+`vueCompilerOptions` に記述します。CLI とエディタはこのプロジェクト設定を使います。
+[設定ガイド](./configuration.md#typescript-and-vue-template-checking)も参照してください。
+
 ## 既存の設定を移行する
 
-トップレベルの `vize` にあるネイティブ設定を `vue` に移します。
-Vite+ のタスク用の `typecheck`、`lint.vize`、`fmt.vize` の代わりに、
-`typeChecker`、`linter`、`formatter` を使います。既存の設定の入口も引き続き受け付けます。
-従来の設定を第1引数に取る `withVue(config)` は、Vue オプションを先に渡す形に変わります。
-以前の呼び出し方を保つ場合は、`defineConfig(config)` または `withVize(config)` を使ってください。
-同じ選択済みの Vite 設定に両方ある場合、明示した canonical の値を優先します。
-省略した値は継承し、配列は置き換え、`false` はそのまま保ちます。
-
-ネイティブ CLI とエディタの自動探索では、既存の `vize.config.*` が引き続き優先されます。
-Vite+ ヘルパーは選択された設定を使い、選択されていない専用ファイルの値を混ぜません。
-canonical な設定をネイティブコマンドと共有する場合は、選択される Vite 設定にまとめてください。
-既存の形式と明示的なファイル選択は、[専用設定のリファレンス](./configuration-reference.md)を
-参照してください。
+トップレベルの `vize:` と `vize.config.*` のネイティブ設定を `vue:` に移します。
+Vue ツールには `typeChecker`、`linter`、`formatter` を使い、Vite+ のタスク拡張には
+`typecheck`、`lint.vue`、`fmt.vue`、`pack.vue` を使います。廃止した専用設定の形式と
+Vize 独自の `extends` は読みません。共有する設定は通常の JavaScript オブジェクトとして
+import してください。`vueCompilerOptions` を含む TypeScript の設定は
+`tsconfig.json` に置きます。

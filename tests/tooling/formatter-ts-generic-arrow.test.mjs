@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -145,15 +146,15 @@ void test("original TS generics retain full bytes while TSX keeps disambiguation
         fs.writeFileSync(file, fixture.source);
         if (fixture.endOfLine)
           fs.writeFileSync(
-            path.join(cwd, "vize.config.json"),
-            `${JSON.stringify({ formatter: { endOfLine: fixture.endOfLine } })}\n`,
+            path.join(cwd, "vite.config.mjs"),
+            vueConfigFixtureSource({ formatter: { endOfLine: fixture.endOfLine } }),
           );
         const call = (mode) => {
           const before = fs.readFileSync(file);
           const result = invoke(cwd, [
             "fmt",
             mode,
-            ...(fixture.endOfLine ? ["--config", "vize.config.json"] : ["--no-config"]),
+            ...(fixture.endOfLine ? ["--config", "vite.config.mjs"] : ["--no-config"]),
             fixture.file,
           ]);
           const after = fs.readFileSync(file);

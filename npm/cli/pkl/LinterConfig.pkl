@@ -5,7 +5,7 @@ typealias RuleSeverity = "off"|"warn"|"error"
 
 typealias RuleCategory = "correctness"|"suspicious"|"style"|"perf"|"a11y"|"security"
 
-typealias LintPreset = "happy-path"|"opinionated"|"essential"|"incremental"|"ecosystem"|"nuxt"
+typealias LintPreset = "general-recommended" | "general_recommended" | "generalRecommended" | "happy-path" | "happy_path" | "happy" | "default" | "recommended" | "opinionated" | "strict" | "all" | "essential" | "incremental" | "ecosystem" | "nuxt"
 typealias TemplateComponentNameCasing = "PascalCase"|"kebab-case"
 typealias CustomEventNameCasing = "camelCase"|"kebab-case"
 typealias HtmlSelfClosingStyle = "always"|"never"|"any"

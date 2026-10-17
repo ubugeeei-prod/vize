@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -85,8 +86,8 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
       report.rows.push(row);
       persist();
       const file = path.join(directory, "Example.vue");
-      const configPath = path.join(directory, "vize.config.json");
-      const config = Buffer.from(`${JSON.stringify({ formatter: fixture.options })}\n`);
+      const configPath = path.join(directory, "vite.config.mjs");
+      const config = Buffer.from(vueConfigFixtureSource({ formatter: fixture.options }));
       fs.writeFileSync(file, input);
       fs.writeFileSync(configPath, config);
       for (const mode of ["--check", "--write", "--write", "--write", "--check"]) {
@@ -145,24 +146,24 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
     50,
   );
   for (const configuration of [
-    { id: "original-paragraph-json", case: "original-paragraph", name: "vize.config.json" },
+    { id: "original-paragraph-json", case: "original-paragraph", name: "vite.config.mjs" },
     {
       id: "original-ts-discovered",
       case: "original-example",
-      name: "vize.config.ts",
+      name: "vite.config.ts",
       fixture: "vize.config.ts.txt",
     },
     {
       id: "original-ts-explicit",
       case: "original-example",
-      name: "explicit.ts",
+      name: "vite.config.mts",
       fixture: "vize.config.ts.txt",
       explicit: true,
     },
     {
       id: "original-json-explicit",
       case: "original-example",
-      name: "explicit.json",
+      name: "vite.config.mjs",
       fixture: "vize.config.json.txt",
       explicit: true,
     },
@@ -175,9 +176,16 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
     const configPath = path.join(project, configuration.name);
     const input = fs.readFileSync(path.join(fixtureRoot, selected.input));
     const expected = fs.readFileSync(path.join(fixtureRoot, selected.output));
-    const config = configuration.fixture
+    // Frozen native carriers retain their original bytes; only the active Vite
+    // module changes representation. TypeScript archives here are plain exports.
+    const originalConfig = configuration.fixture
       ? fs.readFileSync(path.join(fixtureRoot, configuration.fixture))
       : Buffer.from(`${JSON.stringify({ formatter: selected.options })}\n`);
+    const document = configuration.fixture?.endsWith(".ts.txt")
+      ? (await import(`data:text/javascript,${encodeURIComponent(originalConfig.toString())}`))
+          .default
+      : JSON.parse(originalConfig.toString());
+    const config = Buffer.from(vueConfigFixtureSource(document));
     fs.writeFileSync(file, input);
     fs.writeFileSync(configPath, config);
     for (const [pass, mode] of ["--check", "--write", "--write", "--write", "--check"].entries()) {
@@ -195,6 +203,7 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
       const after = fs.readFileSync(file);
       report.configuredCli.push({
         id: configuration.id,
+        originalConfigurationBase64: originalConfig.toString("base64"),
         args,
         status: result.status,
         signal: result.signal,

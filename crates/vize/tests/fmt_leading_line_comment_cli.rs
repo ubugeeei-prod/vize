@@ -7,6 +7,9 @@
     clippy::disallowed_types,
     reason = "whole filesystem and process fixtures"
 )]
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use std::{fs, process::Command};
 
 const ORIGINAL: &str = include_str!(
@@ -22,9 +25,9 @@ fn original_write_write_write_check_is_stable_without_project_configuration() {
         let project = tempfile::tempdir().unwrap();
         let input = project.path().join("Min.vue");
         fs::write(&input, ORIGINAL).unwrap();
-        let config = "{\"formatter\":{\"tabWidth\":9}}\n";
+        let config = vite_config::source("{\"formatter\":{\"tabWidth\":9}}\n");
         if ignored_config {
-            fs::write(project.path().join("vize.config.json"), config).unwrap();
+            fs::write(project.path().join("vite.config.mjs"), &config).unwrap();
         }
         for (flag, changed, code, expected_bytes) in [
             ("--check", true, 1, ORIGINAL),
@@ -58,7 +61,7 @@ fn original_write_write_write_check_is_stable_without_project_configuration() {
             assert_eq!(fs::read(&input).unwrap(), expected_bytes.as_bytes());
             if ignored_config {
                 assert_eq!(
-                    fs::read(project.path().join("vize.config.json")).unwrap(),
+                    fs::read(project.path().join("vite.config.mjs")).unwrap(),
                     config.as_bytes()
                 );
             }

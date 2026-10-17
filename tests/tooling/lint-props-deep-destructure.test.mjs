@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -62,11 +63,11 @@ await test("owned prop destructuring preserves thirty six whole source CLI packe
       assert.equal(sha256(source), entry.sourceSha256);
       const filename = path.join(directory, entry.filename);
       fs.writeFileSync(filename, source);
-      fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+      writeVueConfigFixture(directory, config);
       const argv = [
         "lint",
         "--config",
-        "vize.config.json",
+        "vite.config.mjs",
         "--format",
         "json",
         "--locale",

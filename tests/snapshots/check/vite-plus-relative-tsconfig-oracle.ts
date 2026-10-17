@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "../../tooling/support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -255,7 +256,10 @@ void test("missing and zero-workload selected projects fail without inventing di
 void test("unconfigured no-match and intentionally disabled checking keep the existing empty contract", async () => {
   const oracle = await ProjectOracle.create("legacy-empty");
   try {
-    oracle.write("vize.config.json", JSON.stringify({ typeChecker: { tsconfig: "missing.json" } }));
+    oracle.write(
+      "vite.config.mts",
+      vueConfigFixtureSource({ typeChecker: { tsconfig: "missing.json" } }),
+    );
     const unmatched = oracle.direct("unconfigured-unmatched", [
       "--no-config",
       "does-not-exist.vue",
@@ -277,7 +281,7 @@ void test("unconfigured no-match and intentionally disabled checking keep the ex
     assert.equal(disabled.stdout, "");
     assert.equal(
       disabled.stderr,
-      "[vize] Skipping check because typeChecker.enabled is false in vize.config.\n",
+      "[vize] Skipping check because typeChecker.enabled is false in vite.config.* vue settings.\n",
     );
     assert.equal(disabled.report, null);
     assert.deepEqual(await oracle.disabledFrontend(), { status: 0, launches: 0 });

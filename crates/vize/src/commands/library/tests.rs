@@ -119,8 +119,8 @@ fn pull_uses_dir_flag_then_config_then_registry_default() {
     ui_v1(&project.registry("ui"));
     composable_v1(&project.registry("composable"));
     project.write(
-        "vize.config.json",
-        r#"{ "lib": { "composableDir": "src/use" } }"#,
+        "vite.config.mjs",
+        r#"export default { vue: { "lib": { "composableDir": "src/use" } } };"#,
     );
 
     project
@@ -231,8 +231,8 @@ fn pull_rejects_lockfile_configured_outside_project() {
     let project = Project::new();
     ui_v1(&project.registry("ui"));
     project.write(
-        "vize.config.json",
-        r#"{ "lib": { "lockfile": "../outside.lock.json" } }"#,
+        "vite.config.mjs",
+        r#"export default { vue: { "lib": { "lockfile": "../outside.lock.json" } } };"#,
     );
 
     let error = project.run_with(&["ui"], &["pull", "id"]).unwrap_err();
@@ -304,4 +304,38 @@ fn tampered_registry_files_are_rejected() {
         "{error}"
     );
     assert!(!project.path(ID_TS).exists());
+}
+
+#[test]
+fn init_creates_shared_vue_library_settings() {
+    let project = Project::new();
+    let report = project.json(&[], &["init"]);
+    assert_eq!(report["configPath"], "vite.config.mjs");
+    assert_eq!(report["action"], "create");
+    let source = project.read("vite.config.mjs");
+    assert!(source.contains("\"vue\""), "{source}");
+    assert!(!source.contains("\"vize\""), "{source}");
+    assert!(!project.path("vize.config.json").exists());
+}
+
+#[test]
+fn init_preserves_an_existing_vite_configuration_and_prints_vue_snippet() {
+    let project = Project::new();
+    let source = "export default { server: { port: 3000 } };\n";
+    project.write("vite.config.mjs", source);
+    let report = project.json(&[], &["init"]);
+    assert_eq!(report["action"], "manual");
+    assert_eq!(project.read("vite.config.mjs"), source);
+    assert!(report["hints"].as_array().unwrap().iter().any(|hint| {
+        hint.as_str()
+            .is_some_and(|hint| hint.contains("vue: { lib:"))
+    }));
+}
+
+#[test]
+fn init_dry_run_does_not_create_a_configuration() {
+    let project = Project::new();
+    let report = project.json(&[], &["init", "--dry-run"]);
+    assert_eq!(report["action"], "create");
+    assert!(!project.path("vite.config.mjs").exists());
 }

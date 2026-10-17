@@ -20,7 +20,8 @@ import {
 
 const configPaths = [
   "tsconfig.json",
-  "vize.config.json",
+  "vize.config.json.fixture",
+  "vite.config.mjs",
   `${PLAYGROUND}/compiler-options.json`,
   "project-root-map.d.ts",
 ];

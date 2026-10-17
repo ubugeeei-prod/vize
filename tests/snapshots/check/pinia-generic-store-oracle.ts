@@ -58,8 +58,7 @@ test("Pinia generic stores stay exact across dependency edits", async () => {
       );
       symlinkDirectory(fixture.resolve("packages/pinia"), fixture.resolve("node_modules/pinia"));
       fixture.write("tsconfig.json", `${JSON.stringify(tsconfig, null, 2)}\n`);
-      fixture.write(
-        "vize.config.json",
+      fixture.writeVueConfig(
         `${JSON.stringify(
           {
             lsp: { completion: true, editor: true, hover: true, lint: false, typecheck: true },

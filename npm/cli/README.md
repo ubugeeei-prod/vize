@@ -26,15 +26,18 @@ vp dlx vize setup
 The command:
 
 - installs `vize`, the Vite and Musea plugins, Oxlint, and `oxlint-plugin-vize`;
-- creates `vize.config.ts` and, for plain Vite projects, `oxlint.config.ts` when no supported config
-  already exists;
+- keeps Vue settings in the existing `vite.config.*`, creates `tsconfig.json` when absent,
+  and creates `oxlint.config.ts` for plain Vite projects when needed;
 - enables the Vize Oxlint preset in the `lint` block of a standard Vite+ config, so `vp lint`
   checks Vue files;
 - adds non-conflicting `vize:*` package scripts for build, format, lint, check, Musea, and `ready`;
 - replaces a canonical zero-option `@vitejs/plugin-vue` import with `@vizejs/vite-plugin`, then
   removes the old dependency.
 
-Setup is idempotent. It preserves existing config files and package scripts, and it leaves custom
+Setup is idempotent. It preserves existing config files and package scripts. Dedicated
+`vize.config.*` files are retired: setup leaves them unchanged and reports the migration to
+`vue:` in `vite.config.*` and `vueCompilerOptions` in `tsconfig.json`. A dedicated-only project
+must migrate before setup can complete. Setup leaves custom
 Vite plugin calls such as `vue({ ... })` unchanged because those options need a deliberate
 migration. Use `vize setup --no-install` to generate the files and scripts without changing
 dependencies.
@@ -95,22 +98,17 @@ For one-off local debugging, the installed binary is also available through npm 
 vp exec vize lint --preset essential src
 ```
 
-Shared config discovery is supported for the npm package commands:
-
-- `vize.config.pkl`
-- `vize.config.ts`
-- `vize.config.js`
-- `vize.config.mjs`
-- `vize.config.json`
-
-Pkl config files require either `@pkl-community/pkl` installed in the project or a `pkl` binary on
-`PATH`. The Pkl runtime is optional so packages that only consume Vize through framework plugins do
-not install it by default.
+The npm commands read the selected project's `vite.config.ts`, `.mts`, `.cts`,
+`.js`, `.mjs` or `.cjs`. Put native Vue settings in `vue:`. With Vite+, keep your
+existing configuration and add native settings through the fluent helper:
 
 ```ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+const vpConfig = { server: { port: 3000 } };
+
+export default defineConfig(vpConfig).withVue({
   compiler: {
     sourceMap: true,
     vapor: false,
@@ -126,22 +124,38 @@ export default defineConfig({
     strictSlotChildren: false,
     serverScript: false,
   },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-  linter: {
-    preset: "opinionated",
-  },
+  vite: { scanPatterns: ["src/**/*.vue"] },
+  linter: { preset: "opinionated" },
   typeChecker: {
     enabled: true,
-    strict: true,
     // Large cold LSP projects can raise the default 60-second Corsa request bound.
     lspRequestTimeoutMs: 90000,
   },
 });
 ```
 
-Override config discovery with `--config`, or disable it with `--no-config`.
+For ordinary Vite, use `defineConfig` from `vite`, keep `plugins: [vize()]`, and
+place the same native settings in `vue: { ... }`.
+
+Keep TypeScript strictness and Vue template options in `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": { "strict": true, "noEmit": true },
+  "vueCompilerOptions": { "strictTemplates": true },
+  "include": ["src/**/*"]
+}
+```
+
+Standard TypeScript `extends` and project `references` remain supported. There is
+no Vize-specific config `extends`; import ordinary JavaScript settings and pass
+them to `defineConfig(vpConfig).withVue(vueConfig)` instead.
+
+Dedicated `vize.config.*` files and top-level `vize:` are no longer supported.
+A stale dedicated file beside a Vite config is ignored; a dedicated-only project
+receives a migration error. Override Vite configuration selection with `--config`,
+select a TypeScript project with `--tsconfig`, or disable shared Vue config with
+`--no-config`. CLI, Vite integration and editor use the same project settings.
 
 ## Static Analysis
 
@@ -304,17 +318,20 @@ tool coverage, and upstream RFC links.
 
 ## Programmatic Config Helpers
 
+Use the Vite+ helper shown above to define `vite.config.ts`. A separate script
+can read its normalized native settings without defining another config file:
+
 ```ts
-import { defineConfig, loadConfig } from "vize";
+// scripts/read-vue-settings.ts
+import { loadConfig } from "vize/config";
 
-export default defineConfig({
-  linter: {
-    preset: "happy-path",
-  },
-});
-
-const config = await loadConfig(process.cwd());
+const config = await loadConfig(process.cwd(), { mode: "auto" });
+console.log(config?.linter.preset);
 ```
+
+The `defineConfig` export from `vize` only types a native options payload for API
+callers; it is distinct from the Vite+ composition helper. Do not use it to create
+a dedicated configuration file.
 
 ## Related Packages
 

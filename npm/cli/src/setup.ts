@@ -15,6 +15,7 @@ import {
   planGeneratedConfig,
   readRequiredFile,
   REQUIRED_DEV_DEPENDENCIES,
+  requireSharedConfig,
   VIZE_CONFIG_FILES,
   type PlannedFile,
 } from "./setup/config.js";
@@ -36,6 +37,7 @@ export interface SetupResult {
   readonly enabledVitePlusLint: boolean;
   readonly installCommand: SetupCommand | null;
   readonly removeCommand: SetupCommand | null;
+  readonly migrationWarnings: readonly string[];
 }
 
 export interface SetupOptions {
@@ -60,9 +62,14 @@ export function setupProject(options: SetupOptions): SetupResult {
   const preservedFiles: string[] = [];
   const plannedFiles: PlannedFile[] = [];
   const detection = detectProject(root);
+  requireSharedConfig(root, detection.viteConfigs);
+  const migrationWarnings: string[] = [];
   for (const filename of VIZE_CONFIG_FILES) {
     if (fs.existsSync(path.join(root, filename))) {
       preservedFiles.push(filename);
+      migrationWarnings.push(
+        `${filename} is no longer read; keep Vue settings in vue: in vite.config.*`,
+      );
     }
   }
   planGeneratedConfig(
@@ -145,6 +152,7 @@ export function setupProject(options: SetupOptions): SetupResult {
 
   return {
     root,
+    migrationWarnings,
     createdFiles,
     preservedFiles,
     addedScripts,
@@ -201,6 +209,9 @@ Options:
 
 function printSetupResult(result: SetupResult, install: boolean): void {
   let dependenciesMissing = false;
+  for (const warning of result.migrationWarnings) {
+    process.stdout.write(`[vize setup] ${warning}\n`);
+  }
   for (const filename of result.createdFiles) {
     process.stdout.write(`[vize setup] created ${filename}\n`);
   }

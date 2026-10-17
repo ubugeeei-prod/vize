@@ -83,21 +83,19 @@ CLI ラッパー、静的ホスト、テストの要件は [Musea のホステ�
 
 ## 共有構成
 
-共有の既定値は `vite.config.*` のトップレベルの `vize.musea` にまとめます。`musea()` に直接渡したオプションが、その項目の共有設定より優先されます。同じ Vite プロジェクトに既存の専用設定がある場合は、その設定を優先します。
+共有の既定値は `vite.config.*` のトップレベルの `vue.musea` にまとめます。`musea()` に直接渡したオプションが、その項目の共有設定より優先されます。専用設定は廃止したため、`vue.musea` へ移行してください。
 
 ```ts
-// vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
-  plugins: [musea()],
-  vize: {
+  plugins: [musea({ storybookCompat: false })],
+  vue: {
     musea: {
       include: ["src/**/*.art.vue"],
       exclude: ["node_modules/**", "dist/**"],
       basePath: "/__musea__",
-      storybookCompat: false,
       inlineArt: false,
     },
   },
@@ -108,27 +106,7 @@ export default defineConfig({
 
 `musea-vrt` も同じ Vite 設定から `include`、`exclude`、`vrt` を読み込みます。`vrt.outDir` はスナップショットの保存先で、プラグインに渡した `vrt` の各項目が共有設定より優先されます。`vize musea new` は既定の探索規則で Art ファイルを作成し、専用設定ファイルは生成しません。
 
-<details>
-<summary>既存の専用設定を引き続き使う</summary>
 
-同じ Vite プロジェクトに専用設定がある場合は、こちらの設定が優先されます。
-
-```ts
-// vize.config.ts
-import { defineConfig } from "vize";
-
-export default defineConfig({
-  musea: {
-    include: ["src/**/*.art.vue"],
-    exclude: ["node_modules/**", "dist/**"],
-    basePath: "/__musea__",
-    storybookCompat: false,
-    inlineArt: false,
-  },
-});
-```
-
-</details>
 
 <span id="アート-ファイル"></span>
 

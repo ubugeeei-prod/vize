@@ -14,7 +14,7 @@ export const generationAndCliTasks = defineTasks({
     "pnpm exec pkl eval --project-dir npm/cli/pkl -f json npm/cli/pkl/jsonschema/generate.pkl -o npm/cli/schemas/vize.config.schema.json",
   ),
   "gen:types": noCacheTask(
-    `${runTask("gen:schema")} && pnpm exec json2ts -i npm/cli/schemas/vize.config.schema.json -o npm/cli/src/types/generated.ts && ${nodeTool("tasks/postprocess-types")} && pnpm exec oxfmt --write npm/cli/schemas/vize.config.schema.json npm/cli/src/types/generated.ts`,
+    `${runTask("gen:schema")} && pnpm exec json2ts -i npm/cli/schemas/vize.config.schema.json -o npm/cli/src/types/generated.ts && ${nodeTool("tasks/postprocess-types")} && ${nodeTool("tasks/generate-vue-config-validation")} && pnpm exec oxfmt --write npm/cli/schemas/vize.config.schema.json npm/cli/src/types/generated.ts crates/vize_carton/src/config/loader/vite-runtime.mjs`,
   ),
   gen: noCacheTask(runTask("gen:types")),
   cli: noCacheTask(

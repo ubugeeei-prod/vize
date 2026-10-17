@@ -21,31 +21,24 @@ fn external_type_checker_struct_literal_keeps_the_published_fields() {
 }
 
 #[test]
-fn editor_timeout_loads_from_json_without_changing_the_shared_struct() {
+fn editor_timeout_loads_from_serialized_json_without_changing_the_shared_struct() {
     let dir = tempfile::tempdir().unwrap();
-    let path = dir.path().join("vize.config.json");
+    let path = dir.path().join("serialized-config.json");
     assert_eq!(
         load_lsp_config_snapshot(Some(dir.path())).request_timeout_ms,
         60_000
     );
-
-    std::fs::write(&path, r#"{"typeChecker":{"lspRequestTimeoutMs":90000}}"#).unwrap();
-    assert_eq!(
-        load_lsp_config_snapshot(Some(dir.path())).request_timeout_ms,
-        90_000
-    );
-
-    std::fs::write(&path, r#"{"typeChecker":{"lspRequestTimeoutMs":0}}"#).unwrap();
-    assert_eq!(
-        load_lsp_config_snapshot(Some(dir.path())).request_timeout_ms,
-        1
-    );
-
-    std::fs::write(&path, r#"{"typeChecker":{}}"#).unwrap();
-    assert_eq!(
-        load_lsp_config_snapshot(Some(dir.path())).request_timeout_ms,
-        60_000
-    );
+    for (document, expected) in [
+        (r#"{"typeChecker":{"lspRequestTimeoutMs":90000}}"#, 90_000),
+        (r#"{"typeChecker":{"lspRequestTimeoutMs":0}}"#, 1),
+        (r#"{"typeChecker":{}}"#, 60_000),
+    ] {
+        std::fs::write(&path, document).unwrap();
+        assert_eq!(
+            load_lsp_config_snapshot(Some(&path)).request_timeout_ms,
+            expected
+        );
+    }
 }
 
 #[test]
@@ -53,14 +46,14 @@ fn editor_snapshot_evaluates_function_config_once() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(dir.path().join("eval-count.txt"), "0").unwrap();
     std::fs::write(
-        dir.path().join("vize.config.mjs"),
+        dir.path().join("vite.config.mjs"),
         r#"
 import { readFileSync, writeFileSync } from 'node:fs';
 const counter = new URL('./eval-count.txt', import.meta.url);
 export default () => {
   const count = Number(readFileSync(counter, 'utf8')) + 1;
   writeFileSync(counter, String(count));
-  return { typeChecker: { strict: count === 1, lspRequestTimeoutMs: count === 1 ? 90000 : 120000 } };
+  return { vue: { typeChecker: { strict: count === 1, lspRequestTimeoutMs: count === 1 ? 90000 : 120000 } } };
 };
 "#,
     )

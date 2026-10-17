@@ -21,6 +21,14 @@ export const setupContract = {
   sha256: "28a5dd89494dbaa817f4d92a18e0222dc2a58b0ba91682a2ef4b4998ad1e6ca3",
 };
 
+// Immutable authored observer roles retain their original path and digest.
+// Active test runners evolve; these non-executable archives preserve the source
+// bytes used to define the original release acceptance vectors.
+export const setupOriginalSourcePaths = {
+  "tests/tooling/lint-setup-emits-returns.test.mjs":
+    "tests/_fixtures/differential/lint/setup-emits-6097/original-setup-emits-observer.mjs.txt",
+};
+
 export async function authenticateSetupFix(head, json) {
   const fix = await json(`${apiRoot}/pulls/8647`);
   assert.equal(fix.merged, true);
@@ -43,7 +51,8 @@ export async function loadSetupFixtures(head, destination, json, treeSha) {
   const files = new Map(tree.tree.map((entry) => [entry.path, entry]));
   const authorities = [];
   async function read(name, expectedHash) {
-    const entry = files.get(name);
+    const sourcePath = setupOriginalSourcePaths[name] ?? name;
+    const entry = files.get(sourcePath);
     assert(entry && entry.type === "blob" && ["100644", "100755"].includes(entry.mode));
     const blob = await json(`${apiRoot}/git/blobs/${entry.sha}`);
     assert.equal(blob.encoding, "base64");
@@ -58,6 +67,7 @@ export async function loadSetupFixtures(head, destination, json, treeSha) {
     fs.writeFileSync(file, bytes, { flag: "wx" });
     authorities.push({
       path: name,
+      ...(sourcePath === name ? {} : { sourcePath }),
       source: head,
       blob: entry.sha,
       bytes: bytes.length,

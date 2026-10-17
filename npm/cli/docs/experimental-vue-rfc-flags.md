@@ -1,7 +1,7 @@
 # Experimental Vue RFC Flags
 
 Every flag in this page is fully opt-in. Vize keeps these RFC surfaces disabled unless the matching
-`experimentals` key is `true` or `{}` in `vize.config.*`. Missing keys, `false`, and `null` are off.
+`vue.experimentals` key is `true` or `{}` in `vite.config.*`. Missing keys, `false`, and `null` are off.
 
 The full docs site reference is https://vizejs.dev/guide/experimentals. The RFC-specific details are
 at https://vizejs.dev/guide/experimentals-vue-rfcs. They cover backend experiments such as
@@ -11,20 +11,23 @@ at https://vizejs.dev/guide/experimentals-vue-rfcs. They cover backend experimen
 
 | Surface                          | Accepted option shape                                                                               | Off and override behavior                                                                                       |
 | -------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `vize.config.*`                  | `experimentals` switch values                                                                       | Shared default for npm commands, `vize check`, LSP sessions, and Vite plugin instances that load project config |
+| `vite.config.*`                  | `vue.experimentals` switch values                                                                   | Shared default for npm commands, `vize check`, LSP sessions, and Vite plugin instances that load project config |
 | Direct `vize({ experimentals })` | the same switch values                                                                              | Wins over shared config; `false` and `null` explicitly disable a shared opt-in for that plugin invocation       |
 | Native template APIs             | `experimental*` boolean fields on `compile`, `compileVapor`, and `parseTemplate` options            | Caller must pass final booleans; aliases and `{}` are not resolved                                              |
 | Native SFC APIs                  | `experimental*` boolean fields on `compileSfc`, `compileSfcBatch`, and `compileSfcBatchWithResults` | Caller must pass final booleans; `strictSlotChildren` is meaningful for SFC/check virtual TypeScript surfaces   |
 
-```json
-{
-  "experimentals": {
-    "inTagComment": true,
-    "patternedTemplate": true,
-    "selfComponent": true,
-    "strictSlotChildren": true
-  }
-}
+```ts
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  experimentals: {
+    inTagComment: true,
+    patternedTemplate: true,
+    selfComponent: true,
+    strictSlotChildren: true,
+  },
+});
 ```
 
 The historical names `intagComment` and `pattenedTemplate` remain accepted as aliases for
@@ -157,17 +160,20 @@ Upstream reference: https://github.com/vuejs/rfcs/pull/734/files
 ## Backend Experimentals
 
 The RFC flags above share switch semantics and precedence with backend experiments. Shared
-`vize.config.*` enables them by default for tools that read project config, while direct Vite plugin
+`vue.experimentals` in `vite.config.*` enables them by default for tools that read project config, while direct Vite plugin
 options can opt out with `false` or `null` for one plugin invocation.
 
-```json
-{
-  "experimentals": {
-    "serverScript": true,
-    "vapor": true,
-    "jsxVapor": true
-  }
-}
+```ts
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  experimentals: {
+    serverScript: true,
+    vapor: true,
+    jsxVapor: true,
+  },
+});
 ```
 
 - `serverScript` resolves to the native `experimentalServerScript` compiler flag. Missing keys,
@@ -182,3 +188,5 @@ options can opt out with `false` or `null` for one plugin invocation.
 
 Prefer stable `compiler.vapor` or `compiler.jsxMode: "vapor"` when those choices are no longer
 experiments for the project.
+
+Dedicated `vize.config.*` files are retired. Move their native settings to `vue:` in the existing Vite configuration; keep TypeScript options in `tsconfig.json`, including `vueCompilerOptions`.

@@ -5,6 +5,7 @@ import { isDiagnosticsForUri, offsetToPosition } from "./assertions.ts";
 import { root, testOutputRoot } from "./paths.ts";
 import type { LspRange } from "./protocol.ts";
 import { LspSession } from "./session.ts";
+import { writeVueConfigFixture } from "../vue-config-fixture.ts";
 
 export type Item = {
   name: string;
@@ -48,13 +49,10 @@ export async function workspace(
       include: ["*.vue", "*.ts", "*.tsx", "*.jsx"],
     }),
   );
-  fs.writeFileSync(
-    path.join(directory, "vize.config.json"),
-    JSON.stringify({
-      lsp: { lint: false, typecheck: true },
-      typeChecker: { corsaPath: runtime, jsxTypecheck: jsx },
-    }),
-  );
+  writeVueConfigFixture(directory, {
+    lsp: { lint: false, typecheck: true },
+    typeChecker: { corsaPath: runtime, jsxTypecheck: jsx },
+  });
   const session = new LspSession();
   try {
     await session.initialize(directory, { editor: true, lint: false, typecheck: true });

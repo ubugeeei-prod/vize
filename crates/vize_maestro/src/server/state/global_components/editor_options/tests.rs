@@ -45,7 +45,11 @@ fn expected(paths: &[&Path]) -> VirtualTsOptions {
 }
 
 fn configured_state(root: &Path) -> ServerState {
-    std::fs::write(root.join("vize.config.json"), CONFIG).unwrap();
+    std::fs::write(
+        root.join("vite.config.mjs"),
+        vize_l0::cstr!("export default {{ vue: {} }};", CONFIG).as_bytes(),
+    )
+    .unwrap();
     let state = ServerState::new();
     state.set_workspace_root(root.to_path_buf());
     state.load_workspace_config(root);
@@ -121,7 +125,11 @@ fn editor_options_reload_template_globals_without_losing_declarations() {
     let state = configured_state(root.path());
     assert_options(&state, &expected(&[&declaration]));
 
-    std::fs::write(root.path().join("vize.config.json"), "{}").unwrap();
+    std::fs::write(
+        root.path().join("vite.config.mjs"),
+        "export default { vue: {} };",
+    )
+    .unwrap();
     state.load_workspace_config(root.path());
     let mut expected = expected(&[&declaration]);
     expected.template_globals.clear();

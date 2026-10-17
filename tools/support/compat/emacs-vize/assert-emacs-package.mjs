@@ -80,7 +80,7 @@ const testEl = readTextEntry(entryMap, "emacs/test/vize-test.el");
 
 assert.match(vizeEl, /lexical-binding: t/);
 assert.match(vizeEl, /defcustom vize-eglot-command '\("vize" "lsp"\)/);
-assert.match(vizeEl, /defcustom vize-eglot-profile 'recommended/);
+assert.match(vizeEl, /defcustom vize-eglot-profile nil/);
 assert.match(vizeEl, /recommended \. \(:editor t :ecosystem t :lint t :typecheck t\)/);
 assert.match(vizeEl, /define-derived-mode vize-vue-mode/);
 assert.match(vizeEl, /define-derived-mode vize-art-vue-mode/);

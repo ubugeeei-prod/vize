@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { createReadStream, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { qualifyBenchmarkConfig } from "../../../tests/tooling/support/benchmark-config-contract.ts";
 import { observeCss } from "../../../tests/tooling/support/lsp/css-documentation.ts";
 
 const [baseBinary, headBinary, baseSha, headSha, output] = process.argv.slice(2);
@@ -19,15 +20,19 @@ for (const [label, binary, source] of [
   ["head", headBinary, headSha],
 ] as const) {
   const absolute = resolve(binary);
-  const observations = [
-    ...(await observeCss(absolute, false, label === "head", 80, true)),
-    ...(await observeCss(absolute, false, label === "head", 80, false)),
+  // Qualify each exact executable before either measured/priming LSP session.
+  const contract = qualifyBenchmarkConfig(absolute, `${output}.${label}.config-qualification.json`);
+  const captures = [
+    await observeCss(absolute, false, label === "head", 80, true, contract),
+    await observeCss(absolute, false, label === "head", 80, false, contract),
   ];
+  const observations = captures.flatMap((capture) => capture.observations);
   rows.push({
     label,
     source,
     binary: absolute,
     binarySha256: await sha256(absolute),
+    configurations: captures.map((capture) => capture.configuration),
     observations: observations.map((row) => {
       const sorted = [...row.samplesMs].sort((a, b) => a - b);
       return {

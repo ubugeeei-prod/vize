@@ -14,7 +14,7 @@ function ordinaryViteJavaScriptPlan(packageManager: "bun" | "pnpm") {
     `  package manager: ${packageManager}`,
     "  language:        JavaScript (no tsconfig.json)",
     "  lint command:    oxlint",
-    "  vize config:     none",
+    "  Vue settings:    vue: in vite.config.*",
     "  oxlint config:   none",
     "[vize init] plan:",
     "  lint      skipped    not selected",

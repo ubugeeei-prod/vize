@@ -1,6 +1,8 @@
 #![cfg(test)]
 #![cfg(feature = "legacy")]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -75,8 +77,8 @@ fn create_project(name: &str) -> PathBuf {
     )
     .unwrap();
     std::fs::write(
-        project_root.join("vize.config.json"),
-        r#"{ "typeChecker": { "legacyVue2": true, "optionsApi": true } }"#,
+        project_root.join("vite.config.mjs"),
+        vite_config::source(r#"{ "typeChecker": { "legacyVue2": true, "optionsApi": true } }"#),
     )
     .unwrap();
     std::fs::write(

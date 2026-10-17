@@ -99,10 +99,10 @@ Vize compiles `.jsx`/`.tsx` Vue components to either Virtual DOM or
 default** for components that do not opt in explicitly; it defaults to `"vdom"`.
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "@vizejs/vite-plugin";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   compiler: {
     // Default every .jsx/.tsx component to Vapor output.
     jsxMode: "vapor",
@@ -136,7 +136,7 @@ const Classic = () => {
 Because each component is routed independently, a **single module can mix both backends**:
 
 ```tsx
-// vize.config: { compiler: { jsxMode: "vapor" } }
+// vite.config.ts: { vue: { compiler: { jsxMode: "vapor" } } }
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -167,10 +167,13 @@ diagnosed. Unrelated prologues such as `"use strict"` are left untouched.
 
 `dialect` selects the Vue dialect profile for standalone HTML documents (`.html`/`.htm`):
 
-```json
-{
-  "dialect": "petite-vue"
-}
+```ts
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  dialect: "petite-vue",
+});
 ```
 
 - `"vue"` treats standalone HTML documents as plain Vue-from-CDN documents.

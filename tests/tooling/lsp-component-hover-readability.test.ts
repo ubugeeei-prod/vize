@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -79,8 +80,8 @@ await test("component hovers wrap complete long types and preserve exact short c
       fs.symlinkSync(vueNamespace, path.join(nodeModules, "@vue"), "junction");
     }
     fs.writeFileSync(path.join(workspace, "package.json"), '{"private":true,"type":"module"}');
-    fs.writeFileSync(
-      path.join(workspace, "vize.config.json"),
+    writeVueConfigFixture(
+      workspace,
       JSON.stringify({
         lsp: { hover: true, lint: false, typecheck: true },
         typeChecker: { corsaPath },

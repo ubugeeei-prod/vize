@@ -19,7 +19,7 @@ fn newly_created_and_removed_nested_config_refreshes_without_document_requests()
         root,
         "vite.config.mjs",
         &cstr!(
-            "export default {{vize:{{typeChecker:{{runtimePath:{}}},lsp:{{lint:false,typecheck:true}}}}}};",
+            "export default {{vue:{{typeChecker:{{corsaPath:{}}},languageServer:{{lint:false,typecheck:true}}}}}};",
             serde_json::to_string(&runtime).unwrap()
         ),
     );
@@ -43,7 +43,7 @@ fn newly_created_and_removed_nested_config_refreshes_without_document_requests()
     write(
         root,
         "nested/vite.config.mjs",
-        "export default {vize:{lsp:{lint:false,typecheck:false}}};",
+        "export default {vue:{languageServer:{lint:false,typecheck:false}}};",
     );
     let config_uri = file_uri(&config);
     lsp.send(json!({"jsonrpc":"2.0","method":"workspace/didChangeWatchedFiles","params":{"changes":[{"uri":config_uri,"type":1}]}}));

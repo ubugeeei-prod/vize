@@ -13,15 +13,15 @@ CLI と Vite+ のタスクで同じ方針を使うには、実行時のオプシ
 最初の実行方法とコマンドのオプションは、[CLI の Lint](./cli.md#lint)を参照してください。
 ファイル間の関係を示すレポートは、[コンポーネントツリーと複雑度](./cross-file-complexity.md)で説明しています。
 
-`vize.config.*` と Vite+ 連携では、Vize の Lint に同じ設定を使えます。
-Vite+ では、次のように `lint.vize` に指定します。
+`vite.config.*` の `vue.linter` は CLI とエディタで共有します。
+Vite+ では、次のように `lint.vue` に指定します。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
   lint: {
-    vize: {
+    vue: {
       preset: "opinionated",
       crossFile: true,
       strictReactivity: true,
@@ -33,7 +33,7 @@ export default defineConfig({
 });
 ```
 
-`vize.config.*` では、これらのキーを `linter` に指定します。
+CLI とエディタで共有する場合は、これらのキーを `vue.linter` に指定します。
 `crossFileTree` と `crossFileComplexity` は、ファイル間の解析も有効にします。
 ファイル間のチェックは、Vize の CLI 実行で対象に選ばれたファイルに対して行います。
 
@@ -46,5 +46,5 @@ export default defineConfig({
 `0` を指定すると、警告が一つでも残っている場合に失敗します。負の値は指定できません。
 
 Vite+ の Lint タスクには、対象のパスと `--fix` を渡せます。
-Vize 固有のオプションは、Oxlint に渡すのではなく `lint.vize` に指定してください。
+Vize 固有のオプションは、Oxlint に渡すのではなく `lint.vue` に指定してください。
 たとえば `vp run lint -- src` を実行すると、それぞれの設定を使って両方の Lint が実行されます。

@@ -167,13 +167,16 @@ defineArt("./Button.vue", { title: "Button" });
 
 pub(super) fn write_corsa_config(root: &Path, corsa_path: &Path) {
     std::fs::write(
-        root.join("vize.config.json"),
-        serde_json::json!({
-            "typeChecker": {
-                "corsaPath": corsa_path.to_string_lossy()
-            }
-        })
-        .to_string(),
+        root.join("vite.config.mjs"),
+        vize_l0::cstr!(
+            "export default {{ vue: {} }};",
+            serde_json::json!({
+                "typeChecker": {
+                    "corsaPath": corsa_path.to_string_lossy()
+                }
+            })
+        )
+        .as_bytes(),
     )
     .expect("vize config");
 }

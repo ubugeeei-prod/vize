@@ -17,8 +17,8 @@ The complete installed router must be reachable from the application's createApp
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-missing-param": "warn" },
     },
   },

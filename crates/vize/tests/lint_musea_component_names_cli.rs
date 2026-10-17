@@ -1,11 +1,13 @@
 #![cfg(test)]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{fs, process::Command};
 
 #[test]
 fn original_art_sources_have_complete_empty_default_and_explicit_cli_results() {
     let project = tempfile::tempdir().unwrap();
-    fs::write(project.path().join("vize.config.json"), r#"{"linter":{"preset":"incremental","rules":{"vue/component-definition-name-casing":"warn","vue/multi-word-component-names":"error"}}}"#).unwrap();
+    fs::write(project.path().join("vite.config.mjs"), vite_config::source(r#"{"linter":{"preset":"incremental","rules":{"vue/component-definition-name-casing":"warn","vue/multi-word-component-names":"error"}}}"#)).unwrap();
     for (filename, source) in [
         (
             "my-button.art.vue",
@@ -21,7 +23,7 @@ fn original_art_sources_have_complete_empty_default_and_explicit_cli_results() {
         ),
     ] {
         fs::write(project.path().join(filename), source).unwrap();
-        for config in ["--no-config", "--config=vize.config.json"] {
+        for config in ["--no-config", "--config=vite.config.mjs"] {
             let output = Command::new(env!("CARGO_BIN_EXE_vize"))
                 .current_dir(project.path())
                 .args(["lint", config, "--format", "json", filename])

@@ -1,11 +1,11 @@
 #![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 
-use vize_carton::config::load_config_with_features_and_source;
+use vize_carton::config::{load_config_with_features_and_source, validate_explicit_config_path};
 
 #[test]
 fn loads_documented_pkl_compat_schema_without_deserialize_warnings() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.pkl");
+    let config_path = dir.path().join("serialized-config.pkl");
     install_pkl_modules(dir.path());
     std::fs::write(
         &config_path,
@@ -34,8 +34,8 @@ languageServer {
     )
     .unwrap();
 
-    let loaded = load_config_with_features_and_source(Some(dir.path()));
-    let linter = vize_carton::config::load_linter_config(Some(dir.path()));
+    let loaded = load_config_with_features_and_source(Some(&config_path));
+    let linter = vize_carton::config::load_linter_config(Some(&config_path));
 
     assert_eq!(loaded.source_path.as_deref(), Some(config_path.as_path()));
     assert_eq!(loaded.config.formatter.print_width, 100);
@@ -64,5 +64,22 @@ fn copy_dir_recursive(source: &std::path::Path, target: &std::path::Path) {
         } else {
             std::fs::copy(&entry_path, &target_path).unwrap();
         }
+    }
+}
+
+#[test]
+fn dedicated_pkl_requires_vite_migration_before_runtime_evaluation() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("vize.config.pkl");
+    std::fs::write(&path, "not valid PKL syntax").unwrap();
+    for selected in [path.as_path(), dir.path()] {
+        let error = validate_explicit_config_path(selected).unwrap_err();
+        let migration = "vize.config.* is no longer supported; move Vue settings to vue: in vite.config.* and TypeScript settings to tsconfig.json";
+        let expected = if selected.is_file() {
+            format!("failed to parse {}: {migration}", selected.display())
+        } else {
+            migration.to_owned()
+        };
+        assert_eq!(error, expected);
     }
 }

@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 use std::{
     fs,
     io::{Read, Write},
@@ -219,33 +219,20 @@ pub fn assert_json_eq(actual: &Value, expected: Value, label: &str) -> Result<()
     Ok(())
 }
 
-pub fn run_editor_contract(repo_root: &Path, label: &str, formatting: bool) -> Result<(), String> {
+pub fn run_editor_contract(repo_root: &Path, label: &str) -> Result<(), String> {
     let session_root = unique_temp_dir(&format!("vize-{label}-e2e"))?;
     let workspace_path = session_root.join("real-vue");
     editor_e2e::prepare_real_vue_workspace(&workspace_path, false)?;
     let mut session = LspSession::spawn(repo_root)?;
     let result = (|| {
-        let mut options = json!({
-            "editor": true,
-            "ecosystem": true,
-            "lint": true,
-            "typecheck": true
-        });
-        if formatting {
-            options["formatting"] = json!(true);
-        }
+        // Packaged adapters defer feature defaults and project discovery to the server.
+        let options = json!({});
         let initialization = session.initialize(&workspace_path, options)?;
         let document_formatting_provider =
             initialization.pointer("/capabilities/documentFormattingProvider");
-        if formatting {
-            if document_formatting_provider != Some(&Value::Bool(true)) {
-                return Err(format!(
-                    "{label} initialization did not enable documentFormattingProvider"
-                ));
-            }
-        } else if document_formatting_provider.is_some_and(|value| !value.is_null()) {
+        if document_formatting_provider != Some(&Value::Bool(true)) {
             return Err(format!(
-                "{label} initialization exposed documentFormattingProvider without formatting"
+                "{label} initialization did not enable documentFormattingProvider"
             ));
         }
         let document_path = workspace_path.join("src/Scenario.vue");
@@ -308,7 +295,7 @@ pub fn run_editor_contract(repo_root: &Path, label: &str, formatting: bool) -> R
             }),
         )?;
         assert_json_eq(&code_actions, expected_code_actions(&uri), "code actions")?;
-        if formatting {
+        {
             let response = session.request(
                 "textDocument/formatting",
                 json!({
@@ -341,14 +328,7 @@ pub fn run_editor_contract(repo_root: &Path, label: &str, formatting: bool) -> R
     let shutdown = session.shutdown();
     let _ = fs::remove_dir_all(&session_root);
     result.and(shutdown)?;
-    println!(
-        "{}",
-        if formatting {
-            "zed extension-contract real-server scenario passed"
-        } else {
-            "helix package-contract real-server scenario passed"
-        }
-    );
+    println!("{label} package-contract real-server scenario passed");
     Ok(())
 }
 

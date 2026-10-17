@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -31,7 +32,7 @@ await test("setup export defaults preserve seventy whole source CLI packets", ()
       argv: [
         "lint",
         "--config",
-        "vize.config.json",
+        "vite.config.mjs",
         "--format",
         "json",
         "--locale",
@@ -76,9 +77,9 @@ await test("setup export defaults preserve seventy whole source CLI packets", ()
       assert.equal(sha256(source), entry.sourceSha256);
       const filename = path.join(directory, entry.filename);
       fs.writeFileSync(filename, source);
-      if (route.config !== null)
-        fs.writeFileSync(path.join(directory, "vize.config.json"), route.config);
-      const run = spawnSync(path.join(root, build.binaryPath), route.argv, {
+      if (route.config !== null) writeVueConfigFixture(directory, route.config);
+      const argv = route.argv.map((arg) => (arg === "vize.config.json" ? "vite.config.mjs" : arg));
+      const run = spawnSync(path.join(root, build.binaryPath), argv, {
         cwd: directory,
         env: process.env,
         timeout: 60_000,
@@ -91,7 +92,8 @@ await test("setup export defaults preserve seventy whole source CLI packets", ()
         route: route.id,
         source: entry.source,
         sourceSha256: entry.sourceSha256,
-        argv: route.argv,
+        argv,
+        originalArgv: route.argv,
         config: route.config,
         expected: route.afterCliPacket,
         expectedStatus: route.afterStatus,

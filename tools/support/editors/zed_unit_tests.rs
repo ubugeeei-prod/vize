@@ -1,7 +1,4 @@
-use super::{
-    configured_binary_path, merge_env, recommended_initialization_options, zed, CommandSettings,
-    LspSettings, VizeExtension,
-};
+use super::{CommandSettings, LspSettings, VizeExtension, configured_binary_path, merge_env, zed};
 
 #[test]
 fn discovered_binary_defaults_to_lsp() {
@@ -182,19 +179,6 @@ fn merge_env_sorts_custom_env_for_stable_commands() {
             ),
         ),
         env_vars([("PATH", "/usr/bin"), ("VIZE_A", "a"), ("VIZE_Z", "z")])
-    );
-}
-
-#[test]
-fn default_initialization_options_are_recommended_profile() {
-    assert_eq!(
-        recommended_initialization_options(),
-        zed::serde_json::json!({
-            "editor": true,
-            "ecosystem": true,
-            "lint": true,
-            "typecheck": true,
-        })
     );
 }
 

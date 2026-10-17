@@ -20,8 +20,8 @@ script setup のコンパイラーマクロを一定の順に宣言します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/define-macros-order": "warn"

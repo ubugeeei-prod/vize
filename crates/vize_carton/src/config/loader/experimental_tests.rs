@@ -7,7 +7,7 @@ use crate::config::JsxMode;
 #[test]
 fn load_config_reads_experimentals() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r#"{
@@ -41,7 +41,7 @@ fn load_config_reads_experimentals() {
 #[test]
 fn load_config_accepts_experimental_aliases_and_false_switches() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r#"{

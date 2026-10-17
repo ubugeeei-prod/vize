@@ -122,7 +122,7 @@ fn serve_plan_forwards_shared_vize_config_path() {
 
     let plan = create_serve_plan(
         &ServeArgs {
-            config: Some(PathBuf::from("../vize.config.ts")),
+            config: Some(PathBuf::from("../vite.config.ts")),
             ..ServeArgs::default()
         },
         temp.path(),
@@ -132,7 +132,7 @@ fn serve_plan_forwards_shared_vize_config_path() {
     assert_eq!(plan.program, vite_bin);
     assert_eq!(
         plan.env,
-        [("VIZE_CONFIG_FILE".into(), "../vize.config.ts".into())]
+        [("VIZE_CONFIG_FILE".into(), "../vite.config.ts".into())]
     );
 }
 
@@ -145,7 +145,7 @@ fn serve_plan_combines_shared_config_with_static_build_environment() {
     let plan = create_serve_plan(
         &ServeArgs {
             build: true,
-            config: Some(PathBuf::from("../vize.config.ts")),
+            config: Some(PathBuf::from("../vite.config.ts")),
             ..ServeArgs::default()
         },
         temp.path(),
@@ -155,7 +155,7 @@ fn serve_plan_combines_shared_config_with_static_build_environment() {
     assert_eq!(
         plan.env,
         [
-            ("VIZE_CONFIG_FILE".into(), "../vize.config.ts".into()),
+            ("VIZE_CONFIG_FILE".into(), "../vite.config.ts".into()),
             ("VIZE_MUSEA_STATIC_BUILD".into(), "1".into()),
         ]
     );

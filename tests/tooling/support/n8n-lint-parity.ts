@@ -12,6 +12,7 @@
 // Usage: vp node tests/tooling/support/n8n-lint-parity.ts <vize-binary> <output-dir>
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   cpSync,
   mkdirSync,
@@ -24,6 +25,7 @@ import {
 import { createRequire } from "node:module";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { vueConfigFixtureSource } from "./vue-config-fixture.ts";
 
 type Projection = {
   linter: { enabled: boolean; preset: string; rules: Record<string, string>; ruleOptions: unknown };
@@ -202,8 +204,28 @@ const output = resolve(outputArgument);
 const workspace = join(output, "workspace");
 rmSync(output, { recursive: true, force: true });
 mkdirSync(workspace, { recursive: true });
-const config = join(output, "vize.config.json");
-writeFileSync(config, `${JSON.stringify({ linter: projection.linter }, null, 2)}\n`);
+const originalConfigSource = `${JSON.stringify({ linter: projection.linter }, null, 2)}\n`;
+const originalConfig = join(output, "vize.config.json");
+const config = join(output, "vite.config.mjs");
+const carrierSource = vueConfigFixtureSource(originalConfigSource);
+const configHash = (source: string) => createHash("sha256").update(source).digest("hex");
+writeFileSync(config, carrierSource);
+writeFileSync(
+  join(output, "config-migration.json"),
+  JSON.stringify(
+    {
+      original: {
+        path: originalConfig,
+        source: originalConfigSource,
+        sha256: configHash(originalConfigSource),
+      },
+      actual: { path: config, source: carrierSource, sha256: configHash(carrierSource) },
+      argvConfigSelection: { original: ["-c", originalConfig], actual: ["-c", config] },
+    },
+    null,
+    2,
+  ) + "\n",
+);
 
 const vizeOnly: Finding[] = [];
 const eslintOnly: Finding[] = [];

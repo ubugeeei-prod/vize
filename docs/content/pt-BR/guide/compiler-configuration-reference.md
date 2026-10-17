@@ -8,8 +8,7 @@ title: Referência de configuração do compilador
 
 ## Opções do compilador
 
-Essas opções estão sob `compiler`. Eles são respaldados por esquemas e compartilhados por meio de `defineConfig`; Não
-toda integração consome todos os campos ainda.
+Essas opções pertencem a `vue.compiler` em `vite.config.*` e também podem ser definidas por `defineConfig(vpConfig).withVue(vueConfig)`. Nem toda integração usa todos os campos.
 
 | Opção               | Valores                               | Uso comum                                                                              |
 | ------------------- | ------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -96,10 +95,10 @@ O Vize compila componentes `.jsx`/`.tsx` Vue para saída Virtual DOM ou
 - - padrão para componentes que não optam explicitamente; Ele é o padrão `"vdom"`.
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "@vizejs/vite-plugin";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   compiler: {
     // Default every .jsx/.tsx component to Vapor output.
     jsxMode: "vapor",
@@ -133,7 +132,7 @@ const Classic = () => {
 Como cada componente é roteado de forma independente, um **único módulo pode misturar ambos os backends**:
 
 ```tsx
-// vize.config: { compiler: { jsxMode: "vapor" } }
+// vite.config.ts : vue: { compiler: { jsxMode: "vapor" } }
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -162,12 +161,15 @@ diagnosticadas. Prólogos não relacionados, como `"use strict"`, ficam intocado
 
 ## Dialeto Vue
 
-`dialect` seleciona o perfil do dialeto Vue para documentos HTML independentes (`.html`/`.htm`):
+`vue.dialect` seleciona o dialeto Vue para documentos HTML independentes (`.html`/`.htm`):
 
-```json
-{
-  "dialect": "petite-vue"
-}
+```ts
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  dialect: "petite-vue",
+});
 ```
 
 - `"vue"` trata documentos HTML autônomos como documentos simples do Vue a partir do CDN.

@@ -8,8 +8,7 @@ title: Référence de configuration du compilateur
 
 ## Options du compilateur
 
-Ces options sont placées sous `compiler`. Ils sont soutenus par un schéma et partagés via `defineConfig`; Pas
-chaque intégration consomme tous les domaines pour l’instant.
+Ces options se placent sous `vue.compiler` dans `vite.config.*`, ou dans l’objet Vue passé à `defineConfig(vpConfig).withVue(vueConfig)`. Chaque intégration consomme les options qui la concernent.
 
 | Option              | Valeurs                               | Usage courant                                                                                               |
 | ------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -90,16 +89,14 @@ auto-fermantes.
 > Pour l’API complète d’auteur, les styles à cadrage, la vérification de type, le support de l’éditeur et les limitations, voir le
 > [JSX & TSX guide](./jsx.md). Cette section ne couvre que les clés de configuration en mode de sortie.
 
-Vize compile les composants Vue `.jsx`/`.tsx` en sortie soit en DOM Virtual, soit en sortie
-[Vapor](https://blog.vuejs.org/posts/vue-vapor). `compiler.jsxMode` sélectionne le \*\*global
-
-- - par défaut pour les composants qui ne s’inscrivent pas explicitement ; par défaut, il est `"vdom"`.
+Vize compile les composants Vue `.jsx`/`.tsx` vers le DOM virtuel ou vers
+[Vapor](https://blog.vuejs.org/posts/vue-vapor). `vue.compiler.jsxMode` choisit le backend par défaut des composants sans directive explicite ; sa valeur par défaut est `"vdom"`.
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "@vizejs/vite-plugin";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   compiler: {
     // Default every .jsx/.tsx component to Vapor output.
     jsxMode: "vapor",
@@ -133,7 +130,7 @@ const Classic = () => {
 Comme chaque composant est routé indépendamment, un **seul module peut mélanger les deux backends** :
 
 ```tsx
-// vize.config: { compiler: { jsxMode: "vapor" } }
+// vite.config.ts : vue: { compiler: { jsxMode: "vapor" } }
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -162,12 +159,15 @@ diagnostiquées. Des prologues sans lien comme `"use strict"` sont laissés inta
 
 ## Dialecte Vue
 
-`dialect` sélectionne le profil dialectal Vue pour les documents HTML autonomes (`.html`/`.htm`) :
+`vue.dialect` sélectionne le profil dialectal Vue pour les documents HTML autonomes (`.html`/`.htm`) :
 
-```json
-{
-  "dialect": "petite-vue"
-}
+```ts
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  dialect: "petite-vue",
+});
 ```
 
 - `"vue"` considère les documents HTML autonomes comme de simples documents Vue-from-CDN.

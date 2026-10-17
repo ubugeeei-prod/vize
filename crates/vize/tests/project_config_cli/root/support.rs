@@ -1,10 +1,12 @@
-use super::super::support::{run, write};
+use super::super::support::{canonical_settings, run, write};
 use serde_json::{Value, json};
-use std::{collections::BTreeMap, fs, path::Path};
+use std::{collections::BTreeMap, fs, path::Path, sync::LazyLock};
 
-pub(super) const SETTINGS: &str = include_str!(
-    "../../../../../tests/_fixtures/differential/config/vite-root-8371/vite.config.mjs.txt"
-);
+pub(super) static SETTINGS: LazyLock<String> = LazyLock::new(|| {
+    canonical_settings(include_str!(
+        "../../../../../tests/_fixtures/differential/config/vite-root-8371/vite.config.mjs.txt"
+    ))
+});
 pub(super) const APP: &str =
     include_str!("../../../../../tests/_fixtures/differential/config/vite-root-8371/App.vue.txt");
 pub(super) const IMAGE: &str =
@@ -12,22 +14,36 @@ pub(super) const IMAGE: &str =
 pub(super) const TSCONFIG: &str = include_str!(
     "../../../../../tests/_fixtures/differential/config/vite-root-8371/tsconfig.json.txt"
 );
-pub(super) const ARRAY: &str = "export default {root:'app',vize:[{__vizeProjectRoot:'decoy',linter:{preset:'essential',rules:{'a11y/alt-text':'off'}}},{files:['src/**/*.vue'],ignores:['src/Ignored.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]};";
+pub(super) const ARRAY: &str = "export default {root:'app',__vizeProjectRoot:'decoy',vue:{linter:{preset:'essential',rules:{'a11y/alt-text':'off'}},entries:[{files:['src/**/*.vue'],ignores:['src/Ignored.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]}};";
 pub(super) const DEDICATED: &str =
     r#"{"linter":{"preset":"essential","rules":{"a11y/alt-text":"off"}}}"#;
-pub(super) const IGNORE_SETTINGS: &str = include_str!(
-    "../../../../../tests/_fixtures/differential/config/vite-root-8371/ignore.config.mjs.txt"
-);
+pub(super) static IGNORE_SETTINGS: LazyLock<String> = LazyLock::new(|| {
+    canonical_settings(include_str!(
+        "../../../../../tests/_fixtures/differential/config/vite-root-8371/ignore.config.mjs.txt"
+    ))
+});
 
 macro_rules! oracle {
     ($name:literal) => {
-        serde_json::from_str::<Value>(include_str!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/../../tests/_fixtures/differential/config/vite-root-8371/oracles/",
-            $name
-        )))
-        .unwrap()
+        $crate::root::support::canonical_oracle(
+            serde_json::from_str::<Value>(include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/_fixtures/differential/config/vite-root-8371/oracles/",
+                $name
+            )))
+            .unwrap(),
+        )
     };
+}
+
+pub(super) fn canonical_oracle(mut oracle: Value) -> Value {
+    if let Some(Value::String(source)) = oracle
+        .get_mut("vite.config.mjs")
+        .and_then(|config| config.get_mut("text"))
+    {
+        *source = canonical_settings(source);
+    }
+    oracle
 }
 
 pub(super) fn project() -> tempfile::TempDir {
@@ -35,7 +51,7 @@ pub(super) fn project() -> tempfile::TempDir {
     let root = project.path();
     for (name, source) in [
         ("package.json", "{\"type\":\"module\"}"),
-        ("vite.config.mjs", SETTINGS),
+        ("vite.config.mjs", SETTINGS.as_str()),
         ("app/src/App.vue", APP),
         ("app/src/Image.vue", IMAGE),
         ("app/src/Ignored.vue", IMAGE),
@@ -53,7 +69,7 @@ pub(super) fn project() -> tempfile::TempDir {
 pub(super) fn ignore_project() -> tempfile::TempDir {
     let project = project();
     let root = project.path();
-    write(root, "vite.config.mjs", IGNORE_SETTINGS);
+    write(root, "vite.config.mjs", &IGNORE_SETTINGS);
     for name in [
         "app/generated/DropItem.vue",
         "app/generated/KeepItem.vue",

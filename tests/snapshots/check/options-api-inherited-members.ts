@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "../../tooling/support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -145,10 +146,7 @@ function writeProject(workspaceDir: string, files: Record<string, string>): void
       2,
     )}\n`,
   );
-  fs.writeFileSync(
-    path.join(workspaceDir, "vize.config.json"),
-    `${JSON.stringify({ typeChecker: { legacyVue2: true } }, null, 2)}\n`,
-  );
+  writeVueConfigFixture(workspaceDir, { typeChecker: { legacyVue2: true } });
 }
 
 const vue2TypeOracle = `export * from "vue-original";

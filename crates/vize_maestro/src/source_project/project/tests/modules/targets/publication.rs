@@ -46,8 +46,12 @@ fn module_link_target_context_root_checker_aba_and_sticky_retirement_refuse_whol
             }
             1 => {
                 std::fs::write(
-                    root.join("vize.config.json"),
-                    "{\"typeChecker\":{\"strict\":true}}",
+                    root.join("vite.config.mjs"),
+                    vize_l0::cstr!(
+                        "export default {{ vue: {} }};",
+                        "{\"typeChecker\":{\"strict\":true}}"
+                    )
+                    .as_bytes(),
                 )
                 .unwrap();
                 state.load_lsp_config(&root);

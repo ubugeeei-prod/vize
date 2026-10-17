@@ -1,5 +1,8 @@
 //! Strict real dependency setup for the original held-Hover process fixture.
 
+#[path = "../support/vite_config.rs"]
+mod vite_config;
+
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::time::{Duration, Instant};
@@ -57,12 +60,14 @@ impl Project {
         )
         .unwrap();
         std::fs::write(
-            root.path().join("vize.config.json"),
-            serde_json::to_vec(&json!({
-                "typeChecker":{"corsaPath":proxy,"checkFallthroughAttrs":false},
-                "lsp":{"typecheck":true,"lint":false,"hover":true}
-            }))
-            .unwrap(),
+            root.path().join("vite.config.mjs"),
+            vite_config::source(
+                serde_json::to_vec(&json!({
+                    "typeChecker":{"corsaPath":proxy,"checkFallthroughAttrs":false},
+                    "lsp":{"typecheck":true,"lint":false,"hover":true}
+                }))
+                .unwrap(),
+            ),
         )
         .unwrap();
         Self(root)

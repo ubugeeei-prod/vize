@@ -7,7 +7,7 @@ title: JSX と TSX
 # JSX と TSX
 
 > **対応状況:** JSX/TSX はコンパイラ、リンター、型チェッカー、LSP、フォーマッタで扱えます。
-> 専用の `vize.config.*` がない新規プロジェクトでは、Vue JSX の型チェックを既定で有効にします。専用設定がある場合は明示的に有効にしてください。
+> Vue JSX の型チェックはプロジェクトの既定値で有効です。`vite.config.*` の `vue.typeChecker.jsxTypecheck` で変更できます。
 > 新規プロジェクトの既定値のリリース検証は未完了です。React が混在するプロジェクトでは、Vue JSX の型チェックを明示的に無効にしてください。
 > スタンドアロンの `.jsx`/`.tsx` モジュールでは、HMR 対応が主な未完了項目です。
 
@@ -181,13 +181,15 @@ const TodoList = ({ todos, initialActiveId }: TodoListProps) => {
 値は `"vdom"` または `"vapor"` で、デフォルトは `"vdom"` です。
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  compiler: {
-    // Default every .jsx/.tsx component to Vapor output.
-    jsxMode: "vapor",
+  vue: {
+    compiler: {
+      // Default every .jsx/.tsx component to Vapor output.
+      jsxMode: "vapor",
+    },
   },
 });
 ```
@@ -217,7 +219,7 @@ const Classic = () => {
 各コンポーネントの出力先は独立しているため、**1 つのファイルで VDOM と Vapor を併用できます**。
 
 ```tsx
-// vize.config: { compiler: { jsxMode: "vapor" } }
+// vite.config.ts: { vue: { compiler: { jsxMode: "vapor" } } }
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -345,18 +347,19 @@ vize fmt src --write
 
 ## 型チェック
 
-専用の `vize.config.*` がないプロジェクトでは、Vue JSX の型チェックを既定で**有効**にする方針です。
-専用設定がある場合、`typeChecker.jsxTypecheck` は明示的に有効にするまで `false` のままです。
+Vue JSX の型チェックはプロジェクトの既定値で**有効**です。`vite.config.*` の `vue.typeChecker.jsxTypecheck` で変更できます。
 新規プロジェクトの既定値のリリース検証は未完了です。Vue と React が混在する場合は、[Vue JSX の型チェックを明示的に無効にしてください](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md#react-owned-projects)。Vue SFC の型チェックは引き続き利用できます。
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  typeChecker: {
-    enabled: true,
-    jsxTypecheck: true,
+  vue: {
+    typeChecker: {
+      enabled: true,
+      jsxTypecheck: true,
+    },
   },
 });
 ```
@@ -468,7 +471,7 @@ lint と型チェックの仕組みは[静的解析](./static-analysis.md)を、
 
 現在の制限は次のとおりです。
 
-- **新規プロジェクトの既定値のリリース検証は未完了です。** 専用設定がある場合は、型チェックを明示的に有効にします。Vue と React が混在する場合は、Vue JSX の型チェックを明示的に無効にしてください。
+- **新規プロジェクトの既定値のリリース検証は未完了です。** Vue と React が混在する場合は、Vue JSX の型チェックを明示的に無効にしてください。
 - **`.jsx`/`.tsx` モジュールの HMR は未対応です。** VDOM は元の import、export、ブロック内の setup 状態、JSX の引数のデフォルト値とスコープを保持します。ただし、バンドラーが Vue の HMR 境界を登録しないため、編集時は通常の再読み込みになります。
 - **Vapor と SSR で元のモジュールを保持する処理は未完了です。** スタンドアロンのレンダラーが保持できない import、export、setup 文、捕捉したローカルの束縛は診断します。静的なスタンドアロンのレンダラーとコンポーネント単位の出力は利用できます。
 - **実行時ヘルパーの別名は隠せません。** `_openBlock` などの生成するヘルパーと元の束縛が衝突すると、不正なモジュールを出力せず診断します。

@@ -17,6 +17,12 @@ class LanguageServerConfig {
   /// Enable editor-oriented IDE features.
   editor: Boolean? = null
 
+  /// Enable Vue ecosystem lint and editor helpers.
+  ecosystem: Boolean? = null
+
+  /// Enable workspace-wide cross-file diagnostic groups (disabled by default).
+  crossFile: Boolean? = null
+
   /// Enable Vue 2.7 / Nuxt 2 editor and type-checking compatibility.
   legacyVue2: Boolean? = null
 

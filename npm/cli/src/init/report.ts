@@ -21,9 +21,14 @@ export function renderDetection(detection: ProjectDetection): string {
       detection.tsconfig === null ? " (no tsconfig.json)" : " (tsconfig.json)"
     }`,
     `  lint command:    ${detection.usesVitePlus ? "vp lint" : "oxlint"}`,
-    `  vize config:     ${detection.vizeConfig ?? "none"}`,
+    `  Vue settings:    ${detection.viteConfigs.length > 0 ? "vue: in vite.config.*" : "defaults"}`,
     `  oxlint config:   ${describeOxlintConfig(detection)}`,
   ];
+  if (detection.vizeConfig !== null) {
+    lines.push(
+      `  removed config:  ${detection.vizeConfig} (not read; migrate to vue: in vite.config.*)`,
+    );
+  }
   return `${lines.join("\n")}\n`;
 }
 

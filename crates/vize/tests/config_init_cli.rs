@@ -40,7 +40,7 @@ defineArt("../src/Button.vue", {
 </style>
 "#;
 const CREATED_VITE: &str = r#"export default {
-  "vize": {
+  "vue": {
     "lib": {
       "composableDir": "src/composables/vize",
       "uiDir": "src/ui"
@@ -116,7 +116,7 @@ fn expected(entries: impl IntoIterator<Item = (&'static str, Value)>) -> BTreeMa
 
 fn musea_stderr(name: &str) -> String {
     format!(
-        "vize musea new: Creating Musea project '{name}'...\n  Created stories/Button.art.vue\n\nMusea project '{name}' created successfully!\n\nNext steps:\n  1. Add more art files in the 'stories' directory\n  2. Enable @vizejs/vite-plugin-musea in your Vite or Nuxt project\n     Musea discovers .art.vue files by default; configure vize.musea in vite.config.* when needed\n"
+        "vize musea new: Creating Musea project '{name}'...\n  Created stories/Button.art.vue\n\nMusea project '{name}' created successfully!\n\nNext steps:\n  1. Add more art files in the 'stories' directory\n  2. Enable @vizejs/vite-plugin-musea in your Vite or Nuxt project\n     Musea discovers .art.vue files by default; configure vue.musea in vite.config.* when needed\n"
     )
 }
 
@@ -256,4 +256,27 @@ fn library_init_preserves_an_existing_vite_configuration() {
         init_report("unchanged", "src/components/vize")
     );
     assert_eq!(inventory(root), expected([("vite.config.mjs", text(VITE))]));
+}
+
+#[test]
+fn library_init_rejects_a_removed_dedicated_config_without_changing_project_files() {
+    let project = tempfile::tempdir().unwrap();
+    let root = project.path();
+    fs::write(root.join("package.json"), "{\"private\":true}\n").unwrap();
+    fs::write(
+        root.join("vize.config.json"),
+        "{\"lib\":{\"uiDir\":\"src/custom\"}}\n",
+    )
+    .unwrap();
+    let before = inventory(root);
+
+    let output = run(root, &["lib", "--json", "--offline", "init"]);
+
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    assert_eq!(output.stdout, b"");
+    assert_eq!(
+        output.stderr,
+        b"error: vize.config.* is no longer supported; move Vue settings to vue: in vite.config.* and TypeScript settings to tsconfig.json\n",
+    );
+    assert_eq!(inventory(root), before);
 }

@@ -228,8 +228,8 @@ export default {
     let dir = tempfile::tempdir().unwrap();
     let dir_path = Box::leak(Box::new(dir)).path();
     fs::write(
-        dir_path.join("vize.config.json"),
-        r#"{ "typeChecker": { "optionsApi": false } }"#,
+        dir_path.join("vite.config.mjs"),
+        r#"export default { vue: { "typeChecker": { "optionsApi": false } } };"#,
     )
     .unwrap();
     let path = dir_path.join("Greeting.vue");

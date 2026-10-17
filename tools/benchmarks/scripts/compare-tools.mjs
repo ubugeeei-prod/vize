@@ -243,13 +243,13 @@ function copySelectedFiles(inputDir, outputDir, files, extraFiles = []) {
 
 function prepareFormatDir(inputDir, files, label, invocation) {
   const outputDir = join(workRoot, "fmt", `${label}-${String(invocation).padStart(4, "0")}`);
-  copySelectedFiles(inputDir, outputDir, files, ["vize.config.json"]);
+  copySelectedFiles(inputDir, outputDir, files, ["vite.config.mjs"]);
   return outputDir;
 }
 
 function prepareViteDir(inputDir, files, label, invocation) {
   const outputDir = join(workRoot, "vite", `${label}-${String(invocation).padStart(4, "0")}`);
-  copySelectedFiles(inputDir, outputDir, files, ["vize.config.json"]);
+  copySelectedFiles(inputDir, outputDir, files, ["vite.config.mjs"]);
 
   const imports = [];
   const components = [];
@@ -317,8 +317,8 @@ function prepareLargeSfcDir(blockCount) {
     )}\n`,
   );
   writeFileSync(
-    join(outputDir, "vize.config.json"),
-    `${JSON.stringify({ typeChecker: {} }, null, 2)}\n`,
+    join(outputDir, "vite.config.mjs"),
+    `export default ${JSON.stringify({ vue: { typeChecker: { jsxTypecheck: false } } }, null, 2)};\n`,
   );
 
   return {

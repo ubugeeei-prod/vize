@@ -6,6 +6,14 @@ import { fileURLToPath } from "node:url";
 
 import { test } from "vite-plus/test";
 
+import { CONFIG_FREE_PROJECT_SHAPES } from "../../../tools/support/compat/npm/smoke-release-init-config-free.mjs";
+import { FRESH_INIT_MATRIX } from "../../../tools/support/compat/npm/smoke-release-init-shapes.mjs";
+import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.mjs";
+import {
+  expectedInitOutput,
+  writeFiles,
+} from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
+
 import { setupProject } from "../src/setup.ts";
 import { VIZE_CONFIG_FILES } from "../src/setup/config.ts";
 import { read, runInit, temporaryProject, write, writeManifest } from "./init-support.ts";
@@ -78,22 +86,29 @@ test("setup scaffolds a strict TypeScript project and preserves its project refe
   }
 });
 
-test("init and setup preserve every supported dedicated config byte-for-byte", async () => {
+test("init and setup preserve removed dedicated files beside a shared Vite config", async () => {
   for (const filename of VIZE_CONFIG_FILES) {
     const root = temporaryProject(`preserve-${path.extname(filename).slice(1)}`);
     try {
       writeManifest(root, { name: "fixture", private: true });
       const source = "// User-owned configuration; never replace or parse during init.\n";
       write(root, filename, source);
+      write(root, "vite.config.mjs", "export default { vue: {} };\n");
       const tsconfig = '{"files":[],"references":[{"path":"./app"}]}\n';
       write(root, "tsconfig.json", tsconfig);
 
-      await runInit(root, TYPECHECK_ARGS);
+      const init = await runInit(root, TYPECHECK_ARGS);
+      assert.match(init.output, /removed config:.*not read/u);
       const setup = setupProject({ root, install: false });
 
       assert.equal(read(root, filename), source, filename);
       assert.equal(read(root, "tsconfig.json"), tsconfig, filename);
       assert.ok(setup.preservedFiles.includes(filename), filename);
+      assert.ok(
+        setup.migrationWarnings.some((warning) =>
+          warning.includes(`${filename} is no longer read`),
+        ),
+      );
       assert.deepEqual(
         fs.readdirSync(root).filter((name) => name.startsWith("vize.config.")),
         [filename],
@@ -150,5 +165,64 @@ test("the packed init command configures Vite+ without a dedicated Vize config",
     assert.doesNotMatch(output, /will create vize\.config/u);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("init and setup reject dedicated-only projects before changing any files", async () => {
+  for (const filename of VIZE_CONFIG_FILES) {
+    const root = temporaryProject("removed-config");
+    try {
+      writeManifest(root, { name: "fixture", private: true });
+      write(root, filename, "// Keep user settings intact.\n");
+      const manifest = read(root, "package.json");
+      await assert.rejects(
+        runInit(root, TYPECHECK_ARGS),
+        /no longer supported; move Vue settings to vue:/u,
+      );
+      assert.throws(
+        () => setupProject({ root, install: false }),
+        /no longer supported; move Vue settings to vue:/u,
+      );
+      assert.equal(read(root, "package.json"), manifest);
+      assert.equal(read(root, filename), "// Keep user settings intact.\n");
+      assert.equal(fs.existsSync(path.join(root, "tsconfig.json")), false);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  }
+});
+
+test("current release fixtures match complete packed init plans for every manager cell", () => {
+  const cli = fileURLToPath(new URL("../dist/cli.mjs", import.meta.url));
+  const peers = { typescript: "6.0.3", vite: "8.0.0", "vite-plus": "0.1.0", vue: "3.5.0" };
+  for (const cell of FRESH_INIT_MATRIX) {
+    const shape = CONFIG_FREE_PROJECT_SHAPES[cell.shape];
+    const manager = PACKAGE_MANAGERS[cell.packageManager];
+    const root = temporaryProject("release-plan");
+    try {
+      writeFiles(root, { ...shape.files(peers), ...manager.projectFiles });
+      // Bootstrap only the authored package-manager detection signal. Dependency
+      // installation and the unchanged diagnostic triples belong to the release smoke.
+      write(root, manager.lockfile, "");
+      const run = (args: string[]) =>
+        execFileSync(process.execPath, [cli, "init", root, ...shape.initFlags, ...args], {
+          encoding: "utf8",
+        });
+      assert.equal(run(["--dry-run"]), expectedInitOutput(shape, root, manager, "dry"));
+      assert.equal(run(["--no-install"]), expectedInitOutput(shape, root, manager, "apply"));
+      for (const [name, source] of Object.entries(shape.expectedFiles))
+        assert.equal(read(root, name), source);
+      const manifest = JSON.parse(read(root, "package.json"));
+      for (const dependency of shape.plannedDependencies)
+        manifest.devDependencies[dependency] = "*";
+      write(root, "package.json", JSON.stringify(manifest));
+      assert.equal(run(["--no-install"]), expectedInitOutput(shape, root, manager, "rerun"));
+      assert.equal(
+        fs.readdirSync(root).some((name) => name.startsWith("vize.config.")),
+        false,
+      );
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
   }
 });

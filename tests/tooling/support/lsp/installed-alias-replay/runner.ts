@@ -6,9 +6,10 @@ import { inspect } from "node:util";
 import type { VizePublicRegistryInstallAuthority } from "./authority-schema.ts";
 import { recheckPublicBytes } from "./authority.ts";
 import { loadFrozenAliasCases, rebindFrozenExpected } from "./cases.ts";
-import { publicEnvironment, verifyNativeJournal } from "./custody.ts";
+import { digest, exactFile, publicEnvironment, verifyNativeJournal } from "./custody.ts";
 import { InstalledAliasSession } from "./protocol.ts";
 import { observeFrozenCase } from "./transactions.ts";
+import { vueConfigFixtureSource } from "../../vue-config-fixture.ts";
 
 type ReplayOptions = {
   authority: VizePublicRegistryInstallAuthority;
@@ -28,6 +29,8 @@ const vizeConfig = {
   typeChecker: { checkFallthroughAttrs: false, optionsApi: false },
   lsp: { lint: false, typecheck: true, hover: true, crossFile: true },
 };
+const nativeConfigSource = JSON.stringify(vizeConfig);
+const configSource = vueConfigFixtureSource(nativeConfigSource);
 
 /** No public identity is assigned here; an authenticated installed authority is mandatory. */
 export async function replayInstalledAliases(options: ReplayOptions) {
@@ -53,7 +56,19 @@ export async function replayInstalledAliases(options: ReplayOptions) {
     cases: 32,
     outcomes,
     adaptation:
-      "The original explicit workspace Corsa path is absent; the public npm CLI configures its bundled Corsa. All original tsconfig/project options and authored source/oracle bytes are retained.",
+      "The original explicit workspace Corsa path is absent; the public npm CLI configures its bundled Corsa. Project options use canonical vue: settings in Vite, preserving native defaults. All original tsconfig options and authored source/oracle bytes are retained.",
+    configuration: {
+      originalNative: {
+        file: "vize.config.json",
+        source: nativeConfigSource,
+        sha256: digest(nativeConfigSource),
+      },
+      carrier: { file: "vite.config.mjs", source: configSource, sha256: digest(configSource) },
+      mapping:
+        "native root -> vue; lsp -> vue.languageServer; omitted native jsxTypecheck -> false",
+      authority:
+        "authenticated installed public authority; canonical configuration required without version inference",
+    },
   };
   const persist = () =>
     fs.writeFileSync(
@@ -67,8 +82,15 @@ export async function replayInstalledAliases(options: ReplayOptions) {
     fs.mkdirSync(projectRoot, { recursive: true });
     fs.mkdirSync(path.join(projectRoot, "node_modules"));
     fs.symlinkSync(options.vuePath, path.join(projectRoot, "node_modules/vue"), "dir");
-    fs.writeFileSync(path.join(projectRoot, "tsconfig.json"), tsconfig);
-    fs.writeFileSync(path.join(projectRoot, "vize.config.json"), JSON.stringify(vizeConfig));
+    const configuration = [
+      { path: path.join(projectRoot, "tsconfig.json"), source: tsconfig, sha256: digest(tsconfig) },
+      {
+        path: path.join(projectRoot, "vite.config.mjs"),
+        source: configSource,
+        sha256: digest(configSource),
+      },
+    ];
+    for (const input of configuration) fs.writeFileSync(input.path, input.source);
     fs.writeFileSync(path.join(projectRoot, "E.vue"), testCase.input);
     assert.equal(fs.realpathSync(projectRoot), projectRoot);
     const expected = rebindFrozenExpected(testCase, {
@@ -84,6 +106,7 @@ export async function replayInstalledAliases(options: ReplayOptions) {
       status: "running",
       projectRoot,
       source: testCase.input,
+      configuration,
       expected,
       vueLink: { path: path.join(projectRoot, "node_modules/vue"), target: options.vuePath },
     };
@@ -92,6 +115,7 @@ export async function replayInstalledAliases(options: ReplayOptions) {
     let session: InstalledAliasSession | undefined;
     try {
       recheckPublicBytes(options.authority);
+      for (const input of configuration) exactFile(input.path, input.sha256, projectRoot);
       options.recheckVue();
       session = await InstalledAliasSession.launch({
         nodePath: options.authority.node.path,
@@ -136,6 +160,7 @@ export async function replayInstalledAliases(options: ReplayOptions) {
       try {
         const terminal = outcome.terminal as { pid?: number } | undefined;
         outcome.nativeCustody = verifyNativeJournal(journalPath, options.authority, terminal?.pid);
+        for (const input of configuration) exactFile(input.path, input.sha256, projectRoot);
         recheckPublicBytes(options.authority);
         options.recheckVue();
       } catch (error) {

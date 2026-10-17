@@ -22,11 +22,19 @@ const original = JSON.parse(
     "utf8",
   ),
 ) as { files: Record<string, string> };
+const currentFiles: Record<string, string> = {
+  ...original.files,
+  "vite.config.ts": "import { settings } from './settings';\nexport default { vue: settings };\n",
+};
 
-async function project(run: (root: string) => Promise<void>, withVite = true): Promise<void> {
+async function project(
+  run: (root: string) => Promise<void>,
+  withVite = true,
+  files = currentFiles,
+): Promise<void> {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-public-config-")));
   try {
-    for (const [name, source] of Object.entries(original.files)) {
+    for (const [name, source] of Object.entries(files)) {
       fs.writeFileSync(path.join(root, name), source);
     }
     if (withVite) {
@@ -39,7 +47,7 @@ async function project(run: (root: string) => Promise<void>, withVite = true): P
   }
 }
 
-test("source and packed public APIs match native on the complete unchanged helper-import project", async () => {
+test("source and packed public APIs match native on the canonical helper-import project", async () => {
   await project(async (root) => {
     const selected = path.join(root, "vite.config.ts");
     const module = await importConfigModule(selected);
@@ -49,7 +57,7 @@ test("source and packed public APIs match native on the complete unchanged helpe
     const packed = await import("../dist/config.mjs");
     assert.deepEqual(await loadConfig(root), expected);
     assert.deepEqual(await packed.loadConfig(root), expected);
-    for (const [name, source] of Object.entries(original.files)) {
+    for (const [name, source] of Object.entries(currentFiles)) {
       assert.equal(fs.readFileSync(path.join(root, name), "utf8"), source);
     }
     assert.equal(
@@ -57,6 +65,22 @@ test("source and packed public APIs match native on the complete unchanged helpe
       false,
     );
   });
+});
+
+test("source and packed APIs reject the unchanged historical vize config with migration guidance", async () => {
+  await project(
+    async (root) => {
+      const packed = await import("../dist/config.mjs");
+      for (const load of [loadConfig, packed.loadConfig]) {
+        await assert.rejects(load(root), /vize: configuration is no longer supported/);
+      }
+      for (const [name, source] of Object.entries(original.files)) {
+        assert.equal(fs.readFileSync(path.join(root, name), "utf8"), source);
+      }
+    },
+    true,
+    original.files,
+  );
 });
 
 test("the selected project Vite resolves JSON, extensionless TS and JS-to-TS imports with file scope", async () => {
@@ -71,7 +95,7 @@ test("the selected project Vite resolves JSON, extensionless TS and JS-to-TS imp
       `import pkg from './metadata.json';
       import {width} from './tools/width.js'; import {scope} from './tools/scope';
       if (scope !== ${JSON.stringify(path.join(root, "tools"))} || __dirname !== ${JSON.stringify(root)} || import.meta.url !== ${JSON.stringify(pathToFileURL(selected).href)}) throw new Error('file scope changed');
-      export default {vize:{formatter:{printWidth:pkg.width+width}}};`,
+      export default {vue:{formatter:{printWidth:pkg.width+width}}};`,
     );
     const result = await loadConfig(root);
     assert.equal(result?.formatter.printWidth, 90);
@@ -93,7 +117,7 @@ test("Vite+ source and module evaluate once with the caller's complete environme
         const counts=JSON.parse(readFileSync(counter,'utf8')); counts.source++;
         writeFileSync(counter,JSON.stringify(counts));
         if (env.command!=='serve'||env.mode!=='production'||env.isSsrBuild!==true) throw new Error('environment changed');
-        return {vize:{formatter:{printWidth:91}}};
+        return {vue:{formatter:{printWidth:91}}};
       }; export default wrapper;`,
     );
     const env = Object.freeze({ command: "fmt", mode: "production", isSsrBuild: true });
@@ -103,7 +127,7 @@ test("Vite+ source and module evaluate once with the caller's complete environme
   });
 });
 
-test("dedicated precedence and explicit selection preserve their distinct factory environments", async () => {
+test("Vite selection retains its environment and retired files cannot override it", async () => {
   await project(async (root) => {
     fs.writeFileSync(
       path.join(root, "vize.config.ts"),
@@ -113,13 +137,19 @@ test("dedicated precedence and explicit selection preserve their distinct factor
     };`,
     );
     const env = { command: "lint", mode: "production" };
-    assert.equal((await loadConfig(root, { env }))?.formatter.printWidth, 99);
+    assert.equal((await loadConfig(root, { env }))?.formatter.singleQuote, true);
     assert.equal(
       (await loadConfig(root, { env, configFile: "vite.config.ts" }))?.formatter.singleQuote,
       true,
     );
     fs.writeFileSync(path.join(root, "vize.config.ts"), "throw new Error('dedicated refuses');");
-    await assert.rejects(loadConfig(root, { env }), /dedicated refuses/);
+    assert.equal((await loadConfig(root, { env }))?.formatter.singleQuote, true);
+    await assert.rejects(
+      loadConfig(root, { env, configFile: "vize.config.ts" }),
+      /vize\.config\.\* is no longer supported/,
+    );
+    fs.rmSync(path.join(root, "vite.config.ts"));
+    await assert.rejects(loadConfig(root, { env }), /vize\.config\.\* is no longer supported/);
   });
 });
 
@@ -127,18 +157,18 @@ test("without project Vite the existing TypeScript transform and fresh direct mo
   await project(async (root) => {
     fs.writeFileSync(
       path.join(root, "vite.config.ts"),
-      "export default {vize:{formatter:{printWidth:90}}} satisfies Record<string,unknown>;",
+      "export default {vue:{formatter:{printWidth:90}}} satisfies Record<string,unknown>;",
     );
     assert.equal((await loadConfig(root))?.formatter.printWidth, 90);
     fs.writeFileSync(
       path.join(root, "vite.config.ts"),
-      "export default {vize:{formatter:{printWidth:91}}} satisfies Record<string,unknown>;",
+      "export default {vue:{formatter:{printWidth:91}}} satisfies Record<string,unknown>;",
     );
     assert.equal((await loadConfig(root))?.formatter.printWidth, 91);
     fs.rmSync(path.join(root, "vite.config.ts"));
     fs.writeFileSync(
       path.join(root, "vite.config.mjs"),
-      "export default {vize:{formatter:{printWidth:92}}};",
+      "export default {vue:{formatter:{printWidth:92}}};",
     );
     assert.equal((await loadConfig(root))?.formatter.printWidth, 92);
   }, false);
@@ -146,8 +176,8 @@ test("without project Vite the existing TypeScript transform and fresh direct mo
 
 test("selected config and dependency failures never fall through to a sibling config", async () => {
   for (const source of [
-    "import value from './missing'; export default {vize:value};",
-    "import value from './broken.json'; export default {vize:value};",
+    "import value from './missing'; export default {vue:value};",
+    "import value from './broken.json'; export default {vue:value};",
     "throw new Error('selected factory refuses');",
     "export default ()=>{throw new Error('selected factory refuses');};",
   ]) {
@@ -185,11 +215,11 @@ test("a present empty nearest Vite cannot select the otherwise legitimate hoiste
   await project(async (root) => {
     const nested = path.join(root, "nested");
     fs.mkdirSync(path.join(nested, "node_modules/vite"), { recursive: true });
-    for (const [name, source] of Object.entries(original.files)) {
+    for (const [name, source] of Object.entries(currentFiles)) {
       fs.writeFileSync(path.join(nested, name), source);
     }
     await assert.rejects(loadConfig(nested), /escapes selected project Vite/);
-    for (const [name, source] of Object.entries(original.files)) {
+    for (const [name, source] of Object.entries(currentFiles)) {
       assert.equal(fs.readFileSync(path.join(nested, name), "utf8"), source);
     }
   });

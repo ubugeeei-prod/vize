@@ -20,8 +20,8 @@ required: true と default を同時に持つ prop を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-required-prop-with-default": "error"

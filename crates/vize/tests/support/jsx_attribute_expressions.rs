@@ -1,4 +1,6 @@
 //! Required native full CLI packets for authored JSX attribute AST roots.
+#[path = "vite_config.rs"]
+mod vite_config;
 use super::{corsa_requirement, link_dir};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -80,8 +82,8 @@ fn authored_attribute_roots_preserve_complete_native_cli_packets() {
         )
         .unwrap();
         std::fs::write(
-            project.join("vize.config.json"),
-            json!({"typeChecker":{"jsxTypecheck":jsx}}).to_string(),
+            project.join("vite.config.mjs"),
+            vite_config::source(json!({"typeChecker":{"jsxTypecheck":jsx}}).to_string()),
         )
         .unwrap();
         let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));

@@ -72,7 +72,7 @@ mod tests {
     #[test]
     fn load_config_reads_compiler_template_syntax() {
         let dir = tempfile::tempdir().unwrap();
-        let config_path = dir.path().join("vize.config.json");
+        let config_path = dir.path().join("serialized-config.json");
         std::fs::write(
             &config_path,
             r#"{ "compiler": { "templateSyntax": "quirks" } }"#,
@@ -88,7 +88,7 @@ mod tests {
     #[test]
     fn load_config_reads_compiler_custom_elements() {
         let dir = tempfile::tempdir().unwrap();
-        let config_path = dir.path().join("vize.config.json");
+        let config_path = dir.path().join("serialized-config.json");
         std::fs::write(
             &config_path,
             r#"{ "compiler": { "customElements": ["Tres*", "primitive"] } }"#,
@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn load_compiler_host_compiler_reads_compiler_compatibility_key() {
         let dir = tempfile::tempdir().unwrap();
-        let config_path = dir.path().join("vize.config.json");
+        let config_path = dir.path().join("serialized-config.json");
         std::fs::write(
             &config_path,
             r#"{ "compiler": { "compatibility": { "hostCompiler": false } } }"#,

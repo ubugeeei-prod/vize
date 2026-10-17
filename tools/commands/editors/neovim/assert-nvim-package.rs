@@ -93,13 +93,13 @@ fn run() -> Result<(), String> {
     for (source, needle) in [
         (&config, r#"cmd = { "vize", "lsp" }"#),
         (&config, r#"filetypes = { "vue", "art-vue" }"#),
-        (
-            &config,
-            r#"root_markers = { "vize.config.pkl", "vize.config.json", "package.json", ".git" }"#,
-        ),
+        (&config, "root_markers = {"),
+        (&config, r#""vite.config.ts""#),
+        (&config, r#""vite.config.js""#),
+        (&config, r#""tsconfig.json""#),
         (&config, "lint = true"),
         (&config, "recommended = {"),
-        (&config, "init_options = profiles.recommended"),
+        (&config, "init_options = vim.empty_dict()"),
         (&config, r#"assert_list("cmd""#),
         (&init, r#"vim.lsp.config("vize", resolved)"#),
         (&init, r#"vim.lsp.enable("vize")"#),

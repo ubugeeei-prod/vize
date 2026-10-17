@@ -20,8 +20,8 @@ title: "a11y/no-refer-to-non-existent-id"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "a11y/no-refer-to-non-existent-id": "warn"

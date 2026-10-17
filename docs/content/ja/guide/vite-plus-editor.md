@@ -37,21 +37,25 @@ Vue の言語サービスを提供する拡張機能は、ひとつに絞って�
 
 ## エディター共通のネイティブ設定
 
-ネイティブの言語サーバーは、`vite.config.*` から設定を読み込めます。Vite+ 用ヘルパーの `lint.vize`、`fmt.vize`、`typecheck` も対象です。ネイティブツール共通の設定は、同じファイルのトップレベルの `vize` に書きます。
+ネイティブの言語サーバーは、`vite.config.*` の `vue:` と、プロジェクトの `tsconfig.json` を読み込みます。Vite+ では `defineConfig(vpConfig).withVue(vueConfig)` を使い、既存の Vite+ 設定を保ちながらネイティブ設定を共有します。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vize: {
-    linter: { preset: "essential" },
-    formatter: { singleQuote: true },
-    typeChecker: { strict: true },
-  },
+export default defineConfig({}).withVue({
+  linter: { preset: "essential" },
+  formatter: { singleQuote: true },
 });
 ```
 
-プロジェクトの型設定は `tsconfig.json` に置き、ワークスペースフォルダーは明示的に選択してください。エディター側で明示した機能の有効・無効は、プロジェクトの設定より優先されます。同じディレクトリに専用の設定ファイルがある場合は、Vite の設定よりそちらが優先されます。設定ファイルの探し方、モノレポでの探索範囲、Vite 設定の共有が現在のリリースでどこまで使えるかは、[設定](./configuration.md)を参照してください。
+TypeScript の設定は `tsconfig.json` の `compilerOptions`、Vue テンプレートの設定は `vueCompilerOptions` に置きます。標準の `extends` と `references` は引き続き使えます。ワークスペースフォルダーは明示的に選択してください。エディター側で明示した機能の有効・無効は、プロジェクトの設定より優先されます。専用の `vize.config.*` は廃止されました。既存の設定は `vue:` と TypeScript プロジェクトへ移してください。探索範囲と移行方法は[設定](./configuration.md)を参照してください。
+
+```json
+{
+  "compilerOptions": { "strict": true, "noEmit": true },
+  "vueCompilerOptions": { "strictTemplates": true }
+}
+```
 
 ## その他のエディター
 

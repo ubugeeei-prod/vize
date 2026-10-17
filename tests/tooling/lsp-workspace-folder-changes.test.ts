@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -28,11 +29,7 @@ test("vize lsp revalidates open documents when workspace folders change", async 
   const rootB = path.join(parentDir, "root-b");
   fs.mkdirSync(rootA);
   fs.mkdirSync(rootB);
-  fs.writeFileSync(
-    path.join(rootB, "vize.config.json"),
-    JSON.stringify({ linter: { rules: { [V_FOR_KEY_RULE]: "off" } } }),
-    "utf8",
-  );
+  writeVueConfigFixture(rootB, JSON.stringify({ linter: { rules: { [V_FOR_KEY_RULE]: "off" } } }));
 
   const filePath = path.join(rootB, "List.vue");
   const uri = pathToFileURL(filePath).href;

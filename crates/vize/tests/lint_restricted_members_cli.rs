@@ -2,6 +2,8 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{fs, path::Path, process::Command};
 
 fn write_file(root: &Path, path: &str, content: &str) {
@@ -36,8 +38,9 @@ fn configured_restricted_members_enable_the_project_local_rule() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "incremental",
     "ruleOptions": {
@@ -53,6 +56,7 @@ fn configured_restricted_members_enable_the_project_local_rule() {
     }
   }
 }"#,
+        ),
     );
     write_restricted_member_sfc(project_root.path());
 
@@ -61,7 +65,7 @@ fn configured_restricted_members_enable_the_project_local_rule() {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/App.vue",
@@ -98,8 +102,9 @@ fn explicit_off_keeps_configured_restricted_members_disabled() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "incremental",
     "rules": {
@@ -118,6 +123,7 @@ fn explicit_off_keeps_configured_restricted_members_disabled() {
     }
   }
 }"#,
+        ),
     );
     write_restricted_member_sfc(project_root.path());
 
@@ -126,7 +132,7 @@ fn explicit_off_keeps_configured_restricted_members_disabled() {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/App.vue",

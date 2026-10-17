@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { originalConfigDocument } from "./support/docs-config-archive.ts";
+import { currentConfigExample } from "./support/docs-config-successor.ts";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
@@ -153,17 +155,17 @@ void test("Japanese rule options retain the complete authored review and origina
     "the previous generated input has no authored regeneration authority",
   );
   const fencePattern = /^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm;
-  const fences = [...japanese.matchAll(fencePattern)].map((match) => match[0]);
-  const currentInlineTokens = [
-    ...japanese.replace(fencePattern, "").matchAll(/(?<!`)`([^`\n]+)`(?!`)/g),
-  ].map((match) => match[1]);
-  assert.equal(currentInlineTokens.length, 135);
-  const inlineTokens = [...currentInlineTokens];
+  const archived = originalConfigDocument(`docs/content/ja/${path}`);
+  const recipes = (source: string) => [...source.matchAll(fencePattern)].map((match) => match[0]);
+  const fences = recipes(archived);
   assert.deepEqual(
-    inlineTokens.splice(19, 3),
-    ["vue/valid-v-on", "{ modifiers?: string[] }", "[]"],
-    "only the approved custom modifier row succeeds the frozen 132-token contract",
+    recipes(japanese),
+    fences.map(currentConfigExample),
+    "all current whole recipes retain the archived option payloads",
   );
+  const inlineTokens = [
+    ...archived.replace(fencePattern, "").matchAll(/(?<!`)`([^`\n]+)`(?!`)/g),
+  ].map((match) => match[1]);
   const digest = (value: string[]) =>
     createHash("sha256").update(JSON.stringify(value)).digest("hex");
   const propsCorrections = new Map<number, string>([
@@ -195,6 +197,19 @@ void test("Japanese rule options retain the complete authored review and origina
   assert.equal(
     digest(originalTokens),
     "90b695added36c831b6af36e61fc2b31a0f7cd58f914ba16974bb3d8a8de30b1",
+  );
+  const currentTokens = [
+    ...japanese.replace(fencePattern, "").matchAll(/(?<!`)`([^`\n]+)`(?!`)/g),
+  ].map((match) => match[1]);
+  assert.equal(currentTokens.length, 135);
+  const successorTokens = inlineTokens.map((token) =>
+    token.replace(/^lint\.vize(?=\.|$)/, "vue.linter"),
+  );
+  successorTokens.splice(19, 0, "vue/valid-v-on", "{ modifiers?: string[] }", "[]");
+  assert.deepEqual(
+    currentTokens,
+    successorTokens,
+    "the exact approved modifier option and canonical namespaces succeed all132 tokens",
   );
   assert.deepEqual(
     [...japanese.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]),
@@ -259,8 +274,15 @@ void test("Japanese init survives regeneration with the original setup and recov
   );
   assert.equal(fences(japanese).length, 9);
   assert.equal(
-    digest(fences(japanese)),
+    digest(fences(originalConfigDocument(`docs/content/ja/${path}`))),
     "b8cac95696ac0a6f2ef2291370af86a70d3b1cc3211a976b8c823cc2ef18e182",
+  );
+  assert.deepEqual(
+    fences(japanese),
+    fences(originalConfigDocument(`docs/content/ja/${path}`)).map((recipe) =>
+      recipe.replace("  vize config:     none", "  Vue settings:    vue: in vite.config.*"),
+    ),
+    "all complete setup recipes retain their original content except the canonical config report",
   );
   const inline = (source: string) =>
     [

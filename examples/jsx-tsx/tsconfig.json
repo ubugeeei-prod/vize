@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "preserve",
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true
+  },
+  "vueCompilerOptions": { "strictTemplates": true },
+  "include": ["src/**/*"]
+}

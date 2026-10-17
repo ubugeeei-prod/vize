@@ -1,4 +1,6 @@
 //! Genuine public CLI and formatter controls; the existing archive supplies this binary.
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use serde_json::{Value, json};
 use std::{fs, process::Command};
 
@@ -45,12 +47,16 @@ fn component_value_reads_use_the_actual_ecosystem_cli_and_selected_error_disable
         fs::write(project.path().join("ValueReader.vue"), &source).unwrap();
         let config = if let Some(name) = case["config"].as_str() {
             let body = fs::read(std::path::Path::new(ROOT).join(name)).unwrap();
-            fs::write(project.path().join("vize.config.json"), &body).unwrap();
+            fs::write(
+                project.path().join("vite.config.mjs"),
+                vite_config::source(&body),
+            )
+            .unwrap();
             Some(body)
         } else {
             None
         };
-        let args: Vec<_> = case["argv"]
+        let mut args: Vec<_> = case["argv"]
             .as_array()
             .unwrap()
             .iter()
@@ -75,6 +81,9 @@ fn component_value_reads_use_the_actual_ecosystem_cli_and_selected_error_disable
                 &["--no-config"][..]
             }
         );
+        if config.is_some() {
+            args[7] = "vite.config.mjs";
+        }
         let output = Command::new(env!("CARGO_BIN_EXE_vize"))
             .current_dir(project.path())
             .args(&args)
@@ -106,8 +115,8 @@ fn component_value_reads_use_the_actual_ecosystem_cli_and_selected_error_disable
         );
         if let Some(config) = config {
             assert_eq!(
-                fs::read(project.path().join("vize.config.json")).unwrap(),
-                config,
+                fs::read(project.path().join("vite.config.mjs")).unwrap(),
+                vite_config::source(&config).as_bytes(),
                 "{id}: selected config unchanged"
             );
         }

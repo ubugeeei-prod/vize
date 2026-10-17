@@ -20,8 +20,8 @@ ARIA 属性を使用できない要素への指定を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "a11y/aria-unsupported-elements": "error"

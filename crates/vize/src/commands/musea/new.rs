@@ -82,6 +82,6 @@ defineArt("../src/Button.vue", {
     eprintln!("  1. Add more art files in the 'stories' directory");
     eprintln!("  2. Enable @vizejs/vite-plugin-musea in your Vite or Nuxt project");
     eprintln!(
-        "     Musea discovers .art.vue files by default; configure vize.musea in vite.config.* when needed"
+        "     Musea discovers .art.vue files by default; configure vue.musea in vite.config.* when needed"
     );
 }

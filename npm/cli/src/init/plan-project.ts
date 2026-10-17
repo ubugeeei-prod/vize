@@ -21,7 +21,7 @@ const FEATURE_SCRIPTS: Readonly<Record<FeatureId, readonly string[]>> = {
  *
  * CLI tools use project settings and sensible defaults without a dedicated
  * config. Only typechecking needs a tsconfig scaffold; existing project and Vize
- * configs keep their exact contents.
+ * configs keep their exact contents; removed dedicated files are never rewritten.
  */
 export function planToolSettings(
   detection: ProjectDetection,
@@ -57,7 +57,7 @@ export function planToolSettings(
       detail:
         detection.vizeConfig === null
           ? detail
-          : `${detail}; ${detection.vizeConfig} already exists and was left unchanged`,
+          : `${detail}; ${detection.vizeConfig} is no longer read; move settings to vue: in vite.config.*`,
       snippet: null,
     });
   }

@@ -132,8 +132,7 @@ function configureVue2Workspace(fixture: PinnedFixtureWorkspace, corsaPath: stri
       include: ["src"],
     }),
   );
-  fixture.write(
-    "vize.config.json",
+  fixture.writeVueConfig(
     json({
       compiler: { compatibility: { vueVersion: "2" } },
       typeChecker: { corsaPath, legacyVue2: true },

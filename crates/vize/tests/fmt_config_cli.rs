@@ -1,6 +1,9 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use std::{
     fs,
     path::Path,
@@ -26,33 +29,35 @@ fn output_details(output: &Output) -> String {
 fn write_entry_config(root: &Path) {
     write_project_file(
         root,
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "entries": [
     {
-      "name": "design-system",
       "basePath": "design-system",
       "files": ["src/**/*.vue", "src/**/*.art.vue"]
     }
   ]
 }"#,
+        ),
     );
 }
 
 fn write_entry_ts_config(root: &Path) {
     write_project_file(
         root,
-        "vize.config.ts",
-        r#"export default {
-  entries: [
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
+  "entries": [
     {
-      name: "design-system",
-      basePath: "design-system",
-      files: ["src/**/*.vue", "src/**/*.art.vue"],
-    },
-  ],
+      "basePath": "design-system",
+      "files": ["src/**/*.vue", "src/**/*.art.vue"]
+    }
+  ]
 }
 "#,
+        ),
     );
 }
 
@@ -71,7 +76,7 @@ fn fmt_check_supports_root_relative_paths_for_config_entries() {
         .args([
             "fmt",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--check",
             "design-system/src/AfsButton.vue",
         ])
@@ -100,7 +105,7 @@ fn fmt_check_supports_root_relative_art_vue_paths_for_config_entries() {
         .args([
             "fmt",
             "--config",
-            "vize.config.ts",
+            "vite.config.mjs",
             "--check",
             "design-system/src/AfsButton.art.vue",
         ])
@@ -122,14 +127,16 @@ fn fmt_check_supports_root_relative_ts_paths_for_config_entries() {
     let project = tempfile::tempdir().unwrap();
     write_project_file(
         project.path(),
-        "vize.config.ts",
-        r#"export default {
-  entries: [
-    { name: "app", basePath: ".", files: ["*.ts", "components/**/*.vue"] },
-    { name: "scripts", basePath: "scripts", files: ["**/*.ts"] },
-  ],
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
+  "entries": [
+    { "basePath": ".", "files": ["*.ts", "components/**/*.vue"] },
+    { "basePath": "scripts", "files": ["**/*.ts"] }
+  ]
 }
 "#,
+        ),
     );
     write_project_file(project.path(), "scripts/lint.ts", "export   const ok=1\n");
 
@@ -138,7 +145,7 @@ fn fmt_check_supports_root_relative_ts_paths_for_config_entries() {
         .args([
             "fmt",
             "--config",
-            "vize.config.ts",
+            "vite.config.mjs",
             "--check",
             "scripts/lint.ts",
         ])
@@ -170,7 +177,7 @@ fn fmt_check_resolves_entry_relative_art_vue_paths_from_monorepo_root() {
         .args([
             "fmt",
             "--config",
-            "vize.config.ts",
+            "vite.config.mjs",
             "--check",
             "src/AfsButton.art.vue",
         ])
@@ -187,6 +194,40 @@ fn fmt_check_resolves_entry_relative_art_vue_paths_from_monorepo_root() {
     assert!(!stderr.contains("No .vue"), "{stderr}");
 }
 
+#[cfg(unix)]
+#[test]
+fn fmt_check_keeps_entry_relative_resolution_through_a_config_directory_alias() {
+    let project = tempfile::tempdir().unwrap();
+    let aliases = tempfile::tempdir().unwrap();
+    let alias = aliases.path().join("workspace");
+    std::os::unix::fs::symlink(project.path(), &alias).unwrap();
+    write_entry_config(project.path());
+    let source =
+        "<template><div>{{msg}}</div></template>\n<script setup lang=\"ts\">const msg=1</script>\n";
+    let relative = "design-system/src/AfsButton.art.vue";
+    write_project_file(project.path(), relative, source);
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .arg("fmt")
+        .arg("--config")
+        .arg(alias.join("vite.config.mjs"))
+        .args(["--check", "src/AfsButton.art.vue"])
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("Found 1 file(s)"), "{stderr}");
+    assert!(stderr.contains("Would reformat:"), "{stderr}");
+    assert!(stderr.contains("AfsButton.art.vue"), "{stderr}");
+    assert!(!stderr.contains("No .vue"), "{stderr}");
+    assert_eq!(
+        fs::read_to_string(project.path().join(relative)).unwrap(),
+        source
+    );
+}
+
 #[test]
 fn fmt_check_fails_when_explicit_patterns_match_no_files() {
     let project = tempfile::tempdir().unwrap();
@@ -197,7 +238,7 @@ fn fmt_check_fails_when_explicit_patterns_match_no_files() {
         .args([
             "fmt",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--check",
             "design-system/src/**/*.art.vue",
         ])
@@ -219,13 +260,15 @@ fn fmt_check_honors_top_level_ignores_during_directory_discovery() {
     let project = tempfile::tempdir().unwrap();
     write_project_file(
         project.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "ignores": [
     "src/generated/schema.ts",
     "src/framework/static/sw.js"
   ]
 }"#,
+        ),
     );
     write_project_file(
         project.path(),
@@ -245,7 +288,7 @@ fn fmt_check_honors_top_level_ignores_during_directory_discovery() {
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(project.path())
-        .args(["fmt", "--config", "vize.config.json", "--check", "src"])
+        .args(["fmt", "--config", "vite.config.mjs", "--check", "src"])
         .output()
         .unwrap();
 

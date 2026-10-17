@@ -19,9 +19,10 @@
   :type '(repeat string)
   :group 'vize)
 
-(defcustom vize-eglot-profile 'recommended
-  "Default Vize feature profile for Eglot."
-  :type '(choice (const :tag "Lint only" lint)
+(defcustom vize-eglot-profile nil
+  "Vize feature override for Eglot; nil uses the project's settings."
+  :type '(choice (const :tag "Project settings" nil)
+                 (const :tag "Lint only" lint)
                  (const :tag "Recommended" recommended)
                  (const :tag "Off" off))
   :group 'vize)
@@ -56,7 +57,7 @@
   "Return initialization options for PROFILE."
   (let* ((profile (or profile vize-eglot-profile))
          (entry (assq profile vize--profiles)))
-    (unless entry
+    (unless (or (null profile) entry)
       (error "Unknown Vize profile: %S" profile))
     (copy-tree (cdr entry))))
 

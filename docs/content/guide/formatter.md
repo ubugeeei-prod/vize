@@ -89,22 +89,20 @@ The script is formatted by the Oxc formatter, the same engine Oxfmt uses. The te
 
 ## Configure the style
 
-In a Vite+ project, set options under `fmt.vize` in `vite.config.ts`:
+In a Vite+ project, set options under `vue.formatter` in `vite.config.ts`:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  fmt: {
-    vize: {
-      printWidth: 100,
-      singleQuote: true,
-    },
+export default defineConfig({}).withVue({
+  formatter: {
+    printWidth: 100,
+    singleQuote: true,
   },
 });
 ```
 
-`fmt.ignorePatterns` applies to both formatters. Set `fmt.vize: false` to hand `.vue` files back to Oxfmt. See [Configuration](./configuration.md) for where the standalone CLI and the editor read the same settings.
+`fmt.ignorePatterns` applies to both formatters. To hand `.vue` files back to Oxfmt, omit `vue.formatter` and set `fmt.vue: false`. An explicit `vue.formatter` takes precedence over the task control. See [Configuration](./configuration.md) for where the standalone CLI and the editor read the same settings.
 
 The same options are available as CLI flags:
 
@@ -133,12 +131,14 @@ Each of these guides covers one setting in detail:
 Vize is close to Prettier and Oxfmt, but a few defaults differ on purpose. To keep the written order of attributes and blocks, as Prettier does, turn off sorting:
 
 ```ts
-fmt: {
-  vize: {
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  formatter: {
     sortAttributes: false,
     sortBlocks: false,
   },
-},
+});
 ```
 
 On the command line, `vize fmt --preset prettier` applies these settings and also:

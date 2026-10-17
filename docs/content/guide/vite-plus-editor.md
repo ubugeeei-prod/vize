@@ -55,27 +55,34 @@ for native rules. Vue formatting is selected with the language-specific
 
 ## Native editor configuration
 
-The native language server can read settings from `vite.config.*`, including
-the Vite+ helper's `lint.vize`, `fmt.vize`, and `typecheck` sections. Common
-native settings also belong in the same file's top-level `vize` object:
+The native language server reads `vue:` from `vite.config.*` and the project’s
+`tsconfig.json`. With Vite+, share native settings through
+`defineConfig(vpConfig).withVue(vueConfig)` while preserving the existing Vite+
+configuration:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vize: {
-    linter: { preset: "essential" },
-    formatter: { singleQuote: true },
-    typeChecker: { strict: true },
-  },
+export default defineConfig({}).withVue({
+  linter: { preset: "essential" },
+  formatter: { singleQuote: true },
 });
 ```
 
-Keep project types in `tsconfig.json` and select workspace folders explicitly.
-Explicit editor feature switches retain their precedence over project settings.
-An existing dedicated config in the same directory still takes priority over
-Vite config. See [Configuration](./configuration.md) for discovery, monorepo
-bounds and the current release availability of shared Vite discovery.
+Keep TypeScript options in `compilerOptions` and Vue template options in
+`vueCompilerOptions` in `tsconfig.json`. Standard TypeScript `extends` and project
+`references` remain supported. Select workspace folders explicitly. Explicit
+editor feature switches retain their precedence over project settings. Dedicated
+`vize.config.*` files are no longer supported; migrate them to `vue:` and the
+TypeScript project. See [Configuration](./configuration.md) for discovery,
+monorepo boundaries and migration.
+
+```json
+{
+  "compilerOptions": { "strict": true, "noEmit": true },
+  "vueCompilerOptions": { "strictTemplates": true }
+}
+```
 
 ## Other editors
 

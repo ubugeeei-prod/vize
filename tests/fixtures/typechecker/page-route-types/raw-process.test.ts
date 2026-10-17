@@ -6,7 +6,7 @@ import { test } from "node:test";
 
 import { ownError, rawCommand } from "./raw-process.ts";
 import { fakeFixture, temporary } from "./raw-process-test-workspace.ts";
-import { PAGE_PATH, PLAYGROUND, typeofReference } from "./support.ts";
+import { configure, PAGE_PATH, PLAYGROUND, typeofReference } from "./support.ts";
 
 type Packet = Record<string, unknown>;
 type Descriptor = {
@@ -55,6 +55,32 @@ function recorded(packets: Packet[], stage: string, observation?: string): Packe
   assert.ok(result, `${stage}/${observation ?? "any"} was saved`);
   return result;
 }
+
+await test("page-route configuration retains native evidence and emits the active Vue carrier", async (t) => {
+  const { fixture } = fakeFixture(t);
+  configure(fixture, "owned-corsa-path", PAGE_PATH, { inherited: true });
+  const native = fixture.read("vize.config.json.fixture");
+  const settings = JSON.parse(native) as { lsp: unknown; typeChecker: unknown };
+  const carrier = fixture.read("vite.config.mjs");
+  const loaded = (await import(`data:text/javascript,${encodeURIComponent(carrier)}`)) as {
+    default: { vue: { languageServer: unknown; typeChecker: unknown } };
+  };
+  assert.deepEqual(loaded.default.vue.languageServer, settings.lsp);
+  assert.deepEqual(loaded.default.vue.typeChecker, {
+    jsxTypecheck: false,
+    ...(settings.typeChecker as object),
+  });
+  const tsconfig = JSON.parse(fixture.read("tsconfig.json")) as {
+    extends: string;
+    compilerOptions: object;
+  };
+  assert.equal(tsconfig.extends, `./${PLAYGROUND}/compiler-options.json`);
+  assert.equal(Object.hasOwn(tsconfig.compilerOptions, "rootDir"), false);
+  assert.equal(
+    fixture.read(`${PLAYGROUND}/compiler-options.json`),
+    `${JSON.stringify({ compilerOptions: { rootDir: "." } }, null, 2)}\n`,
+  );
+});
 
 await test("binary stdout/stderr and nonzero status are recorded before UTF-8 decoding", (t) => {
   const cwd = temporary(t);
@@ -262,10 +288,16 @@ await test(
             observe(source, [], PAGE_PATH, () => {
               const before = recorded(capture.packets, "reference-input");
               assert.deepEqual(decoded((before.inputs as Packet)[PAGE_PATH]), Buffer.from(source));
+              for (const file of ["vize.config.json.fixture", "vite.config.mjs"])
+                assert.deepEqual(
+                  decoded((before.inputs as Packet)[file]),
+                  fs.readFileSync(fixture.resolve(file)),
+                );
               for (const file of [
                 PAGE_PATH,
                 "tsconfig.json",
-                "vize.config.json",
+                "vize.config.json.fixture",
+                "vite.config.mjs",
                 `${PLAYGROUND}/compiler-options.json`,
                 "project-root-map.d.ts",
               ])
@@ -279,6 +311,26 @@ await test(
         assertRestored();
       },
     );
+    await t.test("reference failure restores an absent active carrier", (t) => {
+      const { fixture, source, stub, assertRestored, observer } = fakeFixture(t, {
+        activeConfig: false,
+      });
+      const cli = stub("process.stdout.write('{}');");
+      const capture = recorder();
+      const observe = observer(capture, cli);
+      const failure = new Error("owned absent carrier control");
+      assert.throws(
+        () =>
+          observe(source, [], PAGE_PATH, () => {
+            const before = recorded(capture.packets, "reference-input");
+            assert.equal((before.inputs as Packet)["vite.config.mjs"], null);
+            fixture.write("vite.config.mjs", "owned temporary reference carrier\r\n");
+            throw failure;
+          }),
+        (error) => error === failure,
+      );
+      assertRestored();
+    });
     await t.test(
       "reference spawn failure retains transformed typeof input before restoration",
       (t) => {

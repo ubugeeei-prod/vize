@@ -31,7 +31,7 @@ pub(super) struct CheckerSettings {
     pub(super) experimental_in_tag_comments: bool,
     pub(super) experimental_patterned_template: bool,
     pub(super) experimental_strict_slot_children: bool,
-    pub(super) dialect: VueVersion,
+    pub(super) dialect: Option<VueVersion>,
     pub(super) check_props: bool,
     pub(super) check_template_bindings: bool,
     pub(super) check_emits: bool,
@@ -73,17 +73,42 @@ pub(super) struct ProgramExecutionInput<'a> {
     pub(super) ensure_included_sources: bool,
 }
 
+fn resolve_program_dialect(
+    configured: Option<VueVersion>,
+    project_root: &std::path::Path,
+    tsconfig: Option<&std::path::Path>,
+) -> Result<VueVersion, String> {
+    if let Some(dialect) = configured {
+        return Ok(dialect);
+    }
+    let target = tsconfig
+        .map_or(Ok(None), |path| {
+            vize_canon::snapshot_tsconfig_vue_target(project_root, path)
+        })
+        .map_err(|error| cstr!("{error}"))?;
+    Ok(super::dialect_from_features(target))
+}
+
 pub(super) fn execute_program(
     input: ProgramExecutionInput<'_>,
     settings: &CheckerSettings,
 ) -> Result<ProgramExecution, String> {
+    let dialect = resolve_program_dialect(
+        settings.dialect,
+        input.project_root,
+        input.tsconfig_path.as_deref(),
+    )?;
+    let legacy_vue2 = settings.legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
+    if settings.dialect.is_none() {
+        super::warn_for_disabled_legacy(legacy_vue2);
+    }
     let mut virtual_ts_options = settings.virtual_ts_options.clone();
     let nuxt_path_aliases = nuxt::detect(
         &mut virtual_ts_options,
         input.nuxt_project_root,
         input.tsconfig_path.as_deref(),
-        settings.legacy_vue2,
-        settings.dialect,
+        legacy_vue2,
+        dialect,
     );
     collect_project_global_component_stubs(
         &mut virtual_ts_options,
@@ -131,7 +156,7 @@ pub(super) fn execute_program(
         checker.enable_options_api();
     }
     #[cfg(feature = "legacy")]
-    if settings.legacy_vue2 {
+    if legacy_vue2 {
         checker.enable_legacy_vue2();
     }
     if settings.jsx_typecheck {
@@ -141,7 +166,7 @@ pub(super) fn execute_program(
     checker.set_experimental_in_tag_comments(settings.experimental_in_tag_comments);
     checker.set_experimental_patterned_template(settings.experimental_patterned_template);
     checker.set_experimental_strict_slot_children(settings.experimental_strict_slot_children);
-    checker.set_dialect(settings.dialect);
+    checker.set_dialect(dialect);
     checker.set_virtual_ts_checks(
         settings.check_props,
         settings.check_template_bindings,
@@ -206,4 +231,64 @@ pub(super) fn execute_program(
         check_time: check_start.elapsed(),
         _checker_tsconfig: checker_tsconfig,
     })
+}
+
+#[cfg(test)]
+mod vue_target_tests {
+    use super::{VueVersion, resolve_program_dialect};
+
+    #[test]
+    fn explicit_vite_dialect_wins_over_tsconfig_including_explicit_vue3() {
+        let root = tempfile::tempdir().unwrap();
+        let config = root.path().join("tsconfig.json");
+        std::fs::write(&config, r#"{"vueCompilerOptions":{"target":2.7}}"#).unwrap();
+        assert_eq!(
+            resolve_program_dialect(None, root.path(), Some(&config)).unwrap(),
+            VueVersion::V2_7
+        );
+        assert_eq!(
+            resolve_program_dialect(Some(VueVersion::V3), root.path(), Some(&config)).unwrap(),
+            VueVersion::V3
+        );
+        std::fs::write(&config, r#"{"vueCompilerOptions":{"target":3.5}}"#).unwrap();
+        assert_eq!(
+            resolve_program_dialect(Some(VueVersion::V2), root.path(), Some(&config)).unwrap(),
+            VueVersion::V2
+        );
+    }
+
+    #[test]
+    fn each_effective_program_uses_its_own_target_and_invalid_target_fails() {
+        let root = tempfile::tempdir().unwrap();
+        for (name, target, expected) in [
+            ("app", "2.7", VueVersion::V2_7),
+            ("server", "3.5", VueVersion::V3),
+        ] {
+            let config = root
+                .path()
+                .join(vize_l0::cstr!("tsconfig.{name}.json").as_str());
+            std::fs::write(
+                &config,
+                vize_l0::cstr!(r#"{{"vueCompilerOptions":{{"target":{target}}}}}"#),
+            )
+            .unwrap();
+            assert_eq!(
+                resolve_program_dialect(None, root.path(), Some(&config)).unwrap(),
+                expected
+            );
+        }
+        let config = root.path().join("tsconfig.invalid.json");
+        std::fs::write(&config, r#"{"vueCompilerOptions":{"target":4}}"#).unwrap();
+        assert_eq!(
+            resolve_program_dialect(None, root.path(), Some(&config)).unwrap_err(),
+            vize_l0::cstr!(
+                "Configuration error: unsupported vueCompilerOptions.target 4 in {}; expected a numeric Vue 2.x target up to 2.7, a Vue 3.x target, 99, or \"auto\"",
+                config.display()
+            )
+        );
+        assert_eq!(
+            resolve_program_dialect(None, root.path(), None).unwrap(),
+            VueVersion::V3
+        );
+    }
 }

@@ -12,8 +12,8 @@ fn actual_project_vue_version_and_template_role_refuse_and_refresh_the_original_
     block_on(project.definition(&uri(), reference)).unwrap();
     let original = worker(&project);
     let directory = tempfile::tempdir().unwrap();
-    let config = directory.path().join("vize.config.json");
-    std::fs::write(&config, r#"{"vue":{"version":"2"}}"#).unwrap();
+    let config = directory.path().join("vite.config.mjs");
+    std::fs::write(&config, r#"export default { vue: {"version":"2"} };"#).unwrap();
     state.load_lsp_config(directory.path());
     assert!(matches!(
         block_on(project.definition(&uri(), reference)),
@@ -22,7 +22,7 @@ fn actual_project_vue_version_and_template_role_refuse_and_refresh_the_original_
     original.wait_exit();
     let refused = worker(&project);
     assert_eq!(refused.sfc_productions(), 1);
-    std::fs::write(&config, r#"{"vue":{"version":"3"}}"#).unwrap();
+    std::fs::write(&config, r#"export default { vue: {"version":"3"} };"#).unwrap();
     state.load_lsp_config(directory.path());
     assert_eq!(
         block_on(project.definition(&uri(), reference)),
@@ -86,8 +86,8 @@ fn actual_patterned_template_configuration_is_a_sticky_explicit_refusal() {
     let (state, project) = new_project(source);
     let directory = tempfile::tempdir().unwrap();
     std::fs::write(
-        directory.path().join("vize.config.json"),
-        r#"{"experimentals":{"patternedTemplate":true}}"#,
+        directory.path().join("vite.config.mjs"),
+        r#"export default { vue: {"experimentals":{"patternedTemplate":true}} };"#,
     )
     .unwrap();
     state.load_lsp_config(directory.path());

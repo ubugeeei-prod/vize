@@ -20,8 +20,8 @@ prop の default / validator 内で使えなくなった this を検出します
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-props-default-this": "error"

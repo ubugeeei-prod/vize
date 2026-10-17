@@ -45,12 +45,13 @@ Musea middleware is intended for the local Vite dev server and trusted developme
 not expose `/__musea__` directly on the public internet unless it is protected by your own network
 controls or authentication layer.
 
-Shared defaults can live in `vize.config.ts`:
+Shared defaults live in `vue.musea` in your existing `vite.config.*`. With Vite+, retain
+your existing options and add Vue settings through the helper:
 
 ```ts
-import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   musea: {
     include: ["src/**/*.art.vue"],
     exclude: ["node_modules/**", "dist/**"],

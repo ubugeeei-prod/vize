@@ -20,8 +20,8 @@ Nuxt の環境フラグを process.* から import.meta.* に置き換えます�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/prefer-import-meta": "error"

@@ -90,7 +90,7 @@ for (const [mode, expected] of [
             resolveVizeCli(),
             defused,
             files,
-            path.join(out, "class-b/original/vize.config.json"),
+            path.join(out, "class-b/original/vite.config.mjs"),
           ),
         );
         const diagnostics = new Map();

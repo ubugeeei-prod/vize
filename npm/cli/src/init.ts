@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
-import { atomicWriteFile } from "./setup/config.js";
+import { atomicWriteFile, requireSharedConfig } from "./setup/config.js";
 import { initHelp, parseInitArgs, type InitArgs } from "./init/args.js";
 import { detectProject, withFramework, type ProjectDetection } from "./init/detect.js";
 import { planInit, type InitCommand, type InitPlan } from "./init/plan.js";
@@ -102,6 +102,7 @@ export async function initProject(options: InitOptions): Promise<InitPlan | null
   const root = path.resolve(args.root ?? options.root);
   const detection = withFramework(detectProject(root), args.bundlerOverride);
   output(renderDetection(detection));
+  requireSharedConfig(root, detection.viteConfigs);
 
   const selection = await resolveSelection(detection, args, {
     output,

@@ -22,8 +22,8 @@ to allow. The native checker projection already uses strict checking.
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       typeAware: true,
       rules: {
         "type/strict-boolean-expressions": "error",

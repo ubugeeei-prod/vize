@@ -11,7 +11,7 @@ import { configureTools } from "./vite-plus/conflicts.ts";
 import { createTasks } from "./vite-plus/tasks.ts";
 import { normalizeConfig, resolveConfig } from "./vite-plus/config.ts";
 import { configurePack } from "./vite-plus/pack.ts";
-import { isLegacyVueCompatibilityMode } from "./plugin/vue-version.ts";
+import { mergeVueConfigOptions } from "../../../cli/src/config/vite-runtime.mjs";
 
 export type {
   VitePlusConfig,
@@ -27,7 +27,7 @@ export type {
   VizePackOptions,
 } from "./vite-plus/types.ts";
 
-/** Extend the installed Vite+ configuration with the native Vue toolchain. */
+/** Add the native Vue toolchain to an ordinary Vite+ export. */
 export function defineConfig(
   config: VueConfig = {},
   integration: VizePlusOptions = {},
@@ -37,8 +37,11 @@ export function defineConfig(
       const source = await resolveConfig(config, env);
       const { vp, metadata, compiler } = normalizeConfig(source, integration);
       const { options } = metadata;
+      const legacy =
+        compiler !== false &&
+        (await import("./plugin/vue-version.ts")).isLegacyVueCompatibilityMode(compiler);
       const plugins =
-        compiler === false || isLegacyVueCompatibilityMode(compiler)
+        compiler === false || legacy
           ? [...(vp.plugins ?? [])]
           : await withoutVueCompiler(vp.plugins ?? []);
       if (compiler !== false) {
@@ -64,10 +67,19 @@ export function defineConfig(
                 ...vp.run,
                 tasks: { ...createTasks(vp.run?.tasks, options.tasks), ...vp.run?.tasks },
               },
+        [sourceConfigKey]: source,
         [taskConfigKey]: metadata,
       };
     },
-    { [sourceConfigKey]: config },
+    {
+      [sourceConfigKey]: config,
+      withVue(vue: VueOptions): VizePlusConfigFactory {
+        return defineConfig(async (env) => {
+          const source = await resolveConfig(config, env);
+          return { ...source, vue: mergeVueConfigOptions(source.vue, vue) };
+        }, integration);
+      },
+    },
   );
 }
 
@@ -87,7 +99,7 @@ export function withVue(
   vpConfig: VitePlusConfig = {},
   integration: VizePlusOptions = {},
 ): VizePlusConfigFactory {
-  return defineConfig({ extends: vpConfig, vue }, integration);
+  return defineConfig(vpConfig, integration).withVue(vue);
 }
 
 /** Compatibility alias for the original config-first helper. */

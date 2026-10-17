@@ -16,13 +16,17 @@ use crate::config::ConfigDocument;
 
 /// Evaluate a JS-like config file through Node and deserialize the result.
 pub(super) fn parse_js_config(path: &Path) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
-    let (config_path, json) = evaluate_js_config(path)?;
+    let EvaluatedConfig {
+        path: config_path,
+        json,
+        dependencies,
+    } = evaluate_js_config_with_dependencies(path)?;
 
     // Public Vite settings permit flat entry arrays. Normalize only that shape
     // with the same pure Rust projection used by vize/config; ordinary objects
     // and dedicated config files retain their existing deserialization path.
     if config_path.file_name().is_some_and(|name| {
-        super::discovery::CONFIG_FILE_NAMES[5..]
+        super::discovery::CONFIG_FILE_NAMES
             .iter()
             .any(|candidate| name == *candidate)
     }) && json.iter().find(|byte| !byte.is_ascii_whitespace()) == Some(&b'[')
@@ -30,15 +34,24 @@ pub(super) fn parse_js_config(path: &Path) -> Result<ConfigDocument, Box<dyn std
         let value = serde_json::from_slice(&json)?;
         let normalized = crate::config::normalize_public_config_value(value)
             .map_err(|error| IoError::new(ErrorKind::InvalidData, error))?;
-        return Ok(serde_json::from_value(normalized)?);
+        let mut document: ConfigDocument = serde_json::from_value(normalized)?;
+        document.set_config_dependencies(dependencies);
+        return Ok(document);
     }
-    super::parse::document_from_json(&json, &config_path)
+    let mut document = super::parse::document_from_json(&json, &config_path)?;
+    document.set_config_dependencies(dependencies);
+    Ok(document)
 }
 
-/// Evaluate a JS-like config file through Node and return its JSON output.
-pub(super) fn evaluate_js_config(
+struct EvaluatedConfig {
+    path: PathBuf,
+    json: Vec<u8>,
+    dependencies: Vec<std::string::String>,
+}
+
+fn evaluate_js_config_with_dependencies(
     path: &Path,
-) -> Result<(PathBuf, Vec<u8>), Box<dyn std::error::Error>> {
+) -> Result<EvaluatedConfig, Box<dyn std::error::Error>> {
     let config_path = if path.is_absolute() {
         path.to_path_buf()
     } else {
@@ -53,14 +66,17 @@ import { dirname } from "node:path";
 
 const configPath = process.argv[1];
 console.log = (...args) => console.error(...args);
-const module = await importConfigModule(configPath);
-const exported = module.default ?? module;
-const config = isViteConfigFile(configPath)
-  ? await resolveViteConfigExport(exported, undefined, dirname(configPath))
-  : typeof exported === "function"
-  ? await exported({ mode: "development", command: "serve" })
-  : exported;
-process.stdout.write(JSON.stringify(config ?? {}));
+const { value: config, dependencies } = await importConfigModuleWithDependencies(
+  configPath, undefined, undefined, async (module) => {
+    const exported = module.default ?? module;
+    return isViteConfigFile(configPath)
+      ? await resolveViteConfigExport(exported, undefined, dirname(configPath))
+      : typeof exported === "function"
+      ? await exported({ mode: "development", command: "serve" })
+      : exported;
+  },
+);
+process.stdout.write(JSON.stringify({ config: config ?? {}, dependencies }));
 "#,
     ]
     .concat();
@@ -80,5 +96,15 @@ process.stdout.write(JSON.stringify(config ?? {}));
         )));
     }
 
-    Ok((config_path, output.stdout))
+    #[derive(serde::Deserialize)]
+    struct Evaluation {
+        config: serde_json::Value,
+        dependencies: Vec<std::string::String>,
+    }
+    let evaluated: Evaluation = serde_json::from_slice(&output.stdout)?;
+    Ok(EvaluatedConfig {
+        path: config_path,
+        json: serde_json::to_vec(&evaluated.config)?,
+        dependencies: evaluated.dependencies,
+    })
 }

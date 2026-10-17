@@ -23,9 +23,10 @@ const snapshot = (files) =>
 function control(loaded) {
   const workspace = path.join(os.tmpdir(), "malformed-config-contract");
   const rows = loaded.cases.map((fixture) => {
-    const initialFiles = snapshot(fixture.initialFiles);
+    const execution = fixture.execution;
+    const initialFiles = snapshot(execution.initialFiles);
     let previous = initialFiles;
-    const passes = fixture.steps.map((step) => {
+    const passes = execution.steps.map((step) => {
       const pass = {
         argv: step.argv,
         inputFiles: previous,
@@ -44,6 +45,7 @@ function control(loaded) {
     });
     return {
       id: fixture.id,
+      executionAuthority: execution.authority,
       workspace,
       initialFiles,
       state: "matched-reference",
@@ -108,19 +110,72 @@ void test("malformed history retains all original named-law settings and complet
   );
 });
 
+void test("relative explicit serialization preserves every historical parse error beyond its discovered-path identity", () => {
+  const loaded = loadSortingConfigManifest(root, manifestPath);
+  let changedPaths = 0;
+  for (const fixture of loaded.cases) {
+    const original = fixture.steps[0];
+    const current = fixture.execution.steps[0];
+    assert.deepEqual(original.argv, ["fmt", "--write", "UserCard.vue"]);
+    assert.deepEqual(current.argv, [
+      "fmt",
+      "--config",
+      "serialized-config.json",
+      "--write",
+      "UserCard.vue",
+    ]);
+    const originalStderr = original.stderr.toString();
+    const expected = originalStderr.replace(
+      "failed to parse {{workspace}}/vize.config.json:",
+      "failed to parse serialized-config.json:",
+    );
+    if (expected !== originalStderr) changedPaths++;
+    assert.equal(current.stderr.toString(), expected, fixture.id);
+    assert.equal(current.exitStatus, original.exitStatus);
+    assert.deepEqual(current.stdout, original.stdout);
+    assert.deepEqual(current.expectedFiles["UserCard.vue"], original.expectedFiles["UserCard.vue"]);
+    assert.deepEqual(
+      current.expectedFiles["serialized-config.json"],
+      original.expectedFiles["vize.config.json"],
+    );
+  }
+  assert.equal(
+    changedPaths,
+    4,
+    "the four complete serde errors change only the declared path context",
+  );
+});
+
 void test("malformed admission rejects lost complete errors, bypasses and file protection", () => {
   const loaded = loadSortingConfigManifest(root, manifestPath);
   for (const mutate of [
     (report) => report.rows.pop(),
+    (report) => (report.rows[0].executionAuthority.historicalArgv[0] = ["fmt"]),
+    (report) => (report.rows[0].passes[0].argv = ["fmt", "--write", "UserCard.vue"]),
     (report) => report.rows[0].passes.shift(),
     (report) => (report.rows[0].passes[0].exitStatus = 0),
     (report) => (report.rows[0].passes[1].argv = ["fmt", "--check", "UserCard.vue"]),
     (report) => (report.rows[0].passes[0].stderr = observation(Buffer.alloc(0))),
+    (report) => {
+      const workspace = report.rows[0].workspace;
+      report.rows[0].passes[0].stderr = observation(
+        Buffer.from(
+          loaded.cases[0].steps[0].stderr
+            .toString()
+            .replaceAll("{{workspace}}", workspace)
+            .replaceAll("vize.config.json", "serialized-config.json"),
+        ),
+      );
+    },
     (report) => (report.rows[0].passes[0].stderr.sha256 = "0".repeat(64)),
     (report) =>
       (report.rows[0].passes[0].outputFiles["UserCard.vue"] = observation(Buffer.from("changed"))),
     (report) =>
       (report.rows[0].passes[0].outputFiles["vize.config.json"] = observation(Buffer.from("{}"))),
+    (report) =>
+      (report.rows[0].passes[0].outputFiles["serialized-config.json"] = observation(
+        Buffer.from("{}"),
+      )),
     (report) => (report.rows[0].passes[1].inputFiles = {}),
     (report) => (report.rows[0].passes[1].signal = "SIGTERM"),
     (report) => (report.rows[0].passes[1].processError = "spawn failed"),

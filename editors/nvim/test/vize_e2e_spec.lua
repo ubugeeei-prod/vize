@@ -212,20 +212,23 @@ local function step_rename(client, bufnr, uri, offset_encoding)
 end
 
 local function start_client(bufnr, published, published_version_counts)
-  -- The packaged `recommended` profile leaves formatting off, matching the
-  -- server default. Format-on-save is an explicit opt-in, so the scenario
-  -- turns it on the same way a user would: through `init_options`.
-  local init_options = config.profile("recommended")
-  init_options.formatting = true
-
-  local resolved = config.normalize({
-    cmd = { server_path, "lsp" },
-    init_options = init_options,
-  })
+  -- Exercise the packaged default: project settings and server defaults own features.
+  local resolved = config.normalize({ cmd = { server_path, "lsp" } })
+  assert_eq(resolved.init_options, {}, "packaged project-owned feature settings")
   assert_eq(resolved.filetypes, { "vue", "art-vue" }, "packaged filetypes")
   assert_eq(
     resolved.root_markers,
-    { "vize.config.pkl", "vize.config.json", "package.json", ".git" },
+    {
+      "vite.config.ts",
+      "vite.config.js",
+      "vite.config.mts",
+      "vite.config.mjs",
+      "vite.config.cts",
+      "vite.config.cjs",
+      "tsconfig.json",
+      "package.json",
+      ".git",
+    },
     "packaged root markers"
   )
 

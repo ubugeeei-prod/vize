@@ -63,7 +63,7 @@ test("create-vue editor features answer in authored Vue ranges", async (t) => {
       );
       symlinkVueTypes(fixture.workspaceDir);
       fixture.write("tsconfig.json", json(tsconfig));
-      fixture.write("vize.config.json", json({ typeChecker: { corsaPath } }));
+      fixture.writeVueConfig(json({ typeChecker: { corsaPath } }));
 
       fixture.applyExactPatch(appPath, upstreamScriptBlock, authoredScriptBlock);
       const source = fixture.applyExactPatch(appPath, upstreamHeading, authoredHeading);

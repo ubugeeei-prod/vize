@@ -65,28 +65,17 @@ export async function resolveSharedConfig(
   let fileConfig: ResolvedVizeConfig | null = null;
   if (options.configMode !== false) {
     const configFile = options.configFile ?? process.env[VIZE_CONFIG_FILE_ENV];
-    try {
-      fileConfig = await loadConfig(root, {
-        mode: options.configMode ?? "root",
-        configFile,
-        env,
-        viteConfig: false,
-      });
-      if (fileConfig) logger.log("Loaded config from vize.config file");
-    } catch (error) {
-      logger.warn(`Failed to load vize config from ${configFile ?? root}:`, error);
-    }
+    fileConfig = await loadConfig(root, {
+      mode: options.configMode ?? "root",
+      configFile,
+      env,
+      viteConfig: false,
+    });
+    if (fileConfig) logger.log("Loaded explicitly selected native Vue settings");
   }
 
-  let inlineConfig: ResolvedVizeConfig | null = null;
-  if (options.config) {
-    try {
-      inlineConfig = await resolveConfigExport(options.config, env);
-      logger.log("Loaded inline vize config from plugin options");
-    } catch (error) {
-      logger.warn("Failed to resolve inline vize config:", error);
-    }
-  }
+  const inlineConfig = options.config ? await resolveConfigExport(options.config, env) : null;
+  if (inlineConfig) logger.log("Loaded inline Vue settings from plugin options");
 
   const projectConfig =
     viteConfig === undefined || options.configMode === false

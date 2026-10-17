@@ -5,11 +5,12 @@ Emacs Eglot integration for the Vize language server.
 ```elisp
 (add-to-list 'load-path "/path/to/emacs-vize")
 (require 'vize)
-(vize-setup-eglot 'recommended)
+(vize-setup-eglot)
 ```
 
-The default profile is `recommended`, so Eglot starts Vize with diagnostics,
-hover, completion, definition, references, symbols, and ecosystem helpers enabled.
+By default, Eglot lets the server read `vue` settings from `vite.config.*` and
+`vueCompilerOptions` from `tsconfig.json`, including nested projects.
+Set `vize-eglot-profile` or pass a named profile to override project features.
 
 Profiles:
 

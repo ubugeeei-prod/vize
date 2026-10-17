@@ -6,9 +6,9 @@
     "dev": "vp dev --config vite.app.config.ts",
     "build": "vp build --config vite.app.config.ts",
     "preview": "vp preview --config vite.app.config.ts",
-    "check": "vp check src vite.config.ts vite.app.config.ts vize.config.ts",
-    "check:fix": "vp check --fix src vite.config.ts vite.app.config.ts vize.config.ts",
-    "fmt": "vp fmt --write src vite.config.ts vite.app.config.ts vize.config.ts"
+    "check": "vp check src vite.config.ts vite.app.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts vite.app.config.ts",
+    "fmt": "vp fmt --write src vite.config.ts vite.app.config.ts"
   },
   "dependencies": {
     "vue": "catalog:vue-production"

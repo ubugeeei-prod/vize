@@ -165,8 +165,8 @@ fn module_link_actual_writer_waits_until_original_source_and_context_publication
         let (state, project) = project();
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(
-            dir.path().join("vize.config.json"),
-            r#"{"typeChecker":{"strict":true,"lspRequestTimeoutMs":91000}}"#,
+            dir.path().join("vite.config.mjs"),
+            r#"export default { vue: {"typeChecker":{"strict":true,"lspRequestTimeoutMs":91000}} };"#,
         )
         .unwrap();
         let context = project.capture_module_link_context().unwrap();

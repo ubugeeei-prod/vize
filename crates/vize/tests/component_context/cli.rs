@@ -1,4 +1,6 @@
 use super::support::{self, cli_packet, config, persist, write};
+#[path = "../support/vite_config.rs"]
+mod vite_config;
 use serde_json::{Value, json};
 use std::{fs, path::Path, process::Command};
 
@@ -38,10 +40,14 @@ fn all_original_contexts_reach_discovered_and_explicit_cli_routes() {
         let source = case["source"].as_str().unwrap();
         let config = config(case);
         write(&root, filename, source);
-        write(&root, "vize.config.json", &config.to_string());
+        write(
+            &root,
+            "vite.config.mjs",
+            &vite_config::source(config.to_string()),
+        );
         for selection in [
             &[][..],
-            &["--config", "vize.config.json"][..],
+            &["--config", "vite.config.mjs"][..],
             &["--config", "."][..],
         ] {
             for repeat in [1, 2] {
@@ -54,8 +60,8 @@ fn all_original_contexts_reach_discovered_and_explicit_cli_routes() {
         }
         assert_eq!(fs::read_to_string(root.join(filename)).unwrap(), source);
         assert_eq!(
-            fs::read_to_string(root.join("vize.config.json")).unwrap(),
-            config.to_string()
+            fs::read_to_string(root.join("vite.config.mjs")).unwrap(),
+            vite_config::source(config.to_string())
         );
     }
     let evidence = json!({"schema": "vize.component-context.actual-cli-transport-v1",
@@ -81,12 +87,12 @@ fn compiler_and_lint_policy_share_one_actual_javascript_evaluation() {
 const file = new URL('./evaluations.txt', import.meta.url);
 const previous = existsSync(file) ? Number(readFileSync(file, 'utf8')) : 0;
 writeFileSync(file, String(previous + 1));
-export default {
+export default { vue: {
   compiler: {customElements: ['my-owned']},
   linter: {preset: 'incremental', rules: {'vue/require-component-registration': 'warn'}}
-};
+} };
 "#;
-    write(root, "vize.config.mjs", settings);
+    write(root, "vite.config.mjs", settings);
     let start = source.find("my-neighbor").unwrap();
     let case = json!({"source": source, "authoredExpectedPacket": {
         "diagnostics": [{"message": "Component is used but not explicitly imported",
@@ -96,7 +102,7 @@ export default {
     let mut observations = Vec::new();
     for selection in [
         &[][..],
-        &["--config", "vize.config.mjs"][..],
+        &["--config", "vite.config.mjs"][..],
         &["--config", "."][..],
     ] {
         for _ in [1, 2] {
@@ -127,7 +133,7 @@ export default {
         source
     );
     assert_eq!(
-        fs::read_to_string(root.join("vize.config.mjs")).unwrap(),
+        fs::read_to_string(root.join("vite.config.mjs")).unwrap(),
         settings
     );
 }

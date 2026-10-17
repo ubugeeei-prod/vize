@@ -7,7 +7,7 @@ use super::*;
 #[test]
 fn preserves_scopes_and_resolves_rules_in_declaration_order() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r##"{
@@ -58,7 +58,7 @@ fn preserves_scopes_and_resolves_rules_in_declaration_order() {
 #[test]
 fn preserves_scoped_rule_options_for_options_only_entries() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r##"{

@@ -2,6 +2,9 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use serde_json::{Value, json};
 use std::path::Path;
 use vize_carton::corsa_resolver::discover_corsa_in_ancestors;
@@ -131,12 +134,14 @@ impl Fixture {
                 .expect("plain script tests require the actual TypeScript native runtime");
             std::fs::write(project.path().join("tsconfig.json"), CONFIG).unwrap();
             std::fs::write(
-                project.path().join("vize.config.json"),
-                serde_json::to_vec(&json!({
-                    "typeChecker": { "corsaPath": runtime },
-                    "lsp": { "lint": true, "typecheck": true }
-                }))
-                .unwrap(),
+                project.path().join("vite.config.mjs"),
+                vite_config::source(
+                    serde_json::to_vec(&json!({
+                        "typeChecker": { "corsaPath": runtime },
+                        "lsp": { "lint": true, "typecheck": true }
+                    }))
+                    .unwrap(),
+                ),
             )
             .unwrap();
         }
@@ -206,7 +211,7 @@ impl Fixture {
                 "processEvidence": self.process.terminal_evidence(),
                 "projectRoot": self._project.path(),
                 "tsconfig": std::fs::read_to_string(self._project.path().join("tsconfig.json")).ok(),
-                "vizeConfig": std::fs::read_to_string(self._project.path().join("vize.config.json")).ok()
+                "vizeConfig": std::fs::read_to_string(self._project.path().join("vite.config.mjs")).ok()
             }));
         }
         std::mem::take(&mut self.mismatches)

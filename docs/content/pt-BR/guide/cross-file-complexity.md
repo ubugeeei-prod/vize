@@ -75,14 +75,14 @@ corpus real da Vize, com 40.724 templates. O aviso aponta para a tag `<template>
 construções que mais adicionam complexidade.
 
 Como os limites são um p95, cerca de um componente real em cada vinte os ultrapassa. Nenhum preset
-ativa a regra, então ativá-la é uma decisão do projeto. Declare-a em `lint.vize.rules` para ativá-la:
+ativa a regra, então ativá-la é uma decisão do projeto. Declare-a em `vue.linter.rules` para ativá-la:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       rules: {
         "vue/max-template-complexity": "warn",
       },

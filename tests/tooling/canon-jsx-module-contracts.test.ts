@@ -13,13 +13,11 @@ import {
   workspace,
 } from "./support/upstream/vue-language-tools.ts";
 import { vueTscDiagnostics } from "./support/vue-tsc-oracle.ts";
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 function createProject(options: Record<string, unknown> = {}): string {
   const directory = workspace("jsx-module-contract-");
-  fs.writeFileSync(
-    path.join(directory, "vize.config.json"),
-    JSON.stringify({ typeChecker: { jsxTypecheck: true } }),
-  );
+  writeVueConfigFixture(directory, { typeChecker: { jsxTypecheck: true } });
   fs.writeFileSync(
     path.join(directory, "tsconfig.json"),
     JSON.stringify({

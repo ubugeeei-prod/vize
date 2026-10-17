@@ -2,197 +2,119 @@
 title: 共享配置参考
 ---
 
-<!-- Reviewed translation; source: guide/configuration-reference.md; scope: introduction and discovery -->
+<!-- Reviewed translation; source: guide/configuration-reference.md -->
+
+<span id="standalone-configuration-reference"></span>
 
 # 共享配置参考
 
-优先使用现有的 `vite.config.*` 和 `tsconfig.json`；请参阅[配置指南](./configuration.md)。本页介绍原生设置和可选的专用配置格式。
+在现有 Vite 配置中使用 `vue:`，在 TypeScript 项目中使用 `vueCompilerOptions`。最小配置见[配置指南](./configuration.md)。
 
 ## 配置文件
 
-最近项目的同目录不存在专用配置时，会发现并读取 Vite 配置。CLI 也支持 `--config`；直接传给插件的选项和编辑器中显式设置的功能具有更高优先级。专用配置中的相对路径以配置文件目录为基准。Vite 中的 `typeChecker` 路径和作用域 `basePath` 以选定的 Vite `root` 为基准；显式 CLI 输入仍以执行目录为基准。使用 `vize.entries` 和目标包的 TypeScript 项目来设置包的范围。
+CLI 和编辑器发现最近项目中的 `vite.config.ts`、`.mts`、`.cts`、`.js`、`.mjs` 和 `.cjs`。`package.json`、`tsconfig.json` 和 `jsconfig.json` 构成项目边界。命令可以通过 `--config` 选择 Vite 配置。
 
+专用的 `vize.config.*` 文件已不再受支持。与 Vite 配置并存的旧专用文件会被忽略；只有专用配置的项目会收到迁移错误。将旧 TypeScript、JSON 或 Pkl 配置中的原生设置迁入 `vue:`，不要继续创建专用文件。
 
-npm 包命令和`@vizejs/vite-plugin`从项目根加载这些文件
-优先顺序：
-
-- `vize.config.pkl`
-- `vize.config.ts`
-- `vize.config.js`
-- `vize.config.mjs`
-- `vize.config.json`
-
-Rust CLI按上述顺序读取与命令原生设置相同的配置文件名，例如：
-`check`、`lint`、`lsp`和`fmt`。
+Vite 配置中的原生相对路径以选定的 Vite `root` 为基准，`root` 自身从配置文件目录解析。显式 CLI 输入和 `--tsconfig` 以执行命令的目录为基准。直接传给插件的选项和编辑器中显式设置的功能开关优先于共享设置。
 
 ## TypeScript 配置
 
 ```ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig(({ command, mode, isSsrBuild }) => ({
+export default defineConfig({
+  server: { port: 3000 },
+}).withVue({
   compiler: {
-    sourceMap: mode !== "production",
-    ssr: isSsrBuild,
+    sourceMap: true,
     vapor: false,
-    customRenderer: false,
     templateSyntax: "standard",
   },
-  vite: {
-    include: [/\.vue$/],
-    exclude: [/node_modules/],
-    scanPatterns: ["src/**/*.vue"],
-    ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
-  },
-  linter: {
-    enabled: command !== "build",
-    preset: "happy-path",
-  },
-  typeChecker: {
-    enabled: true,
-    strict: true,
-  },
-  formatter: {
-    printWidth: 100,
-    singleQuote: false,
-  },
-  lsp: {
-    lint: true,
-    typecheck: false,
-    editor: false,
-    formatting: false,
-  },
-  musea: {
-    include: ["src/**/*.art.vue"],
-    basePath: "/__musea__",
-  },
-}));
-```
-
-## Vue类型解析
-
-Vize 不会将 Vue 的类型表面从已发布的 `vize` 包中钉出：`vize check`，语言
-服务器和包命令解析`vue`、`@vue/compiler-sfc`及相关环境类型，这些类型来自
-分析项目，因此 Vue 3 的补丁、次要和预发布选项仍由该项目控制
-而非用于构建Vize的版本。为了获得可预测的结果，声明支持的Vue
-用户项目中的版本（非通过 Vize 内部），保持 `vue`、`@vue/compiler-sfc` 和
-像Nuxt这样的集成就在那里对齐了，并`vize check`从项目根点或点开始运行
-`typeChecker.tsconfig`目标包裹;只用`typeChecker.corsaPath`来选棋子
-二进制，绝不覆盖Vue类型的版本。当一个项目支持多个Vue系列时，测试每个范围
-因此 Vize 遵循活跃的依赖图，而非硬编码的类型路径。
-
-## 实验平面作品
-
-Monorepos 可以用 `entries` 描述根默认和包范围覆盖。普通对象
-配置内部规范化为一个条目，数组导出被`defineConfig`接受
-ESLint-flat-config风格的创作。
-
-```ts
-export default defineConfig({
-  formatter: {
-    printWidth: 100,
-  },
-  entries: [
-    {
-      name: "web app",
-      basePath: "apps/web",
-      files: ["src/**/*.vue"],
-      typeChecker: {
-        tsconfig: "tsconfig.app.json",
-      },
-    },
-    {
-      name: "ui package",
-      basePath: "packages/ui",
-      files: ["src/**/*.vue"],
-      formatter: {
-        singleQuote: true,
-      },
-    },
-  ],
+  linter: { preset: "happy-path" },
+  formatter: { printWidth: 100, singleQuote: false },
+  languageServer: { hover: true },
 });
 ```
 
-## PKL 配置
+`vue` 接受 `version`、`compiler`、`typeChecker`、`linter`、`formatter`、`languageServer`、`globalTypes`、`files`、`ignores`、`basePath`、`lib`、`vite`、`musea`、`experimentals`、`dialect`、`name` 和 `entries`。请使用原生选项名；未知成员会产生配置错误。编译模式见[编译器参考](./compiler-configuration-reference.md)，带类型的 lint 选项见[规则选项](/rules/options.md)。
 
-```pkl
-amends "node_modules/vize/pkl/vize.pkl"
+## Vue 类型解析
 
-compiler {
-  sourceMap = true
-  vapor = false
-  customRenderer = false
-  templateSyntax = "standard"
-}
+`vize check` 和语言服务器从被分析的项目解析 Vue 类型。请在用户项目中声明需要的 Vue 版本，并让 `vue`、`@vue/compiler-sfc` 和 Nuxt 等框架集成保持一致。Vize 自身构建时的依赖不会决定用户项目使用的 Vue 版本。支持多个 Vue 系列的项目应分别验证各个依赖范围。
 
-vite {
-  scanPatterns = new Listing {
-    "src/**/*.vue"
-  }
-}
-
-linter {
-  preset = "happy-path"
-}
-
-typeChecker {
-  enabled = true
-  strict = true
-}
-
-entries = new Listing {
-  new ConfigEntry {
-    name = "web app"
-    basePath = "apps/web"
-    files = new Listing { "src/**/*.vue" }
-    typeChecker {
-      tsconfig = "tsconfig.app.json"
-    }
-  }
-}
-
-lsp {
-  lint = true
-  typecheck = false
-  editor = false
-  formatting = false
-}
-```
-
-## JSON 配置
+环境声明、生成的自动导入文件、路径别名和 Vue `ComponentCustomProperties` 声明保留在项目的 `tsconfig.json` 中。标准 TypeScript `extends`（包括包路径和数组形式）及项目 `references` 保持原有含义。
 
 ```json
 {
-  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
-  "compiler": {
-    "sourceMap": true,
-    "vapor": false,
-    "customRenderer": false,
-    "templateSyntax": "standard"
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "strict": true, "noEmit": true },
+  "vueCompilerOptions": {
+    "target": 3.5,
+    "strictTemplates": true,
+    "checkUnknownComponents": true
   },
-  "vite": {
-    "scanPatterns": ["src/**/*.vue"]
-  },
-  "linter": {
-    "preset": "happy-path"
-  },
-  "typeChecker": {
-    "enabled": true,
-    "strict": true
-  },
-  "musea": {
-    "include": ["src/**/*.art.vue"],
-    "basePath": "/__musea__"
-  }
+  "include": ["src/**/*"]
 }
 ```
 
-## 静态分析选项
+支持的 Vue 选项包括 `target`、`strictTemplates`、`checkUnknownProps`、`checkUnknownComponents`、`checkUnknownEvents`、`checkUnknownDirectives`、`strictVModel`、`strictCssModules`、`jsxSlots`、`inferComponentDollarEl`、`inferComponentDollarRefs`、`inferTemplateDollarEl`、`inferTemplateDollarRefs`、`inferTemplateDollarSlots`、`inferTemplateDollarAttrs`、`fallthroughAttributes`、`checkRequiredFallthroughAttributes`、`resolveStyleImports`、`resolveStyleClassNames` 和 `vapor`。这不代表已支持全部 `vue-tsc` 选项。
 
-使用`linter`来实现npm绒毛路径：
+`target` 接受 Vue 2.x（最高 2.7）、Vue 3.x、`99` 和 `"auto"`。自动选择使用项目安装的 Vue 包；Vite 配置中显式设置的 `vue.version` 优先。不支持的目标值会产生配置错误。TypeScript 严格性保留在 `compilerOptions` 中；显式 Vize 类型检查选项覆盖对应的项目默认值。
+
+### TypeScript 项目归属与支持边界
+
+这些设置来自源文件所属的 TypeScript 项目，包括继承的 JSONC、标准包路径或数组形式的 `extends` 以及项目 `references`。`target: "auto"` 解析该项目安装的 Vue 包；找不到或版本不受支持时会产生配置错误。小于 2.7 的数值 Vue 2 目标选择 Vue 2，恰好 2.7 选择 Vue 2.7，Vue 3.x 或 `99` 选择现代 Vue 3 系列。Vite 中显式设置的 `vue.version`（包括 `"3"`）优先于 `target`。
+
+还支持 `strictComponentAttrs`，但需要显式启用；`strictTemplates` 不会自动开启它。`plugins` 仅识别标识符 `vue-router/volar/sfc-typed-router`，不会加载任意 Vue 语言插件。
+
+`optionsWrapper` 尚不支持。它在 Vue 工具中表示代码前缀和后缀包装，并不是 Options API 开关。Vize 已有的 Options API 检查通过独立的 `vue.typeChecker.optionsApi` 设置。以上是有限的选项映射，不代表与全部 `vue-tsc` 选项完全等价。
+
+## 实验性作用域条目
+
+Monorepo 类型检查使用目标包的 TypeScript 项目。Vue lint 的作用域设置可以使用 `vue.entries`：
 
 ```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
 export default defineConfig({
+  root: "apps/web",
+  vue: {
+    entries: [
+      {
+        files: ["src/trusted/**/*.vue"],
+        linter: { rules: { "vue/no-v-html": "off" } },
+      },
+    ],
+  },
+});
+```
+
+条目接受 `basePath`、`files`、`ignores` 和 `linter`；其他部分保持项目级设置。不要将 TypeScript 项目引用放入这些条目。
+
+## 复用配置
+
+不再提供 Vize 专用的 `extends`。使用普通 JavaScript 对象复用设置：
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import vpConfig from "./build-options.ts";
+import vueConfig from "./vue-options.ts";
+
+export default defineConfig(vpConfig).withVue(vueConfig);
+```
+
+这不会改变标准 TypeScript `extends` 或 Vite 配置函数的行为。
+
+## 静态分析选项
+
+原生 Vue lint 选项放在 `vue.linter` 中，语言服务器选项放在 `vue.languageServer` 中。Vue 规则使用 `vue.linter.rules`，Oxlint 规则保留在 `lint.rules` 中。跨文件和类型感知检查见 [lint 执行](/guide/lint-execution.md)（英文），完整选项对象见[规则选项](/rules/options.md)。未知规则选项字段会被拒绝。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
   linter: {
     enabled: true,
     preset: "opinionated",
@@ -201,13 +123,157 @@ export default defineConfig({
       "vue/no-v-html": "warn",
     },
   },
+  typeChecker: {
+    enabled: true,
+    checkProps: true,
+    checkEmits: true,
+    checkTemplateBindings: true,
+    optionsApi: true,
+  },
 });
 ```
 
-使用`typeChecker`作为NPM检查路径：
+`vue.typeChecker.optionsApi` 默认启用，解析 Vue 3 Options API 的模板绑定，包括普通 `<script>` 中的 `data`、`computed`、`methods`、`inject`、`setup` 和 `props`。它仅对非 `<script setup>` 组件运行，可设为 `false` 关闭。Legacy Vue 2.7 / Nuxt 2 支持是独立的 `legacy` 构建功能。
+
+`vue.typeChecker.tsconfig` 选择其他 TypeScript 项目。只有需要指定已安装的检查器可执行文件时才设置 `vue.typeChecker.corsaPath`；它不会选择 Vue 类型版本。`vue.typeChecker.servers` 限制并行检查器进程数（`1`–`32`），省略时 Vize 会根据项目和可用 CPU 自动调整并发数。
+
+<span id="博物馆选项"></span>
+
+## Musea 共享配置
+
+共享的文件发现、路由和 VRT 设置放在 `vue.musea` 中。直接传给 `musea()` 的选项覆盖对应的共享值。
 
 ```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { musea } from "@vizejs/vite-plugin-musea";
+
 export default defineConfig({
+  plugins: [musea({ storybookCompat: false })],
+  vue: {
+    musea: {
+      include: ["src/**/*.art.vue"],
+      exclude: ["node_modules/**", "dist/**"],
+      basePath: "/__musea__",
+      inlineArt: false,
+    },
+  },
+});
+```
+
+`previewCss`、`previewSetup`、`tokensPath`、`theme` 和 `storybookOutDir` 等展示选项属于 `musea()` 插件选项。
+
+`musea-vrt` 从同一 Vite 配置中读取共享的 `include`、`exclude` 和 `vrt` 选项。`vize musea new` 创建示例故事，不会创建专用配置文件。
+
+## 迁移示例
+
+专用 JSON/PKL 配置和 Vize 自定义 `extends` 已移除。请通过导入普通 JavaScript 对象复用配置。以下示例保留迁移前支持的设置。
+
+### 动态 Vite 配置
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig(({ command, mode, isSsrBuild }) => ({
+  vue: {
+    compiler: {
+      sourceMap: mode !== "production",
+      ssr: isSsrBuild,
+      vapor: false,
+      customRenderer: false,
+      templateSyntax: "standard",
+    },
+    vite: {
+      include: [/\.vue$/],
+      exclude: [/node_modules/],
+      scanPatterns: ["src/**/*.vue"],
+      ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
+    },
+    linter: {
+      enabled: command !== "build",
+      preset: "happy-path",
+    },
+    typeChecker: {
+      enabled: true,
+      strict: true,
+    },
+    formatter: {
+      printWidth: 100,
+      singleQuote: false,
+    },
+    languageServer: {
+      lint: true,
+      typecheck: false,
+      editor: false,
+      formatting: false,
+    },
+    musea: {
+      include: ["src/**/*.art.vue"],
+      basePath: "/__musea__",
+    },
+  },
+}));
+```
+
+### 迁移已移除的 JSON 和 PKL 设置
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+    templateSyntax: "standard",
+  },
+  vite: { scanPatterns: ["src/**/*.vue"] },
+  linter: { preset: "happy-path" },
+  typeChecker: { enabled: true, strict: true },
+  languageServer: { lint: true, typecheck: false, editor: false, formatting: false },
+  musea: { include: ["src/**/*.art.vue"], basePath: "/__musea__" },
+});
+```
+
+### 按包划分项目
+
+`entries` 只划分 lint 设置的作用域。每个包的检查器与格式化设置应放在该包自己的 Vite 和 TypeScript 项目中。下面两个文件属于不同的包项目。
+
+```ts
+// apps/web/vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  name: "web app",
+  files: ["src/**/*.vue"],
+  formatter: { printWidth: 100 },
+  typeChecker: { tsconfig: "tsconfig.app.json" },
+});
+```
+
+```ts
+// packages/ui/vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  name: "ui package",
+  files: ["src/**/*.vue"],
+  formatter: { printWidth: 100, singleQuote: true },
+});
+```
+
+### 静态分析与检查进程
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    enabled: true,
+    preset: "opinionated",
+    rules: {
+      "vue/require-v-for-key": "error",
+      "vue/no-v-html": "warn",
+    },
+  },
   typeChecker: {
     enabled: true,
     strict: true,
@@ -220,48 +286,33 @@ export default defineConfig({
 });
 ```
 
-`typeChecker.optionsApi` resolves Vue 3 Options API template bindings
-（在普通`<script> export default { ... }`上`data`/`computed`/`methods`/`inject`/`setup`/`props`）。
-它以标准配置（不是 `legacy` 功能）发售，默认开启（匹配`vue-tsc`），
-并且仅对非 `<script setup>` 组件运行，因此该公共路径保持零成本;场景
-`optionsApi: false`选择退出。Legacy Vue 2.7 / Nuxt 2 支持（`typeChecker.legacyVue2`，增加了
-Nuxt 2模板全局）是一个独立的`legacy`构建选择加入。
-
-`typeChecker.tsconfig` 和 `typeChecker.corsaPath` 是共享模式的一部分，但
-项目支持的Corsa路径如今是Rust CLI的表面。`corsaPath`与`vize check`共享，
-类型感知`vize lint`和`vize lsp`（`typeChecker.tsgoPath`是已弃用的别名）;运行时间
-栈是 TypeScript 7 native platform package（`typescript` / `@typescript/typescript-*`）
-和 Corsa/corsa-bind API 层。除非需要将 Vize 指向特定已安装的 `lib/tsc` 可执行文件，
-否则请保持 `corsaPath` 未设置。保留环境声明、生成的自动导入文件、路径别名和Vue
-`ComponentCustomProperties`在你的项目`tsconfig.json`中设置声明，并使用包脚本
-例如`vize:check:app` `--tsconfig`或`--corsa-path`覆盖。
-
-```json
-{
-  "typeChecker": {
-    "servers": 1
-  }
-}
-```
-
-`typeChecker.servers`为未来的Corsa工人池保留。直接项目会话执行者
-目前仅支持`1`;更大的值会很快失效，而不是假装调谐并发。
-
-## 博物馆选项
-
-共享配置目前涵盖画廊文件集和路由：
-
 ```ts
-export default defineConfig({
-  musea: {
-    include: ["src/**/*.art.vue"],
-    exclude: ["node_modules/**", "dist/**"],
-    basePath: "/__musea__",
-    storybookCompat: false,
-    inlineArt: false,
-  },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  typeChecker: { servers: 1 },
 });
 ```
 
-放弃以演示为重点的选项，如`previewCss`、`previewSetup`、`tokensPath`、`theme`和
-`storybookOutDir`直接`vite.config.ts`的`musea()`。
+### 现有工作流设置
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  formatter: {
+    printWidth: 100,
+  },
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+    tsconfig: "tsconfig.json",
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
+```

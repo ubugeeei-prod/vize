@@ -4,6 +4,8 @@
     reason = "whole CLI fixtures use std strings"
 )]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{fs, path::Path, process::Command};
 use vize_atelier_core::parser::with_vue2_preserve_whitespace;
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
@@ -103,7 +105,11 @@ fn build(ssr: bool) -> String {
 fn build_with(ssr: bool, vapor: bool) -> String {
     let project = tempfile::tempdir().unwrap();
     fs::write(project.path().join("App.vue"), SOURCE).unwrap();
-    fs::write(project.path().join("vize.config.json"), CONFIG).unwrap();
+    fs::write(
+        project.path().join("vite.config.mjs"),
+        vite_config::source(CONFIG),
+    )
+    .unwrap();
     let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
     command
         .current_dir(project.path())

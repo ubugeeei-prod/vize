@@ -10,6 +10,8 @@ mod corsa_requirement;
 mod empty_inputs;
 #[path = "check_cli/stubs.rs"]
 mod stubs;
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use stubs::{write_test_vite_stub, write_test_vue_runtime_dom_stub, write_test_vue_stub};
 
 use std::{
@@ -1776,16 +1778,19 @@ const count = 1;
     );
     let missing_corsa = project_root.join("__missing_configured_tsgo__");
     std::fs::write(
-        project_root.join("vize.config.json"),
-        cstr!(
-            r#"{{
+        project_root.join("vite.config.mjs"),
+        vite_config::source(
+            cstr!(
+                r#"{{
   "typeChecker": {{
     "tsgoPath": "{}"
   }}
 }}"#,
-            missing_corsa.display()
-        )
-        .as_str(),
+                missing_corsa.display()
+            )
+            .as_str()
+            .as_bytes(),
+        ),
     )
     .unwrap();
 
@@ -1821,12 +1826,14 @@ const count = 1;
     let config_dir = project_root.join("config");
     std::fs::create_dir_all(&config_dir).unwrap();
     std::fs::write(
-        config_dir.join("vize.config.json"),
-        r#"{
+        config_dir.join("vite.config.mjs"),
+        vite_config::source(
+            r#"{
   "typeChecker": {
     "corsaPath": "__missing_configured_corsa__"
   }
 }"#,
+        ),
     )
     .unwrap();
 
@@ -1835,7 +1842,7 @@ const count = 1;
         .args([
             "check",
             "--config",
-            "config/vize.config.json",
+            "config/vite.config.mjs",
             "src/App.vue",
             "--quiet",
         ])
@@ -1879,12 +1886,14 @@ defineProps<{
         )],
     );
     std::fs::write(
-        project_root.join("vize.config.json"),
-        r#"{
+        project_root.join("vite.config.mjs"),
+        vite_config::source(
+            r#"{
   "compiler": {
     "templateSyntax": "quirks"
   }
 }"#,
+        ),
     )
     .unwrap();
 
@@ -1932,16 +1941,19 @@ loadData()
     );
     let missing_corsa = project_root.join("__missing_lint_corsa__");
     std::fs::write(
-        project_root.join("vize.config.json"),
-        cstr!(
-            r#"{{
+        project_root.join("vite.config.mjs"),
+        vite_config::source(
+            cstr!(
+                r#"{{
   "typeChecker": {{
     "corsaPath": "{}"
   }}
 }}"#,
-            missing_corsa.display()
-        )
-        .as_str(),
+                missing_corsa.display()
+            )
+            .as_str()
+            .as_bytes(),
+        ),
     )
     .unwrap();
 

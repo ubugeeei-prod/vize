@@ -22,8 +22,8 @@ title: "type/no-unsafe-template-binding"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/no-unsafe-template-binding": "warn"

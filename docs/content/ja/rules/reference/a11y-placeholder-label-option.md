@@ -20,8 +20,8 @@ select のプレースホルダー option に disabled または hidden を指�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "a11y/placeholder-label-option": "warn"

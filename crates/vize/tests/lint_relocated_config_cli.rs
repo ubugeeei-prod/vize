@@ -1,5 +1,7 @@
 //! #7307: serialized temporary configs and ./ config paths preserve lint scopes.
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{fs, process::Command};
 
 #[test]
@@ -16,8 +18,8 @@ fn temporary_config_and_dot_config_keep_original_project_scopes() {
     let relative: serde_json::Value =
         serde_json::from_str(include_str!("fixtures/lint-config-paths/vize.config.json")).unwrap();
     fs::write(
-        root.join("vize.config.json"),
-        serde_json::to_vec(&relative).unwrap(),
+        root.join("vite.config.mjs"),
+        vite_config::source(serde_json::to_vec(&relative).unwrap()),
     )
     .unwrap();
     let mut relocated = relative.clone();
@@ -28,8 +30,8 @@ fn temporary_config_and_dot_config_keep_original_project_scopes() {
 
     let mut reference = None;
     for config_path in [
-        root.join("vize.config.json"),
-        std::path::PathBuf::from("./vize.config.json"),
+        root.join("vite.config.mjs"),
+        std::path::PathBuf::from("./vite.config.mjs"),
         temporary,
     ] {
         let output = Command::new(env!("CARGO_BIN_EXE_vize"))

@@ -81,7 +81,11 @@ fn expected_all(uri: &Url, diagnostics: &[Diagnostic], attach: bool) -> Vec<Code
 
 fn project() -> (tempfile::TempDir, ServerState, Url) {
     let directory = tempfile::tempdir().unwrap();
-    std::fs::write(directory.path().join("vize.config.json"), CONFIG).unwrap();
+    std::fs::write(
+        directory.path().join("vite.config.mjs"),
+        vize_l0::cstr!("export default {{ vue: {} }};", CONFIG).as_bytes(),
+    )
+    .unwrap();
     let state = ServerState::new();
     state.load_lsp_config(directory.path());
     let uri = Url::from_file_path(directory.path().join("App.vue")).unwrap();
@@ -161,8 +165,12 @@ fn current_buffer_and_config_refuse_obsolete_diagnostics_without_losing_repaired
         .open(uri.clone(), ORIGINAL.into(), 3, "vue".into());
     assert_eq!(actions(&state, &uri, &old), expected_all(&uri, &old, true));
     std::fs::write(
-        directory.path().join("vize.config.json"),
-        "{\"linter\":{\"enabled\":false}}",
+        directory.path().join("vite.config.mjs"),
+        vize_l0::cstr!(
+            "export default {{ vue: {} }};",
+            "{\"linter\":{\"enabled\":false}}"
+        )
+        .as_bytes(),
     )
     .unwrap();
     state.load_lsp_config(directory.path());

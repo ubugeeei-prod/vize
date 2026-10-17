@@ -10,6 +10,8 @@ mod corsa_requirement;
 mod lsp;
 #[path = "support/lsp_process.rs"]
 mod lsp_process;
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use serde_json::{Value, json};
 use std::{fs, path::Path, process::Command};
 
@@ -75,11 +77,20 @@ fn project(source: &str, options: Value) -> Option<tempfile::TempDir> {
     #[cfg(windows)]
     std::os::windows::fs::symlink_dir(vue, project.path().join("node_modules/vue"))
         .expect("Vue symlink");
-    fs::write(project.path().join("vize.config.json"), serde_json::to_vec(&json!({
+    fs::write(project.path().join("vite.config.mjs"), vite_config::source(serde_json::to_vec(&json!({
         "typeChecker": { "corsaPath": runtime },
         "linter": { "preset": "incremental", "typeAware": true, "rules": { (RULE): "error" }, "ruleOptions": { (RULE): options } }
-    })).expect("config")).expect("write config");
+    })).expect("config"))).expect("write config");
     Some(project)
+}
+
+fn read_native_config(path: &Path) -> Value {
+    let source = fs::read_to_string(path).expect("Vite config");
+    let native = source
+        .strip_prefix("export default { vue: ")
+        .and_then(|source| source.strip_suffix(" };\n"))
+        .expect("fixture Vite carrier");
+    serde_json::from_str(native).expect("native config JSON")
 }
 
 fn lint(root: &Path) -> (Option<i32>, Value) {
@@ -142,11 +153,14 @@ fn ordered_entries_can_override_options_and_keep_explicit_off() {
     let Some(project) = project(source, serde_json::from_str(STRICT).expect("options")) else {
         return;
     };
-    let path = project.path().join("vize.config.json");
-    let mut config: Value =
-        serde_json::from_slice(&fs::read(&path).expect("config")).expect("JSON");
+    let path = project.path().join("vite.config.mjs");
+    let mut config: Value = read_native_config(&path);
     config["entries"] = json!([{ "files": ["App.vue"], "linter": { "ruleOptions": { (RULE): { "allowNullableObject": true } } } }]);
-    fs::write(&path, serde_json::to_vec(&config).expect("overlay")).expect("config");
+    fs::write(
+        &path,
+        vite_config::source(serde_json::to_vec(&config).expect("overlay")),
+    )
+    .expect("config");
     assert_eq!(
         lint(project.path()),
         (
@@ -157,7 +171,7 @@ fn ordered_entries_can_override_options_and_keep_explicit_off() {
     config["entries"] = json!([{ "files": ["App.vue"], "linter": { "rules": { (RULE): "off" }, "ruleOptions": { (RULE): { "allowNullableObject": false } } } }]);
     fs::write(
         &path,
-        serde_json::to_vec(&config).expect("disabled overlay"),
+        vite_config::source(serde_json::to_vec(&config).expect("disabled overlay")),
     )
     .expect("config");
     assert_eq!(
@@ -175,11 +189,14 @@ fn warning_severity_is_preserved_and_options_alone_do_not_enable_the_rule() {
     let Some(project) = project(source, serde_json::from_str(STRICT).expect("options")) else {
         return;
     };
-    let path = project.path().join("vize.config.json");
-    let mut config: Value =
-        serde_json::from_slice(&fs::read(&path).expect("config")).expect("JSON");
+    let path = project.path().join("vite.config.mjs");
+    let mut config: Value = read_native_config(&path);
     config["linter"]["rules"][RULE] = json!("warn");
-    fs::write(&path, serde_json::to_vec(&config).expect("warning config")).expect("config");
+    fs::write(
+        &path,
+        vite_config::source(serde_json::to_vec(&config).expect("warning config")),
+    )
+    .expect("config");
     let mut expected: Value =
         serde_json::from_str(include_str!("fixtures/strict-boolean/DomElement.json"))
             .expect("oracle");
@@ -188,7 +205,11 @@ fn warning_severity_is_preserved_and_options_alone_do_not_enable_the_rule() {
     expected[0]["warningCount"] = json!(1);
     assert_eq!(lint(project.path()), (Some(0), expected));
     config["linter"]["rules"] = json!({});
-    fs::write(&path, serde_json::to_vec(&config).expect("opt-in config")).expect("config");
+    fs::write(
+        &path,
+        vite_config::source(serde_json::to_vec(&config).expect("opt-in config")),
+    )
+    .expect("config");
     assert_eq!(
         lint(project.path()),
         (

@@ -46,7 +46,6 @@ async function transformWithProjectConfig(compiler: Record<string, unknown>): Pr
   } as unknown as ResolvedConfig;
 
   try {
-    fs.writeFileSync(path.join(root, "vize.config.json"), JSON.stringify({ compiler }));
     fs.writeFileSync(id, SOURCE);
 
     const plugin = vize({ include: /\.jsx$/, root }).find(
@@ -55,7 +54,7 @@ async function transformWithProjectConfig(compiler: Record<string, unknown>): Pr
     const configResolved = functionHook(plugin.configResolved, "configResolved") as (
       config: ResolvedConfig,
     ) => Promise<void>;
-    await configResolved(resolvedConfig);
+    await configResolved({ ...resolvedConfig, vue: { compiler } } as ResolvedConfig);
 
     const transform = functionHook(plugin.transform, "transform") as (
       code: string,

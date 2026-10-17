@@ -42,12 +42,12 @@ vp install -D vize
 
 ## 配置一次
 
-需要修改默认值时，在现有 `vite.config.*` 的顶层 `vize` 对象中添加原生选项。[配置指南](./configuration.md)介绍发现规则、版本可用性和可选的专用格式。
+需要修改默认值时，在现有 `vite.config.*` 的 `vue:` 中添加原生选项。[配置指南](./configuration.md)介绍文件发现和迁移规则。
 
 ```ts
 // vite.config.ts
 export default {
-  vize: {
+  vue: {
     formatter: {
       printWidth: 100,
     },
@@ -66,7 +66,7 @@ export default {
 };
 ```
 
-参见[配置](./configuration.md)中关于扁平单仓库条目、PKL、JSON、编译器选项和
+参见[配置](./configuration.md)中关于作用域条目、标准 TypeScript 项目、编译器选项和
 Vue类型的分辨率细节。
 
 ## 节目形式

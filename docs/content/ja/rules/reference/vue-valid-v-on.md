@@ -20,17 +20,17 @@ v-on のイベント名・式・修飾子を検査します。
 
 ハンドラーなしで動作するのは `.stop` と `.prevent` だけです。`.once`、`.enter`、設定した独自の名前にもハンドラー式が必要です。
 
-独自のイベント処理で使う名前は `linter.ruleOptions` に追加できます。
+独自のイベント処理で使う名前は `vue.linter.ruleOptions` に追加できます。
 
-```json
-{
-  "linter": {
-    "rules": { "vue/valid-v-on": "error" },
-    "ruleOptions": {
-      "vue/valid-v-on": { "modifiers": ["custom"] }
-    }
-  }
-}
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/valid-v-on": "error" },
+    ruleOptions: { "vue/valid-v-on": { modifiers: ["custom"] } },
+  },
+});
 ```
 
 これにより `@click.custom="handler"` を使えます。名前は大文字と小文字を区別して完全一致で比較し、組み込みの名前に追加します。ルール自体が無効な場合は有効にしません。範囲別の設定では継承した一覧を置き換え、`[]` でリセットできます。
@@ -43,11 +43,18 @@ v-on のイベント名・式・修飾子を検査します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "vue/valid-v-on": "error"
+      },
+      "ruleOptions": {
+        "vue/valid-v-on": {
+          "modifiers": [
+            "custom"
+          ]
+        }
       }
     },
   },

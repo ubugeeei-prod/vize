@@ -30,11 +30,14 @@ Install the `vite-plus` version your project uses, then configure the whole tool
 // vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+const vpConfig = {
+  server: { port: 3000 },
+};
+
+export default defineConfig(vpConfig).withVue({
   compiler: { sourceMap: true },
-  typecheck: { strict: true },
-  lint: { vize: { preset: "essential", typecheck: true } },
-  fmt: { vize: { singleQuote: true } },
+  linter: { preset: "essential" },
+  formatter: { singleQuote: true },
 });
 ```
 
@@ -42,9 +45,12 @@ Run `vp run check`, `lint`, `fmt`, `build`, or `pack` without registering anothe
 plugin or writing CLI scripts. Native lint runs alongside Oxlint; overlapping
 rules and Vue formatting ownership are configured automatically.
 
-Use `extends` for shared presets and `pack.vize` for native declarations,
-declaration maps, and compiler maps. `vize.lint.typecheck` is also supported.
-`withVue` and `withVize` are aliases with the same single-object API.
+Keep shared native settings in `vue:` using `.withVue(vueConfig)`. Import ordinary
+JavaScript objects to reuse settings; custom config `extends` is no longer supported.
+Use `pack.vue` for native declarations, declaration maps, and compiler maps.
+The standalone `withVue(vueConfig, vpConfig)` helper remains available; it is not
+an alias of `defineConfig(vpConfig)`. `withVize` is a compatibility name for the
+config-first helper. Prefer the fluent API for new configuration.
 
 Vite+ remains a user-selected optional peer (0.2.3 or later); configuration types
 come from that peer. Ordinary Vite users do not need to install it. Built-in
@@ -100,85 +106,62 @@ For Vite Plus projects, keep `vite-plus/client` and append `@vizejs/vite-plugin`
 
 ### Shared config
 
-`vize.config.ts`
+Put native Vue options in `vue:` in the existing Vite configuration. The CLI,
+plugin and editor read the same project settings:
 
 ```ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "vite";
+import vize from "@vizejs/vite-plugin";
 
 export default defineConfig({
-  compiler: {
-    sourceMap: true,
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
+  plugins: [vize()],
+  vue: {
+    compiler: { sourceMap: true },
+    vite: { scanPatterns: ["src/**/*.vue"] },
+    linter: { preset: "essential" },
   },
 });
 ```
 
-`vize.config.pkl`
+Keep TypeScript options in `tsconfig.json`, including `vueCompilerOptions`:
 
-```pkl
-amends "node_modules/vize/pkl/vize.pkl"
-
-compiler {
-  sourceMap = true
-}
-
-vite {
-  scanPatterns = new Listing {
-    "src/**/*.vue"
-  }
+```json
+{
+  "compilerOptions": { "strict": true, "noEmit": true },
+  "vueCompilerOptions": { "strictTemplates": true },
+  "include": ["src/**/*"]
 }
 ```
 
-`@vizejs/vite-plugin` loads the same `vize.config.ts`, `vize.config.js`, `vize.config.mjs`,
-`vize.config.pkl`, and `vize.config.json` files as the `vize` npm CLI. Importing
-`defineConfig` from `@vizejs/vite-plugin` still works, but `vize` is the shared entry point.
-Install `@pkl-community/pkl` or provide a `pkl` binary on `PATH` when using `vize.config.pkl`.
+Standard TypeScript `extends` and `references` remain supported. The CLI and
+language server use the selected project's Vite configuration and TypeScript
+project, including nested packages in a workspace. Explicit plugin options and
+editor feature switches retain their documented precedence.
+
+Dedicated `vize.config.*` files and top-level `vize:` settings are retired. Move
+native settings to `vue:` and TypeScript settings to `tsconfig.json`. A stale
+dedicated file beside a Vite configuration is ignored; a dedicated-only project
+receives a migration error. See the [configuration guide](../../../docs/content/guide/configuration.md).
 
 ### Nuxt
 
-For Nuxt 3, add the plugin to your `nuxt.config.ts`:
+Use the framework module so Nuxt keeps control of its own Vue configuration:
 
-```ts
-// nuxt.config.ts
-import vize from "@vizejs/vite-plugin";
-
-export default defineNuxtConfig({
-  vite: {
-    plugins: [
-      vize({
-        // Exclude Nuxt's internal .vue files if needed
-        exclude: [/node_modules/, /#/, /\.nuxt/],
-      }),
-    ],
-  },
-
-  // Disable the default Vue plugin
-  vue: {
-    propsDestructure: false,
-  },
-});
+```bash
+vp install -D @vizejs/nuxt
 ```
-
-**Note**: When using with Nuxt, you may need to disable Nuxt's built-in Vue plugin to avoid conflicts:
 
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
-  hooks: {
-    "vite:extendConfig": (config) => {
-      // Remove @vitejs/plugin-vue from plugins
-      config.plugins = config.plugins?.filter(
-        (p) => p && (Array.isArray(p) ? p[0] : p).name !== "vite:vue",
-      );
-    },
-  },
-  vite: {
-    plugins: [vize()],
-  },
+  modules: ["@vizejs/nuxt"],
 });
 ```
+
+The module installs the compiler integration and handles the existing Nuxt Vue
+plugin. See the [Nuxt integration guide](../../../docs/content/integrations/nuxt.md)
+for module options and project setup.
 
 ## Options
 

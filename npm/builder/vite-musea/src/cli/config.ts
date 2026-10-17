@@ -93,6 +93,14 @@ async function loadViteConfig(
   cwd: string,
 ): Promise<LoadedViteConfig | undefined> {
   const resolvedConfigPath = configPath ? path.resolve(cwd, configPath) : undefined;
+  if (
+    resolvedConfigPath &&
+    /^vize\.config\.(?:pkl|[cm]?[jt]s|json)$/.test(path.basename(resolvedConfigPath))
+  ) {
+    throw new Error(
+      "vize.config.* is no longer supported; move Musea settings to vue.musea in vite.config.*",
+    );
+  }
   if (resolvedConfigPath && !(await fileExists(resolvedConfigPath))) return undefined;
 
   const loaded = await loadConfigFromFile(

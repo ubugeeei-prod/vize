@@ -8,8 +8,8 @@ export const chineseShared: Record<string, string> = {
     "实验性 Rust 分析器；CLI 不会单独发出此代码",
   "Contract; no current producer": "诊断约定；目前没有实现",
   "Project-specific lint ID": "项目专属 lint ID",
-  "The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `vize:croquis/cf/*` codes use `croquis/cf/*` in `lint.vize.rules` (omit `vize:`). Information/hint diagnostics become CLI warnings. Related locations explain the source/consumer relationship.":
-    "公共 CLI 可通过 `vize lint --cross-file` 执行同一检查。显示的 `vize:croquis/cf/*` 代码在 `lint.vize.rules` 中写为 `croquis/cf/*`（省略 `vize:`）。信息和提示诊断会转换为 CLI 警告。相关位置说明来源与消费者之间的关系。",
+  "The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `vize:croquis/cf/*` codes use `croquis/cf/*` in `vue.linter.rules` (omit `vize:`). Information/hint diagnostics become CLI warnings. Related locations explain the source/consumer relationship.":
+    "公共 CLI 可通过 `vize lint --cross-file` 执行同一检查。显示的 `vize:croquis/cf/*` 代码在 `vue.linter.rules` 中写为 `croquis/cf/*`（省略 `vize:`）。信息和提示诊断会转换为 CLI 警告。相关位置说明来源与消费者之间的关系。",
   "Not emitted": "不产生诊断",
   "context-dependent": "依上下文而定",
   None: "无",

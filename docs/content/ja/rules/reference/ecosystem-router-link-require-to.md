@@ -22,8 +22,8 @@ SFC の単一ルート要素がリンクである場合、親から属性を継�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/router-link-require-to": "error"

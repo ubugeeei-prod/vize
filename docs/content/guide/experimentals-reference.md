@@ -17,7 +17,7 @@ are only for integrations that have already resolved project policy.
 
 | Entry point | Accepted shape | Who resolves it | Notes |
 | --- | --- | --- | --- |
-| `vize.config.*` | `experimentals: { ... }` switch values | config loader | Shared default for npm commands, `vize check`, LSP sessions, and Vite plugin instances that load project config |
+| `vue.experimentals` in `vite.config.*` | `experimentals: { ... }` switch values | config loader | Shared default for npm commands, `vize check`, LSP sessions, and Vite plugin instances that load project config |
 | `vize({ experimentals })` | the same switch values | Vite plugin option resolver | Direct values win over shared config; `false` and `null` are per-plugin opt-outs |
 | `vize({ vapor })`, `vize({ jsxMode })`, `compiler.vapor`, `compiler.jsxMode` | stable compiler options | compiler option resolver | These stable choices win over `experimentals.vapor` and `experimentals.jsxVapor` fallback routing |
 | `compile`, `compileVapor`, `parseTemplate` | `experimental*` boolean fields on `CompilerOptions` | caller | No aliases, no `{}` switch object, and no shared-config precedence |
@@ -103,11 +103,13 @@ until the feature has moved to a stable `compiler` or tool option.
 One RFC proposal in shared config:
 
 ```ts
-import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  experimentals: {
-    inTagComment: true,
+  vue: {
+    experimentals: {
+      inTagComment: true,
+    },
   },
 });
 ```

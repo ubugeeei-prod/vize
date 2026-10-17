@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "../../vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -10,12 +11,17 @@ export function compareCliFixes(
   rows: Array<Record<string, unknown>>,
   save: () => void,
   prepareProviders: (project: string) => unknown,
+  historicalCarrier = false,
 ) {
   const project = fs.mkdtempSync(path.join(output, "cli-project-"));
   for (const name of ["Parent", "Child"])
     fs.copyFileSync(path.join(fixture, `${name}.vue.txt`), path.join(project, `${name}.vue`));
-  for (const name of ["vize.config.json", "tsconfig.json"])
-    fs.copyFileSync(path.join(fixture, name), path.join(project, name));
+  fs.copyFileSync(path.join(fixture, "tsconfig.json"), path.join(project, "tsconfig.json"));
+  if (historicalCarrier) {
+    fs.copyFileSync(path.join(fixture, "vize.config.json"), path.join(project, "vize.config.json"));
+  } else {
+    writeVueConfigFixture(project, fs.readFileSync(path.join(fixture, "vize.config.json"), "utf8"));
+  }
   rows.push({
     method: "original CLI provider preparation",
     project,

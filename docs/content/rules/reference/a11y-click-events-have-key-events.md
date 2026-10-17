@@ -22,8 +22,8 @@ Checks non-interactive elements without an interactive role. Native buttons and 
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "a11y/click-events-have-key-events": "warn"

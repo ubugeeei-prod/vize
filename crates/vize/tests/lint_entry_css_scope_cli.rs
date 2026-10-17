@@ -2,6 +2,8 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{fs, path::Path, process::Command};
 
 fn write_file(root: &Path, path: &str, content: &str) {
@@ -62,8 +64,9 @@ fn entry_linter_rules_disable_builtin_css_rules_for_matching_files() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "incremental",
     "rules": { "css/no-important": "error" }
@@ -73,6 +76,7 @@ fn entry_linter_rules_disable_builtin_css_rules_for_matching_files() {
     "linter": { "rules": { "css/no-important": "off" } }
   }]
 }"#,
+        ),
     );
     write_css_fixtures(project_root.path());
 
@@ -81,7 +85,7 @@ fn entry_linter_rules_disable_builtin_css_rules_for_matching_files() {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/**/*.vue",
@@ -107,8 +111,9 @@ fn entry_linter_rules_enable_builtin_css_rules_for_matching_files() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "incremental",
     "rules": { "css/no-important": "off" }
@@ -118,6 +123,7 @@ fn entry_linter_rules_enable_builtin_css_rules_for_matching_files() {
     "linter": { "rules": { "css/no-important": "error" } }
   }]
 }"#,
+        ),
     );
     write_css_fixtures(project_root.path());
 
@@ -126,7 +132,7 @@ fn entry_linter_rules_enable_builtin_css_rules_for_matching_files() {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/**/*.vue",

@@ -33,13 +33,19 @@ end
 local defaults = config.normalize()
 assert_eq(defaults.cmd, { "vize", "lsp" }, "default cmd")
 assert_eq(defaults.filetypes, { "vue", "art-vue" }, "default filetypes")
-assert_eq(defaults.init_options, {
-  editor = true,
-  ecosystem = true,
-  lint = true,
-  typecheck = true,
-}, "default recommended profile")
-assert(defaults.root_markers[1] == "vize.config.pkl", "prefers vize config root marker")
+assert_eq(defaults.init_options, {}, "default defers feature settings to the server")
+assert(vim.json.encode(defaults.init_options) == "{}", "empty defaults serialize as an LSP object")
+assert_eq(defaults.root_markers, {
+  "vite.config.ts",
+  "vite.config.js",
+  "vite.config.mts",
+  "vite.config.mjs",
+  "vite.config.cts",
+  "vite.config.cjs",
+  "tsconfig.json",
+  "package.json",
+  ".git",
+}, "project root markers")
 
 local recommended = config.normalize({ profile = "recommended" })
 assert_eq(recommended.init_options, {
@@ -118,12 +124,12 @@ local mutable_filetypes_config = config.normalize(mutable_filetypes_opts)
 mutable_filetypes_opts.filetypes[1] = "changed"
 assert_eq(mutable_filetypes_config.filetypes, { "vue", "art-vue" }, "normalization copies filetypes")
 
-local mutable_root_opts = { root_markers = { "vize.config.pkl", ".git" } }
+local mutable_root_opts = { root_markers = { "tsconfig.json", ".git" } }
 local mutable_root_config = config.normalize(mutable_root_opts)
 mutable_root_opts.root_markers[1] = "changed"
 assert_eq(
   mutable_root_config.root_markers,
-  { "vize.config.pkl", ".git" },
+  { "tsconfig.json", ".git" },
   "normalization copies root markers"
 )
 
@@ -158,8 +164,9 @@ assert_fails("rejects non-boolean autostart", function()
   config.normalize({ autostart = "yes" })
 end, "autostart")
 
-local setup_config = require("vize").setup({ autostart = false, profile = "off" })
-assert_eq(setup_config.init_options, {}, "setup returns normalized config")
+local setup_config = require("vize").setup({ autostart = false })
+assert_eq(setup_config.init_options, {}, "setup preserves project-owned feature settings")
+assert_eq(vim.lsp.config.vize.init_options, {}, "registered LSP sends no feature overrides")
 assert_eq(vim.lsp.config.vize.cmd, { "vize", "lsp" }, "registered LSP cmd")
 assert_eq(vim.lsp.config.vize.filetypes, { "vue", "art-vue" }, "registered LSP filetypes")
 

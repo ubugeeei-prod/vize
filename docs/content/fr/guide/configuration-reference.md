@@ -2,197 +2,261 @@
 title: Référence de configuration partagée
 ---
 
-<!-- Reviewed translation; source: guide/configuration-reference.md; scope: introduction and discovery -->
+<!-- Reviewed translation; source: guide/configuration-reference.md -->
+
+<span id="standalone-configuration-reference"></span>
 
 # Référence de configuration partagée
 
-Commencez par les fichiers existants `vite.config.*` et `tsconfig.json` ; consultez le [guide de configuration](./configuration.md). Cette page décrit les réglages natifs et les formats dédiés facultatifs.
+Utilisez `vue:` dans votre configuration Vite existante et `vueCompilerOptions` dans le projet TypeScript. Le [guide de configuration](./configuration.md) présente une mise en place minimale.
 
 ## Fichiers de configuration
 
-La configuration Vite est découverte lorsqu'aucune configuration dédiée n'existe dans le même répertoire du projet le plus proche. La CLI accepte aussi `--config` ; les options directes du plugin et les fonctions explicitement choisies dans l'éditeur ont priorité. Les chemins des configurations dédiées partent de leur répertoire. Les chemins `typeChecker` de Vite et les `basePath` des périmètres partent du `root` Vite sélectionné ; les entrées CLI explicites conservent le répertoire d’exécution comme base. Utilisez `vize.entries` et le projet TypeScript du paquet pour définir les périmètres.
+La CLI et l’éditeur découvrent `vite.config.ts`, `.mts`, `.cts`, `.js`, `.mjs` et `.cjs` dans le projet le plus proche. `package.json`, `tsconfig.json` et `jsconfig.json` délimitent les projets. `--config` sélectionne une configuration Vite.
 
+Les fichiers dédiés `vize.config.*` ne sont plus pris en charge. Un ancien fichier dédié placé à côté d’une configuration Vite est ignoré ; un projet contenant uniquement une configuration dédiée reçoit une erreur de migration. Déplacez ses réglages natifs vers `vue:` et ses options TypeScript vers `tsconfig.json` avant de le supprimer.
 
-Le paquet npm commande et `@vizejs/vite-plugin` charger ces fichiers depuis la racine du projet dans cet ordre de priorité
-:
-
-- `vize.config.pkl`
-- `vize.config.ts`
-- `vize.config.js`
-- `vize.config.mjs`
-- `vize.config.json`
-
-La ligne de commande Rust lit les mêmes noms de fichiers de configuration dans l’ordre ci-dessus pour les paramètres natifs des commandes tels que
-`check`, `lint`, `lsp`et `fmt`.
+Les chemins relatifs appartenant à Vite partent du `root` sélectionné, lui-même résolu depuis le répertoire de configuration. Les entrées CLI explicites et `--tsconfig` partent du répertoire d’exécution. Les options directes du plugin et les fonctions explicitement choisies dans l’éditeur ont priorité sur les réglages partagés.
 
 ## Configuration TypeScript
 
 ```ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig(({ command, mode, isSsrBuild }) => ({
+export default defineConfig({
+  server: { port: 3000 },
+}).withVue({
   compiler: {
-    sourceMap: mode !== "production",
-    ssr: isSsrBuild,
+    sourceMap: true,
     vapor: false,
-    customRenderer: false,
     templateSyntax: "standard",
   },
-  vite: {
-    include: [/\.vue$/],
-    exclude: [/node_modules/],
-    scanPatterns: ["src/**/*.vue"],
-    ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
-  },
-  linter: {
-    enabled: command !== "build",
-    preset: "happy-path",
-  },
-  typeChecker: {
-    enabled: true,
-    strict: true,
-  },
-  formatter: {
-    printWidth: 100,
-    singleQuote: false,
-  },
-  lsp: {
-    lint: true,
-    typecheck: false,
-    editor: false,
-    formatting: false,
-  },
-  musea: {
-    include: ["src/**/*.art.vue"],
-    basePath: "/__musea__",
-  },
-}));
+  linter: { preset: "happy-path" },
+  formatter: { printWidth: 100 },
+  languageServer: { hover: true },
+});
 ```
 
-## Résolution de type Vue
+La section `vue` accepte `version`, `compiler`, `typeChecker`, `linter`, `formatter`, `languageServer`, `globalTypes`, `files`, `ignores`, `basePath`, `lib`, `vite`, `musea`, `experimentals`, `dialect`, `name` et `entries`. Utilisez ces noms natifs ; les membres inconnus sont des erreurs. Consultez la [référence du compilateur](./compiler-configuration-reference.md) et les [options des règles](/rules/options.md).
 
-Vize ne fixe pas la surface de type de Vue à partir du paquet `vize` publié : `vize check`, le langage
-le serveur et les commandes package résolvent `vue`, `@vue/compiler-sfc`, et types d’ambiance associés issus du projet
-analysé, donc les choix de patch, mineurs et pré-release de Vue 3 restent sous le contrôle de ce projet
-plutôt que la version utilisée pour construire Vize. Pour des résultats prévisibles, déclarez la version prise en charge de Vue
-dans le projet utilisateur (pas via les internes Vize), gardez `vue`, `@vue/compiler-sfc`
-intégrations comme Nuxt alignées à cet endroit, et exécutez `vize check` depuis la racine du projet ou un point
-`typeChecker.tsconfig` vers le package cible ; utiliser `typeChecker.corsaPath` uniquement pour choisir le checker
-binaire, jamais pour remplacer les versions de type Vue. Lorsqu’un projet prend en charge plusieurs plages Vue, testez chaque
-dans sa propre matrice de paquets afin que Vize suive le graphe de dépendance active, et non un chemin de type codé en dur.
+## Résolution des types Vue
 
-## Entrées expérimentales sur le plat
+`vize check` et le serveur de langage résolvent les types Vue depuis le projet analysé. Déclarez-y la version de Vue souhaitée et gardez `vue`, `@vue/compiler-sfc` et les intégrations comme Nuxt alignés. Les dépendances de compilation de Vize ne choisissent pas la version Vue du projet consommateur. Testez chaque plage Vue prise en charge dans sa propre matrice de paquets.
 
-Les monorepos peuvent décrire les paramètres par défaut racines et les overrides à portée de paquet avec `entries`. Les configurations d’objets
-simples sont normalisées en une seule entrée en interne, et les exportations de tableaux sont acceptées par `defineConfig` pour
-création de type ESLint-flat-config.
+Conservez les déclarations ambiantes, les fichiers d’auto-imports générés, les alias de chemins et les déclarations Vue `ComponentCustomProperties` dans le `tsconfig.json` du projet. Les `extends` TypeScript standards, y compris les formes par paquet ou tableau, et les `references` conservent leur sens.
+
+```json
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "strict": true, "noEmit": true },
+  "vueCompilerOptions": {
+    "target": 3.5,
+    "strictTemplates": true,
+    "checkUnknownComponents": true
+  },
+  "include": ["src/**/*"]
+}
+```
+
+Les options Vue prises en charge comprennent `target`, `strictTemplates`, `checkUnknownProps`, `checkUnknownComponents`, `checkUnknownEvents`, `checkUnknownDirectives`, `strictVModel`, `strictCssModules`, `jsxSlots`, `inferComponentDollarEl`, `inferComponentDollarRefs`, `inferTemplateDollarEl`, `inferTemplateDollarRefs`, `inferTemplateDollarSlots`, `inferTemplateDollarAttrs`, `fallthroughAttributes`, `checkRequiredFallthroughAttributes`, `resolveStyleImports`, `resolveStyleClassNames` et `vapor`. Cela ne signifie pas que toutes les options de `vue-tsc` sont prises en charge.
+
+`target` accepte Vue 2.x jusqu’à 2.7, Vue 3.x, `99` et `"auto"`. La sélection automatique suit le paquet Vue installé dans le projet ; `vue.version` explicite dans Vite a priorité. Une valeur non prise en charge produit une erreur de configuration. La rigueur TypeScript reste dans `compilerOptions` ; les options explicites du vérificateur Vize remplacent les valeurs correspondantes du projet.
+
+### Projet TypeScript et limites de prise en charge
+
+Ces réglages proviennent du projet TypeScript propriétaire du fichier source, avec les valeurs JSONC héritées, les `extends` standards par paquet ou tableau et les `references`. `target: "auto"` résout le paquet Vue installé dans ce projet ; une version absente ou non prise en charge produit une erreur de configuration. Une cible numérique Vue 2 inférieure à 2.7 sélectionne Vue 2, exactement 2.7 sélectionne Vue 2.7, et Vue 3.x ou `99` sélectionne la famille Vue 3 moderne. `vue.version` explicitement défini dans Vite, y compris `"3"`, a priorité.
+
+`strictComponentAttrs` est également pris en charge, mais doit être explicitement activé : `strictTemplates` ne l’active pas automatiquement. `plugins` reconnaît uniquement l’identifiant `vue-router/volar/sfc-typed-router` ; il ne charge pas des plugins de langage Vue arbitraires.
+
+`optionsWrapper` n’est pas pris en charge. Dans les outils Vue, il décrit un préfixe et un suffixe de code, pas un interrupteur Options API. La vérification Options API existante de Vize se règle séparément avec `vue.typeChecker.optionsApi`. Cette liste est une correspondance limitée, pas une garantie de parité avec toutes les options `vue-tsc`.
+
+## Entrées expérimentales par périmètre
+
+Utilisez le projet TypeScript du paquet ciblé pour vérifier un monorepo. Les réglages de lint Vue par périmètre peuvent utiliser `vue.entries` :
 
 ```ts
 export default defineConfig({
-  formatter: {
-    printWidth: 100,
-  },
+  root: "apps/web",
+}).withVue({
   entries: [
     {
-      name: "web app",
-      basePath: "apps/web",
-      files: ["src/**/*.vue"],
-      typeChecker: {
-        tsconfig: "tsconfig.app.json",
-      },
-    },
-    {
-      name: "ui package",
-      basePath: "packages/ui",
-      files: ["src/**/*.vue"],
-      formatter: {
-        singleQuote: true,
-      },
+      files: ["src/trusted/**/*.vue"],
+      linter: { rules: { "vue/no-v-html": "off" } },
     },
   ],
 });
 ```
 
-## Configuration PKL
+Les entrées acceptent `basePath`, `files`, `ignores` et `linter` ; les autres sections restent communes au projet. Gardez les références de projets TypeScript dans `tsconfig.json`.
 
-```pkl
-amends "node_modules/vize/pkl/vize.pkl"
+## Partager des bases de configuration
 
-compiler {
-  sourceMap = true
-  vapor = false
-  customRenderer = false
-  templateSyntax = "standard"
-}
+Il n’existe pas de `extends` propre à Vize. Réutilisez des objets JavaScript ordinaires :
 
-vite {
-  scanPatterns = new Listing {
-    "src/**/*.vue"
-  }
-}
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import vpConfig from "./build-options.ts";
+import vueConfig from "./vue-options.ts";
 
-linter {
-  preset = "happy-path"
-}
-
-typeChecker {
-  enabled = true
-  strict = true
-}
-
-entries = new Listing {
-  new ConfigEntry {
-    name = "web app"
-    basePath = "apps/web"
-    files = new Listing { "src/**/*.vue" }
-    typeChecker {
-      tsconfig = "tsconfig.app.json"
-    }
-  }
-}
-
-lsp {
-  lint = true
-  typecheck = false
-  editor = false
-  formatting = false
-}
+export default defineConfig(vpConfig).withVue(vueConfig);
 ```
 
-## Configuration JSON
-
-```json
-{
-  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
-  "compiler": {
-    "sourceMap": true,
-    "vapor": false,
-    "customRenderer": false,
-    "templateSyntax": "standard"
-  },
-  "vite": {
-    "scanPatterns": ["src/**/*.vue"]
-  },
-  "linter": {
-    "preset": "happy-path"
-  },
-  "typeChecker": {
-    "enabled": true,
-    "strict": true
-  },
-  "musea": {
-    "include": ["src/**/*.art.vue"],
-    "basePath": "/__musea__"
-  }
-}
-```
+Les `extends` TypeScript standards et les fonctions de configuration Vite restent utilisables.
 
 ## Options d’analyse statique
 
-Utilisez `linter` pour le chemin de peluches npm :
+Placez les options natives de lint Vue dans `vue.linter` et les options du serveur de langage dans `vue.languageServer`. Les règles Vue utilisent `vue.linter.rules` ; les règles Oxlint gardent leur emplacement `lint.rules`. Voir [l’exécution du lint](/guide/lint-execution.md) pour les analyses inter-fichiers et sensibles aux types, ainsi que les [options des règles](/rules/options.md). Les champs inconnus des options sont refusés.
 
 ```ts
+export default defineConfig({}).withVue({
+  linter: {
+    preset: "opinionated",
+    rules: {
+      "vue/require-v-for-key": "error",
+      "vue/no-v-html": "warn",
+    },
+  },
+  typeChecker: {
+    checkProps: true,
+    checkEmits: true,
+    checkTemplateBindings: true,
+    optionsApi: true,
+  },
+});
+```
+
+`vue.typeChecker.optionsApi` résout les liaisons des templates Vue 3 Options API (`data`, `computed`, `methods`, `inject`, `setup` et `props` d’un `<script> export default { ... }`). Cette fonction est activée par défaut, comme dans `vue-tsc`, et ne s’applique qu’aux composants sans `<script setup>`. Définissez `optionsApi: false` pour la désactiver.
+
+`vue.typeChecker.tsconfig` sélectionne un autre projet TypeScript. Utilisez `vue.typeChecker.corsaPath` uniquement pour sélectionner un exécutable de vérification installé, jamais pour changer les types Vue. `corsaPath` est partagé par `vize check`, le lint sensible aux types et `vize lsp`. Laissez-le absent sauf si vous devez sélectionner un exécutable `lib/tsc` précis.
+
+`vue.typeChecker.servers` limite les processus de vérification parallèles (`1` à `32`). Sans valeur explicite, Vize adapte la concurrence au projet et aux processeurs disponibles.
+
+## Options Musea
+
+Placez la découverte, les routes et les réglages VRT partagés dans `vue.musea`. Les options directes de `musea()` remplacent les valeurs partagées correspondantes.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { musea } from "@vizejs/vite-plugin-musea";
+
 export default defineConfig({
+  plugins: [musea({ storybookCompat: false })],
+  vue: {
+    musea: {
+      include: ["src/**/*.art.vue"],
+      exclude: ["node_modules/**", "dist/**"],
+      basePath: "/__musea__",
+      inlineArt: false,
+    },
+  },
+});
+```
+
+Les options de présentation `previewCss`, `previewSetup`, `tokensPath`, `theme` et `storybookOutDir` se placent directement dans `musea()`. `musea-vrt` lit les options partagées `include`, `exclude` et `vrt` dans la même configuration Vite. `vize musea new` crée un exemple sans générer de configuration dédiée.
+
+## Recettes de migration
+
+Les configurations dédiées JSON/PKL et le `extends` propre à Vize sont supprimés. Réutilisez des objets JavaScript importés. Ces recettes conservent les réglages pris en charge pendant la migration.
+
+### Configuration Vite dynamique
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig(({ command, mode, isSsrBuild }) => ({
+  vue: {
+    compiler: {
+      sourceMap: mode !== "production",
+      ssr: isSsrBuild,
+      vapor: false,
+      customRenderer: false,
+      templateSyntax: "standard",
+    },
+    vite: {
+      include: [/\.vue$/],
+      exclude: [/node_modules/],
+      scanPatterns: ["src/**/*.vue"],
+      ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
+    },
+    linter: {
+      enabled: command !== "build",
+      preset: "happy-path",
+    },
+    typeChecker: {
+      enabled: true,
+      strict: true,
+    },
+    formatter: {
+      printWidth: 100,
+      singleQuote: false,
+    },
+    languageServer: {
+      lint: true,
+      typecheck: false,
+      editor: false,
+      formatting: false,
+    },
+    musea: {
+      include: ["src/**/*.art.vue"],
+      basePath: "/__musea__",
+    },
+  },
+}));
+```
+
+### Migrer les anciens réglages JSON et PKL
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+    templateSyntax: "standard",
+  },
+  vite: { scanPatterns: ["src/**/*.vue"] },
+  linter: { preset: "happy-path" },
+  typeChecker: { enabled: true, strict: true },
+  languageServer: { lint: true, typecheck: false, editor: false, formatting: false },
+  musea: { include: ["src/**/*.art.vue"], basePath: "/__musea__" },
+});
+```
+
+### Projets de paquets distincts
+
+`entries` ne définit que des périmètres de lint. Placez les réglages du vérificateur et du formateur dans les projets Vite et TypeScript de chaque paquet. Les deux fichiers ci-dessous appartiennent à des projets distincts.
+
+```ts
+// apps/web/vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  name: "web app",
+  files: ["src/**/*.vue"],
+  formatter: { printWidth: 100 },
+  typeChecker: { tsconfig: "tsconfig.app.json" },
+});
+```
+
+```ts
+// packages/ui/vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  name: "ui package",
+  files: ["src/**/*.vue"],
+  formatter: { printWidth: 100, singleQuote: true },
+});
+```
+
+### Analyse statique et processus de vérification
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
   linter: {
     enabled: true,
     preset: "opinionated",
@@ -201,13 +265,6 @@ export default defineConfig({
       "vue/no-v-html": "warn",
     },
   },
-});
-```
-
-Utilisez `typeChecker` pour le chemin de vérification du npm :
-
-```ts
-export default defineConfig({
   typeChecker: {
     enabled: true,
     strict: true,
@@ -220,48 +277,33 @@ export default defineConfig({
 });
 ```
 
-`typeChecker.optionsApi` résout les liaisons de modèles API des options de Vue 3
-(`data`/`computed`/`methods`/`inject`/`setup`/`props` sur un `<script> export default { ... }`simple).
-Il est livré dans la version standard (pas la fonction `legacy`), est **activé par défaut** (correspondant `vue-tsc`),
-et ne fonctionne que pour des composants non`<script setup>`, de sorte que le chemin commun reste sans coût ; Configurez
-`optionsApi: false` pour vous désinscrire. Le support Legacy Vue 2.7 / Nuxt 2 (`typeChecker.legacyVue2`, qui ajoute
-les globals de modèles Nuxt 2) est un op-in séparé `legacy`-build.
-
-`typeChecker.tsconfig` et `typeChecker.corsaPath` font partie du schéma partagé, mais le chemin Corsa
-soutenu par le projet est aujourd’hui la surface Rust CLI. `corsaPath` est partagé par `vize check`,
-`vize lint`sensibles au type , et `vize lsp` (`typeChecker.tsgoPath` est un alias obsolète) ; la pile
-à l’exécution est le package de plateforme native TypeScript 7 (`typescript` / `@typescript/typescript-*`)
-avec la couche API Corsa/corsa-bind. Laissez `corsaPath` non défini sauf si vous devez pointer Vize
-vers un exécutable `lib/tsc` installé précis. Gardez les déclarations d’ambiance, les fichiers d’auto-importation générés, les alias de chemin et les déclarations Vue
-`ComponentCustomProperties` dans votre `tsconfig.json`de projet, et utilisez un script de paquet
-comme `vize:check:app` pour `--tsconfig` ou `--corsa-path` overrides.
-
-```json
-{
-  "typeChecker": {
-    "servers": 1
-  }
-}
-```
-
-`typeChecker.servers` est réservé aux futurs pools de travailleurs Corsa. Le runner direct de session de projet
-ne supporte actuellement que `1`; les valeurs plus élevées échouent rapidement au lieu de faire semblant d’ajuster la concurrence.
-
-## Musea Options
-
-La configuration partagée couvre actuellement l’ensemble de fichiers et le routage de la galerie :
-
 ```ts
-export default defineConfig({
-  musea: {
-    include: ["src/**/*.art.vue"],
-    exclude: ["node_modules/**", "dist/**"],
-    basePath: "/__musea__",
-    storybookCompat: false,
-    inlineArt: false,
-  },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  typeChecker: { servers: 1 },
 });
 ```
 
-Passez directement des options axées sur la présentation telles que `previewCss`, `previewSetup`, `tokensPath`, `theme`et
-`storybookOutDir` directement pour `musea()` dans `vite.config.ts`.
+### Réglages des workflows existants
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  formatter: {
+    printWidth: 100,
+  },
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+    tsconfig: "tsconfig.json",
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
+```

@@ -40,14 +40,24 @@ test("nvim config default cmd, filetypes and root_markers declare the canonical 
   // Both Vue dialects are registered as default filetypes.
   assert.match(config, /filetypes\s*=\s*\{\s*["']vue["']\s*,\s*["']art-vue["']\s*\}/);
 
-  // Root markers are declared with vize.config.pkl FIRST, then json/package.json/.git.
-  assert.match(
-    config,
-    /root_markers\s*=\s*\{\s*["']vize\.config\.pkl["']\s*,\s*["']vize\.config\.json["']\s*,\s*["']package\.json["']\s*,\s*["']\.git["']\s*\}/,
-  );
+  const markers = config.match(/root_markers\s*=\s*\{([^}]+)\}/)?.[1] ?? "";
+  for (const marker of [
+    "vite.config.ts",
+    "vite.config.js",
+    "vite.config.mts",
+    "vite.config.mjs",
+    "vite.config.cts",
+    "vite.config.cjs",
+    "tsconfig.json",
+    "package.json",
+    ".git",
+  ]) {
+    assert.ok(markers.includes(`"${marker}"`));
+  }
+  assert.doesNotMatch(markers, /vize\.config/);
 });
 
-test("nvim config defines profiles and defaults init_options to recommended", () => {
+test("nvim config defines profiles and leaves feature defaults to the server", () => {
   const config = readRepoFile("editors/nvim/lua/vize/config.lua");
 
   // All three named profiles are defined inside the profiles table.
@@ -55,8 +65,8 @@ test("nvim config defines profiles and defaults init_options to recommended", ()
   assert.match(config, /\brecommended\s*=\s*\{/);
   assert.match(config, /\boff\s*=\s*\{\s*\}/);
 
-  // Default init_options points at the full editor profile.
-  assert.match(config, /init_options\s*=\s*profiles\.recommended/);
+  // An empty override preserves authored project settings.
+  assert.match(config, /init_options\s*=\s*vim\.empty_dict\(\)/);
 });
 
 test("nvim plugin entrypoint wires the plugin via guard + setup command", () => {

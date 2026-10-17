@@ -6,6 +6,7 @@ import { validateBuildReceipt } from "./build-receipt.ts";
 import { sha256, validateResultEnvelope } from "./harness.mjs";
 import { initializeCapabilities, materializeWorkspace, NATIVE_REASON } from "./lsp-manifest.ts";
 import { decodeFrames } from "./lsp-wire.ts";
+import { validateLspWorkspace } from "./lsp-workspace.ts";
 import {
   hasCapabilities,
   type JsonRpcMessage,
@@ -161,6 +162,7 @@ export function validateLspReport(
     assert.deepEqual(row.comparison, { state: "not-compared", reason: NATIVE_REASON });
     assert.equal(row.legacy.comparator, "complete-jsonrpc-response");
     assert(["completed", "failed"].includes(row.legacy.state));
+    validateLspWorkspace(fixture, row.legacy.workspace, row.legacy.state === "completed");
     if (row.legacy.state === "failed") {
       assert.equal(row.legacy.verdict, "failed");
       assert(typeof row.legacy.error === "string");

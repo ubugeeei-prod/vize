@@ -93,22 +93,23 @@ Vite+ のプロジェクトでは、既存の Vite+ のクライアント型を�
 
 ## ネイティブ設定を共有する
 
-Vite+ では統合用の helper の `compiler` フィールドに設定します。
-通常の Vite では、`vize({ ... })` にオプションを直接渡します。
-CLI やエディターと共有するネイティブ設定は、同じ Vite 設定のトップレベルの `vize` にまとめます。
-[設定ガイド](./configuration.md)に、対応する記法、設定ファイルの検索方法、リリース状況をまとめています。
+Vite+ では `@vizejs/vite-plugin/vite-plus` の
+`defineConfig(vpConfig).withVue(vueConfig)` で、既存の設定にネイティブ Vue 設定を追加します。
+通常の Vite では、同じ設定ファイルのトップレベルの `vue:` に共有設定を置き、
+`plugins: [vize()]` を使います。CLI とエディターも同じプロジェクト設定を読みます。
 
-専用の `vize.config.*` ファイルも、必要に応じて使えます。
-`"vize"` から `defineConfig` を import する場合は、`vize` を直接の依存関係に追加してください。
-[単独設定リファレンス](./configuration-reference.md)に、ファイルの検索方法、TypeScript/JSON/PKL の例、スコープ別の設定をまとめています。
-Vite+ の統合タスクでは、`vite.config.ts` の helper を使います。
+TypeScript の `compilerOptions`、標準の `extends`・`references` は `tsconfig.json` に、
+Vue テンプレートの設定は `vueCompilerOptions` に置いてください。
+専用の `vize.config.*` とトップレベルの `vize:` は廃止しました。
+[設定ガイド](./configuration.md)に移行方法を、
+[共有 Vue 設定](./vue-configuration.md)にスコープの扱いをまとめています。
 
 <span id="compiler-options"></span>
 
 ## コンパイラ オプション
 
 `vize()` に直接渡したオプションが優先され、次にインラインの `config`、検索で見つかったプロジェクト設定、既定値の順に適用します。
-同じディレクトリに両方ある場合は、`vize.config.*` が Vite 設定より優先されます。
+専用の `vize.config.*` は廃止しました。`vite.config.*` の `vue:` に移してください。
 `config: false` で設定ファイルの自動検索を無効にできます。
 
 ```ts
@@ -127,20 +128,20 @@ vize({
 | オプション | 設定場所 | 説明 |
 | --- | --- | --- |
 | `vueVersion` | `vize({ vueVersion })` | `0.11`、`1`、`2`、`"legacy"` を指定すると、既存環境に介入しない旧 Vue の互換モードで動作し、SFC のコンパイルを既存のコンパイラに任せます。 |
-| `sourceMap` | `compiler.sourceMap` または `vize({ sourceMap })` | `sources` が元の `.vue` ファイルを指すソースマップを生成します。`build.sourcemap` の指定がない場合、既定では開発時に有効、本番ビルド時に無効です。 |
-| `ssr` | `compiler.ssr` または `vize({ ssr })` | Vite の SSR ビルドフラグだけでは足りない場合に、SSR 向けのコンパイルを強制します。 |
-| `vapor` | `compiler.vapor` または `vize({ vapor })` | Vapor バックエンドでテンプレートをコンパイルします。 |
-| `jsxMode` | `compiler.jsxMode` または `vize({ jsxMode })` | `.jsx` / `.tsx` コンポーネントの既定の出力先を `"vdom"` / `"vapor"` から選びます。コンポーネントごとの `"use vue:*"` ディレクティブが優先します。 |
-| `customRenderer` | `compiler.customRenderer` または `vize({ customRenderer })` | 小文字の非 HTML タグをカスタムレンダラーの要素として扱います。`<TresMesh>` などの PascalCase タグには一致しません。 |
-| `customElements` | `compiler.customElements` または `vize({ customElements })` | Vue コンポーネントではなくカスタム要素としてコンパイルするタグのパターンです。TresJS の PascalCase レンダラータグには `["Tres*"]` を使います。 |
-| `templateSyntax` | `compiler.templateSyntax` または `vize({ templateSyntax })` | テンプレート構文の処理を `"standard"`、`"strict"`、`"quirks"` から選びます。 |
-| `whitespace` | `compiler.whitespace`、`vize({ whitespace })`、または `template.compilerOptions.whitespace` | Vue の `"condense"`（既定）と `"preserve"` を選びます。Vize の独自コンパイラ/Vite オプションでは `"vue2-line-breaks"` も指定でき、Vue 3 がテキストや補間の後の改行を空白一つにまとめる箇所で改行を残します。移行用の限定的なモードであり、Vue 2 の空白処理全体を再現するものではありません。Vue 2.7 の `whitespace: "preserve"`（Vue 2、vue-loader 15、Nuxt 2 が使う設定）と同じ出力にするには `"vue2-preserve"` を使います。テキストや補間の前後の空白は書いたとおりに残り、要素の間にある空白だけの部分は空白一つになります。 |
+| `sourceMap` | `vue.compiler.sourceMap` または `vize({ sourceMap })` | `sources` が元の `.vue` ファイルを指すソースマップを生成します。`build.sourcemap` の指定がない場合、既定では開発時に有効、本番ビルド時に無効です。 |
+| `ssr` | `vue.compiler.ssr` または `vize({ ssr })` | Vite の SSR ビルドフラグだけでは足りない場合に、SSR 向けのコンパイルを強制します。 |
+| `vapor` | `vue.compiler.vapor` または `vize({ vapor })` | Vapor バックエンドでテンプレートをコンパイルします。 |
+| `jsxMode` | `vue.compiler.jsxMode` または `vize({ jsxMode })` | `.jsx` / `.tsx` コンポーネントの既定の出力先を `"vdom"` / `"vapor"` から選びます。コンポーネントごとの `"use vue:*"` ディレクティブが優先します。 |
+| `customRenderer` | `vue.compiler.customRenderer` または `vize({ customRenderer })` | 小文字の非 HTML タグをカスタムレンダラーの要素として扱います。`<TresMesh>` などの PascalCase タグには一致しません。 |
+| `customElements` | `vue.compiler.customElements` または `vize({ customElements })` | Vue コンポーネントではなくカスタム要素としてコンパイルするタグのパターンです。TresJS の PascalCase レンダラータグには `["Tres*"]` を使います。 |
+| `templateSyntax` | `vue.compiler.templateSyntax` または `vize({ templateSyntax })` | テンプレート構文の処理を `"standard"`、`"strict"`、`"quirks"` から選びます。 |
+| `whitespace` | `vue.compiler.whitespace`、`vize({ whitespace })`、または `template.compilerOptions.whitespace` | Vue の `"condense"`（既定）と `"preserve"` を選びます。Vize の独自コンパイラ/Vite オプションでは `"vue2-line-breaks"` も指定でき、Vue 3 がテキストや補間の後の改行を空白一つにまとめる箇所で改行を残します。移行用の限定的なモードであり、Vue 2 の空白処理全体を再現するものではありません。Vue 2.7 の `whitespace: "preserve"`（Vue 2、vue-loader 15、Nuxt 2 が使う設定）と同じ出力にするには `"vue2-preserve"` を使います。テキストや補間の前後の空白は書いたとおりに残り、要素の間にある空白だけの部分は空白一つになります。 |
 | `template.compilerOptions.comments` | `vize({ template: { compilerOptions: { comments } } })` | テンプレートに書いたコメントは、既定では開発時に残し、本番ビルド時に省略します。`true` / `false` で変更できます。ネイティブ API を直接呼ぶ場合は `templateComments` を使い、既定値は `false` です。 |
 | `experimentals` | トップレベルの `experimentals` または `vize({ experimentals })` | Vue RFC とバックエンドの実験的機能を明示的に有効にします。キーの省略、`false`、`null` は無効です。 |
-| `include` | `vite.include` または `vize({ include })` | プラグインがコンパイルするファイルを指定します。 |
-| `exclude` | `vite.exclude` または `vize({ exclude })` | プラグインが処理しないファイルを指定します。 |
-| `scanPatterns` | `vite.scanPatterns` または `vize({ scanPatterns })` | 起動時のプリコンパイルで検索する Glob パターンです。 |
-| `ignorePatterns` | `vite.ignorePatterns` または `vize({ ignorePatterns })` | 起動時のプリコンパイルで除外する Glob パターンです。 |
+| `include` | `vue.vite.include` または `vize({ include })` | プラグインがコンパイルするファイルを指定します。 |
+| `exclude` | `vue.vite.exclude` または `vize({ exclude })` | プラグインが処理しないファイルを指定します。 |
+| `scanPatterns` | `vue.vite.scanPatterns` または `vize({ scanPatterns })` | 起動時のプリコンパイルで検索する Glob パターンです。 |
+| `ignorePatterns` | `vue.vite.ignorePatterns` または `vize({ ignorePatterns })` | 起動時のプリコンパイルで除外する Glob パターンです。 |
 | `configMode` | `vize({ configMode })` | 共有設定の読み込み方法に `"root"`、`"auto"`、`false` を指定します。 |
 | `configFile` | `vize({ configFile })` | 読み込む設定ファイルを明示します。 |
 | `config` | `vize({ config })` | Vite+ の実行時設定に使うインラインの共有設定です。 |

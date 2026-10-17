@@ -57,6 +57,7 @@ const strictRepoCheckCommand = [
   "node tools/support/typescript/check-project.ts tsconfig.benchmark-scripts.json",
   "node tools/support/typescript/check-project.ts tsconfig.ci-gates.json",
   "node tools/support/typescript/check-project.ts tsconfig.source-build-receipt.json",
+  "node tools/support/typescript/check-project.ts tsconfig.release-observers.json",
   "node tools/support/typescript/check-project.ts tsconfig.css-catalog.json",
   "node tools/support/typescript/check-project.ts tsconfig.public-vrt.json",
   "node tools/support/typescript/check-project.ts tsconfig.public-musea-static.json",
@@ -65,7 +66,7 @@ const strictRepoCheckCommand = [
 const ciVizeAppCheckCommand = [
   runInDirectory(
     "./examples/vite-musea",
-    "vize check && vp check src vite.config.ts vite.app.config.ts vize.config.ts playwright.config.ts",
+    "vize check && vp check src vite.config.ts vite.app.config.ts playwright.config.ts",
   ),
   runInDirectory(
     "./playground",

@@ -49,8 +49,7 @@ test("Nuxt UI generated ambient and #imports types stay exact across editor revi
       fixture.write(".nuxt/tsconfig.json", json(generatedTsconfig));
       fixture.write("tsconfig.json", json(tsconfig));
       fixture.write("nuxt.config.ts", "export default defineNuxtConfig({})\n");
-      fixture.write(
-        "vize.config.json",
+      fixture.writeVueConfig(
         json({
           lsp: { completion: true, editor: true, hover: true, lint: false, typecheck: true },
           typeChecker: { corsaPath },

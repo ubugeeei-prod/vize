@@ -8,7 +8,7 @@ title: "跨文件规则"
 
 本页完整展示 66 项项目检查的用途、共享项目文件，以及错误和正确示例的全部修改。两组示例都需使用各项提供的共享文件，并遵循依赖及版本说明。项目检查需要完整的已分析组件图。60 个公开跨文件诊断代码具有不同支持边界：19 个属于 CLI 分析遍（18 组已验证的源代码对照，以及一项附响应式流图的说明性 Vue 项目）；16 个有实验性 Rust 分析器实现，但该 CLI 分析遍不会单独发出这些代码；25 个仅是目前没有诊断实现的公开约定。说明性源代码和保留图的验证条件分别注明；启用规则 ID 不会激活尚不可用的实现。
 
-公共 CLI 可通过 `vize lint --cross-file` 执行同一检查。显示的 `vize:croquis/cf/*` 代码在 `lint.vize.rules` 中写为 `croquis/cf/*`（省略 `vize:`）。信息和提示诊断会转换为 CLI 警告。相关位置说明来源与消费者之间的关系。
+公共 CLI 可通过 `vize lint --cross-file` 执行同一检查。显示的 `vize:croquis/cf/*` 代码在 `vue.linter.rules` 中写为 `croquis/cf/*`（省略 `vize:`）。信息和提示诊断会转换为 CLI 警告。相关位置说明来源与消费者之间的关系。
 
 <span id="跨档规则"></span>
 <span id="实施方向"></span>
@@ -99,8 +99,8 @@ title: "跨文件规则"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-extra-param": "warn" },
     },
   },
@@ -204,8 +204,8 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-missing-param": "warn" },
     },
   },
@@ -309,8 +309,8 @@ postId 不是可重复参数，因此数组无效。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-param-type": "warn" },
     },
   },
@@ -414,8 +414,8 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-unknown-route": "warn" },
     },
   },
@@ -517,8 +517,8 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "html/cross-component-nesting": "warn" },
     },
   },
@@ -693,8 +693,8 @@ export function replaceFirst(items: string[], next: string): void {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/async-boundary": "warn" },
     },
   },
@@ -934,8 +934,8 @@ const greeting = await Promise.resolve("Hello");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/browser-api-ssr": "warn" },
     },
   },
@@ -1124,8 +1124,8 @@ export const bLabel = 'B' + aPrefix;
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/circular-reactive-dependency": "warn" },
     },
   },
@@ -1639,8 +1639,8 @@ export { label } from './public-api';
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/destructuring-breaks-reactivity": "warn" },
     },
   },
@@ -1977,8 +1977,8 @@ async function increment() {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/duplicate-id": "warn" },
     },
   },
@@ -2297,8 +2297,8 @@ emit("save");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/hydration-risk": "warn" },
     },
   },
@@ -2489,8 +2489,8 @@ defineOptions({ inheritAttrs: false });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/inject-without-symbol": "warn" },
     },
   },
@@ -2615,8 +2615,8 @@ const theme = inject(ThemeKey);
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/injected-async-mutation-race": "warn" },
     },
   },
@@ -3441,8 +3441,8 @@ export function publishProfile(): void {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/non-reactive-provide": "warn" },
     },
   },
@@ -3573,8 +3573,8 @@ const theme = inject(ThemeKey);
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/non-unique-id": "warn" },
     },
   },
@@ -3939,8 +3939,8 @@ const props = defineProps<{ title: string }>();
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/provide-inject-type": "warn" },
     },
   },
@@ -4047,8 +4047,8 @@ const title = inject<string>("title");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/provide-without-symbol": "warn" },
     },
   },
@@ -4375,8 +4375,8 @@ export function useCounter() {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/reassignment-breaks-reactivity": "warn" },
     },
   },
@@ -4740,8 +4740,8 @@ export function makeProfile() { return reactive({ user: { name: 'Ada' } }); }
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/spread-breaks-reactivity": "warn" },
     },
   },
@@ -5126,8 +5126,8 @@ export function rename(profile: { name: string }): void {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/uncaught-error": "warn" },
     },
   },
@@ -5600,8 +5600,8 @@ emit("save");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/unmatched-inject": "warn" },
     },
   },
@@ -6150,8 +6150,8 @@ emit("save");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/unused-provide": "warn" },
     },
   },
@@ -6287,8 +6287,8 @@ const theme = inject(ThemeKey);
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/value-extraction-breaks-reactivity": "warn" },
     },
   },
@@ -6493,8 +6493,8 @@ export function useDouble() {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/watcheffect-async": "warn" },
     },
   },
@@ -6745,8 +6745,8 @@ export function useObserver() {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "vue/cross-file-attrs-fallthrough": "warn" },
     },
   },

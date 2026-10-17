@@ -31,7 +31,7 @@ export function prepareTypecheckPackages(dir) {
 
 export function prepareTypecheckDir({ inputDir, files, workRoot, copySelectedFiles }) {
   const outputDir = join(workRoot, `check-${files.length}`);
-  copySelectedFiles(inputDir, outputDir, files, ["vize.config.json"]);
+  copySelectedFiles(inputDir, outputDir, files, ["vite.config.mjs"]);
   writeFileSync(
     join(outputDir, "tsconfig.json"),
     `${JSON.stringify(

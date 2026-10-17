@@ -29,7 +29,7 @@ export async function runTools(
   const formatCheck =
     task === "fmt:check" || (task === "check" && !fix) || args.includes("--check");
   if ((task === "check" || lint) && args.some((arg) => arg.startsWith("-") && arg !== "--fix")) {
-    const section = task === "check" ? "the corresponding config section" : "lint.vize";
+    const section = task === "check" ? "the corresponding config section" : "lint.vue";
     throw new Error(
       `Vize ${task} tasks accept paths and --fix. Put native tool options in ${section}.`,
     );
@@ -62,7 +62,7 @@ export async function runTools(
     const patterns = args.filter((arg) => !["--check", "--write", "-w", "--fix"].includes(arg));
     if (patterns.some((arg) => arg.startsWith("-"))) {
       throw new Error(
-        "Vize fmt tasks accept paths and --check/--write. Put native formatter options in defineConfig({ fmt: { vize: ... } }).",
+        "Vize fmt tasks accept paths and --check/--write. Put native formatter options in defineConfig({ fmt: { vue: ... } }).",
       );
     }
     if (options.fmt !== false) {

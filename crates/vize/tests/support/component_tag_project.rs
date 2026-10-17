@@ -5,6 +5,9 @@
     reason = "authored full protocol fixtures"
 )]
 
+#[path = "vite_config.rs"]
+mod vite_config;
+
 use super::lsp_process::{LspProcess, file_uri};
 use serde_json::{Value, json};
 use std::path::{Path, PathBuf};
@@ -57,6 +60,9 @@ impl Project {
         std::os::unix::fs::symlink(vue(), root.path().join("node_modules/vue")).unwrap();
         #[cfg(windows)]
         std::os::windows::fs::symlink_dir(vue(), root.path().join("node_modules/vue")).unwrap();
+        let vite_config = vite_config::source(include_str!(
+            "../../../../tests/_fixtures/differential/lsp/component-tag-classification/vize.config.json.txt"
+        ));
         for (name, bytes) in [
             (
                 "tsconfig.json",
@@ -64,12 +70,7 @@ impl Project {
                     "../../../../tests/_fixtures/differential/lsp/component-tag-classification/tsconfig.json.txt"
                 ),
             ),
-            (
-                "vize.config.json",
-                include_str!(
-                    "../../../../tests/_fixtures/differential/lsp/component-tag-classification/vize.config.json.txt"
-                ),
-            ),
+            ("vite.config.mjs", vite_config.as_str()),
             (
                 "src/MyButton.vue",
                 include_str!(

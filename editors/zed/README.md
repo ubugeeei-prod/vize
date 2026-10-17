@@ -7,11 +7,11 @@ This extension expects the `vize` CLI to be available on `PATH`, or configured t
 The extension also registers an `Art Vue` language for `*.art.vue`, so Vize can power hover,
 completion, go-to-definition, and references there without relying on a separate Zed extension.
 
-When neither Zed initialization options nor a workspace config is present, the extension starts
-Vize with the recommended profile: lint, typecheck, editor features, and ecosystem helpers.
-A worktree-root `vize.config.pkl`, `.ts`, `.js`, `.mjs`, or `.json` lets the server use the project's
-`languageServer` settings. Explicit `lsp.vize.initialization_options`, including `{}`, always takes
-precedence; the examples below deliberately set that option.
+The extension lets the server discover `vue` settings in `vite.config.*` and
+`vueCompilerOptions` in `tsconfig.json`, including projects nested in a monorepo.
+It sends no feature overrides by default, so project `languageServer` settings apply.
+Explicit `lsp.vize.initialization_options` override individual features; `{}` keeps project settings.
+The examples below deliberately select editor-level overrides.
 
 ## Recommended Profile
 

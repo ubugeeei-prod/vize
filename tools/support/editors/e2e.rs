@@ -38,10 +38,12 @@ pub fn prepare_real_vue_workspace(
         remove_path(&vue_link)?;
     }
     symlink_dir(&resolve_vue_package_path(&repo_root)?, &vue_link)?;
-    common::write_json_pretty(
-        workspace_path.join("vize.config.json"),
-        &json!({ "typeChecker": { "corsaPath": resolve_corsa_path(&repo_root)? } }),
-    )?;
+    let vue = json!({ "typeChecker": { "corsaPath": resolve_corsa_path(&repo_root)? } });
+    fs::write(
+        workspace_path.join("vite.config.js"),
+        format!("export default {{ vue: {vue} }};\n"),
+    )
+    .map_err(|error| format!("cannot write editor project settings: {error}"))?;
     Ok(workspace_path.to_path_buf())
 }
 

@@ -22,14 +22,11 @@ runtime ftdetect/vize.vim
 execute 'source ' . fnameescape(s:plugin_root . '/test/vize_e2e_expected.vim')
 let s:expected = g:vize_e2e_expected
 
-let s:init_options = vize#profile('recommended')
-let s:init_options.formatting = v:true
 let s:resolved = vize#setup({
       \ 'cmd': [s:server, 'lsp'],
-      \ 'initialization_options': s:init_options,
       \ })
 call assert_equal(['vue', 'art-vue'], s:resolved.allowlist, 'packaged filetypes')
-call assert_equal(s:init_options, s:resolved.initialization_options, 'packaged init options')
+call assert_equal({}, s:resolved.initialization_options, 'packaged project-owned feature settings')
 
 " Register first, then let vim-lsp enable itself. This is the normal vimrc
 " startup order and catches integrations that wrongly require an autoload

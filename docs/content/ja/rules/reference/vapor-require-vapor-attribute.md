@@ -26,8 +26,8 @@ Vapor 向けの script setup に vapor 属性を付ける規約を示します�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "vapor/require-vapor-attribute": "warn"

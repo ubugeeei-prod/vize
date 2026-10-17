@@ -1,4 +1,9 @@
 import assert from "node:assert/strict";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import ts from "typescript";
 import { test } from "node:test";
 import { resolveNuxtCompilerOptions, splitNuxtCompilerDefaults } from "./compiler-option-bridge.ts";
 import { mergeCompilerOptions } from "../../../builder/vite/src/plugin/compiler-config.ts";
@@ -101,4 +106,70 @@ await test("explicit undefined still admits the Nuxt default; unsupported/legacy
   );
   assert.equal((legacy as VizeNuxtCompilerOptions).compatibility?.hostCompiler, true);
   assert.equal((legacy as VizeNuxtCompilerOptions).whitespace, "preserve");
+});
+
+await test("inline native compiler policies remain typed and retain scope precedence", () => {
+  const config = {
+    compiler: { whitespace: "preserve" },
+    entries: [{ files: ["app/tight/**"], compiler: { whitespace: "condense" } }],
+  } satisfies NonNullable<VizeNuxtCompilerOptions["config"]>;
+  const authored: VizeNuxtCompilerOptions = { config, whitespace: "preserve" };
+  const resolved = resolveNuxtCompilerOptions(
+    "/repo",
+    "/",
+    "/_nuxt/",
+    authored,
+    {},
+    { whitespace: "condense" },
+  );
+  assert.notEqual(resolved, false);
+  const split = splitNuxtCompilerDefaults(resolved as VizeNuxtCompilerOptions, authored, {
+    whitespace: "condense",
+  });
+  assert.equal(split.options.config, config);
+  assert.equal(split.options.root, "/repo");
+  assert.equal(
+    createFileCompilerOptions(config, "/repo", split.options, split.defaults)!(
+      "/repo/app/tight/Row.vue",
+    ).whitespace,
+    "preserve",
+  );
+});
+
+await test("consumer compiler config uses the public native option types", () => {
+  const directory = mkdtempSync(path.join(os.tmpdir(), "vize-nuxt-config-types-"));
+  try {
+    const filename = path.join(directory, "consumer.mts");
+    const options = fileURLToPath(new URL("./compiler-options.ts", import.meta.url));
+    writeFileSync(
+      filename,
+      `
+import type { VizeNuxtCompilerOptions } from ${JSON.stringify(options)};
+const inline: VizeNuxtCompilerOptions = { config: { compiler: { whitespace: "preserve" }, entries: [{ files: ["app/tight/**"], compiler: { whitespace: "condense" } }] } };
+const list: VizeNuxtCompilerOptions = { config: [{ compiler: { whitespace: "preserve" } }] };
+const factory: VizeNuxtCompilerOptions = { config: async (env) => ({ compiler: { whitespace: env.command === "serve" ? "preserve" : "condense" } }) };
+// @ts-expect-error Native whitespace leaves retain their registered values.
+const invalid: VizeNuxtCompilerOptions = { config: { compiler: { whitespace: "invalid" } } };
+// @ts-expect-error Native policy does not introduce custom config inheritance.
+const inherited: VizeNuxtCompilerOptions = { config: { extends: "./base" } };
+`,
+    );
+    const program = ts.createProgram([filename], {
+      noEmit: true,
+      strict: true,
+      skipLibCheck: true,
+      target: ts.ScriptTarget.ES2022,
+      module: ts.ModuleKind.NodeNext,
+      moduleResolution: ts.ModuleResolutionKind.NodeNext,
+      allowImportingTsExtensions: true,
+    });
+    assert.deepEqual(
+      ts
+        .getPreEmitDiagnostics(program)
+        .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")),
+      [],
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

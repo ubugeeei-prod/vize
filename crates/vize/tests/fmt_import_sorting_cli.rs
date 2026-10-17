@@ -1,5 +1,8 @@
 //! Authored SFC and standalone import blocks use the same configured sort policy.
 #![cfg(test)]
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 use std::{fs, process::Command};
 
 const SOURCE: &str = include_str!("../../vize_glyph/tests/fixtures/sort-imports/UserCard.vue");
@@ -21,8 +24,8 @@ fn configured_sfc_sorting_is_applied_by_write_and_detected_by_check() {
     let root = dir.path();
     fs::write(root.join("UserCard.vue"), SOURCE).expect("source");
     fs::write(
-        root.join("vize.config.json"),
-        r#"{"formatter":{"sortImports":{}}}"#,
+        root.join("vite.config.mjs"),
+        vite_config::source(r#"{"formatter":{"sortImports":{}}}"#),
     )
     .expect("config");
     assert_eq!(
@@ -53,8 +56,8 @@ fn configured_sfc_sorting_is_applied_by_write_and_detected_by_check() {
     );
     fs::write(root.join("UserCard.vue"), SOURCE).expect("source");
     fs::write(
-        root.join("vize.config.json"),
-        r#"{"formatter":{"sortImports":false}}"#,
+        root.join("vite.config.mjs"),
+        vite_config::source(r#"{"formatter":{"sortImports":false}}"#),
     )
     .expect("disabled");
     assert_eq!(
@@ -82,8 +85,8 @@ fn standalone_script_receives_the_same_native_groups() {
     };
     fs::write(root.join("imports.ts"), script(SOURCE)).expect("script source");
     fs::write(
-        root.join("vize.config.json"),
-        r#"{"formatter":{"sortImports":{}}}"#,
+        root.join("vite.config.mjs"),
+        vite_config::source(r#"{"formatter":{"sortImports":{}}}"#),
     )
     .expect("config");
     assert_eq!(fmt(root, &["--write", "imports.ts"]).status.code(), Some(0));
@@ -99,8 +102,8 @@ fn contradictory_sort_settings_cannot_write_authored_sources() {
     let root = dir.path();
     fs::write(root.join("UserCard.vue"), SOURCE).expect("source");
     fs::write(
-        root.join("vize.config.json"),
-        r#"{"formatter":{"sortImports":{"partitionByNewline":true}}}"#,
+        root.join("vite.config.mjs"),
+        vite_config::source(r#"{"formatter":{"sortImports":{"partitionByNewline":true}}}"#),
     )
     .expect("invalid config");
     assert_eq!(
@@ -127,9 +130,18 @@ fn malformed_sort_settings_fail_closed_and_no_config_bypasses_them() {
         r#"{"formatter":{"sortImports":{"groups":["external",{"newlinesBetween":true},{"newlinesBetween":false},"sibling"]}}}"#,
         "{",
     ] {
-        fs::write(root.join("vize.config.json"), invalid).expect("invalid config");
+        let config_name = if invalid == "{" {
+            fs::write(root.join("config.json"), invalid).expect("malformed native JSON");
+            "config.json"
+        } else {
+            fs::write(root.join("vite.config.mjs"), vite_config::source(invalid))
+                .expect("invalid config");
+            "vite.config.mjs"
+        };
         assert_eq!(
-            fmt(root, &["--write", "UserCard.vue"]).status.code(),
+            fmt(root, &["--config", config_name, "--write", "UserCard.vue"])
+                .status
+                .code(),
             Some(2)
         );
         assert_eq!(
@@ -155,21 +167,21 @@ fn sorting_entries_and_ignores_share_one_effectful_js_config_evaluation() {
     }
     fs::write(root.join("eval-count.txt"), "0").expect("counter");
     fs::write(
-        root.join("vize.config.mjs"),
+        root.join("vite.config.mjs"),
         r#"
 import { readFileSync, writeFileSync } from 'node:fs';
 const counter = new URL('./eval-count.txt', import.meta.url);
 export default () => {
   const count = Number(readFileSync(counter, 'utf8')) + 1;
   writeFileSync(counter, String(count));
-  return { formatter: { sortImports: count === 1 ? {} : false },
-    entries: [{ basePath: 'nested', files: ['*.vue'], ignores: ['Ignored.vue'] }] };
+  return { vue: { formatter: { sortImports: count === 1 ? {} : false },
+    entries: [{ basePath: 'nested', files: ['*.vue'], ignores: ['Ignored.vue'] }] } };
 };
 "#,
     )
     .expect("effectful config");
     assert_eq!(
-        fmt(root, &["--config", "vize.config.mjs", "--write", "*.vue"])
+        fmt(root, &["--config", "vite.config.mjs", "--write", "*.vue"])
             .status
             .code(),
         Some(0)

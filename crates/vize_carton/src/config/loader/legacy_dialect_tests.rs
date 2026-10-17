@@ -9,7 +9,7 @@ use crate::config::VueVersion;
 
 fn features_for(config_json: &str) -> crate::config::ConfigFeatureFlags {
     let dir = tempfile::tempdir().unwrap();
-    let path = dir.path().join("vize.config.json");
+    let path = dir.path().join("serialized-config.json");
     std::fs::write(&path, config_json).unwrap();
     load_config_with_features_and_source(Some(&path)).features
 }

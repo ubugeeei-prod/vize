@@ -15,8 +15,8 @@ title: "vize:croquis/cf/non-unique-id"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/non-unique-id": "warn" },
     },
   },

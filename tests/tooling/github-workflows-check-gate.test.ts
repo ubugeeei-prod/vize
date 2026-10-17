@@ -168,12 +168,32 @@ test("source gates cover iteration events while full qualification runs on sched
   assert.equal(appAction.runs.using, "composite");
   const appSteps = appAction.runs.steps;
   assert.ok(appSteps.some((step) => /cargo build --profile ci -p vize/.test(step.run ?? "")));
-  const configExports = appSteps.findIndex((step) => step.run?.includes("(cd npm/cli && vp pack)"));
+  const configExports = appSteps.findIndex((step) => step.name === "Build public Vue config APIs");
+  const configBuild = appSteps[configExports]?.run;
+  assert.equal(configBuild, "(cd npm/cli && vp pack) && (cd npm/builder/vite && vp pack)");
+  assert.doesNotMatch(
+    configBuild,
+    /vp run|rust-script|generate:rule-types|build:native|cargo build/,
+  );
+  assert.match(
+    readRepoFile("examples", "vite-musea", "vite.config.ts"),
+    /from ["']@vizejs\/vite-plugin\/vite-plus["']/,
+    "the app config must exercise the public consumer API",
+  );
   assert.ok(
     configExports >= 0 &&
-      configExports < appSteps.findIndex((step) => step.name === "Check Vize app fixtures"),
-    "workspace config imports need built public JS exports before the source CLI checks apps",
+      configExports < appSteps.findIndex((step) => step.name === "Check Vize app fixtures") &&
+      configExports <
+        appSteps.findIndex(
+          (step) => step.name === "Lint authored source with the opinionated preset",
+        ),
+    "both source lint and app checks must use the genuine built CLI and Vite config APIs",
   );
+  const appCommands = appSteps.map((step) => step.run ?? "").join("\n");
+  assert.equal([...appCommands.matchAll(/cargo build --profile ci -p vize/g)].length, 1);
+  assert.match(appCommands, /tests\/differential\/build-receipt\.ts/);
+  assert.match(appCommands, /sudo install -m 0755 target\/ci\/vize/);
+  assert.doesNotMatch(appCommands, /build:native|build:runtime|build:all/);
   assert.match(
     readRepoFile(".github", "actions", "test-full-tooling", "action.yml"),
     /vp run --workspace-root test:scripts/,

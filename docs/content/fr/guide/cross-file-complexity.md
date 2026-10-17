@@ -76,17 +76,15 @@ le p95 du corpus réel de Vize, soit 40 724 templates. L’avertissement pointe 
 étiquette les cinq constructions qui ajoutent le plus de complexité.
 
 Comme les limites sont un p95, environ un composant réel sur vingt les dépasse. Aucun preset n’active
-la règle : l’activer est une décision propre au projet. Nommez-la sous `lint.vize.rules` pour l’activer :
+la règle : l’activer est une décision propre au projet. Nommez-la sous `vue.linter.rules` pour l’activer :
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  lint: {
-    vize: {
-      rules: {
-        "vue/max-template-complexity": "warn",
-      },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/max-template-complexity": "warn",
     },
   },
 });

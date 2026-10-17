@@ -118,7 +118,7 @@ fn config_watcher_releases_contexts_before_waiting_for_a_route_shard() {
     let (root, state, uri, previous) = fixture();
     let route = state.project_contexts.routes.get(&uri).unwrap();
     let generation = state.project_routing_generation();
-    let marker = Url::from_file_path(root.path().join("vize.config.json")).unwrap();
+    let marker = Url::from_file_path(root.path().join("vite.config.mjs")).unwrap();
     let (entered, resume, install) = pause_at(Phase::BeforeRoutes);
     let worker_state = state.clone();
     let worker = std::thread::spawn(move || {
@@ -230,8 +230,8 @@ fn registered_workspaces_named_after_generated_directories_observe_their_own_con
         let parent = tempfile::tempdir().unwrap();
         let root = parent.path().join(name.as_str().unwrap());
         std::fs::create_dir_all(&root).unwrap();
-        let marker = root.join("vize.config.json");
-        std::fs::write(&marker, "{}").unwrap();
+        let marker = root.join("vite.config.mjs");
+        std::fs::write(&marker, "export default { vue: {} };").unwrap();
         let state = Arc::new(ServerState::new());
         state.set_workspace_root(root.clone());
         let uri = Url::from_file_path(root.join("App.vue")).unwrap();

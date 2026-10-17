@@ -94,7 +94,7 @@ for (const variant of dialectVariants) {
         symlinkVueTypes(fixture.workspaceDir);
         fixture.write("src/api/remote-search.d.ts", remoteSearchDeclaration);
         fixture.write("tsconfig.json", json(tsconfig));
-        fixture.write("vize.config.json", json(variant.config(corsaPath)));
+        fixture.writeVueConfig(json(variant.config(corsaPath)));
 
         const source = fixture.read(sourcePath);
         const sourceUri = pathToFileURL(fixture.resolve(sourcePath)).href;

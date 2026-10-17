@@ -15,13 +15,11 @@ use super::{InitArgs, LibContext};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 enum ConfigAction {
-    /// No config file exists; `vite.config.mjs` is created with `vize.lib`.
+    /// No config file exists; `vite.config.mjs` is created with `vue.lib`.
     Create,
-    /// `vize.config.json` gains (or with --force, replaces) its `lib` section.
-    Update,
-    /// A `lib` section already exists; nothing is written.
+    /// The shared config already declares library settings; nothing is written.
     Unchanged,
-    /// The config is Pkl/TS/JS; the snippet must be added by hand.
+    /// The existing Vite configuration must be edited by hand.
     Manual,
 }
 
@@ -62,44 +60,21 @@ fn join_dir(base: &str, rest: &str) -> String {
     }
 }
 
-/// Insert `"lib": …` before the closing brace of a JSON object, keeping the rest verbatim.
-fn insert_lib_section(source: &str, lib: &str) -> Option<String> {
-    let close = source.rfind('}')?;
-    let head = source.get(..close)?;
-    let tail = source.get(close..)?;
-    let trimmed = head.trim_end();
-    let separator = if trimmed.ends_with('{') { "" } else { "," };
-    Some(String::from(
-        [trimmed, separator, "\n  \"lib\": ", lib, "\n", tail].concat(),
-    ))
-}
-
 pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
     let root = &context.root;
-    // The shared loader may skip a config it cannot evaluate (for example,
-    // a TypeScript file when Node is unavailable). `init` still must preserve
-    // that file and offer a manual snippet instead of creating a JSON config.
-    let discovered_config = context.config_path.clone().or_else(|| {
-        [
-            "vize.config.pkl",
-            "vize.config.ts",
-            "vize.config.mts",
-            "vize.config.cts",
-            "vize.config.js",
-            "vize.config.mjs",
-            "vize.config.cjs",
-            "vize.config.json",
-            "vite.config.ts",
-            "vite.config.mts",
-            "vite.config.cts",
-            "vite.config.js",
-            "vite.config.mjs",
-            "vite.config.cjs",
-        ]
-        .into_iter()
-        .map(|name| root.join(name))
-        .find(|path| fs::symlink_metadata(path).is_ok())
-    });
+    // Preserve Vite files the loader could not evaluate, for example when Node
+    // is unavailable. Never create or edit a removed dedicated config format.
+    let discovered_config = [
+        "vite.config.ts",
+        "vite.config.mts",
+        "vite.config.cts",
+        "vite.config.js",
+        "vite.config.mjs",
+        "vite.config.cjs",
+    ]
+    .into_iter()
+    .map(|name| root.join(name))
+    .find(|path| fs::symlink_metadata(path).is_ok());
     // The config is another write destination: an existing symlink must not
     // bypass the project boundary when the lib section is added or replaced.
     let config_destination = discovered_config
@@ -117,10 +92,6 @@ pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
     };
     let lib =
         serde_json::json!({ "uiDir": ui_dir.as_str(), "composableDir": composable_dir.as_str() });
-    let lib_text = serde_json::to_string_pretty(&lib)
-        .map_err(|error| LibError::new(cstr!("failed to serialize lib section: {error}")))?
-        .replace('\n', "\n  ");
-
     let tsconfig = fs::read_to_string(root.join("tsconfig.json")).ok();
     let typescript = tsconfig.is_some();
     let allow_ts_extensions = tsconfig
@@ -145,62 +116,21 @@ pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
                 ConfigAction::Create,
                 Some(cstr!(
                     "export default {};\n",
-                    serde_json::to_string_pretty(&serde_json::json!({ "vize": { "lib": lib } }))
+                    serde_json::to_string_pretty(&serde_json::json!({ "vue": { "lib": lib } }))
                         .map_err(|error| LibError::new(cstr!(
                             "failed to serialize Vite config: {error}"
                         )))?
                 )),
             ),
-            Some(path)
-                if path
-                    .extension()
-                    .is_some_and(|extension| extension == "json") =>
-            {
-                let source =
-                    fs::read_to_string(path).map_err(|error| LibError::io("read", path, &error))?;
-                let value: serde_json::Value = serde_json::from_str(&source)
-                    .map_err(|error| LibError::new(cstr!("invalid {}: {error}", path.display())))?;
-                match value.get("lib") {
-                    Some(_) if !args.force => (path.clone(), ConfigAction::Unchanged, None),
-                    Some(_) => {
-                        let mut value = value;
-                        if let Some(object) = value.as_object_mut() {
-                            object.insert("lib".into(), lib.clone());
-                        }
-                        let text = serde_json::to_string_pretty(&value).map_err(|error| {
-                            LibError::new(cstr!("failed to serialize config: {error}"))
-                        })?;
-                        (path.clone(), ConfigAction::Update, Some(cstr!("{text}\n")))
-                    }
-                    None => {
-                        let text = insert_lib_section(&source, &lib_text).ok_or_else(|| {
-                            LibError::new(cstr!("{} is not a JSON object", path.display()))
-                        })?;
-                        (path.clone(), ConfigAction::Update, Some(text))
-                    }
-                }
-            }
             Some(path) if context.config != Default::default() && !args.force => {
                 (path.clone(), ConfigAction::Unchanged, None)
             }
             Some(path) => (path.clone(), ConfigAction::Manual, None),
         };
     if action == ConfigAction::Manual {
-        let snippet = if config_path
-            .extension()
-            .is_some_and(|extension| extension == "pkl")
-        {
-            cstr!("lib {{\n  uiDir = \"{ui_dir}\"\n  composableDir = \"{composable_dir}\"\n}}")
-        } else if config_path
-            .file_name()
-            .is_some_and(|name| name.to_string_lossy().starts_with("vite.config."))
-        {
-            cstr!(
-                "vize: {{ lib: {{ uiDir: \"{ui_dir}\", composableDir: \"{composable_dir}\" }} }},"
-            )
-        } else {
-            cstr!("lib: {{ uiDir: \"{ui_dir}\", composableDir: \"{composable_dir}\" }},")
-        };
+        let snippet = cstr!(
+            "vue: {{ lib: {{ uiDir: \"{ui_dir}\", composableDir: \"{composable_dir}\" }} }},"
+        );
         hints.push(cstr!("add to {}:\n{snippet}", config_path.display()));
     }
     if !args.dry_run
@@ -241,8 +171,6 @@ pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
     let verb = match (report.action, args.dry_run) {
         (ConfigAction::Create, true) => "would create",
         (ConfigAction::Create, false) => "created",
-        (ConfigAction::Update, true) => "would update",
-        (ConfigAction::Update, false) => "updated",
         (ConfigAction::Unchanged, _) => "kept existing lib section in (pass --force to replace)",
         (ConfigAction::Manual, _) => "cannot edit; add the lib section to",
     };
@@ -251,22 +179,4 @@ pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
         line(&mut out, format_args!("hint: {hint}"));
     }
     Ok(out)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::insert_lib_section;
-
-    #[test]
-    fn inserts_into_empty_and_populated_objects() {
-        assert_eq!(
-            insert_lib_section("{}\n", "{}").unwrap(),
-            "{\n  \"lib\": {}\n}\n"
-        );
-        assert_eq!(
-            insert_lib_section("{\n  \"formatter\": { \"semi\": false }\n}\n", "{}").unwrap(),
-            "{\n  \"formatter\": { \"semi\": false },\n  \"lib\": {}\n}\n"
-        );
-        assert!(insert_lib_section("[]", "{}").is_none());
-    }
 }

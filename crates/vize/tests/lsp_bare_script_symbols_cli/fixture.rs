@@ -1,3 +1,6 @@
+#[path = "../support/vite_config.rs"]
+mod vite_config;
+
 use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
@@ -76,7 +79,8 @@ impl Fixture {
             "typeChecker":{"corsaPath":runtime,"jsxTypecheck":jsx,"checkFallthroughAttrs":false},
             "lsp":{"lint":false,"typecheck":true,"hover":true,"crossFile":true}
         }))?;
-        let path = project.path().join("vize.config.json");
+        let config = vite_config::source(config).into_bytes();
+        let path = project.path().join("vite.config.mjs");
         std::fs::write(&path, &config)?;
         original.push((path, config));
         let native = Session::new(project.path(), Some(&runtime))?;

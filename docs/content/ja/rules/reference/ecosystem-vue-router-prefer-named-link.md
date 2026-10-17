@@ -20,8 +20,8 @@ RouterLink の文字列パスを名前付きルートの指定に置き換えま
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-router-prefer-named-link": "warn"

@@ -20,8 +20,8 @@ prop の default を宣言した型に合う値にします。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-valid-default-prop": "error"

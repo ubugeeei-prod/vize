@@ -1,6 +1,8 @@
 #![cfg(test)]
 #![cfg(feature = "legacy")]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{path::Path, process::Command};
 
 use vize_l0::cstr;
@@ -197,7 +199,7 @@ export default {
         .args([
             "check",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--tsconfig",
             "tsconfig.json",
             "--format",
@@ -244,12 +246,14 @@ fn create_project(name: &str) -> std::path::PathBuf {
     )
     .unwrap();
     std::fs::write(
-        project_root.join("vize.config.json"),
-        r#"{
+        project_root.join("vite.config.mjs"),
+        vite_config::source(
+            r#"{
   "typeChecker": {
     "legacyVue2": true
   }
 }"#,
+        ),
     )
     .unwrap();
     std::fs::write(

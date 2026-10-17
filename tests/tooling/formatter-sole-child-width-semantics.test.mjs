@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -59,8 +60,8 @@ void test("actual source CLI preserves sealed sole-child DOM/text/SSR/event cont
     fs.mkdirSync(project);
     const filename = "App.vue";
     const file = path.join(project, filename);
-    const configPath = path.join(project, "vize.config.json");
-    const config = Buffer.from(`${JSON.stringify({ formatter: fixture.options })}\n`);
+    const configPath = path.join(project, "vite.config.mjs");
+    const config = Buffer.from(vueConfigFixtureSource({ formatter: fixture.options }));
     fs.writeFileSync(configPath, config);
     fs.writeFileSync(file, fixture.input);
     for (const [pass, mode] of ["--check", "--write", "--write", "--write", "--check"].entries()) {

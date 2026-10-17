@@ -8,7 +8,7 @@ title: "ファイル間ルール"
 
 全 66 件のプロジェクトの例について、共通ファイルと、省略のない悪い例・良い例をこのページにまとめています。共通ファイルは両方で使用します。解析器の 60 件の診断コードには、CLI の 19 件（検証済みのソース例 18 件と、参照関係を保持したリアクティブなグラフを含む説明用プロジェクト 1 件）、CLI が個別には生成しない実験的な Rust 解析器の 16 件、現在は診断を生成する処理のない契約 25 件があります。ID を設定しても、未対応の診断処理は有効になりません。
 
-公開 CLI では `vize lint --cross-file` で同じ処理を使用できます。表示される `vize:croquis/cf/*` コードは、`lint.vize.rules` では `croquis/cf/*` と設定します（`vize:` を省略）。information/hint の診断は CLI では warning になります。関連箇所は生成元と利用側の関係を説明します。
+公開 CLI では `vize lint --cross-file` で同じ処理を使用できます。表示される `vize:croquis/cf/*` コードは、`vue.linter.rules` では `croquis/cf/*` と設定します（`vize:` を省略）。information/hint の診断は CLI では warning になります。関連箇所は生成元と利用側の関係を説明します。
 
 <span id="プロジェクト固有の-lint-id"></span>
 <span id="公開-analyzer-コード"></span>
@@ -99,8 +99,8 @@ title: "ファイル間ルール"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-extra-param": "warn" },
     },
   },
@@ -204,8 +204,8 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-missing-param": "warn" },
     },
   },
@@ -309,8 +309,8 @@ postId は繰り返しパラメーターではないため配列を渡せませ�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-param-type": "warn" },
     },
   },
@@ -414,8 +414,8 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-unknown-route": "warn" },
     },
   },
@@ -517,8 +517,8 @@ import した子コンポーネントの要素を合成して HTML の入れ子�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "html/cross-component-nesting": "warn" },
     },
   },
@@ -693,8 +693,8 @@ reactive な状態が async 境界を越え、古い値が見えることがあ�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/async-boundary": "warn" },
     },
   },
@@ -934,8 +934,8 @@ const greeting = await Promise.resolve("Hello");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/browser-api-ssr": "warn" },
     },
   },
@@ -1124,8 +1124,8 @@ reactive な計算が互いに循環して依存しています。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/circular-reactive-dependency": "warn" },
     },
   },
@@ -1639,8 +1639,8 @@ reactive オブジェクトの分割代入はフィールドをコピーし、�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/destructuring-breaks-reactivity": "warn" },
     },
   },
@@ -1977,8 +1977,8 @@ async function increment() {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/duplicate-id": "warn" },
     },
   },
@@ -2297,8 +2297,8 @@ emit("save");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/hydration-risk": "warn" },
     },
   },
@@ -2489,8 +2489,8 @@ defineOptions({ inheritAttrs: false });
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/inject-without-symbol": "warn" },
     },
   },
@@ -2615,8 +2615,8 @@ inject した値が、競合し得る async タスクから変更されていま
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/injected-async-mutation-race": "warn" },
     },
   },
@@ -3441,8 +3441,8 @@ provide した値が reactive ではないため、子孫は更新を観測で�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/non-reactive-provide": "warn" },
     },
   },
@@ -3573,8 +3573,8 @@ const theme = inject(ThemeKey);
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/non-unique-id": "warn" },
     },
   },
@@ -3939,8 +3939,8 @@ provide した値と inject の型が一致しません。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/provide-inject-type": "warn" },
     },
   },
@@ -4047,8 +4047,8 @@ const title = inject<string>("title");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/provide-without-symbol": "warn" },
     },
   },
@@ -4375,8 +4375,8 @@ reactive な束縛を再代入すると、ただの値に置き換わります�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/reassignment-breaks-reactivity": "warn" },
     },
   },
@@ -4740,8 +4740,8 @@ reactive オブジェクトのスプレッドは値をコピーし、追跡を�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/spread-breaks-reactivity": "warn" },
     },
   },
@@ -5126,8 +5126,8 @@ export function rename(profile: { name: string }): void {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/uncaught-error": "warn" },
     },
   },
@@ -5600,8 +5600,8 @@ emit("save");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/unmatched-inject": "warn" },
     },
   },
@@ -6150,8 +6150,8 @@ provide したキーが一度も inject されていません。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/unused-provide": "warn" },
     },
   },
@@ -6287,8 +6287,8 @@ reactive な値をローカルへ取り出すと、その後の更新が失わ�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/value-extraction-breaks-reactivity": "warn" },
     },
   },
@@ -6493,8 +6493,8 @@ export function useDouble() {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/watcheffect-async": "warn" },
     },
   },
@@ -6745,8 +6745,8 @@ export function useObserver() {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "vue/cross-file-attrs-fallthrough": "warn" },
     },
   },

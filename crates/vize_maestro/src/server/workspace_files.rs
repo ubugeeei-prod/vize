@@ -52,9 +52,7 @@ pub(super) async fn initialized(server: &MaestroServer) {
 async fn register_typecheck_dependency_watcher(server: &MaestroServer) {
     #[cfg(feature = "native")]
     {
-        if !server.state.project_source_watcher_enabled()
-            || !server.state.global_component_watcher_supported()
-        {
+        if !server.state.global_component_watcher_supported() {
             return;
         }
         if let Err(error) = server
@@ -76,9 +74,8 @@ fn typecheck_dependency_watcher_registration() -> Registration {
             "**/*.d.{ts,mts,cts}",
             "**/*.{vue,ts,tsx,mts,cts,js,jsx,mjs,cjs}",
             "**/package.json",
-            "**/vize.config.*",
             "**/vite.config.*",
-            "**/tsconfig*.json",
+            "**/*.json",
             "**/jsconfig.json",
         ]
         .into_iter()

@@ -20,8 +20,8 @@ title: "a11y/no-i-for-icon"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "a11y/no-i-for-icon": "warn"

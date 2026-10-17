@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -155,9 +156,9 @@ test(
       let version = 0;
       fs.mkdirSync(path.dirname(file));
       fs.writeFileSync(file, original);
-      fs.copyFileSync(
-        new URL("vize.config.json", fixture),
-        path.join(directory, "vize.config.json"),
+      writeVueConfigFixture(
+        directory,
+        fs.readFileSync(new URL("vize.config.json", fixture), "utf8"),
       );
       fs.writeFileSync(
         path.join(directory, "tsconfig.json"),

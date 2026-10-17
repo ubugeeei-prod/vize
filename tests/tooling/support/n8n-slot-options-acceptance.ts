@@ -9,6 +9,7 @@ import { root } from "./lsp/paths.ts";
 import { LspSession } from "./lsp/session.ts";
 import { errorPacket } from "./n8n-cli-config-oracle.mjs";
 import { runCli, sha256, writeJson } from "./n8n-cli-config-workspace.mjs";
+import { nativeConfigToVueOptions, vueConfigFixtureSource } from "./vue-config-fixture.ts";
 
 type Input = { id: string; source: string; sourceSha256: string };
 type Expected = {
@@ -60,12 +61,27 @@ const configValue = {
   ],
 };
 const configSource = JSON.stringify(configValue, null, 2) + "\n";
-const config = { path: path.join(workspace, "vize.config.json"), sha256: sha256(configSource) };
-fs.writeFileSync(config.path, configSource);
-writeJson(path.join(output, "config.json"), {
-  ...config,
+const originalConfig = {
+  path: path.join(workspace, "vize.config.json"),
+  sha256: sha256(configSource),
   source: configSource,
   value: configValue,
+};
+const carrierSource = vueConfigFixtureSource(configSource);
+const config = {
+  path: path.join(workspace, "vite.config.mjs"),
+  sha256: sha256(carrierSource),
+  original: originalConfig,
+  argvConfigSelection: {
+    original: ["--config", originalConfig.path],
+    actual: ["--config", path.join(workspace, "vite.config.mjs")],
+  },
+};
+fs.writeFileSync(config.path, carrierSource);
+writeJson(path.join(output, "config.json"), {
+  ...config,
+  source: carrierSource,
+  value: { vue: nativeConfigToVueOptions(configSource) },
 });
 const custody: Array<{ file: string; sha256: string }> = [
   { file: config.path, sha256: config.sha256 },

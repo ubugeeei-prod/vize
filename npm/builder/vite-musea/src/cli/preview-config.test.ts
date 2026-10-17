@@ -12,10 +12,9 @@ void test("VRT resolves Vite base and explicit Musea route ahead of shared confi
   try {
     assert.equal(await loadMuseaPreviewBasePath("missing.mjs", root), "/__musea__");
     await writeFile(
-      path.join(root, "vize.config.mjs"),
-      'export default { musea: { basePath: "/shared" } };',
+      path.join(root, "vite.config.mjs"),
+      'export default { base: "/site/", vue: { musea: { basePath: "/shared" } } };',
     );
-    await writeFile(path.join(root, "vite.config.mjs"), 'export default { base: "/site/" };');
     assert.equal(await loadMuseaPreviewBasePath("vite.config.mjs", root), "/site/shared");
     await writeFile(
       path.join(root, "vite.config.mjs"),

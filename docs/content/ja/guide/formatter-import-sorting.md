@@ -5,36 +5,34 @@
 Vue スクリプトの import を、Vite+ プロジェクト内のほかのファイルと同じ規則で並べ替えます。
 import のグループをそろえたいときに使います。副作用のある import の初期化順は、明示的に変更する場合を除き保たれます。
 
-設定の置き場所を選ぶ前に、[CLI・エディタとの共有方法と現在のリリースで使える設定](./configuration.md)を確認してください。
+共通の設定は `vite.config.*` の `vue.formatter` に置きます。CLI とエディターは同じ設定を読み込みます。[Vue 設定ガイド](./configuration.md)を参照してください。
 
 ## import の並べ替えを設定する
 
-既存の Vite+ 設定で `fmt.vize.sortImports` を指定すると、import の並べ替えを有効にできます。
+既存の Vite+ 設定で `vue.formatter.sortImports` を指定すると、import の並べ替えを有効にできます。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  fmt: {
-    vize: {
-      sortImports: {
-        internalPattern: ["@/", "~/"],
-        groups: ["builtin", "external", "internal", ["parent", "sibling", "index"]],
-        newlinesBetween: true,
-        order: "asc",
-      },
+export default defineConfig({}).withVue({
+  formatter: {
+    sortImports: {
+      internalPattern: ["@/", "~/"],
+      groups: ["builtin", "external", "internal", ["parent", "sibling", "index"]],
+      newlinesBetween: true,
+      order: "asc",
     },
   },
 });
 ```
 
 空のオブジェクトを指定すると、Oxfmt の既定のグループと並べ替え方を使います。
-指定を省略するか `false` にすると、元の import の順序を保ちます。
+`false` にすると、元の import の順序を保ちます。共有の `fmt.sortImports` が未設定なら、省略しても元の順序を保ちます。
 `<script>` と `<script setup>` の両方で、JSX/TSX を含めて native Oxc の import sorter を使います。
 `vize fmt` を直接実行した場合も、単独の JS/TS/JSX/TSX ファイルに同じ規則を適用します。
 
 Vite+ では `fmt.sortImports` を Vue のフォーマットにも自動的に共有します。
-`fmt.vize.sortImports` で上書きでき、`false` を指定すると Vue だけ並べ替えを無効にできます。
+`vue.formatter.sortImports` で上書きでき、`false` を指定すると Vue だけ並べ替えを無効にできます。
 Oxfmt には、元の設定がそのまま渡ります。
 
 指定できるオプションは `groups`、`customGroups`、`internalPattern`、`order`、
@@ -59,4 +57,4 @@ JavaScript の文字列とは別に、[JSX 属性の引用符を設定](./format
 
 スペースとタブによる字下げは、[インデント幅の設定](./formatter-indent-width.md)で説明しています。
 
-CLI・エディタとの共有や任意の専用設定については、[設定ガイド](./configuration.md)で現在のリリースでの対応範囲も確認してください。
+CLI とエディターは `vite.config.*` の `vue.formatter` を共有します。設定の探索方法と、廃止された専用設定ファイルからの移行については、[設定ガイド](./configuration.md)を参照してください。

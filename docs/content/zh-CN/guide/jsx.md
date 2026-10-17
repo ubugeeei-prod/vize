@@ -188,10 +188,10 @@ LSP 虚拟 TypeScript，因此悬停、补全、诊断和重命名都基于相�
 或者`"vapor"`，默认为`"vdom"`。
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   compiler: {
     // Default every .jsx/.tsx component to Vapor output.
     jsxMode: "vapor",
@@ -225,7 +225,7 @@ const Classic = () => {
 由于每个组件独立路由，**一个文件可以混合两个后端**：
 
 ```tsx
-// vize.config: { compiler: { jsxMode: "vapor" } }
+// vite.config.ts: vue: { compiler: { jsxMode: "vapor" } }
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -366,10 +366,10 @@ JSX/TSX类型检查通过`typeChecker.jsxTypecheck`为**选择加入**，默认�
 类型校对为 Vue JSX。
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+export default defineConfig({}).withVue({
   typeChecker: {
     enabled: true,
     jsxTypecheck: true,

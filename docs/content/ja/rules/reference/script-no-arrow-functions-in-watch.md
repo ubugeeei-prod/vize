@@ -20,8 +20,8 @@ Options API の watch ハンドラーにアロー関数を使う箇所を検出�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-arrow-functions-in-watch": "error"

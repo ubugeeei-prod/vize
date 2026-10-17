@@ -7,10 +7,10 @@ use std::{
 
 use super::{
     CanonicalPathCache, CheckArgs, CheckerSettings, TsconfigInputCache, build_virtual_ts_options,
-    collect_roots, dialect_from_features, exit_after_execution_error, explicit_input_root,
-    finish_executions, prepare_and_execute, report_no_inputs, resolve_from_config_dir,
-    resolve_invocation_program, resolve_nuxt_project_root, split_program_candidates,
-    template_syntax_mode, validate_corsa_server_count, warn_for_disabled_legacy,
+    collect_roots, exit_after_execution_error, explicit_input_root, finish_executions,
+    prepare_and_execute, report_no_inputs, resolve_from_config_dir, resolve_invocation_program,
+    resolve_nuxt_project_root, split_program_candidates, template_syntax_mode,
+    validate_corsa_server_count, warn_for_disabled_legacy,
 };
 
 /// Run type checking directly with materialized Corsa projects.
@@ -38,7 +38,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         source_path: project_config.source_path,
     };
     crate::config::write_schema_for_config(loaded_config.source_path.as_deref());
-    let dialect = dialect_from_features(loaded_config.features.vue_version);
+    let dialect = loaded_config.features.vue_version;
     let options_api = loaded_config.features.type_checker_options_api;
     let jsx_typecheck = loaded_config.features.type_checker_jsx_typecheck;
     let legacy_vue2 = cfg!(feature = "legacy") && loaded_config.features.type_checker_legacy_vue2;
@@ -51,7 +51,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         .and_then(Path::parent)
         .unwrap_or(cwd.as_path());
     if !config.type_checker.enabled {
-        eprintln!("[vize] Skipping check because typeChecker.enabled is false in vize.config.");
+        eprintln!(
+            "[vize] Skipping check because typeChecker.enabled is false in vite.config.* vue settings."
+        );
         return;
     }
     let project = crate::config::ProjectModel::new(

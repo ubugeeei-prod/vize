@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -139,11 +140,7 @@ test("real stdio server asks Corsa type information before inserting .value", as
       JSON.stringify({ include: ["*.vue"], compilerOptions: { strict: true } }),
       "utf8",
     );
-    fs.writeFileSync(
-      path.join(workspaceDir, "vize.config.json"),
-      JSON.stringify({ typeChecker: { corsaPath } }),
-      "utf8",
-    );
+    writeVueConfigFixture(workspaceDir, JSON.stringify({ typeChecker: { corsaPath } }));
 
     await session.initialize(workspaceDir, {
       editor: true,

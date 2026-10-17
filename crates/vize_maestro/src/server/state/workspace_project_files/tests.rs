@@ -95,18 +95,18 @@ fn project_inventory_preserves_multiple_roots_and_metadata_dependency_exclusions
 }
 
 #[test]
-fn structural_workspace_symbols_need_file_events_without_enabling_the_checker() {
+fn structural_workspace_symbols_remain_lazy_without_enabling_the_checker() {
     let state = ServerState::new();
     state.apply_lsp_initialization_options(Some(
         &serde_json::json!({"editor":true,"typecheck":false}),
     ));
     assert!(!state.is_lsp_typecheck_enabled());
-    assert!(state.project_source_watcher_enabled());
+    assert!(state.lsp_features().workspace_symbols);
     assert!(state.workspace_project_files.paths.read().is_none());
     state.apply_lsp_initialization_options(Some(
         &serde_json::json!({"editor":false,"typecheck":false}),
     ));
-    assert!(!state.project_source_watcher_enabled());
+    assert!(!state.lsp_features().workspace_symbols);
     assert!(state.workspace_project_files.paths.read().is_none());
 }
 

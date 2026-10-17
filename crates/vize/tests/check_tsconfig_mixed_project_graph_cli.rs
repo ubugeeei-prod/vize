@@ -4,6 +4,8 @@
 mod corsa_path;
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "support/vite_config.rs"]
+mod vite_config;
 #[path = "support/vue_stub.rs"]
 mod vue_stub;
 
@@ -21,8 +23,8 @@ fn default_check_reports_mixed_tsconfig_program_graph_and_repair() {
     };
     let project = ProjectCase::new("mixed-tsconfig-project-graph");
     project.write(
-        "vize.config.json",
-        r#"{ "typeChecker": { "jsxTypecheck": true } }"#,
+        "vite.config.mjs",
+        &vite_config::source(r#"{ "typeChecker": { "jsxTypecheck": true } }"#),
     );
     project.write(
         "tsconfig.json",

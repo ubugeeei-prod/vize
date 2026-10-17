@@ -3,6 +3,8 @@
     clippy::disallowed_types,
     reason = "whole CLI fixtures use std strings"
 )]
+#[path = "support/vite_config.rs"]
+mod vite_config;
 
 use std::{fs, path::Path, process::Command};
 
@@ -64,7 +66,11 @@ fn build(config: Option<&str>) -> (Option<i32>, String) {
     let project = tempfile::tempdir().unwrap();
     fs::write(project.path().join("App.vue"), SOURCE).unwrap();
     if let Some(config) = config {
-        fs::write(project.path().join("vize.config.json"), config).unwrap();
+        fs::write(
+            project.path().join("vite.config.mjs"),
+            vite_config::source(config),
+        )
+        .unwrap();
     }
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(project.path())

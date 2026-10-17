@@ -1,3 +1,5 @@
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{fs, process::Command};
 
 #[test]
@@ -9,10 +11,10 @@ fn cli_config_permits_preview_globals_and_retains_missing_component_errors() {
     )
     .unwrap();
     fs::write(
-        project.path().join("vize.config.json"),
-        include_str!(
+        project.path().join("vite.config.mjs"),
+        vite_config::source(include_str!(
             "../../vize_patina/tests/fixtures/global-component-registration/vize.config.json"
-        ),
+        )),
     )
     .unwrap();
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -20,7 +22,7 @@ fn cli_config_permits_preview_globals_and_retains_missing_component_errors() {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "Card.art.vue",

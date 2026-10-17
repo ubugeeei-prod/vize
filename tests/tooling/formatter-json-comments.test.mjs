@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -46,8 +47,8 @@ void test("all JSON config names preserve comments and accept trailing commas", 
       report.rows.push(row);
       if (fixture.eol) {
         fs.writeFileSync(
-          path.join(directory, "vize.config.json"),
-          `${JSON.stringify({ formatter: { endOfLine: fixture.eol } })}\n`,
+          path.join(directory, "vite.config.mjs"),
+          vueConfigFixtureSource({ formatter: { endOfLine: fixture.eol } }),
         );
       }
       const invoke = (mode) => {
@@ -55,7 +56,7 @@ void test("all JSON config names preserve comments and accept trailing commas", 
           "fmt",
           mode,
           fixture.file,
-          ...(fixture.eol ? ["--config", "vize.config.json"] : ["--no-config"]),
+          ...(fixture.eol ? ["--config", "vite.config.mjs"] : ["--no-config"]),
         ];
         const before = fs.readFileSync(file);
         const result = spawnSync(path.join(root, identity.binaryPath), argv, {

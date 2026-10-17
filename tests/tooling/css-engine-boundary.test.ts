@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -164,6 +165,49 @@ void test("original CSS bytes and whole healthy/fallback CLI authorities remain 
   }
 });
 
+void test("canonical CSS cell transport retains every frozen whole-output oracle", () => {
+  const authority = JSON.parse(
+    fs.readFileSync(
+      path.join(root, "tests/_fixtures/differential/css-engine-vendor-exit/finite-successors.json"),
+      "utf8",
+    ),
+  );
+  for (const cell of authority.cliCells) {
+    const [surface, id, passText] = cell.id.split("/");
+    const pass = Number(passText);
+    const entry = (surface === "formatter" ? corpus.formatterCases : corpus.linterCases).find(
+      (entry) => entry.id === id,
+    )!;
+    assert(entry);
+    const before = surface === "formatter" && pass > 2 ? cell.wholeFileAfter : entry.source;
+    const row = {
+      id: cell.id,
+      args: cell.args.map((arg: string) => (arg === "vize.config.json" ? "vite.config.mjs" : arg)),
+      config: vueConfigFixtureSource(cell.sourceOptions),
+      status: cell.status,
+      signal: cell.signal,
+      error: cell.processError,
+      readError: cell.readError,
+      before,
+      after: cell.wholeFileAfter,
+      stdout: cell.wholeStdout,
+      stderr: cell.wholeStderr,
+      beforeBase64: Buffer.from(before).toString("base64"),
+      afterBase64: Buffer.from(cell.wholeFileAfter).toString("base64"),
+      stdoutBase64: Buffer.from(cell.wholeStdout).toString("base64"),
+      stderrBase64: Buffer.from(cell.wholeStderr).toString("base64"),
+    };
+    const verify = (value: typeof row) =>
+      surface === "formatter"
+        ? assertWholeFormatterCell(value, entry, pass, cell.wholeFileAfter)
+        : assertWholeLinterCell(value, entry, pass, cell.wholeStdout);
+    verify(row);
+    assert.throws(() => verify({ ...row, config: vueConfigFixtureSource({}) }));
+    assert.throws(() => verify({ ...row, stdout: row.stdout + "extra" }));
+  }
+  assert.equal(authority.cliCells.length, 26);
+});
+
 await test("source-built CSS consumers survive exact originals and preserve whole healthy outputs", async (t) => {
   const build = expectedBuildIdentity(root);
   const receipt = JSON.parse(
@@ -237,10 +281,10 @@ await test("source-built CSS consumers survive exact originals and preserve whol
         const wholeExpected = repaired?.wholeCode ?? entry.expected;
         const file = path.join(directory, "App.vue");
         fs.writeFileSync(file, entry.source);
-        const config = JSON.stringify({ formatter: entry.options }) + "\n";
-        fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+        const config = vueConfigFixtureSource({ formatter: entry.options });
+        fs.writeFileSync(path.join(directory, "vite.config.mjs"), config);
         const options = Object.keys(entry.options).length
-          ? ["--config", "vize.config.json"]
+          ? ["--config", "vite.config.mjs"]
           : ["--no-config"];
         for (const [pass, mode] of [
           "--check",
@@ -281,14 +325,13 @@ await test("source-built CSS consumers survive exact originals and preserve whol
         const filename = entry.options.filename;
         const file = path.join(directory, filename);
         fs.writeFileSync(file, entry.source);
-        const config =
-          JSON.stringify({
-            linter: {
-              preset: "incremental",
-              rules: Object.fromEntries(entry.options.enabledRules.map((rule) => [rule, "warn"])),
-            },
-          }) + "\n";
-        fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+        const config = vueConfigFixtureSource({
+          linter: {
+            preset: "incremental",
+            rules: Object.fromEntries(entry.options.enabledRules.map((rule) => [rule, "warn"])),
+          },
+        });
+        fs.writeFileSync(path.join(directory, "vite.config.mjs"), config);
         let previous: string | undefined;
         for (let pass = 1; pass <= 2; pass += 1) {
           const row = invoke(
@@ -302,7 +345,7 @@ await test("source-built CSS consumers survive exact originals and preserve whol
               "--locale",
               "en",
               "--config",
-              "vize.config.json",
+              "vite.config.mjs",
               filename,
             ],
             file,

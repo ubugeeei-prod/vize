@@ -128,24 +128,21 @@ helper を使う Vite+ プロジェクトでは、次の script 変更でネイ�
 
 ## 単独設定を Vite+ に移す
 
-CLI とエディターも `vite.config.*` のトップレベルの `vize` 設定を共有できます。
-対応範囲とリリース状況は[設定ガイド](./configuration.md)を参照してください。
-Vite+ の統合タスク用の設定は、ツールごとの設定項目に移します。
+`vize.config.*` とトップレベルの `vize:` のネイティブ設定を、既存の Vite 設定の
+`vue:` に移します。TypeScript の厳密さと `vueCompilerOptions` は `tsconfig.json`
+に置き、標準の `extends` と `references` を保ちます。
 
-```ts annotate="remove:1,5,6,7;add:2,8,9,10"
-import { defineConfig } from "vize";
+```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
+const vpConfig = { server: { port: 3000 } };
+
+export default defineConfig(vpConfig).withVue({
   linter: { preset: "essential" },
   formatter: { printWidth: 100 },
-  typeChecker: { strict: true },
-  lint: { vize: { preset: "essential" } },
-  fmt: { vize: { printWidth: 100 } },
-  typecheck: { strict: true },
 });
 ```
 
-import だけでなく設定も移します。項目名が異なる点に注意してください。
-既存の専用設定は、その形式や優先順位が必要な場合に維持します。
-[設定ガイド](./configuration.md)に統合ごとの設定場所をまとめています。
+CLI とエディタも同じ Vite と TypeScript のプロジェクト設定を読みます。
+移行を確認してから古い専用ファイルを削除してください。専用ファイルと Vize 独自の
+`extends` は廃止しました。[設定ガイド](./configuration.md)も参照してください。

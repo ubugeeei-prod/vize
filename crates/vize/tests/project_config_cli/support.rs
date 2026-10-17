@@ -1,12 +1,27 @@
+#![expect(
+    clippy::disallowed_types,
+    reason = "adapted fixture source and process evidence use std strings"
+)]
+
 use std::{
     fs,
     path::Path,
     process::{Command, Output},
+    sync::LazyLock,
 };
 
-pub const SETTINGS: &str = include_str!(
-    "../../../../tests/_fixtures/differential/config/project-settings-8371/vite.config.mjs.txt"
-);
+// Adapt the historical source only when copying it into a live project.
+pub fn canonical_settings(source: &str) -> String {
+    source
+        .replace("vize:", "vue:")
+        .replace("lsp:", "languageServer:")
+}
+
+pub static SETTINGS: LazyLock<String> = LazyLock::new(|| {
+    canonical_settings(include_str!(
+        "../../../../tests/_fixtures/differential/config/project-settings-8371/vite.config.mjs.txt"
+    ))
+});
 pub const QUOTES: &str = include_str!(
     "../../../../tests/_fixtures/differential/config/project-settings-8371/Quotes.vue.txt"
 );
@@ -39,7 +54,7 @@ pub fn project() -> tempfile::TempDir {
             "package.json",
             r#"{"name":"project-settings-fixture","private":true,"type":"module"}"#,
         ),
-        ("vite.config.mjs", SETTINGS),
+        ("vite.config.mjs", SETTINGS.as_str()),
         (
             "tsconfig.json",
             include_str!(
@@ -85,6 +100,22 @@ pub fn run(root: &Path, args: &[&str]) -> Output {
         .args(args)
         .output()
         .unwrap()
+}
+
+pub const LEGACY_CONFIG_ERROR: &str = "vize.config.* is no longer supported; move Vue settings to vue: in vite.config.* and TypeScript settings to tsconfig.json";
+
+pub fn assert_legacy_config_rejected(output: &Output) {
+    // Invalid configuration is a usage failure, distinct from lint diagnostics.
+    assert_eq!(output.status.code(), Some(2), "{output:?}");
+    assert_eq!(
+        String::from_utf8_lossy(&output.stderr),
+        vize_l0::cstr!(
+            "\x1b[31mError:\x1b[0m failed to parse vize.config.json: {LEGACY_CONFIG_ERROR}\n"
+        )
+        .as_str(),
+        "{output:?}",
+    );
+    assert!(output.stdout.is_empty(), "{output:?}");
 }
 
 pub fn assert_success(output: &Output) {

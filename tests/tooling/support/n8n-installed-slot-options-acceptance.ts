@@ -9,6 +9,7 @@ import { errorPacket } from "./n8n-cli-config-oracle.mjs";
 import { sha256, writeJson } from "./n8n-cli-config-workspace.mjs";
 import { installedCliRuntime } from "./n8n-installed-cli.ts";
 import { installedLspRuntime } from "./n8n-installed-lsp.ts";
+import { nativeConfigToVueOptions, vueConfigFixtureSource } from "./vue-config-fixture.ts";
 
 type Input = { id: string; source: string; sourceSha256: string };
 type Expected = {
@@ -55,13 +56,27 @@ const configValue = {
     },
   ],
 };
-const configSource = JSON.stringify(configValue, null, 2) + "\n";
-const config = { path: path.join(workspace, "vize.config.json"), sha256: sha256(configSource) };
+const nativeConfigSource = JSON.stringify(configValue, null, 2) + "\n";
+const configSource = vueConfigFixtureSource(nativeConfigSource);
+const config = { path: path.join(workspace, "vite.config.mjs"), sha256: sha256(configSource) };
 fs.writeFileSync(config.path, configSource);
 writeJson(path.join(output, "config.json"), {
   ...config,
   source: configSource,
-  value: configValue,
+  value: { vue: nativeConfigToVueOptions(configValue) },
+  originalNative: {
+    file: "vize.config.json",
+    source: nativeConfigSource,
+    sha256: sha256(nativeConfigSource),
+    value: configValue,
+  },
+  adaptation: {
+    authority: "reviewed installed public campaign; canonical Vite configuration required",
+    file: "vize.config.json -> vite.config.mjs",
+    sections: "native root -> vue; lsp -> vue.languageServer; entries unchanged",
+    nativeDefaultPreserved: { "vue.typeChecker.jsxTypecheck": false },
+    cli: "actual explicit --config argv is retained by installedCliRuntime",
+  },
 });
 const custody: Array<{ file: string; sha256: string }> = [
   { file: config.path, sha256: config.sha256 },

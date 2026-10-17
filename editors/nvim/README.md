@@ -3,14 +3,13 @@
 Neovim integration for the Vize language server.
 
 ```lua
-require("vize").setup({
-  profile = "recommended",
-})
+require("vize").setup()
 ```
 
 The plugin configures `vim.lsp.config("vize", ...)` with `cmd = { "vize", "lsp" }` and filetypes
-for `vue` and `art-vue`. The default profile enables diagnostics, hover, completion,
-definition, references, symbols, and ecosystem helpers.
+for `vue` and `art-vue`. By default, the server reads `vue` settings from `vite.config.*`
+and `vueCompilerOptions` from `tsconfig.json`, including nested projects.
+Named profiles and explicit `init_options` override project features.
 
 Profiles:
 

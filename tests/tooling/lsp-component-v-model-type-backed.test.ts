@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -57,8 +58,8 @@ test("component v-model hover and definition use the child model contract", asyn
   try {
     fs.mkdirSync(path.join(workspaceDir, "src"), { recursive: true });
     linkVuePackage(workspaceDir);
-    fs.writeFileSync(
-      path.join(workspaceDir, "vize.config.json"),
+    writeVueConfigFixture(
+      workspaceDir,
       JSON.stringify({
         lsp: { hover: true, lint: false, typecheck: true },
         typeChecker: { corsaPath },

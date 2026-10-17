@@ -20,8 +20,8 @@ setup の context.attrs を useAttrs() に置き換えます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-use-attrs": "warn"

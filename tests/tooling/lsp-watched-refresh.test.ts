@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -61,11 +62,7 @@ test("created and watched dependency changes refresh the open importer", async (
       JSON.stringify({ include: ["*.vue"], compilerOptions: { strict: true } }),
       "utf8",
     );
-    fs.writeFileSync(
-      path.join(workspaceDir, "vize.config.json"),
-      JSON.stringify({ typeChecker: { corsaPath } }),
-      "utf8",
-    );
+    writeVueConfigFixture(workspaceDir, JSON.stringify({ typeChecker: { corsaPath } }));
     const componentsDir = path.join(workspaceDir, "components");
     const movedComponentsDir = path.join(workspaceDir, "moved-components");
     const childPath = path.join(componentsDir, "Child.vue");

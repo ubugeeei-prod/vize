@@ -186,7 +186,7 @@ export const chineseVue2: Record<string, readonly [purpose: string, bad: string,
   ],
 };
 
-export const chineseVueNotes: Record<string, string> = {
+export const chineseVueNotes = {
   "The component filename is checked. PascalCase and kebab-case are accepted; mixed casing is reported.":
     "检查的是组件文件名。接受 PascalCase 和 kebab-case；混合大小写会被报告。",
   "Bad has cyclomatic complexity 13 and cognitive complexity 25 (limits: 11 and 16). Each component is measured separately; only inline HTML templates are supported.":
@@ -207,29 +207,37 @@ export const chineseVueNotes: Record<string, string> = {
     "列出由应用插件或 Musea previewSetup 提供的明确组件名称。接受 PascalCase 和 kebab-case 写法；不解析正则表达式。设置选项不会启用规则。后面的配置层会替换列表；空列表会清除继承的名称。",
   "Malformed attribute spelling is diagnosed by parser/template before this defensive rule sees an attribute. Bad therefore reports parser/template; it does not promise a separate vue/valid-attribute-name finding.":
     "格式错误的属性写法会先由 parser/template 诊断，之后该防御性规则才能读取属性。因此 Bad 报告的是 parser/template，并不保证另有独立的 vue/valid-attribute-name 问题。",
-  "## Numeric selection and fixes": "## 数值修饰符的选择与修复",
-  'The first decimal-prefix numeric modifier determines the finding. `@keyup.13.27="submit"` reports only `13` and offers `@keyup.enter.27="submit"`; another fix pass can replace `27` with `escape`. `@keyup.13suffix="submit"` also becomes `@keyup.enter="submit"`. Values 0–9 are exempt, so `@keyup.0.13="submit"` is clean under this rule. Unknown values such as `999` report without a fix. The existing Vue 2 and petite-vue exemption remains in effect.':
-    '首个名称带十进制整数前缀的数值修饰符决定诊断结果。`@keyup.13.27="submit"` 只报告 `13`，并提供修复结果 `@keyup.enter.27="submit"`；再次修复可以将 `27` 替换为 `escape`。`@keyup.13suffix="submit"` 也会变为 `@keyup.enter="submit"`。0–9 不在检查范围内，因此 `@keyup.0.13="submit"` 不会触发此规则。`999` 等未知值会被报告，但不提供修复。现有的 Vue 2 和 petite-vue 豁免仍然有效。',
-  "## Modifier validation": "## 修饰符验证",
-  "Unsupported modifiers are reported individually at the modifier name, including on long-form `v-on:click`, dynamic event arguments, and object listener syntax. The accepted names match `eslint-plugin-vue` 10.9.2: Vue's built-in event modifiers, the complete keyboard alias table, any single Unicode code point, and names with a finite decimal integer prefix (JavaScript `Number.parseInt(name, 10)` semantics). For example, `.13suffix` is accepted by this rule. Numeric-key deprecation and `.native` migration diagnostics belong to separate rules.":
-    "不受支持的修饰符会在各自名称的位置被单独报告，包括长格式 `v-on:click`、动态事件参数和监听器对象语法中的修饰符。接受的名称与 `eslint-plugin-vue` 10.9.2 一致：Vue 内置的事件修饰符、完整的按键别名表、任意单个 Unicode 码点，以及带有有限十进制整数前缀的名称（遵循 JavaScript 的 `Number.parseInt(name, 10)` 语义）。例如，此规则接受 `.13suffix`。数字键码的弃用诊断和 `.native` 的迁移诊断由其他规则负责。",
-  "Only `.stop` and `.prevent` provide behavior without a handler. A modifier such as `.once`, `.enter`, or a configured custom name still needs a handler expression.":
-    "只有 `.stop` 和 `.prevent` 在没有处理器时也能产生行为。`.once`、`.enter` 或配置的自定义名称等修饰符仍然需要处理器表达式。",
-  "Projects with custom event handling can add names under `linter.ruleOptions`:":
-    "使用自定义事件处理的项目可以在 `linter.ruleOptions` 下添加名称：",
-  'This allows `@click.custom="handler"`. Names are exact and case-sensitive; options supplement the built-in names and do not enable a disabled rule. Scoped config entries can replace inherited names with a new list or reset them with `[]`.':
-    '这允许使用 `@click.custom="handler"`。名称必须精确匹配且区分大小写；这些选项补充内置名称，不会启用已禁用的规则。限定作用范围的配置条目可以用新列表替换继承的名称，或用 `[]` 将其重置。',
-  "The keyboard table is adapted from the MIT-licensed [eslint-plugin-vue keyboard aliases](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/key-aliases.json). Its source and license are preserved alongside the implementation.":
-    "按键表改编自采用 MIT 许可证的 [eslint-plugin-vue 按键别名](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/key-aliases.json)。其源代码和许可证与实现一同保留。",
-  "## When handlers overlap": "## 处理器何时会重叠",
+  "Unsupported modifiers are reported individually at their names, including on long-form `v-on:click`, dynamic arguments and object listener syntax. Accepted names match `eslint-plugin-vue` 10.9.2: Vue's built-in modifiers, the complete keyboard alias table, any single Unicode code point, and names with a finite decimal integer prefix (`Number.parseInt(name, 10)` semantics). For example, `.13suffix` is accepted. Numeric-key deprecation and `.native` migration belong to separate rules.":
+    "不支持的修饰符会逐个在其名称处报告，完整形式的 `v-on:click`、动态参数和对象监听器语法也会检查。接受的名称与 `eslint-plugin-vue` 10.9.2 一致：Vue 内置修饰符、完整的键盘别名表、任意单个 Unicode 码点，以及具有有限十进制整数前缀的名称（按 `Number.parseInt(name, 10)` 的语义解析）。例如，`.13suffix` 是有效名称。数字按键的弃用和 `.native` 的迁移由其他规则检查。",
+  "Only `.stop` and `.prevent` allow an omitted handler. `.once`, `.enter` and configured custom names still need a handler. Add custom names under `vue.linter.ruleOptions`:":
+    "只有 `.stop` 和 `.prevent` 允许省略处理器。`.once`、`.enter` 和配置的自定义名称仍然需要处理器。在 `vue.linter.ruleOptions` 中添加自定义名称：",
+  'This permits `@click.custom="handler"`. Names are exact and case-sensitive; options supplement the built-in names and do not enable a disabled rule. Scoped entries can replace inherited names or reset them with `[]`.':
+    '此设置允许 `@click.custom="handler"`。名称按原样匹配且区分大小写；选项补充内置名称，不会启用已禁用的规则。作用域条目可以替换继承的名称，或用 `[]` 清空它们。',
+  "The keyboard table is adapted from the MIT-licensed [eslint-plugin-vue keyboard aliases](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/key-aliases.json); its source and license are preserved alongside the implementation.":
+    "键盘别名表改编自采用 MIT 许可证的 [eslint-plugin-vue keyboard aliases](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/key-aliases.json)；原始源码和许可证随实现一同保留。",
   "The rule compares listeners for the same event on a native element. It ignores custom component events unless both listeners use `.native`. Different event names and disjoint keyboard filters do not conflict.":
     "此规则比较原生元素上同一事件的监听器。对于自定义组件事件，只有两个监听器都使用 `.native` 时才进行检查。事件名称不同或按键过滤器没有共同按键时，不会发生冲突。",
   "System modifiers are required keys, so `@keydown.alt.shift` also accepts Ctrl+Alt+Shift. If a second handler uses `@keydown.alt.ctrl.shift`, add `.exact` to the broader handler to keep those actions separate. `.exact` permits its declared system modifiers and rejects additional Ctrl, Shift, Alt or Meta keys.":
     "系统修饰符指定必须按下的按键，因此 `@keydown.alt.shift` 也接受 Ctrl+Alt+Shift。如果另一个处理器使用 `@keydown.alt.ctrl.shift`，请为匹配范围更广的处理器添加 `.exact`，以区分这些操作。`.exact` 允许其声明的系统修饰符，并拒绝额外的 Ctrl、Shift、Alt 或 Meta 键。",
   "Multiple keyboard modifiers are alternatives: `@keydown.up.down` accepts either arrow key. It can overlap `@keydown.ctrl.down` on Ctrl+ArrowDown. The rule reports the directive key that needs `.exact`, excluding its handler expression.":
     "多个键盘修饰符表示备选项：`@keydown.up.down` 接受上、下两个方向键中的任意一个。按下 Ctrl+下方向键时，它可能与 `@keydown.ctrl.down` 重叠。规则报告需要 `.exact` 的指令键，不包括其处理器表达式。",
+  'The first decimal-prefix numeric modifier determines the finding. `@keyup.13.27="submit"` reports only `13` and offers `@keyup.enter.27="submit"`; another fix pass can replace `27` with `escape`. `@keyup.13suffix="submit"` also becomes `@keyup.enter="submit"`. Values 0–9 are exempt, so `@keyup.0.13="submit"` is clean under this rule. Unknown values such as `999` report without a fix. The existing Vue 2 and petite-vue exemption remains in effect.':
+    '首个名称带十进制整数前缀的数值修饰符决定诊断结果。`@keyup.13.27="submit"` 只报告 `13`，并提供修复结果 `@keyup.enter.27="submit"`；再次修复可以将 `27` 替换为 `escape`。`@keyup.13suffix="submit"` 也会变为 `@keyup.enter="submit"`。0–9 不在检查范围内，因此 `@keyup.0.13="submit"` 不会触发此规则。`999` 等未知值会被报告，但不提供修复。现有的 Vue 2 和 petite-vue 豁免仍然有效。',
+  "## Numeric selection and fixes": "## 数值修饰符的选择与修复",
+  "## Modifier validation": "## 修饰符验证",
+  "Unsupported modifiers are reported individually at the modifier name, including on long-form `v-on:click`, dynamic event arguments, and object listener syntax. The accepted names match `eslint-plugin-vue` 10.9.2: Vue's built-in event modifiers, the complete keyboard alias table, any single Unicode code point, and names with a finite decimal integer prefix (JavaScript `Number.parseInt(name, 10)` semantics). For example, `.13suffix` is accepted by this rule. Numeric-key deprecation and `.native` migration diagnostics belong to separate rules.":
+    "不受支持的修饰符会在各自名称的位置被单独报告，包括长格式 `v-on:click`、动态事件参数和监听器对象语法中的修饰符。接受的名称与 `eslint-plugin-vue` 10.9.2 一致：Vue 内置的事件修饰符、完整的按键别名表、任意单个 Unicode 码点，以及带有有限十进制整数前缀的名称（遵循 JavaScript 的 `Number.parseInt(name, 10)` 语义）。例如，此规则接受 `.13suffix`。数字键码的弃用诊断和 `.native` 的迁移诊断由其他规则负责。",
+  "Only `.stop` and `.prevent` provide behavior without a handler. A modifier such as `.once`, `.enter`, or a configured custom name still needs a handler expression.":
+    "只有 `.stop` 和 `.prevent` 在没有处理器时也能产生行为。`.once`、`.enter` 或配置的自定义名称等修饰符仍然需要处理器表达式。",
+  'This allows `@click.custom="handler"`. Names are exact and case-sensitive; options supplement the built-in names and do not enable a disabled rule. Scoped config entries can replace inherited names with a new list or reset them with `[]`.':
+    '这允许使用 `@click.custom="handler"`。名称必须精确匹配且区分大小写；这些选项补充内置名称，不会启用已禁用的规则。限定作用范围的配置条目可以用新列表替换继承的名称，或用 `[]` 将其重置。',
+  "The keyboard table is adapted from the MIT-licensed [eslint-plugin-vue keyboard aliases](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/key-aliases.json). Its source and license are preserved alongside the implementation.":
+    "按键表改编自采用 MIT 许可证的 [eslint-plugin-vue 按键别名](https://github.com/vuejs/eslint-plugin-vue/blob/v10.9.2/lib/utils/key-aliases.json)。其源代码和许可证与实现一同保留。",
+  "## When handlers overlap": "## 处理器何时会重叠",
   "The check compares `v-for`, `v-slot` (including `#name`), and legacy scoped-slot bindings within the template. It reports the identifier that hides an earlier binding, including declarations on the same element in attribute order. Sibling elements have independent scopes. Property keys and default-value references are not declarations, and `v-pre` makes its subtree inert.":
     "此检查比较模板内的 `v-for`、`v-slot`（包括 `#name`）和旧式作用域插槽绑定。它报告遮蔽先前绑定的标识符，也包括按属性顺序比较的同一元素上的声明。兄弟元素具有独立的作用域。属性键和默认值中的引用不属于声明，`v-pre` 会使其子树不参与检查。",
   "Script and component property names are outside the current check: a single template binding does not produce a warning merely because a script binding has the same name. Diagnostic ranges cover the authored identifier, including escaped spellings and HTML entities.":
     "脚本和组件属性的名称不在当前检查范围内：单个模板绑定不会仅仅因为与脚本绑定同名就产生警告。诊断范围覆盖源代码中实际编写的标识符，包括转义写法和 HTML 实体。",
-};
+  "Projects with custom event handling can add names under `vue.linter.ruleOptions`:":
+    "使用自定义事件处理的项目可以在 `vue.linter.ruleOptions` 下添加名称：",
+} satisfies Record<string, string>;

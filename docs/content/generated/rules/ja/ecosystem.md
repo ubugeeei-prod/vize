@@ -44,8 +44,8 @@ Nuxt の内部リンクに NuxtLink を使います。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/nuxt-prefer-nuxt-link": "warn"
@@ -105,8 +105,8 @@ Pinia store の分割代入に storeToRefs() を使います。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/pinia-prefer-store-to-refs": "warn"
@@ -169,8 +169,8 @@ SFC の単一ルート要素がリンクである場合、親から属性を継�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/router-link-require-to": "error"
@@ -230,8 +230,8 @@ Void Vue の Link に href を指定します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/void-link-require-href": "error"
@@ -299,8 +299,8 @@ Void Vue の Link に有効な静的 method を指定します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/void-link-valid-method": "warn"
@@ -368,8 +368,8 @@ SFC 内の翻訳データに存在しない静的キーを検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-i18n-no-missing-key": "warn"
@@ -433,8 +433,8 @@ RouterLink の文字列パスを名前付きルートの指定に置き換えま
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-router-prefer-named-link": "warn"
@@ -494,8 +494,8 @@ Vue Router のプログラムによる移動に名前付きルートを使いま
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-router-prefer-named-push": "warn"
@@ -555,8 +555,8 @@ wrapper.html() 全体の snapshot に依存するテストを検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ecosystem/vue-test-utils-no-html-snapshot": "warn"
@@ -616,8 +616,8 @@ Nuxt 設定の test キーに旧形式の真偽値を指定する箇所を検出
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/no-nuxt-config-test-key": "error"
@@ -677,8 +677,8 @@ definePageMeta の即時評価部分で実行時コンテキストを使う箇�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/no-page-meta-runtime-values": "error"
@@ -738,8 +738,8 @@ Nuxt 設定のプロパティを推奨順に並べます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/nuxt-config-keys-order": "error"
@@ -799,8 +799,8 @@ Nuxt の環境フラグを process.* から import.meta.* に置き換えます�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "nuxt/prefer-import-meta": "error"

@@ -20,8 +20,8 @@ Options API の computed プロパティをメソッドとして呼ぶ箇所を�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-use-computed-property-like-method": "error"

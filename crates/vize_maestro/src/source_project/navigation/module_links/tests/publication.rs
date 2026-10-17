@@ -260,9 +260,13 @@ fn module_link_consumer_input_retirement_with_retained_server_state_refuses_held
 #[test]
 fn module_link_consumer_actual_checker_load_origin_and_config_aba_guard_original_operands() {
     let (_dir, root, uri, state, project) = project("import './child.ts';");
-    let path = root.join("vize.config.json");
+    let path = root.join("vite.config.mjs");
     let first = r#"{"typeChecker":{"strict":true,"lspRequestTimeoutMs":91000}}"#;
-    std::fs::write(&path, first).unwrap();
+    std::fs::write(
+        &path,
+        vize_l0::cstr!("export default {{ vue: {} }};", first).as_bytes(),
+    )
+    .unwrap();
     state.load_workspace_config(&root);
     let ready = ready(&project, &uri);
     let context = ready.capture_current_module_link_context().unwrap();
@@ -292,11 +296,15 @@ fn module_link_consumer_actual_checker_load_origin_and_config_aba_guard_original
         .unwrap();
     std::fs::write(
         &path,
-        r#"{"typeChecker":{"strict":false,"lspRequestTimeoutMs":72000}}"#,
+        r#"export default { vue: {"typeChecker":{"strict":false,"lspRequestTimeoutMs":72000}} };"#,
     )
     .unwrap();
     state.load_workspace_config(&root);
-    std::fs::write(&path, first).unwrap();
+    std::fs::write(
+        &path,
+        vize_l0::cstr!("export default {{ vue: {} }};", first).as_bytes(),
+    )
+    .unwrap();
     state.load_workspace_config(&root);
     let mut published = false;
     assert!(matches!(

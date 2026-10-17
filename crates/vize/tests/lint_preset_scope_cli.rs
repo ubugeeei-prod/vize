@@ -1,11 +1,22 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+use sha2::{Digest, Sha256};
 use std::{
     fs,
     path::{Path, PathBuf},
     process::Command,
 };
+
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
+fn digest(bytes: &[u8]) -> String {
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
 
 fn temp_project_dir(test_name: &str) -> PathBuf {
     let nonce = std::time::SystemTime::now()
@@ -193,29 +204,38 @@ fn six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_pac
                     config["linter"]["rules"] =
                         serde_json::json!({(case["rule"].as_str().unwrap()): "off"});
                 }
-                write_project_file(
-                    project.path(),
-                    "vize.config.json",
-                    &serde_json::to_string(&config).unwrap(),
-                );
+                let original_config = serde_json::to_vec(&config).unwrap();
+                let carrier = vite_config::source(&original_config);
+                write_project_file(project.path(), "vite.config.mjs", &carrier);
+                let argv = [
+                    "lint",
+                    "--config",
+                    "vite.config.mjs",
+                    "--format",
+                    "json",
+                    "--locale",
+                    "en",
+                    filename,
+                ];
+                let mut historical_argv = argv;
+                historical_argv[2] = "vize.config.json";
                 let output = Command::new(env!("CARGO_BIN_EXE_vize"))
                     .current_dir(project.path())
-                    .args([
-                        "lint",
-                        "--config",
-                        "vize.config.json",
-                        "--format",
-                        "json",
-                        "--locale",
-                        "en",
-                        filename,
-                    ])
+                    .args(argv)
                     .output()
                     .unwrap();
                 commands += 1;
                 receipts.push(serde_json::json!({
                     "case": case["id"], "preset": preset, "mode": mode,
                     "source": source, "config": config,
+                    "sourceSha256": digest(source.as_bytes()),
+                    "argv": argv, "historicalArgv": historical_argv,
+                    "originalConfigBytes": original_config,
+                    "originalConfigSha256": digest(&original_config),
+                    "configIdentity": {"historical": "vize.config.json", "current": "vite.config.mjs"},
+                    "configBytes": carrier.as_bytes(),
+                    "configSha256": digest(carrier.as_bytes()),
+                    "configAfterBytes": fs::read(project.path().join("vite.config.mjs")).unwrap(),
                     "status": output.status.code(),
                     "stdoutBytes": &output.stdout, "stderrBytes": &output.stderr
                 }));
@@ -272,6 +292,10 @@ fn six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_pac
                 assert_eq!(
                     fs::read_to_string(project.path().join(filename)).unwrap(),
                     source
+                );
+                assert_eq!(
+                    fs::read_to_string(project.path().join("vite.config.mjs")).unwrap(),
+                    carrier
                 );
             }
         }

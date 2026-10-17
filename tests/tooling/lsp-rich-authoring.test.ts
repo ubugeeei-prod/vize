@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -62,8 +63,8 @@ for (const [surface, source] of Object.entries(surfaces)) {
         include: ["*.vue", "*.tsx"],
       }),
     );
-    fs.writeFileSync(
-      path.join(directory, "vize.config.json"),
+    writeVueConfigFixture(
+      directory,
       JSON.stringify({
         lsp: { editor: true, typecheck: true, lint: false },
         typeChecker: { jsxTypecheck: true },

@@ -32,11 +32,13 @@ export function prepareWorkspace(workspace, files) {
   fs.symlinkSync(resolveVuePackagePath(), path.join(workspace, "node_modules/vue"), "junction");
   const corsaPath = resolveCorsaPath();
   fs.writeFileSync(
-    path.join(workspace, "vize.config.json"),
-    JSON.stringify({
-      lsp: { editor: true, ecosystem: true, lint: true, typecheck: true },
-      typeChecker: { corsaPath },
-    }),
+    path.join(workspace, "vite.config.mjs"),
+    `export default ${JSON.stringify({
+      vue: {
+        languageServer: { editor: true, ecosystem: true, lint: true, typecheck: true },
+        typeChecker: { corsaPath, jsxTypecheck: false },
+      },
+    })};\n`,
   );
   fs.writeFileSync(
     path.join(workspace, "tsconfig.json"),

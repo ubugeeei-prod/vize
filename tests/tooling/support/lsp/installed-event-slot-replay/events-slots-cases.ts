@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { utf16Position } from "../installed-alias-replay/apply.ts";
+import { originalVueConfigFixtureSource } from "../../vue-config-source-custody.ts";
 
 type ObjectValue = Record<string, unknown>;
 type Family = "event" | "slot" | "quoted-slot";
@@ -158,7 +159,7 @@ export function loadEventSlotCases(repositoryRoot: string): readonly EventSlotCa
   }
   for (const [file, expectedSha] of Object.entries(originalLawShas))
     assert.equal(
-      sha(fs.readFileSync(path.join(repositoryRoot, file))),
+      sha(originalVueConfigFixtureSource(file, fs.readFileSync(path.join(repositoryRoot, file)))),
       expectedSha,
       `original law SHA: ${file}`,
     );

@@ -27,7 +27,7 @@ fn validate_explicit_config_path_missing_errors() {
 #[test]
 fn validate_explicit_config_path_malformed_errors() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(&config_path, "this is { not valid json ===").unwrap();
 
     let result = validate_explicit_config_path(&config_path);
@@ -41,7 +41,7 @@ fn validate_explicit_config_path_malformed_errors() {
 #[test]
 fn validate_explicit_config_path_valid_ok() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(&config_path, r#"{ "formatter": { "singleQuote": true } }"#).unwrap();
 
     assert!(validate_explicit_config_path(&config_path).is_ok());
@@ -51,8 +51,8 @@ fn validate_explicit_config_path_valid_ok() {
 fn validate_explicit_config_path_dir_with_config_ok() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{ "formatter": {} }"#,
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: { formatter: {} } };"#,
     )
     .unwrap();
 
@@ -66,7 +66,7 @@ fn validate_explicit_config_path_empty_dir_errors() {
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
-        format!("no vize config file found under {}", dir.path().display())
+        format!("no Vite config file found under {}", dir.path().display())
     );
 }
 
@@ -84,7 +84,7 @@ fn load_config_uses_explicit_file_path() {
 #[test]
 fn load_config_reads_dialect_key() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(&config_path, r#"{ "dialect": "petite-vue" }"#).unwrap();
 
     let loaded = load_config_with_source(Some(&config_path));
@@ -97,7 +97,7 @@ fn load_config_reads_dialect_key() {
 #[test]
 fn load_config_defaults_dialect_to_unset() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(&config_path, r#"{ "formatter": { "singleQuote": true } }"#).unwrap();
 
     let loaded = load_config_with_source(Some(&config_path));
@@ -107,7 +107,7 @@ fn load_config_defaults_dialect_to_unset() {
 #[test]
 fn load_compiler_vue_version_reads_vue_version_key() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(&config_path, r#"{ "vue": { "version": "2" } }"#).unwrap();
 
     assert_eq!(
@@ -119,7 +119,7 @@ fn load_compiler_vue_version_reads_vue_version_key() {
 #[test]
 fn load_compiler_vue_version_reads_compiler_compatibility_key() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r#"{ "compiler": { "compatibility": { "vueVersion": "2.7" } } }"#,
@@ -135,7 +135,7 @@ fn load_compiler_vue_version_reads_compiler_compatibility_key() {
 #[test]
 fn load_compiler_vue_version_reads_top_level_compatibility_key() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r#"{ "compatibility": { "vueVersion": "2.7" } }"#,
@@ -151,7 +151,7 @@ fn load_compiler_vue_version_reads_top_level_compatibility_key() {
 #[test]
 fn load_compiler_vue_version_defaults_to_unset_for_vue3() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(&config_path, r#"{ "formatter": { "singleQuote": true } }"#).unwrap();
 
     // No `vue.version` key → modern Vue 3 (the absent/default dialect).
@@ -161,12 +161,12 @@ fn load_compiler_vue_version_defaults_to_unset_for_vue3() {
 #[test]
 fn load_config_uses_typescript_config() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.ts");
+    let config_path = dir.path().join("vite.config.ts");
     std::fs::write(
         &config_path,
         r#"
 export default {
-  linter: {
+  vue: { linter: {
     rules: {
       "vue/prop-name-casing": "off",
       "script/no-options-api": "error",
@@ -175,7 +175,7 @@ export default {
       "style": "off",
       "a11y": "warn",
     },
-  },
+  } },
 }
 "#,
     )
@@ -205,7 +205,7 @@ export default {
 #[test]
 fn load_linter_config_uses_common_entry_preset() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r#"{
@@ -227,7 +227,7 @@ fn load_linter_config_uses_common_entry_preset() {
 #[test]
 fn load_linter_config_keeps_root_preset_over_entry_preset() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r#"{
@@ -247,7 +247,7 @@ fn load_linter_config_keeps_root_preset_over_entry_preset() {
 #[test]
 fn load_config_entry_ignores_preserves_base_paths() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r#"{
@@ -278,7 +278,7 @@ fn load_config_entry_ignores_preserves_base_paths() {
 #[test]
 fn load_config_entry_files_preserves_base_paths() {
     let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
+    let config_path = dir.path().join("serialized-config.json");
     std::fs::write(
         &config_path,
         r#"{
@@ -312,14 +312,14 @@ fn load_config_uses_relative_typescript_file_path() {
         .join(format!("vize-config-relative-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&case_dir);
     std::fs::create_dir_all(&case_dir).unwrap();
-    let config_path = case_dir.join("vize.config.ts");
+    let config_path = case_dir.join("vite.config.ts");
     std::fs::write(
         &config_path,
         r#"
 export default {
-  formatter: {
+  vue: { formatter: {
     singleQuote: true,
-  },
+  } },
 }
 "#,
     )

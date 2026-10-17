@@ -6,8 +6,8 @@ use super::ServerState;
 fn lsp_corsa_request_bound_uses_workspace_config() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{"typeChecker":{"lspRequestTimeoutMs":90000}}"#,
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: {"typeChecker":{"lspRequestTimeoutMs":90000}} };"#,
     )
     .unwrap();
     let state = ServerState::new();
@@ -18,7 +18,11 @@ fn lsp_corsa_request_bound_uses_workspace_config() {
         state.get_type_checker_config(),
         vize_l0::config::TypeCheckerConfig::default()
     );
-    std::fs::write(dir.path().join("vize.config.json"), "{}").unwrap();
+    std::fs::write(
+        dir.path().join("vite.config.mjs"),
+        "export default { vue: {} };",
+    )
+    .unwrap();
     state.load_lsp_config(dir.path());
     assert_eq!(state.lsp_request_timeout_ms(), 60_000);
 }
@@ -28,13 +32,13 @@ fn lsp_corsa_request_bounds_are_independent_per_server() {
     let first_dir = tempfile::tempdir().unwrap();
     let second_dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        first_dir.path().join("vize.config.json"),
-        r#"{"typeChecker":{"lspRequestTimeoutMs":90000}}"#,
+        first_dir.path().join("vite.config.mjs"),
+        r#"export default { vue: {"typeChecker":{"lspRequestTimeoutMs":90000}} };"#,
     )
     .unwrap();
     std::fs::write(
-        second_dir.path().join("vize.config.json"),
-        r#"{"typeChecker":{"lspRequestTimeoutMs":120000}}"#,
+        second_dir.path().join("vite.config.mjs"),
+        r#"export default { vue: {"typeChecker":{"lspRequestTimeoutMs":120000}} };"#,
     )
     .unwrap();
 
@@ -45,7 +49,11 @@ fn lsp_corsa_request_bounds_are_independent_per_server() {
     assert_eq!(first.lsp_request_timeout_ms(), 90_000);
     assert_eq!(second.lsp_request_timeout_ms(), 120_000);
 
-    std::fs::write(first_dir.path().join("vize.config.json"), "{}").unwrap();
+    std::fs::write(
+        first_dir.path().join("vite.config.mjs"),
+        "export default { vue: {} };",
+    )
+    .unwrap();
     first.load_lsp_config(first_dir.path());
     assert_eq!(first.lsp_request_timeout_ms(), 60_000);
     assert_eq!(second.lsp_request_timeout_ms(), 120_000);
@@ -56,14 +64,14 @@ fn lsp_config_uses_one_evaluation_for_type_checker_and_timeout() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(dir.path().join("eval-count.txt"), "0").unwrap();
     std::fs::write(
-        dir.path().join("vize.config.mjs"),
+        dir.path().join("vite.config.mjs"),
         r#"
 import { readFileSync, writeFileSync } from 'node:fs';
 const counter = new URL('./eval-count.txt', import.meta.url);
 export default () => {
   const count = Number(readFileSync(counter, 'utf8')) + 1;
   writeFileSync(counter, String(count));
-  return { typeChecker: { strict: count === 1, lspRequestTimeoutMs: count === 1 ? 90000 : 120000 } };
+  return { vue: { typeChecker: { strict: count === 1, lspRequestTimeoutMs: count === 1 ? 90000 : 120000 } } };
 };
 "#,
     )
@@ -100,7 +108,11 @@ fn patterned_template_opt_in_is_reloaded_by_both_config_loaders() {
             (r#"{"experimentals":{"patternedTemplate":{}}}"#, true),
             ("{}", false),
         ] {
-            std::fs::write(dir.path().join("vize.config.json"), config).unwrap();
+            std::fs::write(
+                dir.path().join("vite.config.mjs"),
+                vize_l0::cstr!("export default {{ vue: {} }};", config).as_bytes(),
+            )
+            .unwrap();
             load(&state, dir.path());
             assert_eq!(state.patterned_template_enabled(), expected);
         }
@@ -111,8 +123,8 @@ fn patterned_template_opt_in_is_reloaded_by_both_config_loaders() {
 fn language_server_legacy_vue2_reaches_logged_lsp_feature_payload() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: {
           "languageServer": {
             "enabled": true,
             "lint": true,
@@ -125,7 +137,7 @@ fn language_server_legacy_vue2_reaches_logged_lsp_feature_payload() {
             "optionsApi": true,
             "tsconfig": "tsconfig.vize.json"
           }
-        }"#,
+        } };"#,
     )
     .unwrap();
 
@@ -157,13 +169,13 @@ fn language_server_legacy_vue2_reaches_logged_lsp_feature_payload() {
 fn disabled_language_server_clears_logged_legacy_vue2_feature() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: {
           "languageServer": {
             "enabled": false,
             "legacyVue2": true
           }
-        }"#,
+        } };"#,
     )
     .unwrap();
 
@@ -190,8 +202,8 @@ fn disabled_language_server_clears_logged_legacy_vue2_feature() {
 fn both_config_loaders_preserve_exact_template_globals() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: {
           "globalTypes": {
             "currentRoute": {
               "type": "{ path: string }",
@@ -199,7 +211,7 @@ fn both_config_loaders_preserve_exact_template_globals() {
             },
             "toThousandFilter": "(value: number) => string"
           }
-        }"#,
+        } };"#,
     )
     .unwrap();
 
@@ -244,8 +256,8 @@ fn vue_version_2_7_alone_enables_legacy_lowering() {
     // accepts under the identical config (#3297).
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{ "vue": { "version": "2.7" } }"#,
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: { "version":"2.7" } };"#,
     )
     .unwrap();
 
@@ -267,8 +279,8 @@ fn vue_version_2_7_alone_enables_legacy_lowering() {
 fn compiler_compatibility_vue_version_2_alone_enables_legacy_lowering() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{ "compiler": { "compatibility": { "vueVersion": "2" } } }"#,
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: { "compiler": { "compatibility": { "vueVersion": "2" } } } };"#,
     )
     .unwrap();
 
@@ -286,8 +298,8 @@ fn compiler_compatibility_vue_version_2_alone_enables_legacy_lowering() {
 fn vue_version_3_keeps_legacy_lowering_disabled() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{ "vue": { "version": "3" } }"#,
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: { "version":"3" } };"#,
     )
     .unwrap();
 

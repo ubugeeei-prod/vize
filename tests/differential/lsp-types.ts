@@ -1,3 +1,5 @@
+import type { LspWorkspaceEvidence } from "./lsp-workspace.ts";
+
 export type JsonRpcMessage = {
   jsonrpc: string;
   id?: number;
@@ -67,6 +69,7 @@ export type LspRow = {
     verdict: string;
     comparator: string;
     observation?: WireObservation;
+    workspace?: LspWorkspaceEvidence;
     responses?: ResponseComparison[];
     error?: string;
   };

@@ -26,17 +26,18 @@ mod tests {
     #[test]
     fn reads_lib_section_from_json_config() {
         let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("serialized-config.json");
         std::fs::write(
-            directory.path().join("vize.config.json"),
+            &path,
             r#"{ "lib": { "dir": "src/vendor", "composableDir": "src/use" } }"#,
         )
         .unwrap();
 
-        let loaded = load_lib_config_with_source(Some(directory.path()));
+        let loaded = load_lib_config_with_source(Some(&path));
 
         assert_eq!(loaded.config.dir.as_deref(), Some("src/vendor"));
         assert_eq!(loaded.config.dir_for_kind("composable"), Some("src/use"));
-        assert!(loaded.source_path.is_some());
+        assert_eq!(loaded.source_path.as_deref(), Some(path.as_path()));
     }
 
     #[test]

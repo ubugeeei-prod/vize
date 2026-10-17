@@ -1,3 +1,4 @@
+import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -61,8 +62,19 @@ await test("whole original bind-style diagnostics have configured fixes and supp
   }
   const output = createCaptureOutput(root, process.env.VIZE_BIND_STYLE_OUTPUT);
   const workspace = fs.realpathSync(fs.mkdtempSync(path.join(output, "original-project-")));
-  for (const name of ["vize.config.json", "tsconfig.json"])
-    fs.copyFileSync(path.join(fixture, name), path.join(workspace, name));
+  fs.copyFileSync(path.join(fixture, "tsconfig.json"), path.join(workspace, "tsconfig.json"));
+  if (publicAuthority) {
+    // The pinned 0.434 observer retains its historical carrier contract.
+    fs.copyFileSync(
+      path.join(fixture, "vize.config.json"),
+      path.join(workspace, "vize.config.json"),
+    );
+  } else {
+    writeVueConfigFixture(
+      workspace,
+      fs.readFileSync(path.join(fixture, "vize.config.json"), "utf8"),
+    );
+  }
   fs.writeFileSync(path.join(workspace, "Parent.vue"), parent);
   fs.writeFileSync(path.join(workspace, "Child.vue"), child);
   fs.writeFileSync(
@@ -97,8 +109,14 @@ await test("whole original bind-style diagnostics have configured fixes and supp
   let awaitObservedClosure: (() => Promise<void>) | undefined;
   let session: import("./support/lsp/session.ts").LspSession | undefined;
   try {
-    compareCliFixes(binary, fixture, output, rows, save, (project) =>
-      prepareProviders(root, project, Boolean(publicAuthority)),
+    compareCliFixes(
+      binary,
+      fixture,
+      output,
+      rows,
+      save,
+      (project) => prepareProviders(root, project, Boolean(publicAuthority)),
+      Boolean(publicAuthority),
     );
     const capture = path.join(output, "literal-original");
     fs.mkdirSync(capture, { recursive: true });

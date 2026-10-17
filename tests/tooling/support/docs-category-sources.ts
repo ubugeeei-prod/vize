@@ -93,7 +93,7 @@ export function verifyCompleteCategorySources(root: string) {
         "vize lint --cross-file",
         "vize:croquis/cf/*",
         "croquis/cf/*",
-        "lint.vize.rules",
+        "vue.linter.rules",
         "vize:",
       ])
         assert(catalogue.includes(`\`${token}\``), `${file}: complete public CLI guidance`);

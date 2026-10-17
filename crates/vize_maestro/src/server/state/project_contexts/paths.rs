@@ -77,8 +77,12 @@ mod tests {
         let alias = fixture.path().join("editor");
         let package = root.join("packages/a");
         std::fs::create_dir_all(package.join("src")).unwrap();
-        let config = package.join("vize.config.json");
-        std::fs::write(&config, r#"{"lsp":{"hover":false}}"#).unwrap();
+        let config = package.join("vite.config.mjs");
+        std::fs::write(
+            &config,
+            r#"export default { vue: {"languageServer":{"hover":false}} };"#,
+        )
+        .unwrap();
         std::os::unix::fs::symlink(&root, &alias).unwrap();
         let owner = Arc::new(ServerState::new());
         owner.set_workspace_root(alias.clone());
@@ -89,7 +93,11 @@ mod tests {
             .open(uri.clone(), "<template />".into(), 1, "vue".into());
         let previous = owner.document_project_state(&uri).unwrap();
         assert!(!previous.lsp_features().hover);
-        std::fs::write(&config, r#"{"lsp":{"hover":true}}"#).unwrap();
+        std::fs::write(
+            &config,
+            r#"export default { vue: {"languageServer":{"hover":true}} };"#,
+        )
+        .unwrap();
         assert_eq!(
             owner.observe_project_config_events(&[FileEvent {
                 uri: Url::from_file_path(physical_path(&config)).unwrap(),

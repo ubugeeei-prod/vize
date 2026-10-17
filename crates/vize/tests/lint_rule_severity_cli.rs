@@ -1,6 +1,8 @@
 #![cfg(test)]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{fs, path::Path, process::Command};
 
 fn write_file(root: &Path, path: &str, content: &str) {
@@ -24,8 +26,9 @@ fn lint_config_rule_severity_override_applies_to_builtin_script_rules() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "ecosystem",
     "rules": {
@@ -33,6 +36,7 @@ fn lint_config_rule_severity_override_applies_to_builtin_script_rules() {
     }
   }
 }"#,
+        ),
     );
     write_file(
         project_root.path(),
@@ -52,7 +56,7 @@ const handleStepClick = (stepIndex: number) => {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/AfsStepperDialog.vue",
@@ -83,8 +87,9 @@ fn lint_config_category_severity_applies_to_builtin_script_rules() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "nuxt",
     "categories": {
@@ -97,6 +102,7 @@ fn lint_config_category_severity_applies_to_builtin_script_rules() {
     }
   }
 }"#,
+        ),
     );
     write_file(
         project_root.path(),
@@ -109,7 +115,7 @@ fn lint_config_category_severity_applies_to_builtin_script_rules() {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "nuxt.config.ts",
@@ -140,8 +146,9 @@ fn quiet_lint_reduces_warning_totals_and_preserves_max_warnings_exit() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "ecosystem",
     "rules": {
@@ -149,6 +156,7 @@ fn quiet_lint_reduces_warning_totals_and_preserves_max_warnings_exit() {
     }
   }
 }"#,
+        ),
     );
     let source = r#"<script setup lang="ts">
 const emit = defineEmits(["update:current-step-index"])
@@ -164,7 +172,7 @@ emit("update:current-step-index", 1)
             "lint",
             "--quiet",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--max-warnings",
             "0",
             "src/*.vue",
@@ -185,8 +193,9 @@ fn lint_applies_entry_rule_severity_only_to_matching_files() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "ecosystem",
     "rules": { "script/custom-event-name-casing": "error" }
@@ -197,6 +206,7 @@ fn lint_applies_entry_rule_severity_only_to_matching_files() {
     "linter": { "rules": { "script/custom-event-name-casing": "warn" } }
   }]
 }"#,
+        ),
     );
     let source = r#"<script setup lang="ts">
 const emit = defineEmits(["update:current-step-index"])
@@ -212,7 +222,7 @@ emit("update:current-step-index", 1)
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/**/*.vue",

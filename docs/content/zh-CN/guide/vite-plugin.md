@@ -66,13 +66,13 @@ export default defineConfig({
 
 ## 共享原生设置
 
-Vite+ 使用集成的 `compiler` 字段；普通 Vite 使用插件的直接选项。CLI 和编辑器共用的原生设置放在同一 Vite 配置的顶层 `vize` 对象中；[配置指南](./configuration.md)介绍语法、发现规则和版本可用性。专用格式仍可按需使用。
+将共享原生设置放在 `vite.config.*` 的 `vue:` 中。Vite+ 可以使用 `defineConfig(vpConfig).withVue(vueConfig)` 保留现有配置；普通 Vite 也可以直接传入插件选项。CLI 和编辑器读取同一份 Vue 设置；语法和文件发现规则见[配置指南](./configuration.md)。
 
 <span id="compiler-options"></span>
 
 ## 编译器选项
 
-直接传给 `vize()` 的选项优先，然后是内联 `config`、发现的项目设置和默认值。同目录的 `vize.config.*` 优先于 Vite 配置。`config: false` 禁用自动发现。
+直接传给 `vize()` 的选项优先，然后是内联 `config`、发现的项目设置和默认值。共享设置使用 Vite 配置中的 `vue:`；专用的 `vize.config.*` 已不再受支持。`config: false` 禁用自动发现。
 
 ```ts
 vize({

@@ -139,12 +139,15 @@ mod tests {
             r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"bundler","noEmit":true},"include":["*.ts"]}"#,
         ).unwrap();
         std::fs::write(
-            project.path().join("vize.config.json"),
-            serde_json::json!({
-                "lsp": {"lint": false, "typecheck": true},
-                "typeChecker": {"corsaPath": corsa_path}
-            })
-            .to_string(),
+            project.path().join("vite.config.mjs"),
+            vize_l0::cstr!(
+                "export default {{ vue: {} }};",
+                serde_json::json!({
+                    "languageServer": {"lint": false, "typecheck": true},
+                    "typeChecker": {"corsaPath": corsa_path}
+                })
+            )
+            .as_bytes(),
         )
         .unwrap();
         let source = include_str!(concat!(

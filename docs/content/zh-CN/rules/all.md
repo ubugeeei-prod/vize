@@ -8,7 +8,7 @@ title: "全部规则"
 
 66 个项目条目链接到跨文件规则页面中的完整共享文件以及错误和正确示例。60 个分析器代码保留其实际支持边界：19 个 CLI 代码（18 对已验证的源代码示例，以及一个保留响应式图的说明性项目）、16 个该 CLI 阶段不会单独输出的实验性 Rust 分析器代码，以及 25 个当前没有生成器的契约。配置 ID 不会启用尚不可用的生成器。
 
-公共 CLI 可通过 `vize lint --cross-file` 执行同一检查。显示的 `vize:croquis/cf/*` 代码在 `lint.vize.rules` 中写为 `croquis/cf/*`（省略 `vize:`）。信息和提示诊断会转换为 CLI 警告。相关位置说明来源与消费者之间的关系。
+公共 CLI 可通过 `vize lint --cross-file` 执行同一检查。显示的 `vize:croquis/cf/*` 代码在 `vue.linter.rules` 中写为 `croquis/cf/*`（省略 `vize:`）。信息和提示诊断会转换为 CLI 警告。相关位置说明来源与消费者之间的关系。
 
 <span id="所有铜绿统治"></span>
 <span id="分类"></span>

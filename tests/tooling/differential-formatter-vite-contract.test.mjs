@@ -12,11 +12,15 @@ import {
   publicIdentity,
   expectedPublic,
   publicCoreReference,
+  publicStrings,
+  assertMetadata,
 } from "../differential/formatter-vite-public.mjs";
 import { originalViteArchives } from "../differential/formatter-vite-source-family.mjs";
 import {
   originalViteInputs,
   viteConfigurationPlans,
+  migrateViteConfigSource,
+  expectedViteNativeConfig,
 } from "../differential/formatter-vite-source.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -178,3 +182,52 @@ void test("declared CLI loader observation forwards real return and identical th
 });
 
 import * as requireCrypto from "node:crypto";
+
+void test("active history inputs migrate namespaces while archived inheritance remains evidence", () => {
+  const original = originalViteInputs(root);
+  const base = migrateViteConfigSource(original.inherited.base);
+  const own = migrateViteConfigSource(original.inherited.own);
+  assert.equal(base.lint.vue.preset, "essential");
+  assert.equal(own.lint.vue.typecheck, false);
+  assert.equal(own.fmt.vue.tabWidth, 4);
+  assert.ok(Object.hasOwn(original.inherited.own, "extends"));
+  assert.ok(!Object.hasOwn(own, "extends"));
+  assert.ok(!Object.hasOwn(base, "vize"));
+  const inherited = viteConfigurationPlans(root).at(-1);
+  const expected = expectedViteNativeConfig(inherited, "/authored/project");
+  assert.equal(expected.entries.length, 1);
+  assert.equal(expected.__vizeProjectRoot, "/authored/project");
+  assert.equal(expected.entries[0].__vizeProjectRoot, "/authored/project");
+  assert.deepEqual(expected.typeChecker, { jsxTypecheck: true, strict: true });
+  assert.deepEqual(expected.formatter, { singleQuote: true, tabWidth: 4 });
+});
+
+void test("all migrated public snapshots keep the independently authored Vite and task oracles", async () => {
+  const { defineConfig } = await import("../../npm/builder/vite/src/vite-plus.ts");
+  const { taskConfigKey, sourceConfigKey } =
+    await import("../../npm/builder/vite/src/vite-plus/types.ts");
+  const require = createRequire(path.join(root, "npm/builder/vite/package.json"));
+  const { mergeConfig } = require("vite-plus");
+  for (const fixture of viteConfigurationPlans(root)) {
+    const source = fixture.base
+      ? mergeConfig(
+          mergeConfig(
+            migrateViteConfigSource(fixture.base),
+            migrateViteConfigSource(fixture.promisedBase),
+          ),
+          migrateViteConfigSource(fixture.source),
+        )
+      : migrateViteConfigSource(fixture.source);
+    const result = await defineConfig(
+      source,
+      fixture.integration,
+    )({ command: "build", mode: "production" });
+    assert.deepEqual(
+      publicStrings(observePublic(result).snapshot),
+      expectedPublic(fixture),
+      fixture.id,
+    );
+    assertMetadata(result[taskConfigKey], fixture, {});
+    assert.equal(result[sourceConfigKey], source);
+  }
+});

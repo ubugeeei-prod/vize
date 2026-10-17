@@ -20,33 +20,64 @@ export default defineConfig({});
 
 既存の Vue plugin の import と `vue()` を削除します。
 [移行ガイド](./migration.md)にそのまま使える差分を記載しています。
-統合のタスクだけを使う場合、別の `vize.config.ts` は不要です。
+CLI、エディタ、統合タスクは `vite.config.*` と `tsconfig.json` を共有します。
 
 ## 設定
 
 ```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { defineConfig, type VueConfigObject } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  compiler: { sourceMap: true },
-  typecheck: { strict: true },
+const vpConfig = {
+  server: { port: 3000 },
   lint: {
-    vize: {
-      preset: "essential",
-      rules: { "vue/no-v-html": "error" },
-      locale: "ja",
-      helpLevel: "short",
-    },
+    vue: { locale: "ja", helpLevel: "short" },
     rules: { "no-debugger": "error" },
   },
-  fmt: { vize: { printWidth: 100 } },
-  server: { port: 3000 },
+} satisfies VueConfigObject;
+
+export default defineConfig(vpConfig).withVue({
+  compiler: { sourceMap: true },
+  linter: {
+    preset: "essential",
+    rules: { "vue/no-v-html": "error" },
+  },
+  formatter: { printWidth: 100 },
 });
 ```
 
-Vue の compiler 設定は `compiler`、Vize のルールは `lint.vize`、Vue のフォーマットは
-`fmt.vize`、型チェックは `typecheck` に設定します。その他の `lint`・`fmt` は Vite+ の
-Oxlint・Oxfmt 設定です。[設定ガイド](./configuration.md)に対応表をまとめています。
+`.withVue(vueConfig)` は、既存の Vite+ 設定を保ちながら `vue:` にネイティブ設定を追加します。
+インラインの `vue: { ... }` と同じ設定です。共有するコンパイラ・lint・フォーマッタの設定は
+`vue.compiler`・`vue.linter`・`vue.formatter` に、エディター設定は `vue.languageServer` に置きます。
+`lint.vue` は診断言語などのタスク設定、その他の `lint`・`fmt` は Vite+ の Oxlint・Oxfmt 設定です。
+[共有 Vue 設定](./vue-configuration.md)にパスとスコープの扱いをまとめています。
+
+TypeScript の設定は既存の `tsconfig.json` を使います。
+
+```json
+{
+  "compilerOptions": { "strict": true, "noEmit": true },
+  "vueCompilerOptions": { "strictTemplates": true },
+  "include": ["src/**/*"]
+}
+```
+
+### 既存の設定を組み合わせる
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import vpConfig from "./vite.base.ts";
+import vueConfig from "./vue.settings.ts";
+
+export default defineConfig(vpConfig).withVue(vueConfig);
+```
+
+通常の JavaScript オブジェクトを import して共有してください。オブジェクト、Promise、関数、
+async 関数を渡せます。既存のプラグインやフックを保持し、Vue のプラグインを一度だけ組み込みます。
+独自の設定 `extends`、専用の `vize.config.*`、トップレベルの `vize:` は廃止しました。
+TypeScript 標準の `extends`・`references` は引き続き使えます。
+
+単独の `withVue(vueConfig, vpConfig)` も使えますが、引数の順序が異なるため `defineConfig` の別名ではありません。
+`withVize` は従来の config-first helper の互換名です。新しい設定には fluent API を使ってください。
 
 <span id="tasks"></span>
 
@@ -88,12 +119,13 @@ Vue ルールの重複はデフォルトで調整され、明示的な `lint.rul
 
 Vize は Vue ファイル、Oxfmt はその他のファイルをフォーマットします。
 `fmt.ignorePatterns` は両方に適用されます。
-`lint.vize: false` または `fmt.vize: false` で、その担当を Vite+ に戻せます。
-`compiler: false` なら既存の Vue compiler plugin を保持します。
+`vue.linter.enabled: false` でネイティブ lint を無効にできます。
+`lint.vue: false`・`fmt.vue: false` を使う場合は、対応する共有ネイティブ設定がツールを明示的に有効化しないようにします。
+`vue.compiler` を省略して `compiler: false` を指定すると、既存の Vue compiler plugin を保持します。
 
 ## 次の設定
 
 - [移行](./migration.md) — 既存の import・plugin・script から置き換える。
 - [設定](./configuration.md) — 必要な設定場所を選ぶ。
-- [型宣言・共有設定・editor の詳細（英語）](../../guide/vite-plus.md) — `pack.vize`、`extends` と高度なオプション。
+- [型宣言・共有設定・editor の詳細（英語）](../../guide/vite-plus.md) — `pack.vue`、fluent API と高度なオプション。
 - [エディター設定（英語）](../../guide/vite-plus-editor.md) — エディターと統合設定の役割。

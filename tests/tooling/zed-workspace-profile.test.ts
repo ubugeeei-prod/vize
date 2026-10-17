@@ -49,6 +49,7 @@ test("current Zed formatting defaults preserve the frozen baseline and narrow su
   assert.deepEqual(current, {
     ...original,
     id: "no-config-current-default",
+    initializationOptions: {},
     formattingProvider: true,
     formattingProviderPresent: true,
   });

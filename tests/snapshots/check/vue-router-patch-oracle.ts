@@ -176,8 +176,7 @@ test("Vue Router linter reports and repairs one exact event directive edit", asy
   await withPinnedFixtureWorkspace(
     { fixtureId: "vue-router", includePaths: [appPath] },
     async (fixture) => {
-      fixture.write(
-        "vize.config.json",
+      fixture.writeVueConfig(
         `${JSON.stringify(
           {
             linter: {
@@ -244,8 +243,7 @@ test("Vue Router package exports stay exact across clean, broken, and repaired e
         fixture.resolve("node_modules/vue-router"),
       );
       fixture.write("tsconfig.json", `${JSON.stringify(tsconfig, null, 2)}\n`);
-      fixture.write(
-        "vize.config.json",
+      fixture.writeVueConfig(
         `${JSON.stringify(
           {
             lsp: { completion: true, editor: true, hover: true, lint: false, typecheck: true },

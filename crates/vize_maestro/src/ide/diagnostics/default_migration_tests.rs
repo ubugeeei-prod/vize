@@ -21,14 +21,18 @@ fn editor_default_migrations_preserve_full_vectors_and_legacy_off_controls() {
         (None, false),
         (Some(json!({"linter":{"preset":"recommended"}})), false),
         (Some(json!({"linter":{"rules":disabled}})), true),
-        (Some(json!({"vue":{"version":"2"}})), true),
-        (Some(json!({"vue":{"version":"2.7"}})), true),
-        (Some(json!({"vue":{"version":"3"}})), false),
+        (Some(json!({"version":"2"})), true),
+        (Some(json!({"version":"2.7"})), true),
+        (Some(json!({"version":"3"})), false),
         (Some(json!({"linter":{"preset":"incremental"}})), true),
     ] {
         let root = tempfile::tempdir().unwrap();
         if let Some(config) = &config {
-            std::fs::write(root.path().join("vize.config.json"), config.to_string()).unwrap();
+            std::fs::write(
+                root.path().join("vite.config.mjs"),
+                vize_l0::cstr!("export default {{ vue: {} }};", config).as_bytes(),
+            )
+            .unwrap();
         }
         let state = ServerState::new();
         state.apply_lsp_initialization_options(Some(&json!({"lint":true,"typecheck":false})));

@@ -22,7 +22,12 @@ export type VueConfig = {
 
 /** Native Vue settings shared by Vite, Vite+, the CLI projection and the editor. */
 type VueOptionKeys =
+  | "name"
   | "compiler"
+  | "experimentals"
+  | "dialect"
+  | "vite"
+  | "musea"
   | "typeChecker"
   | "linter"
   | "formatter"
@@ -33,7 +38,7 @@ type VueOptionKeys =
   | "basePath"
   | "lib";
 
-/** Scoped policy currently supported by the native configuration model. */
+/** Native scopes retain the same authored options inside the Vue namespace. */
 export type VueOptionsEntry = Pick<VizeConfigEntry, "basePath" | "files" | "ignores" | "linter">;
 
 /** Section option values reuse the native types rather than a second schema. */

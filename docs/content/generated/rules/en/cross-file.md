@@ -8,7 +8,7 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 
 This page shows all 66 project examples with their complete Bad and Good versions and the files both versions share. Use the shared files with both. Of the 60 diagnostic codes, the CLI reports 19 today (18 verified against source examples and one shown with an illustrative project), 16 exist only in the experimental Rust analyzer and are not reported individually by the CLI, and 25 are specified but nothing produces them yet. Configuring an ID does not turn on a check that is not available.
 
-The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `vize:croquis/cf/*` codes use `croquis/cf/*` in `lint.vize.rules` (omit `vize:`). Information/hint diagnostics become CLI warnings. Related locations explain the source/consumer relationship.
+The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `vize:croquis/cf/*` codes use `croquis/cf/*` in `vue.linter.rules` (omit `vize:`). Information/hint diagnostics become CLI warnings. Related locations explain the source/consumer relationship.
 
 <span id="project-specific-lint-ids"></span>
 <span id="published-analyzer-codes"></span>
@@ -99,8 +99,8 @@ The complete installed router must be reachable from the application's createApp
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-extra-param": "warn" },
     },
   },
@@ -204,8 +204,8 @@ The complete installed router must be reachable from the application's createApp
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-missing-param": "warn" },
     },
   },
@@ -309,8 +309,8 @@ The complete installed router must be reachable from the application's createApp
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-param-type": "warn" },
     },
   },
@@ -414,8 +414,8 @@ The complete installed router must be reachable from the application's createApp
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "ecosystem/vue-router-unknown-route": "warn" },
     },
   },
@@ -517,8 +517,8 @@ Automatic fix: None
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "html/cross-component-nesting": "warn" },
     },
   },
@@ -693,8 +693,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/async-boundary": "warn" },
     },
   },
@@ -934,8 +934,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/browser-api-ssr": "warn" },
     },
   },
@@ -1124,8 +1124,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/circular-reactive-dependency": "warn" },
     },
   },
@@ -1639,8 +1639,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/destructuring-breaks-reactivity": "warn" },
     },
   },
@@ -1977,8 +1977,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/duplicate-id": "warn" },
     },
   },
@@ -2297,8 +2297,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/hydration-risk": "warn" },
     },
   },
@@ -2489,8 +2489,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/inject-without-symbol": "warn" },
     },
   },
@@ -2615,8 +2615,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/injected-async-mutation-race": "warn" },
     },
   },
@@ -3441,8 +3441,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/non-reactive-provide": "warn" },
     },
   },
@@ -3573,8 +3573,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/non-unique-id": "warn" },
     },
   },
@@ -3939,8 +3939,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/provide-inject-type": "warn" },
     },
   },
@@ -4047,8 +4047,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/provide-without-symbol": "warn" },
     },
   },
@@ -4375,8 +4375,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/reassignment-breaks-reactivity": "warn" },
     },
   },
@@ -4740,8 +4740,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/spread-breaks-reactivity": "warn" },
     },
   },
@@ -5126,8 +5126,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/uncaught-error": "warn" },
     },
   },
@@ -5600,8 +5600,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/unmatched-inject": "warn" },
     },
   },
@@ -6150,8 +6150,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/unused-provide": "warn" },
     },
   },
@@ -6287,8 +6287,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/value-extraction-breaks-reactivity": "warn" },
     },
   },
@@ -6493,8 +6493,8 @@ Options: No per-code options; supported CLI findings accept severity overrides
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "croquis/cf/watcheffect-async": "warn" },
     },
   },
@@ -6745,8 +6745,8 @@ Automatic fix: None
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
+  vue: {
+    linter: { preset: "incremental", crossFile: true,
       rules: { "vue/cross-file-attrs-fallthrough": "warn" },
     },
   },

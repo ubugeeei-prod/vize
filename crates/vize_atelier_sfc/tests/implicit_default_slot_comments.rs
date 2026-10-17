@@ -78,8 +78,8 @@ fn direct_comments_only_change_implicit_slots_beside_named_templates() {
             // Compare every public field. With maps disabled, removed trivia
             // must not change any output byte or runtime helper registration.
             if fixture["drop"] == true || target == "vapor" {
-                let mut actual = serde_json::to_value(actual).unwrap();
-                let mut expected = serde_json::to_value(without_comment).unwrap();
+                let actual = serde_json::to_value(actual).unwrap();
+                let expected = serde_json::to_value(without_comment).unwrap();
                 assert_eq!(actual, expected, "{target}: {}", fixture["name"]);
             } else {
                 assert_ne!(

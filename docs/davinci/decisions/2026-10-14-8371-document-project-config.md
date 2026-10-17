@@ -1,5 +1,9 @@
 # Per-document project configuration in the editor
 
+The current configuration sources and reference-project ownership are recorded
+in [the October 17 decision](./2026-10-17-8371-vite-tsconfig-editor-config.md).
+The dedicated-file discovery described below is historical.
+
 Issue: [#8371](https://github.com/ubugeeei-prod/vize/issues/8371).
 
 The language server assigns each open document to its nearest project root

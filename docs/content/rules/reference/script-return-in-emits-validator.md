@@ -22,8 +22,8 @@ Use a block-body arrow for the currently supported SFC filter. The underlying va
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/return-in-emits-validator": "error"

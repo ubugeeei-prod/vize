@@ -158,8 +158,8 @@ emit("save-item");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       preset: "incremental",
       rules: { "script/define-props-destructuring": "warn" },
       ruleOptions: { "script/define-props-destructuring": { destructure: "only-when-assigned" } },
@@ -192,4 +192,4 @@ ESLint から移行する場合は、Vize のルール ID と型付きオプシ�
  ruleOptions: { "script/define-props-destructuring": { destructure: "always" } }
 ```
 
-追加する設定は、上記の Vite+ 設定の `lint.vize` に指定してください。
+追加する設定は、上記の Vite+ 設定の `vue.linter` に指定してください。

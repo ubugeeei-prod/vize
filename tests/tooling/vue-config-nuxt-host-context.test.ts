@@ -16,11 +16,7 @@ void test("only the explicit Nuxt constructor context excludes the complete host
     let hookReads = 0;
     const source = {
       vue: host,
-      vize: (actual: unknown) => {
-        callbackCalls++;
-        assert.equal(actual, env);
-        return { formatter: { printWidth: 70 } };
-      },
+      fmt: { vue: { printWidth: 70 } },
       get unrelatedHostHook() {
         hookReads++;
         return host;
@@ -37,14 +33,32 @@ void test("only the explicit Nuxt constructor context excludes the complete host
       Object.getOwnPropertyDescriptor(view, "unrelatedHostHook"),
       originalDescriptors.unrelatedHostHook,
     );
-    assert.equal(view.vize, source.vize);
+    assert.equal(view.fmt, source.fmt);
     assert.deepEqual(await projectViteConfigSource(view, env), {
       typeChecker: { jsxTypecheck: true },
       formatter: { printWidth: 70 },
     });
-    assert.equal(callbackCalls, 1);
+    assert.equal(callbackCalls, 0);
     assert.equal(hookReads, 0);
     assert.deepEqual(Object.getOwnPropertyDescriptors(source), originalDescriptors);
+    const legacy = Object.defineProperty(
+      Object.create(Object.getPrototypeOf(source), originalDescriptors),
+      "vize",
+      {
+        enumerable: true,
+        value: (actual: unknown) => {
+          callbackCalls++;
+          assert.equal(actual, env);
+          return { formatter: { printWidth: 70 } };
+        },
+      },
+    );
+    await assert.rejects(
+      projectViteConfigSource(nativeProjectSource(legacy, "nuxt"), env),
+      /vize: configuration is no longer supported/,
+    );
+    assert.equal(callbackCalls, 0, "retired callbacks must never execute");
+    assert.equal(hookReads, 0);
   }
 });
 
@@ -88,7 +102,7 @@ void test("spoofable host flags and all canonical, mixed, unknown or nonplain ob
 void test("host root getters are evaluated once and their original descriptors remain intact", async () => {
   let reads = 0;
   const host = { script: {} };
-  const source = Object.defineProperty({ vize: { linter: { enabled: false } } }, "vue", {
+  const source = Object.defineProperty({ lint: { vue: { enabled: false } } }, "vue", {
     enumerable: true,
     get() {
       reads++;

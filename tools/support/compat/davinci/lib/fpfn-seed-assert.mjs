@@ -229,8 +229,11 @@ function assertUnused({ manifest, outDir, cli, hooks }) {
   }
   const load = (tree, hook) => {
     const cwd = path.join(plane, tree);
-    const config = path.join(cwd, "vize.config.json");
-    fs.writeFileSync(config, JSON.stringify({ linter: { rules: { [CLASS_B_RULE]: "warn" } } }));
+    const config = path.join(cwd, "vite.config.mjs");
+    fs.writeFileSync(
+      config,
+      `export default ${JSON.stringify({ vue: { linter: { rules: { [CLASS_B_RULE]: "warn" } } } })};\n`,
+    );
     const rows = hook
       ? loadLintRows(hook, cli, cwd, files)
       : flattenLintJson(runVizeLintJson(cli, cwd, files, config));

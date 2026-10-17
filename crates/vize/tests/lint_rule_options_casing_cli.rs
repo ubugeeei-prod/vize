@@ -1,4 +1,6 @@
 #![cfg(test)]
+#[path = "support/vite_config.rs"]
+mod vite_config;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -61,8 +63,9 @@ emit('keepOriginal');
     );
     write_project_file(
         &project_root,
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "incremental",
     "rules": {
@@ -75,6 +78,7 @@ emit('keepOriginal');
     }
   }
 }"#,
+        ),
     );
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -82,7 +86,7 @@ emit('keepOriginal');
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/Casing.vue",
@@ -148,8 +152,9 @@ fn lint_rule_options_configure_html_self_closing() {
     );
     write_project_file(
         &project_root,
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "incremental",
     "rules": {
@@ -168,6 +173,7 @@ fn lint_rule_options_configure_html_self_closing() {
     }
   }
 }"#,
+        ),
     );
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -175,7 +181,7 @@ fn lint_rule_options_configure_html_self_closing() {
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/SelfClosing.vue",
@@ -223,8 +229,9 @@ export default {};
     );
     write_project_file(
         &project_root,
-        "vize.config.json",
-        r#"{
+        "vite.config.mjs",
+        &vite_config::source(
+            r#"{
   "linter": {
     "preset": "incremental",
     "rules": {
@@ -243,6 +250,7 @@ export default {};
     }
   }
 }"#,
+        ),
     );
 
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -250,7 +258,7 @@ export default {};
         .args([
             "lint",
             "--config",
-            "vize.config.json",
+            "vite.config.mjs",
             "--format",
             "json",
             "src/RuleOptions.vue",

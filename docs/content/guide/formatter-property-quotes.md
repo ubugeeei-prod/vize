@@ -2,21 +2,18 @@
 
 Choose when script object keys need quotes. Use the preserve mode to retain authored quoted keys, or the other modes to make quoting follow the object structure.
 
-Check [shared formatter configuration and current release availability](./configuration.md)
-before choosing where to put these settings.
+Keep shared options in `vue.formatter` in `vite.config.*`; the CLI and editor read the same settings. See [Configuration](./configuration.md).
 
 ## Configure property quotes
 
-Set `fmt.vize.quoteProps` in your existing Vite+ configuration to choose how
+Set `vue.formatter.quoteProps` in your existing Vite+ configuration to choose how
 script object keys are quoted:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  fmt: {
-    vize: { quoteProps: "preserve" },
-  },
+export default defineConfig({}).withVue({
+  formatter: { quoteProps: "preserve" },
 });
 ```
 
@@ -35,4 +32,4 @@ quotes its sibling keys as well.
 The `singleQuote` setting still chooses the quote character. `quoteProps`
 controls which keys have quotes; it does not keep the original quote character.
 
-For CLI/editor sharing and optional dedicated settings, see [Configuration](./configuration.md), including the current release availability.
+The CLI and editor read the same `vue.formatter` settings from `vite.config.*`. See [Configuration](./configuration.md) for discovery and migration from removed dedicated configuration files.

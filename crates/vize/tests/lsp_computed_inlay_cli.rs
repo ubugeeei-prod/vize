@@ -6,6 +6,9 @@
     reason = "whole native and actual CLI RPC oracles"
 )]
 
+#[path = "support/vite_config.rs"]
+mod vite_config;
+
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 #[path = "support/lsp_process.rs"]
@@ -97,9 +100,13 @@ fn original_computed_types_match_complete_stock_native_hints_after_edits_and_ran
     let package: Value =
         serde_json::from_slice(&std::fs::read(vue.join("package.json")).unwrap()).unwrap();
     assert_eq!(package["version"], "3.5.41");
+    let vite_config = vite_config::source(VIZE_CONFIG);
     for newline in ["\n", "\r\n"] {
         let source = ORIGINAL.replace('\n', newline);
-        let files = [("tsconfig.json", CONFIG), ("vize.config.json", VIZE_CONFIG)];
+        let files = [
+            ("tsconfig.json", CONFIG),
+            ("vite.config.mjs", vite_config.as_str()),
+        ];
         let mut fixture =
             Fixture::new_with_pinned_vue_project(&source, "src/App.vue", &files, &vue);
         let mut native = NativeOracle::new(&runtime, &vue, CONFIG, "ts");
@@ -138,7 +145,7 @@ fn original_computed_types_match_complete_stock_native_hints_after_edits_and_ran
                 &[
                     ("App.vue", &current),
                     ("tsconfig.json", CONFIG),
-                    ("vize.config.json", VIZE_CONFIG),
+                    ("vite.config.mjs", vite_config.as_str()),
                 ],
                 &expected,
                 &actual,
@@ -227,7 +234,7 @@ fn plain_ts_and_js_keep_checker_generic_alias_types_and_utf16_ranges() {
                 ("Plain.source", source),
                 ("tsconfig.json", &config),
                 ("App.vue", ORIGINAL),
-                ("vize.config.json", &fixture.read_file("vize.config.json")),
+                ("vite.config.mjs", &fixture.read_file("vite.config.mjs")),
             ],
             &expected,
             &actual,

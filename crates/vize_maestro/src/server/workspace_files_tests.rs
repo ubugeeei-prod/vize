@@ -18,9 +18,8 @@ fn typecheck_watcher_tracks_declarations_vue_sources_and_manifests() {
             {"globPattern":"**/*.d.{ts,mts,cts}"},
             {"globPattern":"**/*.{vue,ts,tsx,mts,cts,js,jsx,mjs,cjs}"},
             {"globPattern":"**/package.json"},
-            {"globPattern":"**/vize.config.*"},
             {"globPattern":"**/vite.config.*"},
-            {"globPattern":"**/tsconfig*.json"},
+            {"globPattern":"**/*.json"},
             {"globPattern":"**/jsconfig.json"}
         ]})
     );

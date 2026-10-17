@@ -63,7 +63,7 @@ withVue(vue, defineVpConfig(callback));
 withVue(vue, defineVpConfig(async (env) => callback(env)));
 withVue(vue, defineVpConfig(Promise.resolve(vpConfig)));
 defineViteConfig({ vue });
-withVize({ vize: { formatter: { singleQuote: true } } });
+withVize({ vue: { formatter: { singleQuote: true } } });
 // @ts-expect-error Native compiler has no enabled flag.
 withVue({ compiler: { enabled: false } }, vpConfig);
 // @ts-expect-error Native formatter has no enabled flag.
@@ -115,7 +115,7 @@ withVue({ entries: [{ globalTypes: { flag: "boolean" } }] }, vpConfig);
     `
 import assert from "node:assert/strict";
 import { defineConfig as defineVpConfig } from "vite-plus";
-import { withVue } from "@vizejs/vite-plugin/vite-plus";
+import { defineConfig, withVue } from "@vizejs/vite-plugin/vite-plus";
 import { resolveConfigExport, resolveViteConfigExport } from "@vizejs/vite-plugin";
 const sourceKey = Symbol.for("@vizejs/vite-plugin/vite-plus/source");
 const taskKey = Symbol.for("@vizejs/vite-plugin/vite-plus");
@@ -123,21 +123,20 @@ const env = { command: "serve", mode: "packed", isSsrBuild: true, isPreview: tru
 const options = { plugin: false, tasks: false, conflicts: false, lint: false, fmt: false };
 const injected = ["vite-plus:vitest-resolver", "vite-plus:auto-inline-matcher-deps", "vite-plus:coverage-version-guard"];
 for (const shape of ["object", "promise", "function", "async"]) {
-  let sourceCalls = 0, legacyCalls = 0;
+  let sourceCalls = 0;
   const hook = () => "kept";
   const plugin = { name: "packed-consumer", transform: hook };
   const source = {
     plugins: [plugin], futureOption: { enabled: true }, run: { tasks: { original: "echo original" } },
     test: { projects: [{ test: { name: "nested" }, plugins: [plugin] }] },
-    vize: (context) => { legacyCalls++; assert.deepEqual(context, env); return { formatter: { printWidth: 70, singleQuote: true } }; },
+    vue: { formatter: { printWidth: 70, singleQuote: true } },
   };
   const callback = (context) => { sourceCalls++; assert.deepEqual(context, env); return source; };
   const selected = defineVpConfig(shape === "object" ? source : shape === "promise" ? Promise.resolve(source) : shape === "function" ? callback : async (context) => callback(context));
-  const wrapped = withVue({ formatter: { singleQuote: false }, typeChecker: { enabled: false }, linter: { enabled: false } }, selected, options);
-  assert.equal(sourceCalls, 0); assert.equal(legacyCalls, 0);
+  const wrapped = defineConfig(selected, options).withVue({ formatter: { singleQuote: false }, typeChecker: { enabled: false }, linter: { enabled: false } });
+  assert.equal(sourceCalls, 0);
   const result = await wrapped(env);
   assert.equal(sourceCalls, shape === "function" || shape === "async" ? 1 : 0);
-  assert.equal(legacyCalls, 0);
   assert.deepEqual(result.plugins.map(({name}) => name), [...injected, "packed-consumer"]);
   assert.equal(result.plugins[3], plugin); assert.equal(result.plugins[3].transform, hook);
   assert.deepEqual(result.test.projects[0].plugins.map(({name}) => name), [...injected, "packed-consumer"]);
@@ -145,14 +144,16 @@ for (const shape of ["object", "promise", "function", "async"]) {
   assert.deepEqual(result.futureOption, source.futureOption); assert.deepEqual(result.run.tasks, source.run.tasks);
   assert.ok(!("vue" in result)); assert.ok(!("vize" in result));
   const native = await resolveConfigExport(result[taskKey].config, env);
-  assert.equal(legacyCalls, 1);
-  const direct = await resolveViteConfigExport(wrapped[sourceKey], env, process.cwd());
-  assert.equal(legacyCalls, 2);
-  assert.equal(sourceCalls, shape === "function" || shape === "async" ? 2 : 0);
+  const direct = await resolveViteConfigExport(result, env, process.cwd());
+  assert.equal(typeof result[sourceKey], "object");
+  assert.equal(sourceCalls, shape === "function" || shape === "async" ? 1 : 0);
   assert.deepEqual(native, direct);
   assert.deepEqual(native.formatter, { printWidth: 70, singleQuote: false });
   assert.equal(native.typeChecker.enabled, false); assert.equal(native.linter.enabled, false);
   assert.deepEqual(source.plugins, [plugin]);
+  let legacyCalls = 0;
+  await assert.rejects(withVue({}, { vize: () => { legacyCalls++; return {}; } }, options)(env), /vize: configuration is no longer supported/);
+  assert.equal(legacyCalls, 0, "a rejected legacy callback must never execute");
 }
 `,
   );

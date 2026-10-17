@@ -1,5 +1,8 @@
 //! Real stdio controls with independent source/revision and disk custody.
 
+#[path = "../support/vite_config.rs"]
+mod vite_config;
+
 use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
@@ -57,12 +60,14 @@ impl Project {
             "include":["*.vue"]
         }"#).unwrap();
         std::fs::write(
-            root.path().join("vize.config.json"),
-            serde_json::to_vec(&json!({
-                "typeChecker":{"corsaPath":runtime,"checkFallthroughAttrs":false},
-                "lsp":{"lint":false,"typecheck":native,"hover":true}
-            }))
-            .unwrap(),
+            root.path().join("vite.config.mjs"),
+            vite_config::source(
+                serde_json::to_vec(&json!({
+                    "typeChecker":{"corsaPath":runtime,"checkFallthroughAttrs":false},
+                    "lsp":{"lint":false,"typecheck":native,"hover":true}
+                }))
+                .unwrap(),
+            ),
         )
         .unwrap();
         let uri = file_uri(&root.path().join("Owner.vue")).to_string();

@@ -20,8 +20,8 @@ Options API のオプション名の入力ミスを検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-potential-component-option-typo": "error"

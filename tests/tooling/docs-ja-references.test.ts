@@ -1,4 +1,8 @@
 import assert from "node:assert/strict";
+import {
+  currentConfigExample,
+  currentCompilerReferenceExample,
+} from "./support/docs-config-successor.ts";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { resolve } from "node:path";
@@ -39,7 +43,15 @@ void test("Japanese reference review preserves every complete recipe and origina
     const rendered = native.transform(japanese, {});
     assert.deepEqual(rendered.errors, [], page.file);
     assert.equal(page.code.length, 6, page.file);
-    assert.deepEqual(code(japanese), page.code, `${page.file}: original source bytes`);
+    assert.deepEqual(
+      code(japanese),
+      page.code.map(
+        page.file.endsWith("/compiler-configuration-reference.md")
+          ? currentCompilerReferenceExample
+          : currentConfigExample,
+      ),
+      `${page.file}: original source bytes`,
+    );
     assert.deepEqual(code(japanese), code(english), `${page.file}: complete English recipes`);
     assert.deepEqual(links(japanese), page.links, `${page.file}: original destinations`);
     const ids = new Set(Array.from(rendered.html.matchAll(/\bid="([^"]+)"/g), (m) => m[1]));

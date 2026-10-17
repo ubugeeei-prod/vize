@@ -153,7 +153,7 @@ PROFILE_DECLARATIONS.push({
 
 // Editors that legitimately declare NO profile table: VS Code (it exposes
 // per-feature `*.enable` settings plus Recommended/Lint-only *commands*, not a
-// canonical profile table), Zed and Helix (single recommended config, no named
+// canonical profile table), Zed and Helix (server-owned defaults, no named
 // profiles).
 const PROFILE_LESS_EDITORS = new Set(["vscode", "zed", "helix"]);
 

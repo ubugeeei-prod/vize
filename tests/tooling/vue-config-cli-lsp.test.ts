@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { test } from "node:test";
 import { LspWire } from "../differential/lsp-wire.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
@@ -15,8 +15,10 @@ const source =
   '<script setup>\nconst html="<b>hello</b>";\n</script>\n<template>\n<p v-html="html" />\n</template>\n';
 const hash = (body: Buffer) => createHash("sha256").update(body).digest("hex");
 const evidenceDirectory = path.join(root, "target/differential/vue-config-cli-lsp");
+const fluentModule = pathToFileURL(path.join(root, "npm/builder/vite/src/vite-plus.ts")).href;
+const upstreamModule = import.meta.resolve("vite-plus");
 
-test("canonical Vue settings preserve the genuine CLI and editor results of a dedicated config", async () => {
+test("plain and public fluent Vue settings preserve whole CLI and editor results", async () => {
   // Both PR and protected tooling restore this same-run receipted producer.
   const [binary] = resolveVizeLaunchCommand(undefined, path.join(root, "target/ci/vize"), {
     required: true,
@@ -26,9 +28,40 @@ test("canonical Vue settings preserve the genuine CLI and editor results of a de
   const app = path.join(directory, "App.vue");
   const uri = pathToFileURL(app).href;
   const packets: unknown[] = [];
+  const retiredPackets: unknown[] = [];
   fs.mkdirSync(evidenceDirectory, { recursive: true });
   try {
     fs.writeFileSync(path.join(directory, "package.json"), '{"type":"module"}');
+    const retiredConfig = JSON.stringify({ linter: { rules: { "vue/no-v-html": "off" } } });
+    const retiredPath = path.join(directory, "vize.config.json");
+    fs.writeFileSync(retiredPath, retiredConfig);
+    fs.writeFileSync(app, source);
+    for (const args of [
+      ["lint", "App.vue", "--format", "json"],
+      ["lint", "App.vue", "--format", "json", "--config", "vize.config.json"],
+    ]) {
+      const result = spawnSync(binary, args, {
+        cwd: directory,
+        encoding: "utf8",
+        timeout: 30_000,
+      });
+      retiredPackets.push({
+        config: retiredConfig,
+        args,
+        status: result.status,
+        signal: result.signal,
+        error: result.error?.message ?? null,
+        stdout: result.stdout,
+        stderr: result.stderr,
+      });
+      assert.equal(result.error, undefined);
+      assert.equal(result.signal, null);
+      assert.equal(result.status, 2, result.stdout + result.stderr);
+      assert.equal(result.stdout, "");
+      assert.match(result.stderr, /vize\.config\.\* is no longer supported/);
+      assert.match(result.stderr, /vue: in vite\.config\.\*/);
+    }
+    fs.rmSync(retiredPath);
     for (const active of [true, false]) {
       const settings = {
         formatter: { singleQuote: true, tabWidth: 4 },
@@ -37,20 +70,17 @@ test("canonical Vue settings preserve the genuine CLI and editor results of a de
       };
       const answers: { lint: unknown; diagnostics: unknown; formatted: string; edits: unknown }[] =
         [];
-      for (const selected of ["dedicated", "vite"]) {
-        const configFile = path.join(
-          directory,
-          selected === "dedicated" ? "vize.config.json" : "vite.config.mjs",
-        );
-        const other = path.join(
-          directory,
-          selected === "dedicated" ? "vite.config.mjs" : "vize.config.json",
-        );
-        fs.rmSync(other, { force: true });
-        const config =
-          selected === "dedicated"
-            ? JSON.stringify(settings)
-            : `export default {vue:${JSON.stringify(settings)}};`;
+      for (const selected of ["plain", "fluent"]) {
+        const configFile = path.join(directory, "vite.config.mjs");
+        const configSource = (vue: unknown) =>
+          selected === "plain"
+            ? `export default {vue:${JSON.stringify(vue)}};`
+            : `import {defineConfig} from ${JSON.stringify(fluentModule)};
+import {defineConfig as defineVpConfig} from ${JSON.stringify(upstreamModule)};
+export default defineConfig(defineVpConfig(async () => ({
+  vue: {formatter: {singleQuote: false}, linter: {rules: {"vue/no-v-html": "error"}}}
+}))).withVue(${JSON.stringify(vue)});`;
+        const config = configSource(settings);
         fs.writeFileSync(configFile, config);
         fs.writeFileSync(app, source);
         const commands: unknown[] = [];
@@ -89,10 +119,7 @@ test("canonical Vue settings preserve the genuine CLI and editor results of a de
               ...settings,
               entries: [{ files: ["App.vue"], linter: { rules: { "vue/no-v-html": "off" } } }],
             };
-            const scopedConfig =
-              selected === "dedicated"
-                ? JSON.stringify(scoped)
-                : `export default {vue:${JSON.stringify(scoped)}};`;
+            const scopedConfig = configSource(scoped);
             const otherApp = path.join(directory, "OtherView.vue");
             fs.writeFileSync(otherApp, source);
             fs.writeFileSync(configFile, scopedConfig);
@@ -184,6 +211,16 @@ test("canonical Vue settings preserve the genuine CLI and editor results of a de
           binarySha256: hash(fs.readFileSync(binary)),
           buildReceipt: JSON.parse(fs.readFileSync(binary + ".differential-build.json", "utf8")),
           source,
+          fluentApi: {
+            kind: "public-source-entry",
+            url: fluentModule,
+            sha256: hash(fs.readFileSync(fileURLToPath(fluentModule))),
+          },
+          upstreamApi: {
+            url: upstreamModule,
+            sha256: hash(fs.readFileSync(fileURLToPath(upstreamModule))),
+          },
+          retiredPackets,
           packets,
         },
         null,

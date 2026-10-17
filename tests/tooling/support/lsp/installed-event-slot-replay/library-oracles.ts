@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import { gunzipSync } from "node:zlib";
 import type { Packet } from "../installed-alias-replay/protocol.ts";
+import { originalVueConfigFixtureSource } from "../../vue-config-source-custody.ts";
 
 type ObjectValue = Record<string, any>;
 export type LibraryCase = {
@@ -131,7 +132,10 @@ export function loadFrozenLibraryCases(root: string): readonly LibraryCase[] {
   }
   const sourceRoot = path.resolve(root, "../../../../../..");
   for (const [file, sha] of Object.entries(manifest.sourceFiles))
-    assert.equal(digest(fs.readFileSync(path.join(sourceRoot, file))), sha);
+    assert.equal(
+      digest(originalVueConfigFixtureSource(file, fs.readFileSync(path.join(sourceRoot, file)))),
+      sha,
+    );
   const cases = manifest.cases.map((entry: ObjectValue) => {
     const raw = gunzipSync(checked(entry.file, entry.gzipSha256));
     assert.equal(digest(raw), entry.rawSha256);

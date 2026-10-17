@@ -225,6 +225,25 @@ void test("package versions may advance while changed native or secondary script
   }
 });
 
+void test("secondary checks retain canonical Vite configs and reject retired config reintroduction", (t) => {
+  const file = "examples/vite-musea/package.json";
+  for (const change of [
+    (command) => command.replace(" vite.config.ts", ""),
+    (command) => command.replace(" vite.app.config.ts", ""),
+    (command) => command.replace(" vite.ui-gallery.config.ts", ""),
+    (command) => command.replace(" vite.globals.config.ts", ""),
+    (command) => command + " vize.config.ts",
+  ]) {
+    const directory = fixture(t);
+    edit(directory, file, (value) => {
+      const original = value.scripts.check;
+      value.scripts.check = change(original);
+      assert.notEqual(value.scripts.check, original);
+    });
+    assert.throws(() => verifyDocsWasmConsumers(directory), assert.AssertionError);
+  }
+});
+
 void test("the distinct NAPI caller is not silently reclassified as WASM", (t) => {
   const directory = fixture(t);
   edit(directory, docs, (value) => {

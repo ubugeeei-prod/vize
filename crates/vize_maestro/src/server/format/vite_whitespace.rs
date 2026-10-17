@@ -52,15 +52,15 @@ fn preserve_on_type_keeps_authored_template_indent_and_default_changes_only_inde
 }
 
 #[test]
-fn dedicated_compiler_whitespace_does_not_change_historical_editor_formatter() {
+fn vite_compiler_whitespace_preserve_reaches_editor_formatter() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
-        project.path().join("vize.config.json"),
-        r#"{"compiler":{"whitespace":"preserve"},"formatter":{"singleQuote":true}}"#,
+        project.path().join("vite.config.mjs"),
+        r#"export default { vue: {"compiler":{"whitespace":"preserve"},"formatter":{"singleQuote":true}} };"#,
     )
     .unwrap();
     let state = crate::server::ServerState::new();
     state.load_workspace_config(project.path());
     let (options, preserve) = state.get_formatter_context();
-    assert_eq!((options.single_quote, preserve), (true, false));
+    assert_eq!((options.single_quote, preserve), (true, true));
 }

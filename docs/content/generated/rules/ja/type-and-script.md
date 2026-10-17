@@ -100,8 +100,8 @@ title: "型と script のルール"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/component-options-name-casing": "error"
@@ -165,8 +165,8 @@ emit するカスタムイベント名を指定した形式に揃えます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/custom-event-name-casing": "error"
@@ -228,8 +228,8 @@ defineEmits を型による宣言形式に揃えます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/define-emits-declaration": "warn"
@@ -291,8 +291,8 @@ script setup のコンパイラーマクロを一定の順に宣言します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/define-macros-order": "warn"
@@ -358,8 +358,8 @@ defineProps を型による宣言形式に揃えます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/define-props-declaration": "warn"
@@ -421,8 +421,8 @@ defineProps の分割代入スタイルを指定した方針に揃えます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/define-props-destructuring": "warn"
@@ -482,8 +482,8 @@ Options API の watch ハンドラーにアロー関数を使う箇所を検出�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-arrow-functions-in-watch": "error"
@@ -563,8 +563,8 @@ computed の getter で非同期関数を使う箇所を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-async-in-computed": "error"
@@ -638,8 +638,8 @@ Boolean prop の冗長な default を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-boolean-default": "warn"
@@ -715,8 +715,8 @@ defineProps の深い分割代入を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deep-destructure-in-props": "warn"
@@ -778,8 +778,8 @@ Vue 3 で関数にすべき data オプションのオブジェクト指定を�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-data-object-declaration": "error"
@@ -848,8 +848,8 @@ Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 の hook に置き換�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-destroyed-lifecycle": "error"
@@ -909,8 +909,8 @@ Vue 3 で $attrs に統合された $listeners を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-dollar-listeners-api": "error"
@@ -981,8 +981,8 @@ Vue 3 で $slots に統合された $scopedSlots を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-dollar-scopedslots-api": "error"
@@ -1046,8 +1046,8 @@ Vue 3 で削除された $on / $off / $once を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-events-api": "error"
@@ -1121,8 +1121,8 @@ prop の default / validator 内で使えなくなった this を検出します
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-deprecated-props-default-this": "error"
@@ -1214,8 +1214,8 @@ Options API の props / data / computed などのキー重複を検出します�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-dupe-keys": "error"
@@ -1294,8 +1294,8 @@ fallthrough 属性を同じコンポーネントで二重に適用する箇所�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-duplicate-attr-inheritance": "warn"
@@ -1353,8 +1353,8 @@ script setup 内の export 文を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-export-in-script-setup": "error"
@@ -1414,8 +1414,8 @@ Vapor で null を返す getCurrentInstance() を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-get-current-instance": "error"
@@ -1477,8 +1477,8 @@ const appConfig = inject("app-config");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-import-compiler-macros": "error"
@@ -1541,8 +1541,8 @@ Vue 内部モジュールからの import を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-internal-imports": "error"
@@ -1603,8 +1603,8 @@ scoped slot 関数に複数の引数を渡す箇所を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-multiple-slot-args": "warn"
@@ -1670,8 +1670,8 @@ Vapor 向けコンポーネントの nextTick() 使用を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-next-tick": "error"
@@ -1735,8 +1735,8 @@ Vapor で Options API を使用する箇所を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-options-api": "error"
@@ -1800,8 +1800,8 @@ Options API のオプション名の入力ミスを検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-potential-component-option-typo": "error"
@@ -1861,8 +1861,8 @@ reactive オブジェクトを分割代入し、リアクティビティを失�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-reactive-destructure": "warn"
@@ -1926,8 +1926,8 @@ ref を演算の値として使う際に .value を参照します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-ref-as-operand": "error"
@@ -1991,8 +1991,8 @@ required: true と default を同時に持つ prop を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-required-prop-with-default": "error"
@@ -2052,8 +2052,8 @@ Vue コンパイラーが予約した識別子の宣言を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-reserved-identifiers": "error"
@@ -2117,8 +2117,8 @@ Options API のキーに Vue の予約名を使う箇所を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-reserved-keys": "error"
@@ -2178,8 +2178,8 @@ prop 宣言に Vue の予約名を使う箇所を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-reserved-props": "error"
@@ -2253,8 +2253,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-restricted-globals": "error"
@@ -2323,8 +2323,8 @@ viewStorage.write('view.scroll', String(window.scrollY))
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-restricted-members": "error"
@@ -2394,8 +2394,8 @@ Options API の computed getter 内の副作用を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-side-effects-in-computed-properties": "error"
@@ -2480,8 +2480,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-top-level-ref-in-script": "error"
@@ -2568,8 +2568,8 @@ setup / render 内で毎回コンポーネントを定義する箇所を検出�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-unstable-nested-components": "warn"
@@ -2632,8 +2632,8 @@ export default { setup() { return { Child }; } };
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-unused-emit-declarations": "warn"
@@ -2696,8 +2696,8 @@ Options API の computed プロパティをメソッドとして呼ぶ箇所を�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-use-computed-property-like-method": "error"
@@ -2757,8 +2757,8 @@ Vue 3.5 以降の props 分割代入の既定値を勧めます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/no-with-defaults": "warn"
@@ -2820,8 +2820,8 @@ const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string 
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-computed": "warn"
@@ -2886,8 +2886,8 @@ name / inheritAttrs だけの通常 script を defineOptions() にまとめま�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-define-options": "warn"
@@ -2951,8 +2951,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-import-from-vue": "warn"
@@ -3014,8 +3014,8 @@ import { isString } from '@vue/shared'
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-ref-over-reactive": "warn"
@@ -3088,8 +3088,8 @@ setup の context.attrs を useAttrs() に置き換えます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-use-attrs": "warn"
@@ -3150,8 +3150,8 @@ export default { setup() { const attrs = useAttrs(); console.log(attrs.class); }
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-use-id": "warn"
@@ -3214,8 +3214,8 @@ setup の context.slots を useSlots() に置き換えます。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-use-slots": "warn"
@@ -3284,8 +3284,8 @@ export default defineComponent({
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/prefer-use-template-ref": "warn"
@@ -3357,8 +3357,8 @@ const error = ref(null)
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-default-prop": "error"
@@ -3430,8 +3430,8 @@ emit するイベントを defineEmits または emits に宣言します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-explicit-emits": "warn"
@@ -3493,8 +3493,8 @@ useSlots() で使う slot を defineSlots の型で宣言します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-explicit-slots": "warn"
@@ -3556,8 +3556,8 @@ const slots = useSlots()
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-function-return-type": "warn"
@@ -3629,8 +3629,8 @@ prop の type に文字列ではなくコンストラクターを指定します
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-prop-type-constructor": "error"
@@ -3703,8 +3703,8 @@ export default {
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-prop-types": "error"
@@ -3778,8 +3778,8 @@ provide / inject のキーに衝突しにくい Symbol を使います。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-symbol-provide": "warn"
@@ -3851,8 +3851,8 @@ Object / Array の prop に具体的な型を指定します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-typed-object-prop": "warn"
@@ -3917,8 +3917,8 @@ const props = defineProps({
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-typed-ref": "warn"
@@ -3986,8 +3986,8 @@ prop の default を宣言した型に合う値にします。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/require-valid-default-prop": "error"
@@ -4062,8 +4062,8 @@ computed の getter に値を返す return を用意します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/return-in-computed-property": "error"
@@ -4127,8 +4127,8 @@ Options API の emits validator に戻り値を用意します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/return-in-emits-validator": "error"
@@ -4188,8 +4188,8 @@ defineEmits の重複や型と実行時引数の併用を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/valid-define-emits": "error"
@@ -4249,8 +4249,8 @@ defineOptions の引数と使用回数を検査します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/valid-define-options": "error"
@@ -4313,8 +4313,8 @@ defineProps の重複や型と実行時引数の併用を検出します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/valid-define-props": "error"
@@ -4374,8 +4374,8 @@ nextTick() の完了を await、then、または callback で扱います。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "script/valid-next-tick": "warn"
@@ -4439,8 +4439,8 @@ await nextTick();
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/no-floating-promises": "warn"
@@ -4505,8 +4505,8 @@ void save();
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/no-reactivity-loss": "warn"
@@ -4573,8 +4573,8 @@ const count = toRef(state, "count");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/no-unsafe-template-binding": "warn"
@@ -4639,8 +4639,8 @@ defineEmits に型定義を指定します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/require-typed-emits": "warn"
@@ -4703,8 +4703,8 @@ defineProps に型定義を指定します。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/require-typed-props": "warn"
@@ -4769,8 +4769,8 @@ typeAware とこのルールを明示的に有効にします。既定では nul
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "type/strict-boolean-expressions": "warn"

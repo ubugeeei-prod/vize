@@ -188,7 +188,6 @@ pub struct RemoveArgs {
 /// Shared state for one `vize lib` invocation.
 pub struct LibContext {
     pub root: PathBuf,
-    pub config_path: Option<PathBuf>,
     pub lock_path: PathBuf,
     pub config: crate::config::LibConfig,
     pub resolver: Resolver,
@@ -201,8 +200,9 @@ impl LibContext {
             .root
             .canonicalize()
             .map_err(|error| LibError::io("open project root", &args.root, &error))?;
-        let loaded = crate::config::load_lib_config_with_source(Some(&root));
-        let config = loaded.config;
+        let loaded =
+            crate::config::try_load_project_config_from_root(&root).map_err(LibError::new)?;
+        let config = loaded.document.into_lib_config();
         let config_dir = loaded
             .source_path
             .as_deref()
@@ -239,7 +239,6 @@ impl LibContext {
         }
         Ok(Self {
             root,
-            config_path: loaded.source_path,
             lock_path,
             config,
             resolver,

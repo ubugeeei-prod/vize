@@ -20,8 +20,8 @@ title: "ssr/no-hydration-mismatch"
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lint: {
-    vize: {
+  vue: {
+    linter: {
       "preset": "incremental",
       "rules": {
         "ssr/no-hydration-mismatch": "warn"

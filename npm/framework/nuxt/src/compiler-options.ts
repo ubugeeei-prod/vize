@@ -1,3 +1,5 @@
+import type { VizeOptions } from "@vizejs/vite-plugin";
+
 export type VizeNuxtPattern = string | RegExp;
 export type VizeNuxtVueVersion = 0.11 | 1 | 2 | "2.7" | 3 | "legacy";
 
@@ -23,8 +25,7 @@ export interface VizeNuxtInspectorOptions {
  * Nuxt-facing mirror of the public `@vizejs/vite-plugin` options.
  *
  * Keeping this shape local lets the Nuxt module expose compiler configuration
- * without requiring the sibling package's generated declaration files to exist
- * during monorepo lint runs.
+ * while inline native policies reuse the sibling package's public config type.
  */
 export interface VizeNuxtCompilerOptions {
   /**
@@ -84,6 +85,8 @@ export interface VizeNuxtCompilerOptions {
   precompileBatchSize?: number;
   /** Glob patterns to ignore during pre-compilation. */
   ignorePatterns?: string[];
+  /** Explicit native policy for specialized compiler scopes; shared project settings use vite.config.vue. */
+  config?: VizeOptions["config"];
   /** Config file search mode. */
   configMode?: "root" | "auto" | false;
   /** Custom config file path. */

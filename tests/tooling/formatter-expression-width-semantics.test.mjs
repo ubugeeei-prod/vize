@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -112,8 +113,8 @@ void test("source CLI preserves eighty complete processes and stock semantics at
       const row = { id: fixture.id, cli: [], after: [] };
       report.rows.push(row);
       const file = path.join(directory, "Example.vue");
-      const configPath = path.join(directory, "vize.config.json");
-      const config = Buffer.from(`${JSON.stringify({ formatter: fixture.options })}\n`);
+      const configPath = path.join(directory, "vite.config.mjs");
+      const config = Buffer.from(vueConfigFixtureSource({ formatter: fixture.options }));
       fs.writeFileSync(file, input);
       fs.writeFileSync(configPath, config);
       for (const [pass, mode] of [

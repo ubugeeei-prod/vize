@@ -27,8 +27,8 @@ fn unavailable_typecheck_notice_points_to_typescript_7() {
 fn a_failed_native_backend_preserves_the_script_parser_fallback() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
-        project.path().join("vize.config.json"),
-        r#"{"lsp":{"lint":false,"typecheck":true},"typeChecker":{"corsaPath":"./missing-syntax-checker"}}"#,
+        project.path().join("vite.config.mjs"),
+        r#"export default { vue: {"languageServer":{"lint":false,"typecheck":true},"typeChecker":{"corsaPath":"./missing-syntax-checker"}} };"#,
     ).unwrap();
     let state = crate::server::ServerState::new();
     state.load_lsp_config(project.path());

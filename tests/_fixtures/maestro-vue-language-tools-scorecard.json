@@ -554,11 +554,7 @@
       "evidence": [
         {
           "file": "tools/support/editors/lsp_smoke.rs",
-          "contains": [
-            "expected_diagnostics()",
-            "expected_formatting()",
-            "expected_rename(&uri)"
-          ]
+          "contains": ["expected_diagnostics()", "expected_formatting()", "expected_rename(&uri)"]
         },
         {
           "file": ".github/actions/vscode-host-smoke/action.yml",
@@ -615,22 +611,21 @@
         "hover",
         "quick-fix",
         "semantic-tokens",
-        "rename"
+        "rename",
+        "formatting"
       ],
-      "mustExclude": ["formatting-provider-when-not-configured"],
+      "mustExclude": ["editor-defaults-overriding-project-settings"],
       "evidence": [
         {
           "file": "tools/commands/editors/helix/run-real-server.rs",
-          "contains": [
-            "\"typecheck = true\"",
-            "run_editor_contract(&repo, \"helix\", false)"
-          ]
+          "contains": ["run_editor_contract(&repo, \"helix\")"]
         },
         {
           "file": "tools/support/editors/lsp_smoke.rs",
           "contains": [
             "documentFormattingProvider",
-            "expected_rename(&uri)"
+            "expected_rename(&uri)",
+            "let options = json!({})"
           ]
         },
         {

@@ -283,15 +283,15 @@ fn collect_surfaces_sfc_level_lint_diagnostics() {
 fn collect_lints_standalone_html_with_configured_rule() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r#"{
-            "lsp": { "lint": true },
+        dir.path().join("vite.config.mjs"),
+        r#"export default { vue: {
+            "languageServer": { "lint": true },
             "linter": {
                 "rules": {
                     "script/no-options-api": "error"
                 }
             }
-        }"#,
+        } };"#,
     )
     .unwrap();
 

@@ -44,7 +44,7 @@ fn compiler_reads_whitespace_and_custom_elements_from_vite() {
     assert_no_dedicated_config(root);
     assert_eq!(
         fs::read_to_string(root.join("vite.config.mjs")).unwrap(),
-        support::SETTINGS
+        support::SETTINGS.as_str()
     );
 }
 
@@ -122,12 +122,12 @@ fn package_boundaries_precedence_and_sibling_settings_reach_the_formatter() {
     write(
         &root.join("packages/a"),
         "vite.config.mjs",
-        "export default {vize:{formatter:{singleQuote:true}}};",
+        "export default {vue:{formatter:{singleQuote:true}}};",
     );
     write(
         &root.join("packages/b"),
         "vite.config.mjs",
-        "export default {vize:{formatter:{singleQuote:false}}};",
+        "export default {vue:{formatter:{singleQuote:false}}};",
     );
     let a = root.join("packages/a/src");
     let b = root.join("packages/b/src");
@@ -144,13 +144,30 @@ fn package_boundaries_precedence_and_sibling_settings_reach_the_formatter() {
     fs::remove_file(root.join("packages/b/vite.config.mjs")).unwrap();
     assert_eq!(formatted(&b, &[]).as_str(), support::FORMATTED_DOUBLE);
 
-    // Existing same-directory dedicated configs still override Vite settings.
+    // Stale same-directory dedicated configs do not change canonical Vite settings.
     write(
         &root.join("packages/a"),
         "vize.config.json",
         r#"{"formatter":{"singleQuote":false}}"#,
     );
-    assert_eq!(formatted(&a, &[]).as_str(), support::FORMATTED_DOUBLE);
+    assert_eq!(formatted(&a, &[]).as_str(), support::FORMATTED_SINGLE);
+    let rejected = run(
+        &a,
+        &["fmt", "Quotes.vue", "--config", "../vize.config.json"],
+    );
+    let expected = vize_l0::cstr!(
+        "Invalid formatter configuration: failed to parse ../vize.config.json: {}\n",
+        support::LEGACY_CONFIG_ERROR
+    );
+    assert_eq!(
+        (
+            rejected.status.code(),
+            rejected.stdout.as_slice(),
+            rejected.stderr.as_slice()
+        ),
+        (Some(2), b"".as_slice(), expected.as_bytes()),
+        "{rejected:?}"
+    );
     write(
         &root.join("packages/a"),
         "manual.json",

@@ -28,7 +28,8 @@ pub use loader::{
     load_linter_config, load_linter_execution_with_source, load_linter_rule_options,
     load_lsp_config_snapshot, load_project_config_with_source, try_load_formatter_snapshot,
     try_load_linter_execution_with_project, try_load_linter_execution_with_source,
-    try_load_project_config_with_source, validate_explicit_config_path,
+    try_load_project_config_from_root, try_load_project_config_with_source,
+    validate_explicit_config_path,
 };
 pub use project::ProjectModel;
 pub use vize_l0::config::*;

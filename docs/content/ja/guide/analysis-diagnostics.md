@@ -108,7 +108,7 @@ src/App.vue
 
    export default defineConfig({
      lint: {
-       vize: {
+       vue: {
          rules: {
            "a11y/alt-text": "error",
            "vue/require-v-for-key": "off",
@@ -142,7 +142,7 @@ src/App.vue
 | 型情報を使う診断    | `type/*`                | `vize lint --type-aware`（TypeScript の型チェッカーを使用）          |
 | Musea と CSS        | `musea/*`               | Musea の art ブロックやスタイルを解析する lint                       |
 
-単一ファイルのルールは、Vize のリンターである Patina が実行します。Vite+ の設定、共有の `vize.config.*`、CLI、JavaScript API、Oxlint プラグインから設定できます。
+単一ファイルのルールは、Vize のリンターである Patina が実行します。Vite+ の設定、`vite.config.*` の共有の `vue:`、CLI、JavaScript API、Oxlint プラグインから設定できます。
 
 ファイル横断の診断は、provide と inject の対応、ID の重複、コンポーネントをまたぐリアクティビティの問題を検査します。出力されるレポートは[ファイル横断の複雑性](./cross-file-complexity.md)で説明しています。
 

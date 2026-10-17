@@ -120,8 +120,8 @@ mod tests {
     fn pattern_guard_keeps_its_arm_bindings_despite_script_offset_overlap() {
         let project = tempfile::tempdir().unwrap();
         std::fs::write(
-            project.path().join("vize.config.json"),
-            r#"{"experimentals":{"patternedTemplate":true}}"#,
+            project.path().join("vite.config.mjs"),
+            r#"export default { vue: {"experimentals":{"patternedTemplate":true}} };"#,
         )
         .unwrap();
         let state = crate::server::ServerState::new();

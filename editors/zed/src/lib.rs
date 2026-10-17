@@ -7,8 +7,6 @@ use zed_extension_api::{
 
 mod initialization_options;
 use initialization_options::initialization_options;
-#[cfg(test)]
-use initialization_options::recommended_initialization_options;
 
 struct VizeExtension;
 
@@ -72,7 +70,6 @@ impl zed::Extension for VizeExtension {
         let settings = LspSettings::for_worktree(language_server_id.as_ref(), worktree)?;
         Ok(Some(initialization_options(
             settings.initialization_options,
-            |filename| worktree.read_text_file(filename).is_ok(),
         )))
     }
 

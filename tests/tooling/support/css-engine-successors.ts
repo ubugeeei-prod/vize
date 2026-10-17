@@ -1,3 +1,4 @@
+import { vueConfigFixtureSource } from "./vue-config-fixture.ts";
 // Named corrected-engine outputs; the entire original corpus remains unchanged.
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -83,10 +84,10 @@ export function assertWholeFormatterCell(
   const before = original ? entry.source : expected;
   const changed = before !== expected;
   const options = Object.keys(entry.options).length
-    ? ["--config", "vize.config.json"]
+    ? ["--config", "vite.config.mjs"]
     : ["--no-config"];
   assert.deepEqual(row.args, ["fmt", ...options, check ? "--check" : "--write", "App.vue"]);
-  assert.equal(row.config, JSON.stringify({ formatter: entry.options }) + "\n");
+  assert.equal(row.config, vueConfigFixtureSource({ formatter: entry.options }));
   assert.equal(row.status, check && changed ? 1 : 0);
   assert.equal(row.before, before);
   assert.equal(row.after, check ? before : expected);
@@ -106,8 +107,8 @@ export function assertWholeFormatterCell(
   );
   const changedCell = authority.cliCells.find((cell: { id: string }) => cell.id === row.id);
   if (changedCell) {
-    assert.deepEqual(row.args, changedCell.args);
-    assert.equal(row.config, changedCell.sourceOptions);
+    assert.deepEqual(row.args, canonicalArguments(changedCell.args));
+    assert.equal(row.config, vueConfigFixtureSource(changedCell.sourceOptions));
     assert.equal(row.after, changedCell.wholeFileAfter);
     assert.equal(row.stdout, changedCell.wholeStdout);
     assert.equal(row.stderr, changedCell.wholeStderr);
@@ -135,19 +136,19 @@ export function assertWholeLinterCell(
     "--locale",
     "en",
     "--config",
-    "vize.config.json",
+    "vite.config.mjs",
     filename,
   ]);
   assert.equal(
     row.config,
-    JSON.stringify({
+    vueConfigFixtureSource({
       linter: {
         preset: "incremental",
         rules: Object.fromEntries(
           (entry.options.enabledRules as string[]).map((rule) => [rule, "warn"]),
         ),
       },
-    }) + "\n",
+    }),
   );
   assert.equal(row.status, 0);
   assert.equal(row.before, entry.source);
@@ -155,8 +156,8 @@ export function assertWholeLinterCell(
   assert.equal(row.stdout, changed ? changed.wholeStdout : originalStdout);
   assert.equal(row.stderr, "");
   if (changed) {
-    assert.deepEqual(row.args, changed.args);
-    assert.equal(row.config, changed.sourceOptions);
+    assert.deepEqual(row.args, canonicalArguments(changed.args));
+    assert.equal(row.config, vueConfigFixtureSource(changed.sourceOptions));
   }
   assertPhysicalBytes(row);
 }
@@ -173,4 +174,10 @@ function assertPhysicalBytes(row: WholeCell) {
   ]) {
     assert.equal(Buffer.from(value ?? "").toString("base64"), base64);
   }
+}
+
+// Transport names change with the configuration API. The complete frozen
+// argument order, native options, source, output, and status stay authoritative.
+function canonicalArguments(args: string[]): string[] {
+  return args.map((argument) => (argument === "vize.config.json" ? "vite.config.mjs" : argument));
 }

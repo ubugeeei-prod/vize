@@ -30,7 +30,7 @@ features:
     details: Navegue por Vue, HTML, SSR, Vapor, Musea, type-aware e faça diagnósticos cruzados com exemplos bons e ruins.
     link: pt-BR/rules/index.md
   - title: Configuração Compartilhada
-    details: Configure opções do compilador, escaneamento Vite, predefinições de lint, verificação de tipos, formatação, recursos LSP e Musea a partir de `vize.config.*`.
+    details: Compartilhe opções do compilador, lint, formatação, LSP e Musea em `vue:` no `vite.config.*`, e configure a verificação de tipos no `tsconfig.json`.
     link: pt-BR/guide/configuration.md
   - title: Verificação de Tipos Nativa
     details: |

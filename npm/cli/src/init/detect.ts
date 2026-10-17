@@ -19,8 +19,10 @@ export const NUXT_CONFIG_FILES = [
 export const VITE_CONFIG_FILES = [
   "vite.config.ts",
   "vite.config.mts",
+  "vite.config.cts",
   "vite.config.js",
   "vite.config.mjs",
+  "vite.config.cjs",
 ] as const;
 
 export type PackageManager = "pnpm" | "npm" | "yarn" | "bun";

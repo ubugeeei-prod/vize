@@ -8,9 +8,9 @@ fn collect_lints_configured_project_local_rule_options() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(dir.path().join("src")).unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r##"{
-            "lsp": { "lint": true },
+        dir.path().join("vite.config.mjs"),
+        r##"export default { vue: {
+            "languageServer": { "lint": true },
             "linter": {
                 "preset": "incremental",
                 "rules": {
@@ -37,7 +37,7 @@ fn collect_lints_configured_project_local_rule_options() {
                     }
                 }
             }
-        }"##,
+        } };"##,
     )
     .unwrap();
 
@@ -124,8 +124,8 @@ fn collect_lints_configured_html_self_closing_options() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(dir.path().join("src")).unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r##"{
+        dir.path().join("vite.config.mjs"),
+        r##"export default { vue: {
             "languageServer": { "lint": true },
             "linter": {
                 "preset": "incremental",
@@ -144,7 +144,7 @@ fn collect_lints_configured_html_self_closing_options() {
                     }
                 }
             }
-        }"##,
+        } };"##,
     )
     .unwrap();
 
@@ -176,8 +176,8 @@ fn collect_lints_configured_misskey_vue_rule_options() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(dir.path().join("src")).unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r##"{
+        dir.path().join("vite.config.mjs"),
+        r##"export default { vue: {
             "languageServer": { "lint": true },
             "linter": {
                 "preset": "incremental",
@@ -196,7 +196,7 @@ fn collect_lints_configured_misskey_vue_rule_options() {
                     "vue/attribute-hyphenation": "never"
                 }
             }
-        }"##,
+        } };"##,
     )
     .unwrap();
 
@@ -249,8 +249,8 @@ fn collect_musea_lint_respects_disabled_linter_config() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(dir.path().join("src")).unwrap();
     std::fs::write(
-        dir.path().join("vize.config.json"),
-        r##"{
+        dir.path().join("vite.config.mjs"),
+        r##"export default { vue: {
             "languageServer": { "lint": true },
             "linter": {
                 "enabled": false,
@@ -265,7 +265,7 @@ fn collect_musea_lint_respects_disabled_linter_config() {
                     }
                 }
             }
-        }"##,
+        } };"##,
     )
     .unwrap();
 
