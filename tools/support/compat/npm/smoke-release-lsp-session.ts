@@ -13,10 +13,18 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import type { ConfigLspReceipt } from "./smoke-release-config-lsp.ts";
 
-const [projectRoot] = process.argv.slice(2);
+const [projectRoot, mode, workspaceRoot] = process.argv.slice(2);
 assert.ok(projectRoot, "Usage: smoke-release-lsp-session.ts <project-root>");
+assert.ok(mode === undefined || mode === "--config-workspace", "unknown installed LSP mode");
 const root = fs.realpathSync(projectRoot);
+if (mode === "--config-workspace") assert.ok(workspaceRoot, "workspace root is required");
+const workspace = workspaceRoot === undefined ? root : fs.realpathSync(workspaceRoot);
+// Load config-only dependencies before spawning, so general public observers
+// remain dependency-free and config custody still sees every child byte.
+const configSession =
+  mode === "--config-workspace" ? await import("./smoke-release-config-lsp.ts") : undefined;
 const appPath = path.join(root, "src", "App.vue");
 const app = pathToFileURL(appPath).href;
 const componentPath = path.join(root, "src", "components", "HelloWorld.vue");
@@ -50,14 +58,41 @@ function serverEvidence(): string {
     stderr.slice(-3000),
   ].join("\n");
 }
-function writeSessionLog(): void {
+function writeSessionLog(custody?: ConfigLspReceipt): void {
+  if (mode === "--config-workspace") {
+    // Existing CI logs also retain the whole record when no artifact directory
+    // was requested; no packet is reduced to its diagnostic codes or a summary.
+    console.log(
+      JSON.stringify({
+        root,
+        workspace,
+        app,
+        results,
+        messages,
+        stderr: custody?.stderr ?? stderr,
+        custody,
+      }),
+    );
+  }
   if (!logDir) return;
   fs.mkdirSync(logDir, { recursive: true });
   const name = `lsp-${process.platform}-${process.arch}-node${process.versions.node}-${process.pid}`;
-  fs.writeFileSync(path.join(logDir, `${name}.stderr.log`), stderr);
+  fs.writeFileSync(
+    path.join(logDir, `${name}.stderr.log`),
+    custody ? Buffer.from(custody.stderrBase64, "base64") : stderr,
+  );
+  if (custody)
+    fs.writeFileSync(
+      path.join(logDir, `${name}.stdout.lsp`),
+      Buffer.from(custody.stdoutBase64, "base64"),
+    );
   fs.writeFileSync(
     path.join(logDir, `${name}.results.json`),
-    JSON.stringify({ root, app, results }, null, 2),
+    JSON.stringify(
+      { root, workspace, app, results, messages, ...(custody ? { custody } : {}) },
+      null,
+      2,
+    ),
   );
 }
 
@@ -70,21 +105,32 @@ type Message = {
 };
 const pending = new Map<number, (message: Message) => void>();
 const notifications: Message[] = [];
+const messages: Message[] = [];
 let buffer = Buffer.alloc(0);
+let protocolError: unknown;
 server.stdout.on("data", (chunk: Buffer) => {
   buffer = Buffer.concat([buffer, chunk]);
-  for (;;) {
-    const header = buffer.indexOf("\r\n\r\n");
-    if (header < 0) return;
-    const length = Number(
-      /Content-Length: (\d+)/i.exec(buffer.subarray(0, header).toString())?.[1],
-    );
-    if (buffer.length < header + 4 + length) return;
-    const message = JSON.parse(buffer.subarray(header + 4, header + 4 + length).toString("utf8"));
-    buffer = buffer.subarray(header + 4 + length);
-    if (message.id !== undefined && message.method === undefined)
-      pending.get(message.id)?.(message);
-    else if (message.method !== undefined) notifications.push(message);
+  if (protocolError !== undefined) return;
+  try {
+    for (;;) {
+      const header = buffer.indexOf("\r\n\r\n");
+      if (header < 0) return;
+      const length = Number(
+        /Content-Length: (\d+)/i.exec(buffer.subarray(0, header).toString())?.[1],
+      );
+      if (mode === "--config-workspace")
+        assert.ok(Number.isSafeInteger(length) && length >= 0, "invalid LSP Content-Length");
+      if (buffer.length < header + 4 + length) return;
+      const message = JSON.parse(buffer.subarray(header + 4, header + 4 + length).toString("utf8"));
+      messages.push(message);
+      buffer = buffer.subarray(header + 4 + length);
+      if (message.id !== undefined && message.method === undefined)
+        pending.get(message.id)?.(message);
+      else if (message.method !== undefined) notifications.push(message);
+    }
+  } catch (error) {
+    if (mode !== "--config-workspace") throw error;
+    protocolError = error;
   }
 });
 
@@ -115,17 +161,20 @@ function position(text: string, needle: string, offset = 0) {
   return { line: before.length - 1, character: before.at(-1)!.length };
 }
 
-await request("initialize", {
-  processId: process.pid,
-  rootUri: pathToFileURL(root).href,
-  capabilities: {},
-  workspaceFolders: [{ uri: pathToFileURL(root).href, name: path.basename(root) }],
-});
-send({ method: "initialized", params: {} });
-send({
-  method: "textDocument/didOpen",
-  params: { textDocument: { uri: app, languageId: "vue", version: 1, text: appText } },
-});
+async function initialize(): Promise<void> {
+  await request("initialize", {
+    processId: process.pid,
+    rootUri: pathToFileURL(workspace).href,
+    capabilities: {},
+    workspaceFolders: [{ uri: pathToFileURL(workspace).href, name: path.basename(workspace) }],
+  });
+  send({ method: "initialized", params: {} });
+  send({
+    method: "textDocument/didOpen",
+    params: { textDocument: { uri: app, languageId: "vue", version: 1, text: appText } },
+  });
+}
+
 const at = (needle: string, offset = 0) => ({
   textDocument: { uri: app },
   position: position(appText, needle, offset),
@@ -142,58 +191,81 @@ function mentions(result: unknown, file: string): boolean {
   return uris.some((uri) => samePath(path.resolve(fileURLToPath(uri)), file));
 }
 
-// Every feature is checked and every failure reported, so one run shows the
-// whole state of a host.
-const failures: string[] = [];
-async function expectFeature(
-  name: string,
-  method: string,
-  params: unknown,
-  ok: (result: unknown) => boolean,
-) {
-  try {
-    const result = await request(method, params);
-    results.push({ name, result });
-    if (!ok(result)) failures.push(`${name}: ${JSON.stringify(result)?.slice(0, 600)}`);
-  } catch (error) {
-    results.push({ name, result: String(error) });
-    failures.push(`${name}: ${error instanceof Error ? error.message : String(error)}`);
+if (configSession) {
+  await configSession.runConfigLspSession(server, {
+    run: async () => {
+      await initialize();
+      await configSession.runConfigWorkspaceLsp({
+        workspace,
+        notifications,
+        request,
+        send,
+        record: (name, result) => results.push({ name, result }),
+      });
+    },
+    shutdown: () => request("shutdown", undefined),
+    exit: () => {
+      send({ method: "exit" });
+      server.stdin.end();
+    },
+    protocolState: () => ({ remainder: buffer, error: protocolError }),
+    save: writeSessionLog,
+  });
+} else {
+  await initialize();
+  // Every feature is checked and every failure reported, so one run shows the
+  // whole state of a host.
+  const failures: string[] = [];
+  async function expectFeature(
+    name: string,
+    method: string,
+    params: unknown,
+    ok: (result: unknown) => boolean,
+  ) {
+    try {
+      const result = await request(method, params);
+      results.push({ name, result });
+      if (!ok(result)) failures.push(`${name}: ${JSON.stringify(result)?.slice(0, 600)}`);
+    } catch (error) {
+      results.push({ name, result: String(error) });
+      failures.push(`${name}: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
+
+  await expectFeature(
+    "hover on title shows its type",
+    "textDocument/hover",
+    at(':msg="title"', 6),
+    (result) =>
+      /\btitle\b/.test(JSON.stringify(result) ?? "") && /string/.test(JSON.stringify(result) ?? ""),
+  );
+  await expectFeature(
+    "definition of HelloWorld reaches the component",
+    "textDocument/definition",
+    at("HelloWorld from", 1),
+    (result) => mentions(result, componentPath),
+  );
+  await expectFeature(
+    "template completion offers title",
+    "textDocument/completion",
+    at(':msg="title"', 6),
+    (result) => {
+      const items = Array.isArray(result)
+        ? result
+        : ((result as { items?: unknown[] } | null)?.items ?? []);
+      return items.some((item) => (item as { label?: string }).label === "title");
+    },
+  );
+  await expectFeature(
+    "rename of title edits App.vue",
+    "textDocument/rename",
+    { ...at("const title", 6), newName: "heading" },
+    (result) => mentions(result, appPath),
+  );
+  writeSessionLog();
+  assert.deepEqual(failures, [], `project-local vize lsp failed in ${root}\n${serverEvidence()}`);
+
+  await request("shutdown", undefined);
+  send({ method: "exit" });
+  console.log("runtime: project-local vize lsp (hover, definition, completion, rename)");
 }
-
-await expectFeature(
-  "hover on title shows its type",
-  "textDocument/hover",
-  at(':msg="title"', 6),
-  (result) =>
-    /\btitle\b/.test(JSON.stringify(result) ?? "") && /string/.test(JSON.stringify(result) ?? ""),
-);
-await expectFeature(
-  "definition of HelloWorld reaches the component",
-  "textDocument/definition",
-  at("HelloWorld from", 1),
-  (result) => mentions(result, componentPath),
-);
-await expectFeature(
-  "template completion offers title",
-  "textDocument/completion",
-  at(':msg="title"', 6),
-  (result) => {
-    const items = Array.isArray(result)
-      ? result
-      : ((result as { items?: unknown[] } | null)?.items ?? []);
-    return items.some((item) => (item as { label?: string }).label === "title");
-  },
-);
-await expectFeature(
-  "rename of title edits App.vue",
-  "textDocument/rename",
-  { ...at("const title", 6), newName: "heading" },
-  (result) => mentions(result, appPath),
-);
-writeSessionLog();
-assert.deepEqual(failures, [], `project-local vize lsp failed in ${root}\n${serverEvidence()}`);
-
-await request("shutdown", undefined);
-send({ method: "exit" });
-console.log("runtime: project-local vize lsp (hover, definition, completion, rename)");

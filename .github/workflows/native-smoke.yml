@@ -6,12 +6,16 @@ on:
       target:
         description: Native producer scope; default retains the full smoke matrix
         type: choice
-        options: [all, darwin-arm64]
+        options: [all, darwin-arm64, packed-config]
         default: all
       host_only:
         description: Produce one selected host artifact; not full matrix qualification
         type: boolean
         default: false
+      expected_source_sha:
+        description: Exact reviewed source for packed-config; unused by the full matrix
+        type: string
+        required: false
   schedule:
     # Full native/fresh-install smoke is release evidence, not a per-push gate.
     # Keep it on a weekly cadence plus manual runs so normal PR pushes stay
@@ -19,7 +23,7 @@ on:
     - cron: "17 3 * * 1"
 
 concurrency:
-  group: native-smoke-${{ github.workflow }}-${{ github.ref }}
+  group: native-smoke-${{ github.workflow }}-${{ github.ref }}${{ inputs.target == 'packed-config' && '-packed-config' || '' }}
   cancel-in-progress: true
 
 permissions:
@@ -32,7 +36,7 @@ env:
 
 jobs:
   host-native-smoke:
-    if: github.event_name != 'workflow_dispatch' || !inputs.host_only || inputs.target != 'darwin-arm64'
+    if: github.event_name != 'workflow_dispatch' || (inputs.target != 'packed-config' && (!inputs.host_only || inputs.target != 'darwin-arm64'))
     name: Native host smoke (${{ matrix.target }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
@@ -134,7 +138,7 @@ jobs:
             npm/native/.artifacts/native/build-token-receipt.json
 
   fresh-install-smoke:
-    if: github.event_name != 'workflow_dispatch' || !inputs.host_only || inputs.target != 'darwin-arm64'
+    if: github.event_name != 'workflow_dispatch' || (inputs.target != 'packed-config' && (!inputs.host_only || inputs.target != 'darwin-arm64'))
     name: Fresh install smoke (${{ matrix.platform.target }}, Node ${{ matrix.node-version }})
     runs-on: ${{ matrix.platform.runner }}
     timeout-minutes: 45
@@ -167,19 +171,119 @@ jobs:
             msvc_arch: arm64
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-    steps:
+    steps: &fresh-install-steps
+      - name: Select packed configuration evidence directory
+        if: env.PACKED_CONFIG_MODE == 'true'
+        shell: bash
+        run: |
+          packed_config_output="$RUNNER_TEMP/packed-config-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir -p "$packed_config_output"
+          printf 'PACKED_CONFIG_OUTPUT=%s\n' "$packed_config_output" >> "$GITHUB_ENV"
+          printf 'VIZE_SMOKE_LSP_LOG_DIR=%s/lsp\n' "$packed_config_output" >> "$GITHUB_ENV"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: ${{ env.PACKED_CONFIG_MODE == 'true' && '0' || '1' }}
       - name: Setup runtime package managers
         uses: ./.github/actions/setup-runtime-package-managers
         with:
           node-version: ${{ matrix.node-version }}
+      - name: Authenticate selected packed configuration source
+        id: packed-config-source
+        if: env.PACKED_CONFIG_OUTPUT != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$PACKED_CONFIG_OUTPUT"
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { execFileSync } from 'node:child_process';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const source = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+          const files = [
+            '.github/workflows/native-smoke.yml', 'rust-toolchain.toml',
+            'tools/support/compat/npm/smoke-release-config-fixture.ts',
+            'tools/support/compat/npm/smoke-release-config-workspace.ts',
+            'tools/support/compat/npm/smoke-release-config-lsp.ts',
+            'tools/support/compat/npm/smoke-release-config-evidence.ts',
+            'tools/support/compat/npm/smoke-release-init-workspace.ts',
+            'tools/support/compat/npm/smoke-release-lsp-session.ts',
+            'tests/tooling/release/release-smoke-init-config-free.test.ts',
+            'tests/tooling/release/release-smoke-config-evidence.test.ts',
+            'tests/tooling/native-packed-config-workflow.test.ts',
+            'tests/tooling/support/native-packed-config-extension.ts',
+            'tests/_fixtures/differential/vite-native-image-identity/packed-config-extension.json',
+            '.github/workflows/lsp-config-diagnostics.yml',
+            'tests/tooling/lsp-config-diagnostics-workflow.test.ts',
+            'tools/support/compat/github/run-lsp-config-diagnostics.ts',
+            'tools/commands/release/npm/smoke-release-install.rs',
+            'tools/support/common.rs',
+            'tools/support/release/npm_publish.rs',
+            'tools/support/release/npm_smoke_init.rs',
+            'tools/support/compat/npm/smoke-process.mjs',
+            'tools/support/compat/npm/smoke-release-init-fresh.mjs',
+            'tools/support/compat/npm/smoke-release-init-typecheck.mjs',
+            'tools/support/compat/npm/smoke-release-init-project.mjs',
+            'tools/support/compat/npm/smoke-release-init-paths.mjs',
+            'tools/support/compat/npm/smoke-release-init-outcome.mjs',
+            'tools/support/compat/npm/smoke-release-init-managers.mjs',
+            'tools/support/compat/npm/smoke-release-init-config-free.mjs',
+            'tools/support/compat/npm/smoke-release-init-shapes.mjs',
+            'tools/support/compat/npm/smoke-release-path-poison.mjs',
+            'tools/support/compat/npm/smoke-release-semver.mjs',
+          ];
+          const { producer: producerWitness } = JSON.parse(fs.readFileSync('tests/_fixtures/differential/vite-native-image-identity/packed-config-extension.json', 'utf8'));
+          const producerFiles = Object.keys(producerWitness.files);
+          const producerAbsentFiles = producerWitness.absentFiles;
+          const toolchain = /^channel\s*=\s*"([^"]+)"/mu.exec(fs.readFileSync('rust-toolchain.toml', 'utf8'))?.[1];
+          assert.match(toolchain ?? '', /^\d+\.\d+\.\d+$/u);
+          const receipt = {
+            scope: 'one Linux Node24 source-built packed workspace; no release/full-matrix credit',
+            source, toolchain, workflow: process.env.GITHUB_WORKFLOW_SHA,
+            expected: process.env.PACKED_CONFIG_EXPECTED_SOURCE,
+            producer: process.env.PACKED_CONFIG_PRODUCER,
+            reviewedProducerFiles: producerWitness.files, producerAbsentFiles,
+            run: process.env.GITHUB_RUN_ID, attempt: process.env.GITHUB_RUN_ATTEMPT,
+            files: Object.fromEntries([...files, ...producerFiles].map(file =>
+              [file, fs.existsSync(file) ? createHash('sha256').update(fs.readFileSync(file)).digest('hex') : null])),
+          };
+          fs.writeFileSync(path.join(process.env.PACKED_CONFIG_OUTPUT, 'source.json'), JSON.stringify(receipt, null, 2) + '\n');
+          assert.match(receipt.expected ?? '', /^[0-9a-f]{40}$/);
+          assert.equal(source, receipt.expected);
+          assert.equal(source, process.env.GITHUB_SHA);
+          assert.equal(source, receipt.workflow);
+          assert.equal(process.env.PACKED_CONFIG_HOST_ONLY, 'false');
+          assert.equal(receipt.producer, producerWitness.head);
+          assert.equal(new Set(producerAbsentFiles).size, producerAbsentFiles.length);
+          assert.deepEqual([...producerAbsentFiles].sort(), producerFiles.filter(file => producerWitness.files[file] === null).sort());
+          execFileSync('git', ['diff', '--exit-code', 'HEAD']);
+          execFileSync('git', ['merge-base', '--is-ancestor', receipt.producer, source]);
+          assert.match(receipt.producer ?? "", /^[0-9a-f]{40}$/u);
+          receipt.producerFiles = Object.fromEntries(producerFiles.map(file => {
+            if (producerAbsentFiles.includes(file)) {
+              assert.equal(execFileSync('git', ['ls-tree', '--name-only', receipt.producer, '--', file], { encoding: 'utf8' }), '', file);
+              assert.equal(fs.lstatSync(file, { throwIfNoEntry: false }), undefined, file);
+              return [file, null];
+            }
+            assert.match(producerWitness.files[file], /^[0-9a-f]{64}$/u);
+            return [file, createHash('sha256').update(execFileSync('git', ['show', `${receipt.producer}:${file}`])).digest('hex')];
+          }));
+          fs.writeFileSync(path.join(process.env.PACKED_CONFIG_OUTPUT, 'source.json'), JSON.stringify(receipt, null, 2) + '\n');
+          for (const file of producerFiles) {
+            assert.equal(receipt.producerFiles[file], producerWitness.files[file], file);
+            assert.equal(receipt.files[file], receipt.producerFiles[file], file);
+          }
+          execFileSync('git', ['diff', '--exit-code', '--name-status', receipt.producer, source, '--', ...producerFiles]);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `toolchain=${toolchain}\n`);
+          JS
       - name: Setup MSVC toolchain (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
         with:
           arch: ${{ matrix.platform.msvc_arch }}
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
+        with: { toolchain: "${{ steps.packed-config-source.outputs.toolchain || 'stable' }}" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: runner.os == 'Linux'
         with:
@@ -203,8 +307,40 @@ jobs:
             --filter './npm/native...' \
             --filter './npm/cli...' \
             --filter './npm/builder/vite...'
+      - name: Verify packed configuration driver laws and command versions
+        if: env.PACKED_CONFIG_OUTPUT != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/tooling/release/release-smoke-init-config-free.test.ts tests/tooling/release/release-smoke-config-evidence.test.ts tests/tooling/native-image-producer-workflow.test.ts tests/tooling/native-smoke-workflow.test.ts tests/tooling/native-packed-config-workflow.test.ts tests/tooling/release/release-smoke-init-fresh.test.ts 2>&1 | tee "$PACKED_CONFIG_OUTPUT/driver-tests.log"
+          { node --version; rustc -vV; cargo --version; } > "$PACKED_CONFIG_OUTPUT/versions.txt"
+          node --input-type=module <<'JS' >> "$PACKED_CONFIG_OUTPUT/versions.txt"
+          import assert from 'node:assert/strict';
+          import { spawnSync } from 'node:child_process';
+          import fs from 'node:fs';
+          import os from 'node:os';
+          import path from 'node:path';
+          import { PACKAGE_MANAGERS } from './tools/support/compat/npm/smoke-release-init-managers.mjs';
+          import { managerCommand, managerEnv } from './tools/support/compat/npm/smoke-release-init-project.mjs';
+          const managerProbeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'vize-manager-versions-'));
+          try {
+            for (const manager of Object.values(PACKAGE_MANAGERS)) {
+              const argv = managerCommand(manager, ['--version']);
+              const result = spawnSync(argv.command, argv.args, { cwd: managerProbeRoot, encoding: 'utf8', env: managerEnv(manager) });
+              console.log(JSON.stringify({ manager: manager.id, cwd: managerProbeRoot, ...argv, status: result.status, signal: result.signal, stdout: result.stdout, stderr: result.stderr, error: result.error?.message }));
+              assert.equal(result.error, undefined);
+              assert.equal(result.status, 0);
+              assert.equal(result.signal, null);
+            }
+          } finally {
+            fs.rmSync(managerProbeRoot, { recursive: true, force: true });
+          }
+          JS
       - name: Build @vizejs/native
         run: vp run --filter './npm/native' build:ci
+      - name: Capture selected native image authority
+        if: env.PACKED_CONFIG_OUTPUT != ''
+        run: node npm/native/scripts/native-build-receipt.mjs
       - name: Prepare native platform packages
         shell: bash
         working-directory: npm/native
@@ -233,9 +369,29 @@ jobs:
       - name: Fresh install and runtime smoke published tarballs
         shell: bash
         run: |
-          rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
-            npm/native npm/native/npm/* \
-            npm/cli npm/builder/vite
+          if [ -n "${PACKED_CONFIG_OUTPUT:-}" ]; then
+            set -euo pipefail
+            rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks --keep-temp \
+              npm/native npm/native/npm/* \
+              npm/cli npm/builder/vite 2>&1 | tee "$PACKED_CONFIG_OUTPUT/runtime.log"
+          else
+            rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
+              npm/native npm/native/npm/* \
+              npm/cli npm/builder/vite
+          fi
+      - name: Bind installed native images to the selected source producer
+        if: always() && env.PACKED_CONFIG_OUTPUT != ''
+        run: node tools/support/compat/npm/smoke-release-config-evidence.ts collect
+      - name: Preserve complete selected packed configuration evidence
+        if: always() && env.PACKED_CONFIG_OUTPUT != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: packed-config-${{ github.sha }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            ${{ env.PACKED_CONFIG_OUTPUT }}
+            npm/native/.artifacts/native/build-token-receipt.json
 
   selected-host-native-producer:
     if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
@@ -250,3 +406,24 @@ jobs:
             msvc_arch: amd64
     env: *native-host-env
     steps: *native-host-steps
+
+  packed-config-acceptance:
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'packed-config'
+    name: Packed configuration acceptance (linux-x64-gnu, Node24)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    strategy:
+      matrix:
+        node-version: ["24"]
+        platform:
+          - runner: ubuntu-22.04
+            target: linux-x64-gnu
+            msvc_arch: amd64
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      PACKED_CONFIG_MODE: "true"
+      PACKED_CONFIG_EXPECTED_SOURCE: ${{ inputs.expected_source_sha }}
+      PACKED_CONFIG_HOST_ONLY: ${{ inputs.host_only }}
+      # Updated only when the reviewed producer is deliberately frozen again.
+      PACKED_CONFIG_PRODUCER: a9dec43c406c7afd1d2ce8067fc563678e28ac64
+    steps: *fresh-install-steps

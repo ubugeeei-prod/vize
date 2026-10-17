@@ -9,6 +9,7 @@ import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 import { parse as parseToml } from "@iarna/toml";
 import { runCiBuild } from "../../npm/native/scripts/build-ci.mjs";
+import { withoutPackedConfigExtension } from "./support/native-packed-config-extension.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -53,7 +54,10 @@ test("native smoke keeps MoonBit out of the npm fresh install path", () => {
 
 const selected =
   "github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'";
-const workflowFile = () => readRepoFile(".github", "workflows", "native-smoke.yml");
+// The named exact extension has its own current-mode laws; retain every old
+// immutable workflow law on the authenticated inverse, not a replacement hash.
+const workflowFile = () =>
+  withoutPackedConfigExtension(readRepoFile(".github", "workflows", "native-smoke.yml"));
 const workflowObject = () => parse(workflowFile());
 const evaluate = (
   expression: string,
@@ -91,7 +95,7 @@ function authenticateWorkflow(source: string) {
   assert.equal(createHash("sha256").update(reversed).digest("hex"), originalDigest);
 }
 
-void test("the complete original workflow changes only the setup predicate and ported token laws", () => {
+void test("the authenticated historical workflow retains the setup predicate and ported token laws", () => {
   const source = workflowFile();
   authenticateWorkflow(source);
   for (const removed of [

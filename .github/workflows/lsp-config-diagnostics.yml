@@ -1,8 +1,9 @@
 name: LSP config startup diagnostics
-run-name: Vben startup trace @ ${{ github.event.pull_request.head.sha }}
+run-name: Vben startup trace @ ${{ github.event.pull_request.head.sha || github.sha }}
 
 # One instrumented original performance case, not full Check qualification.
 on:
+  workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
@@ -14,7 +15,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: lsp-config-diagnostics-${{ github.event.pull_request.number }}
+  group: lsp-config-diagnostics-${{ github.event.pull_request.number || github.ref_name }}
   cancel-in-progress: false
 
 env:
@@ -25,7 +26,7 @@ env:
   VIZE_PERF_BUDGET_SCALE: "1"
   VIZE_TRACE_EDITOR_PREPARATION: "1"
   VIZE_LSP_BIN: target/ci/vize
-  EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha }}
+  EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
   vben-startup:
@@ -34,8 +35,13 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+      - name: Verify the exact qualification source
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
@@ -147,7 +153,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: lsp-config-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha }}
+          name: lsp-config-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             target/vize-tests/lsp-config-diagnostics/
             target/vize-tests/metrics/vben-lsp-incremental/
