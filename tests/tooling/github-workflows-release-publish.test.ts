@@ -26,6 +26,56 @@ function jobNeeds(job: ReleaseJob): string[] {
   return Array.isArray(job.needs) ? job.needs : [job.needs];
 }
 
+type PublishedManifest = {
+  name: string;
+  dependencies?: Record<string, string>;
+  optionalDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+  scripts?: Record<string, string>;
+};
+
+function assertNoPublishHooks(manifest: PublishedManifest): void {
+  assert.deepEqual(
+    Object.keys(manifest.scripts ?? {}).filter((name) =>
+      ["prepublishOnly", "prepare", "prepack", "postpack", "publish", "postpublish"].includes(name),
+    ),
+    [],
+    `${manifest.name} publishes its prebuilt artifact without lifecycle hooks`,
+  );
+}
+
+function assertPublishedDependencies(
+  jobs: Record<string, ReleaseJob>,
+  manifests: Array<[string, PublishedManifest]>,
+): void {
+  const owners = new Map(manifests.map(([job, manifest]) => [manifest.name, job]));
+  const native = manifests.find(([job]) => job === "release-npm-native")?.[1];
+  for (const name of Object.keys(native?.optionalDependencies ?? {}))
+    owners.set(name, "release-npm-native");
+  function waitsFor(job: string, target: string, seen = new Set<string>()): boolean {
+    if (seen.has(job)) return false;
+    seen.add(job);
+    return jobNeeds(jobs[job]).some(
+      (dependency) => dependency === target || waitsFor(dependency, target, seen),
+    );
+  }
+  for (const [job, manifest] of manifests) {
+    const peers = Object.keys(manifest.peerDependencies ?? {}).filter(
+      (name) => !manifest.peerDependenciesMeta?.[name]?.optional,
+    );
+    for (const name of [
+      ...Object.keys(manifest.dependencies ?? {}),
+      ...Object.keys(manifest.optionalDependencies ?? {}),
+      ...peers,
+    ]) {
+      const dependency = owners.get(name);
+      if (dependency && dependency !== job)
+        assert.equal(waitsFor(job, dependency), true, `${manifest.name} latest requires ${name}`);
+    }
+  }
+}
+
 function publicationJobNames(jobs: Record<string, ReleaseJob>): string[] {
   return Object.entries(jobs)
     .filter(([, job]) => {
@@ -51,6 +101,27 @@ function setupVpSteps(job: ReleaseJob): NonNullable<ReleaseJob["steps"]> {
     .flatMap((step) => (step.uses === sharedPublisher ? sharedRecipe().runs.steps : [step]))
     .filter((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
 }
+
+test("release preflight executes the publication workflow laws", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "release-preflight-contracts.yml"));
+  const files = [
+    "tests/tooling/github-workflows-release-publish.test.ts",
+    "tests/tooling/github-workflows-release-build.test.ts",
+    "tests/tooling/github-workflows-release-smoke.test.ts",
+    "tests/tooling/github-workflows-release-vscode-publisher.test.ts",
+    "tests/tooling/release-jsr-workflow.test.ts",
+  ];
+  assert.deepEqual(
+    files.filter((file) => workflow.on.pull_request.paths.includes(file)),
+    files,
+  );
+  const steps = workflow.jobs.contracts.steps as NonNullable<ReleaseJob["steps"]>;
+  const commands = steps.flatMap((step) => (step.run ? [step.run.trim().split(/\s+/)] : []));
+  assert.deepEqual(
+    commands.filter((command) => command.includes(files[0])),
+    [["node", "--test", ...files]],
+  );
+});
 
 test("every publication edge waits for credential-free release preflight", () => {
   const source = readRepoFile(".github", "workflows", "release.yml");
@@ -214,6 +285,7 @@ test("release workflow publishes npm packages from package-specific artifacts", 
   ] as const;
 
   const jobs = (parse(workflow) as { jobs: Record<string, ReleaseJob> }).jobs;
+  const manifests: Array<[string, PublishedManifest]> = [];
   for (const [jobName, artifactName, downloadPath] of downloadTargets) {
     const shared = jobs[jobName].steps?.find((step) => step.uses === sharedPublisher);
     const download = jobs[jobName].steps?.find((step) =>
@@ -226,7 +298,45 @@ test("release workflow publishes npm packages from package-specific artifacts", 
         : { name: artifactName, path: downloadPath },
       jobName,
     );
+    const manifest = JSON.parse(
+      readRepoFile(...downloadPath.split("/"), "package.json"),
+    ) as PublishedManifest;
+    assertNoPublishHooks(manifest);
+    manifests.push([jobName, manifest]);
   }
+  for (const [job, directory] of [
+    ["release-npm-native", "native"],
+    ["release-npm-fresco-native", "fresco-native"],
+  ])
+    manifests.push([job, JSON.parse(readRepoFile("npm", directory, "package.json"))]);
+  assertPublishedDependencies(jobs, manifests);
+
+  for (const job of ["release-npm-plugin-sdk", "release-npm-musea-nuxt"])
+    assert.deepEqual(jobNeeds(jobs[job]), [
+      "build-release-packages",
+      "smoke-release-packages",
+      "release-preflight",
+    ]);
+  assert.equal(jobNeeds(jobs["release-npm-nuxt"]).includes("release-npm-musea-nuxt"), false);
+  assert.deepEqual(jobNeeds(jobs["release-jsr"]), [
+    "release-npm-cli",
+    "release-npm-native",
+    "release-npm-vite-plugin",
+  ]);
+
+  for (const [job, dependency] of [
+    ["release-npm-cli", "release-npm-native"],
+    ["release-npm-vite-plugin", "release-npm-unplugin"],
+    ["release-npm-vite-plugin-musea", "release-npm-vite-plugin"],
+  ]) {
+    const premature = structuredClone(jobs);
+    premature[job].needs = jobNeeds(premature[job]).filter((name) => name !== dependency);
+    assert.throws(() => assertPublishedDependencies(premature, manifests), /latest requires/);
+  }
+  assert.throws(
+    () => assertNoPublishHooks({ name: "future-publisher", scripts: { prepack: "npm install" } }),
+    /without lifecycle hooks/,
+  );
 });
 
 test("release workflow smokes the wasm package wrapper before publishing", () => {

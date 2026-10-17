@@ -126,6 +126,19 @@ Marketplace extension. Open VSX uses a separate workflow. Issue-specific
 installed-package reproductions remain required wherever the issue's acceptance
 criteria call for them.
 
+Publishers consume prebuilt package artifacts, but their public npm dependency
+graph also determines publication order. A package advertised under `latest`
+must wait for its exact internal dependencies and required peers to become
+visible, including native platform packages. Independent packages such as the
+plugin SDK and Musea Nuxt can publish alongside native packages; Nuxt waits for
+the Musea Vite plugin it actually imports. Each publisher retains its version
+and dist-tag visibility checks and provenance. JSR installs wait for all npm
+packages they consume, and the GitHub Release still joins every publisher.
+Sealed build artifacts alone do not justify advertising an uninstallable
+dependency graph. The v0.463.0 job durations model approximately 54 seconds of
+savings from this ordering change; a future release must measure the real
+effect, including registry propagation and queueing, against the 15-minute goal.
+
 ## Current-main promotion
 
 The command performs the whole release:
