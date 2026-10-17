@@ -251,13 +251,12 @@ fn six_default_presets_preserve_complete_cli_warning_off_repair_and_alias_packet
                             }
                         })
                 {
-                    messages.extend(
-                        case["baselineCliMessages"]
-                            .as_array()
-                            .unwrap()
-                            .iter()
-                            .cloned(),
-                    );
+                    let baseline = case["baselineCliMessages"].as_array().unwrap();
+                    if case["baselineCliMessagesFirst"].as_bool() == Some(true) {
+                        messages = baseline.iter().cloned().chain(messages).collect();
+                    } else {
+                        messages.extend(baseline.iter().cloned());
+                    }
                 }
                 let expected = serde_json::json!([{
                     "file": filename, "errorCount": 0, "warningCount": messages.len(), "messages": messages

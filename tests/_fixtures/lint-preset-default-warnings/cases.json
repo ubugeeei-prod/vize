@@ -166,7 +166,7 @@
         "column": 29,
         "endLine": 3,
         "endColumn": 35,
-        "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options."
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
       },
       "repair": "<script setup>\ndefineOptions({ inheritAttrs: false });\n</script>\n<template><div><div v-bind=\"$attrs\"></div></div></template>\n",
       "negativeSources": [
@@ -176,9 +176,33 @@
         "<template><div v-bind=\"{ '$attrs': local }\"></div></template>\n",
         "<script>export default { inheritAttrs: false };</script><script setup></script><template><div v-bind=\"$attrs\"></div></template>\n"
       ],
-      "baselinePresets": [],
-      "baselineDiagnostics": [],
-      "baselineCliMessages": []
+      "baselinePresets": ["opinionated", "nuxt"],
+      "baselineDiagnostics": [
+        {
+          "rule_name": "vue/no-empty-component-block",
+          "severity": "warning",
+          "message": "The <script> block is empty",
+          "start": 0,
+          "end": 24,
+          "help": "Add meaningful content to the block or remove it entirely.",
+          "fix": null,
+          "labels": []
+        }
+      ],
+      "baselineCliMessages": [
+        {
+          "ruleId": "vue/no-empty-component-block",
+          "ruleDocsPath": "docs/content/rules/vue.md",
+          "severity": 1,
+          "message": "[vize:vue/no-empty-component-block] The <script> block is empty",
+          "line": 1,
+          "column": 1,
+          "endLine": 2,
+          "endColumn": 10,
+          "help": "Add meaningful content to the block or remove it entirely."
+        }
+      ],
+      "baselineCliMessagesFirst": true
     }
   ],
   "baselineAuthority": {
@@ -191,5 +215,35 @@
   "essentialExtensionAuthority": {
     "base": "a94b04b4a2a576400b8c4baed644ae89ff6a7553",
     "scope": "The two essential-* source payloads, expected complete descriptors, repairs and negative controls are authored before candidate execution. Both rules already belong to all four broad presets; only Essential gains their warnings. Original two cases and archived baseline evidence are retained unchanged. No source execution or snapshot recapture is claimed."
+  },
+  "essentialBaselineAuthority": {
+    "run": 39031013421,
+    "runConclusion": "failure",
+    "successfulCliBuildJob": 117391461352,
+    "source": "500fd109327684d05c7a42214b11996c98ab9799",
+    "comparison": "b17e7ff2e25fdd6a583691bc009d444cb8fe95b8",
+    "artifact": 12100388289,
+    "artifactZipSha256": "438e9f50628725a79e32c831463b28eb9a6e636ccbbdbc3222610e682b856752",
+    "executableSha256": "ce08d6d3caa4ddb19c167c0728968dd2f7dc4a3cae6f630c47737a6fb6dff7b6",
+    "baselineReceiptSha256": "06cf30acbcf11ee1f64111e4bfc3e4c85203029a30df47afab60b9b59806b522",
+    "wholeSourceAuthority": [
+      {
+        "path": "crates/vize_patina/src/rules/opinionated/vue/no_empty_component_block.rs",
+        "sha256": "64fb4543d478a3628e3f9ec6f65a9be88d526df7c6be760240ad825cf49b09c6"
+      },
+      {
+        "path": "crates/vize_patina/src/output/json.rs",
+        "sha256": "32937f0714c101c226814a2fe3c3a3ae7aadab54a289aafcbe84809b7f146fdc"
+      },
+      {
+        "path": "crates/vize_patina/src/diagnostic/formatting.rs",
+        "sha256": "42793dda2b251b2fa9048bce99280def9c3ca6c85eb60f32dd57c453a03fce82"
+      },
+      {
+        "path": "crates/vize/src/commands/lint/aggregate.rs",
+        "sha256": "e386772551349461cbc6a4f601902b5f82d0d29bf728d5210c54bdee07fb5960"
+      }
+    ],
+    "scope": "Prechange source baseline only, not published0.461 acceptance. All crates/vendor/davinci/.cargo/toolchain Git trees match b17; rootCargo.toml/lock differ only exact release version literals.24 actual commands on the two frozen sources across four broad presets (default/off/repair) exit0/stderr0, retaining original input bytes. Preserve the existing empty-script warning in opinionated/Nuxt. Raw promoted warning descriptors are unchanged; CLI help follows the unchanged plain-text renderer. Full CLI order is authored explicitly, never sorted or filtered by this corpus."
   }
 }
