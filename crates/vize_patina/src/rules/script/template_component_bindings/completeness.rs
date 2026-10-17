@@ -10,6 +10,13 @@ const MAX_ITEMS: usize = 4096;
 
 pub(super) fn normal_setup_is_complete(program: &Program<'_>) -> bool {
     for statement in &program.body {
+        // Named/default re-exports are not a direct, authenticated options object.
+        if matches!(
+            statement,
+            Statement::ExportNamedDeclaration(_) | Statement::ExportAllDeclaration(_)
+        ) {
+            return false;
+        }
         let Statement::ExportDefaultDeclaration(export) = statement else {
             continue;
         };
@@ -54,6 +61,9 @@ pub(super) fn normal_setup_is_complete(program: &Program<'_>) -> bool {
 fn setup_keys_complete(value: &Expression<'_>) -> bool {
     let statements = match value {
         Expression::FunctionExpression(function) => {
+            if function.generator {
+                return false;
+            }
             let Some(body) = &function.body else {
                 return false;
             };

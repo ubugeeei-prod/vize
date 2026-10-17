@@ -371,4 +371,25 @@ mod tests {
             );
         }
     }
+    #[test]
+    fn generator_and_indirect_default_exports_cannot_prove_binding_absence() {
+        for source in [
+            "<script>export default { setup: function*() { return { $listeners: {} } } }</script><template>{{ $listeners }}</template>",
+            "<script>const component = { setup() { return { $listeners: {} } } }; export { component as default };</script><template>{{ $listeners }}</template>",
+            "<script>export { default } from './component.js';</script><template>{{ $listeners }}</template>",
+        ] {
+            let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+            let arena = Allocator::default();
+            let block = descriptor.script.as_ref().unwrap();
+            let parsed = Parser::new(&arena, &block.content, SourceType::ts()).parse();
+            assert!(!parsed.panicked && parsed.diagnostics.is_empty());
+            let bindings =
+                TemplateComponentBindings::from_parsed_sfc(&descriptor, None, Some(&parsed));
+            assert!(
+                !bindings.can_report_component_reference("$listeners"),
+                "{source}"
+            );
+            assert!(!bindings.has_authored_value("$listeners"), "{source}");
+        }
+    }
 }
