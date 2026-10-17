@@ -86,12 +86,28 @@ fn global_and_local_scopes_preserve_only_authored_module_exports() {
         (":global(.external) .root {}", vec!["root"]),
         (":global .external .another, .root {}", vec!["root"]),
         (":global .external :local .root {}", vec!["root"]),
-        (":global(.external :local(.root)) {}", vec!["root"]),
+        (":global(.external) :local(.root) {}", vec!["root"]),
         (
             ":local(.root, .row):global(.loaded) {}",
             vec!["root", "row"],
         ),
         (".root:is(:global(.external), .row) {}", vec!["root", "row"]),
+        // PostCSS CSS Modules keeps bare global mode across the function's
+        // selector list, unlike the narrow functional :global(...) above.
+        (".bar:not(:global .foo, .baz) {}", vec!["bar"]),
+        (".root:is(:global .external, .row) {}", vec!["root"]),
+        (
+            ".root:is(:global .external, .row) .after {}",
+            vec!["after", "root"],
+        ),
+        (
+            ".root:is(:global .external, .row), .after {}",
+            vec!["after", "root"],
+        ),
+        (
+            ".root:is(:global .external, :local .row) .after {}",
+            vec!["after", "root", "row"],
+        ),
         ("[data-kind=.attribute] .root {}", vec!["root"]),
         (":global(.external) {}", vec![]),
     ] {
