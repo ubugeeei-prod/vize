@@ -49,6 +49,7 @@ pub fn emit_dom_source_with_options_captured_and_slot_scope<C: CaptureSink>(
             options,
             strict_slot_params,
             no_slotted,
+            preflight: None,
         },
         &mut NoObserver,
         capture,

@@ -1,0 +1,787 @@
+{
+  "schema": "vize.public-vue-script-suppressions-9291",
+  "version": 1,
+  "qualification": "Only the frozen four source regression contracts through the unmodified public npm CLI/native packages; no full51, template, receiver/span, source-built or release-wide acceptance.",
+  "authority": {
+    "commit": "8f2e12d8519205bf2b5eae2db0e5e323a45a57d0",
+    "path": "crates/vize_patina/src/linter/tests/vue_script_suppressions.rs",
+    "blob": "2bb6b1114efb86d34f9c3d03df0eaf8b4c387b7b",
+    "sha256": "c56cd5a2315253c66572609a340927ee182fe3b1b3ca5520b79dd51d63152013",
+    "tests": [
+      "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "vue_and_native_script_names_share_region_enable_state",
+      "each_vue_script_alias_preserves_every_other_enabled_finding"
+    ]
+  },
+  "cases": [
+    {
+      "id": "listeners-positive",
+      "sourceTest": "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { created() { return this.$listeners } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "a9e070f6c857f0935b4f652c039495830ca91ef2ddb0a011f7d4864277773bc0",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": [
+        "script/no-deprecated-dollar-listeners-api"
+      ]
+    },
+    {
+      "id": "listeners-clean",
+      "sourceTest": "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { created() { return this.$attrs } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "801f92a47ed7c0b84927b46e6023c3746d05e6f217eb214fd66d91697dc9047f",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-unrelated-rule",
+      "sourceTest": "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vue/no-v-html */\nexport default { created() { return this.$listeners } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "b112b3b215ce00b7144e9c4db1816f98ede619b1044a2331eace9fd34dfc05b5",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": [
+        "script/no-deprecated-dollar-listeners-api"
+      ]
+    },
+    {
+      "id": "listeners-eslint-plain-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vue/no-deprecated-dollar-listeners-api */\nexport default { created() { return this.$listeners } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "47e36bed323317d8cf3fc427afcbc2ffc0d930017d1d8f48442e47e6994fd40f",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-eslint-plain-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// eslint-disable-next-line vue/no-deprecated-dollar-listeners-api\nexport default { created() { return this.$listeners } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "ca34d00d99f350a0275c45fd8db1e98bfa14f0ba28895612a54e5e0e1f88dcc0",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-eslint-plain-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { created() { return this.$listeners } } // eslint-disable-line vue/no-deprecated-dollar-listeners-api\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "e2a5dec0d72c8db6bfaf4d6f9d62576d78dd9a26e45ff5505fa8676deb2067cb",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-oxlint-plain-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* oxlint-disable vue/no-deprecated-dollar-listeners-api */\nexport default { created() { return this.$listeners } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "5ec88f3ce07518ac87ee2d3337d3a285d0b189d29bbfdf7d7fc4af21e0e99f7e",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-oxlint-plain-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// oxlint-disable-next-line vue/no-deprecated-dollar-listeners-api\nexport default { created() { return this.$listeners } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "622fb6519662b8a7bdbae4993672651c2495574b5397b094280b50055fac6ae3",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-oxlint-plain-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { created() { return this.$listeners } } // oxlint-disable-line vue/no-deprecated-dollar-listeners-api\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "0fe9269544f80e5b320409d1da04a68f799dc270032e495cd0d4b48fef1ea210",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-eslint-plugin-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vize/vue/no-deprecated-dollar-listeners-api */\nexport default { created() { return this.$listeners } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "26a15ab685cfb4c68966cba73a0816f3d5d195b7a7c8bd6227dc6369f661d772",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-eslint-plugin-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// eslint-disable-next-line vize/vue/no-deprecated-dollar-listeners-api\nexport default { created() { return this.$listeners } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "4da7ea7cecaa90c43561ff19adf4c99120fb79dde6bbfe87675b7c55d18543e4",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-eslint-plugin-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { created() { return this.$listeners } } // eslint-disable-line vize/vue/no-deprecated-dollar-listeners-api\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "3a1967986706d0ceba7dfa62edf15aea3b11f080df14d88b6a5e62bbc42198be",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-oxlint-plugin-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* oxlint-disable vize/vue/no-deprecated-dollar-listeners-api */\nexport default { created() { return this.$listeners } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "e55dc2880d1a378e1e32c1676fa9667af9d47b61d9695aa7468ea8cdd809679f",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-oxlint-plugin-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// oxlint-disable-next-line vize/vue/no-deprecated-dollar-listeners-api\nexport default { created() { return this.$listeners } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "3152b19897f90c6f1fd744d48e65d728fff8116297d7acdeb8056f054a0810cf",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-oxlint-plugin-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { created() { return this.$listeners } } // oxlint-disable-line vize/vue/no-deprecated-dollar-listeners-api\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "553de7183ff13870db192403299fa6b6426b4c87f5103cb970a8e0e5161beb6b",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "listeners-enable-native-to-vue",
+      "sourceTest": "vue_and_native_script_names_share_region_enable_state",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable script/no-deprecated-dollar-listeners-api */\n/* eslint-enable vue/no-deprecated-dollar-listeners-api */\nexport default { created() { return this.$listeners } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "b71737c3c7b4568ce8482fb3cae49bb0b3820e48258a31e047dde42c77bc891d",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": [
+        "script/no-deprecated-dollar-listeners-api"
+      ]
+    },
+    {
+      "id": "listeners-enable-vue-to-native",
+      "sourceTest": "vue_and_native_script_names_share_region_enable_state",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vue/no-deprecated-dollar-listeners-api */\n/* eslint-enable script/no-deprecated-dollar-listeners-api */\nexport default { created() { return this.$listeners } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "8271d55fffa3af3c474d9977946ac87752925e4e700cf8174d9d33305279d433",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "aa21315e9a4e03b95a30461a6a541903bf2eca65175f001c8fde570c383b2de4",
+      "expectedRuleIds": [
+        "script/no-deprecated-dollar-listeners-api"
+      ]
+    },
+    {
+      "id": "listeners-preserve-other-three",
+      "sourceTest": "each_vue_script_alias_preserves_every_other_enabled_finding",
+      "filename": "OtherFindings.vue",
+      "source": "<script>\n/* eslint-disable vue/no-deprecated-dollar-listeners-api */\nexport default { props: { count: { type: Number, default: 'bad' } }, computed: { total() { return 1 } }, methods: { read() { this.$listeners; this.$scopedSlots; return this.total() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "1e6736db279a1366f0263441fdc517fedc82183d55a84254f7a4d2b85d8b9be9",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\",\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\",\n      \"script/no-use-computed-property-like-method\": \"error\",\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "b2cb21d4a1393a180c6a3294b860293e80097a3f5f313f8a4abf0585c1833c13",
+      "expectedRuleIds": [
+        "script/no-deprecated-dollar-scopedslots-api",
+        "script/no-use-computed-property-like-method",
+        "script/require-valid-default-prop"
+      ]
+    },
+    {
+      "id": "scopedslots-positive",
+      "sourceTest": "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { created() { return this.$scopedSlots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "db0a8d1775e846ccdc81d37322bc75641a81b1e0bf7ceb9a53f0464c5541752c",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": [
+        "script/no-deprecated-dollar-scopedslots-api"
+      ]
+    },
+    {
+      "id": "scopedslots-clean",
+      "sourceTest": "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { created() { return this.$slots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "aa5281a5e48ab5b6428927cbc2591bd476c01780ca8b1e6340d7973ba3601d71",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-unrelated-rule",
+      "sourceTest": "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vue/no-v-html */\nexport default { created() { return this.$scopedSlots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "83ba08b54d0b78daf3604705a0d7168f4965a0b8b7b781358717f15bd058b942",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": [
+        "script/no-deprecated-dollar-scopedslots-api"
+      ]
+    },
+    {
+      "id": "scopedslots-eslint-plain-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vue/no-deprecated-dollar-scopedslots-api */\nexport default { created() { return this.$scopedSlots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "59b83e15e03924335536522da8d9303bf8e6420c67dfcd28d99a5b20869aa753",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-eslint-plain-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// eslint-disable-next-line vue/no-deprecated-dollar-scopedslots-api\nexport default { created() { return this.$scopedSlots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "a3cd48f81cf0f73778cb0c7937eeda8d4a884e9cafeac4784fd9ec0653164089",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-eslint-plain-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { created() { return this.$scopedSlots } } // eslint-disable-line vue/no-deprecated-dollar-scopedslots-api\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "a810cfeaee2d35a23185595a82d44727004bf68e6ae503bdce29499c4c758d94",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-oxlint-plain-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* oxlint-disable vue/no-deprecated-dollar-scopedslots-api */\nexport default { created() { return this.$scopedSlots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "4f9d3d955bd1ee54840ad9e63327fa68a9719dd474dd4e9c86a9205a0ae952cf",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-oxlint-plain-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// oxlint-disable-next-line vue/no-deprecated-dollar-scopedslots-api\nexport default { created() { return this.$scopedSlots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "59bfe878bc0b5ca6b000cf07b3eb5e6f955e585ed0562b5f4fb0dc1a4327220a",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-oxlint-plain-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { created() { return this.$scopedSlots } } // oxlint-disable-line vue/no-deprecated-dollar-scopedslots-api\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "c6c12668ff506a5b2b06c5436936268b85436b20dc1bb3ca8e6b52308e72ec3d",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-eslint-plugin-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vize/vue/no-deprecated-dollar-scopedslots-api */\nexport default { created() { return this.$scopedSlots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "5f68429abd340ab73090ca87c179fb58a1a6de36011c5794b16f2f89426a0236",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-eslint-plugin-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// eslint-disable-next-line vize/vue/no-deprecated-dollar-scopedslots-api\nexport default { created() { return this.$scopedSlots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "3d205e16b9614c4b778578f49d94a0ee207389f6a5d184f2cc9e1324e68c2551",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-eslint-plugin-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { created() { return this.$scopedSlots } } // eslint-disable-line vize/vue/no-deprecated-dollar-scopedslots-api\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "c5ef44936d13a2e24dbf2e20bdc80f0f42567bf1eab3c3934f4f0feb6d293fbc",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-oxlint-plugin-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* oxlint-disable vize/vue/no-deprecated-dollar-scopedslots-api */\nexport default { created() { return this.$scopedSlots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "fce0609bfb3f72a00611e83cfdcbbeb7d832d3477239202f4441ba9fb2e6f70f",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-oxlint-plugin-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// oxlint-disable-next-line vize/vue/no-deprecated-dollar-scopedslots-api\nexport default { created() { return this.$scopedSlots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "9af3fddc5bdd3a113dcbeb8021e154ae8a0d6a80c2c9986c115ad879e9fca82b",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-oxlint-plugin-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { created() { return this.$scopedSlots } } // oxlint-disable-line vize/vue/no-deprecated-dollar-scopedslots-api\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "144ca7b58af0826edc2a97a15b39a9cc274d6b1233905726bbd9ca53269b1180",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "scopedslots-enable-native-to-vue",
+      "sourceTest": "vue_and_native_script_names_share_region_enable_state",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable script/no-deprecated-dollar-scopedslots-api */\n/* eslint-enable vue/no-deprecated-dollar-scopedslots-api */\nexport default { created() { return this.$scopedSlots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "e88490ba75e9bdede40d9cd46fe16bda3d2e5c568a1a19ba92eb80f324f09fa1",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": [
+        "script/no-deprecated-dollar-scopedslots-api"
+      ]
+    },
+    {
+      "id": "scopedslots-enable-vue-to-native",
+      "sourceTest": "vue_and_native_script_names_share_region_enable_state",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vue/no-deprecated-dollar-scopedslots-api */\n/* eslint-enable script/no-deprecated-dollar-scopedslots-api */\nexport default { created() { return this.$scopedSlots } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "70f66b3bfe84f9515f6fd14f4d91ca176cb73b19a6e1d20090a48e4c0d92f154",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a4b3134e65e26a928ae2d212bcee8b64073ae3d11cd4babd02b765818dab0143",
+      "expectedRuleIds": [
+        "script/no-deprecated-dollar-scopedslots-api"
+      ]
+    },
+    {
+      "id": "scopedslots-preserve-other-three",
+      "sourceTest": "each_vue_script_alias_preserves_every_other_enabled_finding",
+      "filename": "OtherFindings.vue",
+      "source": "<script>\n/* eslint-disable vue/no-deprecated-dollar-scopedslots-api */\nexport default { props: { count: { type: Number, default: 'bad' } }, computed: { total() { return 1 } }, methods: { read() { this.$listeners; this.$scopedSlots; return this.total() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "80889f4e79640afc932be59c91e2089d3b352f412dc9f77fa6d6d04645858db5",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\",\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\",\n      \"script/no-use-computed-property-like-method\": \"error\",\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "b2cb21d4a1393a180c6a3294b860293e80097a3f5f313f8a4abf0585c1833c13",
+      "expectedRuleIds": [
+        "script/no-deprecated-dollar-listeners-api",
+        "script/no-use-computed-property-like-method",
+        "script/require-valid-default-prop"
+      ]
+    },
+    {
+      "id": "computed-positive",
+      "sourceTest": "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "07cb5b2ea812ce1449d65cc6f671bdd85ee631a81ede4bae0df5883e1b0d8bfa",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": [
+        "script/no-use-computed-property-like-method"
+      ]
+    },
+    {
+      "id": "computed-clean",
+      "sourceTest": "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "b15607012480029fea949d0dcd799a6bdb1728e928cbb6ed38137481e637ece4",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-unrelated-rule",
+      "sourceTest": "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vue/no-v-html */\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "e6aa2cbf4c5b83d141a307f65da4a091252275372882bb7e41dce005c1554275",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": [
+        "script/no-use-computed-property-like-method"
+      ]
+    },
+    {
+      "id": "computed-eslint-plain-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vue/no-use-computed-property-like-method */\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "be77655162a8ef505d113faf14f5cf5e78e5260d426bcdf17d43bbfb3afd553d",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-eslint-plain-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// eslint-disable-next-line vue/no-use-computed-property-like-method\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "4fd0e61d6c7586956930d8c673904fa37acc4cf28f0d2a993342af927c09ceb9",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-eslint-plain-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } } // eslint-disable-line vue/no-use-computed-property-like-method\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "74b47a49016bea24adb1bf71ff974e75eb1118bb0a487b315aaa59a87f56fe10",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-oxlint-plain-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* oxlint-disable vue/no-use-computed-property-like-method */\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "b02aec8803d08c5ceefd211fcbb935f48bc9858c3128e0a3dbb1929c11d2fe7d",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-oxlint-plain-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// oxlint-disable-next-line vue/no-use-computed-property-like-method\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "4348feebc5120d8be99d72e806b9e9bdf865e8753264bc6977d2ede511d93a69",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-oxlint-plain-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } } // oxlint-disable-line vue/no-use-computed-property-like-method\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "3d161d53ffea5ba2c1e76e95aa5a8385fcad04b2e1705040a5cbb333ab89189b",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-eslint-plugin-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vize/vue/no-use-computed-property-like-method */\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "088ca4f1d4285a4fb146c24c1ed60d9d5b40ddaccbd1e293b381dd80e9ed5975",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-eslint-plugin-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// eslint-disable-next-line vize/vue/no-use-computed-property-like-method\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "3e7af0e96fd3b3d49738f9bd754d3b56bacec7992a5670cfeb66480af58a334b",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-eslint-plugin-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } } // eslint-disable-line vize/vue/no-use-computed-property-like-method\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "603ba796e5644d966b3c616d5f8a8f5c51ebd2fb37ee79548f3d1b0c3a50b761",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-oxlint-plugin-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* oxlint-disable vize/vue/no-use-computed-property-like-method */\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "3c9d5d798c6c1ed10b7713974b317ae7e8bf7a91e68ab745f0586a506f8541bd",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-oxlint-plugin-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// oxlint-disable-next-line vize/vue/no-use-computed-property-like-method\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "6e9006ecb4659194a0925f9197a16e4029d224e132a0ff03df33bc755e67859d",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-oxlint-plugin-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } } // oxlint-disable-line vize/vue/no-use-computed-property-like-method\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "32dcd95ab6bb026388e73e6b282c5ea969a35228d31d64f4f8dc556523bfd764",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "computed-enable-native-to-vue",
+      "sourceTest": "vue_and_native_script_names_share_region_enable_state",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable script/no-use-computed-property-like-method */\n/* eslint-enable vue/no-use-computed-property-like-method */\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "20bf4793ba1d305d1f3979007abe94cf942067c8ad5993a91d2afb4bd4c5b943",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": [
+        "script/no-use-computed-property-like-method"
+      ]
+    },
+    {
+      "id": "computed-enable-vue-to-native",
+      "sourceTest": "vue_and_native_script_names_share_region_enable_state",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vue/no-use-computed-property-like-method */\n/* eslint-enable script/no-use-computed-property-like-method */\nexport default { computed: { size() { return 3 } }, methods: { read() { return this.size() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "3b56ad161d890bbae0255019532543a6763ced5ae4db0af5e1de253740bcb866",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-use-computed-property-like-method\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "69942c3efa959828c894370ec47cef08d08069ccd42fbdcdb31283753a856c7e",
+      "expectedRuleIds": [
+        "script/no-use-computed-property-like-method"
+      ]
+    },
+    {
+      "id": "computed-preserve-other-three",
+      "sourceTest": "each_vue_script_alias_preserves_every_other_enabled_finding",
+      "filename": "OtherFindings.vue",
+      "source": "<script>\n/* eslint-disable vue/no-use-computed-property-like-method */\nexport default { props: { count: { type: Number, default: 'bad' } }, computed: { total() { return 1 } }, methods: { read() { this.$listeners; this.$scopedSlots; return this.total() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "3f7267f76657e0d933958b57e452525d4a392bc0c0ad20020e1e36ef6c4ae6f5",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\",\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\",\n      \"script/no-use-computed-property-like-method\": \"error\",\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "b2cb21d4a1393a180c6a3294b860293e80097a3f5f313f8a4abf0585c1833c13",
+      "expectedRuleIds": [
+        "script/no-deprecated-dollar-listeners-api",
+        "script/no-deprecated-dollar-scopedslots-api",
+        "script/require-valid-default-prop"
+      ]
+    },
+    {
+      "id": "default-positive",
+      "sourceTest": "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { props: { enabled: { type: Boolean, default: 3 } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "b83747614fe963ae461084a8279783730a55bf8de0f70b94775c821c3d253643",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": [
+        "script/require-valid-default-prop"
+      ]
+    },
+    {
+      "id": "default-clean",
+      "sourceTest": "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { props: { enabled: { type: Boolean, default: false } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "496a037390c0e0177bd27cc955097c471ae8525f013fa4cdaa353112164a6885",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-unrelated-rule",
+      "sourceTest": "vue_script_alias_controls_retain_unsuppressed_positives_and_clean_sources",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vue/no-v-html */\nexport default { props: { enabled: { type: Boolean, default: 3 } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "070b5107881cdeec512184207cb740959a1ae47c1a396d5ffbc95967f31b8eb7",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": [
+        "script/require-valid-default-prop"
+      ]
+    },
+    {
+      "id": "default-eslint-plain-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vue/require-valid-default-prop */\nexport default { props: { enabled: { type: Boolean, default: 3 } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "c5bf51661be9d7a50554d30f18c0849798e31eef280084245643ec4c29f73393",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-eslint-plain-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// eslint-disable-next-line vue/require-valid-default-prop\nexport default { props: { enabled: { type: Boolean, default: 3 } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "f9b680c93aa001260872ca36c4b400fbcf38cd3b0c011435bbb024640b91f4df",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-eslint-plain-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { props: { enabled: { type: Boolean, default: 3 } } } // eslint-disable-line vue/require-valid-default-prop\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "1eac58cbda209683dfb67f88105889618057129ab45064af9599585f17c8fac7",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-oxlint-plain-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* oxlint-disable vue/require-valid-default-prop */\nexport default { props: { enabled: { type: Boolean, default: 3 } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "19459a92c00d87955e904bb736a6fe420c55a491bfca238264fa4bd8b8a3dc5d",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-oxlint-plain-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// oxlint-disable-next-line vue/require-valid-default-prop\nexport default { props: { enabled: { type: Boolean, default: 3 } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "9e11e971725f09c6e77089a034e142ffb31234671025c929509ef0f978bc3c39",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-oxlint-plain-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { props: { enabled: { type: Boolean, default: 3 } } } // oxlint-disable-line vue/require-valid-default-prop\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "09994708fdc60841a18e518ca717293a2bb7c755a394fb7011619bade8d5c5b1",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-eslint-plugin-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vize/vue/require-valid-default-prop */\nexport default { props: { enabled: { type: Boolean, default: 3 } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "268f3c5120c9c6d7933b9b4126c538512a33d783490f4a0e0f051c8f9d13f247",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-eslint-plugin-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// eslint-disable-next-line vize/vue/require-valid-default-prop\nexport default { props: { enabled: { type: Boolean, default: 3 } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "a9535383e9c7cadce1fbaf2fa0a2bf14a19ee8ec5130bb0550f85f25a59ede1b",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-eslint-plugin-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { props: { enabled: { type: Boolean, default: 3 } } } // eslint-disable-line vize/vue/require-valid-default-prop\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "600266aedfdf5c89efecd96e1995412e309954feb7327b2d197a6484a96a12af",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-oxlint-plugin-block",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* oxlint-disable vize/vue/require-valid-default-prop */\nexport default { props: { enabled: { type: Boolean, default: 3 } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "1e8f3661a736698c35aa5a4c7267d22f4d673b958f4bd72cf76b114d0a9841ac",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-oxlint-plugin-next-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n// oxlint-disable-next-line vize/vue/require-valid-default-prop\nexport default { props: { enabled: { type: Boolean, default: 3 } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "89e170f3b20b509800b846784d3116b35c5c9566f4aeb72d17af1426758a26f1",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-oxlint-plugin-same-line",
+      "sourceTest": "vue_script_aliases_work_for_block_next_line_and_line_pragmas",
+      "filename": "AliasControls.vue",
+      "source": "<script>\nexport default { props: { enabled: { type: Boolean, default: 3 } } } // oxlint-disable-line vize/vue/require-valid-default-prop\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "a5423d93e77796a2782a76f51b6f3580a8a89c85bcbb14eac4d79909ef1ba7f3",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": []
+    },
+    {
+      "id": "default-enable-native-to-vue",
+      "sourceTest": "vue_and_native_script_names_share_region_enable_state",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable script/require-valid-default-prop */\n/* eslint-enable vue/require-valid-default-prop */\nexport default { props: { enabled: { type: Boolean, default: 3 } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "daf2ac8aa6978eaf6476e4b051d72860948661bafbd1c07e668567a3ea778220",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": [
+        "script/require-valid-default-prop"
+      ]
+    },
+    {
+      "id": "default-enable-vue-to-native",
+      "sourceTest": "vue_and_native_script_names_share_region_enable_state",
+      "filename": "AliasControls.vue",
+      "source": "<script>\n/* eslint-disable vue/require-valid-default-prop */\n/* eslint-enable script/require-valid-default-prop */\nexport default { props: { enabled: { type: Boolean, default: 3 } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "2f83ce45ed2961964b75a1f0db4f1639e1869bfdc0ff9ddf17a315cfe782ed46",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "a839019e84ff3d3ae3bc6bf37d7052e35663bfdac034984f538587456a30e687",
+      "expectedRuleIds": [
+        "script/require-valid-default-prop"
+      ]
+    },
+    {
+      "id": "default-preserve-other-three",
+      "sourceTest": "each_vue_script_alias_preserves_every_other_enabled_finding",
+      "filename": "OtherFindings.vue",
+      "source": "<script>\n/* eslint-disable vue/require-valid-default-prop */\nexport default { props: { count: { type: Number, default: 'bad' } }, computed: { total() { return 1 } }, methods: { read() { this.$listeners; this.$scopedSlots; return this.total() } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "e7a5039de1e1664ce7ced5384f03ab6ee75c8466463e197b28e6aa832bee7675",
+      "config": "{\n  \"linter\": {\n    \"enabled\": true,\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\",\n      \"script/no-deprecated-dollar-scopedslots-api\": \"error\",\n      \"script/no-use-computed-property-like-method\": \"error\",\n      \"script/require-valid-default-prop\": \"error\"\n    }\n  }\n}\n",
+      "configSha256": "b2cb21d4a1393a180c6a3294b860293e80097a3f5f313f8a4abf0585c1833c13",
+      "expectedRuleIds": [
+        "script/no-deprecated-dollar-listeners-api",
+        "script/no-deprecated-dollar-scopedslots-api",
+        "script/no-use-computed-property-like-method"
+      ]
+    }
+  ]
+}

@@ -67,6 +67,7 @@ pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
                 no_slotted,
             },
             capture,
+            &mut None,
         )
     )
     .ok()
@@ -74,6 +75,10 @@ pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
 
 /// Emit one DOM module through L2, with the SFC-only slot check when requested.
 /// The product L2 emitter with a compile-time selected stage capture sink.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "existing emission inputs and optional borrowed validation"
+)]
 pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
     allocator: &Allocator,
     source: &str,
@@ -82,11 +87,42 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
     pre_s2_walks: Option<WalkCounts>,
     policy: SlotEmitPolicy,
     capture: &mut C,
+    preflight: &mut Option<&mut dyn vize_l1_to_l2::SurfacePreflight>,
 ) -> Result<CodegenResultWithSections, EmitError> {
     let SlotEmitPolicy {
         strict_slot_params,
         no_slotted,
     } = policy;
+    if let Some(preflight) = preflight.as_deref_mut() {
+        let observe = global_profiler().is_enabled();
+        let observed = vize_l1_to_l2::emit_dom_source_with_preflight(
+            allocator,
+            source,
+            LegacyCaps::for_version(dialect),
+            options,
+            strict_slot_params,
+            no_slotted,
+            preflight,
+            observe,
+            capture,
+        );
+        let (emit, budget) = if C::RECORDING {
+            observed
+        } else {
+            super::noting_refusal(observed)
+        }?;
+        if let Some(budget) = budget {
+            super::record_l2_budget(budget, pre_s2_walks);
+        }
+        return Ok(CodegenResultWithSections {
+            result: CodegenResult {
+                code: emit.code,
+                preamble: emit.preamble,
+                map: None,
+            },
+            sections: Some(l2_codegen_sections(emit.sections)),
+        });
+    }
     if !C::RECORDING {
         return super::noting_refusal(super::emit_l2(
             allocator,
@@ -111,29 +147,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
                 no_slotted,
                 capture,
             )?;
-        let budget = observed.budget;
-        // P2-12b observes the compiler path that actually produced this DOM
-        // module. The regular entry point keeps the observer uninstantiated,
-        // preserving the no-observer cost law outside explicit profiling.
-        profiler.record_counter_enabled("l2.dom.files", 1);
-        profiler
-            .record_counter_enabled("l2.dom.transform.walks", u64::from(budget.transform.walks));
-        profiler.record_counter_enabled(
-            "l2.dom.transform.passes",
-            u64::from(budget.transform.passes),
-        );
-        profiler.record_counter_enabled("l2.dom.emit.walks", u64::from(budget.emit_walks));
-        profiler.record_counter_enabled("l2.dom.emit.visits", u64::from(budget.emit_visits));
-        profiler.record_counter_enabled("l2.dom.total.walks", u64::from(budget.total_walks()));
-        let (pre_s2_walks, pre_s2_visits) = pre_s2_walks.map_or((0, 0), |counts| {
-            (counts.total_walks(), counts.total_visits())
-        });
-        profiler.record_counter_enabled("l2.dom.pre_s2.walks", pre_s2_walks);
-        profiler.record_counter_enabled("l2.dom.pre_s2.visits", pre_s2_visits);
-        profiler.record_counter_enabled(
-            "l2.dom.build.walks",
-            pre_s2_walks + u64::from(budget.total_walks()),
-        );
+        super::record_l2_budget(observed.budget, pre_s2_walks);
         observed.emit
     } else {
         vize_l1_to_l2::emit_dom_source_with_options_captured_and_slot_scope(

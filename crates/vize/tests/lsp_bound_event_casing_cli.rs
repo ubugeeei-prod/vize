@@ -206,7 +206,7 @@ fn assert_case(case: &Value) -> Option<Value> {
         .collect();
     let mut observations = Vec::new();
     let mut wanted = Vec::new();
-    for (index, query) in case["queries"].as_array().unwrap().iter().enumerate() {
+    for query in case["queries"].as_array().unwrap() {
         let params = json!({"textDocument":{"uri":fixture.uri(query["file"].as_str().unwrap())},"position":query["position"]});
         let (refs_id, refs) = fixture.request(
             "textDocument/references",
@@ -237,14 +237,13 @@ fn assert_case(case: &Value) -> Option<Value> {
             &actual_rename,
             &expected_rename,
         );
-        // No independently authored declaration-origin definition vector exists.
-        // All160 responses remain in the packet, with an explicit absent contract.
-        let contracted = index >= 8;
-        if contracted && !allowed_definitions.as_array().unwrap().contains(&def) {
+        // The independently authored source-name target also owns all eight
+        // declaration cursors, including quoted defineEmits event names.
+        if !allowed_definitions.as_array().unwrap().contains(&def) {
             failures.push(json!({"context":"whole contracted definition response","query":query,"actual":def,"allowedWholeResponses":allowed_definitions}));
         }
-        observations.push(json!({"query":query,"referencesReply":refs,"definitionReply":def,"renameReply":actual_rename,"definitionContracted":contracted}));
-        wanted.push(json!({"query":query,"referencesReply":expected_refs,"renameReply":expected_rename,"definitionContracted":contracted,"allowedWholeDefinitionResponses":if contracted {allowed_definitions} else {Value::Null}}));
+        observations.push(json!({"query":query,"referencesReply":refs,"definitionReply":def,"renameReply":actual_rename,"definitionContracted":true}));
+        wanted.push(json!({"query":query,"referencesReply":expected_refs,"renameReply":expected_rename,"definitionContracted":true,"allowedWholeDefinitionResponses":allowed_definitions}));
     }
     assert_eq!(observations.len(), 33);
     let original_disk: Vec<_> = FILES
@@ -297,7 +296,7 @@ fn assert_case(case: &Value) -> Option<Value> {
         }
     }
     let actual = json!({"nativeGuard":guard,"initialDiagnostics":initial,"observations":observations,"originalDiskAfterQueries":original_disk,"applicationError":application_error,"selectedApplicationQueryIndex":0,"appliedFiles":version2,"independentGoldenFiles":version3,"allDiagnosticPublications":publications});
-    let expected = json!({"queries":wanted,"selectedApplicationQueryIndex":0,"version2":expected_version2,"independentVersion3":expected_version3,"declarationOriginDefinitionsObservedOnly":8,"allowedWholeDiagnosticPublications":allowed_publications});
+    let expected = json!({"queries":wanted,"selectedApplicationQueryIndex":0,"version2":expected_version2,"independentVersion3":expected_version3,"allDefinitionOriginsContracted":true,"allowedWholeDiagnosticPublications":allowed_publications});
     fixture.capture(&context, case, &expected, &actual);
     (!failures.is_empty())
         .then(|| json!({"context":context,"failures":failures,"expected":expected,"actual":actual}))

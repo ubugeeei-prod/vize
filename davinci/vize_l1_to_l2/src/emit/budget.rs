@@ -12,16 +12,20 @@ use crate::pass::{TransformProfile, run_dom_transform_with_profile};
 use super::run::{DomEmitObservation, emit_dom_observed};
 use super::{DomEmit, DomEmitOptions, EmitError};
 
+mod preflight;
+pub use preflight::{SurfacePreflight, emit_dom_source_with_preflight};
+
 mod slot_scope;
 pub use slot_scope::{
     emit_dom_source_observed_with_options_captured_and_slot_scope,
     emit_dom_source_with_options_captured_and_slot_scope,
 };
 
-struct EmitInvocation<'o, 'p> {
+struct EmitInvocation<'o, 'p, 'v> {
     options: &'o DomEmitOptions<'p>,
     strict_slot_params: bool,
     no_slotted: bool,
+    preflight: Option<&'v mut dyn SurfacePreflight>,
 }
 
 /// Observer-facing counts for the L2 DOM emitter.
@@ -131,6 +135,7 @@ fn emit_dom_source_observed_with_slot_policy_captured<C: CaptureSink>(
             options,
             strict_slot_params,
             no_slotted,
+            preflight: None,
         },
         &mut transform,
         capture,
@@ -197,6 +202,7 @@ pub fn emit_dom_source_patch_facts_observed_with_options<'a>(
         &mut observer,
         false,
         false,
+        None,
     )?;
     Ok(ObservedPatchFactsEmit {
         emit: observed.emit,
@@ -204,6 +210,10 @@ pub fn emit_dom_source_patch_facts_observed_with_options<'a>(
     })
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "existing source compilation inputs and optional borrowed validation"
+)]
 pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -212,6 +222,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
     observer: &mut O,
     strict_slot_params: bool,
     no_slotted: bool,
+    preflight: Option<&mut dyn SurfacePreflight>,
 ) -> Result<DomEmitObservation, EmitError> {
     ensure_sufficient_stack(|| {
         let (tree, errors) = parse_with_options(
@@ -221,6 +232,11 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
             },
         );
+        if let Some(preflight) = preflight
+            && !preflight.check(Some((&tree, &errors)))
+        {
+            return Err(EmitError::Diagnostics);
+        }
         let mut lowered = lower_with_caps_and_comment_policy(
             allocator,
             &tree,
@@ -245,7 +261,7 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
     allocator: &'a Allocator,
     source: &'a str,
     caps: LegacyCaps,
-    invocation: EmitInvocation<'_, '_>,
+    invocation: EmitInvocation<'_, '_, '_>,
     observer: &mut O,
     capture: &mut C,
 ) -> Result<DomEmitObservation, EmitError> {
@@ -253,6 +269,7 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
         options,
         strict_slot_params,
         no_slotted,
+        preflight,
     } = invocation;
     if !C::RECORDING {
         return emit_dom_source_with_options_and_observer(
@@ -263,6 +280,7 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
             observer,
             strict_slot_params,
             no_slotted,
+            preflight,
         );
     }
     ensure_sufficient_stack(|| {
@@ -273,6 +291,11 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
             },
         );
+        if let Some(preflight) = preflight
+            && !preflight.check(Some((&tree, &errors)))
+        {
+            return Err(EmitError::Diagnostics);
+        }
         capture.page(Level::L1, "parse", || {
             let mut text = String::default();
             vize_l1::render::render(&tree, &mut |slice| text.push_str(slice));

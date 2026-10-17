@@ -6,6 +6,9 @@
   },
   "include": [],
   "files": [
+    "tools/support/compat/github/rust-archive-download.ts",
+    "tests/tooling/rust-archive-download.test.ts",
+    "tests/tooling/github-workflows-rust-source.test.ts",
     "tools/support/compat/github/require-needs-success.ts",
     "tools/support/compat/github/release-integration-event.ts",
     "tools/support/compat/github/require-rust-tier.ts",

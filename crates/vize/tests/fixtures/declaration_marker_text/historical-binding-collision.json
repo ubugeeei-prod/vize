@@ -1,0 +1,6 @@
+{
+  "source": "<script lang=\"ts\">\nexport declare const __vize_component__: { readonly __vizeComponentMarker: \"authored\" };\nexport declare const Other: { readonly __vizeComponentMarker: \"authored\" };\n</script>\n<script setup lang=\"ts\">\ndefineProps<{ label: string }>()\n</script>\n<template>{{ label }}</template>\n",
+  "status": 1,
+  "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/Button.vue\",\n      \"diagnostics\": [\n        \"error:2:22 [TS2395] Individual declarations in merged declaration '__vize_component__' must be all exported or all local.\"\n      ]\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"declaration\": true,\n        \"declarationMap\": true,\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"strict\": true,\n        \"target\": \"ES2022\"\n      },\n      \"files\": [\n        \"src/Button.vue\"\n      ]\n    }\n  ],\n  \"errorCount\": 1,\n  \"warningCount\": 0,\n  \"fileCount\": 1\n}\n",
+  "stderr": "Building Corsa virtual project for 1 files under /private/tmp/vize-3984-audit/repro/collision-control...\nRunning Corsa diagnostics for 1 files...\nSkipping declaration emit because type errors were reported.\n"
+}

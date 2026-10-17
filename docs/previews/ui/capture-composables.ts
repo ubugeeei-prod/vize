@@ -44,12 +44,18 @@ import {
   verifyAsyncResourceUnmount,
 } from "./interactions-async-resource.ts";
 
+import {
+  exerciseTextareaAutosizeExample,
+  verifyTextareaAutosizeUnmount,
+} from "./interactions-textarea-autosize.ts";
+
 async function activate(page: Page, label: string): Promise<void> {
   await page.getByRole("button", { name: label, exact: true }).focus();
   await page.keyboard.press("Enter");
 }
 
 async function exercise(page: Page, name: string): Promise<string[]> {
+  if (name === "textarea-autosize") return exerciseTextareaAutosizeExample(page);
   if (name === "async-resource") return exerciseAsyncResourceExample(page);
   if (name === "virtual-list") return exerciseVirtualListExample(page);
   if (asyncEffectExamples.some((example) => example.name === name))
@@ -302,7 +308,11 @@ export async function captureComposablePreviews(
           });
         }
         const scopeDisposalChecks =
-          example.name === "async-resource" ? await verifyAsyncResourceUnmount(page) : undefined;
+          example.name === "async-resource"
+            ? await verifyAsyncResourceUnmount(page)
+            : example.name === "textarea-autosize"
+              ? await verifyTextareaAutosizeUnmount(page)
+              : undefined;
         assert.deepEqual(diagnostics, [], `${example.name}: diagnostics after scope disposal`);
         receipts.push({
           name: example.name,

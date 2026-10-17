@@ -258,3 +258,6 @@ struct EmitCx<'facts> {
     /// The transform scope and codegen slot params the prefixer consults.
     scope: prefix::PrefixScope<'facts>,
 }
+
+#[doc(hidden)]
+pub use budget::{SurfacePreflight, emit_dom_source_with_preflight};

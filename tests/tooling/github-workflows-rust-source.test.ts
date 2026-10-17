@@ -4,6 +4,8 @@ import { parse } from "yaml";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 type Step = {
+  id?: string;
+  "timeout-minutes"?: number;
   name?: string;
   if?: string;
   run?: string;
@@ -147,8 +149,19 @@ void test("named Rust cohorts preserve filtered execution and receipt-bound queu
   assert.match(archiveRun.run ?? "", /--extract-to "\$GITHUB_WORKSPACE"/);
   assert.match(archiveRun.run ?? "", /--workspace-remap "\$GITHUB_WORKSPACE"/);
   assert.match(steps[verify].if ?? "", /merge_group/);
-  const artifact = steps.find((step) => step.uses?.startsWith("actions/download-artifact@"));
-  assert.equal(artifact?.with?.name, "rust-test-archive-${{ github.run_id }}-${{ github.sha }}");
+  const artifacts = steps.filter((step) => step.uses?.startsWith("actions/download-artifact@"));
+  assert.equal(artifacts.length, 2, "one bounded attempt and one clean retry");
+  for (const artifact of artifacts) {
+    assert.equal(artifact.with?.["artifact-ids"], "${{ steps.rust-archive.outputs.id }}");
+    assert.equal(artifact.with?.["digest-mismatch"], "error");
+    assert.equal(artifact["timeout-minutes"], 3);
+  }
+  assert.ok(
+    steps.some(
+      (step) =>
+        step.id === "rust-archive" && /rust-archive-download\.ts select/.test(step.run ?? ""),
+    ),
+  );
 });
 
 void test("full repository ratchets and coverage remain scheduled or explicitly requested", () => {

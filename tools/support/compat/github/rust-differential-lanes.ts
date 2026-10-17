@@ -85,6 +85,14 @@ export const rustDifferentialLanes: readonly Lane[] = [
     name: "sfc",
     steps: [
       corpus("vize_atelier_sfc", ["davinci_production_reach"], "legacy-dom-differential"),
+      test("vize_atelier_sfc", [
+        "--features",
+        "legacy-dom-differential",
+        "--lib",
+        "compile_template::duplicates::",
+        "--",
+        "--nocapture",
+      ]),
       test("vize_atelier_sfc", ["--test", "vapor_runtime_contracts"], {
         VIZE_VUE_RUNTIME_PRODUCTION: "1",
       }),
