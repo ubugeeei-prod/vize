@@ -15,9 +15,9 @@ use oxc_ast::{
     builder::{AstBuilder, GetAstBuilder},
 };
 use oxc_ecmascript::{
-    GlobalContext,
+    GlobalContext, ToBoolean,
     constant_evaluation::{ConstantEvaluation, ConstantEvaluationCtx},
-    side_effects::{MayHaveSideEffectsContext, PropertyReadSideEffects},
+    side_effects::{MayHaveSideEffects, MayHaveSideEffectsContext, PropertyReadSideEffects},
 };
 use vize_l0::is_native_tag;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
@@ -331,10 +331,15 @@ fn constant_truthiness<'a>(
         .js_ast
         .filter(|ast| ast.raw == simple.content)?
         .as_expression()?;
-    retained
-        .ast
-        .get_inner_expression()
-        .get_side_free_boolean_value(context)
+    let expression = retained.ast.get_inner_expression();
+    if expression.may_have_side_effects(context) {
+        return None;
+    }
+    // Pinned OXC deliberately skips BinaryExpression's boolean target. Its
+    // ordinary constant value is still authoritative (e.g. 0 === 1).
+    expression
+        .evaluate_value_to_boolean(context)
+        .or_else(|| expression.evaluate_value(context)?.to_boolean(context))
 }
 
 fn key_can_change(prop: &PropNode<'_>) -> bool {

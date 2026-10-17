@@ -208,6 +208,27 @@ fn static_identity_and_component_owned_visibility_keep_whole_clean_packets() {
     }
 }
 
+// Default lint parsing retains these documented standard-HTML recoveries.
+// Check every field instead of hiding them or changing the parser mode.
+fn assert_parse_recoveries(
+    errors: &[vize_relief::errors::CompilerError],
+    expected: &[(u32, u32)],
+    source: &str,
+) {
+    assert_eq!(errors.len(), expected.len(), "{source}: {errors:?}");
+    for (error, span) in errors.iter().zip(expected) {
+        assert_eq!(error.code, vize_relief::ErrorCode::ExtendPoint);
+        assert_eq!(
+            error.message,
+            "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag."
+        );
+        assert_eq!(
+            error.loc.as_ref().map(|loc| (loc.span.start, loc.span.end)),
+            Some(*span)
+        );
+    }
+}
+
 #[test]
 fn normalized_if_branch_keys_and_for_nodes_preserve_wrapper_ownership() {
     use vize_l0::{Allocator, Box};
@@ -252,7 +273,16 @@ fn normalized_if_branch_keys_and_for_nodes_preserve_wrapper_ownership() {
             r#"<KeepAlive><div v-show="opened"><Panel :key="identity" /></div></KeepAlive>"#
         };
         let (mut root, errors) = vize_armature::Parser::new(allocator, source).parse();
-        assert!(errors.is_empty());
+        let recoveries: &[(u32, u32)] = if kind.contains("logical-false") {
+            &[(32, 80)]
+        } else if kind.contains("binary") {
+            &[(32, 71)]
+        } else if kind.ends_with("false") {
+            &[(32, 69)]
+        } else {
+            &[]
+        };
+        assert_parse_recoveries(&errors, recoveries, source);
         let TemplateChildNode::Element(keep_alive) = root.children.first_mut().unwrap() else {
             panic!()
         };
@@ -386,7 +416,12 @@ fn normalized_conditional_chains_keep_constant_truth_and_prior_unknown_ownership
         let allocator = Allocator::default();
         let allocator = &allocator;
         let (mut root, errors) = vize_armature::Parser::new(allocator, source).parse();
-        assert!(errors.is_empty());
+        let recoveries: &[(u32, u32)] = match case["id"].as_str().unwrap() {
+            "constant-and-false-else" => &[(32, 80)],
+            "prior-unknown-before-constant-true" => &[(32, 56)],
+            _ => &[],
+        };
+        assert_parse_recoveries(&errors, recoveries, source);
         let TemplateChildNode::Element(keep_alive) = root.children.first_mut().unwrap() else {
             panic!()
         };
