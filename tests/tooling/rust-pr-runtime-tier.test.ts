@@ -167,12 +167,15 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
       };
       // The PR step resolves the checked-out runner relative to the workspace.
       mkdirSync(join(cwd, "tools/support/compat/github"), { recursive: true });
-      copyFileSync(
-        fileURLToPath(
-          new URL("../../tools/support/compat/github/run-affected-rust.ts", import.meta.url),
-        ),
-        join(cwd, "tools/support/compat/github/run-affected-rust.ts"),
-      );
+      for (const name of [
+        "run-affected-rust.ts",
+        "rust-build-evidence.ts",
+        "compare-unused-bindings-profiles.ts",
+      ])
+        copyFileSync(
+          fileURLToPath(new URL(`../../tools/support/compat/github/${name}`, import.meta.url)),
+          join(cwd, "tools/support/compat/github", name),
+        );
       delete environment.VIZE_TEST_DISABLE_TSGO;
       delete environment.VIZE_TEST_REQUIRE_TSGO;
       const result = spawnSync(
@@ -215,6 +218,8 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
           ...plan.cargoArgs,
           "--cargo-profile",
           "ci",
+          "--timings",
+          "--cargo-message-format=json-render-diagnostics",
           ...filter,
         ]);
       }
