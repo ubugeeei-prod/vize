@@ -23,7 +23,6 @@ jobs:
     name: Per-stage instruction ceilings
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
-    continue-on-error: true
     env:
       # Reusable workflows retain the caller's workflow name.
       MEASURE: ${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.workflow == 'Level instruction counts' }}

@@ -24,6 +24,7 @@
       "/guide/testing": "Tests et retours",
       "/guide/doctor": "Doctor",
       "/guide/cli": "CLI",
+      "/guide/jsr": "API JavaScript via JSR",
       "/guide/lib-pull": "Distribution des sources",
       "/guide/auto-imports": "Imports automatiques",
       "/guide/ui": "Référence UI",

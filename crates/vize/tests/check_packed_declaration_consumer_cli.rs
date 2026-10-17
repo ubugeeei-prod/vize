@@ -17,6 +17,9 @@ use std::{
 
 use vize_l0::cstr;
 
+#[path = "check_packed_declaration_consumer_cli/marker_text.rs"]
+mod marker_text;
+
 const BUTTON_VUE: &str = r#"<script setup lang="ts">
 export interface ButtonProps {
   label: string

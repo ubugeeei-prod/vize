@@ -177,6 +177,7 @@ jobs:
   # `nextest-ci` clone and start beside Clippy, instead of moving a multi-GB
   # archive. The merge queue keeps its archive: its receipts bind the evidence.
   pr-rust-shard:
+    permissions: { contents: read, actions: read }
     name: Rust tests (${{ matrix.name }})
     if: ${{ always() && !cancelled() && inputs.run-rust && (github.event_name == 'pull_request' || github.event_name == 'merge_group' && needs.merge-rust-source.result == 'success') }}
     needs: [merge-rust-source]
@@ -225,11 +226,44 @@ jobs:
           esac
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - name: Select immutable Rust test archive
+        id: rust-archive
         if: ${{ github.event_name == 'merge_group' }}
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: node tools/support/compat/github/rust-archive-download.ts select
+      - name: Download immutable Rust test archive
+        id: rust-archive-first
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ github.event_name == 'merge_group' }}
+        timeout-minutes: 3
+        continue-on-error: true
         with:
-          name: rust-test-archive-${{ github.run_id }}-${{ github.sha }}
+          artifact-ids: ${{ steps.rust-archive.outputs.id }}
           path: .artifacts/rust-test-archive
+          digest-mismatch: error
+      - name: Discard partial Rust archive before the single retry
+        id: rust-archive-clean
+        if: ${{ !cancelled() && steps.rust-archive-first.outcome == 'failure' }}
+        env: { RUST_ARCHIVE_FIRST_OUTCOME: "${{ steps.rust-archive-first.outcome }}" }
+        run: node tools/support/compat/github/rust-archive-download.ts clean-retry
+      - name: Retry immutable Rust test archive once
+        id: rust-archive-retry
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: ${{ !cancelled() && steps.rust-archive-first.outcome == 'failure' && steps.rust-archive-clean.outcome == 'success' }}
+        timeout-minutes: 3
+        with:
+          artifact-ids: ${{ steps.rust-archive.outputs.id }}
+          path: .artifacts/rust-test-archive
+          digest-mismatch: error
+      - name: Require completed immutable archive download
+        if: ${{ !cancelled() && github.event_name == 'merge_group' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUST_ARCHIVE_ID: ${{ steps.rust-archive.outputs.id }}
+          RUST_ARCHIVE_DIGEST: ${{ steps.rust-archive.outputs.digest }}
+          RUST_ARCHIVE_FIRST_OUTCOME: ${{ steps.rust-archive-first.outcome }}
+          RUST_ARCHIVE_RETRY_OUTCOME: ${{ steps.rust-archive-retry.outcome }}
+        run: node tools/support/compat/github/rust-archive-download.ts verify
       - name: Verify Rust archive identity
         if: ${{ github.event_name == 'merge_group' }}
         run: node tools/support/compat/github/rust-test-archive.mjs verify .artifacts/rust-test-archive/tests.tar.zst .artifacts/rust-test-archive/receipt.json

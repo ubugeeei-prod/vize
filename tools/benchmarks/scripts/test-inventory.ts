@@ -10,14 +10,28 @@ import { pathToFileURL } from "node:url";
 import { collectRustTests, customRustTestTargets } from "./rust-test-inventory.ts";
 import type { TestCase, TestGroup } from "./rust-test-inventory.ts";
 import type { CliArgs } from "./script-types.ts";
+import { isRecord } from "./script-types.ts";
 
 type AreaSummary = { area: string; files: number; cases: number };
+type Metric = { covered: number; count: number };
+type ComponentSummary = {
+  component: string;
+  files: number;
+  cases: number;
+  coverage?: { lines: Metric; regions: Metric; functions: Metric };
+};
 export type TestInventory = {
   totalCases: number;
   totalFiles: number;
   areas: AreaSummary[];
   groups: TestGroup[];
+  components: ComponentSummary[];
+  coverageSource?: { headSha: string };
 };
+
+function componentFor(file: string): string {
+  return file.split("/").slice(0, 2).join("/");
+}
 
 const IGNORED_DIRS = new Set([
   ".git",
@@ -265,12 +279,90 @@ export function collectInventory(root: string = process.cwd()): TestInventory {
   areas.push(...byArea.values());
   areas.sort((a, b) => a.area.localeCompare(b.area));
 
+  const components = new Map<string, ComponentSummary>();
+  // Include workspace components with no statically recognized cases.
+  for (const absolute of files) {
+    const file = normalizePath(root, absolute);
+    if (/^(?:crates|davinci|npm)\/[^/]+\/(?:Cargo\.toml|package\.json)$/.test(file)) {
+      const component = componentFor(file);
+      components.set(component, { component, files: 0, cases: 0 });
+    }
+  }
+  for (const group of groups) {
+    const component = componentFor(group.file);
+    const summary = components.get(component) ?? { component, files: 0, cases: 0 };
+    summary.files++;
+    summary.cases += group.count;
+    components.set(component, summary);
+  }
+
   return {
     totalCases: groups.reduce((sum, group) => sum + group.count, 0),
     totalFiles: groups.length,
     areas,
     groups,
+    components: [...components.values()].sort((a, b) => a.component.localeCompare(b.component)),
   };
+}
+
+/** Join measured LLVM totals by repository component, never average file percentages. */
+export function attachSourceCoverage(
+  inventory: TestInventory,
+  report: unknown,
+  headSha: string,
+): void {
+  if (!/^[a-f0-9]{40}$/i.test(headSha)) {
+    throw new Error("--source-sha must identify the measured report's full commit SHA");
+  }
+  if (
+    !isRecord(report) ||
+    report.type !== "llvm.coverage.json.export" ||
+    !Array.isArray(report.data) ||
+    report.data.length !== 1 ||
+    !isRecord(report.data[0]) ||
+    !Array.isArray(report.data[0].files)
+  ) {
+    throw new Error("Expected one cargo llvm-cov summary JSON export");
+  }
+  const components = new Map(inventory.components.map((entry) => [entry.component, entry]));
+  for (const file of report.data[0].files) {
+    if (!isRecord(file) || typeof file.filename !== "string" || !isRecord(file.summary)) {
+      throw new Error("Invalid LLVM file summary");
+    }
+    const normalized = file.filename.replaceAll("\\", "/");
+    const match = /(?:^|\/)((?:crates|davinci|npm|tests|tools|vendor)\/[^/]+)\//.exec(normalized);
+    if (!match) continue;
+    const component = match[1];
+    if (!components.has(component) && !/^(?:crates|davinci)\//.test(component)) continue;
+    const summary = components.get(component) ?? { component, files: 0, cases: 0 };
+    const coverage = summary.coverage ?? {
+      lines: { covered: 0, count: 0 },
+      regions: { covered: 0, count: 0 },
+      functions: { covered: 0, count: 0 },
+    };
+    for (const key of ["lines", "regions", "functions"] as const) {
+      const metric = file.summary[key];
+      if (
+        !isRecord(metric) ||
+        typeof metric.covered !== "number" ||
+        typeof metric.count !== "number" ||
+        !Number.isSafeInteger(metric.covered) ||
+        !Number.isSafeInteger(metric.count) ||
+        metric.covered < 0 ||
+        metric.covered > metric.count
+      ) {
+        throw new Error(`Invalid LLVM ${key} totals for ${file.filename}`);
+      }
+      coverage[key].covered += metric.covered;
+      coverage[key].count += metric.count;
+    }
+    summary.coverage = coverage;
+    components.set(component, summary);
+  }
+  inventory.components = [...components.values()].sort((a, b) =>
+    a.component.localeCompare(b.component),
+  );
+  inventory.coverageSource = { headSha };
 }
 
 function escapeTable(value: string): string {
@@ -293,6 +385,34 @@ export function renderInventoryMarkdown(inventory: TestInventory): string {
     lines.push(`| ${escapeTable(area.area)} | ${area.files} | ${area.cases} |`);
   }
 
+  lines.push(
+    "",
+    "### Components",
+    "",
+    "Cases are static declarations, not executed tests or measured coverage. Parameterized cases, fixtures and custom harnesses can execute many checks per declaration.",
+    "Components use the first two repository path segments; test files belong to their containing component. Cross-component integration tests stay under their own test suite.",
+    "",
+  );
+  if (inventory.coverageSource) {
+    lines.push(
+      `Measured coverage source: \`${inventory.coverageSource.headSha}\`. Counts describe the scanned checkout; coverage describes this separate commit.`,
+      "",
+    );
+  }
+  lines.push(
+    "| Component | Test files | Static cases | Measured lines | Measured regions | Measured functions |",
+    "| --- | ---: | ---: | ---: | ---: | ---: |",
+  );
+  const metricText = (metric: Metric | undefined): string =>
+    metric == null
+      ? "unmeasured"
+      : `${metric.covered}/${metric.count} (${metric.count === 0 ? "n/a" : `${((100 * metric.covered) / metric.count).toFixed(2)}%`})`;
+  for (const entry of inventory.components) {
+    lines.push(
+      `| ${escapeTable(entry.component)} | ${entry.files} | ${entry.cases} | ${metricText(entry.coverage?.lines)} | ${metricText(entry.coverage?.regions)} | ${metricText(entry.coverage?.functions)} |`,
+    );
+  }
+
   // File rows only: a per-test table exceeds GitHub's 1024k step-summary cap.
   lines.push("");
   lines.push("<details>");
@@ -312,6 +432,12 @@ async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const root = path.resolve(args.root ?? process.cwd());
   const inventory = collectInventory(root);
+  if (args["source-coverage"]) {
+    const report: unknown = JSON.parse(fs.readFileSync(args["source-coverage"], "utf8"));
+    attachSourceCoverage(inventory, report, args["source-sha"] ?? "");
+  } else if (args["source-sha"]) {
+    throw new Error("--source-sha requires --source-coverage");
+  }
 
   if (args.json) {
     writeFileSync(args.json, `${JSON.stringify(inventory, null, 2)}\n`);

@@ -27,6 +27,8 @@ void test("public rename refuses ambient native/provider/compiler authority", ()
     "VIZE_CORSA_DEV_PATHS",
     "VIZE_TEST_DISABLE_TSGO",
     "VIZE_TEST_REQUIRE_TSGO",
+    "VIZE_TEST_CONTENT_MAPPER_TSGO",
+    "VIZE_TEST_CONTENT_MAPPER_VUE",
     "SOURCE_SHA",
     "RUSTC_WRAPPER",
     "CORSA_EXECUTABLE",

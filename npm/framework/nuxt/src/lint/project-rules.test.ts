@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -172,3 +173,31 @@ void test("generated config lists project rules under the incremental preset", a
 function unexpectedPreset(): Promise<ProjectLintRules> {
   throw new Error("preset loader should not run");
 }
+
+await test("Nuxt's public config consumer reads the whole original helper-import Vite project", async (t) => {
+  const root = await temporaryRoot(t, "vize-nuxt-original-vite-module-");
+  const original = JSON.parse(
+    await readFile(
+      new URL(
+        "../../../../../tests/_fixtures/differential/config/public-vite-module-8371/project.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ) as { files: Record<string, string>; rules: ProjectLintRules };
+  for (const [name, source] of Object.entries(original.files)) {
+    await writeFile(path.join(root, name), source);
+  }
+  const require = createRequire(import.meta.url);
+  assert.equal(path.basename(require.resolve("vize/config")), "config.mjs");
+  await mkdir(path.join(root, "node_modules"));
+  await symlink(
+    path.dirname(require.resolve("vite/package.json")),
+    path.join(root, "node_modules/vite"),
+    "junction",
+  );
+  assert.deepEqual(await readProjectLintRules(root, unexpectedPreset), original.rules);
+  for (const [name, source] of Object.entries(original.files)) {
+    assert.equal(await readFile(path.join(root, name), "utf8"), source);
+  }
+});

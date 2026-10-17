@@ -12,10 +12,12 @@ jobs:
     permissions: { contents: read, pull-requests: read }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
       - name: Select the official integration candidate
         id: candidate
         env: { GH_TOKEN: "${{ github.token }}" }
-        run: node tools/support/compat/github/release-integration-event.mjs
+        run: node tools/support/compat/github/release-integration-event.ts
       - name: Fetch exact integration history
         if: ${{ steps.candidate.outputs.integration != '' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

@@ -29,6 +29,7 @@ const topPrior = [
   "node-engine-compat",
   "check-vize-apps",
   "pr-source-checks",
+  "instruction-counts",
   "level-dependency-direction",
   "release-integration-catalog",
 ];
@@ -80,7 +81,7 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
   );
   assert.equal(
     check.jobs["test-report"].steps?.at(-1)?.run,
-    "node tools/support/compat/github/require-needs-success.ts",
+    "node tools/support/compat/github/require-needs-success.ts --check-report",
   );
   assert.equal(Object.hasOwn(contracts.on, "workflow_call"), true);
   assert.equal(Object.hasOwn(contracts.on, "push"), true);

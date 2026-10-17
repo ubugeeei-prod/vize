@@ -45,7 +45,7 @@ fn v_html_and_v_text_values_hover_with_their_checker_types() {
         assert_eq!(
             fixture.request("textDocument/hover", APP, needle),
             json!({
-                "contents": {"kind": "markdown", "value": vize_carton::cstr!("```typescript\n{expected}\n```")},
+                "contents": {"kind": "markdown", "value": vize_l0::cstr!("```typescript\n{expected}\n```")},
                 "range": {"start": start, "end": end}
             }),
             "complete checker hover at {needle}"

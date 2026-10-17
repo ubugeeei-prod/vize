@@ -1,4 +1,8 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, matchesGlob } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -73,6 +77,11 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
     ".github/workflows/build-docs.yml",
     "docs/**",
     "!docs/davinci/decisions/**",
+    "npm/compose/core/examples/**",
+    "npm/ui/src/**/examples/**",
+    "npm/ui/scripts/generate-reference-docs.ts",
+    "npm/ui/scripts/reference-docs/**",
+    "tests/tooling/docs-preview-readiness-browser.test.ts",
     "playground/**",
     "examples/vite-musea/**",
   ]);
@@ -94,6 +103,98 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
     assert.ok(upload, `missing ${artifact} artifact upload`);
     assert.match(upload.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
     assert.equal(upload.with?.["if-no-files-found"], "error");
+  }
+});
+
+test("authored reader inputs publish while runtime-only and excluded inputs keep their policy", () => {
+  const events = readWorkflow("build-docs.yml").on as {
+    push: { paths: string[] };
+  };
+  const publishes = (file: string) =>
+    events.push.paths.reduce((included, pattern) => {
+      const excluded = pattern.startsWith("!");
+      return matchesGlob(file, excluded ? pattern.slice(1) : pattern) ? !excluded : included;
+    }, false);
+  for (const [file, expected] of [
+    ["npm/compose/core/examples/virtual-list.vue", true],
+    ["npm/compose/core/examples/tsconfig.json", true],
+    ["npm/ui/src/families/actions/button/examples/button-basic.vue", true],
+    ["npm/ui/scripts/generate-reference-docs.ts", true],
+    ["npm/ui/scripts/reference-docs/composable-examples.ts", true],
+    ["docs/content/getting-started.md", true],
+    ["tests/tooling/docs-preview-readiness-browser.test.ts", true],
+    ["npm/compose/core/src/virtual-list.ts", false],
+    ["npm/ui/scripts/check-renderers.ts", false],
+    ["docs/davinci/decisions/2026-10-16-8374-virtual-list-catalogue.md", false],
+    ["tests/tooling/github-workflows-docs.test.ts", false],
+  ] as const) {
+    assert.equal(publishes(file), expected, file);
+  }
+});
+
+test("full Docs checks real preview resources before building and retains the raw evidence", () => {
+  const job = workflowJob(readWorkflow("build-docs.yml"), "build-docs");
+  const readiness = namedStep(job, "Check preview resource readiness");
+  const steps = job.steps!;
+  assert.equal(readiness.if, "${{ inputs.links-only != true }}");
+  assert(steps.indexOf(readiness) > steps.indexOf(namedStep(job, "Install JS dependencies")));
+  assert(
+    steps.indexOf(readiness) > steps.indexOf(namedStep(job, "Install Japanese rendering fonts")),
+  );
+  assert(steps.indexOf(readiness) < steps.indexOf(namedStep(job, "Build docs")));
+  assert.match(readiness.run!, /vp node docs\/scripts\/ensure-browser\.ts/);
+  assert.match(
+    readiness.run!,
+    /node --test --test-reporter=tap tests\/tooling\/docs-preview-readiness-browser\.test\.ts/,
+  );
+  assert.match(readiness.run!, /\| tee docs-render-evidence\/resource-readiness\/tests\.tap/);
+  assert.match(readiness.run!, /receipt\.json/);
+  const upload = namedStep(job, "Upload rendered docs screenshots");
+  assert.equal(upload.if, "${{ always() }}");
+  assert.equal(upload.with?.path, "docs-render-evidence");
+});
+
+test("Docs resource fixture preserves Node exit failure even after a passing TAP summary", () => {
+  const job = workflowJob(readWorkflow("build-docs.yml"), "build-docs");
+  const step = namedStep(job, "Check preview resource readiness");
+  const temporary = mkdtempSync(join(tmpdir(), "docs-resource-exit-"));
+  try {
+    const bin = join(temporary, "bin");
+    mkdirSync(bin);
+    writeFileSync(join(bin, "vp"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+    writeFileSync(
+      join(bin, "node"),
+      `#!/bin/sh
+if [ "$1" = "--test" ]; then
+  printf '%s\\n' '# tests 8' '# pass 8' '# fail 0' '# cancelled 0' '# skipped 0' '# todo 0'
+  exit 17
+fi
+touch "$READINESS_CONTROL_MARKER"
+`,
+      { mode: 0o755 },
+    );
+    const script = join(temporary, "step.sh");
+    const marker = join(temporary, "unexpected-receipt");
+    writeFileSync(script, step.run!);
+    // Execute the actual YAML body without supplying shell failure options:
+    // the workflow must preserve the producer's status through tee itself.
+    const result = spawnSync("bash", [script], {
+      cwd: temporary,
+      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, READINESS_CONTROL_MARKER: marker },
+      encoding: "utf8",
+    });
+    assert.equal(result.status, 17, `${result.stdout}\n${result.stderr}`);
+    assert.match(
+      readFileSync(join(temporary, "docs-render-evidence/resource-readiness/tests.tap"), "utf8"),
+      /# pass 8/,
+    );
+    assert.equal(existsSync(marker), false, "a failed producer cannot write a success receipt");
+    assert.equal(
+      existsSync(join(temporary, "docs-render-evidence/resource-readiness/receipt.json")),
+      false,
+    );
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
   }
 });
 

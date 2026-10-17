@@ -4,6 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
+  assertRecordOnlyObservations,
   breachFailure,
   cleanup,
   commitSha,
@@ -209,6 +210,7 @@ test("--budget-mode record-only reports an unusable baseline as a warning", () =
     assert.equal(
       result.stdout,
       [
+        `Wrote ${path.relative(root, path.join(fixture.reportDir, "fixture-typecheck-observations.json"))}`,
         `Wrote ${path.relative(root, artifactPath(fixture, "json"))}`,
         `Wrote ${path.relative(root, artifactPath(fixture, "md"))}`,
         "::warning title=Typecheck divergence budget not enforced::" +
@@ -216,7 +218,9 @@ test("--budget-mode record-only reports an unusable baseline as a warning", () =
         "",
       ].join("\n"),
     );
-    assert.equal(readJson(artifactPath(fixture, "json")).budget.passed, false);
+    const artifact = readJson(artifactPath(fixture, "json"));
+    assert.equal(artifact.budget.passed, false);
+    assertRecordOnlyObservations(fixture, artifact, { baselineOutput: "", baselineFiles: [] });
   } finally {
     cleanup(fixture);
   }

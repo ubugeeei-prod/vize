@@ -14,9 +14,8 @@ same code and the same native binaries.
 ## Install
 
 ```sh
-npx jsr add @vizejs/vize    # Node.js 22 or newer
+npx jsr add @vizejs/vize    # Node.js 22 or 24+
 bunx jsr add @vizejs/vize   # Bun
-deno add jsr:@vizejs/vize   # Deno 2
 ```
 
 ```ts
@@ -31,6 +30,28 @@ const result = compileSfc("<template><h1>Hello</h1></template>", {
 });
 const plugin = vize();
 ```
+
+## Deno 2.9.7
+
+From a new empty directory, run the same published API smoke checked on Ubuntu 24.04, Linux x64 with glibc:
+
+```sh
+VIZE_JSR_EXAMPLES=https://raw.githubusercontent.com/ubugeeei-prod/vize/1b6f856f4f276b853f649df42943a1fd5ac2798d/tools/support/release/jsr
+curl -fsSL "$VIZE_JSR_EXAMPLES/consumer-deno.json" -o deno.json
+curl -fsSL "$VIZE_JSR_EXAMPLES/consumer.ts" -o consumer.ts
+deno run --config deno.json --allow-all consumer.ts jsr:@vizejs/vize@0.457.0
+```
+
+It prints `Verified jsr:@vizejs/vize@0.457.0 (no flags)` after importing configuration
+and native APIs and compiling an SFC. The canonical configuration keeps external
+dependencies at `P1D` (24 hours), exempts exactly 13 listed Vize-owned packages for
+fresh releases, and uses Deno's cache with `nodeModulesDir: "none"`. Merge those
+settings into an existing Deno project. `--allow-all` grants full permissions,
+including native FFI; use it with trusted build dependencies.
+
+See the [JSR guide](https://vizejs.dev/guide/jsr) or
+[日本語ガイド](https://vizejs.dev/ja/guide/jsr) for installation, imports, Vite/Vue
+peers and the tested runtime boundaries. The Deno smoke does not exercise `/vite`.
 
 ## Requirements
 

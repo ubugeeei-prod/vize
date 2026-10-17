@@ -359,7 +359,7 @@ mod pinia_availability_tests;
 #[cfg(test)]
 mod valid_v_on_options_tests {
     use super::apply_rule_options;
-    use vize_patina::{Linter, RuleRegistry, rules::vue::ValidVOn};
+    use vize_patina::{LintDiagnostic, LintResult, Linter, RuleRegistry, rules::vue::ValidVOn};
 
     #[test]
     fn lsp_custom_modifiers_reach_the_configured_rule() {
@@ -372,8 +372,33 @@ mod valid_v_on_options_tests {
             r#"<div @click.custom="handler" @click.unknown="handler" />"#,
             "test.vue",
         );
-        assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0].message.contains("unknown"));
+        if let Some(directory) = std::env::var_os("VIZE_NATIVE_STRICT_CAPTURE_DIR") {
+            std::fs::create_dir_all(&directory).unwrap();
+            std::fs::write(
+                std::path::Path::new(&directory).join("lsp-custom-modifier.txt"),
+                vize_l0::cstr!("{result:#?}").as_bytes(),
+            )
+            .unwrap();
+        }
+        let expected = LintResult {
+            filename: "test.vue".into(),
+            diagnostics: vec![LintDiagnostic::error(
+                "vue/valid-v-on",
+                "v-on does not support the modifier 'unknown'",
+                36,
+                43,
+            )
+            .with_help(
+                "Use a built-in event modifier, keyboard alias, or a configured custom modifier.",
+            )],
+            error_count: 1,
+            warning_count: 0,
+        };
+        assert_eq!(
+            vize_l0::cstr!("{result:#?}"),
+            vize_l0::cstr!("{expected:#?}"),
+            "complete LSP-configured modifier diagnostic, including receiver and fix fields"
+        );
         let empty = apply_rule_options(Linter::with_registry(RuleRegistry::new()), &options, false);
         assert!(!empty.registry().has_rule("vue/valid-v-on"));
     }

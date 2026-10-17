@@ -1,0 +1,376 @@
+{
+  "schema": "vize.sfc.native-template-descriptor",
+  "compiler": {
+    "name": "@vue/compiler-sfc",
+    "version": "3.5.41"
+  },
+  "filename": "Native雪🌸.vue",
+  "scope": "Original complete inputs and independent official descriptor content/byte spans. Native marks the bounded default projection contract, not native-only compiler acceptance. Legacy diagnostic compatibility is checked separately without assuming Vue diagnostic equality.",
+  "cases": [
+    {
+      "id": "empty",
+      "source": "<template></template>",
+      "native": true,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "",
+          "start": 10,
+          "end": 10,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "element",
+      "source": "<template><div/></template>",
+      "native": true,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<div/>",
+          "start": 10,
+          "end": 16,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "unicode-crlf",
+      "source": "\r\n\t<template>\r\n<p>雪🌸</p>\r\n</template>\t\n",
+      "native": true,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "\r\n<p>雪🌸</p>\r\n",
+          "start": 13,
+          "end": 31,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "nested-template",
+      "source": "<template><div><template v-if=\"true\"><span/></template></div></template>",
+      "native": true,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<div><template v-if=\"true\"><span/></template></div>",
+          "start": 10,
+          "end": 61,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "frozen",
+      "source": "<template><div v-pre>{{ raw }}</div></template>",
+      "native": true,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<div v-pre>{{ raw }}</div>",
+          "start": 10,
+          "end": 36,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "quoted-close",
+      "source": "<template><div title=\"</template>\">text</div></template>",
+      "native": true,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<div title=\"</template>\">text</div>",
+          "start": 10,
+          "end": 45,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "comment-close",
+      "source": "<template><!-- </template> --><div/></template>",
+      "native": true,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<!-- </template> --><div/>",
+          "start": 10,
+          "end": 36,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "expression-close",
+      "source": "<template><div>{{ '</template>' }}</div></template>",
+      "native": true,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<div>{{ '</template>' }}</div>",
+          "start": 10,
+          "end": 40,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "raw-text-close",
+      "source": "<template><textarea></template></textarea></template>",
+      "native": true,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<textarea></template></textarea>",
+          "start": 10,
+          "end": 42,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "encoded-text",
+      "source": "<template><p>&amp; &#x96ea;</p></template>",
+      "native": true,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<p>&amp; &#x96ea;</p>",
+          "start": 10,
+          "end": 31,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "invalid-template-body",
+      "source": "<template><div></template>",
+      "native": true,
+      "official": {
+        "errors": [
+          {
+            "code": 24,
+            "message": "Element is missing end tag."
+          }
+        ],
+        "template": {
+          "content": "<div>",
+          "start": 10,
+          "end": 15,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "frozen-unclosed-interpolation",
+      "source": "<template><div v-pre>{{</div></template>",
+      "native": false,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<div v-pre>{{</div>",
+          "start": 10,
+          "end": 29,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "frozen-nested-template",
+      "source": "<template><div v-pre><template v-if=\"x\">{{</template></div></template>",
+      "native": false,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<div v-pre><template v-if=\"x\">{{</template></div>",
+          "start": 10,
+          "end": 59,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "outer-language",
+      "source": "<template lang=\"html\"><div/></template>",
+      "native": false,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<div/>",
+          "start": 22,
+          "end": 28,
+          "attrs": {
+            "lang": "html"
+          }
+        }
+      }
+    },
+    {
+      "id": "external",
+      "source": "<template src=\"missing.html\"></template>",
+      "native": false,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "",
+          "start": 29,
+          "end": 29,
+          "attrs": {
+            "src": "missing.html"
+          }
+        }
+      }
+    },
+    {
+      "id": "script",
+      "source": "<script>export default {}</script><template><div/></template>",
+      "native": false,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<div/>",
+          "start": 44,
+          "end": 50,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "setup-map",
+      "source": "<script setup>import { render } from './runtime';const value=render();</script><template>{{ value }}</template>",
+      "native": false,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "{{ value }}",
+          "start": 89,
+          "end": 100,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "style",
+      "source": "<template><p/></template><style scoped>.p{color:red}</style>",
+      "native": false,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<p/>",
+          "start": 10,
+          "end": 14,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "custom",
+      "source": "<template><div/></template><docs>content</docs>",
+      "native": false,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<div/>",
+          "start": 10,
+          "end": 16,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "duplicate",
+      "source": "<template><div/></template><template><p/></template>",
+      "native": false,
+      "official": {
+        "errors": [
+          {
+            "message": "Single file component can contain only one <template> element"
+          }
+        ],
+        "template": {
+          "content": "<div/>",
+          "start": 10,
+          "end": 16,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "unclosed",
+      "source": "<template><div/>",
+      "native": false,
+      "official": {
+        "errors": [
+          {
+            "code": 24,
+            "message": "Element is missing end tag."
+          }
+        ],
+        "template": {
+          "content": "",
+          "start": 10,
+          "end": 10,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "self-closing",
+      "source": "<template/>",
+      "native": false,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "",
+          "start": 11,
+          "end": 11,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "outer-attribute",
+      "source": "<template data-owner=\"retained\"><div/></template>",
+      "native": false,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<div/>",
+          "start": 32,
+          "end": 38,
+          "attrs": {
+            "data-owner": "retained"
+          }
+        }
+      }
+    },
+    {
+      "id": "outer-comment",
+      "source": "<!--雪🌸--><template><div/></template>",
+      "native": false,
+      "official": {
+        "errors": [],
+        "template": {
+          "content": "<div/>",
+          "start": 24,
+          "end": 30,
+          "attrs": {}
+        }
+      }
+    },
+    {
+      "id": "no-template",
+      "source": "<script>export default {}</script>",
+      "native": false,
+      "official": {
+        "errors": [],
+        "template": null
+      }
+    }
+  ]
+}

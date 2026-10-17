@@ -4,7 +4,7 @@
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
 
-export const finishSteps = ["generate:og-images", "check:ui-docs"] as const;
+export const finishSteps = ["generate:og-images", "check:ui-docs", "check:heading-links"] as const;
 
 function run(script: string): Promise<number> {
   return new Promise((resolve, reject) => {

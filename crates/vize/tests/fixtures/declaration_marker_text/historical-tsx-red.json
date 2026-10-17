@@ -1,0 +1,34 @@
+[
+  {
+    "name": "ordinary",
+    "state": "clean",
+    "source": "import Button from \"packed-button\";\nconst node = <Button label=\"ordinary\" />;\nvoid node;\n",
+    "status": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "name": "ordinary",
+    "state": "wrong",
+    "source": "import Button from \"packed-button\";\nconst node = <Button label=\"wrong\" />;\nvoid node;\n",
+    "status": 1,
+    "stdout": "src/consumer.tsx(2,22): error TS2322: Type '\"wrong\"' is not assignable to type '\"ordinary\"'.\n",
+    "stderr": ""
+  },
+  {
+    "name": "marker",
+    "state": "clean",
+    "source": "import Button from \"packed-button\";\nconst node = <Button label=\"__vizeComponentMarker\" />;\nvoid node;\n",
+    "status": 1,
+    "stdout": "src/consumer.tsx(2,15): error TS2322: Type '{ label: string; }' is not assignable to type 'IntrinsicAttributes & __VizeAuthoredKeyWitness<{ label: unknown; }> & Partial<PublicProps> & Partial<__VizeKebabProps<PublicProps>> & ... 5 more ... & { ...; }'.\n  Property '__vizeInvalidComponentProps' is missing in type '{ label: string; }' but required in type '{ readonly __vizeInvalidComponentProps: { readonly missing: never; readonly extra: \"label\"; }; }'.\n",
+    "stderr": ""
+  },
+  {
+    "name": "marker",
+    "state": "wrong",
+    "source": "import Button from \"packed-button\";\nconst node = <Button label=\"wrong\" />;\nvoid node;\n",
+    "status": 1,
+    "stdout": "src/consumer.tsx(2,15): error TS2322: Type '{ label: string; }' is not assignable to type 'IntrinsicAttributes & __VizeAuthoredKeyWitness<{ label: unknown; }> & Partial<PublicProps> & Partial<__VizeKebabProps<PublicProps>> & ... 5 more ... & { ...; }'.\n  Property '__vizeInvalidComponentProps' is missing in type '{ label: string; }' but required in type '{ readonly __vizeInvalidComponentProps: { readonly missing: never; readonly extra: \"label\"; }; }'.\n",
+    "stderr": ""
+  }
+]

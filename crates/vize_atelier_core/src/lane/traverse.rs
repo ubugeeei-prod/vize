@@ -94,6 +94,32 @@ pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChil
 }
 
 fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChildNode<'a>) {
+    // Leaves cannot own structural directives, children, or exit callbacks. Keep
+    // their expression/scope work, but avoid constructing and dropping an empty
+    // callback list for every interpolation, text node, and comment.
+    let node_ptr = node as *mut _;
+    match node {
+        TemplateChildNode::Interpolation(interp) => {
+            ctx.current_node = Some(node_ptr);
+            profile!(
+                "atelier.transform.interpolation",
+                transform_interpolation(ctx, interp)
+            );
+            return;
+        }
+        TemplateChildNode::Text(_) => {
+            ctx.current_node = Some(node_ptr);
+            ctx.helper(RuntimeHelper::CreateText);
+            return;
+        }
+        TemplateChildNode::Comment(_) => {
+            ctx.current_node = Some(node_ptr);
+            ctx.helper(RuntimeHelper::CreateComment);
+            return;
+        }
+        _ => {}
+    }
+
     // Collect exit functions from transforms
     let mut exit_fns = ExitFns::new();
 
@@ -253,18 +279,6 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
                     exit_fns.extend(exits);
                 }
             }
-            TemplateChildNode::Interpolation(interp) => {
-                profile!(
-                    "atelier.transform.interpolation",
-                    transform_interpolation(ctx, interp)
-                );
-            }
-            TemplateChildNode::Text(_) => {
-                ctx.helper(RuntimeHelper::CreateText);
-            }
-            TemplateChildNode::Comment(_) => {
-                ctx.helper(RuntimeHelper::CreateComment);
-            }
             TemplateChildNode::If(if_node) => {
                 // Traverse if branches
                 for i in 0..if_node.branches.len() {
@@ -345,5 +359,61 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
     ctx.current_node = Some(node as *mut _);
     for exit_fn in exit_fns.into_iter().rev() {
         profile!("atelier.transform.exit_fn", exit_fn(ctx));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{TransformOptions, parser::parse};
+    use vize_l0::Allocator;
+
+    #[test]
+    fn leaf_fast_path_preserves_helpers_scopes_and_current_node() {
+        for vapor in [false, true] {
+            let allocator = Allocator::new();
+            let source = "text<!--comment-->{{ item }}{{ outer }}";
+            let (mut root, errors) = parse(&allocator, source);
+            assert!(errors.is_empty());
+            let mut ctx = TransformContext::new(
+                &allocator,
+                source,
+                TransformOptions {
+                    prefix_identifiers: true,
+                    vapor,
+                    ..Default::default()
+                },
+            );
+            ctx.enter_v_for_scope(Some("item"), None, None, "items");
+
+            traverse_children(&mut ctx, ParentNode::Root(&mut root));
+
+            assert!(ctx.errors.is_empty());
+            assert_eq!(ctx.helpers.count(RuntimeHelper::CreateText), 1);
+            assert_eq!(ctx.helpers.count(RuntimeHelper::CreateComment), 1);
+            assert_eq!(ctx.helpers.count(RuntimeHelper::ToDisplayString), 2);
+            assert_eq!(
+                ctx.helpers.iter().collect::<std::vec::Vec<_>>(),
+                [
+                    RuntimeHelper::CreateText,
+                    RuntimeHelper::CreateComment,
+                    RuntimeHelper::ToDisplayString,
+                ]
+            );
+            let mut expressions = std::vec::Vec::new();
+            for node in root.children.iter_mut() {
+                if let TemplateChildNode::Interpolation(interp) = node {
+                    let ExpressionNode::Simple(exp) = &interp.content else {
+                        panic!("expected a simple interpolation expression");
+                    };
+                    expressions.push((exp.content, exp.loc.span.slice(source)));
+                }
+            }
+            assert_eq!(expressions, [("item", "item"), ("_ctx.outer", "outer")]);
+            assert_eq!(
+                ctx.current_node,
+                root.children.last_mut().map(|node| node as *mut _)
+            );
+        }
     }
 }

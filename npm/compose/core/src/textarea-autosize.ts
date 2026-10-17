@@ -61,9 +61,9 @@ export interface TextareaAutosizeControls {
  * Grow a textarea to fit its content.
  *
  * On each input change (and when the element width changes), the style
- * property is reset to `auto`, `scrollHeight` is read, and the height is
- * written back in pixels. Nothing is measured during server rendering, so the
- * markup keeps its declared `rows`.
+ * property is reset to `auto`, and `scrollHeight` is adjusted for the element's
+ * padding, borders and box sizing before writing the CSS height in pixels.
+ * Nothing is measured during server rendering; markup keeps its declared `rows`.
  *
  * @param target Reactive textarea target.
  * @param options Bound input, style property, callback, and observer capability.
@@ -82,7 +82,12 @@ export function useTextareaAutosize(
     const element = resolveElement(target);
     if (!element || !isAutosizeElement(element)) return;
     element.style.setProperty(styleProp, "auto");
-    const height = element.scrollHeight;
+    const style = element.ownerDocument?.defaultView?.getComputedStyle(element);
+    const offset =
+      style?.boxSizing === "border-box"
+        ? cssPixels(style.borderTopWidth) + cssPixels(style.borderBottomWidth)
+        : -cssPixels(style?.paddingTop) - cssPixels(style?.paddingBottom);
+    const height = Math.max(0, element.scrollHeight + offset);
     element.style.setProperty(styleProp, `${height}px`);
     options.onResize?.(height);
   };
@@ -111,4 +116,8 @@ export function useTextareaAutosize(
 
 function isAutosizeElement(element: Element): element is AutosizeElement {
   return "style" in element && typeof element.scrollHeight === "number";
+}
+
+function cssPixels(value: string | undefined): number {
+  return Number.parseFloat(value ?? "0") || 0;
 }

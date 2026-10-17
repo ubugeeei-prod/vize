@@ -13,7 +13,14 @@ on:
       - "tests/tooling/davinci-unused-setup-bindings.test.ts"
       - "tests/_fixtures/davinci-fpfn/**"
       - ".github/workflows/davinci-unused-bindings.yml"
+      - "tools/support/compat/github/compare-unused-bindings-profiles.ts"
+      - "tests/tooling/unused-bindings-profiles.test.mjs"
   workflow_dispatch:
+    inputs:
+      compare-profiles:
+        description: Compare the old test profile and ci profile on this exact source, old first
+        type: boolean
+        default: false
 
 concurrency:
   group: davinci-unused-${{ github.event.pull_request.number || github.ref }}
@@ -47,14 +54,46 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
       - name: Hydrate the pinned P0-13 shard
         run: git submodule update --init --depth 1 -- tests/_fixtures/_git/splitpanes tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/cssgridgenerator
+      - name: Start fresh Cargo unit evidence
+        run: |
+          rm -rf target/unused-bindings-units
+          mkdir -p target/unused-bindings-units
       - name: Check independent specs and real rule dispatch
+        if: ${{ !inputs.compare-profiles }}
         env:
           VIZE_DAVINCI_FACT_CORPUS: tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator
         run: |
-          cargo test -p vize_l0 --test fact_demand
-          cargo test -p vize_croquis --test fact_spec
-          cargo test -p vize_patina unused_setup_bindings
+          set -o pipefail
+          cargo test --profile ci --message-format=json-render-diagnostics -p vize_l0 --test fact_demand | tee target/unused-bindings-units/ci-fact_demand.jsonl
+          cargo test --profile ci --message-format=json-render-diagnostics -p vize_croquis --test fact_spec | tee target/unused-bindings-units/ci-fact_spec.jsonl
+          cargo test --profile ci --message-format=json-render-diagnostics -p vize_patina unused_setup_bindings | tee target/unused-bindings-units/ci-unused_setup_bindings.jsonl
+      - name: Compare the same complete fact specs under both profiles
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.compare-profiles }}
+        env:
+          VIZE_DAVINCI_FACT_CORPUS: tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator
+        run: node tools/support/compat/github/compare-unused-bindings-profiles.ts
       - name: Build the real CLI
-        run: cargo build --profile ci -p vize
+        run: |
+          set -o pipefail
+          cargo build --profile ci --message-format=json-render-diagnostics -p vize | tee target/unused-bindings-units/ci-vize.jsonl
       - name: Recall every class-b mutation and reject wrong diagnostic identities
         run: VIZE_BIN="$PWD/target/ci/vize" vp exec node --test tests/tooling/davinci-unused-setup-bindings.test.ts tests/tooling/davinci-fpfn-pilots.test.ts
+      - name: Collect only emitted Cargo unit fingerprints
+        if: ${{ always() }}
+        run: node tools/support/compat/github/compare-unused-bindings-profiles.ts --collect-unit-evidence
+      - name: Preserve Cargo unit evidence even on failure
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: unused-bindings-units-${{ github.sha }}
+          path: target/unused-bindings-units/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Preserve complete profile comparison output
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.compare-profiles }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: unused-bindings-profiles-${{ github.sha }}
+          path: target/unused-bindings-profiles/
+          if-no-files-found: error
+          retention-days: 14

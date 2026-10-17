@@ -28,7 +28,7 @@ runs:
       if: ${{ inputs.workspace-already-tested != 'true' }}
       shell: bash
       env: { VIZE_TEST_REQUIRE_TSGO: "1" }
-      run: node tools/support/compat/github/run-rust-workspace-tests.mjs
+      run: node tools/support/compat/github/run-rust-workspace-tests.ts
     - name: Test feature-enabled differential corpora
       shell: bash
       env: { VIZE_TEST_REQUIRE_TSGO: "1" }

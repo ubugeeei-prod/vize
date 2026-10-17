@@ -5,11 +5,11 @@ import { writeSync } from "node:fs";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import { Window } from "happy-dom";
-import { build } from "vite-plus";
 import { mountedScope } from "./davinci-mounted-scope.mjs";
 import { withMountedRuntimeDevtools } from "./mounted-runtime-devtools.ts";
 import { evaluateCompiledRender } from "./davinci-runtime-trace.mjs";
-import { vueVaporRuntimeEntry } from "./vue-vapor-release.mjs";
+import { mountedRuntimeSource } from "./mounted-runtime-source.ts";
+import { forbidMountedRuntimeAddons } from "./mounted-runtime-native-boundary.ts";
 
 /** One process owns one DOM and one Vue module, including its scheduler and effects. */
 export async function traceMountedBackend({
@@ -283,64 +283,9 @@ export async function loadRuntime({
 } = {}) {
   assert.equal(typeof production, "boolean", "production runtime mode must be explicit");
   onPhase("build mounted runtime");
-  const result = await build({
-    configFile: false,
-    logLevel: "silent",
-    define: {
-      "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
-      __VUE_OPTIONS_API__: "true",
-      __VUE_PROD_DEVTOOLS__: "false",
-      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: production ? "false" : "true",
-    },
-    build: {
-      write: false,
-      minify: production,
-      lib: {
-        entry: vueVaporRuntimeEntry,
-        formats: ["es"],
-      },
-    },
-  });
-  const outputs = Array.isArray(result) ? result : [result];
-  const chunks = outputs.flatMap((output) => output.output.filter((item) => item.type === "chunk"));
-  assert.equal(chunks.length, 1, "Vue runtime must bundle into one self-contained module");
+  const code = await mountedRuntimeSource(production);
   onPhase("import mounted runtime");
-  return import(`data:text/javascript;base64,${Buffer.from(chunks[0].code).toString("base64")}`);
-}
-
-let nativeExitArmed = false;
-
-/**
- * `build()` above loads vite-plus's native binding. On process teardown its
- * env-cleanup hook shuts the tokio runtime down while other native state is
- * still live; that use-after-free is the Linux SIGSEGV after `{"passed":N}`
- * (#9067). `execve` keeps the already-flushed stdio and the exit code, and
- * does not run that hook. A signal still fails the parent.
- */
-export function leaveMountedRuntimeProcess() {
-  if (nativeExitArmed) return;
-  nativeExitArmed = true;
-  const report = (error) => {
-    const text = error instanceof Error ? (error.stack ?? String(error)) : String(error);
-    writeSync(2, text.endsWith("\n") ? text : `${text}\n`);
-  };
-  process.on("uncaughtException", (error) => {
-    report(error);
-    process.exit(1);
-  });
-  process.on("unhandledRejection", (error) => {
-    report(error);
-    process.exit(1);
-  });
-  process.on("exit", (code) => {
-    if (process.platform === "win32" || typeof process.execve !== "function") return;
-    const status = Number.isInteger(code) && code >= 0 && code <= 255 ? code : 1;
-    try {
-      process.execve("/bin/sh", ["/bin/sh", "-c", `exit ${status}`]);
-    } catch {
-      // The normal exit remains. The parent still fails if it is a signal.
-    }
-  });
+  return import(`data:text/javascript;base64,${Buffer.from(code).toString("base64")}`);
 }
 
 /** Ignore backend anchor comments; retain text, attributes, and live form state. */
@@ -373,7 +318,7 @@ export function observeChildren(parent) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  leaveMountedRuntimeProcess();
+  forbidMountedRuntimeAddons();
   const chunks = [];
   for await (const chunk of process.stdin) chunks.push(chunk);
   const input = JSON.parse(Buffer.concat(chunks).toString("utf8"));

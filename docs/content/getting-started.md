@@ -53,6 +53,7 @@ Apply fixes with `vp run check -- --fix`. Use `vp run` for Vize's generated task
 - [Explore components](./guide/ui/index.md) with recipes and the component reference.
 - [Preview your components](./guide/musea.md) with Musea art files and the gallery.
 - [Set up your editor](./guide/vite-plus-editor.md) with shared native settings.
+- [Use the JavaScript APIs through JSR](./guide/jsr.md) from Node, Deno or Bun.
 
 > [!NOTE]
 > Vize 0.457.0 supports shared Vite configuration in the native CLI and `init` without a dedicated Vize file. Keep the CLI, Vite integration and editor extension up to date to use the shared configuration workflow. The [reference](./guide/configuration-reference.md) covers discovery, precedence and optional dedicated formats.

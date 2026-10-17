@@ -553,7 +553,13 @@ impl<'a> Comments<'a> {
     }
 
     /// Checks if the node has a suppression comment.
+    #[inline]
     pub fn is_suppressed(&self, start: u32) -> bool {
+        // Comment-free files cannot suppress nodes. Avoid constructing the
+        // cursor/view-limited range when suppression is impossible.
+        if self.inner.is_empty() {
+            return false;
+        }
         self.comments_before(start).iter().any(|comment| self.is_suppression_comment(comment))
     }
 
@@ -563,7 +569,11 @@ impl<'a> Comments<'a> {
     /// `statement(); // prettier-ignore`
     /// `statement(); /* prettier-ignore */`
     /// `value, // prettier-ignore`
+    #[inline]
     pub fn has_trailing_suppression_comment(&self, pos: u32) -> bool {
+        if self.inner.is_empty() {
+            return false;
+        }
         self.end_of_line_comments_after(pos)
             .iter()
             .any(|comment| self.is_suppression_comment(comment))
@@ -717,3 +727,7 @@ impl<'a> Comments<'a> {
         self.printed_count += count;
     }
 }
+
+#[cfg(test)]
+#[path = "comments_tests.rs"]
+mod tests;

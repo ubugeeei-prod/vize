@@ -11,12 +11,13 @@ on:
         required: true
         type: string
       packet_scope:
-        description: Complete original packets to replay (residual-two is not four-project qualification)
+        description: Complete original packets to replay (subsets are not four-project qualification)
         default: original-four
         type: choice
         options:
           - original-four
           - residual-two
+          - misskey-only
       trace_preparation:
         description: Record existing preparation phases (instrumented observation, not paired performance)
         default: false
@@ -69,6 +70,7 @@ jobs:
           scopes = {
               'original-four': list(pins),
               'residual-two': ['vue3-antd-admin', 'misskey'],
+              'misskey-only': ['misskey'],
           }
           scope = os.environ['PACKET_SCOPE']
           assert scope in scopes
@@ -166,7 +168,7 @@ jobs:
           test -x "$CORSA_PATH"
           node tests/tooling/support/lsp/verify-session-captures.ts snapshot "$CAMPAIGN_DIR/lsp-wire-before.json"
           python3 - <<'PY'
-          import hashlib, json, os, pathlib, shutil, subprocess, sys, time
+          import hashlib, json, os, pathlib, shutil, signal, subprocess, sys, time, traceback
           out = pathlib.Path(os.environ['CAMPAIGN_DIR'])
           plan = json.loads((out / 'plan.json').read_text())
           provider = pathlib.Path(os.environ['CORSA_PATH']).resolve(strict=True)
@@ -174,6 +176,66 @@ jobs:
               'path': str(provider), 'sha256': hashlib.sha256(provider.read_bytes()).hexdigest(),
               'lockfileSha256': hashlib.sha256(pathlib.Path('pnpm-lock.yaml').read_bytes()).hexdigest(),
           }, indent=2) + '\n')
+          # Reuse the existing Linux sampler without changing the packet or
+          # its own Maestro-tree resource oracle. This observer's root also
+          # includes the harness and observer; raw PID/birth/exe rows preserve
+          # the distinction from native Vize/Corsa work. Trace-only overhead
+          # makes these observations unsuitable for paired speed claims.
+          resource_observer = r'''
+          import fs from 'node:fs';
+          import crypto from 'node:crypto';
+          import { createSampler } from './tools/support/compat/davinci/lib/lsp-resource-sampler.mjs';
+          const [rootPid, directory] = process.argv.slice(1);
+          const source = 'tools/support/compat/davinci/lib/lsp-resource-sampler.mjs';
+          const sampler = createSampler(Number(rootPid));
+          const started = process.hrtime.bigint();
+          let count = 0;
+          const metadata = {
+            sourceRevision: process.env.GITHUB_SHA,
+            samplerSource: source,
+            samplerSha256: crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex'),
+            rootPid: Number(rootPid),
+            scope: 'workflow harness and sampled descendants, including observer; reparented CPU after leaving the tree is excluded',
+            instrumented: true,
+          };
+          function record() {
+            const snapshot = sampler.sample();
+            const processes = snapshot.processes.map((entry) => {
+              let executable = null;
+              try { executable = fs.readlinkSync(`/proc/${entry.pid}/exe`); } catch {}
+              return { ...entry, executable };
+            });
+            fs.appendFileSync(`${directory}/resource-samples.jsonl`, JSON.stringify({
+              ...snapshot, processes, wallTime: new Date().toISOString(),
+              elapsedNs: String(process.hrtime.bigint() - started),
+            }) + '\n');
+            count++;
+            return snapshot;
+          }
+          record();
+          const interval = setInterval(record, 500);
+          process.once('SIGTERM', () => {
+            clearInterval(interval);
+            let final;
+            let result;
+            let failure;
+            try { final = record(); } catch (error) { failure = error; }
+            try { result = sampler.stop(); } catch (error) { failure ??= error; }
+            if (failure) {
+              fs.writeFileSync(`${directory}/resource-error.txt`, String(failure));
+              process.exitCode = 1;
+              return;
+            }
+            try {
+              fs.writeFileSync(`${directory}/resource-summary.json`, JSON.stringify({
+                ...metadata, ...result, final, rawSamples: count,
+              }, null, 2) + '\n');
+            } catch (error) {
+              fs.writeFileSync(`${directory}/resource-error.txt`, String(error));
+              process.exitCode = 1;
+            }
+          });
+          '''
           results = []
           for project in plan['projects']:
               directory = out / project['id']
@@ -182,16 +244,59 @@ jobs:
               subprocess.run(['node', 'tests/tooling/support/lsp/verify-session-captures.ts',
                               'snapshot', str(directory / 'lsp-wire-before.json')], check=True)
               command = ['node', '--test', '--test-concurrency=1', 'tests/tooling/real-project-lsp.test.ts']
+              observer = None
+              resource_status = None
+              resource_streams = []
+              if plan['preparationTrace']:
+                  try:
+                      for stream in ['stdout', 'stderr']:
+                          resource_streams.append((directory / ('resource-observer.' + stream)).open('wb'))
+                      observer = subprocess.Popen(
+                          ['node', '--input-type=module', '--eval', resource_observer, str(os.getpid()), str(directory)],
+                          stdout=resource_streams[0], stderr=resource_streams[1])
+                  except Exception:
+                      (directory / 'resource-error.txt').write_text(traceback.format_exc())
+                      resource_status = -1
               started = time.monotonic_ns()
-              with (directory / 'test.stdout').open('wb') as stdout, (directory / 'test.stderr').open('wb') as stderr:
-                  result = subprocess.run(command, env=environment, stdout=stdout, stderr=stderr)
-              duration = (time.monotonic_ns() - started) / 1e6
+              result = None
+              command_error = None
+              try:
+                  with (directory / 'test.stdout').open('wb') as stdout, (directory / 'test.stderr').open('wb') as stderr:
+                      try:
+                          result = subprocess.run(command, env=environment, stdout=stdout, stderr=stderr)
+                      except Exception:
+                          command_error = traceback.format_exc()
+                          stderr.write(command_error.encode())
+              finally:
+                  duration = (time.monotonic_ns() - started) / 1e6
+                  try:
+                      if observer is not None:
+                          try:
+                              if observer.poll() is None:
+                                  observer.send_signal(signal.SIGTERM)
+                              resource_status = observer.wait(timeout=10)
+                          except subprocess.TimeoutExpired:
+                              observer.kill()
+                              resource_status = observer.wait()
+                          except Exception:
+                              (directory / 'resource-error.txt').write_text(traceback.format_exc())
+                              resource_status = -1
+                          finally:
+                              if observer.poll() is None:
+                                  observer.kill()
+                                  observer.wait()
+                  finally:
+                      for stream in resource_streams:
+                          stream.close()
               with (directory / 'wire.stdout').open('wb') as stdout, (directory / 'wire.stderr').open('wb') as stderr:
                   wire = subprocess.run(['node', 'tests/tooling/support/lsp/verify-session-captures.ts',
                                          'verify', str(directory / 'lsp-wire-before.json'),
                                          str(directory / 'lsp-wire-integrity.json')], stdout=stdout, stderr=stderr)
-              results.append({'id': project['id'], 'command': command, 'exitStatus': result.returncode,
-                              'wireExitStatus': wire.returncode, 'durationMs': duration})
+              results.append({'id': project['id'], 'command': command,
+                              'exitStatus': result.returncode if result is not None else None,
+                              'commandError': command_error,
+                              'wireExitStatus': wire.returncode, 'durationMs': duration,
+                              'resourceExitStatus': resource_status})
               (out / 'sessions.json').write_text(json.dumps(results, indent=2) + '\n')
               for stream in ['stdout', 'stderr']:
                   with (directory / ('test.' + stream)).open('rb') as raw:
@@ -201,6 +306,30 @@ jobs:
       - name: Verify every source-bound raw session
         if: ${{ always() }}
         run: node tests/tooling/support/lsp/verify-session-captures.ts verify "$CAMPAIGN_DIR/lsp-wire-before.json" "$CAMPAIGN_DIR/lsp-wire-integrity.json"
+      - name: Verify trace resource custody independently of packet acceptance
+        if: ${{ always() && inputs.trace_preparation }}
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          VIZE_LSP_BIN: target/ci/vize
+        shell: python
+        run: |
+          import hashlib, json, os, pathlib
+          out = pathlib.Path(os.environ['CAMPAIGN_DIR'])
+          plan = json.loads((out / 'plan.json').read_text())
+          results = json.loads((out / 'sessions.json').read_text())
+          assert plan['preparationTrace'] is True
+          assert [r['id'] for r in results] == [p['id'] for p in plan['projects']]
+          assert all(r['resourceExitStatus'] == 0 for r in results)
+          for project in plan['projects']:
+              directory = out / project['id']
+              resource = json.loads((directory / 'resource-summary.json').read_text())
+              assert resource['sourceRevision'] == plan['sourceRevision']
+              assert resource['samplerSha256'] == hashlib.sha256(pathlib.Path(resource['samplerSource']).read_bytes()).hexdigest()
+              samples = [json.loads(line) for line in (directory / 'resource-samples.jsonl').read_text().splitlines()]
+              assert len(samples) == resource['rawSamples'] and len(samples) > 0
+              executables = {entry['executable'] for sample in samples for entry in sample['processes']}
+              assert str(pathlib.Path(os.environ['VIZE_LSP_BIN']).resolve()) in executables
+              assert str(pathlib.Path(os.environ['CORSA_PATH']).resolve()) in executables
       - name: Refuse missing selected projects, stale binaries, or failed preparation
         if: ${{ always() }}
         shell: python

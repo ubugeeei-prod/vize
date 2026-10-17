@@ -1,0 +1,66 @@
+[
+  {
+    "name": "ordinary",
+    "state": "clean",
+    "source": "import type { PublicProps } from \"packed-button\";\ntype Label = PublicProps[\"label\"];\nconst label: Label = \"ordinary\";\nvoid label;\n",
+    "cwd": "/tmp/vize-3984-audit/repro/ordinary-consumer",
+    "argv": [
+      "--noEmit",
+      "--pretty",
+      "false",
+      "-p",
+      "tsconfig.json"
+    ],
+    "status": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "name": "ordinary",
+    "state": "wrong",
+    "source": "import type { PublicProps } from \"packed-button\";\nconst props: PublicProps = { label: \"wrong\" };\nvoid props;\n",
+    "cwd": "/tmp/vize-3984-audit/repro/ordinary-consumer",
+    "argv": [
+      "--noEmit",
+      "--pretty",
+      "false",
+      "-p",
+      "tsconfig.json"
+    ],
+    "status": 1,
+    "stdout": "src/index.ts(2,30): error TS2322: Type '\"wrong\"' is not assignable to type '\"ordinary\"'.\n",
+    "stderr": ""
+  },
+  {
+    "name": "marker",
+    "state": "clean",
+    "source": "import type { PublicProps } from \"packed-button\";\ntype Label = PublicProps[\"label\"];\nconst label: Label = \"__vizeComponentMarker\";\nvoid label;\n",
+    "cwd": "/tmp/vize-3984-audit/repro/marker-consumer",
+    "argv": [
+      "--noEmit",
+      "--pretty",
+      "false",
+      "-p",
+      "tsconfig.json"
+    ],
+    "status": 1,
+    "stdout": "src/index.ts(2,26): error TS2339: Property 'label' does not exist on type 'PublicProps'.\n",
+    "stderr": ""
+  },
+  {
+    "name": "marker",
+    "state": "wrong",
+    "source": "import type { PublicProps } from \"packed-button\";\nconst props: PublicProps = { label: \"wrong\" };\nvoid props;\n",
+    "cwd": "/tmp/vize-3984-audit/repro/marker-consumer",
+    "argv": [
+      "--noEmit",
+      "--pretty",
+      "false",
+      "-p",
+      "tsconfig.json"
+    ],
+    "status": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

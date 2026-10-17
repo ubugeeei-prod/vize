@@ -10,6 +10,7 @@ const PR_JOBS = [
   "iteration-plan",
   ...CORE,
   "pr-source-checks",
+  "instruction-counts",
   "level-dependency-direction",
   "release-integration-catalog",
 ];
@@ -102,7 +103,7 @@ test("source gates cover iteration events while full qualification runs on sched
   );
   assert.equal(
     workflow.jobs?.["test-report"]?.steps?.at(-1)?.run,
-    "node tools/support/compat/github/require-needs-success.ts",
+    "node tools/support/compat/github/require-needs-success.ts --check-report",
   );
   const commands = (job: string) =>
     (workflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
@@ -256,6 +257,7 @@ test("full JS qualification retains independent native builds and strictly gates
     "test-scripts",
     "full-source-cli",
     "check-js",
+    "instruction-counts",
   ];
   assert.deepEqual(full.needs, fullJobs);
   const caller = full.steps?.at(-1);

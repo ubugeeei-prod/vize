@@ -13,6 +13,7 @@ import { uiFamilyCatalog } from "../../npm/ui/src/catalog/family-catalog.ts";
 import { featuredExamples, publicExample } from "../../npm/ui/scripts/reference-docs/examples.ts";
 import {
   composableExamples,
+  japaneseComposableGoals,
   composableExampleSource,
 } from "../../npm/ui/scripts/reference-docs/composable-examples.ts";
 import { previewComposableExamples } from "../../docs/previews/ui/build-config.ts";
@@ -175,8 +176,8 @@ void test("component hub guides tasks in English and Japanese and links real cap
 void test("practical composable examples share complete source with their live preview", () => {
   const packageRoot = path.join(repoRoot, "npm/compose/core");
   const exports = JSON.parse(readFileSync(path.join(packageRoot, "package.json"), "utf8")).exports;
-  assert.equal(composableExamples.length, 124);
-  assert.equal(new Set(composableExamples.map((example) => example.name)).size, 124);
+  assert.equal(composableExamples.length, 126);
+  assert.equal(new Set(composableExamples.map((example) => example.name)).size, 126);
   for (const example of composableExamples) {
     const source = composableExampleSource(packageRoot, example.name);
     const preview = previewComposableExamples.find((item) => item.name === example.name);
@@ -214,4 +215,23 @@ void test("all reference entries show setup and composable hubs disclose preview
     rendered.get("guide/composables/index.md") ?? "",
     new RegExp(`checks currently cover the ${composableExamples.length} examples`),
   );
+});
+
+void test("Japanese composable hub gives every live demo a reviewed Japanese goal", () => {
+  const ja = rendered.get("ja/guide/composables/index.md") ?? "";
+  const en = rendered.get("guide/composables/index.md") ?? "";
+  assert.deepEqual(
+    Object.keys(japaneseComposableGoals).sort(),
+    composableExamples.map(({ name }) => name).sort(),
+    "new demos need Japanese navigation and removed demos must not leave orphan labels",
+  );
+  for (const { name, title } of composableExamples) {
+    const goal = japaneseComposableGoals[name];
+    assert.match(goal, /[ぁ-んァ-ヶ一-龯]/, `${name}: natural Japanese goal`);
+    assert.ok(ja.includes(`[${goal}](../../../guide/composables/${name}.md)`), name);
+    assert.ok(!ja.includes(`[${title}](`), `${name}: no English goal fallback`);
+    assert.ok(en.includes(`[${title}](./${name}.md)`), `${name}: original English goal`);
+  }
+  assert.match(ja, /API 説明と操作画面は英語/);
+  assert.match(ja, /実機での接続や許可後の動作まで検証済みとは限りません/);
 });

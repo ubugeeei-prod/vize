@@ -35,10 +35,14 @@ test("docs build prepares its browser before previews and checks the rendered si
     "node ./scripts/finish-build.ts",
   ]);
   const finish = fs.readFileSync(path.join(repoRoot, "docs", "scripts", "finish-build.ts"), "utf8");
-  assert.match(finish, /finishSteps = \["generate:og-images", "check:ui-docs"\] as const/);
+  assert.match(
+    finish,
+    /finishSteps = \["generate:og-images", "check:ui-docs", "check:heading-links"\] as const/,
+  );
   assert.equal(script("generate:ui-previews"), "node ./scripts/build-ui-previews.ts");
   assert.equal(script("generate:reference"), "node ../npm/ui/scripts/generate-reference-docs.ts");
   assert.equal(script("check:ui-docs"), "node ./previews/ui/check-site.ts");
+  assert.equal(script("check:heading-links"), "node ./scripts/check-heading-hash.ts");
   assert.equal(script("generate:og-images"), "node ./scripts/generate-og-images.ts");
 });
 

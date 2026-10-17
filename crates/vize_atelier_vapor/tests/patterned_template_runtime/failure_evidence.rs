@@ -80,10 +80,10 @@ fn a_signal_after_the_exact_passing_payload_fails() {
     }
 }
 
-/// Loading the mounted-trace binding and leaving through its exit must be a
-/// real status 0. A teardown signal fails this the way the gate failed.
+/// Both real bundler producers and the addon-free observer must exit naturally.
+/// A teardown signal fails this the way the original gate failed.
 #[test]
-fn mounted_runtime_child_exits_zero_after_loading_native_binding() {
+fn mounted_runtime_producers_and_observer_exit_naturally() {
     use std::path::Path;
 
     let child = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -94,7 +94,7 @@ fn mounted_runtime_child_exits_zero_after_loading_native_binding() {
     assert_eq!(
         output.status.code(),
         Some(0),
-        "native teardown must exit 0\nstatus: {}\nstdout:\n{stdout}\nstderr:\n{stderr}",
+        "producer and observer teardown must exit 0\nstatus: {}\nstdout:\n{stdout}\nstderr:\n{stderr}",
         output.status,
     );
     #[cfg(unix)]
@@ -108,4 +108,8 @@ fn mounted_runtime_child_exits_zero_after_loading_native_binding() {
         );
     }
     assert_eq!(output.stdout, br#"{"passed":1}"#);
+    assert!(
+        output.stderr.is_empty(),
+        "unexpected teardown stderr:\n{stderr}"
+    );
 }

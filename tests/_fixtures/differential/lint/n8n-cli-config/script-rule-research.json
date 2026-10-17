@@ -1,0 +1,1818 @@
+{
+  "schema": "vize.n8n.cli-script-rule-research",
+  "version": 1,
+  "qualification": "Six declared ordinary-object/template counterexamples. Complete native/provider mismatches must fail and remain research; no qualification is transferred from the sixteen script controls.",
+  "oracleFilePrefix": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research",
+  "cases": [
+    {
+      "id": "script-listeners--ordinary-object",
+      "family": "listeners",
+      "control": "ordinary-object",
+      "source": "<script>\nconst holder = { $listeners: 7 }\nexport default {\n  methods: { read() { return holder.$listeners } }\n}\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "f5e909b8cdfa6ff1885bc7573d3a256742b0146f193a5a30c43eb4f924d64a3e",
+      "ruleOptions": {},
+      "expectedOracleRuleIds": [],
+      "scriptless": false,
+      "compareCoordinates": true,
+      "cliExpectations": [
+        {
+          "file": "script-listeners--ordinary-object.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "script-listeners--template-instance",
+      "family": "listeners",
+      "control": "template-instance",
+      "source": "<script>\nexport default {}\n</script>\n<template><div>{{ $listeners }}</div></template>\n",
+      "sourceSha256": "5ad21b1687ddde77677441de5fac67fdc9066f19456852ebbe01c483780a0309",
+      "ruleOptions": {},
+      "expectedOracleRuleIds": ["vue/no-deprecated-dollar-listeners-api"],
+      "scriptless": false,
+      "compareCoordinates": true,
+      "cliExpectations": [
+        {
+          "file": "script-listeners--template-instance.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-listeners-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
+              "line": 4,
+              "column": 19,
+              "endLine": 4,
+              "endColumn": 29,
+              "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "script-scopedslots--ordinary-object",
+      "family": "scopedslots",
+      "control": "ordinary-object",
+      "source": "<script>\nconst holder = { $scopedSlots: 7 }\nexport default {\n  methods: { read() { return holder.$scopedSlots } }\n}\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "945eef01ef413b1ec074d4ae7817889ab5c9b16fcc2dddec41b14c59760c73ca",
+      "ruleOptions": {},
+      "expectedOracleRuleIds": [],
+      "scriptless": false,
+      "compareCoordinates": true,
+      "cliExpectations": [
+        {
+          "file": "script-scopedslots--ordinary-object.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "script-scopedslots--template-instance",
+      "family": "scopedslots",
+      "control": "template-instance",
+      "source": "<script>\nexport default {}\n</script>\n<template><div>{{ $scopedSlots }}</div></template>\n",
+      "sourceSha256": "69c546752b9f19ccf08a46712c305f53492c109c340e06acca9d2357f0227ccb",
+      "ruleOptions": {},
+      "expectedOracleRuleIds": ["vue/no-deprecated-dollar-scopedslots-api"],
+      "scriptless": false,
+      "compareCoordinates": true,
+      "cliExpectations": [
+        {
+          "file": "script-scopedslots--template-instance.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-dollar-scopedslots-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-dollar-scopedslots-api] `$scopedSlots` was removed in Vue 3",
+              "line": 4,
+              "column": 19,
+              "endLine": 4,
+              "endColumn": 31,
+              "help": "Replace $scopedSlots with $slots. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "script-computed--template-call",
+      "family": "computed",
+      "control": "template-call",
+      "source": "<script>\nexport default { computed: { total() { return 7 } } }\n</script>\n<template><div>{{ total() }}</div></template>\n",
+      "sourceSha256": "1aaf2f3da8789c2ac56c70334bc32f596c295c5abbe4a8f264aeaa240287e6bb",
+      "ruleOptions": {},
+      "expectedOracleRuleIds": ["vue/no-use-computed-property-like-method"],
+      "scriptless": false,
+      "compareCoordinates": true,
+      "cliExpectations": [
+        {
+          "file": "script-computed--template-call.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-use-computed-property-like-method",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-use-computed-property-like-method] 'total' is a computed property and must not be called like a method.",
+              "line": 4,
+              "column": 19,
+              "endLine": 4,
+              "endColumn": 26,
+              "help": "A computed property exposes a value, not a function. Drop the call parentheses ({{ name }}), or move the logic into a method if you need to invoke it."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "script-default--ordinary-object",
+      "family": "default",
+      "control": "ordinary-object",
+      "source": "<script>\nconst holder = { props: { count: { type: Number, default: \"seven\" } } }\nexport default { methods: { read() { return holder } } }\n</script>\n<template><div /></template>\n",
+      "sourceSha256": "2ffc0148db9725d35ede9de32f71384c3224164fcedc4c52384fcf0191f42719",
+      "ruleOptions": {},
+      "expectedOracleRuleIds": [],
+      "scriptless": false,
+      "compareCoordinates": true,
+      "cliExpectations": [
+        {
+          "file": "script-default--ordinary-object.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    }
+  ],
+  "oracleCapture": [
+    {
+      "caseId": "script-listeners--ordinary-object",
+      "observations": [
+        {
+          "providers": {
+            "eslint": {
+              "version": "10.4.1",
+              "publicEntrypoint": "lib/api.js",
+              "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+              "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+            },
+            "eslint-plugin-vue": {
+              "version": "10.9.2",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+              "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+            },
+            "vue-eslint-parser": {
+              "version": "10.4.1",
+              "publicEntrypoint": "dist/index.cjs",
+              "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+              "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+            },
+            "@typescript-eslint/parser": {
+              "version": "8.65.0",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+              "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+            }
+          },
+          "officialVueBase": {
+            "export": "flat/base",
+            "rules": {
+              "vue/comment-directive": "error",
+              "vue/jsx-uses-vars": "error"
+            },
+            "processors": ["vue/vue"]
+          },
+          "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+          "configurations": [
+            {
+              "id": "latest-cli",
+              "ruleOptions": {
+                "vue/attribute-hyphenation": "always",
+                "vue/component-name-in-template-casing": {
+                  "casing": "PascalCase"
+                },
+                "vue/sfc-element-order": {
+                  "order": ["script", "template", "style"]
+                }
+              },
+              "rules": {
+                "vue/attribute-hyphenation": ["error", "always"],
+                "vue/component-name-in-template-casing": ["error", "PascalCase"],
+                "vue/no-child-content": "error",
+                "vue/no-deprecated-functional-template": "error",
+                "vue/no-deprecated-html-element-is": "error",
+                "vue/no-deprecated-inline-template": "error",
+                "vue/no-deprecated-router-link-tag-prop": "error",
+                "vue/no-deprecated-scope-attribute": "error",
+                "vue/no-deprecated-slot-attribute": "error",
+                "vue/no-deprecated-slot-scope-attribute": "error",
+                "vue/no-deprecated-v-bind-sync": "error",
+                "vue/no-deprecated-v-on-native-modifier": "error",
+                "vue/no-deprecated-v-on-number-modifiers": "error",
+                "vue/no-dupe-v-else-if": "error",
+                "vue/no-duplicate-attributes": "error",
+                "vue/no-multiple-template-root": "error",
+                "vue/no-template-key": "error",
+                "vue/no-textarea-mustache": "error",
+                "vue/no-unused-components": "error",
+                "vue/no-unused-vars": "error",
+                "vue/no-use-v-if-with-v-for": "error",
+                "vue/no-useless-template-attributes": "error",
+                "vue/no-v-for-template-key-on-child": "error",
+                "vue/no-v-html": "error",
+                "vue/require-component-is": "error",
+                "vue/no-undef-components": "error",
+                "vue/require-toggle-inside-transition": "error",
+                "vue/require-v-for-key": "error",
+                "vue/block-order": [
+                  "error",
+                  {
+                    "order": ["script", "template", "style"]
+                  }
+                ],
+                "vue/use-v-on-exact": "error",
+                "vue/v-slot-style": "error",
+                "vue/valid-attribute-name": "error",
+                "vue/valid-template-root": "error",
+                "vue/valid-v-bind": "error",
+                "vue/valid-v-cloak": "error",
+                "vue/valid-v-else": "error",
+                "vue/valid-v-for": "error",
+                "vue/valid-v-html": "error",
+                "vue/valid-v-if": "error",
+                "vue/valid-v-memo": "error",
+                "vue/valid-v-model": "error",
+                "vue/valid-v-on": "error",
+                "vue/valid-v-once": "error",
+                "vue/valid-v-show": "error",
+                "vue/valid-v-slot": "error",
+                "vue/valid-v-text": "error",
+                "vue/no-deprecated-dollar-listeners-api": "error",
+                "vue/no-deprecated-dollar-scopedslots-api": "error",
+                "vue/no-ref-as-operand": "error",
+                "vue/no-use-computed-property-like-method": "error",
+                "vue/require-valid-default-prop": "error"
+              }
+            }
+          ],
+          "captures": [
+            {
+              "configuration": "latest-cli",
+              "caseId": "script-listeners--ordinary-object",
+              "sourceSha256": "f5e909b8cdfa6ff1885bc7573d3a256742b0146f193a5a30c43eb4f924d64a3e",
+              "packets": [
+                {
+                  "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research/script-listeners--ordinary-object.vue",
+                  "messages": [],
+                  "suppressedMessages": [],
+                  "errorCount": 0,
+                  "fatalErrorCount": 0,
+                  "warningCount": 0,
+                  "fixableErrorCount": 0,
+                  "fixableWarningCount": 0,
+                  "usedDeprecatedRules": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "providers": {
+            "eslint": {
+              "version": "10.4.1",
+              "publicEntrypoint": "lib/api.js",
+              "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+              "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+            },
+            "eslint-plugin-vue": {
+              "version": "10.9.2",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+              "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+            },
+            "vue-eslint-parser": {
+              "version": "10.4.1",
+              "publicEntrypoint": "dist/index.cjs",
+              "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+              "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+            },
+            "@typescript-eslint/parser": {
+              "version": "8.65.0",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+              "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+            }
+          },
+          "officialVueBase": {
+            "export": "flat/base",
+            "rules": {
+              "vue/comment-directive": "error",
+              "vue/jsx-uses-vars": "error"
+            },
+            "processors": ["vue/vue"]
+          },
+          "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+          "configurations": [
+            {
+              "id": "latest-cli",
+              "ruleOptions": {
+                "vue/attribute-hyphenation": "always",
+                "vue/component-name-in-template-casing": {
+                  "casing": "PascalCase"
+                },
+                "vue/sfc-element-order": {
+                  "order": ["script", "template", "style"]
+                }
+              },
+              "rules": {
+                "vue/attribute-hyphenation": ["error", "always"],
+                "vue/component-name-in-template-casing": ["error", "PascalCase"],
+                "vue/no-child-content": "error",
+                "vue/no-deprecated-functional-template": "error",
+                "vue/no-deprecated-html-element-is": "error",
+                "vue/no-deprecated-inline-template": "error",
+                "vue/no-deprecated-router-link-tag-prop": "error",
+                "vue/no-deprecated-scope-attribute": "error",
+                "vue/no-deprecated-slot-attribute": "error",
+                "vue/no-deprecated-slot-scope-attribute": "error",
+                "vue/no-deprecated-v-bind-sync": "error",
+                "vue/no-deprecated-v-on-native-modifier": "error",
+                "vue/no-deprecated-v-on-number-modifiers": "error",
+                "vue/no-dupe-v-else-if": "error",
+                "vue/no-duplicate-attributes": "error",
+                "vue/no-multiple-template-root": "error",
+                "vue/no-template-key": "error",
+                "vue/no-textarea-mustache": "error",
+                "vue/no-unused-components": "error",
+                "vue/no-unused-vars": "error",
+                "vue/no-use-v-if-with-v-for": "error",
+                "vue/no-useless-template-attributes": "error",
+                "vue/no-v-for-template-key-on-child": "error",
+                "vue/no-v-html": "error",
+                "vue/require-component-is": "error",
+                "vue/no-undef-components": "error",
+                "vue/require-toggle-inside-transition": "error",
+                "vue/require-v-for-key": "error",
+                "vue/block-order": [
+                  "error",
+                  {
+                    "order": ["script", "template", "style"]
+                  }
+                ],
+                "vue/use-v-on-exact": "error",
+                "vue/v-slot-style": "error",
+                "vue/valid-attribute-name": "error",
+                "vue/valid-template-root": "error",
+                "vue/valid-v-bind": "error",
+                "vue/valid-v-cloak": "error",
+                "vue/valid-v-else": "error",
+                "vue/valid-v-for": "error",
+                "vue/valid-v-html": "error",
+                "vue/valid-v-if": "error",
+                "vue/valid-v-memo": "error",
+                "vue/valid-v-model": "error",
+                "vue/valid-v-on": "error",
+                "vue/valid-v-once": "error",
+                "vue/valid-v-show": "error",
+                "vue/valid-v-slot": "error",
+                "vue/valid-v-text": "error",
+                "vue/no-deprecated-dollar-listeners-api": "error",
+                "vue/no-deprecated-dollar-scopedslots-api": "error",
+                "vue/no-ref-as-operand": "error",
+                "vue/no-use-computed-property-like-method": "error",
+                "vue/require-valid-default-prop": "error"
+              }
+            }
+          ],
+          "captures": [
+            {
+              "configuration": "latest-cli",
+              "caseId": "script-listeners--ordinary-object",
+              "sourceSha256": "f5e909b8cdfa6ff1885bc7573d3a256742b0146f193a5a30c43eb4f924d64a3e",
+              "packets": [
+                {
+                  "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research/script-listeners--ordinary-object.vue",
+                  "messages": [],
+                  "suppressedMessages": [],
+                  "errorCount": 0,
+                  "fatalErrorCount": 0,
+                  "warningCount": 0,
+                  "fixableErrorCount": 0,
+                  "fixableWarningCount": 0,
+                  "usedDeprecatedRules": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "script-listeners--template-instance",
+      "observations": [
+        {
+          "providers": {
+            "eslint": {
+              "version": "10.4.1",
+              "publicEntrypoint": "lib/api.js",
+              "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+              "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+            },
+            "eslint-plugin-vue": {
+              "version": "10.9.2",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+              "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+            },
+            "vue-eslint-parser": {
+              "version": "10.4.1",
+              "publicEntrypoint": "dist/index.cjs",
+              "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+              "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+            },
+            "@typescript-eslint/parser": {
+              "version": "8.65.0",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+              "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+            }
+          },
+          "officialVueBase": {
+            "export": "flat/base",
+            "rules": {
+              "vue/comment-directive": "error",
+              "vue/jsx-uses-vars": "error"
+            },
+            "processors": ["vue/vue"]
+          },
+          "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+          "configurations": [
+            {
+              "id": "latest-cli",
+              "ruleOptions": {
+                "vue/attribute-hyphenation": "always",
+                "vue/component-name-in-template-casing": {
+                  "casing": "PascalCase"
+                },
+                "vue/sfc-element-order": {
+                  "order": ["script", "template", "style"]
+                }
+              },
+              "rules": {
+                "vue/attribute-hyphenation": ["error", "always"],
+                "vue/component-name-in-template-casing": ["error", "PascalCase"],
+                "vue/no-child-content": "error",
+                "vue/no-deprecated-functional-template": "error",
+                "vue/no-deprecated-html-element-is": "error",
+                "vue/no-deprecated-inline-template": "error",
+                "vue/no-deprecated-router-link-tag-prop": "error",
+                "vue/no-deprecated-scope-attribute": "error",
+                "vue/no-deprecated-slot-attribute": "error",
+                "vue/no-deprecated-slot-scope-attribute": "error",
+                "vue/no-deprecated-v-bind-sync": "error",
+                "vue/no-deprecated-v-on-native-modifier": "error",
+                "vue/no-deprecated-v-on-number-modifiers": "error",
+                "vue/no-dupe-v-else-if": "error",
+                "vue/no-duplicate-attributes": "error",
+                "vue/no-multiple-template-root": "error",
+                "vue/no-template-key": "error",
+                "vue/no-textarea-mustache": "error",
+                "vue/no-unused-components": "error",
+                "vue/no-unused-vars": "error",
+                "vue/no-use-v-if-with-v-for": "error",
+                "vue/no-useless-template-attributes": "error",
+                "vue/no-v-for-template-key-on-child": "error",
+                "vue/no-v-html": "error",
+                "vue/require-component-is": "error",
+                "vue/no-undef-components": "error",
+                "vue/require-toggle-inside-transition": "error",
+                "vue/require-v-for-key": "error",
+                "vue/block-order": [
+                  "error",
+                  {
+                    "order": ["script", "template", "style"]
+                  }
+                ],
+                "vue/use-v-on-exact": "error",
+                "vue/v-slot-style": "error",
+                "vue/valid-attribute-name": "error",
+                "vue/valid-template-root": "error",
+                "vue/valid-v-bind": "error",
+                "vue/valid-v-cloak": "error",
+                "vue/valid-v-else": "error",
+                "vue/valid-v-for": "error",
+                "vue/valid-v-html": "error",
+                "vue/valid-v-if": "error",
+                "vue/valid-v-memo": "error",
+                "vue/valid-v-model": "error",
+                "vue/valid-v-on": "error",
+                "vue/valid-v-once": "error",
+                "vue/valid-v-show": "error",
+                "vue/valid-v-slot": "error",
+                "vue/valid-v-text": "error",
+                "vue/no-deprecated-dollar-listeners-api": "error",
+                "vue/no-deprecated-dollar-scopedslots-api": "error",
+                "vue/no-ref-as-operand": "error",
+                "vue/no-use-computed-property-like-method": "error",
+                "vue/require-valid-default-prop": "error"
+              }
+            }
+          ],
+          "captures": [
+            {
+              "configuration": "latest-cli",
+              "caseId": "script-listeners--template-instance",
+              "sourceSha256": "5ad21b1687ddde77677441de5fac67fdc9066f19456852ebbe01c483780a0309",
+              "packets": [
+                {
+                  "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research/script-listeners--template-instance.vue",
+                  "messages": [
+                    {
+                      "ruleId": "vue/no-deprecated-dollar-listeners-api",
+                      "severity": 2,
+                      "message": "The `$listeners` is deprecated.",
+                      "line": 4,
+                      "column": 19,
+                      "messageId": "deprecated",
+                      "endLine": 4,
+                      "endColumn": 29
+                    }
+                  ],
+                  "suppressedMessages": [],
+                  "errorCount": 1,
+                  "fatalErrorCount": 0,
+                  "warningCount": 0,
+                  "fixableErrorCount": 0,
+                  "fixableWarningCount": 0,
+                  "source": "<script>\nexport default {}\n</script>\n<template><div>{{ $listeners }}</div></template>\n",
+                  "usedDeprecatedRules": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "providers": {
+            "eslint": {
+              "version": "10.4.1",
+              "publicEntrypoint": "lib/api.js",
+              "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+              "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+            },
+            "eslint-plugin-vue": {
+              "version": "10.9.2",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+              "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+            },
+            "vue-eslint-parser": {
+              "version": "10.4.1",
+              "publicEntrypoint": "dist/index.cjs",
+              "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+              "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+            },
+            "@typescript-eslint/parser": {
+              "version": "8.65.0",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+              "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+            }
+          },
+          "officialVueBase": {
+            "export": "flat/base",
+            "rules": {
+              "vue/comment-directive": "error",
+              "vue/jsx-uses-vars": "error"
+            },
+            "processors": ["vue/vue"]
+          },
+          "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+          "configurations": [
+            {
+              "id": "latest-cli",
+              "ruleOptions": {
+                "vue/attribute-hyphenation": "always",
+                "vue/component-name-in-template-casing": {
+                  "casing": "PascalCase"
+                },
+                "vue/sfc-element-order": {
+                  "order": ["script", "template", "style"]
+                }
+              },
+              "rules": {
+                "vue/attribute-hyphenation": ["error", "always"],
+                "vue/component-name-in-template-casing": ["error", "PascalCase"],
+                "vue/no-child-content": "error",
+                "vue/no-deprecated-functional-template": "error",
+                "vue/no-deprecated-html-element-is": "error",
+                "vue/no-deprecated-inline-template": "error",
+                "vue/no-deprecated-router-link-tag-prop": "error",
+                "vue/no-deprecated-scope-attribute": "error",
+                "vue/no-deprecated-slot-attribute": "error",
+                "vue/no-deprecated-slot-scope-attribute": "error",
+                "vue/no-deprecated-v-bind-sync": "error",
+                "vue/no-deprecated-v-on-native-modifier": "error",
+                "vue/no-deprecated-v-on-number-modifiers": "error",
+                "vue/no-dupe-v-else-if": "error",
+                "vue/no-duplicate-attributes": "error",
+                "vue/no-multiple-template-root": "error",
+                "vue/no-template-key": "error",
+                "vue/no-textarea-mustache": "error",
+                "vue/no-unused-components": "error",
+                "vue/no-unused-vars": "error",
+                "vue/no-use-v-if-with-v-for": "error",
+                "vue/no-useless-template-attributes": "error",
+                "vue/no-v-for-template-key-on-child": "error",
+                "vue/no-v-html": "error",
+                "vue/require-component-is": "error",
+                "vue/no-undef-components": "error",
+                "vue/require-toggle-inside-transition": "error",
+                "vue/require-v-for-key": "error",
+                "vue/block-order": [
+                  "error",
+                  {
+                    "order": ["script", "template", "style"]
+                  }
+                ],
+                "vue/use-v-on-exact": "error",
+                "vue/v-slot-style": "error",
+                "vue/valid-attribute-name": "error",
+                "vue/valid-template-root": "error",
+                "vue/valid-v-bind": "error",
+                "vue/valid-v-cloak": "error",
+                "vue/valid-v-else": "error",
+                "vue/valid-v-for": "error",
+                "vue/valid-v-html": "error",
+                "vue/valid-v-if": "error",
+                "vue/valid-v-memo": "error",
+                "vue/valid-v-model": "error",
+                "vue/valid-v-on": "error",
+                "vue/valid-v-once": "error",
+                "vue/valid-v-show": "error",
+                "vue/valid-v-slot": "error",
+                "vue/valid-v-text": "error",
+                "vue/no-deprecated-dollar-listeners-api": "error",
+                "vue/no-deprecated-dollar-scopedslots-api": "error",
+                "vue/no-ref-as-operand": "error",
+                "vue/no-use-computed-property-like-method": "error",
+                "vue/require-valid-default-prop": "error"
+              }
+            }
+          ],
+          "captures": [
+            {
+              "configuration": "latest-cli",
+              "caseId": "script-listeners--template-instance",
+              "sourceSha256": "5ad21b1687ddde77677441de5fac67fdc9066f19456852ebbe01c483780a0309",
+              "packets": [
+                {
+                  "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research/script-listeners--template-instance.vue",
+                  "messages": [
+                    {
+                      "ruleId": "vue/no-deprecated-dollar-listeners-api",
+                      "severity": 2,
+                      "message": "The `$listeners` is deprecated.",
+                      "line": 4,
+                      "column": 19,
+                      "messageId": "deprecated",
+                      "endLine": 4,
+                      "endColumn": 29
+                    }
+                  ],
+                  "suppressedMessages": [],
+                  "errorCount": 1,
+                  "fatalErrorCount": 0,
+                  "warningCount": 0,
+                  "fixableErrorCount": 0,
+                  "fixableWarningCount": 0,
+                  "source": "<script>\nexport default {}\n</script>\n<template><div>{{ $listeners }}</div></template>\n",
+                  "usedDeprecatedRules": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "script-scopedslots--ordinary-object",
+      "observations": [
+        {
+          "providers": {
+            "eslint": {
+              "version": "10.4.1",
+              "publicEntrypoint": "lib/api.js",
+              "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+              "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+            },
+            "eslint-plugin-vue": {
+              "version": "10.9.2",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+              "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+            },
+            "vue-eslint-parser": {
+              "version": "10.4.1",
+              "publicEntrypoint": "dist/index.cjs",
+              "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+              "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+            },
+            "@typescript-eslint/parser": {
+              "version": "8.65.0",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+              "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+            }
+          },
+          "officialVueBase": {
+            "export": "flat/base",
+            "rules": {
+              "vue/comment-directive": "error",
+              "vue/jsx-uses-vars": "error"
+            },
+            "processors": ["vue/vue"]
+          },
+          "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+          "configurations": [
+            {
+              "id": "latest-cli",
+              "ruleOptions": {
+                "vue/attribute-hyphenation": "always",
+                "vue/component-name-in-template-casing": {
+                  "casing": "PascalCase"
+                },
+                "vue/sfc-element-order": {
+                  "order": ["script", "template", "style"]
+                }
+              },
+              "rules": {
+                "vue/attribute-hyphenation": ["error", "always"],
+                "vue/component-name-in-template-casing": ["error", "PascalCase"],
+                "vue/no-child-content": "error",
+                "vue/no-deprecated-functional-template": "error",
+                "vue/no-deprecated-html-element-is": "error",
+                "vue/no-deprecated-inline-template": "error",
+                "vue/no-deprecated-router-link-tag-prop": "error",
+                "vue/no-deprecated-scope-attribute": "error",
+                "vue/no-deprecated-slot-attribute": "error",
+                "vue/no-deprecated-slot-scope-attribute": "error",
+                "vue/no-deprecated-v-bind-sync": "error",
+                "vue/no-deprecated-v-on-native-modifier": "error",
+                "vue/no-deprecated-v-on-number-modifiers": "error",
+                "vue/no-dupe-v-else-if": "error",
+                "vue/no-duplicate-attributes": "error",
+                "vue/no-multiple-template-root": "error",
+                "vue/no-template-key": "error",
+                "vue/no-textarea-mustache": "error",
+                "vue/no-unused-components": "error",
+                "vue/no-unused-vars": "error",
+                "vue/no-use-v-if-with-v-for": "error",
+                "vue/no-useless-template-attributes": "error",
+                "vue/no-v-for-template-key-on-child": "error",
+                "vue/no-v-html": "error",
+                "vue/require-component-is": "error",
+                "vue/no-undef-components": "error",
+                "vue/require-toggle-inside-transition": "error",
+                "vue/require-v-for-key": "error",
+                "vue/block-order": [
+                  "error",
+                  {
+                    "order": ["script", "template", "style"]
+                  }
+                ],
+                "vue/use-v-on-exact": "error",
+                "vue/v-slot-style": "error",
+                "vue/valid-attribute-name": "error",
+                "vue/valid-template-root": "error",
+                "vue/valid-v-bind": "error",
+                "vue/valid-v-cloak": "error",
+                "vue/valid-v-else": "error",
+                "vue/valid-v-for": "error",
+                "vue/valid-v-html": "error",
+                "vue/valid-v-if": "error",
+                "vue/valid-v-memo": "error",
+                "vue/valid-v-model": "error",
+                "vue/valid-v-on": "error",
+                "vue/valid-v-once": "error",
+                "vue/valid-v-show": "error",
+                "vue/valid-v-slot": "error",
+                "vue/valid-v-text": "error",
+                "vue/no-deprecated-dollar-listeners-api": "error",
+                "vue/no-deprecated-dollar-scopedslots-api": "error",
+                "vue/no-ref-as-operand": "error",
+                "vue/no-use-computed-property-like-method": "error",
+                "vue/require-valid-default-prop": "error"
+              }
+            }
+          ],
+          "captures": [
+            {
+              "configuration": "latest-cli",
+              "caseId": "script-scopedslots--ordinary-object",
+              "sourceSha256": "945eef01ef413b1ec074d4ae7817889ab5c9b16fcc2dddec41b14c59760c73ca",
+              "packets": [
+                {
+                  "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research/script-scopedslots--ordinary-object.vue",
+                  "messages": [],
+                  "suppressedMessages": [],
+                  "errorCount": 0,
+                  "fatalErrorCount": 0,
+                  "warningCount": 0,
+                  "fixableErrorCount": 0,
+                  "fixableWarningCount": 0,
+                  "usedDeprecatedRules": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "providers": {
+            "eslint": {
+              "version": "10.4.1",
+              "publicEntrypoint": "lib/api.js",
+              "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+              "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+            },
+            "eslint-plugin-vue": {
+              "version": "10.9.2",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+              "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+            },
+            "vue-eslint-parser": {
+              "version": "10.4.1",
+              "publicEntrypoint": "dist/index.cjs",
+              "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+              "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+            },
+            "@typescript-eslint/parser": {
+              "version": "8.65.0",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+              "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+            }
+          },
+          "officialVueBase": {
+            "export": "flat/base",
+            "rules": {
+              "vue/comment-directive": "error",
+              "vue/jsx-uses-vars": "error"
+            },
+            "processors": ["vue/vue"]
+          },
+          "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+          "configurations": [
+            {
+              "id": "latest-cli",
+              "ruleOptions": {
+                "vue/attribute-hyphenation": "always",
+                "vue/component-name-in-template-casing": {
+                  "casing": "PascalCase"
+                },
+                "vue/sfc-element-order": {
+                  "order": ["script", "template", "style"]
+                }
+              },
+              "rules": {
+                "vue/attribute-hyphenation": ["error", "always"],
+                "vue/component-name-in-template-casing": ["error", "PascalCase"],
+                "vue/no-child-content": "error",
+                "vue/no-deprecated-functional-template": "error",
+                "vue/no-deprecated-html-element-is": "error",
+                "vue/no-deprecated-inline-template": "error",
+                "vue/no-deprecated-router-link-tag-prop": "error",
+                "vue/no-deprecated-scope-attribute": "error",
+                "vue/no-deprecated-slot-attribute": "error",
+                "vue/no-deprecated-slot-scope-attribute": "error",
+                "vue/no-deprecated-v-bind-sync": "error",
+                "vue/no-deprecated-v-on-native-modifier": "error",
+                "vue/no-deprecated-v-on-number-modifiers": "error",
+                "vue/no-dupe-v-else-if": "error",
+                "vue/no-duplicate-attributes": "error",
+                "vue/no-multiple-template-root": "error",
+                "vue/no-template-key": "error",
+                "vue/no-textarea-mustache": "error",
+                "vue/no-unused-components": "error",
+                "vue/no-unused-vars": "error",
+                "vue/no-use-v-if-with-v-for": "error",
+                "vue/no-useless-template-attributes": "error",
+                "vue/no-v-for-template-key-on-child": "error",
+                "vue/no-v-html": "error",
+                "vue/require-component-is": "error",
+                "vue/no-undef-components": "error",
+                "vue/require-toggle-inside-transition": "error",
+                "vue/require-v-for-key": "error",
+                "vue/block-order": [
+                  "error",
+                  {
+                    "order": ["script", "template", "style"]
+                  }
+                ],
+                "vue/use-v-on-exact": "error",
+                "vue/v-slot-style": "error",
+                "vue/valid-attribute-name": "error",
+                "vue/valid-template-root": "error",
+                "vue/valid-v-bind": "error",
+                "vue/valid-v-cloak": "error",
+                "vue/valid-v-else": "error",
+                "vue/valid-v-for": "error",
+                "vue/valid-v-html": "error",
+                "vue/valid-v-if": "error",
+                "vue/valid-v-memo": "error",
+                "vue/valid-v-model": "error",
+                "vue/valid-v-on": "error",
+                "vue/valid-v-once": "error",
+                "vue/valid-v-show": "error",
+                "vue/valid-v-slot": "error",
+                "vue/valid-v-text": "error",
+                "vue/no-deprecated-dollar-listeners-api": "error",
+                "vue/no-deprecated-dollar-scopedslots-api": "error",
+                "vue/no-ref-as-operand": "error",
+                "vue/no-use-computed-property-like-method": "error",
+                "vue/require-valid-default-prop": "error"
+              }
+            }
+          ],
+          "captures": [
+            {
+              "configuration": "latest-cli",
+              "caseId": "script-scopedslots--ordinary-object",
+              "sourceSha256": "945eef01ef413b1ec074d4ae7817889ab5c9b16fcc2dddec41b14c59760c73ca",
+              "packets": [
+                {
+                  "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research/script-scopedslots--ordinary-object.vue",
+                  "messages": [],
+                  "suppressedMessages": [],
+                  "errorCount": 0,
+                  "fatalErrorCount": 0,
+                  "warningCount": 0,
+                  "fixableErrorCount": 0,
+                  "fixableWarningCount": 0,
+                  "usedDeprecatedRules": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "script-scopedslots--template-instance",
+      "observations": [
+        {
+          "providers": {
+            "eslint": {
+              "version": "10.4.1",
+              "publicEntrypoint": "lib/api.js",
+              "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+              "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+            },
+            "eslint-plugin-vue": {
+              "version": "10.9.2",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+              "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+            },
+            "vue-eslint-parser": {
+              "version": "10.4.1",
+              "publicEntrypoint": "dist/index.cjs",
+              "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+              "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+            },
+            "@typescript-eslint/parser": {
+              "version": "8.65.0",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+              "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+            }
+          },
+          "officialVueBase": {
+            "export": "flat/base",
+            "rules": {
+              "vue/comment-directive": "error",
+              "vue/jsx-uses-vars": "error"
+            },
+            "processors": ["vue/vue"]
+          },
+          "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+          "configurations": [
+            {
+              "id": "latest-cli",
+              "ruleOptions": {
+                "vue/attribute-hyphenation": "always",
+                "vue/component-name-in-template-casing": {
+                  "casing": "PascalCase"
+                },
+                "vue/sfc-element-order": {
+                  "order": ["script", "template", "style"]
+                }
+              },
+              "rules": {
+                "vue/attribute-hyphenation": ["error", "always"],
+                "vue/component-name-in-template-casing": ["error", "PascalCase"],
+                "vue/no-child-content": "error",
+                "vue/no-deprecated-functional-template": "error",
+                "vue/no-deprecated-html-element-is": "error",
+                "vue/no-deprecated-inline-template": "error",
+                "vue/no-deprecated-router-link-tag-prop": "error",
+                "vue/no-deprecated-scope-attribute": "error",
+                "vue/no-deprecated-slot-attribute": "error",
+                "vue/no-deprecated-slot-scope-attribute": "error",
+                "vue/no-deprecated-v-bind-sync": "error",
+                "vue/no-deprecated-v-on-native-modifier": "error",
+                "vue/no-deprecated-v-on-number-modifiers": "error",
+                "vue/no-dupe-v-else-if": "error",
+                "vue/no-duplicate-attributes": "error",
+                "vue/no-multiple-template-root": "error",
+                "vue/no-template-key": "error",
+                "vue/no-textarea-mustache": "error",
+                "vue/no-unused-components": "error",
+                "vue/no-unused-vars": "error",
+                "vue/no-use-v-if-with-v-for": "error",
+                "vue/no-useless-template-attributes": "error",
+                "vue/no-v-for-template-key-on-child": "error",
+                "vue/no-v-html": "error",
+                "vue/require-component-is": "error",
+                "vue/no-undef-components": "error",
+                "vue/require-toggle-inside-transition": "error",
+                "vue/require-v-for-key": "error",
+                "vue/block-order": [
+                  "error",
+                  {
+                    "order": ["script", "template", "style"]
+                  }
+                ],
+                "vue/use-v-on-exact": "error",
+                "vue/v-slot-style": "error",
+                "vue/valid-attribute-name": "error",
+                "vue/valid-template-root": "error",
+                "vue/valid-v-bind": "error",
+                "vue/valid-v-cloak": "error",
+                "vue/valid-v-else": "error",
+                "vue/valid-v-for": "error",
+                "vue/valid-v-html": "error",
+                "vue/valid-v-if": "error",
+                "vue/valid-v-memo": "error",
+                "vue/valid-v-model": "error",
+                "vue/valid-v-on": "error",
+                "vue/valid-v-once": "error",
+                "vue/valid-v-show": "error",
+                "vue/valid-v-slot": "error",
+                "vue/valid-v-text": "error",
+                "vue/no-deprecated-dollar-listeners-api": "error",
+                "vue/no-deprecated-dollar-scopedslots-api": "error",
+                "vue/no-ref-as-operand": "error",
+                "vue/no-use-computed-property-like-method": "error",
+                "vue/require-valid-default-prop": "error"
+              }
+            }
+          ],
+          "captures": [
+            {
+              "configuration": "latest-cli",
+              "caseId": "script-scopedslots--template-instance",
+              "sourceSha256": "69c546752b9f19ccf08a46712c305f53492c109c340e06acca9d2357f0227ccb",
+              "packets": [
+                {
+                  "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research/script-scopedslots--template-instance.vue",
+                  "messages": [
+                    {
+                      "ruleId": "vue/no-deprecated-dollar-scopedslots-api",
+                      "severity": 2,
+                      "message": "The `$scopedSlots` is deprecated.",
+                      "line": 4,
+                      "column": 19,
+                      "messageId": "deprecated",
+                      "endLine": 4,
+                      "endColumn": 31,
+                      "fix": {
+                        "range": [55, 67],
+                        "text": "$slots"
+                      }
+                    }
+                  ],
+                  "suppressedMessages": [],
+                  "errorCount": 1,
+                  "fatalErrorCount": 0,
+                  "warningCount": 0,
+                  "fixableErrorCount": 1,
+                  "fixableWarningCount": 0,
+                  "source": "<script>\nexport default {}\n</script>\n<template><div>{{ $scopedSlots }}</div></template>\n",
+                  "usedDeprecatedRules": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "providers": {
+            "eslint": {
+              "version": "10.4.1",
+              "publicEntrypoint": "lib/api.js",
+              "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+              "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+            },
+            "eslint-plugin-vue": {
+              "version": "10.9.2",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+              "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+            },
+            "vue-eslint-parser": {
+              "version": "10.4.1",
+              "publicEntrypoint": "dist/index.cjs",
+              "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+              "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+            },
+            "@typescript-eslint/parser": {
+              "version": "8.65.0",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+              "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+            }
+          },
+          "officialVueBase": {
+            "export": "flat/base",
+            "rules": {
+              "vue/comment-directive": "error",
+              "vue/jsx-uses-vars": "error"
+            },
+            "processors": ["vue/vue"]
+          },
+          "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+          "configurations": [
+            {
+              "id": "latest-cli",
+              "ruleOptions": {
+                "vue/attribute-hyphenation": "always",
+                "vue/component-name-in-template-casing": {
+                  "casing": "PascalCase"
+                },
+                "vue/sfc-element-order": {
+                  "order": ["script", "template", "style"]
+                }
+              },
+              "rules": {
+                "vue/attribute-hyphenation": ["error", "always"],
+                "vue/component-name-in-template-casing": ["error", "PascalCase"],
+                "vue/no-child-content": "error",
+                "vue/no-deprecated-functional-template": "error",
+                "vue/no-deprecated-html-element-is": "error",
+                "vue/no-deprecated-inline-template": "error",
+                "vue/no-deprecated-router-link-tag-prop": "error",
+                "vue/no-deprecated-scope-attribute": "error",
+                "vue/no-deprecated-slot-attribute": "error",
+                "vue/no-deprecated-slot-scope-attribute": "error",
+                "vue/no-deprecated-v-bind-sync": "error",
+                "vue/no-deprecated-v-on-native-modifier": "error",
+                "vue/no-deprecated-v-on-number-modifiers": "error",
+                "vue/no-dupe-v-else-if": "error",
+                "vue/no-duplicate-attributes": "error",
+                "vue/no-multiple-template-root": "error",
+                "vue/no-template-key": "error",
+                "vue/no-textarea-mustache": "error",
+                "vue/no-unused-components": "error",
+                "vue/no-unused-vars": "error",
+                "vue/no-use-v-if-with-v-for": "error",
+                "vue/no-useless-template-attributes": "error",
+                "vue/no-v-for-template-key-on-child": "error",
+                "vue/no-v-html": "error",
+                "vue/require-component-is": "error",
+                "vue/no-undef-components": "error",
+                "vue/require-toggle-inside-transition": "error",
+                "vue/require-v-for-key": "error",
+                "vue/block-order": [
+                  "error",
+                  {
+                    "order": ["script", "template", "style"]
+                  }
+                ],
+                "vue/use-v-on-exact": "error",
+                "vue/v-slot-style": "error",
+                "vue/valid-attribute-name": "error",
+                "vue/valid-template-root": "error",
+                "vue/valid-v-bind": "error",
+                "vue/valid-v-cloak": "error",
+                "vue/valid-v-else": "error",
+                "vue/valid-v-for": "error",
+                "vue/valid-v-html": "error",
+                "vue/valid-v-if": "error",
+                "vue/valid-v-memo": "error",
+                "vue/valid-v-model": "error",
+                "vue/valid-v-on": "error",
+                "vue/valid-v-once": "error",
+                "vue/valid-v-show": "error",
+                "vue/valid-v-slot": "error",
+                "vue/valid-v-text": "error",
+                "vue/no-deprecated-dollar-listeners-api": "error",
+                "vue/no-deprecated-dollar-scopedslots-api": "error",
+                "vue/no-ref-as-operand": "error",
+                "vue/no-use-computed-property-like-method": "error",
+                "vue/require-valid-default-prop": "error"
+              }
+            }
+          ],
+          "captures": [
+            {
+              "configuration": "latest-cli",
+              "caseId": "script-scopedslots--template-instance",
+              "sourceSha256": "69c546752b9f19ccf08a46712c305f53492c109c340e06acca9d2357f0227ccb",
+              "packets": [
+                {
+                  "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research/script-scopedslots--template-instance.vue",
+                  "messages": [
+                    {
+                      "ruleId": "vue/no-deprecated-dollar-scopedslots-api",
+                      "severity": 2,
+                      "message": "The `$scopedSlots` is deprecated.",
+                      "line": 4,
+                      "column": 19,
+                      "messageId": "deprecated",
+                      "endLine": 4,
+                      "endColumn": 31,
+                      "fix": {
+                        "range": [55, 67],
+                        "text": "$slots"
+                      }
+                    }
+                  ],
+                  "suppressedMessages": [],
+                  "errorCount": 1,
+                  "fatalErrorCount": 0,
+                  "warningCount": 0,
+                  "fixableErrorCount": 1,
+                  "fixableWarningCount": 0,
+                  "source": "<script>\nexport default {}\n</script>\n<template><div>{{ $scopedSlots }}</div></template>\n",
+                  "usedDeprecatedRules": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "script-computed--template-call",
+      "observations": [
+        {
+          "providers": {
+            "eslint": {
+              "version": "10.4.1",
+              "publicEntrypoint": "lib/api.js",
+              "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+              "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+            },
+            "eslint-plugin-vue": {
+              "version": "10.9.2",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+              "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+            },
+            "vue-eslint-parser": {
+              "version": "10.4.1",
+              "publicEntrypoint": "dist/index.cjs",
+              "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+              "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+            },
+            "@typescript-eslint/parser": {
+              "version": "8.65.0",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+              "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+            }
+          },
+          "officialVueBase": {
+            "export": "flat/base",
+            "rules": {
+              "vue/comment-directive": "error",
+              "vue/jsx-uses-vars": "error"
+            },
+            "processors": ["vue/vue"]
+          },
+          "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+          "configurations": [
+            {
+              "id": "latest-cli",
+              "ruleOptions": {
+                "vue/attribute-hyphenation": "always",
+                "vue/component-name-in-template-casing": {
+                  "casing": "PascalCase"
+                },
+                "vue/sfc-element-order": {
+                  "order": ["script", "template", "style"]
+                }
+              },
+              "rules": {
+                "vue/attribute-hyphenation": ["error", "always"],
+                "vue/component-name-in-template-casing": ["error", "PascalCase"],
+                "vue/no-child-content": "error",
+                "vue/no-deprecated-functional-template": "error",
+                "vue/no-deprecated-html-element-is": "error",
+                "vue/no-deprecated-inline-template": "error",
+                "vue/no-deprecated-router-link-tag-prop": "error",
+                "vue/no-deprecated-scope-attribute": "error",
+                "vue/no-deprecated-slot-attribute": "error",
+                "vue/no-deprecated-slot-scope-attribute": "error",
+                "vue/no-deprecated-v-bind-sync": "error",
+                "vue/no-deprecated-v-on-native-modifier": "error",
+                "vue/no-deprecated-v-on-number-modifiers": "error",
+                "vue/no-dupe-v-else-if": "error",
+                "vue/no-duplicate-attributes": "error",
+                "vue/no-multiple-template-root": "error",
+                "vue/no-template-key": "error",
+                "vue/no-textarea-mustache": "error",
+                "vue/no-unused-components": "error",
+                "vue/no-unused-vars": "error",
+                "vue/no-use-v-if-with-v-for": "error",
+                "vue/no-useless-template-attributes": "error",
+                "vue/no-v-for-template-key-on-child": "error",
+                "vue/no-v-html": "error",
+                "vue/require-component-is": "error",
+                "vue/no-undef-components": "error",
+                "vue/require-toggle-inside-transition": "error",
+                "vue/require-v-for-key": "error",
+                "vue/block-order": [
+                  "error",
+                  {
+                    "order": ["script", "template", "style"]
+                  }
+                ],
+                "vue/use-v-on-exact": "error",
+                "vue/v-slot-style": "error",
+                "vue/valid-attribute-name": "error",
+                "vue/valid-template-root": "error",
+                "vue/valid-v-bind": "error",
+                "vue/valid-v-cloak": "error",
+                "vue/valid-v-else": "error",
+                "vue/valid-v-for": "error",
+                "vue/valid-v-html": "error",
+                "vue/valid-v-if": "error",
+                "vue/valid-v-memo": "error",
+                "vue/valid-v-model": "error",
+                "vue/valid-v-on": "error",
+                "vue/valid-v-once": "error",
+                "vue/valid-v-show": "error",
+                "vue/valid-v-slot": "error",
+                "vue/valid-v-text": "error",
+                "vue/no-deprecated-dollar-listeners-api": "error",
+                "vue/no-deprecated-dollar-scopedslots-api": "error",
+                "vue/no-ref-as-operand": "error",
+                "vue/no-use-computed-property-like-method": "error",
+                "vue/require-valid-default-prop": "error"
+              }
+            }
+          ],
+          "captures": [
+            {
+              "configuration": "latest-cli",
+              "caseId": "script-computed--template-call",
+              "sourceSha256": "1aaf2f3da8789c2ac56c70334bc32f596c295c5abbe4a8f264aeaa240287e6bb",
+              "packets": [
+                {
+                  "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research/script-computed--template-call.vue",
+                  "messages": [
+                    {
+                      "ruleId": "vue/no-use-computed-property-like-method",
+                      "severity": 2,
+                      "message": "Use total instead of total().",
+                      "line": 4,
+                      "column": 19,
+                      "messageId": "unexpected",
+                      "endLine": 4,
+                      "endColumn": 26
+                    }
+                  ],
+                  "suppressedMessages": [],
+                  "errorCount": 1,
+                  "fatalErrorCount": 0,
+                  "warningCount": 0,
+                  "fixableErrorCount": 0,
+                  "fixableWarningCount": 0,
+                  "source": "<script>\nexport default { computed: { total() { return 7 } } }\n</script>\n<template><div>{{ total() }}</div></template>\n",
+                  "usedDeprecatedRules": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "providers": {
+            "eslint": {
+              "version": "10.4.1",
+              "publicEntrypoint": "lib/api.js",
+              "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+              "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+            },
+            "eslint-plugin-vue": {
+              "version": "10.9.2",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+              "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+            },
+            "vue-eslint-parser": {
+              "version": "10.4.1",
+              "publicEntrypoint": "dist/index.cjs",
+              "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+              "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+            },
+            "@typescript-eslint/parser": {
+              "version": "8.65.0",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+              "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+            }
+          },
+          "officialVueBase": {
+            "export": "flat/base",
+            "rules": {
+              "vue/comment-directive": "error",
+              "vue/jsx-uses-vars": "error"
+            },
+            "processors": ["vue/vue"]
+          },
+          "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+          "configurations": [
+            {
+              "id": "latest-cli",
+              "ruleOptions": {
+                "vue/attribute-hyphenation": "always",
+                "vue/component-name-in-template-casing": {
+                  "casing": "PascalCase"
+                },
+                "vue/sfc-element-order": {
+                  "order": ["script", "template", "style"]
+                }
+              },
+              "rules": {
+                "vue/attribute-hyphenation": ["error", "always"],
+                "vue/component-name-in-template-casing": ["error", "PascalCase"],
+                "vue/no-child-content": "error",
+                "vue/no-deprecated-functional-template": "error",
+                "vue/no-deprecated-html-element-is": "error",
+                "vue/no-deprecated-inline-template": "error",
+                "vue/no-deprecated-router-link-tag-prop": "error",
+                "vue/no-deprecated-scope-attribute": "error",
+                "vue/no-deprecated-slot-attribute": "error",
+                "vue/no-deprecated-slot-scope-attribute": "error",
+                "vue/no-deprecated-v-bind-sync": "error",
+                "vue/no-deprecated-v-on-native-modifier": "error",
+                "vue/no-deprecated-v-on-number-modifiers": "error",
+                "vue/no-dupe-v-else-if": "error",
+                "vue/no-duplicate-attributes": "error",
+                "vue/no-multiple-template-root": "error",
+                "vue/no-template-key": "error",
+                "vue/no-textarea-mustache": "error",
+                "vue/no-unused-components": "error",
+                "vue/no-unused-vars": "error",
+                "vue/no-use-v-if-with-v-for": "error",
+                "vue/no-useless-template-attributes": "error",
+                "vue/no-v-for-template-key-on-child": "error",
+                "vue/no-v-html": "error",
+                "vue/require-component-is": "error",
+                "vue/no-undef-components": "error",
+                "vue/require-toggle-inside-transition": "error",
+                "vue/require-v-for-key": "error",
+                "vue/block-order": [
+                  "error",
+                  {
+                    "order": ["script", "template", "style"]
+                  }
+                ],
+                "vue/use-v-on-exact": "error",
+                "vue/v-slot-style": "error",
+                "vue/valid-attribute-name": "error",
+                "vue/valid-template-root": "error",
+                "vue/valid-v-bind": "error",
+                "vue/valid-v-cloak": "error",
+                "vue/valid-v-else": "error",
+                "vue/valid-v-for": "error",
+                "vue/valid-v-html": "error",
+                "vue/valid-v-if": "error",
+                "vue/valid-v-memo": "error",
+                "vue/valid-v-model": "error",
+                "vue/valid-v-on": "error",
+                "vue/valid-v-once": "error",
+                "vue/valid-v-show": "error",
+                "vue/valid-v-slot": "error",
+                "vue/valid-v-text": "error",
+                "vue/no-deprecated-dollar-listeners-api": "error",
+                "vue/no-deprecated-dollar-scopedslots-api": "error",
+                "vue/no-ref-as-operand": "error",
+                "vue/no-use-computed-property-like-method": "error",
+                "vue/require-valid-default-prop": "error"
+              }
+            }
+          ],
+          "captures": [
+            {
+              "configuration": "latest-cli",
+              "caseId": "script-computed--template-call",
+              "sourceSha256": "1aaf2f3da8789c2ac56c70334bc32f596c295c5abbe4a8f264aeaa240287e6bb",
+              "packets": [
+                {
+                  "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research/script-computed--template-call.vue",
+                  "messages": [
+                    {
+                      "ruleId": "vue/no-use-computed-property-like-method",
+                      "severity": 2,
+                      "message": "Use total instead of total().",
+                      "line": 4,
+                      "column": 19,
+                      "messageId": "unexpected",
+                      "endLine": 4,
+                      "endColumn": 26
+                    }
+                  ],
+                  "suppressedMessages": [],
+                  "errorCount": 1,
+                  "fatalErrorCount": 0,
+                  "warningCount": 0,
+                  "fixableErrorCount": 0,
+                  "fixableWarningCount": 0,
+                  "source": "<script>\nexport default { computed: { total() { return 7 } } }\n</script>\n<template><div>{{ total() }}</div></template>\n",
+                  "usedDeprecatedRules": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "script-default--ordinary-object",
+      "observations": [
+        {
+          "providers": {
+            "eslint": {
+              "version": "10.4.1",
+              "publicEntrypoint": "lib/api.js",
+              "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+              "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+            },
+            "eslint-plugin-vue": {
+              "version": "10.9.2",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+              "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+            },
+            "vue-eslint-parser": {
+              "version": "10.4.1",
+              "publicEntrypoint": "dist/index.cjs",
+              "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+              "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+            },
+            "@typescript-eslint/parser": {
+              "version": "8.65.0",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+              "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+            }
+          },
+          "officialVueBase": {
+            "export": "flat/base",
+            "rules": {
+              "vue/comment-directive": "error",
+              "vue/jsx-uses-vars": "error"
+            },
+            "processors": ["vue/vue"]
+          },
+          "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+          "configurations": [
+            {
+              "id": "latest-cli",
+              "ruleOptions": {
+                "vue/attribute-hyphenation": "always",
+                "vue/component-name-in-template-casing": {
+                  "casing": "PascalCase"
+                },
+                "vue/sfc-element-order": {
+                  "order": ["script", "template", "style"]
+                }
+              },
+              "rules": {
+                "vue/attribute-hyphenation": ["error", "always"],
+                "vue/component-name-in-template-casing": ["error", "PascalCase"],
+                "vue/no-child-content": "error",
+                "vue/no-deprecated-functional-template": "error",
+                "vue/no-deprecated-html-element-is": "error",
+                "vue/no-deprecated-inline-template": "error",
+                "vue/no-deprecated-router-link-tag-prop": "error",
+                "vue/no-deprecated-scope-attribute": "error",
+                "vue/no-deprecated-slot-attribute": "error",
+                "vue/no-deprecated-slot-scope-attribute": "error",
+                "vue/no-deprecated-v-bind-sync": "error",
+                "vue/no-deprecated-v-on-native-modifier": "error",
+                "vue/no-deprecated-v-on-number-modifiers": "error",
+                "vue/no-dupe-v-else-if": "error",
+                "vue/no-duplicate-attributes": "error",
+                "vue/no-multiple-template-root": "error",
+                "vue/no-template-key": "error",
+                "vue/no-textarea-mustache": "error",
+                "vue/no-unused-components": "error",
+                "vue/no-unused-vars": "error",
+                "vue/no-use-v-if-with-v-for": "error",
+                "vue/no-useless-template-attributes": "error",
+                "vue/no-v-for-template-key-on-child": "error",
+                "vue/no-v-html": "error",
+                "vue/require-component-is": "error",
+                "vue/no-undef-components": "error",
+                "vue/require-toggle-inside-transition": "error",
+                "vue/require-v-for-key": "error",
+                "vue/block-order": [
+                  "error",
+                  {
+                    "order": ["script", "template", "style"]
+                  }
+                ],
+                "vue/use-v-on-exact": "error",
+                "vue/v-slot-style": "error",
+                "vue/valid-attribute-name": "error",
+                "vue/valid-template-root": "error",
+                "vue/valid-v-bind": "error",
+                "vue/valid-v-cloak": "error",
+                "vue/valid-v-else": "error",
+                "vue/valid-v-for": "error",
+                "vue/valid-v-html": "error",
+                "vue/valid-v-if": "error",
+                "vue/valid-v-memo": "error",
+                "vue/valid-v-model": "error",
+                "vue/valid-v-on": "error",
+                "vue/valid-v-once": "error",
+                "vue/valid-v-show": "error",
+                "vue/valid-v-slot": "error",
+                "vue/valid-v-text": "error",
+                "vue/no-deprecated-dollar-listeners-api": "error",
+                "vue/no-deprecated-dollar-scopedslots-api": "error",
+                "vue/no-ref-as-operand": "error",
+                "vue/no-use-computed-property-like-method": "error",
+                "vue/require-valid-default-prop": "error"
+              }
+            }
+          ],
+          "captures": [
+            {
+              "configuration": "latest-cli",
+              "caseId": "script-default--ordinary-object",
+              "sourceSha256": "2ffc0148db9725d35ede9de32f71384c3224164fcedc4c52384fcf0191f42719",
+              "packets": [
+                {
+                  "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research/script-default--ordinary-object.vue",
+                  "messages": [],
+                  "suppressedMessages": [],
+                  "errorCount": 0,
+                  "fatalErrorCount": 0,
+                  "warningCount": 0,
+                  "fixableErrorCount": 0,
+                  "fixableWarningCount": 0,
+                  "usedDeprecatedRules": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "providers": {
+            "eslint": {
+              "version": "10.4.1",
+              "publicEntrypoint": "lib/api.js",
+              "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+              "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+            },
+            "eslint-plugin-vue": {
+              "version": "10.9.2",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+              "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+            },
+            "vue-eslint-parser": {
+              "version": "10.4.1",
+              "publicEntrypoint": "dist/index.cjs",
+              "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+              "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+            },
+            "@typescript-eslint/parser": {
+              "version": "8.65.0",
+              "publicEntrypoint": "dist/index.js",
+              "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+              "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+            }
+          },
+          "officialVueBase": {
+            "export": "flat/base",
+            "rules": {
+              "vue/comment-directive": "error",
+              "vue/jsx-uses-vars": "error"
+            },
+            "processors": ["vue/vue"]
+          },
+          "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+          "configurations": [
+            {
+              "id": "latest-cli",
+              "ruleOptions": {
+                "vue/attribute-hyphenation": "always",
+                "vue/component-name-in-template-casing": {
+                  "casing": "PascalCase"
+                },
+                "vue/sfc-element-order": {
+                  "order": ["script", "template", "style"]
+                }
+              },
+              "rules": {
+                "vue/attribute-hyphenation": ["error", "always"],
+                "vue/component-name-in-template-casing": ["error", "PascalCase"],
+                "vue/no-child-content": "error",
+                "vue/no-deprecated-functional-template": "error",
+                "vue/no-deprecated-html-element-is": "error",
+                "vue/no-deprecated-inline-template": "error",
+                "vue/no-deprecated-router-link-tag-prop": "error",
+                "vue/no-deprecated-scope-attribute": "error",
+                "vue/no-deprecated-slot-attribute": "error",
+                "vue/no-deprecated-slot-scope-attribute": "error",
+                "vue/no-deprecated-v-bind-sync": "error",
+                "vue/no-deprecated-v-on-native-modifier": "error",
+                "vue/no-deprecated-v-on-number-modifiers": "error",
+                "vue/no-dupe-v-else-if": "error",
+                "vue/no-duplicate-attributes": "error",
+                "vue/no-multiple-template-root": "error",
+                "vue/no-template-key": "error",
+                "vue/no-textarea-mustache": "error",
+                "vue/no-unused-components": "error",
+                "vue/no-unused-vars": "error",
+                "vue/no-use-v-if-with-v-for": "error",
+                "vue/no-useless-template-attributes": "error",
+                "vue/no-v-for-template-key-on-child": "error",
+                "vue/no-v-html": "error",
+                "vue/require-component-is": "error",
+                "vue/no-undef-components": "error",
+                "vue/require-toggle-inside-transition": "error",
+                "vue/require-v-for-key": "error",
+                "vue/block-order": [
+                  "error",
+                  {
+                    "order": ["script", "template", "style"]
+                  }
+                ],
+                "vue/use-v-on-exact": "error",
+                "vue/v-slot-style": "error",
+                "vue/valid-attribute-name": "error",
+                "vue/valid-template-root": "error",
+                "vue/valid-v-bind": "error",
+                "vue/valid-v-cloak": "error",
+                "vue/valid-v-else": "error",
+                "vue/valid-v-for": "error",
+                "vue/valid-v-html": "error",
+                "vue/valid-v-if": "error",
+                "vue/valid-v-memo": "error",
+                "vue/valid-v-model": "error",
+                "vue/valid-v-on": "error",
+                "vue/valid-v-once": "error",
+                "vue/valid-v-show": "error",
+                "vue/valid-v-slot": "error",
+                "vue/valid-v-text": "error",
+                "vue/no-deprecated-dollar-listeners-api": "error",
+                "vue/no-deprecated-dollar-scopedslots-api": "error",
+                "vue/no-ref-as-operand": "error",
+                "vue/no-use-computed-property-like-method": "error",
+                "vue/require-valid-default-prop": "error"
+              }
+            }
+          ],
+          "captures": [
+            {
+              "configuration": "latest-cli",
+              "caseId": "script-default--ordinary-object",
+              "sourceSha256": "2ffc0148db9725d35ede9de32f71384c3224164fcedc4c52384fcf0191f42719",
+              "packets": [
+                {
+                  "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-rule-research/script-default--ordinary-object.vue",
+                  "messages": [],
+                  "suppressedMessages": [],
+                  "errorCount": 0,
+                  "fatalErrorCount": 0,
+                  "warningCount": 0,
+                  "fixableErrorCount": 0,
+                  "fixableWarningCount": 0,
+                  "usedDeprecatedRules": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

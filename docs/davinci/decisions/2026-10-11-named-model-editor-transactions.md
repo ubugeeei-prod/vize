@@ -157,3 +157,73 @@ provider, changed source or partial process receipt prevents acceptance.
 Reviewed source requires exact-head Actions and a fresh published tuple; it
 grants no installed execution or Issue closure claim. Reuse the existing workflow and keep its
 DOM, SSR, gallery and VRT gates and original deadlines intact.
+
+## Exact Content Mapper backend qualification
+
+The manual `event-rename-only` input of Content Mapper Conformance selects both
+existing CLI targets in one locked Cargo invocation, with `--profile ci` and
+`--no-fail-fast`, using the repository-pinned Rust toolchain. The normal
+scheduled/default full conformance job and its gates remain unchanged. An explicit
+`VIZE_TEST_CONTENT_MAPPER_TSGO` now owns each fixture's `corsaPath`; an invalid
+selection fails instead of silently discovering an installed backend. Explicit
+`VIZE_TEST_CONTENT_MAPPER_VUE` likewise owns the symlinked Vue package. When these
+inputs are absent, installed-release replays retain their existing discovery.
+
+The qualifier records the actual source commit, pristine source diff, exact
+upstream checkout and executable/library hashes, dependency lock, Vue package
+manifest and both immutable oracle hashes before queries. It always uploads both
+complete capture namespaces, decoded process messages, terminal receipts and
+actual `target/ci/vize` hash and Rust/Go/Node toolchain identities before requiring the test step to succeed. A failed/partial
+execution remains a failure; the 160 uncontracted declaration definitions do
+not gain contracts. This lane qualifies the Vize-owned editor bridge only; stock
+mapper null/refusal controls remain unchanged. A reviewed source diff is not an
+executed acceptance result.
+
+## Disjoint expectation protocol boundary (#6258)
+
+The exact configured TypeScript revision is
+[`d6c4afddb2c55f4a9dea7b59293a99a8fdea1799`](https://github.com/microsoft/TypeScript/tree/d6c4afddb2c55f4a9dea7b59293a99a8fdea1799).
+Its [`applyContentMapperDiagnosticDirectives`](https://github.com/microsoft/TypeScript/blob/d6c4afddb2c55f4a9dea7b59293a99a8fdea1799/tsc/internal/compiler/program.go#L1493-L1526)
+allocates one used bit per directive tuple and compares a diagnostic's generated
+start against one `VirtualRange`. It marks the first matching tuple, then emits
+an unused diagnostic for every unmatched expect tuple. Consequently identical
+authored comment coordinates do not aggregate usage across disjoint intervals.
+The local six-field v1 tuple has no independently negotiated group identity.
+
+The current Vize serializer still bounds an expect's first/last generated ranges.
+That includes intervening child checks and can suppress a child error owned by a
+different authored node. This is an unresolved correctness bug, not acceptance.
+Ignore/skip can use separate intervals because they have no used/unused state.
+Splitting expect into multiple tuples would trade false suppression for false
+unused diagnostics; extra JSON fields ignored by the pinned backend cannot fix it.
+
+A complete solution must either make each authored owner's generated checks truly
+contiguous without changing scope/inference, or coordinate an understood backend
+representation that retains disjoint intervals and one expectation usage identity.
+The latter requires protocol/backend ownership review, not an unrecognized mapper
+field or an unsolicited upstream write. Neither change is made in this slice.
+Real CLI/LSP parent/child, multiline, nested, orphan and parent-only repair packets
+must prove exact ownership and one unused report before #6258 can close. The event
+rename bridge and its qualifier confer no directive-protocol completion credit.
+
+## Frame-boundary EOF observation
+
+The exact pinned-backend [focused run 38935788479](https://github.com/ubugeeei-prod/vize/actions/runs/38935788479)
+at signed main `072d9d52dda13ee2fc67017cf832de76be365e62` passed both targets.
+Its immutable artifact `12061561315` has ZIP SHA256
+`a2d0c93b95e8d0e216ca0a67261325307c989a7b8e2df4bbc28ab47427ecc4f2`.
+Independent whole-packet audit matched all 32 contexts, 660 bound cursor triples,
+224 named-model cursors, actual disk transactions and repairs. Each decoded trace
+also retained a `stdoutError` EOF record after its shutdown reply and exit
+notification. Therefore the existing strict transport audit failed for all 32;
+semantic success does not confer transport-clean or overall acceptance credit.
+
+The shared test decoder previously returned the same EOF error before a new frame
+and inside unfinished headers. Distinguish no-byte frame-boundary EOF as `None`,
+while truncated headers/delimiters/bodies and malformed complete frames remain
+errors. The reader then closes its response channel; a missing required response
+still fails the caller. Exhaustive nonempty truncations, truncated second frames,
+multiple complete messages and malformed-frame controls protect this boundary.
+Do not filter or reinterpret the old artifact. Exact new-source Actions and fresh
+whole process captures must qualify the corrected observer before claiming strict
+transport success. Native provider stderr/lifetime observations are separate.
