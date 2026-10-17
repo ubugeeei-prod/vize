@@ -159,6 +159,12 @@ export async function activate(context: ExtensionContext): Promise<void> {
 }
 function scheduleClientSync(context: ExtensionContext, reason: string): void {
   traceConfig(`schedule reason=${reason} generation=${configurationSyncGeneration}`);
+  if (client && reason === "project configuration changed") {
+    // The live server owns project reloads through its watched-file registrations.
+    // Preserve both that transport and any pending initialization-settings sync.
+    void syncClientToConfiguration(context, reason);
+    return;
+  }
   if (configurationSyncTimer) {
     traceConfig(`timer cancel generation=${configurationSyncGeneration}`);
     clearTimeout(configurationSyncTimer);
@@ -172,6 +178,11 @@ function scheduleClientSync(context: ExtensionContext, reason: string): void {
 }
 
 async function syncClientToConfiguration(context: ExtensionContext, reason: string): Promise<void> {
+  if (client && reason === "project configuration changed") {
+    await workspaceLspConfig.refresh();
+    traceConfig("project discovery refreshed; retaining live language server");
+    return;
+  }
   const generation = ++configurationSyncGeneration;
   traceConfig(`sync enter generation=${generation} reason=${reason}`);
   await workspaceLspConfig.refresh(generation);

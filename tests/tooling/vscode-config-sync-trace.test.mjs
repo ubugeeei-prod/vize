@@ -73,6 +73,7 @@ function createSync(refresh, activeClient, refuseLogging = false) {
       operations.push(["start", generation]); started.resolve();
     };
     ({ scheduleClientSync, syncClientToConfiguration, deactivate,
+       setClient: (value) => { client = value; },
        state: () => ({ generation: configurationSyncGeneration, hasClient: Boolean(client) }) });
   `).runInContext(context);
   return { control, operations, logs, timers, started };
@@ -170,4 +171,73 @@ await test("actual refresh error remains identical even if diagnostic output ref
   );
   assert.deepEqual(current.operations, []);
   assert.equal(current.control.state().generation, 1);
+});
+
+await test("project-file discovery retains the live client and pending settings restart", async () => {
+  let refreshes = 0;
+  let stops = 0;
+  const current = createSync(
+    async () => {
+      refreshes++;
+    },
+    {
+      stop: async () => {
+        stops++;
+      },
+    },
+  );
+  current.control.scheduleClientSync({}, "configuration changed");
+  current.control.scheduleClientSync({}, "project configuration changed");
+  await Promise.resolve();
+  assert.equal(refreshes, 1);
+  assert.equal(stops, 0);
+  assert.equal(current.control.state().generation, 0);
+  assert.equal(current.control.state().hasClient, true);
+  assert.deepEqual(current.operations, [["schedule", 1, 150]]);
+  assert.equal(current.timers.size, 1);
+  current.timers.get(1)();
+  await current.started.promise;
+  assert.equal(refreshes, 2);
+  assert.equal(stops, 1);
+  assert.deepEqual(
+    current.operations.filter(([kind]) => kind === "start").map((row) => [...row]),
+    [["start", 1]],
+  );
+});
+
+await test("a queued project discovery event retains a client started before its timer fires", async () => {
+  let refreshes = 0;
+  let stops = 0;
+  const current = createSync(async () => {
+    refreshes++;
+  });
+  current.control.scheduleClientSync({}, "project configuration changed");
+  current.control.setClient({
+    stop: async () => {
+      stops++;
+    },
+  });
+  current.timers.get(1)();
+  await Promise.resolve();
+  assert.equal(refreshes, 1);
+  assert.equal(stops, 0);
+  assert.deepEqual(current.operations, [["schedule", 1, 150]]);
+  assert.equal(current.control.state().generation, 0);
+  assert.equal(current.control.state().hasClient, true);
+});
+
+await test("first project configuration still starts a client through debounced discovery", async () => {
+  let refreshes = 0;
+  const current = createSync(async () => {
+    refreshes++;
+  });
+  current.control.scheduleClientSync({}, "project configuration changed");
+  assert.deepEqual(current.operations, [["schedule", 1, 150]]);
+  current.timers.get(1)();
+  await current.started.promise;
+  assert.equal(refreshes, 1);
+  assert.deepEqual(
+    current.operations.filter(([kind]) => kind === "start").map((row) => [...row]),
+    [["start", 1]],
+  );
 });
