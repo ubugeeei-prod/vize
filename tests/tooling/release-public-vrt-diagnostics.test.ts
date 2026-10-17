@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -256,4 +256,68 @@ test("the reviewed shell keeps fd3 public before redirecting both private log st
     assert.match(source, /node vrt_observer\.ts[^\n]* 3>&2 > "\$PUBLIC_OUTPUT\/vrt\.log" 2>&1/u);
     assert.doesNotMatch(source, /node vrt_observer\.ts[^\n]*2>&1 3>&2/u);
   });
+});
+
+test("the actual shell refuses failed promotion even after a successful observer", async (t) => {
+  const file = new URL("../../.github/workflows/release-public-acceptance.yml", import.meta.url);
+  const workflow = await fs.readFile(file, "utf8");
+  const step = workflow
+    .split("- name: Observe installed public Musea VRT and hosted audits\n")[1]
+    .split("\n      - name:")[0];
+  const script = step
+    .split("        run: |\n")[1]
+    .split("\n")
+    .map((row) => row.slice(10))
+    .join("\n");
+  const root = await fs.realpath(
+    await fs.mkdtemp(path.join(os.tmpdir(), "vize-vrt-shell-control-")),
+  );
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const bin = path.join(root, "bin");
+  await fs.mkdir(bin);
+  await fs.writeFile(
+    path.join(bin, "node"),
+    `#!/bin/sh
+if [ "$1" = vrt_observer.ts ]; then
+  printf '%s' '${control}'
+  printf '%s' '${control}' >&2
+  exit "$OBSERVER_CODE"
+fi
+exit "$PUBLISHER_CODE"
+`,
+    { mode: 0o700 },
+  );
+  for (const [observer, publisher, expected] of [
+    [0, 0, 0],
+    [0, 1, 1],
+    [1, 0, 1],
+    [1, 1, 1],
+    [7, 0, 7],
+    [7, 1, 7],
+  ]) {
+    const result = spawnSync(
+      "bash",
+      ["--noprofile", "--norc", "-e", "-o", "pipefail", "-c", script],
+      {
+        env: {
+          ...process.env,
+          PATH: bin + path.delimiter + process.env.PATH,
+          RUNNER_TEMP: root,
+          PUBLIC_OUTPUT: root,
+          PUBLIC_VERSION: "inert",
+          OBSERVER_CODE: String(observer),
+          PUBLISHER_CODE: String(publisher),
+          vrt_status: control,
+        },
+        encoding: "utf8",
+        timeout: 5_000,
+      },
+    );
+    assert.equal(result.error, undefined);
+    assert.equal(result.signal, null);
+    assert.equal(result.status, expected, `observer ${observer}, publisher ${publisher}`);
+    assert.equal(result.stdout.includes(control), false);
+    assert.equal(result.stderr.includes(control), false);
+    assert.match(result.stderr, new RegExp(`VRT observer exited: ${observer}\\n`, "u"));
+  }
 });

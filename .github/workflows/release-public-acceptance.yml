@@ -134,9 +134,10 @@ jobs:
           node vrt_observer.ts "$PUBLIC_VERSION" "$PUBLIC_OUTPUT/vrt.json" 3>&2 > "$PUBLIC_OUTPUT/vrt.log" 2>&1 || vrt_status=$?
           printf 'VRT observer exited: %d\n' "${vrt_status:-0}" >&2
           if ! node vrt_retained.ts "$PUBLIC_OUTPUT/vrt.log" "$VRT_RETAINED_OUTPUT"; then
-            exit "${vrt_status:-1}"
+            if [ "$vrt_status" -eq 0 ]; then exit 1; fi
+            exit "$vrt_status"
           fi
-          exit "${vrt_status:-0}"
+          exit "$vrt_status"
       - name: Seal installed public acceptance
         if: ${{ success() && steps.native.outcome == 'success' && steps.browser.outcome == 'success' && steps.lsp.outcome == 'success' }}
         shell: bash
