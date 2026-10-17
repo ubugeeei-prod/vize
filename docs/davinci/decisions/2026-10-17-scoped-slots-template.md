@@ -28,3 +28,10 @@ Runtime qualification is pending Actions. This does not turn the retained failed
 22-source campaign green, qualify all 51 rules, resolve registration-range or
 self-recursion disagreements, or establish public-package acceptance. The user
 closed #8142; it is not reopened or reinterpreted as complete adoption.
+
+Template capabilities report through the original template context before unused
+directives are finalized. This preserves authenticated comment ownership and the
+same suppression usage records without another parse or comment scan. Only
+capabilities that actually execute contribute to unused-directive accounting.
+The active CLI carrier is `vite.config.mjs` with `vue:`; receipts retain the
+original JSON policy and argv beside the current module bytes and argv.

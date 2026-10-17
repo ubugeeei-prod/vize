@@ -95,6 +95,7 @@ pub(super) fn lint_with_descriptor<'a>(
                 } else {
                     TemplateAnalysis::Precomputed(&analysis)
                 },
+                template_syntax: template_syntax.as_ref(),
             })
         );
         let mut parse_result =
@@ -102,22 +103,21 @@ pub(super) fn lint_with_descriptor<'a>(
         super::super::engine::offset_result(&mut parse_result, template.loc.start as u32);
         Linter::merge_lint_results(parse_result, lint_result)
     } else {
-        LintResult {
+        let mut result = LintResult {
             filename: filename.into(),
             diagnostics: Vec::new(),
             error_count: 0,
             warning_count: 0,
-        }
+        };
+        super::super::script_rules::append_builtin_script_diagnostics(
+            linter,
+            descriptor,
+            &mut result,
+            None,
+            None,
+        );
+        result
     };
-    super::super::script_rules::append_builtin_script_diagnostics(
-        linter,
-        descriptor,
-        &mut result,
-        template_ast
-            .as_ref()
-            .and_then(|(root, offset, _, fatal)| (!*fatal).then_some((root, *offset))),
-        template_syntax.as_ref(),
-    );
     let script_block = descriptor
         .script_setup
         .as_ref()

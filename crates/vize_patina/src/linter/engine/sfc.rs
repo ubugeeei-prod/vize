@@ -12,19 +12,36 @@ use vize_l0::{Allocator, ToCompactString, profile};
 
 impl Linter {
     pub(crate) fn lint_sfc_template_root<'a>(&self, input: SfcTemplateLintInput<'a>) -> LintResult {
-        self.lint_template_root(
-            input.allocator,
-            &input.template.content,
-            input.filename,
-            input.root,
-            input.analysis,
-            TemplateRuleEnv {
-                sfc_descriptor: input.descriptor,
-                art_script_analysis: None,
-                dialect: VueDialect::Vue,
-                facade_rules: facade::RULES,
+        let mut scripts = empty_lint_result(input.filename);
+        let valid_template = !matches!(&input.analysis, TemplateAnalysis::Disabled);
+        let lint = self.lint_template_root_with_finish(
+            super::template::TemplateExecution {
+                allocator: input.allocator,
+                source: &input.template.content,
+                filename: input.filename,
+                root: input.root,
+                env: TemplateRuleEnv {
+                    sfc_descriptor: input.descriptor,
+                    art_script_analysis: None,
+                    dialect: VueDialect::Vue,
+                    facade_rules: facade::RULES,
+                },
             },
-        )
+            input.analysis,
+            |ctx| {
+                if let Some(descriptor) = input.descriptor {
+                    super::super::script_rules::append_builtin_script_diagnostics_with_template_context(
+                        self,
+                        descriptor,
+                        &mut scripts,
+                        valid_template.then_some((input.root, input.template.loc.start as u32)),
+                        input.template_syntax,
+                        Some(ctx),
+                    );
+                }
+            },
+        );
+        Self::merge_lint_results(lint, scripts)
     }
 
     fn lint_sfc_with_descriptor<'a>(
@@ -112,17 +129,11 @@ impl Linter {
             } else {
                 TemplateAnalysis::Lazy
             },
+            template_syntax: template_syntax.as_ref(),
         });
 
         let mut result = Self::merge_lint_results(parse_result, lint_result);
         drop(template_profile);
-        super::super::script_rules::append_builtin_script_diagnostics(
-            self,
-            descriptor,
-            &mut result,
-            (!has_fatal_parse_errors).then_some((&root, template.loc.start as u32)),
-            template_syntax.as_ref(),
-        );
         if super::super::css_rules::has_active_builtin_css_rules(self) {
             super::super::css_rules::append_builtin_css_diagnostics(
                 self,
