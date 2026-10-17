@@ -1,0 +1,126 @@
+{
+  "note": "Exact original authored source/config fences. Current require-v-for-key opening-tag authority is separate from original historical attribute-column diagnostic; no historical output is rewritten.",
+  "cases": [
+    {
+      "filename": "List.vue",
+      "source": "<script setup lang=\"ts\">\nconst items = [1, 2, 3];\n</script>\n\n<template>\n  <ul>\n    <li v-for=\"item in items\">{{ item }}</li>\n  </ul>\n</template>\n",
+      "sha256": "1fe94a3b9e888b8e8f1decaf93cbea6dab2690009281bd12f558b00d0f43b810",
+      "config": "{\n  \"jsPlugins\": [\"oxlint-plugin-vize\"],\n  \"rules\": { \"vize/vue/require-v-for-key\": \"error\" }\n}\n",
+      "origin": "https://github.com/ubugeeei-prod/vize/issues/7004",
+      "rule": "vue/require-v-for-key",
+      "anchors": [
+        {
+          "line": 7,
+          "column": 5,
+          "length": 26
+        }
+      ],
+      "contrasts": [
+        {
+          "name": "keyed",
+          "source": "<script setup lang=\"ts\">\nconst items = [1, 2, 3];\n</script>\n\n<template>\n  <ul>\n    <li :key=\"item\" v-for=\"item in items\">{{ item }}</li>\n  </ul>\n</template>\n",
+          "sha256": "5bc188f46feb9add81f65531ec9c48d093973dd8db75ec96d23b1f37c91de1d7",
+          "anchors": []
+        }
+      ]
+    },
+    {
+      "filename": "EmptyScript.vue",
+      "source": "<script setup lang=\"ts\"></script>\n\n<template>\n  <ul>\n    <li v-for=\"item in [1, 2]\">{{ item }}</li>\n  </ul>\n</template>\n",
+      "sha256": "754c9f881479c500bf89dc6fff92439a47f209eff32ea40121754d7d5bb6bf14",
+      "config": "{\n  \"jsPlugins\": [\"oxlint-plugin-vize\"],\n  \"rules\": { \"vize/vue/require-v-for-key\": \"error\" }\n}\n",
+      "origin": "https://github.com/ubugeeei-prod/vize/issues/7004",
+      "rule": "vue/require-v-for-key",
+      "anchors": [
+        {
+          "line": 5,
+          "column": 5,
+          "length": 27
+        }
+      ],
+      "contrasts": [
+        {
+          "name": "keyed",
+          "source": "<script setup lang=\"ts\"></script>\n\n<template>\n  <ul>\n    <li :key=\"item\" v-for=\"item in [1, 2]\">{{ item }}</li>\n  </ul>\n</template>\n",
+          "sha256": "dfd254cc7e64c0d2a28e846dac73856dc36a54f596f6ac30f41eec2dc2451d3d",
+          "anchors": []
+        }
+      ]
+    },
+    {
+      "filename": "TplOnly.vue",
+      "source": "<template>\n  <ul>\n    <li v-for=\"item in [1, 2]\">{{ item }}</li>\n  </ul>\n</template>\n",
+      "sha256": "c9b23d9033d0bc446f8f862551e302d249bdf1481b970211c3516872a466353a",
+      "config": "{\n  \"jsPlugins\": [\"oxlint-plugin-vize\"],\n  \"rules\": { \"vize/vue/require-v-for-key\": \"error\" }\n}\n",
+      "origin": "https://github.com/ubugeeei-prod/vize/issues/7005",
+      "rule": "vue/require-v-for-key",
+      "anchors": [
+        {
+          "line": 3,
+          "column": 5,
+          "length": 27
+        }
+      ],
+      "contrasts": [
+        {
+          "name": "keyed",
+          "source": "<template>\n  <ul>\n    <li :key=\"item\" v-for=\"item in [1, 2]\">{{ item }}</li>\n  </ul>\n</template>\n",
+          "sha256": "99c5180e7f13b88aafceabd21f5bebdf8956887f8b33ddb35863196db0b1b0d2",
+          "anchors": []
+        }
+      ]
+    },
+    {
+      "filename": "MyPicker.vue",
+      "source": "<script setup lang=\"ts\">\nconst open = false;\n</script>\n\n<template>\n  <div class=\"picker\">\n    <template v-if=\"open\">\n      <b>open</b>\n    </template>\n    <span class=\"picker__value\">\n      <input readonly aria-hidden=\"true\" />\n    </span>\n    <input readonly aria-hidden=\"true\" />\n  </div>\n</template>\n",
+      "sha256": "ddd7b27ad4f3bea60f7531d9cee43f506cca0f7b0a17e0df554bea092403287c",
+      "config": "{\n  \"plugins\": [\"vue\"],\n  \"jsPlugins\": [\"oxlint-plugin-vize\"],\n  \"settings\": { \"vize\": { \"preset\": \"incremental\" } },\n  \"rules\": { \"vize/a11y/no-aria-hidden-on-focusable\": \"warn\" }\n}\n",
+      "origin": "https://github.com/ubugeeei-prod/vize/issues/7004#issuecomment-5987858680",
+      "rule": "a11y/no-aria-hidden-on-focusable",
+      "anchors": [
+        {
+          "line": 11,
+          "column": 7,
+          "length": 37
+        },
+        {
+          "line": 13,
+          "column": 5,
+          "length": 37
+        }
+      ],
+      "contrasts": [
+        {
+          "name": "first-corrected",
+          "source": "<script setup lang=\"ts\">\nconst open = false;\n</script>\n\n<template>\n  <div class=\"picker\">\n    <template v-if=\"open\">\n      <b>open</b>\n    </template>\n    <span class=\"picker__value\">\n      <input readonly />\n    </span>\n    <input readonly aria-hidden=\"true\" />\n  </div>\n</template>\n",
+          "sha256": "2bf9fe45d22f89b3110cbc48f75c398e7f65d654dae8966e3a325e8035d6d07f",
+          "anchors": [
+            {
+              "line": 13,
+              "column": 5,
+              "length": 37
+            }
+          ]
+        },
+        {
+          "name": "second-corrected",
+          "source": "<script setup lang=\"ts\">\nconst open = false;\n</script>\n\n<template>\n  <div class=\"picker\">\n    <template v-if=\"open\">\n      <b>open</b>\n    </template>\n    <span class=\"picker__value\">\n      <input readonly aria-hidden=\"true\" />\n    </span>\n    <input readonly />\n  </div>\n</template>\n",
+          "sha256": "08067843579a500b652b587371ccbc42aa71af2d15958c10a764fbd5eb6ccfe7",
+          "anchors": [
+            {
+              "line": 11,
+              "column": 7,
+              "length": 37
+            }
+          ]
+        },
+        {
+          "name": "both-corrected",
+          "source": "<script setup lang=\"ts\">\nconst open = false;\n</script>\n\n<template>\n  <div class=\"picker\">\n    <template v-if=\"open\">\n      <b>open</b>\n    </template>\n    <span class=\"picker__value\">\n      <input readonly />\n    </span>\n    <input readonly />\n  </div>\n</template>\n",
+          "sha256": "bebedc4b97e212e43b3926aff37e27d170d495f289a26d1403bbb151e77088a4",
+          "anchors": []
+        }
+      ]
+    }
+  ]
+}

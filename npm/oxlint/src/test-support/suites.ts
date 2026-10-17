@@ -24,6 +24,7 @@ await Promise.all([
   import("../cli/scoped-options.test.ts"),
   import("../scoped-transport.test.ts"),
   import("../sfc-blocks.test.ts"),
+  import("../sfc-blocks-projection.test.ts"),
   import("../template-locations.test.ts"),
   import("../vite-plus-flat-config.test.ts"),
   import("../vite-plus-lint.test.ts"),

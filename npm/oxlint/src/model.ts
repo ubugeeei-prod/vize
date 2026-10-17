@@ -42,7 +42,34 @@ export interface PatinaRuleMeta {
   presets: PatinaPreset[];
 }
 
+/** Existing native parser geometry. Every offset and column is a UTF-8 byte count. */
+export interface NativeSfcLocation {
+  start: number;
+  end: number;
+  tagStart: number;
+  tagEnd: number;
+  startLine: number;
+  startColumn: number;
+  endLine: number;
+  endColumn: number;
+}
+
+export interface NativeSfcBlock {
+  content: string;
+  loc: NativeSfcLocation;
+}
+
+export interface NativeSfcDescriptor {
+  source: string;
+  template: NativeSfcBlock | null;
+  script: (NativeSfcBlock & { setup: boolean }) | null;
+  scriptSetup: (NativeSfcBlock & { setup: boolean }) | null;
+  styles: NativeSfcBlock[];
+  customBlocks: (NativeSfcBlock & { type: string })[];
+}
+
 export interface PatinaBinding {
+  parseSfc(source: string): NativeSfcDescriptor;
   lintOxlintHtml?: (options: OxlintHtmlOptions) => OxlintHtmlOutcome;
   lintPatinaSfc(
     source: string,
