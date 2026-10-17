@@ -1,0 +1,257 @@
+{
+  "schema": "vize.official-ts71-css-options.v1",
+  "reporter": "escaton",
+  "typescript": "7.1.0-dev.20261017.1",
+  "vue": "3.5.20",
+  "baselineVize": "0.458.0",
+  "originals": [
+    {
+      "issue": 9376,
+      "issueBodySha256": "ccd4c355e2fe680dac10af93e716fd814a981dbfd38d71760a898e2beefe77e7",
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": { \"strictTemplates\": true, \"strictCssModules\": true }\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { useCssModule } from 'vue'\nconst $style = useCssModule()\n</script>\n<template><div :class=\"$style.active\" /></template>\n<style module>.active { color: red; }</style>\n"
+      },
+      "baselineCodes": [2300, 2300],
+      "expectedCodes": [],
+      "expectedTerms": [],
+      "baselineTerms": ["'$style'"]
+    },
+    {
+      "issue": 9378,
+      "issueBodySha256": "0c227fb912dc4945632d12fedc604959531bcd252b6fd78b55315a70c91e1f2f",
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": { \"strictTemplates\": true, \"strictCssModules\": true }\n}\n",
+        "App.vue": "<template><div :class=\"{ [$style.active]: true }\" /></template>\n<style module>\n.active:global(.loaded) { color: red; }\n</style>\n"
+      },
+      "baselineCodes": [2464],
+      "expectedCodes": [],
+      "expectedTerms": [],
+      "baselineTerms": ["A computed property name"]
+    },
+    {
+      "issue": 9383,
+      "issueBodySha256": "f21c4f0185f3b220d0c2c270ffc33000dd141a21254dfc8765e949fac874a31a",
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true, \"strictCssModules\": true, \"checkUnknownProps\": true}\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\"\n</script>\n<template><Child :count=\"1\" :typo=\"2\" /></template>\n"
+      },
+      "baselineCodes": [],
+      "expectedCodes": [2353],
+      "expectedTerms": ["'typo'"],
+      "baselineTerms": []
+    },
+    {
+      "issue": 9384,
+      "issueBodySha256": "b9f1a0c49f7fa8616a16d49ae052acf4cbde1b9bb8f0581e68d9f04670bc1b21",
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true, \"strictCssModules\": true}\n}\n",
+        "App.vue": "<template><div :class=\"$style.missing\" /></template>\n<style module>.active { color: red; }</style>\n"
+      },
+      "baselineCodes": [],
+      "expectedCodes": [2339],
+      "expectedTerms": ["'missing'"],
+      "baselineTerms": []
+    }
+  ],
+  "controls": [
+    {
+      "name": "setup-renamed-css-binding",
+      "original": 9376,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": { \"strictTemplates\": true, \"strictCssModules\": true }\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { useCssModule } from 'vue'\nconst styles = useCssModule()\n</script>\n<template><div :class=\"styles.active\" /></template>\n<style module>.active { color: red; }</style>\n"
+      },
+      "codes": [],
+      "terms": []
+    },
+    {
+      "name": "named-setup-css-binding",
+      "original": 9376,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": { \"strictTemplates\": true, \"strictCssModules\": true }\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { useCssModule } from 'vue'\nconst theme = useCssModule('theme')\n</script>\n<template><div :class=\"theme.active\" /></template>\n<style module=\"theme\">.active { color: red; }</style>\n"
+      },
+      "codes": [],
+      "terms": []
+    },
+    {
+      "name": "known-local-css-class",
+      "original": 9384,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true, \"strictCssModules\": true}\n}\n",
+        "App.vue": "<template><div :class=\"$style.active\" /></template>\n<style module>.active { color: red; }</style>\n"
+      },
+      "codes": [],
+      "terms": []
+    },
+    {
+      "name": "strict-css-explicitly-disabled",
+      "original": 9384,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"strictTemplates\": true,\n    \"strictCssModules\": false\n  }\n}\n",
+        "App.vue": "<template><div :class=\"$style.missing\" /></template>\n<style module>.active { color: red; }</style>\n"
+      },
+      "codes": [],
+      "terms": []
+    },
+    {
+      "name": "named-css-module-missing",
+      "original": 9384,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true, \"strictCssModules\": true}\n}\n",
+        "App.vue": "<template><div :class=\"theme.missing\" /></template>\n<style module=\"theme\">.active { color: red; }</style>\n"
+      },
+      "codes": [2339],
+      "terms": ["'missing'"]
+    },
+    {
+      "name": "global-selector-retains-local-key",
+      "original": 9378,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": { \"strictTemplates\": true, \"strictCssModules\": true }\n}\n",
+        "App.vue": "<template><div :class=\"{ [$style.active]: true }\" /></template>\n<style module>\n.active { color: red; }\n</style>\n"
+      },
+      "codes": [],
+      "terms": []
+    },
+    {
+      "name": "global-selector-missing-local-key",
+      "original": 9378,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": { \"strictTemplates\": true, \"strictCssModules\": true }\n}\n",
+        "App.vue": "<template><div :class=\"{ [$style.missing]: true }\" /></template>\n<style module>\n.active:global(.loaded) { color: red; }\n</style>\n"
+      },
+      "codes": [2339],
+      "terms": ["'missing'"]
+    },
+    {
+      "name": "known-component-props",
+      "original": 9383,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true, \"strictCssModules\": true, \"checkUnknownProps\": true}\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\"\n</script>\n<template><Child :count=\"1\" /></template>\n"
+      },
+      "codes": [],
+      "terms": []
+    },
+    {
+      "name": "unknown-props-explicitly-disabled",
+      "original": 9383,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"strictTemplates\": true,\n    \"strictCssModules\": true,\n    \"checkUnknownProps\": false\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\"\n</script>\n<template><Child :count=\"1\" :typo=\"2\" /></template>\n"
+      },
+      "codes": [],
+      "terms": []
+    },
+    {
+      "name": "explicit-unknown-props-overrides-loose-template",
+      "original": 9383,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"strictTemplates\": false,\n    \"strictCssModules\": true,\n    \"checkUnknownProps\": true\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\"\n</script>\n<template><Child :count=\"1\" :typo=\"2\" /></template>\n"
+      },
+      "codes": [2353],
+      "terms": ["'typo'"]
+    },
+    {
+      "name": "declared-prop-type-error-still-reported",
+      "original": 9383,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"strictTemplates\": true,\n    \"strictCssModules\": true,\n    \"checkUnknownProps\": false\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\"\n</script>\n<template><Child :count=\"'wrong'\" /></template>\n"
+      },
+      "codes": [2322, 2322],
+      "terms": ["Type 'string' is not assignable to type 'number'."]
+    },
+    {
+      "name": "inherited-css-strictness",
+      "original": 9384,
+      "files": {
+        "tsconfig.json": "{\"extends\":\"./tsconfig.base.json\"}\n",
+        "App.vue": "<template><div :class=\"$style.missing\" /></template>\n<style module>.active { color: red; }</style>\n",
+        "tsconfig.base.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true, \"strictCssModules\": true}\n}\n"
+      },
+      "codes": [2339],
+      "terms": ["'missing'"]
+    },
+    {
+      "name": "inherited-unknown-prop-check",
+      "original": 9383,
+      "files": {
+        "tsconfig.json": "{\"extends\":\"./tsconfig.base.json\"}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\"\n</script>\n<template><Child :count=\"1\" :typo=\"2\" /></template>\n",
+        "tsconfig.base.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true, \"strictCssModules\": true, \"checkUnknownProps\": true}\n}\n"
+      },
+      "codes": [2353],
+      "terms": ["'typo'"]
+    },
+    {
+      "name": "setup-binding-preserves-other-implicit-module",
+      "original": 9376,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": { \"strictTemplates\": true, \"strictCssModules\": true }\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { useCssModule } from 'vue'\nconst $style = useCssModule()\n</script>\n<template><div :class=\"[$style.active, theme.hot]\" /></template>\n<style module>.active { color: red; }</style>\n\n<style module=\"theme\">.hot { color: blue; }</style>\n"
+      },
+      "codes": [],
+      "terms": []
+    },
+    {
+      "name": "bare-global-function-keeps-outer-local",
+      "original": 9378,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": { \"strictTemplates\": true, \"strictCssModules\": true }\n}\n",
+        "App.vue": "<template><div :class=\"{ [$style.root]: true }\" /></template>\n<style module>.root:is(:global .external, .row) { color: red; }</style>\n"
+      },
+      "codes": [],
+      "terms": []
+    },
+    {
+      "name": "bare-global-function-does-not-invent-local",
+      "original": 9378,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": { \"strictTemplates\": true, \"strictCssModules\": true }\n}\n",
+        "App.vue": "<template><div :class=\"$style.row\" /></template>\n<style module>.root:is(:global .external, .row) { color: red; }</style>\n"
+      },
+      "codes": [2339],
+      "terms": ["'row'"]
+    },
+    {
+      "name": "bare-global-not-does-not-invent-local",
+      "original": 9378,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"noUncheckedIndexedAccess\": true\n  },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": { \"strictTemplates\": true, \"strictCssModules\": true }\n}\n",
+        "App.vue": "<template><div :class=\"$style.baz\" /></template>\n<style module>.bar:not(:global .foo, .baz) { color: red; }</style>\n"
+      },
+      "codes": [2339],
+      "terms": ["'baz'"]
+    },
+    {
+      "name": "referenced-owners-preserve-independent-options",
+      "original": 9383,
+      "files": {
+        "loose-props/tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": false,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"composite\": true,\n    \"declaration\": true,\n    \"emitDeclarationOnly\": true,\n    \"outDir\": \"./dist\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"strictTemplates\": true,\n    \"strictCssModules\": false,\n    \"checkUnknownProps\": false\n  }\n}\n",
+        "loose-props/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n<template><div /></template>\n",
+        "loose-props/App.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\"\n</script>\n<template><Child :count=\"1\" :typo=\"2\" /></template>\n",
+        "strict-props/tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": false,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"composite\": true,\n    \"declaration\": true,\n    \"emitDeclarationOnly\": true,\n    \"outDir\": \"./dist\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"strictTemplates\": true,\n    \"strictCssModules\": true,\n    \"checkUnknownProps\": true\n  }\n}\n",
+        "strict-props/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n<template><div /></template>\n",
+        "strict-props/App.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\"\n</script>\n<template><Child :count=\"1\" :typo=\"2\" /></template>\n",
+        "loose-css/tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": false,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"composite\": true,\n    \"declaration\": true,\n    \"emitDeclarationOnly\": true,\n    \"outDir\": \"./dist\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"strictTemplates\": true,\n    \"strictCssModules\": false,\n    \"checkUnknownProps\": false\n  }\n}\n",
+        "loose-css/App.vue": "<template><div :class=\"$style.missing\" /></template>\n<style module>.active { color: red; }</style>\n",
+        "strict-css/tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": false,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true,\n    \"composite\": true,\n    \"declaration\": true,\n    \"emitDeclarationOnly\": true,\n    \"outDir\": \"./dist\"\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"strictTemplates\": true,\n    \"strictCssModules\": true,\n    \"checkUnknownProps\": true\n  }\n}\n",
+        "strict-css/App.vue": "<template><div :class=\"$style.missing\" /></template>\n<style module>.active { color: red; }</style>\n",
+        "tsconfig.json": "{\"files\":[],\"references\":[{\"path\":\"./loose-props\"},{\"path\":\"./strict-props\"},{\"path\":\"./loose-css\"},{\"path\":\"./strict-css\"}]}\n"
+      },
+      "codes": [2353, 2339],
+      "build": true,
+      "terms": ["'typo'", "'missing'"]
+    }
+  ]
+}

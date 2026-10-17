@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 
@@ -24,6 +25,8 @@ const PACKAGE_ROUTE_COMMANDS = [
   "cargo test -p vize --test check_package_tsx_shadow_cli -- --nocapture",
 ];
 interface WorkflowStep {
+  id?: string;
+  if?: string;
   env?: Record<string, string>;
   name?: string;
   run?: string;
@@ -208,7 +211,7 @@ test("manual focused campaigns preserve the full default and upload before gatin
   };
   assert.equal(
     workflow.concurrency.group,
-    "content-mapper-${{ github.event.pull_request.number || github.ref }}${{ inputs.directive-owners-only && '-directive-owners' || inputs.event-rename-only && '-event-rename' || '' }}",
+    "content-mapper-${{ github.event.pull_request.number || github.ref }}${{ inputs.official-css-options-only && '-official-css-options' || inputs.directive-owners-only && '-directive-owners' || inputs.event-rename-only && '-event-rename' || '' }}",
     "a focused campaign must not cancel the full conformance campaign",
   );
   const input = workflow.on.workflow_dispatch.inputs["event-rename-only"];
@@ -220,10 +223,11 @@ test("manual focused campaigns preserve the full default and upload before gatin
     default: false,
   });
   const groups: string[] = [];
-  for (const [job, suffix, rename, owners] of [
-    ["exact-tsgo-project", "", false, false],
-    ["event-rename", "-event-rename", true, false],
-    ["directive-owners", "-directive-owners", false, true],
+  for (const [job, suffix, rename, owners, official] of [
+    ["exact-tsgo-project", "", false, false, false],
+    ["event-rename", "-event-rename", true, false, false],
+    ["directive-owners", "-directive-owners", false, true, false],
+    ["official-css-options", "-official-css-options", false, false, true],
   ] as const) {
     const context = {
       github: {
@@ -231,7 +235,11 @@ test("manual focused campaigns preserve the full default and upload before gatin
         event: { pull_request: {} },
         ref: "refs/heads/main",
       },
-      inputs: { "event-rename-only": rename, "directive-owners-only": owners },
+      inputs: {
+        "event-rename-only": rename,
+        "directive-owners-only": owners,
+        "official-css-options-only": official,
+      },
     };
     const evaluate = (expression: string): unknown =>
       runInNewContext(
@@ -252,19 +260,15 @@ test("manual focused campaigns preserve the full default and upload before gatin
       [job],
     );
   }
-  assert.equal(
-    new Set(groups).size,
-    3,
-    "all three campaigns must run without canceling each other",
-  );
+  assert.equal(new Set(groups).size, 4, "all four campaigns must run without canceling each other");
   assert.equal(
     workflow.jobs["exact-tsgo-project"].if,
-    "${{ !inputs.event-rename-only && !inputs.directive-owners-only }}",
+    "${{ !inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only }}",
   );
   const focused = workflow.jobs["event-rename"];
   assert.equal(
     focused.if,
-    "github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.directive-owners-only",
+    "github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only",
   );
   const rust = focused.steps.find((step) => step.name === "Setup Rust");
   const pinned = /^channel = "([^"]+)"$/mu.exec(readRepoFile("rust-toolchain.toml"))?.[1];
@@ -291,4 +295,120 @@ test("manual focused campaigns preserve the full default and upload before gatin
   assert.equal(focused.steps[gate].if, "always()");
   assert.equal(focused.steps[gate].env?.TRANSACTIONS_OUTCOME, "${{ steps.transactions.outcome }}");
   assert.equal(focused.steps[gate].run?.trim(), 'test "$TRANSACTIONS_OUTCOME" = success');
+});
+
+test("official TypeScript acceptance keeps the reported host and complete installed package evidence", () => {
+  const workflow = parse(
+    readRepoFile(".github", "workflows", "content-mapper-conformance.yml"),
+  ) as {
+    jobs: Record<string, { if: string; steps: WorkflowStep[]; "timeout-minutes": number }>;
+  };
+  const job = workflow.jobs["official-css-options"];
+  assert.equal(
+    job.if,
+    "github.event_name == 'workflow_dispatch' && inputs.official-css-options-only",
+  );
+  assert.equal(job["timeout-minutes"], 15);
+  const admission = job.steps.find(
+    (step) => step.name === "Authenticate source and recipe before any build",
+  )!.run!;
+  for (const boundary of [
+    "EXPECTED_SOURCE_SHA",
+    "GITHUB_SHA",
+    "GITHUB_WORKFLOW_SHA",
+    "git status --porcelain",
+  ])
+    assert.ok(admission.includes(boundary));
+  const build = job.steps.find(
+    (step) => step.name === "Build the real packed mapper runtime",
+  )!.run!;
+  assert.match(build, /vp run --filter '\.\/npm\/native' build:ci/u);
+  assert.match(build, /\(cd npm\/cli && vp pack\)/u);
+  assert.match(build, /sha256sum npm\/native\/vize-vitrine\.linux-x64-gnu\.node/u);
+  const run = job.steps.find((step) => step.id === "official")!;
+  assert.match(run.run!, /node tools\/support\/compat\/content-mapper\/official-css-options\.ts/u);
+  assert.equal("continue-on-error" in run, false);
+  const upload = job.steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"))!;
+  assert.equal(upload.if, "always()");
+  assert.equal(upload.with?.["include-hidden-files"], true);
+  assert.match(String(upload.with?.path), /official-css-source/u);
+  assert.match(String(upload.with?.path), /official-css-options/u);
+  assert.ok(job.steps.indexOf(upload) > job.steps.indexOf(run));
+  const source = readRepoFile(
+    "tools",
+    "support",
+    "compat",
+    "content-mapper",
+    "official-css-options.ts",
+  );
+  assert.match(source, /"--runExternalCode"/u);
+  assert.match(source, /candidateIdentity\.nativeImage\.sha256/u);
+  assert.match(source, /"--ignore-scripts"/u);
+  assert.match(source, /refuse overwriting previous campaign evidence/u);
+  assert.doesNotMatch(source, /CORSA_PATH\s*=|VIZE_LSP_BIN\s*=|\|\| true/u);
+});
+
+test("official-host fixtures preserve every original reported input and referenced owner contrast", () => {
+  const fixture = JSON.parse(
+    readRepoFile("tests", "_fixtures", "content-mapper", "escaton-css-options.json"),
+  ) as {
+    typescript: string;
+    vue: string;
+    baselineVize: string;
+    originals: Array<{ issue: number; files: Record<string, string> }>;
+    controls: Array<{ name: string; files: Record<string, string> }>;
+  };
+  assert.equal(fixture.typescript, "7.1.0-dev.20261017.1");
+  assert.equal(fixture.vue, "3.5.20");
+  assert.equal(fixture.baselineVize, "0.458.0");
+  const expected: Record<string, Record<string, string>> = {
+    "9376": {
+      "tsconfig.json": "8224da59d1bc6dcd3ce78ccae5f035b45f9e9152042d186d282417c249b1106a",
+      "App.vue": "6967dfae3b3be43c1364230a0847040db777f14c2bf17bd7d5091059235ba97a",
+    },
+    "9378": {
+      "tsconfig.json": "8224da59d1bc6dcd3ce78ccae5f035b45f9e9152042d186d282417c249b1106a",
+      "App.vue": "320728ae6706c73cd09dfab01c4d485945a48c21163911df297aa57ce40b937b",
+    },
+    "9383": {
+      "tsconfig.json": "8b6768e8add6de9fe5e97a9a668a68eb3fa22f2bb107018bcf454b31ad57873b",
+      "Child.vue": "feaa37fe318a008df36ddf01c9c0c02678519260d254a7fad494ec94ba09679b",
+      "App.vue": "ad4c404edeb48520230d4e5b39ce9ed8498e2ed01d7ef1c344e16f359c00312e",
+    },
+    "9384": {
+      "tsconfig.json": "34f63cb865f684086ac975c92b32c5a4462b2573dad5ba926a1f45d8c98f9742",
+      "App.vue": "4fd2bd21fc753093d6b685e0d854cef1f8255ffa94656590cf6f7389188e7a4f",
+    },
+  };
+  assert.deepEqual(
+    fixture.originals.map((row) => String(row.issue)),
+    Object.keys(expected),
+  );
+  for (const original of fixture.originals) {
+    assert.deepEqual(Object.keys(original.files), Object.keys(expected[original.issue]));
+    for (const [file, content] of Object.entries(original.files))
+      assert.equal(
+        createHash("sha256").update(content).digest("hex"),
+        expected[original.issue][file],
+        `${original.issue}/${file}`,
+      );
+  }
+  const owners = fixture.controls.find(
+    (row) => row.name === "referenced-owners-preserve-independent-options",
+  )!.files;
+  for (const role of ["props", "css"]) {
+    assert.equal(owners[`loose-${role}/App.vue`], owners[`strict-${role}/App.vue`]);
+    assert.equal(
+      JSON.parse(owners[`loose-${role}/tsconfig.json`]).vueCompilerOptions[
+        role === "props" ? "checkUnknownProps" : "strictCssModules"
+      ],
+      false,
+    );
+    assert.equal(
+      JSON.parse(owners[`strict-${role}/tsconfig.json`]).vueCompilerOptions[
+        role === "props" ? "checkUnknownProps" : "strictCssModules"
+      ],
+      true,
+    );
+  }
 });
