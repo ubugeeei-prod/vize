@@ -206,8 +206,9 @@ pub(super) fn prequalification_fixture(repo: &Repo) -> (Value, String, String, S
     receipt["originalEvidence"]["HRunPages"] =
         json!([{"total_count":1,"workflow_runs":[qualification]}]);
     receipt["originalEvidence"]["observations"] = json!([q_observation, operator_observation]);
-    let current = std::env::current_dir().unwrap();
-    let tooling = current
+    // rust-script runs Cargo tests from its cache project, not the tooling checkout.
+    let source = std::path::Path::new(file!()).canonicalize().unwrap();
+    let tooling = source
         .ancestors()
         .find(|directory| {
             directory
