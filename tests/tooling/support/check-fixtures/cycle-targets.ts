@@ -8,6 +8,8 @@ export type CycleTarget = {
   readonly description: string;
   /** Project directory, relative to the repository root. */
   readonly projectDir: string;
+  /** Authenticate and install the complete pinned workspace before measurements. */
+  readonly dependencyFixture?: { readonly id: string; readonly corpusPaths: readonly string[] };
   /** Glob patterns handed to `vize check`. */
   readonly patterns: readonly string[];
   /** Explicit `--servers`, or `null` to let `vize` auto-tune. */
@@ -107,6 +109,7 @@ export const cycleTargets: readonly CycleTarget[] = [
     expectedFileCount: 42,
     expectsDiagnostics: false,
     id: "maximum-shard",
+    dependencyFixture: { id: "create-vue", corpusPaths: ["template"] },
     maxCycles: null,
     patterns: ["template/**/*.vue"],
     peakGroupProcessBound: 9,

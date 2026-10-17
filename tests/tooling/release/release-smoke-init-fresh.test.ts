@@ -244,8 +244,18 @@ function smokeInstallInvocations(workflow: string): string[][] {
   const invocations: string[][] = [];
   for (const job of Object.values(parsed.jobs ?? {})) {
     for (const step of job.steps ?? []) {
-      if (!step.run?.includes("smoke-release-install.")) continue;
-      invocations.push(step.run.replace(/\\\n/gu, " ").trim().split(/\s+/u));
+      // A quoted source-custody path is metadata, not an installer command.
+      if (!step.run?.match(/^[ \t]*[^ \t'"#\n][^\n]*smoke-release-install\.(?:rs|ts)\b/mu))
+        continue;
+      // A selected manual mode may wrap two real invocations in if/else.
+      // Inspect both complete continuation-joined commands, not the shell's if.
+      const commands = [
+        ...step.run
+          .replace(/\\\n/gu, " ")
+          .matchAll(/^\s*((?:rust-script|node)[^\n]*smoke-release-install\.(?:rs|ts)[^\n]*)$/gmu),
+      ];
+      assert.ok(commands.length > 0, `${workflow} must retain literal smoke invocations`);
+      for (const command of commands) invocations.push(command[1].trim().split(/\s+/u));
     }
   }
   assert.ok(invocations.length > 0, `${workflow} runs no release smoke installer step`);

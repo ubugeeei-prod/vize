@@ -14,6 +14,7 @@ import {
 } from "../../_helpers/apps.ts";
 import { genericBuildApp, typecheckVueImportsApp } from "../../_helpers/fixture-apps.ts";
 import { runVizeCheckWithInjectedTypeError } from "../_helpers/realworld.ts";
+import { withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 
 const fixtureApps = [
   typecheckErrorsApp,
@@ -33,8 +34,22 @@ describe("fixture vize check injected type errors", () => {
   before(requireVizeAndCorsaBins);
 
   for (const app of fixtureApps) {
-    it(`${app.name} catches and repairs an injected TS2322`, () => {
-      const summary = runVizeCheckWithInjectedTypeError(app, { timeoutMs: 120_000 });
+    it(`${app.name} catches and repairs an injected TS2322`, async () => {
+      const summary =
+        app.name === "vue-vben-admin"
+          ? await withPinnedFixtureWorkspace(
+              {
+                fixtureId: app.name,
+                includePaths: ["apps", "packages", "playground"],
+                prepareDependencies: true,
+              },
+              async (fixture) =>
+                runVizeCheckWithInjectedTypeError(
+                  { ...app, check: { ...app.check!, cwd: fixture.workspaceDir } },
+                  { timeoutMs: 120_000 },
+                ),
+            )
+          : runVizeCheckWithInjectedTypeError(app, { timeoutMs: 120_000 });
       assert.deepEqual(summary.repairedDiagnostics, []);
       console.log(
         `${app.name}: file=${summary.file}, fileCount=${summary.fileCount}, errorCount=${summary.errorCount}, durationMs=${summary.durationMs.toFixed(0)}, repairDurationMs=${summary.repairDurationMs.toFixed(0)}`,

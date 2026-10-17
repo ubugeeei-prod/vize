@@ -26,7 +26,7 @@ runs:
     - uses: ./.github/actions/setup-rust-script
     - name: Hydrate CLI diagnostic fixture and install JS dependencies
       shell: bash
-      run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline && node tools/support/compat/github/prepare-vue-benchmarks.mjs
+      run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && git -C tests/_fixtures/_git/create-vue submodule update --init --recursive --depth 1 && vp install --frozen-lockfile --prefer-offline && node tools/support/compat/github/prepare-vue-benchmarks.mjs
     - uses: ./.github/actions/restore-source-cli
       with: { producer: "${{ inputs.producer }}" }
     - name: Check configured Router page CLI and editor types
@@ -63,3 +63,11 @@ runs:
     - uses: ./.github/actions/upload-formatter-api-corpus-evidence
       if: ${{ always() }}
       with: { shard: "${{ inputs.shard }}" }
+    - name: Retain genuine pinned project dependency closures
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: tooling-pinned-fixture-closures-${{ inputs.shard }}
+        path: target/vize-tests/pinned-fixture-dependencies/
+        if-no-files-found: ignore
+        retention-days: 7

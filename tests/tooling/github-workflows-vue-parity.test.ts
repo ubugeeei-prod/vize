@@ -45,6 +45,20 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vue-vben-admin/);
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vitepress/);
   assert.match(hydration?.run ?? "", /vp install --frozen-lockfile --prefer-offline/);
+  const hydrationCommands = hydration?.run ?? "";
+  assert.match(hydrationCommands, /^git submodule update --init --depth 1 /);
+  const nestedCheckout =
+    "git -C tests/_fixtures/_git/create-vue submodule update --init --recursive --depth 1";
+  assert.ok(
+    hydrationCommands.indexOf(nestedCheckout) >
+      hydrationCommands.indexOf("git submodule update --init --depth 1"),
+    "the root Gitlink must be checked out before its declared nested modules",
+  );
+  assert.ok(
+    hydrationCommands.indexOf(nestedCheckout) <
+      hydrationCommands.indexOf("vp install --frozen-lockfile --prefer-offline"),
+    "create-vue's declared playground must be hydrated before dependency preparation",
+  );
   const build = steps.find((step) => step.name === "Build vize CLI");
   assert.deepEqual(build?.env, { RUNNER_ENVIRONMENT: "${{ runner.environment }}" });
   assert.match(

@@ -6,7 +6,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { lexicalView } from "../../levels/move-host-runtime.ts";
-import { pathHostCallers, pathHostFunctions } from "./path-host-callers.ts";
+import { pathHostMoveCallers as pathHostCallers, pathHostFunctions } from "./path-host-callers.ts";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const SOURCE = "davinci/vize_l0/src/path.rs";

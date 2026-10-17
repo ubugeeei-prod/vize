@@ -3,6 +3,7 @@
 // capability registration, progress creation) with what the replayed client
 // would answer, and nothing else.
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
+import fs from "node:fs";
 
 export type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 type Message = {
@@ -31,10 +32,21 @@ export class LspClient {
     answer: (method: string, params: Json) => Json,
   ) {
     this.answer = answer;
+    const transcript = options.env.VIZE_CONFORMANCE_TRANSCRIPT;
+    const stderr = transcript ? `${transcript}.stderr.log` : undefined;
+    if (stderr) fs.writeFileSync(stderr, "");
     this.child = spawn(command, args, { cwd: options.cwd, env: options.env, stdio: "pipe" });
-    this.child.stderr.resume();
+    if (stderr) this.child.stderr.on("data", (chunk: Buffer) => fs.appendFileSync(stderr, chunk));
+    else this.child.stderr.pipe(process.stderr, { end: false });
     this.child.stdout.on("data", (chunk: Buffer) => this.receive(chunk));
-    this.exited = new Promise((resolve) => this.child.on("close", (code) => resolve(code)));
+    this.exited = new Promise((resolve) =>
+      this.child.on("close", (code) => {
+        // `close` follows complete pipe drainage. Preserve raw failure output
+        // alongside the transcript and expose it without changing RPC frames.
+        if (code !== 0 && stderr) process.stderr.write(fs.readFileSync(stderr));
+        resolve(code);
+      }),
+    );
   }
 
   /** `params: undefined` omits the member, as JSON-RPC requires for parameterless calls. */

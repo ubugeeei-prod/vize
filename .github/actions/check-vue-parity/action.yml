@@ -90,6 +90,7 @@ runs:
           tests/_fixtures/_git/vue2-elm \
           tests/_fixtures/_git/vue-vben-admin \
           tests/_fixtures/_git/vitepress
+        git -C tests/_fixtures/_git/create-vue submodule update --init --recursive --depth 1
         vp install --frozen-lockfile --prefer-offline
 
     - name: Build vize CLI
@@ -251,6 +252,7 @@ runs:
         path: |
           target/ci/vize.differential-build.json
           target/differential/lsp-sessions/
+          target/vize-tests/pinned-fixture-dependencies/
         if-no-files-found: error
         retention-days: 7
 

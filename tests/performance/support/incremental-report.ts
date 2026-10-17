@@ -8,6 +8,12 @@ export type IncrementalReportData = {
   fixture: string;
   fixtureRevision: string;
   corpus: { vueFiles: number; vueAndTypeScriptFiles: number; baselineDiagnostics: number };
+  fixtureClosure?: {
+    availableAuthoredVueFiles: number;
+    availableAuthoredVueAndTypeScriptFiles: number;
+    declaredCorpusSha256: string;
+    evidence: string;
+  };
   budget: LspIncrementalBudget & { scale: number };
   timingsMs: Record<string, number>;
   sampledPeakRssKiB: number;
@@ -34,6 +40,12 @@ function renderMarkdown(title: string, data: IncrementalReportData): string {
     `Status: **${data.status}**. Fixture: \`${data.fixture}@${data.fixtureRevision}\`.`,
     "",
     `Corpus: ${data.corpus.vueFiles} Vue files; ${data.corpus.vueAndTypeScriptFiles} Vue/TS files; ${data.corpus.baselineDiagnostics} baseline diagnostics.`,
+    ...(data.fixtureClosure
+      ? [
+          "",
+          `The original corpus is retained within a full authored workspace containing ${data.fixtureClosure.availableAuthoredVueFiles} Vue / ${data.fixtureClosure.availableAuthoredVueAndTypeScriptFiles} Vue/TS files. These are available source counts, not native analyzed-file counts. Complete dependency and native input evidence: [${data.fixtureClosure.evidence}](${data.fixtureClosure.evidence}).`,
+        ]
+      : []),
     "",
     "| Stage | Time | Budget |",
     "| --- | ---: | ---: |",

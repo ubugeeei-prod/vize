@@ -325,6 +325,7 @@ test("CI runs every client at the editor-host-smoke pins and requires all four r
   assert.deepEqual(String(lifecycleEvidence?.with?.path).trim().split("\n"), [
     "${{ runner.temp }}/rich-host-evidence/",
     "editors/vscode/.vscode-test/host-smoke-real/failure/",
+    "editors/vscode/.vscode-test/external-config-evidence/",
     "editors/vscode/.vscode-test/host-smoke/failure/",
     "editors/vscode/.vscode-test/host-smoke/output-channel/",
     "editors/vscode/.vscode-test/host-smoke/fake-server/events.jsonl",

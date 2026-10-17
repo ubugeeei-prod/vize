@@ -213,7 +213,6 @@ const disabledCapabilities = [
   "declarationProvider",
   "callHierarchyProvider",
   "monikerProvider",
-  "experimental",
 ];
 const positives = [
   "completionProvider",
@@ -277,6 +276,9 @@ for (const name of names) {
     if (name === "off" || name === "lint") {
       for (const key of disabledCapabilities)
         assert.ok(capabilities[key] == null || capabilities[key] === false, `${name}: ${key}`);
+      // Routing metadata is always advertised; it is not an enabled provider.
+      // Whole equality still rejects auto-insertion or any extra capability.
+      assert.deepEqual(capabilities.experimental, { vize: { jsxTypecheck: false } });
       const workspaceCapability = capabilities.workspace;
       assert.ok(
         workspaceCapability &&

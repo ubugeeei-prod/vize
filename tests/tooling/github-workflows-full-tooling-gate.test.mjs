@@ -46,6 +46,20 @@ void test("one planner owns the exhaustive matrix that every full worker regener
     step.run?.includes("plan-tooling-tests.mjs"),
   );
   assert.equal(worker.run, planCommand);
+  const closure = yaml(".github/actions/test-full-tooling/action.yml").runs.steps.find(
+    (step) => step.name === "Retain genuine pinned project dependency closures",
+  );
+  assert.deepEqual(closure, {
+    name: "Retain genuine pinned project dependency closures",
+    if: "${{ always() }}",
+    uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+    with: {
+      name: "tooling-pinned-fixture-closures-${{ inputs.shard }}",
+      path: "target/vize-tests/pinned-fixture-dependencies/",
+      "if-no-files-found": "ignore",
+      "retention-days": 7,
+    },
+  });
 });
 
 void test("the planned matrix partitions the complete inventory and refuses any other shape", () => {

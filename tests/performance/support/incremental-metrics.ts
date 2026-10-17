@@ -5,7 +5,7 @@ import { inspect } from "node:util";
 import { performance } from "node:perf_hooks";
 
 import { repoRoot } from "../../_helpers/realworld-patch.ts";
-import { writeIncrementalArtifacts } from "./incremental-report.ts";
+import { writeIncrementalArtifacts, type IncrementalReportData } from "./incremental-report.ts";
 import { gitHead, processRssKiB, processTreeRss } from "./process-metrics.ts";
 
 export type IncrementalSuite = {
@@ -97,6 +97,7 @@ type MetricContext = {
   vueFiles: number;
   sourceFiles: number;
   baselineDiagnostics: number;
+  fixtureClosure?: IncrementalReportData["fixtureClosure"];
 };
 
 export class IncrementalMetrics {
@@ -211,6 +212,7 @@ export class IncrementalMetrics {
         vueAndTypeScriptFiles: context.sourceFiles,
         baselineDiagnostics: context.baselineDiagnostics,
       },
+      ...(context.fixtureClosure ? { fixtureClosure: context.fixtureClosure } : {}),
       runtime: {
         platform: process.platform,
         architecture: process.arch,

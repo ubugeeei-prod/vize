@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { spawnSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -24,7 +25,12 @@ type Step = {
 
 test("startup diagnostics retain the production producer and unchanged scale-one oracle", () => {
   const workflow = parse(readRepoFile(".github/workflows/lsp-config-diagnostics.yml"));
-  assert.deepEqual(Object.keys(workflow.on), ["pull_request"]);
+  assert.deepEqual(Object.keys(workflow.on), ["workflow_dispatch", "pull_request"]);
+  assert.equal(
+    workflow.on.workflow_dispatch,
+    null,
+    "Dispatch uses its own ref without a source override",
+  );
   assert.deepEqual(workflow.on.pull_request.paths, [
     ".github/workflows/lsp-config-diagnostics.yml",
     "tools/support/compat/github/run-lsp-config-diagnostics.ts",
@@ -38,9 +44,43 @@ test("startup diagnostics retain the production producer and unchanged scale-one
   const steps: Step[] = workflow.jobs["vben-startup"].steps;
   const checkout = steps.find((step) => step.uses?.startsWith("actions/checkout@"))!;
   assert.deepEqual(checkout.with, {
-    ref: "${{ github.event.pull_request.head.sha }}",
+    ref: "${{ github.event.pull_request.head.sha || github.sha }}",
     "persist-credentials": false,
   });
+  const source = "${{ github.event.pull_request.head.sha || github.sha }}";
+  assert.equal(workflow.env.EXPECTED_SOURCE, source);
+  assert.equal(workflow["run-name"], `Vben startup trace @ ${source}`);
+  assert.equal(
+    workflow.concurrency.group,
+    "lsp-config-diagnostics-${{ github.event.pull_request.number || github.ref_name }}",
+  );
+  assert.equal(workflow.concurrency["cancel-in-progress"], false);
+  const guard = steps.find((step) => step.name === "Verify the exact qualification source")!;
+  assert.ok(steps.indexOf(guard) > steps.indexOf(checkout));
+  assert.ok(
+    steps.indexOf(guard) <
+      steps.findIndex((step) => step.uses?.startsWith("voidzero-dev/setup-vp@")),
+  );
+  const actual = spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" });
+  assert.equal(actual.status, 0);
+  const current = actual.stdout.trim();
+  const executeGuard = (expected: string) =>
+    spawnSync("bash", ["-c", guard.run!], {
+      env: { ...process.env, EXPECTED_SOURCE: expected },
+      encoding: "utf8",
+    });
+  assert.equal(executeGuard(current).status, 0, "The exact checked-out source is admitted");
+  for (const refused of ["", "main", current.slice(1), "0".repeat(40)])
+    assert.notEqual(
+      executeGuard(refused).status,
+      0,
+      `Refuse an unpinned or stale source: ${refused}`,
+    );
+  const artifact = steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"))!;
+  assert.equal(
+    artifact.with?.name,
+    "lsp-config-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}-" + source,
+  );
   const build = steps.find(
     (step) => step.name === "Build and receipt the same Vue parity producer",
   )!;
@@ -121,6 +161,10 @@ test("startup diagnostics retain the production producer and unchanged scale-one
     /process\.argv\[2\] === "--retain-rename-producer"[\s\S]*?retainIntegrationProducer\(path\.join\(directory, "rename\.stdout"\), directory, "rename-test"\)/,
   );
   for (const sourcePath of [
+    "tests/_helpers/pinned-fixture-dependencies.ts",
+    "tests/_helpers/pinned-fixture-source.ts",
+    "tests/_helpers/lint-fixture-runtime.ts",
+    "tests/performance/support/incremental-report.ts",
     "crates/vize_canon/src/batch/virtual_project/materialize_delta.rs",
     "crates/vize_canon/src/corsa_bridge/source_catalog.rs",
     "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/catalog.rs",
@@ -135,6 +179,24 @@ test("startup diagnostics retain the production producer and unchanged scale-one
   ]) {
     assert.equal(carrier.split(JSON.stringify(sourcePath)).length - 1, 1, sourcePath);
     assert.ok(readRepoFile(sourcePath).length > 0, sourcePath);
+  }
+  // This qualification must retain the new IPC/admission authority as well as
+  // its original workloads; capturing only the old main pipeline hides drift.
+  for (const sourcePath of [
+    "crates/vize_carton/src/config/loader/js.rs",
+    "crates/vize_carton/src/config/loader/failure_identity.rs",
+    "crates/vize_carton/src/config/loader/js_observation.rs",
+    "crates/vize_carton/src/config/loader/module-runtime.mjs",
+    "crates/vize_carton/src/config/loader/vite-runtime.mjs",
+    "crates/vize_maestro/src/server/project_contexts/operation_admission_tests.rs",
+    "crates/vize_maestro/src/server/diagnostic_publishing/configuration_failure_tests.rs",
+    "crates/vize_maestro/src/server/workspace_files/config_watchers_lifecycle_tests.rs",
+    "crates/vize_maestro/src/server/state/project_contexts/freshness.rs",
+    "crates/vize_maestro/src/server/state/project_contexts/config_reload.rs",
+    "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_snapshot.rs",
+    "tests/tooling/support/vue-config-fixture.ts",
+  ]) {
+    assert.equal(carrier.split(JSON.stringify(sourcePath)).length - 1, 1, sourcePath);
   }
   assert.match(
     steps[completionControls].run!,

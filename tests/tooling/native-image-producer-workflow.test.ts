@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
+import { withoutPackedConfigExtension } from "./support/native-packed-config-extension.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const original = fs.readFileSync(
@@ -31,7 +32,9 @@ const before = parse(original.toString()) as {
   on: { schedule: unknown };
 };
 const after = parse(
-  fs.readFileSync(path.join(root, ".github/workflows/native-smoke.yml"), "utf8"),
+  withoutPackedConfigExtension(
+    fs.readFileSync(path.join(root, ".github/workflows/native-smoke.yml"), "utf8"),
+  ),
 ) as {
   jobs: Record<string, Job>;
   on: { schedule: unknown; workflow_dispatch: { inputs: Record<string, { default: unknown }> } };

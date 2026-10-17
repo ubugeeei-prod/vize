@@ -60,13 +60,29 @@ void test("the complete authored bilingual recipes and relative destinations agr
   assert.deepEqual(fences(japanese), fences(english));
   const destinations = (source) => [...source.matchAll(/\]\(([^)]+)\)/g)].map(([, href]) => href);
   assert.deepEqual(destinations(japanese), destinations(english));
+  assert.deepEqual(
+    destinations(english).filter((name) => new URL(name, root).protocol === "https:"),
+    [
+      "https://github.com/microsoft/vscode-languageserver-node/blob/release/client/9.0.1/client/src/common/fileSystemWatcher.ts#L40-L65",
+      "https://github.com/zed-industries/zed/blob/v1.16.1/crates/lsp/src/lsp.rs#L812-L817",
+      "https://github.com/neovim/neovim/blob/v0.11.4/runtime/lua/vim/lsp/protocol.lua#L561-L566",
+      "https://github.com/helix-editor/helix/blob/25.07.1/helix-lsp/src/client.rs#L596-L599",
+      "https://github.com/prabirshrestha/vim-lsp/blob/474c656659b5fb51eec6770309e0211c8aa49b5b/autoload/lsp.vim#L686-L694",
+      "https://github.com/emacs-mirror/emacs/blob/emacs-29.3/lisp/progmodes/eglot.el#L3421-L3468",
+    ],
+  );
   for (const name of destinations(english)) {
-    assert.doesNotThrow(() =>
-      readFileSync(fileURLToPath(new URL(name, new URL("docs/content/guide/", root)))),
-    );
-    assert.doesNotThrow(() =>
-      readFileSync(fileURLToPath(new URL(name, new URL("docs/content/ja/guide/", root)))),
-    );
+    for (const directory of ["docs/content/guide/", "docs/content/ja/guide/"]) {
+      const destination = new URL(name, new URL(directory, root));
+      if (destination.protocol === "https:") {
+        assert.equal(destination.href, name);
+        continue;
+      }
+      assert.equal(destination.protocol, "file:");
+      destination.hash = "";
+      destination.search = "";
+      assert.doesNotThrow(() => readFileSync(fileURLToPath(destination)));
+    }
   }
   assert.match(japanese, /<!-- Reviewed translation; source: guide\/vue-configuration\.md -->/);
   for (const source of [english, japanese]) {

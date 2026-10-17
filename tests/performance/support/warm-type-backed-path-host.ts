@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 
-import { pathHostCallers } from "../../../tools/support/compat/levels/path-host-callers.ts";
+import { pathHostMoveCallers } from "../../../tools/support/compat/levels/path-host-callers.ts";
 
 type Side = "before" | "after";
 type BodyDigest = (side: Side, file: string) => string | null;
@@ -26,7 +26,7 @@ for (const source of [manifest.originalSource, manifest.transformedSource])
 const oldPath = "davinci/vize_l0/src/path.rs";
 const newPath = "crates/vize_carton/src/path.rs";
 const expectedFiles = [
-  ...Object.keys(pathHostCallers),
+  ...Object.keys(pathHostMoveCallers),
   oldPath,
   newPath,
   "davinci/vize_l0/src/lib.rs",

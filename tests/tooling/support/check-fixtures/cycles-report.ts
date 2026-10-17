@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import type { PreparedPinnedFixtureWorkspace } from "../../../_helpers/realworld-patch.ts";
 import type { CycleRecord } from "./cycle-runner.ts";
 import { writeAtomic } from "./report.ts";
 import { readRunnerFacts, type RunnerFacts } from "./runner-facts.ts";
@@ -13,6 +14,11 @@ export type CyclesTargetReport = {
   readonly id: string;
   readonly description: string;
   readonly projectDir: string;
+  /** Exact execution root and complete authored dependency/source receipt. */
+  readonly preparedWorkspace?: {
+    readonly root: string;
+    readonly dependencyClosure: NonNullable<PreparedPinnedFixtureWorkspace["dependencyClosure"]>;
+  };
   readonly argv: readonly string[];
   readonly bounds: {
     readonly peakGroupProcesses: number;
@@ -45,7 +51,20 @@ export type CyclesReport = {
   readonly runner: RunnerFacts;
   readonly targets: CyclesTargetReport[];
   status: "running" | "passed" | "failed";
+  preparationFailures?: readonly string[];
 };
+
+/** Source custody must finish successfully before this artifact can claim success. */
+export function finishCyclesReport(report: CyclesReport, failures: readonly unknown[]): void {
+  report.finishedAtIso = new Date().toISOString();
+  report.preparationFailures = failures.map((error) =>
+    error instanceof Error ? (error.stack ?? error.message) : String(error),
+  );
+  report.status =
+    failures.length === 0 && report.targets.every((target) => target.status === "passed")
+      ? "passed"
+      : "failed";
+}
 
 export function createCyclesReport(options: {
   readonly repoRoot: string;
@@ -134,6 +153,9 @@ export function renderCyclesSummary(report: CyclesReport): string {
     lines.push(...targetRows(target));
   }
   lines.push("");
+  for (const failure of report.preparationFailures ?? []) {
+    lines.push(`- preparation/source verification failed: ${flatten(failure)}`);
+  }
   for (const target of report.targets) {
     lines.push(
       `- \`${target.id}\`: ${target.status} over ${target.cycles.length}/${target.plannedCycles} ` +

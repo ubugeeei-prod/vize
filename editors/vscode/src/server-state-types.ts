@@ -1,4 +1,5 @@
-import type { QuickPickItem } from "vscode";
+import type { OutputChannel, QuickPickItem, StatusBarItem } from "vscode";
+import type { LspInitializationOptions } from "./extension-core.js";
 
 export type ServerCandidateSource =
   | "configured"
@@ -31,3 +32,15 @@ export type VizeStatusAction =
 export type VizeStatusQuickPickItem = QuickPickItem & {
   action: VizeStatusAction;
 };
+
+/** The lifecycle owns these fields; setup and discovery observe the same live values. */
+export interface ExtensionRuntimeState {
+  readonly outputChannel: OutputChannel;
+  readonly statusBarItem: StatusBarItem | undefined;
+  selectedServerCandidate: InspectedServerCandidate | undefined;
+  readonly activeInitializationOptions: LspInitializationOptions;
+  currentStatus: VizeStatus;
+  currentStatusDetail: string;
+  readonly configurationSyncGeneration: number;
+  suppressConfigurationSync: boolean;
+}

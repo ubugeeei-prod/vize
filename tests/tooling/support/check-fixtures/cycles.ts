@@ -13,10 +13,16 @@
 //! or output hash drift, when it exceeds the documented peak, or when it leaves
 //! a task behind. Nothing here retries, sleeps, or widens the runner.
 
+import assert from "node:assert/strict";
+import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  type PreparedPinnedFixtureWorkspace,
+  preparePinnedFixtureWorkspace,
+} from "../../../_helpers/realworld-patch.ts";
 import {
   checkArgv,
   type CycleTarget,
@@ -25,7 +31,12 @@ import {
   resolveVizeBin,
 } from "./cycle-targets.ts";
 import { type CycleRecord, runCycle } from "./cycle-runner.ts";
-import { type CyclesReport, createCyclesReport, writeCyclesReport } from "./cycles-report.ts";
+import {
+  type CyclesReport,
+  createCyclesReport,
+  finishCyclesReport,
+  writeCyclesReport,
+} from "./cycles-report.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(HERE, "../../../..");
@@ -108,62 +119,103 @@ export async function runCycles(options: CyclesOptions = {}): Promise<CyclesRepo
   });
   writeCyclesReport(metricsDir, report);
 
-  const startedAt = performance.now();
-  for (const target of targets) {
-    const records: CycleRecord[] = [];
-    const targetCycles = resolveTargetCycles(target, cycles);
-    const entry = {
-      argv: [vizeBin, ...checkArgv(target, corsaBin)],
-      bounds: {
-        corsaProcesses: target.corsaProcesses,
-        peakGroupProcesses: target.peakGroupProcessBound,
-        taskBudget: target.taskBudget(budgetCpuCount),
-      },
-      cycles: records,
-      description: target.description,
-      failures: [] as string[],
-      id: target.id,
-      plannedCycles: targetCycles,
-      projectDir: target.projectDir,
-      status: "running" as CyclesReport["targets"][number]["status"],
-    };
-    report.targets.push(entry);
-
-    for (let index = 1; index <= targetCycles; index += 1) {
-      const first = records[0];
-      const record = await runCycle(target, index, {
-        corsaBin,
-        budgetCpuCount,
-        expectedExitCode: first?.exitCode ?? null,
-        expectedSha256: first?.outputSha256 ?? null,
-        repoRoot,
-        sampleIntervalMs,
-        startedAt,
-        vizeBin,
+  const failures: unknown[] = [];
+  const prepared = new Map<CycleTarget, PreparedPinnedFixtureWorkspace>();
+  try {
+    // Install once before the process-budget envelope, never between measured
+    // cycles. This retains the authored tsconfig/package graph without editing
+    // upstream inputs or borrowing packages from the surrounding repository.
+    for (const target of targets) {
+      if (target.dependencyFixture == null || prepared.has(target)) continue;
+      const fixture = preparePinnedFixtureWorkspace({
+        repositoryRoot: repoRoot,
+        fixtureId: target.dependencyFixture.id,
+        includePaths: [...target.dependencyFixture.corpusPaths],
+        prepareDependencies: true,
       });
-      records.push(record);
-      console.log(
-        `[check-fixtures-cycles] ${target.id} cycle ${index}/${targetCycles}: ${record.durationMs}ms, ` +
-          `peak ${record.peakGroupProcesses} procs / ${record.peakGroupLiveTasks} tasks, ` +
-          `${record.peakCorsaProcesses} corsa, ulimit -u ${record.budget.ulimitProcesses}` +
-          (record.failures.length === 0 ? "" : ` — ${record.failures.join("; ")}`) +
-          (record.stderrExcerpt == null || record.stderrExcerpt.length === 0
-            ? ""
-            : `\n  child output: ${record.stderrExcerpt}`),
+      prepared.set(target, fixture);
+      assert.equal(
+        fs.realpathSync(path.join(repoRoot, target.projectDir)),
+        fs.realpathSync(fixture.upstreamDir),
+        "the prepared dependency closure must belong to the measured pinned source",
       );
+      assert.ok(fixture.dependencyClosure?.complete, "the authored closure must be ready");
+    }
+    const startedAt = performance.now();
+    for (const target of targets) {
+      const fixture = prepared.get(target);
+      const records: CycleRecord[] = [];
+      const targetCycles = resolveTargetCycles(target, cycles);
+      const entry = {
+        argv: [vizeBin, ...checkArgv(target, corsaBin)],
+        bounds: {
+          corsaProcesses: target.corsaProcesses,
+          peakGroupProcesses: target.peakGroupProcessBound,
+          taskBudget: target.taskBudget(budgetCpuCount),
+        },
+        cycles: records,
+        description: target.description,
+        failures: [] as string[],
+        id: target.id,
+        plannedCycles: targetCycles,
+        projectDir: target.projectDir,
+        ...(fixture
+          ? {
+              preparedWorkspace: {
+                root: fixture.workspaceDir,
+                dependencyClosure: fixture.dependencyClosure!,
+              },
+            }
+          : {}),
+        status: "running" as CyclesReport["targets"][number]["status"],
+      };
+      report.targets.push(entry);
+
+      for (let index = 1; index <= targetCycles; index += 1) {
+        const first = records[0];
+        const record = await runCycle(target, index, {
+          corsaBin,
+          budgetCpuCount,
+          expectedExitCode: first?.exitCode ?? null,
+          expectedSha256: first?.outputSha256 ?? null,
+          repoRoot,
+          preparedProjectDir: fixture?.workspaceDir,
+          sampleIntervalMs,
+          startedAt,
+          vizeBin,
+        });
+        records.push(record);
+        console.log(
+          `[check-fixtures-cycles] ${target.id} cycle ${index}/${targetCycles}: ${record.durationMs}ms, ` +
+            `peak ${record.peakGroupProcesses} procs / ${record.peakGroupLiveTasks} tasks, ` +
+            `${record.peakCorsaProcesses} corsa, ulimit -u ${record.budget.ulimitProcesses}` +
+            (record.failures.length === 0 ? "" : ` — ${record.failures.join("; ")}`) +
+            (record.stderrExcerpt == null || record.stderrExcerpt.length === 0
+              ? ""
+              : `\n  child output: ${record.stderrExcerpt}`),
+        );
+        writeCyclesReport(metricsDir, report);
+      }
+
+      entry.failures = summarizeTarget(target, records);
+      entry.status = entry.failures.length === 0 ? "passed" : "failed";
       writeCyclesReport(metricsDir, report);
     }
-
-    entry.failures = summarizeTarget(target, records);
-    entry.status = entry.failures.length === 0 ? "passed" : "failed";
-    writeCyclesReport(metricsDir, report);
+  } catch (error) {
+    failures.push(error);
   }
-
-  report.finishedAtIso = new Date().toISOString();
-  report.status = report.targets.every((target) => target.status === "passed")
-    ? "passed"
-    : "failed";
+  for (const fixture of prepared.values()) {
+    try {
+      fixture.dispose();
+    } catch (error) {
+      failures.push(error);
+    }
+  }
+  finishCyclesReport(report, failures);
   writeCyclesReport(metricsDir, report);
+  if (failures.length > 0) {
+    throw new AggregateError(failures, "Fixture preparation or source verification failed");
+  }
   return report;
 }
 

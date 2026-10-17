@@ -5,7 +5,8 @@ export const pathHostFunctions = [
   "normalize_windows_verbatim_path",
 ] as const;
 
-export const pathHostCallers: Record<string, readonly [number, number, number]> = {
+/** Frozen callers of the original sixty-body move; later hosts cannot rewrite that authority. */
+export const pathHostMoveCallers: Record<string, readonly [number, number, number]> = {
   "crates/vize/src/commands/build/runner/collect.rs": [3, 1, 0],
   "crates/vize/src/commands/build/runner/declarations.rs": [0, 1, 0],
   "crates/vize/src/commands/check/imports_generated_tests.rs": [0, 1, 0],
@@ -53,7 +54,6 @@ export const pathHostCallers: Record<string, readonly [number, number, number]> 
   "crates/vize_canon/src/batch/type_checker/tests/recent_issues/css_side_effect_import.rs": [
     0, 1, 0,
   ],
-  "crates/vize_canon/src/corsa_bridge/vue_document/build/native_union_tests.rs": [0, 1, 0],
   "crates/vize_maestro/src/ide/corsa_support/canonical.rs": [0, 4, 0],
   "crates/vize_maestro/src/ide/corsa_support/canonical/open.rs": [0, 3, 0],
   "crates/vize_maestro/src/ide/corsa_support/canonical/project.rs": [0, 2, 0],
@@ -61,10 +61,16 @@ export const pathHostCallers: Record<string, readonly [number, number, number]> 
   "crates/vize_maestro/src/ide/corsa_support/rename_scope.rs": [0, 0, 1],
   "crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs": [0, 2, 0],
   "crates/vize_maestro/src/ide/file_rename/manual.rs": [1, 0, 0],
-  "crates/vize_maestro/src/server/native_requests/tests.rs": [0, 1, 0],
-  "crates/vize_maestro/src/server/project_contexts/operation_admission_tests.rs": [0, 2, 0],
   "crates/vize_maestro/src/server/state/global_components.rs": [1, 0, 0],
   "crates/vize_maestro/src/server/state/global_tag_names.rs": [1, 1, 0],
   "crates/vize_maestro/src/server/state/workspace_project_files.rs": [2, 0, 0],
   "crates/vize_maestro/src/server/state/workspace_vue_files.rs": [4, 0, 0],
+};
+
+/** Current host boundaries include the separately reviewed editor admission regressions. */
+export const pathHostCallers: Record<string, readonly [number, number, number]> = {
+  ...pathHostMoveCallers,
+  "crates/vize_canon/src/corsa_bridge/vue_document/build/native_union_tests.rs": [0, 1, 0],
+  "crates/vize_maestro/src/server/native_requests/tests.rs": [0, 1, 0],
+  "crates/vize_maestro/src/server/project_contexts/operation_admission_tests.rs": [0, 2, 0],
 };

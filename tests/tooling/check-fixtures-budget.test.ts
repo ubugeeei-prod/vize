@@ -15,6 +15,11 @@ import {
 } from "./support/check-fixtures/cycles.ts";
 import { checkArgv, cycleTargets } from "./support/check-fixtures/cycle-targets.ts";
 import {
+  createCyclesReport,
+  finishCyclesReport,
+  renderCyclesSummary,
+} from "./support/check-fixtures/cycles-report.ts";
+import {
   parseProcLimits,
   readUlimitProcesses,
   readUlimitProcessesHard,
@@ -173,6 +178,9 @@ test("the cycle targets pin single-Corsa, ecosystem virtual TS, and maximum-shar
   );
   assert.equal(ecosystem.expectsDiagnostics, false, "the ecosystem corpus plants no errors");
   assert.equal(shard.projectDir, "tests/_fixtures/_git/create-vue");
+  assert.deepEqual(shard.dependencyFixture, { id: "create-vue", corpusPaths: ["template"] });
+  assert.equal(single.dependencyFixture, undefined);
+  assert.equal(ecosystem.dependencyFixture, undefined);
   assert.equal(shard.servers, 8, "the shard cap is eight Corsa servers");
   assert.equal(shard.showVirtualTs, false);
   assert.equal(shard.maxCycles, null, "a six-second cycle runs the full requested count");
@@ -270,4 +278,27 @@ test("the hosted-runner fallback raises only the documented task-budget CPU floo
   assert.equal(single.taskBudget(hostedBudgetCpuCount), 160);
   assert.equal(ecosystem.taskBudget(hostedBudgetCpuCount), 320);
   assert.equal(shard.taskBudget(hostedBudgetCpuCount), 512);
+});
+
+test("cycle evidence cannot pass when preparation or original source verification fails", () => {
+  const options = {
+    repoRoot: "/repository",
+    vizeBin: "/vize",
+    corsaBin: "/corsa",
+    cycles: 20,
+    budgetCpuCount: 8,
+  };
+  const clean = createCyclesReport(options);
+  assert.equal(clean.status, "running");
+  finishCyclesReport(clean, []);
+  assert.equal(clean.status, "passed");
+  assert.ok(clean.finishedAtIso);
+  const failed = createCyclesReport(options);
+  const error = new Error("original fixture bytes changed: tsconfig.json");
+  finishCyclesReport(failed, [error]);
+  assert.equal(failed.status, "failed");
+  assert.ok(failed.finishedAtIso);
+  assert.deepEqual(failed.preparationFailures, [error.stack]);
+  assert.match(renderCyclesSummary(failed), /preparation\/source verification failed/);
+  assert.match(renderCyclesSummary(failed), /original fixture bytes changed: tsconfig.json/);
 });

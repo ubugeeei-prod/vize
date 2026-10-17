@@ -179,6 +179,8 @@ export function resolveBudget(
 
 export type CycleOptions = {
   readonly repoRoot: string;
+  /** Actual authenticated, dependency-ready workspace; never prepared inside the cycle. */
+  readonly preparedProjectDir?: string;
   readonly vizeBin: string;
   readonly corsaBin: string;
   readonly sampleIntervalMs: number;
@@ -206,7 +208,7 @@ export async function runCycle(
     args: budgetedArgv(budget.ulimitProcesses, options.vizeBin, args),
     capture: true,
     command: "/bin/sh",
-    cwd: path.join(options.repoRoot, target.projectDir),
+    cwd: options.preparedProjectDir ?? path.join(options.repoRoot, target.projectDir),
     env: process.env,
     sampleIntervalMs: options.sampleIntervalMs,
     startedAt: options.startedAt,

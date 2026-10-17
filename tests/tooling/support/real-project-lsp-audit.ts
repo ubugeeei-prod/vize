@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { collectVueInputPaths } from "../../../tools/support/compat/fixtures/tool-matrix-inputs.mjs";
+import { withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 import { isDiagnosticsForUri, offsetToPosition } from "./lsp/assertions.ts";
 import type {
   LspDiagnostic,
@@ -97,37 +98,38 @@ export async function runRealProjectLspAudit(
     const projectEvidence = emptyLspEvidence(project);
     try {
       assert.ok(project.coverage.includes("lsp"), `${project.id} does not declare lsp coverage`);
-      const fixtureDir = path.resolve(root, project.fixturePath);
-      assert.ok(isHydrated(fixtureDir), `${project.id} fixture is not hydrated`);
-      const files = collectVueInputPaths(fixtureDir, project.vueGlobs);
-      assertFixtureFileCount(project, files);
-      projectEvidence.vueFileCount = files.length;
-      const actualFile = project.lspAuthoredOracle?.templateBinding.file ?? files[0] ?? null;
-      projectEvidence.actualFile = actualFile;
-      if (project.lspAuthoredOracle != null) {
-        assertOracleFilesAreInCorpus(project, files, project.lspAuthoredOracle);
-      }
-      const remainingMs = () => {
-        const remaining = deadline - now();
-        assert.ok(remaining > 0, `LSP fixture shard exceeded ${timeoutMs}ms`);
-        return Math.min(remaining, diagnosticsTimeoutMs);
-      };
-      const session = dependencies.createSession?.() ?? new LspSession();
-      // #3952: publish peak RSS and process count of the whole server tree.
-      const stopSampling = sampleSessionResources(session);
-      try {
-        const result = await exerciseLspLifecycle(
-          session,
-          fixtureDir,
-          actualFile,
-          remainingMs,
-          project.lspAuthoredOracle,
-        );
-        Object.assign(projectEvidence, result, { status: "ok" as const });
-      } finally {
-        const resources = stopSampling();
-        if (resources != null) projectEvidence.resources = resources;
-      }
+      await withConfigReadyFixture(project, async (fixtureDir) => {
+        assert.ok(isHydrated(fixtureDir), `${project.id} fixture is not hydrated`);
+        const files = collectVueInputPaths(fixtureDir, project.vueGlobs);
+        assertFixtureFileCount(project, files);
+        projectEvidence.vueFileCount = files.length;
+        const actualFile = project.lspAuthoredOracle?.templateBinding.file ?? files[0] ?? null;
+        projectEvidence.actualFile = actualFile;
+        if (project.lspAuthoredOracle != null) {
+          assertOracleFilesAreInCorpus(project, files, project.lspAuthoredOracle);
+        }
+        const remainingMs = () => {
+          const remaining = deadline - now();
+          assert.ok(remaining > 0, `LSP fixture shard exceeded ${timeoutMs}ms`);
+          return Math.min(remaining, diagnosticsTimeoutMs);
+        };
+        const session = dependencies.createSession?.() ?? new LspSession();
+        // #3952: publish peak RSS and process count of the whole server tree.
+        const stopSampling = sampleSessionResources(session);
+        try {
+          const result = await exerciseLspLifecycle(
+            session,
+            fixtureDir,
+            actualFile,
+            remainingMs,
+            project.lspAuthoredOracle,
+          );
+          Object.assign(projectEvidence, result, { status: "ok" as const });
+        } finally {
+          const resources = stopSampling();
+          if (resources != null) projectEvidence.resources = resources;
+        }
+      });
     } catch (error) {
       projectEvidence.failure = errorMessage(error);
     }
@@ -149,6 +151,19 @@ export async function runRealProjectLspAudit(
       `${report.summary.failedProjectCount} failed project(s)\n`,
   );
   return { evidence, report, skipped: false } as const;
+}
+
+async function withConfigReadyFixture<T>(
+  project: FixtureProject,
+  run: (directory: string) => Promise<T>,
+): Promise<T> {
+  if (!["create-vue", "vue-router", "vue-vben-admin"].includes(project.id)) {
+    return run(path.resolve(root, project.fixturePath));
+  }
+  return withPinnedFixtureWorkspace(
+    { fixtureId: project.id, includePaths: ["."], prepareDependencies: true },
+    (fixture) => run(fixture.workspaceDir),
+  );
 }
 
 export async function exerciseLspLifecycle(
