@@ -349,3 +349,7 @@ struct SourceArtifacts {
     module_exports: Option<Box<[vize_croquis::script_parser::AuthoredModuleExport]>>,
     star_projection: Option<star_exports::StarProjection>,
 }
+
+#[cfg(test)]
+#[path = "virtual_project/preparation_import_facts_test_snapshot.rs"]
+mod preparation_import_facts_test_snapshot;
