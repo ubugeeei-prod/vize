@@ -7,7 +7,11 @@ use std::{fs, path::Path, process::Command};
 const RULE: &str = "script/no-deprecated-dollar-scopedslots-api";
 
 fn sha256(bytes: &[u8]) -> vize_l0::String {
-    vize_l0::cstr!("{:x}", Sha256::digest(bytes))
+    let mut output = vize_l0::String::default();
+    for byte in Sha256::digest(bytes) {
+        vize_l0::append!(output, "{byte:02x}");
+    }
+    output
 }
 
 #[test]
