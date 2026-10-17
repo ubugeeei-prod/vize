@@ -69,10 +69,12 @@ jobs:
       - name: Require actual frozen Rust and TypeScript subprocess parity
         env:
           VIZE_LINT_REPORT_PARITY_DIR: ${{ runner.temp }}/lint-report-parity
-        run: node --test tests/tooling/support/lint-report-parity.ts
+        run: env -u GITHUB_SHA node --test tests/tooling/support/lint-report-parity.ts
       - name: Require complete pinned packets, visitors and actual report integrity
+        # pull_request GITHUB_SHA names the synthetic merge; report evidence must
+        # resolve the actual authored checkout above through git rev-parse HEAD.
         run: >-
-          node --test
+          env -u GITHUB_SHA node --test
           tests/tooling/lint-reference-classifier.test.ts
           tests/tooling/lint-reference-coverage.test.mjs
           tests/tooling/lint-baseline-script-language.test.mjs
