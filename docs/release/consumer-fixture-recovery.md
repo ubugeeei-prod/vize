@@ -26,10 +26,13 @@ failed Deno consumer. Missing, pending, failed, cancelled or newly skipped build
 refuse recovery. The failed job must belong to the latest attempt, contain exactly the known
 `npm:vize@VERSION` / `node_modules` exception, and have failed only its original Deno invocation.
 
-The replacement uses the exact Deno 2.9.7 configuration qualified in [#9257](https://github.com/ubugeeei-prod/vize/pull/9257):
-`nodeModulesDir: "none"`, with an empty Deno cache. It adds no dependency-age exception. Every
-observed Vize npm package and JSR version must already be at least 24 hours old, even though the
-existing approved configuration contains scoped Vize exclusions.
+Admission retains the exact Deno configuration source and digest qualified in
+[#9257](https://github.com/ubugeeei-prod/vize/pull/9257), including its existing scoped exclusions.
+The separate **effective recovery configuration** contains only `nodeModulesDir: "none"`, with an
+empty Deno cache and Deno 2.9.7's default dependency age. Every Deno packet records that effective
+configuration's digest, and finalization/verifiers check its retained `deno.json` bytes. No age
+exclusion or override executes. The existing additional checks that every observed Vize npm
+package and JSR version is at least 24 hours old remain required.
 
 ## Official sequence
 
@@ -39,14 +42,23 @@ existing approved configuration contains scoped Vize exclusions.
    Its admission contracts run in pull requests and must pass again before live qualification.
 2. Admission retains the complete original failure log, job inventory, source bytes, artifact
    identities, signed integration evidence and fresh public registry archive observations.
+   Original log transport uses `--allow-escape-sequences` and retains complete stdout/stderr bytes
+   and status before semantic gates. UTF-8 decoding preserves BOM and requires an exact byte
+   round-trip. For the original 0.457.0 / R4 tuple, the entire 24,145-byte failed log must retain
+   SHA256 `df3ec6ea97cd47a655a0fd46528a4e28f24ae3aac6fa256ff8b7e23a8e778860`.
 3. All six original contracts execute in fresh projects outside the checkout: Node 22 and 24 on
    Linux, Node 24 on macOS and Windows, Deno 2.9.7 on Linux, and Bun 1.3.14 on Linux. Each uses the
-   byte-for-byte original consumer, actual public JSR/npm packages and a loaded native provider.
+   byte-for-byte original consumer, its exact terminal completion output, actual public JSR/npm
+   packages and a loaded native provider. A zero exit without the complete consumer witness fails.
+   Native/public commands receive an explicit runtime environment allowlist, not arbitrary job
+   variables. Credentials exist only in trusted metadata steps; no native/public parent step has
+   a job-wide credential. Complete raw command bytes are retained separately from decoded text.
    Node/Bun retain the Vite assertion; the original Deno contract does not import that entry point.
    Complete commands, stdout/stderr, exit status, installed paths, archive hashes, manifests,
    lockfiles and publication times remain in the packet.
 4. Finalization requires all six packets from the same current run and attempt, rechecks the
-   original identities and all public channels, and signs a complete file manifest with the
+   original identities and all public channels, authenticates the closed source/import/config and
+   materialized harness policy, and signs a complete file manifest with the
    existing pinned Cosign/OIDC toolchain. The receipt says `originalConclusion: "failure"` and
    `status: "consumer-requalified"`; it never represents R as successful.
 5. Dispatch the protected main-only **Release Operator**, operation `recover-consumer`, with
@@ -57,7 +69,9 @@ existing approved configuration contains scoped Vize exclusions.
 6. Run **Public release acceptance** with the original C/H/tag/source-PR/R and the explicit
    `consumer_recovery_run`. Signature verification is mandatory; the workflow preserves the
    original failure in its publication packet and runs its complete installed native, LSP,
-   browser/Musea and VRT acceptance. Existing product checks remain required.
+   browser/Musea and VRT acceptance. Existing product checks remain required. After all installed
+   processes finish, its metadata-only seal revalidates the signed recovery and current original
+   attempt again before accepting the installed results.
 7. Only after that acceptance succeeds may the maintainer close the original unmerged source
    receipt and start the next official release. Retain original R as failed and leave H, the
    annotated tag, original workflow and public versions unchanged.
@@ -81,3 +95,10 @@ identities and the reviewed frozen bytes and job graph.
 The implementation and unit tests do not establish actual hosted requalification or release
 completion. Record the resulting signed recovery run and full installed acceptance run before
 claiming this incident complete.
+
+The pull-request admission-contract job additionally typechecks the complete recovery authority
+and runs one read-only Linux Deno probe of the exact historical H consumer using only the host
+configuration correction. Its commands, whole raw streams, effective configuration digest and
+actual runtime outcome are retained. This probe never admits, signs or substitutes release
+evidence, closes a source, or launches the six-platform live recovery. Record its hosted result
+before requesting approval for this authority change.

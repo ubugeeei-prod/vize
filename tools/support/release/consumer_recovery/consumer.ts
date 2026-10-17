@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
@@ -8,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { rejectOverrides } from "../public_acceptance/installed.ts";
 import { publicReader } from "../public_acceptance/http.ts";
 import { verifyPackageIdentity } from "../windows_hover_acceptance.ts";
+import { captureCommand, effectiveDenoConfig, publicEnvironment, strictUtf8 } from "./runtime.ts";
 
 type Original = {
   schema: string;
@@ -63,6 +63,7 @@ type Packet = {
   policy: Original["policy"];
   consumerSha256: string;
   denoConfigSha256: string;
+  effectiveDenoConfigSha256: string;
   run: { id?: string; attempt?: string; sha?: string };
   project: string;
   checkout: string;
@@ -151,6 +152,7 @@ export function verifyConsumer(value: unknown, expected?: unknown) {
     packet.policy.workflowSha256,
     "bf5b8d553c05b85afa434a4b4f637a5c5f0b09f9357a6026ab4d0f2014893d81",
   );
+  assert.equal(packet.effectiveDenoConfigSha256, digest(effectiveDenoConfig));
   assert.equal(packet.run.sha, packet.policy.sha);
   const platformPath = selected.platform === "win32" ? path.win32 : path.posix;
   assert.ok(platformPath.isAbsolute(packet.project));
@@ -172,6 +174,15 @@ export function verifyConsumer(value: unknown, expected?: unknown) {
     assert.equal(command.error, undefined);
   }
   assert.match(packet.commands[0].stdout, new RegExp(`^v${selected.node}\\.`));
+  const completed = packet.commands.find((command) => command.label === "consumer");
+  assert.ok(completed);
+  assert.equal(
+    completed.stdout,
+    selected.runtime === "deno"
+      ? `Verified jsr:@vizejs/vize@${version} (no flags)\n`
+      : "Verified @vizejs/vize (--vite)\n",
+    "the complete original consumer must reach its exact final witness",
+  );
   assert.ok(packet.installed);
   assert.equal(packet.installed.native.loaded, true);
   assert.match(packet.installed.native.sha256, /^[a-f0-9]{64}$/u);
@@ -321,10 +332,10 @@ async function main() {
   const cache = path.join(project, "deno-cache");
   if (selected.runtime === "deno") {
     fs.mkdirSync(cache);
-    fs.writeFileSync(path.join(project, "deno.json"), config);
+    fs.writeFileSync(path.join(project, "deno.json"), effectiveDenoConfig);
   }
   const environment: NodeJS.ProcessEnv = {
-    ...process.env,
+    ...publicEnvironment(process.env),
     npm_config_registry: "https://registry.npmjs.org/",
     ...(selected.runtime === "deno" ? { DENO_DIR: cache } : {}),
   };
@@ -338,6 +349,7 @@ async function main() {
     policy: original.policy,
     consumerSha256: digest(source),
     denoConfigSha256: digest(config),
+    effectiveDenoConfigSha256: digest(effectiveDenoConfig),
     run: {
       id: process.env.GITHUB_RUN_ID,
       attempt: process.env.GITHUB_RUN_ATTEMPT,
@@ -354,14 +366,12 @@ async function main() {
   save("original.json", original);
   const persist = () => save("consumer.json", packet);
   persist();
-  const run = (label: string, command: string, args: string[]) => {
+  const run = async (label: string, command: string, args: string[]) => {
     const began = new Date().toISOString();
-    const result = spawnSync(command, args, {
+    const result = await captureCommand(command, args, path.join(output, `${label}-raw`), {
       cwd: project,
       env: environment,
-      encoding: "utf8",
-      timeout: 300_000,
-      maxBuffer: 32 * 1024 * 1024,
+      timeoutMs: 300_000,
     });
     const record = {
       label,
@@ -372,20 +382,22 @@ async function main() {
       ended: new Date().toISOString(),
       status: result.status,
       signal: result.signal,
-      error: result.error?.message,
-      stdout: result.stdout ?? "",
-      stderr: result.stderr ?? "",
+      error: result.error,
+      stdout: strictUtf8(result.stdout),
+      stderr: strictUtf8(result.stderr),
       denoDir: selected.runtime === "deno" ? cache : null,
     };
     packet.commands.push(record);
     save(`${label}.json`, record);
     persist();
+    assert.equal(result.error, undefined, label);
+    assert.equal(result.signal, null, label);
     assert.equal(result.status, 0, `${label}: ${record.stderr}`);
-    return result.stdout;
+    return record.stdout;
   };
   try {
     for (const [label, command, args] of commandPlan(packet)) {
-      const stdout = run(label, command, args);
+      const stdout = await run(label, command, args);
       if (label === "runtime-version") {
         if (selected.runtime === "bun") assert.equal(stdout.trim(), "1.3.14");
         else assert.match(stdout, /^deno 2\.9\.7\s/u);

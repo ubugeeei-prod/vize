@@ -12,9 +12,9 @@ import {
   files,
   verifiedRecovery,
   verifyIntegration,
+  verifyConsumerDirectory,
   type Original,
 } from "./custody.ts";
-import { verifyConsumer } from "./consumer.ts";
 import {
   assertFresh,
   consumerAttempt,
@@ -53,7 +53,11 @@ if (operation === "prepare" || operation === "finalize") {
       run: process.env.GITHUB_RUN_ID,
       attempt: process.env.GITHUB_RUN_ATTEMPT,
     });
-    const original = await collectOriginal(expected, policySha);
+    const original = await collectOriginal(
+      expected,
+      policySha,
+      path.join(output, "original-log-capture"),
+    );
     save(output, "original.json", original);
     writeFileSync(path.join(output, "original-failure.log"), original.log, { flag: "wx" });
     writeFileSync(path.join(output, "consumer.ts"), String(original.blobs.consumerSha256), {
@@ -76,8 +80,7 @@ if (operation === "prepare" || operation === "finalize") {
     const consumers: Json[] = [];
     for (const role of roles) {
       const file = path.join(output, "consumers", role, "consumer.json");
-      const packet = load(file);
-      verifyConsumer(packet, original);
+      const packet = verifyConsumerDirectory(path.dirname(file), original);
       same(packet.role, role, "consumer role substitution");
       consumerAttempt(
         packet.run,
@@ -87,8 +90,17 @@ if (operation === "prepare" || operation === "finalize") {
       );
       consumers.push({ role, sha256: sha256(readFileSync(file)) });
     }
-    const live = await collectOriginal(expected, policySha);
-    for (const key of ["policy", "run", "jobs", "failed", "log", "blobs", "artifacts"])
+    const live = await collectOriginal(expected, policySha, path.join(output, "final-log-capture"));
+    for (const key of [
+      "policy",
+      "run",
+      "jobs",
+      "failed",
+      "log",
+      "logCustody",
+      "blobs",
+      "artifacts",
+    ])
       same(original[key], live[key], `original ${key} changed during fresh consumers`);
     const publication = await verifyPublication(
       derivePublicationPlan(root, expected.head),

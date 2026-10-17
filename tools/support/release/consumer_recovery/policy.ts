@@ -146,6 +146,21 @@ export function admitOriginal(
     ),
     "other step failure",
   );
+  if (
+    expected.cut === "014bd42cacdf3d026fb75162cfa80dce76d78315" &&
+    expected.head === "03882089eff75664abe99ba71868e33739496b01" &&
+    expected.tag === "v0.457.0" &&
+    expected.sourcePr === "9196" &&
+    expected.run === "38805261385" &&
+    expected.attempt === 4
+  ) {
+    same(Buffer.byteLength(log), 24145, "complete original 0.457.0 failure log required");
+    same(
+      sha256(log),
+      "df3ec6ea97cd47a655a0fd46528a4e28f24ae3aac6fa256ff8b7e23a8e778860",
+      "original 0.457.0 failure log bytes changed",
+    );
+  }
   const plain = stripVTControlCharacters(log);
   const fingerprint = `Could not find a matching package for 'npm:vize@${expected.tag.slice(1)}' in the node_modules directory.`;
   same(
@@ -217,4 +232,12 @@ export function reviewedPolicy(sha: string, compare: Json, commit: Json) {
   const verification = object(object(commit.commit).verification);
   same(verification.verified, true, "policy commit signature required");
   same(verification.reason, "valid", "valid policy commit signature required");
+}
+
+/** The immutable tag keeps the original # prefix; normalize only its parsed identity. */
+export function annotatedIntegrationPr(value: unknown): number {
+  assert.equal(typeof value, "string");
+  const match = /^#([1-9][0-9]*)$/.exec(String(value));
+  assert.ok(match, "one anchored annotated #<positive PR> required");
+  return positive(match[1]);
 }
