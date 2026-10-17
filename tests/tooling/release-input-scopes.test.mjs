@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { matchesGlob } from "node:path";
 import { test } from "node:test";
 import { toolingTestScopes } from "../../tools/config/vite-plus/tooling-test-scopes.ts";
 import {
@@ -23,6 +24,12 @@ const deliveredInitContracts = [
 const installedReportedContracts = ["tests/tooling/release/release-public-vapor.test.ts"];
 const stablePatchContracts = ["tests/tooling/release/release-stable-operator.test.ts"];
 const sharedPublisherContracts = ["tests/tooling/release/release-public-shared-publisher.test.ts"];
+const installedSmokeMigrationContracts = [
+  "tests/tooling/release/release-smoke-parity-peer-copy.test.ts",
+  "tests/tooling/release/release-smoke-public-native.test.ts",
+  "tests/tooling/release/release-smoke-typescript-parity.test.ts",
+  "tests/tooling/release/release-smoke-typescript-runtime.test.ts",
+];
 // The immutable generated consumer imports its installed native provider dynamically.
 // Its two callers must retain the planner's conservative broad fallback.
 const dynamicPublisherContracts = [
@@ -59,6 +66,7 @@ void test("audited release contracts have complete imports and leave unresolved 
     ...installedReportedContracts,
     ...stablePatchContracts,
     ...sharedPublisherContracts,
+    ...installedSmokeMigrationContracts,
   ].sort();
   const inventory = [...scoped, ...expectedUnscoped].sort();
   assert.equal(new Set(inventory).size, inventory.length, "contracts belong to exactly one scope");
@@ -80,6 +88,27 @@ void test("audited release contracts have complete imports and leave unresolved 
     selected("davinci/vize_l1/src/parser.rs"),
     [...new Set([...unscoped, ...dynamicPublisherContracts])].sort(),
   );
+});
+
+void test("installed smoke migration contracts retain unreviewed broad inputs", () => {
+  const plans = ["davinci/vize_l1/src/parser.rs", "crates/vize_maestro/src/server.rs"].map(
+    (input) => ({ input, plan: planToolingTests([input]) }),
+  );
+  for (const contract of installedSmokeMigrationContracts) {
+    assert.equal(
+      toolingTestScopes.some((entry) =>
+        entry.tests.some((pattern) => matchesGlob(contract, pattern)),
+      ),
+      false,
+      `${contract} has no audited scope registration`,
+    );
+    const imports = localImportInputs(contract);
+    for (const { input, plan } of plans) {
+      assert.equal(imports.files.includes(input), false, `${contract}: independent input`);
+      assert.equal(plan.reason, "declared task and import inputs", input);
+      assert.ok(plan.tests.includes(contract), `${input}: ${contract} retains broad fallback`);
+    }
+  }
 });
 
 void test("shared publisher authority retains broad inputs across the dynamic consumer oracle", () => {
