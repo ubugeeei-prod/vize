@@ -14,17 +14,35 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { parse } from "yaml";
 import {
   prepareBuildEvidence,
   finishBuildEvidence,
 } from "../../tools/support/compat/github/rust-build-evidence.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const workflow = parse(readFileSync(join(root, ".github/workflows/pr-rust-checks.yml"), "utf8"));
-const step = workflow.jobs["pr-rust-shard"].steps.find(
-  (entry) => entry.name === "Build and run the affected Rust test cohort",
-);
+// The source-plan job has Node but deliberately installs no dependencies.
+// Execute the actual named literal shell block without importing a YAML package.
+const workflowSource = readFileSync(join(root, ".github/workflows/pr-rust-checks.yml"), "utf8");
+function workflowStep(name) {
+  const marker = `      - name: ${name}\n`;
+  const start = workflowSource.indexOf(marker);
+  assert(start >= 0 && workflowSource.indexOf(marker, start + marker.length) === -1);
+  const next = workflowSource.indexOf("\n      - ", start + marker.length);
+  const block = workflowSource.slice(start, next < 0 ? undefined : next);
+  const run = /^        run: \|\n([\s\S]*)$/m.exec(block)?.[1];
+  return {
+    if: /^        if: (.+)$/m.exec(block)?.[1],
+    run: run
+      ?.split("\n")
+      .map((line) => {
+        assert(line.trim() === "" || line.startsWith("          "));
+        return line.slice(10);
+      })
+      .join("\n"),
+  };
+}
+const step = workflowStep("Build and run the affected Rust test cohort");
+assert.equal(typeof step.run, "string");
 const json = (file) => JSON.parse(readFileSync(file, "utf8"));
 const fixture = () => {
   const directory = mkdtempSync(join(tmpdir(), "vize-rust-build-evidence-"));
@@ -180,9 +198,7 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
       assert.equal(packet.success, exit === 0);
       assert.equal(json(join(directory, "target/nextest/pr/timing.json")).exit_code, exit);
       assert.equal(
-        workflow.jobs["pr-rust-shard"].steps.find(
-          (entry) => entry.name === "Upload PR Rust build evidence",
-        ).if,
+        workflowStep("Upload PR Rust build evidence").if,
         "${{ always() && github.event_name == 'pull_request' }}",
       );
     } finally {
