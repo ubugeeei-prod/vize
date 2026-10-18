@@ -236,7 +236,7 @@ test("typecheck divergence progress logging is opt-in", () => {
     assert.equal(progressLines[1], "[typecheck-divergence] run projectId=fixture command=baseline");
     assert.match(
       progressLines[2],
-      /^\[typecheck-divergence\] finish projectId=fixture command=baseline durationMs=\d+ status=2$/u,
+      /^\[typecheck-divergence\] finish projectId=fixture command=baseline durationMs=\d+ status=0$/u,
     );
     assert.equal(progressLines[3], "[typecheck-divergence] run projectId=fixture command=coverage");
     assert.match(
