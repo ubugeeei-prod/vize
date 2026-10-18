@@ -1,6 +1,14 @@
-// Nuxt 4.5.2 e2d3a394: packages/schema/src/config/vite.ts owns these host fields.
+// Nuxt's schema owns the compiler fields; modules such as @vue-macros/nuxt
+// extend the same @vitejs/plugin-vue options with include/exclude filters.
 // Only its explicit constructor context admits this already-resolved host view.
-const hostVueFields = new Set(["isProduction", "template", "script", "features"]);
+const hostVueFields = new Set([
+  "isProduction",
+  "template",
+  "script",
+  "features",
+  "include",
+  "exclude",
+]);
 
 export function nativeProjectSource(source: unknown, hostContext?: "nuxt"): unknown {
   if (

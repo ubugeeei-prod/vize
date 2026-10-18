@@ -29,6 +29,8 @@ on:
       - tests/_fixtures/differential/compiler/nuxt-prefetch-manifest/**
       - tests/tooling/nuxt-prefetch-manifest.test.mjs
       - tests/tooling/nuxt-source-binding.test.mjs
+      - tests/tooling/vue-config-nuxt-host-context.test.ts
+      - tests/_fixtures/differential/config/nuxt-elk-host-options/**
       - npm/native/**
       - crates/**
       - davinci/**
@@ -64,6 +66,8 @@ on:
       - tests/_fixtures/differential/compiler/nuxt-prefetch-manifest/**
       - tests/tooling/nuxt-prefetch-manifest.test.mjs
       - tests/tooling/nuxt-source-binding.test.mjs
+      - tests/tooling/vue-config-nuxt-host-context.test.ts
+      - tests/_fixtures/differential/config/nuxt-elk-host-options/**
       - npm/native/**
       - crates/**
       - davinci/**
@@ -125,6 +129,8 @@ jobs:
         run: vp pack
       - name: Verify inherited compiler option precedence
         run: vp env exec node --test npm/framework/nuxt/src/compiler-defaults.test.ts
+      - name: Verify complete Nuxt host filter projection and strict native boundaries
+        run: vp env exec node --test tests/tooling/vue-config-nuxt-host-context.test.ts
       - name: Install the pinned Nuxt 3 reproduction
         working-directory: tools/support/compat/nuxt/fixtures/nuxt3-module-build
         run: npm ci --no-audit --no-fund
