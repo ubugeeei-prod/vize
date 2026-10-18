@@ -167,6 +167,24 @@ jobs:
       - name: Test actual source LSP feature and project responses
         if: ${{ matrix.lane == 'lsp' }}
         uses: ./.github/actions/test-native-lsp
+      - name: Replay complete formatter CLI stock semantics with the source CLI
+        if: ${{ success() && matrix.lane == 'lsp' }}
+        run: |
+          set -euo pipefail
+          mkdir -p target/differential
+          node --test tests/tooling/formatter-expression-width-semantics.test.mjs tests/tooling/formatter-continuation-prefix-width.test.mjs 2>&1 | tee target/differential/formatter-source.log
+      - name: Preserve complete source formatter semantic observations
+        if: ${{ always() && matrix.lane == 'lsp' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: source-formatter-semantics-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: |
+            target/differential/formatter-expression-width-semantics.json
+            target/differential/formatter-continuation-prefix-width.json
+            target/differential/formatter-source.log
+            target/ci/vize.differential-build.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Test fresh native SSR modules
         if: ${{ matrix.lane == 'ssr' }}
         uses: ./.github/actions/test-native-ssr
