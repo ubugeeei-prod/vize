@@ -97,6 +97,17 @@ function requireDailySourceContracts(planWorkflow: typeof source, rustWorkflow: 
     steps[contracts].run,
     "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts tests/tooling/typecheck-divergence-report-timeout.test.ts tests/tooling/typecheck-divergence-mutation-oracle.test.ts tests/tooling/typecheck-fixture-custody.test.ts",
   );
+  const custody = steps[contracts + 1];
+  assert.equal(custody.name, "Retain mutation deadline command and fixture evidence");
+  assert.equal(custody.if, "${{ always() && inputs.run-source-contracts }}");
+  assert.equal(custody.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
+  assert.deepEqual(custody.with, {
+    name: "mutation-deadline-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}",
+    path: "target/differential/typecheck-mutation/",
+    "include-hidden-files": true,
+    "if-no-files-found": "warn",
+    "retention-days": 7,
+  });
   for (const action of [
     "actions/setup-node@",
     "dtolnay/rust-toolchain@",
