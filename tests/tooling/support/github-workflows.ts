@@ -229,7 +229,32 @@ export function requireDailySourceContracts(
   assert.equal(steps[contracts]["continue-on-error"], undefined);
   assert.equal(
     steps[contracts].run,
-    "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts tests/tooling/typecheck-divergence-report-timeout.test.ts tests/tooling/typecheck-divergence-mutation-oracle.test.ts tests/tooling/typecheck-fixture-custody.test.ts tests/tooling/davinci-canonical-corpus-native-walk.test.mjs",
+    [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "tests/tooling/davinci-assertion-lint.test.ts",
+      "tests/tooling/davinci-consumer-migration-surfaces.test.mjs",
+      "tests/tooling/docs-reviewed-translations.test.ts",
+      "tests/tooling/typecheck-divergence-report-timeout.test.ts",
+      "tests/tooling/typecheck-divergence-mutation-oracle.test.ts",
+      "tests/tooling/typecheck-fixture-custody.test.ts",
+      "tests/tooling/davinci-canonical-corpus-native-walk.test.mjs",
+      "tests/tooling/typecheck-divergence-baseline-ambient.test.ts",
+      "tests/tooling/typecheck-divergence-baseline-configuration.test.ts",
+      "tests/tooling/typecheck-divergence-baseline-support-corpus.test.ts",
+      "tests/tooling/typecheck-divergence-baseline-support.test.ts",
+      "tests/tooling/typecheck-divergence-baseline.test.ts",
+      "tests/tooling/typecheck-divergence-budget.test.ts",
+      "tests/tooling/typecheck-divergence-ledger.test.ts",
+      "tests/tooling/typecheck-divergence-mutation-delta.test.ts",
+      "tests/tooling/typecheck-divergence-report-enforcement.test.ts",
+      "tests/tooling/typecheck-divergence-report-ledger.test.ts",
+      "tests/tooling/typecheck-divergence-report-rejections.test.ts",
+      "tests/tooling/typecheck-divergence-report.test.ts",
+      "tests/tooling/typecheck-divergence.test.ts",
+      "tests/tooling/typecheck-baseline-usability.test.ts",
+    ].join(" "),
   );
   const custody = steps[contracts + 1];
   assert.deepEqual(custody, {

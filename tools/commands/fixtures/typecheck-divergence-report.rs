@@ -23,6 +23,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+#[path = "../../support/typecheck_baseline_usability.rs"]
+mod baseline_usability;
 #[path = "../../support/common.rs"]
 mod common;
 #[path = "../../support/typecheck_project_deadline.rs"]
@@ -301,7 +303,7 @@ fn write_project_artifact(
     }
     // Keep original streams for successful and rejected comparisons alike:
     // hashes bind evidence, but cannot explain provider/configuration drift.
-    let observations = json!({
+    let mut observations = json!({
         "schema": "vize.fixtureTypecheckObservations",
         "version": 1,
         "project": project_id,
@@ -372,6 +374,144 @@ fn write_project_artifact(
     } else {
         evaluate_baseline_ambient_environment(&coverage_baseline.run.output, &fixture_root)?
     };
+    // A diagnostic exit alone is not an unusable baseline: semantic findings are
+    // the comparison's input. Ask the same official provider for diagnostics
+    // before semantic checking only when the existing instrument checks passed.
+    if baseline.run_error.is_none()
+        && matches!(baseline.run.status, 1 | 2)
+        && coverage["verdict"] == "usable"
+        && configuration["verdict"] == "usable"
+        && ambient_unusable_reason(&ambient).is_none()
+    {
+        let reject = |kind: &str,
+                      reason: String,
+                      diagnostics: Vec<Value>|
+         -> Result<Value, String> {
+            baseline_usability::retain_failure(
+                &args.report_dir,
+                project,
+                &summary["evidence"],
+                &observations_path,
+                kind,
+                &reason,
+                &diagnostics,
+            )?;
+            Err(format!(
+                "Typecheck divergence baseline is unusable for {project_id} — {INSTRUMENT_FAILURE_CLASSIFICATION}: {reason}"
+            ))
+        };
+        match baseline_usability::parse_diagnostics(&baseline.run.output) {
+            Ok(diagnostics) if !diagnostics.is_empty() => {}
+            Ok(_) => {
+                return reject(
+                    "missing-full-baseline-diagnostics",
+                    "vue-tsc returned a diagnostic status without diagnostics".to_string(),
+                    Vec::new(),
+                );
+            }
+            Err(error) => return reject("malformed-full-baseline-output", error, Vec::new()),
+        }
+        let source_path = fixture_root.join(&source_project);
+        let authority =
+            match baseline_usability::configuration_snapshot(&baseline_config.path, &source_path) {
+                Ok(value) => value,
+                Err(error) => return reject("configuration-authority-failure", error, Vec::new()),
+            };
+        observations["preSemanticAuthorityBefore"] = authority.clone();
+        project_deadline::atomic_json(&observations_path, &observations)?;
+        if authority["configSha256"].as_str() != Some(sha256(&baseline_config.source).as_str())
+            || authority["sourceConfigSha256"].as_str() != Some(sha256(&source_config).as_str())
+        {
+            return reject(
+                "configuration-authority-failure",
+                "baseline configuration changed before pre-semantic checking".to_string(),
+                Vec::new(),
+            );
+        }
+        let mut probe_args = baseline_args.clone();
+        probe_args.push("--noCheck".to_string());
+        let probe = match context.capture(
+            &args.vue_tsc_bin,
+            &probe_args,
+            &fixture_root,
+            timeout_ms,
+            "vue-tsc pre-semantic baseline",
+        ) {
+            Ok(value) => value,
+            Err(error) => {
+                observations["preSemantic"] = json!({
+                    "command": display_command(&args.vue_tsc_bin, &probe_args),
+                    "providerVersion": vue_tsc_version,
+                    "configSha256": sha256(&baseline_config.source),
+                    "exitCode": Value::Null,
+                    "runError": error,
+                    "stdout": Value::Null,
+                    "stderr": Value::Null,
+                });
+                project_deadline::atomic_json(&observations_path, &observations)?;
+                return reject("provider-process-failure", error, Vec::new());
+            }
+        };
+        observations["preSemantic"] = json!({
+            "command": display_command(&args.vue_tsc_bin, &probe_args),
+            "providerVersion": vue_tsc_version,
+            "configSha256": sha256(&baseline_config.source),
+            "exitCode": probe.status.code(),
+            "processStatus": probe.status.to_string(),
+            "runError": Value::Null,
+            "stdout": probe.stdout,
+            "stderr": probe.stderr,
+        });
+        project_deadline::atomic_json(&observations_path, &observations)?;
+        let authority_after =
+            match baseline_usability::configuration_snapshot(&baseline_config.path, &source_path) {
+                Ok(value) => value,
+                Err(error) => return reject("configuration-authority-failure", error, Vec::new()),
+            };
+        observations["preSemanticAuthorityAfter"] = authority_after.clone();
+        project_deadline::atomic_json(&observations_path, &observations)?;
+        if authority_after != authority {
+            return reject(
+                "configuration-authority-failure",
+                "baseline configuration changed during pre-semantic checking".to_string(),
+                Vec::new(),
+            );
+        }
+        let parsed =
+            baseline_usability::parse_diagnostics(&format!("{}\n{}", probe.stdout, probe.stderr));
+        if !probe.status.success() || !matches!(&parsed, Ok(diagnostics) if diagnostics.is_empty())
+        {
+            let (kind, reason) = if !matches!(probe.status.code(), Some(0 | 1 | 2)) {
+                (
+                    "provider-process-failure",
+                    format!(
+                        "vue-tsc pre-semantic checking returned unsupported process status {}",
+                        probe.status
+                    ),
+                )
+            } else if let Err(error) = &parsed {
+                ("malformed-provider-output", error.clone())
+            } else if probe.status.success() {
+                (
+                    "provider-status-disagreement",
+                    "vue-tsc returned pre-semantic diagnostics with a successful status"
+                        .to_string(),
+                )
+            } else if matches!(&parsed, Ok(diagnostics) if diagnostics.is_empty()) {
+                (
+                    "missing-provider-diagnostics",
+                    "vue-tsc pre-semantic checking failed without diagnostics".to_string(),
+                )
+            } else {
+                (
+                    "pre-semantic-diagnostics",
+                    "vue-tsc pre-semantic diagnostics prevent a usable semantic baseline"
+                        .to_string(),
+                )
+            };
+            return reject(kind, reason, parsed.unwrap_or_default());
+        }
+    }
     context.phase("mutation selection")?;
     let mutation_oracle = create_seeded_mutation_oracle(MutationContext {
         context,
@@ -484,6 +624,7 @@ fn quarantine_previous_typecheck_artifacts(
         ("typecheck-divergence.md", "comparison.md"),
         ("typecheck-observations.json", "observations.json"),
         ("typecheck-divergence-failure.json", "failure.json"),
+        ("baseline-unusable.json", "baseline-unusable.json"),
     ] {
         let filename = format!("{project_id}-{suffix}");
         let path = report_dir.join(&filename);

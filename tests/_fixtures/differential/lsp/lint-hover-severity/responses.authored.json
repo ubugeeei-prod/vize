@@ -1,0 +1,69 @@
+{
+  "fixCommit": "ef8c3e059ed645e319154d475ef6d994dc489ee6",
+  "documentVersion": 1,
+  "position": { "line": 1, "character": 5 },
+  "diagnostic": {
+    "range": {
+      "start": { "line": 1, "character": 3 },
+      "end": { "line": 1, "character": 20 }
+    },
+    "severity": 1,
+    "code": "vue/authored-marker",
+    "codeDescription": { "href": "https://example.invalid/rules/authored-marker" },
+    "source": "vize/lint",
+    "message": "First problem.\n\nHelp: Keep the authored marker."
+  },
+  "severities": [
+    {
+      "severity": 1,
+      "result": {
+        "contents": {
+          "kind": "markdown",
+          "value": "### Error: vue/authored-marker\n\nFirst problem.\n\n**Help:** Keep the authored marker.\n\n[View rule documentation](https://example.invalid/rules/authored-marker)\n\n"
+        }
+      }
+    },
+    {
+      "severity": 2,
+      "result": {
+        "contents": {
+          "kind": "markdown",
+          "value": "### Warning: vue/authored-marker\n\nFirst problem.\n\n**Help:** Keep the authored marker.\n\n[View rule documentation](https://example.invalid/rules/authored-marker)\n\n"
+        }
+      }
+    },
+    {
+      "severity": 3,
+      "result": {
+        "contents": {
+          "kind": "markdown",
+          "value": "### Information: vue/authored-marker\n\nFirst problem.\n\n**Help:** Keep the authored marker.\n\n[View rule documentation](https://example.invalid/rules/authored-marker)\n\n"
+        }
+      }
+    },
+    {
+      "severity": 4,
+      "result": {
+        "contents": {
+          "kind": "markdown",
+          "value": "### Hint: vue/authored-marker\n\nFirst problem.\n\n**Help:** Keep the authored marker.\n\n[View rule documentation](https://example.invalid/rules/authored-marker)\n\n"
+        }
+      }
+    },
+    {
+      "severity": null,
+      "result": {
+        "contents": {
+          "kind": "markdown",
+          "value": "### Diagnostic: vue/authored-marker\n\nFirst problem.\n\n**Help:** Keep the authored marker.\n\n[View rule documentation](https://example.invalid/rules/authored-marker)\n\n"
+        }
+      }
+    }
+  ],
+  "orderedResult": {
+    "contents": {
+      "kind": "markdown",
+      "value": "### Error: vue/authored-marker\n\nFirst problem.\n\n**Help:** Keep the authored marker.\n\n[View rule documentation](https://example.invalid/rules/authored-marker)\n\n---\n\n### Hint: musea/second-marker\n\nSecond problem — keep Unicode.\n\n"
+    }
+  }
+}

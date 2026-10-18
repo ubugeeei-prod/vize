@@ -145,6 +145,8 @@ if (process.argv.includes("--version")) {
   process.exit(0);
 }
 
+if (process.argv.includes("--noCheck")) process.exit(0);
+
 if (process.argv.includes("--listFilesOnly")) {
   console.log(path.join(process.cwd(), "src/App.vue"));
   process.exit(0);

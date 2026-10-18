@@ -35,7 +35,12 @@ process.exit(report.errorCount > 0 ? 1 : 0);
   fs.chmodSync(pathname, 0o755);
 }
 
-export function writeVueTsc(pathname: string, runBody: string, invocationPath?: string) {
+export function writeVueTsc(
+  pathname: string,
+  runBody: string,
+  invocationPath?: string,
+  preSemantic: { output?: string; exitCode?: number } = {},
+) {
   const recordInvocation =
     invocationPath == null
       ? ""
@@ -46,6 +51,10 @@ export function writeVueTsc(pathname: string, runBody: string, invocationPath?: 
 import fs from "node:fs";
 if (process.argv.includes("--version")) { console.log("3.3.4"); process.exit(0); }
 ${recordInvocation}
+if (process.argv.includes("--noCheck")) {
+  process.stdout.write(${JSON.stringify(preSemantic.output ?? "")});
+  process.exit(${JSON.stringify(preSemantic.exitCode ?? 0)});
+}
 ${runBody}
 `,
   );
@@ -94,7 +103,7 @@ for (const { file, sourcePath } of ${JSON.stringify(sourceFiles)}) {
   if (mutation != null) output += mutation;
 }
 process.${options.baselineOutputStream === "stderr" ? "stderr" : "stdout"}.write(output);
-process.exit(${JSON.stringify(options.exitCode ?? 2)});
+process.exit(${options.exitCode == null ? 'output === "" ? 0 : 2' : JSON.stringify(options.exitCode)});
 `;
   writeVueTsc(pathname, runBody, invocationPath);
 }

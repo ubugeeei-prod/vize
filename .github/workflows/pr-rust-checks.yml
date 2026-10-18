@@ -67,6 +67,20 @@ jobs:
           tests/tooling/typecheck-divergence-mutation-oracle.test.ts
           tests/tooling/typecheck-fixture-custody.test.ts
           tests/tooling/davinci-canonical-corpus-native-walk.test.mjs
+          tests/tooling/typecheck-divergence-baseline-ambient.test.ts
+          tests/tooling/typecheck-divergence-baseline-configuration.test.ts
+          tests/tooling/typecheck-divergence-baseline-support-corpus.test.ts
+          tests/tooling/typecheck-divergence-baseline-support.test.ts
+          tests/tooling/typecheck-divergence-baseline.test.ts
+          tests/tooling/typecheck-divergence-budget.test.ts
+          tests/tooling/typecheck-divergence-ledger.test.ts
+          tests/tooling/typecheck-divergence-mutation-delta.test.ts
+          tests/tooling/typecheck-divergence-report-enforcement.test.ts
+          tests/tooling/typecheck-divergence-report-ledger.test.ts
+          tests/tooling/typecheck-divergence-report-rejections.test.ts
+          tests/tooling/typecheck-divergence-report.test.ts
+          tests/tooling/typecheck-divergence.test.ts
+          tests/tooling/typecheck-baseline-usability.test.ts
       - name: Retain mutation deadline command and fixture evidence
         if: ${{ always() && inputs.run-source-contracts }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

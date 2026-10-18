@@ -314,6 +314,17 @@ export function assertRecordOnlyObservations(
     path.join(fixture.reportDir, "fixture-typecheck-observations.json"),
   );
   const payloadBytes = fs.readFileSync(fixture.outputPath);
+  const config = fs.readFileSync(
+    path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"),
+    "utf8",
+  );
+  const sourceConfig = fs.readFileSync(path.join(fixture.fixtureRoot, "tsconfig.json"), "utf8");
+  const authority = {
+    config,
+    configSha256: sha256(config),
+    sourceConfig,
+    sourceConfigSha256: sha256(sourceConfig),
+  };
   assert.deepEqual(artifact.enforcement, { budgetMode: "record-only" });
   assert.deepEqual(observations, {
     schema: "vize.fixtureTypecheckObservations",
@@ -329,16 +340,29 @@ export function assertRecordOnlyObservations(
     baseline: {
       command: artifact.baseline.command,
       version: "3.3.4",
-      exitCode: 2,
+      exitCode: expected.baselineOutput === "" ? 0 : 2,
       runError: null,
       stdout: expected.baselineOutput,
       stderr: "",
-      config: fs.readFileSync(
-        path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"),
-        "utf8",
-      ),
-      sourceConfig: fs.readFileSync(path.join(fixture.fixtureRoot, "tsconfig.json"), "utf8"),
+      config,
+      sourceConfig,
     },
+    ...(expected.baselineOutput === ""
+      ? {}
+      : {
+          preSemantic: {
+            command: `${artifact.baseline.command} --noCheck`,
+            providerVersion: "3.3.4",
+            configSha256: sha256(config),
+            exitCode: 0,
+            processStatus: "exit status: 0",
+            runError: null,
+            stdout: "",
+            stderr: "",
+          },
+          preSemanticAuthorityBefore: authority,
+          preSemanticAuthorityAfter: authority,
+        }),
     coverage: {
       command: artifact.baseline.coverageCommand,
       exitCode: 0,

@@ -139,3 +139,19 @@ and provenance remain required before replacing the legacy product path.
 
 The selected-request fixture contributes no native acceptance credit. #6883
 stays open, and the ledger's remaining entries retain explicit pending states.
+
+## Diagnostic hover severity response installment
+
+The historical `ef8c3e059ed645e319154d475ef6d994dc489ee6` fix replaced
+emoji severity badges and the documentation-link icon in Maestro's lint hover.
+Its pinned source-review row had no changed-test witness. The authored
+`lint-hover-severity` corpus now supplies a comment-only input, typed cached
+diagnostics and whole serialized Hover expectations. Existing handler tests
+exercise all five severity labels, ordered lint/Musea messages, Help and links,
+and disabled, foreign-source, out-of-range, stale and republished controls.
+
+These are real handler response tests with an authored diagnostic-cache input,
+not a Patina producer test or stdio trace. The unchanged historical ledger and
+the eighteen shared stdio sessions retain their existing scope. Existing Maestro
+Actions must execute the new controls before runtime credit; no local native
+execution or whole-#6883 completion is inferred from their source registration.
