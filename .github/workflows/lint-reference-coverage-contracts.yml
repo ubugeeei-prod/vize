@@ -13,6 +13,22 @@ on:
       - "tests/_fixtures/patina-eslint-vue-rule-map.json"
       - "tests/_fixtures/patina-lint-documented-divergences.json"
       - "tests/_fixtures/vue-ecosystem-fixtures.json"
+      - "tests/tooling/docs-all-lint-rules.test.ts"
+      - "tests/tooling/support/docs-*.ts"
+      - "docs/scripts/*.ts"
+      - "docs/scripts/generate-patina-rules-page.ts"
+      - "docs/scripts/rules/**"
+      - "docs/content/rules/**"
+      - "docs/content/ja/rules/**"
+      - "docs/content/generated/rules/**"
+      - "crates/vize_patina/src/rule.rs"
+      - "crates/vize_patina/src/rule/**"
+      - "crates/vize_patina/src/rules/**"
+      - "crates/vize_patina/src/preset.rs"
+      - "crates/vize_patina/src/preset/**"
+      - "crates/vize_patina/src/linter/script_rules/registry.rs"
+      - "crates/vize_patina/src/linter/script_rules/registry/**"
+      - "tests/_fixtures/lint-preset-default-warnings/**"
       - "tests/tooling/lint-reference-*.test.*"
       - "tests/tooling/lint-divergence*.test.*"
       - "tests/tooling/lint-baseline-script-language.test.mjs"
@@ -95,6 +111,7 @@ jobs:
           tests/tooling/lint-divergence-report-runner.test.ts
           tests/tooling/lint-divergence-report.test.ts
           tests/tooling/real-project-matrix-workflow.test.ts
+          tests/tooling/docs-all-lint-rules.test.ts
       - name: Retain every real process and whole report comparison
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

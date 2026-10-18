@@ -1,0 +1,85 @@
+{
+  "retiredExtensionHost": {
+    "path": ".config/nextest.toml",
+    "before": {
+      "bytes": 5213,
+      "sha256": "d7aca4d0556a5ab2a4ef81c16d022883aaf2e17ddc48de3235e9cbe028596e86"
+    },
+    "after": {
+      "bytes": 4801,
+      "sha256": "ff231a2a36a5b1a2fafa247a79785fb7aa08b70b035a3f14392a5648880d1595"
+    },
+    "hunks": [
+      {
+        "before": "[test-groups]\n# Guest builders share target/contract-guests. Their OnceLocks are process-local,\n# so nextest must limit the guest builds across test processes on each runner.\ncontract-guests = { max-threads = 1 }\n\n[[profile.pr.overrides]]\nfilter = 'package(=vize_extension_host)'\ntest-group = \"contract-guests\"\n\n# Full T1 has no default-filter: every ordinary workspace case remains selected.\n",
+        "after": "# Full T1 has no default-filter: every ordinary workspace case remains selected.\n"
+      },
+      {
+        "before": "[profile.full.junit]\npath = \"junit.xml\"\nstore-success-output = false\nstore-failure-output = true\n\n[[profile.full.overrides]]\nfilter = 'package(=vize_extension_host)'\ntest-group = \"contract-guests\"\n",
+        "after": "[profile.full.junit]\npath = \"junit.xml\"\nstore-success-output = false\nstore-failure-output = true\n"
+      }
+    ]
+  },
+  "presetCaseName": {
+    "path": ".config/nextest.toml",
+    "before": {
+      "bytes": 4801,
+      "sha256": "ff231a2a36a5b1a2fafa247a79785fb7aa08b70b035a3f14392a5648880d1595"
+    },
+    "after": {
+      "bytes": 4794,
+      "sha256": "a15ff1ec341a5eae7a3267c286834d2641a685d269ac44dd75c919995c0e19c5"
+    },
+    "hunks": [
+      {
+        "before": "# Retain the 38 exact default/off/repair/alias CLI packets without changing selection.\n[[profile.default.overrides]]\nfilter = 'package(=vize) & binary(=lint_preset_scope_cli) & test(=six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_packets)'\n",
+        "after": "# Retain complete default/off/repair/alias CLI packets without changing selection.\n[[profile.default.overrides]]\nfilter = 'package(=vize) & binary(=lint_preset_scope_cli) & test(=six_default_presets_preserve_complete_cli_warning_off_repair_and_alias_packets)'\n"
+      }
+    ]
+  },
+  "callbackReceipts": {
+    "path": ".config/nextest.toml",
+    "before": {
+      "bytes": 4794,
+      "sha256": "a15ff1ec341a5eae7a3267c286834d2641a685d269ac44dd75c919995c0e19c5"
+    },
+    "after": {
+      "bytes": 4884,
+      "sha256": "b72ab346f8286e68abe2d549de7c32cebc131fd61e122ef327f1e8329abd0ea0"
+    },
+    "hunks": [
+      {
+        "before": "  test(=script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_this_frontier)\n",
+        "after": "  test(=script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_this_frontier) |\n  test(=legacy_instance_cli::callback_return_ownership_keeps_all_six_whole_cli_packets)\n"
+      }
+    ]
+  },
+  "staticClassRegistration": {
+    "path": "crates/vize_patina/src/rule/happy_path.rs",
+    "before": {
+      "bytes": 8068,
+      "sha256": "742fbe9f2d727e487e64057c3d115cbf40ea84048a38062067883ceef4e42d49"
+    },
+    "after": {
+      "bytes": 8156,
+      "sha256": "1a11b814d351ac638ddc331583f418f903e0f9139cce4e8a95afe7641e889a76"
+    },
+    "hunks": [
+      {
+        "before": "        registry.register(Box::new(crate::rules::html::RequireDatetime));\n",
+        "after": "        registry.register(Box::new(crate::rules::html::RequireDatetime));\n        registry.register(Box::new(crate::rules::opinionated::html::NoDuplicateClass));\n"
+      }
+    ]
+  },
+  "staticClassMembership": {
+    "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "before": {
+      "bytes": 30026,
+      "sha256": "244040c22d9a34ca04b9fa8e67c52ca254eeed7aec388f8a050d4d9e41c09cb1"
+    },
+    "after": {
+      "bytes": 30088,
+      "sha256": "ee25f8d46985e51ef826759f40d5b8d3d7177b275cd8ec459b102bcf6e8b10e9"
+    }
+  }
+}

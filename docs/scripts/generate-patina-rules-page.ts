@@ -184,7 +184,14 @@ function readNativeRulePresets() {
   }
   // Preserve the established native-rule table order. This controls display
   // only; membership still comes exclusively from the Rust snapshot.
-  const presetOrder = ["essential", "happy_path", "nuxt", "ecosystem", "opinionated", "incremental"];
+  const presetOrder = [
+    "essential",
+    "happy_path",
+    "nuxt",
+    "ecosystem",
+    "opinionated",
+    "incremental",
+  ];
   const entries = Object.entries(snapshot).sort(
     ([left], [right]) => presetOrder.indexOf(left) - presetOrder.indexOf(right),
   );
