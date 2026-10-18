@@ -21,8 +21,8 @@
       "file": "malformed-membership/part-01.json",
       "mode": "100644",
       "bytes": 7105,
-      "sha256": "d909cf72441989b862eeae7e15a853656580bdd850e489225c8149080c7af943",
-      "gitBlob": "ef7293681906c81120744fd9441e514f42eedb65",
+      "sha256": "782e37db622a9b4db9cee075f9034e70188bd135b9aaaddb9dfe32724b122e9a",
+      "gitBlob": "b9322e40907a00f9692e1ad1e2d7c66b7b0d1408",
       "start": 43,
       "entries": 43
     }
@@ -50,6 +50,35 @@
       "helpers": "constant SHARED_PREAMBLE_DTS without Vue JSX reference under both captured exact configs; actual separate fullbody packet retained",
       "modules": "constant 63-byte write_vue_module_stubs text; actual separate fullbody packet retained"
     },
-    "scope": "new test-only full ordered membership/body reference; no claim the failed malformed receipt read all86 bodies, no semantic or runtime acceptance credit"
+    "scope": "Full ordered current86-file reference: original85 members and explicitly revised shared-helper member82. Historical packets remain separately attributed; no semantic or runtime acceptance credit.",
+    "generatedHelperRevision": {
+      "source": "1e9e00e43f1ec854fda16891f59334e6166564c7",
+      "run": 39104670856,
+      "job": 117608454753,
+      "artifact": 12127862753,
+      "artifactSHA256": "1b79e2787120839e4802b07f3144704780852ef3a370f30f94fec6410fe8df9a",
+      "member": "typechecker-fixtures/empty-vue-star-exports/malformed-refusal.json",
+      "wholePacketSHA256": "83d433827e7f98aa6c11ee05305906fa51185832b9b4527c3858ced4d395142f",
+      "priorManifestSHA256": "b16a9ac2304d3c8b6a4d97dd5fed7172087d5babe95d492cfe2d21c712a98f78",
+      "entry": 82,
+      "before": [
+        "project/__vize_helpers.d.ts",
+        28402,
+        "d810450f3c2bea0d32e60ce1ee376f7a931c7d839e933e2707d88b5a1648e976"
+      ],
+      "after": [
+        "project/__vize_helpers.d.ts",
+        28462,
+        "574bc22bbe5c59b54cf69d712caacc043ad92c3395ce8102c2410b2fe0359454"
+      ],
+      "sourceChange": {
+        "path": "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+        "commit": "2f1bebc2ffd157309f840c7ab63b61acdf7d1ac9",
+        "declaration": "__VizeFallthroughAttrs",
+        "bytesAdded": 60
+      },
+      "proof": "All86 current bodies retain validated byte lengths and SHA256. All86 rooted paths/order and the other85 complete bodies are identical to the prior reference. Reversing only the single reviewed fallthrough declaration recovers the exact prior helper length/SHA256.",
+      "scope": "Current generated support reference only; native malformed syntax refusal remains an observation, never semantic-green credit."
+    }
   }
 }

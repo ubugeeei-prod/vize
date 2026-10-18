@@ -23,22 +23,31 @@ pub(in crate::virtual_ts::expressions) fn emit_vif_control_flow_chain(
     template_binding_access: &TemplateBindingAccess,
     context: &ExpressionListEmitContext<'_>,
 ) {
+    // A nested branch can interrupt the first run, so a later run starts with
+    // the exclusions of earlier siblings as its prefix. Enforce that prefix
+    // once: repeating it in the final else rechecks an already narrowed value.
+    let has_prefix = !chain.prefix.is_empty();
+    if has_prefix {
+        append!(*ts, "{}if (", context.indent);
+        append_guard_prefix(ts, &chain.prefix, template_binding_access);
+        ts.push_str(") {\n");
+    }
+    let branch_indent = cstr!("{}{}", context.indent, if has_prefix { "  " } else { "" });
+    let inner_context = ExpressionListEmitContext::new(
+        context.skipped_expression_ranges,
+        context.template_offset,
+        branch_indent.as_str(),
+        context.checks,
+    );
     let branch_context = BranchContext {
         exprs,
         bindings: template_binding_access,
-        context,
+        context: &inner_context,
     };
     for (branch_index, branch) in chain.branches.iter().enumerate() {
-        emit_vif_branch_open(
-            ts,
-            mappings,
-            chain,
-            branch,
-            branch_index == 0,
-            &branch_context,
-        );
+        emit_vif_branch_open(ts, mappings, branch, branch_index == 0, &branch_context);
 
-        let body_indent = cstr!("{}  ", context.indent);
+        let body_indent = cstr!("{}  ", branch_indent);
         for (expr_index, expr) in exprs.iter().enumerate().take(branch.end).skip(branch.start) {
             if branch.condition_expr_index == Some(expr_index) {
                 continue;
@@ -60,38 +69,34 @@ pub(in crate::virtual_ts::expressions) fn emit_vif_control_flow_chain(
             );
         }
     }
-    append!(*ts, "{}}}\n", context.indent);
+    append!(*ts, "{}}}\n", branch_indent);
+    if has_prefix {
+        append!(*ts, "{}}}\n", context.indent);
+    }
 }
 
 fn emit_vif_branch_open(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    chain: &VifControlFlowChain<'_>,
     branch: &VifBranch<'_>,
     first: bool,
     ctx: &BranchContext<'_, '_>,
 ) {
     let context = ctx.context;
     let exprs = ctx.exprs;
-    let prefix_is_empty = chain.prefix.is_empty();
     match (first, branch.condition) {
         (true, Some(condition)) => {
             append!(*ts, "{}if (", context.indent);
-            append_guard_condition(ts, &chain.prefix, Some(condition), mappings, branch, ctx);
+            append_guard_condition(ts, condition, mappings, branch, ctx);
             ts.push_str(") {\n");
         }
         (false, Some(condition)) => {
             append!(*ts, "{}}} else if (", context.indent);
-            append_guard_condition(ts, &chain.prefix, Some(condition), mappings, branch, ctx);
+            append_guard_condition(ts, condition, mappings, branch, ctx);
             ts.push_str(") {\n");
-        }
-        (false, None) if prefix_is_empty => {
-            append!(*ts, "{}}} else {{\n", context.indent);
         }
         (false, None) => {
-            append!(*ts, "{}}} else if (", context.indent);
-            append_binding_expression(ts, branch.guard, ctx.bindings);
-            ts.push_str(") {\n");
+            append!(*ts, "{}}} else {{\n", context.indent);
         }
         (true, None) => {}
     }
@@ -112,44 +117,34 @@ fn emit_vif_branch_open(
 
 fn append_guard_condition(
     ts: &mut String,
-    prefix: &[GuardTerm<'_>],
-    condition: Option<&str>,
+    condition: &str,
     mappings: &mut Vec<VizeMapping>,
     branch: &VifBranch<'_>,
     ctx: &BranchContext<'_, '_>,
 ) {
     let template_offset = ctx.context.template_offset;
     let exprs = ctx.exprs;
-    append_guard_prefix(ts, prefix, ctx.bindings);
-    if let Some(condition) = condition {
-        if !prefix.is_empty() {
-            ts.push_str(" && (");
-        }
-        let gen_start = ts.len();
-        append_binding_expression(ts, condition, ctx.bindings);
-        let gen_end = ts.len();
-        if let Some(expr) = branch
-            .condition_expr_index
-            .and_then(|expr_index| exprs.get(expr_index))
-        {
-            mappings.push(VizeMapping {
-                gen_range: gen_start..gen_end,
-                src_range: (template_offset + expr.start) as usize
-                    ..(template_offset + expr.end) as usize,
-                sub_spans: Vec::new(),
-            });
-            map_rewritten_template_binding(
-                ts,
-                mappings,
-                gen_start,
-                (template_offset + expr.start) as usize,
-                condition,
-                ctx.bindings,
-            );
-        }
-        if !prefix.is_empty() {
-            ts.push(')');
-        }
+    let gen_start = ts.len();
+    append_binding_expression(ts, condition, ctx.bindings);
+    let gen_end = ts.len();
+    if let Some(expr) = branch
+        .condition_expr_index
+        .and_then(|expr_index| exprs.get(expr_index))
+    {
+        mappings.push(VizeMapping {
+            gen_range: gen_start..gen_end,
+            src_range: (template_offset + expr.start) as usize
+                ..(template_offset + expr.end) as usize,
+            sub_spans: Vec::new(),
+        });
+        map_rewritten_template_binding(
+            ts,
+            mappings,
+            gen_start,
+            (template_offset + expr.start) as usize,
+            condition,
+            ctx.bindings,
+        );
     }
 }
 

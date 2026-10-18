@@ -329,7 +329,7 @@ const emit = defineEmits({
     );
     assert!(virtual_ts.contains("...emitObject"), "{virtual_ts}");
     assert!(
-        virtual_ts.contains("const __vize_emits = defineEmits(__vize_emit_options);"),
+        virtual_ts.contains("const __vize_emits = defineEmits({\n    ...emitObject,\n});"),
         "{virtual_ts}"
     );
     assert!(
@@ -370,7 +370,8 @@ const emit = defineEmits([...useDialogPluginComponent.emits]);
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("const __vize_emits = defineEmits(__vize_emit_options);"),
+        virtual_ts
+            .contains("const __vize_emits = defineEmits([...useDialogPluginComponent.emits]);"),
         "{virtual_ts}"
     );
     assert!(

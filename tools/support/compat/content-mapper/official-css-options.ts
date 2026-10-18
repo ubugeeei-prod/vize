@@ -5,33 +5,19 @@ import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  loadOfficialFixture,
+  officialCases,
+  officialDiagnostics,
+  assertOfficialDiagnostics,
+  type Case,
+  type Fixture,
+} from "./official-fixtures.ts";
 import { preparePublishManifest } from "../../release/smoke_release_install/prepare.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixturePath = path.join(root, "tests/_fixtures/content-mapper/escaton-css-options.json");
-interface Original {
-  issue: number;
-  files: Record<string, string>;
-  baselineCodes: number[];
-  expectedCodes: number[];
-  expectedTerms: string[];
-  baselineTerms: string[];
-}
-interface Case {
-  name: string;
-  original: number;
-  files: Record<string, string>;
-  codes: number[];
-  terms?: string[];
-  build?: boolean;
-}
-const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf8")) as {
-  typescript: string;
-  vue: string;
-  baselineVize: string;
-  originals: Original[];
-  controls: Case[];
-};
+const fixture = loadOfficialFixture(fixturePath);
 const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const identity = (file: string) => ({
   path: file,
@@ -102,19 +88,10 @@ function successful(result: ReturnType<typeof run>) {
 }
 
 export function officialCssCases(): Case[] {
-  return [
-    ...fixture.originals.map((row) => ({
-      name: `issue-${row.issue}`,
-      original: row.issue,
-      files: structuredClone(row.files),
-      codes: [...row.expectedCodes],
-      terms: [...row.expectedTerms],
-    })),
-    ...structuredClone(fixture.controls),
-  ];
+  return officialCases(fixture);
 }
 
-function check(install: string, row: Case, output: string, baseline = false) {
+function check(install: string, row: Case, output: string, suite: Fixture, baseline = false) {
   const project = path.join(output, row.name);
   fs.mkdirSync(project, { recursive: true });
   for (const [file, source] of Object.entries(row.files)) {
@@ -140,51 +117,10 @@ function check(install: string, row: Case, output: string, baseline = false) {
     ? [tsc, "--build", "tsconfig.json", "--runExternalCode", "--pretty", "false"]
     : [tsc, "--runExternalCode", "--noEmit", "-p", "tsconfig.json", "--pretty", "false"];
   const result = run(process.execPath, args, project, path.join(project, "process"));
-  const diagnostics = [
-    ...result.stdoutText.matchAll(/^([^\r\n]+)\((\d+),(\d+)\): error TS(\d+): (.*)$/gmu),
-  ].map((match) => ({
-    file: match[1],
-    line: Number(match[2]),
-    column: Number(match[3]),
-    code: Number(match[4]),
-    message: match[5],
-  }));
+  const original = suite.originals.find((original) => original.issue === row.original)!;
+  const diagnostics = officialDiagnostics(result.stdoutText);
   writeJson(path.join(project, "diagnostics.json"), diagnostics);
-  const original = fixture.originals.find((original) => original.issue === row.original)!;
-  const codes = baseline ? original.baselineCodes : row.codes;
-  assert.equal(result.signal, null, row.name);
-  assert.equal(result.error, null, row.name);
-  assert.equal(result.status, codes.length ? 2 : 0, `${row.name}; see ${project}`);
-  assert.equal(result.stderr.bytes, 0, row.name);
-  assert.deepEqual(
-    diagnostics.map((diagnostic) => diagnostic.code).sort((left, right) => left - right),
-    [...codes].sort((left, right) => left - right),
-    `${row.name}; see ${project}`,
-  );
-  const terms = baseline ? original.baselineTerms : (row.terms ?? []);
-  for (const term of terms)
-    assert.ok(
-      diagnostics.some((diagnostic) => diagnostic.message.includes(term)),
-      `${row.name} must retain the original diagnostic term ${term}`,
-    );
-  if (!codes.length) assert.equal(result.stdout.bytes, 0, row.name);
-  if (row.build)
-    assert.deepEqual(
-      diagnostics
-        .map((diagnostic) => diagnostic.file)
-        .sort((left, right) => left.localeCompare(right)),
-      ["strict-css/App.vue", "strict-props/App.vue"],
-    );
-  if (!baseline)
-    for (const diagnostic of diagnostics) {
-      const source = row.files[diagnostic.file];
-      assert.ok(source !== undefined, `diagnostic must name authored file: ${row.name}`);
-      const line = source.split(/\r?\n/u)[diagnostic.line - 1];
-      assert.ok(
-        line !== undefined && diagnostic.column >= 1 && diagnostic.column <= line.length + 1,
-        `diagnostic must map into authored source: ${row.name}`,
-      );
-    }
+  assertOfficialDiagnostics(row, original, baseline, result, diagnostics);
   return {
     name: row.name,
     original: row.original,
@@ -343,6 +279,18 @@ function packCurrentPackages(output: string) {
   return dependencies;
 }
 
+function failure(name: string, error: unknown) {
+  return {
+    name,
+    error:
+      error instanceof Error
+        ? Object.fromEntries(
+            Object.getOwnPropertyNames(error).map((key) => [key, Reflect.get(error, key)]),
+          )
+        : String(error),
+  };
+}
+
 export async function main(args = process.argv.slice(2)) {
   const option = (name: string) => {
     const index = args.indexOf(name);
@@ -357,33 +305,54 @@ export async function main(args = process.argv.slice(2)) {
   );
   fs.mkdirSync(output, { recursive: true });
   const pins = { typescript: fixture.typescript, vue: fixture.vue };
-  const baseline = install(
-    path.join(output, "baseline-install"),
-    { ...pins, vize: fixture.baselineVize },
-    path.join(output, "baseline-install-process"),
-  );
-  const baselineIdentity = await installedIdentity(
-    baseline,
-    path.join(output, "baseline-identity"),
-  );
-  assert.equal(
-    baselineIdentity.packages.find((pkg) => pkg.name === "vize")!.version,
-    fixture.baselineVize,
-  );
-  const baselineResults = fixture.originals.map((row) =>
-    check(
-      baseline,
-      {
-        name: `issue-${row.issue}`,
-        original: row.issue,
-        files: row.files,
-        codes: row.baselineCodes,
-      },
-      path.join(output, "baseline"),
-      true,
-    ),
-  );
+  const fixturePaths = [fixturePath];
+  for (let index = 0; index < args.length; index++)
+    if (args[index] === "--fixture") {
+      assert.ok(args[index + 1], "--fixture requires a path");
+      fixturePaths.push(path.resolve(root, args[++index]));
+    }
+  assert.equal(new Set(fixturePaths).size, fixturePaths.length, "duplicate fixture path");
+  const suites = fixturePaths.map((file) => ({ file, fixture: loadOfficialFixture(file) }));
+  const allCases = suites.flatMap((suite) => officialCases(suite.fixture));
+  assert.equal(new Set(allCases.map((row) => row.name)).size, allCases.length);
+  const baselineVersions = new Map<string, string>();
+  const baselineResults = [],
+    baselineFailures = [];
+  for (const suite of suites) {
+    assert.equal(suite.fixture.typescript, pins.typescript);
+    assert.equal(suite.fixture.vue, pins.vue);
+    const version = suite.fixture.baselineVize;
+    let baseline = baselineVersions.get(version);
+    if (!baseline) {
+      const suffix = baselineVersions.size ? "-" + version : "";
+      baseline = install(
+        path.join(output, "baseline-install" + suffix),
+        { ...pins, vize: version },
+        path.join(output, "baseline-install-process" + suffix),
+      );
+      const observed = await installedIdentity(
+        baseline,
+        path.join(output, "baseline-identity" + suffix),
+      );
+      assert.equal(observed.packages.find((pkg) => pkg.name === "vize")!.version, version);
+      baselineVersions.set(version, baseline);
+    }
+    for (const original of suite.fixture.originals) {
+      const row = officialCases(suite.fixture).find(
+        (row) => row.name === `issue-${original.issue}`,
+      )!;
+      try {
+        baselineResults.push(
+          check(baseline, row, path.join(output, "baseline"), suite.fixture, true),
+        );
+      } catch (error) {
+        baselineFailures.push(failure(row.name, error));
+      }
+    }
+  }
   writeJson(path.join(output, "baseline-results.json"), baselineResults);
+  writeJson(path.join(output, "baseline-failures.json"), baselineFailures);
+  assert.deepEqual(baselineFailures, [], "all original public failures must reproduce");
   if (args.includes("--baseline-only")) return;
   const publicVersion = option("--public-version");
   const source = run("git", ["rev-parse", "HEAD"], root, path.join(output, "source-identity"));
@@ -417,25 +386,19 @@ export async function main(args = process.argv.slice(2)) {
     );
   const results = [],
     failures = [];
-  for (const row of officialCssCases()) {
-    try {
-      results.push(check(candidate, row, path.join(output, "candidate")));
-    } catch (error) {
-      failures.push({
-        name: row.name,
-        error:
-          error instanceof Error
-            ? Object.fromEntries(
-                Object.getOwnPropertyNames(error).map((key) => [key, Reflect.get(error, key)]),
-              )
-            : String(error),
-      });
+  for (const suite of suites)
+    for (const row of officialCases(suite.fixture)) {
+      try {
+        results.push(check(candidate, row, path.join(output, "candidate"), suite.fixture));
+      } catch (error) {
+        failures.push(failure(row.name, error));
+      }
     }
-  }
   writeJson(path.join(output, "results.json"), {
     source: source.stdoutText.trim(),
     kind: publicVersion ? "released-package" : "source-built-packed-candidate",
     fixture: identity(fixturePath),
+    fixtures: suites.map((suite) => identity(suite.file)),
     results,
     failures,
   });

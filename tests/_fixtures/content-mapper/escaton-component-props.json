@@ -1,0 +1,259 @@
+{
+  "typescript": "7.1.0-dev.20261017.1",
+  "vue": "3.5.20",
+  "baselineVize": "0.463.0",
+  "originals": [
+    {
+      "issue": 9428,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true, \"dataAttributes\": [\"data-*\"]}\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [value: number] }>()\n</script>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child data-test=\"x\" @close=\"() => {}\" /></template>\n"
+      },
+      "baselineCodes": [
+        2353
+      ],
+      "expectedCodes": [],
+      "expectedTerms": [],
+      "baselineTerms": [
+        "dataTest"
+      ],
+      "issueBodySha256": "1cabde8160e65e3aa33fa8e3baf08ccc9b108c64eec3a53c855de8b0348d8796",
+      "baselineStdout": "App.vue(151,5): error TS2353: Object literal may only specify known properties, and '\"dataTest\"' does not exist in type 'Partial<Props> & Partial<__VizeKebabProps<Props>> & __EmitProps<Emits> & { class?: unknown; style?: unknown; } & { [x: `data-${string}`]: unknown; } & ... & Omit<...> & __VizeReservedComponentInputProps'.\n  This location is in virtual code produced by the content mapper 'vize@0.463.0' and has no corresponding location in the original file.\n",
+      "baselineStderr": "",
+      "expectedStdout": "",
+      "expectedStderr": ""
+    },
+    {
+      "issue": 9431,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true}\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\ndefineProps<{ is: abstract new (...args: any) => any }>()\n</script>\n<template><component :is=\"is\" foo=\"x\" /></template>\n"
+      },
+      "baselineCodes": [
+        2353
+      ],
+      "expectedCodes": [],
+      "expectedTerms": [],
+      "baselineTerms": [
+        "foo"
+      ],
+      "issueBodySha256": "2a78267961220db8e1a821117c14e48bf151862a6f1ec845b1e0b39395ab9ce6",
+      "baselineStdout": "App.vue(4,37): error TS2353: Object literal may only specify known properties, and '\"foo\"' does not exist in type '__VizeComponentCheckProps<{}, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 656 more ...; zoomAndPan?: ...'.\n",
+      "baselineStderr": "",
+      "expectedStdout": "",
+      "expectedStderr": ""
+    },
+    {
+      "issue": 9432,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nconst Div = {}\n</script>\n<template><Div /></template>\n"
+      },
+      "baselineCodes": [
+        2571
+      ],
+      "expectedCodes": [],
+      "expectedTerms": [],
+      "baselineTerms": [
+        "unknown"
+      ],
+      "issueBodySha256": "f801de3f378fbc5f734aef71d5032822e9dd4700269077e4c91ab89d791ef777",
+      "baselineStdout": "App.vue(175,9): error TS2571: Object is of type 'unknown'.\n  This location is in virtual code produced by the content mapper 'vize@0.463.0' and has no corresponding location in the original file.\n",
+      "baselineStderr": "",
+      "expectedStdout": "",
+      "expectedStderr": ""
+    }
+  ],
+  "controls": [
+    {
+      "name": "props-9428-component-data-with-listener",
+      "original": 9428,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true, \"dataAttributes\": [\"data-*\"]}\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [value: number] }>()\n</script>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child data-testid=\"x\" :data-count=\"2\" @close=\"() => {}\" /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0
+    },
+    {
+      "name": "props-9428-component-aria-with-listener",
+      "original": 9428,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"strictTemplates\": false,\n    \"dataAttributes\": [\n      \"data-*\"\n    ]\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [value: number] }>()\n</script>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child aria-label=\"close\" :aria-hidden=\"false\" @close=\"() => {}\" /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0
+    },
+    {
+      "name": "props-9428-component-explicit-unknown-attr-remains-strict",
+      "original": 9428,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"*.vue\"\n  ],\n  \"vueCompilerOptions\": {\n    \"strictTemplates\": true,\n    \"dataAttributes\": [\n      \"data-*\"\n    ],\n    \"checkUnknownProps\": true\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [value: number] }>()\n</script>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child definitely-not-a-prop=\"x\" /></template>\n"
+      },
+      "codes": [
+        2353
+      ],
+      "terms": [
+        "definitelyNotAProp"
+      ],
+      "stdout": "App.vue(4,42): error TS2353: Object literal may only specify known properties, and '\"definitelyNotAProp\"' does not exist in type '__VizeComponentCheckProps<__VizeStaticEmitProps, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 661 more ...; zoomAndPan?: unknown; } & ...>'.\n",
+      "stderr": "",
+      "status": 2
+    },
+    {
+      "name": "props-9428-component-owned-data-prop-remains-typed",
+      "original": 9428,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true, \"dataAttributes\": [\"data-*\"]}\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ dataTest: number }>()\n</script>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child data-test=\"wrong\" /></template>\n"
+      },
+      "codes": [
+        2322,
+        2322
+      ],
+      "terms": [
+        "number"
+      ],
+      "stdout": "App.vue(4,18): error TS2322: Type 'string' is not assignable to type 'number'.\nApp.vue(4,34): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+      "stderr": "",
+      "status": 2
+    },
+    {
+      "name": "props-9431-abstract-constructor-open-authored-instance",
+      "original": 9431,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true}\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\ndefineProps<{ is: abstract new (...args: any) => any }>()\n</script>\n<template><component :is=\"is\" custom-prop=\"x\" :another=\"2\" /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0
+    },
+    {
+      "name": "props-9431-abstract-constructor-typed-prop-value",
+      "original": 9431,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true}\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\ndefineProps<{ is: abstract new (...args: any) => { $props: { count: number } } }>()\n</script>\n<template><component :is=\"is\" count=\"wrong\" /></template>\n"
+      },
+      "codes": [
+        2322,
+        2322
+      ],
+      "terms": [
+        "number"
+      ],
+      "stdout": "App.vue(4,31): error TS2322: Type 'string' is not assignable to type 'number'.\nApp.vue(4,43): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+      "stderr": "",
+      "status": 2,
+      "diagnosticProvenance": "Existing concrete constructor with identical $props and template, actually observed in public0.463 officialTS7; abstract candidate must earn these same strict diagnostics in Actions."
+    },
+    {
+      "name": "props-9431-abstract-constructor-required-prop",
+      "original": 9431,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true}\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\ndefineProps<{ is: abstract new (...args: any) => { $props: { count: number } } }>()\n</script>\n<template><component :is=\"is\" /></template>\n"
+      },
+      "codes": [
+        2345
+      ],
+      "terms": [
+        "count"
+      ],
+      "stdout": "App.vue(4,12): error TS2345: Argument of type '{}' is not assignable to parameter of type '__VizeComponentCheckProps<{ count: number; }, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 658 more ...; zoomAndPan?: unknown; } & ...>'.\n  Property 'count' is missing in type '{}' but required in type '{ readonly count: number; }'.\n",
+      "stderr": "",
+      "status": 2,
+      "diagnosticProvenance": "Existing concrete constructor with identical $props and template, actually observed in public0.463 officialTS7; abstract candidate must earn these same strict diagnostics in Actions."
+    },
+    {
+      "name": "props-9432-empty-options-define-component-contrast",
+      "original": 9432,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { defineComponent } from \"vue\"\nconst Div = defineComponent({})\n</script>\n<template><Div /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0
+    },
+    {
+      "name": "props-9432-functional-component-typed-prop-remains-strict",
+      "original": 9432,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nconst Div = (props: { count: number }) => null\n</script>\n<template><Div count=\"wrong\" /></template>\n"
+      },
+      "codes": [
+        2322,
+        2322
+      ],
+      "terms": [
+        "number"
+      ],
+      "stdout": "App.vue(4,16): error TS2322: Type 'string' is not assignable to type 'number'.\nApp.vue(4,28): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+      "stderr": "",
+      "status": 2
+    },
+    {
+      "name": "props-9431-concrete-constructor-typed-prop-value",
+      "original": 9431,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true}\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\ndefineProps<{ is: new (...args: any) => { $props: { count: number } } }>()\n</script>\n<template><component :is=\"is\" count=\"wrong\" /></template>\n"
+      },
+      "codes": [
+        2322,
+        2322
+      ],
+      "terms": [
+        "number"
+      ],
+      "stdout": "App.vue(4,31): error TS2322: Type 'string' is not assignable to type 'number'.\nApp.vue(4,43): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+      "stderr": "",
+      "status": 2
+    },
+    {
+      "name": "props-9431-concrete-constructor-required-prop",
+      "original": 9431,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"],\n  \"vueCompilerOptions\": {\"strictTemplates\": true}\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\ndefineProps<{ is: new (...args: any) => { $props: { count: number } } }>()\n</script>\n<template><component :is=\"is\" /></template>\n"
+      },
+      "codes": [
+        2345
+      ],
+      "terms": [
+        "count"
+      ],
+      "stdout": "App.vue(4,12): error TS2345: Argument of type '{}' is not assignable to parameter of type '__VizeComponentCheckProps<{ count: number; }, __VizePublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; ... 658 more ...; zoomAndPan?: unknown; } & ...>'.\n  Property 'count' is missing in type '{}' but required in type '{ readonly count: number; }'.\n",
+      "stderr": "",
+      "status": 2
+    }
+  ],
+  "schema": "vize.official-component-props.v1",
+  "reporter": "escaton",
+  "limitations": [
+    "The three originals and data/aria positives are also accepted by genuine vue-tsc3.3.9/TypeScript6.0.3/Vue3.5.20.",
+    "Typed abstract dynamic components are unchecked by that vue-tsc oracle; negative expectations retain Vize existing typed-concrete constructor contract.",
+    "Owned data props and functional components preserve current Vize stricter two-diagnostic output rather than claiming primary diagnostic parity.",
+    "No locally built or edited native candidate executed; source and all expected candidate behavior require Actions."
+  ]
+}

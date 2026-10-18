@@ -344,6 +344,12 @@ test("official TypeScript acceptance keeps the reported host and complete instal
   assert.match(build, /sha256sum npm\/native\/vize-vitrine\.linux-x64-gnu\.node/u);
   const run = job.steps.find((step) => step.id === "official")!;
   assert.match(run.run!, /node tools\/support\/compat\/content-mapper\/official-css-options\.ts/u);
+  for (const name of ["component-events", "component-props", "nested-flow-9433"]) {
+    const file = `tests/_fixtures/content-mapper/escaton-${name}.json`;
+    assert.ok(run.run!.includes(`--fixture ${file}`));
+    assert.ok(admission.includes(file));
+  }
+  assert.ok(admission.includes("tools/support/compat/content-mapper/official-fixtures.ts"));
   assert.equal("continue-on-error" in run, false);
   const upload = job.steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"))!;
   assert.equal(upload.if, "always()");

@@ -164,3 +164,61 @@ defineExpose<{ ready: boolean }>();
     assert!(!virtual_ts.contains("__VizeSlots<T>"), "{virtual_ts}");
     assert!(!virtual_ts.contains("Exposed<T>"), "{virtual_ts}");
 }
+
+#[test]
+fn generic_event_payload_alias_is_resolved_in_the_instantiated_setup_scope() {
+    let source = r#"<script setup lang="ts" generic="T extends 'number' | 'text'">
+type Value = T extends 'number' ? number : string
+defineProps<{ type: T }>()
+defineEmits<{ 'change': [value: Value] }>()
+</script>"#;
+    let virtual_ts = generate_virtual_ts_from_sfc(source);
+    for expected in [
+        "type Value = __VizeHoistedGeneric0<T>;",
+        "const __vize_typed_emits = undefined as unknown as { 'change': [value: Value] };",
+        "export type Emits<T extends 'number' | 'text' = any> = Awaited<ReturnType<typeof __setup<T>>>[\"__vize_typed_emits\"];",
+        "__EmitProps<Emits<T>>",
+    ] {
+        assert!(
+            virtual_ts.contains(expected),
+            "missing {expected}:\n{virtual_ts}"
+        );
+    }
+    assert!(
+        !virtual_ts.contains("= { 'change': [value: Value] };\n"),
+        "the public alias must not instantiate a bare module-level Value with its fallback:\n{virtual_ts}"
+    );
+}
+
+#[test]
+fn generic_event_alias_keeps_indirect_callable_and_model_contracts() {
+    for (emits, model, expected) in [
+        ("{ change: [value: Alias] }", "", "type Alias = Value\n"),
+        (
+            "(event: 'change', value: Value) => void",
+            "",
+            "[\"__vize_typed_emits\"];",
+        ),
+        (
+            "{ change: [value: Value] }",
+            "defineModel<number>()",
+            "__EmitFn<Awaited<ReturnType<typeof __setup<T>>>[\"__vize_typed_emits\"]> & __EmitFn<{",
+        ),
+    ] {
+        let source = format!(
+            "<script setup lang=\"ts\" generic=\"T extends 'number' | 'text'\">\ntype Value = T extends 'number' ? number : string\ntype Alias = Value\ndefineProps<{{ type: T }}>()\ndefineEmits<{emits}>()\n{model}\n</script>"
+        );
+        let virtual_ts = generate_virtual_ts_from_sfc(&source);
+        assert!(
+            virtual_ts.contains(expected),
+            "missing {expected}:\n{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains(&format!(
+                "const __vize_typed_emits = undefined as unknown as {emits};"
+            )),
+            "{virtual_ts}"
+        );
+        assert!(virtual_ts.contains("__EmitProps<Emits<T>>"), "{virtual_ts}");
+    }
+}

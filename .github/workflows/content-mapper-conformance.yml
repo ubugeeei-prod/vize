@@ -14,7 +14,7 @@ on:
         type: boolean
         default: false
       official-css-options-only:
-        description: "Qualify Escaton's four original cases with the official published TypeScript 7.1 host"
+        description: "Qualify Escaton's CSS, component and flow cases with the official published TypeScript 7.1 host"
         type: boolean
         default: false
       expected-source-sha:
@@ -372,7 +372,11 @@ jobs:
           git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/official-css-source/git-identity.txt"
           sha256sum Cargo.toml Cargo.lock rust-toolchain.toml \
             tools/support/compat/content-mapper/official-css-options.ts \
+            tools/support/compat/content-mapper/official-fixtures.ts \
             tests/_fixtures/content-mapper/escaton-css-options.json \
+            tests/_fixtures/content-mapper/escaton-component-events.json \
+            tests/_fixtures/content-mapper/escaton-component-props.json \
+            tests/_fixtures/content-mapper/escaton-nested-flow-9433.json \
             .github/workflows/content-mapper-conformance.yml \
             > "$RUNNER_TEMP/official-css-source/inputs.sha256"
       - name: Setup pinned Node and Vite Plus
@@ -409,6 +413,9 @@ jobs:
         run: >-
           node tools/support/compat/content-mapper/official-css-options.ts
           --output "$RUNNER_TEMP/official-css-options"
+          --fixture tests/_fixtures/content-mapper/escaton-component-events.json
+          --fixture tests/_fixtures/content-mapper/escaton-component-props.json
+          --fixture tests/_fixtures/content-mapper/escaton-nested-flow-9433.json
       - name: Retain complete official compiler diagnostics and package evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -15,7 +15,6 @@ struct GuardTerm<'a> {
 
 struct VifBranch<'a> {
     condition: Option<&'a str>,
-    guard: &'a str,
     start: usize,
     end: usize,
     condition_expr_index: Option<usize>,
@@ -39,7 +38,6 @@ impl<'a> VifControlFlowChain<'a> {
         let mut previous_conditions = vec![first_condition.condition];
         let mut branches = vec![VifBranch {
             condition: Some(first_condition.condition),
-            guard: first.guard,
             start: first.start,
             end: first.end,
             condition_expr_index: find_branch_condition_expr(
@@ -71,7 +69,6 @@ impl<'a> VifControlFlowChain<'a> {
                 previous_conditions.push(current.condition);
                 branches.push(VifBranch {
                     condition: Some(current.condition),
-                    guard: group.guard,
                     start: group.start,
                     end: group.end,
                     condition_expr_index: find_branch_condition_expr(
@@ -90,7 +87,6 @@ impl<'a> VifControlFlowChain<'a> {
             {
                 branches.push(VifBranch {
                     condition: None,
-                    guard: group.guard,
                     start: group.start,
                     end: group.end,
                     condition_expr_index: None,
