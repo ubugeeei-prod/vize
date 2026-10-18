@@ -2639,7 +2639,7 @@ KeepAlive 有条件地包装原生 div，而没有直接缓存 UserCard。
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L15) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L26) · [全部规则](all.md)
 
 ### `vue/no-preprocessor-lang`
 

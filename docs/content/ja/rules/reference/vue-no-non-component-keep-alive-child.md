@@ -68,4 +68,4 @@ KeepAlive の条件付きの子が UserCard ではなく、標準の div にな�
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L15) · [全ルール](../all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L26) · [全ルール](../all.md)

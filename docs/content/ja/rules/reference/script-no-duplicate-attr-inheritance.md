@@ -9,7 +9,7 @@ fallthrough 属性を同じコンポーネントで二重に適用する箇所�
 [悪い例](#悪い) · [良い例](#良い)
 
 既定の重大度: `warning`  
-プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
