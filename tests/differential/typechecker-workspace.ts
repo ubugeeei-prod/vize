@@ -32,6 +32,7 @@ type WorkspaceOptions = {
 const files = {
   receipt: "typechecker-workspace-receipt.json",
   captures: "typechecker-workspace",
+  syntax: "typechecker-fixtures",
   packet: "typechecker-workspace-observations.json",
   ts40: "template-emit-ts40-projection",
   inventory: "workspace-inventory-ci.json",
@@ -180,6 +181,7 @@ export function prepareTypecheckerWorkspace({
   assert.equal(nextestVersion, "0.9.146");
   assert.equal(path.resolve(repoRoot, inventoryPath), locations_.inventory);
   for (const key of [
+    "VIZE_NATIVE_SYNTAX_CAPTURE_DIR",
     "VIZE_TEST_FIX_HISTORY_CAPTURE_DIR",
     "VIZE_TEST_FIX_HISTORY_WORKSPACE_CAPTURE_DIR",
     "VIZE_TEST_FIX_HISTORY_ARCHIVE_RECEIPT",
@@ -222,6 +224,7 @@ export function prepareTypecheckerWorkspace({
   };
   // Exclusive fresh directories and receipt retain any stale collision for diagnosis.
   fs.mkdirSync(locations_.captures);
+  fs.mkdirSync(locations_.syntax);
   fs.mkdirSync(locations_.ts40);
   save(locations_.receipt, receipt);
   return {
@@ -229,6 +232,7 @@ export function prepareTypecheckerWorkspace({
     captureDir: locations_.captures,
     ts40Dir: locations_.ts40,
     childEnvironment: {
+      VIZE_NATIVE_SYNTAX_CAPTURE_DIR: locations_.syntax,
       VIZE_TEST_FIX_HISTORY_WORKSPACE_CAPTURE_DIR: locations_.captures,
       VIZE_TEST_FIX_HISTORY_WORKSPACE_RECEIPT: locations_.receipt,
       VIZE_TEMPLATE_EMIT_TS40_CAPTURE: locations_.ts40,

@@ -311,6 +311,8 @@ void test("workspace producer/consumer bind physical bytes, all registered bodie
   const env = prepared.childEnvironment;
   assert(Object.values(env).every((value) => path.isAbsolute(value)));
   assert(!Object.hasOwn(env, "VIZE_TEST_FIX_HISTORY_CAPTURE_DIR"));
+  assert.equal(env.VIZE_NATIVE_SYNTAX_CAPTURE_DIR, artifact(f, "typechecker-fixtures"));
+  assert(fs.lstatSync(env.VIZE_NATIVE_SYNTAX_CAPTURE_DIR).isDirectory());
   assert.equal(env.VIZE_TEST_FIX_HISTORY_WORKSPACE_CAPTURE_DIR, prepared.captureDir);
   assert(fs.readFileSync(path.resolve(f.repoRoot, "crates/vize_maestro", prepared.receiptPath)));
   assert(!Object.hasOwn(process.env, "VIZE_TEST_FIX_HISTORY_WORKSPACE_RECEIPT"));
@@ -339,6 +341,7 @@ void test("workspace producer/consumer bind physical bytes, all registered bodie
 
 void test("pre-run attestation refuses stale capture state, changed provenance, excluded tests and conflicting ambient modes", (t) => {
   for (const key of [
+    "VIZE_NATIVE_SYNTAX_CAPTURE_DIR",
     "VIZE_TEST_FIX_HISTORY_CAPTURE_DIR",
     "VIZE_TEST_FIX_HISTORY_WORKSPACE_CAPTURE_DIR",
     "VIZE_TEST_FIX_HISTORY_ARCHIVE_RECEIPT",
