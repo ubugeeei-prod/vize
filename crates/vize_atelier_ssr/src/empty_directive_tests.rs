@@ -65,13 +65,13 @@ fn both_ssr_lanes_keep_custom_directive_value_padding_and_static_values() {
                 "_ssrGetDirectiveProps(_ctx, _resolveDirective(\"masonry\"), void 0, \"foo\", { bar: true })",
             ),
         ] {
-            let baseline = compile(&cstr!("<div {directive} />"), lane, false);
+            let baseline = compile(&cstr!("<div {directive}></div>"), lane, false);
             assert!(baseline.contains(expected), "{baseline}");
             for value in ["\"\"", "''", "\" \t \""] {
-                let source = cstr!("<div {directive}={value} />");
+                let source = cstr!("<div {directive}={value}></div>");
                 assert_eq!(compile(&source, lane, false), baseline, "{source}");
             }
-            let explicit_string = compile(&cstr!("<div {directive}=\"''\" />"), lane, false);
+            let explicit_string = compile(&cstr!("<div {directive}=\"''\"></div>"), lane, false);
             assert_ne!(explicit_string, baseline);
             assert!(
                 explicit_string.contains("\"masonry\"), ''"),
