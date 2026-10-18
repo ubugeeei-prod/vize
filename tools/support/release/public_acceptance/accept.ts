@@ -32,6 +32,7 @@ import {
   retainInstalledInputs,
 } from "./a11y.ts";
 import { readArchive } from "../consumer_recovery/archive.ts";
+import { assertPublishedUnicode, prepareUnicodeSource, unicodeSourceIdentity } from "./unicode.ts";
 
 rejectOverrides();
 rejectLspOverrides();
@@ -89,6 +90,7 @@ const consumerHarness = [
   "a11y.ts",
   "installed.ts",
   "native.ts",
+  "unicode.ts",
   "browser.ts",
   "gallery.ts",
   "browser_observation.ts",
@@ -124,6 +126,11 @@ if (process.argv[2] === "prepare") {
   assert.ok(!consumer.startsWith(root + path.sep));
   const version = plan.version;
   const lsp = prepareLspSource(root, source.head, consumer, output);
+  const unicode = prepareUnicodeSource(
+    (file) => readRawBlob(root, source.head, file),
+    consumer,
+    source.head,
+  );
   assert.equal(lsp.metadata.package.version, version);
   const dependencies = Object.fromEntries(
     [
@@ -149,6 +156,9 @@ if (process.argv[2] === "prepare") {
           "vue-router": "4.5.1",
           playwright: "1.62.1",
           "happy-dom": "20.11.2",
+          "vue-ssr-css-vars-oracle": "npm:vue@3.6.0-rc.10",
+          "@babel/core": "7.29.0",
+          "@babel/parser": "7.29.0",
           [axePolicy.name]: axePolicy.version,
         },
       },
@@ -222,6 +232,7 @@ export default function publicSetup(app, context) {
     ...fixtures.map((fixture) => fixture.file.slice(fixturePrefix.length)),
     ...vrtInputs.map((entry) => entry.file),
     ...trustedInputs.map((entry) => entry.file),
+    ...unicode.files.map((entry) => entry.file),
   ].map((file) => ({ file, sha256: digest(readFileSync(path.join(consumer, file))) }));
   const policy = actorPolicy(consumer);
   save("preparation.json", {
@@ -229,6 +240,7 @@ export default function publicSetup(app, context) {
     consumer,
     version,
     lsp,
+    unicode,
     archiveValidatorSha256: archiveValidatorSha256(),
     fixtures,
     vrtInputs,
@@ -290,6 +302,14 @@ export default function publicSetup(app, context) {
     musea = load("musea.json"),
     vrt = load("vrt.json");
   const lsp = await assertInstalledLsp(output);
+  const unicode = load("native-unicode.json");
+  const unicodeSource = unicodeSourceIdentity(
+    (file) => readRawBlob(root, source.head, file),
+    source.head,
+  );
+  assert.deepEqual(preparation.unicode, unicodeSource);
+  assert.deepEqual(native.unicode, unicode);
+  assertPublishedUnicode(unicode, unicodeSource, preparation.version, preparation.consumer, output);
   for (const receipt of [native, musea, vrt]) {
     assert.equal(receipt.version, preparation.version);
     assert.equal(receipt.success, true);
