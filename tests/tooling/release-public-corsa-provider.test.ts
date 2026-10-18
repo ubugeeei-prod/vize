@@ -6,6 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import {
   installedCorsaProvider,
+  assertInstalledCorsaProvider,
   packageProvider,
 } from "../../tools/support/release/public_acceptance/lsp_assets.ts";
 import { sha256 } from "../../tools/support/release/public_acceptance/lsp_source.ts";
@@ -22,7 +23,7 @@ const write = (file: string, value: unknown) => {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, typeof value === "string" ? value : JSON.stringify(value));
 };
-function fixture() {
+function fixture(content = released.content) {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-public-corsa-")));
   const consumer = path.join(root, "fresh public consumer Ω"),
     repo = path.join(root, "source");
@@ -40,7 +41,7 @@ function fixture() {
     exports: { "./package.json": "./package.json" },
   });
   const module = path.join(cli, released.file);
-  write(module, released.content);
+  write(module, content);
   const binary = path.join(provider, "lib", process.platform === "win32" ? "tsc.exe" : "tsc");
   write(binary, "controlled provider bytes; no product execution in this discovery test\n");
   write(path.join(consumer, "package-lock.json"), {
@@ -59,7 +60,7 @@ function fixture() {
       ]),
     ),
   });
-  write(path.join(repo, "npm/cli/src/corsa-runtime.ts"), released.content);
+  write(path.join(repo, "npm/cli/src/corsa-runtime.ts"), content);
   const git = (args: string[]) =>
     execFileSync("git", args, { cwd: repo, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   git(["init", "--quiet"]);
@@ -187,6 +188,106 @@ test("changed provider bytes cannot reuse an earlier installed observation", asy
     const before = await f.resolve();
     fs.appendFileSync(f.binary, "changed bytes\n");
     assert.notDeepEqual(await f.resolve(), before);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test("authenticated installed resolver side effects never execute with metadata credentials", async () => {
+  const content =
+    released.content +
+    "\n(globalThis as Record<string, unknown>).__vize_public_resolver_executed = process.env.GH_TOKEN;\n" +
+    "throw new Error('installed resolver top level must not execute');\n";
+  const f = fixture(content),
+    previous = process.env.GH_TOKEN;
+  process.env.GH_TOKEN = "inert-metadata-credential-marker";
+  try {
+    await assert.rejects(
+      assertInstalledCorsaProvider(
+        f.consumer,
+        released.version,
+        f.head,
+        { name, version } as Awaited<ReturnType<typeof installedCorsaProvider>>,
+        f.repo,
+      ),
+      /reviewed trusted resolver contract/,
+    );
+    assert.equal(
+      (globalThis as Record<string, unknown>).__vize_public_resolver_executed,
+      undefined,
+    );
+  } finally {
+    if (previous === undefined) delete process.env.GH_TOKEN;
+    else process.env.GH_TOKEN = previous;
+    delete (globalThis as Record<string, unknown>).__vize_public_resolver_executed;
+    f.cleanup();
+  }
+});
+
+test("metadata provider observations rederive every recorded field without installed code execution", async () => {
+  const f = fixture();
+  try {
+    const expected = await f.resolve();
+    for (const key of [
+      "name",
+      "version",
+      "directory",
+      "resolved",
+      "integrity",
+      "manifestSha256",
+      "executable",
+      "executableSha256",
+    ] as const) {
+      const changed = structuredClone(expected);
+      changed[key] = "changed";
+      await assert.rejects(
+        assertInstalledCorsaProvider(f.consumer, released.version, f.head, changed, f.repo),
+        `provider ${key}`,
+      );
+    }
+    for (const key of [
+      "module",
+      "moduleSha256",
+      "javascriptSha256",
+      "sourceFile",
+      "head",
+    ] as const) {
+      const changed = structuredClone(expected);
+      changed.resolver[key] = "changed";
+      await assert.rejects(
+        assertInstalledCorsaProvider(f.consumer, released.version, f.head, changed, f.repo),
+        `resolver ${key}`,
+      );
+    }
+    for (const key of [
+      "name",
+      "version",
+      "directory",
+      "resolved",
+      "integrity",
+      "manifestSha256",
+    ] as const) {
+      const changed = structuredClone(expected);
+      changed.resolver.cli[key] = "changed";
+      await assert.rejects(
+        assertInstalledCorsaProvider(f.consumer, released.version, f.head, changed, f.repo),
+        `resolver CLI ${key}`,
+      );
+    }
+    // Another same-byte file within the package must not change the selected path.
+    const alias = path.join(f.provider, "lib", "copied-provider");
+    fs.copyFileSync(f.binary, alias);
+    assert.equal((await f.resolve()).executable, expected.executable);
+    assert.notEqual((await f.resolve()).executable, alias);
+    await assert.rejects(
+      assertInstalledCorsaProvider(
+        f.consumer,
+        released.version,
+        f.head,
+        { ...expected, executable: alias },
+        f.repo,
+      ),
+    );
   } finally {
     f.cleanup();
   }

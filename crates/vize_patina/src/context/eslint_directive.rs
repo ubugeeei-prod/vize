@@ -180,6 +180,9 @@ fn parse_eslint_rule_list(raw: &str) -> Vec<String> {
         .map(|rule| match rule {
             "vue/no-reserved-keys" => "script/no-reserved-keys",
             "vue/no-dupe-keys" => "script/no-dupe-keys",
+            "vue/no-side-effects-in-computed-properties" => {
+                "script/no-side-effects-in-computed-properties"
+            }
             "vue/no-deprecated-dollar-listeners-api" => "script/no-deprecated-dollar-listeners-api",
             "vue/no-deprecated-dollar-scopedslots-api" => {
                 "script/no-deprecated-dollar-scopedslots-api"

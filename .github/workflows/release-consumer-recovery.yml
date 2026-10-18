@@ -2,6 +2,7 @@ name: Public release consumer recovery
 on:
   pull_request:
     paths:
+      - "npm/cli/src/corsa-runtime.ts"
       - ".github/workflows/release-consumer-recovery.yml"
       - ".github/workflows/release-operator.yml"
       - ".github/workflows/release-public-acceptance.yml"
