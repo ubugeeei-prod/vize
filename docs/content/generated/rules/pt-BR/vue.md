@@ -2640,7 +2640,7 @@ O primeiro exemplo torna UserCard o filho condicional. O invólucro com v-show i
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L15) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L26) · [Todas as regras](all.md)
 
 ### `vue/no-preprocessor-lang`
 

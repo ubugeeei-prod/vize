@@ -100,7 +100,14 @@ test("required outer report rejects absent instructions and permits only the PR 
 
 test("the actual required Check report command fails a red or missing instruction producer", () => {
   const report = workflow.jobs?.["test-report"];
-  const command = report?.steps?.at(-1)?.run;
+  const gates = report?.steps?.filter(
+    (step) => step.name === "Require every needed job to succeed",
+  );
+  assert.equal(gates?.length, 1);
+  const gate = gates?.[0];
+  assert.equal(gate?.if, undefined);
+  assert.equal(gate?.["continue-on-error"], undefined);
+  const command = gate?.run;
   assert.ok(command);
   const [executable, ...args] = command.trim().split(/\s+/);
   assert.equal(executable, "node");
