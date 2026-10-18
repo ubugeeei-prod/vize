@@ -1,0 +1,10 @@
+{
+  "upstream": "https://github.com/elk-zone/elk/blob/8aa2b4650760eeba4ea1fdd9dc18d8a88ca5d7f0/app/pages/mutes.vue",
+  "path": "app/pages/mutes.vue",
+  "sourceBytes": 359,
+  "sourceSha256": "55530ec73a05bc6b2f430a8e4618d7078d127ab826927495e1c6ae2647328666",
+  "officialVersion": "3.6.0-beta.10",
+  "officialImplementationSha256": "131cae84341c63aeb3c10dcdc2401a7bfd299adff8ef64bf5fcc1d734fed1cce",
+  "compilerOptions": "Same complete descriptor-derived Inspector options, including isProd:true, for both Node environments; only NODE_ENV differs.",
+  "negativeControl": "The development compiler retains a v-if comment in the false VNode slot fallback. Production uses an empty comment; true branch and direct SSR-push routes are unchanged."
+}

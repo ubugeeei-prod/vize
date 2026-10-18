@@ -1,0 +1,22 @@
+{
+  "upstream": "https://github.com/elk-zone/elk/blob/8aa2b4650760eeba4ea1fdd9dc18d8a88ca5d7f0/app/components/nav/NavSideItem.vue",
+  "path": "app/components/nav/NavSideItem.vue",
+  "sourceBytes": 2918,
+  "sourceSha256": "6a8776c369c010d8df3f5fff4bc4706fda23ed87ab5ba605dcaddc8d6b7f024b",
+  "provider": "Same pinned public compiler-sfc version and implementation SHA256 as source.json",
+  "oracle": "Independent public parse + compileScript + compileTemplate with scoped, slotted and ssrCssVars from the authored descriptor. Full DOM and SSR output, including script.",
+  "negativeControl": {
+    "description": "Insert one :slotted(.nav-icon) rule before the original closing style tag; preserve all original source bytes.",
+    "addedRule": "  .item :slotted(.nav-icon) { color: inherit; }\n"
+  },
+  "officialPluginReference": {
+    "package": "@vitejs/plugin-vue",
+    "version": "6.0.7",
+    "implementation": "dist/index.mjs",
+    "implementationSha256": "c611e1cad08187d9b4c9c4b4c4d6a535ce4ba0678b0eb018820b8ddafe691b20",
+    "templateOptionsLine": 218,
+    "inlineTemplateOptionsLine": 281,
+    "packageUrl": "https://www.npmjs.com/package/@vitejs/plugin-vue/v/6.0.7"
+  },
+  "referenceNodeEnvironment": "production"
+}

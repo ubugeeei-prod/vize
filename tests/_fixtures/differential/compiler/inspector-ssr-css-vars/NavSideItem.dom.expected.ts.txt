@@ -1,0 +1,116 @@
+import { defineComponent as _defineComponent } from 'vue'
+import { unref as _unref, renderSlot as _renderSlot, normalizeClass as _normalizeClass, createElementVNode as _createElementVNode, toDisplayString as _toDisplayString, resolveComponent as _resolveComponent, withCtx as _withCtx, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+const _hoisted_1 = {
+  block: "",
+  "sm:hidden": "",
+  "xl:block": "",
+  "select-none": ""
+}
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'NavSideItem',
+  props: {
+    text: {},
+    icon: {},
+    to: {},
+    userOnly: { type: Boolean, default: false },
+    command: { type: Boolean }
+  },
+  setup(__props: any) {
+
+
+
+
+
+const router = useRouter()
+
+useCommand({
+  scope: 'Navigation',
+
+  name: () => __props.text ?? (typeof __props.to === 'string' ? __props.to as string : __props.to.name),
+  icon: () => __props.icon,
+  visible: () => __props.command,
+
+  onActivate() {
+    router.push(__props.to)
+  },
+})
+
+const activeClass = ref('text-primary')
+onHydrated(async () => {
+  // TODO: force NuxtLink to reevaluate, we now we are in this route though, so we should force it to active
+  // we don't have currentServer defined until later
+  activeClass.value = ''
+  await nextTick()
+  activeClass.value = 'text-primary'
+})
+
+// Optimize rendering for the common case of being logged in, only show visual feedback for disabled user-only items
+// when we know there is no user.
+const noUserDisable = computed(() => !isHydrated.value || (__props.userOnly && !currentUser.value))
+const noUserVisual = computed(() => isHydrated.value && __props.userOnly && !currentUser.value)
+
+return (_ctx: any,_cache: any) => {
+  const _component_CommonTooltip = _resolveComponent("CommonTooltip")!
+  const _component_NuxtLink = _resolveComponent("NuxtLink")!
+
+  return (_openBlock(), _createBlock(_component_NuxtLink, {
+    to: __props.to,
+    disabled: _unref(noUserDisable),
+    class: _normalizeClass(_unref(noUserVisual) ? 'op25 pointer-events-none ' : ''),
+    "active-class": _unref(activeClass),
+    group: "",
+    "focus:outline-none": "",
+    "disabled:pointer-events-none": "",
+    tabindex: _unref(noUserDisable) ? -1 : undefined,
+    onClick: _ctx.$scrollToTop
+  }, {
+    default: _withCtx(() => [
+      _createVNode(_component_CommonTooltip, {
+        disabled: !_ctx.isMediumOrLargeScreen,
+        content: __props.text,
+        placement: "right"
+      }, {
+        default: _withCtx(() => [
+          _createElementVNode("div", {
+            class: _normalizeClass(["item", _ctx.isSmallScreen
+          ? `
+            w-full
+            px5 sm:mxa
+            transition-colors duration-200 transform
+            hover-bg-gray-100 hover-dark:(bg-gray-700 text-white)
+          ` : `
+            w-fit rounded-3
+            px2 mx3 sm:mxa
+            transition-100
+            elk-group-hover-bg-active
+            group-focus-visible:ring-2
+            group-focus-visible:ring-current
+          `]),
+            flex: "",
+            "items-center": "",
+            gap4: "",
+            xl: "ml0 mr5 px5 w-auto"
+          }, [
+            _renderSlot(_ctx.$slots, "icon", {}, () => [
+              _createElementVNode("div", {
+                class: _normalizeClass(__props.icon),
+                "text-xl": ""
+              }, null, 2)
+            ], true),
+            _renderSlot(_ctx.$slots, "default", {}, () => [
+              _createElementVNode("span", _hoisted_1, _toDisplayString(_ctx.isHydrated ? __props.text : ' '), 1)
+            ], true)
+          ], 2)
+        ]),
+        _: 3
+      }, 8, ["disabled", "content"])
+    ]),
+    _: 3
+  }, 8, ["to", "disabled", "class", "active-class", "tabindex", "onClick"]))
+}
+}
+
+})

@@ -1,0 +1,207 @@
+import { defineComponent as _defineComponent } from 'vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'NavSideItem',
+  props: {
+    text: {},
+    icon: {},
+    to: {},
+    userOnly: { type: Boolean, default: false },
+    command: { type: Boolean }
+  },
+  setup(__props: any, { expose: __expose }) {
+  __expose();
+
+
+
+
+
+const router = useRouter()
+
+useCommand({
+  scope: 'Navigation',
+
+  name: () => __props.text ?? (typeof __props.to === 'string' ? __props.to as string : __props.to.name),
+  icon: () => __props.icon,
+  visible: () => __props.command,
+
+  onActivate() {
+    router.push(__props.to)
+  },
+})
+
+const activeClass = ref('text-primary')
+onHydrated(async () => {
+  // TODO: force NuxtLink to reevaluate, we now we are in this route though, so we should force it to active
+  // we don't have currentServer defined until later
+  activeClass.value = ''
+  await nextTick()
+  activeClass.value = 'text-primary'
+})
+
+// Optimize rendering for the common case of being logged in, only show visual feedback for disabled user-only items
+// when we know there is no user.
+const noUserDisable = computed(() => !isHydrated.value || (__props.userOnly && !currentUser.value))
+const noUserVisual = computed(() => isHydrated.value && __props.userOnly && !currentUser.value)
+
+const __returned__ = { router, activeClass, noUserDisable, noUserVisual }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+})
+
+import { resolveComponent as _resolveComponent, withCtx as _withCtx, renderSlot as _renderSlot, createVNode as _createVNode, toDisplayString as _toDisplayString, mergeProps as _mergeProps } from "vue"
+import { ssrRenderSlot as _ssrRenderSlot, ssrRenderClass as _ssrRenderClass, ssrRenderComponent as _ssrRenderComponent, ssrInterpolate as _ssrInterpolate } from "vue/server-renderer"
+
+export function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  const _component_NuxtLink = _resolveComponent("NuxtLink")
+  const _component_CommonTooltip = _resolveComponent("CommonTooltip")
+
+  _push(_ssrRenderComponent(_component_NuxtLink, _mergeProps({
+    to: $props.to,
+    disabled: $setup.noUserDisable,
+    class: $setup.noUserVisual ? 'op25 pointer-events-none ' : '',
+    "active-class": $setup.activeClass,
+    group: "",
+    "focus:outline-none": "",
+    "disabled:pointer-events-none": "",
+    tabindex: $setup.noUserDisable ? -1 : undefined,
+    onClick: _ctx.$scrollToTop
+  }, _attrs), {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(_ssrRenderComponent(_component_CommonTooltip, {
+          disabled: !_ctx.isMediumOrLargeScreen,
+          content: $props.text,
+          placement: "right"
+        }, {
+          default: _withCtx((_, _push, _parent, _scopeId) => {
+            if (_push) {
+              _push(`<div flex items-center gap4 xl="ml0 mr5 px5 w-auto" class="${
+                _ssrRenderClass([_ctx.isSmallScreen
+          ? `
+            w-full
+            px5 sm:mxa
+            transition-colors duration-200 transform
+            hover-bg-gray-100 hover-dark:(bg-gray-700 text-white)
+          ` : `
+            w-fit rounded-3
+            px2 mx3 sm:mxa
+            transition-100
+            elk-group-hover-bg-active
+            group-focus-visible:ring-2
+            group-focus-visible:ring-current
+          `, "item"])
+              }" data-v-app/components/nav/NavSideItem.vue${
+                _scopeId
+              }>`)
+              _ssrRenderSlot(_ctx.$slots, "icon", {}, () => {
+                _push(`<div class="${
+                  _ssrRenderClass($props.icon)
+                }" text-xl data-v-app/components/nav/NavSideItem.vue${
+                  _scopeId
+                }></div>`)
+              }, _push, _parent, "data-v-app/components/nav/NavSideItem.vue-s" + _scopeId)
+              _ssrRenderSlot(_ctx.$slots, "default", {}, () => {
+                _push(`<span block sm:hidden xl:block select-none data-v-app/components/nav/NavSideItem.vue${
+                  _scopeId
+                }>${
+                  _ssrInterpolate(_ctx.isHydrated ? $props.text : ' ')
+                }</span>`)
+              }, _push, _parent, "data-v-app/components/nav/NavSideItem.vue-s" + _scopeId)
+              _push(`</div>`)
+            } else {
+              return [
+                _createVNode("div", {
+                  class: ["item", _ctx.isSmallScreen
+          ? `
+            w-full
+            px5 sm:mxa
+            transition-colors duration-200 transform
+            hover-bg-gray-100 hover-dark:(bg-gray-700 text-white)
+          ` : `
+            w-fit rounded-3
+            px2 mx3 sm:mxa
+            transition-100
+            elk-group-hover-bg-active
+            group-focus-visible:ring-2
+            group-focus-visible:ring-current
+          `],
+                  flex: "",
+                  "items-center": "",
+                  gap4: "",
+                  xl: "ml0 mr5 px5 w-auto"
+                }, [
+                  _renderSlot(_ctx.$slots, "icon", {}, () => [
+                    _createVNode("div", {
+                      class: $props.icon,
+                      "text-xl": ""
+                    }, null, 2)
+                  ]),
+                  _renderSlot(_ctx.$slots, "default", {}, () => [
+                    _createVNode("span", {
+                      block: "",
+                      "sm:hidden": "",
+                      "xl:block": "",
+                      "select-none": ""
+                    }, _toDisplayString(_ctx.isHydrated ? $props.text : ' '), 1)
+                  ])
+                ], 2)
+              ]
+            }
+          }),
+          _: 3
+        }, _parent, _scopeId))
+      } else {
+        return [
+          _createVNode(_component_CommonTooltip, {
+            disabled: !_ctx.isMediumOrLargeScreen,
+            content: $props.text,
+            placement: "right"
+          }, {
+            default: _withCtx(() => [
+              _createVNode("div", {
+                class: ["item", _ctx.isSmallScreen
+          ? `
+            w-full
+            px5 sm:mxa
+            transition-colors duration-200 transform
+            hover-bg-gray-100 hover-dark:(bg-gray-700 text-white)
+          ` : `
+            w-fit rounded-3
+            px2 mx3 sm:mxa
+            transition-100
+            elk-group-hover-bg-active
+            group-focus-visible:ring-2
+            group-focus-visible:ring-current
+          `],
+                flex: "",
+                "items-center": "",
+                gap4: "",
+                xl: "ml0 mr5 px5 w-auto"
+              }, [
+                _renderSlot(_ctx.$slots, "icon", {}, () => [
+                  _createVNode("div", {
+                    class: $props.icon,
+                    "text-xl": ""
+                  }, null, 2)
+                ]),
+                _renderSlot(_ctx.$slots, "default", {}, () => [
+                  _createVNode("span", {
+                    block: "",
+                    "sm:hidden": "",
+                    "xl:block": "",
+                    "select-none": ""
+                  }, _toDisplayString(_ctx.isHydrated ? $props.text : ' '), 1)
+                ])
+              ], 2)
+            ]),
+            _: 3
+          }, 8, ["disabled", "content"])
+        ]
+      }
+    }),
+    _: 3
+  }, _parent))
+}
