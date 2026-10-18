@@ -315,6 +315,11 @@ await test("every documented native rule uses the Rust-checked preset membership
     ).split(/\r?\n---\r?\n/, 2)[1],
   );
   const names = [...implementations()];
+  for (const [preset, rules] of Object.entries(snapshot)) {
+    if (preset === "opt_in") continue;
+    for (const rule of rules)
+      assert.ok(names.includes(rule), `${preset}: ${rule} has an implementation`);
+  }
   for (const locale of ["", "ja/"]) {
     const lines = read(`docs/content/${locale}rules/all.md`).split("\n");
     for (const name of names) {
