@@ -96,6 +96,7 @@ fn quoted_pairs_and_refusals_preserve_all_authored_protocol_results() {
             case["source"].as_str().unwrap(),
             case["generated"].as_str().unwrap(),
             &mappings,
+            &[],
         );
         actual.push(json!({"name":case["name"],"spans":spans}));
         expected.push(json!({"name":case["name"],"spans":case["expected"]}));

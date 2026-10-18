@@ -1,15 +1,15 @@
 //! Recursive traversal of nested template scopes.
 
+use crate::virtual_ts::scope::ScopeMappings;
 use vize_carton::{String, profile};
 use vize_croquis::ScopeKind;
 
 use super::closures::generate_scope_node;
 use super::context::ScopeGenContext;
-use crate::virtual_ts::types::VizeMapping;
 
 pub(super) fn generate_child_scopes(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    mappings: &mut ScopeMappings<'_>,
     ctx: &ScopeGenContext<'_, '_>,
     parent_scope_id: u32,
     indent: &str,

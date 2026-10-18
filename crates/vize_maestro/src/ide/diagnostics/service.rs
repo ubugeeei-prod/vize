@@ -10,7 +10,9 @@ use super::{LineIndex, Severity};
 #[cfg(feature = "native")]
 pub(in crate::ide) struct VirtualTsResult {
     pub(in crate::ide) code: String,
+    /// Authored editor-operation owners; inference-only copies are separate.
     pub(in crate::ide) source_mappings: Vec<vize_canon::virtual_ts::VizeMapping>,
+    pub(in crate::ide) diagnostic_mappings: Vec<vize_canon::virtual_ts::VizeMapping>,
     pub(in crate::ide) semantic_links: Vec<vize_canon::virtual_ts::VizeSemanticLink>,
     pub(in crate::ide) prop_default_key_links: Vec<vize_canon::virtual_ts::VizeSemanticLink>,
     /// Byte-offset mapping from post-rewrite to pre-rewrite virtual TS.

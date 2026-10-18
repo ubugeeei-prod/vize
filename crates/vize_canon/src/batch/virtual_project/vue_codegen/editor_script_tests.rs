@@ -166,3 +166,91 @@ fn complete_malformed_ts40_template_preserves_the_whole_original_fallback() {
         assert_eq!(diagnostics(&editor), diagnostics(&batch));
     }
 }
+
+#[test]
+fn editor_documents_retain_diagnostic_only_inference_owners_through_jsx_prefixes() {
+    use crate::batch::{
+        ImportRewriter, VueDocumentVirtualTsOptions, generate_vue_document_virtual_ts_with_options,
+    };
+    use crate::virtual_ts::ProjectionFeatures;
+
+    for language in ["ts", "tsx"] {
+        let source = cstr!(
+            "<script setup lang=\"{language}\">import Child from './Child.vue';</script>\n<template><Child :hidden=\"'wrong'\" @close=\"() => {{}}\" /></template>"
+        );
+        let document = generate_vue_document_virtual_ts_with_options(
+            Path::new("App.vue"),
+            &source,
+            &VirtualTsOptions::default(),
+            &ImportRewriter::new(),
+            false,
+            VueDocumentVirtualTsOptions {
+                preserve_event_navigation: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(document.source_type.is_jsx(), language == "tsx");
+        let inference = document
+            .pre_rewrite_code
+            .find("const __vize_emit_props_")
+            .unwrap();
+        let suffix = document.pre_rewrite_code.get(inference..).unwrap();
+        let key = inference + suffix.find("\"hidden\"").unwrap();
+        let value = inference + suffix.find("'wrong'").unwrap();
+        let authored_key = source.find(":hidden").unwrap() + 1;
+        let authored_value = source.find("'wrong'").unwrap();
+        let row = document
+            .mapping
+            .rows()
+            .find(|row| row.span.gen_range.start == key)
+            .unwrap();
+        assert_eq!(row.meta.features, ProjectionFeatures::DIAGNOSTICS);
+        assert_eq!(
+            document
+                .mapping
+                .diagnostic_range_to_authored(value, value + 7),
+            Some((authored_value, authored_value + 7))
+        );
+        for feature in [
+            ProjectionFeatures::HOVER,
+            ProjectionFeatures::COMPLETION,
+            ProjectionFeatures::DEFINITION,
+        ] {
+            let target = document
+                .mapping
+                .to_generated_for(authored_key, feature)
+                .unwrap();
+            assert!(!row.span.gen_range.contains(&target));
+        }
+        let mapper =
+            crate::batch::generate_vue_content_mapper_transform(Path::new("App.vue"), &source)
+                .unwrap();
+        let inference = mapper.text.find("const __vize_emit_props_").unwrap();
+        let suffix = mapper.text.get(inference..).unwrap();
+        for offset in [
+            inference + suffix.find("\"hidden\"").unwrap() + 1,
+            inference + suffix.find("'wrong'").unwrap() + 1,
+        ] {
+            let spans = mapper
+                .mappings
+                .iter()
+                .filter(|span| span.0[0] <= offset && offset < span.0[0] + span.0[1])
+                .collect::<Vec<_>>();
+            assert!(
+                !spans.is_empty(),
+                "inference geometry must remain available to diagnostics"
+            );
+            assert!(
+                spans.iter().all(|span| span.0[5] == 0),
+                "inference copies must not claim protocol editor operations"
+            );
+        }
+        assert!(
+            mapper.mappings.iter().any(|span| span.0[2] <= authored_key
+                && authored_key < span.0[2] + span.0[3]
+                && span.0[5] != 0),
+            "the authored primary prop remains navigable"
+        );
+    }
+}

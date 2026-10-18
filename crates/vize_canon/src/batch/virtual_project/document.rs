@@ -118,6 +118,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
     let GeneratedVueFile {
         mut code,
         mut mappings,
+        mapping_meta,
         mut semantic_links,
         mut prop_default_key_links,
         ..
@@ -171,6 +172,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
         ),
     };
     let mut mapping = ProjectionMapping::from_parts(mappings, semantic_links);
+    mapping.restore_row_metadata(mapping_meta);
     mapping.set_prop_default_key_links(prop_default_key_links);
     Ok(VueDocumentVirtualTs {
         code: rewritten.code,

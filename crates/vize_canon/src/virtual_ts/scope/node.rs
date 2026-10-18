@@ -10,13 +10,14 @@ use super::vif_guard::{
 use crate::virtual_ts::expressions::{
     ExpressionListEmitContext, generate_expressions, generate_expressions_in_enclosing_guard,
 };
+use crate::virtual_ts::scope::ScopeMappings;
 use crate::virtual_ts::types::VizeMapping;
 use vize_carton::{String, append, cstr, profile};
 use vize_croquis::{Scope, ScopeData};
 
 pub(super) fn generate_scope_node(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    mappings: &mut ScopeMappings<'_>,
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
     indent: &str,

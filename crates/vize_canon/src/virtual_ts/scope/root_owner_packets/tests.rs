@@ -24,9 +24,10 @@ fn render(script: &str, template: &str, packets: bool, navigation: bool) -> Outp
     let names = FxHashSet::default();
     let access = TemplateBindingAccess::collect(&summary, false);
     let mut result = (String::default(), Vec::new(), Vec::new());
+    let mut diagnostics = Vec::new();
     emit_scope_closures(
         &mut result.0,
-        &mut result.1,
+        &mut super::super::context::ScopeMappings::new(&mut result.1, &mut diagnostics),
         &mut result.2,
         &summary,
         &access,
@@ -57,6 +58,7 @@ fn render(script: &str, template: &str, packets: bool, navigation: bool) -> Outp
             packets,
         ),
     );
+    result.1.extend(diagnostics);
     result
 }
 

@@ -2,6 +2,7 @@
 //! the closure's rest parameter, and an inline statement body is declared
 //! against the child's listener prop type so its return value is checked.
 
+use crate::virtual_ts::scope::ScopeMappings;
 use vize_carton::{String, append, profile};
 use vize_croquis::{EventHandlerScopeData, Scope};
 
@@ -15,7 +16,7 @@ use super::event_targets::needs_typed_handler_assignment;
 
 pub(super) fn generate_component_handler_scope(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    mappings: &mut ScopeMappings<'_>,
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
     data: &EventHandlerScopeData,
@@ -33,7 +34,7 @@ pub(super) fn generate_component_handler_scope(
     // no event contract to declare.
     let Some(event_types) = generate_component_event_types(
         ts,
-        mappings,
+        mappings.diagnostics,
         ComponentEventTypeContext {
             summary: ctx.summary,
             virtual_ts_options: ctx.virtual_ts_options,

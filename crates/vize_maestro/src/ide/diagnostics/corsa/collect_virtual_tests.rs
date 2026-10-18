@@ -139,3 +139,45 @@ fn vue_import_extension_diagnostics_are_suppressed_on_both_sides_of_the_projecti
         []
     );
 }
+
+#[test]
+fn inference_witnesses_keep_diagnostics_without_claiming_editor_navigation() {
+    use crate::ide::diagnostics::VirtualTsResult;
+    use vize_canon::virtual_ts::{ProjectionFeatures, ProjectionMeta, VizeSubSpan};
+
+    let owner = VizeMapping::new(0..8, 20..28);
+    let inference = VizeMapping {
+        gen_range: 10..18,
+        src_range: 20..28,
+        sub_spans: vec![VizeSubSpan {
+            gen_range: 11..15,
+            src_range: 22..26,
+        }],
+    };
+    let mut mapping = ProjectionMapping::from_spans(vec![owner.clone()]);
+    mapping.push_with(
+        inference.clone(),
+        ProjectionMeta {
+            features: ProjectionFeatures::DIAGNOSTICS,
+            ..Default::default()
+        },
+    );
+    let result = VirtualTsResult::from_projection(
+        "01234567890123456789".into(),
+        mapping,
+        ImportSourceMap::empty(),
+    );
+    assert_eq!(result.source_mappings, vec![owner]);
+    assert_eq!(result.diagnostic_mappings, vec![inference]);
+    let document = CorsaDocument::from_result(result);
+    assert_eq!(document.mapping.len(), 2);
+    assert_eq!(document.mapping.meta(0).features, ProjectionFeatures::ALL);
+    assert_eq!(
+        document.mapping.meta(1).features,
+        ProjectionFeatures::DIAGNOSTICS
+    );
+    assert_eq!(
+        document.mapping.diagnostic_range_to_authored(11, 15),
+        Some((22, 26))
+    );
+}

@@ -127,10 +127,31 @@ fn listener_inference_maps_its_own_prop_keys_values_and_spreads() {
         let source_value = template_offset as usize + template.find("'wrong'").unwrap();
         let row = output
             .mapping
-            .spans()
-            .iter()
-            .find(|row| row.gen_range.start == generated_key)
+            .rows()
+            .find(|row| row.span.gen_range.start == generated_key)
             .expect("inference must map its own literal, not borrow the primary prop checker");
+        assert_eq!(row.meta.features, super::ProjectionFeatures::DIAGNOSTICS);
+        let row = row.span;
+        for feature in [
+            super::ProjectionFeatures::HOVER,
+            super::ProjectionFeatures::COMPLETION,
+            super::ProjectionFeatures::DEFINITION,
+        ] {
+            let target = output
+                .mapping
+                .to_generated_for(source_key, feature)
+                .expect("the primary prop owner remains navigable");
+            assert!(
+                !row.gen_range.contains(&target),
+                "inference witnesses must not claim editor operations"
+            );
+        }
+        assert_eq!(
+            output
+                .mapping
+                .diagnostic_range_to_authored(generated_value, generated_value + 7),
+            Some((source_value, source_value + 7))
+        );
         for (generated, source) in [
             (generated_key..generated_key + 8, source_key..source_key + 6),
             (
