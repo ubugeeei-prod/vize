@@ -8,8 +8,11 @@
 //! `optionDiagnostics` addressed into the entry's options object instead of
 //! failing the request, so TypeScript can surface them in the tsconfig.
 
+use std::path::Path;
+
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use vize_canon::{ContentMapperProjectConfiguration, ContentMapperTransformOptions, CorsaError};
 use vize_l0::{FxHashMap, String as CompactString, cstr};
 
 /// Mapper diagnostic code for an options value that is not an object.
@@ -22,19 +25,7 @@ const OPTION_CODE_INVALID_TYPE: i32 = 3;
 /// Mapper settings resolved when TypeScript opens a project.
 #[derive(Clone, Copy, Debug)]
 pub(super) struct ProjectSettings {
-    /// Resolve Vue Options API instance bindings in templates.
-    pub options_api: bool,
-    /// Preserve diagnostics for user-authored unused locals.
-    pub no_unused_locals: bool,
-}
-
-impl Default for ProjectSettings {
-    fn default() -> Self {
-        Self {
-            options_api: true,
-            no_unused_locals: false,
-        }
-    }
+    pub transform_options: ContentMapperTransformOptions,
 }
 
 /// Open mapper projects, keyed by the host-assigned opaque handle.
@@ -62,7 +53,6 @@ impl ProjectRegistry {
 #[serde(rename_all = "camelCase")]
 pub(super) struct OpenProjectParams {
     /// The absolute project configuration file name, or empty when none exists.
-    #[expect(dead_code, reason = "read via Debug snapshots")]
     #[serde(default)]
     config_file_name: CompactString,
     pub project_handle: CompactString,
@@ -90,12 +80,13 @@ pub(super) struct OptionDiagnostic {
     code: i32,
 }
 
-/// The `openProject` response. Vize does not declare `dynamicConfig`, so it
-/// must return an empty `configIdentity` and no `watchedFiles`.
+/// Dynamic config identity and its complete tsconfig resolution watch closure.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct OpenProjectResult {
-    config_identity: &'static str,
+    config_identity: CompactString,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    watched_files: Vec<CompactString>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     option_diagnostics: Vec<OptionDiagnostic>,
 }
@@ -106,8 +97,11 @@ pub(super) struct OpenProjectResult {
 /// TypeScript reports the diagnostics against the tsconfig entry.
 pub(super) fn resolve_open_project(
     params: &OpenProjectParams,
-) -> (ProjectSettings, OpenProjectResult) {
-    let mut settings = ProjectSettings::default();
+) -> Result<(ProjectSettings, OpenProjectResult), CorsaError> {
+    let configuration =
+        ContentMapperProjectConfiguration::load(Path::new(params.config_file_name.as_str()))?;
+    let mut options_api = true;
+    let mut no_unused_locals = false;
     let mut diagnostics = Vec::new();
     match &params.options {
         Value::Null => {}
@@ -115,7 +109,7 @@ pub(super) fn resolve_open_project(
             for (name, value) in options {
                 match name.as_str() {
                     "optionsApi" => match value {
-                        Value::Bool(enabled) => settings.options_api = *enabled,
+                        Value::Bool(enabled) => options_api = *enabled,
                         _ => diagnostics.push(OptionDiagnostic {
                             path: vec![json!(name)],
                             message_text: cstr!("Option '{name}' requires a value of type boolean"),
@@ -139,13 +133,19 @@ pub(super) fn resolve_open_project(
     if let Value::Object(compiler_options) = &params.compiler_options
         && compiler_options.get("noUnusedLocals") == Some(&Value::Bool(true))
     {
-        settings.no_unused_locals = true;
+        no_unused_locals = true;
     }
-    (
-        settings,
+    Ok((
+        ProjectSettings {
+            transform_options: configuration
+                .transform_options
+                .with_options_api(options_api)
+                .with_preserve_unused_diagnostics(no_unused_locals),
+        },
         OpenProjectResult {
-            config_identity: "",
+            config_identity: configuration.config_identity,
+            watched_files: configuration.watched_files,
             option_diagnostics: diagnostics,
         },
-    )
+    ))
 }

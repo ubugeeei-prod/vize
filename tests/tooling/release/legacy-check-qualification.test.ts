@@ -5,10 +5,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { repoRoot } from "../_helpers/moonbit.ts";
+import { repoRoot } from "../_helpers/tool-commands.ts";
 
 const cases = [
   "cold",
+  "overlap-source",
   "failed-check",
   "existing-run",
   "existing-merged-run",
@@ -34,18 +35,23 @@ const cases = [
   "lease-final",
 ];
 
-test("actual legacy driver qualifies a cold cut before R and retains resume and drift safety", () => {
+test("actual legacy driver starts Q before R and retains resume and drift safety", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-legacy-check-"));
   try {
     const watch = path.join(repoRoot, "tools/support/release/pr_watch.rs");
     const contract = path.join(repoRoot, "tools/support/release/pr_contract.rs");
-    // rust-script's entry source must change when either included production module changes.
+    const ci = path.join(repoRoot, "tools/support/release/pr_ci.rs");
+    // The cache key includes every production module and embedded parser.
     const digest = createHash("sha256")
       .update(fs.readFileSync(watch))
       .update(fs.readFileSync(contract))
+      .update(fs.readFileSync(ci))
+      .update(
+        fs.readFileSync(path.join(repoRoot, "tools/support/release/qualify_check/capability.ts")),
+      )
       .digest("hex");
     const script = path.join(root, "legacy-check.rs");
-    fs.writeFileSync(script, harness(watch, contract, digest));
+    fs.writeFileSync(script, harness(watch, contract, ci, digest));
     const result = spawnSync("rust-script", ["--test", script], {
       encoding: "utf8",
       // rust-script 0.34 uses cargo test directly and does not forward script arguments.
@@ -57,14 +63,14 @@ test("actual legacy driver qualifies a cold cut before R and retains resume and 
       0,
       `${String(result.error ?? "")}\n${result.stdout}\n${result.stderr}`,
     );
-    assert.match(result.stdout, /1 passed; 0 failed/);
+    assert.match(result.stdout, /2 passed; 0 failed/);
     for (const name of cases) assert.ok(result.stdout.includes(`scenario ${name}: passed`), name);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
-function harness(watch: string, contract: string, digest: string): string {
+function harness(watch: string, contract: string, ci: string, digest: string): string {
   return `//! \`\`\`cargo
 //! [dependencies]
 //! serde_json = "1"
@@ -84,6 +90,7 @@ const BRANCH: &str = "release/v1.2.3";
 const TAG: &str = "v1.2.3";
 #[path = ${JSON.stringify(watch)}] mod pr_watch;
 #[path = ${JSON.stringify(contract)}] mod pr_contract;
+#[path = ${JSON.stringify(ci)}] mod actual_ci;
 #[derive(Default)]
 struct State { mode: String, events: Vec<String>, lists: usize, dispatches: usize,
     budget_checks: usize, lease_checks: usize, parent_reads: usize }
@@ -94,6 +101,8 @@ fn unused<T>() -> Result<T, String> { panic!("unexpected backend operation outsi
 mod pr_budget {
     use super::*;
     pub struct Budget;
+    pub fn check(_: Option<&Budget>) -> Result<(), String> { unused() }
+    pub fn child_command(_: &mut std::process::Command, _: Option<&Budget>) -> Result<(), String> { unused() }
     pub fn configured() -> Result<Option<Budget>, String> { unused() }
     impl Budget {
         pub fn new(_: Duration) -> Self { Self }
@@ -106,7 +115,10 @@ mod pr_budget {
         pub fn sleep(&self, _: Duration) -> Result<(), String> { self.check() }
     }
 }
-mod pr_pin { pub mod lock {
+mod pr_pin {
+    pub fn validate(_:u64,_:&str,_:&str,_:&std::path::Path)->Result<(),String>{super::unused()}
+    pub fn wait_for_promotion(_:u64,_:&str,_:&str,_:&std::path::Path)->Result<(),String>{super::unused()}
+    pub mod lock {
     use super::super::*;
     pub struct Operator;
     impl Operator { pub fn verify(&self) -> Result<(), String> {
@@ -118,12 +130,12 @@ mod pr_pin { pub mod lock {
 } }
 mod pr_ci {
     use super::*;
-    pub fn qualify_check(repo: &str, branch: &str, head: &str, cut: &str,
-        budget: Option<&pr_budget::Budget>, _: &Path) -> Result<(), String> {
+    pub fn start_check(repo: &str, branch: &str, head: &str, cut: &str,
+        budget: Option<&pr_budget::Budget>, _: &Path) -> Result<Option<u64>, String> {
         assert_eq!((repo, branch, head, cut), (REPO, BRANCH, HEAD, CUT));
         assert!(budget.is_some());
         event("qualify");
-        if mode("failed-check") || mode("failed-main-drift") { Err("Check failed".into()) } else { Ok(()) }
+        if mode("failed-check") || mode("failed-main-drift") { Err("Check failed".into()) } else { Ok(if mode("overlap-source") { Some(123456) } else { None }) }
     }
     pub fn published_identity(_: &pr_contract::Candidate, _: &Path) -> Result<(), String> { unused() }
 }
@@ -135,6 +147,7 @@ mod pr_promote {
 }
 mod pr_github {
     use super::*;
+    pub fn repository(_: &Path) -> Result<String, String> { unused() }
     pub fn api(repo: &str, resource: &str, _: &Path) -> Result<Value, String> {
         assert_eq!(repo, REPO);
         if resource.starts_with("actions/workflows/release.yml/runs?") {
@@ -183,8 +196,20 @@ mod pr_github {
         assert_eq!(tag,TAG); event("tag"); Ok(if mode("tag-appeared") {Some(HEAD.into())} else {None}) }
     pub fn output(program: &str, args: &[&str], _: &Path) -> Result<String, String> {
         assert_eq!(program,"gh");
-        assert_eq!(args, ["workflow","run","release.yml","--repo",REPO,"--ref",BRANCH,
-            "--field",&format!("tag_name={TAG}"),"--field","release_pr=42","--field",&format!("expected_sha={HEAD}")]);
+        let mut expected = vec!["workflow".to_owned(),"run".into(),"release.yml".into(),"--repo".into(),REPO.into(),"--ref".into(),BRANCH.into(),
+            "--field".into(),format!("tag_name={TAG}"),"--field".into(),"release_pr=42".into(),"--field".into(),format!("expected_sha={HEAD}")];
+        let mut declared = vec!["tag_name", "release_pr", "expected_sha", "pinned"];
+        if mode("overlap-source") {
+            declared.push("qualification_deadline");
+            expected.extend(["--field".into(), "qualification_deadline=123456".into()]);
+        }
+        // Behave like the real GitHub dispatcher: old H rejects undeclared inputs.
+        for field in args[7..].chunks_exact(2) {
+            assert_eq!(field[0], "--field");
+            let key = field[1].split_once('=').expect("dispatch field").0;
+            assert!(declared.contains(&key), "GitHub422: undeclared input {key}");
+        }
+        assert_eq!(args, expected.iter().map(String::as_str).collect::<Vec<_>>());
         event("dispatch"); STATE.with(|s| s.borrow_mut().dispatches += 1); Ok(String::new())
     }
     pub fn protect_release_pr(_: &str, _: u64, _: &Path) -> Result<Value, String> { unused() }
@@ -200,7 +225,7 @@ fn actual_legacy_driver_handoff() {
         STATE.with(|s| {
             let s = s.borrow();
             match scenario {
-                "cold" => {
+                "cold" | "overlap-source" => {
                     assert_eq!(result,Ok(Some(303)));
                     assert_eq!(s.dispatches,1);
                     assert_eq!(s.events, ["find-run","parent","budget","lease","qualify","budget","lease",
@@ -216,7 +241,7 @@ fn actual_legacy_driver_handoff() {
                 value if value.starts_with("lease-") => { assert_eq!(result,Err("lease lost".into())); }
                 _ => assert_eq!(result,Ok(None),"{scenario}"),
             }
-            if scenario != "cold" { assert_eq!(s.dispatches,0,"{scenario} dispatched stale R"); }
+            if scenario != "cold" && scenario != "overlap-source" { assert_eq!(s.dispatches,0,"{scenario} dispatched stale R"); }
             if scenario.ends_with("-before") { assert!(!s.events.iter().any(|e| e == "qualify")); }
             if scenario != "existing-run" && scenario != "existing-merged-run" && scenario != "merged-without-run" && !scenario.ends_with("-before") {
                 assert_eq!(s.events.iter().filter(|e| *e == "qualify").count(),1);

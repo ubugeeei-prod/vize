@@ -230,7 +230,7 @@ fn happy_path_keeps_opinionated_rules_opt_in() {
     assert!(essential_script.contains(&"script/valid-define-props"));
     assert!(essential_script.contains(&"script/no-import-compiler-macros"));
     assert!(essential_script.contains(&"script/no-ref-as-operand"));
-    assert!(!essential_script.contains(&"script/no-duplicate-attr-inheritance"));
+    assert!(essential_script.contains(&"script/no-duplicate-attr-inheritance"));
     assert!(!happy_path_script.contains(&"script/no-unused-emit-declarations"));
     assert!(!essential_script.contains(&"script/no-unused-emit-declarations"));
     assert!(!happy_path_script.contains(&"script/no-reactive-destructure"));
@@ -329,7 +329,7 @@ emit('save')
 }
 
 #[test]
-fn essential_runs_script_correctness_without_happy_path_warnings() {
+fn essential_runs_script_correctness_without_unrelated_strict_policies() {
     let source = r#"<script setup lang="ts">
 import { defineProps, ref } from 'vue'
 
@@ -353,7 +353,7 @@ emit('save')
     assert!(rules.contains("script/no-import-compiler-macros"));
     assert!(rules.contains("script/valid-define-props"));
     assert!(rules.contains("script/no-ref-as-operand"));
-    assert!(!rules.contains("script/no-duplicate-attr-inheritance"));
+    assert!(rules.contains("script/no-duplicate-attr-inheritance"));
     assert!(!rules.contains("script/no-unused-emit-declarations"));
 }
 

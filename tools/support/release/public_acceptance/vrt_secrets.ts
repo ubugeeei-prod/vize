@@ -1,20 +1,119 @@
 import assert from "node:assert/strict";
-import { fstatSync, fsyncSync } from "node:fs";
+import { fstatSync, fsyncSync, writeSync } from "node:fs";
 import { lstat, readFile, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { isAnyArrayBuffer, isArrayBufferView, isNativeError, isProxy } from "node:util/types";
 import { inventory, type Evidence } from "./vrt_artifacts.ts";
 import { sha256 } from "./vrt_fixtures.ts";
 import { scanRetained } from "./vrt_retained_scan.ts";
 
 const receiptName = "vrt-log-barrier.json";
 const schema = "vize-public-vrt-log-barrier-v1";
+// Snapshot the observer's Node formatter before any installed product executes.
+const nativeStackDescriptor = Object.getOwnPropertyDescriptor(new Error(), "stack");
+const nativePrepareStackTrace = Object.getOwnPropertyDescriptor(Error, "prepareStackTrace")?.value;
+const errorToStringDescriptor = Object.getOwnPropertyDescriptor(Error.prototype, "toString");
+
+const diagnosticPhases = [
+  "observer-entry",
+  "observer-cleanup",
+  "installed-native-custody",
+  "sealed-delivered-inputs",
+  "public-chromium",
+  "configured-public-api",
+  "mandatory-public-hosted-cli-and-audits",
+  "mandatory-normally-trusted-public-https",
+  "final-installed-custody",
+  "trusted-config-task",
+  "trusted-static-host",
+  "trusted-tunnel",
+  "trusted-gallery-readiness",
+  "trusted-session",
+  "trusted-browser-context",
+  "trusted-cdp",
+  "trusted-observation",
+  "trusted-cleanup-cdp",
+  "trusted-cleanup-context",
+  "trusted-cleanup-session",
+  "trusted-cleanup-tunnel",
+  "trusted-cleanup-host",
+  "trusted-cleanup-config",
+  "hosted-audit-installation",
+  "hosted-audit-build",
+  "hosted-audit-vendor-bytes",
+  "hosted-audit-previews",
+  "hosted-audit-run-all",
+  "hosted-audit-positive-results",
+  "hosted-audit-individual",
+  "hosted-audit-browser-version",
+  "hosted-audit-vendor-requests",
+  "hosted-audit-vendor-refusal",
+  "closure-barrier",
+  "closure-trusted-surfaces",
+  "closure-published-children",
+  "seal-owned-writes",
+  "seal-log-identity",
+  "seal-stdio-drain",
+  "seal-retained-scan",
+  "seal-private-scan",
+  "seal-recheck",
+  "seal-receipt",
+  "seal-complete",
+  "promotion-inputs",
+  "promotion-whole-files",
+  "promotion-retained-fallback",
+  "promotion-cleanup",
+] as const;
+export type VrtPhase = (typeof diagnosticPhases)[number];
+export type VrtDisposition = "entered" | "passed" | "failed";
+type Diagnostic = (phase: VrtPhase, disposition: VrtDisposition) => void;
+
+/** Fixed vocabulary only: never accept an error, path, URL, credential or derived fingerprint. */
+export function vrtDiagnosticRecord(phase: VrtPhase, disposition: VrtDisposition): string {
+  if (!diagnosticPhases.includes(phase) || !["entered", "passed", "failed"].includes(disposition))
+    throw new Error("Invalid VRT diagnostic vocabulary");
+  return JSON.stringify({ schema: "vize-public-vrt-diagnostic-v1", phase, disposition }) + "\n";
+}
+
+/** The reviewed shell opens fd3 before redirecting all private stdout/stderr. */
+export function writeVrtDiagnostic(phase: VrtPhase, disposition: VrtDisposition): void {
+  writeSync(3, vrtDiagnosticRecord(phase, disposition));
+}
 
 /** Campaign credentials stay private through failure evidence, cleanup and the closed-writer scan. */
 export class VrtSecrets {
+  readonly #diagnostic?: Diagnostic;
+  constructor(diagnostic?: Diagnostic) {
+    this.#diagnostic = diagnostic;
+  }
   #tokens: Buffer[] = [];
   #writes = new Set<Promise<void>>();
   #writeFailures = 0;
+  #failureDetails: Array<{ kind: "save" | "error"; file?: string; detail: unknown }> = [];
+  #failureBytes = 0;
+  #failureTruncated = false;
   #closed = false;
+  #phase: VrtPhase = "observer-entry";
+
+  stage(phase: VrtPhase): void {
+    if (this.report(phase, "entered")) this.#phase = phase;
+  }
+
+  failed(phase = this.#phase): void {
+    this.report(phase, "failed");
+  }
+
+  report(phase: VrtPhase, disposition: VrtDisposition): boolean {
+    try {
+      vrtDiagnosticRecord(phase, disposition);
+      this.#diagnostic?.(phase, disposition);
+      return true;
+    } catch {
+      // Diagnostic channel failure refuses acceptance but never interrupts owned cleanup or scans.
+      process.exitCode ||= 1;
+      return false;
+    }
+  }
 
   remember(token: string): void {
     assert.equal(this.#closed, false, "Credential scope already closed");
@@ -51,8 +150,9 @@ export class VrtSecrets {
       this.#writes.add(writing);
       void writing.then(
         () => this.#writes.delete(writing),
-        () => {
+        (error: unknown) => {
           this.#writeFailures++;
+          this.#diagnose("save", error, name);
           this.#writes.delete(writing);
         },
       );
@@ -72,7 +172,90 @@ export class VrtSecrets {
     return safe;
   }
 
+  /** Private bounded evidence only; never evaluate user getters, hooks or binary payloads. */
+  #diagnose(kind: "save" | "error", error: unknown, file?: string): void {
+    if (this.#failureDetails.length >= 16 || this.#failureTruncated) {
+      this.#failureTruncated = true;
+      return;
+    }
+    try {
+      let nodes = 0;
+      const seen = new WeakSet<object>();
+      const text = (value: string) =>
+        value.length > 4096 ? "[omitted oversized string]" : this.#text(value);
+      const data = (value: object, key: string): PropertyDescriptor | undefined => {
+        let current: object | null = value;
+        for (let depth = 0; current && depth < 8; depth++) {
+          if (isProxy(current)) return {};
+          const descriptor = Object.getOwnPropertyDescriptor(current, key);
+          if (descriptor) return descriptor;
+          current = Object.getPrototypeOf(current);
+        }
+        return current ? {} : undefined;
+      };
+      const nativeStack = (value: object, descriptor: PropertyDescriptor): unknown => {
+        const prepare = data(Error, "prepareStackTrace");
+        if (
+          !isNativeError(value) ||
+          descriptor.get !== nativeStackDescriptor?.get ||
+          !nativeStackDescriptor?.get ||
+          (prepare && (!("value" in prepare) || prepare.value !== nativePrepareStackTrace)) ||
+          data(value, "toString")?.value !== errorToStringDescriptor?.value ||
+          ["name", "message"].some((key) => typeof data(value, key)?.value !== "string")
+        )
+          return { omitted: "accessor" };
+        return nativeStackDescriptor.get.call(value);
+      };
+      const snapshot = (value: unknown, depth = 0): unknown => {
+        if (++nodes > 128 || depth > 6) return { omitted: "depth-or-node-limit" };
+        if (typeof value === "string") return text(value);
+        if (value === null || typeof value === "boolean") return value;
+        if (typeof value === "number")
+          return Number.isFinite(value) ? value : { omitted: "number" };
+        if (typeof value !== "object") return { omitted: typeof value };
+        if (isProxy(value)) return { omitted: "proxy" };
+        if (isArrayBufferView(value) || isAnyArrayBuffer(value)) return { omitted: "binary" };
+        if (seen.has(value)) return { omitted: "cycle" };
+        seen.add(value);
+        const keys = Reflect.ownKeys(value);
+        return {
+          type: Array.isArray(value) ? "array" : isNativeError(value) ? "error" : "object",
+          properties: keys.slice(0, 32).map((key) => {
+            const descriptor = Object.getOwnPropertyDescriptor(value, key);
+            return {
+              name: text(typeof key === "string" ? key : String(key)),
+              value:
+                descriptor && "value" in descriptor
+                  ? snapshot(descriptor.value, depth + 1)
+                  : key === "stack" && descriptor
+                    ? snapshot(nativeStack(value, descriptor), depth + 1)
+                    : { omitted: "accessor" },
+            };
+          }),
+          ...(keys.length > 32 ? { omittedProperties: true } : {}),
+        };
+      };
+      const record = {
+        kind,
+        ...(file === undefined ? {} : { file: text(file) }),
+        detail: snapshot(error),
+      };
+      // Include pretty-print and parent indentation in the whole receipt budget.
+      const bytes =
+        Buffer.byteLength(JSON.stringify(record, null, 2).replace(/^/gm, "        ")) + 2;
+      if (this.#failureBytes + bytes > 64 * 1024) this.#failureTruncated = true;
+      else {
+        this.#failureDetails.push(record);
+        this.#failureBytes += bytes;
+      }
+    } catch {
+      // Diagnostics never replace the original rejection or interrupt owned cleanup.
+      this.#failureTruncated = true;
+    }
+  }
+
   sanitizeError(error: unknown, depth = 0): unknown {
+    if (depth === 0) this.#diagnose("error", error);
     if (this.#tokens.length === 0) return error;
     if (depth > 4) return new Error("Additional nested failure omitted");
     const message = this.#text(error instanceof Error ? error.message : String(error));
@@ -91,8 +274,37 @@ export class VrtSecrets {
     return safe;
   }
 
+  async closeBarrier(
+    trustedSurfaces: () => void | Promise<void>,
+    publishedChildren: () => void | Promise<void>,
+  ): Promise<void> {
+    this.stage("closure-barrier");
+    const checks = [
+      ["closure-trusted-surfaces", trustedSurfaces],
+      ["closure-published-children", publishedChildren],
+    ] as const;
+    const results = await Promise.allSettled(
+      checks.map(([phase, verify]) =>
+        Promise.resolve().then(async () => {
+          try {
+            await verify();
+            this.report(phase, "passed");
+          } catch (error) {
+            this.failed(phase);
+            throw error;
+          }
+        }),
+      ),
+    );
+    assert.ok(
+      results.every((result) => result.status === "fulfilled"),
+      "Owned VRT closure barrier refused",
+    );
+  }
+
   /** No timers, child streams or evidence writes may remain owned when this starts. */
   async seal(log: string, retainedRoot?: string): Promise<void> {
+    this.stage("seal-owned-writes");
     assert.equal(this.#closed, false);
     this.#closed = true;
     await Promise.allSettled(this.#writes);
@@ -100,11 +312,13 @@ export class VrtSecrets {
       console.error("VRT retained writer failure; acceptance refused");
       process.exitCode ||= 1;
     }
+    this.stage("seal-log-identity");
     const output = await realpath(path.dirname(log));
     assert.equal(path.basename(log), "vrt.log");
     const info = await lstat(log, { bigint: true });
     assert.equal(info.isSymbolicLink(), false);
     assert.equal(info.isFile(), true);
+    this.stage("seal-stdio-drain");
     for (const [stream, descriptor] of [
       [process.stdout, 1],
       [process.stderr, 2],
@@ -120,6 +334,7 @@ export class VrtSecrets {
     }
     const retainedOutput = retainedRoot ? await realpath(retainedRoot) : undefined;
     if (retainedOutput) {
+      this.stage("seal-retained-scan");
       assert.ok(output !== retainedOutput && !output.startsWith(retainedOutput + path.sep));
       assert.ok(!retainedOutput.startsWith(output + path.sep));
     }
@@ -129,6 +344,7 @@ export class VrtSecrets {
       );
       assert.equal(quarantined, false, "Unsafe retained artifact quarantined; acceptance refused");
     }
+    this.stage("seal-private-scan");
     const retainedFiles = retainedOutput ? await inventory(retainedOutput) : undefined;
     const before = await inventory(output);
     assert.equal(
@@ -146,6 +362,7 @@ export class VrtSecrets {
       }
       assert.deepEqual(await inventory(retainedOutput), retainedFiles);
     }
+    this.stage("seal-recheck");
     assert.deepEqual(await inventory(output), before, "Retained bytes changed during scan");
     const body =
       JSON.stringify(
@@ -156,6 +373,10 @@ export class VrtSecrets {
           allRetainedArtifactsScanned: true,
           credentialCount: this.#tokens.length,
           retainedWriterFailures: this.#writeFailures,
+          failureDiagnostics: {
+            entries: JSON.parse(this.#text(JSON.stringify(this.#failureDetails))),
+            truncated: this.#failureTruncated,
+          },
           files: before,
           retainedOutput,
           retainedFiles,
@@ -163,13 +384,17 @@ export class VrtSecrets {
         null,
         2,
       ) + "\n";
+    this.stage("seal-receipt");
     this.#check(body);
     await writeFile(path.join(output, receiptName), body, { flag: "wx" });
+    this.report("seal-complete", "passed");
   }
 
   erase(): void {
     for (const token of this.#tokens) token.fill(0);
     this.#tokens.length = 0;
+    this.#failureDetails.length = 0;
+    this.#failureBytes = 0;
     this.#closed = true;
   }
 }

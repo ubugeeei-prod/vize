@@ -46,7 +46,6 @@ const sourceNeeds = [
   "pr-js-packages",
   "pr-native-runtime",
   "pr-playground-test",
-  "wit-contracts",
   "nuxt-module-qualification",
   "canonical-corpus",
 ];
@@ -60,7 +59,10 @@ void test("scheduled tooling owns the CLI producer without delaying independent 
   assert.equal(full.jobs["full-source-cli"].uses, "./.github/workflows/full-source-cli.yml");
   assert.equal(full.jobs["full-source-cli"].if, fullCondition);
   assert.equal(full.jobs["tooling-plan"].if, fullCondition);
-  assert.equal(full.jobs["test-scripts"].if, alwaysFullCondition);
+  assert.equal(
+    full.jobs["test-scripts"].if,
+    "${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
+  );
   assert.deepEqual(full.jobs["test-scripts"].needs, ["full-source-cli", "tooling-plan"]);
   assert.equal(source.jobs["pr-source-cli"], undefined);
   assert.equal(source.jobs["pr-tooling-scripts"], undefined);

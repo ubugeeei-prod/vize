@@ -48,7 +48,9 @@ export function verifyProjectHostCalls(events, custody, receipt) {
 
 export function createHostCommandRunner({ temporary, output, version }) {
   return (command, args, options = {}, captureName = command === "npm" ? "install" : "tests") => {
-    assert.ok(["install", "tests", "html-tests"].includes(captureName));
+    assert.ok(
+      ["install", "tests", "html-tests", "linked-worktree-html-tests"].includes(captureName),
+    );
     const result = spawnSync(command, args, {
       cwd: temporary,
       encoding: "utf8",
@@ -187,6 +189,30 @@ async function runProjectHost({ packageDir, artifacts, binary, version, types, t
       const htmlCapture = JSON.parse(fs.readFileSync(path.join(output, "original-html-cli.json")));
       assert.equal(htmlCapture.complete, true);
       qualification.originalHtml = htmlCapture.qualified;
+      if (version === "1.86.0") {
+        const linkedCapture = path.join(output, "linked-worktree-html.json");
+        run(
+          process.execPath,
+          ["--test", "src/cli/html-custody.test.ts", "src/git-worktree-html.test.ts"],
+          {
+            cwd: packageDir,
+            env: {
+              ...process.env,
+              NODE_OPTIONS:
+                `${process.env.NODE_OPTIONS ?? ""} --require=${JSON.stringify(htmlPreload)}`.trim(),
+              VIZE_OXLINT_NATIVE_CUSTODY: htmlConfiguration,
+              VIZE_OXLINT_TEST_ENTRYPOINT: engine,
+              VIZE_OXLINT_LINKED_WORKTREE_CAPTURE: linkedCapture,
+            },
+          },
+          "linked-worktree-html-tests",
+        );
+        const linked = JSON.parse(fs.readFileSync(linkedCapture));
+        assert.equal(linked.source, receipt.source.head);
+        assert.equal(linked.observations.length, 7);
+        assert.ok(linked.observations.every((observation) => observation.passed === true));
+        qualification.linkedWorktreeHtml = linked.observations.map(({ label }) => label);
+      }
     });
     const waiting = performance.now();
     let replay;

@@ -1,0 +1,75 @@
+{
+  "schema": "vize.lint.preset-default-warning-controls",
+  "version": 1,
+  "authority": "Independently authored complete expected packets before candidate execution. Valid Vue control-flow syntax and strict depth preference are warnings, not compiler-error claims. No historical corpus or diagnostic is rebaselined.",
+  "cases": [
+    {
+      "id": "else-for",
+      "filename": "DefaultControlFlow.vue",
+      "source": "<template><section><p v-if=\"true\">one</p><p v-for=\"item in [1]\" v-else :key=\"item\">{{ item }}</p></section></template>\n",
+      "sourceSha256": "134c24beedb595d340a37f3872c3147e5d5ffcf627d7406a194397ee558e0cea",
+      "rule": "vue/no-use-v-else-with-v-for",
+      "enabledPresets": [
+        "happy-path",
+        "ecosystem",
+        "opinionated",
+        "nuxt"
+      ],
+      "diagnostic": {
+        "rule_name": "vue/no-use-v-else-with-v-for",
+        "severity": "warning",
+        "message": "Unexpected `v-else` and `v-for` on the same element. Move `v-else` to a wrapper element instead.",
+        "start": 41,
+        "end": 97,
+        "help": "Move the conditional directive to a wrapper element around the v-for element.",
+        "fix": null,
+        "labels": []
+      },
+      "cliMessage": {
+        "ruleId": "vue/no-use-v-else-with-v-for",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-use-v-else-with-v-for] Unexpected `v-else` and `v-for` on the same element. Move `v-else` to a wrapper element instead.",
+        "line": 1,
+        "column": 42,
+        "endLine": 1,
+        "endColumn": 98,
+        "help": "Move the conditional directive to a wrapper element around the v-for element."
+      },
+      "repair": "<template><section><p v-if=\"true\">one</p><template v-else><p v-for=\"item in [1]\" :key=\"item\">{{ item }}</p></template></section></template>\n"
+    },
+    {
+      "id": "deep-props",
+      "filename": "DefaultDepthPolicy.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><p>{{ name }}</p></template>\n",
+      "sourceSha256": "cf1e5cb02e9c48f2b07e3e6cac25ee8e2cc1721267908dbaead8f1dd6497faf9",
+      "rule": "script/no-deep-destructure-in-props",
+      "enabledPresets": [
+        "opinionated",
+        "nuxt"
+      ],
+      "diagnostic": {
+        "rule_name": "script/no-deep-destructure-in-props",
+        "severity": "warning",
+        "message": "Avoid deeply nested destructuring in defineProps",
+        "start": 31,
+        "end": 49,
+        "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+        "fix": null,
+        "labels": []
+      },
+      "cliMessage": {
+        "ruleId": "script/no-deep-destructure-in-props",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+        "line": 2,
+        "column": 7,
+        "endLine": 2,
+        "endColumn": 25,
+        "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+      },
+      "repair": "<script setup lang=\"ts\">\nconst { user } = defineProps<{ user: { name: string } }>();\n</script>\n<template><p>{{ user.name }}</p></template>\n"
+    }
+  ]
+}

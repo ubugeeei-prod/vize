@@ -101,8 +101,9 @@ fn walk_chain<'a>(
     let source = doc.source;
     let mut gaps = siblings
         .iter()
-        .filter(|child| matches!(child, SurfaceChild::Comment(_) | SurfaceChild::Text(_)))
-        .filter(|child| {
+        .enumerate()
+        .filter(|(_, child)| matches!(child, SurfaceChild::Comment(_) | SurfaceChild::Text(_)))
+        .filter(|(_, child)| {
             let start = child_start(source, child);
             start > if_op.span.start && start < if_op.span.end
         })
@@ -110,7 +111,7 @@ fn walk_chain<'a>(
     let mut branches = if_op.branches.iter().peekable();
     loop {
         let next_branch = branches.peek().map(|branch| branch.span.start);
-        let next_gap = gaps.peek().map(|child| child_start(source, child));
+        let next_gap = gaps.peek().map(|(_, child)| child_start(source, child));
         let Some(first) = [next_branch, next_gap].into_iter().flatten().min() else {
             break;
         };
@@ -122,13 +123,14 @@ fn walk_chain<'a>(
             }
         } else {
             match gaps.next() {
-                Some(SurfaceChild::Comment(token)) => {
+                Some((_, SurfaceChild::Comment(token))) => {
                     visitor(MarkupNode::Comment(token_range(source, token)));
                 }
-                Some(SurfaceChild::Text(token)) => {
+                Some((index, SurfaceChild::Text(token))) => {
                     if let Some(allocator) = doc.allocator
-                        && let Some(content) =
-                            vize_l1_to_l2::lower::branch_gap_text(allocator, token.text, in_pre)
+                        && let Some(content) = vize_l1_to_l2::lower::branch_gap_text_at(
+                            allocator, siblings, index, in_pre,
+                        )
                     {
                         visitor(MarkupNode::Text(MarkupText::from_static(
                             content,
@@ -158,13 +160,13 @@ pub(in crate::markup) fn walk_kept_gaps<'a>(
     else {
         return;
     };
-    for child in siblings {
+    for (index, child) in siblings.iter().enumerate() {
         if let SurfaceChild::Text(token) = child {
             let start = child_start(doc.source, child);
             if start > if_op.span.start
                 && start < if_op.span.end
                 && let Some(content) =
-                    vize_l1_to_l2::lower::branch_gap_text(allocator, token.text, in_pre)
+                    vize_l1_to_l2::lower::branch_gap_text_at(allocator, siblings, index, in_pre)
             {
                 visitor(MarkupText::from_static(
                     content,

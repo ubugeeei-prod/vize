@@ -175,8 +175,6 @@ jobs:
           rust-script tools/commands/fixtures/glyph-corpus-waiver-audit.rs \
             --output "$FIXTURE_REPORT_DIR/glyph-waiver-issues.json"
 
-      - uses: ./.github/actions/setup-moonbit
-
       - name: Setup Wild linker
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
@@ -250,7 +248,7 @@ jobs:
         env:
           LINT_DIVERGENCE_MODE: ${{ inputs.lint_divergence_mode || 'enforce' }}
         run: |
-          rust-script tools/commands/fixtures/lint-divergence-report.rs \
+          node tools/commands/fixtures/lint-divergence-report.ts \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
             --measure-coverage-gap \

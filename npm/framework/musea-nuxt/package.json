@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/musea-nuxt",
-  "version": "0.457.0",
+  "version": "0.463.0",
   "description": "Nuxt mock layer for Musea - enables Nuxt component isolation in galleries",
   "keywords": [
     "component-gallery",
@@ -30,6 +30,10 @@
     ".": {
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.mts"
+    },
+    "./auto-imports": {
+      "import": "./dist/auto-imports.mjs",
+      "types": "./dist/auto-imports.d.mts"
     }
   },
   "publishConfig": {

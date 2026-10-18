@@ -145,7 +145,7 @@ fn project_key(project_root: &Path) -> vize_carton::String {
     encode_digest(digest.finalize())
 }
 
-fn encode_digest(digest: impl AsRef<[u8]>) -> vize_carton::String {
+pub(super) fn encode_digest(digest: impl AsRef<[u8]>) -> vize_carton::String {
     let digest = digest.as_ref();
     let mut encoded = vize_carton::String::with_capacity(digest.len() * 2);
     for nibble in digest.iter().flat_map(|byte| [byte >> 4, byte & 0x0f]) {

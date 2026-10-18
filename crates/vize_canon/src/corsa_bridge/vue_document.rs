@@ -148,11 +148,15 @@ impl CorsaBridge {
         )?;
         let CorsaVueVirtualProject {
             host,
-            documents,
+            mut documents,
             session_project_root,
             session_config_path,
             materialized_changes,
         } = project;
+        if let Some(project_root) = session_project_root.as_deref() {
+            host.source_catalog
+                .extend_native_project_documents(project_root, &mut documents);
+        }
         self.open_canon_project_documents(
             documents,
             session_project_root,

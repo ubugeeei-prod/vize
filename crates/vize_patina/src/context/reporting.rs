@@ -42,6 +42,29 @@ impl<'a> LintContext<'a> {
         );
     }
 
+    /// A late template capability already addresses the complete SFC. Reuse
+    /// the original template pragma state without shifting its ranges twice.
+    pub(crate) fn report_template_in_sfc(&mut self, diagnostic: LintDiagnostic) {
+        let local = diagnostic
+            .start
+            .checked_sub(self.source_offset)
+            .zip(diagnostic.end.checked_sub(self.source_offset))
+            .filter(|(start, end)| start <= end && (*end as usize) <= self.source.len());
+        let Some((start, _)) = local else {
+            debug_assert!(
+                false,
+                "a template capability must report within its template frame"
+            );
+            return;
+        };
+        self.report_at_line(
+            diagnostic,
+            self.offset_to_line(start),
+            DirectiveDomain::Template,
+            0,
+        );
+    }
+
     /// Report a diagnostic about a directive comment itself. Directives and
     /// rule selection do not apply to it.
     pub(crate) fn report_directive(&mut self, mut diagnostic: LintDiagnostic) {

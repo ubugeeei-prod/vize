@@ -97,10 +97,12 @@ jobs:
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/cache-vp-bootstrap
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
+          version: latest
           node-version-file: "package.json"
           cache: true
+          cache-save: false
           run-install: true
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
@@ -132,3 +134,40 @@ jobs:
           node-version-file: "package.json"
           cache: false
           run-install: false
+
+  # The Linux x64 Rust workers and check-js restore this same dependency-store
+  # key, but never race to save it. Bootstrap runtime caching remains separate.
+  # Explicit latest preserves the old action's installer default; the new
+  # action otherwise auto-selects the project's Vite+ dependency version.
+  seed-vp-dependencies:
+    name: Seed source workers' JS dependency store
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'schedule')
+    permissions: { contents: read, actions: write }
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: true
+          run-install: false
+      - name: Require the source and runtime identity used by Rust workers
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          import { readFileSync } from 'node:fs';
+          const manifest = JSON.parse(readFileSync('package.json', 'utf8'));
+          assert.equal(process.platform, 'linux');
+          assert.equal(process.arch, 'x64');
+          assert.equal(process.versions.node, manifest.devEngines.runtime.version);
+          assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), process.env.GITHUB_SHA);
+          NODE
+      - name: Validate the complete frozen dependency store before saving
+        run: |
+          vp install --frozen-lockfile --prefer-offline
+          git diff --exit-code -- package.json pnpm-lock.yaml pnpm-workspace.yaml

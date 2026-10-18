@@ -4,6 +4,7 @@
   "include": [
     "tools/support/release/consumer_recovery/**/*.ts",
     "tests/tooling/release-consumer-recovery.test.ts",
+    "tests/tooling/release-consumer-runtime.test.ts",
     "tests/tooling/release-consumer-archive.test.ts",
     "tools/support/release/public_acceptance/accept.ts"
   ]

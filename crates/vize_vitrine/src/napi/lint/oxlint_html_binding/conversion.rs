@@ -55,6 +55,7 @@ pub(super) fn completed(
                     profile::SourceRole::GitIgnore => "GitIgnore",
                     profile::SourceRole::GitInfoExclude => "GitInfoExclude",
                     profile::SourceRole::CustomIgnore => "CustomIgnore",
+                    profile::SourceRole::GitMetadata => "GitMetadata",
                 }
                 .into(),
                 bytes: source.bytes,

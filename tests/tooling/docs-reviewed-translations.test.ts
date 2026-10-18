@@ -125,10 +125,25 @@ void test("Japanese Content Mapper review survives regeneration with every whole
   assert.equal(retained.get(path), japanese, "regeneration retains the complete authored review");
   const fences = (source: string) =>
     [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm)].map((match) => match[0]);
-  assert.deepEqual(fences(japanese), fences(english), "all five full runnable examples remain");
-  const digest = createHash("sha256")
-    .update(JSON.stringify(fences(japanese)))
-    .digest("hex");
+  const reviewedRecipes = fences(japanese);
+  assert.deepEqual(reviewedRecipes, fences(english), "all six full runnable examples agree");
+  assert.equal(reviewedRecipes.length, 6);
+  const originalRecipes = [...reviewedRecipes];
+  assert.deepEqual(
+    originalRecipes.splice(4, 1),
+    [
+      `\`\`\`json
+{
+  "vueCompilerOptions": {
+    "checkUnknownProps": true,
+    "strictCssModules": true
+  }
+}
+\`\`\``,
+    ],
+    "only the reviewed top-level Vue options recipe succeeds the five original recipes",
+  );
+  const digest = createHash("sha256").update(JSON.stringify(originalRecipes)).digest("hex");
   assert.equal(digest, "8940b963ebe24b35e139a63098e85a348de702114d24b7d243b4497cf01ffcea");
   const links = (source: string) =>
     [...source.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]);
@@ -154,9 +169,16 @@ void test("Japanese rule options retain the complete authored review and origina
   );
   const fencePattern = /^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm;
   const fences = [...japanese.matchAll(fencePattern)].map((match) => match[0]);
-  const inlineTokens = [
+  const currentInlineTokens = [
     ...japanese.replace(fencePattern, "").matchAll(/(?<!`)`([^`\n]+)`(?!`)/g),
   ].map((match) => match[1]);
+  assert.equal(currentInlineTokens.length, 135);
+  const inlineTokens = [...currentInlineTokens];
+  assert.deepEqual(
+    inlineTokens.splice(19, 3),
+    ["vue/valid-v-on", "{ modifiers?: string[] }", "[]"],
+    "only the approved custom modifier row succeeds the frozen 132-token contract",
+  );
   const digest = (value: string[]) =>
     createHash("sha256").update(JSON.stringify(value)).digest("hex");
   const propsCorrections = new Map<number, string>([
@@ -191,7 +213,7 @@ void test("Japanese rule options retain the complete authored review and origina
   );
   assert.deepEqual(
     [...japanese.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]),
-    ["./options-type.md", "../guide/lint-execution.md"],
+    ["./options-type.md", "../guide/lint-execution.md", "./reference/vue-valid-v-on.md"],
     "retain the original type-aware destination and the authored rule-selection next step",
   );
   assert.ok(readFileSync(resolve(root, "docs/content/ja/guide/lint-execution.md"), "utf8"));

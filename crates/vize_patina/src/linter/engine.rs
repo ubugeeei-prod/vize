@@ -17,6 +17,7 @@ mod rule_sets;
 mod script;
 mod sfc;
 mod tag_scan;
+mod template;
 mod template_extract;
 mod unused_directives;
 
@@ -25,7 +26,7 @@ pub(crate) use template_extract::extract_template_fast;
 use crate::{context::LintContext, diagnostic::LintSummary, preset::LintPreset};
 use vize_armature::Parser;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_croquis::{Croquis, Drawer};
+use vize_croquis::Croquis;
 use vize_l0::Allocator;
 use vize_l0::String;
 use vize_l0::ToCompactString;
@@ -52,6 +53,7 @@ pub(crate) struct SfcTemplateLintInput<'a> {
     pub root: &'a RootNode<'a>,
     pub descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
     pub analysis: TemplateAnalysis<'a>,
+    pub template_syntax: Option<&'a vize_armature::parser::TemplateSyntaxFacts<'a>>,
 }
 
 impl<'a> TemplateRuleEnv<'a> {
@@ -207,95 +209,6 @@ impl Linter {
                     false
                 }
             }
-    }
-
-    fn run_template_rules<'a>(
-        &'a self,
-        allocator: &'a Allocator,
-        source: &'a str,
-        filename: &'a str,
-        root: &RootNode<'a>,
-        analysis: Option<&'a Croquis>,
-        env: TemplateRuleEnv<'a>,
-    ) -> LintResult {
-        let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
-        ctx.set_enabled_rules(self.enabled_rules.clone());
-        ctx.set_config_disabled_rules(self.disabled_rules.clone());
-        ctx.set_config_rule_severities(self.severity_overrides.clone());
-        ctx.set_help_level(self.help_level);
-        ctx.set_custom_elements(&self.custom_elements);
-        ctx.set_dialect(env.dialect);
-        ctx.art_script_analysis = env.art_script_analysis;
-        if let Some(descriptor) = env.sfc_descriptor {
-            ctx.set_sfc_template_descriptor(descriptor);
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        let has_analysis = analysis.is_some();
-        if let Some(analysis) = analysis {
-            ctx.set_analysis(analysis);
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        if has_analysis && super::native_type_aware::has_active_type_aware_rules(self) {
-            ctx.set_analysis_excluded_rules(super::native_type_aware::TYPE_AWARE_RULES);
-        }
-        let rule_count = self.template_rule_count_for_source(
-            source,
-            env.sfc_descriptor
-                .map(|descriptor| descriptor.source.as_ref()),
-        );
-        sfc::facade::dispatch_template_rules(
-            self,
-            &mut ctx,
-            sfc::facade::Dispatch {
-                allocator,
-                source,
-                root,
-                analysis,
-                rules: env.facade_rules,
-                rule_count,
-            },
-        );
-        if self.report_unused_disable_directives {
-            unused_directives::report(self, &mut ctx);
-        }
-
-        let error_count = ctx.error_count();
-        let warning_count = ctx.warning_count();
-        let diagnostics = ctx.into_diagnostics();
-
-        LintResult {
-            filename: filename.to_compact_string(),
-            diagnostics,
-            error_count,
-            warning_count,
-        }
-    }
-
-    fn lint_template_root<'a>(
-        &self,
-        allocator: &'a Allocator,
-        source: &'a str,
-        filename: &'a str,
-        root: &RootNode<'a>,
-        analysis: TemplateAnalysis<'a>,
-        env: TemplateRuleEnv<'a>,
-    ) -> LintResult {
-        let owned_analysis;
-        let analysis = match analysis {
-            TemplateAnalysis::Disabled => None,
-            _ if !self.has_active_semantic_template_rules() => None,
-            TemplateAnalysis::Precomputed(analysis) => Some(analysis),
-            TemplateAnalysis::Lazy => {
-                owned_analysis = profile!("patina.template.croquis", {
-                    let mut analyzer = Drawer::for_lint();
-                    analyzer.analyze_template(root);
-                    analyzer.finish()
-                });
-                Some(&owned_analysis)
-            }
-        };
-
-        self.run_template_rules(allocator, source, filename, root, analysis, env)
     }
 
     /// Lint a Vue template source.

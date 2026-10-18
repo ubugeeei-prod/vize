@@ -21,15 +21,18 @@ mod differential_battery {
                 "../../../../../tests/_fixtures/differential/compiler/conditional-branch-whitespace/inline.template.txt"
             ),
             "<p><b v-if=\"a\">A</b>  <!-- gap --> \t<i v-else>B</i> tail</p>",
+            "<p><b v-if=\"a\">A</b> <!--a--> <!--b--> <i v-else>B</i> tail</p>",
+            "<pre><p><b v-if=\"a\">A</b> <!-- gap --> <i v-else>B</i></p></pre>",
             "<pre><p><b v-if=\"a\">A</b>\n\t<i v-else>B</i></p></pre>",
             "<p><b v-if=\"a\">A</b> \u{a0}\t<i v-else>B</i></p>",
         ] {
+            let compared = compare_template(source);
             assert!(
                 matches!(
-                    compare_template(source),
+                    compared,
                     Ok(TemplateComparison::Compared(lines)) if lines > 0
                 ),
-                "{source}"
+                "{source}: {compared:?}"
             );
         }
     }

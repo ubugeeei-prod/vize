@@ -31,6 +31,21 @@ impl VirtualProject {
     /// Include failed probes: creating a previously missing dependency, or a
     /// higher-priority TypeScript companion, changes native module identity.
     pub(crate) fn editor_resolution_inputs(&self) -> Vec<PathBuf> {
+        self.editor_resolution_inputs_inner(None)
+    }
+
+    /// Reuse syntax from this preparation, while resolving every probe again.
+    pub(crate) fn editor_resolution_inputs_with_import_facts(
+        &self,
+        facts: &mut ModuleSpecifierFactsCache,
+    ) -> Vec<PathBuf> {
+        self.editor_resolution_inputs_inner(Some(facts))
+    }
+
+    fn editor_resolution_inputs_inner(
+        &self,
+        mut facts: Option<&mut ModuleSpecifierFactsCache>,
+    ) -> Vec<PathBuf> {
         let aliases = self.dependency_alias_map();
         let mut inputs = Vec::new();
         for file in self.virtual_files_sorted() {
@@ -47,10 +62,13 @@ impl VirtualProject {
             let Some(source_type) = super::build::source_type_for_path(&file.virtual_path) else {
                 continue;
             };
-            for (specifier, _) in self
-                .rewriter
-                .collect_all_specifier_occurrences(source, source_type)
-            {
+            let occurrences = match facts.as_deref_mut() {
+                Some(facts) => facts.collect_occurrences(source, source_type),
+                None => self
+                    .rewriter
+                    .collect_all_specifier_occurrences(source, source_type),
+            };
+            for (specifier, _) in occurrences {
                 inputs.extend(
                     super::dependency_scan::resolve_dependency_with_inputs(
                         &specifier,

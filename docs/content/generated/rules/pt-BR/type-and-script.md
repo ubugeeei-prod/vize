@@ -705,7 +705,7 @@ Proibir desestruturação profundamente aninhada em defineProps
 [Incorreto](#script-no-deep-destructure-in-props-bad) · [Correto](#script-no-deep-destructure-in-props-good)
 
 Severidade padrão: `warning`  
-Predefinições: _none_  
+Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -1027,7 +1027,7 @@ render($slots.default)
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L44) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L45) · [Todas as regras](all.md)
 
 ### `script/no-deprecated-events-api`
 

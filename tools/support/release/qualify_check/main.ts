@@ -1,57 +1,21 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  bootstrapRequiredWorkflowRuns,
-  createReleaseGateDispatchPlans,
-  releaseGateRunQualifiers,
-} from "../../compat/github/release-preflight-bootstrap.mjs";
-import {
-  assertRequiredWorkflowJobs,
-  latestRequiredWorkflowRun,
-  requiredWorkflowJobNames,
-  selectRequiredWorkflowRuns,
-  summarizeRequiredWorkflowJobFailures,
-} from "../../compat/github/release-preflight-evidence.mjs";
+import { bootstrapRequiredWorkflowRuns } from "../../compat/github/release-preflight-bootstrap.mjs";
 import { githubApiPages, githubApiRequest } from "../../compat/github/release-preflight-github.mjs";
 
-type Row = Record<string, unknown>;
-type CheckedRun = Row & {
-  id: number;
-  run_attempt: number;
-  status: string;
-  conclusion: string | null;
-};
-function assertRun(run: Row): asserts run is CheckedRun {
-  assert.ok(
-    typeof run.id === "number" && Number.isSafeInteger(run.id) && run.id > 0,
-    "positive Check run ID required",
-  );
-  assert.ok(
-    typeof run.run_attempt === "number" &&
-      Number.isSafeInteger(run.run_attempt) &&
-      run.run_attempt > 0,
-    "positive latest Check attempt required",
-  );
-  assert.equal(typeof run.status, "string", "Check run status required");
-  assert.ok(
-    run.conclusion === null || typeof run.conclusion === "string",
-    "Check conclusion required",
-  );
-}
-export type Candidate = { repository: string; branch: string; head: string; cut: string };
-export type Api = {
-  read: (resource: string) => Promise<Row>;
-  pages: (resource: string, collection: string, query?: Record<string, string>) => Promise<Row[]>;
-  dispatch: (resource: string, body: unknown) => Promise<void>;
-};
-type Options = {
-  api: Api;
-  deadline: number;
-  now?: () => number;
-  sleep?: (milliseconds: number) => Promise<void>;
-  log?: (message: string) => void;
-};
+import {
+  createCheckObserver,
+  assertRun,
+  type Row,
+  type Candidate,
+  type Api,
+  type Options,
+} from "./check-state.ts";
+export type { Candidate, Api } from "./check-state.ts";
+import { ensureCheckStarted, waitForExistingCheck, parseQualificationDeadline } from "./overlap.ts";
+export { ensureCheckStarted, waitForExistingCheck, parseQualificationDeadline } from "./overlap.ts";
 
 export function operatorDeadline(environment: NodeJS.ProcessEnv, now = Date.now()) {
   const seconds = environment.VIZE_RELEASE_OPERATOR_TIMEOUT_SECONDS ?? "28800";
@@ -70,96 +34,17 @@ export function operatorDeadline(environment: NodeJS.ProcessEnv, now = Date.now(
 
 /** Source qualification finishes before a new publishing run is allowed to exist. */
 export async function qualifyCheck(candidate: Candidate, options: Options) {
-  assert.match(candidate.repository, /^[\w.-]+\/[\w.-]+$/u);
-  assert.match(candidate.branch, /^release\/v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u);
-  for (const sha of [candidate.head, candidate.cut]) assert.match(sha, /^[0-9a-f]{40}$/u);
-  assert.notEqual(candidate.head, candidate.cut);
-  const now = options.now ?? Date.now;
-  const log = options.log ?? console.log;
-  const remaining = () => {
-    const milliseconds = options.deadline - now();
-    assert.ok(
-      Number.isSafeInteger(milliseconds) && milliseconds > 0,
-      "operator deadline expired during Check qualification",
-    );
-    return milliseconds;
-  };
-  const sleep = async (milliseconds: number) => {
-    await (options.sleep ?? ((delay) => new Promise((done) => setTimeout(done, delay))))(
-      Math.min(milliseconds, remaining()),
-    );
-    remaining();
-  };
-  const branchStillFrozen = async () => {
-    remaining();
-    const ref = await options.api.read(`git/ref/heads/${candidate.branch}`);
-    assert.equal(ref.ref, `refs/heads/${candidate.branch}`);
-    const object = ref.object as Row;
-    assert.equal(object?.type, "commit");
-    assert.equal(
-      object?.sha,
-      candidate.head,
-      "frozen release branch moved during Check qualification",
-    );
-    remaining();
-  };
-  const plans = createReleaseGateDispatchPlans({
-    ref: candidate.branch,
-    headSha: candidate.head,
-    baseSha: candidate.cut,
-  });
-  const qualifiers = releaseGateRunQualifiers(plans);
-  let previous = "";
-  const listRuns = async () => {
-    await branchStillFrozen();
-    const runs = await options.api.pages("actions/runs", "workflow_runs", {
-      head_sha: candidate.head,
-    });
-    remaining();
-    const current = latestRequiredWorkflowRun(
-      runs,
-      candidate.head,
-      "Check",
-      qualifiers.get("Check"),
-    );
-    if (current) {
-      assertRun(current);
-      const state = `${current.id}/${current.run_attempt}/${current.status}/${current.conclusion}`;
-      if (state !== previous) {
-        log(
-          `Check qualification https://github.com/${candidate.repository}/actions/runs/${current.id} (${current.status}/${current.conclusion ?? "pending"})`,
-        );
-        previous = state;
-      }
-    }
-    return runs;
-  };
-  const jobsFor = async (run: Row) => {
-    assertRun(run);
-    remaining();
-    const jobs = await options.api.pages(`actions/runs/${run.id}/jobs`, "jobs", {
-      filter: "latest",
-    });
-    const names = new Set(requiredWorkflowJobNames("Check", run));
-    const attempt = run.run_attempt;
-    assert.ok(
-      typeof attempt === "number" && Number.isSafeInteger(attempt) && attempt > 0,
-      "positive latest Check attempt required",
-    );
-    for (const job of jobs.filter((value) => names.has(String(value.name)))) {
-      assert.equal(job.run_id, run.id, "Check job belongs to another run");
-      assert.ok(
-        typeof job.run_attempt === "number" &&
-          Number.isSafeInteger(job.run_attempt) &&
-          job.run_attempt > 0 &&
-          job.run_attempt <= attempt,
-        "Check job belongs to an invalid or future attempt",
-      );
-      assert.equal(job.head_sha, candidate.head, "Check job belongs to another source");
-    }
-    remaining();
-    return jobs;
-  };
+  const {
+    log,
+    remaining,
+    now,
+    sleep,
+    branchStillFrozen,
+    plans,
+    listRuns,
+    requiredFailure,
+    finish,
+  } = createCheckObserver(candidate, options);
   const selected = await bootstrapRequiredWorkflowRuns({
     sha: candidate.head,
     dispatchPlans: plans,
@@ -175,23 +60,7 @@ export async function qualifyCheck(candidate: Candidate, options: Options) {
       });
       remaining();
     },
-    requiredJobFailure: async (_workflow: string, run: Row) => {
-      const jobs = await jobsFor(run);
-      const required = new Set(requiredWorkflowJobNames("Check", run));
-      const selectedJobs = jobs.filter((job) => required.has(String(job.name)));
-      const duplicate = selectedJobs.some(
-        (job, index) => selectedJobs.findIndex((other) => other.name === job.name) !== index,
-      );
-      return duplicate ||
-        selectedJobs.some(
-          (job) =>
-            job.run_attempt === run.run_attempt &&
-            job.status === "completed" &&
-            job.conclusion !== "success",
-        )
-        ? summarizeRequiredWorkflowJobFailures("Check", jobs, run)
-        : undefined;
-    },
+    requiredJobFailure: (_workflow: string, run: Row) => requiredFailure(run),
     timeoutMs: remaining(),
     now,
     sleep,
@@ -199,27 +68,7 @@ export async function qualifyCheck(candidate: Candidate, options: Options) {
   });
   const run = selected.get("Check") as Row;
   assertRun(run);
-  assertRequiredWorkflowJobs("Check", await jobsFor(run), run);
-  // A newer failed/pending attempt must not be hidden by the run just inspected.
-  const latest = selectRequiredWorkflowRuns(
-    await listRuns(),
-    candidate.head,
-    undefined,
-    qualifiers,
-  ).get("Check") as Row;
-  for (const key of [
-    "id",
-    "run_attempt",
-    "head_sha",
-    "head_branch",
-    "event",
-    "path",
-    "display_title",
-    "status",
-    "conclusion",
-  ])
-    assert.equal(latest[key], run[key], "latest Check changed during candidate qualification");
-  await branchStillFrozen();
+  await finish(run);
   log(
     `Qualified frozen ${candidate.head}: https://github.com/${candidate.repository}/actions/runs/${run.id}; the publishing preflight must recheck this live evidence.`,
   );
@@ -227,18 +76,43 @@ export async function qualifyCheck(candidate: Candidate, options: Options) {
 }
 
 async function main() {
-  assert.equal(process.argv.length, 6, "Usage: main.ts <repository> <release/vTAG> <H> <C>");
-  const [repository, branch, head, cut] = process.argv.slice(2);
-  const deadline = operatorDeadline(process.env);
+  const args = process.argv.slice(2);
+  const mode = args[0] === "--start" ? "start" : args[0] === "--wait-existing" ? "wait" : "qualify";
+  if (mode !== "qualify") args.shift();
+  assert.equal(
+    args.length,
+    mode === "wait" ? 5 : 4,
+    "Usage: main.ts <repository> <release/vTAG> <H> <C> (or --start; --wait-existing additionally requires its original deadline)",
+  );
+  const [repository, branch, head, cut, inheritedDeadline] = args;
+  const deadline =
+    mode === "wait" ? parseQualificationDeadline(inheritedDeadline) : operatorDeadline(process.env);
+  if (mode === "wait") {
+    assert.equal(process.env.GITHUB_SHA, head, "release wait must use the exact workflow source");
+    const root = fileURLToPath(new URL("../../../../", import.meta.url));
+    const git = (revision: string) =>
+      execFileSync("git", ["rev-parse", revision], {
+        cwd: root,
+        encoding: "utf8",
+        timeout: 30_000,
+      }).trim();
+    assert.equal(git("HEAD"), head, "release wait checkout must be H");
+    assert.equal(git("HEAD^"), cut, "release wait parent must be C");
+  }
   const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
   assert.ok(token, "authenticated GitHub token required");
   const apiUrl = process.env.GITHUB_API_URL ?? "https://api.github.com";
   const checked = () => {
     const milliseconds = deadline - Date.now();
+    // Only the first already-terminal observation may authenticate after expiry.
+    // The observer refuses pending expiry before another API/poll; retry sleep below
+    // always observes the original deadline, including on an expired first read.
+    if (mode === "wait" && milliseconds <= 0) return 30_000;
     assert.ok(milliseconds > 0, "operator deadline expired during GitHub request");
     return Math.min(30_000, milliseconds);
   };
   const boundedSleep = async (milliseconds: number) => {
+    assert.ok(deadline > Date.now(), "operator deadline expired before GitHub retry sleep");
     checked();
     await new Promise((done) => setTimeout(done, Math.min(milliseconds, deadline - Date.now())));
     checked();
@@ -252,16 +126,27 @@ async function main() {
         AbortSignal.timeout(checked()),
       ]),
     });
-  const api: Api = {
-    read: async (resource) =>
+  const readApi = {
+    read: async (resource: string) =>
       JSON.parse((await githubApiRequest({ ...base, resource, fetchImpl: boundedFetch })).body),
-    pages: (resource, collection, query = {}) =>
+    pages: (resource: string, collection: string, query: Record<string, string> = {}) =>
       githubApiPages({ ...base, resource, collection, query, fetchImpl: boundedFetch }),
+  };
+  const candidate = { repository, branch, head, cut };
+  if (mode === "wait") {
+    await waitForExistingCheck(candidate, { api: readApi, deadline });
+    return;
+  }
+  const api: Api = {
+    ...readApi,
     dispatch: async (resource, body) => {
       await githubApiRequest({ ...base, resource, method: "POST", body, fetchImpl: boundedFetch });
     },
   };
-  await qualifyCheck({ repository, branch, head, cut }, { api, deadline });
+  if (mode === "start") {
+    const receipt = await ensureCheckStarted(candidate, { api, deadline, log: console.error });
+    console.log(JSON.stringify(receipt));
+  } else await qualifyCheck(candidate, { api, deadline });
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   await main().catch((error) => {

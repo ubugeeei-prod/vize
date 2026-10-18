@@ -48,10 +48,10 @@ pub(super) fn find_or_dispatch(
     if let Some(id) = find()? {
         return Ok(id);
     }
-    // Full source qualification is outside the publication workflow's ten-minute
-    // preflight. Existing immutable R resumes above retain their original evidence.
+    // Start Q separately; R builds overlap its read-only qualification join.
+    // Existing immutable R resumes above retain their original evidence.
     operator.verify()?;
-    pr_ci::qualify_check(
+    let qualification_deadline = pr_ci::start_check(
         &candidate.repository,
         &candidate.branch,
         &candidate.head,
@@ -78,32 +78,41 @@ pub(super) fn find_or_dispatch(
     if github::tag_target(&candidate.tag, root)?.is_some() {
         return Err("The release tag appeared during Check qualification; inspect the retained source and Release before resuming.".into());
     }
-    // A concurrent observer may have found the same R while Check was running.
-    // Never create another publication run after the blocking qualification.
+    // A concurrent observer may have found the same R while Q was starting.
+    // Never create another publication run after the authenticated handoff.
     if let Some(id) = find()? {
         return Ok(id);
     }
     pr_budget::check(budget)?;
     operator.verify()?;
+    let mut arguments = [
+        "workflow",
+        "run",
+        "release.yml",
+        "--repo",
+        &candidate.repository,
+        "--ref",
+        &candidate.branch,
+        "--field",
+        &format!("tag_name={}", candidate.tag),
+        "--field",
+        &format!("release_pr={}", candidate.number),
+        "--field",
+        &format!("expected_sha={}", candidate.head),
+        "--field",
+        "pinned=true",
+    ]
+    .map(str::to_owned)
+    .to_vec();
+    if let Some(deadline) = qualification_deadline {
+        arguments.extend([
+            "--field".into(),
+            format!("qualification_deadline={deadline}"),
+        ]);
+    }
     github::output(
         "gh",
-        &[
-            "workflow",
-            "run",
-            "release.yml",
-            "--repo",
-            &candidate.repository,
-            "--ref",
-            &candidate.branch,
-            "--field",
-            &format!("tag_name={}", candidate.tag),
-            "--field",
-            &format!("release_pr={}", candidate.number),
-            "--field",
-            &format!("expected_sha={}", candidate.head),
-            "--field",
-            "pinned=true",
-        ],
+        &arguments.iter().map(String::as_str).collect::<Vec<_>>(),
         root,
     )?;
     for _ in 0..30 {

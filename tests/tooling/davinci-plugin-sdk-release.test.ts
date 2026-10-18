@@ -7,7 +7,7 @@ import { parse } from "yaml";
 
 import { validateReleaseJobs } from "../../tools/support/compat/github/npm-bootstrap-contract.mjs";
 import { bootstrapJobContract } from "../../tools/support/compat/github/npm-bootstrap-packages.mjs";
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 import { requiredSuccessfulReleaseJobs } from "../../tools/support/compat/github/npm-bootstrap-contract.mjs";
 import { runRepositoryGuardFixture } from "./support/release-guard-fixture.ts";
@@ -59,18 +59,18 @@ test("SDK first-publish recovery accepts only its own failed publish after green
   }
 });
 
-test("SDK publication uses the built artifact and waits for native, smoke, and release safety", () => {
+test("SDK publication uses the built artifact and waits for smoke and release safety", () => {
   const workflow = parse(readRepoFile(".github/workflows/release.yml"));
   const publish = workflow.jobs["release-npm-plugin-sdk"];
   assert.deepEqual(
     new Set(publish.needs),
-    new Set([
-      "build-release-packages",
-      "release-npm-native",
-      "smoke-release-packages",
-      "release-preflight",
-    ]),
+    new Set(["build-release-packages", "smoke-release-packages", "release-preflight"]),
   );
+  const manifest = JSON.parse(readRepoFile(`${packagePath}/package.json`));
+  assert.equal(manifest.dependencies?.["@vizejs/native"], undefined);
+  assert.equal(manifest.optionalDependencies?.["@vizejs/native"], undefined);
+  assert.deepEqual(manifest.peerDependencies, { "@vizejs/native": ">=0.429.0" });
+  assert.deepEqual(manifest.peerDependenciesMeta, { "@vizejs/native": { optional: true } });
   assert.equal(publish.environment, "npm");
   assert.deepEqual(publish.permissions, { contents: "read", "id-token": "write" });
   const shared = publish.steps.find(
@@ -86,6 +86,20 @@ test("SDK publication uses the built artifact and waits for native, smoke, and r
     step.run?.includes("davinci-plugin-sdk-package.test.ts"),
   );
   assert.equal(standalone.if, "steps.preflight.outputs.package_path == 'npm/plugin-sdk'");
+});
+
+test("the Rust-ready preflight executes the complete SDK release contracts", () => {
+  const carrier = parse(readRepoFile(".github/workflows/release-preflight-contracts.yml"));
+  const source = "tests/tooling/davinci-plugin-sdk-release.test.ts";
+  assert.ok(carrier.on.pull_request.paths.includes(source));
+  const steps = carrier.jobs.contracts.steps as Array<{ uses?: string; run?: string }>;
+  const rust = steps.findIndex((step) => step.uses === "./.github/actions/setup-rust-script");
+  const policy = steps.findIndex((step) => step.run?.split(/\s+/).includes(source));
+  assert.ok(rust >= 0 && policy > rust);
+  const command = steps[policy]?.run;
+  assert.ok(typeof command === "string");
+  assert.match(command, /^node --test\s/);
+  assert.doesNotMatch(command, /--test-name-pattern|--test-skip-pattern/);
 });
 
 test("release preparation bumps and stages the public SDK using the real manifest sweep", () => {

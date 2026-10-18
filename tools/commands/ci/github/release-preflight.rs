@@ -366,7 +366,7 @@ fn create_release_gate_dispatch_plans(
         workflow_name: "Check",
         workflow_id: "check.yml",
         ref_name: ref_name.to_string(),
-        inputs: json!({}),
+        inputs: json!({ "release-qualification": true }),
         expected_run_name: format!("Check full @ {head_sha}"),
         accepts_scheduled_evidence: false,
     }])

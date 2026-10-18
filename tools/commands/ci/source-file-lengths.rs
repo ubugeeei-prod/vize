@@ -139,11 +139,6 @@ fn is_excluded_path(path: &str) -> bool {
         || path.starts_with("tools/support/")
         || path == "npm/cli/schemas/vize.config.schema.json"
         || path == "npm/cli/src/types/generated.ts"
-        // Immutable generated surfaces are checked against exact canonical
-        // bytes by contract_surface; this ratchet governs authored source.
-        || path.strip_prefix("davinci/vize_guest/versions/").is_some_and(|name| {
-            name.starts_with("vize-contracts@") && name.ends_with(".json") && !name.contains('/')
-        })
         || path == "docs/davinci/plan/croquis-consumption.md"
         || path == "docs/davinci/plan/corpus-coverage.md"
         || path == "package.json"

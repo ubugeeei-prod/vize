@@ -160,3 +160,76 @@ fn longer_words_do_not_match_directive_tokens() {
     let source = "<template>\n  <!-- @vue-ignores nothing here -->\n  <div />\n</template>\n";
     assert!(transform(source).diagnostic_directives.is_none());
 }
+
+#[test]
+fn static_component_expect_owns_one_packet_without_its_child() {
+    for newline in ["\n", "\r\n"] {
+        for prefix in ["", "😀日本"] {
+            for (id, event) in [
+                ("bad", "missing"),
+                ("ok", "missing"),
+                ("bad", "save"),
+                ("ok", "save"),
+            ] {
+                let source = vize_l0::cstr!(
+                    "<script setup lang=\"ts\">import Comp from './Comp.vue'; const value = 1; const noop = () => {{}};</script>{newline}<template>{prefix}<!-- @vue-expect-error -->{newline}<Comp{newline} id=\"{id}\" @{event}=\"noop\">{{{{ value.bad }}}}</Comp></template>"
+                );
+                let result = transform(source.as_str());
+                let directives = result.diagnostic_directives.unwrap();
+                assert_eq!(directives.directives.len(), 1, "{directives:?}");
+                assert_eq!(directives.unused_expect_directive_diagnostics.len(), 1);
+                let [token, length, start, end, policy, unused] = directives.directives[0].0;
+                assert_eq!(&source[token..token + length], "@vue-expect-error");
+                assert_eq!((policy, unused), (DIRECTIVE_POLICY_EXPECT, 0));
+                let parent = source.find("<Comp").unwrap();
+                let parent_end = parent + source[parent..].find('>').unwrap() + 1;
+                let parent_rows = result
+                    .mappings
+                    .iter()
+                    .filter(
+                        |super::protocol::ContentMapperSpan([_, _, original, length, _, _])| {
+                            *original < parent_end && parent < original + length
+                        },
+                    )
+                    .collect::<Vec<_>>();
+                assert!(!parent_rows.is_empty());
+                assert!(parent_rows.iter().all(
+                    |super::protocol::ContentMapperSpan([generated, length, _, _, _, _])| start
+                        <= *generated
+                        && generated + length <= end
+                ));
+                let child = source.find("value.bad").unwrap();
+                let child_positions = mapped_positions(&result.mappings, child);
+                assert!(!child_positions.is_empty());
+                assert!(
+                    child_positions
+                        .iter()
+                        .all(|position| !covered(&directives.directives, *position)),
+                    "child cannot be suppressed by the parent's one expectation"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn unrelated_marker_text_never_creates_owner_directives() {
+    for template in [
+        "<!-- prose @vue-expect-error --><Comp id=\"bad\" @save=\"noop\">{{ value.bad }}</Comp>",
+        "@vue-expect-error<Comp id=\"bad\" @save=\"noop\">{{ value.bad }}</Comp>",
+        "<Comp id=\"@vue-expect-error\" @save=\"noop\">{{ value.bad }}</Comp>",
+    ] {
+        let source = vize_l0::cstr!(
+            "<script setup lang=\"ts\">import Comp from './Comp.vue'; const value = 1; const noop = () => {{}};</script><template>{template}</template>"
+        );
+        assert!(transform(source.as_str()).diagnostic_directives.is_none());
+    }
+    let source = "<script setup lang=\"ts\">import Comp from './Comp.vue'; const value = 1; const noop = () => {};</script><template><Comp id=\"bad\" @save=\"noop\">{{ value.bad }}</Comp><!-- @vue-expect-error --></template>";
+    let result = transform(source);
+    let directives = result.diagnostic_directives.unwrap();
+    assert_eq!(directives.directives.len(), 1);
+    assert_eq!(
+        (directives.directives[0].0[2], directives.directives[0].0[3]),
+        (0, 0)
+    );
+}

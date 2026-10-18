@@ -110,3 +110,28 @@ configuration correction. Its commands, whole raw streams, effective configurati
 actual runtime outcome are retained. This probe never admits, signs or substitutes release
 evidence, closes a source, or launches the six-platform live recovery. Record its hosted result
 before requesting approval for this authority change.
+
+## Evidence policy versions
+
+New collections and signed replacements use `vize-consumer-recovery-v2`,
+`vize-consumer-recovery-original-v2` and `vize-consumer-recovery-consumer-v2`.
+Their policy closes all current local imports and materialized public helpers, including A11y,
+atomic LSP and the trusted npm Corsa resolver. Both retained original-log transports and every
+consumer command must match their complete raw streams, process packet and effective configuration.
+A timed-out command owns its POSIX process group; inherited streams have a separate bounded drain.
+An incomplete capture is retained as failure evidence and cannot qualify a consumer.
+
+The existing signed recovery run `38993331275`, attempt `1`, retains its original v1 semantics under
+reviewed policy [`d57cf724d2caea6cf47f814250d18801f6b75e15`](https://github.com/ubugeeei-prod/vize/commit/d57cf724d2caea6cf47f814250d18801f6b75e15).
+The static legacy verifier binds its exact 17-file authority to that Git source. The existing
+reviewed-main, original release identity, six-role job graph, complete evidence manifest, archive,
+Cosign workflow SHA and signed integration checks remain required. Dispatch selects legacy policy
+from the authenticated run and source identity; a packet's self-declared schema cannot select it.
+Another run, a changed attempt or policy, missing v2 fields or a v1 relabel under new policy refuses.
+The old receipt and published 0.463 observations remain unchanged and do not earn the new safeguards.
+
+`tests/_fixtures/release/consumer-recovery-legacy-v1.json` retains the complete original receipt and
+one whole original Deno packet as raw contract inputs. Its tests verify exact bytes and the receipt's
+file digest before exercising old semantics. They do not repeat cryptographic verification or
+historical product execution. Fresh source Actions qualification is required before this proposal
+can replace #9315; source qualification does not authorize a live recovery or release.

@@ -1,11 +1,96 @@
 import assert from "node:assert/strict";
-import { cp, mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import path from "node:path";
 import { galleryPath, sha256, sides, writeVrtConfig, type VrtFixture } from "./vrt_fixtures.ts";
 import { inventory, type Evidence } from "./vrt_artifacts.ts";
+import { quickTunnelHostname } from "./vrt_tunnel.ts";
 
 export const hostedPath = `/built${galleryPath}`;
+
+/** Provisioning announces a hostname before DNS exists; require the real emitted bytes first. */
+export async function awaitHostedGallery(galleryUrl: string, emitted: Buffer): Promise<void> {
+  const gallery = new URL(galleryUrl);
+  quickTunnelHostname(gallery.origin);
+  assert.ok(
+    galleryUrl === gallery.href &&
+      gallery.pathname === hostedPath &&
+      !gallery.username &&
+      !gallery.password &&
+      !gallery.search &&
+      !gallery.hash,
+    "Exact public static gallery required",
+  );
+  assert.ok(emitted.length > 0 && emitted.length <= 262_144, "Bounded emitted manifest required");
+  const expected = Buffer.from(emitted);
+  const manifest = new URL("api/static.json", gallery);
+  // A real public origin took 76.8s to leave NXDOMAIN. This is provisioning, not a CLI retry.
+  const deadline = performance.now() + 90_000;
+  for (;;) {
+    const remaining = deadline - performance.now();
+    assert.ok(remaining > 0, "Public static gallery provisioning deadline expired");
+    let response: Response;
+    try {
+      response = await fetch(manifest, {
+        redirect: "error",
+        signal: AbortSignal.timeout(Math.ceil(remaining)),
+      });
+    } catch (error) {
+      const cause =
+        error instanceof TypeError && error.message === "fetch failed" ? error.cause : undefined;
+      const code = cause instanceof Error ? Reflect.get(cause, "code") : undefined;
+      if (
+        ![
+          "ENOTFOUND",
+          "EAI_AGAIN",
+          "ECONNREFUSED",
+          "ECONNRESET",
+          "ETIMEDOUT",
+          "UND_ERR_CONNECT_TIMEOUT",
+        ].includes(code)
+      )
+        throw new Error("Public static gallery HTTPS acquisition refused");
+      const pause = Math.min(1_000, deadline - performance.now());
+      assert.ok(pause > 0, "Public static gallery provisioning deadline expired");
+      await new Promise<void>((resolve) => setTimeout(resolve, pause));
+      continue;
+    }
+    assert.ok(response.body, "Public static gallery response body required");
+    const reader = response.body.getReader();
+    let complete = false;
+    try {
+      assert.equal(response.url, manifest.href, "Public static gallery response identity changed");
+      assert.equal(response.status, 200, "Public static gallery HTTP status refused");
+      assert.equal(response.headers.get("content-type")?.split(";")[0].trim(), "application/json");
+      const chunks: Buffer[] = [];
+      let length = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        length += value.length;
+        assert.ok(length <= expected.length, "Public static gallery body exceeds emitted manifest");
+        chunks.push(Buffer.from(value));
+      }
+      assert.ok(
+        Buffer.concat(chunks).equals(expected),
+        "Public static gallery emitted bytes changed",
+      );
+      assert.ok(
+        performance.now() < deadline,
+        "Public static gallery provisioning deadline expired",
+      );
+      complete = true;
+      return;
+    } finally {
+      try {
+        if (!complete) await reader.cancel();
+      } finally {
+        reader.releaseLock();
+      }
+    }
+  }
+}
+
 export async function buildHostedVrt(
   f: VrtFixture,
   e: Evidence,
@@ -79,7 +164,14 @@ export async function buildHostedVrt(
 /** Only real emitted static bytes are served; no preview, compiler, API or runner substitution. */
 export async function staticVrtHost(directory: string, e: Evidence) {
   const requests: unknown[] = [];
-  const saved = new Set<string>();
+  // Several emitted hosts share one Evidence owner during this campaign.
+  // Allocate each host an exclusive namespace; never overwrite or ignore a
+  // failed immutable evidence write when an asset is served again.
+  const bodyRoot = path.join(e.output, "http-bodies");
+  await mkdir(bodyRoot, { recursive: true });
+  const bodyDirectory = await mkdtemp(path.join(bodyRoot, "host-"));
+  const bodyPrefix = path.relative(e.output, bodyDirectory).split(path.sep).join("/");
+  const saved = new Map<string, Promise<void>>();
   let refuseAxe = false;
   const types: Record<string, string> = {
     ".html": "text/html",
@@ -127,10 +219,14 @@ export async function staticVrtHost(directory: string, e: Evidence) {
         bytes = Buffer.from("Not found");
       }
       const digest = sha256(bytes);
-      if (!saved.has(digest)) {
-        saved.add(digest);
-        await e.save(`http-bodies/${digest}.bin`, bytes);
+      let writing = saved.get(digest);
+      if (!writing) {
+        writing = e.save(`${bodyPrefix}/${digest}.bin`, bytes);
+        saved.set(digest, writing);
       }
+      // Concurrent responses wait for the same complete write, including its
+      // rejection. A prior failure cannot become a later successful response.
+      await writing;
       requests.push({
         method: request.method,
         target: request.url,

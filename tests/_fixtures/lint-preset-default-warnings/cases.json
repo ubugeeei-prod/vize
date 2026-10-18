@@ -1,0 +1,249 @@
+{
+  "schema": "vize.lint.preset-default-warning-controls",
+  "version": 1,
+  "authority": "Original source payloads, repairs and newly promoted warning descriptors were authored before candidate execution and are retained byte-exact in authored-cases-before-baseline.json. Separate existing baseline fields retain the complete observed unrelated finding; no diagnostic is filtered or suppressed.",
+  "cases": [
+    {
+      "id": "else-for",
+      "filename": "DefaultControlFlow.vue",
+      "source": "<template><section><p v-if=\"true\">one</p><p v-for=\"item in [1]\" v-else :key=\"item\">{{ item }}</p></section></template>\n",
+      "sourceSha256": "134c24beedb595d340a37f3872c3147e5d5ffcf627d7406a194397ee558e0cea",
+      "rule": "vue/no-use-v-else-with-v-for",
+      "enabledPresets": ["happy-path", "ecosystem", "opinionated", "nuxt"],
+      "diagnostic": {
+        "rule_name": "vue/no-use-v-else-with-v-for",
+        "severity": "warning",
+        "message": "Unexpected `v-else` and `v-for` on the same element. Move `v-else` to a wrapper element instead.",
+        "start": 41,
+        "end": 97,
+        "help": "Move the conditional directive to a wrapper element around the v-for element.",
+        "fix": null,
+        "labels": []
+      },
+      "cliMessage": {
+        "ruleId": "vue/no-use-v-else-with-v-for",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-use-v-else-with-v-for] Unexpected `v-else` and `v-for` on the same element. Move `v-else` to a wrapper element instead.",
+        "line": 1,
+        "column": 42,
+        "endLine": 1,
+        "endColumn": 98,
+        "help": "Move the conditional directive to a wrapper element around the v-for element."
+      },
+      "repair": "<template><section><p v-if=\"true\">one</p><template v-else><p v-for=\"item in [1]\" :key=\"item\">{{ item }}</p></template></section></template>\n",
+      "baselinePresets": [],
+      "baselineDiagnostics": [],
+      "baselineCliMessages": []
+    },
+    {
+      "id": "deep-props",
+      "filename": "DefaultDepthPolicy.vue",
+      "source": "<script setup lang=\"ts\">\nconst { user: { name } } = defineProps<{ user: { name: string } }>();\n</script>\n<template><p>{{ name }}</p></template>\n",
+      "sourceSha256": "cf1e5cb02e9c48f2b07e3e6cac25ee8e2cc1721267908dbaead8f1dd6497faf9",
+      "rule": "script/no-deep-destructure-in-props",
+      "enabledPresets": ["opinionated", "nuxt"],
+      "diagnostic": {
+        "rule_name": "script/no-deep-destructure-in-props",
+        "severity": "warning",
+        "message": "Avoid deeply nested destructuring in defineProps",
+        "start": 31,
+        "end": 49,
+        "help": "Use simple destructuring and access nested properties via computed or direct prop access",
+        "fix": null,
+        "labels": []
+      },
+      "cliMessage": {
+        "ruleId": "script/no-deep-destructure-in-props",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
+        "line": 2,
+        "column": 7,
+        "endLine": 2,
+        "endColumn": 25,
+        "help": "Use simple destructuring and access nested properties via computed or direct prop access"
+      },
+      "repair": "<script setup lang=\"ts\">\nconst { user } = defineProps<{ user: { name: string } }>();\n</script>\n<template><p>{{ user.name }}</p></template>\n",
+      "baselinePresets": ["happy-path", "ecosystem", "opinionated", "nuxt"],
+      "baselineDiagnostics": [
+        {
+          "rule_name": "vue/no-unused-properties",
+          "severity": "warning",
+          "message": "Prop 'user' is defined but never used",
+          "start": 66,
+          "end": 88,
+          "help": "Remove unused prop or use it in your template/script",
+          "fix": null,
+          "labels": []
+        }
+      ],
+      "baselineCliMessages": [
+        {
+          "ruleId": "vue/no-unused-properties",
+          "ruleDocsPath": "docs/content/rules/vue.md",
+          "severity": 1,
+          "message": "[vize:vue/no-unused-properties] Prop 'user' is defined but never used",
+          "line": 2,
+          "column": 42,
+          "endLine": 2,
+          "endColumn": 64,
+          "help": "Remove unused prop or use it in your template/script"
+        }
+      ]
+    },
+    {
+      "id": "essential-keep-alive",
+      "filename": "KeepAliveControl.vue",
+      "source": "<script setup>\nimport CachedPanel from './CachedPanel.vue';\n</script>\n<template><KeepAlive><div><CachedPanel /></div></KeepAlive></template>\n",
+      "sourceSha256": "6b4584dd9f80c0d527b3fbf4e29197bafd1cbf267fe93d2656c18b20e6790276",
+      "rule": "vue/no-non-component-keep-alive-child",
+      "enabledPresets": ["happy-path", "ecosystem", "opinionated", "nuxt", "essential"],
+      "newlyEnabledPresets": ["essential"],
+      "diagnostic": {
+        "rule_name": "vue/no-non-component-keep-alive-child",
+        "severity": "warning",
+        "message": "<KeepAlive> can only cache component children; this direct child is a plain element",
+        "start": 91,
+        "end": 96,
+        "help": "Move the condition or key onto the component child, or render a dynamic component directly with <component :is=\"...\">",
+        "fix": null,
+        "labels": []
+      },
+      "cliMessage": {
+        "ruleId": "vue/no-non-component-keep-alive-child",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-non-component-keep-alive-child] <KeepAlive> can only cache component children; this direct child is a plain element",
+        "line": 4,
+        "column": 22,
+        "endLine": 4,
+        "endColumn": 27,
+        "help": "Move the condition or key onto the component child, or render a dynamic component directly with <component :is=\"...\">"
+      },
+      "repair": "<script setup>\nimport CachedPanel from './CachedPanel.vue';\n</script>\n<template><KeepAlive><CachedPanel /></KeepAlive></template>\n",
+      "negativeSources": [
+        "<template><KeepAlive><component :is=\"view\" /></KeepAlive></template>\n",
+        "<template><keep-alive><n-layout /></keep-alive></template>\n",
+        "<script setup>\nimport CachedPanel from './CachedPanel.vue';\nconst visible = true;\n</script>\n<template><KeepAlive><CachedPanel v-show=\"visible\" /></KeepAlive></template>\n",
+        "<template><Transition><div v-if=\"open\"></div></Transition></template>\n",
+        "<template><KeepAlive><Transition><component :is=\"view\" /></Transition></KeepAlive></template>\n"
+      ],
+      "baselinePresets": [],
+      "baselineDiagnostics": [],
+      "baselineCliMessages": []
+    },
+    {
+      "id": "essential-attrs-forwarding",
+      "filename": "AttrsForwardingControl.vue",
+      "source": "<script setup>\n</script>\n<template><div><div v-bind=\"$attrs\"></div></div></template>\n",
+      "sourceSha256": "90d7b028717526036f5af906d39e42cd862a4374cd8a36e5a40c63e258479318",
+      "rule": "script/no-duplicate-attr-inheritance",
+      "enabledPresets": ["happy-path", "ecosystem", "opinionated", "nuxt", "essential"],
+      "newlyEnabledPresets": ["essential"],
+      "diagnostic": {
+        "rule_name": "script/no-duplicate-attr-inheritance",
+        "severity": "warning",
+        "message": "Set \"inheritAttrs\" to false.",
+        "start": 53,
+        "end": 59,
+        "help": "Opt out of the automatic inheritance so only this `v-bind` applies them, e.g. `defineOptions({ inheritAttrs: false })` or `inheritAttrs: false` in the component options.",
+        "fix": null,
+        "labels": [
+          {
+            "message": "attributes applied twice",
+            "start": 53,
+            "end": 59
+          }
+        ]
+      },
+      "cliMessage": {
+        "ruleId": "script/no-duplicate-attr-inheritance",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
+        "line": 3,
+        "column": 29,
+        "endLine": 3,
+        "endColumn": 35,
+        "help": "Opt out of the automatic inheritance so only this v-bind applies them, e.g. defineOptions({ inheritAttrs: false }) or inheritAttrs: false in the component options."
+      },
+      "repair": "<script setup>\ndefineOptions({ inheritAttrs: false });\n</script>\n<template><div><div v-bind=\"$attrs\"></div></div></template>\n",
+      "negativeSources": [
+        "<template><Panel v-slot=\"$attrs\"><div v-bind=\"$attrs\"></div></Panel></template>\n",
+        "<template><div><span v-for=\"$attrs in rows\" :key=\"$attrs.id\" v-bind=\"$attrs\"></span></div></template>\n",
+        "<template><div v-bind=\"(($attrs) => $attrs)(local)\"></div></template>\n",
+        "<template><div v-bind=\"{ '$attrs': local }\"></div></template>\n",
+        "<script>export default { inheritAttrs: false };</script><script setup></script><template><div v-bind=\"$attrs\"></div></template>\n"
+      ],
+      "baselinePresets": ["opinionated", "nuxt"],
+      "baselineDiagnostics": [
+        {
+          "rule_name": "vue/no-empty-component-block",
+          "severity": "warning",
+          "message": "The <script> block is empty",
+          "start": 0,
+          "end": 24,
+          "help": "Add meaningful content to the block or remove it entirely.",
+          "fix": null,
+          "labels": []
+        }
+      ],
+      "baselineCliMessages": [
+        {
+          "ruleId": "vue/no-empty-component-block",
+          "ruleDocsPath": "docs/content/rules/vue.md",
+          "severity": 1,
+          "message": "[vize:vue/no-empty-component-block] The <script> block is empty",
+          "line": 1,
+          "column": 1,
+          "endLine": 2,
+          "endColumn": 10,
+          "help": "Add meaningful content to the block or remove it entirely."
+        }
+      ],
+      "baselineCliMessagesFirst": true
+    }
+  ],
+  "baselineAuthority": {
+    "run": 38991839496,
+    "job": 117275806128,
+    "head": "7bcbd9e60b2d1a1aa9f6dc9df85bf42ca7b2e874",
+    "rawLogSha256": "70465d7e2aabd3bed3c1ef186ddab3fec829061fc2f63078c2891f2c91d8d31f",
+    "scope": "The unchanged nested source also exposes an existing nested-ownership diagnostic frontier in vue/no-unused-properties. Preserve this complete current-source baseline in broad defaults and explicit-new-rule-off packets; this is not a correctness endorsement or a claim of historical execution. No source or newly promoted warning descriptor changed."
+  },
+  "essentialExtensionAuthority": {
+    "base": "a94b04b4a2a576400b8c4baed644ae89ff6a7553",
+    "scope": "The two essential-* source payloads, expected complete descriptors, repairs and negative controls are authored before candidate execution. Both rules already belong to all four broad presets; only Essential gains their warnings. Original two cases and archived baseline evidence are retained unchanged. No source execution or snapshot recapture is claimed."
+  },
+  "essentialBaselineAuthority": {
+    "run": 39031013421,
+    "runConclusion": "failure",
+    "successfulCliBuildJob": 117391461352,
+    "source": "500fd109327684d05c7a42214b11996c98ab9799",
+    "comparison": "b17e7ff2e25fdd6a583691bc009d444cb8fe95b8",
+    "artifact": 12100388289,
+    "artifactZipSha256": "438e9f50628725a79e32c831463b28eb9a6e636ccbbdbc3222610e682b856752",
+    "executableSha256": "ce08d6d3caa4ddb19c167c0728968dd2f7dc4a3cae6f630c47737a6fb6dff7b6",
+    "baselineReceiptSha256": "06cf30acbcf11ee1f64111e4bfc3e4c85203029a30df47afab60b9b59806b522",
+    "wholeSourceAuthority": [
+      {
+        "path": "crates/vize_patina/src/rules/opinionated/vue/no_empty_component_block.rs",
+        "sha256": "64fb4543d478a3628e3f9ec6f65a9be88d526df7c6be760240ad825cf49b09c6"
+      },
+      {
+        "path": "crates/vize_patina/src/output/json.rs",
+        "sha256": "32937f0714c101c226814a2fe3c3a3ae7aadab54a289aafcbe84809b7f146fdc"
+      },
+      {
+        "path": "crates/vize_patina/src/diagnostic/formatting.rs",
+        "sha256": "42793dda2b251b2fa9048bce99280def9c3ca6c85eb60f32dd57c453a03fce82"
+      },
+      {
+        "path": "crates/vize/src/commands/lint/aggregate.rs",
+        "sha256": "e386772551349461cbc6a4f601902b5f82d0d29bf728d5210c54bdee07fb5960"
+      }
+    ],
+    "scope": "Prechange source baseline only, not published0.461 acceptance. All crates/vendor/davinci/.cargo/toolchain Git trees match b17; rootCargo.toml/lock differ only exact release version literals.24 actual commands on the two frozen sources across four broad presets (default/off/repair) exit0/stderr0, retaining original input bytes. Preserve the existing empty-script warning in opinionated/Nuxt. Raw promoted warning descriptors are unchanged; CLI help follows the unchanged plain-text renderer. Full CLI order is authored explicitly, never sorted or filtered by this corpus."
+  }
+}

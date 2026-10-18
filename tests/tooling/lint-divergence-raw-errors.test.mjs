@@ -11,7 +11,7 @@ import {
 
 const root = path.resolve(import.meta.dirname, "../..");
 
-await test("the actual Rust report preserves complete raw fatal results before strict classification", async () => {
+await test("the actual TypeScript report preserves complete raw fatal results before strict classification", async () => {
   fs.mkdirSync(path.join(root, "target"), { recursive: true });
   const cwd = fs.mkdtempSync(path.join(root, "target", "lint-fatal-custody-"));
   try {
@@ -40,9 +40,9 @@ await test("the actual Rust report preserves complete raw fatal results before s
     );
     const output = path.join(cwd, "report");
     const processResult = spawnSync(
-      "rust-script",
+      process.execPath,
       [
-        "tools/commands/fixtures/lint-divergence-report.rs",
+        "tools/commands/fixtures/lint-divergence-report.ts",
         "--registry",
         registry,
         "--output-dir",

@@ -1,0 +1,87 @@
+name: Release smoke contracts
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/release-smoke-contracts.yml"
+      - ".github/workflows/release.yml"
+      - ".github/actions/setup-runtime-package-managers/**"
+      - "tools/commands/release/npm/smoke-release-install.*"
+      - "tools/support/common.rs"
+      - "tools/support/release/npm_publish.rs"
+      - "tools/support/release/npm_smoke_init.rs"
+      - "tools/support/release/smoke_release_install/**"
+      - "tools/support/compat/npm/smoke-*"
+      - "tests/tooling/release/release-smoke-*"
+      - "tests/tooling/support/release-smoke-*"
+      - "tests/tooling/github-workflows-release-build.test.ts"
+      - "tests/tooling/github-workflows-release-smoke.test.ts"
+      - "tests/tooling/release/release-pr.test.ts"
+      - "tests/tooling/native-build-token.test.ts"
+      - "tests/tooling/native-binding-identity.test.ts"
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: release-smoke-contracts-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  parity:
+    name: Release smoke parity (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          [
+            blacksmith-32vcpu-ubuntu-2404,
+            blacksmith-12vcpu-macos-15,
+            blacksmith-32vcpu-windows-2025,
+          ]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.1" }
+      - uses: ./.github/actions/setup-rust-script
+      - uses: ./.github/actions/setup-runtime-package-managers
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: |
+            ~/.cache/rust-script
+            ~/.cargo/registry
+          key: release-smoke-reference-${{ runner.os }}-${{ runner.arch }}-1.99.1-${{ hashFiles('tools/commands/release/npm/smoke-release-install.rs', 'tools/support/common.rs', 'tools/support/release/npm_publish.rs', 'tools/support/release/npm_smoke_init.rs') }}
+      - name: Install source contract dependencies
+        shell: bash
+        run: vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts
+      - name: Compile the exact retained Rust reference before comparing child output
+        shell: bash
+        run: |
+          node tests/tooling/support/release-smoke-reference.ts
+      - name: Require complete actual Rust and TypeScript process parity
+        shell: bash
+        run: node --test tests/tooling/release/release-smoke-parity-peer-copy.test.ts tests/tooling/release/release-smoke-typescript-parity.test.ts
+      - name: Require installed public native image parity and existing image-token laws
+        shell: bash
+        run: node --test tests/tooling/release/release-smoke-public-native.test.ts tests/tooling/native-build-token.test.ts tests/tooling/native-binding-identity.test.ts
+      - name: Require the TypeScript caller to retain installed runtime oracle refusals
+        shell: bash
+        env:
+          VIZE_RELEASE_SMOKE_DRIVER: typescript
+        run: node --test tests/tooling/release/release-smoke-install.test.ts tests/tooling/release/release-smoke-runtime-oracle.test.ts tests/tooling/release/release-smoke-typescript-runtime.test.ts
+      - name: Require release caller and fresh-project workflow wiring
+        shell: bash
+        run: |
+          node --test tests/tooling/github-workflows-release-build.test.ts tests/tooling/github-workflows-release-smoke.test.ts tests/tooling/release/release-smoke-init-fresh.test.ts
+          node --test --test-name-pattern='^release-only workflow validates all artifacts before promotion and preserves normal PR cost$' tests/tooling/release/release-pr.test.ts
+      - name: Retain compiled-reference source and image custody with raw compiler output
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: smoke-reference-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/smoke-reference.json
+            ${{ runner.temp }}/smoke-reference-compile.stdout
+            ${{ runner.temp }}/smoke-reference-compile.stderr
+          if-no-files-found: error

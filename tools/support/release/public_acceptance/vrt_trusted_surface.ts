@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import type { Browser, BrowserContext, CDPSession, Page } from "playwright";
 import type { Evidence } from "./vrt_artifacts.ts";
 import type { VrtFixture } from "./vrt_fixtures.ts";
-import { hostedPath, staticVrtHost } from "./vrt_host.ts";
-import type { VrtSecrets } from "./vrt_secrets.ts";
+import { awaitHostedGallery, hostedPath, staticVrtHost } from "./vrt_host.ts";
+import type { VrtPhase, VrtSecrets } from "./vrt_secrets.ts";
 import { startPublishedVrtSession } from "./vrt_service_process.ts";
 import { writeQuickTunnelConfig } from "./vrt_tunnel.ts";
 import { startStaticQuickTunnel } from "./vrt_tunnel_process.ts";
@@ -47,7 +47,24 @@ export async function withTrustedVrtSurface(
     context?: BrowserContext;
     cdp?: CDPSession;
   } = {};
-  let acquiring: string | undefined;
+  const acquisitionPhases = {
+    "private-config-task": "trusted-config-task",
+    "emitted-static-host": "trusted-static-host",
+    "static-only-pinned-tunnel": "trusted-tunnel",
+    "published-loopback-session": "trusted-session",
+    "same-browser-context": "trusted-browser-context",
+    "granular-permission-CDP": "trusted-cdp",
+  } as const satisfies Record<string, VrtPhase>;
+  const cleanupPhases = {
+    "granular-permission-CDP": "trusted-cleanup-cdp",
+    "same-browser-context": "trusted-cleanup-context",
+    "published-loopback-session": "trusted-cleanup-session",
+    "static-only-pinned-tunnel": "trusted-cleanup-tunnel",
+    "emitted-static-host": "trusted-cleanup-host",
+    "owned-empty-config": "trusted-cleanup-config",
+  } as const satisfies Record<string, VrtPhase>;
+  let acquiring: keyof typeof acquisitionPhases | undefined;
+  let checkingGallery = false;
   let failed = false;
   let failure: unknown;
   const cleanupErrors: Error[] = [];
@@ -82,7 +99,7 @@ export async function withTrustedVrtSurface(
         if (owned.task) await rm(owned.task, { recursive: true });
       },
     },
-  ];
+  ] as const;
   try {
     acquiring = "private-config-task";
     owned.task = await mkdtemp(path.join(os.tmpdir(), "vize-vrt-trusted-"));
@@ -103,6 +120,15 @@ export async function withTrustedVrtSurface(
     });
     acquiring = undefined;
     const galleryUrl = `${owned.tunnel.origin}${hostedPath}`;
+    owned.tunnel.assertRunning();
+    checkingGallery = true;
+    input.secrets.stage("trusted-gallery-readiness");
+    await awaitHostedGallery(
+      galleryUrl,
+      await readFile(path.join(input.directory, "gallery/vrt/api/static.json")),
+    );
+    input.secrets.report("trusted-gallery-readiness", "passed");
+    checkingGallery = false;
     owned.tunnel.assertRunning();
     acquiring = "published-loopback-session";
     owned.session = await startPublishedVrtSession(input.fixture, galleryUrl, input.secrets);
@@ -127,6 +153,13 @@ export async function withTrustedVrtSurface(
     await observe({ page, cdp: owned.cdp, galleryUrl, session, assertRunning });
     assertRunning();
   } catch (error) {
+    input.secrets.failed(
+      acquiring
+        ? acquisitionPhases[acquiring]
+        : checkingGallery
+          ? "trusted-gallery-readiness"
+          : "trusted-observation",
+    );
     failed = true;
     failure = input.secrets.sanitizeError(error);
   } finally {
@@ -134,6 +167,7 @@ export async function withTrustedVrtSurface(
       try {
         await release.run();
       } catch {
+        input.secrets.failed(cleanupPhases[release.name]);
         cleanupErrors.push(new Error(`Owned ${release.name} cleanup refused`));
       }
     }

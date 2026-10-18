@@ -24,13 +24,16 @@ test("check workflow runs declared Node engine compatibility matrix", () => {
   assert.deepEqual(parsedJob?.strategy?.matrix?.["node-version"], ["22", "24"]);
   assert.doesNotMatch(job, /\.node-version\.ci/);
   assert.deepEqual(setupStep?.with, {
+    version: "latest",
     "node-version": "${{ matrix.node-version }}",
     cache: true,
+    "cache-save": false,
     "run-install": false,
   });
   assert.match(
     testStep?.run ?? "",
     /node --test tests\/tooling\/node-engine-matrix\.test\.ts tests\/tooling\/package-manifests\.test\.ts/,
   );
+  assert.ok(testStep?.run?.split(/\s+/).includes("tests/tooling/bundler-plugin-manifests.test.ts"));
   assert.doesNotMatch(job, /vscode-typescript-vue-plugin\.test\.ts/);
 });

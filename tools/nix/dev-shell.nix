@@ -5,10 +5,8 @@
       clearTestboxEnvironment,
       config,
       lib,
-      moonbit,
       pkgs,
       rustDevToolchain,
-      system,
       ...
     }:
     let
@@ -64,8 +62,7 @@
         ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
           workspaceXcrun
           pkgs.libiconv
-        ]
-        ++ lib.optionals (moonbit != null) [ moonbit ];
+        ];
 
         RUST_SRC_PATH = "${rustDevToolchain}/lib/rustlib/src/rust/library";
 
@@ -80,30 +77,9 @@
             export LIBRARY_PATH="$VIZE_DARWIN_LIBICONV_LIB''${LIBRARY_PATH:+:$LIBRARY_PATH}"
             export RUSTFLAGS="-L native=$VIZE_DARWIN_LIBICONV_LIB''${RUSTFLAGS:+ $RUSTFLAGS}"
           ''}
-          ${lib.optionalString (moonbit != null) ''
-            export MOON_HOME="$VIZE_WORKSPACE_ROOT/.cache/moonbit"
-            moonbit_version_file="$MOON_HOME/.nix-version"
-            if [ ! -x "$MOON_HOME/bin/moon" ] || [ "$(cat "$moonbit_version_file" 2>/dev/null || true)" != "${moonbit.version}" ]; then
-              rm -rf "$MOON_HOME/bin" "$MOON_HOME/include" "$MOON_HOME/lib"
-              mkdir -p "$MOON_HOME"
-              cp -R "${moonbit}/bin" "${moonbit}/include" "${moonbit}/lib" "$MOON_HOME"/
-              chmod -R u+rwX "$MOON_HOME/bin" "$MOON_HOME/include" "$MOON_HOME/lib"
-              printf '%s\n' "${moonbit.version}" > "$moonbit_version_file"
-            fi
-            if [ -n "''${HOME:-}" ]; then
-              PATH=":$PATH:"
-              PATH="''${PATH//:$HOME\/.moon\/bin:/:}"
-              PATH="''${PATH#:}"
-              PATH="''${PATH%:}"
-            fi
-            export PATH="$MOON_HOME/bin:$PATH"
-          ''}
 
           echo "Vize dev shell ready."
-          echo "Nix provides Node, pnpm, Rust, wasm-pack, wasm-bindgen, binaryen, and MoonBit."
-          ${lib.optionalString (moonbit == null)
-            ''echo "MoonBit native toolchain is not available for ${system}; install it separately if needed."''
-          }
+          echo "Nix provides Node, pnpm, Rust, wasm-pack, wasm-bindgen, and binaryen."
           echo "Run: vp install --frozen-lockfile"
           echo "Local defaults: vp check / vp fmt / vp dev / vp build / vp test / vp lint"
         '';

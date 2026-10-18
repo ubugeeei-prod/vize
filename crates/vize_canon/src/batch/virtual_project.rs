@@ -29,6 +29,7 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 mod art_usage;
 mod build;
 mod content_mapper;
+mod content_mapper_config;
 pub use content_mapper::{
     CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE, CONTENT_MAPPER_SFC_PARSE_ERROR_CODE,
     CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperDiagnosticDirective,
@@ -36,6 +37,7 @@ pub use content_mapper::{
     ContentMapperTransform, ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic,
     generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
 };
+pub use content_mapper_config::ContentMapperProjectConfiguration;
 mod css_var_usage;
 mod declaration_emit;
 pub(crate) mod dependency_scan;

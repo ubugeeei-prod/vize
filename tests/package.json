@@ -80,6 +80,8 @@
     "vue-component-type-helpers": "3.3.11",
     "vue-i18n": "11.4.5",
     "vue-language-tools-fixture-vue": "npm:vue@3.6.0-rc.6",
+    "vue-legacy-compiler-core-artifact": "npm:@vue/compiler-core@3.5.35",
+    "vue-legacy-instance-oracle": "npm:vue@3.6.0-rc.9",
     "vue-property-decorator": "10.0.0-rc.3",
     "vue-router": "catalog:vue-stable",
     "vue-select": "4.0.0-beta.6",

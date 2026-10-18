@@ -62,6 +62,9 @@ enum ContentMapperSpanKind {
 pub struct ContentMapperTransformOptions {
     options_api: bool,
     preserve_unused_diagnostics: bool,
+    pub(super) check_unknown_props: bool,
+    pub(super) check_unknown_fallthrough_props: bool,
+    pub(super) strict_css_modules: bool,
 }
 
 impl Default for ContentMapperTransformOptions {
@@ -69,6 +72,9 @@ impl Default for ContentMapperTransformOptions {
         Self {
             options_api: true,
             preserve_unused_diagnostics: false,
+            check_unknown_props: true,
+            check_unknown_fallthrough_props: false,
+            strict_css_modules: false,
         }
     }
 }
@@ -153,7 +159,12 @@ pub fn generate_vue_content_mapper_transform_with_options(
         &descriptor,
         &VirtualTsOptions::default(),
         VueCodegenOptions {
-            check_options: VirtualTsCheckOptions::default(),
+            check_options: VirtualTsCheckOptions {
+                check_unknown_props: transform_options.check_unknown_props,
+                check_unknown_fallthrough_props: transform_options.check_unknown_fallthrough_props,
+                strict_css_modules: transform_options.strict_css_modules,
+                ..Default::default()
+            },
             typed_router_root: None,
             preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
             options_api: transform_options.options_api(),

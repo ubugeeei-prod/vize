@@ -6,8 +6,12 @@ export function createPreviewReadinessWaiter(page: Page): () => Promise<void> {
   const pending = new Map<Request, { settled: Promise<void>; finish: () => void }>();
   const failures: string[] = [];
   page.on("request", (request) => {
-    const { promise, resolve } = Promise.withResolvers<void>();
-    pending.set(request, { settled: promise, finish: resolve });
+    let finish: (() => void) | undefined;
+    const settled = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    assert.ok(finish, "Preview request installs its completion handler synchronously");
+    pending.set(request, { settled, finish });
   });
   page.on("response", (response) => {
     if (response.status() >= 400) failures.push(`${response.status()} ${response.url()}`);

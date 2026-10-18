@@ -15,6 +15,7 @@ test("vize package exposes an executable TypeScript content mapper", () => {
     tsContentMapper?: unknown;
     typescript?: {
       contentMapper?: {
+        dynamicConfig?: boolean;
         compilerOptions?: string[];
         exec?: string[];
       };
@@ -23,6 +24,7 @@ test("vize package exposes an executable TypeScript content mapper", () => {
   const binPath = path.join(root, "npm/cli/bin/vize");
 
   assert.deepEqual(packageJson.typescript?.contentMapper, {
+    dynamicConfig: true,
     exec: ["node", "./bin/vize", "content-mapper"],
     compilerOptions: ["noUnusedLocals"],
   });

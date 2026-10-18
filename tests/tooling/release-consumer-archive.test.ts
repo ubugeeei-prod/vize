@@ -356,7 +356,7 @@ function completeConsumer() {
     custodyProbeSha256: sha256(custodyProbe),
   };
   const packet = {
-    schema: "vize-consumer-recovery-consumer-v1",
+    schema: "vize-consumer-recovery-consumer-v2",
     status: "passed",
     role: "node24-linux" as const,
     identity: {

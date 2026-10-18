@@ -34,7 +34,7 @@ Fichiers: **3,000** (12,302,100 bytes).
 | workers / max | 1.61s             | 65.0ms  | **24.7x** |
 | 1T / max      | 3.57s             | 65.0ms  | **54.8x** |
 
-[Méthodologie et résultats complets](./performance-blacksmith)
+[Méthodologie et résultats complets](./performance-blacksmith.md)
 
 <details class="benchmark-provenance">
 <summary>Versions des outils et sommes de contrôle</summary>
@@ -224,7 +224,7 @@ Un seul artefact versionné alimente le README et toutes les langues. Le nombre 
 
 Les rapports de vérification des types comparent Vize et vue-tsc, le vérificateur qu'utilisent aujourd'hui les projets Vue. vue-tsc s'appuie sur le compilateur TypeScript en JavaScript tandis que Vize s'appuie sur tsgo natif : le rapport porte donc sur toute la chaîne d'outils et non sur la seule couche Vue ; les tableaux par classe de moteur de l'instantané complet classent les outils d'un même moteur entre eux pour isoler cette couche. Chaque exécution chronométrée valide le travail de diagnostic, mais la couverture varie selon les outils. Ces rapports ne prouvent ni une précision équivalente ni un gain par rapport à une ancienne version de Vize. Aucun temps ni classement n'est publié pour les comparateurs rejetés.
 
-[Méthodologie et résultats complets](./performance-blacksmith)
+[Méthodologie et résultats complets](./performance-blacksmith.md)
 
 Les profils ci-dessous sont des mesures locales historiques, distinctes de cette comparaison.
 
@@ -277,7 +277,7 @@ Fichiers: **1,000**.
 | ---------- | ------------------ | ------------------- | -------- |
 | Build Vite | 1.66s              | 889.2ms             | **1.9x** |
 
-[Méthodologie et résultats complets](./performance-blacksmith)
+[Méthodologie et résultats complets](./performance-blacksmith.md)
 
 <!-- benchmark:vite:end -->
 

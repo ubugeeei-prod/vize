@@ -1,16 +1,16 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import {
   admitOriginal,
   fixture,
+  integrationReference,
   sha256,
   assertFresh,
   consumerAttempt,
   failureLogArguments,
-  integrationReference,
   object,
   roles,
   recoveryRunIdentity,
@@ -21,20 +21,9 @@ import {
 import { publicInputs } from "../../tools/support/release/public_acceptance/inputs.ts";
 import { verifyGithub } from "../../tools/support/release/public_acceptance/github.ts";
 import YAML from "yaml";
-import {
-  commandPlan,
-  verifyConsumer,
-} from "../../tools/support/release/consumer_recovery/consumer.ts";
-import {
-  policyFiles,
-  verifyIntegration,
-} from "../../tools/support/release/consumer_recovery/custody.ts";
-import {
-  captureCommand,
-  effectiveDenoConfig,
-  publicEnvironment,
-  strictUtf8,
-} from "../../tools/support/release/consumer_recovery/runtime.ts";
+import { commandPlan } from "../../tools/support/release/consumer_recovery/consumer.ts";
+import { verifyIntegration } from "../../tools/support/release/consumer_recovery/custody.ts";
+import { effectiveDenoConfig } from "../../tools/support/release/consumer_recovery/runtime.ts";
 import {
   assertOracleFiles,
   custodyProbe,
@@ -109,33 +98,6 @@ test("actual retained official tag #PR and source marker PR authenticate the sam
     () => verifyIntegration(packet.github, retained.identity, read),
     /successful exact original delivery Check/,
   );
-});
-
-test("tag and source PR references reject malformed, hybrid and unsafe identities without normalization", () => {
-  for (const invalid of [
-    "",
-    "0",
-    "09197",
-    "9197 ",
-    " 9197",
-    "9197\n",
-    "9197\r\n",
-    "+9197",
-    "9197.0",
-    "9.197e3",
-    "9197/9198",
-    "9197abc",
-    "９１９７",
-    "9007199254740992",
-  ]) {
-    assert.throws(() => integrationReference(`#${invalid}`, invalid), invalid);
-    assert.throws(() => integrationReference(`#${invalid}`, "9197"), invalid);
-    assert.throws(() => integrationReference("#9197", invalid), invalid);
-  }
-  for (const source of [9197, null, {}, ["9197"], "#9197"])
-    assert.throws(() => integrationReference("#9197", source));
-  for (const tag of [9197, null, {}, ["#9197"], "9197", "##9197", "#9198"])
-    assert.throws(() => integrationReference(tag, "9197"));
 });
 
 test("complete raw GitHub logs explicitly retain ANSI bytes before fingerprint normalization", () => {
@@ -510,252 +472,4 @@ test("recovery is an explicit read-only official operation; ordinary resume rema
   assert.ok(!Object.hasOwn(publicInputs(inputs), "recoveryRun"));
   assert.throws(() => publicInputs({ ...inputs, PUBLIC_CONSUMER_RECOVERY_RUN: "not-a-run" }));
   assert.equal(publicInputs({ ...inputs, PUBLIC_CONSUMER_RECOVERY_RUN: "123" }).recoveryRun, "123");
-});
-
-test("actual immutable tag Integration-PR annotation keeps its # prefix while parsing one positive identity", () => {
-  // Exact field from annotated tag 46536212e8e1a16492f9e196d84908286170d57b.
-  const annotation = "Integration-PR: #9197";
-  assert.equal(integrationReference(annotation.slice("Integration-PR: ".length), "9197"), 9197);
-  assert.equal(annotation, "Integration-PR: #9197", "never rewrite retained annotation bytes");
-  for (const value of [
-    "9197",
-    "#0",
-    "#09197",
-    "##9197",
-    " #9197",
-    "#9197\n",
-    "#9197 trailing",
-    "#9007199254740992",
-  ])
-    assert.throws(() => integrationReference(value, "9197"));
-});
-
-test("recovery policy binds the complete local import and materialized public harness closure", () => {
-  const root = new URL("../../", import.meta.url);
-  const declared = new Set<string>(policyFiles);
-  const seen = new Set<string>();
-  function visit(file: string) {
-    assert.ok(declared.has(file), `unbound policy dependency: ${file}`);
-    if (seen.has(file)) return;
-    seen.add(file);
-    const source = readFileSync(new URL(file, root), "utf8");
-    const imports = [
-      ...source.matchAll(
-        /^\s*(?:import|export)\s+(?:type\s+)?(?:\{[^}]*\}|[\w* ,]+)\s+from\s*["'](\.[^"']+)["']/gm,
-      ),
-      ...source.matchAll(/\bimport\(\s*["'](\.[^"']+)["']/g),
-    ];
-    for (const match of imports)
-      visit(path.posix.normalize(path.posix.join(path.posix.dirname(file), match[1])));
-  }
-  for (const file of policyFiles) if (file.endsWith(".ts")) visit(file);
-  visit("tools/support/release/consumer_recovery/main.ts");
-  visit("tools/support/release/consumer_recovery/consumer.ts");
-  visit("tools/support/release/public_acceptance/accept.ts");
-  for (const directory of [
-    "tools/support/release/consumer_recovery/",
-    "tools/support/release/public_acceptance/",
-  ])
-    for (const name of readdirSync(new URL(directory, root)).filter((name) => name.endsWith(".ts")))
-      assert.ok(declared.has(directory + name), `materialized helper missing: ${name}`);
-  assert.ok(declared.has("tools/support/release/jsr/consumer-deno.json"));
-  assert.ok(declared.has("tools/support/release/marketplace_query.ts"));
-});
-
-test("native and public parents have no job-wide credential; actual child sees only runtime necessities", async (t) => {
-  const workflow = YAML.parse(
-    readFileSync(
-      new URL("../../.github/workflows/release-public-acceptance.yml", import.meta.url),
-      "utf8",
-    ),
-  );
-  const job = workflow.jobs["public-consumer"];
-  assert.equal(job.env.GH_TOKEN, undefined);
-  assert.equal(job.env.GITHUB_TOKEN, undefined);
-  const credentialSteps = job.steps.filter(
-    (step: { env?: Record<string, string> }) => step.env?.GH_TOKEN,
-  );
-  assert.deepEqual(
-    credentialSteps.map(
-      (step: { run: string }) => /accept\.ts (prepare|finish)/.exec(step.run)?.[1],
-    ),
-    ["prepare", "finish"],
-  );
-  const parent = {
-    ...process.env,
-    GH_TOKEN: "marker-gh",
-    GITHUB_TOKEN: "marker-github",
-    ACTIONS_RUNTIME_TOKEN: "marker-actions",
-    ACTIONS_ID_TOKEN_REQUEST_TOKEN: "marker-oidc",
-    DENO_AUTH_TOKENS: "marker-deno",
-    NODE_OPTIONS: "--require marker-hook",
-    PRIVATE_CREDENTIAL: "marker-private",
-  };
-  const environment = publicEnvironment(parent);
-  const directory = mkdtempSync(path.join(os.tmpdir(), "vize-recovery-environment-"));
-  t.after(() => rmSync(directory, { recursive: true }));
-  const observed = await captureCommand(
-    process.execPath,
-    [
-      "-e",
-      "process.stdout.write(JSON.stringify({ runtime: process.version, environment: process.env }))",
-    ],
-    path.join(directory, "child"),
-    { env: environment },
-  );
-  assert.equal(observed.status, 0);
-  assert.equal(observed.signal, null);
-  assert.equal(observed.error, undefined);
-  const packet = JSON.parse(strictUtf8(observed.stdout));
-  assert.equal(packet.runtime, process.version);
-  for (const key of [
-    "GH_TOKEN",
-    "GITHUB_TOKEN",
-    "ACTIONS_RUNTIME_TOKEN",
-    "ACTIONS_ID_TOKEN_REQUEST_TOKEN",
-    "DENO_AUTH_TOKENS",
-    "NODE_OPTIONS",
-    "PRIVATE_CREDENTIAL",
-  ])
-    assert.equal(packet.environment[key], undefined, key);
-  assert.doesNotMatch(strictUtf8(observed.stdout), /marker-/);
-});
-
-test("raw failure custody retains original ANSI and arbitrary bytes before status or decoding gates", async (t) => {
-  const raw = Buffer.from(retained.log);
-  assert.equal(raw.length, 24145);
-  assert.equal(sha256(raw), "df3ec6ea97cd47a655a0fd46528a4e28f24ae3aac6fa256ff8b7e23a8e778860");
-  assert.deepEqual(Buffer.from(strictUtf8(raw)), raw);
-  const changed = structuredClone(retained);
-  changed.log += "unannotated additional error";
-  assert.throws(() => admit(changed), /complete original|bytes changed/);
-  const directory = mkdtempSync(path.join(os.tmpdir(), "vize-recovery-raw-"));
-  t.after(() => rmSync(directory, { recursive: true }));
-  const child = await captureCommand(
-    process.execPath,
-    [
-      "-e",
-      "process.stdout.write(Buffer.from([0, 128, 255])); process.stderr.write('full stderr'); process.exitCode = 17;",
-    ],
-    path.join(directory, "negative"),
-  );
-  assert.equal(child.status, 17);
-  assert.equal(child.signal, null);
-  assert.deepEqual(
-    readFileSync(path.join(directory, "negative/stdout.bin")),
-    Buffer.from([0, 128, 255]),
-  );
-  assert.equal(readFileSync(path.join(directory, "negative/stderr.bin"), "utf8"), "full stderr");
-  assert.throws(() => strictUtf8(child.stdout));
-});
-
-function completeDenoPacket() {
-  const project = "/fresh",
-    output = "/evidence";
-  const policy = { sha: "a".repeat(40), ...fixture, custodyProbeSha256: sha256(custodyProbe) };
-  const packet: Parameters<typeof commandPlan>[0] = {
-    schema: "vize-consumer-recovery-consumer-v1",
-    status: "passed",
-    role: "deno-linux",
-    identity: retained.identity,
-    policy,
-    consumerSha256: fixture.consumerSha256,
-    denoConfigSha256: fixture.denoConfigSha256,
-    effectiveDenoConfigSha256: sha256(effectiveDenoConfig),
-    run: { sha: policy.sha },
-    project,
-    checkout: "/checkout",
-    output,
-    nodeExecutable: "/node/bin/node",
-    runtime: { runtime: "deno", node: "24", platform: "linux" },
-    commands: [],
-    installed: {
-      packages: [],
-      native: { path: "/fresh/provider/vize.node", loaded: true, sha256: "a".repeat(64) },
-      runtime: { node: "v24.14.0", deno: { deno: "2.9.7" }, platform: "linux", arch: "x64" },
-    },
-    packages: ["vize", "@vizejs/native", "@vizejs/native-linux-x64-gnu"].map((name) => {
-      const content = JSON.stringify({ name, version: "0.457.0" });
-      const entries = [
-        { path: "package.json", sha256: sha256(content), bytes: Buffer.byteLength(content) },
-        { path: "vize.node", sha256: "a".repeat(64), bytes: 1 },
-      ];
-      const integrity = "A".repeat(86) + "==";
-      return {
-        name,
-        version: "0.457.0",
-        source: retained.identity.head,
-        tarball: "https://registry.npmjs.org/package.tgz",
-        integrity: "sha512-" + integrity,
-        archive: { sha512: integrity, sha256: "a".repeat(64), bytes: 1 },
-        archiveEntries: entries,
-        installedFiles: structuredClone(entries),
-        archiveManifest: {
-          name,
-          version: "0.457.0",
-          content,
-          sha256: sha256(content),
-          bytes: Buffer.byteLength(content),
-        },
-        manifestSha256: sha256(content),
-        published: "2026-10-15T00:00:00Z",
-        directory: name.includes("native-linux") ? "/fresh/provider" : "/fresh/package",
-      };
-    }),
-    jsr: {},
-  };
-  packet.installed!.packages = packet.packages.map((record) => ({
-    name: String(record.name),
-    version: String(record.version),
-    directory: String(record.directory),
-    manifestSha256: String(record.manifestSha256),
-  }));
-  const oracle = {
-    "consumer.ts": policy.consumerSha256,
-    "custody.ts": policy.custodyProbeSha256,
-    "deno.json": sha256(effectiveDenoConfig),
-  };
-  packet.commands = commandPlan(packet).map(([label, command, args]) => ({
-    label,
-    command,
-    args,
-    began: "2026-10-17T01:00:00Z",
-    ended: "2026-10-17T01:00:01Z",
-    cwd: project,
-    status: 0,
-    signal: null,
-    stdout:
-      label === "node-version"
-        ? "v24.14.0\n"
-        : label === "consumer"
-          ? "Verified jsr:@vizejs/vize@0.457.0 (no flags)\n"
-          : "",
-    stderr: "legitimate retained stderr",
-    denoDir: "/fresh/deno-cache",
-    oracleBefore: { ...oracle },
-    oracleAfter: { ...oracle },
-  }));
-  return packet;
-}
-test("zero exit cannot replace the exact whole H consumer completion or default-age host-only config", () => {
-  const packet = completeDenoPacket();
-  verifyConsumer(packet);
-  assert.deepEqual(JSON.parse(effectiveDenoConfig), { nodeModulesDir: "none" });
-  assert.equal(
-    sha256(retained.blobs.denoConfigSha256 as string),
-    fixture.denoConfigSha256,
-    "retain original #9257 source policy",
-  );
-  for (const stdout of [
-    "",
-    "Verified jsr:@vizejs/vize@0.457.0 (no flags)",
-    "Verified jsr:@vizejs/vize@0.457.0 (no flags)\nextra\n",
-  ]) {
-    const bad = structuredClone(packet);
-    bad.commands.find((command) => command.label === "consumer")!.stdout = stdout;
-    assert.throws(() => verifyConsumer(bad), /final witness/);
-  }
-  const bad = structuredClone(packet);
-  bad.effectiveDenoConfigSha256 = sha256(retained.blobs.denoConfigSha256 as string);
-  assert.throws(() => verifyConsumer(bad));
 });

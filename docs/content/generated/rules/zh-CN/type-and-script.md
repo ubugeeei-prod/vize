@@ -706,7 +706,7 @@ export default {
 [错误示例](#script-no-deep-destructure-in-props-bad) · [正确示例](#script-no-deep-destructure-in-props-good)
 
 默认严重程度: `warning`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -1028,7 +1028,7 @@ render($slots.default)
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L44) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L45) · [全部规则](all.md)
 
 ### `script/no-deprecated-events-api`
 

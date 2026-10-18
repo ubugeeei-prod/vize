@@ -15,6 +15,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
@@ -47,6 +48,60 @@ function recordingCli(directory, source = "process.exit(0);") {
       existsSync(calls) ? readFileSync(calls, "utf8").trim().split("\n").map(JSON.parse) : [],
   };
 }
+
+void test("full partitions validate the actual inventory and retain every original execution guard", () => {
+  const [validate, all, group, build, qualify] = history.runs.steps;
+  assert.equal(validate.name, "Validate full JS partition");
+  assert.deepEqual(validate.env, { VIZE_JS_PARTITION: "${{ inputs.partition }}" });
+  const enabled = (step, partition, prior) =>
+    runInNewContext(step.if.slice(3, -3), {
+      inputs: { partition },
+      job: { status: prior },
+      success: () => prior === "success",
+    });
+  for (const partition of ["all", "builders", "ui", "oxlint", "original-project"]) {
+    const result = spawnSync("/bin/bash", ["-c", validate.run], {
+      cwd: root,
+      env: { ...process.env, VIZE_JS_PARTITION: partition },
+      encoding: "utf8",
+      timeout: 10_000,
+    });
+    assert.equal(result.status, 0, result.stderr);
+    for (const prior of ["success", "failure", "cancelled", "skipped"]) {
+      const selected = [all, group, build, qualify].filter((step) =>
+        enabled(step, partition, prior),
+      );
+      const expected =
+        prior !== "success"
+          ? []
+          : partition === "all"
+            ? [all, qualify]
+            : partition === "original-project"
+              ? [build, qualify]
+              : [group];
+      assert.deepEqual(
+        selected.map(({ name }) => name),
+        expected.map(({ name }) => name),
+      );
+    }
+  }
+  for (const partition of ["", "none", "all; exit 0", "builders,ui", "unknown"]) {
+    const result = spawnSync("/bin/bash", ["-c", validate.run], {
+      cwd: root,
+      env: { ...process.env, VIZE_JS_PARTITION: partition },
+      encoding: "utf8",
+      timeout: 10_000,
+    });
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stderr, /AssertionError.*unknown full JS partition/);
+  }
+  assert.equal(group.run, groupCommand);
+  assert.deepEqual(group.env, { VIZE_JS_PACKAGE_GROUP: "${{ inputs.partition }}" });
+  assert.equal(build.run, "vp run --workspace-root build:oxlint-qualification");
+  for (const step of [validate, all, group, build, qualify])
+    assert.equal(step["continue-on-error"], undefined);
+  assert.deepEqual(qualify.env, { VIZE_N8N_BASELINE_MODE: "partitioned" });
+});
 
 void test("PR and merge queue preserve package tests, native declaration, type and complete UI checks", () => {
   assert.deepEqual(workflow.jobs["pr-js-packages"], {
@@ -168,16 +223,23 @@ void test("PR and merge queue preserve package tests, native declaration, type a
 void test("public native evidence remains reachable after prior build or package test failure", () => {
   // Scheduled and manual qualification retain the complete package history.
   assert.equal(history.runs.using, "composite");
-  assert.equal(history.runs.steps.length, 7);
-  const [execute, qualification, upload, style, oxlint, cleanup, fault] = history.runs.steps;
-  assert.equal(execute.if, "${{ success() && job.status == 'success' }}");
+  assert.equal(history.runs.steps.length, 10);
+  assert.equal(history.inputs.partition.default, "all");
+  const [, execute, , , qualification, upload, style, oxlint, cleanup, fault] = history.runs.steps;
+  assert.equal(
+    execute.if,
+    "${{ success() && job.status == 'success' && inputs.partition == 'all' }}",
+  );
   assert.equal(execute.shell, "bash");
   assert.equal(
     execute.run,
     "node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root test:js",
   );
   assert.equal(execute["continue-on-error"], undefined);
-  assert.equal(qualification.if, "${{ success() && job.status == 'success' }}");
+  assert.equal(
+    qualification.if,
+    "${{ success() && job.status == 'success' && (inputs.partition == 'all' || inputs.partition == 'original-project') }}",
+  );
   assert.equal(qualification.shell, "bash");
   assert.equal(qualification.run, "node npm/oxlint/scripts/check-project-transport.mjs");
   assert.equal(qualification["continue-on-error"], undefined);
@@ -185,7 +247,7 @@ void test("public native evidence remains reachable after prior build or package
   assert.equal(upload.if, "${{ always() }}");
   assert.equal(upload.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
   assert.deepEqual(upload.with, {
-    name: "public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}",
+    name: "public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.partition }}",
     path: "npm/native/.artifacts/native/formatter-history/**",
     "if-no-files-found": "warn",
     "retention-days": 14,
@@ -193,7 +255,7 @@ void test("public native evidence remains reachable after prior build or package
   assert.equal(style.if, "${{ always() }}");
   assert.equal(style.uses, upload.uses);
   assert.deepEqual(style.with, {
-    name: "template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}",
+    name: "template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.partition }}",
     path: "target/template-style-fixes-7905.json",
     "if-no-files-found": "warn",
     "retention-days": 14,
@@ -202,7 +264,7 @@ void test("public native evidence remains reachable after prior build or package
   assert.equal(oxlint.id, "original-project-evidence");
   assert.equal(oxlint.uses, upload.uses);
   assert.deepEqual(oxlint.with, {
-    name: "oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}",
+    name: "oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.partition }}",
     path: [
       "target/oxlint-original-locations-7904.json",
       "target/oxlint-original-project-checks-7903.json",
@@ -230,8 +292,7 @@ void test("public native evidence remains reachable after prior build or package
   // Each PR package group uploads the same evidence under a per-group name.
   const groupJob = jsChecks.jobs["pr-js-package-tests"];
   const groupStep = (name) => groupJob.steps.find((step) => step.name === name);
-  const perGroup = (name) =>
-    name.replace(/\$\{\{ github\.job \}\}$/, "${{ github.job }}-${{ matrix.group }}");
+  const perGroup = (name) => name.replace("${{ inputs.partition }}", "${{ matrix.group }}");
   const stagingPath = "target/oxlint-original-project-transport/**\n";
   for (const original of [upload, style, oxlint, fault]) {
     const step = groupStep(original.name.replace("bridge locations", "package locations"));
@@ -277,7 +338,10 @@ void test("public native evidence remains reachable after prior build or package
   ]) {
     assert.equal(step.if, evidenceJs);
     assert.equal(step.uses, original.uses);
-    assert.deepEqual(step.with, original.with);
+    assert.deepEqual(step.with, {
+      ...original.with,
+      name: original.with.name.replace("-${{ inputs.partition }}", ""),
+    });
   }
   assert.equal(qualify[evidence].id, oxlint.id);
   assert.deepEqual(

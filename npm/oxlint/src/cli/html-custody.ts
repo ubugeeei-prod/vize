@@ -24,6 +24,47 @@ const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest(
 const same = (left: Buffer | null, right: Buffer | null) =>
   left == null ? right == null : right != null && left.equals(right);
 
+function metadataPath(bytes: Buffer, file: string, prefix = ""): string {
+  const text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true })
+    .decode(bytes)
+    .replace(/\n$/u, "")
+    .replace(/\r$/u, "");
+  if (!text.startsWith(prefix) || text.length === prefix.length || /[\r\n\0]/u.test(text))
+    throw new Error(`invalid Git directory metadata: ${file}`);
+  return text.slice(prefix.length);
+}
+
+function regularDirectory(directory: string): string {
+  const stat = fs.lstatSync(directory);
+  if (!stat.isDirectory() || stat.isSymbolicLink())
+    throw new Error(`Git metadata requires a regular directory: ${directory}`);
+  return fs.realpathSync(directory);
+}
+
+/** Resolve Git's per-worktree marker and shared directory without losing input custody. */
+function gitDirectory(marker: string, sources: HtmlCustody["sources"]): string | null {
+  let stat: fs.Stats;
+  try {
+    stat = fs.lstatSync(marker);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
+  }
+  if (stat.isDirectory() && !stat.isSymbolicLink()) return marker;
+  const bytes = read(marker);
+  if (bytes == null) throw new Error(`Git metadata disappeared: ${marker}`);
+  sources.set(marker, bytes);
+  const directory = regularDirectory(
+    path.resolve(path.dirname(marker), metadataPath(bytes, marker, "gitdir: ")),
+  );
+  const commonFile = path.join(directory, "commondir");
+  const common = read(commonFile);
+  sources.set(commonFile, common);
+  return common == null
+    ? directory
+    : regularDirectory(path.resolve(directory, metadataPath(common, commonFile)));
+}
+
 /** Snapshots prove identity, and do not perform native ignore selection. */
 export function captureHtmlCustody(
   options: OxlintHtmlOptions,
@@ -51,8 +92,9 @@ export function captureHtmlCustody(
       const file = path.join(directory, name);
       sources.set(file, read(file));
     }
-    if (fs.existsSync(path.join(directory, ".git"))) {
-      const file = path.join(directory, ".git/info/exclude");
+    const git = gitDirectory(path.join(directory, ".git"), sources);
+    if (git != null) {
+      const file = path.join(git, "info/exclude");
       sources.set(file, read(file));
     }
   }

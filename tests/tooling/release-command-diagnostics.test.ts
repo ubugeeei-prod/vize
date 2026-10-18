@@ -51,8 +51,22 @@ test("argument errors keep their exact diagnostics and statuses", (t) => {
       "",
       usage(
         "publish_npm_package_dirs",
-        "<dir> [--concurrency 1..4] [--receipt path] [--provenance] [--ignore-failure] [--retries N] [--delay N]",
+        "<dir> [--concurrency 1..8] [--receipt path] [--provenance] [--ignore-failure] [--retries N] [--delay N]",
       ),
+    ],
+    [
+      "publish_npm_package_dirs",
+      [root, "--concurrency", "8"],
+      1,
+      "",
+      `No publishable package directories were found in ${root}\n`,
+    ],
+    [
+      "publish_npm_package_dirs",
+      [root, "--concurrency", "9"],
+      1,
+      "",
+      "--concurrency requires an integer from 1 to 8\n",
     ],
     [
       "publish_npm_package_dirs",

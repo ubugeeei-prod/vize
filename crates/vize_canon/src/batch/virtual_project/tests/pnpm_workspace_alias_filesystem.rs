@@ -71,7 +71,7 @@ fn editor_union_rejects_raw_parent_link_before_rewriting_real_pnpm_install() {
         root.join("packages/b/node_modules"),
     )]);
     let error = project
-        .materialize_editor_union(&vize_carton::FxHashSet::default(), &preserved, &[])
+        .materialize_editor_union(&vize_carton::FxHashSet::default(), &preserved, &[], false)
         .unwrap_err();
     assert!(
         error
@@ -175,7 +175,9 @@ fn editor_union_preserves_alias_claims_when_only_the_previous_snapshot_owns_them
         .register_path(&root.join("packages/a/src/index.ts"))
         .unwrap();
     assert!(query.workspace_alias_links().is_empty());
-    query.materialize_editor_union(&files, &links, &[]).unwrap();
+    query
+        .materialize_editor_union(&files, &links, &[], false)
+        .unwrap();
     for (alias, target, manifest) in before {
         assert_eq!(fs::read_link(&alias).unwrap(), target);
         assert_eq!(fs::read(alias.join("package.json")).unwrap(), manifest);

@@ -11,7 +11,7 @@ import { test } from "node:test";
 
 const repoRoot = path.resolve(import.meta.dirname, "..", "..");
 
-test("the Rust runner keeps pug template findings out of the scored surface", () => {
+test("the TypeScript runner keeps pug template findings out of the scored surface", () => {
   fs.mkdirSync(path.join(repoRoot, "target"), { recursive: true });
   const fixtureDir = fs.mkdtempSync(path.join(repoRoot, "target", "lint-pug-fixture-"));
   const outputDir = fs.mkdtempSync(path.join(repoRoot, "target", "lint-pug-report-"));
@@ -65,9 +65,9 @@ test("the Rust runner keeps pug template findings out of the scored surface", ()
     );
 
     const result = spawnSync(
-      "rust-script",
+      process.execPath,
       [
-        "tools/commands/fixtures/lint-divergence-report.rs",
+        "tools/commands/fixtures/lint-divergence-report.ts",
         "--registry",
         registryPath,
         "--output-dir",

@@ -14,6 +14,7 @@ import { quickTunnelPin } from "../../../tools/support/release/public_acceptance
 import {
   createTunnelAssetDirectory,
   requireReleasedService,
+  tunnelSetupRefusal,
 } from "../../../tools/support/release/public_acceptance/vrt_tunnel_setup.ts";
 
 const fixtureUrl = new URL("../fixtures/musea/quick-tunnel-pin.json", import.meta.url);
@@ -154,6 +155,207 @@ void test("authenticated preparation must bind the same frozen official release 
   assert.throws(() => requireReleasedService("unused", "not-a-commit"));
 });
 
+// Projection of retained artifact12086476844 from actual acceptance38994019210:
+// publication.source excludes recoveryRun; signed recovery is under github.consumerRecovery.
+const recoveredCustody = () => {
+  const source = {
+    cut: "014bd42cacdf3d026fb75162cfa80dce76d78315",
+    head: "03882089eff75664abe99ba71868e33739496b01",
+    tag: "v0.457.0",
+    sourcePr: "9196",
+    run: "38805261385",
+    recoveryRun: "38993331275",
+  };
+  const { recoveryRun, ...original } = source;
+  return {
+    source,
+    preparation: { source: { ...source }, version: "0.457.0" },
+    publication: {
+      schema: "vize-public-release-acceptance-v1",
+      success: true,
+      source: original,
+      github: {
+        target: source.head,
+        runStatus: "completed",
+        runConclusion: "failure",
+        releaseId: 1,
+        jobs: [
+          {
+            run: Number(source.run),
+            head: source.head,
+            attempt: 4,
+            status: "completed",
+            conclusion: "failure",
+          },
+        ],
+        consumerRecovery: {
+          schema: "vize-consumer-recovery-v1",
+          identity: { ...original, attempt: 4 },
+          recovery: {
+            run: recoveryRun,
+            attempt: 1,
+            policySha: "d57cf724d2caea6cf47f814250d18801f6b75e15",
+          },
+          originalConclusion: "failure",
+          status: "consumer-requalified",
+          completedAt: new Date().toISOString(),
+          consumers: [
+            "node22-linux",
+            "node24-linux",
+            "node24-macos",
+            "node24-windows",
+            "deno-linux",
+            "bun-linux",
+          ].map((role) => ({ role })),
+        },
+      },
+    },
+  };
+};
+
+type RecoveryPacket = ReturnType<typeof recoveredCustody>;
+const assertRecovered = (packet: RecoveryPacket) =>
+  assertTunnelReleaseCustody(packet.source, packet.preparation, packet.publication);
+
+void test("authenticated explicit recovery binds the failed original attempt without rewriting its conclusion", () => {
+  const packet = recoveredCustody();
+  assertRecovered(packet);
+  assert.equal(packet.publication.github.runConclusion, "failure");
+  assert.equal(Reflect.get(packet.publication.source, "recoveryRun"), undefined);
+  for (const key of ["cut", "head", "tag", "sourcePr", "run", "attempt"]) {
+    const drift = recoveredCustody();
+    Reflect.set(drift.publication.github.consumerRecovery.identity, key, "changed");
+    assert.throws(() => assertRecovered(drift), `original recovery identity: ${key}`);
+  }
+});
+
+void test("absent, partial, stale, foreign and truthy recovery claims cannot admit a failed Release", () => {
+  const changes: ((packet: RecoveryPacket) => void)[] = [
+    (p) => {
+      Reflect.deleteProperty(p.source, "recoveryRun");
+      p.preparation.source = { ...p.source };
+    },
+    (p) => {
+      p.preparation.source.recoveryRun = "1";
+    },
+    (p) => {
+      p.source.recoveryRun = "1";
+      p.preparation.source.recoveryRun = "1";
+    },
+    (p) => {
+      p.source.recoveryRun = "true";
+      p.preparation.source.recoveryRun = "true";
+    },
+    (p) => {
+      Reflect.deleteProperty(p.publication.github, "consumerRecovery");
+    },
+    (p) => {
+      Reflect.set(p.publication.github, "consumerRecovery", true);
+    },
+    (p) => {
+      p.publication.github.runConclusion = "success";
+    },
+    (p) => {
+      p.publication.github.consumerRecovery.schema = "changed";
+    },
+    (p) => {
+      p.publication.github.consumerRecovery.status = "pending";
+    },
+    (p) => {
+      p.publication.github.consumerRecovery.originalConclusion = "success";
+    },
+    (p) => {
+      p.publication.github.consumerRecovery.completedAt = new Date(
+        Date.now() - 25 * 3600_000,
+      ).toISOString();
+    },
+    (p) => {
+      p.publication.github.consumerRecovery.completedAt = new Date(
+        Date.now() + 3600_000,
+      ).toISOString();
+    },
+    (p) => {
+      p.publication.github.consumerRecovery.recovery.run = "1";
+    },
+    (p) => {
+      p.publication.github.consumerRecovery.recovery.attempt = 0;
+    },
+    (p) => {
+      p.publication.github.consumerRecovery.recovery.policySha = "main";
+    },
+    (p) => {
+      p.publication.github.consumerRecovery.identity.attempt = 0;
+    },
+    (p) => {
+      p.publication.github.consumerRecovery.identity.attempt = 3;
+    },
+    (p) => {
+      p.publication.github.jobs = [];
+    },
+    (p) => {
+      p.publication.github.jobs.push({ ...p.publication.github.jobs[0] });
+    },
+    (p) => {
+      p.publication.github.jobs[0].run = 1;
+    },
+    (p) => {
+      p.publication.github.jobs[0].head = "a".repeat(40);
+    },
+    (p) => {
+      p.publication.github.jobs[0].status = "in_progress";
+    },
+    (p) => {
+      p.publication.github.jobs[0].attempt = 3;
+    },
+  ];
+  for (const change of changes) {
+    const packet = recoveredCustody();
+    change(packet);
+    assert.throws(() => assertRecovered(packet));
+  }
+  const unsolicited = custody();
+  Reflect.set(
+    unsolicited.publication.github,
+    "consumerRecovery",
+    recoveredCustody().publication.github.consumerRecovery,
+  );
+  assert.throws(
+    () => assertTunnelReleaseCustody(source, unsolicited.preparation, unsolicited.publication),
+    /explicit recovery run required/u,
+  );
+  for (let index = 0; index < 6; index++) {
+    for (const replacement of ["missing", "duplicate", "foreign"]) {
+      const packet = recoveredCustody();
+      const consumers = packet.publication.github.consumerRecovery.consumers;
+      if (replacement === "missing") consumers.splice(index, 1);
+      else
+        consumers[index].role =
+          replacement === "duplicate" ? consumers[(index + 1) % 6].role : replacement;
+      assert.throws(() => assertRecovered(packet), `missing/duplicate/foreign role ${index}`);
+    }
+  }
+});
+
+void test("setup refusal retains a useful safe cause while discarding raw values and HTTP errors", () => {
+  let failure: unknown;
+  try {
+    assert.equal("credential-secret", "different", "exact authenticated recovery run required");
+  } catch (error) {
+    failure = error;
+  }
+  const refusal = tunnelSetupRefusal(failure, "authenticated release custody");
+  assert.deepEqual(refusal.cause, {
+    phase: "authenticated release custody",
+    reason: "exact authenticated recovery run required",
+  });
+  assert.doesNotMatch(JSON.stringify(refusal.cause), /credential-secret|different/u);
+  const remote = tunnelSetupRefusal(
+    new TypeError("https://host/?token=credential-secret"),
+    "official pinned metadata",
+  );
+  assert.deepEqual(remote.cause, { phase: "official pinned metadata", reason: "TypeError" });
+});
+
 void test("real private directory ownership stays outside upload scope and preserves HOME", async (t) => {
   const home = process.env.HOME,
     root = await mkdtemp(path.join(os.tmpdir(), "vize-tunnel-setup-law-"));
@@ -205,7 +407,8 @@ void test("workflow keeps original VRT eligibility and makes setup a separate pr
   );
   assert.match(
     observerStep,
-    /node vrt_observer\.ts "\$PUBLIC_VERSION" "\$PUBLIC_OUTPUT\/vrt\.json" > "\$PUBLIC_OUTPUT\/vrt\.log" 2>&1/u,
+    /node vrt_observer\.ts "\$PUBLIC_VERSION" "\$PUBLIC_OUTPUT\/vrt\.json" 3>&2 > "\$PUBLIC_OUTPUT\/vrt\.log" 2>&1/u,
   );
-  assert.match(observerStep, /exit "\$\{vrt_status:-0\}"/u);
+  assert.match(observerStep, /if \[ "\$vrt_status" -eq 0 \]; then exit 1; fi/u);
+  assert.match(observerStep, /exit "\$vrt_status"/u);
 });

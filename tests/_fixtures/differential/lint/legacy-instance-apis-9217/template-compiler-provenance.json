@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "contract": "Append-only provider provenance correction. The original packets and complete expected outputs remain immutable. A recorded top-level compiler-core source artifact does not establish which core the original capture executed. Current replays use and verify the compiler dependency closure owned by the pinned Vue package.",
+  "historicalCompiledClosure": "unknown",
+  "frozenPackets": [
+    {
+      "file": "template-boundaries.json",
+      "bytes": 66661,
+      "sha256": "a486e04a6ca24c882bf32803c8001e67d21db2de34d79999ed2fca4d99acb19b",
+      "providerPath": ["compilerProvider"]
+    },
+    {
+      "file": "template-component-bindings.json",
+      "bytes": 293436,
+      "sha256": "cd86d2f4344879ce047f6c43b1aa13011d3e17106b29789f0e89f6701411701b",
+      "providerPath": ["compilerProvider"]
+    },
+    {
+      "file": "template-component-declaration-bindings.json",
+      "bytes": 426707,
+      "sha256": "20773dbd9198c737693fc532a9eec4ab3009c5c155bee6bcb31d851df91232fe",
+      "providerPath": ["compilerProvider"]
+    },
+    {
+      "file": "template-event-object-reference.json",
+      "bytes": 8902,
+      "sha256": "da2e09b9cdb9bd587d8e8f04fb3ae14053cd3eacd16a625f24aefb3289f6449e",
+      "providerPath": ["proof", "compilerProvider"]
+    },
+    {
+      "file": "template-authority-review-corrections-proof.json.gz",
+      "bytes": 1157378,
+      "sha256": "cdf2a6673e1a2cb956365a2cff3894c063cc7920fa66c789bf015bf43a2aae40",
+      "providerPath": ["compilerProvider"]
+    }
+  ],
+  "recordedArtifact": {
+    "role": "historical source artifact only; never selected as the current compiler",
+    "dependency": "vue-legacy-compiler-core-artifact",
+    "packageName": "@vue/compiler-core",
+    "version": "3.5.35",
+    "path": "dist/compiler-core.cjs.js",
+    "sha256": "820601aa19727baa3de3b6eea199d6dfb547911afdb7b22d8081d3c81eff284e"
+  },
+  "currentReplay": {
+    "vue": "3.6.0-rc.9",
+    "typescript": "6.0.3",
+    "dependency": "vue-legacy-instance-oracle",
+    "sources": [
+      {
+        "packageName": "@vue/compiler-sfc",
+        "version": "3.6.0-rc.9",
+        "path": "dist/compiler-sfc.cjs.js",
+        "sha256": "16f5957f30e3356923c549a887b786d8b7beb4f6967f5952a2c1b94493c53a18"
+      },
+      {
+        "packageName": "@vue/compiler-dom",
+        "version": "3.6.0-rc.9",
+        "path": "dist/compiler-dom.cjs.js",
+        "sha256": "cea50c552f02adc45f5347920e20ddf7e1d77b639d898bef1dc4ad61989e0c6c"
+      },
+      {
+        "packageName": "@vue/compiler-core",
+        "version": "3.6.0-rc.9",
+        "path": "dist/compiler-core.cjs.js",
+        "sha256": "61aa2191bdde10d4e7e9f8224f47913350de3941cf54b2c2430ccdb8f7d1c08f"
+      }
+    ]
+  }
+}

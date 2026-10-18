@@ -4,12 +4,12 @@ import { differentialSteps } from "../../tools/support/compat/github/rust-differ
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-// TS-32 (P3-13): the corpus remarks-diff rides the required clippy-and-test
+// TS-32 (P3-13): the corpus remarks-diff rides the required rust-native-differential
 // job beside the sibling feature-gated L1-to-L2 corpus lanes, and the plan's
 // suite row names exactly the command CI runs.
 test("the TS-32 remarks-diff lane is wired and documented", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
-  const clippyJob = workflowJobBody(workflow, "clippy-and-test");
+  const nativeJob = workflowJobBody(workflow, "rust-native-differential");
   const recipe = readRepoFile(
     ".github",
     "actions",
@@ -24,7 +24,7 @@ test("the TS-32 remarks-diff lane is wired and documented", () => {
     manifest,
     /^\[\[test\]\]\nname = "davinci_remarks_corpus"\nrequired-features = \["legacy-differential"\]$/m,
   );
-  assert.match(clippyJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
+  assert.match(nativeJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
   assert.match(
     recipe,
     /run: node tools\/support\/compat\/github\/rust-differential-lanes\.ts --all/,

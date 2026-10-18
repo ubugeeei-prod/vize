@@ -34,7 +34,7 @@ type Original = {
     custodyProbeSha256: string;
   };
 };
-const roles = {
+export const roles = {
   "node22-linux": { runtime: "node", node: "22", platform: "linux" },
   "node24-linux": { runtime: "node", node: "24", platform: "linux" },
   "node24-macos": { runtime: "node", node: "24", platform: "darwin" },
@@ -65,12 +65,12 @@ type Command = {
   oracleBefore: Record<string, string>;
   oracleAfter?: Record<string, string>;
 };
-type Installed = {
+export type Installed = {
   native: { path: string; loaded: boolean; sha256: string };
   packages: { name: string; version: string; directory: string; manifestSha256: string }[];
   runtime: { node: string; deno?: { deno: string }; bun?: string; platform: string; arch: string };
 };
-type Packet = {
+export type Packet = {
   schema: string;
   status: string;
   role: Role;
@@ -144,7 +144,7 @@ export function commandPlan(packet: Packet) {
 export function verifyConsumer(value: unknown, expected?: unknown) {
   object(value);
   const packet = value as Packet;
-  assert.equal(packet.schema, "vize-consumer-recovery-consumer-v1");
+  assert.equal(packet.schema, "vize-consumer-recovery-consumer-v2");
   assert.equal(packet.status, "passed");
   assert.ok(Object.hasOwn(roles, packet.role));
   const selected = roles[packet.role];
@@ -266,7 +266,7 @@ async function main() {
   const role = roleValue as Role;
   const selected = roles[role];
   const original: Original = json(originalFile);
-  assert.equal(original.schema, "vize-consumer-recovery-original-v1");
+  assert.equal(original.schema, "vize-consumer-recovery-original-v2");
   assert.equal(process.platform, selected.platform);
   assert.equal(process.versions.node.split(".")[0], selected.node);
   assert.equal(process.env.RECOVERY_RUNTIME, selected.runtime);
@@ -321,7 +321,7 @@ async function main() {
   delete environment.GITHUB_TOKEN;
   delete environment.GH_TOKEN;
   const packet: Packet = {
-    schema: "vize-consumer-recovery-consumer-v1",
+    schema: "vize-consumer-recovery-consumer-v2",
     status: "running",
     role,
     identity: original.identity,

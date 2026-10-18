@@ -33,8 +33,8 @@ use super::names::{
 };
 use super::{
     BuiltinScriptRuleEntry, ECOSYSTEM_SCRIPT_PRESETS, ESSENTIAL_SCRIPT_PRESETS,
-    HAPPY_PATH_SCRIPT_PRESETS, NUXT_SCRIPT_PRESETS, OPINIONATED_ONLY_SCRIPT_PRESETS,
-    OPINIONATED_SCRIPT_PRESETS, OPT_IN_SCRIPT_PRESETS,
+    HAPPY_PATH_SCRIPT_PRESETS, NUXT_SCRIPT_PRESETS, OPINIONATED_AND_NUXT_SCRIPT_PRESETS,
+    OPINIONATED_ONLY_SCRIPT_PRESETS, OPINIONATED_SCRIPT_PRESETS, OPT_IN_SCRIPT_PRESETS,
 };
 use crate::rules::script::{
     ComponentOptionsNameCasing, CustomEventNameCasing, DefineEmitsDeclaration, DefineMacrosOrder,
@@ -95,7 +95,7 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
     BuiltinScriptRuleEntry { rule_name: RULE_PREFER_USE_ID, profile_name: "patina.script_rule.prefer_use_id", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &PreferUseId },
     BuiltinScriptRuleEntry { rule_name: RULE_PREFER_IMPORT_FROM_VUE, profile_name: "patina.script_rule.prefer_import_from_vue", category: "Script", fixable: true, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &PreferImportFromVue },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_WITH_DEFAULTS, profile_name: "patina.script_rule.no_with_defaults", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoWithDefaults },
-    BuiltinScriptRuleEntry { rule_name: RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, profile_name: "patina.script_rule.no_deep_destructure_in_props", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NO_DEEP_DESTRUCTURE_IN_PROPS_RULE },
+    BuiltinScriptRuleEntry { rule_name: RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, profile_name: "patina.script_rule.no_deep_destructure_in_props", category: "Script", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &NO_DEEP_DESTRUCTURE_IN_PROPS_RULE },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_INTERNAL_IMPORTS, profile_name: "patina.script_rule.no_internal_imports", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoInternalImports },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_IMPORT_COMPILER_MACROS, profile_name: "patina.script_rule.no_import_compiler_macros", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoImportCompilerMacros },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_RESERVED_IDENTIFIERS, profile_name: "patina.script_rule.no_reserved_identifiers", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoReservedIdentifiers },
@@ -141,7 +141,7 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
     BuiltinScriptRuleEntry { rule_name: RULE_CUSTOM_EVENT_NAME_CASING, profile_name: "patina.script_rule.custom_event_name_casing", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &CUSTOM_EVENT_NAME_CASING_RULE },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_REF_AS_OPERAND, profile_name: "patina.script_rule.no_ref_as_operand", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoRefAsOperand },
     BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_EXPLICIT_SLOTS, profile_name: "patina.script_rule.require_explicit_slots", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &RequireExplicitSlots },
-    BuiltinScriptRuleEntry { rule_name: RULE_NO_DUPLICATE_ATTR_INHERITANCE, profile_name: "patina.script_rule.no_duplicate_attr_inheritance", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoDuplicateAttrInheritance },
+    BuiltinScriptRuleEntry { rule_name: RULE_NO_DUPLICATE_ATTR_INHERITANCE, profile_name: "patina.script_rule.no_duplicate_attr_inheritance", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoDuplicateAttrInheritance },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_MULTIPLE_SLOT_ARGS, profile_name: "patina.script_rule.no_multiple_slot_args", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoMultipleSlotArgs },
     BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_EXPLICIT_EMITS, profile_name: "patina.script_rule.require_explicit_emits", category: "Script", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &RequireExplicitEmits },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_UNSTABLE_NESTED_COMPONENTS, profile_name: "patina.script_rule.no_unstable_nested_components", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoUnstableNestedComponents },

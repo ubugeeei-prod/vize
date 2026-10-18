@@ -13,6 +13,8 @@ import os from "node:os";
 import path from "node:path";
 import { TextDecoder } from "node:util";
 import { fileURLToPath } from "node:url";
+import { object, same, sha256 } from "./policy.ts";
+import type { Original } from "./custody.ts";
 
 export const effectiveDenoConfig = '{\n  "nodeModulesDir": "none"\n}\n';
 export const bytesSha256 = (bytes: Uint8Array | string) =>
@@ -59,6 +61,7 @@ export async function captureCommand(
     cwd: options.cwd,
     env: options.env ?? process.env,
     stdio: ["ignore", "pipe", "pipe"],
+    detached: process.platform !== "win32",
   });
   child.stdout.on("data", (bytes: Buffer) => {
     appendFileSync(path.join(directory, "stdout.bin"), bytes);
@@ -69,31 +72,44 @@ export async function captureCommand(
     stderr.push(bytes);
   });
   const timeoutMs = options.timeoutMs ?? 120_000;
-  let timedOut = false;
-  const timer = setTimeout(() => {
-    timedOut = true;
-    child.kill("SIGKILL");
-  }, timeoutMs);
   const outcome = await new Promise<{
     status: number | null;
     signal: string | null;
     error?: string;
   }>((done) => {
     let error: string | undefined;
+    let settled = false;
+    let drain: ReturnType<typeof setTimeout> | undefined;
+    const finish = (status: number | null, signal: string | null) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      clearTimeout(drain);
+      done({ status, signal, ...(error ? { error } : {}) });
+    };
+    const timer = setTimeout(() => {
+      error = `Command timed out after ${timeoutMs}ms`;
+      if (process.platform !== "win32" && child.pid) {
+        try {
+          process.kill(-child.pid, "SIGKILL");
+        } catch {
+          child.kill("SIGKILL");
+        }
+      } else child.kill("SIGKILL");
+      // A descendant can inherit either pipe. Bound draining separately and
+      // preserve all received bytes, explicitly refusing incomplete streams.
+      drain = setTimeout(() => {
+        error += "; inherited streams did not close; raw capture incomplete";
+        child.stdout.destroy();
+        child.stderr.destroy();
+        finish(child.exitCode, child.signalCode);
+      }, 1_000);
+    }, timeoutMs);
     child.on("error", (caught) => {
       error = caught.message;
     });
     child.on("close", (status, signal) => {
-      clearTimeout(timer);
-      done({
-        status,
-        signal,
-        ...(error
-          ? { error }
-          : timedOut
-            ? { error: `Command timed out after ${timeoutMs}ms` }
-            : {}),
-      });
+      finish(status, signal);
     });
   });
   const out = Buffer.concat(stdout),
@@ -115,6 +131,37 @@ export function strictUtf8(bytes: Buffer) {
   const text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes);
   assert.deepEqual(Buffer.from(text), bytes, "text decoding must preserve all original bytes");
   return text;
+}
+
+/** The retained original/final transport must describe the same complete failed log. */
+export function verifyOriginalLogDirectory(
+  directory: string,
+  label: "original-log-capture" | "final-log-capture",
+  original: Original,
+) {
+  const raw = path.join(directory, label);
+  const stdout = readFileSync(path.join(raw, "stdout.bin"));
+  const stderr = readFileSync(path.join(raw, "stderr.bin"));
+  const process = object(JSON.parse(readFileSync(path.join(raw, "process.json"), "utf8")));
+  same(strictUtf8(stdout), original.log, "complete original failure stdout changed");
+  same(
+    process.stdout,
+    { bytes: stdout.length, sha256: sha256(stdout) },
+    "original raw stdout digest changed",
+  );
+  same(
+    process.stderr,
+    { bytes: stderr.length, sha256: sha256(stderr) },
+    "original raw stderr digest changed",
+  );
+  same(process.status, 0, "original log transport failed");
+  same(process.signal, null, "original log transport signalled");
+  same(process.error, undefined, "original log transport incomplete");
+  same(
+    Object.fromEntries(Object.entries(process).filter(([key]) => key !== "cwd")),
+    original.logCustody,
+    "original transport custody changed",
+  );
 }
 
 /** Pull-request proof only: no admission, signing, operator or GitHub mutation. */

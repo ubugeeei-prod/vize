@@ -313,6 +313,12 @@ export function assertFresh(receipt: Json, expected: Identity, now = Date.now())
   );
 }
 
+/** Fresh collections use the complete raw-custody policy, never legacy admission. */
+export function assertFreshV2(receipt: Json, expected: Identity, now = Date.now()) {
+  same(receipt.schema, "vize-consumer-recovery-v2", "current policy requires v2 evidence");
+  assertFresh({ ...receipt, schema: "vize-consumer-recovery-v1" }, expected, now);
+}
+
 export function recoveryRunIdentity(run: Json, expectedRun: string) {
   same(String(run.id), expectedRun, "recovery run identity mismatch");
   for (const key of ["repository", "head_repository"])

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
@@ -22,6 +22,8 @@ const FULL_SUITE_JOBS = [
   "editor-host-smoke",
   "build-js-packages",
   "test-js-packages",
+  "full-js-package-tests",
+  "full-js-original-project",
   "clippy-and-test",
   "coverage",
   "source-coverage",
@@ -34,6 +36,7 @@ type Job = {
   outputs?: Record<string, string>;
   steps?: Array<{
     name?: string;
+    "continue-on-error"?: boolean;
     if?: string;
     run?: string;
     env?: Record<string, string>;
@@ -52,10 +55,7 @@ function needs(results: Record<string, string> = {}): Record<string, { result: s
   return Object.fromEntries(PR_JOBS.map((job) => [job, { result: results[job] ?? "success" }]));
 }
 test("obsolete main validation is cancelled when the branch advances", () => {
-  for (const candidate of [
-    workflow,
-    parse(readRepoFile(".github", "workflows", "davinci-contracts.yml")) as typeof workflow,
-  ]) {
+  for (const candidate of [workflow]) {
     assert.equal(candidate.concurrency?.["cancel-in-progress"], true);
     assert.match(
       candidate.concurrency?.group ?? "",
@@ -88,9 +88,13 @@ test("source gates cover iteration events while full qualification runs on sched
   for (const job of FULL_SUITE_JOBS) {
     assert.equal(
       workflow.jobs?.[job]?.if,
-      job === "test-scripts"
-        ? "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
-        : "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+      job === "source-coverage"
+        ? "${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !(inputs.release-qualification && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')))) }}"
+        : job === "clippy-and-test" || job === "test-js-packages"
+          ? "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+          : job === "test-scripts"
+            ? "${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+            : "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
     );
   }
   assert.equal(
@@ -101,10 +105,40 @@ test("source gates cover iteration events while full qualification runs on sched
     workflow.jobs?.["semver-checks"]?.if,
     "${{ github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')) }}",
   );
+  const reportSteps = workflow.jobs?.["test-report"]?.steps ?? [];
+  const aggregate = reportSteps.find((step) => step.name === "Require every needed job to succeed");
+  const select = reportSteps.find(
+    (step) => step.name === "Re-select the current integration before the required final gate",
+  );
+  const final = reportSteps.find(
+    (step) =>
+      step.name === "Freshly verify the same exact qualification at the required final gate",
+  );
+  const custody = reportSteps.find(
+    (step) => step.name === "Retain the required final qualification observations",
+  );
+  assert.ok(aggregate && select && final && custody);
   assert.equal(
-    workflow.jobs?.["test-report"]?.steps?.at(-1)?.run,
+    aggregate.run,
     "node tools/support/compat/github/require-needs-success.ts --check-report",
   );
+  assert.ok(reportSteps.indexOf(aggregate) < reportSteps.indexOf(select));
+  assert.ok(reportSteps.indexOf(select) < reportSteps.indexOf(final));
+  assert.equal(select.if, "${{ github.event_name == 'merge_group' }}");
+  assert.equal(select.run, "node tools/support/compat/github/release-integration-event.ts");
+  assert.equal(final.if, "${{ github.event_name == 'merge_group' }}");
+  assert.ok(
+    final.run?.includes(
+      'integration-release.ts --verify < "$directory/qualification.json" > "$directory/final-qualification.json"',
+    ),
+  );
+  for (const step of [aggregate, select, final]) assert.equal(step["continue-on-error"], undefined);
+  assert.equal(reportSteps.at(-2), final);
+  assert.equal(reportSteps.at(-1), custody);
+  assert.equal(custody.if, "${{ always() && github.event_name == 'merge_group' }}");
+  assert.equal(custody.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
+  assert.equal(custody.with?.path, "${{ runner.temp }}/vize-release-integration-final/");
+  assert.equal(custody.with?.["if-no-files-found"], "error");
   const commands = (job: string) =>
     (workflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
   const checkSteps = workflow.jobs?.["check-js"]?.steps ?? [];
@@ -181,12 +215,12 @@ test("source gates cover iteration events while full qualification runs on sched
   const jsTestCommands = history.runs.steps.map((step) => step.run ?? "").join("\n");
   assert.match(jsTestCommands, /vp run --workspace-root test:js/);
   assert.match(jsTestCommands, /node npm\/oxlint\/scripts\/check-project-transport\.mjs/);
-  assert.match(commands("clippy-and-test"), /cargo clippy --workspace/);
+  assert.match(commands("rust-clippy-portability"), /cargo clippy --workspace/);
   assert.equal(
-    workflow.jobs?.["clippy-and-test"]?.steps?.find((step) => step.name === "Test")?.uses,
+    workflow.jobs?.["rust-native-differential"]?.steps?.find((step) => step.name === "Test")?.uses,
     "./.github/actions/test-rust-workspace-differential",
   );
-  assert.match(commands("clippy-and-test"), /cargo bench -p vize_l1_to_l2/);
+  assert.match(commands("rust-davinci-allocations"), /cargo bench -p vize_l1_to_l2/);
   assert.match(commands("branch-coverage"), /coverage:source:branch/);
   assert.match(commands("playground-test"), /test:browser/);
   assert.deepEqual(workflow.jobs?.["playground-test"]?.needs, ["build-js-packages"]);
@@ -284,11 +318,29 @@ test("full JS qualification retains independent native builds and strictly gates
   });
   assert.ok(report.runs.steps.indexOf(setup) < report.runs.steps.indexOf(gate));
   const testJob = workflow.jobs?.["test-js-packages"];
-  const history = testJob?.steps?.find((step) => step.name === "Test JS packages");
-  assert.equal(history?.if, "${{ always() }}");
-  assert.equal(history?.uses, "./.github/actions/test-js-packages-with-history");
-  assert.equal(history?.run, undefined);
-  for (const job of [testJob, workflow.jobs?.["build-js-packages"]]) {
+  const producers = ["full-js-package-tests", "full-js-original-project"];
+  assert.deepEqual(testJob?.needs, producers);
+  const packageGate = testJob?.steps?.at(-1);
+  assert.equal(
+    packageGate?.run,
+    "node tools/support/compat/github/require-needs-success.ts --full-js-packages",
+  );
+  assert.deepEqual(packageGate?.env, { NEEDS_JSON: "${{ toJSON(needs) }}" });
+  for (const [id, partition] of [
+    ["full-js-package-tests", "${{ matrix.group }}"],
+    ["full-js-original-project", "original-project"],
+  ]) {
+    const history = workflow.jobs?.[id]?.steps?.find(
+      (step) => step.uses === "./.github/actions/test-js-packages-with-history",
+    );
+    assert.equal(history?.if, "${{ !cancelled() }}");
+    assert.deepEqual(history?.with, { partition });
+    assert.equal(history?.run, undefined);
+  }
+  for (const job of [
+    ...producers.map((id) => workflow.jobs?.[id]),
+    workflow.jobs?.["build-js-packages"],
+  ]) {
     assert.ok(job);
     assert.equal(job.needs, undefined, "each exact-source job owns its physical native build");
     assert.ok(job.steps?.some((step) => step.uses?.startsWith("actions/checkout@")));
@@ -304,23 +356,22 @@ test("full JS qualification retains independent native builds and strictly gates
     for (const result of ["failure", "cancelled", "skipped", "unknown"]) {
       const observed = { ...allSucceeded, [job]: { result } };
       assert.equal(aggregateNeedsResults(observed).exitCode, 1, `${job}: ${result}`);
-      const command = spawnSync(process.execPath, [gate.run.split(" ")[1]], {
-        cwd: root,
-        encoding: "utf8",
-        env: { ...process.env, NEEDS_JSON: JSON.stringify(observed) },
-      });
+      const command: SpawnSyncReturns<string> = spawnSync(
+        process.execPath,
+        [gate.run.split(" ")[1]],
+        {
+          cwd: root,
+          encoding: "utf8",
+          env: { ...process.env, NEEDS_JSON: JSON.stringify(observed) },
+        },
+      );
       assert.equal(command.status, 1, `${command.stderr}\n${command.stdout}`);
       assert.ok(command.stderr.includes(`${job}: ${result}`));
     }
   }
 });
 test("slow suites use schedules or explicit dispatch without starting on PRs", () => {
-  const pushOrDispatch = [
-    "davinci-contracts.yml",
-    "davinci-html-content-model.yml",
-    "davinci-incremental.yml",
-    "level-moonbit.yml",
-  ];
+  const pushOrDispatch = ["davinci-html-content-model.yml", "davinci-incremental.yml"];
   const scheduledOrDispatch = [
     "benchmark.yml",
     "check-bench.yml",
@@ -347,13 +398,97 @@ test("slow suites use schedules or explicit dispatch without starting on PRs", (
     assert.equal(Object.hasOwn(events, "pull_request"), false, name);
     assert.equal(Object.hasOwn(events, "workflow_dispatch"), true, name);
     if (pushOrDispatch.includes(name)) assert.equal(Object.hasOwn(events, "push"), true, name);
-    if (name === "level-moonbit.yml") {
-      const push = events.push as { paths?: string[] };
-      assert.equal(push.paths?.includes(".github/workflows/level-moonbit.yml"), true, name);
-    }
     if (scheduledOrDispatch.includes(name))
       assert.equal(Object.hasOwn(events, "schedule"), true, name);
     if (scheduledOrDispatch.includes(name) || name === "pkg-pr-new.yml")
       assert.equal(Object.hasOwn(events, "push"), false, name);
   }
+});
+
+test("release candidate readiness joins all seven original gates before promotion without a cycle", () => {
+  const release = parse(readRepoFile(".github/workflows/release.yml")) as {
+    jobs: Record<string, Job>;
+  };
+  const expected = {
+    name: "Release candidate ready",
+    needs: [
+      "candidate-preflight",
+      "build-cli",
+      "build-editor-extensions",
+      "build-release-packages",
+      "build-wasm-package",
+      "build-native-all",
+      "smoke-release-packages",
+    ],
+    "runs-on": "ubuntu-24.04",
+    "timeout-minutes": 5,
+    steps: [{ run: 'echo "All release artifacts and preflight gates passed for this candidate."' }],
+  };
+  const assertReady = (jobs: Record<string, Job>) => {
+    assert.deepEqual(jobs["candidate-ready"], expected);
+    const seen = new Set<string>();
+    const visit = (name: string, pending = new Set<string>()) => {
+      assert.ok(!pending.has(name), "release readiness dependency cycle");
+      assert.doesNotMatch(
+        name,
+        /^(release-preflight|release-npm-|release-crates|release-jsr|create-github-release)/,
+      );
+      const job = jobs[name];
+      assert.ok(job, name);
+      assert.notEqual(job.uses, "./.github/workflows/release-promotion.yml");
+      const dependencies = typeof job.needs === "string" ? [job.needs] : (job.needs ?? []);
+      for (const dependency of dependencies) visit(dependency, new Set([...pending, name]));
+      seen.add(name);
+    };
+    visit("candidate-ready");
+    assert.deepEqual(
+      [...seen].sort(),
+      [...expected.needs, "candidate-ready", "candidate", "plan-release-platforms"].sort(),
+    );
+    assert.equal(jobs["candidate-preflight"].uses, "./.github/workflows/release-preflight.yml");
+    assert.equal(jobs["release-preflight"].needs, "candidate-ready");
+  };
+  assertReady(release.jobs);
+  for (const name of expected.needs) {
+    const changed = structuredClone(release.jobs);
+    changed["candidate-ready"].needs = expected.needs.filter((value) => value !== name);
+    assert.throws(() => assertReady(changed));
+  }
+  for (const dependency of [
+    "release-preflight",
+    "candidate-ready",
+    "release-npm-cli",
+    "create-github-release",
+  ]) {
+    const changed = structuredClone(release.jobs);
+    changed.candidate.needs = dependency;
+    assert.throws(() => assertReady(changed));
+  }
+  const preflight = parse(readRepoFile(".github/workflows/release-preflight.yml"));
+  assert.equal(preflight.jobs.verify.needs, "wait-check");
+  assert.ok(
+    preflight.jobs["wait-check"].steps.some((step: { run?: string }) =>
+      step.run?.includes("main.ts --wait-existing"),
+    ),
+  );
+  assert.ok(
+    preflight.jobs.verify.steps.some(
+      (step: { run?: string }) =>
+        step.run === "node tools/support/compat/github/release-preflight.ts --verify-only",
+    ),
+  );
+  const catalog = parse(readRepoFile(".github/workflows/release-integration-catalog.yml"));
+  const wait = catalog.jobs["release-integration-catalog"].steps.find(
+    (step: { id?: string }) => step.id === "qualification",
+  );
+  const q =
+    'integration.ts --wait < "$directory/candidate-context.json" > "$directory/qualification-q.json"';
+  const r =
+    'integration-release.ts --wait < "$directory/qualification-q.json" > "$directory/qualification.json"';
+  assert.ok(wait.run.includes(q) && wait.run.includes(r));
+  assert.ok(wait.run.indexOf(q) < wait.run.indexOf(r));
+  assert.doesNotMatch(
+    workflow.jobs?.["test-report"]?.steps?.at(-2)?.run ?? "",
+    /rust-script|cargo |--wait/,
+  );
 });

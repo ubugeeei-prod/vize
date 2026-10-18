@@ -25,9 +25,14 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             self.section_start = self.index + 1;
         } else if is_tag_start_char(c) {
             self.section_start = self.index;
-            if c == b't' {
+            let name_start = if P::FOLD_NAME_CASE {
+                c.to_ascii_lowercase()
+            } else {
+                c
+            };
+            if name_start == b't' {
                 self.state = State::BeforeSpecialT;
-            } else if c == b's' {
+            } else if name_start == b's' {
                 self.state = State::BeforeSpecialS;
             } else {
                 self.state = State::InTagName;

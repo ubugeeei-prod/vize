@@ -23,7 +23,7 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       workflowName: "Check",
       workflowId: "check.yml",
       ref,
-      inputs: {},
+      inputs: { "release-qualification": true },
       expectedRunName: `Check full @ ${headSha}`,
       acceptsScheduledEvidence: false,
     },

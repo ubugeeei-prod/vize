@@ -153,7 +153,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
           `<script>${generateDevGlobalsScript(basePath, devSessionToken, themeConfig, tokenPreviewConfig, toolbar)}</script></head>`,
         );
         res.setHeader("Content-Type", "text/html");
-        res.end(html);
+        res.end(await devServer.transformIndexHtml(url, html));
         return;
       } catch {
         const sourceHtml = await tryLoadSourceGalleryHtml(

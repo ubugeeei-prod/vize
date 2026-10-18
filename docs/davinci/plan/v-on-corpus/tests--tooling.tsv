@@ -1,3 +1,8 @@
 file	spelling
 tests/tooling/canon-template-public-contracts.test.ts	@valid.once
+tests/tooling/lint-deprecation-source-composition.test.mjs	@keyup.enter
+tests/tooling/lint-deprecation-source-composition.test.mjs	v-on:keyup.escape
+tests/tooling/lint-deprecation-source-composition.test.mjs	@keyup.enter.27.stop
+tests/tooling/lint-deprecation-source-composition.test.mjs	@keyup.enter.stop
+tests/tooling/lint-deprecation-source-composition.test.mjs	@keyup.escape
 tests/tooling/sfc-baselines.test.ts	@keyup.32

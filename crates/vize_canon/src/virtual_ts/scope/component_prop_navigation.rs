@@ -21,49 +21,60 @@ pub(super) fn emit_references(
 ) {
     ts.push_str("\n  // Component template navigation references\n");
     for &(idx, usage) in checkable_usages {
-        let named_dynamic_ref = named_dynamic_reference(ctx, usage);
-        let inference_only = named_dynamic_ref.is_some();
-        let component_ref = named_dynamic_ref.unwrap_or_else(|| {
-            component_binding_reference(
-                ctx.summary,
-                ctx.options,
-                ctx.syntactic_type_only_imported_names,
-                usage.name.as_str(),
-            )
-        });
-
-        if inference_only {
-            ts.push_str("  // @ts-ignore Navigation-only reference; the authored v-bind statement owns diagnostics.\n");
-        }
-        ts.push_str("  void ");
-        let tag_gen_start = ts.len();
-        ts.push_str(&component_ref);
-        let tag_gen_end = ts.len();
-        ts.push_str(";\n");
-        let tag_gen_range = tag_gen_start..tag_gen_end;
-        if let Some(src_range) = crate::virtual_ts::component_tag::source_range(
-            ctx.template_source,
-            ctx.template_offset,
-            usage,
-        ) {
-            mappings.push(VizeMapping {
-                gen_range: tag_gen_range.clone(),
-                src_range,
-                sub_spans: Vec::new(),
-            });
-        }
-
-        emit_prop_references(
-            ts,
-            mappings,
-            semantic_links,
-            ctx,
-            idx,
-            usage,
-            &tag_gen_range,
-        );
-        emit_slot_references(ts, mappings, ctx, idx, usage);
+        emit_usage_references(ts, mappings, semantic_links, ctx, idx, usage);
     }
+}
+
+pub(super) fn emit_usage_references(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    semantic_links: &mut Vec<VizeSemanticLink>,
+    ctx: &ComponentPropsContext<'_, '_>,
+    idx: usize,
+    usage: &ComponentUsage,
+) {
+    let named_dynamic_ref = named_dynamic_reference(ctx, usage);
+    let inference_only = named_dynamic_ref.is_some();
+    let component_ref = named_dynamic_ref.unwrap_or_else(|| {
+        component_binding_reference(
+            ctx.summary,
+            ctx.options,
+            ctx.syntactic_type_only_imported_names,
+            usage.name.as_str(),
+        )
+    });
+
+    if inference_only {
+        ts.push_str("  // @ts-ignore Navigation-only reference; the authored v-bind statement owns diagnostics.\n");
+    }
+    ts.push_str("  void ");
+    let tag_gen_start = ts.len();
+    ts.push_str(&component_ref);
+    let tag_gen_end = ts.len();
+    ts.push_str(";\n");
+    let tag_gen_range = tag_gen_start..tag_gen_end;
+    if let Some(src_range) = crate::virtual_ts::component_tag::source_range(
+        ctx.template_source,
+        ctx.template_offset,
+        usage,
+    ) {
+        mappings.push(VizeMapping {
+            gen_range: tag_gen_range.clone(),
+            src_range,
+            sub_spans: Vec::new(),
+        });
+    }
+
+    emit_prop_references(
+        ts,
+        mappings,
+        semantic_links,
+        ctx,
+        idx,
+        usage,
+        &tag_gen_range,
+    );
+    emit_slot_references(ts, mappings, ctx, idx, usage);
 }
 
 fn emit_prop_references(
@@ -236,7 +247,7 @@ fn emit_slot_references(
     }
 }
 
-fn slot_navigation_source_range(
+pub(super) fn slot_navigation_source_range(
     template_source: Option<&str>,
     slot: &SlotUsage,
 ) -> Option<Range<usize>> {

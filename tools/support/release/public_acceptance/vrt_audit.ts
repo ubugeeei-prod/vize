@@ -5,6 +5,8 @@ import type { Page } from "playwright";
 import { sha256, writeVrtConfig, type VrtFixture } from "./vrt_fixtures.ts";
 import { inventory, type Evidence } from "./vrt_artifacts.ts";
 import type { staticVrtHost } from "./vrt_host.ts";
+import { assertAxeVendor, axePolicy, installedAxe } from "./a11y.ts";
+import type { VrtSecrets } from "./vrt_secrets.ts";
 
 /** Authored Arts are compiled by the installed plugins, including every original audit trait. */
 export async function observeHostedAudit(
@@ -13,7 +15,11 @@ export async function observeHostedAudit(
   e: Evidence,
   host: Awaited<ReturnType<typeof staticVrtHost>>,
   beforeRefusal: () => void,
+  secrets: VrtSecrets,
 ) {
+  secrets.stage("hosted-audit-installation");
+  const axe = installedAxe(process.cwd());
+  await e.json("hosted-audit/installed-axe.json", axe);
   const input = await readFile(path.join(process.cwd(), "vrt-inputs/hosted-audits.json"));
   const contract = JSON.parse(input.toString()) as {
     setupDelayMs: number;
@@ -48,11 +54,20 @@ export async function observeHostedAudit(
   await e.save("hosted-audit/inputs/vite.config.mjs", await readFile(f.config));
   const { build } = await import("vite");
   const directory = path.join(f.root, "dist");
+  secrets.stage("hosted-audit-build");
   await build({
     root: f.root,
     configFile: f.config,
     logLevel: "warn",
     build: { outDir: directory, emptyOutDir: true },
+  });
+  secrets.stage("hosted-audit-vendor-bytes");
+  const vendor = await readFile(path.join(directory, "gallery/vrt/vendor/axe-core.min.js"));
+  assertAxeVendor(vendor, axe);
+  await e.json("hosted-audit/exported-axe.json", {
+    version: axe.version,
+    sha256: sha256(vendor),
+    bytes: vendor.length,
   });
   const raw = await readFile(path.join(directory, "gallery/vrt/api/static.json"));
   const manifest = JSON.parse(raw.toString()) as {
@@ -82,6 +97,7 @@ export async function observeHostedAudit(
   const response = await fetch(new URL("api/static.json", host.url));
   assert.equal(response.status, 200);
   assert.deepEqual(Buffer.from(await response.arrayBuffer()), raw);
+  secrets.stage("hosted-audit-previews");
   for (const [i, name] of contract.variants.entries()) {
     const preview = manifest.previews[artPath][name];
     assert.ok(preview.startsWith("/built/gallery/vrt/preview/"));
@@ -108,8 +124,10 @@ export async function observeHostedAudit(
   await page.goto(new URL("tests", host.url).href);
   const runAll = () => page.getByRole("button", { name: "Run All A11y Tests", exact: true });
   for (let repeat = 0; repeat < 2; repeat++) {
+    secrets.stage("hosted-audit-run-all");
     await runAll().click();
     await runAll().waitFor({ timeout: 15_000 });
+    secrets.stage("hosted-audit-positive-results");
     const counts = await page.locator(".summary-stats .stat-value").allTextContents();
     assert.deepEqual(counts.slice(0, 4), contract.successfulCounts);
     assert.equal(
@@ -129,6 +147,7 @@ export async function observeHostedAudit(
       documentSha256: sha256(document),
     });
   }
+  secrets.stage("hosted-audit-individual");
   await page.locator(".test-item").first().click();
   const frame = page.frameLocator(".variant-card iframe").first();
   await frame.getByRole("button", { name: "Accessible action", exact: true }).waitFor();
@@ -142,6 +161,27 @@ export async function observeHostedAudit(
   await page.locator(".tab-btn").filter({ hasText: "A11y" }).click();
   await page.getByRole("button", { name: /^Run (Test|Again)$/ }).click();
   await page.locator(".a11y-panel .a11y-success").waitFor({ timeout: 10_000 });
+  secrets.stage("hosted-audit-browser-version");
+  const browserAxeVersion = await page
+    .frameLocator(".a11y-panel iframe.a11y-iframe")
+    .locator("body")
+    .evaluate(() => (Reflect.get(window, "axe") as { version?: unknown } | undefined)?.version);
+  assert.equal(browserAxeVersion, axePolicy.version);
+  secrets.stage("hosted-audit-vendor-requests");
+  const vendorRequests = host.requests.filter((item) =>
+    (item as { pathname: string }).pathname.endsWith("/vendor/axe-core.min.js"),
+  ) as Array<{ status: number; sha256: string }>;
+  assert.ok(vendorRequests.length > 0);
+  for (const request of vendorRequests) {
+    assert.equal(request.status, 200);
+    assert.equal(request.sha256, axe.script.sha256);
+  }
+  e.records.push({
+    phase: "hosted-audit-browser-axe",
+    version: browserAxeVersion,
+    vendorSha256: axe.script.sha256,
+    successfulVendorRequests: vendorRequests.length,
+  });
   await e.save("hosted-audit/individual.html", await page.content());
   await page.getByRole("button", { name: "VRT", exact: true }).click();
   await page.getByText("Capture this hosted gallery with Node and Playwright:").waitFor();
@@ -150,6 +190,7 @@ export async function observeHostedAudit(
   await e.save("hosted-audit/vrt-notice.html", await page.content());
   await page.screenshot({ path: path.join(e.output, "hosted-audit/complete.png"), fullPage: true });
   beforeRefusal();
+  secrets.stage("hosted-audit-vendor-refusal");
   await page.goto(new URL("tests", host.url).href);
   host.refuseAxe();
   await runAll().click();

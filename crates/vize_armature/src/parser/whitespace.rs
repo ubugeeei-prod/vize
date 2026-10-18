@@ -129,17 +129,25 @@ fn condense_whitespace_in<'a>(
 
             let before = children.get(..i).unwrap_or_default();
             let after = children.get(run_end..).unwrap_or_default();
-            let prev_is_text = before
-                .iter()
-                .rev()
-                .find(|node| !is_whitespace_text(node))
-                .is_some_and(is_text_like);
-            let next_is_text = after
-                .iter()
-                .find(|node| !is_whitespace_text(node))
-                .is_some_and(is_text_like);
+            let prev = before.iter().rev().find(|node| !is_whitespace_text(node));
+            let next = after.iter().find(|node| !is_whitespace_text(node));
+            let prev_is_text = prev.is_some_and(is_text_like);
+            let next_is_text = next.is_some_and(is_text_like);
+            // Vue removes whitespace adjoining a comment and another comment
+            // or element even without a newline. A retained space becomes a
+            // real Text VNode and prevents single-root attribute fallthrough.
+            let beside_comment = matches!(
+                (prev, next),
+                (
+                    Some(TemplateChildNode::Comment(_)),
+                    Some(TemplateChildNode::Comment(_) | TemplateChildNode::Element(_))
+                ) | (
+                    Some(TemplateChildNode::Element(_)),
+                    Some(TemplateChildNode::Comment(_))
+                )
+            );
 
-            if !prev_is_text && !next_is_text && has_newline {
+            if beside_comment || (!prev_is_text && !next_is_text && has_newline) {
                 WhitespaceAction::Remove(run_end - i)
             } else {
                 WhitespaceAction::Condense(

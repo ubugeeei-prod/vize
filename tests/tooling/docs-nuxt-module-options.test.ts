@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import ts from "typescript";
 
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 
 const optionsSource = path.join(repoRoot, "npm/framework/nuxt/src/options.ts");
 const checkerSource = path.join(repoRoot, "npm/framework/nuxt/src/lint/checker/options.ts");

@@ -4,13 +4,11 @@ import { lstatSync, mkdtempSync, readFileSync, readdirSync, realpathSync } from 
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { verifyConsumer } from "./consumer.ts";
-import { captureCommand, effectiveDenoConfig, strictUtf8 } from "./runtime.ts";
-import { custodyProbe, assertOracleFiles, type OraclePolicy } from "./oracles.ts";
+import { captureCommand, strictUtf8, verifyOriginalLogDirectory } from "./runtime.ts";
+import { custodyProbe, assertOracleFiles, policyFiles, type OraclePolicy } from "./oracles.ts";
 import { revalidatePublicArchives, type InstalledArchive } from "./archive.ts";
 import {
   admitOriginal,
-  assertFresh,
   compareText,
   consumerAttempt,
   fixture,
@@ -30,6 +28,17 @@ import {
   type Identity,
   type Json,
 } from "./policy.ts";
+
+import {
+  assertLegacyOracleFiles,
+  assertRecoveryReceiptPolicy,
+  collectLegacyOriginal,
+  legacyAdmission,
+  legacyAuthority,
+  recoveryEvidencePolicy,
+  verifyLegacyConsumer,
+  verifyConsumerDirectory,
+} from "./evidence.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 export function command(executable: string, args: string[], cwd = root): Buffer {
@@ -64,69 +73,7 @@ export async function pages(endpoint: string, key: string): Promise<Json[]> {
   }
   throw new Error("incomplete inventory");
 }
-// Closed source/config/workflow closure for signing AND consuming recovery evidence.
-// Include all materialized public harness modules as well as static imports.
-export const policyFiles = [
-  ".github/workflows/release-consumer-recovery.yml",
-  ".github/workflows/release-operator.yml",
-  ".github/workflows/release-public-acceptance.yml",
-  "tests/performance/support/warm-type-backed-public-archives.ts",
-  "tools/support/release/consumer_recovery/archive.ts",
-  "tools/support/release/consumer_recovery/consumer.ts",
-  "tools/support/release/consumer_recovery/custody.ts",
-  "tools/support/release/consumer_recovery/main.ts",
-  "tools/support/release/consumer_recovery/oracles.ts",
-  "tools/support/release/consumer_recovery/policy.ts",
-  "tools/support/release/consumer_recovery/runtime.ts",
-  "tools/support/release/jsr/consumer-deno.json",
-  "tools/support/release/marketplace_query.ts",
-  "tools/support/release/public_acceptance/accept.ts",
-  "tools/support/release/public_acceptance/browser.ts",
-  "tools/support/release/public_acceptance/browser_observation.ts",
-  "tools/support/release/public_acceptance/gallery.ts",
-  "tools/support/release/public_acceptance/github.ts",
-  "tools/support/release/public_acceptance/http.ts",
-  "tools/support/release/public_acceptance/inputs.ts",
-  "tools/support/release/public_acceptance/installed.ts",
-  "tools/support/release/public_acceptance/lsp.ts",
-  "tools/support/release/public_acceptance/lsp_assets.ts",
-  "tools/support/release/public_acceptance/lsp_cargo.ts",
-  "tools/support/release/public_acceptance/lsp_case.ts",
-  "tools/support/release/public_acceptance/lsp_packets.ts",
-  "tools/support/release/public_acceptance/lsp_source.ts",
-  "tools/support/release/public_acceptance/native.ts",
-  "tools/support/release/public_acceptance/plan.ts",
-  "tools/support/release/public_acceptance/registry.ts",
-  "tools/support/release/public_acceptance/vrt_api.ts",
-  "tools/support/release/public_acceptance/vrt_artifacts.ts",
-  "tools/support/release/public_acceptance/vrt_audit.ts",
-  "tools/support/release/public_acceptance/vrt_cli.ts",
-  "tools/support/release/public_acceptance/vrt_fixtures.ts",
-  "tools/support/release/public_acceptance/vrt_host.ts",
-  "tools/support/release/public_acceptance/vrt_hosted.ts",
-  "tools/support/release/public_acceptance/vrt_literal.ts",
-  "tools/support/release/public_acceptance/vrt_observer.ts",
-  "tools/support/release/public_acceptance/vrt_retained.ts",
-  "tools/support/release/public_acceptance/vrt_retained_scan.ts",
-  "tools/support/release/public_acceptance/vrt_secrets.ts",
-  "tools/support/release/public_acceptance/vrt_service_announcement.ts",
-  "tools/support/release/public_acceptance/vrt_service_process.ts",
-  "tools/support/release/public_acceptance/vrt_trusted_color_build.ts",
-  "tools/support/release/public_acceptance/vrt_trusted_color_capture.ts",
-  "tools/support/release/public_acceptance/vrt_trusted_colors.ts",
-  "tools/support/release/public_acceptance/vrt_trusted_failures.ts",
-  "tools/support/release/public_acceptance/vrt_trusted_gallery.ts",
-  "tools/support/release/public_acceptance/vrt_trusted_network.ts",
-  "tools/support/release/public_acceptance/vrt_trusted_observation.ts",
-  "tools/support/release/public_acceptance/vrt_trusted_report_isolation.ts",
-  "tools/support/release/public_acceptance/vrt_trusted_surface.ts",
-  "tools/support/release/public_acceptance/vrt_trusted_ui.ts",
-  "tools/support/release/public_acceptance/vrt_tunnel.ts",
-  "tools/support/release/public_acceptance/vrt_tunnel_metadata.ts",
-  "tools/support/release/public_acceptance/vrt_tunnel_process.ts",
-  "tools/support/release/public_acceptance/vrt_tunnel_setup.ts",
-  "tools/support/release/windows_hover_acceptance.ts",
-] as const;
+export { policyFiles } from "./oracles.ts";
 export function authority(sha: string) {
   return policyFiles.map((file) => {
     const bytes = readFileSync(path.join(root, file));
@@ -149,12 +96,12 @@ export interface Original extends Json {
   jobs: Json[];
   failed: Json;
   log: string;
-  logCustody: Json;
+  logCustody?: Json;
   blobs: Json;
   artifacts: Json[];
 }
 export function admission(original: Original): Admission {
-  same(original.schema, "vize-consumer-recovery-original-v1", "original schema mismatch");
+  same(original.schema, "vize-consumer-recovery-original-v2", "original schema mismatch");
   return admitOriginal(
     original.identity,
     original.run,
@@ -230,7 +177,7 @@ export async function collectOriginal(
     );
   }
   const original: Original = {
-    schema: "vize-consumer-recovery-original-v1",
+    schema: "vize-consumer-recovery-original-v2",
     identity: expected,
     policy,
     run,
@@ -363,41 +310,7 @@ export function files(directory: string) {
   visit("");
   return found;
 }
-/** Check the signed packet against the actual retained command bytes and effective config. */
-export function verifyConsumerDirectory(directory: string, original: Original) {
-  const packet = object(JSON.parse(readFileSync(path.join(directory, "consumer.json"), "utf8")));
-  verifyConsumer(packet, original);
-  for (const value of packet.commands as unknown[]) {
-    const record = object(value),
-      label = String(record.label);
-    assert.match(label, /^[a-z-]+$/);
-    const raw = path.join(directory, `${label}-raw`);
-    const stdout = readFileSync(path.join(raw, "stdout.bin")),
-      stderr = readFileSync(path.join(raw, "stderr.bin"));
-    same(strictUtf8(stdout), record.stdout, "complete command stdout changed");
-    same(strictUtf8(stderr), record.stderr, "complete command stderr changed");
-    const process = object(JSON.parse(readFileSync(path.join(raw, "process.json"), "utf8")));
-    for (const key of ["command", "args", "cwd", "status", "signal", "error"])
-      same(process[key], record[key], `raw command ${key} changed`);
-    same(
-      process.stdout,
-      { bytes: stdout.length, sha256: sha256(stdout) },
-      "raw stdout digest changed",
-    );
-    same(
-      process.stderr,
-      { bytes: stderr.length, sha256: sha256(stderr) },
-      "raw stderr digest changed",
-    );
-  }
-  if (packet.role === "deno-linux")
-    same(
-      readFileSync(path.join(directory, "deno.json"), "utf8"),
-      effectiveDenoConfig,
-      "effective Deno config changed",
-    );
-  return packet;
-}
+export { verifyConsumerDirectory } from "./evidence.ts";
 export async function verifiedRecovery(
   expected: Identity,
   recoveryRun: string,
@@ -412,7 +325,14 @@ export async function verifiedRecovery(
   recoveryRunIdentity(run, recoveryRun);
   const attempt = positive(run.run_attempt);
   const policySha = String(run.head_sha);
-  const policyAuthority = policyOnMain(policySha);
+  const evidencePolicy = recoveryEvidencePolicy(run);
+  // Legacy routing is bound to the actual workflow run and reviewed signed main
+  // source, then to Cosign workflow SHA below before any packet is consumed.
+  const policyAuthority =
+    evidencePolicy === "legacy-v1"
+      ? (reviewedPolicy(policySha, api(`compare/${policySha}...main`), api(`commits/${policySha}`)),
+        legacyAuthority(policySha))
+      : policyOnMain(policySha);
   const jobs = await pages(`actions/runs/${recoveryRun}/jobs?filter=latest`, "jobs");
   same(jobs.length, 9, "admission contracts, prepare, six consumers and signed finalizer required");
   same(
@@ -474,7 +394,7 @@ export async function verifiedRecovery(
     "workflow_dispatch",
     receiptFile,
   ]);
-  assertFresh(receipt, expected);
+  assertRecoveryReceiptPolicy(receipt, run, expected);
   same(
     receipt.recovery,
     { run: recoveryRun, attempt, policySha },
@@ -499,10 +419,19 @@ export async function verifiedRecovery(
     readFileSync(path.join(directory, "original.json"), "utf8"),
   ) as Original;
   same(original.identity, expected, "original identity reused");
-  const admitted = admission(original);
+  const admitted = evidencePolicy === "legacy-v1" ? legacyAdmission(original) : admission(original);
+  if (evidencePolicy === "current-v2") {
+    verifyOriginalLogDirectory(directory, "original-log-capture", original);
+    verifyOriginalLogDirectory(directory, "final-log-capture", original);
+  }
   for (const role of roles) {
-    const packet = verifyConsumerDirectory(path.join(directory, "consumers", role), original);
-    assertOracleFiles(
+    const consumerDirectory = path.join(directory, "consumers", role);
+    const packet =
+      evidencePolicy === "legacy-v1"
+        ? object(JSON.parse(readFileSync(path.join(consumerDirectory, "consumer.json"), "utf8")))
+        : verifyConsumerDirectory(consumerDirectory, original);
+    if (evidencePolicy === "legacy-v1") verifyLegacyConsumer(packet, original);
+    (evidencePolicy === "legacy-v1" ? assertLegacyOracleFiles : assertOracleFiles)(
       path.join(directory, "consumers", role),
       original.policy,
       role === "deno-linux",
@@ -514,7 +443,10 @@ export async function verifiedRecovery(
     same(packet.role, role, "replacement role substituted");
     consumerAttempt(packet.run, recoveryRun, attempt, policySha);
   }
-  const live = await collectOriginal(expected, policySha);
+  const live =
+    evidencePolicy === "legacy-v1"
+      ? await collectLegacyOriginal(expected, policySha)
+      : await collectOriginal(expected, policySha);
   for (const key of [
     "policy",
     "run",
@@ -522,7 +454,7 @@ export async function verifiedRecovery(
     "failed",
     "log",
     "logIdentity",
-    "logCustody",
+    ...(evidencePolicy === "legacy-v1" ? [] : ["logCustody"]),
     "blobs",
     "artifacts",
     "pin",

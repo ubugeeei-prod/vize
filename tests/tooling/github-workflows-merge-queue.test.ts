@@ -83,7 +83,6 @@ test("queue scope reaches the planner and every selected source lane remains req
   );
   assert.deepEqual(source.jobs["source-report"].needs, [
     ...lanes,
-    "wit-contracts",
     "nuxt-module-qualification",
     "canonical-corpus",
   ]);
@@ -110,8 +109,27 @@ test("queue scope reaches the planner and every selected source lane remains req
   assert.match(jsCommands, /node npm\/oxlint\/scripts\/check-project-transport\.mjs/);
   assert.match(jsCommands, /vp run --filter '\.\/npm\/ui' check/);
   assert.equal(jsHistory.runs.using, "composite");
-  assert.equal(jsHistory.runs.steps[0].if, "${{ success() && job.status == 'success' }}");
-  assert.ok(check.jobs["test-js-packages"].steps?.some((step) => step.uses === jsHistoryPath));
+  const fullPackageTest = jsHistory.runs.steps.find((step) => step.name === "Test JS packages");
+  assert.equal(
+    fullPackageTest?.if,
+    "${{ success() && job.status == 'success' && inputs.partition == 'all' }}",
+  );
+  const producers = ["full-js-package-tests", "full-js-original-project"];
+  assert.deepEqual(check.jobs["test-js-packages"].needs, producers);
+  assert.equal(
+    check.jobs["test-js-packages"].steps?.at(-1)?.run,
+    "node tools/support/compat/github/require-needs-success.ts --full-js-packages",
+  );
+  for (const [id, partition] of [
+    ["full-js-package-tests", "${{ matrix.group }}"],
+    ["full-js-original-project", "original-project"],
+  ]) {
+    const producer = check.jobs[id];
+    assert.equal(producer.needs, undefined, `${id} owns its independent source build`);
+    const history = producer.steps?.find((step) => step.uses === jsHistoryPath);
+    assert.equal(history?.if, "${{ !cancelled() }}");
+    assert.deepEqual(history?.with, { partition });
+  }
   const nativeRuntime = source.jobs["pr-native-runtime"];
   assert.equal(nativeRuntime.needs, "pr-source-plan");
   assert.equal(nativeRuntime.if, undefined, "unaffected runtime inputs still report success");
@@ -181,7 +199,7 @@ test("queue Rust keeps affected doctests beside archive builds and the different
     rust.jobs["merge-rust-differential"].uses,
     "./.github/workflows/pr-rust-differential.yml",
   );
-  const manual = check.jobs["clippy-and-test"].steps?.find((step) => step.name === "Test");
+  const manual = check.jobs["rust-native-differential"].steps?.find((step) => step.name === "Test");
   assert.equal(manual?.uses, actionPath);
   assert.equal(manual?.with?.["workspace-already-tested"], "true");
   assert.deepEqual(check.jobs["full-rust-report"].needs, [
@@ -252,7 +270,6 @@ void test("a failed or disabled Rust tier cannot reach a green required Check re
       const sourceNeeds = success(source.jobs["source-report"]);
       sourceNeeds["pr-source-plan"].outputs = { "canonical-corpus": "false" };
       sourceNeeds["canonical-corpus"].result = "skipped";
-      sourceNeeds["wit-contracts"].result = event === "merge_group" ? "success" : "skipped";
       sourceNeeds["nuxt-module-qualification"].result =
         event === "merge_group" ? "success" : "skipped";
       sourceNeeds["pr-rust-source"].result = rustResult;

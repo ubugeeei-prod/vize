@@ -6,13 +6,12 @@
       pkgs = import inputs.nixpkgs {
         inherit system;
         overlays = [ inputs.rust-overlay.overlays.default ];
-        # Only the two vendor toolchains this flake pins may be unfree; nothing
+        # Only the vendor toolchain this flake pins may be unfree; nothing
         # else is allowed to pull unfree code in behind them.
         config.allowUnfreePredicate =
           pkg:
           builtins.elem (pkg.pname or null) [
             "blacksmith"
-            "moonbit"
           ];
       };
     in

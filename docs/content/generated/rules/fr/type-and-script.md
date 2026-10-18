@@ -705,7 +705,7 @@ Interdire la déstructuration profondément imbriquée dans defineProps
 [Mauvais](#script-no-deep-destructure-in-props-bad) · [Bon](#script-no-deep-destructure-in-props-good)
 
 Gravité par défaut: `warning`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -1027,7 +1027,7 @@ render($slots.default)
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L44) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L45) · [Toutes les règles](all.md)
 
 ### `script/no-deprecated-events-api`
 

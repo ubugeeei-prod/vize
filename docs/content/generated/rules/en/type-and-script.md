@@ -704,7 +704,7 @@ Disallow deeply nested destructuring in defineProps
 [Bad](#script-no-deep-destructure-in-props-bad) · [Good](#script-no-deep-destructure-in-props-good)
 
 Default severity: `warning`  
-Presets: _none_  
+Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -734,7 +734,7 @@ vp run lint
 
 **Bad**
 
-This sole inline `<script setup>` has a top-level compiler macro binding that destructures `name` through `user`, exceeding the default depth of one. Arrays nested inside object bindings also increase depth. This opt-in warning enforces a depth policy: it does not read the compiler's `propsDestructure` setting, and `withDefaults` can compile despite the warning.
+This sole inline `<script setup>` has a top-level compiler macro binding that destructures `name` through `user`, exceeding the default depth of one. Arrays nested inside object bindings also increase depth. Opinionated and Nuxt enable this depth-policy warning; other presets require explicit opt-in: it does not read the compiler's `propsDestructure` setting, and `withDefaults` can compile despite the warning.
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -1026,7 +1026,7 @@ render($slots.default)
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L44) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L45) · [All rules](all.md)
 
 ### `script/no-deprecated-events-api`
 

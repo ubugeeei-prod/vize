@@ -172,7 +172,7 @@ fn current_shadow_src_and_preserved_union_src_decline_before_writes_or_gc() {
     assert!(query.package_shadow_files.is_empty());
     assert!(
         query
-            .materialize_editor_union(&files, &links, &[])
+            .materialize_editor_union(&files, &links, &[], false)
             .unwrap_err()
             .to_string()
             .contains("requires owned directories")

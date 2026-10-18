@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use vize_carton::FxHashMap;
 
 use super::{AliasContext, ContextFingerprint, build};
+use crate::batch::ModuleSpecifierFactsCache;
 use crate::corsa_bridge::types::CorsaBridgeError;
 use crate::corsa_bridge::vue_document::{CorsaProjectEnvironment, CorsaVueVirtualDocumentOptions};
 
@@ -105,21 +106,30 @@ impl AliasContext {
             "alias_prebuild",
             requested_sources.len(),
         );
-        let mut resolver = environment.package_routes.clone();
-        let context = build::build(
-            source_path,
-            content,
-            overlays,
-            build::SourceRevision {
-                requested_sources,
-                overlay_identity: fingerprint.overlay_identity(),
-            },
-            &mut resolver,
-            options,
-            environment,
-        )?;
-        fingerprint.stamp(&context);
+        let context = {
+            // Keep syntax facts only until the immediately following stamp.
+            // Stored prebuilt revisions never retain the source/facts cache.
+            let mut facts = ModuleSpecifierFactsCache::default();
+            let mut resolver = environment.package_routes.clone();
+            let context = build::build_with_import_facts(
+                source_path,
+                content,
+                overlays,
+                build::SourceRevision {
+                    requested_sources,
+                    overlay_identity: fingerprint.overlay_identity(),
+                },
+                &mut resolver,
+                options,
+                environment,
+                &mut facts,
+            )?;
+            fingerprint.stamp_with_import_facts(&context, &mut facts);
+            context
+        };
         phase.finish();
+        #[cfg(test)]
+        ModuleSpecifierFactsCache::assert_no_live_preparation_facts();
         environment.editor_session.cache().store_prebuilt(
             generation,
             source_path.to_path_buf(),

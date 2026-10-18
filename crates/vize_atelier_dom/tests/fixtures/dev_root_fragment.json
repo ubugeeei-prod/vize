@@ -1,0 +1,146 @@
+[
+  {
+    "name": "adjacent",
+    "template": "<!-- note --><div class=\"child\" />",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": true,
+    "devRoot": true
+  },
+  {
+    "name": "reporter_newline",
+    "template": "<!-- note -->\n  <div class=\"child\" />",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": true,
+    "devRoot": true
+  },
+  {
+    "name": "leading_space",
+    "template": "<!-- note --> <div class=\"child\" />",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": true,
+    "devRoot": true
+  },
+  {
+    "name": "trailing_space",
+    "template": "<div class=\"child\" /> <!-- note -->",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": true,
+    "devRoot": true
+  },
+  {
+    "name": "both_comments",
+    "template": "<!-- before --> <div class=\"child\" /> <!-- after -->",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": true,
+    "devRoot": true
+  },
+  {
+    "name": "component_root",
+    "template": "<!-- note --> <Inner />",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": true,
+    "devRoot": true
+  },
+  {
+    "name": "conditional_true",
+    "template": "<!-- note --><div v-if=\"ok\" class=\"child\" />",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": true,
+    "devRoot": true
+  },
+  {
+    "name": "conditional_false",
+    "template": "<!-- note --><div v-if=\"no\" class=\"child\" />",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": false,
+    "devRoot": true
+  },
+  {
+    "name": "logical_condition",
+    "template": "<!-- note --><div class=\"child\"><span v-if=\"a && b\" /></div>",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": true,
+    "devRoot": true
+  },
+  {
+    "name": "nested_comments",
+    "template": "<div class=\"child\"><!-- note --> <span /></div>",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": true,
+    "devRoot": false
+  },
+  {
+    "name": "pre_root",
+    "template": "<!-- note --> <pre class=\"child\"> <!-- inner --> <span /> </pre>",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": true,
+    "devRoot": true
+  },
+  {
+    "name": "multiple_roots",
+    "template": "<!-- note --><div class=\"child\" /><span />",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": false,
+    "devRoot": false
+  },
+  {
+    "name": "meaningful_text",
+    "template": "<!-- note -->hello<div class=\"child\" />",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": false,
+    "devRoot": false
+  },
+  {
+    "name": "unicode_text",
+    "template": "<!-- note --> <div class=\"child\" />",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": false,
+    "devRoot": false
+  },
+  {
+    "name": "comment_only",
+    "template": "<!-- note -->",
+    "comments": true,
+    "whitespace": "condense",
+    "inherit": false,
+    "devRoot": false
+  },
+  {
+    "name": "preserve_space",
+    "template": "<!-- note --> <div class=\"child\" />",
+    "comments": true,
+    "whitespace": "preserve",
+    "inherit": false,
+    "devRoot": false
+  },
+  {
+    "name": "preserve_adjacent",
+    "template": "<!-- note --><div class=\"child\" />",
+    "comments": true,
+    "whitespace": "preserve",
+    "inherit": true,
+    "devRoot": true
+  },
+  {
+    "name": "production_strip",
+    "template": "<!-- note --> <div class=\"child\" />",
+    "comments": false,
+    "whitespace": "condense",
+    "inherit": true,
+    "devRoot": false
+  }
+]

@@ -1,0 +1,159 @@
+name: LSP config startup diagnostics
+run-name: Vben startup trace @ ${{ github.event.pull_request.head.sha }}
+
+# One instrumented original performance case, not full Check qualification.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/lsp-config-diagnostics.yml
+      - tools/support/compat/github/run-lsp-config-diagnostics.ts
+      - tests/tooling/lsp-config-diagnostics-workflow.test.ts
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lsp-config-diagnostics-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+  RAYON_NUM_THREADS: "4"
+  VIZE_PERF_BUDGET_SCALE: "1"
+  VIZE_TRACE_EDITOR_PREPARATION: "1"
+  VIZE_LSP_BIN: target/ci/vize
+  EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha }}
+
+jobs:
+  vben-startup:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+          components: clippy
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: vue-parity
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Hydrate only the original pinned Vben fixture
+        run: git submodule update --init --depth 1 tests/_fixtures/_git/vue-vben-admin
+      - name: Install the frozen workspace dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build and receipt the same Vue parity producer
+        id: producer
+        run: |
+          cargo build --profile ci -p vize --features legacy
+          node tests/differential/build-receipt.ts --legacy
+      - name: Run the unchanged original performance case with native phase tracing
+        run: node tools/support/compat/github/run-lsp-config-diagnostics.ts
+      - name: Protect cold local responses and existing initial diagnostic controls
+        if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
+        run: |
+          set +e
+          node --test --test-concurrency=1 tests/tooling/lsp-startup-local-interactive.test.ts tests/tooling/lsp-initial-diagnostics-version.test.ts > target/vize-tests/lsp-config-diagnostics/controls.stdout 2> target/vize-tests/lsp-config-diagnostics/controls.stderr
+          status=$?
+          cat target/vize-tests/lsp-config-diagnostics/controls.stdout
+          cat target/vize-tests/lsp-config-diagnostics/controls.stderr >&2
+          printf '%s\n' "$status" > target/vize-tests/lsp-config-diagnostics/controls.status
+          exit "$status"
+      - name: Verify native preparation and request freshness laws
+        if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
+        run: |
+          cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::initial_diagnostics::
+          cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::native_requests::
+          cargo clippy --locked --profile ci -p vize_maestro --features legacy --all-targets -- -D warnings
+      - name: Verify real union ownership and reverse open-order regressions
+        if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
+        run: |
+          cargo test --locked --profile ci -p vize_canon --features legacy --lib corsa_bridge::vue_document_package_tests::symlink_workspace::
+          cargo test --locked --profile ci -p vize_canon --features legacy --lib batch::virtual_project::materialize::alias_transition_tests::
+          cargo test --locked --profile ci -p vize_canon --features legacy --lib corsa_bridge::vue_dependencies_alias::context::cache::tests::
+          cargo clippy --locked --profile ci -p vize_canon --features legacy --lib -- -D warnings
+      - name: Verify whole native views and issued candidate freshness with nonzero tests
+        if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
+        run: |
+          run_required_rust_tests() {
+            local label="$1"
+            shift
+            set +e
+            "$@" > "target/vize-tests/lsp-config-diagnostics/${label}.stdout" 2> "target/vize-tests/lsp-config-diagnostics/${label}.stderr"
+            local status=$?
+            set -e
+            printf '%s\n' "$status" > "target/vize-tests/lsp-config-diagnostics/${label}.status"
+            cat "target/vize-tests/lsp-config-diagnostics/${label}.stdout"
+            cat "target/vize-tests/lsp-config-diagnostics/${label}.stderr" >&2
+            node tools/support/compat/github/run-lsp-config-diagnostics.ts --require-rust-tests "target/vize-tests/lsp-config-diagnostics/${label}.stdout"
+            return "$status"
+          }
+          run_required_rust_tests native-view cargo test --locked --profile ci -p vize_canon --features legacy --lib corsa_bridge::vue_document::build::tests:: -- --nocapture
+          run_required_rust_tests issued-candidates cargo test --locked --profile ci -p vize_canon --features legacy --lib lsp_client::editor_lsp::completion_resolve::issued::tests:: -- --nocapture
+      - name: Resolve the original native candidate after unchanged sibling diagnostics
+        if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
+        run: |
+          set +e
+          cargo test --locked --profile ci -p vize --features legacy --message-format=json --test lsp_completion_sibling_overlay_cli -- --nocapture > target/vize-tests/lsp-config-diagnostics/completion.stdout 2> target/vize-tests/lsp-config-diagnostics/completion.stderr
+          status=$?
+          set -e
+          printf '%s\n' "$status" > target/vize-tests/lsp-config-diagnostics/completion.status
+          node tools/support/compat/github/run-lsp-config-diagnostics.ts --retain-completion-producer
+          cat target/vize-tests/lsp-config-diagnostics/completion.stdout
+          cat target/vize-tests/lsp-config-diagnostics/completion.stderr >&2
+          exit "$status"
+      - name: Preserve the original atomic rename and unsafe-name refusal contract
+        if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
+        run: |
+          set +e
+          cargo test --locked --profile ci -p vize --features profiling --message-format=json --test lsp_component_attribute_authority_cli library_refusal::original_emit_string_keeps_atomic_owned_updates_and_unsafe_name_refusals_without_file_writes -- --exact --nocapture > target/vize-tests/lsp-config-diagnostics/rename.stdout 2> target/vize-tests/lsp-config-diagnostics/rename.stderr
+          status=$?
+          printf '%s\n' "$status" > target/vize-tests/lsp-config-diagnostics/rename.status
+          node tools/support/compat/github/run-lsp-config-diagnostics.ts --retain-rename-producer
+          retain_status=$?
+          cat target/vize-tests/lsp-config-diagnostics/rename.stdout
+          cat target/vize-tests/lsp-config-diagnostics/rename.stderr >&2
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          exit "$retain_status"
+      - name: Observe the original six symlink workspace layouts
+        if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
+        run: |
+          set +e
+          cargo test --locked --profile ci -p vize --features legacy --message-format=json --test lsp_symlink_workspace_staging_cli original_include_and_open_order_controls_keep_all_authored_bytes -- --nocapture > target/vize-tests/lsp-config-diagnostics/symlink.stdout 2> target/vize-tests/lsp-config-diagnostics/symlink.stderr
+          status=$?
+          set -e
+          printf '%s\n' "$status" > target/vize-tests/lsp-config-diagnostics/symlink.status
+          node tools/support/compat/github/run-lsp-config-diagnostics.ts --retain-symlink-producer
+          cat target/vize-tests/lsp-config-diagnostics/symlink.stdout
+          cat target/vize-tests/lsp-config-diagnostics/symlink.stderr >&2
+          exit "$status"
+      - name: Retain source, binary, raw process output, native phases, and metrics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lsp-config-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha }}
+          path: |
+            target/vize-tests/lsp-config-diagnostics/
+            target/vize-tests/metrics/vben-lsp-incremental/
+            target/ci/vize
+            target/ci/vize.differential-build.json
+            node_modules/.vize/lsp.log
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 3

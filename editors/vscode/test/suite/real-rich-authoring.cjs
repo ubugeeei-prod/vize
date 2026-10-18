@@ -1,7 +1,12 @@
 const assert = require("node:assert/strict");
 const vscode = require("vscode");
 const { openWorkspaceDocument, waitForDiagnostics } = require("./real-server-support.cjs");
-const { beginHover, retainHover } = require("./real-rich-hover-custody.cjs");
+const {
+  beginHover,
+  retainHover,
+  beginCompletion,
+  retainCompletion,
+} = require("./real-rich-hover-custody.cjs");
 
 function assertReadableDocumentation(value) {
   assert.match(value, /```typescript\n/);
@@ -287,15 +292,23 @@ async function assertMemberDocumentation(file, cases) {
       ),
       true,
     );
+    const completionPosition = document.positionAt(start + incomplete.length);
+    const completionRequest = beginCompletion(
+      document,
+      completionPosition,
+      { expression, label, description },
+      16,
+    );
     const completions = await vscode.commands.executeCommand(
       "vscode.executeCompletionItemProvider",
       document.uri,
-      document.positionAt(start + incomplete.length),
+      completionPosition,
       undefined,
       // The attributes fixture includes Vue's own class/style candidates.
       // Resolve this small list so selecting a later item exercises its docs.
       16,
     );
+    retainCompletion(completionRequest, completions);
     const candidate = completions?.items.find(
       (item) => (typeof item.label === "string" ? item.label : item.label.label) === label,
     );

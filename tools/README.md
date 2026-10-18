@@ -19,7 +19,6 @@ call the Rust Script command path, and new user-facing automation belongs in
 - `tools/support`: shared command support modules grouped by use case.
 - `tools/support/github` and `tools/support/tasks`: strictly typed TypeScript commands for
   GitHub Actions job steps and root Vite+ tasks, run directly with `node`.
-- `tools/moon`: MoonBit command packages that are still built with `moon run`.
 
 Run `rust-script tools/commands/ci/verify-tool-layout.rs` after adding or removing tool
 entrypoints. It verifies that the canonical command surface is Rust Script,

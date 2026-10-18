@@ -9,6 +9,13 @@ use std::process::{Command, Output};
 use serde_json::json;
 use vize_l0::cstr;
 
+#[path = "content_mapper_tsgo_directives/owners.rs"]
+mod owners;
+
+pub mod content_mapper_lsp_support;
+#[path = "content_mapper_tsgo_directives/owner_lsp.rs"]
+mod owner_lsp;
+
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
 const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
 

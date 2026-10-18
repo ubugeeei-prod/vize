@@ -53,7 +53,6 @@ jobs:
           key: davinci-plugin-sdk
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
-      - uses: ./.github/actions/setup-moonbit
       - run: vp install --frozen-lockfile --prefer-offline
       - name: Build the actual native JS host
         working-directory: npm/native

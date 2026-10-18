@@ -5,6 +5,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::{String as CompactString, ToCompactString};
 
+use crate::css_classes::authored_local_css_classes as extract_authored_css_classes;
 use crate::virtual_ts::{
     CSS_MODULE_GLOBAL_MARKER, ResolveStyleClassNames, TemplateGlobal, VirtualTsOptions,
 };
@@ -203,7 +204,7 @@ fn css_module_type(shape: &CssModuleShape, strict: bool) -> CompactString {
 
 fn contains_dynamic_css_module_exports(css: &str) -> bool {
     let lower = css.to_ascii_lowercase();
-    ["@value", "composes", ":export", ":global", "#{"]
+    ["@value", "composes", ":export", "#{"]
         .iter()
         .any(|marker| lower.contains(marker))
 }
@@ -230,92 +231,6 @@ fn css_import_targets(css: &str) -> Vec<CompactString> {
         rest = after_target;
     }
     targets
-}
-
-/// Extract simple authored class selectors from selector preludes. Declarations
-/// are never scanned, so values such as `url(./asset.png)` cannot become fake
-/// module keys. Comments and string contents are blanked before inspection.
-fn extract_authored_css_classes(css: &str) -> Option<BTreeSet<CompactString>> {
-    let bytes = css.as_bytes();
-    let mut classes = BTreeSet::new();
-    let mut prelude = Vec::new();
-    let mut index = 0usize;
-    let mut quote = None;
-
-    while let Some(&byte) = bytes.get(index) {
-        if let Some(open_quote) = quote {
-            if byte == b'\\' {
-                index = (index + 2).min(bytes.len());
-                continue;
-            }
-            if byte == open_quote {
-                quote = None;
-            }
-            index += 1;
-            continue;
-        }
-        if byte == b'/' && bytes.get(index + 1) == Some(&b'*') {
-            let relative_end = css.get(index + 2..)?.find("*/")?;
-            index += relative_end + 4;
-            continue;
-        }
-        if matches!(byte, b'\'' | b'"') {
-            quote = Some(byte);
-            index += 1;
-            continue;
-        }
-        match byte {
-            b'{' => {
-                collect_classes_from_selector_prelude(&prelude, &mut classes)?;
-                prelude.clear();
-            }
-            b';' | b'}' => prelude.clear(),
-            _ => prelude.push(byte),
-        }
-        index += 1;
-    }
-    quote.is_none().then_some(classes)
-}
-
-fn collect_classes_from_selector_prelude(
-    prelude: &[u8],
-    classes: &mut BTreeSet<CompactString>,
-) -> Option<()> {
-    let trimmed = prelude.trim_ascii_start();
-    if trimmed.starts_with(b"@") {
-        return Some(());
-    }
-    if trimmed.contains(&b'\\') || !trimmed.is_ascii() {
-        return None;
-    }
-
-    let mut index = 0usize;
-    while let Some([dot, first]) = trimmed.get(index..index + 2) {
-        if *dot != b'.' || !is_css_class_start(*first) {
-            index += 1;
-            continue;
-        }
-        let start = index + 1;
-        let mut end = start + 1;
-        while trimmed
-            .get(end)
-            .is_some_and(|&byte| is_css_class_continue(byte))
-        {
-            end += 1;
-        }
-        let class_name = std::str::from_utf8(trimmed.get(start..end)?).ok()?;
-        classes.insert(class_name.to_compact_string());
-        index = end;
-    }
-    Some(())
-}
-
-fn is_css_class_start(byte: u8) -> bool {
-    byte.is_ascii_alphabetic() || matches!(byte, b'_' | b'-')
-}
-
-fn is_css_class_continue(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-')
 }
 
 fn css_module_type_annotation(classes: &BTreeSet<CompactString>) -> CompactString {

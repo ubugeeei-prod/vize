@@ -615,6 +615,7 @@
     "vue/no-duplicate-attr-inheritance": {
       "patinaPresets": [
         "ecosystem",
+        "essential",
         "general-recommended",
         "nuxt",
         "opinionated"
@@ -1070,6 +1071,8 @@
     },
     "vue/no-use-v-else-with-v-for": {
       "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
         "nuxt",
         "opinionated"
       ],

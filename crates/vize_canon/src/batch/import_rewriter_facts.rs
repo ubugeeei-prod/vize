@@ -47,7 +47,7 @@ impl ModuleSpecifierFacts {
 /// Callers own this cache for one preparation, never a session or native query.
 /// Complete SourceType and exact source bytes determine syntax; no paths,
 /// resolution decisions, callbacks, or rewritten output are retained.
-#[derive(Default)]
+#[cfg_attr(not(test), derive(Default))]
 pub(crate) struct ModuleSpecifierFactsCache {
     sources: FxHashMap<SourceType, FxHashMap<String, ModuleSpecifierFacts>>,
     #[cfg(test)]
@@ -58,6 +58,22 @@ pub(crate) struct ModuleSpecifierFactsCache {
     hits: usize,
     #[cfg(test)]
     parses: usize,
+    #[cfg(test)]
+    _observed_lifetime: Option<lifetime::ObservedLifetime>,
+}
+
+#[cfg(test)]
+impl Default for ModuleSpecifierFactsCache {
+    fn default() -> Self {
+        Self {
+            sources: FxHashMap::default(),
+            uncached: false,
+            scratch: None,
+            hits: 0,
+            parses: 0,
+            _observed_lifetime: lifetime::created(),
+        }
+    }
 }
 
 impl ModuleSpecifierFactsCache {
@@ -113,6 +129,16 @@ impl ModuleSpecifierFactsCache {
     }
 
     #[cfg(test)]
+    pub(crate) fn observe_lifetimes() -> lifetime::Observation {
+        lifetime::observe()
+    }
+
+    #[cfg(test)]
+    pub(crate) fn assert_no_live_preparation_facts() {
+        lifetime::checkpoint();
+    }
+
+    #[cfg(test)]
     pub(crate) fn uncached() -> Self {
         Self {
             uncached: true,
@@ -141,3 +167,7 @@ pub(crate) struct ModuleSpecifierFactsCacheStats {
 #[cfg(test)]
 #[path = "import_rewriter_facts_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "import_rewriter_facts_lifetime.rs"]
+mod lifetime;

@@ -15,6 +15,67 @@ import {
 const fixture = fileURLToPath(
   new URL("../fixtures/release/vrt-log-barrier/observer.fixture.ts", import.meta.url),
 );
+const diagnosticFixture = `
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import { VrtSecrets } from ${JSON.stringify(new URL("../../../tools/support/release/public_acceptance/vrt_secrets.ts", import.meta.url).href)};
+import { evidence } from ${JSON.stringify(new URL("../../../tools/support/release/public_acceptance/vrt_artifacts.ts", import.meta.url).href)};
+const [root, mode] = process.argv.slice(1);
+let release, touched = 0;
+const scope = new VrtSecrets((phase) => { if (phase === 'seal-owned-writes') release?.(); });
+const a = Buffer.alloc(32, 21).toString('base64url'), b = Buffer.alloc(32, 22).toString('base64url');
+scope.remember(a);
+const original = await evidence(path.join(root, 'evidence')), e = scope.evidence(original);
+await e.save('body.bin', 'original');
+if (mode === 'diagnostic-writes') {
+  await Promise.allSettled([e.save('body.bin', 'first'), e.save('body.bin', 'second')]);
+  process.exitCode = 7;
+} else if (mode === 'diagnostic-late') {
+  const delayed = scope.evidence({ ...original, save: async (_, bytes) => {
+    await new Promise((resolve) => { release = resolve; });
+    await original.save('body.bin', bytes);
+  }});
+  void delayed.save('late.bin', 'late').catch(() => {});
+} else if (mode === 'diagnostic-tree') {
+  const cause = Object.assign(new Error('inner ' + a), { code: 'EIO', errno: -5, syscall: 'read', path: a });
+  const error = new Error('outer ' + b, { cause: new AggregateError([cause], 'batch ' + a) });
+  Object.defineProperty(error, 'hidden', { value: a });
+  Object.defineProperty(error, 'poison', { get() { touched++; throw new Error('getter executed'); } });
+  error[a] = b;
+  error.toJSON = () => { touched++; throw new Error('toJSON executed'); };
+  scope.sanitizeError(error);
+  scope.remember(b); // The receipt must also redact credentials learned after snapshotting.
+} else if (mode === 'diagnostic-bounds') {
+  const extra = {}, error = Object.assign(new Error('bounded'), { extra });
+  extra.cycle = extra;
+  let deep = extra.deep = {}; for (let i = 0; i < 12; i++) deep = deep.next = {};
+  extra.large = 'x'.repeat(4097) + a; extra.binary = Buffer.from(a);
+  extra.proxy = new Proxy({}, { ownKeys() { touched++; throw new Error('proxy executed'); } });
+  Object.defineProperty(extra, 'poison', { get() { touched++; throw new Error('getter executed'); } });
+  extra.properties = Object.fromEntries(Array.from({ length: 40 }, (_, i) => ['key' + i, i]));
+  extra.array = Array.from({ length: 40 }, (_, i) => i);
+  scope.sanitizeError(error);
+  for (let i = 0; i < 20; i++) scope.sanitizeError(new Error('bounded ' + i));
+} else if (mode === 'diagnostic-size') {
+  const payload = Object.fromEntries(Array.from({ length: 14 }, (_, i) => ['key' + i, 's'.repeat(4096)]));
+  scope.sanitizeError(Object.assign(new Error('first budget'), { payload }));
+  scope.sanitizeError(Object.assign(new Error('second budget'), { payload }));
+} else if (mode === 'diagnostic-hostile') {
+  const inaccessible = new Error('custom stack');
+  Object.defineProperty(inaccessible, 'stack', { get() { touched++; throw new Error('stack getter executed'); } });
+  const native = new Error('native stack'), previous = Error.prepareStackTrace;
+  Error.prepareStackTrace = () => { touched++; throw new Error('prepareStackTrace executed'); };
+  for (const error of [inaccessible, native]) {
+    const rejected = scope.evidence({ ...original, save: async () => { throw error; } });
+    try { await rejected.save('hostile.bin', 'control'); } catch {}
+  }
+  Error.prepareStackTrace = previous;
+}
+await e.json('observations.json', { beforeSeal: true });
+await scope.seal(path.join(root, 'vrt.log'));
+assert.equal(touched, 0);
+scope.erase();
+`;
 
 async function owned(t: TestContext) {
   const root = await mkdtemp(path.join(os.tmpdir(), "vize-public-vrt-log-control-"));
@@ -28,7 +89,10 @@ async function run(root: string, mode: string, pipe = false, retained?: string) 
   let code: number | null = null;
   let signal: NodeJS.Signals | null = null;
   try {
-    const child = spawn(process.execPath, [fixture, root, mode], {
+    const args = mode.startsWith("diagnostic-")
+      ? ["--input-type=module", "--eval", diagnosticFixture, root, mode]
+      : [fixture, root, mode];
+    const child = spawn(process.execPath, args, {
       stdio: pipe ? ["ignore", "pipe", "pipe"] : ["ignore", file.fd, file.fd],
       env: retained ? { ...process.env, VRT_RETAINED_OUTPUT: retained } : undefined,
     });
@@ -162,6 +226,84 @@ test("credential format errors and evidence guards never expose supplied control
   assert.equal(String(safe).includes(token), false);
   scope.erase();
   assert.throws(() => scope.remember(token), /already closed/);
+});
+
+test("rejected saves retain original EEXIST and late-seal details without changing failures", async (t) => {
+  for (const [mode, count, exit] of [
+    ["writes", 2, 7],
+    ["late", 1, 1],
+  ] as const) {
+    const root = await owned(t);
+    const { log, code } = await run(root, `diagnostic-${mode}`);
+    assert.equal(code, exit);
+    const receipt = JSON.parse(await readFile(path.join(root, "vrt-log-barrier.json"), "utf8"));
+    assert.equal(receipt.retainedWriterFailures, count);
+    const failures = receipt.failureDiagnostics.entries;
+    assert.equal(failures.length, count);
+    for (const failure of failures) {
+      assert.equal(failure.kind, "save");
+      assert.equal(failure.file, mode === "late" ? "late.bin" : "body.bin");
+      const properties = Object.fromEntries(
+        failure.detail.properties.map(({ name, value }: { name: string; value: unknown }) => [
+          name,
+          value,
+        ]),
+      );
+      assert.equal(properties.code, "EEXIST");
+      assert.equal(properties.syscall, "open");
+      assert.equal(properties.path, path.join(root, "evidence/body.bin"));
+      assert.equal(typeof properties.errno, "number");
+      assert.match(String(properties.stack), /EEXIST/);
+    }
+    assert.equal(await readFile(path.join(root, "evidence/body.bin"), "utf8"), "original");
+    assert.deepEqual(await verifiedVrtLog(log), await readFile(log));
+  }
+});
+
+test("diagnostics retain nested own error fields with bounded nonexecuting credential-safe snapshots", async (t) => {
+  for (const mode of ["tree", "bounds", "size", "hostile"]) {
+    const root = await owned(t);
+    const { log, code } = await run(root, `diagnostic-${mode}`);
+    assert.equal(code, mode === "hostile" ? 1 : 0);
+    const bytes = await readFile(path.join(root, "vrt-log-barrier.json"), "utf8");
+    const details = JSON.parse(bytes).failureDiagnostics;
+    const serialized = JSON.stringify(details, null, 2);
+    assert.ok(Buffer.byteLength(serialized) <= 64 * 1024 + 128);
+    for (const byte of [21, 22])
+      assert.equal(bytes.includes(Buffer.alloc(32, byte).toString("base64url")), false);
+    if (mode === "tree") {
+      for (const field of [
+        "cause",
+        "errors",
+        "stack",
+        "hidden",
+        "EIO",
+        "errno",
+        "syscall",
+        "path",
+        "[redacted]",
+      ])
+        assert.ok(serialized.includes(field), field);
+      assert.equal(details.truncated, false);
+    } else if (mode === "bounds") {
+      for (const marker of [
+        "cycle",
+        "depth-or-node-limit",
+        "oversized string",
+        "binary",
+        "proxy",
+        "accessor",
+        "omittedProperties",
+      ])
+        assert.ok(serialized.includes(marker), marker);
+      assert.equal(details.entries.length, 16);
+      assert.equal(details.truncated, true);
+    } else if (mode === "size") {
+      assert.equal(details.entries.length, 1);
+      assert.equal(details.truncated, true);
+    } else assert.ok(serialized.includes("accessor"));
+    assert.deepEqual(await verifiedVrtLog(log), await readFile(log));
+  }
 });
 
 const publisher = fileURLToPath(

@@ -1,0 +1,74 @@
+[
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n\nconst _hoisted_1 = { class: \"child\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    _createElementVNode(\"div\", _hoisted_1)\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+    "name": "adjacent"
+  },
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n\nconst _hoisted_1 = { class: \"child\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    _createElementVNode(\"div\", _hoisted_1)\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+    "name": "reporter_newline"
+  },
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n\nconst _hoisted_1 = { class: \"child\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    _createElementVNode(\"div\", _hoisted_1)\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+    "name": "leading_space"
+  },
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n\nconst _hoisted_1 = { class: \"child\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"div\", _hoisted_1),\n    _createCommentVNode(\" note \")\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+    "name": "trailing_space"
+  },
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n\nconst _hoisted_1 = { class: \"child\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" before \"),\n    _createElementVNode(\"div\", _hoisted_1),\n    _createCommentVNode(\" after \")\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+    "name": "both_comments"
+  },
+  {
+    "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  const _component_Inner = _resolveComponent(\"Inner\")\n  \n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    _createVNode(_component_Inner)\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+    "name": "component_root"
+  },
+  {
+    "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    (_ctx.ok)\n      ? (_openBlock(), _createElementBlock(\"div\", {\n        key: 0,\n        class: \"child\"\n      }))\n      : _createCommentVNode(\"v-if\", true)\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+    "name": "conditional_true"
+  },
+  {
+    "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    (_ctx.no)\n      ? (_openBlock(), _createElementBlock(\"div\", {\n        key: 0,\n        class: \"child\"\n      }))\n      : _createCommentVNode(\"v-if\", true)\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+    "name": "conditional_false"
+  },
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    _createElementVNode(\"div\", { class: \"child\" }, [\n      (_ctx.a && _ctx.b)\n        ? (_openBlock(), _createElementBlock(\"span\", { key: 0 }))\n        : _createCommentVNode(\"v-if\", true)\n    ])\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+    "name": "logical_condition"
+  },
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"child\" }, [\n    _createCommentVNode(\" note \"),\n    _createElementVNode(\"span\")\n  ]))\n}",
+    "name": "nested_comments"
+  },
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    _createElementVNode(\"pre\", { class: \"child\" }, [\n      _createTextVNode(),\n      _createCommentVNode(\" inner \"),\n      _createTextVNode(),\n      _createElementVNode(\"span\"),\n      _createTextVNode()\n    ])\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+    "name": "pre_root"
+  },
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n\nconst _hoisted_1 = { class: \"child\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    _createElementVNode(\"div\", _hoisted_1),\n    _createElementVNode(\"span\")\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    "name": "multiple_roots"
+  },
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode } from \"vue\"\n\nconst _hoisted_1 = { class: \"child\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    _createTextVNode(\"hello\"),\n    _createElementVNode(\"div\", _hoisted_1)\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    "name": "meaningful_text"
+  },
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode } from \"vue\"\n\nconst _hoisted_1 = { class: \"child\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    _createTextVNode(\" \"),\n    _createElementVNode(\"div\", _hoisted_1)\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    "name": "unicode_text"
+  },
+  {
+    "code": "import { createCommentVNode as _createCommentVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return _createCommentVNode(\" note \")\n}",
+    "name": "comment_only"
+  },
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode } from \"vue\"\n\nconst _hoisted_1 = { class: \"child\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    _createTextVNode(),\n    _createElementVNode(\"div\", _hoisted_1)\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    "name": "preserve_space"
+  },
+  {
+    "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n\nconst _hoisted_1 = { class: \"child\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\" note \"),\n    _createElementVNode(\"div\", _hoisted_1)\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+    "name": "preserve_adjacent"
+  },
+  {
+    "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { class: \"child\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1))\n}",
+    "name": "production_strip"
+  }
+]

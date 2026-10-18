@@ -63,7 +63,12 @@ export function planPrChecks({ paths, eventName, labels, workspace, cargoMetadat
   const js = planAffectedJs(workspace, paths, affectedRust);
   const native = planNativeRuntime(paths, affectedRust);
   const tier = selectPrTier({ paths, eventName, labels });
-  return { source, rust, js, native, tier };
+  // Preserve the real-tree source/API and reviewed-doc contracts in daily CI.
+  // Unknown Rust/tooling inputs remain conservative; ordinary package-only
+  // edits do not pay for these independent repository scans.
+  const sourceContracts =
+    source.rust || source.tooling || paths.some((path) => path.startsWith("docs/"));
+  return { source, rust, js, native, tier, sourceContracts };
 }
 
 export function prCheckOutputs(plan: ReturnType<typeof planPrChecks>): Record<string, string> {
@@ -73,6 +78,7 @@ export function prCheckOutputs(plan: ReturnType<typeof planPrChecks>): Record<st
     js: String(plan.js.groups.length > 0 || plan.js.conformance.fresco || plan.js.conformance.ui),
     "js-plan": JSON.stringify(plan.js),
     tooling: String(plan.source.tooling),
+    "source-contracts": String(plan.sourceContracts),
     heavy: String(plan.tier === "heavy"),
     playground: String(plan.tier === "heavy" && plan.source.playground),
     "native-runtime-matrix": JSON.stringify(plan.native.matrix),

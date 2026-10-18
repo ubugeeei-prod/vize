@@ -216,3 +216,22 @@ fn will_rename_files_request_uses_lsp_file_rename_shape() {
         })
     );
 }
+
+/// Construct a real subprocess-owned client without the independent API
+/// transport, so batch-finalization tests can exercise exact LSP refusals.
+#[cfg(unix)]
+impl CorsaProjectClient {
+    pub(crate) fn batch_editor_peer_for_test(
+        executable: &std::path::Path,
+        root: &std::path::Path,
+    ) -> Result<Self, String> {
+        let mut client = Self::empty_for_test(root.to_path_buf());
+        client.executable = executable.to_str().unwrap().into();
+        client.editor_lsp = Some(EditorLspSession::spawn(
+            executable.to_str().unwrap(),
+            root,
+            root,
+        )?);
+        Ok(client)
+    }
+}

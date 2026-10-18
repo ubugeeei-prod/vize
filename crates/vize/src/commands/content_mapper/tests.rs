@@ -228,7 +228,7 @@ export default { data() { return { count: 1 } } }
         "id": 2,
         "method": "openProject",
         "params": {
-            "configFileName": "/project/tsconfig.json",
+            "configFileName": "",
             "projectHandle": super::test_support::PROJECT_HANDLE,
             "compilerOptions": {}
         }
@@ -238,9 +238,15 @@ export default { data() { return { count: 1 } } }
         open_project_request(2, Value::Null, json!({})),
         open_project_request(2, json!({}), json!({})),
     ] {
+        assert_eq!(open["params"]["configFileName"], "");
         let input = frames(&[initialize_request(), open, transform_request(3, source)]);
         let responses = exchange(&input);
 
+        assert!(
+            responses[1].get("error").is_none() && responses[1]["result"].is_object(),
+            "expected inferred project to open successfully: {}",
+            responses[1]
+        );
         assert!(
             responses[2]["result"]["text"]
                 .as_str()

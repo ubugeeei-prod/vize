@@ -123,7 +123,14 @@ fn start_selected(bump: &str, requested: Option<(&str, &str)>, root: &Path) -> R
         let branch = format!("release/{tag}");
         super::dispatch::version_owner(&repository, &tag, &work)?;
         pr_budget::check(budget.as_ref())?;
-        let operator = super::lock::acquire(&tag, &head, &work)?;
+        let operator = super::lock::acquire_for_start(
+            &tag,
+            &head,
+            &cut,
+            bump == "minor" && stable.is_none(),
+            budget.as_ref(),
+            &work,
+        )?;
         if !github::git(
             &[
                 "ls-remote",

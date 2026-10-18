@@ -280,6 +280,11 @@ pub(crate) struct MaterializedFileSnapshot {
 }
 
 impl MaterializedFileSnapshot {
+    #[cfg(feature = "native")]
+    pub(crate) fn contains_file(&self, path: &Path) -> bool {
+        self.revisions.contains_key(path)
+    }
+
     pub(crate) fn package_links(&self) -> &FxHashMap<PathBuf, PathBuf> {
         &self.package_links
     }
