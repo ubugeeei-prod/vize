@@ -56,3 +56,11 @@ evidence. In particular, TS2493/TS2353 are not added to the three-code checker
 give-up policy. Actual execution of the new native reference remains an Actions
 qualification requirement. Recovering or reproducing the original Misskey
 classes remains separate work.
+
+The first execution reached only the empty-event case: its raw response also
+contained four TS6196 suggestions for unused generated type aliases. Its full
+messages/ranges and generated declarations are retained; this is not a new
+TS2493/TS2353 finding. Cases now retain their packets independently before the
+overall gate: a caught assertion continues evidence collection, and every such
+failure still fails the test at its final gate. No raw suggestion is filtered
+or accepted by that observation change.

@@ -50,6 +50,7 @@ fn generated_tuple_and_property_references_keep_raw_and_authored_diagnostics_dis
     );
     let event = original("escaton-component-events.json", 9427);
     let props = original("escaton-component-props.json", 9428);
+    let mut failures = Vec::new();
     for (case, original, addition, expected) in [
         ("empty-event", &event, "", None),
         ("inferred-data-attribute", &props, "", None),
@@ -72,173 +73,187 @@ fn generated_tuple_and_property_references_keep_raw_and_authored_diagnostics_dis
             )),
         ),
     ] {
-        let temporary = tempfile::tempdir().unwrap();
-        let root = temporary.path().canonicalize().unwrap();
-        std::os::unix::fs::symlink(&provider, root.join("node_modules")).unwrap();
-        let original_files = original["files"].as_object().unwrap();
-        let mut config: Value =
-            serde_json::from_str(original_files["tsconfig.json"].as_str().unwrap()).unwrap();
-        // This is the existing Batch API, not the external content-mapper
-        // plugin. Preserve its original config separately; don't claim that
-        // this distinct native project is the old reporter's invocation.
-        config.as_object_mut().unwrap().remove("contentMappers");
-        fs::write(
-            root.join("tsconfig.json"),
-            serde_json::to_vec(&config).unwrap(),
-        )
-        .unwrap();
-        let mut paths = Vec::new();
-        for (name, content) in original_files {
-            if name == "tsconfig.json" {
-                continue;
+        let observed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let temporary = tempfile::tempdir().unwrap();
+            let root = temporary.path().canonicalize().unwrap();
+            std::os::unix::fs::symlink(&provider, root.join("node_modules")).unwrap();
+            let original_files = original["files"].as_object().unwrap();
+            let mut config: Value =
+                serde_json::from_str(original_files["tsconfig.json"].as_str().unwrap()).unwrap();
+            // This is the existing Batch API, not the external content-mapper
+            // plugin. Preserve its original config separately; don't claim that
+            // this distinct native project is the old reporter's invocation.
+            config.as_object_mut().unwrap().remove("contentMappers");
+            fs::write(
+                root.join("tsconfig.json"),
+                serde_json::to_vec(&config).unwrap(),
+            )
+            .unwrap();
+            let mut paths = Vec::new();
+            for (name, content) in original_files {
+                if name == "tsconfig.json" {
+                    continue;
+                }
+                let source = if name == "App.vue" {
+                    content
+                        .as_str()
+                        .unwrap()
+                        .replace("</script>", &cstr!("{addition}</script>"))
+                } else {
+                    content.as_str().unwrap().to_owned()
+                };
+                fs::write(root.join(name), source).unwrap();
+                paths.push(root.join(name));
             }
-            let source = if name == "App.vue" {
-                content
-                    .as_str()
-                    .unwrap()
-                    .replace("</script>", &cstr!("{addition}</script>"))
-            } else {
-                content.as_str().unwrap().to_owned()
-            };
-            fs::write(root.join(name), source).unwrap();
-            paths.push(root.join(name));
-        }
-        let mut checker = BatchTypeChecker::with_options_and_corsa_path(
-            &root,
-            BatchTypeCheckerOptions {
-                tsconfig_path: Some(root.join("tsconfig.json")),
-                ..Default::default()
-            },
-            Some(&native),
-        )
-        .unwrap();
-        checker.set_server_count(Some(1));
-        checker.set_checker_count(Some(1));
-        checker.scan_paths(&paths).unwrap();
-        let public = checker.check_project().unwrap();
-        let (mirror, config) = checker.native_project_paths_for_test();
-        let files = checker.virtual_files();
-        let (mapped, packet) = packets::diagnose_selected(
-            &root,
-            &native,
-            &files,
-            case,
-            "current",
-            None,
-            (&mirror, &config),
-            &paths,
-        );
-        let authority = &packet["nativeAuthority"];
-        assert_eq!(authority["nativeBinary"], json!(native), "{authority}");
-        assert_eq!(
-            authority["normalizedRequestedOptions"]["strict"], true,
-            "{authority}"
-        );
-        assert_eq!(
-            authority["sourceFileNamesResponse"]["status"], "ok",
-            "{authority}"
-        );
-        packets::retain(
-            &cstr!("{case}-new-reference"),
-            &json!({
-                "reference":"Escaton 9427/9428 sources with current Batch API, not original Misskey diagnostics",
-                "original":original,"authoredAddition":addition,
-                "providerVueManifest":fs::read_to_string(provider.join("vue/package.json")).unwrap(),
-                "wholePublicResult":cstr!("{public:#?}"),
-                "rawScope":"decoded pre-assembly LspDiagnostic vector, not untouched RPC frames",
-                "packet":packet,
-            }),
-        );
-        let raw: Vec<_> = packet["wholeRawDiagnosticVector"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .flat_map(|row| row.get(1).unwrap().as_array().unwrap())
-            .collect();
-        let expected_rows: Vec<_> = expected
-            .into_iter()
-            .map(|(code, message)| (json!(code), json!(1), json!(message)))
-            .collect();
-        assert_eq!(
-            raw.iter()
-                .map(|d| (
-                    d["code"].clone(),
-                    d["severity"].clone(),
-                    d["message"].clone()
-                ))
-                .collect::<Vec<_>>(),
-            expected_rows,
-            "{packet}"
-        );
-        assert_eq!(public.diagnostics.len(), expected_rows.len(), "{public:#?}");
-        assert_eq!(mapped.len(), expected_rows.len(), "{packet}");
-        if let Some((code, message)) = expected {
-            let (needle, relative, length) = if code == 2493 {
-                ("empty[0]", "empty[".len(), 1)
-            } else {
-                ("extra: 1", 0, "extra".len())
-            };
-            let source = fs::read_to_string(root.join("App.vue")).unwrap();
-            let at = source.find(needle).unwrap() + relative;
-            let authored = LineBreaks::Lsp.offset_to_position(&source, at);
-            let app = files
-                .iter()
-                .find(|file| file.original_path == root.join("App.vue"))
-                .unwrap();
-            let generated = app.content.find(needle).unwrap() + relative;
-            let start = LineBreaks::Lsp.offset_to_position(&app.content, generated);
-            let end = LineBreaks::Lsp.offset_to_position(&app.content, generated + length);
+            let mut checker = BatchTypeChecker::with_options_and_corsa_path(
+                &root,
+                BatchTypeCheckerOptions {
+                    tsconfig_path: Some(root.join("tsconfig.json")),
+                    ..Default::default()
+                },
+                Some(&native),
+            )
+            .unwrap();
+            checker.set_server_count(Some(1));
+            checker.set_checker_count(Some(1));
+            checker.scan_paths(&paths).unwrap();
+            let public = checker.check_project().unwrap();
+            let (mirror, config) = checker.native_project_paths_for_test();
+            let files = checker.virtual_files();
+            let (mapped, packet) = packets::diagnose_selected(
+                &root,
+                &native,
+                &files,
+                case,
+                "current",
+                None,
+                (&mirror, &config),
+                &paths,
+            );
+            let authority = &packet["nativeAuthority"];
+            assert_eq!(authority["nativeBinary"], json!(native), "{authority}");
             assert_eq!(
-                raw.first().unwrap()["range"],
-                json!({
-                    "start":{"line":start.0,"character":start.1},
-                    "end":{"line":end.0,"character":end.1},
+                authority["normalizedRequestedOptions"]["strict"], true,
+                "{authority}"
+            );
+            assert_eq!(
+                authority["sourceFileNamesResponse"]["status"], "ok",
+                "{authority}"
+            );
+            packets::retain(
+                &cstr!("{case}-new-reference"),
+                &json!({
+                    "reference":"Escaton 9427/9428 sources with current Batch API, not original Misskey diagnostics",
+                    "original":original,"authoredAddition":addition,
+                    "providerVueManifest":fs::read_to_string(provider.join("vue/package.json")).unwrap(),
+                    "wholePublicResult":cstr!("{public:#?}"),
+                    "rawScope":"decoded pre-assembly LspDiagnostic vector, not untouched RPC frames",
+                    "packet":packet,
                 }),
-                "{packet}"
             );
-            assert_eq!(
-                mapped,
-                [(
-                    String::from("App.vue"),
-                    authored.0,
-                    authored.1,
-                    Some(code),
-                    Some(1),
-                    String::from(message)
-                )],
-                "{packet}"
-            );
-            let diagnostic = public.diagnostics.first().unwrap();
-            assert_eq!(
-                (
-                    &diagnostic.file,
-                    diagnostic.line,
-                    diagnostic.column,
-                    diagnostic.code,
-                    diagnostic.severity,
-                    diagnostic.message.as_str(),
-                    diagnostic.block_type
-                ),
-                (
-                    &root.join("App.vue"),
-                    authored.0,
-                    authored.1,
-                    Some(code),
-                    1,
-                    message,
-                    Some(crate::SfcBlockType::ScriptSetup)
-                ),
-                "{public:#?}"
-            );
-        }
-        if case == "empty-event" {
-            let app = files
+            if case == "empty-event" {
+                let app = files
+                    .iter()
+                    .find(|file| file.original_path == root.join("App.vue"))
+                    .unwrap();
+                let replay = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    replay_prior_runtime_tuple_read(&native, &mirror, &config, app);
+                }));
+                if replay.is_err() {
+                    failures.push("empty-event-prior-runtime-expression");
+                }
+            }
+            let raw: Vec<_> = packet["wholeRawDiagnosticVector"]
+                .as_array()
+                .unwrap()
                 .iter()
-                .find(|file| file.original_path == root.join("App.vue"))
-                .unwrap();
-            replay_prior_runtime_tuple_read(&native, &mirror, &config, app);
+                .flat_map(|row| row.get(1).unwrap().as_array().unwrap())
+                .collect();
+            let expected_rows: Vec<_> = expected
+                .into_iter()
+                .map(|(code, message)| (json!(code), json!(1), json!(message)))
+                .collect();
+            assert_eq!(
+                raw.iter()
+                    .map(|d| (
+                        d["code"].clone(),
+                        d["severity"].clone(),
+                        d["message"].clone()
+                    ))
+                    .collect::<Vec<_>>(),
+                expected_rows,
+                "{packet}"
+            );
+            assert_eq!(public.diagnostics.len(), expected_rows.len(), "{public:#?}");
+            assert_eq!(mapped.len(), expected_rows.len(), "{packet}");
+            if let Some((code, message)) = expected {
+                let (needle, relative, length) = if code == 2493 {
+                    ("empty[0]", "empty[".len(), 1)
+                } else {
+                    ("extra: 1", 0, "extra".len())
+                };
+                let source = fs::read_to_string(root.join("App.vue")).unwrap();
+                let at = source.find(needle).unwrap() + relative;
+                let authored = LineBreaks::Lsp.offset_to_position(&source, at);
+                let app = files
+                    .iter()
+                    .find(|file| file.original_path == root.join("App.vue"))
+                    .unwrap();
+                let generated = app.content.find(needle).unwrap() + relative;
+                let start = LineBreaks::Lsp.offset_to_position(&app.content, generated);
+                let end = LineBreaks::Lsp.offset_to_position(&app.content, generated + length);
+                assert_eq!(
+                    raw.first().unwrap()["range"],
+                    json!({
+                        "start":{"line":start.0,"character":start.1},
+                        "end":{"line":end.0,"character":end.1},
+                    }),
+                    "{packet}"
+                );
+                assert_eq!(
+                    mapped,
+                    [(
+                        String::from("App.vue"),
+                        authored.0,
+                        authored.1,
+                        Some(code),
+                        Some(1),
+                        String::from(message)
+                    )],
+                    "{packet}"
+                );
+                let diagnostic = public.diagnostics.first().unwrap();
+                assert_eq!(
+                    (
+                        &diagnostic.file,
+                        diagnostic.line,
+                        diagnostic.column,
+                        diagnostic.code,
+                        diagnostic.severity,
+                        diagnostic.message.as_str(),
+                        diagnostic.block_type
+                    ),
+                    (
+                        &root.join("App.vue"),
+                        authored.0,
+                        authored.1,
+                        Some(code),
+                        1,
+                        message,
+                        Some(crate::SfcBlockType::ScriptSetup)
+                    ),
+                    "{public:#?}"
+                );
+            }
+        }));
+        if observed.is_err() {
+            failures.push(case);
         }
     }
+    assert!(
+        failures.is_empty(),
+        "all reference gates must pass: {failures:?}"
+    );
 }
 
 fn replay_prior_runtime_tuple_read(
@@ -282,6 +297,8 @@ fn replay_prior_runtime_tuple_read(
             "wholeGeneratedConfig":fs::read_to_string(config).unwrap(),
         }),
     );
+    client.shutdown().unwrap();
+    fs::write(&file.virtual_path, file.content.as_str()).unwrap();
     assert_eq!(authority["selectedConfig"], json!(config));
     assert_eq!(authority["nativeBinary"], json!(native));
     assert_eq!(
@@ -326,6 +343,4 @@ fn replay_prior_runtime_tuple_read(
         (diagnostic.range.end.line, diagnostic.range.end.character),
         end
     );
-    fs::write(&file.virtual_path, file.content.as_str()).unwrap();
-    client.shutdown().unwrap();
 }
