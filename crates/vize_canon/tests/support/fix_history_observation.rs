@@ -108,7 +108,14 @@ fn digest(bytes: &[u8]) -> String {
 
 impl Capture {
     pub(crate) fn from_environment() -> Option<Self> {
-        let directory = std::env::var_os("VIZE_TEST_FIX_HISTORY_CAPTURE_DIR")?;
+        let archive_directory = std::env::var_os("VIZE_TEST_FIX_HISTORY_CAPTURE_DIR");
+        let workspace_directory = std::env::var_os("VIZE_TEST_FIX_HISTORY_WORKSPACE_CAPTURE_DIR");
+        let (directory, workspace_namespace) = match (archive_directory, workspace_directory) {
+            (Some(path), None) => (path, false),
+            (None, Some(path)) => (path, true),
+            (None, None) => return None,
+            _ => panic!("archive and workspace capture directories conflict"),
+        };
         assert!(!directory.is_empty(), "capture directory must not be empty");
         let archive = std::env::var_os("VIZE_TEST_FIX_HISTORY_ARCHIVE_RECEIPT");
         let workspace = std::env::var_os("VIZE_TEST_FIX_HISTORY_WORKSPACE_RECEIPT");
@@ -117,6 +124,10 @@ impl Capture {
             (None, Some(path)) => (path, true),
             _ => panic!("capture requires exactly one archive or workspace receipt"),
         };
+        assert_eq!(
+            workspace_namespace, is_workspace,
+            "capture namespace must match receipt"
+        );
         assert!(!receipt.is_empty(), "capture receipt must not be empty");
         let bytes = std::fs::read(receipt).expect("capture receipt must exist");
         let value: serde_json::Value =

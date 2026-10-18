@@ -181,6 +181,7 @@ export function prepareTypecheckerWorkspace({
   assert.equal(path.resolve(repoRoot, inventoryPath), locations_.inventory);
   for (const key of [
     "VIZE_TEST_FIX_HISTORY_CAPTURE_DIR",
+    "VIZE_TEST_FIX_HISTORY_WORKSPACE_CAPTURE_DIR",
     "VIZE_TEST_FIX_HISTORY_ARCHIVE_RECEIPT",
     "VIZE_TEST_FIX_HISTORY_WORKSPACE_RECEIPT",
     "VIZE_TEMPLATE_EMIT_TS40_CAPTURE",
@@ -228,7 +229,7 @@ export function prepareTypecheckerWorkspace({
     captureDir: locations_.captures,
     ts40Dir: locations_.ts40,
     childEnvironment: {
-      VIZE_TEST_FIX_HISTORY_CAPTURE_DIR: locations_.captures,
+      VIZE_TEST_FIX_HISTORY_WORKSPACE_CAPTURE_DIR: locations_.captures,
       VIZE_TEST_FIX_HISTORY_WORKSPACE_RECEIPT: locations_.receipt,
       VIZE_TEMPLATE_EMIT_TS40_CAPTURE: locations_.ts40,
     },

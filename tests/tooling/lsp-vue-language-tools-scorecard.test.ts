@@ -10,7 +10,11 @@ import {
   budgetRegistryPath,
   loadLspIncrementalBudget,
 } from "../performance/support/incremental-metrics.ts";
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  readRepoFile,
+  workflowJobBody,
+} from "./support/github-workflows.ts";
 
 const scorecardPath = "tests/_fixtures/maestro-vue-language-tools-scorecard.json";
 const scorecardDocPath = "docs/release/maestro-vue-language-tools-scorecard.md";
@@ -150,7 +154,7 @@ test("Maestro scorecard gates editor breadth through CI-backed artifacts", () =>
     expectedEditors,
   );
 
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const hostAction = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
   const hostJob = workflowJobBody(workflow, "editor-host-smoke");
   assert.match(hostJob, /uses: \.\/\.github\/actions\/vscode-host-smoke/);

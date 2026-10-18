@@ -24,7 +24,7 @@ import {
   parseToolingTimingLog,
   parseToolingLeadLog,
 } from "../../tools/support/compat/github/update-tooling-test-timings.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 
 type Step = { name?: string; if?: string; uses?: string };
 const reporter = fileURLToPath(
@@ -62,7 +62,7 @@ void test("the committed timing table is complete, sorted and names only tooling
 });
 
 void test("the full tooling caller retains shard coordinates and native lead-step timing identities", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "check.yml"));
+  const workflow = parse(checkWorkflowJobSources());
   const job = workflow.jobs["test-scripts"];
   assert.equal(job.name, "Tooling (${{ matrix.name }})");
   assert.equal(job.strategy.matrix, "${{ fromJSON(needs.tooling-plan.outputs.matrix) }}");

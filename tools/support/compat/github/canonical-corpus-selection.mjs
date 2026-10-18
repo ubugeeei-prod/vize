@@ -38,10 +38,14 @@ const inputs = [
   /^tests\/tooling\/support\/canonical-corpus-worker-inventory\.mjs$/,
   /^tools\/(?:commands\/fixtures|support\/compat\/fixtures|benchmarks)\//,
   /^tools\/support\/common\.rs$/,
+  /^tools\/support\/command-runtime\.ts$/,
+  /^tools\/support\/release\/qualify_check\/(?:check-state|integration(?:-http|-product|-release)?|overlap)\.ts$/,
   /^tools\/support\/compat\/davinci\/lib\/(?:corpus-baseline-contract|corpus-baseline-artifact|ordering|paths)\.mjs$/,
   /^tools\/support\/compat\/github\/canonical-corpus-[a-z-]+\.(?:mjs|ts|rs)$/,
   /^tools\/support\/compat\/github\/(?:comparison-base|plan-source-checks|require-needs-success|prepare-vue-benchmarks|release-preflight-github)\.mjs$/,
   /^tools\/support\/compat\/github\/(?:comparison-base|plan-source-checks)\.ts$/,
+  /^tools\/support\/compat\/github\/(?:full-check-policy|real-project-matrix-plan)\.ts$/,
+  /^tools\/support\/compat\/github\/release-preflight-(?:bootstrap|evidence)\.mjs$/,
   /^tools\/support\/compat\/github\/(?:require-needs-success|require-rust-tier)\.ts$/,
 ];
 // A symlink can make the committed fixture sweep read any directory, so a

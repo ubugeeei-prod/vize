@@ -305,17 +305,16 @@ function controlled(t: { after: (callback: () => void) => void }) {
 
 type Fixture = ReturnType<typeof controlled>;
 const artifact = (f: Fixture, name: string) => path.join(f.resultDir, name);
-
 void test("workspace producer/consumer bind physical bytes, all registered bodies, complete JUnit and raw TS40 without native credit", (t) => {
   const f = controlled(t);
   const prepared = f.prepare({}, "target/nextest/full");
-  assert(Object.values(prepared.childEnvironment).every((value) => path.isAbsolute(value)));
+  const env = prepared.childEnvironment;
+  assert(Object.values(env).every((value) => path.isAbsolute(value)));
+  assert(!Object.hasOwn(env, "VIZE_TEST_FIX_HISTORY_CAPTURE_DIR"));
+  assert.equal(env.VIZE_TEST_FIX_HISTORY_WORKSPACE_CAPTURE_DIR, prepared.captureDir);
   assert(fs.readFileSync(path.resolve(f.repoRoot, "crates/vize_maestro", prepared.receiptPath)));
   assert(!Object.hasOwn(process.env, "VIZE_TEST_FIX_HISTORY_WORKSPACE_RECEIPT"));
-  assert.equal(
-    prepared.childEnvironment.VIZE_TEST_FIX_HISTORY_WORKSPACE_RECEIPT,
-    prepared.receiptPath,
-  );
+  assert.equal(env.VIZE_TEST_FIX_HISTORY_WORKSPACE_RECEIPT, prepared.receiptPath);
   f.complete();
   const packet = finishTypecheckerWorkspace(f);
   assert.equal(packet.captures.length, 15);
@@ -341,6 +340,7 @@ void test("workspace producer/consumer bind physical bytes, all registered bodie
 void test("pre-run attestation refuses stale capture state, changed provenance, excluded tests and conflicting ambient modes", (t) => {
   for (const key of [
     "VIZE_TEST_FIX_HISTORY_CAPTURE_DIR",
+    "VIZE_TEST_FIX_HISTORY_WORKSPACE_CAPTURE_DIR",
     "VIZE_TEST_FIX_HISTORY_ARCHIVE_RECEIPT",
     "VIZE_TEST_FIX_HISTORY_WORKSPACE_RECEIPT",
     "VIZE_TEMPLATE_EMIT_TS40_CAPTURE",
@@ -421,6 +421,7 @@ void test("no missing, forged, failed, stale or modified workspace chain can pro
     ],
   ];
   const changes: Array<(f: Fixture) => void> = [
+    (f) => f.write("target/nextest/full/typechecker-workspace/foreign.json", "{}"),
     ...jsonChanges.map(
       ([file, field, replacement]) =>
         (f: Fixture) =>

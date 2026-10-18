@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
-import { readRepoFile, root } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile, root } from "./support/github-workflows.ts";
 
 // Guardrails for the #3457 real-server editor scenarios. A scenario nobody
 // executes is not coverage, so these assert the wiring that makes CI run them,
@@ -243,7 +243,7 @@ test("CI executes the packaged Emacs ERT suite", () => {
 });
 
 test("check.yml keeps the editor real-server job in scheduled and manual Check", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
 
   assert.match(
     workflow,
