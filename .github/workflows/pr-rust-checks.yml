@@ -234,6 +234,9 @@ jobs:
       - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: cargo-nextest@0.9.146
+      - name: Test canonical native content classification
+        if: ${{ matrix.cohort == 'lint-and-format' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}
+        run: node --test tests/tooling/patina-native-svg-content-oracle.test.ts
       - name: Select Rust runtime envelope
         run: |
           case "$GITHUB_EVENT_NAME" in

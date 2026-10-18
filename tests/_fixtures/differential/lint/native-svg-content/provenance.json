@@ -1,0 +1,27 @@
+{
+  "repository": "https://github.com/npmx-dev/npmx.dev",
+  "revision": "c9e8be91e61eeeae956e2068722caa09e293cc68",
+  "workflow": "https://github.com/ubugeeei-prod/vize/actions/runs/38866347055",
+  "files": [
+    {
+      "file": "FacetBarChart.vue",
+      "upstreamPath": "app/components/Compare/FacetBarChart.vue",
+      "sha256": "af48262113b64c56f9cd6843557e8086043241a0f941dfb3a4adfa0e912334d7",
+      "eslintDefaultLocation": [
+        300,
+        13
+      ]
+    },
+    {
+      "file": "TimelineChartDepSizeSvgSlot.vue",
+      "upstreamPath": "app/components/Package/TimelineChartDepSizeSvgSlot.vue",
+      "sha256": "d97de75a04d0d553433ea3bf63ec3fe4b3ab12752ad398d439d2fda8caf1b35b",
+      "eslintDefaultLocation": [
+        16,
+        68
+      ]
+    }
+  ],
+  "license": "MIT",
+  "licenseSha256": "85bcb2a23d1c5b967e514ebbbd0c966f9fffeae29e1569460c72853e8dc127aa"
+}
