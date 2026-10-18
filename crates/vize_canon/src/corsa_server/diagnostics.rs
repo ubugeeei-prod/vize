@@ -1,7 +1,10 @@
 use super::{CorsaServer, Diagnostic};
-use crate::batch::restore_virtual_vue_specifiers;
 use crate::corsa_bridge::CorsaVueVirtualProject;
 use crate::corsa_client::LspDiagnostic;
+use crate::projection::{
+    AssembledOrigin, AssemblyPolicy, AuthoredSource, FinishedDiagnostic, ProjectedDocument,
+    assemble_diagnostics,
+};
 use vize_carton::{FxHashSet, String, cstr, line_index::LineIndex};
 
 type DiagnosticKey = (String, String, u32, u32, Option<String>);
@@ -70,19 +73,75 @@ fn map_corsa_diagnostics(
 ) -> Vec<Diagnostic> {
     let virtual_line_index = LineIndex::new(&project.host.code);
     let source_line_index = LineIndex::new(source);
-    diagnostics
+    let finished = diagnostics
         .into_iter()
         .filter_map(|diagnostic| {
-            map_corsa_diagnostic(
-                project,
-                source,
-                &virtual_line_index,
-                &source_line_index,
-                diagnostic,
-            )
+            let start = virtual_line_index.line_col_to_offset(
+                diagnostic.range.start.line,
+                diagnostic.range.start.character,
+            )?;
+            let end = virtual_line_index
+                .line_col_to_offset(diagnostic.range.end.line, diagnostic.range.end.character)
+                .unwrap_or(start)
+                .max(start);
+            let code = diagnostic.code.map(|code| match code {
+                serde_json::Value::Number(number) => cstr!("TS{number}"),
+                serde_json::Value::String(code) => code.into(),
+                _ => cstr!("{code:?}"),
+            });
+            Some(FinishedDiagnostic {
+                document: 0,
+                start,
+                end,
+                code: typescript_code(code.as_deref()),
+                severity: diagnostic
+                    .severity
+                    .and_then(|value| u8::try_from(value).ok()),
+                message: diagnostic.message,
+                payload: code,
+            })
         })
-        .filter(|diagnostic| check_reports(diagnostic, report_unused))
-        .collect()
+        .collect();
+    let documents = [ProjectedDocument {
+        generated: &project.host.code,
+        import_map: &project.host.import_source_map,
+        mapping: Some(&project.host.mapping),
+        tsx: project.host.source_type.is_jsx(),
+    }];
+    // Assemble the whole authored file once, just like the batch checker and
+    // Maestro. Point-wise projection cannot retain or coalesce generated
+    // checker give-ups because they deliberately have no authored mapping.
+    assemble_diagnostics(
+        &AuthoredSource::vue(source),
+        &documents,
+        finished,
+        AssemblyPolicy { report_unused },
+    )
+    .into_iter()
+    .map(|assembled| {
+        let (line, column) = source_line_index.line_col(assembled.start);
+        let code = match assembled.origin {
+            AssembledOrigin::Checker(raw) | AssembledOrigin::MissingVueImport(raw)
+                if typescript_code(raw.as_deref()) == assembled.code =>
+            {
+                raw
+            }
+            _ => assembled.code.map(|code| cstr!("TS{code}")),
+        };
+        Diagnostic {
+            message: assembled.message,
+            severity: match assembled.severity {
+                Some(2) => "warning".into(),
+                Some(3) => "info".into(),
+                Some(4) => "hint".into(),
+                _ => "error".into(),
+            },
+            line: one_based(line),
+            column: one_based(column),
+            code,
+        }
+    })
+    .collect()
 }
 
 /// `vize check` drops `TS6133` unless the tsconfig asks for unused declarations.
@@ -104,112 +163,25 @@ fn reports_unused(project_root: &std::path::Path, source: &std::path::Path) -> b
         })
 }
 
-fn check_reports(diagnostic: &Diagnostic, report_unused: bool) -> bool {
-    crate::projection::assemble::is_reportable(
-        typescript_code(diagnostic.code.as_deref()),
-        severity_code(diagnostic.severity.as_str()),
-        diagnostic.message.as_str(),
-        crate::projection::AssemblyPolicy { report_unused },
-    )
-}
-
 fn typescript_code(code: Option<&str>) -> Option<u32> {
     let code = code?;
     code.strip_prefix("TS").unwrap_or(code).parse().ok()
-}
-
-fn severity_code(severity: &str) -> Option<u8> {
-    match severity {
-        "error" => Some(1),
-        "warning" => Some(2),
-        "info" => Some(3),
-        "hint" => Some(4),
-        _ => None,
-    }
-}
-
-fn map_corsa_diagnostic(
-    project: &CorsaVueVirtualProject,
-    source: &str,
-    virtual_line_index: &LineIndex<'_>,
-    source_line_index: &LineIndex<'_>,
-    diagnostic: LspDiagnostic,
-) -> Option<Diagnostic> {
-    let (line, column) = map_host_position_to_source(
-        project,
-        virtual_line_index,
-        source_line_index,
-        diagnostic.range.start.line,
-        diagnostic.range.start.character,
-    )?;
-    let severity: String = match diagnostic.severity {
-        Some(1) => "error".into(),
-        Some(2) => "warning".into(),
-        Some(3) => "info".into(),
-        Some(4) => "hint".into(),
-        _ => "error".into(),
-    };
-    let code = diagnostic.code.map(|code| match code {
-        serde_json::Value::Number(number) => cstr!("TS{number}"),
-        serde_json::Value::String(code) => code.into(),
-        _ => cstr!("{code:?}"),
-    });
-    Some(Diagnostic {
-        message: restore_virtual_vue_specifiers(&diagnostic.message, source),
-        severity,
-        line: one_based(line),
-        column: one_based(column),
-        code,
-    })
 }
 
 fn one_based(position: u32) -> u32 {
     position.saturating_add(1)
 }
 
-fn map_host_position_to_source(
-    project: &CorsaVueVirtualProject,
-    virtual_line_index: &LineIndex<'_>,
-    source_line_index: &LineIndex<'_>,
-    line: u32,
-    column: u32,
-) -> Option<(u32, u32)> {
-    let rewritten_offset = virtual_line_index.line_col_to_offset(line, column)?;
-    let generated_offset = project
-        .host
-        .import_source_map
-        .get_original_offset(u32::try_from(rewritten_offset).ok()?)
-        as usize;
-    let mapping = project
-        .host
-        .mapping
-        .spans()
-        .iter()
-        .find(|mapping| mapping.gen_range.contains(&generated_offset))?;
-    let (generated_range, source_range) = mapping
-        .sub_span_for_gen(generated_offset)
-        .map(|span| (&span.gen_range, &span.src_range))
-        .unwrap_or((&mapping.gen_range, &mapping.src_range));
-    let delta = generated_offset.saturating_sub(generated_range.start);
-    let source_offset = source_range
-        .start
-        .saturating_add(delta)
-        .min(source_range.end.saturating_sub(1));
-    Some(source_line_index.line_col(source_offset))
-}
-
 #[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
-    use oxc_span::SourceType;
-    use serde_json::json;
-    use vize_carton::line_index::LineIndex;
-
-    use super::{dedup_diagnostics, map_corsa_diagnostic, map_corsa_diagnostics, one_based};
+    use super::{dedup_diagnostics, map_corsa_diagnostics, one_based};
     use crate::batch::ImportSourceMap;
     use crate::corsa_bridge::{CorsaVueVirtualDocument, CorsaVueVirtualProject};
     use crate::corsa_client::{LspDiagnostic, LspPosition, LspRange};
     use crate::virtual_ts::VizeMapping;
+    use oxc_span::SourceType;
+    use serde_json::json;
 
     const SOURCE: &str = "mapped\n";
     const VIRTUAL_SOURCE: &str = "helper\nmapped\n";
@@ -259,13 +231,7 @@ mod tests {
 
     fn map(diagnostic: LspDiagnostic) -> Option<super::Diagnostic> {
         let project = project();
-        map_corsa_diagnostic(
-            &project,
-            SOURCE,
-            &LineIndex::new(&project.host.code),
-            &LineIndex::new(SOURCE),
-            diagnostic,
-        )
+        map_corsa_diagnostics(&project, SOURCE, vec![diagnostic], true).pop()
     }
 
     #[test]
@@ -299,14 +265,9 @@ mod tests {
         .into();
         let source = "import Missing from './Missing.vue.ts';\n";
         let project = project();
-        let mapped = map_corsa_diagnostic(
-            &project,
-            source,
-            &LineIndex::new(&project.host.code),
-            &LineIndex::new(source),
-            raw,
-        )
-        .expect("mapped diagnostic");
+        let mapped = map_corsa_diagnostics(&project, source, vec![raw], true)
+            .pop()
+            .expect("mapped diagnostic");
 
         assert_eq!(
             mapped.message,
