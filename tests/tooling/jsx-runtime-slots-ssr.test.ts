@@ -22,12 +22,12 @@ const cases = [
   ["member", "const A = () => <B v-slots={owner.slots}/>;"],
   ["conditional", "const A = () => <B v-slots={choose ? left : right}/>;"],
   ["nested", "const A = () => <Outer><B v-slots={slots}/></Outer>;"],
-  ["dynamic-component", "const A = () => <component is={view} v-slots={slots}/>;"],
+  ["dynamic-component", "const A = () => <view.Component v-slots={slots}/>;"],
   ["alias", "const A = () => <B vSlots={slots}/>;"],
   ["compiled-ssr", "const A = () => <B v-slots={getSlots()}/>;"],
   [
     "dynamic-mixed",
-    "const A = () => <component is={view} v-slots={getSlots()}><div>A</div><template v-slot:named><i>N</i></template></component>;",
+    "const A = () => <view.Component v-slots={getSlots()}><div>A</div><template v-slot:named><i>N</i></template></view.Component>;",
   ],
 ];
 const url = (source: string) =>
@@ -151,7 +151,7 @@ test(
           false,
           { default: () => [core.h("u", "WRONG")] },
           slots,
-          Child,
+          { Component: Child },
         ),
       };
       const app = core.createSSRApp(Parent);

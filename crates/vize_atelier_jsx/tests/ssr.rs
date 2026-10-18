@@ -90,13 +90,13 @@ fn runtime_slots_capture_complete_modules_for_the_pinned_ssr_runtime() {
         ),
         (
             "dynamic-component",
-            "const A = () => <component is={view} v-slots={slots}/>;",
+            "const A = () => <view.Component v-slots={slots}/>;",
         ),
         ("alias", "const A = () => <B vSlots={slots}/>;"),
         ("compiled-ssr", "const A = () => <B v-slots={getSlots()}/>;"),
         (
             "dynamic-mixed",
-            "const A = () => <component is={view} v-slots={getSlots()}><div>A</div><template v-slot:named><i>N</i></template></component>;",
+            "const A = () => <view.Component v-slots={getSlots()}><div>A</div><template v-slot:named><i>N</i></template></view.Component>;",
         ),
     ];
     let packets = cases.into_iter().map(|(id, source)| {
@@ -163,4 +163,33 @@ fn vapor_server_mode_uses_the_same_checked_ssr_plan() {
     let component = output.components.first().expect("one server component");
     assert_eq!(component.mode, JsxOutputMode::Vapor);
     assert_eq!(component.code, ssr_code(source, JsxLang::Jsx));
+}
+
+#[test]
+fn lowercase_component_keeps_the_original_plain_element_diagnostic() {
+    let allocator = Allocator::new();
+    let output = compile_to_ssr(
+        &allocator,
+        "const A = () => <component is={view} v-slots={slots}/>;",
+        JsxLang::Jsx,
+        SsrCompileOptions::default(),
+    );
+    assert_eq!(
+        output
+            .diagnostics
+            .iter()
+            .map(|diagnostic| (
+                diagnostic.is_error(),
+                diagnostic.message.as_str(),
+                diagnostic.start,
+                diagnostic.end
+            ))
+            .collect::<Vec<_>>(),
+        [(
+            true,
+            "v-slots can only be used on a component; a plain element has no slots.",
+            37,
+            52
+        )]
+    );
 }
