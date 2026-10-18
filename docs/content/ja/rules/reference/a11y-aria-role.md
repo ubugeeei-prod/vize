@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-`datepicker` は認識される ARIA role ではありません。
+`datepicker` は有効な ARIA ロールではありません。
 
 ```vue
 <template>
@@ -47,7 +47,7 @@ vp run lint
 
 ## 良い
 
-認識される `dialog` を使い、日付を選択する領域の名前も指定します。
+有効な ARIA ロールである `dialog` を使い、日付を選択する領域の名前も指定します。
 
 ```vue
 <template>

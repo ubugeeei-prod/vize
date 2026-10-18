@@ -14,11 +14,11 @@
 //! not rely on IIFE inlining either: each handler expression re-checks its own
 //! `v-if` guard inside the closure (see `event_handler.rs`).
 
+use crate::virtual_ts::scope::ScopeMappings;
 use vize_carton::{String, append, profile};
 use vize_croquis::{EventHandlerScopeData, Scope};
 
 use crate::virtual_ts::helpers::get_dom_event_type;
-use crate::virtual_ts::types::VizeMapping;
 
 mod component_scope;
 mod event_targets;
@@ -32,7 +32,7 @@ use event_targets::{
 
 pub(super) fn generate_event_handler_scope(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    mappings: &mut ScopeMappings<'_>,
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
     data: &EventHandlerScopeData,

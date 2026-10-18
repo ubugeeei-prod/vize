@@ -60,7 +60,7 @@ title: Vue ルール
 | [`vue/no-template-target-blank`](#vue-no-template-target-blank) | [悪い](#vue-no-template-target-blank-bad) · [良い](#vue-no-template-target-blank-good) | target=_blank の外部リンクに適切な rel を指定します。 |
 | [`vue/no-textarea-mustache`](#vue-no-textarea-mustache) | [悪い](#vue-no-textarea-mustache-bad) · [良い](#vue-no-textarea-mustache-good) | textarea 内の mustache を検出し、v-model の使用を勧めます。 |
 | [`vue/no-undefined-refs`](#vue-no-undefined-refs) | [悪い](#vue-no-undefined-refs-bad) · [良い](#vue-no-undefined-refs-good) | テンプレート内の未定義変数参照を検出します。 |
-| [`vue/no-unsafe-url`](#vue-no-unsafe-url) | [悪い](#vue-no-unsafe-url-bad) · [良い](#vue-no-unsafe-url-good) | 危険なスキームになり得る URL 属性やバインディングを検出します。 |
+| [`vue/no-unsafe-url`](#vue-no-unsafe-url) | [悪い](#vue-no-unsafe-url-bad) · [良い](#vue-no-unsafe-url-good) | 危険なスキームを含む可能性がある URL 属性やバインディングを検出します。 |
 | [`vue/no-unsandboxed-iframe`](#vue-no-unsandboxed-iframe) | [悪い](#vue-no-unsandboxed-iframe-bad) · [良い](#vue-no-unsandboxed-iframe-good) | iframe に sandbox 属性を指定します。 |
 | [`vue/no-unused-components`](#vue-no-unused-components) | [悪い](#vue-no-unused-components-bad) · [良い](#vue-no-unused-components-good) | 登録しているのにテンプレートで使わないコンポーネントを検出します。 |
 | [`vue/no-unused-properties`](#vue-no-unused-properties) | [悪い](#vue-no-unused-properties-bad) · [良い](#vue-no-unused-properties-good) | defineProps に宣言しているのに使わない prop を検出します。 |
@@ -73,7 +73,7 @@ title: Vue ルール
 | [`vue/no-useless-template-attributes`](#vue-no-useless-template-attributes) | [悪い](#vue-no-useless-template-attributes-bad) · [良い](#vue-no-useless-template-attributes-good) | template 要素の効果がない属性を検出します。 |
 | [`vue/no-useless-v-bind`](#vue-no-useless-v-bind) | [悪い](#vue-no-useless-v-bind-bad) · [良い](#vue-no-useless-v-bind-good) | 文字列リテラルだけの不要な v-bind を検出します。 |
 | [`vue/no-v-for-template-key-on-child`](#vue-no-v-for-template-key-on-child) | [悪い](#vue-no-v-for-template-key-on-child-bad) · [良い](#vue-no-v-for-template-key-on-child-good) | template v-for の key を子ではなく template に指定します。 |
-| [`vue/no-v-html`](#vue-no-v-html) | [悪い](#vue-no-v-html-bad) · [良い](#vue-no-v-html-good) | XSS を防ぐため、v-html の使用に警告します。 |
+| [`vue/no-v-html`](#vue-no-v-html) | [悪い](#vue-no-v-html-bad) · [良い](#vue-no-v-html-good) | XSS を防ぐため、v-html を使用した箇所に警告を出します。 |
 | [`vue/no-v-text`](#vue-no-v-text) | [悪い](#vue-no-v-text-bad) · [良い](#vue-no-v-text-good) | v-text の代わりに mustache を使う方針を適用します。 |
 | [`vue/no-v-text-v-html-on-component`](#vue-no-v-text-v-html-on-component) | [悪い](#vue-no-v-text-v-html-on-component-bad) · [良い](#vue-no-v-text-v-html-on-component-good) | コンポーネントでの v-text / v-html を検出します。 |
 | [`vue/permitted-contents`](#vue-permitted-contents) | [悪い](#vue-permitted-contents-bad) · [良い](#vue-permitted-contents-good) | HTML の要素ごとのコンテンツモデルを検査します。 |
@@ -3182,7 +3182,7 @@ lang を取り除き、通常の HTML の p を直接記述します。規約の
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-検査はテンプレート内の `v-for`、`v-slot`（`#name` を含む）、従来のスコープ付きスロットの束縛を比較します。外側の束縛を隠す識別子を報告し、同じ要素内では属性の順番に比較します。兄弟要素のスコープは独立しています。プロパティのキーや既定値の参照は宣言ではなく、`v-pre` の部分木は検査しません。
+検査はテンプレート内の `v-for`、`v-slot`（`#name` を含む）、従来のスコープ付きスロットの束縛を比較します。外側の束縛を隠す識別子を報告し、同じ要素内では属性が記述された順に比較します。兄弟要素のスコープは独立しています。プロパティのキーや既定値の参照は宣言ではなく、`v-pre` の部分木は検査しません。
 
 script やコンポーネントのプロパティ名は現在の検査範囲に含みません。同じ名前の script 束縛があるだけで、単独のテンプレート束縛を報告することはありません。診断範囲は、エスケープや HTML エンティティを含む元の識別子を示します。
 
@@ -3418,7 +3418,7 @@ script setup で宣言済みの message を補間で参照し、未定義の名�
 
 ### `vue/no-unsafe-url`
 
-危険なスキームになり得る URL 属性やバインディングを検出します。
+危険なスキームを含む可能性がある URL 属性やバインディングを検出します。
 
 [悪い例](#vue-no-unsafe-url-bad) · [良い例](#vue-no-unsafe-url-good)
 
@@ -3465,7 +3465,7 @@ a の移動先に、JavaScript を実行する javascript: スキームを使っ
 
 **良い**
 
-移動先を、通常のローカルの移動先 /next に変更します。
+移動先を、通常のローカルパス /next に変更します。
 
 ```vue annotate="add:2"
 <template>
@@ -4255,7 +4255,7 @@ template の v-for に key を移し、繰り返すフラグメント全体を�
 
 ### `vue/no-v-html`
 
-XSS を防ぐため、v-html の使用に警告します。
+XSS を防ぐため、v-html を使用した箇所に警告を出します。
 
 [悪い例](#vue-no-v-html-bad) · [良い例](#vue-no-v-html-good)
 
@@ -4476,7 +4476,7 @@ vp run lint
 
 **悪い**
 
-p にブロックを入れ、tbody を省略し、操作要素を入れ子にするか、ul に div を直接入れています。
+p にブロック要素を入れたり、tbody を省略したりしています。操作要素の入れ子や、ul の直下に div を置く例もあります。
 
 ```vue annotate="remove:2,3,4,5"
 <template>
@@ -5293,7 +5293,7 @@ vp run lint
 
 **良い**
 
-`#my-slot` を kebab-case にします。対応するスロットの出口の名前も合わせます。
+スロット名を kebab-case の `#my-slot` にします。対応するスロットの出口の名前も合わせます。
 
 ```vue annotate="add:2"
 <template>
@@ -5554,7 +5554,7 @@ vp run lint
 
 **悪い**
 
-`v-bind:class` が長い形式で、設定したコロン省略形の規約に合いません。
+`v-bind:class` が長い形式で、設定で指定したコロンによる省略形の規約に合いません。
 
 ```vue annotate="remove:2"
 <template>
@@ -6205,7 +6205,7 @@ vp run lint
 
 **良い**
 
-続きとなる `v-if` または `v-else-if` の直後に、条件式を持つ `v-else-if` を置きます。
+先行する `v-if` または `v-else-if` の直後に、条件式を持つ `v-else-if` を置きます。
 
 ```vue annotate="add:2,3"
 <template>

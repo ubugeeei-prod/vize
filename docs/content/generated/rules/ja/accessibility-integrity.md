@@ -315,7 +315,7 @@ vp run lint
 
 **悪い**
 
-正の tabindex 3 で、通常の操作要素より先に独自のフォーカス順を作っています。
+tabindex に正の値 3 を指定し、通常の操作要素より先にフォーカスが移動するようにしています。
 
 ```vue annotate="remove:2"
 <template>

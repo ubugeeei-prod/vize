@@ -1,6 +1,7 @@
 //! Component event listener type generation.
 
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
+use crate::virtual_ts::{expressions::ComponentPropSource, types::VizeMapping};
 mod generic_inference;
 mod handler_context;
 mod inference_helpers;
@@ -37,6 +38,7 @@ pub(super) struct ComponentEventTypeContext<'a> {
     pub(super) scope: &'a Scope,
     pub(super) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(super) template_binding_access: &'a TemplateBindingAccess,
+    pub(super) source_context: ComponentPropSource<'a>,
     pub(super) legacy_vue2: bool,
     pub(super) needs_typed_handler_assignment: bool,
     /// `fallthroughAttributes`: a listener the child neither declares nor
@@ -49,6 +51,7 @@ pub(super) struct ComponentEventTypeContext<'a> {
 
 pub(super) fn generate_component_event_types(
     ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
     ctx: ComponentEventTypeContext<'_>,
 ) -> Option<ComponentEventTypes> {
     let ComponentEventTypeContext {
@@ -58,6 +61,7 @@ pub(super) fn generate_component_event_types(
         scope,
         syntactic_type_only_imported_names,
         template_binding_access,
+        source_context,
         legacy_vue2,
         needs_typed_handler_assignment,
         fallthrough_listeners,
@@ -165,6 +169,7 @@ pub(super) fn generate_component_event_types(
 
     let inferred_emit_args = generate_inferred_emit_args(
         ts,
+        mappings,
         &EmitInferenceContext {
             summary,
             component_name: component_name.as_str(),
@@ -175,6 +180,7 @@ pub(super) fn generate_component_event_types(
             safe_event_name: &safe_event_name,
             prop_key: &prop_key,
             template_binding_access,
+            source_context,
             indent,
         },
     );

@@ -61,7 +61,7 @@ export const ecosystemMuseaVaporExplanations: readonly ExplanationRecord[] = [
     "ecosystem/vue-test-utils-no-html-snapshot",
     "The assertion snapshots the complete wrapper HTML instead of checking the expected behavior.",
     "The assertion checks that the rendered text contains Saved.",
-    "期待する振る舞いを検査する代わりに、wrapper の HTML 全体を snapshot にしています。",
+    "期待する振る舞いを検査する代わりに、wrapper の HTML 全体をスナップショットにしています。",
     "表示された文字に Saved が含まれることを直接検査します。",
   ],
   [
@@ -131,7 +131,7 @@ export const ecosystemMuseaVaporExplanations: readonly ExplanationRecord[] = [
     "vapor/require-vapor-attribute",
     "The script setup block lacks the Vapor compilation attribute. This is an intended convention: the current empty rule callback does not diagnose it.",
     "Adding vapor selects Vapor compilation. It demonstrates the intended repair and does not imply that the current linter emits this catalog rule.",
-    "script setup に Vapor の指定がありません。これは規約を示す例で、現在の空の callback は診断を生成しません。",
-    "vapor を追加して Vapor のコンパイルを選択します。修正方針を示す例であり、現在の linter がこのルールを検出するという意味ではありません。",
+    "script setup に Vapor の指定がありません。これは規約を示す例で、現在の空のコールバックは診断を生成しません。",
+    "vapor を追加して Vapor のコンパイルを選択します。修正方針を示す例であり、現在のリンターがこのルールの違反を検出するという意味ではありません。",
   ],
 ];

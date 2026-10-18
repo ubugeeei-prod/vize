@@ -11,7 +11,7 @@ use vize_canon::projection::{
     AssembledOrigin, AssemblyPolicy, AuthoredSource, FinishedDiagnostic, ProjectedDocument,
     assemble_diagnostics,
 };
-use vize_canon::virtual_ts::ProjectionMapping;
+use vize_canon::virtual_ts::{ProjectionFeatures, ProjectionMapping, ProjectionMeta};
 use vize_l0::line_index::LineBreaks;
 
 use super::super::{VirtualTsResult, sources};
@@ -26,9 +26,19 @@ pub(super) struct CorsaDocument {
 
 impl CorsaDocument {
     pub(super) fn from_result(result: VirtualTsResult) -> Self {
+        let mut mapping = ProjectionMapping::from_spans(result.source_mappings);
+        for span in result.diagnostic_mappings {
+            mapping.push_with(
+                span,
+                ProjectionMeta {
+                    features: ProjectionFeatures::DIAGNOSTICS,
+                    ..Default::default()
+                },
+            );
+        }
         Self {
             code: result.code,
-            mapping: ProjectionMapping::from_spans(result.source_mappings),
+            mapping,
             import_source_map: result.import_source_map,
         }
     }

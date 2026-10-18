@@ -20,6 +20,7 @@ fn document(uri: &Url) -> CanonicalVirtualDocument {
             }],
             semantic_links: Vec::new(),
             prop_default_key_links: Vec::new(),
+            diagnostic_mappings: Vec::new(),
             import_source_map: ImportSourceMap::empty(),
         },
         dependencies: Vec::new(),

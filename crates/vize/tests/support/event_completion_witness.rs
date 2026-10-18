@@ -140,6 +140,25 @@ pub fn slot_navigation_prelude_utf16_len() -> usize {
     SLOT_NAVIGATION_PRELUDE.encode_utf16().count()
 }
 
+/// UTF-16 growth from the complete helper at the original test's source
+/// baseline (da26dc4b2bb9f02492f8682929d29c4dfc1f7ec9). The older hosted
+/// counterfactual remains untouched; it predates other helper changes too.
+pub fn public_input_prelude_utf16_delta() -> usize {
+    let current = include_str!("../../../vize_canon/src/virtual_ts/component_prop_helpers.txt");
+    let before = include_str!(
+        "../../../../tests/_fixtures/differential/lsp/component-native-events/public-input-prelude-before-9498.txt"
+    );
+    assert_eq!(
+        super::hash(before.as_bytes()),
+        "86a95b8a79b0c6dd2d17a79362ec9cd617bbc8a95e361387dc364cda0f2c945d"
+    );
+    current
+        .encode_utf16()
+        .count()
+        .checked_sub(before.encode_utf16().count())
+        .unwrap()
+}
+
 // A named source counterfactual preserves the old position; it is not an old backend run.
 fn historical_counterfactual(app: &str, construct: &str) -> (Value, usize) {
     assert!(!SLOT_NAVIGATION_PRELUDE.is_empty());

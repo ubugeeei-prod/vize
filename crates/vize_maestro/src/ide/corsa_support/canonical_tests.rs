@@ -262,6 +262,7 @@ fn canonical_location_maps_exact_package_shadow_and_rejects_synthetic_coordinate
             source_mappings: Vec::new(),
             semantic_links: Vec::new(),
             prop_default_key_links: Vec::new(),
+            diagnostic_mappings: Vec::new(),
             import_source_map: vize_canon::ImportSourceMap::empty(),
         },
         mapping_kind: vize_canon::CorsaMaterializedMappingKind::AuthoredIdentity,

@@ -113,6 +113,13 @@ jobs:
           test -s docs-render-evidence/component-previews/browser-evidence.json
           test -s docs-render-evidence/component-previews/unavailable-storage-evidence.json
 
+      - name: Verify rendered navigation and Japanese reading paths
+        if: ${{ inputs.links-only != true }}
+        run: |
+          ja_reading_routes=$(node --input-type=module -e 'import { defaultNavigationRenderRoutes } from "./docs/scripts/navigation-render-routes.ts"; process.stdout.write(defaultNavigationRenderRoutes.filter(route => route.startsWith("/ja/")).join(","))')
+          node docs/scripts/verify-navigation-render.ts --routes "$ja_reading_routes"
+          node docs/scripts/verify-ja-editorial-render.ts
+
       - name: Upload rendered docs screenshots
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

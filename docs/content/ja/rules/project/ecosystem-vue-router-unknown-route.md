@@ -71,7 +71,7 @@ export const router = createRouter({
 
 ## 悪い
 
-到達できる登録済み router の名前は `user-post` ですが、navigation で `user-posts` と誤記しています。
+解析で参照できる登録済みルーターには `user-post` が登録されていますが、遷移時のルート名を `user-posts` と誤記しています。
 
 `src/UserPost.vue`
 
@@ -86,7 +86,7 @@ router.push({ name: "user-posts", params: { userId: "1", postId: "2" } });
 
 ## 良い
 
-二つの path parameter を保ち、登録名の `user-post` に合わせます。
+宣言済みの二つのパスパラメーターはそのまま渡し、ルート名を登録済みの `user-post` に合わせます。
 
 `src/UserPost.vue`
 
@@ -99,6 +99,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [ファイル間ルール一覧](../cross-file.md)

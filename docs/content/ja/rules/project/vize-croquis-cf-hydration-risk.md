@@ -4,12 +4,12 @@ title: "vize:croquis/cf/hydration-risk"
 
 # `vize:croquis/cf/hydration-risk`
 
-このコードはprop を ref にコピーする操作など、複数のリアクティビティ検出をまとめています。ファイル間検査がすべての Date.now() 式を検出するという意味ではありません。
+この診断コードは、prop を ref にコピーする操作など、リアクティビティに関する複数の検出結果をまとめています。ファイル間検査がすべての `Date.now()` 式を検出するという意味ではありません。
 
 既定の重大度: error  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
 自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
+オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -72,7 +72,7 @@ const count = ref(props.count);
 
 ## 良い
 
-初期値を独立した state にコピーせず、`toRef(props, "count")` で prop を参照します。
+初期値を独立した状態にコピーせず、`toRef(props, "count")` で prop を参照します。
 
 `App.vue`
 
@@ -94,7 +94,7 @@ const count = toRef(props, "count");
 <template><p>{{ count }}</p></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

@@ -40,7 +40,7 @@ const x = 1
     let template = docs.template.expect("template document");
     assert_eq!(
         template.content.as_str(),
-        include_str!("fixtures/split_script_checker.virtual.ts")
+        include_str!("fixtures/split_script_checker.virtual.ts.txt")
     );
 
     let export_at = source.find("export default").unwrap();

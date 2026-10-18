@@ -194,7 +194,7 @@ export function renderProvenanceLines(data, locale = "en") {
   ];
   const readyLine =
     locale === "ja"
-      ? `バックエンド: ネイティブ TypeScript エンジンを ${code(backend.corsaPath)} で利用できます。型検査の計測では、意図的に追加した診断が検出されることを tools/benchmarks/scripts/check-gate.mjs（.github/workflows/check-bench.yml）で検証します。`
+      ? `バックエンド: ネイティブ TypeScript エンジンのパスは ${code(backend.corsaPath)} です。型検査の計測では、意図的に追加した診断が検出されることを tools/benchmarks/scripts/check-gate.mjs（.github/workflows/check-bench.yml）で検証します。`
       : `Backend: native TypeScript engine ready at ${code(backend.corsaPath)}. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).`;
   const unavailableLine =
     locale === "ja"

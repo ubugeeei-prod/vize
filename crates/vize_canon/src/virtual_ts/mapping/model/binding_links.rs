@@ -1,5 +1,7 @@
 //! Binding metadata accessors for the projection mapping.
 
+#[cfg(any(feature = "native", test))]
+use super::ProjectionMeta;
 use super::{ProjectionMapping, VizeMapping, VizeSemanticLink};
 
 impl ProjectionMapping {
@@ -12,6 +14,25 @@ impl ProjectionMapping {
     /// The rows and semantic links, dropping metadata and base.
     pub fn into_parts(self) -> (Vec<VizeMapping>, Vec<VizeSemanticLink>) {
         (self.spans, self.semantic_links)
+    }
+
+    /// Preserve the producer's compact metadata column across internal raw
+    /// transports. The older public accessors retain their existing contract.
+    #[cfg(any(feature = "native", test))]
+    pub(crate) fn into_binding_parts_with_metadata(
+        self,
+    ) -> (
+        Vec<VizeMapping>,
+        Vec<ProjectionMeta>,
+        Vec<VizeSemanticLink>,
+        Vec<VizeSemanticLink>,
+    ) {
+        (
+            self.spans,
+            self.meta,
+            self.semantic_links,
+            self.prop_default_key_links,
+        )
     }
 
     /// Additional AST-owned inline default keys joined to bare prop bindings.
@@ -96,5 +117,31 @@ mod tests {
         assert_eq!(mapping.semantic_links()[0].target_range, 68..72);
         assert_eq!(mapping.prop_default_key_links()[0].source_range, 15..19);
         assert_eq!(mapping.prop_default_key_links()[0].target_range, 58..62);
+    }
+    #[test]
+    fn metadata_transport_keeps_diagnostics_and_appended_ordinary_rows() {
+        use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta};
+        let mut before = mapping(vec![VizeMapping::new(0..4, 10..14)]);
+        before.push_with(
+            VizeMapping::new(8..12, 20..24),
+            ProjectionMeta {
+                features: ProjectionFeatures::DIAGNOSTICS,
+                ..Default::default()
+            },
+        );
+        let (mut spans, metadata, links, keys) = before.clone().into_binding_parts_with_metadata();
+        spans.push(VizeMapping::new(15..19, 30..34));
+        let mut after = ProjectionMapping::from_parts(spans, links);
+        after.restore_row_metadata(metadata);
+        after.set_prop_default_key_links(keys);
+        assert_eq!(after.meta(0).features, ProjectionFeatures::ALL);
+        assert_eq!(after.meta(1).features, ProjectionFeatures::DIAGNOSTICS);
+        assert_eq!(after.meta(2).features, ProjectionFeatures::ALL);
+        assert_eq!(after.semantic_links(), before.semantic_links());
+        assert_eq!(
+            after.prop_default_key_links(),
+            before.prop_default_key_links()
+        );
+        assert_eq!(&after.spans()[..2], before.spans());
     }
 }

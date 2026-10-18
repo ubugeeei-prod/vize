@@ -33,13 +33,13 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "a11y/tabindex-no-positive": "通常のフォーカス順序を変える正の tabindex を検出します。",
   "a11y/use-list": "箇条書きに見えるテキストをリスト要素で表現します。",
   "css/no-display-none": "表示切り替えに display: none を使う箇所で v-show を検討します。",
-  "css/no-hardcoded-values": "CSS の直接指定値を CSS 変数にまとめます。",
+  "css/no-hardcoded-values": "CSS に直接記述した値を CSS 変数にまとめます。",
   "css/no-id-selectors": "詳細度が高い CSS の ID セレクターを検出します。",
   "css/no-important": "通常のカスケードを上書きする !important を検出します。",
-  "css/no-utility-classes": "コンポーネント内で utility class を定義する箇所を検出します。",
+  "css/no-utility-classes": "コンポーネント内でユーティリティクラスを定義する箇所を検出します。",
   "css/no-v-bind-performance": "CSS v-bind() の実行時コストを検討するための警告です。",
   "css/prefer-logical-properties": "書字方向に対応する CSS の論理プロパティを使います。",
-  "css/prefer-nested-selectors": "子孫セレクターを CSS nesting でまとめます。",
+  "css/prefer-nested-selectors": "子孫セレクターを CSS のネスト構文でまとめます。",
   "css/prefer-slotted": "slot や子コンポーネントに対する scoped CSS のセレクターを検査します。",
   "css/require-font-display": "@font-face に font-display を指定します。",
   "ecosystem/nuxt-prefer-nuxt-link": "Nuxt の内部リンクに NuxtLink を使います。",
@@ -53,7 +53,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "ecosystem/vue-router-prefer-named-push":
     "Vue Router のプログラムによる移動に名前付きルートを使います。",
   "ecosystem/vue-test-utils-no-html-snapshot":
-    "wrapper.html() 全体の snapshot に依存するテストを検出します。",
+    "wrapper.html() 全体のスナップショットに依存するテストを検出します。",
   "html/deprecated-attr": "非推奨の HTML 属性を検出します。",
   "html/deprecated-element": "非推奨の HTML 要素を検出します。",
   "html/id-duplication": "同じテンプレート内の ID 重複を検出します。",
@@ -65,7 +65,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "html/require-datetime": "time 要素に機械可読の datetime を指定します。",
   "musea/no-empty-variant": "内容のない variant ブロックを検出します。",
   "musea/prefer-design-tokens":
-    "登録したデザイントークンの値に一致する CSS の直接指定値を、対応する CSS 変数で表現します。",
+    "CSS に直接記述した値が登録済みのデザイントークンの値に一致する場合、対応する CSS 変数で表現します。",
   "musea/require-component": "art ブロックに対象の component を指定します。",
   "musea/require-title": "art ブロックに title を指定します。",
   "musea/unique-variant-names": "同じ Art ファイル内の variant 名を一意にします。",
@@ -94,7 +94,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "script/no-deprecated-data-object-declaration":
     "Vue 3 で関数にすべき data オプションのオブジェクト指定を検出します。",
   "script/no-deprecated-destroyed-lifecycle":
-    "Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 の hook に置き換えます。",
+    "Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 のライフサイクルフックに置き換えます。",
   "script/no-deprecated-dollar-listeners-api":
     "Vue 3 で $attrs に統合された $listeners を検出します。",
   "script/no-deprecated-dollar-scopedslots-api":
@@ -144,7 +144,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "script/prefer-use-id": "一意な ID の生成に Vue 3.5 の useId() を使います。",
   "script/prefer-use-slots": "setup の context.slots を useSlots() に置き換えます。",
   "script/prefer-use-template-ref": "テンプレート参照に Vue 3.5 の useTemplateRef() を使います。",
-  "script/require-default-prop": "任意指定で Boolean ではない prop に default を用意します。",
+  "script/require-default-prop": "省略可能な、Boolean 以外の prop に default を用意します。",
   "script/require-explicit-emits": "emit するイベントを defineEmits または emits に宣言します。",
   "script/require-explicit-slots": "useSlots() で使う slot を defineSlots の型で宣言します。",
   "script/require-function-return-type": "関数に戻り値の型注釈を指定します。",
@@ -160,7 +160,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "script/valid-define-emits": "defineEmits の重複や型と実行時引数の併用を検出します。",
   "script/valid-define-options": "defineOptions の引数と使用回数を検査します。",
   "script/valid-define-props": "defineProps の重複や型と実行時引数の併用を検出します。",
-  "script/valid-next-tick": "nextTick() の完了を await、then、または callback で扱います。",
+  "script/valid-next-tick": "nextTick() の完了を await、then、またはコールバックで扱います。",
   "ssr/no-browser-globals-in-ssr":
     "SSR で実行されるコードのブラウザー専用グローバル参照を検出します。",
   "ssr/no-hydration-mismatch": "サーバーとクライアントで一致しないテンプレート値を検出します。",
@@ -233,7 +233,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/no-template-target-blank": "target=_blank の外部リンクに適切な rel を指定します。",
   "vue/no-textarea-mustache": "textarea 内の mustache を検出し、v-model の使用を勧めます。",
   "vue/no-undefined-refs": "テンプレート内の未定義変数参照を検出します。",
-  "vue/no-unsafe-url": "危険なスキームになり得る URL 属性やバインディングを検出します。",
+  "vue/no-unsafe-url": "危険なスキームを含む可能性がある URL 属性やバインディングを検出します。",
   "vue/no-unsandboxed-iframe": "iframe に sandbox 属性を指定します。",
   "vue/no-unused-components": "登録しているのにテンプレートで使わないコンポーネントを検出します。",
   "vue/no-unused-properties": "defineProps に宣言しているのに使わない prop を検出します。",
@@ -247,7 +247,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/no-useless-v-bind": "文字列リテラルだけの不要な v-bind を検出します。",
   "vue/no-v-for-template-key-on-child":
     "template v-for の key を子ではなく template に指定します。",
-  "vue/no-v-html": "XSS を防ぐため、v-html の使用に警告します。",
+  "vue/no-v-html": "XSS を防ぐため、v-html を使用した箇所に警告を出します。",
   "vue/no-v-text": "v-text の代わりに mustache を使う方針を適用します。",
   "vue/no-v-text-v-html-on-component": "コンポーネントでの v-text / v-html を検出します。",
   "vue/permitted-contents": "HTML の要素ごとのコンテンツモデルを検査します。",

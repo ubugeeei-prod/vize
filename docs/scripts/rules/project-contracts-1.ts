@@ -23,7 +23,7 @@ export const contract1Examples: Record<string, ContractExample> = {
     },
     goodExplanation: {
       en: "Awaiting `nextTick()` after the state write lets Vue update the paragraph before `readLabel` samples its text.",
-      ja: "状態を書いた後に `nextTick()` を待ち、Vue が段落を更新してから `readLabel` でテキストを読みます。",
+      ja: "状態を更新した後に `nextTick()` を待ち、Vue が段落を更新してから `readLabel` でテキストを読みます。",
     },
   },
   "event-listener-leak": {
@@ -73,7 +73,7 @@ export const contract1Examples: Record<string, ContractExample> = {
     },
     badExplanation: {
       en: "The entry calls `installTitle()` before mounting an app, so `onMounted` is registered without an active component setup context.",
-      ja: "entry がアプリのマウント前に `installTitle()` を呼び、有効なコンポーネントの setup なしで `onMounted` を登録しています。",
+      ja: "エントリーファイルの `main.ts` がアプリのマウント前に `installTitle()` を呼び、コンポーネントの setup が有効でない状態で `onMounted` を登録しています。",
     },
     goodExplanation: {
       en: "Calling the same helper synchronously from App’s setup attaches the lifecycle callback to that instance’s mount.",
@@ -99,11 +99,11 @@ export const contract1Examples: Record<string, ContractExample> = {
     },
     badExplanation: {
       en: "`AsyncCard` has top-level await, making its setup asynchronous, but App renders it without a Suspense boundary to coordinate that dependency.",
-      ja: "`AsyncCard` の top-level await が setup を非同期にしますが、App はその依存を調整する Suspense の境界なしで描画しています。",
+      ja: "`AsyncCard` のトップレベルの `await` が setup を非同期にしますが、App は非同期処理の完了を待つ `Suspense` の境界なしで描画しています。",
     },
     goodExplanation: {
       en: "App wraps the async child in `Suspense` and supplies a loading fallback until the child setup resolves.",
-      ja: "App が非同期の子を `Suspense` で包み、子の setup が完了するまでローディングの fallback を表示します。",
+      ja: "App が非同期の子を `Suspense` で包み、子の setup が完了するまで読み込み中の代替表示を出します。",
     },
   },
   "module-scope-reactive": {

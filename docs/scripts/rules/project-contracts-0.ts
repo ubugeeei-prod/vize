@@ -19,7 +19,7 @@ export const contract0Examples: Record<string, ContractExample> = {
     },
     badExplanation: {
       en: "In this historical Vue 2.7 project, `items[0] = next` changes the array without notifying Vue 2’s array observer, so the displayed first item need not update.",
-      ja: "この旧 Vue 2.7 プロジェクトでは、`items[0] = next` が Vue 2 の配列 observer に通知せず配列を変えるため、表示中の最初の要素が更新されない場合があります。",
+      ja: "この旧 Vue 2.7 プロジェクトでは、`items[0] = next` が配列の変更を監視する Vue 2 の仕組みに通知せず配列を変更するため、表示中の最初の要素が更新されない場合があります。",
     },
     goodExplanation: {
       en: "`splice(0, 1, next)` uses the array mutation method observed by Vue 2, allowing the same replacement to update the view.",
@@ -106,7 +106,7 @@ export const contract0Examples: Record<string, ContractExample> = {
     },
     badExplanation: {
       en: "Importing `use-title.ts` registers `onMounted` before a component setup is active. Calling its exported function later only returns that module-level ref; it cannot repair the missed lifecycle ownership.",
-      ja: "`use-title.ts` の import 時点で、コンポーネントの setup が有効になる前に `onMounted` を登録します。後から公開関数を呼んでもモジュール直下の ref を返すだけで、ライフサイクルの所属は修復されません。",
+      ja: "`use-title.ts` の import 時点で、コンポーネントの setup が有効になる前に `onMounted` を登録します。後から公開関数を呼んでもモジュール直下の ref を返すだけで、ライフサイクルフックは、コンポーネントに登録されないままです。",
     },
     goodExplanation: {
       en: "Both state creation and hook registration move into `useTitle`, which App calls synchronously inside setup. The mounted hook now belongs to that App instance.",

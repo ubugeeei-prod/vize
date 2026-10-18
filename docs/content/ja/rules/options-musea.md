@@ -49,7 +49,7 @@ export default defineConfig({
 });
 ```
 
-Bad（上の設定で指摘される例）:
+悪い例（上の設定で指摘される例）:
 
 ```vue
 <style scoped>
@@ -59,7 +59,7 @@ Bad（上の設定で指摘される例）:
 </style>
 ```
 
-Good:
+良い例:
 
 ```vue
 <style scoped>

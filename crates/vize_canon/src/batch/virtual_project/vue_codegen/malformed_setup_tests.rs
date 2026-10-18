@@ -74,10 +74,12 @@ fn project(source: &str) -> (GeneratedVueFile, GeneratedVueFile, serde_json::Val
             ..Default::default()
         },
     );
-    let (mappings, semantic_links, prop_default_key_links) = prior.mapping.into_binding_parts();
+    let (mappings, mapping_meta, semantic_links, prop_default_key_links) =
+        prior.mapping.into_binding_parts_with_metadata();
     let before = GeneratedVueFile {
         code: prior.code,
         mappings,
+        mapping_meta,
         semantic_links,
         prop_default_key_links,
         diagnostics: retained.diagnostics,

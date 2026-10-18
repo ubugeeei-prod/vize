@@ -40,7 +40,7 @@ Vize のドキュメントでは、二つの種類の記事を公開していま
 <div class="blog-post-list">
   <a class="blog-post-list-item" href="./notes/2026-06-07-real-world-testing/">
     <strong>実際のプロジェクトでの検証</strong>
-    <span>実際のプロジェクトをテストの中心に据え、v1.0.0 へのロードマップを示した、Vize の実プロジェクト検証段階への移行。</span>
+    <span>実際のプロジェクトをテストの中心に据える開発段階への移行と、v1.0.0 へのロードマップ。</span>
   </a>
   <a class="blog-post-list-item" href="./notes/2026-05-16-comparing-vize-with-official-vue-oxc-golar-verter-flint-and-tsslint/">
     <strong>ツールの比較</strong>
@@ -52,7 +52,7 @@ Vize のドキュメントでは、二つの種類の記事を公開していま
   </a>
   <a class="blog-post-list-item" href="./notes/2026-05-16-testing-agentic-coding-and-trust/">
     <strong>テストとエージェント</strong>
-    <span>エージェントが開発に加わるほど、スナップショット、実プロジェクトのフィクスチャ、決定的な検証が重要になる理由。</span>
+    <span>エージェントが開発に加わるほど、スナップショット、実プロジェクトのフィクスチャ、決定論的な検証が重要になる理由。</span>
   </a>
   <a class="blog-post-list-item" href="./notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface/">
     <strong>Vapor Mode</strong>

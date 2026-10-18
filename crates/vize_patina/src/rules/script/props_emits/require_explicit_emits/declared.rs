@@ -126,8 +126,9 @@ fn collect_call_emits(call: &CallExpression<'_>) -> Option<FxHashSet<CompactStri
     match call.arguments.first() {
         Some(Argument::ArrayExpression(array)) => collect_array_emits(array),
         Some(Argument::ObjectExpression(object)) => collect_object_emits(object),
-        // No argument at all (`defineEmits()`): no events declared.
-        None => Some(FxHashSet::default()),
+        // Untyped `defineEmits()` permits arbitrary event names; unlike an
+        // explicit empty array, it does not declare a known empty surface.
+        None => None,
         // Any other argument shape (identifier, spread, call, ...) is unknown.
         _ => None,
     }

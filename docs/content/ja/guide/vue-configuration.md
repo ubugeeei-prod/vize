@@ -7,7 +7,7 @@ title: Vue の設定を共有する
 # Vue の設定を共有する
 
 ネイティブの Vue 設定を `vite.config.ts` の `vue` にまとめます。コンパイラ、
-CLI、エディタで同じオプション名を使えます。ビルド、型チェック、Lint、整形を
+CLI、エディターで同じオプション名を使えます。ビルド、型チェック、lint、整形を
 まとめて実行するには、[Vite+ 連携](./vite-plus.md)から始めてください。
 
 この API は次のマイナーリリースに向けた変更です。現在公開されているバージョンでは、
@@ -34,8 +34,8 @@ export default defineConfig({
 `vue` では、ネイティブの `compiler`、`typeChecker`、`linter`、`formatter`、
 `languageServer`、`globalTypes`、`files`、`ignores`、`basePath`、`lib` を使います。
 `version` と `entries` も指定できます。コンパイラと整形のセクションには
-`enabled` はありません。型チェッカー、Linter、言語サーバーでは、ネイティブと
-同じ `enabled` を使えます。未知のキーを canonical な `vue` に置くとエラーになります。
+`enabled` はありません。型チェッカー、リンター、言語サーバーでは、ネイティブと
+同じ `enabled` を使えます。`vue` に未対応のキーを指定するとエラーになります。
 
 ## 既存の Vite+ 設定を使う
 
@@ -78,9 +78,9 @@ export default defineConfig({
 });
 ```
 
-canonical な entry に置けるのは、現在 `basePath`、`files`、`ignores`、`linter` だけです。
-ほかのセクションと `version` はプロジェクト全体に指定し、entry に置くとエラーになります。
-CLI のスコープ付き Lint は従来の動作を保ちます。エディタでのファイル単位のスコープ適用と、
+`vue.entries` の各エントリに指定できるのは、現在 `basePath`、`files`、`ignores`、`linter` だけです。
+ほかのセクションと `version` はプロジェクト全体に指定し、エントリに置くとエラーになります。
+CLI のスコープ別の lint は従来どおり動作します。エディターでのファイル単位のスコープ適用と、
 ほかのセクションのスコープ対応は未完了です。
 
 ## 既存の設定を移行する
@@ -90,11 +90,11 @@ Vite+ のタスク用の `typecheck`、`lint.vize`、`fmt.vize` の代わりに�
 `typeChecker`、`linter`、`formatter` を使います。既存の設定の入口も引き続き受け付けます。
 従来の設定を第1引数に取る `withVue(config)` は、Vue オプションを先に渡す形に変わります。
 以前の呼び出し方を保つ場合は、`defineConfig(config)` または `withVize(config)` を使ってください。
-同じ選択済みの Vite 設定に両方ある場合、明示した canonical の値を優先します。
+読み込む Vite 設定に従来の形式と `vue` の両方がある場合、`vue` に明示した値を優先します。
 省略した値は継承し、配列は置き換え、`false` はそのまま保ちます。
 
-ネイティブ CLI とエディタの自動探索では、既存の `vize.config.*` が引き続き優先されます。
+ネイティブ CLI とエディターの自動探索では、既存の `vize.config.*` が引き続き優先されます。
 Vite+ ヘルパーは選択された設定を使い、選択されていない専用ファイルの値を混ぜません。
-canonical な設定をネイティブコマンドと共有する場合は、選択される Vite 設定にまとめてください。
+`vue` の設定をネイティブコマンドと共有する場合は、読み込まれる Vite 設定にまとめてください。
 既存の形式と明示的なファイル選択は、[専用設定のリファレンス](./configuration-reference.md)を
 参照してください。

@@ -111,7 +111,7 @@ export const vue1Explanations: readonly ExplanationRecord[] = [
     "The anchor destination begins with the executable javascript: scheme.",
     "The anchor uses the ordinary local /next navigation destination.",
     "a の移動先に、JavaScript を実行する javascript: スキームを使っています。",
-    "移動先を、通常のローカルの移動先 /next に変更します。",
+    "移動先を、通常のローカルパス /next に変更します。",
   ],
   [
     "vue/no-unsandboxed-iframe",
@@ -222,7 +222,7 @@ export const vue1Explanations: readonly ExplanationRecord[] = [
     "vue/permitted-contents",
     "The examples put block content in p, omit the table body, nest interactive controls, or put a div directly inside ul.",
     "The examples use inline paragraph content, an explicit tbody, and li children. The custom MyItem is not treated as a known native ul child.",
-    "p にブロックを入れ、tbody を省略し、操作要素を入れ子にするか、ul に div を直接入れています。",
+    "p にブロック要素を入れたり、tbody を省略したりしています。操作要素の入れ子や、ul の直下に div を置く例もあります。",
     "p はインラインの内容、table は tbody、ul は li を使います。独自コンポーネントの MyItem は、ul の子となる既知の HTML 要素としては検査されません。",
   ],
   [

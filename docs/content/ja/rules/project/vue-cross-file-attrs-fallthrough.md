@@ -48,7 +48,7 @@ createApp(Root).mount("#app");
 
 ## 悪い
 
-親が `class="notice"` を fragment の子に渡しますが、属性の自動適用先がなく、子も `$attrs` を使いません。
+親が `class="notice"` を複数のルートを持つ子コンポーネントに渡しますが、属性の自動適用先がなく、子も `$attrs` を使いません。
 
 `App.vue`
 
@@ -67,7 +67,7 @@ import Child from "./Child.vue";
 
 ## 良い
 
-子が `<main>` に `$attrs` を binding して適用先を選び、隣の `<aside>` は別に保ちます。
+子が `<main>` に `$attrs` をバインドして属性の適用先を明示します。隣の `<aside>` には適用しません。
 
 `App.vue`
 
@@ -84,6 +84,6 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [ファイル間ルール一覧](../cross-file.md)

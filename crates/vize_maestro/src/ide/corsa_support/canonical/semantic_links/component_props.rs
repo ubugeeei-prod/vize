@@ -285,6 +285,7 @@ mod tests {
             source_mappings: Vec::new(),
             semantic_links: Vec::new(),
             prop_default_key_links: Vec::new(),
+            diagnostic_mappings: Vec::new(),
             import_source_map: ImportSourceMap::empty(),
         }
     }

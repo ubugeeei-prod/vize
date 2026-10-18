@@ -11,13 +11,13 @@ title: コメントによる設定
 コメントを使って lint 診断やコード生成の動作を指定できます。テンプレートとスクリプトで記法が異なります。
 
 - **`<!-- @vize:xxx -->`**— `<template>` の HTML コメント (Patina リンターのディレクティブ)
-- **`// @vize forget: reason`**— `<script>` の JS コメント (ファイル間分析の抑制)
+- **`// @vize forget: reason`**— `<script>` の JS コメント （ファイル横断解析の診断を抑制）
 
-すべての `@vize:` テンプレートのディレクティブは**ビルド出力から削除**され、本番コードには決して表示されません。
+テンプレート内のすべての `@vize:` ディレクティブは**ビルド出力から削除**され、本番コードには含まれません。
 
 ## テンプレートのディレクティブ (`@vize:`)
 
-`<template>` 内で HTML コメントとして使用されます。これらは Patina (組み込みリンター) の動作を制御します。
+`<template>` 内の HTML コメントに記述し、組み込みリンター Patina の動作を指定します。
 
 ### `@vize:expected`
 
@@ -48,7 +48,7 @@ title: コメントによる設定
 
 ### `@vize:level(warn|error|off)`
 
-次の行に出る診断のレベルを上書きします。
+次の行に出る診断の重大度を上書きします。
 
 ```vue
 <template>
@@ -68,7 +68,7 @@ title: コメントによる設定
 
 ### `@vize:todo`
 
-TODO 警告を発行します。
+TODO の警告を報告します。
 
 ```vue
 <template>
@@ -79,7 +79,7 @@ TODO 警告を発行します。
 
 ### `@vize:fixme`
 
-FIXME エラーを発行します。
+FIXME のエラーを報告します。
 
 ```vue
 <template>
@@ -129,7 +129,7 @@ FIXME エラーを発行します。
 | `@vize:ignore-start/end` | 指定した範囲の診断を抑制する     | —      |
 | `@vize:level(...)`       | 次の行の重大度を上書きする                 | —      |
 | `@vize:todo <msg>`       | TODO を警告する                             | 警告   |
-| `@vize:fixme <msg>`      | FIXMEを発行する                            | エラー |
+| `@vize:fixme <msg>`      | FIXME のエラーを報告する                            | エラー |
 | `@vize:deprecated <msg>` | 非推奨の通知を発行する                     | 警告   |
 | `@vize:docs <text>`      | 説明用コメント（lint に影響しない）            | —      |
 | `@vize:dev-only`         | 本番ビルドから削除する                         | —      |
@@ -169,7 +169,7 @@ const { count } = inject("state");
 | 理由が必要   | 理由のない `// @vize forget` はエラーになります。 |
 | コロンは必須 | `// @vize forget: <reason>` (理由の前にコロン) を使用する必要があります。 |
 | 次のコード行のみ | コメントや空行を読み飛ばし、次のコード行に適用します。 |
-| 後続のコードが必要 | 抑制コメントの後にコードがなければエラーになる。                              |
+| 後続のコードが必要 | 抑制コメントの後にコードがなければエラーになります。                              |
 
 ### 複数の抑制
 
@@ -206,7 +206,7 @@ const { count } = inject("state");
 | `intentionally non-reactive` | 値はリアクティブである必要はありません。 |
 | `read-only access`           | 読み取りのみで、変更は追跡しません。     |
 | `legacy code`                | 既知の問題。後でリファクタリングします。 |
-| `third-party integration`    | 外部ライブラリで必要                     |
+| `third-party integration`    | 外部ライブラリとの連携のために必要                     |
 
 ### 無効な例
 

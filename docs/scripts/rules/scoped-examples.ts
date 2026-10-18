@@ -129,7 +129,7 @@ export const scopedOverrides: Record<string, RuleExample> = {
       ruleOptions: { tokens: [{ path: "color.primary", value: "#3b82f6", tier: "semantic" }] },
       note: "Requires an .art.vue file and the token inventory shown below. It does not infer a token from an arbitrary color.",
       noteJa:
-        ".art.vue ファイルと下記の token 一覧が必要です。任意の色から token を推測するルールではありません。",
+        ".art.vue ファイルと下記のデザイントークン一覧が必要です。任意の色からトークンを推測するルールではありません。",
     },
   ),
   "vue/max-template-complexity": pair(

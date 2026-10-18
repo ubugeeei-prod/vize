@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join, matchesGlob } from "node:path";
 import { test } from "node:test";
+import { defaultNavigationRenderRoutes } from "../../docs/scripts/navigation-render-routes.ts";
 import { parse } from "yaml";
 
 import {
@@ -149,7 +150,29 @@ test("full Docs checks real preview resources before building and retains the ra
   );
   assert.match(readiness.run!, /\| tee docs-render-evidence\/resource-readiness\/tests\.tap/);
   assert.match(readiness.run!, /receipt\.json/);
+  const reading = namedStep(job, "Verify rendered navigation and Japanese reading paths");
+  assert.equal(reading.if, "${{ inputs.links-only != true }}");
+  assert.equal(
+    reading.run,
+    [
+      'ja_reading_routes=$(node --input-type=module -e \'import { defaultNavigationRenderRoutes } from "./docs/scripts/navigation-render-routes.ts"; process.stdout.write(defaultNavigationRenderRoutes.filter(route => route.startsWith("/ja/")).join(","))\')',
+      'node docs/scripts/verify-navigation-render.ts --routes "$ja_reading_routes"',
+      "node docs/scripts/verify-ja-editorial-render.ts",
+      "",
+    ].join("\n"),
+  );
+  const japaneseRoutes = defaultNavigationRenderRoutes.filter((route) => route.startsWith("/ja/"));
+  assert.equal(japaneseRoutes.length, 42);
+  for (const name of ["docs-ja-nonrule-editorial", "docs-ja-rule-editorial"]) {
+    const fixture = JSON.parse(readRepoFile("tests", "_fixtures", `${name}.json`)) as {
+      cases: { case: string; route: string }[];
+    };
+    for (const witness of fixture.cases)
+      assert(japaneseRoutes.includes(witness.route), `${witness.case}: original rendered witness`);
+  }
+  assert(steps.indexOf(reading) > steps.indexOf(namedStep(job, "Build docs")));
   const upload = namedStep(job, "Upload rendered docs screenshots");
+  assert(steps.indexOf(reading) < steps.indexOf(upload));
   assert.equal(upload.if, "${{ always() }}");
   assert.equal(upload.with?.path, "docs-render-evidence");
 });
