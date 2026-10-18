@@ -78,9 +78,7 @@ impl TemplateFormatter<'_> {
         let mut i = 0;
         while i + 1 < bytes.len() {
             if bytes.get(i..i + 2) == Some(b"{{".as_slice()) {
-                let Some((expr_start, expr_end, end)) = parse_interpolation_range(bytes, i) else {
-                    return None;
-                };
+                let (expr_start, expr_end, end) = parse_interpolation_range(bytes, i)?;
                 has_multiline_interp = bytes.get(expr_start..expr_end)?.contains(&b'\n');
                 i = end;
                 if has_multiline_interp {

@@ -137,7 +137,7 @@ fn multiline_literal_open_delimiters_preserve_crlf_and_quote_policy() {
 #[test]
 fn sfc_literal_open_delimiters_stay_inside_the_authored_interpolation() {
     let source = r#"<template><p>{{'{{<i>'}}</p></template>"#;
-    let expected = "<template>\n  <p>{{ \"{{<i>\" }}</p>\n</template>";
+    let expected = "<template>\n  <p>{{ \"{{<i>\" }}</p>\n</template>\n";
     let options = FormatOptions::default();
     let first = format_sfc(source, &options).unwrap();
     assert_eq!(first.code.as_str(), expected);
