@@ -22,7 +22,9 @@ const rust = readFileSync(
   "utf8",
 );
 assert.ok(
-  rust.includes('const OFFICIAL_COMPILER_NODE_SCRIPT: &str = include_str!("official_compiler.ts");'),
+  rust.includes(
+    'const OFFICIAL_COMPILER_NODE_SCRIPT: &str = include_str!("official_compiler.ts");',
+  ),
 );
 const embedded = readFileSync(
   new URL("../../crates/vize/src/commands/inspector/official_compiler.ts", import.meta.url),
