@@ -327,16 +327,19 @@ mod tests {
         let allocator = Allocator::new();
         let span = Span::new(0, 25);
         let value = ExprRef::parse_js_in(&allocator, "getSlots(owner)", Span::new(9, 24));
-        let typed = BindingOp::SlotsObject(Box::new_in(SlotsObjectOp { value, span }, &allocator));
+        let typed = BindingOp::SlotsObject(Box::new_in(
+            SlotsObjectOp { value, span },
+            allocator.as_oxc(),
+        ));
         let legacy = BindingOp::VueDirective(Box::new_in(
             VueDirectiveOp {
                 name: "slots",
                 argument: None,
-                modifiers: Vec::new_in(&allocator),
+                modifiers: Vec::new_in(allocator.as_oxc()),
                 value: Some(value),
                 span,
             },
-            &allocator,
+            allocator.as_oxc(),
         ));
         assert_eq!(
             binding_parts(&typed),

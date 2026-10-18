@@ -436,11 +436,11 @@ fn historical_slots_view_cannot_silently_gain_native_ssr_admission() {
         VueDirectiveOp {
             name: "slots",
             argument: None,
-            modifiers: Vec::new_in(&allocator),
+            modifiers: Vec::new_in(allocator.as_oxc()),
             value: Some(value),
             span,
         },
-        &allocator,
+        allocator.as_oxc(),
     ));
     assert!(
         vize_atelier_ssr::compile_l2_to_ssr(&allocator, l2.source, &l2.root, &options).is_none(),
