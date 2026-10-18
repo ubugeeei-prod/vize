@@ -194,6 +194,7 @@ await test("already-created versions cannot release through metadata plus latest
     [
       "const url = new URL(process.argv.at(-1));",
       "if (url.pathname.endsWith('.tgz')) {",
+      "  if (process.env.TEST_PROBE_MODE === 'frame') process.stderr.write('unexpected diagnostic frame\\n');",
       `  const child = require('node:child_process').spawnSync(${JSON.stringify(curl)}, process.argv.slice(2), { stdio: 'inherit' });`,
       "  process.exit(child.status ?? 1);",
       "}",
@@ -285,6 +286,16 @@ await test("already-created versions cannot release through metadata plus latest
       performance.now() - started < 8500,
       "metadata and archive share the original six-second attempt budget",
     );
+    const framed = await run("correct", 0, "frame");
+    assert.equal(framed.code, 1, framed.stdout + framed.stderr);
+    const framedArchive = probe(framed.stdout).requests.find((entry) => entry.phase === "archive");
+    assert.ok(framedArchive);
+    assert.equal(framedArchive.curlExit, 0);
+    assert.equal(framedArchive.httpStatus, "200");
+    assert.equal(framedArchive.bytes, payload.length);
+    assert.equal(framedArchive.reason, "status-frame");
+    assert.equal(probe(framed.stdout).archiveVisible, false);
+    assert.doesNotMatch(framed.stdout + framed.stderr, /unexpected diagnostic frame/);
     const result = await run("correct");
     assert.equal(result.code, 0, result.stdout + result.stderr);
     assert.match(result.stdout, /is visible in npm with dist-tag latest/);
@@ -300,7 +311,7 @@ await test("already-created versions cannot release through metadata plus latest
     assert.equal(fs.existsSync(trace), false, "an existing version must never be published again");
     assert.deepEqual(
       http.requests.map((request) => request.path),
-      ["/missing.tgz", "/corrupt-tail.tgz", "/body-stall.tgz", "/correct.tgz"],
+      ["/missing.tgz", "/corrupt-tail.tgz", "/body-stall.tgz", "/correct.tgz", "/correct.tgz"],
     );
   } finally {
     await http.close();
