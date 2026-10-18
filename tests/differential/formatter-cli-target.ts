@@ -88,7 +88,11 @@ export async function formatterCliTarget(root: string, reportName: string) {
     receipt = build;
   }
   const assertUnchanged = () => {
-    assert.equal(fs.realpathSync(binary), binary, "explicit physical formatter executable required");
+    assert.equal(
+      fs.realpathSync(binary),
+      binary,
+      "explicit physical formatter executable required",
+    );
     assert.ok(fs.lstatSync(binary).isFile());
     assert.equal(sha256(fs.readFileSync(binary)), expectedSha, "formatter executable changed");
   };

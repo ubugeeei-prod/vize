@@ -84,15 +84,11 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
       fs.writeFileSync(file, input);
       fs.writeFileSync(configPath, config);
       for (const mode of ["--check", "--write", "--write", "--write", "--check"]) {
-        const result = spawnSync(
-          target.binary,
-          ["fmt", mode, "Example.vue"],
-          {
-            cwd: directory,
-            timeout: 30000,
-            maxBuffer: 1048576,
-          },
-        );
+        const result = spawnSync(target.binary, ["fmt", mode, "Example.vue"], {
+          cwd: directory,
+          timeout: 30000,
+          maxBuffer: 1048576,
+        });
         const after = fs.readFileSync(file);
         row.cli.push({
           mode,
