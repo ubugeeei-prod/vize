@@ -316,15 +316,16 @@ void test(
           const changed = beforeEdit.replace("#0000ff", "#00ff00");
           assert.notEqual(changed, beforeEdit);
           await drainPackedGalleryHttp(pending);
-          const reloaded = page.waitForEvent("framenavigated", {
-            predicate: (frame) => frame === page.mainFrame(),
-            timeout: 15000,
-          });
+          const reloaded = page.waitForEvent("load", { timeout: 15000 });
           httpPhase = "physical-edit";
           await writeFile(arts[0], changed);
           await reloaded;
-          httpPhase = "physical-edit-committed";
+          httpPhase = "physical-edit-loaded";
           await page.waitForLoadState("load");
+          assert.equal(
+            await page.evaluate(() => Reflect.get(window, "__packedGalleryDocument")),
+            undefined,
+          );
           httpPhase = "physical-edit-loaded-poll";
           await page.waitForFunction(
             async (url) => {
