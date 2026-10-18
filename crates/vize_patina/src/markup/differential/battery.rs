@@ -271,8 +271,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // matrices in rule tests; the scanner deliberately records those as skips.
     // KeepAlive's complete source/repair packets add five nonliteral calls;
     // their explicit loops remain in rule tests, and all literal samples remain.
-    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5,
-    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5,
+    // Empty binding values add one nonliteral call over seven real-parser
+    // inputs; that loop and the complete CLI reports run in ordinary tests.
+    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1,
+    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25,
     restructured: 0,

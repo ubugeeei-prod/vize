@@ -121,6 +121,52 @@ void test("Clippy and doctests start beside affected cohort execution and stay r
   assert.match(commands(rust.jobs["rust-source-report"]), /require-rust-tier\.ts/);
 });
 
+void test("binding parser captures retain exact rejected history without replacing current gates", () => {
+  const steps = rust.jobs["pr-rust-build"].steps ?? [];
+  const capture = steps.find(
+    (step) => step.name === "Capture exact binding parser BEFORE and rejected AFTER",
+  );
+  const upload = steps.find(
+    (step) => step.name === "Preserve actual binding parser source-pair captures",
+  );
+  const parity = steps.find((step) => step.name === "Native L1 markup parity");
+  assert.ok(capture && upload && parity);
+  assert.match(capture.if ?? "", /always\(\).*!cancelled\(\).*pull_request/);
+  for (const authority of [
+    "before 54400c86c8a224777640d9554c220dccf8f53b90 0",
+    "after bf006b1c11996197296c4344eeb9153a6289fdad 101",
+  ])
+    assert.ok(capture.run?.includes(authority));
+  assert.match(capture.run ?? "", /VIZE_TOKENIZER_CAPTURE_DIR="\$binding_capture"/);
+  assert.match(capture.run ?? "", /for binding_repeat in 1 2/);
+  assert.match(
+    capture.run ?? "",
+    /--lib parser::tokenizer_contract_tests::complete_fixture_asts_and_utf8_cuts_keep_the_frozen_tokenizer_contract -- --exact --nocapture/,
+  );
+  assert.match(capture.run ?? "", /stdout\.bin.*stderr\.bin/);
+  assert.match(capture.run ?? "", /actualExit.*expectedCaptureExit/);
+  assert.match(capture.run ?? "", /index < 4296/);
+  assert.match(capture.run ?? "", /assert.equal\(integer\(\), 7n\)/);
+  assert.match(capture.run ?? "", /assert.deepEqual\(fields\[5\], frozen.subarray/);
+  assert.match(capture.run ?? "", /0xffffffffffffffffn/);
+  assert.match(capture.run ?? "", /assert.equal\(offset, bytes.length\)/);
+  assert.match(capture.run ?? "", /then binding_contract=1; fi/);
+  assert.match(capture.run ?? "", /exit "\$binding_contract"/);
+  assert.equal(
+    upload.if,
+    "${{ always() && github.event_name == 'pull_request' && (contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') || contains(fromJSON(inputs.rust-plan).packages, 'vize_armature')) }}",
+  );
+  assert.equal(upload.with?.["if-no-files-found"], "error");
+  assert.equal(upload.with?.path, "target/differential/binding-value-history/");
+  assert.ok(steps.indexOf(capture) < steps.indexOf(upload));
+  assert.ok(steps.indexOf(upload) < steps.indexOf(parity));
+  assert.equal(
+    parity.run,
+    "cargo test -p vize_armature --features native-lex-parity,legacy --lib --test markup_lex_parity",
+  );
+  assert.doesNotMatch(parity.if ?? "", /continue-on-error|false/);
+});
+
 void test("named Rust cohorts preserve filtered execution and receipt-bound queue archives", () => {
   const workers = rust.jobs["pr-rust-shard"];
   assert.equal(workers.strategy?.matrix, "${{ fromJSON(inputs.rust-plan).testMatrix }}");
