@@ -136,7 +136,7 @@ pub(super) fn for_loop<'a>(
             spans,
             carrier_start: carrier_span.start,
         },
-        retained.allocator(),
+        &retained.allocator(),
     )))
 }
 
