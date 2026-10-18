@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { spawnSync } from "node:child_process";
 import {
   qualifyIntegration,
   validateIntegrationContext,
@@ -343,4 +344,55 @@ test("body changes during the existing Q wait refuse before reusing a later gree
     /validated integration body changed/,
   );
   assert.deepEqual(f.sleeps, [15_000]);
+});
+
+test("product machine options keep complete qualification progress off JSON stdout", () => {
+  const script = `
+    import { fixture, context } from ${JSON.stringify(new URL("./integration-fixture.ts", import.meta.url).href)};
+    import { qualifyIntegration } from ${JSON.stringify(new URL("../../../tools/support/release/qualify_check/integration.ts", import.meta.url).href)};
+    import { integrationProductOptionsFromEnvironment } from ${JSON.stringify(new URL("../../../tools/support/release/qualify_check/integration-product.ts", import.meta.url).href)};
+    const f = fixture();
+    if (process.env.REFUSE_Q === "true") f.jobs[0].conclusion = "failure";
+    const options = integrationProductOptionsFromEnvironment("qualify");
+    const receipt = await qualifyIntegration(context, {
+      ...f.options, log: undefined, ...options, mode: "wait", api: f.options.api, now: f.options.now,
+    });
+    process.stdout.write(JSON.stringify(receipt) + "\\n");
+  `;
+  for (const refuse of [false, true]) {
+    const result = spawnSync(process.execPath, ["--input-type=module", "-e", script], {
+      encoding: "utf8",
+      timeout: 10_000,
+      maxBuffer: 1024 * 1024,
+      env: {
+        ...process.env,
+        GITHUB_EVENT_NAME: "merge_group",
+        GITHUB_REPOSITORY: repository,
+        GITHUB_SHA: candidate,
+        GITHUB_TOKEN: "pure-fixture-no-network",
+        VIZE_RELEASE_INTEGRATION_EVIDENCE: "",
+        REFUSE_Q: String(refuse),
+      },
+    });
+    assert.ifError(result.error);
+    assert.equal(result.signal, null);
+    if (refuse) {
+      assert.notEqual(result.status, 0);
+      assert.equal(result.stdout, "");
+      assert.match(result.stderr, /(?:failure|must finish successfully)/u);
+    } else {
+      assert.equal(result.status, 0, result.stderr);
+      const receipt = JSON.parse(result.stdout);
+      assert.equal(receipt.kind, "vize.release.integration-qualification-v1");
+      assert.equal(receipt.checkId, 7);
+      assert.equal(receipt.checkAttempt, 3);
+      assert.equal(result.stdout, JSON.stringify(receipt) + "\n");
+      assert.equal(
+        result.stderr,
+        `Check qualification https://github.com/${repository}/actions/runs/7 (completed/success)\n`.repeat(
+          2,
+        ),
+      );
+    }
+  }
 });
