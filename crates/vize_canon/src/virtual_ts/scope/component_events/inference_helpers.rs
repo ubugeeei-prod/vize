@@ -3,8 +3,12 @@ use vize_croquis::{Croquis, ScopeData};
 
 /// Higher-order inference keeps a constructor's type parameters until the
 /// authored props instantiate its emit tuple, as the slot factory does.
-const EMIT_INFERENCE_HELPERS: &str = r#"declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
-type __VizeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
+/// The exported fallthrough surface belongs to the component value, outside
+/// its constructor's own props. Keep that surface on this second input check
+/// too; otherwise a listener makes valid forwarded props become excess keys.
+/// Missing, nullish, never and untyped metadata must not erase the own props.
+const EMIT_INFERENCE_HELPERS: &str = r#"type __VizeConstructorEmitPropsFactory<F> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => (props: P & (__VizeIsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>)) => __EmitProps<E>;
+type __VizeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? __VizeConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}> : (component: C) => (props: any) => {};
 type __VizeEmitPropsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : __VizeNativeEmitPropsFactory<C>;
 "#;
 

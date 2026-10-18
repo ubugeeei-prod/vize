@@ -185,8 +185,8 @@ export type Emits = {};
 type __VizeSlots = {};
 export type { __VizeSlots as Slots };
 
-declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
-type __VizeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
+type __VizeConstructorEmitPropsFactory<F> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => (props: P & (__VizeIsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>)) => __EmitProps<E>;
+type __VizeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? __VizeConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}> : (component: C) => (props: any) => {};
 type __VizeEmitPropsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : __VizeNativeEmitPropsFactory<C>;
 type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
 type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = []> = TDepth['length'] extends 32 ? never : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>, [...TDepth, unknown]> | ((...args: TArgs) => TReturn) : never;
