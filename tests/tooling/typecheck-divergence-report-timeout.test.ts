@@ -70,6 +70,9 @@ function assertDeadline(fixture: ReturnType<typeof setup>, budget: number, phase
   );
   return directory;
 }
+function commandStreams(result: ReturnType<typeof run>) {
+  return `stdout:\n${result.stdout ?? "(not captured)"}\nstderr:\n${result.stderr ?? "(not captured)"}`;
+}
 function configureBudget(fixture: ReturnType<typeof setup>, budget: number) {
   updateJson(fixture.registryPath, (registry) => {
     registry.projects[0].typecheckPerformance.hangTimeoutMs = budget;
@@ -96,9 +99,9 @@ setInterval(()=>{},1000);`,
         fixture.invocationPath,
       );
       const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
-      assert.equal(result.error, undefined);
-      assert.equal(result.status, 1);
-      assert.equal(result.stderr, `${unusableFailure(deadlineReason)}\n`);
+      assert.equal(result.error, undefined, commandStreams(result));
+      assert.equal(result.status, 1, commandStreams(result));
+      assert.equal(result.stderr, `${unusableFailure(deadlineReason)}\n`, commandStreams(result));
       const directory = assertDeadline(fixture, budget, "vue-tsc baseline");
       assert.equal(
         fs.readFileSync(path.join(directory, "command-1-stdout.bin"), "utf8"),
@@ -185,9 +188,9 @@ test(
         fixture.invocationPath,
       );
       const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
-      assert.equal(result.error, undefined);
-      assert.equal(result.status, 1);
-      assert.equal(result.stderr, `${unusableFailure(deadlineReason)}\n`);
+      assert.equal(result.error, undefined, commandStreams(result));
+      assert.equal(result.status, 1, commandStreams(result));
+      assert.equal(result.stderr, `${unusableFailure(deadlineReason)}\n`, commandStreams(result));
       const directory = assertDeadline(fixture, budget, "vue-tsc coverage baseline");
       const baseline = readJson(path.join(directory, "command-1-result.json"));
       assert.equal(baseline.completed, true);
@@ -256,13 +259,14 @@ test("record-only mode still warns and retains complete project timeout custody"
     const result = run(fixture, {}, ["--budget-mode", "record-only"], {
       timeoutMs: outerHarnessTimeoutMs,
     });
-    assert.equal(result.error, undefined);
-    assert.equal(result.status, 0, result.stderr);
-    assert.equal(result.stderr, "");
+    assert.equal(result.error, undefined, commandStreams(result));
+    assert.equal(result.status, 0, commandStreams(result));
+    assert.equal(result.stderr, "", commandStreams(result));
     assert.ok(
       result.stdout.includes(
         `::warning title=Typecheck divergence budget not enforced::${unusableFailure(deadlineReason)}`,
       ),
+      commandStreams(result),
     );
     assertDeadline(fixture, budget, "vue-tsc baseline");
   } finally {
@@ -284,9 +288,9 @@ test(
         fixture.invocationPath,
       );
       const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
-      assert.equal(result.error, undefined);
-      assert.equal(result.status, 1);
-      assert.equal(result.stderr, `${unusableFailure(deadlineReason)}\n`);
+      assert.equal(result.error, undefined, commandStreams(result));
+      assert.equal(result.status, 1, commandStreams(result));
+      assert.equal(result.stderr, `${unusableFailure(deadlineReason)}\n`, commandStreams(result));
       const directory = assertDeadline(fixture, budget, "vue-tsc coverage baseline");
       assert.equal(readJson(path.join(directory, "command-1-result.json")).exitCode, 2);
       assert.equal(
@@ -321,8 +325,8 @@ test("a deadline during a broken mutation restores all original authored bytes",
       ),
     );
     const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
-    assert.equal(result.error, undefined);
-    assert.equal(result.status, 1);
+    assert.equal(result.error, undefined, commandStreams(result));
+    assert.equal(result.status, 1, commandStreams(result));
     const directory = assertDeadline(fixture, budget, "Vize mutation run");
     assert.deepEqual(fs.readFileSync(source), original);
     assert.equal(fs.existsSync(path.join(directory, "active-mutation.json")), false);
@@ -357,9 +361,9 @@ const states = ${JSON.stringify(path.join(fixture.reportDir, "typecheck-deadline
       ),
     );
     const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
-    assert.equal(result.error, undefined);
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /Is a directory/);
+    assert.equal(result.error, undefined, commandStreams(result));
+    assert.equal(result.status, 1, commandStreams(result));
+    assert.match(result.stderr, /Is a directory/, commandStreams(result));
     const states = path.join(fixture.reportDir, "typecheck-deadlines");
     const worker = readJson(path.join(states, fs.readdirSync(states)[0]!, "worker-result.json"));
     assert.equal(worker.ok, true, "the original successful flow must have completed");
@@ -405,7 +409,9 @@ test(
       timeout: 180_000,
       maxBuffer: 2 * 1024 * 1024,
     });
-    assert.equal(result.error, undefined);
+    if (result.stdout != null) process.stdout.write(result.stdout);
+    if (result.stderr != null) process.stderr.write(result.stderr);
+    assert.equal(result.error, undefined, commandStreams(result));
     assert.equal(result.status, 0, result.stderr);
     for (const name of [
       "real_cpu_worker_is_stopped_and_both_raw_streams_survive",
