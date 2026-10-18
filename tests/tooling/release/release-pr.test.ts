@@ -211,26 +211,58 @@ void test("prepared integration reuse is confined to fresh exact-C preparation b
   assert.ok(integration.includes('"commit-tree"'));
 });
 
+function assertOwnedWithdrawal(watch: string, queue: string, rollback: string, runner: string) {
+  assert.ok(
+    !watch.includes("--auto") &&
+      !queue.includes("--auto") &&
+      !rollback.includes("--auto") &&
+      !runner.includes("--auto"),
+  );
+  assert.equal(watch.split("queue::enqueue(").length, 2, "one native admission call site");
+  const required = watch.indexOf("pr_promote::checks_pass(candidate, root)?");
+  assert.ok(required >= 0 && required < watch.indexOf("queue::enqueue("));
+  assert.ok(watch.includes("if early_candidate.is_none() {\n                    let integration"));
+  const outcome = watch.indexOf("let result = (|| {");
+  const actualWatch = watch.indexOf("pub(super) fn watch(");
+  const finish = rollback.indexOf("pub(super) fn finish_owned_watch(");
+  assert.ok(finish >= 0 && outcome > actualWatch && actualWatch >= 0);
+  const call = /return finish_owned_watch\(\s*failure,\s*&context,/u.exec(watch);
+  assert.ok(call && call.index > watch.indexOf("})();", outcome));
+  assert.ok(rollback.slice(finish).includes("queue::cleanup("));
+  assert.ok(!rollback.slice(finish).includes("budget.check()"));
+  assert.ok(watch.includes("(&result, &early_candidate, &owned_queue)"));
+  assert.ok(watch.includes("Owned queue withdrawal refused; preserve its complete evidence"));
+}
+
 test("early queue admission waits ordinary required checks and retains finite owned withdrawal evidence", () => {
   const watch = readRepoFile("tools", "support", "release", "pr_pin_watch.rs");
   const queue = readRepoFile("tools", "support", "release", "pr_pin_queue.rs");
-  assert.ok(!watch.includes("--auto") && !queue.includes("--auto"));
-  assert.equal(watch.split("queue::enqueue(").length, 2, "one native admission call site");
-  assert.ok(
-    watch.indexOf("pr_promote::checks_pass(candidate, root)?") < watch.indexOf("queue::enqueue("),
-  );
-  assert.ok(watch.includes("if early_candidate.is_none() {\n                    let integration"));
-  const outcome = watch.indexOf("let result = (|| {");
-  const finish = watch.indexOf("pub(super) fn finish_owned_watch(");
-  const actualWatch = watch.indexOf("pub(super) fn watch(");
-  assert.ok(finish >= 0 && finish < actualWatch && outcome > actualWatch);
-  assert.ok(
-    watch.indexOf("return finish_owned_watch(failure, &context", outcome) >
-      watch.indexOf("})();", outcome),
-  );
-  assert.ok(!watch.slice(finish, actualWatch).includes("budget.check()"));
-  assert.ok(watch.includes("(&result, &early_candidate, &owned_queue)"));
-  assert.ok(watch.includes("Owned queue withdrawal refused; preserve its complete evidence"));
+  const runner = readRepoFile("tools", "support", "release", "pr_pin_process.rs");
+  const rollback = readRepoFile("tools", "support", "release", "pr_pin_rollback.rs");
+  const pin = readRepoFile("tools", "support", "release", "pr_pin.rs");
+  assert.match(queue, /#\[path = "pr_pin_process.rs"\]\s*mod process;/u);
+  assert.match(pin, /#\[path = "pr_pin_rollback.rs"\]\s*mod rollback;/u);
+  assert.ok(watch.includes("pub(super) use super::rollback::{Rollback, finish_owned_watch};"));
+  assertOwnedWithdrawal(watch, queue, rollback, runner);
+  for (const [changedWatch, changedQueue, changedRollback, changedRunner] of [
+    [watch.replace("pr_promote::checks_pass(candidate, root)?", "false"), queue, rollback, runner],
+    [watch.replace("queue::enqueue(", "unowned::enqueue("), queue, rollback, runner],
+    [watch.replace("return finish_owned_watch(", "return unowned_watch("), queue, rollback, runner],
+    [watch, queue + " --auto", rollback, runner],
+    [watch, queue, rollback + " --auto", runner],
+    [
+      watch,
+      queue,
+      rollback.replace("pub(super) fn finish_owned_watch(", "fn foreign_finish("),
+      runner,
+    ],
+    [watch, queue, rollback.replace("queue::cleanup(", "unowned::cleanup("), runner],
+    [watch, queue, rollback + " budget.check()", runner],
+    [watch, queue, rollback, runner + " --auto"],
+  ])
+    assert.throws(() =>
+      assertOwnedWithdrawal(changedWatch, changedQueue, changedRollback, changedRunner),
+    );
   const operator = parse(readRepoFile(".github", "workflows", "release-operator.yml"));
   const invocation = operator.jobs.operator.steps.find(
     (step: { env?: Record<string, string> }) => step.env?.GH_TOKEN,

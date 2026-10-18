@@ -146,7 +146,7 @@ fn failure_during_admission_prevents_enqueue_or_withdraws_its_exact_acquired_ent
     };
     let policy = json!([
         {"type":"required_status_checks","parameters":{"required_status_checks":
-            ["check-js","check-vize-apps","fmt-rust","test-report"].map(|context|json!({"context":context,"integration_id":15368}))}},
+            (["check-js","check-vize-apps","fmt-rust","test-report"].map(|context|json!({"context":context,"integration_id":15368})))}},
         {"type":"merge_queue","ruleset_id":24013395,"parameters":{"grouping_strategy":"ALLGREEN"}}]);
     let enqueued = json!({"data":{"enqueuePullRequest":{"mergeQueueEntry":{"id":"MQE_owned",
         "pullRequest":{"id":"PR_owned","number":43,"headRefOid":candidate.head}}}}});
