@@ -133,7 +133,7 @@ function __setup<T extends string | number>() {
   
   const activeItem = ref<T | null>(null)
   
-  // @vize-map: 14482:14676 -> 0:193
+  // @vize-map: 14542:14736 -> 0:193
 
 
   // Setup-scoped props type artifact

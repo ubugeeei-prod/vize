@@ -128,7 +128,7 @@ function __setup() {
   const model = defineModel<string>({ required: true })
   const count = defineModel<number>('count', { default: 0 })
   
-  // @vize-map: 14541:14664 -> 0:114
+  // @vize-map: 14601:14724 -> 0:114
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
