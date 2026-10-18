@@ -73,7 +73,13 @@ export function assertConsumer(value: unknown, source: Candidate, published: Pub
   assert.equal(row.sourcePatches, false);
   assert.equal(row.sourceReplacement, false);
   assert.ok(Array.isArray(row.archives));
-  assert.deepEqual(row.archives.map((entry) => record(entry).name).sort(), [...crates].sort());
+  const names = row.archives.map((entry) => {
+    const name = record(entry).name;
+    assert.ok(typeof name === "string");
+    return name;
+  });
+  const compare = (left: string, right: string) => left.localeCompare(right);
+  assert.deepEqual(names.sort(compare), [...crates].sort(compare));
   for (const entry of row.archives) {
     const archive = record(entry);
     const own = published.find((item) => item.name === archive.name);
