@@ -55,6 +55,8 @@ test("daily source contracts cover the real Rust/docs failures without widening 
       "tests/tooling/typecheck-divergence-report-timeout.test.ts",
       "tests/tooling/typecheck-divergence-mutation-oracle.test.ts",
       "tests/tooling/typecheck-fixture-custody.test.ts",
+      "tests/tooling/davinci-canonical-corpus-native-walk.test.mjs",
+      "tests/tooling/github-workflows-source-selection.test.ts",
       "tests/tooling/typecheck-divergence-baseline-ambient.test.ts",
       "tests/tooling/typecheck-divergence-baseline-configuration.test.ts",
       "tests/tooling/typecheck-divergence-baseline-support-corpus.test.ts",

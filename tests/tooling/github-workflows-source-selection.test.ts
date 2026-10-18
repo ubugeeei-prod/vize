@@ -69,6 +69,20 @@ test("source planning uses Node and offline metadata before selecting affected p
     ciSelection?.run,
     "node --test tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-test-archive.test.mjs tests/tooling/rust-build-evidence.test.mjs tests/tooling/release-input-scopes.test.mjs tests/tooling/pinned-fixture-hydration.test.ts tests/tooling/native-preparation-identity.test.ts tests/tooling/native-formatter-build-custody.test.mjs tests/tooling/native-ci-formatter-custody.test.mjs tests/tooling/native-history-profile.test.ts tests/tooling/publish-npm-package*.test.ts tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts",
   );
+  const check = parse(readRepoFile(".github", "workflows", "check.yml")) as typeof source;
+  const js = check.jobs["check-js"].steps ?? [];
+  const install = js.findIndex((step) => step.name === "Install JS dependencies");
+  const fast = js.findIndex((step) => step.name === "Check fast JS/TS");
+  assert.ok(install >= 0 && fast > install, "The real source law needs installed YAML");
+  assert.equal(
+    js[fast].if,
+    "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push' }}",
+  );
+  assert.equal(js[fast]["continue-on-error"], undefined);
+  assert.equal(
+    js[fast].run,
+    "vp run --workspace-root check:iteration && node --test tests/tooling/github-workflows-source-selection.test.ts",
+  );
 });
 
 function requireDailySourceContracts(planWorkflow: typeof source, rustWorkflow: typeof rust) {
@@ -105,6 +119,7 @@ function requireDailySourceContracts(planWorkflow: typeof source, rustWorkflow: 
       "tests/tooling/typecheck-divergence-report-timeout.test.ts",
       "tests/tooling/typecheck-divergence-mutation-oracle.test.ts",
       "tests/tooling/typecheck-fixture-custody.test.ts",
+      "tests/tooling/davinci-canonical-corpus-native-walk.test.mjs",
       "tests/tooling/typecheck-divergence-baseline-ambient.test.ts",
       "tests/tooling/typecheck-divergence-baseline-configuration.test.ts",
       "tests/tooling/typecheck-divergence-baseline-support-corpus.test.ts",

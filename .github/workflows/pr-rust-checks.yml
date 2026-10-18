@@ -168,6 +168,7 @@ jobs:
           tests/tooling/typecheck-divergence-report-timeout.test.ts
           tests/tooling/typecheck-divergence-mutation-oracle.test.ts
           tests/tooling/typecheck-fixture-custody.test.ts
+          tests/tooling/davinci-canonical-corpus-native-walk.test.mjs
           tests/tooling/typecheck-divergence-baseline-ambient.test.ts
           tests/tooling/typecheck-divergence-baseline-configuration.test.ts
           tests/tooling/typecheck-divergence-baseline-support-corpus.test.ts
