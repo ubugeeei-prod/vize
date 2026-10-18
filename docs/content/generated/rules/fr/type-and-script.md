@@ -1284,7 +1284,7 @@ Signaler un composant qui applique deux fois ses attributs transmis automatiquem
 [Mauvais](#script-no-duplicate-attr-inheritance-bad) · [Bon](#script-no-duplicate-attr-inheritance-good)
 
 Gravité par défaut: `warning`  
-Préréglages: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Préréglages: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
