@@ -83,15 +83,18 @@ export class WorkspaceLspConfigDiscovery {
         if (leases.has(key)) continue;
         // A string glob only subscribes to the shared workspace watcher's
         // events. Request this folder's recursive watch explicitly at startup.
+        this.trace(`watch register workspace=${key} pattern=${WORKSPACE_PROJECT_CONFIG_GLOB}`);
         const watcher = workspace.createFileSystemWatcher(
           new RelativePattern(folder, WORKSPACE_PROJECT_CONFIG_GLOB),
         );
         const changed = (kind: string, uri: Uri) => {
-          if (
-            disposed ||
-            leases.get(key)?.watcher !== watcher ||
-            workspace.getWorkspaceFolder(uri)?.uri.toString() !== key
-          ) {
+          const active = leases.get(key)?.watcher === watcher;
+          const owner =
+            disposed || !active ? undefined : workspace.getWorkspaceFolder(uri)?.uri.toString();
+          this.trace(
+            `watch event kind=${kind} uri=${uri.toString()} workspace=${key} disposed=${disposed} active=${active} owner=${owner}`,
+          );
+          if (disposed || !active || owner !== key) {
             return;
           }
           const accepted = !uri.path.split("/").some((part) => EXCLUDED_DIRECTORIES.includes(part));
