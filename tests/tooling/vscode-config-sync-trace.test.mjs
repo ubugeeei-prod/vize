@@ -24,20 +24,23 @@ function deferred() {
   return { promise, resolve };
 }
 
-function createSync(refresh, activeClient, refuseLogging = false, startup) {
+function createSync(refresh, activeClient, refuseLogging = false, startup, policy = {}) {
   const operations = [];
   const logs = [];
   const timers = new Map();
   const started = deferred();
+  const retained = deferred();
+  const initializations = [];
   let nextTimer = 0;
   const output = {
     appendLine(message) {
       if (refuseLogging && message.startsWith("[config ")) throw new Error("logger disposed");
       logs.push(message);
+      if (message.includes("retaining live language server")) retained.resolve();
     },
   };
   class Discovery {
-    hasConfig = true;
+    hasConfig = policy.hasConfig ?? true;
     refresh = refresh;
     describeCapabilities() {
       return "test capabilities";
@@ -53,7 +56,7 @@ function createSync(refresh, activeClient, refuseLogging = false, startup) {
     workspace: {
       getConfiguration: (name) => {
         operations.push(["configuration", name]);
-        return { enabled: true, get: (_key, fallback) => fallback };
+        return policy.configuration ?? { enabled: true, get: (_key, fallback) => fallback };
       },
     },
     shouldStartFromConfiguration: (configuration) => configuration.enabled,
@@ -69,12 +72,16 @@ function createSync(refresh, activeClient, refuseLogging = false, startup) {
     },
     output,
     activeClient,
+    policyConfiguration: policy.configuration,
     startup,
     getInitializationOptions: () => ({ lint: true }),
     createServerOptions: (serverPath) => ({ serverPath }),
-    createClientOptions: () => ({}),
+    createClientOptions: (initializationOptions) => ({ initializationOptions }),
     Trace: { Off: "off" },
     LanguageClient: class {
+      constructor(_id, _name, _server, options) {
+        initializations.push(structuredClone(options.initializationOptions));
+      }
       async start() {
         operations.push(["real-start"]);
         started.resolve();
@@ -90,9 +97,20 @@ function createSync(refresh, activeClient, refuseLogging = false, startup) {
     operations,
     started,
   });
+  if (policy.actualOptions) {
+    const core = stripTypeScriptTypes(
+      fs.readFileSync(path.join(root, "editors/vscode/src/extension-core.ts"), "utf8"),
+      { mode: "transform" },
+    ).replace(/^export /gm, "");
+    context.getInitializationOptions = new vm.Script(
+      `${core}\ngetInitializationOptions`,
+    ).runInNewContext();
+  }
   const control = new vm.Script(`${body}\n
     outputChannel = output;
     client = activeClient;
+    if (client) activeInitializationOptions = getInitializationOptions(
+      policyConfiguration, { hasWorkspaceLspConfig: workspaceLspConfig.hasConfig });
     updateStatusBar = (...args) => operations.push(["status", ...args]);
     if (startup) {
       findServerPath = async () => "/test/vize";
@@ -102,10 +120,13 @@ function createSync(refresh, activeClient, refuseLogging = false, startup) {
       };
     }
     ({ scheduleClientSync, syncClientToConfiguration, deactivate,
-       setClient: (value) => { client = value; },
+       setClient: (value) => { client = value; activeInitializationOptions = getInitializationOptions(
+         policyConfiguration, { hasWorkspaceLspConfig: workspaceLspConfig.hasConfig }); },
+       setHasConfig: (value) => { workspaceLspConfig.hasConfig = value; },
+       getClient: () => client,
        state: () => ({ generation: configurationSyncGeneration, hasClient: Boolean(client), starting: startingClientGeneration }) });
   `).runInContext(context);
-  return { control, operations, logs, timers, started };
+  return { control, operations, logs, timers, started, retained, initializations };
 }
 
 await test("actual sync retains one150ms timer, cancellation and stop-before-start with trace", async () => {
@@ -217,12 +238,15 @@ await test("project-file discovery retains the live client and pending settings 
   );
   current.control.scheduleClientSync({}, "configuration changed");
   current.control.scheduleClientSync({}, "project configuration changed");
-  await Promise.resolve();
+  await current.retained.promise;
   assert.equal(refreshes, 1);
   assert.equal(stops, 0);
   assert.equal(current.control.state().generation, 0);
   assert.equal(current.control.state().hasClient, true);
-  assert.deepEqual(current.operations, [["schedule", 1, 150]]);
+  assert.deepEqual(current.operations, [
+    ["schedule", 1, 150],
+    ["configuration", "vize"],
+  ]);
   assert.equal(current.timers.size, 1);
   current.timers.get(1)();
   await current.started.promise;
@@ -247,10 +271,13 @@ await test("a queued project discovery event retains a client started before its
     },
   });
   current.timers.get(1)();
-  await Promise.resolve();
+  await current.retained.promise;
   assert.equal(refreshes, 1);
   assert.equal(stops, 0);
-  assert.deepEqual(current.operations, [["schedule", 1, 150]]);
+  assert.deepEqual(current.operations, [
+    ["schedule", 1, 150],
+    ["configuration", "vize"],
+  ]);
   assert.equal(current.control.state().generation, 0);
   assert.equal(current.control.state().hasClient, true);
 });
@@ -337,5 +364,92 @@ await test("superseded initialization cannot clear the newer startup's project a
   assert.equal(current.control.state().hasClient, true);
   assert.equal(current.control.state().starting, undefined);
   assert.equal(current.operations.filter(([kind]) => kind === "real-start").length, 2);
+  assert.equal(current.operations.filter(([kind]) => kind === "real-stop").length, 1);
+});
+
+const manualConfiguration = {
+  enabled: true,
+  get: (key, fallback) => (key === "enable" ? true : fallback),
+  inspect: (key) => ({ workspaceValue: key === "enable" ? true : undefined }),
+};
+const recommended = { lint: true, typecheck: true, editor: true, ecosystem: true };
+
+await test("real options discovery restarts on first creation and final removal, retaining content edits", async () => {
+  const initialized = deferred();
+  initialized.resolve();
+  let stopped = 0;
+  const original = {
+    stop: async () => {
+      stopped++;
+    },
+  };
+  const current = createSync(async () => {}, original, false, initialized, {
+    hasConfig: false,
+    actualOptions: true,
+    configuration: manualConfiguration,
+  });
+  current.control.setHasConfig(true);
+  await current.control.syncClientToConfiguration({}, "project configuration changed");
+  assert.equal(stopped, 1);
+  assert.deepEqual(current.initializations, [{}]);
+  const configured = current.control.getClient();
+  assert.notEqual(configured, original);
+  await current.control.syncClientToConfiguration({}, "project configuration changed");
+  assert.equal(current.control.getClient(), configured);
+  assert.deepEqual(current.initializations, [{}]);
+  current.control.setHasConfig(false);
+  await current.control.syncClientToConfiguration({}, "project configuration changed");
+  assert.notEqual(current.control.getClient(), configured);
+  assert.deepEqual(current.initializations, [{}, recommended]);
+  assert.equal(current.operations.filter(([kind]) => kind === "real-stop").length, 1);
+});
+
+await test("real same-options initialization survives project discovery before publication", async () => {
+  const gate = deferred();
+  const current = createSync(async () => {}, undefined, false, gate, {
+    actualOptions: true,
+    configuration: manualConfiguration,
+  });
+  const starting = current.control.syncClientToConfiguration({}, "initial activation");
+  await current.started.promise;
+  await current.control.syncClientToConfiguration({}, "project configuration changed");
+  assert.deepEqual(current.initializations, [{}]);
+  assert.equal(current.control.state().generation, 1);
+  gate.resolve();
+  await starting;
+  assert.equal(current.control.state().hasClient, true);
+  assert.equal(current.operations.filter(([kind]) => kind === "real-stop").length, 0);
+});
+
+await test("real changed discovery options supersede unpublished initialization without losing the new client", async () => {
+  const first = { ...deferred(), entered: deferred() };
+  const second = { ...deferred(), entered: deferred() };
+  const current = createSync(
+    async () => {},
+    undefined,
+    false,
+    { gates: [first, second] },
+    {
+      hasConfig: false,
+      actualOptions: true,
+      configuration: manualConfiguration,
+    },
+  );
+  const previous = current.control.syncClientToConfiguration({}, "initial activation");
+  await first.entered.promise;
+  current.control.setHasConfig(true);
+  const replacement = current.control.syncClientToConfiguration(
+    {},
+    "project configuration changed",
+  );
+  await second.entered.promise;
+  assert.deepEqual(current.initializations, [recommended, {}]);
+  first.resolve();
+  await previous;
+  assert.equal(current.control.state().hasClient, false);
+  assert.equal(current.control.state().starting, 2);
+  second.resolve();
+  await replacement;
+  assert.equal(current.control.state().hasClient, true);
   assert.equal(current.operations.filter(([kind]) => kind === "real-stop").length, 1);
 });

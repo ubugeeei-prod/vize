@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 const fs = require("node:fs");
 const { sendResponse } = require("./auto-insert-response.cjs");
-const { sendInitializeResponse } = require("./initialize-response.cjs");
+const {
+  createCapabilities,
+  createConfigurationWatchRegistration,
+  sendInitializeResponse,
+} = require("./initialize-response.cjs");
 
 const args = process.argv.slice(2);
 const logPath = process.env.VIZE_TEST_SERVER_LOG;
 const version = process.env.VIZE_TEST_SERVER_VERSION ?? "0.0.0";
 let activeInitializationOptions = {};
 let workspaceRootUri = "file:///fake-vize-workspace";
+const configurationWatchRequestId = `vize-config-watch-register-${process.pid}`;
 
 appendLog({
   args,
@@ -88,7 +93,35 @@ function handleMessage(message) {
   if (message.method === "initialize") {
     activeInitializationOptions = message.params?.initializationOptions ?? {};
     workspaceRootUri = message.params?.rootUri ?? workspaceRootUri;
-    sendInitializeResponse(message.id, createCapabilities(), version, send, appendLog);
+    sendInitializeResponse(
+      message.id,
+      createCapabilities(activeInitializationOptions),
+      version,
+      send,
+      appendLog,
+    );
+    return;
+  }
+
+  if (message.method === "initialized") {
+    const packet = createConfigurationWatchRegistration(
+      workspaceRootUri,
+      configurationWatchRequestId,
+    );
+    appendLog({
+      event: "configuration-watch-register",
+      pid: process.pid,
+      packet,
+    });
+    send(packet);
+    return;
+  }
+  if (message.id === configurationWatchRequestId && !message.method) {
+    appendLog({
+      event: "configuration-watch-ack",
+      pid: process.pid,
+      response: message,
+    });
     return;
   }
 
@@ -137,55 +170,6 @@ function summarizeParams(params) {
     trace: params.trace,
     workspaceFolders: params.workspaceFolders,
   };
-}
-
-function createCapabilities() {
-  const capabilities = {
-    codeActionProvider: true,
-    codeLensProvider: {
-      resolveProvider: false,
-    },
-    completionProvider: {
-      resolveProvider: false,
-      triggerCharacters: [".", "<", ":"],
-    },
-    definitionProvider: true,
-    documentFormattingProvider: true,
-    documentHighlightProvider: true,
-    documentLinkProvider: {
-      resolveProvider: false,
-    },
-    documentSymbolProvider: true,
-    foldingRangeProvider: true,
-    hoverProvider: true,
-    inlayHintProvider: true,
-    referencesProvider: true,
-    renameProvider: {
-      prepareProvider: true,
-    },
-    semanticTokensProvider: {
-      full: true,
-      legend: {
-        tokenModifiers: ["vue"],
-        tokenTypes: ["vueComponent", "vueDirective"],
-      },
-      range: false,
-    },
-    signatureHelpProvider: {
-      triggerCharacters: ["(", ","],
-    },
-    textDocumentSync: 1,
-    workspaceSymbolProvider: true,
-  };
-  if (activeInitializationOptions.autoInsert === true) {
-    capabilities.experimental = {
-      autoInsertionProvider: {
-        triggerCharacters: ["}", "=", ">", "/", "\\w"],
-        configurationSections: [["vize.autoInsert.bracketSpacing"]],
-      },
-    };
-  }
-  return capabilities;
 }
 
 function createResponse(message) {

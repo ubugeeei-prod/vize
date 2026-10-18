@@ -72,8 +72,12 @@ exports.runExistingConfigSmoke = async function runExistingConfigSmoke() {
     if (error.code !== "FileNotFound") throw error;
     createdNodeModules = true;
   }
-  await assert.rejects(vscode.workspace.fs.stat(dependencyDirectory), { code: "FileNotFound" });
-  await assert.rejects(vscode.workspace.fs.stat(unrelatedDirectory), { code: "FileNotFound" });
+  await assert.rejects(vscode.workspace.fs.stat(dependencyDirectory), {
+    code: "FileNotFound",
+  });
+  await assert.rejects(vscode.workspace.fs.stat(unrelatedDirectory), {
+    code: "FileNotFound",
+  });
   await vscode.workspace.fs.createDirectory(unrelatedDirectory);
   await vscode.workspace.fs.writeFile(unrelatedFile, unrelatedBytes);
   await vscode.workspace.fs.createDirectory(vscode.Uri.file(path.dirname(dependencyUri.fsPath)));
@@ -82,6 +86,8 @@ exports.runExistingConfigSmoke = async function runExistingConfigSmoke() {
   let entries = await waitForReadyServer(logPath, "dependency configs are ignored");
   assertInitializationOptions(entries, recommendedInitializationOptions);
 
+  const manualPid = lspPids(entries).at(-1);
+  assert.ok(Number.isInteger(manualPid), "manual profile has a real LSP process PID");
   const projectUri = vscode.Uri.file(path.join(root, "tsconfig.json"));
   await vscode.workspace.fs.writeFile(projectUri, Buffer.from("{}\n"));
   entries = await waitForLogEntries(
@@ -90,6 +96,9 @@ exports.runExistingConfigSmoke = async function runExistingConfigSmoke() {
     "project config creation refreshes initialization",
   );
   assertInitializationOptions(entries, {});
+  const projectPid = lspPids(entries).at(-1);
+  assert.ok(Number.isInteger(projectPid));
+  assert.notEqual(projectPid, manualPid, "project creation replaces the actual LSP process");
   await vscode.workspace.fs.delete(projectUri);
   entries = await waitForLogEntries(
     logPath,
@@ -97,6 +106,11 @@ exports.runExistingConfigSmoke = async function runExistingConfigSmoke() {
     "project config removal restores the manual profile",
   );
   assertInitializationOptions(entries, recommendedInitializationOptions);
+  assert.notEqual(
+    lspPids(entries).at(-1),
+    projectPid,
+    "project removal replaces the actual LSP process",
+  );
   await disableVizeAndWaitForShutdown(logPath);
   await vscode.workspace.fs.delete(dependencyDirectory, { recursive: true });
   assert.deepEqual(Buffer.from(await vscode.workspace.fs.readFile(unrelatedFile)), unrelatedBytes);
@@ -118,6 +132,21 @@ async function runExistingConfigurationContentChangeSmoke() {
     const options = { typecheck: false };
     let entries = await waitForReadyServer(logPath, `${filename} content-change startup`);
     assertInitializationOptions(entries, options);
+    const pid = lspPids(entries).at(-1);
+    assert.ok(Number.isInteger(pid), "content-change server has a real LSP process PID");
+    entries = await waitForLogEntries(
+      logPath,
+      (next) =>
+        next.some(
+          (entry) =>
+            entry.event === "configuration-watch-ack" &&
+            entry.pid === pid &&
+            entry.response.result === null &&
+            entry.response.error === undefined,
+        ),
+      `${filename} real client ACKs dynamic configuration watches`,
+    );
+    const previousPids = lspPids(entries);
     const previousInitializations = initializeMessages(entries).length;
 
     const packetPrefix = path.join(path.dirname(logPath), "existing-config-events", filename);
@@ -127,6 +156,7 @@ async function runExistingConfigurationContentChangeSmoke() {
       fs.copyFileSync(uri.fsPath, `${packetPrefix}.${stage}.source.txt`);
     };
     retain("before");
+    const changeStart = readLogEntries(logPath).length;
     try {
       await vscode.workspace.fs.writeFile(
         uri,
@@ -134,13 +164,37 @@ async function runExistingConfigurationContentChangeSmoke() {
       );
       entries = await waitForLogEntries(
         logPath,
-        (next) => initializeMessages(next).length > previousInitializations,
-        `${filename} existing content edit restarts without native typecheck watchers`,
+        (next) =>
+          next
+            .slice(changeStart)
+            .some(
+              (entry) =>
+                entry.event === "message" &&
+                entry.method === "workspace/didChangeWatchedFiles" &&
+                entry.params?.changes?.some(
+                  (change) => change.uri === uri.toString() && change.type === 2,
+                ),
+            ),
+        `${filename} existing content edit reaches the same server through an OS watcher`,
       );
-      assert.equal(initializeMessages(entries).length, previousInitializations + 1);
+      const watchPackets = entries
+        .slice(changeStart)
+        .filter(
+          (entry) =>
+            entry.event === "message" && entry.method === "workspace/didChangeWatchedFiles",
+        );
+      const changes = watchPackets.flatMap((entry) => entry.params.changes);
+      assert.ok(changes.length > 0, "only a real client notification can satisfy the edit oracle");
+      for (const change of changes) assert.deepEqual(change, { uri: uri.toString(), type: 2 });
+      assert.equal(initializeMessages(entries).length, previousInitializations);
+      assert.deepEqual(
+        lspPids(entries),
+        previousPids,
+        "same-options edit retains the entire LSP PID history",
+      );
       assert.deepEqual(
         initializeMessages(entries).map((message) => message.params.initializationOptions),
-        Array.from({ length: previousInitializations + 1 }, () => options),
+        Array.from({ length: previousInitializations }, () => options),
       );
     } finally {
       retain("after");
@@ -148,4 +202,10 @@ async function runExistingConfigurationContentChangeSmoke() {
     await disableVizeAndWaitForShutdown(logPath);
     await vscode.workspace.fs.delete(uri);
   }
+}
+
+function lspPids(entries) {
+  return entries
+    .filter((entry) => entry.event === "process-start" && entry.args?.[0] === "lsp")
+    .map((entry) => entry.pid);
 }

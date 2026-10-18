@@ -216,9 +216,25 @@ async function syncClientToConfiguration(context: ExtensionContext, reason: stri
     (client || startingClientGeneration !== undefined) &&
     reason === "project configuration changed"
   ) {
+    const observedGeneration = configurationSyncGeneration;
     await workspaceLspConfig.refresh();
-    traceConfig("project discovery refreshed; retaining live language server");
-    return;
+    if (observedGeneration !== configurationSyncGeneration) return;
+    const configuration = workspace.getConfiguration("vize");
+    const options = getInitializationOptions(configuration, {
+      hasWorkspaceLspConfig: workspaceLspConfig.hasConfig,
+      log: (message) => outputChannel.appendLine(message),
+    });
+    const unchanged =
+      Object.keys(options).length === Object.keys(activeInitializationOptions).length &&
+      Object.entries(options).every(
+        ([key, value]) =>
+          Object.hasOwn(activeInitializationOptions, key) &&
+          activeInitializationOptions[key] === value,
+      );
+    if (shouldStartFromConfiguration(configuration, workspaceLspConfig.hasConfig) && unchanged) {
+      traceConfig("project discovery refreshed; retaining live language server");
+      return;
+    }
   }
   const generation = ++configurationSyncGeneration;
   traceConfig(`sync enter generation=${generation} reason=${reason}`);
