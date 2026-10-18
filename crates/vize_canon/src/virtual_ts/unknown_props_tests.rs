@@ -83,6 +83,92 @@ fn component_listener_inference_accepts_camelized_data_and_aria_attrs() {
 }
 
 #[test]
+fn listener_inference_maps_its_own_prop_keys_values_and_spreads() {
+    let script = "import Child from './Child.vue'; const attrs = { hidden: true };";
+    for spread in ["", "v-bind=\"attrs\" "] {
+        let template = vize_carton::cstr!(
+            "<!-- 日本語 -->\r\n<Child {spread}:hidden=\"'wrong'\" @close=\"() => {{}}\" />"
+        );
+        let allocator = vize_carton::Allocator::new();
+        let (root, errors) = vize_armature::parse(&allocator, &template);
+        assert!(errors.is_empty());
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let template_offset = 91;
+        let output = generate_virtual_ts_with_offsets_and_checks(
+            &analyzer.finish(),
+            Some(script),
+            Some(&root),
+            17,
+            template_offset,
+            &VirtualTsOptions::default(),
+            VirtualTsGenerationOptions::default(),
+        );
+        let inference = output
+            .code
+            .find("const __vize_emit_props_")
+            .expect("the listener must instantiate the child's public input contract");
+        let generated_key = inference
+            + output
+                .code
+                .get(inference..)
+                .unwrap()
+                .find("\"hidden\"")
+                .unwrap();
+        let generated_value = inference
+            + output
+                .code
+                .get(inference..)
+                .unwrap()
+                .find("'wrong'")
+                .unwrap();
+        let source_key = template_offset as usize + template.find(":hidden").unwrap() + 1;
+        let source_value = template_offset as usize + template.find("'wrong'").unwrap();
+        let row = output
+            .mapping
+            .spans()
+            .iter()
+            .find(|row| row.gen_range.start == generated_key)
+            .expect("inference must map its own literal, not borrow the primary prop checker");
+        for (generated, source) in [
+            (generated_key..generated_key + 8, source_key..source_key + 6),
+            (
+                generated_key + 1..generated_key + 7,
+                source_key..source_key + 6,
+            ),
+            (
+                generated_value..generated_value + 7,
+                source_value..source_value + 7,
+            ),
+        ] {
+            assert!(
+                row.sub_spans
+                    .iter()
+                    .any(|span| { span.gen_range == generated && span.src_range == source })
+            );
+        }
+        if !spread.is_empty() {
+            let generated = inference
+                + output
+                    .code
+                    .get(inference..)
+                    .unwrap()
+                    .find("...attrs")
+                    .unwrap()
+                + 3;
+            let source = template_offset as usize + template.find("\"attrs\"").unwrap() + 1;
+            assert!(output.mapping.spans().iter().any(|row| {
+                row.sub_spans.iter().any(|span| {
+                    span.gen_range == (generated..generated + 5)
+                        && span.src_range == (source..source + 5)
+                })
+            }));
+        }
+    }
+}
+
+#[test]
 fn abstract_component_constructor_extracts_its_actual_instance_props() {
     let code = generate_usage(
         "defineProps<{ is: abstract new (...args: any) => any }>()",

@@ -153,3 +153,46 @@ test("fixture admission rejects malformed exact fields, status downgrades and es
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test("public-prop reproduction changes only the listener or the invalid prop value", () => {
+  const fixture = loadOfficialFixture(
+    new URL("../_fixtures/content-mapper/escaton-public-props-9498.json", import.meta.url).pathname,
+  );
+  assert.equal(fixture.baselineVize, "0.467.0");
+  const original = fixture.originals[0];
+  assert.equal(original.issue, 9498);
+  assert.deepEqual(original.baselineCodes, [2353]);
+  assert.deepEqual(original.expectedCodes, []);
+  const control = (name: string) => {
+    const row = fixture.controls.find((row) => row.name === `public-props-9498-${name}`);
+    assert.ok(row, name);
+    return row;
+  };
+  const withoutListener = control("without-listener");
+  assert.deepEqual(withoutListener.files, {
+    ...original.files,
+    "App.vue": original.files["App.vue"].replace(' @close="() => {}"', ""),
+  });
+  assert.equal(withoutListener.stdout, "");
+  assert.equal(withoutListener.status, 0);
+  for (const [name, owner] of [
+    ["wrong-allowed-prop", withoutListener],
+    ["wrong-allowed-prop-listener", original],
+  ] as const) {
+    const invalid = control(name);
+    assert.deepEqual(invalid.files, {
+      ...owner.files,
+      "App.vue": owner.files["App.vue"].replace(':hidden="true"', ":hidden=\"'wrong'\""),
+    });
+    assert.equal(invalid.status, 2);
+    assert.ok(invalid.codes.every((code) => code === 2322));
+  }
+  assert.equal(officialCases(fixture).length, 10);
+  const workflow = fs.readFileSync(
+    new URL("../../.github/workflows/content-mapper-conformance.yml", import.meta.url),
+    "utf8",
+  );
+  const fixturePath = "tests/_fixtures/content-mapper/escaton-public-props-9498.json";
+  assert.equal(workflow.split(fixturePath).length - 1, 2);
+  assert.ok(workflow.includes(`--fixture ${fixturePath}`));
+});
