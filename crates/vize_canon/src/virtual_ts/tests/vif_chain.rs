@@ -44,11 +44,11 @@ fn interrupted_sibling_chain_keeps_exclusions_outside_the_remaining_branches() {
         )),
         "the whole remaining chain must reuse the prior exclusions without rechecking them"
     );
-    assert!(output.mappings.iter().any(|mapping| {
+    assert!(output.mapping.spans().iter().any(|mapping| {
         template.get(mapping.src_range.clone()) == Some("view === 'b'")
             && output.code.get(mapping.gen_range.clone()) == Some("view === 'b'")
     }));
-    assert!(output.mappings.iter().any(|mapping| {
+    assert!(output.mapping.spans().iter().any(|mapping| {
         template.get(mapping.src_range.clone()) == Some("checked")
             && output.code.get(mapping.gen_range.clone()) == Some("checked")
     }));
