@@ -222,42 +222,62 @@ JUnit SHA256 is
 `66ad87a730d8404e17d8ae09748ee31f07ed972717a2057cb5a597b6ea9e7583`.
 No new inventory, native build, download or coverage run was made for this update.
 
-### Next: whole implementation results across an unsaved edit
+### Newer measured Glyph boundary: 792 actual passes
 
-Under existing [#3953](https://github.com/ubugeeei-prod/vize/issues/3953) and
-[#3952](https://github.com/ubugeeei-prod/vize/issues/3952), extend the existing
-`tests/tooling/lsp-implementation-capability.test.ts` scenario. It currently takes
-`firstLocation` for one implementation and checks only its start position. Add
-an interface with two implementations across authored SFC/TSX files; compare
-**every** returned URI and complete UTF-16 range, then change/remove/restore one
-implementation in an unsaved CRLF/Unicode buffer. Reject duplicates, stale
-locations and generated-only URIs anywhere in the response. Preserve real
-checker provenance and require the backend in the qualifying lane.
+[#9527](https://github.com/ubugeeei-prod/vize/pull/9527), actual signed main
+`9b3d1d1752f4a5ffb0fbae104b8defef8ec7b243`, adds three genuine formatter tests.
+The [protected job 117733258944](https://github.com/ubugeeei-prod/vize/actions/runs/39146903146/job/117733258944)
+executed **792 Glyph tests**, including all three additions and the complete
+16-test directive integration binary. Its full lint/format cohort passed
+4,970/4,970 with one reported skip; 4,970 is not a Glyph-only count. The
+[ordinary job](https://github.com/ubugeeei-prod/vize/actions/runs/39146386669/job/117731056862)
+also executed all three and 792 Glyph tests. Other product counts above have
+not been re-inventoried at this newer source.
 
-Existing native SFC/TSX round trips already cover implementation navigation;
-0/94 historical instrumented handler lines do not mean the feature has no test.
-The missing case is the complete multi-target response through edits and a
-released/packaged-host replay, not another non-null smoke assertion. Do not
-recreate #9409's already-added CSS-module unsaved-revision source scenario.
+The tests exercise normal `format_template`/`format_sfc`: complete dynamic
+argument arrows, following attributes, comments, CRLF, tabs, narrow/wide value
+layout, malformed/non-argument neighbors and fixed points. The fix reuses the
+compiler's existing L1 lexical boundary. It does not complete the normal
+L1→Doc→printer migration: #6847 and #6875 remain open. Whole protected raw-log
+SHA256 is `454c30d533e95f38f217517e8cd9aa63d90f44d3f312cb63e3c4d69cc57b698f`.
 
-### Next: run existing formatter semantics through the published CLI
+### Practical boundaries beyond counts
 
-Under existing [#6098](https://github.com/ubugeeei-prod/vize/issues/6098), reuse the
-frozen `authored-crlf-auto` continuation row and `deep-template-literal`
-expression-width row. Source tests already verify complete CLI outputs,
-check/write/fixed points and pinned stock DOM/SSR/event contracts. The missing
-boundary is a **fresh installed public CLI**, which the current normal public
-acceptance workflow does not invoke for formatting. Check package/archive/SRI
-and executable identity, original check refusal, complete output/config bytes,
-second/third-pass identity and the same whole DOM/SSR/runtime-value observations.
-Use the original fixtures and independent contracts unchanged; a successful
-source binary cannot substitute for the published executable.
-
-Formatter is not weak by aggregate test quantity. Historical lower-reached
-`literal_lines.rs` (141/192) is a search hint, not proof of a missing runtime
-oracle: semantic source tests already exist. The completed #9422 private preset
-constructor matrix also cannot prove an unchanged public CLI integration.
-Keep #6098/#6847/#6875 open beyond this bounded evidence improvement.
+- **Formatter:** the existing normal public workflow now invokes both unfiltered
+  stock formatter suites against the authenticated installed CLI. The expected
+  route is 150 processes (16 expression + 10 continuation + four configuration
+  rows, five invocations each), retaining whole check/write/fixed-point and
+  pinned stock DOM/SSR/event contracts. Historical published 0.467's
+  [run 39122208580](https://github.com/ubugeeei-prod/vize/actions/runs/39122208580)
+  completed **0/150 target formatter processes**: a Cargo receipt JSON-roundtrip
+  refusal stopped it before those targets. Later source repairs are distinct
+  from a genuine installed pass and final seal. This update credits no later
+  whole public acceptance.
+- **LSP:** that historical installed 0.467 run completed the original 32 contexts
+  and four separate atomic contexts, with 72 semantic replies inside the latter
+  and 36 clean process lifecycles. These are not 104 Rust unit tests. At signed
+  source `9b3d1d17`, `lsp-implementation-capability.test.ts` already contains the
+  complete SFC/TSX multi-target URI/both UTF-16 endpoints oracle, unsaved
+  Unicode/CRLF edits and missing/duplicate/stale/generated negatives. The older
+  first-location-only proposal is therefore superseded as a source gap. Require
+  its actual backend-bound execution and packaged/public replay evidence before
+  assigning runtime credit; declarations alone do not provide it. Do not
+  duplicate #9409's existing CSS-module unsaved-revision source scenario.
+- **Editor:** source793's actual nested-tsconfig edit failed to restart the real
+  VS Code host (native typecheck watchers disabled, fake language server). This
+  is not evidence that the native engine itself failed. A separate source,
+  `d6e2135e`, genuinely passed the original nested-tsconfig, Vite and legacy-config
+  controls with initialize counts 1→2 in
+  [job 117694992886](https://github.com/ubugeeei-prod/vize/actions/runs/39134100018/job/117694992886).
+  That whole qualification failed elsewhere; neither result proves all hosts or
+  all sources. Keep exact content edits, parameters and lifecycle packets.
+- **Story/CI:** Musea's Rust115 and a separate
+  [47-test protected browser suite](https://github.com/ubugeeei-prod/vize/actions/runs/39129929125/job/117682899017)
+  at source `47bcb279`/signed main `7cb41c0d` are distinct. Neither alone qualifies
+  installed VRT HTTP/body/iframe/A11y/cleanup/scan oracles or the whole seal;
+  the historical 0.467 campaign failed. Likewise 16 successful mixed-tooling
+  shards are not an exclusive CI test count, and artifact entries, raw files or
+  repeated benchmark samples are not independent tests.
 
 ### Reproduce and compare the evidence
 
@@ -281,4 +301,5 @@ must never be relabeled as measurements of another source or public release.
 The analysis that produced this snapshot was read-only: it reused retained
 reports and inspected source without creating Issues/comments, executing native
 or Cargo builds, dispatching CI, installing public packages or running browsers.
-The two follow-up cases remain proposals pending separate review and execution.
+Later dated updates distinguish earned source execution, existing declarations
+and pending installed boundaries. No Issue completion follows from test counts.
