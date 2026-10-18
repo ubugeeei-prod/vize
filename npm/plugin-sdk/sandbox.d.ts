@@ -48,8 +48,19 @@ export type SandboxErrorCode =
   | "execution_stopped"
   | "execution_failed"
   | "cleanup_failed";
+/** Available decoded output can be partial after a stopped execution. */
+export interface SandboxExecutionObservation {
+  readonly phase: "run";
+  readonly elapsedMs: number;
+  readonly status: number | null;
+  readonly signal: string | null;
+  readonly stdout: string | null;
+  readonly stderr: string | null;
+}
 export declare class SandboxRuntimeError extends Error {
   readonly code: SandboxErrorCode;
+  /** Frozen and non-enumerable; the request and environment are not copied into it. */
+  readonly execution?: SandboxExecutionObservation;
   constructor(code: SandboxErrorCode, message: string, options?: ErrorOptions);
 }
 export declare const SANDBOX_IMAGE: string;

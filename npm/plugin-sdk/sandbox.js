@@ -64,6 +64,7 @@ export function createSandboxRunner(input, limits = {}) {
       let failure;
       let output;
       try {
+        const started = performance.now();
         const result = spawnSync(
           "docker",
           [
@@ -106,12 +107,26 @@ export function createSandboxRunner(input, limits = {}) {
             windowsHide: true,
           },
         );
-        if (result.error)
-          throw new SandboxRuntimeError(
+        if (result.error) {
+          const stopped = new SandboxRuntimeError(
             "execution_stopped",
             `sandbox execution stopped: ${result.error.code}`,
             { cause: result.error },
           );
+          // Preserve available captured output without automatically logging it.
+          // A stopped process does not guarantee a complete worker transcript.
+          Object.defineProperty(stopped, "execution", {
+            value: Object.freeze({
+              phase: "run",
+              elapsedMs: performance.now() - started,
+              status: result.status,
+              signal: result.signal,
+              stdout: result.stdout,
+              stderr: result.stderr,
+            }),
+          });
+          throw stopped;
+        }
         if (result.status !== 0) {
           throw new SandboxRuntimeError(
             "execution_failed",
