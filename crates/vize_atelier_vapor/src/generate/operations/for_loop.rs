@@ -253,12 +253,7 @@ fn restore_current_alias_reference(expr: &mut String, reference: &str, alias: &s
 }
 
 fn is_simple_local_alias(alias: &str) -> bool {
-    let mut chars = alias.chars();
-    let Some(first) = chars.next() else {
-        return false;
-    };
-    (first.is_ascii_alphabetic() || first == '_' || first == '$')
-        && chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
+    oxc_syntax::identifier::is_identifier_name(alias)
 }
 
 #[cfg(test)]
