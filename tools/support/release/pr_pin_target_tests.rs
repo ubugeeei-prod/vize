@@ -1,6 +1,8 @@
 use super::super::pr_github as github;
 use super::catalog::publication_targets;
+use super::integration::PreparedNormalCut;
 use super::tests::Repo;
+use super::{Source, metadata};
 use serde_json::{Value, json};
 
 #[test]
@@ -112,7 +114,7 @@ fn normal_cached_driver_module_changes_require_new_entry_source_pin() {
         .unwrap();
     assert_eq!(
         pin,
-        "//! Driver source pin: release-integration-qualification-overlap-v19."
+        "//! Driver source pin: release-integration-qualification-overlap-v19-prepared-tree-2."
     );
     let repo = Repo::new();
     let body = "#[path = \"dependency.rs\"] mod dependency;\nfn main() { println!(\"{}\", dependency::catalog_contract()); }\n";
@@ -137,4 +139,242 @@ fn normal_cached_driver_module_changes_require_new_entry_source_pin() {
         github::output("rust-script", &args, &repo.work).unwrap(),
         "2"
     );
+}
+
+fn prepared_fixture() -> (Repo, Source) {
+    let repo = Repo::new();
+    let cut = repo.commit(&[
+        ("Cargo.toml", "[workspace.package]\nversion = \"1.2.2\"\n"),
+        (
+            "npm/native/package.json",
+            "{\n  \"version\": \"1.2.2\"\n}\n",
+        ),
+        ("README.md", "literal 1.2.2\n"),
+        ("src/code.rs", "unchanged product\n"),
+    ]);
+    let head = repo.commit(&[
+        ("Cargo.toml", "[workspace.package]\nversion = \"1.2.3\"\n"),
+        (
+            "npm/native/package.json",
+            "{\n  \"version\": \"1.2.3\"\n}\n",
+        ),
+        ("README.md", "literal 1.2.3\n"),
+    ]);
+    let mut source = super::tests::source(&head, &cut);
+    source.integration = 0;
+    (repo, source)
+}
+
+#[test]
+fn prepared_normal_cut_reuses_whole_tree_without_another_worktree_or_graph_install() {
+    let (repo, source) = prepared_fixture();
+    let before = github::git(&["show-ref"], &repo.work).unwrap();
+    let worktrees = github::git(&["worktree", "list", "--porcelain"], &repo.work).unwrap();
+    let prepared = PreparedNormalCut::capture(&source, "minor", &repo.work)
+        .unwrap()
+        .unwrap();
+    let authorizations = std::cell::Cell::new(0);
+    let head = prepared
+        .project(&source, &source.cut, &repo.work, &|| {
+            authorizations.set(authorizations.get() + 1);
+            Ok(())
+        })
+        .unwrap()
+        .unwrap();
+    assert_eq!(authorizations.get(), 1);
+    assert_ne!(head, source.candidate.head);
+    assert_eq!(github::parent(&head, &repo.work).unwrap(), source.cut);
+    assert_eq!(
+        github::git(&["rev-parse", &format!("{head}^{{tree}}")], &repo.work).unwrap(),
+        github::git(
+            &["rev-parse", &format!("{}^{{tree}}", source.candidate.head)],
+            &repo.work
+        )
+        .unwrap()
+    );
+    metadata::verify_delta(&source.cut, &head, "1.2.2", "1.2.3", &repo.work).unwrap();
+    assert_eq!(github::git(&["show-ref"], &repo.work).unwrap(), before);
+    assert_eq!(
+        github::git(&["worktree", "list", "--porcelain"], &repo.work).unwrap(),
+        worktrees
+    );
+    assert_eq!(
+        github::git(&["rev-parse", "HEAD"], &repo.work).unwrap(),
+        source.candidate.head
+    );
+    assert_eq!(
+        github::git(&["status", "--porcelain"], &repo.work).unwrap(),
+        ""
+    );
+    assert!(!repo.work.join("node_modules").exists());
+}
+
+#[test]
+fn prepared_normal_cut_keeps_noninitial_and_moved_main_on_the_original_route() {
+    let (repo, source) = prepared_fixture();
+    for bump in ["patch", "major", "alpha", "beta", "rc", "release"] {
+        assert!(
+            PreparedNormalCut::capture(&source, bump, &repo.work)
+                .unwrap()
+                .is_none()
+        );
+    }
+    for index in 0..3 {
+        let mut changed = source.clone();
+        match index {
+            0 => changed.integration = 99,
+            1 => changed.closed = true,
+            _ => {
+                changed.stable = Some(super::stable::Stable {
+                    policy: source.cut.clone(),
+                    blob: source.cut.clone(),
+                    sha256: "a".repeat(64),
+                })
+            }
+        }
+        assert!(
+            PreparedNormalCut::capture(&changed, "minor", &repo.work)
+                .unwrap()
+                .is_none()
+        );
+    }
+    let prepared = PreparedNormalCut::capture(&source, "minor", &repo.work)
+        .unwrap()
+        .unwrap();
+    let advanced = repo.commit(&[("src/code.rs", "new main product\n")]);
+    assert!(
+        prepared
+            .project(&source, &advanced, &repo.work, &|| {
+                panic!("moved main must fall through before authorizing prepared-tree creation")
+            })
+            .unwrap()
+            .is_none()
+    );
+    assert_eq!(
+        github::git(&["rev-parse", "HEAD"], &repo.work).unwrap(),
+        advanced
+    );
+}
+
+#[test]
+fn prepared_normal_cut_rejects_changed_owner_identity_and_revoked_lease_before_creation() {
+    let (repo, source) = prepared_fixture();
+    for index in 0..11 {
+        let prepared = PreparedNormalCut::capture(&source, "minor", &repo.work)
+            .unwrap()
+            .unwrap();
+        let mut changed = source.clone();
+        match index {
+            0 => changed.candidate.number += 1,
+            1 => changed.candidate.repository = "other/repo".into(),
+            2 => changed.candidate.head = source.cut.clone(),
+            3 => changed.candidate.base = source.candidate.head.clone(),
+            4 => changed.cut = source.candidate.head.clone(),
+            5 => changed.base_version = "1.2.1".into(),
+            6 => changed.candidate.tag = "v1.2.4".into(),
+            7 => changed.candidate.branch = "main".into(),
+            8 => changed.integration = 99,
+            9 => changed.closed = true,
+            _ => changed.candidate.merged = true,
+        }
+        assert!(
+            prepared
+                .project(&changed, &source.cut, &repo.work, &|| {
+                    panic!("changed custody cannot reach operator authorization")
+                })
+                .is_err(),
+            "mutation {index}"
+        );
+    }
+    let prepared = PreparedNormalCut::capture(&source, "minor", &repo.work)
+        .unwrap()
+        .unwrap();
+    let before = github::git(&["count-objects", "-v"], &repo.work).unwrap();
+    assert_eq!(
+        prepared
+            .project(&source, &source.cut, &repo.work, &|| {
+                Err("original lease was revoked".into())
+            })
+            .unwrap_err(),
+        "original lease was revoked"
+    );
+    assert_eq!(
+        github::git(&["count-objects", "-v"], &repo.work).unwrap(),
+        before
+    );
+}
+
+#[test]
+fn prepared_normal_cut_refuses_hidden_changes_omitted_versions_and_raw_parent_substitution() {
+    for change in ["product", "omitted", "parent", "replacement"] {
+        let (repo, mut source) = prepared_fixture();
+        match change {
+            "product" => source.candidate.head = repo.commit(&[("src/code.rs", "hidden edit\n")]),
+            "omitted" => {
+                source.candidate.head = repo.commit(&[(
+                    "npm/native/package.json",
+                    "{\n  \"version\": \"1.2.2\"\n}\n",
+                )])
+            }
+            "parent" => {
+                let tree = github::git(&["rev-parse", "HEAD^{tree}"], &repo.work).unwrap();
+                source.candidate.head = github::git(
+                    &[
+                        "commit-tree",
+                        &tree,
+                        "-p",
+                        &source.cut,
+                        "-p",
+                        &source.candidate.head,
+                        "-m",
+                        "two parents",
+                    ],
+                    &repo.work,
+                )
+                .unwrap();
+                github::git(
+                    &["checkout", "--detach", &source.candidate.head],
+                    &repo.work,
+                )
+                .unwrap();
+            }
+            _ => {
+                github::git(
+                    &["replace", &source.candidate.head, &source.cut],
+                    &repo.work,
+                )
+                .unwrap();
+            }
+        }
+        if matches!(change, "product" | "omitted") {
+            // Keep a legitimate C parent so these failures must come from the
+            // complete generated-delta check, rather than the parent guard.
+            let tree = github::git(&["rev-parse", "HEAD^{tree}"], &repo.work).unwrap();
+            source.candidate.head = github::git(
+                &[
+                    "commit-tree",
+                    &tree,
+                    "-p",
+                    &source.cut,
+                    "-m",
+                    "tampered version tree",
+                ],
+                &repo.work,
+            )
+            .unwrap();
+            github::git(
+                &["checkout", "--detach", &source.candidate.head],
+                &repo.work,
+            )
+            .unwrap();
+            assert_eq!(
+                github::parent(&source.candidate.head, &repo.work).unwrap(),
+                source.cut
+            );
+        }
+        assert!(
+            PreparedNormalCut::capture(&source, "minor", &repo.work).is_err(),
+            "{change}"
+        );
+    }
 }

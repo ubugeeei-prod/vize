@@ -6,13 +6,14 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { chromium } from "playwright";
+import { chromium, type Locator } from "playwright";
 import { PNG } from "pngjs";
 import { createServer } from "vite";
 import type { MuseaVrtOptions } from "./types/plugin.ts";
 import {
   createPackedGalleryHttpObserver,
   drainPackedGalleryHttp,
+  tracePackedGalleryHttp,
   type PackedGalleryHttpRecord,
 } from "./packed-gallery-http.ts";
 import type { VrtResult, VrtSummary } from "./vrt/types.ts";
@@ -149,6 +150,45 @@ void test(
           pending: Promise<void>[] = [];
         const responses: PackedGalleryHttpRecord[] = [];
         const observations: unknown[] = [];
+        const httpLifecycle: unknown[] = [];
+        let httpPhase = "initial";
+        const httpTrace = await tracePackedGalleryHttp(page, httpLifecycle, () => httpPhase);
+        releases.push(httpTrace.close);
+        let previousPreview: Awaited<ReturnType<Locator["elementHandle"]>> | undefined;
+        async function recordPreviewOwner(title: string) {
+          const frame = await page.locator(".variant-card iframe").elementHandle();
+          assert.ok(frame);
+          releases.push(() => frame.dispose());
+          const state = await frame.evaluate((element) => {
+            const frame = element as HTMLIFrameElement;
+            return {
+              url: frame.src,
+              documentURL: frame.contentDocument?.URL,
+              connected: frame.isConnected,
+              buttons: [...(frame.contentDocument?.querySelectorAll("button") ?? [])].map(
+                (button) => button.textContent,
+              ),
+            };
+          });
+          const previousConnected = previousPreview
+            ? await previousPreview.evaluate((frame) => frame.isConnected)
+            : null;
+          observations.push({
+            phase: "preview-document-owner",
+            title,
+            previousConnected,
+            ...state,
+          });
+          assert.equal(state.connected, true);
+          assert.equal(
+            state.url,
+            `${origin}${normalized}/preview?art=${encodeURIComponent(arts[fixture.titles.indexOf(title)])}&variant=Default`,
+          );
+          assert.equal(state.documentURL, state.url);
+          assert.deepEqual(state.buttons, [title]);
+          if (previousPreview) assert.equal(previousConnected, false);
+          previousPreview = frame;
+        }
         page.on("pageerror", (error) => errors.push(String(error)));
         page.on("console", (message) => {
           if (message.type() === "error") consoleErrors.push(message.text());
@@ -166,6 +206,7 @@ void test(
             pending,
             httpErrors,
             sha256,
+            onBodyCapture: httpTrace.capture,
           }),
         );
         let failure: unknown;
@@ -188,19 +229,24 @@ void test(
           assert.ok(galleryAssets.length >= 2);
           assert.ok(galleryAssets.every((asset) => asset.startsWith(`${normalized}/assets/`)));
           for (const title of fixture.titles) {
+            httpPhase = `select-${title}`;
             await drainPackedGalleryHttp(pending);
             await page.locator(".art-item").filter({ hasText: title }).click();
             const preview = page.frameLocator(".variant-card iframe");
             await preview.getByRole("button", { name: title, exact: true }).waitFor();
             assert.equal(await preview.locator("museacomponent").count(), 0);
+            await recordPreviewOwner(title);
           }
+          httpPhase = "select-Left-again";
           await drainPackedGalleryHttp(pending);
           await page.locator(".art-item").filter({ hasText: "Left" }).click();
           await page
             .frameLocator(".variant-card iframe")
             .getByRole("button", { name: "Left", exact: true })
             .waitFor();
+          await recordPreviewOwner("Left");
           await drainPackedGalleryHttp(pending);
+          httpPhase = "VRT-tab";
           await page.getByRole("button", { name: "VRT", exact: true }).click();
           const token = await page.evaluate(() => {
             const value = crypto.randomUUID();
@@ -209,6 +255,7 @@ void test(
           });
           let initialPng: Buffer | undefined;
           for (const phase of ["new", "repeat"] as const) {
+            httpPhase = `VRT-${phase}`;
             const [response] = await Promise.all([
               page.waitForResponse(
                 (item) =>
@@ -264,17 +311,22 @@ void test(
             );
             observations.push({ phase, packet, pngSHA256: sha256(png) });
           }
+          httpPhase = "before-physical-edit";
           const beforeEdit = await readFile(arts[0], "utf8");
           const changed = beforeEdit.replace("#0000ff", "#00ff00");
           assert.notEqual(changed, beforeEdit);
           await drainPackedGalleryHttp(pending);
-          const reloaded = page.waitForEvent("framenavigated", {
-            predicate: (frame) => frame === page.mainFrame(),
-            timeout: 15000,
-          });
+          const reloaded = page.waitForEvent("load", { timeout: 15000 });
+          httpPhase = "physical-edit";
           await writeFile(arts[0], changed);
           await reloaded;
+          httpPhase = "physical-edit-loaded";
           await page.waitForLoadState("load");
+          assert.equal(
+            await page.evaluate(() => Reflect.get(window, "__packedGalleryDocument")),
+            undefined,
+          );
+          httpPhase = "physical-edit-loaded-poll";
           await page.waitForFunction(
             async (url) => {
               const art = await (await fetch(url)).json();
@@ -282,6 +334,7 @@ void test(
             },
             `${origin}${normalized}/api/arts/${encodeURIComponent(arts[0])}`,
           );
+          httpPhase = "physical-edit-select-preview";
           await drainPackedGalleryHttp(pending);
           await page.locator(".art-item").filter({ hasText: "Left" }).click();
           const updated = page.frameLocator(".variant-card iframe").getByRole("button", {
@@ -372,6 +425,7 @@ void test(
                     consoleErrors,
                     httpErrors,
                     responses,
+                    httpLifecycle,
                     failure: failure
                       ? {
                           error:

@@ -95,6 +95,7 @@ fn a_rejected_buffer_is_parsed_once_and_keeps_the_error() {
         "Malformed <template> block: the closing tag is missing."
     );
     let loc = error.loc.expect("the parser reports a location");
+    assert_eq!((loc.start, loc.end), (0, text.len()));
     assert_eq!(
         (
             loc.start_line,
@@ -115,6 +116,20 @@ fn a_rejected_buffer_is_parsed_once_and_keeps_the_error() {
     let repaired = docs.parsed("file:///Broken.vue", "/Broken.vue", fixed);
     assert!(matches!(repaired, ParsedSfc::Descriptor(_)));
     assert_eq!(docs.take_stats(), stats(1, 1));
+}
+
+#[test]
+fn a_rejected_buffer_keeps_full_source_byte_offsets_after_crlf_and_unicode() {
+    let mut docs = ResidentDocuments::default();
+    let text = "<!-- 東京🧭 -->\r\n<template><p title=\"😀\">ok</p>";
+    let parsed = docs.parsed("file:///Unicode.vue", "/Unicode.vue", text);
+    let ParsedSfc::Failed(error) = parsed else {
+        panic!("the missing closing template tag must reject the buffer");
+    };
+    let loc = error.loc.expect("the parser reports a location");
+    assert_eq!((loc.start, loc.end), (21, 53));
+    assert_eq!((loc.start_line, loc.start_column), (2, 1));
+    assert_eq!((loc.end_line, loc.end_column), (2, 33));
 }
 
 #[test]

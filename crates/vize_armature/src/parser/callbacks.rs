@@ -99,6 +99,10 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_attrib_entity_value_impl(value, start, end);
     }
 
+    fn on_missing_attribute_value_at_eof(&mut self, end: usize) {
+        self.on_attrib_end(QuoteType::Unquoted, end);
+    }
+
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {
         self.parser.flush_pending_text();
         self.parser.on_attrib_end_impl(quote, end);

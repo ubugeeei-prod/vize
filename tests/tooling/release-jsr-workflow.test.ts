@@ -1,5 +1,17 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  statSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import { test } from "node:test";
 
 import { parse } from "yaml";
@@ -18,6 +30,7 @@ interface Job {
   readonly needs?: string | readonly string[];
   readonly steps?: readonly Step[];
   readonly uses?: string;
+  readonly strategy?: { readonly matrix: { readonly include: readonly unknown[] } };
 }
 interface Workflow {
   readonly jobs: Readonly<Record<string, Job>>;
@@ -119,4 +132,253 @@ await test("pinned Deno runtime proof retains independent fresh-cache controls a
   assert.equal(upload?.if, "${{ always() }}");
   assert.equal(upload?.with?.name, "jsr-consumer-age-${{ github.sha }}-${{ github.run_attempt }}");
   assert.equal(upload?.with?.path, "${{ runner.temp }}/jsr-consumer-age/");
+});
+
+const consumerFiles = [
+  "tools/support/release/jsr/consumer.ts",
+  "tools/support/release/jsr/consumer-deno.json",
+] as const;
+const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+
+await test("only the consumer checkout narrows the original six-cell release workflow", () => {
+  const consumer = jsr.jobs.consumer;
+  const [checkout, ...steps] = consumer.steps ?? [];
+  assert.equal(checkout?.uses, "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd");
+  assert.deepEqual(checkout.with, {
+    ref: "${{ inputs.source_sha || github.sha }}",
+    "persist-credentials": false,
+    "sparse-checkout": consumerFiles.join("\n") + "\n",
+    "sparse-checkout-cone-mode": false,
+  });
+  const {
+    "sparse-checkout": _paths,
+    "sparse-checkout-cone-mode": _cone,
+    ...original
+  } = checkout.with;
+  // Whole job objects from main725126c and frozen release source d3eb1c4 are identical.
+  // These protect every original ref, default fetch, runtime cell and install/oracle command.
+  assert.deepEqual(
+    [
+      jsr.jobs.channel,
+      jsr.jobs.publish,
+      { ...consumer, steps: [{ ...checkout, with: original }, ...steps] },
+    ].map(digest),
+    [
+      "deeb84e361bc452eab69cb4ec329902259ef15f443f5bafdd79ba5e46bc949ab",
+      "2b7aed1b0120850036d3e89f5134aafc68010f530ec36f87e055486371c23a05",
+      "fabc364c2cc5046b5a9ec4688dd5d4698fbc93bad0a8c8787443835b46fb7d06",
+    ],
+  );
+  assert.deepEqual(consumer.strategy?.matrix.include, [
+    { os: "ubuntu-24.04", runtime: "node", node: "22" },
+    { os: "ubuntu-24.04", runtime: "node", node: "24" },
+    { os: "blacksmith-12vcpu-macos-15", runtime: "node", node: "24" },
+    { os: "blacksmith-32vcpu-windows-2025", runtime: "node", node: "24" },
+    { os: "ubuntu-24.04", runtime: "deno", node: "24" },
+    { os: "ubuntu-24.04", runtime: "bun", node: "24" },
+  ]);
+});
+
+// Execute the original source with sealed public facades. This proves checkout
+// closure and the consumer's assertions, never public registry/native acceptance.
+const closureWorker = String.raw`
+import fs from "node:fs";
+import vm from "node:vm";
+import { stripTypeScriptTypes } from "node:module";
+const input = JSON.parse(fs.readFileSync(0, "utf8"));
+const imports = [], calls = [], logs = [];
+const record = (entry, args) => calls.push({ entry, args });
+const context = vm.createContext({
+  process: { argv: ["node", "consumer.ts", input.root, ...input.flags] },
+  console: { log: (line) => logs.push(line) },
+});
+const exports = new Map([
+  [input.root, { defineConfig: (...args) => {
+    record("defineConfig", args);
+    return input.fault === "config" ? { compiler: { vapor: true } } : args[0];
+  } }],
+  [input.root + "/config", { loadConfig: input.fault === "loadConfig" ? null : () => {
+    throw new Error("consumer must not load checkout configuration");
+  } }],
+  [input.root + "/native", { compileSfc: (...args) => {
+    record("compileSfc", args);
+    return { errors: input.fault === "errors" ? ["injected"] : [], code: input.fault === "code" ? "" : args[0] };
+  } }],
+  [input.root + "/vite", { default: (...args) => {
+    record("vite", args);
+    return input.fault === "plugins" ? [] : [{ name: "sealed-facade" }];
+  } }],
+]);
+try {
+  const module = new vm.SourceTextModule(stripTypeScriptTypes(input.source), {
+    context,
+    importModuleDynamically: async (specifier) => {
+      imports.push(specifier);
+      if (!exports.has(specifier)) throw new Error("Unexpected consumer import: " + specifier);
+      const values = exports.get(specifier);
+      const imported = new vm.SyntheticModule(Object.keys(values), function () {
+        for (const [key, value] of Object.entries(values)) this.setExport(key, value);
+      }, { context });
+      await imported.link(() => { throw new Error("facade must not import modules"); });
+      await imported.evaluate();
+      return imported;
+    },
+  });
+  if (module.dependencySpecifiers.length) throw new Error("consumer must not have static imports");
+  await module.link(() => { throw new Error("consumer must not have static imports"); });
+  await module.evaluate();
+  process.stdout.write(JSON.stringify({ imports, calls, logs }) + "\n");
+} catch (error) {
+  process.stdout.write(JSON.stringify({ imports, calls, logs, error: error.message }) + "\n");
+  process.exitCode = 1;
+}
+`;
+
+interface Observation {
+  readonly imports: readonly string[];
+  readonly calls: readonly { readonly entry: string; readonly args: readonly unknown[] }[];
+  readonly logs: readonly string[];
+  readonly error?: string;
+}
+
+function observe(source: string, root: string, flags: readonly string[], fault = "") {
+  const result = spawnSync(
+    process.execPath,
+    [
+      "--experimental-vm-modules",
+      "--disable-warning=ExperimentalWarning",
+      "--input-type=module",
+      "-e",
+      closureWorker,
+    ],
+    { input: JSON.stringify({ source, root, flags, fault }), encoding: "utf8", timeout: 10_000 },
+  );
+  assert.equal(result.error, undefined);
+  assert.equal(result.signal, null);
+  assert.equal(result.stderr, "");
+  const observation: Observation = JSON.parse(result.stdout);
+  return { status: result.status, observation };
+}
+
+function denoClosure(source: string) {
+  const value: unknown = JSON.parse(source);
+  assert.ok(value && typeof value === "object" && !Array.isArray(value));
+  const config = value as Record<string, unknown>;
+  const sorted = (values: string[]) =>
+    values.sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
+  assert.deepEqual(sorted(Object.keys(config)), ["minimumDependencyAge", "nodeModulesDir"]);
+  assert.equal(config.nodeModulesDir, "none");
+  const policy = config.minimumDependencyAge;
+  assert.ok(policy && typeof policy === "object" && !Array.isArray(policy));
+  const age = policy as Record<string, unknown>;
+  assert.deepEqual(sorted(Object.keys(age)), ["age", "exclude"]);
+  assert.equal(age.age, "P1D");
+  assert.ok(Array.isArray(age.exclude));
+  const excluded: readonly unknown[] = age.exclude;
+  assert.ok(excluded.length > 0);
+  for (const specifier of excluded) {
+    assert.ok(typeof specifier === "string");
+    assert.match(specifier, /^(?:jsr:@vizejs\/vize|npm:(?:vize|@vizejs\/[\w-]+))$/);
+  }
+}
+
+await test("the physical two-file checkout executes every original consumer entry without repository imports", (t) => {
+  const directory = mkdtempSync(join(tmpdir(), "vize-jsr-standalone-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  for (const file of consumerFiles) {
+    const destination = join(directory, file);
+    mkdirSync(dirname(destination), { recursive: true });
+    copyFileSync(new URL(`../../${file}`, import.meta.url), destination);
+  }
+  assert.deepEqual(
+    readdirSync(directory, { recursive: true, encoding: "utf8" })
+      .filter((file) => statSync(join(directory, file)).isFile())
+      .map((file) => file.replaceAll("\\", "/"))
+      .sort((a, b) => a.localeCompare(b)),
+    [...consumerFiles].sort((a, b) => a.localeCompare(b)),
+  );
+  const source = readFileSync(join(directory, consumerFiles[0]), "utf8");
+  assert.equal(source, readFileSync(new URL(`../../${consumerFiles[0]}`, import.meta.url), "utf8"));
+  const sfc =
+    '<script setup lang="ts">const title: string = "JSR consumer"</script><template><h1>{{ title }}</h1></template>';
+  for (const [root, flags] of [
+    ["@vizejs/vize", ["--vite"]],
+    ["jsr:@vizejs/vize@0.467.0", []],
+  ] as const) {
+    assert.deepEqual(observe(source, root, flags), {
+      status: 0,
+      observation: {
+        imports: [
+          root,
+          `${root}/config`,
+          `${root}/native`,
+          ...(flags.length ? [`${root}/vite`] : []),
+        ],
+        calls: [
+          { entry: "defineConfig", args: [{ compiler: { vapor: false } }] },
+          { entry: "compileSfc", args: [sfc, { filename: "App.vue" }] },
+          ...(flags.length ? [{ entry: "vite", args: [] }] : []),
+        ],
+        logs: [`Verified ${root} (${flags.join(" ") || "no flags"})`],
+      },
+    });
+  }
+  const config = readFileSync(join(directory, consumerFiles[1]), "utf8");
+  denoClosure(config);
+  for (const change of [
+    { extends: "../deno.json" },
+    { importMap: "./imports.json" },
+    { imports: { local: "./module.ts" } },
+    { nodeModulesDir: "auto" },
+  ]) {
+    assert.throws(() => denoClosure(JSON.stringify({ ...JSON.parse(config), ...change })));
+  }
+});
+
+await test("standalone consumer closure rejects added static, local, builtin and absolute imports", () => {
+  const source = readFileSync(new URL(`../../${consumerFiles[0]}`, import.meta.url), "utf8");
+  for (const specifier of [
+    "./neighbor.ts",
+    "../shared.ts",
+    "node:fs",
+    "/private/module.ts",
+    "file:///private/module.ts",
+    "C:\\private\\module.ts",
+    "https://example.invalid/module.ts",
+    "@vizejs/vize/private",
+  ]) {
+    for (const prefix of [
+      `import ${JSON.stringify(specifier)};`,
+      `await import(${JSON.stringify(specifier)});`,
+    ]) {
+      const result = observe(prefix + "\n" + source, "@vizejs/vize", ["--vite"]);
+      assert.deepEqual(result, {
+        status: 1,
+        observation: {
+          imports: prefix.startsWith("await") ? [specifier] : [],
+          calls: [],
+          logs: [],
+          error: prefix.startsWith("await")
+            ? `Unexpected consumer import: ${specifier}`
+            : "consumer must not have static imports",
+        },
+      });
+    }
+  }
+});
+
+await test("sealed facades exercise all original consumer refusal assertions", () => {
+  const source = readFileSync(new URL(`../../${consumerFiles[0]}`, import.meta.url), "utf8");
+  for (const [fault, error] of [
+    ["config", "defineConfig returns the authored configuration"],
+    ["loadConfig", "the config entry point exports loadConfig"],
+    ["errors", "the native compiler reports no errors: injected"],
+    ["code", "the native compiler emits the component"],
+    ["plugins", "the Vite entry point's default export creates the plugin"],
+  ]) {
+    const result = observe(source, "@vizejs/vize", ["--vite"], fault);
+    assert.equal(result.status, 1);
+    assert.equal(result.observation.error, error);
+    assert.deepEqual(result.observation.logs, []);
+  }
 });

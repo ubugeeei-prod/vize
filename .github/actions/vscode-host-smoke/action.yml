@@ -185,6 +185,7 @@ runs:
           editors/vscode/.vscode-test/host-smoke-real/failure/
           editors/vscode/.vscode-test/host-smoke/failure/
           editors/vscode/.vscode-test/host-smoke/output-channel/
+          editors/vscode/.vscode-test/host-smoke/fake-server/existing-config-events/
         include-hidden-files: true
         if-no-files-found: ignore
         retention-days: 7

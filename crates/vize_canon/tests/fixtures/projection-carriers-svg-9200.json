@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "source": "be62f9e2ae434bd52f776340615436e31d9b102a",
+  "entries": [
+    {
+      "path": "differential/lint/native-svg-content/FacetBarChart.vue",
+      "bytes": 11700,
+      "sha256": "af48262113b64c56f9cd6843557e8086043241a0f941dfb3a4adfa0e912334d7",
+      "mode": "100644"
+    },
+    {
+      "path": "differential/lint/native-svg-content/TimelineChartDepSizeSvgSlot.vue",
+      "bytes": 974,
+      "sha256": "d97de75a04d0d553433ea3bf63ec3fe4b3ab12752ad398d439d2fda8caf1b35b",
+      "mode": "100644"
+    }
+  ]
+}

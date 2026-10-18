@@ -72,7 +72,11 @@ function actorPolicy(consumer: string) {
       commit: head,
       files: ["package.json", "preview.setup.ts", "preview.one-argument.ts"],
       requestedPackageSha256: digest(readFileSync(path.join(consumer, "package.json"))),
-      dependencyDelta: { ...axePolicy, reason: "required by the positive hosted A11y control" },
+      dependencyDelta: {
+        ...axePolicy,
+        reason: "required by the positive hosted A11y control",
+        formatterOracle: { name: "happy-dom", version: "20.11.2" },
+      },
       reviewedDependencyLock: {
         file: "pnpm-lock.yaml",
         sha256: digest(readRawBlob(root, head, "pnpm-lock.yaml")),
@@ -144,6 +148,7 @@ if (process.argv[2] === "prepare") {
           vue: "3.5.35",
           "vue-router": "4.5.1",
           playwright: "1.62.1",
+          "happy-dom": "20.11.2",
           [axePolicy.name]: axePolicy.version,
         },
       },

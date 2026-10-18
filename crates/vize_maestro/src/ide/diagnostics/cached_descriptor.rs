@@ -11,7 +11,7 @@
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Position, Range, Url};
 use vize_incremental::{DescriptorParseError, ParsedSfc, SharedDescriptor};
 
-use super::{DiagnosticService, sources};
+use super::{DiagnosticService, LineIndex, sources};
 use crate::server::ServerState;
 
 impl DiagnosticService {
@@ -28,21 +28,26 @@ impl DiagnosticService {
     ) -> Result<SharedDescriptor, Diagnostic> {
         match state.sfc_parsed(uri, content) {
             ParsedSfc::Descriptor(descriptor) => Ok(descriptor),
-            ParsedSfc::Failed(error) => Err(parser_diagnostic(&error)),
+            ParsedSfc::Failed(error) => Err(parser_diagnostic(&error, content)),
         }
     }
 }
 
-fn parser_diagnostic(error: &DescriptorParseError) -> Diagnostic {
-    let range = error.loc.map_or_else(Range::default, |loc| Range {
-        start: Position {
-            line: loc.start_line.saturating_sub(1) as u32,
-            character: loc.start_column.saturating_sub(1) as u32,
-        },
-        end: Position {
-            line: loc.end_line.saturating_sub(1) as u32,
-            character: loc.end_column.saturating_sub(1) as u32,
-        },
+fn parser_diagnostic(error: &DescriptorParseError, content: &str) -> Diagnostic {
+    let range = error.loc.map_or_else(Range::default, |loc| {
+        let index = LineIndex::new(content);
+        let (start_line, start_character) = index.line_col(loc.start);
+        let (end_line, end_character) = index.line_col(loc.end);
+        Range {
+            start: Position {
+                line: start_line,
+                character: start_character,
+            },
+            end: Position {
+                line: end_line,
+                character: end_character,
+            },
+        }
     });
     Diagnostic {
         range,

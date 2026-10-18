@@ -163,3 +163,88 @@ void test("draining includes responses admitted while earlier bodies are being c
   await finished;
   assert.equal(drained, true);
 });
+
+void test("passive body custody records the original completion before delayed metadata", async (t) => {
+  const capture = await fixture(t);
+  const metadata = deferred<Record<string, string>>();
+  const finished = deferred<Buffer>();
+  const events: Array<{ event: string; response: unknown; result: unknown }> = [];
+  const observe = createPackedGalleryHttpObserver({
+    ...capture,
+    origin,
+    sha256,
+    onBodyCapture: (event, response, result) => events.push({ event, response, result }),
+  });
+  const response = {
+    url: () => url,
+    status: () => 200,
+    allHeaders: () => metadata.promise,
+    request: () => ({ allHeaders: async () => ({}), redirectedTo: () => null }),
+    body: () => finished.promise,
+  };
+  observe(response);
+  assert.deepEqual(events, [{ event: "body-start", response, result: undefined }]);
+  finished.resolve(body);
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.deepEqual(events, [
+    { event: "body-start", response, result: undefined },
+    { event: "body-finished", response, result: { bytes: body.length } },
+  ]);
+  assert.deepEqual(capture.responses, []);
+  metadata.resolve({ "content-type": "text/html" });
+  await drainPackedGalleryHttp(capture.pending);
+  assert.deepEqual(capture.httpErrors, []);
+  assert.deepEqual(capture.responses, [
+    {
+      url,
+      status: 200,
+      headers: { "content-type": "text/html" },
+      requestHeaders: {},
+      bytes: body.length,
+      sha256: sha256(body),
+    },
+  ]);
+  assert.deepEqual(
+    await readFile(path.join(capture.caseOutput, "http-bodies", `${sha256(body)}.bin`)),
+    body,
+  );
+});
+
+void test("passive body custody retains the exact original failure and strict HTTP refusal", async (t) => {
+  const capture = await fixture(t);
+  const metadata = deferred<Record<string, string>>();
+  const failure = new Error("original protocol packet\ncomplete second line", {
+    cause: new Error("original underlying cause"),
+  });
+  Object.assign(failure, { code: "ERR_ORIGINAL_BODY", requestId: "original-id" });
+  const events: Array<{ event: string; response: unknown; result: unknown }> = [];
+  const observe = createPackedGalleryHttpObserver({
+    ...capture,
+    origin,
+    sha256,
+    onBodyCapture: (event, response, result) => events.push({ event, response, result }),
+  });
+  const response = {
+    url: () => url,
+    status: () => 200,
+    allHeaders: () => metadata.promise,
+    request: () => ({ allHeaders: async () => ({}), redirectedTo: () => null }),
+    body: async () => {
+      throw failure;
+    },
+  };
+  observe(response);
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.deepEqual(events, [
+    { event: "body-start", response, result: undefined },
+    { event: "body-error", response, result: failure },
+  ]);
+  assert.equal(events[1].result, failure);
+  assert.deepEqual(capture.httpErrors, []);
+  metadata.resolve({ "content-type": "text/html" });
+  await drainPackedGalleryHttp(capture.pending);
+  assert.deepEqual(capture.httpErrors, [String(failure)]);
+  assert.deepEqual(capture.responses, [
+    { url, status: 200, headers: { "content-type": "text/html" }, requestHeaders: {} },
+  ]);
+});

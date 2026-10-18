@@ -31,6 +31,10 @@ pub(crate) fn merge_authored_locations(
             .cmp(&b.range.start.line)
             .then(a.range.start.character.cmp(&b.range.start.character))
             .then_with(|| a.uri.as_str().cmp(b.uri.as_str()))
+            // Keep the existing position/URI order, but group identical full
+            // ranges even when another hit starts at the same position.
+            .then(a.range.end.line.cmp(&b.range.end.line))
+            .then(a.range.end.character.cmp(&b.range.end.character))
     });
     locations.dedup_by(|a, b| a.uri == b.uri && a.range == b.range);
 
@@ -107,6 +111,73 @@ mod tests {
         assert_eq!(
             merged,
             vec![location(other, 0, 6, 16), location(sfc, 3, 6, 16)]
+        );
+    }
+
+    #[test]
+    fn deduplicates_interleaved_ranges_with_the_same_start() {
+        let sfc = "file:///app/App.vue";
+        let short = location(sfc, 3, 6, 12);
+        let long = location(sfc, 3, 6, 16);
+        let mut multiline = location(sfc, 3, 6, 8);
+        multiline.range.end.line = 4;
+        let expected = vec![short.clone(), long.clone(), multiline.clone()];
+
+        for hits in [
+            vec![
+                short.clone(),
+                long.clone(),
+                short.clone(),
+                multiline.clone(),
+            ],
+            vec![long.clone(), short.clone(), long.clone(), multiline.clone()],
+            vec![multiline.clone(), short.clone(), multiline, long],
+        ] {
+            assert_eq!(
+                merge_authored_locations(Some(hits.clone()), None),
+                Some(expected.clone())
+            );
+            assert_eq!(
+                merge_authored_locations(None, Some(hits)),
+                Some(expected.clone())
+            );
+        }
+    }
+
+    #[test]
+    fn preserves_position_and_uri_order_while_merging_all_three_sources() {
+        let sfc = "file:///app/App.vue";
+        let other = "file:///app/Other.vue";
+        let earlier = location(other, 2, 20, 24);
+        let short = location(sfc, 3, 6, 12);
+        let long = location(sfc, 3, 6, 16);
+        let other_at_same_start = location(other, 3, 6, 8);
+        let later_character = location(sfc, 3, 7, 8);
+        let later_line = location(sfc, 4, 0, 1);
+        let merged = merge_canonical_locations(
+            Some(vec![long.clone(), earlier.clone(), short.clone()]),
+            Some(vec![
+                short.clone(),
+                other_at_same_start.clone(),
+                long.clone(),
+            ]),
+            Some(vec![
+                later_line.clone(),
+                short.clone(),
+                later_character.clone(),
+            ]),
+        );
+
+        assert_eq!(
+            merged,
+            Some(vec![
+                earlier,
+                short,
+                long,
+                other_at_same_start,
+                later_character,
+                later_line,
+            ])
         );
     }
 

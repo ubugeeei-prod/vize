@@ -108,6 +108,149 @@ await test("directory syscall exhaustion preserves the complete native logical v
   }
 });
 
+await test("observation persistence failures retain the exact traversal error and fail closed", (context) => {
+  const originalReaddir = fs.readdirSync;
+  const originalRealpath = fs.realpathSync;
+  const nodes = new Map([["", { path: "", mode: "40000" }]]);
+  const children = new Map([["", new Set()]]);
+  const traversalFailure = new Error("authored directory read failure");
+  const persistenceFailure = new Error("authored observation write failure");
+  const root = "/authored/no-filesystem-access";
+  let observations = 0;
+  try {
+    const readdir = context.mock.method(fs, "readdirSync", () => {
+      throw traversalFailure;
+    });
+    syncBuiltinESMExports();
+    assert.throws(
+      () =>
+        collectNativePhysical(root, nodes, children, () => {
+          observations += 1;
+          throw persistenceFailure;
+        }),
+      (error) => {
+        assert(error instanceof AggregateError);
+        assert.deepEqual(error.errors, [traversalFailure, persistenceFailure]);
+        return true;
+      },
+    );
+    assert.equal(observations, 1);
+    assert.throws(
+      () => collectNativePhysical(root, nodes, children, () => (observations += 1)),
+      (error) => error === traversalFailure,
+    );
+    assert.equal(observations, 2);
+    readdir.mock.mockImplementation(() => []);
+    context.mock.method(fs, "realpathSync", (path) => path);
+    syncBuiltinESMExports();
+    assert.throws(
+      () =>
+        collectNativePhysical(root, nodes, children, () => {
+          observations += 1;
+          throw persistenceFailure;
+        }),
+      (error) => error === persistenceFailure,
+    );
+    assert.equal(observations, 3);
+  } finally {
+    context.mock.restoreAll();
+    syncBuiltinESMExports();
+  }
+  assert.equal(fs.readdirSync, originalReaddir);
+  assert.equal(fs.realpathSync, originalRealpath);
+});
+
+await test("raw recapture rows survive an unchanged strict boundary refusal without replacing the first observation", (context) => {
+  const temporary = mkdtempSync(join(tmpdir(), "canonical-boundary-evidence-"));
+  try {
+    const { nodes, children } = fixture(temporary);
+    const retained = [];
+    const observe = (raw) => retained.push(structuredClone(raw));
+    const original = collectNativePhysical(temporary, nodes, children, observe);
+    const originalBytes = JSON.stringify(retained[0]);
+    assert.equal(retained.length, 1);
+    assert.deepEqual(retained[0].files, original.files);
+    assert.deepEqual(retained[0].rejected, original.boundary.rejected);
+    assert.equal(retained[0].successfulFollows + 1, original.boundary.firstRejected);
+    const stat = fs.statSync;
+    const rejected = "jellyfin-vue/packaging/deb/root/copy";
+    const failure = Object.assign(new Error("authored metadata refusal"), {
+      code: "ELOOP",
+      errno: -40,
+      syscall: "stat",
+      path: join(temporary, rejected),
+    });
+    // This control does not calibrate the kernel or change the logical resolver.
+    // Two different full logical totals must still fail the original comparator.
+    context.mock.method(fs, "statSync", (path, ...args) => {
+      if (path === failure.path) throw failure;
+      return stat(path, ...args);
+    });
+    syncBuiltinESMExports();
+    assert.throws(
+      () => collectNativePhysical(temporary, nodes, children, observe),
+      /Inconsistent native kernel boundary/,
+    );
+    assert.equal(retained.length, 2);
+    assert.equal(JSON.stringify(retained[0]), originalBytes);
+    assert.deepEqual(retained[1].rejected, [
+      { path: rejected, code: "ELOOP", followed: resolveLogical(nodes, rejected).followed },
+      ...original.boundary.rejected,
+    ]);
+    assert.deepEqual(
+      retained[1].metadata.find((row) => row.path === rejected),
+      {
+        path: rejected,
+        error: {
+          code: failure.code,
+          errno: failure.errno,
+          syscall: failure.syscall,
+          path: failure.path,
+          message: failure.message,
+        },
+        followed: resolveLogical(nodes, rejected).followed,
+      },
+    );
+    assert.deepEqual(retained[1].physical, retained[0].physical);
+    assert.deepEqual(
+      retained[1].metadata.filter((row) => row.isDirectory && row.followed !== undefined),
+      retained[0].metadata.filter(
+        (row) =>
+          row.isDirectory &&
+          row.followed !== undefined &&
+          row.path !== rejected &&
+          !row.path.startsWith(`${rejected}/`),
+      ),
+    );
+  } finally {
+    context.mock.restoreAll();
+    syncBuiltinESMExports();
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+await test("foreign physical links retain their raw bytes and remain strict refusals", () => {
+  const temporary = mkdtempSync(join(tmpdir(), "canonical-foreign-evidence-"));
+  try {
+    const { nodes, children } = fixture(temporary);
+    symlinkSync("../../outside", join(temporary, "jellyfin-vue/untracked"));
+    let observed;
+    assert.throws(
+      () => collectNativePhysical(temporary, nodes, children, (raw) => (observed = raw)),
+      /Foreign physical canonical symlink/,
+    );
+    const physical = observed.physical.find((row) => row.path === "jellyfin-vue/untracked");
+    assert.equal(physical.targetBase64, Buffer.from("../../outside").toString("base64"));
+    assert.equal(physical.mode & 0o170000, 0o120000);
+    assert.deepEqual(observed.metadata, []);
+    assert.deepEqual(observed.files, []);
+    assert.deepEqual(observed.rejected, []);
+    assert.equal(observed.successfulFollows, 0);
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
 await test("unchanged original Rust, physical bytes and independent logical Git walk agree at the actual kernel boundary", () => {
   const temporary = mkdtempSync(join(tmpdir(), "canonical-native-walk-"));
   const root = join(temporary, "shape");

@@ -240,6 +240,9 @@ jobs:
         run: >-
           node --test tests/tooling/inspector-production-mode.test.ts
           tests/tooling/inspector-ssr-css-vars.test.ts
+      - name: Test canonical native content classification
+        if: ${{ matrix.cohort == 'lint-and-format' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}
+        run: node --test tests/tooling/patina-native-svg-content-oracle.test.ts
       - name: Select Rust runtime envelope
         run: |
           case "$GITHUB_EVENT_NAME" in

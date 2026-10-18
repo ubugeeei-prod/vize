@@ -38,6 +38,9 @@ in
       checks.package = vize;
       checks.embedded-source-assets = pkgs.runCommand "vize-embedded-source-assets" { } ''
         cmp \
+          ${vize.src}/crates/vize/src/commands/inspector/official_compiler.ts \
+          ${root + /crates/vize/src/commands/inspector/official_compiler.ts}
+        cmp \
           ${vize.src}/crates/vize_canon/src/virtual_ts/helpers/pattern_matching.d.ts \
           ${root + /crates/vize_canon/src/virtual_ts/helpers/pattern_matching.d.ts}
         cmp \

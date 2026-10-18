@@ -5,6 +5,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
+import { fakeNpmArchiveSource } from "./support/fake-npm-registry.ts";
+
 import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
@@ -17,19 +19,25 @@ const visibleTag = `${metadataUrl}${probeQuery}1`;
 const published = "publish succeeded";
 
 function assertPublicationTrace(events: readonly string[]): void {
-  assert.equal(events.length, 4, "one preflight, one publish and exactly two visibility probes");
+  assert.equal(
+    events.length,
+    5,
+    "preflight, publish, two metadata probes and one whole archive GET",
+  );
   assert.equal(events[0], preflight, "the absent version must be checked before publishing");
   assert.equal(events[1], published, "visibility probes must follow successful publishing");
   // waitForRegistryVisibility starts these independent reads with Promise.all.
   // Preserve both exact requests without imposing an order on their child processes.
-  const visibility = events.slice(2);
+  assert.equal(events[4], "https://registry.npmjs.org/@vizejs/example/-/fixture-1.2.3-beta.1.tgz");
+  const visibility = events.slice(2, 4);
   assert.equal(visibility.filter((event) => event === visibleVersion).length, 1);
   assert.equal(visibility.filter((event) => event === visibleTag).length, 1);
 }
 
 test("registry publication trace preserves phases and both exact parallel probes", () => {
-  assertPublicationTrace([preflight, published, visibleVersion, visibleTag]);
-  assertPublicationTrace([preflight, published, visibleTag, visibleVersion]);
+  const archive = "https://registry.npmjs.org/@vizejs/example/-/fixture-1.2.3-beta.1.tgz";
+  assertPublicationTrace([preflight, published, visibleVersion, visibleTag, archive]);
+  assertPublicationTrace([preflight, published, visibleTag, visibleVersion, archive]);
   const invalidTraces = {
     "premature visibility": [preflight, visibleTag, published, visibleVersion],
     "late preflight": [published, preflight, visibleVersion, visibleTag],
@@ -55,7 +63,7 @@ test("registry publication trace preserves phases and both exact parallel probes
     ],
   };
   for (const [name, events] of Object.entries(invalidTraces)) {
-    assert.throws(() => assertPublicationTrace(events), assert.AssertionError, name);
+    assert.throws(() => assertPublicationTrace([...events, archive]), assert.AssertionError, name);
   }
 });
 
@@ -77,6 +85,7 @@ test("publish_npm_package computes the tag and forwards provenance to vp", () =>
       binDir,
       "curl",
       [
+        fakeNpmArchiveSource,
         "const fs = require('node:fs');",
         "const url = process.argv.at(-1);",
         "const name = decodeURIComponent(new URL(url).pathname.split('/')[1]);",
@@ -90,7 +99,7 @@ test("publish_npm_package computes the tag and forwards provenance to vp", () =>
         "  process.exit(0);",
         "}",
         "const body = url.includes(`/${version}?`)",
-        "  ? { name, version }",
+        "  ? { name, version, dist: fakeDist(name, version) }",
         "  : { name, 'dist-tags': { latest: version, beta: version, rc: version } };",
         "process.stdout.write(`${JSON.stringify(body)}VIZE_HTTP_STATUS:200`);",
       ].join("\n"),

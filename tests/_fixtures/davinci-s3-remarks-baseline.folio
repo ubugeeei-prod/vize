@@ -175,6 +175,8 @@
 "tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Trimmed.vue"
 "tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/True.vue"
 "tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Unicode.vue"
+"tests/_fixtures/differential/lint/native-svg-content/FacetBarChart.vue"
+"tests/_fixtures/differential/lint/native-svg-content/TimelineChartDepSizeSvgSlot.vue"
 "tests/_fixtures/differential/lint/oxlint-mixed-directory-8507/app/App.vue"
 "tests/_fixtures/differential/lint/oxlint-mixed-directory-8507/controls/App-error.vue"
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/ExplicitOff.vue"
@@ -593,6 +595,12 @@
 "tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Ordered.vue" s3.extract-placements applied group @86:101 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
 "tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/Sibling.vue" s3.extract-placements applied group @147:162 reason="committed" emitted-size=-21 reactive-edges=-1 update-path=0 budget-left=127
 "tests/_fixtures/differential/lint/attrs-expression-ranges-8090/sources/ThemeIcon.vue" s3.extract-placements applied hoist @163:1032 reason="committed" emitted-size=-34 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/native-svg-content/FacetBarChart.vue" s3.extract-placements missed hoist @9950:10018 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
+"tests/_fixtures/differential/lint/native-svg-content/FacetBarChart.vue" s3.extract-placements missed hoist @10029:10106 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=126
+"tests/_fixtures/differential/lint/native-svg-content/FacetBarChart.vue" s3.extract-placements applied hoist @10168:10237 reason="committed" emitted-size=-13 reactive-edges=0 update-path=-1 budget-left=125
+"tests/_fixtures/differential/lint/native-svg-content/FacetBarChart.vue" s3.extract-placements applied hoist @10458:10527 reason="committed" emitted-size=-13 reactive-edges=0 update-path=-1 budget-left=124
+"tests/_fixtures/differential/lint/native-svg-content/FacetBarChart.vue" s3.extract-placements applied hoist @10589:10658 reason="committed" emitted-size=-13 reactive-edges=0 update-path=-1 budget-left=123
+"tests/_fixtures/differential/lint/native-svg-content/FacetBarChart.vue" s3.extract-placements missed hoist @11126:11137 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=122
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/ExplicitOff.vue" s3.extract-placements missed hoist @59:66 reason="regressed-emitted-size" emitted-size=8 reactive-edges=0 update-path=0 budget-left=127
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/OriginalHome.vue" s3.extract-placements applied hoist @199:347 reason="committed" emitted-size=-13 reactive-edges=0 update-path=-1 budget-left=127
 "tests/_fixtures/differential/lint/transition-custom-child-6881/sources/OriginalHome.vue" s3.extract-placements missed cache @580:629 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=126

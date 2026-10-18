@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
+import { fakeNpmArchiveSource } from "./support/fake-npm-registry.ts";
+
 import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
@@ -199,6 +201,7 @@ test("concurrent real package publishers retain provenance, retry, tag visibilit
       fixture.binDir,
       "curl",
       [
+        fakeNpmArchiveSource,
         "const fs = require('node:fs');",
         "const path = require('node:path');",
         "const url = new URL(process.argv.at(-1));",
@@ -206,7 +209,7 @@ test("concurrent real package publishers retain provenance, retry, tag visibilit
         "const state = path.join(process.env.MOCK_REGISTRY_DIR, name.split('/')[1]);",
         "if (!fs.existsSync(path.join(state, 'published'))) { process.stdout.write('{}VIZE_HTTP_STATUS:404'); process.exit(0); }",
         "let body;",
-        "if (url.pathname.split('/').length === 3) body = { name, version: '1.0.0' };",
+        "if (url.pathname.split('/').length === 3) body = { name, version: '1.0.0', dist: fakeDist(name, '1.0.0') };",
         "else {",
         "  const tagMarker = path.join(state, 'tag-probed');",
         "  const visible = fs.existsSync(tagMarker);",

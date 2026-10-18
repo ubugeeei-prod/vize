@@ -2,12 +2,11 @@ import fs from "node:fs";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { pathToFileURL } from "node:url";
 import { compileFunction } from "node:vm";
+import { formatterOraclePackage } from "../../differential/formatter-cli-target.ts";
 const sha = (value) => createHash("sha256").update(value).digest("hex");
-const uiRequire = createRequire(
-  fileURLToPath(new URL("../../../npm/ui/package.json", import.meta.url)),
-);
+const uiRequire = createRequire(formatterOraclePackage(import.meta.url));
 const vueEntry = uiRequire.resolve("vue");
 const vueRequire = createRequire(vueEntry);
 const rendererEntry = uiRequire.resolve("vue/server-renderer");

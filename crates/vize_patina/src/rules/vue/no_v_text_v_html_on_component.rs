@@ -27,8 +27,8 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use dynamic_component::{dynamic_component_may_render_component, is_dynamic_component};
-use vize_l0::{is_html_tag, is_math_ml_tag, is_svg_tag};
-use vize_relief::{DirectiveNode, ElementNode, ElementType};
+use vize_l0::is_native_tag;
+use vize_relief::{DirectiveNode, ElementNode, ElementType, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-v-text-v-html-on-component",
@@ -82,27 +82,24 @@ fn is_component_like_tag(ctx: &LintContext<'_>, element: &ElementNode<'_>) -> bo
         return dynamic_component_may_render_component(ctx, element);
     }
 
-    if element.tag_type == ElementType::Component {
+    // The lint parser can retain a native tag type for Vue's explicit native
+    // `is="vue:..."` component substitution. Preserve that component boundary.
+    if element.tag_type == ElementType::Component
+        || element.props.iter().any(|prop| {
+            matches!(prop, PropNode::Attribute(attr)
+                if attr.name == "is"
+                    && attr.value.as_ref().is_some_and(|value| value.content.starts_with("vue:")))
+        })
+    {
         return true;
     }
 
-    // Like Vue's compiler and the reference rule, any tag outside the known
-    // names of its namespace resolves as a component, including a
-    // lowercase single word such as a mini-program `<view>`.
-    // The namespace comes from the enclosing `<svg>` / `<math>` (the template
-    // parser also tags a root-level SVG name such as `<view>` as SVG).
-    let tag = element.tag;
-    let inside = |root: &str| {
-        ctx.has_ancestor(|parent| parent.tag.as_str() == root)
-            && !ctx.has_ancestor(|parent| parent.tag.as_str() == "foreignObject")
-    };
-    if tag == "svg" || inside("svg") {
-        !is_svg_tag(tag)
-    } else if tag == "math" || inside("math") {
-        !is_math_ml_tag(tag)
-    } else {
-        !is_html_tag(tag)
-    }
+    // Vue recognizes native HTML/SVG/MathML names independently of lexical
+    // namespace. A root `<g>` or a chart's SVG slot receives its namespace at
+    // runtime; it still compiles to an element, never a component lookup.
+    // Unknown lowercase tags remain components, as do the explicit component
+    // substitutions already classified above.
+    !is_native_tag(element.tag)
 }
 
 #[cfg(test)]

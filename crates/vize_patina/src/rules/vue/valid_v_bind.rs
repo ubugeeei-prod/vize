@@ -79,10 +79,10 @@ impl Rule for ValidVBind {
         }
 
         // Attribute syntax: :class="foo" or Vue 3.4+ same-name shorthand: :loading
-        if let Some(arg) = &directive.arg {
-            // Vue 3.4+ same-name shorthand allows static :attr without expression.
-            // Dynamic arguments still need an explicit expression.
-            if !has_exp && !is_static_argument(arg) {
+        if has_arg {
+            // The parser supplies the expression for Vue 3.4+ same-name
+            // shorthand. An authored empty value must not use that exemption.
+            if !has_exp {
                 ctx.error_with_help(
                     ctx.t("vue/valid-v-bind.missing_expression"),
                     &directive.loc,
@@ -107,10 +107,6 @@ fn is_empty_expression(exp: &ExpressionNode) -> bool {
         ExpressionNode::Simple(s) => s.content.trim().is_empty(),
         ExpressionNode::Compound(c) => c.children.is_empty(),
     }
-}
-
-fn is_static_argument(arg: &ExpressionNode) -> bool {
-    matches!(arg, ExpressionNode::Simple(simple) if simple.is_static)
 }
 
 #[cfg(test)]
@@ -190,5 +186,86 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :foo.bar="value"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn parser_distinguishes_same_name_shorthand_from_authored_empty_values() {
+        use vize_armature::Parser;
+        use vize_l0::Allocator;
+        use vize_relief::{ExpressionNode, PropNode, TemplateChildNode, errors::ErrorCode};
+
+        for (source, expression, shorthand, missing_value) in [
+            (r#"<div :label></div>"#, "label", true, false),
+            (r#"<div :label=""></div>"#, "", false, false),
+            (r#"<div :label=''></div>"#, "", false, false),
+            (r#"<div :label="  "></div>"#, "  ", false, false),
+            (r#"<div :[name]=""></div>"#, "", false, false),
+            (r#"<div v-bind=""></div>"#, "", false, false),
+            ("<div :label=></div>", "", false, true),
+            ("<div :label = ></div>", "", false, true),
+            ("<div :label=", "", false, true),
+            ("<div :label", "label", true, false),
+        ] {
+            let allocator = Allocator::new();
+            let (root, errors) = Parser::new(&allocator, source).parse();
+            assert_eq!(
+                errors
+                    .iter()
+                    .any(|error| error.code == ErrorCode::MissingAttributeValue),
+                missing_value,
+                "{source}: {errors:?}"
+            );
+            if source.ends_with("</div>") && !missing_value {
+                assert!(errors.is_empty(), "{source}: {errors:?}");
+            }
+            let Some(TemplateChildNode::Element(element)) = root.children.first() else {
+                panic!("expected the authored element: {source}");
+            };
+            let Some(PropNode::Directive(directive)) = element.props.first() else {
+                panic!("expected the authored directive: {source}");
+            };
+            let Some(ExpressionNode::Simple(value)) = directive.exp.as_ref() else {
+                panic!("the parser must retain the expression: {source}");
+            };
+            assert_eq!(value.content, expression, "{source}");
+            assert_eq!(directive.shorthand, shorthand, "{source}");
+            assert_eq!(
+                source.get(value.loc.span.start as usize..value.loc.span.end as usize),
+                Some(expression),
+                "{source}"
+            );
+        }
+    }
+
+    #[test]
+    fn authored_empty_values_report_the_complete_directive() {
+        use crate::diagnostic::Severity;
+
+        let linter = create_linter();
+        for attribute in [
+            r#":label="""#,
+            r#":label="  ""#,
+            "v-bind:label=' '",
+            r#":label.prop="""#,
+            r#".label="""#,
+            r#":[name]="""#,
+            r#"v-bind="""#,
+        ] {
+            let source = vize_l0::cstr!("<div {attribute}></div>");
+            let result = linter.lint_template(&source, "test.vue");
+            assert_eq!(result.error_count, 1, "{source}");
+            assert_eq!(result.warning_count, 0, "{source}");
+            assert_eq!(result.diagnostics.len(), 1, "{source}");
+            let diagnostic = result.diagnostics.first().expect("one diagnostic");
+            assert_eq!(diagnostic.rule_name, "vue/valid-v-bind");
+            assert_eq!(diagnostic.severity, Severity::Error);
+            assert_eq!(diagnostic.message, "v-bind requires an expression");
+            assert_eq!(diagnostic.start, 5);
+            assert_eq!(diagnostic.end as usize, 5 + attribute.len());
+            assert_eq!(
+                source.get(diagnostic.start as usize..diagnostic.end as usize),
+                Some(attribute)
+            );
+        }
     }
 }

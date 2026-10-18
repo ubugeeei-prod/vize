@@ -1,0 +1,34 @@
+{
+  "run": "https://github.com/ubugeeei-prod/vize/actions/runs/38866347055",
+  "inputKind": "authored resolved-input reproduction, not a runtime dump",
+  "sources": [
+    {
+      "url": "https://github.com/elk-zone/elk/blob/8aa2b4650760eeba4ea1fdd9dc18d8a88ca5d7f0/nuxt.config.ts",
+      "sha256": "cbbfceb47d77909ccd21c13b82a202e4b0835ecd0b148d7c0651b53d634de04e"
+    },
+    {
+      "package": "@nuxt/schema@4.4.7",
+      "tarball": "https://registry.npmjs.org/@nuxt/schema/-/schema-4.4.7.tgz",
+      "path": "dist/index.mjs",
+      "sha256": "ceb55bc68af0f4b2bac2066a866e134959e0c8f0019dc8f8c9beab0f26c17347"
+    },
+    {
+      "package": "@vue-macros/nuxt@3.1.2",
+      "tarball": "https://registry.npmjs.org/@vue-macros/nuxt/-/nuxt-3.1.2.tgz",
+      "path": "dist/index.js",
+      "sha256": "a5ccb1778d0b81306a2d0c4fa4a8ddf161bb9d610e985bce5c87a3193bf001b1"
+    },
+    {
+      "package": "@vue-macros/common@3.1.2",
+      "tarball": "https://registry.npmjs.org/@vue-macros/common/-/common-3.1.2.tgz",
+      "path": "dist/index.js",
+      "sha256": "e9b462e85ec0abf3f771e695b07c20d7f0b71f4b8d8dbcd3e4fb5c2397138b62"
+    },
+    {
+      "package": "@nuxt/vite-builder@4.4.7",
+      "tarball": "https://registry.npmjs.org/@nuxt/vite-builder/-/vite-builder-4.4.7.tgz",
+      "path": "dist/index.mjs",
+      "sha256": "7550988e844d4d9b75d3aca2d4cec4bf95f5f84d1dde5575a34a03ca522633c0"
+    }
+  ]
+}

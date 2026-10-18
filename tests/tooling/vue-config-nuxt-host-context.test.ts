@@ -1,7 +1,64 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import { nativeProjectSource } from "../../npm/builder/vite/src/plugin/host-config-source.ts";
 import { projectViteConfigSource } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
+import { elkSetupSfcViteConfig } from "../_fixtures/differential/config/nuxt-elk-host-options/resolved-vite-config.ts";
+
+void test("Elk setupSFC host options project in development and both build environments", async () => {
+  const expected = JSON.parse(
+    await readFile(
+      new URL(
+        "../_fixtures/differential/config/nuxt-elk-host-options/projected.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  for (const env of [
+    { command: "serve", mode: "development", isSsrBuild: false },
+    { command: "build", mode: "production", isSsrBuild: false },
+    { command: "build", mode: "production", isSsrBuild: true },
+  ]) {
+    const source = elkSetupSfcViteConfig(env.command === "build");
+    const host = source.vue;
+    const descriptors = Object.getOwnPropertyDescriptors(host);
+    Object.freeze(host.include);
+    Object.freeze(host.script);
+    Object.freeze(source);
+
+    // Without the private constructor context, these remain invalid native options.
+    assert.equal(nativeProjectSource(source), source);
+    await assert.rejects(projectViteConfigSource(source, env), /unknown option script/);
+    const projected = await projectViteConfigSource(nativeProjectSource(source, "nuxt"), env);
+    assert.deepEqual(projected, expected);
+    assert.equal(source.vue, host);
+    assert.deepEqual(Object.getOwnPropertyDescriptors(source.vue), descriptors);
+    assert.equal(source.vue.include, descriptors.include.value);
+    assert.equal(source.vue.script, descriptors.script.value);
+    assert.equal(source.vue.template, descriptors.template.value);
+  }
+});
+
+void test("host filter forms retain their exact identities and are never interpreted as native settings", async () => {
+  for (const filters of [
+    { include: /\.vue$/, exclude: /\/vendor\// },
+    { include: "**/*.vue", exclude: "**/ignored/**" },
+    { include: [/\.vue$/, /\.setup\.[cm]?[jt]sx?$/], exclude: [/\.ce\.vue$/, "**/ignored/**"] },
+    { exclude: [] },
+  ]) {
+    const host = Object.freeze({ script: { hoistStatic: true }, ...filters });
+    const source = Object.freeze({ vue: host });
+    const descriptors = Object.getOwnPropertyDescriptors(host);
+    assert.deepEqual(await projectViteConfigSource(nativeProjectSource(source, "nuxt")), {
+      typeChecker: { jsxTypecheck: true },
+    });
+    assert.equal(source.vue, host);
+    assert.deepEqual(Object.getOwnPropertyDescriptors(host), descriptors);
+    assert.equal(source.vue.exclude, filters.exclude);
+    assert.equal(source.vue.script, descriptors.script.value);
+  }
+});
 
 void test("only the explicit Nuxt constructor context excludes the complete host compiler object", async () => {
   const env = { command: "build", mode: "production", isSsrBuild: true };
@@ -67,6 +124,8 @@ void test("spoofable host flags and all canonical, mixed, unknown or nonplain ob
     { script: {}, version: "3" },
     { script: {}, entries: [{ formatter: {} }] },
     { script: {}, future: true },
+    { script: {}, include: [/\.vue$/], compiler: { whitespace: "preserve" } },
+    { script: {}, exclude: [], future: true },
     Object.assign(Object.create({ version: "3" }), { script: {} }),
     Object.defineProperty({ script: {} }, "compiler", { value: {} }),
     Object.assign({ script: {} }, { [Symbol("native")]: {} }),

@@ -2,8 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 // VS Code's existing ordinary OutputChannel writes these native files. Copy
-// only Vize's complete bytes after the host exits, before removing its profile.
-export function retainHostOutput(profilePath, destination) {
+// Vize's complete bytes after the host exits, before removing its profile.
+// The original fake-host diagnostic additionally keeps the existing logs subtree.
+export function retainHostOutput(profilePath, destination, retainAllLogs = false) {
   const logsRoot = path.join(profilePath, "user-data", "logs");
   for (const directory of [profilePath, path.join(profilePath, "user-data"), logsRoot]) {
     if (fs.lstatSync(directory).isSymbolicLink()) {
@@ -19,15 +20,15 @@ export function retainHostOutput(profilePath, destination) {
       }
       if (entry.isDirectory()) {
         visit(source);
-      } else if (
-        entry.isFile() &&
-        /^\d+-Vize\.log$/.test(entry.name) &&
-        path.basename(directory).startsWith("output_logging_")
-      ) {
+      } else if (entry.isFile()) {
+        const isVizeOutput =
+          /^\d+-Vize\.log$/.test(entry.name) &&
+          path.basename(directory).startsWith("output_logging_");
+        if (!retainAllLogs && !isVizeOutput) continue;
         const target = path.join(destination, path.relative(logsRoot, source));
         fs.mkdirSync(path.dirname(target), { recursive: true });
         fs.copyFileSync(source, target);
-        copied += 1;
+        if (isVizeOutput) copied += 1;
       }
     }
   }
@@ -35,9 +36,9 @@ export function retainHostOutput(profilePath, destination) {
   if (copied === 0) throw new Error("No native Vize OutputChannel log was retained");
 }
 
-export function retainHostOutputBeforeCleanup(profilePath, destination) {
+export function retainHostOutputBeforeCleanup(profilePath, destination, retainAllLogs = false) {
   try {
-    retainHostOutput(profilePath, destination);
+    retainHostOutput(profilePath, destination, retainAllLogs);
   } catch (error) {
     // A diagnostic retention refusal must not replace the original host error.
     console.error(`Vize OutputChannel retention refused: ${String(error)}`);
