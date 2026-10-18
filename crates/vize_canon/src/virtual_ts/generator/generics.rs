@@ -365,21 +365,14 @@ mod tests {
         .expect("Value captures the SFC parameter");
         let mut setup = String::default();
         aliases.emit_setup_aliases(&mut setup);
-        assert!(
-            setup.contains("type Value = __VizeHoistedGeneric0<T>;"),
-            "{setup}"
+        assert_eq!(
+            setup.as_str(),
+            concat!(
+                "  type Value = __VizeHoistedGeneric0<T>;\n",
+                "  type Alias = Value;\n",
+                "  interface Payload { value: Alias }\n",
+            )
         );
-        assert!(setup.contains("type Alias = Value;"), "{setup}");
-        assert!(
-            setup.contains("interface Payload { value: Alias }"),
-            "{setup}"
-        );
-        assert!(!setup.contains("type Shadow"), "{setup}");
-        assert!(
-            !setup.contains("export type") && !setup.contains("export interface"),
-            "{setup}"
-        );
-        assert!(!setup.contains("type Imported"), "{setup}");
     }
 
     #[test]
