@@ -274,6 +274,7 @@ void test(
           });
           await writeFile(arts[0], changed);
           await reloaded;
+          await page.waitForLoadState("load");
           await page.waitForFunction(
             async (url) => {
               const art = await (await fetch(url)).json();

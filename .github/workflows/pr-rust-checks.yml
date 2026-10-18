@@ -206,6 +206,7 @@ jobs:
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
       RUST_TEST_THREADS: "4"
       NEXTEST_PROFILE: ${{ github.event_name == 'merge_group' && 'full' || 'pr' }}
+      VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ github.workspace }}/target/nextest/${{ github.event_name == 'merge_group' && 'full' || 'pr' }}/template-emit-ts40-projection
       COHORT: ${{ matrix.cohort }}
       NEXTEST_FILTER: ${{ matrix.filter }}
       RUST_PLAN_JSON: ${{ inputs.rust-plan }}
@@ -234,6 +235,11 @@ jobs:
       - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: cargo-nextest@0.9.146
+      - name: Test complete Inspector production and descriptor oracles
+        if: ${{ matrix.cohort == 'cli-and-integrations' && contains(fromJSON(inputs.rust-plan).packages, 'vize') }}
+        run: >-
+          node --test tests/tooling/inspector-production-mode.test.ts
+          tests/tooling/inspector-ssr-css-vars.test.ts
       - name: Select Rust runtime envelope
         run: |
           case "$GITHUB_EVENT_NAME" in

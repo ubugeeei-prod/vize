@@ -2,6 +2,75 @@ import assert from "node:assert/strict";
 import { lstatSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { sha256, same } from "./policy.ts";
+import { effectiveDenoConfig } from "./runtime.ts";
+
+// Closed source/config/workflow closure for signing AND consuming recovery evidence.
+// Include all materialized public harness modules as well as static imports.
+export const policyFiles = [
+  ".github/workflows/release-consumer-recovery.yml",
+  ".github/workflows/release-operator.yml",
+  ".github/workflows/release-public-acceptance.yml",
+  "npm/cli/src/corsa-runtime.ts",
+  "tests/performance/support/warm-type-backed-public-archives.ts",
+  "tools/support/release/consumer_recovery/archive.ts",
+  "tools/support/release/consumer_recovery/consumer.ts",
+  "tools/support/release/consumer_recovery/custody.ts",
+  "tools/support/release/consumer_recovery/evidence.ts",
+  "tools/support/release/consumer_recovery/main.ts",
+  "tools/support/release/consumer_recovery/oracles.ts",
+  "tools/support/release/consumer_recovery/policy.ts",
+  "tools/support/release/consumer_recovery/runtime.ts",
+  "tools/support/release/jsr/consumer-deno.json",
+  "tools/support/release/marketplace_query.ts",
+  "tools/support/release/public_acceptance/a11y.ts",
+  "tools/support/release/public_acceptance/accept.ts",
+  "tools/support/release/public_acceptance/browser.ts",
+  "tools/support/release/public_acceptance/browser_observation.ts",
+  "tools/support/release/public_acceptance/gallery.ts",
+  "tools/support/release/public_acceptance/github.ts",
+  "tools/support/release/public_acceptance/http.ts",
+  "tools/support/release/public_acceptance/inputs.ts",
+  "tools/support/release/public_acceptance/installed.ts",
+  "tools/support/release/public_acceptance/lsp.ts",
+  "tools/support/release/public_acceptance/lsp_assets.ts",
+  "tools/support/release/public_acceptance/lsp_atomic.ts",
+  "tools/support/release/public_acceptance/lsp_cargo.ts",
+  "tools/support/release/public_acceptance/lsp_case.ts",
+  "tools/support/release/public_acceptance/lsp_packets.ts",
+  "tools/support/release/public_acceptance/lsp_source.ts",
+  "tools/support/release/public_acceptance/native.ts",
+  "tools/support/release/public_acceptance/plan.ts",
+  "tools/support/release/public_acceptance/registry.ts",
+  "tools/support/release/public_acceptance/vrt_api.ts",
+  "tools/support/release/public_acceptance/vrt_artifacts.ts",
+  "tools/support/release/public_acceptance/vrt_audit.ts",
+  "tools/support/release/public_acceptance/vrt_cli.ts",
+  "tools/support/release/public_acceptance/vrt_fixtures.ts",
+  "tools/support/release/public_acceptance/vrt_host.ts",
+  "tools/support/release/public_acceptance/vrt_hosted.ts",
+  "tools/support/release/public_acceptance/vrt_literal.ts",
+  "tools/support/release/public_acceptance/vrt_observer.ts",
+  "tools/support/release/public_acceptance/vrt_retained.ts",
+  "tools/support/release/public_acceptance/vrt_retained_scan.ts",
+  "tools/support/release/public_acceptance/vrt_secrets.ts",
+  "tools/support/release/public_acceptance/vrt_service_announcement.ts",
+  "tools/support/release/public_acceptance/vrt_service_process.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_color_build.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_color_capture.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_colors.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_failures.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_gallery.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_network.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_observation.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_report_isolation.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_surface.ts",
+  "tools/support/release/public_acceptance/vrt_trusted_ui.ts",
+  "tools/support/release/public_acceptance/vrt_tunnel.ts",
+  "tools/support/release/public_acceptance/vrt_tunnel_metadata.ts",
+  "tools/support/release/public_acceptance/vrt_tunnel_process.ts",
+  "tools/support/release/public_acceptance/vrt_tunnel_setup.ts",
+  "tools/support/release/windows_hover_acceptance.ts",
+] as const;
 
 export interface OraclePolicy {
   consumerSha256: string;
@@ -13,7 +82,7 @@ function expected(policy: OraclePolicy, deno: boolean) {
   return {
     "consumer.ts": policy.consumerSha256,
     "custody.ts": policy.custodyProbeSha256,
-    ...(deno ? { "deno.json": policy.denoConfigSha256 } : {}),
+    ...(deno ? { "deno.json": sha256(effectiveDenoConfig) } : {}),
   };
 }
 export function verifyOracleHashes(actual: unknown, policy: OraclePolicy, deno: boolean) {

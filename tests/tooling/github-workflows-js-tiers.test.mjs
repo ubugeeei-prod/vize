@@ -271,6 +271,7 @@ void test("public native evidence remains reachable after prior build or package
       "target/oxlint-script-safe-carrier-7903.json",
       "target/oxlint-original-project-transport/**",
       "target/oxlint-original-html-binding-7903/**",
+      "target/vize-tests/original-sfc-host-7004-7005-*/**",
       "",
     ].join("\n"),
     "if-no-files-found": "warn",

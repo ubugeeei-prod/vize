@@ -1,8 +1,84 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
+interface SourcePreload {
+  schema: "vize.oxlint.original-sfc-preload";
+  wrapper: { path: string; sha256: string };
+  binary: { path: string; sha256: string };
+}
+
+function authenticateFile(file: SourcePreload["binary"]): string {
+  const physical = fs.realpathSync(file.path);
+  assert.equal(physical, file.path, "selected source files must use their exact physical paths");
+  const descriptor = fs.openSync(physical, "r");
+  try {
+    const before = fs.fstatSync(descriptor, { bigint: true });
+    assert.ok(before.isFile());
+    const digest = createHash("sha256");
+    const chunk = Buffer.allocUnsafe(64 * 1024);
+    let bytes = 0n;
+    for (;;) {
+      const length = fs.readSync(descriptor, chunk, 0, chunk.length, null);
+      if (length === 0) break;
+      bytes += BigInt(length);
+      assert.ok(bytes <= before.size);
+      digest.update(chunk.subarray(0, length));
+    }
+    assert.equal(bytes, before.size);
+    const after = fs.fstatSync(descriptor, { bigint: true });
+    const current = fs.lstatSync(physical, { bigint: true });
+    assert.ok(current.isFile());
+    for (const key of ["dev", "ino", "mode", "size", "mtimeNs", "ctimeNs"] as const) {
+      assert.equal(after[key], before[key], "source file changed during authentication");
+      assert.equal(current[key], after[key], "source path changed during authentication");
+    }
+    assert.equal(digest.digest("hex"), file.sha256);
+    return physical;
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+
+/** Preload only Vize: a global NAPI override would also hijack Oxlint's addon. */
+export function preloadProjectNative(custody: SourcePreload): void {
+  assert.equal(custody.schema, "vize.oxlint.original-sfc-preload");
+  assert.equal(process.env.NAPI_RS_NATIVE_LIBRARY_PATH, undefined);
+  assert.equal(process.env.NAPI_RS_FORCE_WASI, undefined);
+  const expected = fs.realpathSync(
+    fileURLToPath(new URL("../../native/index.js", import.meta.url)),
+  );
+  assert.equal(
+    custody.wrapper.path,
+    expected,
+    "only this source tree's native wrapper may preload",
+  );
+  const wrapper = authenticateFile(custody.wrapper);
+  const binary = authenticateFile(custody.binary);
+  const require = createRequire(import.meta.url);
+  try {
+    process.env.NAPI_RS_NATIVE_LIBRARY_PATH = binary;
+    const binding = require(wrapper);
+    assert.ok(require.cache[binary], "the selected physical image must actually load");
+    assert.equal(
+      require.cache[binary]?.exports,
+      binding,
+      "the wrapper must expose that exact image",
+    );
+  } finally {
+    // All subsequent Oxlint imports, handshakes and subprocesses see no override.
+    delete process.env.NAPI_RS_NATIVE_LIBRARY_PATH;
+  }
+}
+
+if (process.env.VIZE_OXLINT_NATIVE_CUSTODY) {
+  preloadProjectNative(
+    JSON.parse(fs.readFileSync(process.env.VIZE_OXLINT_NATIVE_CUSTODY, "utf8")) as SourcePreload,
+  );
+}
 
 export function stageProjectNative(
   artifactRoot: string,

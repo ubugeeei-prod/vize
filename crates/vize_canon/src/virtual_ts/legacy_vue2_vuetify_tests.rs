@@ -101,7 +101,7 @@ function updateDate(newDate: string) {
 
     let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
     assert!(
-        legacy.contains("const $event = __vize_args[0] as __VDatePicker_")
+        legacy.contains("const $event = (__vize_args as unknown[])[0] as __VDatePicker_")
             && legacy.contains("updateDate($event);  // handler expression"),
         "legacy Vue 2 component events should scope explicit `$event` aliases:\n{legacy}"
     );
@@ -123,7 +123,7 @@ function moveToDetail(item: Manager) {
 
     let legacy = legacy_virtual_ts(script, template, &VirtualTsOptions::default());
     assert!(
-        legacy.contains("__VizeVue2LooseEventArg<__DataTable_")
+        legacy.contains("__VizeVue2LooseEventArg<__A[0]>")
             && legacy.contains("__VizeVue2LooseEmitArgs<__DataTable_"),
         "legacy Vue 2 broad Object component event payloads should be loosened:\n{legacy}"
     );

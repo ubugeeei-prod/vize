@@ -2,6 +2,88 @@ use super::generate_virtual_ts;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 #[test]
+fn interrupted_sibling_chain_keeps_exclusions_outside_the_remaining_branches() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../../tests/_fixtures/content-mapper/escaton-nested-flow-9433.json"
+    ))
+    .unwrap();
+    let source = fixture["originals"][0]["files"]["App.vue"]
+        .as_str()
+        .unwrap();
+    let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+    let script = descriptor.script_setup.as_ref().unwrap().content.as_ref();
+    let template = descriptor.template.as_ref().unwrap().content.as_ref();
+    let allocator = vize_carton::Allocator::new();
+    let (root, errors) = vize_armature::parse(&allocator, template);
+    // The original Vue SFC uses two self-closing non-void HTML elements.
+    // Standard parsing retains their exact compatibility notices; no other
+    // notice or error may pass this admission check.
+    let notice = "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.";
+    assert_eq!(
+        errors
+            .iter()
+            .map(|error| (
+                error.code,
+                error.message.as_str(),
+                error.loc.as_ref().map(|loc| (loc.span.start, loc.span.end)),
+                error.is_recoverable(),
+            ))
+            .collect::<Vec<_>>(),
+        [
+            (
+                vize_armature::ErrorCode::ExtendPoint,
+                notice,
+                Some((33, 50)),
+                true
+            ),
+            (
+                vize_armature::ErrorCode::ExtendPoint,
+                notice,
+                Some((64, 96)),
+                true
+            ),
+        ],
+        "the original parser packet must remain complete: {errors:?}"
+    );
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    let start = output.code.find("  if (!(view === 'a')) {").unwrap();
+    let end = start
+        + output
+            .code
+            .get(start..)
+            .unwrap()
+            .find("\n  // Reference setup bindings")
+            .unwrap();
+    assert_eq!(
+        output.code.get(start..end),
+        Some(concat!(
+            "  if (!(view === 'a')) {\n",
+            "    if (view === 'b') {\n",
+            "      // @vize-map: expr -> 80:92\n",
+            "    } else {\n",
+            "      void (checked); // VModel\n",
+            "      // @vize-map: expr -> 132:139\n",
+            "    }\n",
+            "  }\n",
+        )),
+        "the whole remaining chain must reuse the prior exclusions without rechecking them"
+    );
+    assert!(output.mapping.spans().iter().any(|mapping| {
+        template.get(mapping.src_range.clone()) == Some("view === 'b'")
+            && output.code.get(mapping.gen_range.clone()) == Some("view === 'b'")
+    }));
+    assert!(output.mapping.spans().iter().any(|mapping| {
+        template.get(mapping.src_range.clone()) == Some("checked")
+            && output.code.get(mapping.gen_range.clone()) == Some("checked")
+    }));
+}
+
+#[test]
 fn test_prefixed_v_else_branch_reuses_the_enclosing_v_for_guard() {
     let script = r#"const isOpen = true
 type Item =

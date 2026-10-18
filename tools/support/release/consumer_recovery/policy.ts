@@ -260,6 +260,21 @@ export function admitOriginal(
     ),
     "other step failure",
   );
+  if (
+    expected.cut === "014bd42cacdf3d026fb75162cfa80dce76d78315" &&
+    expected.head === "03882089eff75664abe99ba71868e33739496b01" &&
+    expected.tag === "v0.457.0" &&
+    expected.sourcePr === "9196" &&
+    expected.run === "38805261385" &&
+    expected.attempt === 4
+  ) {
+    same(Buffer.byteLength(log), 24145, "complete original 0.457.0 failure log required");
+    same(
+      sha256(log),
+      "df3ec6ea97cd47a655a0fd46528a4e28f24ae3aac6fa256ff8b7e23a8e778860",
+      "original 0.457.0 failure log bytes changed",
+    );
+  }
   const plain = stripVTControlCharacters(log);
   const fingerprint = `Could not find a matching package for 'npm:vize@${expected.tag.slice(1)}' in the node_modules directory.`;
   same(
@@ -296,6 +311,12 @@ export function assertFresh(receipt: Json, expected: Identity, now = Date.now())
     [...roles].sort(),
     "six distinct original consumer roles required",
   );
+}
+
+/** Fresh collections use the complete raw-custody policy, never legacy admission. */
+export function assertFreshV2(receipt: Json, expected: Identity, now = Date.now()) {
+  same(receipt.schema, "vize-consumer-recovery-v2", "current policy requires v2 evidence");
+  assertFresh({ ...receipt, schema: "vize-consumer-recovery-v1" }, expected, now);
 }
 
 export function recoveryRunIdentity(run: Json, expectedRun: string) {

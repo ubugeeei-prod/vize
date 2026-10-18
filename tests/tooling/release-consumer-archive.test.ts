@@ -21,6 +21,7 @@ import {
   fixture as policyFixture,
   sha256,
 } from "../../tools/support/release/consumer_recovery/policy.ts";
+import { effectiveDenoConfig } from "../../tools/support/release/consumer_recovery/runtime.ts";
 import { custodyProbe } from "../../tools/support/release/consumer_recovery/oracles.ts";
 
 type TarFile = { name: string; body?: string; type?: string; link?: string };
@@ -355,7 +356,7 @@ function completeConsumer() {
     custodyProbeSha256: sha256(custodyProbe),
   };
   const packet = {
-    schema: "vize-consumer-recovery-consumer-v1",
+    schema: "vize-consumer-recovery-consumer-v2",
     status: "passed",
     role: "node24-linux" as const,
     identity: {
@@ -369,6 +370,7 @@ function completeConsumer() {
     policy,
     consumerSha256: policy.consumerSha256,
     denoConfigSha256: policy.denoConfigSha256,
+    effectiveDenoConfigSha256: sha256(effectiveDenoConfig),
     run: { id: "123456789", attempt: "1", sha: policy.sha },
     project,
     checkout: "/work/vize",
@@ -403,7 +405,12 @@ function completeConsumer() {
     ended: "2026-10-17T00:00:01.000Z",
     status: 0,
     signal: null,
-    stdout: label === "node-version" ? "v24.19.0\n" : "",
+    stdout:
+      label === "node-version"
+        ? "v24.19.0\n"
+        : label === "consumer"
+          ? "Verified @vizejs/vize (--vite)\n"
+          : "",
     stderr: "",
     denoDir: null,
     oracleBefore: { ...oracle },

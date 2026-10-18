@@ -1,0 +1,12 @@
+{
+  "upstream": "https://github.com/elk-zone/elk/blob/8aa2b4650760eeba4ea1fdd9dc18d8a88ca5d7f0/app/components/status/StatusMedia.vue",
+  "path": "app/components/status/StatusMedia.vue",
+  "sourceBytes": 1033,
+  "sourceSha256": "bf39327f8b94823538dfc0ac9ef19854a90961476ded170c357cfb8fe12c5404",
+  "officialVersion": "3.6.0-beta.10",
+  "officialImplementationSha256": "131cae84341c63aeb3c10dcdc2401a7bfd299adff8ef64bf5fcc1d734fed1cce",
+  "originalReport": "https://github.com/ubugeeei-prod/vize/actions/runs/38889389579",
+  "ssrOracle": "Independent public compileScript with templateOptions.ssr and compileTemplate with ssrCssVars/slotted from the descriptor; same isProd/id/scoped/bindingMetadata options as inspector.",
+  "negativeControl": "The one authored v-bind(gridColumnNumber) is replaced with literal 2; all other original bytes are retained.",
+  "referenceNodeEnvironment": "production"
+}

@@ -1,7 +1,7 @@
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 
-use super::setup_scope::macro_type_requires_setup_scope;
+use super::setup_scope::{define_emits_type_requires_setup_scope, macro_type_requires_setup_scope};
 use crate::virtual_ts::{
     helpers::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER, push_ts_string_literal},
     macro_type_mappings::MacroTypeMappings,
@@ -163,7 +163,12 @@ pub(super) fn emit_emits_type(
 
     if !emits_already_defined {
         if let Some(type_args) = define_emits_type_args {
-            let inner_type = inner_type_of(type_args);
+            let inner_type = if define_emits_type_requires_setup_scope(summary) {
+                let names = generic_param.map(extract_generic_names).unwrap_or_default();
+                cstr!("Awaited<ReturnType<typeof __setup<{names}>>>[\"__vize_typed_emits\"]")
+            } else {
+                String::from(inner_type_of(type_args))
+            };
             if has_model_emits {
                 append!(
                     *ts,
@@ -270,9 +275,9 @@ pub(super) fn emit_emit_props_helper(
     }
     if info.has_runtime_emits {
         if info.preserve_event_navigation {
-            ts.push_str("type __VizeStaticEventMap = __EmitOptions<Awaited<ReturnType<typeof __setup>>[\"__vize_emit_options\"]>;\n");
+            ts.push_str("type __VizeStaticEventMap = __EmitOptions<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>;\n");
         }
-        ts.push_str("type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emit_options\"]>;\n\n");
+        ts.push_str("type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>;\n\n");
     } else {
         if info.preserve_event_navigation {
             if info.generic_event_map_decl.is_empty() {

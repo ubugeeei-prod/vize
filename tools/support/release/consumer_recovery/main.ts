@@ -12,14 +12,15 @@ import {
   files,
   verifiedRecovery,
   verifyIntegration,
+  verifyConsumerDirectory,
   verifyStoredIntegration,
   type Original,
 } from "./custody.ts";
-import { verifyConsumer } from "./consumer.ts";
+import { verifyOriginalLogDirectory } from "./runtime.ts";
 import { assertOracleFiles } from "./oracles.ts";
 import { revalidatePublicArchives, type InstalledArchive } from "./archive.ts";
 import {
-  assertFresh,
+  assertFreshV2,
   consumerAttempt,
   identity,
   integrationIdentity,
@@ -57,7 +58,11 @@ if (operation === "prepare" || operation === "finalize") {
       run: process.env.GITHUB_RUN_ID,
       attempt: process.env.GITHUB_RUN_ATTEMPT,
     });
-    const original = await collectOriginal(expected, policySha);
+    const original = await collectOriginal(
+      expected,
+      policySha,
+      path.join(output, "original-log-capture"),
+    );
     save(output, "original.json", original);
     writeFileSync(path.join(output, "original-failure.log"), original.log, { flag: "wx" });
     writeFileSync(path.join(output, "consumer.ts"), String(original.blobs.consumerSha256), {
@@ -79,11 +84,11 @@ if (operation === "prepare" || operation === "finalize") {
     const original = load(path.join(output, "original.json")) as Original;
     same(original.identity, expected, "original input changed");
     same(original.policy.sha, policySha, "policy changed during requalification");
+    verifyOriginalLogDirectory(output, "original-log-capture", original);
     const consumers: Json[] = [];
     for (const role of roles) {
       const file = path.join(output, "consumers", role, "consumer.json");
-      const packet = load(file);
-      verifyConsumer(packet, original);
+      const packet = verifyConsumerDirectory(path.dirname(file), original);
       assertOracleFiles(path.dirname(file), original.policy, role === "deno-linux");
       save(
         output,
@@ -102,7 +107,8 @@ if (operation === "prepare" || operation === "finalize") {
       );
       consumers.push({ role, sha256: sha256(readFileSync(file)) });
     }
-    const live = await collectOriginal(expected, policySha);
+    const live = await collectOriginal(expected, policySha, path.join(output, "final-log-capture"));
+    verifyOriginalLogDirectory(output, "final-log-capture", live);
     for (const key of [
       "policy",
       "run",
@@ -110,6 +116,7 @@ if (operation === "prepare" || operation === "finalize") {
       "failed",
       "log",
       "logIdentity",
+      "logCustody",
       "blobs",
       "artifacts",
       "pin",
@@ -136,7 +143,7 @@ if (operation === "prepare" || operation === "finalize") {
       "original signed integration changed",
     );
     const receipt = {
-      schema: "vize-consumer-recovery-v1",
+      schema: "vize-consumer-recovery-v2",
       identity: expected,
       originalConclusion: "failure",
       status: "consumer-requalified",
@@ -157,7 +164,7 @@ if (operation === "prepare" || operation === "finalize") {
       qualification:
         "Only the digest-bound frozen Deno consumer fixture was requalified. Original R/H/tag/artifacts remain unchanged; original R remains failed. All six original public consumer contracts ran freshly. External installed-product acceptance and source receipt closure are separate.",
     };
-    assertFresh(receipt, expected);
+    assertFreshV2(receipt, expected);
     save(output, "receipt.json", receipt);
     console.log(
       "All six public consumers and exact original identities passed requalification; original Release remains failed.",

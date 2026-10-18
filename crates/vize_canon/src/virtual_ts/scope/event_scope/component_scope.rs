@@ -101,7 +101,7 @@ pub(super) fn generate_component_handler_scope(
     }
     append!(
         *ts,
-        "{inner_indent}const {event_value} = __vize_args[0] as {event_type}; void {event_value};\n",
+        "{inner_indent}const {event_value} = (__vize_args as unknown[])[0] as {event_type}; void {event_value};\n",
     );
 
     profile!(

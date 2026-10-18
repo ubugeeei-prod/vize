@@ -1,0 +1,177 @@
+{
+  "schema": "vize.official-ts71-nested-flow.v1",
+  "issue": 9433,
+  "reporter": "escaton",
+  "url": "https://github.com/ubugeeei-prod/vize/issues/9433",
+  "issueBodySha256": "96f7f0ad182588a121fb7c918be2245e618f6e8fc8405634610c86bfceb4dd38",
+  "typescript": "7.1.0-dev.20261017.1",
+  "vue": "3.5.20",
+  "baselineVize": "0.463.0",
+  "originalSha256": {
+    "tsconfig.json": "a14e7e6ae7a338a3d8117283e1a29455b0e04d8debf3896523d8e284663f30b8",
+    "App.vue": "65380888b83e1bed731514d52c3038af70ed243a0049b3c9b958c9acf5b25ff6"
+  },
+  "beforeEvidence": {
+    "path": "escaton-nested-flow-9433-before.json.gz",
+    "sha256": "181e1fde4d547767ae144bda03ec2cc8fcaf0ce02f48c1ce1c244a1d30f80cb8",
+    "uncompressedSha256": "91e088c6b64b511033600fe798f448f6a3e4d534b7dca513de3ae1c4c367e657",
+    "packets": 18,
+    "oracle": {
+      "vue-tsc": "3.3.9",
+      "typescript": "6.0.3",
+      "vue": "3.5.20"
+    }
+  },
+  "originals": [
+    {
+      "issue": 9433,
+      "issueBodySha256": "96f7f0ad182588a121fb7c918be2245e618f6e8fc8405634610c86bfceb4dd38",
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst view = ref<'a' | 'b' | 'c'>('a')\nconst checked = ref(false)\n</script>\n<template>\n  <template v-if=\"view === 'a'\"><p v-if=\"true\" /></template>\n  <div v-else-if=\"view === 'b'\" />\n  <template v-else><input v-model=\"checked\" type=\"checkbox\" /></template>\n</template>\n"
+      },
+      "baselineCodes": [2367],
+      "baselineTerms": ["have no overlap"],
+      "expectedCodes": [],
+      "expectedTerms": [],
+      "baselineStdout": "App.vue(153,35): error TS2367: This comparison appears to be unintentional because the types '\"c\"' and '\"b\"' have no overlap.\n  This location is in virtual code produced by the content mapper 'vize@0.463.0' and has no corresponding location in the original file.\n",
+      "baselineStderr": "",
+      "expectedStdout": "",
+      "expectedStderr": "",
+      "sourceSha256": {
+        "tsconfig.json": "a14e7e6ae7a338a3d8117283e1a29455b0e04d8debf3896523d8e284663f30b8",
+        "App.vue": "65380888b83e1bed731514d52c3038af70ed243a0049b3c9b958c9acf5b25ff6"
+      }
+    }
+  ],
+  "controls": [
+    {
+      "name": "without-nested-if",
+      "original": 9433,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst view = ref<'a' | 'b' | 'c'>('a')\nconst checked = ref(false)\n</script>\n<template>\n  <template v-if=\"view === 'a'\"><p /></template>\n  <div v-else-if=\"view === 'b'\" />\n  <template v-else><input v-model=\"checked\" type=\"checkbox\" /></template>\n</template>\n"
+      },
+      "codes": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0,
+      "sourceSha256": {
+        "tsconfig.json": "a14e7e6ae7a338a3d8117283e1a29455b0e04d8debf3896523d8e284663f30b8",
+        "App.vue": "0c2f60c6ea158c6e3e81049394c9cbb3c7da8e422d0648eecd36c026608b40e6"
+      }
+    },
+    {
+      "name": "nested-false-condition",
+      "original": 9433,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst view = ref<'a' | 'b' | 'c'>('a')\nconst checked = ref(false)\n</script>\n<template>\n  <template v-if=\"view === 'a'\"><p v-if=\"false\" /></template>\n  <div v-else-if=\"view === 'b'\" />\n  <template v-else><input v-model=\"checked\" type=\"checkbox\" /></template>\n</template>\n"
+      },
+      "codes": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0,
+      "sourceSha256": {
+        "tsconfig.json": "a14e7e6ae7a338a3d8117283e1a29455b0e04d8debf3896523d8e284663f30b8",
+        "App.vue": "36e117ded7fb12d0bb391a501ae42fbdcb75d828d009d742adc288a1b09074d4"
+      }
+    },
+    {
+      "name": "reverse-sibling-order",
+      "original": 9433,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst view = ref<'a' | 'b' | 'c'>('a')\nconst checked = ref(false)\n</script>\n<template>\n  <template v-if=\"view === 'b'\"><p v-if=\"true\" /></template>\n  <div v-else-if=\"view === 'a'\" />\n  <template v-else><input v-model=\"checked\" type=\"checkbox\" /></template>\n</template>\n"
+      },
+      "codes": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0,
+      "sourceSha256": {
+        "tsconfig.json": "a14e7e6ae7a338a3d8117283e1a29455b0e04d8debf3896523d8e284663f30b8",
+        "App.vue": "351b51962a1c743fa34be3dd77b8386eb147e4b88ae358cf95f74d3ca198fd9e"
+      }
+    },
+    {
+      "name": "nested-parent-condition",
+      "original": 9433,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst view = ref<'a' | 'b' | 'c'>('a')\nconst checked = ref(false)\nconst ready = ref(true)\n</script>\n<template>\n  <section v-if=\"ready\">\n  <template v-if=\"view === 'a'\"><p v-if=\"true\" /></template>\n  <div v-else-if=\"view === 'b'\" />\n  <template v-else><input v-model=\"checked\" type=\"checkbox\" /></template>\n  </section>\n</template>\n"
+      },
+      "codes": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0,
+      "sourceSha256": {
+        "tsconfig.json": "a14e7e6ae7a338a3d8117283e1a29455b0e04d8debf3896523d8e284663f30b8",
+        "App.vue": "9ffc4aa3aea6a151e3cc2b5070132f921ecbfc66ba33ce841c374bc767eac356"
+      }
+    },
+    {
+      "name": "outer-loop-scope",
+      "original": 9433,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst view = ref<'a' | 'b' | 'c'>('a')\nconst checked = ref(false)\n</script>\n<template>\n  <section v-for=\"entry in [view]\">\n  <template v-if=\"entry === 'a'\"><p v-if=\"true\" /></template>\n  <div v-else-if=\"entry === 'b'\" />\n  <template v-else><input v-model=\"checked\" type=\"checkbox\" /></template>\n  </section>\n</template>\n"
+      },
+      "codes": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0,
+      "sourceSha256": {
+        "tsconfig.json": "a14e7e6ae7a338a3d8117283e1a29455b0e04d8debf3896523d8e284663f30b8",
+        "App.vue": "b8526926db38f39d6302760a16601f45506a0ac85e5867acc15da93e7aa3a138"
+      }
+    },
+    {
+      "name": "authored-impossible-nested-comparison",
+      "original": 9433,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst view = ref<'a' | 'b' | 'c'>('a')\nconst checked = ref(false)\n</script>\n<template>\n  <template v-if=\"view === 'a'\"><p v-if=\"view === 'b'\" /></template>\n  <div v-else-if=\"view === 'b'\" />\n  <template v-else><input v-model=\"checked\" type=\"checkbox\" /></template>\n</template>\n"
+      },
+      "codes": [2367],
+      "stdout": "App.vue(7,42): error TS2367: This comparison appears to be unintentional because the types '\"a\"' and '\"b\"' have no overlap.\n",
+      "stderr": "",
+      "status": 2,
+      "sourceSha256": {
+        "tsconfig.json": "a14e7e6ae7a338a3d8117283e1a29455b0e04d8debf3896523d8e284663f30b8",
+        "App.vue": "d7a5b1fd3d02babc7420bc53e2882d22f4aba48b7c0a34d8bff7c9465d0e23d5"
+      }
+    },
+    {
+      "name": "authored-final-branch-missing-member",
+      "original": 9433,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst view = ref<'a' | 'b' | 'c'>('a')\nconst checked = ref(false)\n</script>\n<template>\n  <template v-if=\"view === 'a'\"><p v-if=\"true\" /></template>\n  <div v-else-if=\"view === 'b'\" />\n  <template v-else><input v-model=\"checked\" type=\"checkbox\" />{{ view.missing }}</template>\n</template>\n"
+      },
+      "codes": [2339],
+      "stdout": "App.vue(9,71): error TS2339: Property 'missing' does not exist on type '\"c\"'.\n",
+      "stderr": "",
+      "status": 2,
+      "sourceSha256": {
+        "tsconfig.json": "a14e7e6ae7a338a3d8117283e1a29455b0e04d8debf3896523d8e284663f30b8",
+        "App.vue": "8c2923afafd90c21c58f479c12bbaf043a04d59d33a237af9702990362805126"
+      }
+    },
+    {
+      "name": "authored-final-branch-impossible-comparison",
+      "original": 9433,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst view = ref<'a' | 'b' | 'c'>('a')\nconst checked = ref(false)\n</script>\n<template>\n  <template v-if=\"view === 'a'\"><p v-if=\"true\" /></template>\n  <div v-else-if=\"view === 'b'\" />\n  <template v-else><input v-model=\"checked\" type=\"checkbox\" />{{ view === 'b' }}</template>\n</template>\n"
+      },
+      "codes": [2367],
+      "stdout": "App.vue(9,66): error TS2367: This comparison appears to be unintentional because the types '\"c\"' and '\"b\"' have no overlap.\n",
+      "stderr": "",
+      "status": 2,
+      "sourceSha256": {
+        "tsconfig.json": "a14e7e6ae7a338a3d8117283e1a29455b0e04d8debf3896523d8e284663f30b8",
+        "App.vue": "722cb363562faec83368d00699f36dcb4c99d4c7287351bb1fdddad35d14cf11"
+      }
+    }
+  ]
+}

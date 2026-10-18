@@ -57,10 +57,24 @@ pub(super) fn emit_return_artifacts(
     if let Some(runtime_args) = define_emits_runtime_args(summary) {
         append!(
             *ts,
-            "\n  const __vize_emit_options = ({runtime_args});\n  const __vize_emits = defineEmits(__vize_emit_options);\n"
+            "\n  const __vize_emit_options = ({runtime_args});\n  const __vize_emits = defineEmits({runtime_args});\n"
         );
         fields.push("__vize_emit_options".into());
         fields.push("__vize_emits".into());
+    } else if super::setup_scope::define_emits_type_requires_setup_scope(summary)
+        && let Some(type_args) = summary
+            .macros
+            .define_emits()
+            .and_then(|call| call.type_args.as_deref())
+    {
+        // Keep local type aliases instantiated by this setup invocation. A
+        // module-scope copy would use their fallback type arguments instead.
+        let inner = super::emits::inner_type_of(type_args);
+        append!(
+            *ts,
+            "\n  const __vize_typed_emits = undefined as unknown as {inner};\n"
+        );
+        fields.push("__vize_typed_emits".into());
     }
 }
 

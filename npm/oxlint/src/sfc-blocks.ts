@@ -1,103 +1,162 @@
-import type { LineColumn, PatinaDiagnostic, SfcBlock, SfcBlockKind } from "./model.js";
+import { isUtf8 } from "node:buffer";
+
+import type {
+  LineColumn,
+  NativeSfcBlock,
+  NativeSfcDescriptor,
+  PatinaDiagnostic,
+  SfcBlock,
+  SfcBlockKind,
+} from "./model.js";
+import { loadBinding } from "./native.ts";
 
 export function extractSfcBlocks(source: string): SfcBlock[] {
-  const blocks: SfcBlock[] = [];
-  const lineStarts = createLineStartOffsets(source);
-  let cursor = 0;
+  // Resolve the image and validate its export outside the user-input error catch.
+  const binding = loadBinding();
+  if (typeof binding.parseSfc !== "function")
+    throw new Error("Vize native binding does not expose the SFC parser.");
 
-  for (;;) {
-    const match = findNextOpenTag(source, cursor);
-    if (match == null) {
-      return blocks;
-    }
-
-    const { tagName, openTag, openTagEnd } = match;
-    const closeTag = `</${tagName}>`;
-    const closeTagStart = source.indexOf(closeTag, openTagEnd);
-    if (closeTagStart === -1) {
-      cursor = openTagEnd;
-      continue;
-    }
-
-    blocks.push({
-      kind: resolveBlockKind(tagName, openTag),
-      name: tagName,
-      content: source.slice(openTagEnd, closeTagStart),
-      contentStart: offsetToLineColumn(lineStarts, openTagEnd),
-      contentEnd: offsetToLineColumn(lineStarts, closeTagStart),
-    });
-
-    cursor = closeTagStart + closeTag.length;
+  let descriptor: NativeSfcDescriptor;
+  try {
+    descriptor = binding.parseSfc(source);
+  } catch (error) {
+    if (
+      error !== null &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "InvalidSfc"
+    )
+      // No ownership can be assigned to malformed input. The lint pass retains
+      // the original parser diagnostic; this classifier must not invent blocks.
+      return [];
+    throw error;
   }
+  return projectSfcBlocks(source, descriptor);
 }
 
-interface OpenTagMatch {
-  readonly tagName: string;
-  readonly openTag: string;
-  readonly openTagEnd: number;
+interface ParsedBlock {
+  block: NativeSfcBlock;
+  kind: SfcBlockKind;
+  name: string;
 }
 
-function findNextOpenTag(source: string, cursor: number): OpenTagMatch | null {
-  let index = cursor;
+/** Project checked native geometry; never rediscover tags from the source text. */
+export function projectSfcBlocks(source: string, descriptor: NativeSfcDescriptor): SfcBlock[] {
+  if (
+    descriptor.source !== source ||
+    !Array.isArray(descriptor.styles) ||
+    !Array.isArray(descriptor.customBlocks)
+  )
+    throw new Error("Vize SFC descriptor does not describe the complete original source.");
+  const parsed: ParsedBlock[] = [];
+  const add = (block: NativeSfcBlock | null, kind: SfcBlockKind, name: string) => {
+    if (block !== null) parsed.push({ block, kind, name });
+  };
+  add(descriptor.template, "template", "template");
+  if (descriptor.script !== null && descriptor.script.setup !== false)
+    throw new Error("Vize SFC script descriptor has invalid setup ownership.");
+  if (descriptor.scriptSetup !== null && descriptor.scriptSetup.setup !== true)
+    throw new Error("Vize SFC setup descriptor has invalid setup ownership.");
+  add(descriptor.script, "script", "script");
+  add(descriptor.scriptSetup, "script-setup", "script");
+  for (const block of descriptor.styles) add(block, "style", "style");
+  for (const block of descriptor.customBlocks) {
+    if (typeof block.type !== "string" || block.type.length === 0)
+      throw new Error("Vize SFC custom descriptor has no block name.");
+    add(block, "custom", block.type);
+  }
 
-  for (;;) {
-    const openTagStart = source.indexOf("<", index);
-    if (openTagStart === -1) {
-      return null;
-    }
-
-    const tagNameStart = openTagStart + 1;
-    if (!isAsciiLetter(source.charCodeAt(tagNameStart))) {
-      index = tagNameStart;
-      continue;
-    }
-
-    let tagNameEnd = tagNameStart + 1;
-    while (isTagNameCharacter(source.charCodeAt(tagNameEnd))) {
-      tagNameEnd += 1;
-    }
-
-    if (!isTagNameBoundary(source.charCodeAt(tagNameEnd))) {
-      index = tagNameEnd;
-      continue;
-    }
-
-    const openTagEnd = findOpenTagEnd(source, tagNameEnd);
-    if (openTagEnd == null) {
-      return null;
-    }
-
+  const bytes = Buffer.from(source, "utf8");
+  if (bytes.toString("utf8") !== source)
+    throw new Error("Vize SFC source cannot round-trip through UTF-8.");
+  for (const { block } of parsed) {
+    const loc = block.loc;
+    if (
+      !loc ||
+      typeof block.content !== "string" ||
+      ![loc.start, loc.end, loc.tagStart, loc.tagEnd].every(
+        (offset) => Number.isSafeInteger(offset) && offset >= 0 && offset <= bytes.length,
+      ) ||
+      loc.tagStart > loc.start ||
+      loc.start > loc.end ||
+      loc.end > loc.tagEnd
+    )
+      throw new Error("Vize SFC descriptor has invalid byte geometry.");
+  }
+  parsed.sort((left, right) => left.block.loc.tagStart - right.block.loc.tagStart);
+  let previousEnd = 0;
+  for (const { block } of parsed) {
+    if (block.loc.tagStart < previousEnd)
+      throw new Error("Vize SFC descriptor contains overlapping top-level blocks.");
+    previousEnd = block.loc.tagEnd;
+  }
+  const positions = projectPositions(
+    bytes,
+    parsed.flatMap(({ block }) => [
+      block.loc.tagStart,
+      block.loc.start,
+      block.loc.end,
+      block.loc.tagEnd,
+    ]),
+  );
+  return parsed.map(({ block, kind, name }) => {
+    const { loc, content } = block;
+    const start = positions.get(loc.start)!;
+    const end = positions.get(loc.end)!;
+    if (
+      source.slice(start.index, end.index) !== content ||
+      loc.startLine !== start.line ||
+      loc.startColumn !== start.byteColumn ||
+      loc.endLine !== end.line ||
+      loc.endColumn !== end.byteColumn
+    )
+      throw new Error(
+        "Vize SFC descriptor content and geometry disagree with the original source.",
+      );
     return {
-      tagName: source.slice(tagNameStart, tagNameEnd),
-      openTag: source.slice(openTagStart, openTagEnd),
-      openTagEnd,
+      kind,
+      name,
+      content,
+      contentStart: { line: start.line, column: start.column },
+      contentEnd: { line: end.line, column: end.column },
     };
-  }
+  });
 }
 
-function findOpenTagEnd(source: string, from: number): number | null {
-  let quote: number | null = null;
+interface ProjectedPosition extends LineColumn {
+  index: number;
+  byteColumn: number;
+}
 
-  for (let index = from; index < source.length; index += 1) {
-    const code = source.charCodeAt(index);
-    if (quote != null) {
-      if (code === quote) {
-        quote = null;
-      }
-      continue;
+/** Decode disjoint byte segments once. LF is the parser's line boundary; CR stays exact. */
+function projectPositions(
+  bytes: Buffer,
+  offsets: readonly number[],
+): Map<number, ProjectedPosition> {
+  const positions = new Map<number, ProjectedPosition>();
+  let previous = 0;
+  let index = 0;
+  let line = 1;
+  let column = 1;
+  let byteColumn = 1;
+  for (const offset of [...new Set(offsets)].sort((left, right) => left - right)) {
+    const segment = bytes.subarray(previous, offset);
+    if (!isUtf8(segment)) throw new Error("Vize SFC byte endpoint splits a UTF-8 scalar.");
+    const text = segment.toString("utf8");
+    index += text.length;
+    const newline = text.lastIndexOf("\n");
+    if (newline === -1) {
+      column += text.length;
+      byteColumn += segment.length;
+    } else {
+      for (const character of text) if (character === "\n") line += 1;
+      column = text.length - newline;
+      byteColumn = segment.length - segment.lastIndexOf(10);
     }
-
-    if (code === 34 || code === 39) {
-      quote = code;
-      continue;
-    }
-
-    if (code === 62) {
-      return index + 1;
-    }
+    positions.set(offset, { index, line, column, byteColumn });
+    previous = offset;
   }
-
-  return null;
+  return positions;
 }
 
 export function getDiagnosticBlock(
@@ -141,79 +200,4 @@ export function compareLineColumn(left: LineColumn, right: LineColumn): number {
   }
 
   return left.column - right.column;
-}
-
-function isAsciiLetter(code: number): boolean {
-  return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
-}
-
-function isTagNameCharacter(code: number): boolean {
-  return (
-    (code >= 48 && code <= 57) ||
-    (code >= 65 && code <= 90) ||
-    code === 45 ||
-    code === 95 ||
-    (code >= 97 && code <= 122)
-  );
-}
-
-function isTagNameBoundary(code: number): boolean {
-  return (
-    code === 9 ||
-    code === 10 ||
-    code === 12 ||
-    code === 13 ||
-    code === 32 ||
-    code === 47 ||
-    code === 62
-  );
-}
-
-function createLineStartOffsets(source: string): number[] {
-  const lineStarts = [0];
-
-  for (let index = 0; index < source.length; index += 1) {
-    if (source.charCodeAt(index) === 10) {
-      lineStarts.push(index + 1);
-    }
-  }
-
-  return lineStarts;
-}
-
-function offsetToLineColumn(lineStarts: readonly number[], offset: number): LineColumn {
-  let low = 0;
-  let high = lineStarts.length - 1;
-
-  while (low <= high) {
-    const middle = (low + high) >> 1;
-    if (lineStarts[middle] <= offset) {
-      low = middle + 1;
-      continue;
-    }
-
-    high = middle - 1;
-  }
-
-  const lineIndex = Math.max(0, low - 1);
-  return {
-    line: lineIndex + 1,
-    column: offset - lineStarts[lineIndex] + 1,
-  };
-}
-
-function resolveBlockKind(tagName: string, openTag: string): SfcBlockKind {
-  if (tagName === "template") {
-    return "template";
-  }
-
-  if (tagName === "script") {
-    return /\bsetup(?:\s|>|=)/u.test(openTag) ? "script-setup" : "script";
-  }
-
-  if (tagName === "style") {
-    return "style";
-  }
-
-  return "custom";
 }
