@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { Request, Response } from "playwright";
+import { inspect } from "node:util";
+import type { Page, Request, Response } from "playwright";
 
 export interface PackedGalleryHttpRecord {
   url: string;
@@ -27,6 +28,7 @@ export interface PackedGalleryHttpContext {
   pending: Promise<void>[];
   httpErrors: string[];
   sha256: (body: Buffer) => string;
+  onBodyCapture?: (event: string, response: PackedGalleryResponse, result?: unknown) => void;
 }
 
 type PackedGalleryResponse = Pick<Response, "url" | "status" | "allHeaders" | "body"> & {
@@ -39,20 +41,27 @@ export async function drainPackedGalleryHttp(pending: Promise<void>[]): Promise<
 }
 
 export function createPackedGalleryHttpObserver(context: PackedGalleryHttpContext) {
-  const { origin, caseOutput, responses, pending, httpErrors, sha256 } = context;
+  const { origin, caseOutput, responses, pending, httpErrors, sha256, onBodyCapture } = context;
   const owners = new Map<string, Promise<PackedGalleryHttpRecord | undefined>>();
   return (response: PackedGalleryResponse) => {
     if (!response.url().startsWith(origin + "/")) return;
     const status = response.status();
     const priorOwner = status === 304 ? owners.get(response.url()) : undefined;
     const work = (async () => {
+      if (status === 200) onBodyCapture?.("body-start", response);
       // Admit the original body before metadata IPC yields to document/iframe navigation.
       // Settle its result immediately, then retain metadata even when that body is unavailable.
       const [captured, headers, requestHeaders] = await Promise.all([
         status === 200
           ? response.body().then(
-              (body) => ({ body }),
-              (error: unknown) => ({ error }),
+              (body) => {
+                onBodyCapture?.("body-finished", response, { bytes: body.length });
+                return { body };
+              },
+              (error: unknown) => {
+                onBodyCapture?.("body-error", response, error);
+                return { error };
+              },
             )
           : undefined,
         response.allHeaders(),
@@ -107,5 +116,78 @@ export function createPackedGalleryHttpObserver(context: PackedGalleryHttpContex
           httpErrors.push(String(error));
         }),
     );
+  };
+}
+
+/** Passive custody only: no routing, cache changes, body substitution or navigation waits. */
+export async function tracePackedGalleryHttp(page: Page, events: unknown[], phase: () => string) {
+  const started = performance.now();
+  const ids = new WeakMap<object, number>();
+  let next = 0;
+  function requestId(request: object) {
+    if (!ids.has(request)) ids.set(request, ++next);
+    return ids.get(request)!;
+  }
+  function record(event: string, fields: object) {
+    events.push({
+      sequence: events.length,
+      elapsedMs: performance.now() - started,
+      phase: phase(),
+      pageUrl: page.url(),
+      event,
+      ...fields,
+    });
+  }
+  function errorFields(error: unknown) {
+    return error instanceof Error
+      ? {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+          ...Object.fromEntries(Object.entries(error)),
+          cause: inspect(error.cause, { depth: null, customInspect: false }),
+          raw: inspect(error, { depth: null, showHidden: true, customInspect: false }),
+        }
+      : { type: typeof error, raw: inspect(error, { depth: null, customInspect: false }) };
+  }
+  function requestFields(request: Request) {
+    const fields = {
+      request: requestId(request),
+      url: request.url(),
+      method: request.method(),
+      resourceType: request.resourceType(),
+      navigation: request.isNavigationRequest(),
+    };
+    try {
+      const frame = request.frame();
+      return { ...fields, frameUrl: frame.url(), mainFrame: frame === page.mainFrame() };
+    } catch (error) {
+      // Initial navigation requests can precede their public Frame object.
+      return { ...fields, frameError: errorFields(error) };
+    }
+  }
+  page.on("request", (request) => record("request", requestFields(request)));
+  page.on("requestfinished", (request) => record("request-finished", requestFields(request)));
+  page.on("requestfailed", (request) =>
+    record("request-failed", { ...requestFields(request), failure: request.failure() }),
+  );
+  page.on("framenavigated", (frame) =>
+    record("frame-navigated", { url: frame.url(), mainFrame: frame === page.mainFrame() }),
+  );
+  page.on("load", () => record("page-load", {}));
+  const session = await page.context().newCDPSession(page);
+  session.on("Page.frameNavigated", ({ frame }) => record("cdp-frame-navigated", { frame }));
+  session.on("Page.navigatedWithinDocument", (event) => record("cdp-same-document", event));
+  await session.send("Page.enable");
+  return {
+    close: () => session.detach(),
+    capture(event: string, response: PackedGalleryResponse, result?: unknown) {
+      record(event, {
+        request: requestId(response.request()),
+        url: response.url(),
+        status: response.status(),
+        result: event === "body-error" ? errorFields(result) : result,
+      });
+    },
   };
 }
