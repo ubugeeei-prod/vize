@@ -181,7 +181,7 @@ export async function tracePackedGalleryHttp(page: Page, events: unknown[], phas
   await session.send("Page.enable");
   return {
     close: () => session.detach(),
-    capture(event: string, response: PackedGalleryResponse, result?: unknown) {
+    capture(this: void, event: string, response: PackedGalleryResponse, result?: unknown) {
       record(event, {
         request: requestId(response.request()),
         url: response.url(),
