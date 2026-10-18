@@ -30,7 +30,7 @@
       "/guide/ui": "UI リファレンス",
       "/guide/composables": "コンポーザブル リファレンス",
       "/guide/content-mapper": "Content Mapper",
-      "/guide/compiler-inspector": "コンパイラインスペクタ",
+      "/guide/compiler-inspector": "コンパイラーインスペクター",
       "/guide/experimentals": "実験的な機能",
       "/guide/musea-globals": "グローバルプレビューコントロール",
       "/guide/musea-capture": "スクリーンショットの安定化",

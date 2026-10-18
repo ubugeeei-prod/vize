@@ -109,6 +109,8 @@ await test("directory syscall exhaustion preserves the complete native logical v
 });
 
 await test("observation persistence failures retain the exact traversal error and fail closed", (context) => {
+  const originalReaddir = fs.readdirSync;
+  const originalRealpath = fs.realpathSync;
   const nodes = new Map([["", { path: "", mode: "40000" }]]);
   const children = new Map([["", new Set()]]);
   const traversalFailure = new Error("authored directory read failure");
@@ -116,7 +118,7 @@ await test("observation persistence failures retain the exact traversal error an
   const root = "/authored/no-filesystem-access";
   let observations = 0;
   try {
-    context.mock.method(fs, "readdirSync", () => {
+    const readdir = context.mock.method(fs, "readdirSync", () => {
       throw traversalFailure;
     });
     syncBuiltinESMExports();
@@ -138,7 +140,7 @@ await test("observation persistence failures retain the exact traversal error an
       (error) => error === traversalFailure,
     );
     assert.equal(observations, 2);
-    context.mock.method(fs, "readdirSync", () => []);
+    readdir.mock.mockImplementation(() => []);
     context.mock.method(fs, "realpathSync", (path) => path);
     syncBuiltinESMExports();
     assert.throws(
@@ -154,6 +156,8 @@ await test("observation persistence failures retain the exact traversal error an
     context.mock.restoreAll();
     syncBuiltinESMExports();
   }
+  assert.equal(fs.readdirSync, originalReaddir);
+  assert.equal(fs.realpathSync, originalRealpath);
 });
 
 await test("raw recapture rows survive an unchanged strict boundary refusal without replacing the first observation", (context) => {
