@@ -41,6 +41,7 @@ export const policyFiles = [
   "tools/support/release/public_acceptance/native.ts",
   "tools/support/release/public_acceptance/plan.ts",
   "tools/support/release/public_acceptance/registry.ts",
+  "tools/support/release/public_acceptance/unicode.ts",
   "tools/support/release/public_acceptance/vrt_api.ts",
   "tools/support/release/public_acceptance/vrt_artifacts.ts",
   "tools/support/release/public_acceptance/vrt_audit.ts",
