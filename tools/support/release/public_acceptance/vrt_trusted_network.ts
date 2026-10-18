@@ -4,6 +4,7 @@ import { type Evidence } from "./vrt_artifacts.ts";
 import { sha256 } from "./vrt_fixtures.ts";
 import {
   browserRequestMetadata,
+  safeBrowserURL,
   type BrowserFailureRecord,
   type ExpectedBrowserFailures,
 } from "./vrt_trusted_failures.ts";
@@ -15,6 +16,17 @@ import {
 } from "./vrt_trusted_ui.ts";
 
 export interface SpaceRecord extends BrowserFailureRecord {
+  eventPhase?: string;
+  frameId?: string;
+  loaderId?: string;
+  requestType?: string;
+  resourceType?: string;
+  documentURL?: string;
+  requestTimestamp?: number;
+  timestamp?: number;
+  errorText?: string;
+  canceled?: boolean;
+  corsErrorStatus?: { corsError: string; failedParameter: string };
   origin?: string;
   pathname?: string;
   initiatorIPAddressSpace?: string;
@@ -28,7 +40,7 @@ export async function publicAddressCustody(cdp: CDPSession, phase: () => string 
   const urls = new Map<string, ReturnType<typeof browserRequestMetadata>>();
   const pending = new Map<string, SpaceRecord[]>();
   function record(id: string, item: Omit<SpaceRecord, "requestId">) {
-    const retained = { ...item, requestId: id };
+    const retained = { ...item, requestId: id, eventPhase: phase() };
     if (urls.has(id)) Object.assign(retained, urls.get(id));
     else pending.set(id, [...(pending.get(id) ?? []), retained]);
     records.push(retained);
@@ -36,11 +48,28 @@ export async function publicAddressCustody(cdp: CDPSession, phase: () => string 
   const request = ({
     requestId,
     request,
+    frameId,
+    loaderId,
+    type,
+    documentURL,
+    timestamp,
   }: {
     requestId: string;
     request: { url: string; method: string };
+    frameId?: string;
+    loaderId?: string;
+    type?: string;
+    documentURL?: string;
+    timestamp?: number;
   }) => {
-    const safe = browserRequestMetadata(request, phase());
+    const safe = {
+      ...browserRequestMetadata(request, phase()),
+      frameId,
+      loaderId,
+      requestType: type,
+      documentURL: documentURL ? safeBrowserURL(documentURL) : undefined,
+      requestTimestamp: timestamp,
+    };
     urls.set(requestId, safe);
     for (const item of pending.get(requestId) ?? []) Object.assign(item, safe);
     pending.delete(requestId);
@@ -68,8 +97,32 @@ export async function publicAddressCustody(cdp: CDPSession, phase: () => string 
     resourceIPAddressSpace: string;
     statusCode: number;
   }) => record(requestId, { kind: "response", resourceIPAddressSpace, statusCode });
-  const failed = ({ requestId, blockedReason }: { requestId: string; blockedReason?: string }) =>
-    record(requestId, { kind: "failure", blockedReason });
+  const failed = ({
+    requestId,
+    blockedReason,
+    errorText,
+    canceled,
+    type,
+    timestamp,
+    corsErrorStatus,
+  }: {
+    requestId: string;
+    blockedReason?: string;
+    errorText: string;
+    canceled?: boolean;
+    type: string;
+    timestamp: number;
+    corsErrorStatus?: { corsError: string; failedParameter: string };
+  }) =>
+    record(requestId, {
+      kind: "failure",
+      blockedReason,
+      errorText,
+      canceled,
+      resourceType: type,
+      timestamp,
+      corsErrorStatus,
+    });
   async function close() {
     cdp.off("Network.requestWillBeSent", request);
     cdp.off("Network.requestWillBeSentExtraInfo", extra);

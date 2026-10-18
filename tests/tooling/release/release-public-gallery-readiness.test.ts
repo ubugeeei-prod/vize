@@ -1,3 +1,10 @@
+import { EventEmitter } from "node:events";
+import type { CDPSession } from "playwright";
+import { publicAddressCustody } from "../../../tools/support/release/public_acceptance/vrt_trusted_network.ts";
+import {
+  assertExpectedBrowserFailures,
+  expectedBrowserFailures,
+} from "../../../tools/support/release/public_acceptance/vrt_trusted_failures.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -199,4 +206,64 @@ void test("a valid body arriving after the provisioning deadline cannot authoriz
     return response();
   });
   await assert.rejects(awaitHostedGallery(gallery, emitted), /provisioning deadline/);
+});
+
+test("original failed-load fields and request/event phases survive without granting ownership", async () => {
+  // Inert CDP transport only; no browser/network failure or product response is substituted.
+  const wire = Object.assign(new EventEmitter(), { async send() {} });
+  let phase = "before-request";
+  const custody = await publicAddressCustody(wire as unknown as CDPSession, () => phase);
+  const failed = {
+    requestId: "same",
+    errorText: "net::ERR_FAILED",
+    canceled: false,
+    blockedReason: "other",
+    type: "Fetch",
+    timestamp: 12.5,
+    corsErrorStatus: { corsError: "InvalidResponse", failedParameter: "original" },
+  };
+  wire.emit("Network.loadingFailed", failed);
+  phase = "authored-request";
+  wire.emit("Network.requestWillBeSent", {
+    requestId: "same",
+    frameId: "frame",
+    loaderId: "loader",
+    type: "Document",
+    timestamp: 11.5,
+    documentURL: "https://authored.example/art?secret=removed",
+    request: { url: "https://authored.example/preview?secret=removed", method: "GET" },
+  });
+  phase = "later-control";
+  const second = { requestId: "same", type: "Fetch", timestamp: 13, errorText: "net::ERR_ABORTED" };
+  wire.emit("Network.loadingFailed", second);
+  const retained = JSON.parse(JSON.stringify(custody.records));
+  const common = {
+    requestType: "Document",
+    frameId: "frame",
+    loaderId: "loader",
+    requestTimestamp: 11.5,
+    documentURL: "https://authored.example/art",
+    phase: "authored-request",
+    method: "GET",
+    origin: "https://authored.example",
+    pathname: "/preview",
+    url: "https://authored.example/preview",
+  };
+  const expected = [failed, second].map(({ type, ...original }, index) => ({
+    ...common,
+    ...original,
+    kind: "failure",
+    resourceType: type,
+    eventPhase: index === 0 ? "before-request" : "later-control",
+  }));
+  assert.deepEqual(retained, expected);
+  assert.equal(Reflect.get(retained[0], "canceled"), false);
+  assert.equal(Object.hasOwn(retained[1], "canceled"), false);
+  for (const record of custody.records)
+    assert.throws(
+      () => assertExpectedBrowserFailures([record], expectedBrowserFailures(), []),
+      /Unowned browser failure/,
+    );
+  await custody.close();
+  assert.equal(wire.eventNames().length, 0);
 });
