@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import {
   integrationIdentity,
@@ -8,6 +11,11 @@ import {
   type Json,
 } from "../../tools/support/release/consumer_recovery/policy.ts";
 import { verifyStoredIntegration } from "../../tools/support/release/consumer_recovery/custody.ts";
+import {
+  assertCheckoutAuthority,
+  policyFiles,
+  sourceAuthority,
+} from "../../tools/support/release/consumer_recovery/oracles.ts";
 
 type Raw = { integration: Json; merge: Json; gates: { workflow_runs: Json[] } };
 type Fixture = {
@@ -396,4 +404,91 @@ test("tag and source PR references reject malformed, hybrid and unsafe identitie
     assert.throws(() => integrationReference("#9197", source));
   for (const tag of [9197, null, {}, ["#9197"], "9197", "##9197", "#9198"])
     assert.throws(() => integrationReference(tag, "9197"));
+});
+
+function policyRepository(check: (directory: string, git: (...args: string[]) => string) => void) {
+  const directory = mkdtempSync(path.join(os.tmpdir(), "vize-recovery-policy-"));
+  const git = (...args: string[]) =>
+    execFileSync("git", ["-C", directory, ...args], { encoding: "utf8", stdio: "pipe" });
+  try {
+    git("init", "--quiet");
+    git("config", "core.hooksPath", path.join(directory, "no-hooks"));
+    git("config", "commit.gpgSign", "false");
+    git("config", "user.name", "Recovery fixture");
+    git("config", "user.email", "recovery@example.invalid");
+    for (const file of policyFiles) {
+      const target = path.join(directory, file);
+      mkdirSync(path.dirname(target), { recursive: true });
+      writeFileSync(
+        target,
+        file.endsWith("/oracles.ts")
+          ? readFileSync(new URL(`../../${file}`, import.meta.url))
+          : `import { writeFileSync } from "node:fs";\nwriteFileSync(${JSON.stringify(path.join(directory, "executed"))}, "executed");\nthrow new Error("Historical policy must never execute: ${file}");\n`,
+      );
+    }
+    check(directory, git);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+}
+
+test("real historical Git blobs remain authoritative after actor drift; producing checkout stays strict", () => {
+  policyRepository((directory, git) => {
+    const expected = policyFiles.map((file) => ({
+      file,
+      sha256: sha256(readFileSync(path.join(directory, file))),
+    }));
+    git("add", ".");
+    git("commit", "--quiet", "-m", "Original policy");
+    const original = git("rev-parse", "HEAD").trim();
+    const read = (sha: string, file: string) =>
+      git("--no-replace-objects", "show", `${sha}:${file}`);
+    const checkout = (file: string) => readFileSync(path.join(directory, file));
+    assert.deepEqual(sourceAuthority(original, read), expected);
+    assertCheckoutAuthority(expected, checkout);
+    const actor = "tools/support/release/public_acceptance/lsp_source.ts";
+    writeFileSync(path.join(directory, actor), "throw new Error('Different current actor');\n");
+    assert.throws(() => assertCheckoutAuthority(expected, checkout), /checkout differs/);
+    git("commit", "--all", "--quiet", "-m", "Reviewed actor successor");
+    const current = sourceAuthority(git("rev-parse", "HEAD").trim(), read);
+    assert.deepEqual(
+      current,
+      expected.map((entry) =>
+        entry.file === actor ? { file: actor, sha256: sha256(checkout(actor)) } : entry,
+      ),
+    );
+    assertCheckoutAuthority(current, checkout);
+    assert.deepEqual(sourceAuthority(original, read), expected);
+    assert.equal(existsSync(path.join(directory, "executed")), false);
+  });
+});
+
+test("real Git policies with incomplete, substituted or unsupported inventories cannot authorize evidence", () => {
+  policyRepository((directory, git) => {
+    const file = "tools/support/release/consumer_recovery/oracles.ts";
+    const original = readFileSync(path.join(directory, file), "utf8");
+    const first = `  ${JSON.stringify(policyFiles[0])},\n`;
+    const read = (sha: string, name: string) =>
+      git("--no-replace-objects", "show", `${sha}:${name}`);
+    for (const changed of [
+      original.replace(first, ""),
+      original.replace(first, first + first),
+      original.replace(first, '  "foreign/authority.ts",\n'),
+      original.replace("export const policyFiles = [", "export const policyFiles = compute(["),
+      original.replace(first, `  ${JSON.stringify(policyFiles[1])},\n`),
+    ]) {
+      writeFileSync(path.join(directory, file), changed);
+      git("add", ".");
+      git("commit", "--quiet", "-m", "Unsupported policy");
+      assert.throws(
+        () => sourceAuthority(git("rev-parse", "HEAD").trim(), read),
+        /unsupported historical/,
+      );
+    }
+    writeFileSync(path.join(directory, file), original);
+    rmSync(path.join(directory, policyFiles[0]));
+    git("commit", "--all", "--quiet", "-m", "Missing required blob");
+    assert.throws(() => sourceAuthority(git("rev-parse", "HEAD").trim(), read));
+    assert.throws(() => sourceAuthority("HEAD", read));
+  });
 });
