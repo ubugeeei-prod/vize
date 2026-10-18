@@ -16,16 +16,20 @@ import { findSfcOpeningTagEnd } from "./sfc-opening-tag.ts";
 export type { TemplateNode } from "./sfc-equivalence/blocks.ts";
 
 const require = createRequire(import.meta.url);
-// Resolved from tests/node_modules (pinned devDependency of @vize/tests).
-const { parse } = require("@vue/compiler-sfc") as {
-  parse: (
-    source: string,
-    options: { filename: string; sourceMap: boolean },
-  ) => {
-    descriptor: SfcDescriptor;
-    errors: Array<{ code?: number; message: string }>;
-  };
-};
+// Resolved from the same tests/node_modules anchor only when an SFC is parsed.
+function sfcParser() {
+  return (
+    require("@vue/compiler-sfc") as {
+      parse: (
+        source: string,
+        options: { filename: string; sourceMap: boolean },
+      ) => {
+        descriptor: SfcDescriptor;
+        errors: Array<{ code?: number; message: string }>;
+      };
+    }
+  ).parse;
+}
 
 /** Compare original and formatted SFC sources; returns human-readable diffs. */
 export function compareSfcEquivalence(
@@ -33,6 +37,7 @@ export function compareSfcEquivalence(
   formatted: string,
   filename: string,
 ): string[] {
+  const parse = sfcParser();
   const before = parse(original, { filename, sourceMap: false });
   const after = parse(formatted, { filename, sourceMap: false });
   const differences: string[] = [];
@@ -61,6 +66,7 @@ export function compareSfcBlockStructure(
   formatted: string,
   filename: string,
 ): string[] {
+  const parse = sfcParser();
   const before = parse(original, { filename, sourceMap: false });
   const after = parse(formatted, { filename, sourceMap: false });
   const differences: string[] = [];
@@ -78,6 +84,7 @@ export function compareSfcBlockStructure(
 
 /** Canonical Vue 3 semantic signature used by dialect evidence hashes. */
 export function sfcSemanticSignature(source: string, filename: string): string {
+  const parse = sfcParser();
   const parsed = parse(source, { filename, sourceMap: false });
   return JSON.stringify([
     parseErrorSignatures(parsed.errors),

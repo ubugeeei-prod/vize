@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 import { compareSfcEquivalence } from "./support/sfc-equivalence.ts";
 
@@ -236,4 +241,62 @@ test("glyph SFC comparator normalizes only compiler-defined presence attributes"
   ]) {
     assert.notDeepEqual(compareSfcEquivalence(before, after, "App.vue"), []);
   }
+});
+
+test("supplied template ASTs need no SFC provider while SFC parsing still requires it", (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-template-signature-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const support = fileURLToPath(new URL("./support/", import.meta.url));
+  for (const file of [
+    "sfc-equivalence.ts",
+    "babel-expression-signature.ts",
+    "sfc-equivalence/blocks.ts",
+    "sfc-opening-tag.ts",
+  ]) {
+    const destination = path.join(directory, file);
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.copyFileSync(path.join(support, file), destination);
+  }
+  fs.writeFileSync(
+    path.join(directory, "check.mjs"),
+    `
+import assert from "node:assert/strict";
+import { createRequire } from "node:module";
+import {
+  compareTemplateAstEquivalence, templateAstSemanticSignature,
+  compareSfcEquivalence, compareSfcBlockStructure, sfcSemanticSignature,
+} from "./sfc-equivalence.ts";
+const require = createRequire(import.meta.url);
+const missing = (error) => error.code === "MODULE_NOT_FOUND" && error.message.includes("@vue/compiler-sfc");
+assert.throws(() => require.resolve("@vue/compiler-sfc"), missing);
+const original = { type: 0, children: [{ type: 1, tag: "button", props: [{ type: 6, name: "title", value: { content: "kept" } }], children: [] }] };
+const copy = structuredClone(original);
+assert.deepEqual(compareTemplateAstEquivalence(original, copy), []);
+assert.equal(templateAstSemanticSignature(original), templateAstSemanticSignature(copy));
+copy.children[0].props[0].value.content = "lost";
+assert.notDeepEqual(compareTemplateAstEquivalence(original, copy), []);
+assert.notEqual(templateAstSemanticSignature(original), templateAstSemanticSignature(copy));
+for (const run of [
+  () => compareSfcEquivalence("<template/>", "<template/>", "Case.vue"),
+  () => compareSfcBlockStructure("<template/>", "<template/>", "Case.vue"),
+  () => sfcSemanticSignature("<template/>", "Case.vue"),
+]) assert.throws(run, missing);
+console.log("provider-free AST and three missing-provider refusals passed");
+`,
+  );
+  const environment = { ...process.env };
+  delete environment.NODE_PATH;
+  delete environment.NODE_OPTIONS;
+  const result = spawnSync(process.execPath, [path.join(directory, "check.mjs")], {
+    cwd: directory,
+    env: environment,
+    timeout: 10000,
+    encoding: "utf8",
+  });
+  const streams = JSON.stringify({ stdout: result.stdout, stderr: result.stderr });
+  assert.equal(result.error, undefined, streams);
+  assert.equal(result.signal, null, streams);
+  assert.equal(result.status, 0, streams);
+  assert.equal(result.stdout, "provider-free AST and three missing-provider refusals passed\n");
+  assert.equal(result.stderr, "");
 });
