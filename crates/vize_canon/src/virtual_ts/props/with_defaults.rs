@@ -21,7 +21,13 @@ pub(super) fn template_props_type_ref(
         return base_type_ref.into();
     }
 
-    let default_keys = key_union(defaulted_prop_names);
+    // Vue accepts surplus defaults, but only declared props belong to the
+    // template contract. Let TypeScript resolve the keys of imported and
+    // generic prop types instead of guessing their shape in the generator.
+    let default_keys = cstr!(
+        "Extract<{}, keyof {base_type_ref}>",
+        key_union(defaulted_prop_names)
+    );
     let Some(undefined_defaults) = boolean_casting else {
         return cstr!(
             "__WithDefaultsResult<{base_type_ref}, Pick<{base_type_ref}, {default_keys}>>"

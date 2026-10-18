@@ -103,7 +103,7 @@ function requireDailySourceContracts(planWorkflow: typeof source, rustWorkflow: 
   assert.equal(steps[contracts]["continue-on-error"], undefined);
   assert.equal(
     steps[contracts].run,
-    "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts",
+    "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts tests/tooling/typecheck-divergence-report-timeout.test.ts",
   );
   for (const action of [
     "actions/setup-node@",

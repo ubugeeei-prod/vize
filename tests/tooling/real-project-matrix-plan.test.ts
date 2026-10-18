@@ -118,7 +118,7 @@ test("unknown, unavailable or ambiguous source naming fails closed", () => {
   assert.throws(
     () =>
       realProjectJobNames(
-        workflow.replace('FIXTURE_SHARD_COUNT: "22"', 'FIXTURE_SHARD_COUNT: "21"'),
+        workflow.replace("matrix.shardCount || '22'", "matrix.shardCount || '21'"),
         registry,
       ),
     /shard routing/,
@@ -131,4 +131,75 @@ test("unknown, unavailable or ambiguous source naming fails closed", () => {
     () => realProjectMatrix({ projects: [...registry.projects, registry.projects[0]] }),
     /unique project IDs/,
   );
+});
+
+test("scoped diagnostics select exactly one original pinned row without changing full partitions", () => {
+  const registry = JSON.parse(readRepoFile(realProjectRegistryPath));
+  const full = realProjectMatrix(registry);
+  assert.equal(registry.projects.length, 145);
+  assert.deepEqual(realProjectMatrix(registry, ""), full);
+  for (const [index, project] of registry.projects.entries()) {
+    const scoped = realProjectMatrix(registry, project.id);
+    assert.deepEqual(scoped, [
+      {
+        shard: index,
+        name: `scoped diagnostic: ${project.id}`,
+        shardCount: registry.projects.length,
+      },
+    ]);
+    const selected = registry.projects.filter(
+      (_: unknown, row: number) => row % registry.projects.length === scoped[0].shard,
+    );
+    assert.deepEqual(selected, [project]);
+    assert.equal(selected[0], project, "the original registry row is not rewritten");
+  }
+  const original = registry.projects.find((project: { id: string }) => project.id === "hoppscotch");
+  assert.equal(original.revision, "1acb8a3a7581e4db32ba0d529170c4669a2e1053");
+  const cli = (args: string[]) =>
+    execFileSync(
+      process.execPath,
+      ["tools/support/compat/github/real-project-matrix-plan.ts", "matrix", ...args],
+      { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+    );
+  assert.deepEqual(JSON.parse(cli(["--project", ""])), { include: full });
+  const scoped = realProjectMatrix(registry, "hoppscotch");
+  assert.deepEqual(JSON.parse(cli(["--project", "hoppscotch"])), { include: scoped });
+  const jobs = scoped.map(({ name }) => ({
+    name: `real projects (${name})`,
+    status: "completed",
+    conclusion: "success",
+  }));
+  assert.throws(
+    () =>
+      assertRequiredWorkflowJobs(
+        "Real Project Matrix",
+        jobs,
+        {
+          head_sha: execFileSync("git", ["rev-parse", "HEAD"], {
+            cwd: root,
+            encoding: "utf8",
+          }).trim(),
+        },
+        root,
+      ),
+    /found 0/,
+    "a scoped success is never whole-matrix evidence",
+  );
+  for (const invalid of [
+    "missing-project",
+    " hoppscotch",
+    "hoppscotch ",
+    "hoppscotch,pinia",
+    "../hoppscotch",
+  ]) {
+    assert.throws(() => realProjectMatrix(registry, invalid), /Unknown .* project/);
+    assert.throws(() => cli(["--project", invalid]), /Unknown .* project/);
+  }
+  for (const invalid of [
+    ["--project"],
+    ["--project", "hoppscotch", "unexpected"],
+    ["--unknown", "hoppscotch"],
+  ]) {
+    assert.throws(() => cli(invalid), /Usage:/);
+  }
 });

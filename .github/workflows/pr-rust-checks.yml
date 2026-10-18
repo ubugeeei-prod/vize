@@ -63,6 +63,7 @@ jobs:
           tests/tooling/davinci-assertion-lint.test.ts
           tests/tooling/davinci-consumer-migration-surfaces.test.mjs
           tests/tooling/docs-reviewed-translations.test.ts
+          tests/tooling/typecheck-divergence-report-timeout.test.ts
       - name: Materialize affected Rust plan
         run: node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
       - name: Select Clippy and doctest runtime envelope
