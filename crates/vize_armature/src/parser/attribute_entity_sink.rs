@@ -88,6 +88,10 @@ impl<C: Callbacks> Sink for OriginalFirstScalarSink<C> {
         }
     }
 
+    fn on_missing_attribute_value_at_eof(&mut self, end: usize) {
+        self.compat.on_missing_attribute_value_at_eof(end);
+    }
+
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {
         self.compat.on_attrib_end(quote, end);
     }

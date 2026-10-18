@@ -32,6 +32,7 @@ impl crate::codegen::SsrCodegenContext<'_> {
         dir.exp
             .as_ref()
             .map(|exp| slot_props_pattern_to_string(exp, self.source))
+            .filter(|pattern| !pattern.trim().is_empty())
     }
 }
 

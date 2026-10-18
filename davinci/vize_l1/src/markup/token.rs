@@ -102,6 +102,12 @@ pub trait Sink {
     fn on_attrib_entity_value(&mut self, value: DecodedEntity, start: usize, end: usize) {
         value.for_each(|ch| self.on_attrib_entity(ch, start, end));
     }
+    /// An authored equals sign reached EOF before any attribute value.
+    /// Existing sinks retain the original valueless recovery event. Owners
+    /// that distinguish an empty assignment may override this provided method.
+    fn on_missing_attribute_value_at_eof(&mut self, end: usize) {
+        self.on_attrib_end(QuoteType::NoValue, end);
+    }
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize);
     fn on_attrib_name(&mut self, start: usize, end: usize);
     fn on_attrib_name_end(&mut self, end: usize);

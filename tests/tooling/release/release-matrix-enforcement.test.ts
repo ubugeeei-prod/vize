@@ -124,6 +124,15 @@ test("matrix run names stay descriptive and no longer gate the release", () => {
     enforcedTitle,
   );
   assertSelectorIgnoresMatrixTitle(enforcedTitle);
+  assert.equal(
+    primaryTitle({ project: "hoppscotch" }),
+    `Real Project Matrix scoped-diagnostic @ ${releaseSha}`,
+  );
+  assert.equal(
+    primaryTitle({ ...releaseModes, project: "hoppscotch" }),
+    `Real Project Matrix scoped-diagnostic @ ${releaseSha}`,
+  );
+  assert.equal(primaryTitle({ project: "" }), enforcedTitle);
   assert.deepEqual(
     plans.map((plan: { workflowName: string }) => plan.workflowName).sort(byCodeUnit),
     [...requiredReleaseWorkflows].sort(byCodeUnit),

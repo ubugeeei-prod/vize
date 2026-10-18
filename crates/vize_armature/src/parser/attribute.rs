@@ -308,7 +308,7 @@ impl<'a> Parser<'a> {
 
         // Vue 3.4+ same-name shorthand: `:foo` without a value is `:foo="foo"`
         // Pre-compute the shorthand expression before moving dir.arg
-        let shorthand_exp = if dir.name == "bind" && dir.value_start.is_none() {
+        let shorthand_exp = if dir.name == "bind" && matches!(quote, QuoteType::NoValue) {
             if let Some((arg_content, arg_start, arg_end, false)) = dir.arg {
                 // Camelization computes a new name that recurs across a file
                 // (`:foo-bar` on many elements), so it interns rather than
@@ -367,6 +367,19 @@ impl<'a> Parser<'a> {
             );
             let exp_boxed = Box::new_in(exp_node, &self.allocator);
             dir_node.exp = Some(ExpressionNode::Simple(exp_boxed));
+        } else if matches!(
+            quote,
+            QuoteType::Double | QuoteType::Single | QuoteType::Unquoted
+        ) {
+            // Empty authored values do not emit an attribute-data event.
+            // Preserve their presence, just as finish_attribute does, rather
+            // than treating an explicit value as same-name shorthand.
+            let exp_loc = self.create_loc(end, end);
+            let exp_node = SimpleExpressionNode::new("", false, exp_loc);
+            dir_node.exp = Some(ExpressionNode::Simple(Box::new_in(
+                exp_node,
+                &self.allocator,
+            )));
         } else if let Some((camelized, s_start, s_end)) = shorthand_exp {
             // Apply same-name shorthand: synthesize expression from arg name
             let exp_loc = self.create_loc(s_start, s_end);

@@ -89,6 +89,10 @@ impl<C: Callbacks> Sink for CompatSink<C> {
         self.callbacks.on_attrib_entity_value(value, start, end);
     }
 
+    fn on_missing_attribute_value_at_eof(&mut self, end: usize) {
+        self.callbacks.on_missing_attribute_value_at_eof(end);
+    }
+
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {
         let quote = match quote {
             QuoteType::NoValue => CompatQuote::NoValue,

@@ -267,7 +267,11 @@ pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &Directi
 }
 
 fn needs_von_handler_cache(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
-    ctx.cache_handlers_in_current_scope() && dir.exp.is_some() && !is_setup_const_handler(ctx, dir)
+    ctx.cache_handlers_in_current_scope()
+        && dir.exp.as_ref().is_some_and(|expression| {
+            !crate::steps::expression::is_empty_dynamic_expression(expression)
+        })
+        && !is_setup_const_handler(ctx, dir)
 }
 
 fn generate_options_api_handler_reference(ctx: &mut CodegenContext, name: &str) {

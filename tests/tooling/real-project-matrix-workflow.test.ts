@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { requiredRealProjectMatrixShardCount } from "../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
 import {
   findStep,
   readCanonicalCorpusWorkflow,
@@ -18,6 +17,7 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   const dispatch = workflow.on?.workflow_dispatch;
   assert.ok(dispatch, "Missing workflow_dispatch trigger");
   assert.deepEqual(Object.keys(dispatch.inputs ?? {}), [
+    "project",
     "core_tools_mode",
     "core_tools_timeout_ms",
     "typecheck_dependencies_mode",
@@ -26,6 +26,12 @@ test("real-project workflow schedules every balanced fixture shard", () => {
     "typecheck_divergence_mode",
     "davinci_dom_corpus_mode",
   ]);
+  assert.deepEqual(dispatch.inputs?.project, {
+    description: "Optional exact fixture ID for a scoped diagnostic; empty runs the full matrix",
+    required: false,
+    default: "",
+    type: "string",
+  });
   assert.deepEqual(dispatch.inputs?.core_tools_mode, {
     description: "Core tool surface handling",
     required: false,
@@ -75,7 +81,8 @@ test("real-project workflow schedules every balanced fixture shard", () => {
     options: ["enforce", "record-only"],
   });
   assert.deepEqual(workflow.concurrency, {
-    group: "real-project-matrix-${{ github.ref }}",
+    group:
+      "real-project-matrix-${{ github.ref }}${{ inputs.project && format('-scoped-{0}', inputs.project) || '' }}",
     "cancel-in-progress": true,
   });
   assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
@@ -89,10 +96,14 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   assert.equal(planner?.outputs?.matrix, "${{ steps.projects.outputs.matrix }}");
   assert.equal(
     findStep(planner?.steps ?? [], "Name every project in its fixture partition").run,
-    "node tools/support/compat/github/real-project-matrix-plan.ts matrix",
+    'node tools/support/compat/github/real-project-matrix-plan.ts matrix --project "$SELECTED_PROJECT"',
+  );
+  assert.deepEqual(
+    findStep(planner?.steps ?? [], "Name every project in its fixture partition").env,
+    { SELECTED_PROJECT: "${{ inputs.project || '' }}" },
   );
   assert.deepEqual(job.env, {
-    FIXTURE_SHARD_COUNT: String(requiredRealProjectMatrixShardCount),
+    FIXTURE_SHARD_COUNT: "${{ matrix.shardCount || '22' }}",
     FIXTURE_SHARD_INDEX: "${{ matrix.shard }}",
     FIXTURE_REPORT_DIR: "real-project-results/shard-${{ matrix.shard }}",
   });

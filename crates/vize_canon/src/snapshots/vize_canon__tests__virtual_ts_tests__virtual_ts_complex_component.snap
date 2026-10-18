@@ -175,9 +175,9 @@ function __setup() {
 
   // Props are available in template as variables
   // Access via `propName` or `props.propName`
-  const props: __WithDefaultsResult<Props, Pick<Props, "initialCount">, __VizeBooleanKey<Props>> = {} as __WithDefaultsResult<Props, Pick<Props, "initialCount">, __VizeBooleanKey<Props>>;
+  const props: __WithDefaultsResult<Props, Pick<Props, Extract<"initialCount", keyof Props>>, __VizeBooleanKey<Props>> = {} as __WithDefaultsResult<Props, Pick<Props, Extract<"initialCount", keyof Props>>, __VizeBooleanKey<Props>>;
   void props; // Mark as used to avoid TS6133
-  const initialCount = props["initialCount"] as Exclude<__WithDefaultsResult<Props, Pick<Props, "initialCount">, __VizeBooleanKey<Props>>["initialCount"], undefined>;
+  const initialCount = props["initialCount"] as Exclude<__WithDefaultsResult<Props, Pick<Props, Extract<"initialCount", keyof Props>>, __VizeBooleanKey<Props>>["initialCount"], undefined>;
   void initialCount;
   const title = props["title"];
   void title;

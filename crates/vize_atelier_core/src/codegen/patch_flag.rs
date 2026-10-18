@@ -254,7 +254,12 @@ fn calculate_element_patch_info_inner(
                                 // Callers pass the effective cache setting for the current
                                 // template scope, so scoped handlers inside v-for / slots
                                 // are treated as dynamic here.
-                                let handler_is_cached = cache_handlers && dir.exp.is_some();
+                                let handler_is_cached = cache_handlers
+                                    && dir.exp.as_ref().is_some_and(|expression| {
+                                        !crate::steps::expression::is_empty_dynamic_expression(
+                                            expression,
+                                        )
+                                    });
 
                                 // Only add PROPS flag if handler is neither const nor cached
                                 if !handler_is_const && !handler_is_cached {

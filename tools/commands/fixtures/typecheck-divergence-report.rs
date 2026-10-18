@@ -4,6 +4,7 @@
 //! edition = "2024"
 //!
 //! [dependencies]
+//! libc = "0.2"
 //! pathdiff = "0.2"
 //! regex = "1"
 //! serde = { version = "1", features = ["derive"] }
@@ -17,21 +18,22 @@ use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
     env, fs,
-    io::Read,
     path::{Path, PathBuf},
-    process::{Command, ExitCode, Stdio},
-    thread,
+    process::{Command, ExitCode},
     time::{Duration, Instant},
 };
 
-#[cfg(unix)]
-use std::os::unix::process::CommandExt;
-
 #[path = "../../support/common.rs"]
 mod common;
+#[path = "../../support/typecheck_project_deadline.rs"]
+mod project_deadline;
+use project_deadline::ProjectContext;
 
 #[derive(Debug)]
 struct Args {
+    deadline_worker: Option<String>,
+    deadline_state: Option<PathBuf>,
+    deadline_budget_ms: Option<u64>,
     budget_mode: String,
     documented_differences: PathBuf,
     registry: PathBuf,
@@ -58,16 +60,43 @@ fn run() -> Result<(), String> {
         );
         return Ok(());
     }
+    if let Some(id) = &args.deadline_worker {
+        let project = selected
+            .iter()
+            .find(|p| p.get("id").and_then(Value::as_str) == Some(id))
+            .ok_or("worker project was not selected by the original registry/shard")?;
+        let directory = args
+            .deadline_state
+            .clone()
+            .ok_or("missing worker evidence directory")?;
+        let context = ProjectContext::worker(
+            directory.clone(),
+            args.deadline_budget_ms.ok_or("missing worker budget")?,
+        )?;
+        let result = write_project_artifact(&root, &args, project, &context);
+        project_deadline::atomic_json(
+            &directory.join("worker-result.json"),
+            &match result {
+                Ok(artifact) => json!({"ok":true,"artifact":artifact}),
+                Err(error) => json!({"ok":false,"error":error}),
+            },
+        )?;
+        return Ok(());
+    }
+    if args.deadline_state.is_some() || args.deadline_budget_ms.is_some() {
+        return Err("private worker state requires a supervised project".into());
+    }
     let mut artifacts = Vec::new();
     let mut failures = Vec::new();
     for project in selected {
-        match write_project_artifact(&root, &args, project) {
-            Ok(artifact) => {
+        match supervise_project(&root, &args, project) {
+            Ok(Some(artifact)) => {
                 if let Some(detail) = budget_failure_detail(&artifact) {
                     failures.push(detail);
                 }
                 artifacts.push(artifact);
             }
+            Ok(None) => failures.push(format!("Typecheck divergence baseline is unusable for {} — {INSTRUMENT_FAILURE_CLASSIFICATION}: whole-project deadline exhausted",project_string(project,"id")?)),
             Err(error) => return Err(error),
         }
     }
@@ -82,7 +111,74 @@ fn run() -> Result<(), String> {
     Ok(())
 }
 
-fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<Value, String> {
+fn supervise_project(root: &Path, args: &Args, project: &Value) -> Result<Option<Value>, String> {
+    let started = Instant::now();
+    validate_performance(project)?;
+    let id = project_string(project, "id")?;
+    let budget_ms = project
+        .pointer("/typecheckPerformance/hangTimeoutMs")
+        .and_then(Value::as_u64)
+        .ok_or("missing project deadline")?;
+    quarantine_previous_typecheck_artifacts(&args.report_dir, &id)?;
+    let executable = env::current_exe().map_err(|e| e.to_string())?;
+    let report = args.report_dir.join(format!("{id}-typechecker.json"));
+    let directory = project_deadline::state_directory(
+        &args.report_dir,
+        &json!({"project":project,"parentPid":std::process::id(),"budgetMs":budget_ms,"producer":executable,"producerSha256":sha256_bytes(&fs::read(&executable).map_err(|e|e.to_string())?),"registrySha256":sha256_bytes(&fs::read(&args.registry).map_err(|e|e.to_string())?),"vizeReportSha256":sha256_bytes(&fs::read(report).map_err(|e|e.to_string())?)}),
+    )?;
+    let remaining = Duration::from_millis(budget_ms)
+        .checked_sub(started.elapsed())
+        .ok_or("project deadline exhausted during supervisor preparation")?;
+    let mut command = Command::new(executable);
+    command
+        .current_dir(root)
+        .args(env::args().skip(1))
+        .args(["--deadline-worker", &id, "--deadline-state"])
+        .arg(&directory)
+        .args(["--deadline-budget-ms", &remaining.as_millis().to_string()]);
+    let timed_out = match project_deadline::supervise(
+        &mut command,
+        &directory,
+        started,
+        Duration::from_millis(budget_ms),
+    ) {
+        Ok(timed_out) => timed_out,
+        Err(error) => {
+            quarantine_previous_typecheck_artifacts(&args.report_dir, &id)?;
+            return Err(error);
+        }
+    };
+    if timed_out {
+        quarantine_previous_typecheck_artifacts(&args.report_dir, &id)?;
+        project_deadline::atomic_json(
+            &directory.join("deadline-result.json"),
+            &json!({"schema":"vize.fixtureTypecheckProjectDeadline","version":1,"project":id,"completed":false,"instrumentFailure":true,"budgetMs":budget_ms,"elapsedMs":started.elapsed().as_millis()}),
+        )?;
+        return Ok(None);
+    }
+    let result = common::read_json(directory.join("worker-result.json"))?;
+    match result["ok"].as_bool() {
+        Some(true) => Ok(Some(
+            result
+                .get("artifact")
+                .ok_or("missing worker artifact")?
+                .clone(),
+        )),
+        Some(false) => Err(result["error"]
+            .as_str()
+            .ok_or("missing worker failure")?
+            .to_string()),
+        None => Err("invalid worker result".into()),
+    }
+}
+
+fn write_project_artifact(
+    root: &Path,
+    args: &Args,
+    project: &Value,
+    context: &ProjectContext,
+) -> Result<Value, String> {
+    context.phase("project preparation")?;
     validate_performance(project)?;
     let project_id = project_string(project, "id")?;
     quarantine_previous_typecheck_artifacts(&args.report_dir, &project_id)?;
@@ -114,6 +210,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         &typecheck_source_roots,
     )?;
     let vue_tsc_version = run_capture_limited(
+        context,
         &args.vue_tsc_bin,
         &["--version".to_string()],
         root,
@@ -163,6 +260,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         eprintln!("[typecheck-divergence] run projectId={project_id} command=baseline");
     }
     let baseline = run_baseline_command(
+        context,
         &args.vue_tsc_bin,
         &baseline_args,
         &fixture_root,
@@ -186,6 +284,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         )
     } else {
         run_baseline_command(
+            context,
             &args.vue_tsc_bin,
             &coverage_args,
             &fixture_root,
@@ -233,9 +332,11 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         .join(format!("{project_id}-typecheck-observations.json"));
     common::write_json_pretty(&observations_path, &observations)?;
     println!("Wrote {}", display_relative(root, &observations_path));
+    context.phase("reviewed difference ledger")?;
     let documented_differences = read_documented_differences(&args.documented_differences)?;
     let expected_documented_differences =
         select_documented_differences(&documented_differences, &project_id, &fixture_root)?;
+    context.phase("diagnostic comparison")?;
     let divergence = compare_typecheck_diagnostics(
         project_id.clone(),
         &fixture_root,
@@ -244,6 +345,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         &typecheck_source_roots,
         &documented_differences,
     )?;
+    context.phase("program coverage interpretation")?;
     let coverage = if let Some(reason) = baseline
         .run_error
         .as_deref()
@@ -258,17 +360,21 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
             &typecheck_source_roots,
         )?
     };
+    context.phase("baseline configuration interpretation")?;
     let configuration = if let Some(reason) = baseline.run_error.as_deref() {
         unavailable_baseline_configuration(reason)
     } else {
         evaluate_baseline_configuration(&baseline.run.output)?
     };
+    context.phase("baseline ambient interpretation")?;
     let ambient = if let Some(reason) = coverage_baseline.run_error.as_deref() {
         unavailable_baseline_ambient_environment(reason)
     } else {
         evaluate_baseline_ambient_environment(&coverage_baseline.run.output, &fixture_root)?
     };
+    context.phase("mutation selection")?;
     let mutation_oracle = create_seeded_mutation_oracle(MutationContext {
+        context,
         project,
         fixture_root: &fixture_root,
         vize_report: &vize_run.payload["parsed"],
@@ -279,6 +385,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         vue_tsc_bin: &args.vue_tsc_bin,
         documented_differences: &documented_differences,
     })?;
+    context.phase("final ledger and budget")?;
     let ledger_error = reject_stale_documented_differences(
         &project_id,
         &expected_documented_differences,
@@ -294,6 +401,7 @@ fn write_project_artifact(root: &Path, args: &Args, project: &Value) -> Result<V
         &mutation_oracle,
         &ambient,
     )?;
+    context.phase("report serialization")?;
     let artifact = json!({
         "schema": "vize.fixtureTypecheckDivergenceRun",
         "version": 7,
@@ -861,6 +969,7 @@ struct CapturedToolRun {
 }
 
 struct MutationContext<'a> {
+    context: &'a ProjectContext,
     project: &'a Value,
     fixture_root: &'a Path,
     vize_report: &'a Value,
@@ -1607,6 +1716,12 @@ fn observe_mutation_candidate(
         code: 2322,
         message: "Type 'number' is not assignable to type 'string'.".to_string(),
     };
+    let lease = ctx.context.mutation(
+        ctx.fixture_root,
+        &source_path,
+        candidate.clean_source.as_bytes(),
+        candidate.broken_source.as_bytes(),
+    )?;
     let result = (|| -> Result<Value, String> {
         common::write_text(&source_path, &candidate.clean_source)?;
         let clean = observe_mutation_state(ctx, candidate, "clean", &source_path)?;
@@ -1616,7 +1731,7 @@ fn observe_mutation_candidate(
         let repaired = observe_mutation_state(ctx, candidate, "repaired", &source_path)?;
         summarize_mutation_observations(candidate, &diagnostic, &clean, &broken, &repaired)
     })();
-    let restore_result = common::write_text(&source_path, &candidate.clean_source);
+    let restore_result = ctx.context.restore(lease);
     match (result, restore_result) {
         (Ok(value), Ok(())) => Ok(value),
         (Err(error), Ok(())) => Ok(unusable_mutation(
@@ -1640,6 +1755,8 @@ fn observe_mutation_state(
     name: &str,
     source_path: &Path,
 ) -> Result<ObservedMutation, String> {
+    ctx.context
+        .phase(&format!("mutation {name}: {}", candidate.file))?;
     let source_bytes = fs::read(source_path)
         .map_err(|error| format!("cannot read {}: {error}", source_path.display()))?;
     let source_sha256 = sha256_bytes(&source_bytes);
@@ -1680,6 +1797,7 @@ fn run_vize_typecheck(
 ) -> Result<ToolRun, String> {
     let args = mutation_tool_args(ctx.project, candidate);
     let mut run = run_capture_limited(
+        ctx.context,
         ctx.vize_bin,
         &args,
         ctx.fixture_root,
@@ -1713,6 +1831,7 @@ fn run_vue_tsc_mutation(
 ) -> Result<ToolRun, String> {
     let args = mutation_baseline_args(ctx, candidate)?;
     run_capture_limited(
+        ctx.context,
         ctx.vue_tsc_bin,
         &args,
         ctx.fixture_root,
@@ -2986,6 +3105,7 @@ fn assert_source_unchanged(
 }
 
 fn run_baseline_command(
+    context: &ProjectContext,
     command: &Path,
     args: &[String],
     cwd: &Path,
@@ -2993,7 +3113,15 @@ fn run_baseline_command(
     label: &str,
     allowed_statuses: &[i32],
 ) -> Result<CapturedToolRun, String> {
-    match run_capture_limited(command, args, cwd, timeout_ms, label, allowed_statuses) {
+    match run_capture_limited(
+        context,
+        command,
+        args,
+        cwd,
+        timeout_ms,
+        label,
+        allowed_statuses,
+    ) {
         Ok(run) => Ok(CapturedToolRun {
             run,
             run_error: None,
@@ -3040,6 +3168,7 @@ fn captured_exit_code(captured: &CapturedToolRun) -> Value {
 }
 
 fn run_capture_limited(
+    context: &ProjectContext,
     command: &Path,
     args: &[String],
     cwd: &Path,
@@ -3047,117 +3176,23 @@ fn run_capture_limited(
     label: &str,
     allowed_statuses: &[i32],
 ) -> Result<ToolRun, String> {
-    let started = Instant::now();
-    let mut child_command = Command::new(command);
-    child_command
-        .args(args)
-        .current_dir(cwd)
-        .env("LANG", "C")
-        .env("LC_ALL", "C")
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
-    #[cfg(unix)]
-    child_command.process_group(0);
-    let mut child = child_command
-        .spawn()
-        .map_err(|error| format!("{label} failed to run: {error}"))?;
-    let stdout = child
-        .stdout
-        .take()
-        .ok_or_else(|| format!("{label} failed to capture stdout"))?;
-    let stderr = child
-        .stderr
-        .take()
-        .ok_or_else(|| format!("{label} failed to capture stderr"))?;
-    let stdout_reader = thread::spawn(move || read_child_output(stdout));
-    let stderr_reader = thread::spawn(move || read_child_output(stderr));
-    let status = loop {
-        if let Some(status) = child
-            .try_wait()
-            .map_err(|error| format!("{label} failed to run: {error}"))?
-        {
-            break status;
-        }
-        if started.elapsed() >= Duration::from_millis(timeout_ms) {
-            kill_child_group(&mut child);
-            // Timeout artifacts only need the failure reason. Descendants may
-            // keep inherited stdio open, so this path must not join readers.
-            drop(stdout_reader);
-            drop(stderr_reader);
-            return Err(timeout_error(label, timeout_ms));
-        }
-        thread::sleep(Duration::from_millis(5));
-    };
-    let status = status.code().unwrap_or(1);
-    kill_child_process_group(child.id());
-    let stdout = join_output_reader(stdout_reader, label, "stdout")?;
-    let stderr = join_output_reader(stderr_reader, label, "stderr")?;
+    let run = context.capture(command, args, cwd, timeout_ms, label)?;
+    let status = run.status.code().unwrap_or(1);
     if !allowed_statuses.contains(&status) {
         return Err(format!("{label} exited with unsupported status {status}"));
     }
-    let stdout = String::from_utf8_lossy(&stdout).into_owned();
-    let stderr = String::from_utf8_lossy(&stderr).into_owned();
     Ok(ToolRun {
         command: display_command(command, args),
         status,
-        output: format!("{stdout}\n{stderr}"),
-        stdout,
-        stderr,
-        duration_ms: started.elapsed().as_millis(),
+        output: format!("{}\n{}", run.stdout, run.stderr),
+        stdout: run.stdout,
+        stderr: run.stderr,
+        duration_ms: run.duration_ms,
         parsed: None,
     })
 }
-
-fn read_child_output<R: Read>(mut pipe: R) -> Result<Vec<u8>, String> {
-    let mut output = Vec::new();
-    pipe.read_to_end(&mut output)
-        .map_err(|error| format!("failed to read child output: {error}"))?;
-    Ok(output)
-}
-
-fn join_output_reader(
-    reader: thread::JoinHandle<Result<Vec<u8>, String>>,
-    label: &str,
-    stream: &str,
-) -> Result<Vec<u8>, String> {
-    reader
-        .join()
-        .map_err(|_| format!("{label} {stream} reader panicked"))?
-        .map_err(|error| format!("{label} failed to run: {error}"))
-}
-
 fn timeout_error(label: &str, timeout_ms: u64) -> String {
     format!("{label} failed to run: spawn timed out after {timeout_ms}ms")
-}
-
-fn kill_child_group(child: &mut std::process::Child) {
-    kill_child_process_group(child.id());
-    let _ = child.kill();
-    let _ = child.wait();
-}
-
-#[cfg(unix)]
-fn kill_child_process_group(child_id: u32) {
-    let Ok(child_pid) = i32::try_from(child_id) else {
-        return;
-    };
-    // SAFETY: `child_pid` came from `Child::id`, and a negative pid asks the OS
-    // to signal the process group created by `process_group(0)` above.
-    unsafe {
-        let _ = kill(-child_pid, SIGKILL);
-    }
-}
-
-#[cfg(not(unix))]
-fn kill_child_process_group(_child_id: u32) {}
-
-#[cfg(unix)]
-const SIGKILL: i32 = 9;
-
-#[cfg(unix)]
-unsafe extern "C" {
-    fn kill(pid: i32, sig: i32) -> i32;
 }
 
 fn mutation_run_error(error: String) -> String {
@@ -3872,9 +3907,12 @@ fn diagnostic_mapping_unusable_reason(summary: &Value) -> Option<String> {
     ))
 }
 
+const INSTRUMENT_FAILURE_CLASSIFICATION: &str =
+    "instrument failure, the vue-tsc baseline did not measure Vize";
+
 fn describe_classification(artifact: &Value) -> String {
     if artifact.pointer("/budget/verdict").and_then(Value::as_str) == Some("unusable") {
-        "instrument failure, the vue-tsc baseline did not measure Vize".to_string()
+        INSTRUMENT_FAILURE_CLASSIFICATION.to_string()
     } else {
         format!(
             "Vize divergence, the vue-tsc baseline loaded cleanly over the same {} Vue files, against the fixture's own Vue runtime",
@@ -4014,6 +4052,9 @@ fn ratio_string(value: &Value, key: &str) -> String {
 
 fn parse_args(argv: Vec<String>, root: &Path) -> Result<Args, String> {
     let mut args = Args {
+        deadline_worker: None,
+        deadline_state: None,
+        deadline_budget_ms: None,
         budget_mode: "enforce".to_string(),
         documented_differences: root.join("tests/_fixtures/compat-documented-differences.json"),
         registry: root.join("tests/_fixtures/vue-ecosystem-fixtures.json"),
@@ -4036,6 +4077,13 @@ fn parse_args(argv: Vec<String>, root: &Path) -> Result<Args, String> {
                 .ok_or_else(|| format!("{arg} requires a value"))
         };
         match arg.as_str() {
+            "--deadline-worker" => args.deadline_worker = Some(value(&mut index)?),
+            "--deadline-state" => {
+                args.deadline_state = Some(absolutize(root, PathBuf::from(value(&mut index)?)))
+            }
+            "--deadline-budget-ms" => {
+                args.deadline_budget_ms = Some(positive_integer(&value(&mut index)?, arg)?)
+            }
             "--budget-mode" => args.budget_mode = parse_budget_mode(&value(&mut index)?)?,
             "--documented-differences" => {
                 args.documented_differences = absolutize(root, PathBuf::from(value(&mut index)?))
