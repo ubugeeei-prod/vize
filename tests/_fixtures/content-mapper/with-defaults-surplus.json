@@ -106,7 +106,8 @@
     {
       "name": "opaque-defaults",
       "files": {
-        "App.vue": "<script setup lang=\"ts\">\nconst defaults = { size: 'normal', hasCloseBtn: true };\nconst props = withDefaults(defineProps<{ size?: string }>(), defaults);\n</script>\n<template>{{ props.size.toUpperCase() }}</template>\n"
+        "App.vue": "<script setup lang=\"ts\">\nimport defaults from './defaults';\nconst props = withDefaults(defineProps<{ size?: string }>(), defaults);\n</script>\n<template>{{ props.size.toUpperCase() }}</template>\n",
+        "defaults.ts": "export default { size: 'normal', hasCloseBtn: true };\n"
       },
       "codes": []
     }
