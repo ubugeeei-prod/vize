@@ -124,6 +124,39 @@ void test("pull-request setup-vp restores the bootstrap runtime and does not ins
   );
 });
 
+void test("both Musea callers restore the bootstrap runtime before their unchanged installer", () => {
+  const action = workflow(".github/actions/cache-vp-bootstrap/action.yml");
+  assert.equal(action.inputs.save.default, "false");
+  const restore = action.runs.steps.find((step) => step.uses?.startsWith("actions/cache/restore@"));
+  assert.equal(
+    restore.if,
+    "${{ steps.key.outputs.key != '' && steps.key.outputs.save != 'true' }}",
+  );
+  const callers = Object.entries(workflow(".github/workflows/musea-browser.yml").jobs).flatMap(
+    ([name, job]) =>
+      (job.steps ?? []).flatMap((step, index, steps) => {
+        if (step.uses !== "./.github/actions/cache-vp-bootstrap") return [];
+        assert.deepEqual(step, { uses: "./.github/actions/cache-vp-bootstrap" });
+        assert.equal(steps[index - 1]?.uses?.startsWith("actions/checkout@"), true);
+        const setup = steps[index + 1];
+        assert.equal(setup?.uses?.startsWith("voidzero-dev/setup-vp@"), true);
+        assert.equal(step.if, setup.if);
+        assert.deepEqual(setup.with, {
+          "node-version-file": "package.json",
+          cache: true,
+          "run-install": false,
+        });
+        for (const event of ["pull_request", "merge_group", "schedule", "workflow_dispatch"])
+          assert.equal(
+            bootstrapCacheWrite(step.with?.save === "true", event, "refs/heads/main", "main"),
+            false,
+          );
+        return [name];
+      }),
+  );
+  assert.deepEqual(callers, ["musea-native-inline", "musea-browser"]);
+});
+
 const dependencyAction = "voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af";
 const dependencyConsumers = [
   ["check.yml", "check-js"],
