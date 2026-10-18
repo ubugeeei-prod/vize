@@ -20,12 +20,16 @@ import {
 
 const read = (file: string) => readFileSync(join(REPO_ROOT, file), "utf8");
 const artifact = JSON.parse(read(RESULT_PATH));
+const reviewedJapaneseMarker =
+  "<!-- Reviewed translation; source: architecture/performance-blacksmith.md; scope: complete document -->";
 
 test("one publisher reproduces the README, JSON and all ten public pages exactly", async () => {
   const outputs = await preparePublication(artifact, read);
   assert.equal(outputs.size, 12);
   for (const [file, content] of outputs) {
     assert.equal(content, read(file), file);
+    if (file === "docs/content/ja/architecture/performance-blacksmith.md")
+      assert.equal(content.split(reviewedJapaneseMarker).length - 1, 1);
     if (file !== RESULT_PATH)
       assert.equal(content.match(/<details class="benchmark-provenance">/g)?.length, 1, file);
   }
@@ -170,6 +174,15 @@ test("check detects locale drift and failed preparation writes nothing", async (
       mkdirSync(dirname(join(root, file)), { recursive: true });
       writeFileSync(join(root, file), source);
     }
+    const reviewedPage = "docs/content/ja/architecture/performance-blacksmith.md";
+    const reviewedSource = outputs.get(reviewedPage);
+    assert.ok(reviewedSource?.includes(reviewedJapaneseMarker));
+    writeFileSync(join(root, reviewedPage), reviewedSource.replace(reviewedJapaneseMarker, ""));
+    await assert.rejects(
+      publishSnapshot({ root, check: true }),
+      /stale generated files.*ja\/architecture\/performance-blacksmith/,
+    );
+    writeFileSync(join(root, reviewedPage), reviewedSource);
     const page = performancePath("ja");
     writeFileSync(join(root, page), read(page).replace(/\*\*\d+\.\d+x\*\*/u, "**999.0x**"));
     await assert.rejects(publishSnapshot({ root, check: true }), /stale generated files.*ja/);

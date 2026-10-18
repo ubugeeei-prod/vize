@@ -24,8 +24,17 @@ const section =
   /<!-- First-copy reader example: start -->\n[\s\S]+?<!-- First-copy reader example: end -->\n\n/g;
 const fences = (source: string) =>
   [...source.matchAll(/^```[^\n]*\n([\s\S]*?)^```$/gm)].map((match) => match[1]);
+// Japanese prose was reviewed in #9522 (64f070766c3915698bd076574c7ba03dc07d7d98).
+// Its original eight code fences remain byte-identical to baseline.base.
+const reviewedJapaneseProse = "b565f137d2c726716ea9a1372eb6bde119b852581b432aef6d418ca66ff4dd03";
+const originalFenceHashes: Record<string, string> = {
+  "docs/content/guide/lib-pull.md":
+    "5837f9440664eec71cdb91d249f2335f811270fb6f98d79c0c4f371181ebf06f",
+  "docs/content/ja/guide/lib-pull.md":
+    "2d84439ab44279ef0fe1ef06c35c01c1e0682bc9c2f6d0ecfcf6aa715940e207",
+};
 
-await test("first-copy guides preserve every original byte and every native bookmark", () => {
+await test("first-copy guides preserve reviewed prose, all original code and every native bookmark", () => {
   assert.equal(baseline.base, "479402e2bd77a1c7b3a4025293b884965d6e2b46");
   for (const document of baseline.documents) {
     const source = read(document.path);
@@ -33,7 +42,16 @@ await test("first-copy guides preserve every original byte and every native book
     assert.ok(renderedMoreGuideRoutes.includes(route), `${route}: actual native reading campaign`);
     assert.equal([...source.matchAll(section)].length, 1);
     const restored = source.replace(section, "");
-    assert.equal(sha(restored), document.sha256, document.path);
+    if (document.path === "docs/content/ja/guide/lib-pull.md")
+      assert.equal(
+        document.sha256,
+        "67cd464bdb5a871c97a49ade58d0475bb924ec10457e05efbc553d00877246bd",
+      );
+    const expectedProse = document.path.startsWith("docs/content/ja/")
+      ? reviewedJapaneseProse
+      : document.sha256;
+    assert.equal(sha(restored), expectedProse, document.path);
+    assert.equal(sha(JSON.stringify(fences(restored))), originalFenceHashes[document.path]);
     assert.equal(fences(restored).length, 8);
     assert.equal(fences(source).length, 10);
     const rendered = native.transform(source, {});

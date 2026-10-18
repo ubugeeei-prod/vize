@@ -277,7 +277,7 @@ test("configuration and vite plugin docs link to experimentals", () => {
   assert.match(configuration, /\[Experimentals\]\(\.\/experimentals\.md\)/);
   assert.match(vitePlugin, /\| `experimentals`/);
   assert.match(vitePlugin, /\[Experimentals\]\(\.\/experimentals\.md\)/);
-  assert.match(jaConfiguration, /\[Experimentals\]\(\.\/experimentals\.md\)/);
+  assert.match(jaConfiguration, /\[実験的な機能のガイド\]\(\.\/experimentals\.md\)/);
   assert.match(jaVitePlugin, /\| `experimentals`/);
   assert.match(jaVitePlugin, /\[Experimentals\]\(\.\/experimentals\.md\)/);
 });
