@@ -156,7 +156,13 @@ test(
               const projectRoot = path.join(directory, "test-workspace/tsc", project);
               const capture =
                 project === "fallthroughAttributes"
-                  ? { name: "upstream-original", sources: fs.readdirSync(projectRoot) }
+                  ? {
+                      name: "upstream-original",
+                      sources: fs
+                        .readdirSync(projectRoot, { withFileTypes: true })
+                        .filter((entry) => entry.isFile())
+                        .map((entry) => entry.name),
+                    }
                   : undefined;
               const actual = (
                 await check(projectRoot, capture ? ["--show-virtual-ts"] : [], capture)

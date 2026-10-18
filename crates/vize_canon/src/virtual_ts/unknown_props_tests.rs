@@ -170,6 +170,38 @@ fn listener_inference_maps_its_own_prop_keys_values_and_spreads() {
             );
         }
         if !spread.is_empty() {
+            let literal_start =
+                inference + output.code.get(inference..).unwrap().find("({\n").unwrap() + 1;
+            let literal_end = literal_start
+                + output
+                    .code
+                    .get(literal_start..)
+                    .unwrap()
+                    .find("});\n")
+                    .unwrap()
+                + 1;
+            let tag_start = template_offset as usize + template.find("<Child").unwrap() + 1;
+            let row = output
+                .mapping
+                .rows()
+                .find(|row| row.span.gen_range == (literal_start..literal_end))
+                .expect("the whole inference argument must own a diagnostic span");
+            assert_eq!(row.meta.features, super::ProjectionFeatures::DIAGNOSTICS);
+            assert_eq!(row.span.src_range, tag_start..tag_start + "Child".len());
+            assert_eq!(
+                output
+                    .mapping
+                    .diagnostic_range_to_authored(literal_start, literal_end),
+                Some((tag_start, tag_start + "Child".len()))
+            );
+            for feature in [
+                super::ProjectionFeatures::HOVER,
+                super::ProjectionFeatures::COMPLETION,
+                super::ProjectionFeatures::DEFINITION,
+            ] {
+                let target = output.mapping.to_generated_for(tag_start, feature).unwrap();
+                assert!(!row.span.gen_range.contains(&target));
+            }
             let generated = inference
                 + output
                     .code

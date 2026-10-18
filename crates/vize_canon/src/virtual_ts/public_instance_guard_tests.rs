@@ -115,8 +115,9 @@ fn listener_input_metadata_is_modern_only_and_legacy_keeps_constructor_inference
     assert!(
         modern
             .code
-            .contains("type __VizeEmitOwnedKeys<C> = keyof __VizePublicComponentInputProps")
+            .contains("type __VizeEmitOwnedKeys<C> = __VizeComponentOwnKeys<")
     );
+    assert!(modern.code.contains("type __VizeComponentOwnKeys<P = {}, E = {}> = keyof __VizePublicComponentInputProps | __VizeComponentMetadataKeys<P> | __VizeComponentMetadataKeys<E>;"));
     assert!(modern.code.contains("<A>(props: __VizeEmitInput<P,"));
     assert!(
         legacy

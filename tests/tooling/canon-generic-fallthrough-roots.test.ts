@@ -308,6 +308,20 @@ defineProps<{ bar: number }>();
           actual.map((d) => d.code),
           Array.from({ length: count }, () => code),
         );
+        if (name === "wrong-inherited-click") {
+          assert.deepEqual(actual.map(diagnosticIdentity), oracle);
+          const line = fs.readFileSync(path.join(directory, "App.vue"), "utf8").split("\n")[5];
+          assert.deepEqual(actual, [
+            {
+              file: "App.vue",
+              line: 6,
+              column: line.lastIndexOf("value") + 1,
+              code: 2345,
+              severity: "error",
+              message: "Argument of type 'string' is not assignable to parameter of type 'number'.",
+            },
+          ]);
+        }
         for (const diagnostic of actual) {
           assert.equal(diagnostic.file, "App.vue");
           assert.equal(diagnostic.line, 6);
@@ -433,10 +447,14 @@ defineEmits<{ close: [] }>();
                 path.join(directory, "App.vue"),
                 parent(`<Forwarding ${attributes} @close="() => {}" />`),
               );
+              const captureName = `index-${name}-${spread ? "spread" : "named"}-${wrong ? "wrong" : "valid"}`;
               const actual = await check(directory, ["--show-virtual-ts"], {
-                name: `index-${name}-${spread ? "spread" : "named"}-${wrong ? "wrong" : "valid"}`,
+                name: captureName,
                 sources: ["App.vue", "Root.vue", "Forwarding.vue", "tsconfig.json"],
               });
+              // Retain the independent oracle's complete packet before asserting
+              // parity for indexed roots or documenting an observed policy gap.
+              vueTscDiagnostics(directory, captureName);
               assert.deepEqual(
                 actual.map((d) => d.code),
                 wrong ? [spread ? 2345 : 2322] : [],
@@ -444,6 +462,14 @@ defineEmits<{ close: [] }>();
               for (const diagnostic of actual) {
                 assert.equal(diagnostic.file, "App.vue");
                 assert.equal(diagnostic.line, 6);
+                const line = fs
+                  .readFileSync(path.join(directory, "App.vue"), "utf8")
+                  .split("\n")[5];
+                const owner = spread ? "Forwarding" : `:${extra}="123"`;
+                const start = line.indexOf(owner);
+                assert.ok(start >= 0);
+                assert.ok(diagnostic.column >= start + 1);
+                assert.ok(diagnostic.column <= start + owner.length);
               }
             },
           );

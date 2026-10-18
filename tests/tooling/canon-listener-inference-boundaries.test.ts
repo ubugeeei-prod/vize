@@ -14,6 +14,21 @@ const implementation = fs.readFileSync(
 const declaration = implementation.match(/const EMIT_INFERENCE_HELPERS: &str = r#"([\s\S]+?)"#;/);
 assert.ok(declaration);
 const helper = declaration[1];
+const shared = fs.readFileSync(
+  new URL("../../crates/vize_canon/src/virtual_ts/component_prop_helpers.txt", import.meta.url),
+  "utf8",
+);
+const ownership = [
+  "__VizeComponentMetadataKeys",
+  "__VizeComponentOwnKeys",
+  "__VizeUnownedComponentAttrs",
+]
+  .map((name) => {
+    const line = shared.split("\n").find((line) => line.startsWith(`type ${name}<`));
+    assert.ok(line);
+    return line;
+  })
+  .join("\n");
 
 // These hand-authored constructor/input models isolate this helper boundary.
 // Genuine Vue, emitted modules, native mappings and original upstream packets
@@ -307,6 +322,7 @@ function diagnostics(exactOptionalPropertyTypes: boolean) {
       "type __EmitProps<E> = { emit: E };",
       "type __VizePublicComponentInputProps = { hidden?: boolean };",
       "type Select<T, K extends PropertyKey> = T extends unknown ? Pick<T, Extract<keyof T, K>> : never;",
+      ownership,
       helper.trimEnd(),
     ].join("\n") + "\n";
   const content = prelude + body;
@@ -337,4 +353,113 @@ function diagnostics(exactOptionalPropertyTypes: boolean) {
 
 test("listener inputs preserve ownership, index values, generics and canonical unknown-prop policy", () => {
   for (const exactOptionalPropertyTypes of [false, true]) diagnostics(exactOptionalPropertyTypes);
+});
+
+test("hand-authored root forwarding preserves listener owners and raw prop identities", () => {
+  // Structural producer/consumer models, never a Vize-generated module.
+  const content = `export {};
+type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
+type __VizePublicComponentInputProps = { hidden?: boolean };
+${ownership}
+type Public<C> = C extends new (...args: any[]) => { $props: infer P } ? P : {};
+type Fallthrough<C> = C extends { readonly __vizeFallthroughProps?: infer F } ? F : {};
+type Owned<C> = __VizeComponentOwnKeys<C extends { readonly __vizeRawProps?: infer P } ? P : {}, C extends { readonly __vizeEmitProps?: infer E } ? E : {}>;
+type Args<P, K extends PropertyKey> = P extends { [Q in K]?: (...args: infer A) => any } ? A : P extends { [Q in K]?: infer H } ? [Extract<NonNullable<H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<H>, (...args: any) => any> extends (...args: infer A) => any ? A : unknown[] : unknown[];
+type RootArgs<C, K extends PropertyKey, F = Fallthrough<C>> = __VizeIsAny<F> extends true ? unknown[] : Args<NonNullable<F>, K> extends infer A ? A extends [] ? unknown[] : A : unknown[];
+type View<C, K extends PropertyKey> = C extends { readonly __vizeComponentMarker: true } ? C extends { __vizeCheck: unknown } ? Public<C> : K extends Owned<C> ? Public<C> : unknown[] extends RootArgs<C, K> ? Public<C> : NonNullable<Fallthrough<C>> : Public<C>;
+type Return<C, K extends PropertyKey> = View<C, K> extends { [Q in K]?: infer H } ? Extract<NonNullable<H>, (...args: any[]) => any> extends (...args: any[]) => infer R ? R : any : any;
+type Arrays<C, K extends PropertyKey> = View<C, K> extends { [Q in K]?: infer H } ? Extract<NonNullable<H>, readonly unknown[]> : never;
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+type Expect<T extends true> = T;
+type AnyRetained = Expect<__VizeIsAny<__VizeUnownedComponentAttrs<any>>>;
+type UnknownRetained = Expect<Equal<__VizeUnownedComponentAttrs<unknown>, unknown>>;
+type NeverRetained = Expect<Equal<__VizeUnownedComponentAttrs<never>, never>>;
+type NullishRetained = Expect<Equal<__VizeUnownedComponentAttrs<null | undefined>, null | undefined>>;
+type Augmented = __VizeUnownedComponentAttrs<{ hidden?: string; extra?: string } | null | undefined>;
+type NullableRetained = Expect<Equal<Augmented, { extra?: string } | null | undefined>>;
+const augmented: __VizePublicComponentInputProps & NonNullable<Augmented> = { hidden: true, extra: 'text' };
+const wrongAugmented: __VizePublicComponentInputProps & NonNullable<Augmented> = { hidden: 'wrong' }; // error 2322
+namespace BroadPublicAugmentation {
+  type __VizePublicComponentInputProps = { hidden?: boolean } & { [key: \`custom-\${string}\`]: boolean | undefined };
+  ${ownership}
+  type RootAttrs = __VizeUnownedComponentAttrs<{ 'custom-flag'?: string; label?: number }>;
+  const valid: __VizePublicComponentInputProps & RootAttrs = { hidden: true, 'custom-flag': true, label: 1 };
+  const wrong: __VizePublicComponentInputProps & RootAttrs = { 'custom-flag': 'wrong' }; // error 2322
+}
+type Native = { onClick?: (value: PointerEvent) => void };
+type Emits = { onClick?: (value: string) => number };
+type Root = Emits & __VizePublicComponentInputProps & __VizeUnownedComponentAttrs<Native, {}, Emits>;
+type Forward = (new () => { $props: Native & { bar?: number } }) & { [key: string]: any; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: { bar?: number }; readonly __vizeFallthroughProps?: Partial<Root> };
+declare const forwarded: (...args: Args<View<Forward, 'onClick'>, 'onClick'>) => Return<Forward, 'onClick'>;
+const forwardedReturn: number = forwarded('text');
+forwarded(new PointerEvent('click')); // error 2345
+forwarded(1); // error 2345
+const wrongReturn: string = forwarded('text'); // error 2322
+type MixedRoot = { onClick?: ((value: string) => number) | ((value: string) => number)[] };
+type MixedForward = (new () => { $props: Native }) & { readonly __vizeComponentMarker: true; readonly __vizeFallthroughProps?: MixedRoot };
+declare const mixed: (...args: Args<View<MixedForward, 'onClick'>, 'onClick'>) => Return<MixedForward, 'onClick'>;
+const mixedReturn: number = mixed('text');
+mixed(new PointerEvent('click')); // error 2345
+const mixedArray: Arrays<MixedForward, 'onClick'> = [(value: string) => value.length];
+const wrongMixedArray: Arrays<MixedForward, 'onClick'> = [(value: PointerEvent) => 1]; // error 2322
+type UnionRoot = __VizeUnownedComponentAttrs<{ kind: 'left'; left: number; onClick?: (value: PointerEvent) => void } | { kind: 'right'; right: string; onClick?: (value: PointerEvent) => void }, {}, Emits>;
+const unionLeft: UnionRoot = { kind: 'left', left: 1 };
+const unionRight: UnionRoot = { kind: 'right', right: 'text' };
+const wrongUnion: UnionRoot = { kind: 'left', left: 'wrong' }; // error 2322
+type OwnEmit = (new () => { $props: { onClick?: (value: number) => void } }) & { readonly __vizeComponentMarker: true; readonly __vizeEmitProps?: { onClick?: (value: number) => void }; readonly __vizeFallthroughProps?: Root };
+declare const ownEmit: (...args: Args<View<OwnEmit, 'onClick'>, 'onClick'>) => void;
+ownEmit(1);
+ownEmit('wrong'); // error 2345
+type OwnArray = (new () => { $props: { onClick?: ((value: number) => void) | ((value: number) => void)[] } }) & { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: { onClick?: ((value: number) => void) | ((value: number) => void)[] }; readonly __vizeFallthroughProps?: Root };
+const ownArray: Arrays<OwnArray, 'onClick'> = [(value: number) => {}];
+const wrongArray: Arrays<OwnArray, 'onClick'> = [(value: string) => {}]; // error 2322
+type NoRoot = (new () => { $props: Native }) & { readonly __vizeComponentMarker: true };
+declare const native: (...args: Args<View<NoRoot, 'onClick'>, 'onClick'>) => void;
+native(new PointerEvent('click'));
+native('wrong'); // error 2345
+type Foreign = (new () => { $props: Native }) & { readonly __vizeFallthroughProps?: Root };
+declare const foreign: (...args: Args<View<Foreign, 'onClick'>, 'onClick'>) => void;
+foreign(new PointerEvent('click'));
+foreign('wrong'); // error 2345
+type Generic = Forward & { __vizeCheck: <T>(props: { value: T }) => void; __vizeResolveProps?: <T>(props: { value: T }) => { value: T } };
+declare const genericFallback: (...args: Args<View<Generic, 'onClick'>, 'onClick'>) => void;
+genericFallback(new PointerEvent('click'));
+genericFallback('wrong'); // error 2345
+type Value<P, K extends PropertyKey, F = unknown, V = P extends unknown ? K extends keyof P ? P[K] : never : never> = [V] extends [never] ? F : V;
+type Props = { 'data-owned'?: number; camelName?: boolean };
+type Inherited = Partial<Record<\`data-\${string}\`, string>>;
+type Named<Raw extends string, Camel extends string> = Value<Props, Raw, Value<Props, Camel, Value<Inherited, Raw>>>;
+const rawOwn: Named<'data-owned', 'dataOwned'> = 1;
+const wrongOwn: Named<'data-owned', 'dataOwned'> = 'wrong'; // error 2322
+const extra: Named<'data-extra', 'dataExtra'> = 'text';
+const wrongExtra: Named<'data-extra', 'dataExtra'> = 1; // error 2322
+const normalized: Named<'camel-name', 'camelName'> = true;
+const wrongNormalized: Named<'camel-name', 'camelName'> = 1; // error 2322
+`;
+  const fixture = fileURLToPath(import.meta.url);
+  const options: ts.CompilerOptions = {
+    strict: true,
+    noEmit: true,
+    types: [],
+    target: ts.ScriptTarget.ESNext,
+    skipLibCheck: false,
+  };
+  const host = ts.createCompilerHost(options);
+  const read = host.readFile.bind(host);
+  host.readFile = (file) => (file === fixture ? content : read(file));
+  const program = ts.createProgram([fixture], options, host);
+  const actual = ts.getPreEmitDiagnostics(program).map((diagnostic) => {
+    assert.equal(diagnostic.file?.fileName, fixture);
+    assert.notEqual(diagnostic.start, undefined);
+    return {
+      line: diagnostic.file!.getLineAndCharacterOfPosition(diagnostic.start!).line + 1,
+      code: diagnostic.code,
+    };
+  });
+  const expected = content.split("\n").flatMap((line, index) => {
+    const marker = /\/\/ error (\d+)/.exec(line);
+    return marker ? [{ line: index + 1, code: Number(marker[1]) }] : [];
+  });
+  assert.equal(expected.length, 16);
+  assert.deepEqual(actual, expected);
 });

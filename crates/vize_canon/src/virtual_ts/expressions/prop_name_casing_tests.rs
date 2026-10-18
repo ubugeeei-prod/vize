@@ -105,8 +105,8 @@ fn kebab_case_attributes_still_resolve_to_their_camel_case_prop() {
 
     assert!(
         code.contains(
-            "__VizePropValue<__Child_ValueProps_0, 'myProp', __Child_FallthroughValue_0<'my-prop'>>"
+            "__VizePropValue<__Child_ValueProps_0, 'my-prop', __VizePropValue<__Child_ValueProps_0, 'myProp', __Child_FallthroughValue_0<'my-prop'>>>"
         ),
-        "kebab attribute did not split prop and fallthrough lookup keys:\n{code}"
+        "literal own prop must precede its camel alias and fallthrough lookup:\n{code}"
     );
 }

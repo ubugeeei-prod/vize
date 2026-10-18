@@ -52,6 +52,9 @@ type __VizeDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K ext
 type __VizeFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown } & { [K in `aria-${string}` | `aria${Capitalize<string>}`]?: unknown } & Omit<__VizeDomListenerProps, keyof Owned>;
 // Match Vue's public prop contract, including runtime-core module augmentations.
 type __VizePublicComponentInputProps = import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;
+type __VizeComponentMetadataKeys<T> = __VizeIsAny<T> extends true ? never : T extends unknown ? keyof NonNullable<T> : never;
+type __VizeComponentOwnKeys<P = {}, E = {}> = keyof __VizePublicComponentInputProps | __VizeComponentMetadataKeys<P> | __VizeComponentMetadataKeys<E>;
+type __VizeUnownedComponentAttrs<F, P = {}, E = {}> = __VizeIsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : Omit<F, __VizeComponentOwnKeys<P, E>> : never;
 type __VizePrettify<T> = (T extends any ? { [K in keyof T]: T[K] } : { [K in keyof T as K]: T[K] }) & {};
 type __VizeComponentFallthroughSurface<C> = (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : Record<string, unknown>) & (C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {});
 type __VizeComponentFallthroughProps<C> = { [K in keyof __VizeComponentFallthroughSurface<C>]: __VizeComponentFallthroughSurface<C>[K] };
@@ -124,7 +127,7 @@ function __setup() {
   const props = defineProps<{ count: number }>();
   const message = ref('Hello');
   
-  // @vize-map: 14612:14700 -> 0:79
+  // @vize-map: 15101:15189 -> 0:79
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -209,5 +212,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Partial<__VizeNativeElement<"div">>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: __VizeUnownedComponentAttrs<Partial<__VizeNativeElement<"div">>, Props, {}>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;

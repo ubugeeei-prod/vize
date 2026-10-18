@@ -50,6 +50,7 @@ export async function check(
     let signal: NodeJS.Signals | null = null;
     let closeObserved = false;
     let error: Error | undefined;
+    let captureError: unknown;
     try {
       status = await new Promise<number | null>((resolve, reject) => {
         child.on("error", (original) => {
@@ -62,68 +63,96 @@ export async function check(
           resolve(code);
         });
       });
+    } catch (original) {
+      if (!(original instanceof Error)) throw original;
+      error = original;
     } finally {
       if (capture) {
-        const output = path.join(
-          root,
-          "target/differential/fallthrough-listener-inputs",
-          capture.name,
-        );
-        fs.mkdirSync(output, { recursive: true });
-        fs.writeFileSync(path.join(output, "stdout.json"), stdout);
-        fs.writeFileSync(path.join(output, "stderr.txt"), stderr);
-        fs.writeFileSync(
-          path.join(output, "process.json"),
-          JSON.stringify({
-            executable: launch[0],
-            argv,
-            cwd: directory,
-            pid: child.pid ?? null,
-            status,
-            signal,
-            closeObserved,
-            sourceRevision: process.env.GITHUB_SHA,
-            error: error
-              ? {
-                  name: error.name,
-                  message: error.message,
-                  stack: error.stack,
-                  ownProperties: Object.getOwnPropertyNames(error),
-                  raw: inspect(error, { showHidden: true, depth: null, customInspect: false }),
-                }
-              : null,
-          }),
-        );
-        for (const file of capture.sources)
-          fs.copyFileSync(path.join(directory, file), path.join(output, file));
+        try {
+          assert.match(capture.name, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+          const captureRoot = path.join(root, "target/differential/fallthrough-listener-inputs");
+          fs.mkdirSync(captureRoot, { recursive: true });
+          assert.ok(fs.realpathSync(captureRoot).startsWith(fs.realpathSync(root) + path.sep));
+          const output = path.join(
+            root,
+            "target/differential/fallthrough-listener-inputs",
+            capture.name,
+          );
+          if (fs.existsSync(output))
+            assert.ok(fs.lstatSync(output).isDirectory() && !fs.lstatSync(output).isSymbolicLink());
+          fs.rmSync(output, { recursive: true, force: true });
+          fs.mkdirSync(output);
+          fs.writeFileSync(path.join(output, "stdout.json"), stdout);
+          fs.writeFileSync(path.join(output, "stderr.txt"), stderr);
+          fs.writeFileSync(
+            path.join(output, "process.json"),
+            JSON.stringify({
+              executable: launch[0],
+              argv,
+              cwd: directory,
+              pid: child.pid ?? null,
+              status,
+              signal,
+              closeObserved,
+              sourceRevision: process.env.GITHUB_SHA,
+              error: error
+                ? {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack,
+                    ownProperties: Object.getOwnPropertyNames(error),
+                    raw: inspect(error, { showHidden: true, depth: null, customInspect: false }),
+                  }
+                : null,
+            }),
+          );
+          for (const file of capture.sources)
+            fs.copyFileSync(path.join(directory, file), path.join(output, file));
+        } catch (original) {
+          captureError = original;
+        }
       }
     }
-    assert.ok(status === 0 || status === 1, `checker failed (${status}): ${stderr}\n${stdout}`);
-    assert.ok(stdout.trim().startsWith("{"), `checker did not return JSON: ${stderr}\n${stdout}`);
-    const result = JSON.parse(stdout) as {
-      files: Array<{ file: string; diagnostics: string[] }>;
-      errorCount: number;
-    };
-    const diagnostics = result.files.flatMap(({ file, diagnostics }) =>
-      diagnostics.map((text) => {
-        const match = /^(error|warning):(\d+):(\d+) (?:\[TS(\d+)\] )?([\s\S]+)$/.exec(text);
-        assert.ok(match, `unrecognized diagnostic: ${text}`);
-        return {
-          file: file.replaceAll("\\", "/"),
-          severity: match[1] as "error" | "warning",
-          line: Number(match[2]),
-          column: Number(match[3]),
-          ...(match[4] ? { code: Number(match[4]) } : {}),
-          message: match[5],
-        };
-      }),
-    );
-    assert.equal(result.errorCount, diagnostics.filter((d) => d.severity === "error").length);
-    assert.equal(
-      status === 0,
-      result.errorCount === 0,
-      "exit code and diagnostic verdict disagree",
-    );
+    let diagnostics: Diagnostic[];
+    try {
+      if (error) throw error;
+      assert.ok(status === 0 || status === 1, `checker failed (${status}): ${stderr}\n${stdout}`);
+      assert.ok(stdout.trim().startsWith("{"), `checker did not return JSON: ${stderr}\n${stdout}`);
+      const result = JSON.parse(stdout) as {
+        files: Array<{ file: string; diagnostics: string[] }>;
+        errorCount: number;
+      };
+      diagnostics = result.files.flatMap(({ file, diagnostics }) =>
+        diagnostics.map((text) => {
+          const match = /^(error|warning):(\d+):(\d+) (?:\[TS(\d+)\] )?([\s\S]+)$/.exec(text);
+          assert.ok(match, `unrecognized diagnostic: ${text}`);
+          return {
+            file: file.replaceAll("\\", "/"),
+            severity: match[1] as "error" | "warning",
+            line: Number(match[2]),
+            column: Number(match[3]),
+            ...(match[4] ? { code: Number(match[4]) } : {}),
+            message: match[5],
+          };
+        }),
+      );
+      assert.equal(result.errorCount, diagnostics.filter((d) => d.severity === "error").length);
+      assert.equal(
+        status === 0,
+        result.errorCount === 0,
+        "exit code and diagnostic verdict disagree",
+      );
+    } catch (original) {
+      if (captureError)
+        throw new AggregateError([original, captureError], "checker and mandatory capture failed", {
+          cause: { checkerError: original, status, signal, stdout, stderr },
+        });
+      throw original;
+    }
+    if (captureError)
+      throw new AggregateError([captureError], "mandatory checker capture failed", {
+        cause: { status, signal, stdout, stderr },
+      });
     return diagnostics;
   } finally {
     clearTimeout(timeout);
