@@ -339,7 +339,7 @@ Proibir nomes de classe duplicados em um atributo class estático
 [Incorreto](#html-no-duplicate-class-bad) · [Correto](#html-no-duplicate-class-good)
 
 Severidade padrão: `warning`  
-Predefinições: `nuxt`, `opinionated`  
+Predefinições: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.

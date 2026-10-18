@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { formatSfc, type FormatOptionsNapi } from "@vizejs/native";
 import { runPublicNativeFormatter } from "../../../../../tests/differential/formatter-native.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../..");
@@ -28,3 +29,118 @@ void test(
     );
   },
 );
+
+void test("public formatter presets retain whole outputs and fixed points", () => {
+  const source = `<template>
+  <div v-bind:id="id" class="a">{{ id }}</div>
+</template>
+
+<script lang="ts" setup>
+const id = "a";
+</script>
+`;
+  const vize = `<script setup lang="ts">
+const id = "a";
+</script>
+
+<template>
+  <div :id="id" class="a">{{ id }}</div>
+</template>
+`;
+  assert.deepEqual(formatSfc(source), { code: vize, changed: true });
+  for (const [options, expected] of [
+    [{}, vize],
+    [{ preset: "vize" }, vize],
+    [{ preset: "prettier" }, source],
+  ] satisfies Array<[FormatOptionsNapi, string]>) {
+    Object.freeze(options);
+    assert.deepEqual(formatSfc(source, options), { code: expected, changed: expected !== source });
+    for (let pass = 2; pass <= 3; pass += 1) {
+      assert.deepEqual(formatSfc(expected, options), { code: expected, changed: false });
+    }
+  }
+});
+
+void test("public Prettier preset reuses CSS, inline-style and void-element policies", () => {
+  const controls = [
+    [
+      "<style>\n@import 'a.css';\n.a {\n  content: 'it\\'s';\n  font-family: 'A \"B\"';\n}\n</style>\n",
+      '<style>\n@import "a.css";\n.a {\n  content: "it\'s";\n  font-family: \'A "B"\';\n}\n</style>\n',
+    ],
+    [
+      '<template>\n  <div style="color:red;top:0;" :style="{ a: 1 }">a</div>\n</template>\n',
+      '<template>\n  <div style="color: red; top: 0" :style="{ a: 1 }">a</div>\n</template>\n',
+    ],
+    [
+      '<template>\n  <ul>\n    <li v-for="item, i in items" :key="i"><img :src="item"><br></li>\n    <li v-for="{ a, b } of pairs" :key="a">{{ b }}</li>\n    <Input v-for="x in xs" :key="x"></Input>\n  </ul>\n</template>\n',
+      '<template>\n  <ul>\n    <li v-for="(item, i) in items" :key="i"><img :src="item" /><br /></li>\n    <li v-for="{ a, b } of pairs" :key="a">{{ b }}</li>\n    <Input v-for="x in xs" :key="x"></Input>\n  </ul>\n</template>\n',
+    ],
+    [
+      '<style lang="scss">\n.a {\n\tcolor: red;\n\n\n\t&:hover {\n\t\tcolor: blue;\n\t}\n}\n</style>\n',
+      '<style lang="scss">\n.a {\n  color: red;\n\n  &:hover {\n    color: blue;\n  }\n}\n</style>\n',
+    ],
+  ] as const;
+  const options = Object.freeze({ preset: "prettier" as const });
+  for (const [source, expected] of controls) {
+    assert.deepEqual(formatSfc(source, options), { code: expected, changed: true });
+    for (let pass = 2; pass <= 3; pass += 1) {
+      assert.deepEqual(formatSfc(expected, options), { code: expected, changed: false });
+    }
+  }
+});
+
+void test("explicit native formatter values override presets including false", () => {
+  const source = `<template>
+  <div v-bind:id="id" class="a">{{ id }}</div>
+</template>
+
+<script lang="ts" setup>
+const id = "a";
+</script>
+`;
+  const options = Object.freeze({
+    preset: "vize" as const,
+    sortAttributes: false,
+    normalizeDirectiveShorthands: false,
+    semi: false,
+    singleQuote: true,
+  });
+  const expected = `<script lang="ts" setup>
+const id = 'a'
+</script>
+
+<template>
+  <div v-bind:id="id" class="a">{{ id }}</div>
+</template>
+`;
+  assert.deepEqual(formatSfc(source, options), { code: expected, changed: true });
+  assert.deepEqual(formatSfc(expected, options), { code: expected, changed: false });
+  assert.deepEqual(options, {
+    preset: "vize",
+    sortAttributes: false,
+    normalizeDirectiveShorthands: false,
+    semi: false,
+    singleQuote: true,
+  });
+});
+
+void test("public formatter rejects unknown presets and wrong JavaScript types", () => {
+  for (const preset of ["", "compact", "documentation", "PRETTIER", 1, true, {}, []]) {
+    assert.throws(
+      () => formatSfc("<template />", { preset } as FormatOptionsNapi),
+      (error: unknown) => {
+        assert.ok(error instanceof Error);
+        assert.equal(
+          (error as Error & { code: string }).code,
+          typeof preset === "string" ? "InvalidArg" : "StringExpected",
+        );
+        if (typeof preset === "string") {
+          assert.equal(error.message, "Unknown formatter preset; expected 'vize' or 'prettier'");
+        } else {
+          assert.match(error.message, /preset|string/i);
+        }
+        return true;
+      },
+    );
+  }
+});

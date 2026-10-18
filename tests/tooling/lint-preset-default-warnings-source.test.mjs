@@ -13,67 +13,20 @@ const bytes = read(`${directory}/successor.json`);
 assert.equal(sha(bytes), "30d630da3f38e9eb667e2097bda2b65d8e0e3b82bb5f62c61e4aead8a4cdc295");
 const manifest = JSON.parse(bytes);
 
-// #9357 (07f5645623a8d26d8909a9a53f8636682ce2192c) removed only
-// retired extension-host scheduling. Keep the original preset audit frozen;
-// restore these two exact source hunks for that audit, never for execution.
-const retiredExtensionHost = {
-  path: ".config/nextest.toml",
-  before: {
-    bytes: 5213,
-    sha256: "d7aca4d0556a5ab2a4ef81c16d022883aaf2e17ddc48de3235e9cbe028596e86",
-  },
-  after: {
-    bytes: 4801,
-    sha256: "ff231a2a36a5b1a2fafa247a79785fb7aa08b70b035a3f14392a5648880d1595",
-  },
-  hunks: [
-    {
-      before:
-        "[test-groups]\n# Guest builders share target/contract-guests. Their OnceLocks are process-local,\n# so nextest must limit the guest builds across test processes on each runner.\ncontract-guests = { max-threads = 1 }\n\n[[profile.pr.overrides]]\nfilter = 'package(=vize_extension_host)'\ntest-group = \"contract-guests\"\n\n# Full T1 has no default-filter: every ordinary workspace case remains selected.\n",
-      after: "# Full T1 has no default-filter: every ordinary workspace case remains selected.\n",
-    },
-    {
-      before:
-        '[profile.full.junit]\npath = "junit.xml"\nstore-success-output = false\nstore-failure-output = true\n\n[[profile.full.overrides]]\nfilter = \'package(=vize_extension_host)\'\ntest-group = "contract-guests"\n',
-      after:
-        '[profile.full.junit]\npath = "junit.xml"\nstore-success-output = false\nstore-failure-output = true\n',
-    },
-  ],
-};
-
-// Two later, exact receipt-retention edits leave every original preset proof frozen.
-const presetCaseName = {
-  path: retiredExtensionHost.path,
-  before: retiredExtensionHost.after,
-  after: {
-    bytes: 4794,
-    sha256: "a15ff1ec341a5eae7a3267c286834d2641a685d269ac44dd75c919995c0e19c5",
-  },
-  hunks: [
-    {
-      before:
-        "# Retain the 38 exact default/off/repair/alias CLI packets without changing selection.\n[[profile.default.overrides]]\nfilter = 'package(=vize) & binary(=lint_preset_scope_cli) & test(=six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_packets)'\n",
-      after:
-        "# Retain complete default/off/repair/alias CLI packets without changing selection.\n[[profile.default.overrides]]\nfilter = 'package(=vize) & binary(=lint_preset_scope_cli) & test(=six_default_presets_preserve_complete_cli_warning_off_repair_and_alias_packets)'\n",
-    },
-  ],
-};
-const callbackReceipts = {
-  path: retiredExtensionHost.path,
-  before: presetCaseName.after,
-  after: {
-    bytes: 4884,
-    sha256: "b72ab346f8286e68abe2d549de7c32cebc131fd61e122ef327f1e8329abd0ea0",
-  },
-  hunks: [
-    {
-      before:
-        "  test(=script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_this_frontier)\n",
-      after:
-        "  test(=script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_this_frontier) |\n  test(=legacy_instance_cli::callback_return_ownership_keeps_all_six_whole_cli_packets)\n",
-    },
-  ],
-};
+// Keep the original retirement/receipt edits and this additive class-default
+// successor pinned as finite source audits, never runtime acceptance adapters.
+const retentionBytes = read(`${directory}/source-retention-successors.json`);
+assert.equal(
+  sha(retentionBytes),
+  "3f9a60c0a76c5e6ed8cddf9aa42654f584fca734dcdad4b5780303abce378c74",
+);
+const {
+  retiredExtensionHost,
+  presetCaseName,
+  callbackReceipts,
+  staticClassRegistration,
+  staticClassMembership,
+} = JSON.parse(retentionBytes);
 
 function identity(body, expected) {
   assert.equal(body.length, expected.bytes);
@@ -92,6 +45,28 @@ function inverse(row, body) {
   }
   const before = Buffer.from(text);
   identity(before, row.before);
+  return before;
+}
+
+// Restore only the reviewed class-default edits for the frozen earlier audit.
+function originalStaticClassSource(name, body) {
+  if (name === staticClassRegistration.path) return inverse(staticClassRegistration, body);
+  if (name !== staticClassMembership.path) return body;
+  identity(body, staticClassMembership.after);
+  const text = body.toString();
+  const at = text.indexOf("{");
+  const table = canonical(Buffer.from(text.slice(at)));
+  const rule = "html/no-duplicate-class";
+  for (const preset of ["happy_path", "ecosystem", "opinionated", "nuxt"]) {
+    const names = table[preset];
+    assert.equal(names.filter((name) => name === rule).length, 1);
+    assert.equal(names[names.indexOf("html/require-datetime") + 1], rule);
+    names.splice(names.indexOf(rule), 1);
+    if (preset === "opinionated" || preset === "nuxt")
+      names.splice(names.indexOf("html/no-dupe-style-properties"), 0, rule);
+  }
+  const before = Buffer.concat([Buffer.from(text.slice(0, at)), jsonBytes(table)]);
+  identity(before, staticClassMembership.before);
   return before;
 }
 
@@ -172,9 +147,25 @@ function inverseCurrent(row, body) {
     row,
     row.path === retiredExtensionHost.path
       ? inverse(retiredExtensionHost, inverse(presetCaseName, inverse(callbackReceipts, body)))
-      : originalEssentialSource(row, body),
+      : originalEssentialSource(row, originalStaticClassSource(row.path, body)),
   );
 }
+
+void test("class-default successors reject missing, duplicate and unrelated edits", () => {
+  for (const row of [staticClassRegistration, staticClassMembership]) {
+    const body = read(row.path);
+    identity(originalStaticClassSource(row.path, body), row.before);
+    const needle = row.hunks?.[0].after ?? '    "html/no-duplicate-class",\n';
+    const text = body.toString();
+    assert(text.includes(needle));
+    for (const changed of [
+      text.replace(needle, ""),
+      text.replace(needle, needle + needle),
+      text + "\n",
+    ])
+      assert.throws(() => originalStaticClassSource(row.path, Buffer.from(changed)));
+  }
+});
 
 void test("callback retention and preset case naming have only their exact finite inverses", () => {
   let body = read(callbackReceipts.path);
@@ -193,7 +184,7 @@ void test("callback retention and preset case naming have only their exact finit
 });
 
 function inverseMembership(body) {
-  body = originalEssentialMembership(body);
+  body = originalEssentialMembership(originalStaticClassSource(staticClassMembership.path, body));
   identity(body, manifest.membership.after);
   const text = body.toString("utf8");
   const at = text.indexOf("{");
@@ -244,9 +235,9 @@ void test("only the exact four-preset registration and metadata edits invert to 
   assert.deepEqual(
     Object.fromEntries(Object.entries(table).map(([key, value]) => [key, value.length])),
     {
-      ecosystem: 148,
+      ecosystem: 149,
       essential: 79,
-      happy_path: 140,
+      happy_path: 141,
       incremental: 0,
       nuxt: 197,
       opinionated: 198,
@@ -271,7 +262,7 @@ void test("missing, duplicated and unrelated source edits cannot receive the fin
             retiredExtensionHost,
             inverse(presetCaseName, inverse(callbackReceipts, read(row.path))),
           )
-        : originalEssentialSource(row, read(row.path));
+        : originalEssentialSource(row, originalStaticClassSource(row.path, read(row.path)));
     const hunk = row.hunks[0];
     for (const text of [
       body.toString().replace(hunk.after, hunk.before),

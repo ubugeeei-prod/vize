@@ -64,7 +64,22 @@ void test("the actual reader remains Node-only and Docs checks do not build the 
   const rendering = readFileSync(join(root, ".github/workflows/build-docs.yml"), "utf8");
   assert.match(rendering, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.doesNotMatch(rendering, /verify-more-guides-render/);
-  assert.doesNotMatch(rendering, /verify-navigation-render/);
+  const japaneseReading = rendering
+    .split("      - name: ")
+    .find((step) => step.startsWith("Verify rendered navigation and Japanese reading paths\n"));
+  assert.ok(japaneseReading, "the reviewed Japanese browser checks remain enrolled");
+  assert.match(japaneseReading, /if: \$\{\{ inputs\.links-only != true \}\}/);
+  assert.ok(
+    japaneseReading.includes(
+      'defaultNavigationRenderRoutes.filter(route => route.startsWith("/ja/"))',
+    ),
+  );
+  assert.ok(
+    japaneseReading.includes(
+      'node docs/scripts/verify-navigation-render.ts --routes "$ja_reading_routes"',
+    ),
+  );
+  assert.ok(japaneseReading.includes("node docs/scripts/verify-ja-editorial-render.ts"));
   assert.doesNotMatch(rendering, /verify-og-images/);
   assert.doesNotMatch(
     readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),

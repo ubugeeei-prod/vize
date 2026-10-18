@@ -1,3 +1,10 @@
+import { EventEmitter } from "node:events";
+import type { CDPSession } from "playwright";
+import { publicAddressCustody } from "../../../tools/support/release/public_acceptance/vrt_trusted_network.ts";
+import {
+  assertExpectedBrowserFailures,
+  expectedBrowserFailures,
+} from "../../../tools/support/release/public_acceptance/vrt_trusted_failures.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -199,4 +206,238 @@ void test("a valid body arriving after the provisioning deadline cannot authoriz
     return response();
   });
   await assert.rejects(awaitHostedGallery(gallery, emitted), /provisioning deadline/);
+});
+
+test("original failed-load fields and request/event phases survive without granting ownership", async () => {
+  // Inert CDP transport only; no browser/network failure or product response is substituted.
+  const wire = Object.assign(new EventEmitter(), { async send() {} });
+  let phase = "before-request";
+  const custody = await publicAddressCustody(wire as unknown as CDPSession, () => phase);
+  const failed = {
+    requestId: "same",
+    errorText: "net::ERR_FAILED",
+    canceled: false,
+    blockedReason: "other",
+    type: "Fetch",
+    timestamp: 12.5,
+    corsErrorStatus: { corsError: "InvalidResponse", failedParameter: "original" },
+  };
+  wire.emit("Network.loadingFailed", failed);
+  phase = "authored-request";
+  wire.emit("Network.requestWillBeSent", {
+    requestId: "same",
+    frameId: "frame",
+    loaderId: "loader",
+    type: "Document",
+    timestamp: 11.5,
+    documentURL: "https://authored.example/art?secret=removed",
+    request: { url: "https://authored.example/preview?secret=removed", method: "GET" },
+  });
+  phase = "later-control";
+  const second = { requestId: "same", type: "Fetch", timestamp: 13, errorText: "net::ERR_ABORTED" };
+  wire.emit("Network.loadingFailed", second);
+  const retained = JSON.parse(JSON.stringify(custody.records));
+  const common = {
+    requestType: "Document",
+    frameId: "frame",
+    loaderId: "loader",
+    requestTimestamp: 11.5,
+    documentURL: "https://authored.example/art",
+    phase: "authored-request",
+    method: "GET",
+    origin: "https://authored.example",
+    pathname: "/preview",
+    url: "https://authored.example/preview",
+  };
+  const expected = [failed, second].map(({ type, ...original }, index) => ({
+    ...common,
+    ...original,
+    kind: "failure",
+    resourceType: type,
+    eventPhase: index === 0 ? "before-request" : "later-control",
+  }));
+  assert.deepEqual(retained, expected);
+  assert.equal(Reflect.get(retained[0], "canceled"), false);
+  assert.equal(Object.hasOwn(retained[1], "canceled"), false);
+  for (const record of custody.records)
+    assert.throws(
+      () => assertExpectedBrowserFailures([record], expectedBrowserFailures(), []),
+      /Unowned browser failure/,
+    );
+  await custody.close();
+  assert.equal(wire.eventNames().length, 0);
+});
+
+async function authenticationModel(kind: "failure" | "finished", beforeRequest = false) {
+  // Inert original CDP event model; never fetch, fulfill, replay or run a browser/product.
+  const wire = Object.assign(new EventEmitter(), { async send() {} });
+  let phase = "earlier-delivery";
+  const custody = await publicAddressCustody(wire as unknown as CDPSession, () => phase);
+  const expected = expectedBrowserFailures();
+  const url = "http://127.0.0.1:43210/capture";
+  const owner = {
+    networkId: "original-network",
+    frameId: "frame",
+    resourceType: "Fetch",
+    url,
+    method: "POST",
+    status: 401,
+    body: Buffer.alloc(0),
+  };
+  expected.capture(new URL(url).origin, 401);
+  expected.authentication401(owner);
+  const terminal =
+    kind === "failure"
+      ? {
+          requestId: owner.networkId,
+          type: "Fetch",
+          timestamp: 12,
+          errorText: "net::ERR_ABORTED",
+          canceled: true,
+        }
+      : { requestId: owner.networkId, timestamp: 12, encodedDataLength: 200 };
+  const emitTerminal = () =>
+    wire.emit(kind === "failure" ? "Network.loadingFailed" : "Network.loadingFinished", terminal);
+  if (beforeRequest) emitTerminal();
+  phase = "actual-401";
+  wire.emit("Network.requestWillBeSent", {
+    requestId: owner.networkId,
+    frameId: "frame",
+    loaderId: "loader",
+    type: "Fetch",
+    timestamp: 11,
+    documentURL: "https://owned.example/component",
+    request: { url, method: "POST" },
+  });
+  wire.emit("Network.responseReceivedExtraInfo", {
+    requestId: owner.networkId,
+    resourceIPAddressSpace: "Loopback",
+    statusCode: 401,
+  });
+  phase = "later-control";
+  if (!beforeRequest) emitTerminal();
+  const observed = structuredClone(custody.records);
+  await custody.close();
+  assert.equal(wire.eventNames().length, 0);
+  return { expected, observed, owner };
+}
+
+test("one genuine401 terminal is completed OR exactly owned aborted, without a fabricated failure", async () => {
+  for (const kind of ["finished", "failure"] as const)
+    for (const beforeRequest of [false, true]) {
+      const model = await authenticationModel(kind, beforeRequest);
+      assertExpectedBrowserFailures(model.observed, model.expected, []);
+      assert.deepEqual(
+        model.expected.records.map((r) => r.kind),
+        ["response"],
+      );
+      assert.equal(model.expected.terminals.length, 1);
+      assert.equal(model.expected.records[0].requestId, model.owner.networkId);
+      const terminal = model.observed.find((r) => r.kind === kind);
+      assert.ok(terminal);
+      assert.equal(terminal.phase, "actual-401");
+      assert.equal(terminal.eventPhase, beforeRequest ? "earlier-delivery" : "later-control");
+      assert.equal(terminal.requestId, model.owner.networkId);
+    }
+});
+
+test("authentication terminal ownership refuses every identity, body, metadata and completion mismatch", async () => {
+  const model = await authenticationModel("failure");
+  for (const change of [
+    { status: 400 },
+    { status: 200 },
+    { body: Buffer.from("nonempty") },
+    { body: "" },
+    { networkId: "" },
+    { frameId: "" },
+    { method: "GET" },
+    { resourceType: "Document" },
+    { url: "http://127.0.0.1:43210/foreign" },
+  ])
+    assert.throws(() =>
+      expectedBrowserFailures().authentication401({ ...model.owner, ...change } as Parameters<
+        typeof model.expected.authentication401
+      >[0]),
+    );
+  for (const change of [
+    { requestId: "foreign" },
+    { requestId: "" },
+    { phase: "other-request" },
+    { phase: undefined },
+    { method: "GET" },
+    { method: undefined },
+    { url: "http://127.0.0.1:43210/other" },
+    { frameId: "foreign" },
+    { frameId: undefined },
+    { loaderId: "foreign" },
+    { requestType: "Document" },
+    { requestTimestamp: undefined },
+    { timestamp: 10 },
+    { timestamp: NaN },
+    { timestamp: undefined },
+    { errorText: "net::ERR_FAILED" },
+    { errorText: undefined },
+    { canceled: false },
+    { canceled: undefined },
+    { resourceType: "Document" },
+    { blockedReason: "other" },
+    { corsErrorStatus: { corsError: "InvalidResponse", failedParameter: "" } },
+  ]) {
+    const rows = model.observed.map((r) => (r.kind === "failure" ? { ...r, ...change } : r));
+    assert.throws(() => assertExpectedBrowserFailures(rows, model.expected, []));
+  }
+  for (const rows of [
+    model.observed.filter((r) => r.kind !== "failure"),
+    model.observed.filter((r) => r.kind !== "response"),
+    model.observed.map((r) => (r.kind === "response" ? { ...r, statusCode: 400 } : r)),
+    [...model.observed, model.observed[0]],
+    [...model.observed, model.observed.find((r) => r.kind === "failure")!],
+    [
+      ...model.observed,
+      {
+        ...model.observed.find((r) => r.kind === "failure")!,
+        kind: "finished" as const,
+        encodedDataLength: 200,
+      },
+    ],
+  ])
+    assert.throws(() => assertExpectedBrowserFailures(rows, model.expected, []));
+  const finished = await authenticationModel("finished");
+  for (const change of [
+    { encodedDataLength: undefined },
+    { encodedDataLength: -1 },
+    { encodedDataLength: Infinity },
+    { errorText: "net::ERR_ABORTED" },
+    { canceled: true },
+  ])
+    assert.throws(() =>
+      assertExpectedBrowserFailures(
+        finished.observed.map((r) => (r.kind === "finished" ? { ...r, ...change } : r)),
+        finished.expected,
+        [],
+      ),
+    );
+  const foreign = {
+    ...model.observed.find((r) => r.kind === "failure")!,
+    requestId: "unowned-preview",
+  };
+  assert.throws(
+    () => assertExpectedBrowserFailures([...model.observed, foreign], model.expected, []),
+    /Unowned browser failure/,
+  );
+  assert.throws(() => model.expected.authentication401(model.owner), /one controlled/);
+  const foreign401 = {
+    ...model.observed.find((r) => r.kind === "response")!,
+    requestId: "foreign401",
+  };
+  assert.throws(
+    () => assertExpectedBrowserFailures([...model.observed, foreign401], model.expected, []),
+    /Unowned browser failure/,
+  );
+  for (const registrations of [0, 2]) {
+    const expected = expectedBrowserFailures();
+    for (let index = 0; index < registrations; index++)
+      expected.capture(new URL(model.owner.url).origin, 401);
+    assert.throws(() => expected.authentication401(model.owner), /one pre-registered/);
+  }
 });

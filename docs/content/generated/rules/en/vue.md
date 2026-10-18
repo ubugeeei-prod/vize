@@ -1113,7 +1113,7 @@ Disallow deprecated Vue 2 filter syntax using the pipe operator
 [Bad](#vue-no-deprecated-filter-bad) · [Good](#vue-no-deprecated-filter-good)
 
 Default severity: `error`  
-Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -1174,7 +1174,7 @@ Disallow the `functional` attribute on the SFC `<template>`
 [Bad](#vue-no-deprecated-functional-template-bad) · [Good](#vue-no-deprecated-functional-template-good)
 
 Default severity: `error`  
-Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -1235,7 +1235,7 @@ Disallow the `is` attribute on native HTML elements
 [Bad](#vue-no-deprecated-html-element-is-bad) · [Good](#vue-no-deprecated-html-element-is-good)
 
 Default severity: `error`  
-Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -1297,7 +1297,7 @@ Disallow the deprecated `inline-template` attribute
 [Bad](#vue-no-deprecated-inline-template-bad) · [Good](#vue-no-deprecated-inline-template-good)
 
 Default severity: `error`  
-Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -1358,7 +1358,7 @@ Disallow the `tag` prop on &lt;router-link&gt;
 [Bad](#vue-no-deprecated-router-link-tag-prop-bad) · [Good](#vue-no-deprecated-router-link-tag-prop-good)
 
 Default severity: `error`  
-Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -1799,7 +1799,7 @@ Disallow deprecated numeric `keyCode` modifiers on `v-on`
 [Bad](#vue-no-deprecated-v-on-number-modifiers-bad) · [Good](#vue-no-deprecated-v-on-number-modifiers-good)
 
 Default severity: `error`  
-Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: Available for supported findings  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -2575,7 +2575,7 @@ Disallow plain element wrappers directly below `<KeepAlive>`
 [Bad](#vue-no-non-component-keep-alive-child-bad) · [Good](#vue-no-non-component-keep-alive-child-good)
 
 Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -3869,7 +3869,7 @@ Disallow using `v-else-if` or `v-else` on the same element as `v-for`
 [Bad](#vue-no-use-v-else-with-v-for-bad) · [Good](#vue-no-use-v-else-with-v-for-good)
 
 Default severity: `warning`  
-Presets: `ecosystem`, `happy-path`, `nuxt`, `opinionated`  
+Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.

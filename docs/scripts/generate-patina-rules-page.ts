@@ -26,7 +26,7 @@ const categoryLabels = {
   Vapor: "Vapor",
 };
 
-const existingRulePresetsByName = readExistingRulePresets();
+const nativeRulePresetsByName = readNativeRulePresets();
 const sourceRulesByName = readPatinaSourceRules();
 const scriptRegistryByName = readScriptRegistry();
 const cssPresetRules = readOpinionatedCssRules();
@@ -154,7 +154,7 @@ function readOpinionatedCssRules() {
 function mergeRuleMetadata(sourceRule: SourceRule): RuleMetadata {
   const scriptRegistry = scriptRegistryByName.get(sourceRule.name);
   const cssPresets = cssPresetRules.has(sourceRule.name) ? ["opinionated", "nuxt"] : null;
-  const existingPresets = existingRulePresetsByName.get(sourceRule.name);
+  const nativePresets = nativeRulePresetsByName.get(sourceRule.name);
 
   return {
     ...sourceRule,
@@ -162,27 +162,57 @@ function mergeRuleMetadata(sourceRule: SourceRule): RuleMetadata {
     defaultSeverity: sourceRule.defaultSeverity ?? "warning",
     description: sourceRule.description || "",
     fixable: scriptRegistry?.fixable ?? sourceRule.fixable ?? false,
-    presets: scriptRegistry?.presets ?? cssPresets ?? existingPresets ?? [],
+    presets: scriptRegistry?.presets ?? cssPresets ?? nativePresets ?? [],
   };
 }
 
-function readExistingRulePresets() {
-  try {
-    return new Map<string, string[]>(
-      readFileSync(resolve(import.meta.dirname, "../content/rules/all.md"), "utf8")
-        .split("\n")
-        .flatMap((line): [string, string[]][] => {
-          const name = line.match(/^\| (?:\[)?`([^`]+)`(?:\]\([^)]*\))? \| /)?.[1];
-          const cells = line.split(" | ");
-          const severity = cells.findIndex((cell) => /^`(?:error|warning)`$/.test(cell));
-          return name && severity >= 0
-            ? [[name, [...cells[severity + 1].matchAll(/`([^`]+)`/g)].map((preset) => preset[1])]]
-            : [];
-        }),
-    );
-  } catch {
-    return new Map<string, string[]>();
+function readNativeRulePresets() {
+  // Rust checks this complete snapshot against the actual preset constructors.
+  // Generated prose must not become its own preset-membership authority.
+  const source = readFileSync(
+    resolve(
+      workspaceRoot,
+      "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    ),
+    "utf8",
+  );
+  const body = source.split(/\r?\n---\r?\n/, 2)[1];
+  if (body === undefined) throw new Error("Missing native preset snapshot body");
+  const snapshot: unknown = JSON.parse(body);
+  if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) {
+    throw new Error("Invalid native preset membership snapshot");
   }
+  // Preserve the established native-rule table order. This controls display
+  // only; membership still comes exclusively from the Rust snapshot.
+  const presetOrder = [
+    "essential",
+    "happy_path",
+    "nuxt",
+    "ecosystem",
+    "opinionated",
+    "incremental",
+  ];
+  const entries = Object.entries(snapshot).sort(
+    ([left], [right]) => presetOrder.indexOf(left) - presetOrder.indexOf(right),
+  );
+  const memberships = new Map<string, string[]>();
+  for (const [key, names] of entries) {
+    if (
+      !Array.isArray(names) ||
+      !names.every((name: unknown): name is string => typeof name === "string")
+    ) {
+      throw new Error(`Invalid native rule membership for ${key}`);
+    }
+    // The opt-in catalogue is not an enabled preset.
+    if (key === "opt_in") continue;
+    const preset = key.replaceAll("_", "-");
+    for (const name of names) {
+      const presets = memberships.get(name) ?? [];
+      presets.push(preset);
+      memberships.set(name, presets);
+    }
+  }
+  return memberships;
 }
 
 function walkRustFiles(directory: string): string[] {

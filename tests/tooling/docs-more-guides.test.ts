@@ -225,6 +225,6 @@ test("formatter guide regeneration keeps all original recipes, tokens and locali
   }
   assert.match(
     content("ja", "/guide/formatter-jsx-quotes"),
-    /native Node[^\n]*`jsxSingleQuote` をまだ指定できません/,
+    /Node 向けネイティブ API のフォーマッタオプションでは `jsxSingleQuote` をまだ指定できません。/,
   );
 });

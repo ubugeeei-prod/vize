@@ -153,6 +153,19 @@ On the command line, `vize fmt --preset prettier` applies these settings and als
 
 Flags given with it still win.
 
+The Node API accepts the same two presets, `vize` and `prettier`:
+
+```ts
+import { formatSfc } from "@vizejs/native";
+
+const result = formatSfc(source, {
+  preset: "prettier",
+  singleQuote: true,
+});
+```
+
+Explicit options override the preset, including `false`. Omitting `preset` keeps the existing Vize defaults; unknown preset names are rejected.
+
 With `sortAttributes: false`, the attributes of `<script>`, `<template>`, `<style>` and custom block tags also stay in the written order. With the default, `<script lang="ts" setup>` becomes `<script setup lang="ts">`.
 
 These differences remain, even with the preset:

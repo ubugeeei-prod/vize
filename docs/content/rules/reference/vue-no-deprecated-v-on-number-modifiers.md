@@ -9,7 +9,7 @@ Disallow deprecated numeric `keyCode` modifiers on `v-on`
 [Bad](#bad) · [Good](#good)
 
 Default severity: `error`  
-Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: Available for supported findings  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.

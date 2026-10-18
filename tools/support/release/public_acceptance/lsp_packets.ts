@@ -2,10 +2,11 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { isDeepStrictEqual } from "node:util";
 import { contained } from "./lsp_assets.ts";
 import { corpus, sha256 } from "./lsp_source.ts";
 
-import { assertWholeCase } from "./lsp_case.ts";
+import { assertWholeCase, diagnosticContract } from "./lsp_case.ts";
 
 type Json = ReturnType<typeof JSON.parse>;
 const files = ["Child.vue", "Parent.vue", "Other.vue"];
@@ -14,7 +15,11 @@ const reply = (id: number, result: Json) => ({ jsonrpc: "2.0", id, result });
 /** Validate H's decoded ledger, whose reader stops silently at frame-boundary EOF.
  * This ledger does not retain raw stdout frames or prove header byte completeness.
  */
-export function assertDecodedLspLifecycle(protocol: Json[], terminal: Json) {
+export function assertDecodedLspLifecycle(
+  protocol: Json[],
+  terminal: Json,
+  authorizedPublications: Json[],
+) {
   assert.equal(terminal.success, true);
   assert.equal(terminal.exitCode, 0);
   assert.equal(terminal.stdoutReaderJoined, true);
@@ -58,7 +63,9 @@ export function assertDecodedLspLifecycle(protocol: Json[], terminal: Json) {
   assert.ok(initialize.index < ready.index && ready.index < initialized.index);
   assert.ok(initialized.index < shutdown.index && shutdown.index < stopped.index);
   assert.ok(stopped.index < exit.index);
-  assert.equal(exit.index, protocol.length - 1, "exit must end the decoded ledger");
+  // Sender and stdout-reader threads append independently. An inbound row's
+  // observation after exit does not prove that it was sent after server exit.
+  assert.equal(exit.index, requests.at(-1)?.index, "exit must end outbound messages");
   assert.deepEqual(shutdown.message, {
     jsonrpc: "2.0",
     id: shutdown.message.id,
@@ -67,6 +74,36 @@ export function assertDecodedLspLifecycle(protocol: Json[], terminal: Json) {
   assert.deepEqual(stopped.message, reply(shutdown.message.id, null));
   assert.deepEqual(exit.message, { jsonrpc: "2.0", method: "exit" });
   assert.ok(requests.every((row) => row.index <= shutdown.index || row.index === exit.index));
+  const calls = requests.filter((row) => Object.hasOwn(row.message, "id"));
+  assert.ok(calls.every((row) => Number.isSafeInteger(row.message.id)));
+  assert.equal(new Set(calls.map((row) => row.message.id)).size, calls.length);
+  const incoming = protocol.flatMap((row, index) =>
+    row.direction === "response" ? [{ message: row.message, index }] : [],
+  );
+  for (const row of incoming) {
+    assert.equal(row.message.jsonrpc, "2.0");
+    assert.ok(!Object.hasOwn(row.message, "error"), "error RPC replies cannot qualify");
+    if (Object.hasOwn(row.message, "id")) {
+      assert.ok(
+        calls.some((call) => call.message.id === row.message.id),
+        "unknown reply ID",
+      );
+      assert.deepEqual(Object.keys(row.message).sort(), ["id", "jsonrpc", "result"]);
+      assert.ok(
+        row.index < shutdown.index || row.index === stopped.index,
+        "only the shutdown acknowledgement may reply after shutdown",
+      );
+    }
+    if (row.message.method === "textDocument/publishDiagnostics" || row.index > exit.index)
+      assert.ok(
+        authorizedPublications.some((expected) => isDeepStrictEqual(row.message, expected)),
+        "whole notification must match the independent diagnostic oracle",
+      );
+  }
+  for (const call of calls) {
+    const result = response(call.message.id);
+    assert.ok(call.index < result.index, "reply must follow its outbound request");
+  }
 }
 
 export function assertProcess(
@@ -130,7 +167,13 @@ export function assertProcess(
     .trim()
     .split("\n")
     .map((line) => JSON.parse(line));
-  assertDecodedLspLifecycle(protocol, terminal);
+  const uris = Object.fromEntries(
+    [...files, "NativeGuard.vue"].map((file) => [
+      file,
+      pathToFileURL(path.join(project, "src", file)).href,
+    ]),
+  );
+  assertDecodedLspLifecycle(protocol, terminal, diagnosticContract(uris).allowed);
   const responses = protocol
     .filter((row) => row.direction === "response")
     .map((row) => row.message);
@@ -170,12 +213,7 @@ export function assertProcess(
     process,
     terminal,
     protocolSha256: sha256(fs.readFileSync(path.join(trace, "protocol.jsonl"))),
-    uris: Object.fromEntries(
-      [...files, "NativeGuard.vue"].map((file) => [
-        file,
-        pathToFileURL(path.join(project, "src", file)).href,
-      ]),
-    ),
+    uris,
   };
 }
 

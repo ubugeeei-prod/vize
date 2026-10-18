@@ -522,6 +522,8 @@ export declare function flattenDesignTokenCategories(categories: string): string
 
 /** Format options for NAPI. */
 export interface FormatOptionsNapi {
+  /** Existing formatter defaults; explicit options below take precedence. */
+  preset?: "vize" | "prettier";
   /** Explicit Vue version; omitted uses Vue 3. */
   vueVersion?: string;
   /** Oxfmt-compatible import sorting; false disables it. */

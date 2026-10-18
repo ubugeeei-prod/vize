@@ -307,3 +307,35 @@ await test("all five Vue categories keep every rule and whole Bad/Good source on
     assert.match(noProducer, /`no-sfc-finding`/, `${locale}: support boundary remains explicit`);
   }
 });
+
+await test("every documented native rule uses the Rust-checked preset membership", () => {
+  const snapshot: Record<string, string[]> = JSON.parse(
+    read(
+      "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    ).split(/\r?\n---\r?\n/, 2)[1],
+  );
+  const names = [...implementations()];
+  for (const [preset, rules] of Object.entries(snapshot)) {
+    if (preset === "opt_in") continue;
+    for (const rule of rules)
+      assert.ok(names.includes(rule), `${preset}: ${rule} has an implementation`);
+  }
+  for (const locale of ["", "ja/"]) {
+    const lines = read(`docs/content/${locale}rules/all.md`).split("\n");
+    for (const name of names) {
+      const rows = lines.filter((line) => line.startsWith(`| [\`${name}\`]`));
+      assert.equal(rows.length, 1, `${locale}${name}: exactly one metadata row`);
+      const cells = rows[0].split(" | ");
+      const severity = cells.findIndex((cell) => /^`(?:error|warning)`$/.test(cell));
+      assert.ok(severity >= 0, `${locale}${name}: explicit severity`);
+      const documented = [...cells[severity + 1].matchAll(/`([^`]+)`/g)]
+        .map((match) => match[1])
+        .sort();
+      const actual = Object.entries(snapshot)
+        .filter(([preset, rules]) => preset !== "opt_in" && rules.includes(name))
+        .map(([preset]) => preset.replaceAll("_", "-"))
+        .sort();
+      assert.deepEqual(documented, actual, `${locale}${name}: native preset membership`);
+    }
+  }
+});

@@ -52,6 +52,9 @@ type __VizeDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K ext
 type __VizeFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}` | `data${Capitalize<string>}`]?: unknown } & { [K in `aria-${string}` | `aria${Capitalize<string>}`]?: unknown } & Omit<__VizeDomListenerProps, keyof Owned>;
 // Match Vue's public prop contract, including runtime-core module augmentations.
 type __VizePublicComponentInputProps = import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;
+type __VizeComponentMetadataKeys<T> = __VizeIsAny<T> extends true ? never : T extends unknown ? keyof NonNullable<T> : never;
+type __VizeComponentOwnKeys<P = {}, E = {}> = keyof __VizePublicComponentInputProps | __VizeComponentMetadataKeys<P> | __VizeComponentMetadataKeys<E>;
+type __VizeUnownedComponentAttrs<F, P = {}, E = {}> = __VizeIsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends __VizeComponentOwnKeys<P, E> ? never : K]: F[K] } : never;
 type __VizePrettify<T> = (T extends any ? { [K in keyof T]: T[K] } : { [K in keyof T as K]: T[K] }) & {};
 type __VizeComponentFallthroughSurface<C> = (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : Record<string, unknown>) & (C extends { readonly __vizeFallthroughProps?: infer __F } ? __VizeIsAny<__F> extends true ? {} : NonNullable<__F> : {});
 type __VizeComponentFallthroughProps<C> = { [K in keyof __VizeComponentFallthroughSurface<C>]: __VizeComponentFallthroughSurface<C>[K] };
@@ -125,7 +128,7 @@ function __setup() {
     void value
   }
   
-  // @vize-map: 14597:14684 -> 0:76
+  // @vize-map: 15127:15214 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -185,8 +188,15 @@ export type Emits = {};
 type __VizeSlots = {};
 export type { __VizeSlots as Slots };
 
+type __VizeEmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
+type __VizeEmitRequiredFields<T> = T extends unknown ? Pick<T, __VizeEmitRequiredKeys<T>> : never;
+type __VizeEmitFiniteFields<T> = { [K in keyof T as {} extends Record<K, unknown> ? never : K]: T[K] };
+type __VizeEmitFallthrough<F> = __VizeIsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>;
+type __VizeEmitOwnedKeys<C> = __VizeComponentOwnKeys<C extends { readonly __vizeRawProps?: infer P } ? P : {}, C extends { readonly __vizeEmitProps?: infer E } ? E : {}>;
+type __VizeEmitInput<P, F, O extends PropertyKey, A> = P extends unknown ? F extends unknown ? { [K in keyof A]: K extends O ? K extends keyof P ? P[K] : never : K extends keyof F ? F[K] : K extends keyof P ? P[K] : unknown } & __VizeEmitRequiredFields<P> & __VizeEmitRequiredFields<Omit<__VizeEmitFiniteFields<F>, O>> : never : never;
 declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
-type __VizeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
+type __VizeConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: __VizeEmitInput<P, __VizeEmitFallthrough<F>, O, A>) => __EmitProps<E>;
+type __VizeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? __VizeConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, __VizeEmitOwnedKeys<C>> : typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
 type __VizeEmitPropsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : __VizeNativeEmitPropsFactory<C>;
 type __VizeOverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
 type __VizeOverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = []> = TDepth['length'] extends 32 ? never : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : __VizeOverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & __VizeOverloadProps<TOverload>, [...TDepth, unknown]> | ((...args: TArgs) => TReturn) : never;
@@ -234,5 +244,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: Record<string, unknown>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: __VizeUnownedComponentAttrs<Record<string, unknown>, Props, {}>; } & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;

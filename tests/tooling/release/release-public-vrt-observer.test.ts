@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { once } from "node:events";
+import { authorizeSession } from "../../../npm/builder/vite-musea/src/cli/service/auth.ts";
 import { execFileSync } from "node:child_process";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
@@ -21,7 +23,10 @@ import {
   cleanup,
   evidence,
 } from "../../../tools/support/release/public_acceptance/vrt_artifacts.ts";
-import { actualRequestRefusal } from "../../../tools/support/release/public_acceptance/vrt_trusted_network.ts";
+import {
+  actualRequestRefusal,
+  emptyAuthenticationRefusal,
+} from "../../../tools/support/release/public_acceptance/vrt_trusted_network.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const head = execFileSync("git", ["--no-replace-objects", "-C", root, "rev-parse", "HEAD"], {
@@ -39,6 +44,10 @@ function refusalLifetime(
     responseStatus?: number;
     status?: 400 | 401;
     triggerError?: Error;
+    missingNetworkId?: boolean;
+    responseNetworkId?: string;
+    responseFrame?: string;
+    responseResourceType?: string;
   } = {},
 ) {
   const url = "http://127.0.0.1:43210/capture";
@@ -136,6 +145,10 @@ function refusalLifetime(
             listener({
               requestId: "response",
               request,
+              networkId:
+                options.responseNetworkId ?? (options.missingNetworkId ? undefined : "network"),
+              frameId: options.responseFrame ?? "frame",
+              resourceType: options.responseResourceType ?? "Fetch",
               responseStatusCode: options.responseStatus ?? options.status ?? 401,
             });
           } else {
@@ -162,7 +175,13 @@ function refusalLifetime(
   const trigger = async () => {
     assert.ok(listener);
     listener({ requestId: "preflight", request: { ...request, method: "OPTIONS" } });
-    listener({ requestId: "request", request });
+    listener({
+      requestId: "request",
+      request,
+      networkId: "network",
+      frameId: "frame",
+      resourceType: "Fetch",
+    });
     if (options.triggerError) throw options.triggerError;
   };
   return { page, cdp, trigger, body, calls, response, url, stages: () => stages.slice() };
@@ -172,13 +191,28 @@ test("the same original refusal body is owned before resuming and disabling inte
   for (const base64 of [false, true])
     for (const status of [400, 401] as const) {
       const f = refusalLifetime({ base64, status });
+      let responseOwned = false;
       const captured = await actualRequestRefusal(
         f.page,
         f.cdp,
         f.url,
         status === 400 ? { postData: '{"bad":true}' } : { wrongBearer: "wrong" },
         f.trigger,
+        (owner) => {
+          assert.equal(f.calls.at(-1), "body-owned");
+          assert.deepEqual(owner, {
+            networkId: "network",
+            frameId: "frame",
+            resourceType: "Fetch",
+            url: f.url,
+            method: "POST",
+            status,
+            body: f.body,
+          });
+          responseOwned = true;
+        },
       );
+      assert.equal(responseOwned, true);
       assert.deepEqual(captured.body, f.body);
       assert.deepEqual(f.stages(), ["Request", "Response"]);
       assert.equal(captured.response.status(), status);
@@ -228,6 +262,12 @@ test("missing original response pause, malformed body and mismatched status cann
   for (const options of [
     { missingResponsePause: true },
     { responseStatus: 200 },
+    { missingNetworkId: true },
+    { responseNetworkId: "foreign" },
+    { responseNetworkId: "" },
+    { responseFrame: "foreign" },
+    { responseFrame: "" },
+    { responseResourceType: "Document" },
     { packet: null },
     { packet: { body: 4, base64Encoded: true } },
     { packet: { body: "same", base64Encoded: "false" } },
@@ -241,6 +281,35 @@ test("missing original response pause, malformed body and mismatched status cann
     assert.ok(f.calls.includes("Fetch.disable") && f.calls.includes("off"));
   }
 });
+test("original authorization HTTP 401 is strictly empty, not a JSON record", async (t) => {
+  const origin = "https://authored.example";
+  const server = createServer((request, response) => {
+    const host = request.headers.host;
+    assert.ok(host);
+    assert.equal(authorizeSession(request, response, origin, host, "original-token"), false);
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => server[Symbol.asyncDispose]());
+  const address = server.address();
+  assert.ok(address && typeof address === "object");
+  const response = await fetch(`http://127.0.0.1:${address.port}/capture`, {
+    method: "POST",
+    headers: { origin, authorization: "Bearer wrong" },
+  });
+  const body = Buffer.from(await response.arrayBuffer());
+  assert.deepEqual(emptyAuthenticationRefusal(response.status, body), {
+    status: 401,
+    bodyBytes: 0,
+    bodySha256: sha256(Buffer.alloc(0)),
+  });
+  assert.throws(() => JSON.parse(body.toString()));
+  for (const invalid of [Buffer.from("{}"), Buffer.from("\n"), Buffer.from([0])])
+    assert.throws(() => emptyAuthenticationRefusal(401, invalid));
+  for (const status of [200, 400, 403])
+    assert.throws(() => emptyAuthenticationRefusal(status, body));
+});
+
 async function consumer(t: TestContext) {
   const directory = await mkdtemp(path.join(os.tmpdir(), "vize-vrt-guard-law-"));
   t.after(() => rm(directory, { recursive: true, force: true }));

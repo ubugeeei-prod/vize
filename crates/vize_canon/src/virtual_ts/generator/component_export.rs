@@ -149,9 +149,24 @@ pub(super) fn emit_default_export_declaration(
         );
     }
     if let Some(fallthrough_ref) = fallthrough_props_ref {
+        // Props and emits are consumed by this component; its root's native
+        // attrs must not reintroduce those keys with an incompatible type when
+        // another component forwards this component's public surface.
+        let mut forwarded = String::from(fallthrough_ref);
+        if generic_component_params.is_none() {
+            let props = static_raw_props_ref.unwrap_or("{}");
+            let emits = if emits_info.has_emits_for_props {
+                "__VizeStaticEmitProps"
+            } else {
+                "{}"
+            };
+            forwarded = vize_carton::cstr!(
+                "__VizeUnownedComponentAttrs<{fallthrough_ref}, {props}, {emits}>"
+            );
+        }
         append!(
             component_contract_fields,
-            " readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {fallthrough_ref};"
+            " readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {forwarded};"
         );
     }
     ts.push_str("declare const __vize_component__: ");

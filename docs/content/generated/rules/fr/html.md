@@ -339,7 +339,7 @@ Interdire les noms de classes en double dans un attribut class statique
 [Mauvais](#html-no-duplicate-class-bad) · [Bon](#html-no-duplicate-class-good)
 
 Gravité par défaut: `warning`  
-Préréglages: `nuxt`, `opinionated`  
+Préréglages: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.

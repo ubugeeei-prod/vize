@@ -42,10 +42,14 @@ pub struct NoDuplicateClass;
 
 impl NoDuplicateClass {
     fn check_class_value(ctx: &mut LintContext<'_>, class_value: &str, range: ByteRange) {
+        let mut classes = class_value.split_ascii_whitespace();
+        let Some(first) = classes.next() else { return };
+        let Some(second) = classes.next() else { return };
         let mut seen: FxHashSet<&str> = FxHashSet::default();
         let mut reported: FxHashSet<&str> = FxHashSet::default();
+        seen.insert(first);
 
-        for class_name in class_value.split_ascii_whitespace() {
+        for class_name in std::iter::once(second).chain(classes) {
             if !seen.insert(class_name) && reported.insert(class_name) {
                 let message = ctx.t_fmt("html/no-duplicate-class.message", &[("name", class_name)]);
                 let help = ctx.t("html/no-duplicate-class.help");

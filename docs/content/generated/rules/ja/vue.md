@@ -1113,7 +1113,7 @@ Vue 2 のパイプによるフィルター構文を検出します。
 [悪い例](#vue-no-deprecated-filter-bad) · [良い例](#vue-no-deprecated-filter-good)
 
 既定の重大度: `error`  
-プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -1174,7 +1174,7 @@ SFC の template で削除済みの functional 属性を検出します。
 [悪い例](#vue-no-deprecated-functional-template-bad) · [良い例](#vue-no-deprecated-functional-template-good)
 
 既定の重大度: `error`  
-プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -1235,7 +1235,7 @@ functional を取り除き、コンポーネントの msg を直接参照しま�
 [悪い例](#vue-no-deprecated-html-element-is-bad) · [良い例](#vue-no-deprecated-html-element-is-good)
 
 既定の重大度: `error`  
-プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -1297,7 +1297,7 @@ vp run lint
 [悪い例](#vue-no-deprecated-inline-template-bad) · [良い例](#vue-no-deprecated-inline-template-good)
 
 既定の重大度: `error`  
-プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -1358,7 +1358,7 @@ router-link の削除済み tag prop を検出します。
 [悪い例](#vue-no-deprecated-router-link-tag-prop-bad) · [良い例](#vue-no-deprecated-router-link-tag-prop-good)
 
 既定の重大度: `error`  
-プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -1799,7 +1799,7 @@ v-on の削除済みの数値 keyCode 修飾子を検出します。
 [悪い例](#vue-no-deprecated-v-on-number-modifiers-bad) · [良い例](#vue-no-deprecated-v-on-number-modifiers-good)
 
 既定の重大度: `error`  
-プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: 対応している診断で利用できます  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -2579,7 +2579,7 @@ KeepAlive の直下に通常の HTML 要素を置く箇所を検出します。
 [悪い例](#vue-no-non-component-keep-alive-child-bad) · [良い例](#vue-no-non-component-keep-alive-child-good)
 
 既定の重大度: `warning`  
-プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -3876,7 +3876,7 @@ index を参照するか、未使用を意図する _index という名前にし
 [悪い例](#vue-no-use-v-else-with-v-for-bad) · [良い例](#vue-no-use-v-else-with-v-for-good)
 
 既定の重大度: `warning`  
-プリセット: `ecosystem`, `happy-path`, `nuxt`, `opinionated`  
+プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。

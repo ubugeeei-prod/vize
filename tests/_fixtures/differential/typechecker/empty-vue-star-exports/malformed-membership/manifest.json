@@ -21,8 +21,8 @@
       "file": "malformed-membership/part-01.json",
       "mode": "100644",
       "bytes": 7105,
-      "sha256": "66d4105fa8763d5a6f195b0b40ac89765204b162c347a3ab04bf0135f7981a23",
-      "gitBlob": "ca0c125f0278141b2e9e8a29ee85a17a437b6c2a",
+      "sha256": "d587b8b5fa1fb10fac8fbbad166351fa5861f785b935efc4c4676cc3d8ccf5b7",
+      "gitBlob": "204f1da9007a17c9c3f2ff6dd4d3d74be1be99a8",
       "start": 43,
       "entries": 43
     }
@@ -50,7 +50,7 @@
       "helpers": "constant SHARED_PREAMBLE_DTS without Vue JSX reference under both captured exact configs; actual separate fullbody packet retained",
       "modules": "constant 63-byte write_vue_module_stubs text; actual separate fullbody packet retained"
     },
-    "scope": "Full ordered current86-file reference: original85 members and explicitly revised shared-helper member82. Historical packets remain separately attributed; no semantic or runtime acceptance credit.",
+    "scope": "Full ordered86-file reference: H966 coverage independently observed revised A/B entries74/75 and helper82 base29096; candidate helper82 successor29137 remains separately source-derived prospective. Other83 references, all roots/order and prior historical lineage retained. Actual coverage failed old membership; successor all86 qualification remains required.",
     "generatedHelperRevision": {
       "source": "1e9e00e43f1ec854fda16891f59334e6166564c7",
       "run": 39104670856,
@@ -142,6 +142,138 @@
       },
       "proof": "Replace only the PublicProps alias reference with its three exported public interfaces in the authenticated whole preceding static helper. Reversing that exact line recovers every preceding body byte. The other85 ordered references are unchanged.",
       "scope": "Source-derived support reference; no newly generated body is attributed to the preceding artifact. Each configured-native run still compares all86 actual bodies against this complete reference. The native TS1109 refusal remains an observation, not semantic-green or release acceptance."
+    },
+    "componentOwnershipSourceRevision": {
+      "status": "SOURCE_DERIVED_PROSPECTIVE_NOT_NEW_NATIVE_CAPTURE",
+      "baseSource": "c04978311b8b716623eec136e5ce2ee781efc513",
+      "priorManifestSHA256": "50ea6eedfd0c2d19a06fb66fb11cd2f66e9b7c230735546d5f0f6eba6a8d202b",
+      "entry": 82,
+      "before": [
+        "project/__vize_helpers.d.ts",
+        28607,
+        "caaf90d485d10d33f5c8a8715fb3625ac42a6717ef533520c517ba9e853167eb"
+      ],
+      "after": [
+        "project/__vize_helpers.d.ts",
+        29096,
+        "e1d0fbb49ccdc3c0a7e4aa75e06924b18c0faffb13a3ee0c1d44f35937b2f899"
+      ],
+      "priorActualBody": {
+        "source": "cc759650faacf19f4b2ba8030835f95ada2636b6",
+        "testedMerge": "b5e72a1002bdfd9c4e3ebf1f8d8d0c627d675c19",
+        "run": 39140616964,
+        "job": 117715237440,
+        "artifact": 12141598012,
+        "artifactSHA256": "a086972e5afd71839c81f5d6972cb2742bff0a0e811b1c7e01d83988f852e751",
+        "member": "typechecker-fixtures/empty-vue-star-exports/malformed-refusal.json",
+        "wholePacketSHA256": "02652dc8e1b22ac25cbd75e77f4f914c5346ff91071279b1b6d7a4320c52184f"
+      },
+      "sourceChange": {
+        "path": "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+        "baseSHA256": "b69b06ada6b05c9d7a714ba7b6e789614e5d6cc9ce6c7a9ccf4098c946a9e098",
+        "uncommittedCandidateSHA256": "a6bdc9fb3571409ceb5546fd93d18d11a96669b0c34d159f91b4dde592a6d44a",
+        "bytesAdded": 489,
+        "linesAdded": 3
+      },
+      "proof": "Replace only the exact whole static component-prop-helper block in the authenticated b5 body after the separately attributed +74 public-interface revision. The three-line insertion is the sole shared-prelude delta; reversing it recovers the complete current 28607-byte helper and SHA256. All85 other ordered body references are retained.",
+      "scope": "Prospective source-derived support reference only. The candidate has no new commit or native capture attribution. Genuine next-head configured-native execution must read and compare all86 complete actual bodies; the malformed TS1109 refusal remains an observation, never semantic-green or release acceptance."
+    },
+    "componentExportAndKeyRemapSourceRevision": {
+      "status": "OBSERVED_H966_MODULES_AND_HELPER_BASE_WITH_SOURCE_DERIVED_PROSPECTIVE_41_BYTE_HELPER",
+      "baseSource": "96672190b030c9136b860aec57a6ab5b628ae9ab",
+      "priorManifestSHA256": "c9eb20f16a32e12b76b465e1261e1a496d1557e2f34a09678c7209a14a4e0554",
+      "priorProvenanceScope": "Full ordered current86-file reference: original85 members and explicitly revised shared-helper member82. Historical packets remain separately attributed; no semantic or runtime acceptance credit.",
+      "entries": [
+        {
+          "entry": 74,
+          "before": [
+            "project/A.vue.ts",
+            4531,
+            "2b6bfba85f452e0ca29d573967acad4b2f35a2f9dffa67cc8892f52764999429"
+          ],
+          "after": [
+            "project/A.vue.ts",
+            4571,
+            "31ccdf3a6d6105eb101dad0772cf795293bfbf1d90f431032ae8af1a17687c06"
+          ],
+          "deltaBytes": 40,
+          "wholeInverseExact": true,
+          "authority": "ACTUAL_H966_COVERAGE whole generated/materialized/native-loaded body matches exact footer candidate; no claim future successor has run"
+        },
+        {
+          "entry": 75,
+          "before": [
+            "project/B.vue.ts",
+            4755,
+            "d60666b73fd9da0085cfb84dce57b5455a87afb967e7321dcd7c012610424191"
+          ],
+          "after": [
+            "project/B.vue.ts",
+            4795,
+            "f0bdb683dd536fff491d3c67bac7b29fb6d8609f1759e01dc3d9840e189dd863"
+          ],
+          "deltaBytes": 40,
+          "wholeInverseExact": true,
+          "authority": "ACTUAL_H966_COVERAGE whole generated/materialized/native-loaded body matches exact footer candidate; no claim future successor has run"
+        },
+        {
+          "entry": 82,
+          "before": [
+            "project/__vize_helpers.d.ts",
+            29096,
+            "e1d0fbb49ccdc3c0a7e4aa75e06924b18c0faffb13a3ee0c1d44f35937b2f899"
+          ],
+          "after": [
+            "project/__vize_helpers.d.ts",
+            29137,
+            "fb8765ca4a5db619b4cba9660f0bff88f13c7889361981e06486294a0fa40718"
+          ],
+          "deltaBytes": 41,
+          "wholeInverseExact": true,
+          "authority": "Before29096 whole body NOW OBSERVED in H966coverage; after29137 still SOURCE_DERIVED_PROSPECTIVE via exact41-byte source/body inverse"
+        }
+      ],
+      "priorActualPacket": {
+        "source": "cc759650faacf19f4b2ba8030835f95ada2636b6",
+        "testedMerge": "b5e72a1002bdfd9c4e3ebf1f8d8d0c627d675c19",
+        "run": 39140616964,
+        "job": 117715237440,
+        "artifact": 12141598012,
+        "artifactSHA256": "a086972e5afd71839c81f5d6972cb2742bff0a0e811b1c7e01d83988f852e751",
+        "member": "typechecker-fixtures/empty-vue-star-exports/malformed-refusal.json",
+        "wholePacketSHA256": "02652dc8e1b22ac25cbd75e77f4f914c5346ff91071279b1b6d7a4320c52184f"
+      },
+      "sealedModuleSourceProofSHA256": "2589fdfe9af04b9167f2dcbef999f74bb9ae3ef5a0e7393bc9e3299cdb69452a",
+      "sourceChanges": {
+        "componentExport": {
+          "path": "crates/vize_canon/src/virtual_ts/generator/component_export.rs",
+          "sourceSHA256": "0983039824204c48e1beea689dc33e14b4c9f21606d32ab3057413e09695a3af",
+          "changes": "Each nongeneric A/B footer wraps Record<string,unknown> with Props and empty emits; 40bytes per module."
+        },
+        "sharedHelper": {
+          "path": "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+          "baseSourceSHA256": "a6bdc9fb3571409ceb5546fd93d18d11a96669b0c34d159f91b4dde592a6d44a",
+          "uncommittedCandidateSourceSHA256": "e555c077d22cc537b8df7cb7628208b3cbfad7f88cee7eb99ca1e35039dc1c0a",
+          "baseBodySHA256": "e1d0fbb49ccdc3c0a7e4aa75e06924b18c0faffb13a3ee0c1d44f35937b2f899",
+          "candidateBodySHA256": "fb8765ca4a5db619b4cba9660f0bff88f13c7889361981e06486294a0fa40718",
+          "deltaBytes": 41,
+          "changes": "Only innermost Omit<F,OwnKeys> becomes literal key-remapping mapped type. Whole helper reverses to current29096, prior28607 and actual b5 28533 bytes exactly."
+        }
+      },
+      "proof": "All86 rooted paths/order and83 other references retained. H966 coverage now authenticates exact complete generated/materialized/native-loaded A/B40-byte postimages and current29096 helper. Prospective helper29137 is derived solely by reviewed41-byte key remap with wholebody/source inverses; it is not attributed to coverage. Original3root/program/malformedTS1109/diagnostic guards remain unchanged.",
+      "scope": "Coverage-profile H966 current86 observation retained separately from the earlier uncaptured FullRust attempt. Actual coverage remainsFAILED at old74/75 membership. Successor helper29137 and the complete successor86 remain unexecuted and must genuinely pass future configured-native equality. No current or future semantic-green/release acceptance is credited.",
+      "observedCoverage": {
+        "source": "96672190b030c9136b860aec57a6ab5b628ae9ab",
+        "run": 39165972144,
+        "job": 117788878503,
+        "artifact": 12150558755,
+        "archiveSHA256": "631dd317507d75fa3a31bd619e935edc0240e020f062c1d4cb520f4e12b6a6b9",
+        "member": "empty-vue-star-exports/malformed-refusal.json",
+        "wholePacketSHA256": "275798d91b189ee8eb4c0d6e8a0d3495958ca1019e5699046ad01f0d75fd23fa",
+        "independentWhole86ProofSHA256": "9c41976528b6fe5efb750a8585d16c763067d39e2fe727019d917e1b747f26f4",
+        "actualMembership": "all86 whole bodies/order retained; old committed reference differs exactly74/75, which equal the prior sealed40-byte footer candidates; helper82 equals observed29096/e1d0; other83 bodies and provider manifests equal historical actual bodies",
+        "originalJobConclusion": "failure; membership refused old74/75 before latercase assertions; native TS1109 remains observation, no semantic-green credit"
+      }
     }
   }
 }

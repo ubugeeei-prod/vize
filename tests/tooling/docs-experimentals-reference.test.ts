@@ -62,7 +62,7 @@ test("Japanese experimentals reference mirrors entrypoints and proofs", () => {
 
   assertReference(reference, japaneseReferenceHeadings);
   assert.match(reference, /別名、`\{\}` の設定オブジェクト/);
-  assert.match(reference, /呼び出し元がそれらの解決ルールを管理/);
+  assert.match(reference, /呼び出し元が設定の解決ルールを管理する連携処理で使ってください/);
   assert.match(reference, /無関係な RFC の設定を、一つの/);
   assert.match(reference, /共通設定で実験フラグを既定で有効にしません/);
   assert.match(reference, /`patternedTemplate` は構造が不正な場合、処理を拒否/);

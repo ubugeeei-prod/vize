@@ -1115,7 +1115,7 @@ Proibir a sintaxe obsoleta de filtros do Vue 2 com o operador de barra vertical
 [Incorreto](#vue-no-deprecated-filter-bad) · [Correto](#vue-no-deprecated-filter-good)
 
 Severidade padrão: `error`  
-Predefinições: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -1176,7 +1176,7 @@ Proibir o atributo `functional` no `<template>` de um SFC
 [Incorreto](#vue-no-deprecated-functional-template-bad) · [Correto](#vue-no-deprecated-functional-template-good)
 
 Severidade padrão: `error`  
-Predefinições: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -1237,7 +1237,7 @@ Proibir o atributo `is` em elementos HTML nativos
 [Incorreto](#vue-no-deprecated-html-element-is-bad) · [Correto](#vue-no-deprecated-html-element-is-good)
 
 Severidade padrão: `error`  
-Predefinições: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -1299,7 +1299,7 @@ Proibir o atributo obsoleto `inline-template`
 [Incorreto](#vue-no-deprecated-inline-template-bad) · [Correto](#vue-no-deprecated-inline-template-good)
 
 Severidade padrão: `error`  
-Predefinições: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -1360,7 +1360,7 @@ Proibir a prop `tag` em &lt;router-link&gt;
 [Incorreto](#vue-no-deprecated-router-link-tag-prop-bad) · [Correto](#vue-no-deprecated-router-link-tag-prop-good)
 
 Severidade padrão: `error`  
-Predefinições: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -1801,7 +1801,7 @@ Proibir modificadores numéricos obsoletos de `keyCode` em `v-on`
 [Incorreto](#vue-no-deprecated-v-on-number-modifiers-bad) · [Correto](#vue-no-deprecated-v-on-number-modifiers-good)
 
 Severidade padrão: `error`  
-Predefinições: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Disponível para os diagnósticos compatíveis  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -2577,7 +2577,7 @@ Proibir invólucros de elementos comuns diretamente abaixo de `<KeepAlive>`
 [Incorreto](#vue-no-non-component-keep-alive-child-bad) · [Correto](#vue-no-non-component-keep-alive-child-good)
 
 Severidade padrão: `warning`  
-Predefinições: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -3871,7 +3871,7 @@ Proibir `v-else-if` ou `v-else` no mesmo elemento que `v-for`
 [Incorreto](#vue-no-use-v-else-with-v-for-bad) · [Correto](#vue-no-use-v-else-with-v-for-good)
 
 Severidade padrão: `warning`  
-Predefinições: `ecosystem`, `happy-path`, `nuxt`, `opinionated`  
+Predefinições: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.

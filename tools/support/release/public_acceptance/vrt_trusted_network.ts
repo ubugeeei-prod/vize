@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
 import type { CDPSession, Page } from "playwright";
 import { type Evidence } from "./vrt_artifacts.ts";
+import { sha256 } from "./vrt_fixtures.ts";
+import { actualRequestRefusal } from "./vrt_trusted_failures.ts";
+export { actualRequestRefusal } from "./vrt_trusted_failures.ts";
 import {
   browserRequestMetadata,
+  safeBrowserURL,
   type BrowserFailureRecord,
   type ExpectedBrowserFailures,
 } from "./vrt_trusted_failures.ts";
@@ -14,6 +18,17 @@ import {
 } from "./vrt_trusted_ui.ts";
 
 export interface SpaceRecord extends BrowserFailureRecord {
+  eventPhase?: string;
+  frameId?: string;
+  loaderId?: string;
+  requestType?: string;
+  resourceType?: string;
+  documentURL?: string;
+  requestTimestamp?: number;
+  timestamp?: number;
+  errorText?: string;
+  canceled?: boolean;
+  corsErrorStatus?: { corsError: string; failedParameter: string };
   origin?: string;
   pathname?: string;
   initiatorIPAddressSpace?: string;
@@ -27,7 +42,7 @@ export async function publicAddressCustody(cdp: CDPSession, phase: () => string 
   const urls = new Map<string, ReturnType<typeof browserRequestMetadata>>();
   const pending = new Map<string, SpaceRecord[]>();
   function record(id: string, item: Omit<SpaceRecord, "requestId">) {
-    const retained = { ...item, requestId: id };
+    const retained = { ...item, requestId: id, eventPhase: phase() };
     if (urls.has(id)) Object.assign(retained, urls.get(id));
     else pending.set(id, [...(pending.get(id) ?? []), retained]);
     records.push(retained);
@@ -35,11 +50,28 @@ export async function publicAddressCustody(cdp: CDPSession, phase: () => string 
   const request = ({
     requestId,
     request,
+    frameId,
+    loaderId,
+    type,
+    documentURL,
+    timestamp,
   }: {
     requestId: string;
     request: { url: string; method: string };
+    frameId?: string;
+    loaderId?: string;
+    type?: string;
+    documentURL?: string;
+    timestamp?: number;
   }) => {
-    const safe = browserRequestMetadata(request, phase());
+    const safe = {
+      ...browserRequestMetadata(request, phase()),
+      frameId,
+      loaderId,
+      requestType: type,
+      documentURL: documentURL ? safeBrowserURL(documentURL) : undefined,
+      requestTimestamp: timestamp,
+    };
     urls.set(requestId, safe);
     for (const item of pending.get(requestId) ?? []) Object.assign(item, safe);
     pending.delete(requestId);
@@ -67,19 +99,54 @@ export async function publicAddressCustody(cdp: CDPSession, phase: () => string 
     resourceIPAddressSpace: string;
     statusCode: number;
   }) => record(requestId, { kind: "response", resourceIPAddressSpace, statusCode });
-  const failed = ({ requestId, blockedReason }: { requestId: string; blockedReason?: string }) =>
-    record(requestId, { kind: "failure", blockedReason });
+  const failed = ({
+    requestId,
+    blockedReason,
+    errorText,
+    canceled,
+    type,
+    timestamp,
+    corsErrorStatus,
+  }: {
+    requestId: string;
+    blockedReason?: string;
+    errorText: string;
+    canceled?: boolean;
+    type: string;
+    timestamp: number;
+    corsErrorStatus?: { corsError: string; failedParameter: string };
+  }) =>
+    record(requestId, {
+      kind: "failure",
+      blockedReason,
+      errorText,
+      canceled,
+      resourceType: type,
+      timestamp,
+      corsErrorStatus,
+    });
+  const finished = ({
+    requestId,
+    timestamp,
+    encodedDataLength,
+  }: {
+    requestId: string;
+    timestamp: number;
+    encodedDataLength: number;
+  }) => record(requestId, { kind: "finished", timestamp, encodedDataLength });
   async function close() {
     cdp.off("Network.requestWillBeSent", request);
     cdp.off("Network.requestWillBeSentExtraInfo", extra);
     cdp.off("Network.responseReceivedExtraInfo", response);
     cdp.off("Network.loadingFailed", failed);
+    cdp.off("Network.loadingFinished", finished);
     await cdp.send("Network.disable");
   }
   cdp.on("Network.requestWillBeSent", request);
   cdp.on("Network.requestWillBeSentExtraInfo", extra);
   cdp.on("Network.responseReceivedExtraInfo", response);
   cdp.on("Network.loadingFailed", failed);
+  cdp.on("Network.loadingFinished", finished);
   try {
     await cdp.send("Network.enable");
     return { records, close };
@@ -91,6 +158,14 @@ export async function publicAddressCustody(cdp: CDPSession, phase: () => string 
     }
     throw primary;
   }
+}
+
+/** The published authorization handler returns an original, strictly empty 401 body. */
+export function emptyAuthenticationRefusal(status: number, body: Buffer) {
+  assert.equal(status, 401);
+  assert.ok(Buffer.isBuffer(body));
+  assert.equal(body.length, 0, "Original unauthorized response body must be empty");
+  return { status, bodyBytes: body.length, bodySha256: sha256(body) };
 }
 
 /** Current granular permission only; unsupported pinned Chrome is an honest campaign refusal. */
@@ -114,153 +189,6 @@ export async function loopbackPermission(
   );
   assert.equal(actual, setting);
   return actual;
-}
-
-interface RefusalResponse {
-  url(): string;
-  request(): { method(): string };
-  status(): number;
-}
-interface RefusalPause {
-  requestId: string;
-  request: { url: string; headers: Record<string, string>; method: string };
-  responseStatusCode?: number;
-  responseErrorReason?: string;
-}
-interface RefusalCDP {
-  on(event: "Fetch.requestPaused", listener: (event: RefusalPause) => void): unknown;
-  off(event: "Fetch.requestPaused", listener: (event: RefusalPause) => void): unknown;
-  send(
-    method: "Fetch.enable",
-    params: { patterns: Array<{ urlPattern: string; requestStage: "Request" | "Response" }> },
-  ): Promise<unknown>;
-  send(method: "Fetch.disable"): Promise<unknown>;
-  send(method: "Fetch.getResponseBody", params: { requestId: string }): Promise<unknown>;
-  send(
-    method: "Fetch.continueRequest",
-    params: {
-      requestId: string;
-      postData?: string;
-      headers?: Array<{ name: string; value: string }>;
-    },
-  ): Promise<unknown>;
-}
-
-/** Only requests are modified; paused response reads own genuine server bytes unchanged. */
-export async function actualRequestRefusal(
-  page: {
-    waitForResponse(predicate: (response: RefusalResponse) => boolean): Promise<RefusalResponse>;
-  },
-  cdp: RefusalCDP,
-  url: string,
-  change: { postData?: string; wrongBearer?: string },
-  trigger: () => Promise<unknown>,
-) {
-  const parsed = new URL(url);
-  assert.equal(parsed.hostname, "127.0.0.1");
-  assert.equal(parsed.protocol, "http:");
-  assert.equal(parsed.search + parsed.hash, "");
-  const pending = new Set<Promise<unknown>>();
-  const errors: unknown[] = [];
-  let used = 0;
-  let responseCount = 0;
-  let responseStatus: number | undefined;
-  let body: Buffer | undefined;
-  const paused = (event: RefusalPause) => {
-    const original = event.request;
-    const matched = original.url === url && original.method === "POST";
-    if (
-      matched &&
-      (event.responseStatusCode !== undefined || event.responseErrorReason !== undefined)
-    ) {
-      const reading = (async () => {
-        try {
-          assert.equal(++responseCount, 1, "exactly one original response is retained");
-          assert.equal(event.responseErrorReason, undefined);
-          assert.equal(typeof event.responseStatusCode, "number");
-          responseStatus = event.responseStatusCode;
-          const packet = await cdp.send("Fetch.getResponseBody", { requestId: event.requestId });
-          assert.ok(packet && typeof packet === "object" && !Array.isArray(packet));
-          assert.deepEqual(Object.keys(packet).sort(), ["base64Encoded", "body"]);
-          assert.ok("body" in packet && "base64Encoded" in packet);
-          assert.ok(typeof packet.body === "string" && typeof packet.base64Encoded === "boolean");
-          const bytes = Buffer.from(packet.body, packet.base64Encoded ? "base64" : "utf8");
-          if (packet.base64Encoded) assert.equal(bytes.toString("base64"), packet.body);
-          body = bytes;
-        } catch (error) {
-          errors.push(error);
-        }
-        // Resume the original response even when custody fails. Never fulfill or rewrite it.
-        try {
-          await cdp.send("Fetch.continueRequest", { requestId: event.requestId });
-        } catch (error) {
-          errors.push(error);
-        }
-      })();
-      pending.add(reading);
-      void reading.then(() => pending.delete(reading));
-      return;
-    }
-    const overrides: { postData?: string; headers?: Array<{ name: string; value: string }> } = {};
-    if (matched && used++ === 0) {
-      if (change.postData !== undefined)
-        overrides.postData = Buffer.from(change.postData).toString("base64");
-      if (change.wrongBearer !== undefined) {
-        const headers = Object.entries(original.headers).filter(
-          ([name]) => name.toLowerCase() !== "authorization",
-        );
-        headers.push(["Authorization", `Bearer ${change.wrongBearer}`]);
-        overrides.headers = headers.map(([name, value]) => ({ name, value }));
-      }
-    }
-    const writing = cdp.send("Fetch.continueRequest", { requestId: event.requestId, ...overrides });
-    pending.add(writing);
-    void writing.then(
-      () => pending.delete(writing),
-      (error) => {
-        errors.push(error);
-        pending.delete(writing);
-      },
-    );
-  };
-  let failure: { error: unknown } | undefined;
-  let result: RefusalResponse | undefined;
-  // The disable/drain finalizer is established before enabling any paused request.
-  cdp.on("Fetch.requestPaused", paused);
-  try {
-    await cdp.send("Fetch.enable", {
-      patterns: [
-        { urlPattern: url, requestStage: "Request" },
-        { urlPattern: url, requestStage: "Response" },
-      ],
-    });
-    [result] = await Promise.all([
-      page.waitForResponse((r) => r.url() === url && r.request().method() === "POST"),
-      trigger(),
-    ]);
-    assert.equal(used, 1);
-  } catch (error) {
-    failure = { error };
-  } finally {
-    // A trigger can fail while a paused body read is still in flight. Keep Fetch valid until it settles.
-    while (pending.size) await Promise.allSettled(pending);
-    try {
-      await cdp.send("Fetch.disable");
-    } catch (error) {
-      errors.push(error);
-    }
-    cdp.off("Fetch.requestPaused", paused);
-    await Promise.allSettled(pending);
-  }
-  if (failure || errors.length)
-    throw new AggregateError(
-      [...(failure ? [failure.error] : []), ...errors],
-      "Actual request refusal or cleanup failed",
-    );
-  assert.equal(responseCount, 1, "missing original paused response");
-  assert.ok(result && body);
-  assert.equal(result.status(), responseStatus, "same original HTTP response status");
-  return { response: result, body };
 }
 
 const wrong = "A".repeat(43);
@@ -375,10 +303,11 @@ export async function authorityRefusals(input: {
     `${session.endpoint}/capture`,
     { wrongBearer: wrong },
     () => page.getByRole("button", { name: "Run VRT", exact: true }).click(),
+    (owner) => expected.authentication401(owner),
   );
   const raw401 = deniedCapture.body;
   await e.save("trusted-public/authority/actual-401.json", raw401);
-  assert.equal(deniedCapture.response.status(), 401);
+  const actual401 = emptyAuthenticationRefusal(deniedCapture.response.status(), raw401);
   await page.getByRole("textbox", { name: "VRT endpoint", exact: true }).waitFor();
   for (const selector of [".vrt-summary", ".vrt-results", ".vrt-error"])
     assert.equal(await page.locator(selector).count(), 0, selector);
@@ -393,7 +322,7 @@ export async function authorityRefusals(input: {
     oldBlobCount: blobs.length,
     allRevoked: true,
     actual400: error400,
-    actual401: JSON.parse(raw401.toString()),
+    actual401,
     noStaleResults: true,
   });
 

@@ -160,9 +160,18 @@ pub(super) fn prop_alias_type(
     if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {
         return String::from("__VizeComponentRefCallback");
     }
-    let resolved = cstr!(
+    let normalized = cstr!(
         "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>>"
     );
+    // A declared literal key such as `data-owned` is still an owned prop.
+    // Try its authored spelling before the normal camelized alias and root.
+    let resolved = if fallthrough_prop_name == camel_prop_name {
+        normalized
+    } else {
+        cstr!(
+            "__VizePropValue<__{component_type_name}_ValueProps_{idx}, '{fallthrough_prop_name}', {normalized}>"
+        )
+    };
     if is_inline_callback_prop(prop) {
         cstr!("__VizeCallableProp<{resolved}>")
     } else {
