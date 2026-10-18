@@ -39,6 +39,11 @@ const dynamicPublisherContracts = [
   "tests/tooling/release/release-public-acceptance.test.ts",
   ...sharedPublisherContracts,
 ];
+// The real SessionArtifacts projector has a source-only .js type import; unresolved inputs stay broad.
+const incompleteScopedContracts = [
+  ...dynamicPublisherContracts,
+  "tests/tooling/release/release-public-vrt-reports.test.ts",
+];
 
 const installedHttpsContracts = [
   "tests/tooling/release/release-public-quick-tunnel.test.ts",
@@ -93,13 +98,13 @@ void test("audited release contracts have complete imports and leave unresolved 
     assert.ok(releaseFiles.includes(file), `${file} must exist`);
     assert.equal(
       localImportInputs(file).complete,
-      !dynamicPublisherContracts.includes(file),
+      !incompleteScopedContracts.includes(file),
       `${file} import closure`,
     );
   }
   assert.deepEqual(
     selected("davinci/vize_l1/src/parser.rs"),
-    [...new Set([...unscoped, ...dynamicPublisherContracts])].sort(),
+    [...new Set([...unscoped, ...incompleteScopedContracts])].sort(),
   );
 });
 
@@ -150,14 +155,18 @@ void test("shared publisher authority retains broad inputs across the dynamic co
   }
 });
 
-void test("installed VRT observer inputs select both complete audited contracts", () => {
+void test("installed VRT inputs retain the complete observer and broad real-projector contract", () => {
   const contracts = [
     "tests/tooling/release/release-public-vrt-observer.test.ts",
     "tests/tooling/release/release-public-vrt-reports.test.ts",
   ];
   for (const contract of contracts) {
     assert.ok(scoped.includes(contract));
-    assert.equal(localImportInputs(contract).complete, true, contract);
+    assert.equal(
+      localImportInputs(contract).complete,
+      !incompleteScopedContracts.includes(contract),
+      contract,
+    );
   }
   for (const input of [
     ...["api", "artifacts", "audit", "cli", "fixtures", "host", "hosted", "observer"].map(

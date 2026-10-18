@@ -44,6 +44,7 @@ jobs:
           tests/tooling/release/release-public-atomic-original.test.ts
           tests/tooling/release/release-public-lsp-source.test.ts
           tests/tooling/release/release-public-trusted-vrt.test.ts
+          tests/tooling/release/release-public-vrt-reports.test.ts
           tests/tooling/release/release-public-vrt-log-barrier.test.ts
           tests/tooling/release/release-public-vrt-upload-refusal.test.ts
           tests/tooling/release/release-public-quick-tunnel.test.ts
