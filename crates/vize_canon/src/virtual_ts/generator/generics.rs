@@ -85,10 +85,13 @@ impl HoistedGenericAliases {
         // A module-level `Alias = Value` would instantiate Value's fallback
         // parameters before setup can bind T. Retain the original dependent
         // declaration inside setup instead, preserving its own generic scope.
-        let mut dependents: FxHashMap<CompactString, Vec<usize>> = FxHashMap::default();
-        for (index, (_, _, references)) in candidates.iter().enumerate() {
+        let mut dependents: FxHashMap<CompactString, Vec<CompactString>> = FxHashMap::default();
+        for (export, _, references) in &candidates {
             for reference in references {
-                dependents.entry(reference.clone()).or_default().push(index);
+                dependents
+                    .entry(reference.clone())
+                    .or_default()
+                    .push(export.name.clone());
             }
         }
         let mut reached: FxHashSet<CompactString> = type_names
@@ -97,10 +100,9 @@ impl HoistedGenericAliases {
             .collect();
         let mut queue: VecDeque<_> = reached.iter().cloned().collect();
         while let Some(name) = queue.pop_front() {
-            for &index in dependents.get(&name).into_iter().flatten() {
-                let (export, _, _) = &candidates[index];
-                if reached.insert(export.name.clone()) {
-                    queue.push_back(export.name.clone());
+            for dependent in dependents.get(&name).into_iter().flatten() {
+                if reached.insert(dependent.clone()) {
+                    queue.push_back(dependent.clone());
                 }
             }
         }

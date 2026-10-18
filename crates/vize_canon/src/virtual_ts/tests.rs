@@ -1460,8 +1460,8 @@ function eventHandler(event: Event) {
         },
     );
     assert!(
-        quirks_output.code.contains("unknown[] extends __Child_")
-            && quirks_output.code.contains("? any : __Child_"),
+        quirks_output.code.contains("unknown[] extends __A")
+            && quirks_output.code.contains("? any : __A[0]"),
         "quirks component event fallback should stay loose when args stay unknown:\n{}",
         quirks_output.code
     );
