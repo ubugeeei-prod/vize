@@ -332,7 +332,7 @@ export async function verifyPublicInstallation(
       assert.equal(released.sha256, archive.archive.sha256);
     }
     archives.push({
-      directory: packageRoot,
+      directory: fs.realpathSync.native(packageRoot),
       integrity: locked.integrity,
       tarball: locked.resolved,
       ...archive,
@@ -341,13 +341,21 @@ export async function verifyPublicInstallation(
   }
   for (const { name } of [...observed.packages, { name: observed.platform.name }])
     assert.ok(archives.some((item) => item.archiveManifest.name === name));
-  for (const file of [observed.mapper.cli.path, observed.nativeImage.path, observed.compiler.path])
+  for (const file of [
+    observed.mapper.cli.path,
+    observed.nativeImage.path,
+    observed.compiler.path,
+  ]) {
+    const canonicalFile = fs.realpathSync.native(file);
     assert.ok(
       archives.some((item) =>
-        item.archiveEntries.some((entry) => path.join(item.directory, entry.path) === file),
+        item.archiveEntries.some(
+          (entry) => path.join(item.directory, entry.path) === canonicalFile,
+        ),
       ),
       "actual executable must belong to a verified archive",
     );
+  }
   fs.writeFileSync(
     path.join(output, "installed-public-archives.json"),
     JSON.stringify({ archives, absentOptional }, null, 2) + "\n",

@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { gzipSync } from "node:zlib";
 import {
   assertOfficialDiagnostics,
   loadOfficialFixture,
@@ -10,6 +12,7 @@ import {
   officialRunOptions,
   resolveOfficialNativeImage,
   officialActorInputs,
+  verifyPublicInstallation,
   type Case,
   type Original,
 } from "../../tools/support/compat/content-mapper/official-fixtures.ts";
@@ -227,6 +230,96 @@ test("public identity resolves an inert native archive without evaluating its wr
       fs.rmSync(directory, { recursive: true, force: true });
       fs.rmSync(outside, { recursive: true, force: true });
     }
+  }
+});
+
+test("verified public archives accept install-root aliases and refuse foreign executable identities", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "official-public-archive-"));
+  const physical = path.join(root, "physical");
+  const alias = path.join(root, "alias");
+  const output = path.join(root, "output");
+  const installed = path.join(physical, "node_modules/vize");
+  const files = {
+    "package.json": JSON.stringify({ name: "vize", version: "0.469.0" }),
+    "cli.js": "inert CLI bytes",
+    "provider.node": "inert provider bytes",
+    "compiler.js": "inert compiler bytes",
+  };
+  const blocks: Buffer[] = [];
+  for (const [name, content] of Object.entries(files)) {
+    const body = Buffer.from(content);
+    const header = Buffer.alloc(512);
+    header.write(`package/${name}`, 0, 100);
+    header.write("0000644\0", 100);
+    header.write("0000000\0", 108);
+    header.write("0000000\0", 116);
+    header.write(body.length.toString(8).padStart(11, "0") + "\0", 124);
+    header.write("00000000000\0", 136);
+    header.fill(32, 148, 156);
+    header.write("0", 156);
+    header.write("ustar\0", 257);
+    header.write("00", 263);
+    const checksum = header.reduce((total, value) => total + value, 0);
+    header.write(checksum.toString(8).padStart(6, "0") + "\0 ", 148);
+    blocks.push(header, body, Buffer.alloc((512 - (body.length % 512)) % 512));
+  }
+  const archive = gzipSync(Buffer.concat([...blocks, Buffer.alloc(1024)]));
+  const integrity = `sha512-${createHash("sha512").update(archive).digest("base64")}`;
+  const resolved = "https://registry.npmjs.org/vize/-/vize-0.469.0.tgz";
+  const requests: string[] = [];
+  t.mock.method(globalThis, "fetch", async (url: URL) => {
+    requests.push(String(url));
+    assert.equal(String(url), resolved);
+    return new Response(Uint8Array.from(archive));
+  });
+  try {
+    fs.mkdirSync(installed, { recursive: true });
+    fs.mkdirSync(output);
+    fs.symlinkSync(physical, alias, process.platform === "win32" ? "junction" : "dir");
+    for (const [name, content] of Object.entries(files))
+      fs.writeFileSync(path.join(installed, name), content);
+    fs.writeFileSync(
+      path.join(physical, "package-lock.json"),
+      JSON.stringify({
+        packages: { "": {}, "node_modules/vize": { version: "0.469.0", resolved, integrity } },
+      }),
+    );
+    fs.writeFileSync(
+      path.join(output, "public-publication.json"),
+      JSON.stringify({
+        npm: [
+          {
+            name: "vize",
+            version: "0.469.0",
+            integrity,
+            sha256: createHash("sha256").update(archive).digest("hex"),
+          },
+        ],
+      }),
+    );
+    const observed = {
+      packages: [{ name: "vize" }],
+      platform: { name: "vize" },
+      mapper: { cli: { path: fs.realpathSync.native(path.join(installed, "cli.js")) } },
+      nativeImage: { path: path.join(alias, "node_modules/vize/provider.node") },
+      compiler: { path: fs.realpathSync.native(path.join(installed, "compiler.js")) },
+    };
+    await verifyPublicInstallation(alias, output, observed);
+    const evidence = fs.readFileSync(path.join(output, "installed-public-archives.json"), "utf8");
+    assert.equal(JSON.parse(evidence).archives[0].directory, fs.realpathSync.native(installed));
+    const foreign = path.join(root, "cli.js");
+    fs.writeFileSync(foreign, files["cli.js"]);
+    await assert.rejects(
+      verifyPublicInstallation(alias, output, { ...observed, mapper: { cli: { path: foreign } } }),
+      /actual executable must belong to a verified archive/,
+    );
+    assert.equal(
+      fs.readFileSync(path.join(output, "installed-public-archives.json"), "utf8"),
+      evidence,
+    );
+    assert.deepEqual(requests, [resolved, resolved]);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
