@@ -21,8 +21,8 @@
       "file": "malformed-membership/part-01.json",
       "mode": "100644",
       "bytes": 7105,
-      "sha256": "18c7db7d17c081d708fdcc9cec92ab783b22a89f210917033fbe9d925cbb3e10",
-      "gitBlob": "30f0f123ec69abd5bd99ba977a4d7f4a679f27cb",
+      "sha256": "66d4105fa8763d5a6f195b0b40ac89765204b162c347a3ab04bf0135f7981a23",
+      "gitBlob": "ca0c125f0278141b2e9e8a29ee85a17a437b6c2a",
       "start": 43,
       "entries": 43
     }
@@ -109,6 +109,39 @@
       },
       "proof": "All86 rooted paths and their order, the other85 complete bodies, native and provider custody, and four generated materialized modules are unchanged. Reversing only the reviewed PublicProps helper block recovers the exact preceding28462-byte helper and its SHA256. Complete actual bodies were captured before the failed membership assertion.",
       "scope": "Current generated support reference only. The complete native TS1109 malformed syntax refusal remains an observation; no semantic-green or release acceptance credit."
+    },
+    "publicInterfacesSourceRevision": {
+      "parentSource": "d489276a9bb097f61c7f3ffd8480f7edcd7dd647",
+      "priorManifestSHA256": "ae96097bb5101dd587f146c23dbf75a693d9c68d3cd180e904f488b77abc1a63",
+      "entry": 82,
+      "before": [
+        "project/__vize_helpers.d.ts",
+        28533,
+        "4ff222ad1428380dc23fa6e0f23f33f8cdab36a6ab42d7bbd8582723c4145688"
+      ],
+      "after": [
+        "project/__vize_helpers.d.ts",
+        28607,
+        "caaf90d485d10d33f5c8a8715fb3625ac42a6717ef533520c517ba9e853167eb"
+      ],
+      "priorActualBody": {
+        "source": "cc759650faacf19f4b2ba8030835f95ada2636b6",
+        "testedMerge": "b5e72a1002bdfd9c4e3ebf1f8d8d0c627d675c19",
+        "run": 39140616964,
+        "job": 117715237440,
+        "artifact": 12141598012,
+        "artifactSHA256": "a086972e5afd71839c81f5d6972cb2742bff0a0e811b1c7e01d83988f852e751",
+        "member": "typechecker-fixtures/empty-vue-star-exports/malformed-refusal.json",
+        "wholePacketSHA256": "02652dc8e1b22ac25cbd75e77f4f914c5346ff91071279b1b6d7a4320c52184f"
+      },
+      "sourceChange": {
+        "path": "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+        "beforeSHA256": "ca6adc4225de07abe13681c351313ea454249e7d6ed55d02a585b5ecc7736605",
+        "afterSHA256": "b69b06ada6b05c9d7a714ba7b6e789614e5d6cc9ce6c7a9ccf4098c946a9e098",
+        "bytesAdded": 74
+      },
+      "proof": "Replace only the PublicProps alias reference with its three exported public interfaces in the authenticated whole preceding static helper. Reversing that exact line recovers every preceding body byte. The other85 ordered references are unchanged.",
+      "scope": "Source-derived support reference; no newly generated body is attributed to the preceding artifact. Each configured-native run still compares all86 actual bodies against this complete reference. The native TS1109 refusal remains an observation, not semantic-green or release acceptance."
     }
   }
 }

@@ -1,6 +1,10 @@
 //! `vize check --declaration` against a `vue` whose typings predate
-//! `NativeElements` and `Directive` (Vue 2.7, an older Vue 3 minor, a trimmed or
-//! shimmed package).
+//! `NativeElements`, `Directive`, and the `PublicProps` alias (older or
+//! trimmed Vue type packages).
+//!
+//! Vue 3.0 and 3.3 publicly export `VNodeProps`, `AllowedComponentProps`, and
+//! `ComponentCustomProps`, but their runtime-core barrels do not re-export
+//! `PublicProps`. Keep that alias absent so declaration emit protects this floor.
 //!
 //! Native prop checking uses Vue's `NativeElements` when it is available. A
 //! missing export must not prevent declaration emit. Custom directives retain
@@ -68,7 +72,7 @@ const INDEX_TS: &str = "export { default as App } from './App.vue'\n";
 
 /// A `vue` that stops short of `NativeElements` and `Directive`, keeping only
 /// the surface the generated virtual modules name (`ComponentPublicInstance`,
-/// `Ref`, `ShallowRef`, `DefineComponent`).
+/// `Ref`, `ShallowRef`, `DefineComponent`, and the three public-prop interfaces).
 const VUE_WITHOUT_NATIVE_ELEMENTS_OR_DIRECTIVE: &str = r#"export interface VNode {
   readonly __v_isVNode: true;
 }
@@ -93,7 +97,6 @@ export interface AllowedComponentProps {
   style?: unknown;
 }
 export interface ComponentCustomProps {}
-export type PublicProps = VNodeProps & AllowedComponentProps & ComponentCustomProps;
 
 export interface ComponentPublicInstance<Props = {}> {
   $props: Props;

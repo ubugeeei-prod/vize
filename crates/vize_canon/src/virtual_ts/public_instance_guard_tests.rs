@@ -17,7 +17,7 @@ fn vue_public_input_contract_reaches_embedded_hoisted_and_declaration_helpers() 
         ("declarations", DECLARATION_HELPERS_DTS),
     ] {
         assert_eq!(
-            text.matches("type __VizePublicComponentInputProps = import('vue').PublicProps;")
+            text.matches("type __VizePublicComponentInputProps = import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;")
                 .count(),
             1,
             "{name} must use Vue's single public prop authority"
