@@ -3,7 +3,7 @@ use super::super::{
     pr_contract::{self, Candidate},
     pr_github as github, pr_start,
 };
-use super::integration::{integration_pr, open_pr};
+use super::integration::{PreparedNormalCut, integration_pr, open_pr};
 use super::{Source, marker, metadata, source, watch};
 #[path = "pr_pin_source_body.rs"]
 mod body;
@@ -176,7 +176,9 @@ fn start_selected(bump: &str, requested: Option<(&str, &str)>, root: &Path) -> R
             closed: false,
             stable: stable.clone(),
         };
-        source.integration = integration_pr(&source, bump, budget.as_ref(), &work)?;
+        let prepared = PreparedNormalCut::capture(&source, bump, &work)?;
+        source.integration =
+            integration_pr(&source, bump, budget.as_ref(), prepared, &operator, &work)?;
         pr_budget::check(budget.as_ref())?;
         super::lock::install_pin(&source, &operator, &work)?;
         set_body(&source, bump, &work)?;
@@ -259,7 +261,8 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
                 closed: false,
                 stable,
             };
-            source.integration = integration_pr(&source, &bump, budget.as_ref(), &work)?;
+            source.integration =
+                integration_pr(&source, &bump, budget.as_ref(), None, &operator, &work)?;
             pr_budget::check(budget.as_ref())?;
             super::lock::install_pin(&source, &operator, &work)?;
             set_body(&source, &bump, &work)?;
