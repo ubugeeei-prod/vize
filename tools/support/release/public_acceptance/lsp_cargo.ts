@@ -193,7 +193,7 @@ export function assertBuiltSupport(stdout: string, allowed: string[]) {
   assert.ok(messages.some((m) => m.reason === "build-finished" && m.success === true));
   return built.map((message) => ({
     packageId: message.package_id,
-    target: message.target,
-    filenames: message.filenames,
+    ...(Object.hasOwn(message, "target") ? { target: message.target } : {}),
+    ...(Object.hasOwn(message, "filenames") ? { filenames: message.filenames } : {}),
   }));
 }

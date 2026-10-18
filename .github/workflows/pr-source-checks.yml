@@ -67,6 +67,7 @@ jobs:
           tests/tooling/release-input-scopes.test.mjs
           tests/tooling/pinned-fixture-hydration.test.ts
           tests/tooling/native-preparation-identity.test.ts
+          tests/tooling/publish-npm-package*.test.ts
           tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts
   canonical-corpus:
     permissions: { contents: read, actions: read, checks: read }
