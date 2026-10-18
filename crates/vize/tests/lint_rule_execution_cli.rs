@@ -163,3 +163,79 @@ export default {
         output_details(&output)
     );
 }
+
+#[test]
+fn binding_values_keep_same_name_shorthand_and_reject_authored_empty_values() {
+    let project_root = tempfile::tempdir().unwrap();
+    write_project_file(
+        project_root.path(),
+        "vize.config.json",
+        r#"{"linter":{"preset":"incremental","rules":{"vue/valid-v-bind":"error"}}}"#,
+    );
+    for (attribute, invalid) in [
+        (r#":label="""#, true),
+        (r#"v-bind:label="  ""#, true),
+        (r#".label="""#, true),
+        (r#":[name]="""#, true),
+        (r#"v-bind="""#, true),
+        (":label", false),
+        ("v-bind:label", false),
+        (r#":label="label""#, false),
+        (r#":[name]="label""#, false),
+        (r#"v-bind="{title: 'hello'}""#, false),
+    ] {
+        let source = format!("<template>\n  <!-- あ😀 -->\n  <div {attribute} />\n</template>\n");
+        write_project_file(project_root.path(), "App.vue", &source);
+        let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+            .current_dir(project_root.path())
+            .args([
+                "lint",
+                "--config",
+                "vize.config.json",
+                "--format",
+                "json",
+                "--help-level",
+                "none",
+                "App.vue",
+            ])
+            .output()
+            .unwrap();
+        assert_eq!(
+            output.status.code(),
+            Some(i32::from(invalid)),
+            "{attribute}: {}",
+            output_details(&output)
+        );
+        assert_eq!(output.stderr, Vec::<u8>::new(), "{attribute}");
+        let messages = if invalid {
+            serde_json::json!([{
+                "ruleId": "vue/valid-v-bind",
+                "ruleDocsPath": "docs/content/rules/vue.md",
+                "severity": 2,
+                "message": "[vize:vue/valid-v-bind] v-bind requires an expression",
+                "line": 3,
+                "column": 8,
+                "endLine": 3,
+                "endColumn": 8 + attribute.len()
+            }])
+        } else {
+            serde_json::json!([])
+        };
+        let expected = serde_json::json!([{
+            "file": "App.vue",
+            "messages": messages,
+            "errorCount": usize::from(invalid),
+            "warningCount": 0
+        }]);
+        assert_eq!(
+            serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap(),
+            expected,
+            "{attribute}: {}",
+            output_details(&output)
+        );
+        assert_eq!(
+            fs::read(project_root.path().join("App.vue")).unwrap(),
+            source.as_bytes()
+        );
+    }
+}

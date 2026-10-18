@@ -18,7 +18,13 @@ impl SsrCodegenContext<'_> {
             "_ssrGetDirectiveProps(_ctx, {}",
             self.directive_reference(dir.name)
         );
-        let exp = dir.exp.as_ref().map(|exp| self.expression_to_string(exp));
+        let exp = dir
+            .exp
+            .as_ref()
+            .filter(|expression| {
+                !vize_atelier_core::steps::expression::is_empty_dynamic_expression(expression)
+            })
+            .map(|exp| self.expression_to_string(exp));
         if let Some(exp) = &exp {
             out.push_str(", ");
             out.push_str(exp);

@@ -5,6 +5,7 @@
 //! Options6/9 retain named BEFORE history and require separate full production
 //! AFTER witnesses for the declared complete-attribute correction.
 
+use super::tokenizer_empty_value_witness as empty_value;
 use super::tokenizer_first_newline_witness as correction;
 use super::{Parser, WhitespaceStrategy};
 use vize_l0::{Allocator, config::VueVersion, cstr, hash::StableHasher128};
@@ -18,6 +19,7 @@ struct Oracle {
     corrections: bool,
     attribute_corrections: bool,
     correction_hits: u8,
+    empty_value_hits: u128,
 }
 
 impl Oracle {
@@ -34,6 +36,18 @@ impl Oracle {
             .corrections
             .then(|| correction::corrected_digest(self.index, fields, context, options, expected))
             .flatten();
+        let empty = self
+            .corrections
+            .then(|| empty_value::corrected_digest(self.index, fields, context, options, expected))
+            .flatten();
+        if let Some((_, bit)) = empty {
+            assert_eq!(
+                self.empty_value_hits & bit,
+                0,
+                "each empty-value context once"
+            );
+            self.empty_value_hits |= bit;
+        }
         if let Some((_, bit)) = corrected {
             self.correction_hits |= bit;
         }
@@ -56,6 +70,7 @@ impl Oracle {
         let required = corrected
             .as_ref()
             .map(|(digest, _)| digest.as_slice())
+            .or_else(|| empty.as_ref().map(|(digest, _)| digest.as_slice()))
             .or(expected);
         if Some(digest.as_slice()) != required {
             self.mismatches += 1;
@@ -85,6 +100,15 @@ impl Oracle {
             if self.corrections { 3 } else { 0 },
             "both exact approved vectors must participate"
         );
+        assert_eq!(
+            self.empty_value_hits,
+            if self.corrections {
+                empty_value::ALL_HITS
+            } else {
+                0
+            },
+            "all 66 exact empty-value corrections must participate"
+        );
     }
 }
 
@@ -100,6 +124,7 @@ fn oracle(expected: &'static [u8], name: &str) -> Oracle {
         corrections: name == "fixtures.bin",
         attribute_corrections: name == "options.bin",
         correction_hits: 0,
+        empty_value_hits: 0,
     }
 }
 
@@ -213,8 +238,8 @@ fn complete_fixture_asts_and_utf8_cuts_keep_the_frozen_tokenizer_contract() {
     cases.finish(&hash.digest());
     assert_eq!(
         hash.digest(),
-        correction::APPROVED_AGGREGATE,
-        "captured source: 5bca3a881; exact two-vector correction: #7889"
+        empty_value::AFTER_AGGREGATE,
+        "authentic bf006 source: exact 66 empty-value corrections; original #7889 history retained"
     );
 }
 
