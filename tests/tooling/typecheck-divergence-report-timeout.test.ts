@@ -348,9 +348,10 @@ test("failed supervisor custody quarantines an otherwise complete v7 packet", li
       fixture.vueTsc,
       previous.replace(
         marker,
-        `const states = ${JSON.stringify(path.join(fixture.reportDir, "typecheck-deadlines"))};
+        `import { join as joinEvidencePath } from "node:path";
+const states = ${JSON.stringify(path.join(fixture.reportDir, "typecheck-deadlines"))};
 ` +
-          `fs.mkdirSync(path.join(states,fs.readdirSync(states)[0],"supervisor.json"),{recursive:true});
+          `fs.mkdirSync(joinEvidencePath(states,fs.readdirSync(states)[0],"supervisor.json"),{recursive:true});
 ` +
           marker,
       ),

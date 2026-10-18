@@ -66,6 +66,7 @@ impl ProjectContext {
         }
     }
     pub fn phase(&self, phase: &str) -> Result<(), String> {
+        self.remaining()?;
         let packet = json!({"schema":"vize.typecheckProjectPhase","phase":phase,"identitySha256":self.identity_sha256,"elapsedMs":self.started.elapsed().as_millis()});
         atomic_json(&self.directory.join("phase-current.json"), &packet)?;
         let mut log = fs::OpenOptions::new()
