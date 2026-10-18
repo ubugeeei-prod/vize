@@ -8,7 +8,7 @@ import {
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
   nativeHistoryBuildEnvironment,
-} from "../../npm/native/scripts/formatter-history-build.mjs";
+} from "../../npm/native/scripts/formatter-history-build.mts";
 import { nativePreparationIsActive } from "../../npm/native/scripts/test-preparation.mjs";
 import { loadPublicNativeManifest } from "./formatter-native-manifest.mjs";
 

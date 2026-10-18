@@ -23,7 +23,7 @@ import {
   nativeHistorySource,
   validateNativeHistoryBuild,
   emittedNativeArtifact,
-} from "../../npm/native/scripts/formatter-history-build.mjs";
+} from "../../npm/native/scripts/formatter-history-build.mts";
 
 void test("ci capture retains original one-build arguments; substituted commands fail", () => {
   const original =

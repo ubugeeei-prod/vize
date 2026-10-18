@@ -9,7 +9,7 @@ import {
   nativeHistoryDirectory,
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
-} from "../../../../npm/native/scripts/formatter-history-build.mjs";
+} from "../../../../npm/native/scripts/formatter-history-build.mts";
 
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const preload = fileURLToPath(new URL("./source-binding-preload.cjs", import.meta.url));

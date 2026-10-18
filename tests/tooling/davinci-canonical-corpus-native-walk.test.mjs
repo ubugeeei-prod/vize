@@ -9,19 +9,20 @@ import { syncBuiltinESMExports } from "node:module";
 import { gitObjectId } from "../../tools/support/compat/github/canonical-corpus-inventory.mjs";
 import {
   cycleOwner,
+  kernelPrefixWitness,
   finiteCommittedInventory,
   pathOrder,
   resolveLogical,
   validateLogicalGraph,
   walkCommittedGraph,
-} from "../../tools/support/compat/github/canonical-corpus-logical-walk.mjs";
+} from "../../tools/support/compat/github/canonical-corpus-logical-walk.ts";
 import {
   collectorHarness,
   collectFinitePhysical,
   collectNativePhysical,
   parseNativeVector,
   validateFiniteNativeVector,
-} from "../../tools/support/compat/github/canonical-corpus-native-walk.mjs";
+} from "../../tools/support/compat/github/canonical-corpus-native-walk.ts";
 
 // Authored small controls exercise the frozen original and current real Rust functions, actual
 // local kernel boundary and raw bytes. They are not the licensed full corpus.
@@ -180,8 +181,9 @@ await test("raw recapture rows survive an unchanged strict boundary refusal with
       syscall: "stat",
       path: join(temporary, rejected),
     });
-    // This control does not calibrate the kernel or change the logical resolver.
-    // Two different full logical totals must still fail the original comparator.
+    // The finite alias cannot certify a kernel prefix. Its extra refusal must
+    // fail the whole committed-path comparator while the real prefix is retained.
+    assert.equal(kernelPrefixWitness(nodes, rejected, posix.dirname(rejected)), undefined);
     context.mock.method(fs, "statSync", (path, ...args) => {
       if (path === failure.path) throw failure;
       return stat(path, ...args);
@@ -189,7 +191,16 @@ await test("raw recapture rows survive an unchanged strict boundary refusal with
     syncBuiltinESMExports();
     assert.throws(
       () => collectNativePhysical(temporary, nodes, children, observe),
-      /Inconsistent native kernel boundary/,
+      (error) => {
+        assert(error instanceof assert.AssertionError);
+        assert.match(error.message, /^Committed kernel boundary paths changed(?:\n|$)/u);
+        assert.deepEqual(error.actual, original.boundary.rejected);
+        assert.deepEqual(error.expected, [
+          { path: rejected, code: "ELOOP", followed: resolveLogical(nodes, rejected).followed },
+          ...original.boundary.rejected,
+        ]);
+        return true;
+      },
     );
     assert.equal(retained.length, 2);
     assert.equal(JSON.stringify(retained[0]), originalBytes);

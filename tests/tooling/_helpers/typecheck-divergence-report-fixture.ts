@@ -5,6 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { retainFixtureCommand } from "../support/typecheck-fixture-custody.ts";
 
 import {
   summarizeTypecheckerCoverage,
@@ -257,29 +258,40 @@ export function run(
   fixture: ReturnType<typeof setup>,
   env: NodeJS.ProcessEnv = {},
   extraArgs: string[] = [],
-  options: { timeoutMs?: number } = {},
+  options: { timeoutMs?: number; retainEvidence?: boolean } = {},
 ) {
-  return spawnSync(
-    "rust-script",
-    [
-      script,
-      "--registry",
-      fixture.registryPath,
-      "--report-dir",
-      fixture.reportDir,
-      "--vize-bin",
-      fixture.vize,
-      "--vue-tsc-bin",
-      fixture.vueTsc,
-      ...extraArgs,
-    ],
-    {
-      cwd: root,
-      encoding: "utf8",
-      env: { ...process.env, GITHUB_SHA: commitSha, ...env },
-      timeout: options.timeoutMs,
-    },
+  const args = [
+    script,
+    "--registry",
+    fixture.registryPath,
+    "--report-dir",
+    fixture.reportDir,
+    "--vize-bin",
+    fixture.vize,
+    "--vue-tsc-bin",
+    fixture.vueTsc,
+    ...extraArgs,
+  ];
+  const commandOptions = {
+    cwd: root,
+    env: { ...process.env, GITHUB_SHA: commitSha, ...env },
+    timeout: options.timeoutMs,
+  };
+  if (!options.retainEvidence)
+    return spawnSync("rust-script", args, { ...commandOptions, encoding: "utf8" });
+  const result = spawnSync("rust-script", args, { ...commandOptions, encoding: "buffer" });
+  const evidence = retainFixtureCommand(
+    path.join(root, "target/differential/typecheck-mutation"),
+    { executable: "rust-script", args, cwd: root, timeoutMs: options.timeoutMs },
+    result,
+    { fixture: fixture.fixtureRoot, report: fixture.reportDir, checkers: fixture.fakeDir },
   );
+  console.error(`Mutation deadline evidence: ${evidence}`);
+  return {
+    ...result,
+    stdout: result.stdout?.toString("utf8") ?? "",
+    stderr: result.stderr?.toString("utf8") ?? "",
+  };
 }
 
 export function cleanup(fixture: ReturnType<typeof setup>) {
@@ -302,6 +314,17 @@ export function assertRecordOnlyObservations(
     path.join(fixture.reportDir, "fixture-typecheck-observations.json"),
   );
   const payloadBytes = fs.readFileSync(fixture.outputPath);
+  const config = fs.readFileSync(
+    path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"),
+    "utf8",
+  );
+  const sourceConfig = fs.readFileSync(path.join(fixture.fixtureRoot, "tsconfig.json"), "utf8");
+  const authority = {
+    config,
+    configSha256: sha256(config),
+    sourceConfig,
+    sourceConfigSha256: sha256(sourceConfig),
+  };
   assert.deepEqual(artifact.enforcement, { budgetMode: "record-only" });
   assert.deepEqual(observations, {
     schema: "vize.fixtureTypecheckObservations",
@@ -317,16 +340,29 @@ export function assertRecordOnlyObservations(
     baseline: {
       command: artifact.baseline.command,
       version: "3.3.4",
-      exitCode: 2,
+      exitCode: expected.baselineOutput === "" ? 0 : 2,
       runError: null,
       stdout: expected.baselineOutput,
       stderr: "",
-      config: fs.readFileSync(
-        path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"),
-        "utf8",
-      ),
-      sourceConfig: fs.readFileSync(path.join(fixture.fixtureRoot, "tsconfig.json"), "utf8"),
+      config,
+      sourceConfig,
     },
+    ...(expected.baselineOutput === ""
+      ? {}
+      : {
+          preSemantic: {
+            command: `${artifact.baseline.command} --noCheck`,
+            providerVersion: "3.3.4",
+            configSha256: sha256(config),
+            exitCode: 0,
+            processStatus: "exit status: 0",
+            runError: null,
+            stdout: "",
+            stderr: "",
+          },
+          preSemanticAuthorityBefore: authority,
+          preSemanticAuthorityAfter: authority,
+        }),
     coverage: {
       command: artifact.baseline.coverageCommand,
       exitCode: 0,

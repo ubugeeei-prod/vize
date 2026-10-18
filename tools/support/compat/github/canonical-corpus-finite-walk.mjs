@@ -17,7 +17,7 @@ import {
   resolveLogical,
   validateLogicalGraph,
   walkCommittedGraph,
-} from "./canonical-corpus-logical-walk.mjs";
+} from "./canonical-corpus-logical-walk.ts";
 
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const excluded = (name) => ["node_modules", "_git-worktrees"].includes(name);

@@ -42,7 +42,7 @@ test("vize native package builds with legacy Vue support", () => {
 
   assert.equal(packageJson.scripts?.["build:ci"], "node ./scripts/build-ci.mjs");
   assert.match(ciBuildCommand.join(" "), /--features napi,legacy(?:\s|$)/);
-  assert.match(readRepoFile("npm/native/scripts/build-local.mjs"), /"--features",\s+"napi,legacy"/);
+  assert.match(readRepoFile("npm/native/scripts/build-local.mts"), /"--features",\s+"napi,legacy"/);
   assert.match(
     readRepoFile("crates/vize_vitrine/Cargo.toml"),
     /^legacy = \["vize\/legacy", "vize_canon\/legacy"\]$/m,

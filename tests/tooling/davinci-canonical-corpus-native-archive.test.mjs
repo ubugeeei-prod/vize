@@ -8,7 +8,7 @@ import { test } from "node:test";
 import {
   collectorHarness,
   validateNativeSource,
-} from "../../tools/support/compat/github/canonical-corpus-native-walk.mjs";
+} from "../../tools/support/compat/github/canonical-corpus-native-walk.ts";
 import { gitObjectId } from "../../tools/support/compat/github/canonical-corpus-inventory.mjs";
 
 await test("native archive source/head/toolchain/binary and entire raw-vector custody refuses replacements", () => {

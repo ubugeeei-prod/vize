@@ -7,7 +7,7 @@ import { ciConsoleOutput } from "../../npm/native/scripts/ci-console-output.mjs"
 import {
   bytes,
   nativeHistoryDirectory,
-} from "../../npm/native/scripts/formatter-history-build.mjs";
+} from "../../npm/native/scripts/formatter-history-build.mts";
 
 void test("CI display retains the complete stream before omitting only Cargo metadata from the console", () => {
   const nativeDir = fs.mkdtempSync(path.join(os.tmpdir(), "native-ci-console-"));

@@ -1,106 +1,6 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import path from "node:path";
-import { stripTypeScriptTypes } from "node:module";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
-import vm from "node:vm";
-
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const source = fs.readFileSync(path.join(root, "editors/vscode/src/workspace-config.ts"), "utf8");
-const body = stripTypeScriptTypes(source, { mode: "transform" })
-  .replace(/^import[\s\S]*?;\n/gm, "")
-  .replace("export class WorkspaceLspConfigDiscovery", "class WorkspaceLspConfigDiscovery");
-
-const CONFIG_GLOB = "original-project-config-glob";
-
-function fileUri(pathname) {
-  return { scheme: "file", path: pathname, fsPath: pathname, toString: () => `file://${pathname}` };
-}
-
-function workspaceFolder(pathname, index = 0) {
-  return { uri: fileUri(pathname), name: path.basename(pathname), index };
-}
-
-function createDiscovery(findFiles = async () => [], initialFolders = ["/workspace"]) {
-  const operations = [];
-  const trace = [];
-  const callbacks = {};
-  const watchers = [];
-  const disposable = (name) => ({ dispose: () => operations.push(["dispose", name]) });
-  const workspace = {
-    workspaceFolders: initialFolders.map(workspaceFolder),
-    getWorkspaceFolder: (uri) =>
-      workspace.workspaceFolders
-        .filter(
-          ({ uri: folder }) => uri.path === folder.path || uri.path.startsWith(`${folder.path}/`),
-        )
-        .sort((left, right) => right.uri.path.length - left.uri.path.length)[0],
-    createFileSystemWatcher: (glob) => {
-      operations.push(["watch", glob]);
-      const index = watchers.length;
-      const prefix = index === 0 ? "" : `${index}:`;
-      const handlers = index === 0 ? callbacks : {};
-      const watcher = {
-        glob,
-        callbacks: handlers,
-        dispose: () => operations.push(["dispose", `${prefix}watcher`]),
-        onDidCreate: (callback) => {
-          handlers.create = callback;
-          return disposable(`${prefix}create`);
-        },
-        onDidChange: (callback) => {
-          handlers.change = callback;
-          return disposable(`${prefix}change`);
-        },
-        onDidDelete: (callback) => {
-          handlers.delete = callback;
-          return disposable(`${prefix}delete`);
-        },
-      };
-      watchers.push(watcher);
-      return watcher;
-    },
-    onDidChangeWorkspaceFolders: (callback) => {
-      callbacks.folders = callback;
-      return disposable("folders");
-    },
-    findFiles: (...arguments_) => {
-      operations.push(["findFiles", ...arguments_]);
-      return findFiles();
-    },
-  };
-  class RelativePattern {
-    constructor(baseUri, pattern) {
-      this.baseUri = baseUri.uri ?? baseUri;
-      this.pattern = pattern;
-    }
-  }
-  const context = vm.createContext({
-    fs,
-    path,
-    workspace,
-    Uri: { file: fileUri },
-    RelativePattern,
-    WORKSPACE_PROJECT_CONFIG_FILES: [],
-    WORKSPACE_PROJECT_CONFIG_GLOB: CONFIG_GLOB,
-    describeCapabilities: () => "original description",
-    trace,
-  });
-  const discovery = new vm.Script(
-    `${body}\nnew WorkspaceLspConfigDiscovery([], message => trace.push(message));`,
-  ).runInContext(context);
-  const setFolders = (paths) => {
-    const previous = workspace.workspaceFolders;
-    const next = paths.map(workspaceFolder);
-    workspace.workspaceFolders = next;
-    callbacks.folders({
-      added: next.filter((folder) => !previous.some((old) => old.uri.path === folder.uri.path)),
-      removed: previous.filter((folder) => !next.some((item) => item.uri.path === folder.uri.path)),
-    });
-  };
-  return { discovery, operations, callbacks, trace, watchers, setFolders };
-}
+import { CONFIG_GLOB, createDiscovery, fileUri } from "./support/vscode-workspace-config.mjs";
 
 await test("actual watcher traces original accepted/rejected create/change/delete callbacks and preserves all subscriptions", () => {
   const { discovery, callbacks, operations, trace } = createDiscovery();
@@ -158,7 +58,7 @@ await test("actual watcher traces original accepted/rejected create/change/delet
   );
 });
 
-await test("actual findFiles keeps original arguments, commits only completed result, and rethrows identical rejection", async () => {
+await test("actual findFiles enumerates configs with original glob/exclusions, commits completed result, and rethrows identical rejection", async () => {
   let resolve;
   const pending = new Promise((complete) => {
     resolve = complete;
@@ -171,7 +71,7 @@ await test("actual findFiles keeps original arguments, commits only completed re
   await refresh;
   assert.equal(discovery.hasConfig, true);
   assert.deepEqual(operations, [
-    ["findFiles", "original-project-config-glob", "**/{node_modules,.git,target,dist,build}/**", 1],
+    ["findFiles", "original-project-config-glob", "**/{node_modules,.git,target,dist,build}/**"],
   ]);
   assert.deepEqual(trace, [
     "findFiles enter generation=7",
@@ -382,4 +282,166 @@ await test("raw watcher events retain URI and lifecycle before the original owne
     "watch event kind=change uri=file:///workspace/packages/app/tsconfig.app.json workspace=file:///workspace disposed=true active=false owner=undefined",
   );
   assert.deepEqual(reasons, []);
+});
+
+await test("awaited discovery anchors every known parent before startup and keeps recursive discovery", async () => {
+  const first = fileUri("/workspace/packages/app/tsconfig.app.json");
+  const sibling = fileUri("/workspace/packages/app/vite.config.ts");
+  const second = fileUri("/workspace/packages/other/tsconfig.json");
+  let files = [
+    first,
+    sibling,
+    second,
+    first,
+    fileUri("/workspace/node_modules/tsconfig.json"),
+    fileUri("/outside/tsconfig.json"),
+  ];
+  const { discovery, watchers, nativeWatchers, operations, setFolders } = createDiscovery(
+    async () => files,
+  );
+  const reasons = [];
+  const subscriptions = discovery.watch((reason) => reasons.push(reason));
+  await discovery.refresh(1);
+  assert.deepEqual(
+    watchers.map(({ glob }) => [glob.baseUri.fsPath, glob.pattern]),
+    [["/workspace", CONFIG_GLOB]],
+  );
+  assert.deepEqual(
+    nativeWatchers.map(({ parent, options }) => [parent, { ...options }]),
+    ["/workspace/packages/app", "/workspace/packages/other"].map((parent) => [
+      parent,
+      { recursive: false, persistent: false, encoding: "utf8" },
+    ]),
+  );
+  const parent = nativeWatchers[0];
+  // Both backends may report a known file; its active parent owns dispatch.
+  for (const kind of ["create", "change", "delete"]) {
+    watchers[0].callbacks[kind](first);
+    parent.callback(kind === "change" ? "change" : "rename", "tsconfig.app.json");
+  }
+  parent.callback("change", "vite.config.ts");
+  parent.callback("change", "unrelated.ts");
+  parent.callback("change", "../other/tsconfig.json");
+  parent.callback("change", "TSCONFIG.APP.JSON");
+  assert.deepEqual(reasons, Array(4).fill("project configuration changed"));
+  watchers[0].callbacks.create(fileUri("/workspace/new/tsconfig.json"));
+  assert.equal(reasons.at(-1), "project configuration changed");
+  await discovery.refresh(2);
+  assert.equal(nativeWatchers.length, 2, "unchanged parents retain their leases");
+  files = [sibling];
+  await discovery.refresh(3);
+  reasons.length = 0;
+  parent.callback("change", "tsconfig.app.json");
+  parent.callback("change", "vite.config.ts");
+  nativeWatchers[1].callback("change", "tsconfig.json");
+  assert.deepEqual(reasons, ["project configuration changed"]);
+  assert.equal(
+    operations.filter(([kind, index]) => kind === "nativeClose" && index === 1).length,
+    1,
+  );
+  setFolders(["/workspace", "/workspace/packages/app"]);
+  const nestedOwner = nativeWatchers.at(-1);
+  assert.notEqual(nestedOwner, parent);
+  reasons.length = 0;
+  parent.callback("change", "vite.config.ts");
+  nestedOwner.callback("change", "vite.config.ts");
+  assert.deepEqual(reasons, ["project configuration changed"]);
+  setFolders(["/workspace"]);
+  const activeParent = nativeWatchers.at(-1);
+  reasons.length = 0;
+  nestedOwner.callback("change", "vite.config.ts");
+  activeParent.callback("change", "vite.config.ts");
+  assert.deepEqual(reasons, ["project configuration changed"]);
+  setFolders([]);
+  reasons.length = 0;
+  activeParent.callback("change", "vite.config.ts");
+  assert.deepEqual(reasons, []);
+  setFolders(["/workspace"]);
+  const replacement = nativeWatchers.at(-1);
+  assert.notEqual(replacement, parent);
+  reasons.length = 0;
+  parent.callback("change", "vite.config.ts");
+  replacement.callback("change", "vite.config.ts");
+  assert.deepEqual(reasons, ["project configuration changed"]);
+  for (const subscription of subscriptions) subscription.dispose();
+  reasons.length = 0;
+  replacement.callback("change", "vite.config.ts");
+  await discovery.refresh(4);
+  assert.deepEqual(reasons, []);
+  assert.equal(nativeWatchers.at(-1), replacement, "disposed discovery cannot recreate a lease");
+});
+
+await test("superseded and disposed searches cannot install stale parent leases", async () => {
+  const searches = [];
+  const { discovery, watchers, nativeWatchers } = createDiscovery(
+    () => new Promise((resolve) => searches.push(resolve)),
+  );
+  const subscriptions = discovery.watch(() => {});
+  const stale = discovery.refresh(1);
+  const current = discovery.refresh(2);
+  searches[1]([fileUri("/workspace/current/tsconfig.json")]);
+  await current;
+  searches[0]([fileUri("/workspace/stale/tsconfig.json")]);
+  await stale;
+  assert.deepEqual(
+    nativeWatchers.map(({ parent }) => parent),
+    ["/workspace/current"],
+  );
+  assert.equal(watchers.length, 1);
+  const pending = discovery.refresh(3);
+  for (const subscription of subscriptions) subscription.dispose();
+  searches[2]([fileUri("/workspace/late/tsconfig.json")]);
+  await pending;
+  assert.equal(nativeWatchers.length, 1);
+});
+
+await test("unattributable and unavailable native watches restore recursive dispatch without restarting", async (t) => {
+  for (const failure of ["null", "empty", "error", "close", "throw"]) {
+    await t.test(failure, async () => {
+      const uri = fileUri("/workspace/app/tsconfig.json");
+      const { discovery, watchers, nativeWatchers, trace } = createDiscovery(
+        async () => [uri],
+        ["/workspace"],
+        {
+          nativeWatchError: failure === "throw" ? new Error("native watch unavailable") : undefined,
+        },
+      );
+      const reasons = [];
+      const subscriptions = discovery.watch((reason) => reasons.push(reason));
+      await discovery.refresh(1);
+      const native = nativeWatchers[0];
+      if (failure === "null") native.callback("change", null);
+      if (failure === "empty") native.callback("rename", "");
+      if (failure === "error") native.emit("error", new Error("native event failure"));
+      if (failure === "close") native.close();
+      assert.deepEqual(reasons, [], "unknown filename/error is not evidence of a config change");
+      watchers[0].callbacks.change(uri);
+      assert.deepEqual(reasons, ["project configuration changed"]);
+      if (native) {
+        assert.equal(native.closed, true);
+        native.callback("change", "tsconfig.json");
+        native.emit("error", new Error("late error after close"));
+        assert.equal(reasons.length, 1);
+      }
+      assert.equal(
+        trace.some((line) => line.includes("watch native")),
+        true,
+      );
+      for (const subscription of subscriptions) subscription.dispose();
+    });
+  }
+});
+
+await test("custom filesystem configurations keep recursive delivery without native path guessing", async () => {
+  const folder = fileUri("/workspace", "vscode-remote");
+  const uri = fileUri("/workspace/app/tsconfig.json", "vscode-remote");
+  const { discovery, watchers, nativeWatchers } = createDiscovery(async () => [uri], [folder]);
+  const reasons = [];
+  const subscriptions = discovery.watch((reason) => reasons.push(reason));
+  await discovery.refresh(1);
+  assert.equal(nativeWatchers.length, 0);
+  assert.equal(watchers.length, 1);
+  watchers[0].callbacks.change(uri);
+  assert.deepEqual(reasons, ["project configuration changed"]);
+  for (const subscription of subscriptions) subscription.dispose();
 });

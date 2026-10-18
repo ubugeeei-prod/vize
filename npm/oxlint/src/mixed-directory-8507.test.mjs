@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import {
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
-} from "../../native/scripts/formatter-history-build.mjs";
+} from "../../native/scripts/formatter-history-build.mts";
 import { snapshot, plainHostEnvironment, readEvents } from "./test-support/html-cli-oracles.mjs";
 import { presentationInputs } from "./cli/presentation-context.ts";
 import {

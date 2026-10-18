@@ -145,6 +145,8 @@ if (process.argv.includes("--version")) {
   process.exit(0);
 }
 
+if (process.argv.includes("--noCheck")) process.exit(0);
+
 if (process.argv.includes("--listFilesOnly")) {
   console.log(path.join(process.cwd(), "src/App.vue"));
   process.exit(0);
@@ -429,6 +431,8 @@ test(
         "failed_supervisor_receipt_still_restores_active_mutation",
         "unknown_authored_bytes_are_not_overwritten_by_recovery",
         "bounded_stream_retains_an_explicit_incomplete_prefix_and_refuses_success",
+        "large_baseline_continuations_preserve_whole_diagnostics_and_exclusions",
+        "baseline_marker_and_positioned_range_refusals_survive_ignored_lines",
       ]) {
         assert.ok(result.stdout.includes(name), name);
       }
