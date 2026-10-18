@@ -158,7 +158,8 @@ test("server-bound full workflow requires eight actual product jobs and the unch
     ref: "refs/heads/release/v0.500.0",
   };
   const run = {
-    name: "Check",
+    name: `Check full @ ${head}`,
+    display_title: `Check full @ ${head}`,
     path: ".github/workflows/check.yml",
     event: "workflow_dispatch",
     head_sha: head,
@@ -186,6 +187,17 @@ test("server-bound full workflow requires eight actual product jobs and the unch
     }).slice(7),
   );
   assert.equal(names.length, 20);
+  assert.deepEqual(
+    requiredWorkflowJobNames("Check", {
+      ...run,
+      event: "schedule",
+      head_branch: "main",
+      referenced_workflows: [{ ...referenced, ref: "refs/heads/main" }],
+      name: `Check schedule @ ${head}`,
+      display_title: `Check schedule @ ${head}`,
+    }),
+    products,
+  );
   const successful = names.map((name) => ({ name, status: "completed", conclusion: "success" }));
   assert.doesNotThrow(() => assertRequiredWorkflowJobs("Check", successful, run));
   for (const name of names) {
@@ -203,6 +215,11 @@ test("server-bound full workflow requires eight actual product jobs and the unch
   }
   for (const changed of [
     { ...run, name: "Other" },
+    { ...run, name: "Check" },
+    { ...run, name: `Check full @ ${"b".repeat(40)}` },
+    { ...run, display_title: "Other" },
+    { ...run, event: "pull_request" },
+    { ...run, event: "schedule" },
     { ...run, path: ".github/workflows/other.yml" },
     { ...run, referenced_workflows: [referenced, referenced] },
     { ...run, referenced_workflows: [{ ...referenced, sha: "b".repeat(40) }] },

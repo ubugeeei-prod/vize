@@ -36,20 +36,28 @@ export function fullCheckProfile(run: Row | undefined): FullCheckProfile {
   assert.equal(matches.length, 1, "unique full qualification workflow required");
   assert.ok(run !== undefined);
   assert.equal(run.path, ".github/workflows/check.yml", "full Check workflow changed");
-  assert.equal(run.name, "Check", "full Check name changed");
-  assert.ok(typeof run.head_sha === "string", "frozen Check source required");
-  assert.match(run.head_sha, /^[a-f0-9]{40}$/u, "frozen Check source required");
+  const head = run.head_sha;
+  if (typeof head !== "string") throw new Error("frozen Check source required");
+  assert.match(head, /^[a-f0-9]{40}$/u, "frozen Check source required");
+  assert.ok(
+    run.event === "workflow_dispatch" || run.event === "schedule",
+    "full Check event changed",
+  );
+  const title = `Check ${run.event === "workflow_dispatch" ? "full" : "schedule"} @ ${head}`;
+  assert.equal(run.name, title, "full Check name changed");
+  assert.equal(run.display_title, title, "full Check title changed");
   assert.ok(
     run.repository !== null && typeof run.repository === "object" && !Array.isArray(run.repository),
     "Check repository required",
   );
   const repository = (run.repository as Row).full_name;
-  assert.ok(typeof repository === "string" && /^[\w.-]+\/[\w.-]+$/u.test(repository));
+  if (typeof repository !== "string") throw new Error("Check repository required");
+  assert.match(repository, /^[\w.-]+\/[\w.-]+$/u);
   const selected = matches[0] as Row;
   assert.equal(selected.sha, run.head_sha, "full qualification source changed");
   assert.equal(
     selected.path,
-    `${repository}/${workflow}@${run.head_sha}`,
+    `${repository}/${workflow}@${head}`,
     "full qualification repository/path/source changed",
   );
   assert.equal(typeof run.head_branch, "string", "Check source ref required");

@@ -82,7 +82,7 @@ async function productFixture({
   const originalResource = (value: string) =>
     value.replaceAll(head.id, H).replaceAll(proposed.id, candidate);
   const q = f.runs[0];
-  q.name = "Check";
+  q.name = `Check full @ ${H}`;
   q.opaque = { whole: [1, { value: "retained" }] };
   if (!legacy)
     q.referenced_workflows = [

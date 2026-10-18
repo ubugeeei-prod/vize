@@ -181,7 +181,8 @@ fn full_check_jobs_fail_closed_for_every_incomplete_result() {
 fn source_bound_full_check_requires_every_new_role_and_rejects_foreign_workflow_source() {
     let head = "a".repeat(40);
     let mut run = json!({
-        "name":"Check", "path":".github/workflows/check.yml",
+        "name":format!("Check full @ {head}"),
+        "display_title":format!("Check full @ {head}"), "path":".github/workflows/check.yml",
         "event":"workflow_dispatch", "head_branch":"main", "head_sha":head,
         "repository":{"full_name":"owner/repo"},
         "referenced_workflows":[{
