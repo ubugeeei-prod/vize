@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { before, test } from "node:test";
-
 import {
   cleanup,
   readJson,
@@ -15,83 +15,121 @@ import {
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
 import { buildRustScript } from "./support/rust-script-build.ts";
 
-// Build outside the timed window: a cold rust-script build exceeded the bound.
-before(() => buildRustScript(script, ["--rust-script-build-check"]));
-
-const outerHarnessTimeoutMs = 20_000;
-
+const linuxOnly = { skip: process.platform !== "linux" };
+before(() => {
+  if (process.platform === "linux") buildRustScript(script, ["--rust-script-build-check"]);
+});
+const outerHarnessTimeoutMs = 6_000;
+const deadlineReason = "whole-project deadline exhausted";
 function artifactPath(fixture: ReturnType<typeof setup>) {
   return path.join(fixture.reportDir, "fixture-typecheck-divergence.json");
 }
-
 function killPidFileIfPresent(pidPath: string) {
   if (!fs.existsSync(pidPath)) return;
-
-  const rawPid = fs.readFileSync(pidPath, "utf8").trim();
-  const pid = Number.parseInt(rawPid, 10);
-  if (!Number.isSafeInteger(pid) || pid <= 0 || String(pid) !== rawPid) return;
-
+  const raw = fs.readFileSync(pidPath, "utf8").trim(),
+    pid = Number(raw);
+  if (!Number.isSafeInteger(pid) || pid <= 0 || String(pid) !== raw) return;
   try {
     process.kill(pid, "SIGKILL");
-  } catch (error) {
-    if ((error as { code?: unknown }).code !== "ESRCH") throw error;
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code !== "ESRCH") throw e;
   }
 }
+function assertDeadline(fixture: ReturnType<typeof setup>, budget: number, phase: string) {
+  const roots = fs.readdirSync(path.join(fixture.reportDir, "typecheck-deadlines"));
+  assert.equal(roots.length, 1);
+  const directory = path.join(fixture.reportDir, "typecheck-deadlines", roots[0]!);
+  const result = readJson(path.join(directory, "deadline-result.json"));
+  assert.deepEqual(
+    {
+      schema: result.schema,
+      version: result.version,
+      project: result.project,
+      completed: result.completed,
+      instrumentFailure: result.instrumentFailure,
+      budgetMs: result.budgetMs,
+    },
+    {
+      schema: "vize.fixtureTypecheckProjectDeadline",
+      version: 1,
+      project: "fixture",
+      completed: false,
+      instrumentFailure: true,
+      budgetMs: budget,
+    },
+  );
+  assert.ok(result.elapsedMs >= budget && result.elapsedMs < outerHarnessTimeoutMs);
+  assert.equal(readJson(path.join(directory, "phase-current.json")).phase, phase);
+  const supervisor = readJson(path.join(directory, "supervisor.json"));
+  assert.equal(supervisor.timedOut, true);
+  assert.equal(supervisor.cleanup.allWritersStopped, true);
+  assert.equal(
+    fs.existsSync(artifactPath(fixture)),
+    false,
+    "an incomplete project must not masquerade as a complete v7 packet",
+  );
+  return directory;
+}
+function configureBudget(fixture: ReturnType<typeof setup>, budget: number) {
+  updateJson(fixture.registryPath, (registry) => {
+    registry.projects[0].typecheckPerformance.hangTimeoutMs = budget;
+  });
+}
 
-test("typecheck divergence report bounds a vue-tsc baseline that ignores SIGTERM", () => {
-  if (process.platform === "win32") return;
+test(
+  "typecheck divergence report bounds a vue-tsc baseline that ignores SIGTERM",
+  linuxOnly,
+  () => {
+    const fixture = setup(),
+      childPid = path.join(fixture.fakeDir, "ignored-term.pid"),
+      budget = 1200;
+    try {
+      configureBudget(fixture, budget);
+      writeVueTsc(
+        fixture.vueTsc,
+        String.raw`import { spawn } from "node:child_process";
+process.on("SIGTERM",()=>{});
+const child=spawn(process.execPath,["-e","process.on('SIGTERM',()=>{});setInterval(()=>{},1000)"],{stdio:"inherit"});
+fs.writeFileSync(${JSON.stringify(childPid)},String(child.pid));
+process.stdout.write("baseline-started\n"); process.stderr.write("baseline-evidence\n");
+setInterval(()=>{},1000);`,
+        fixture.invocationPath,
+      );
+      const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
+      assert.equal(result.error, undefined);
+      assert.equal(result.status, 1);
+      assert.equal(result.stderr, `${unusableFailure(deadlineReason)}\n`);
+      const directory = assertDeadline(fixture, budget, "vue-tsc baseline");
+      assert.equal(
+        fs.readFileSync(path.join(directory, "command-1-stdout.bin"), "utf8"),
+        "baseline-started\n",
+      );
+      assert.equal(
+        fs.readFileSync(path.join(directory, "command-1-stderr.bin"), "utf8"),
+        "baseline-evidence\n",
+      );
+      assert.equal(
+        fs.existsSync(childPid),
+        true,
+        "the real descendant must have started before expiry",
+      );
+    } finally {
+      killPidFileIfPresent(childPid);
+      cleanup(fixture);
+    }
+  },
+);
 
-  const fixture = setup();
-  try {
-    updateJson(
-      fixture.registryPath,
-      (registry) => (registry.projects[0].typecheckPerformance.hangTimeoutMs = 80),
-    );
-    writeVueTsc(
-      fixture.vueTsc,
-      `import { spawn } from "node:child_process";
-process.on("SIGTERM", () => {});
-spawn(process.execPath, ["-e", ${JSON.stringify(
-        "process.on('SIGTERM', () => {}); setInterval(() => {}, 1000);",
-      )}], { stdio: "inherit" });
-setInterval(() => {}, 1000);`,
-      fixture.invocationPath,
-    );
-
-    const startedAt = Date.now();
-    const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
-    const reason = "vue-tsc baseline failed to run: spawn timed out after 80ms";
-    assert.equal(result.status, 1);
-    assert.ok(
-      Date.now() - startedAt < outerHarnessTimeoutMs,
-      "timeout handling must not wait for a vue-tsc process tree that ignores SIGTERM",
-    );
-    assert.equal(result.stderr, `${unusableFailure(reason)}\n`);
-    const artifact = readJson(artifactPath(fixture));
-    assert.equal(artifact.baseline.exitCode, null);
-    assert.equal(artifact.baseline.runError, reason);
-    assert.equal(
-      artifact.baseline.coverageRunError,
-      `vue-tsc coverage baseline skipped because ${reason}`,
-    );
-    assert.equal(artifact.baseline.configuration.unusableReason, reason);
-    assert.equal(artifact.baseline.coverage.unusableReason, reason);
-    assert.equal(artifact.budget.verdict, "unusable");
-    assert.equal(artifact.budget.passed, false);
-  } finally {
-    cleanup(fixture);
-  }
-});
-
-test("typecheck divergence report closes inherited stdio children after checker exit", () => {
-  if (process.platform === "win32") return;
-
-  const fixture = setup();
-  const childPidPath = path.join(fixture.fakeDir, "stdio-child.pid");
-  try {
-    fs.writeFileSync(
-      fixture.vueTsc,
-      `#!/usr/bin/env node
+test(
+  "typecheck divergence report closes inherited stdio children after checker exit",
+  linuxOnly,
+  () => {
+    const fixture = setup();
+    const childPidPath = path.join(fixture.fakeDir, "stdio-child.pid");
+    try {
+      fs.writeFileSync(
+        fixture.vueTsc,
+        `#!/usr/bin/env node
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -112,72 +150,60 @@ if (process.argv.includes("--listFilesOnly")) {
 process.stdout.write("src/App.vue(1,1): error TS2322: shared\\n");
 process.exit(2);
 `,
-    );
-    fs.chmodSync(fixture.vueTsc, 0o755);
+      );
+      fs.chmodSync(fixture.vueTsc, 0o755);
 
-    const startedAt = Date.now();
-    const result = run(fixture, {}, ["--budget-mode", "record-only"], { timeoutMs: 8_000 });
-    assert.equal(result.status, 0, result.stderr);
-    assert.ok(
-      Date.now() - startedAt < 8_000,
-      "checker output capture must not wait for inherited stdio children after exit",
-    );
-    assert.equal(
-      fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
-      true,
-    );
-  } finally {
-    killPidFileIfPresent(childPidPath);
-    cleanup(fixture);
-  }
-});
+      const startedAt = Date.now();
+      const result = run(fixture, {}, ["--budget-mode", "record-only"], { timeoutMs: 8_000 });
+      assert.equal(result.status, 0, result.stderr);
+      assert.ok(
+        Date.now() - startedAt < 8_000,
+        "checker output capture must not wait for inherited stdio children after exit",
+      );
+      assert.equal(
+        fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
+        true,
+      );
+    } finally {
+      killPidFileIfPresent(childPidPath);
+      cleanup(fixture);
+    }
+  },
+);
 
-test("typecheck divergence report records a vue-tsc coverage timeout as an unusable baseline", () => {
-  if (process.platform === "win32") return;
+test(
+  "typecheck divergence report retains a coverage-phase project deadline as an instrument failure",
+  linuxOnly,
+  () => {
+    const fixture = setup(),
+      budget = 1200;
+    try {
+      configureBudget(fixture, budget);
+      writeVueTsc(
+        fixture.vueTsc,
+        String.raw`if(process.argv.includes("--listFilesOnly")){process.stdout.write("coverage-started\n");setInterval(()=>{},1000);} else {process.stdout.write("src/App.vue(1,1): error TS2322: shared\n");process.exit(2);}`,
+        fixture.invocationPath,
+      );
+      const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
+      assert.equal(result.error, undefined);
+      assert.equal(result.status, 1);
+      assert.equal(result.stderr, `${unusableFailure(deadlineReason)}\n`);
+      const directory = assertDeadline(fixture, budget, "vue-tsc coverage baseline");
+      const baseline = readJson(path.join(directory, "command-1-result.json"));
+      assert.equal(baseline.completed, true);
+      assert.equal(baseline.exitCode, 2);
+      assert.equal(
+        fs.readFileSync(path.join(directory, "command-2-stdout.bin"), "utf8"),
+        "coverage-started\n",
+      );
+      assert.equal(fs.existsSync(path.join(directory, "active-mutation.json")), false);
+    } finally {
+      cleanup(fixture);
+    }
+  },
+);
 
-  const fixture = setup();
-  try {
-    updateJson(
-      fixture.registryPath,
-      (registry) => (registry.projects[0].typecheckPerformance.hangTimeoutMs = 500),
-    );
-    writeVueTsc(
-      fixture.vueTsc,
-      `if (process.argv.includes("--listFilesOnly")) {
-  setInterval(() => {}, 1000);
-} else {
-  process.stdout.write("src/App.vue(1,1): error TS2322: shared\\n");
-  process.exit(2);
-}`,
-      fixture.invocationPath,
-    );
-
-    const startedAt = Date.now();
-    const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
-    const reason = "vue-tsc coverage baseline failed to run: spawn timed out after 500ms";
-    assert.equal(result.status, 1);
-    assert.ok(
-      Date.now() - startedAt < outerHarnessTimeoutMs,
-      "coverage timeout handling must not wait for the outer test timeout",
-    );
-    assert.equal(result.stderr, `${unusableFailure(reason)}\n`);
-    const artifact = readJson(artifactPath(fixture));
-    assert.equal(artifact.baseline.exitCode, 2);
-    assert.equal(artifact.baseline.runError, null);
-    assert.equal(artifact.baseline.coverageExitCode, null);
-    assert.equal(artifact.baseline.coverageRunError, reason);
-    assert.equal(artifact.baseline.configuration.verdict, "usable");
-    assert.equal(artifact.baseline.coverage.unusableReason, reason);
-    assert.equal(artifact.mutationOracle.unusableReason, reason);
-    assert.equal(artifact.budget.verdict, "unusable");
-  } finally {
-    cleanup(fixture);
-  }
-});
-
-test("typecheck divergence report drains verbose vue-tsc coverage output", () => {
-  if (process.platform === "win32") return;
-
+test("typecheck divergence report drains verbose vue-tsc coverage output", linuxOnly, () => {
   const fixture = setup();
   try {
     updateJson(
@@ -217,34 +243,183 @@ process.exit(2);`,
   }
 });
 
-test("record-only mode still warns and uploads baseline timeout evidence", () => {
-  if (process.platform === "win32") return;
-
-  const fixture = setup();
+test("record-only mode still warns and retains complete project timeout custody", linuxOnly, () => {
+  const fixture = setup(),
+    budget = 1200;
   try {
-    updateJson(
-      fixture.registryPath,
-      (registry) => (registry.projects[0].typecheckPerformance.hangTimeoutMs = 80),
-    );
+    configureBudget(fixture, budget);
     writeVueTsc(
       fixture.vueTsc,
-      `process.on("SIGTERM", () => {});
-setInterval(() => {}, 1000);`,
+      String.raw`process.on("SIGTERM",()=>{});setInterval(()=>{},1000);`,
       fixture.invocationPath,
     );
-
     const result = run(fixture, {}, ["--budget-mode", "record-only"], {
       timeoutMs: outerHarnessTimeoutMs,
     });
-    const reason = "vue-tsc baseline failed to run: spawn timed out after 80ms";
+    assert.equal(result.error, undefined);
     assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stderr, "");
     assert.ok(
       result.stdout.includes(
-        `::warning title=Typecheck divergence budget not enforced::${unusableFailure(reason)}`,
+        `::warning title=Typecheck divergence budget not enforced::${unusableFailure(deadlineReason)}`,
       ),
     );
-    assert.equal(readJson(artifactPath(fixture)).budget.passed, false);
+    assertDeadline(fixture, budget, "vue-tsc baseline");
   } finally {
     cleanup(fixture);
   }
 });
+
+test(
+  "baseline and coverage spend one shared project allowance without resetting",
+  linuxOnly,
+  () => {
+    const fixture = setup(),
+      budget = 1200;
+    try {
+      configureBudget(fixture, budget);
+      writeVueTsc(
+        fixture.vueTsc,
+        String.raw`const coverage=process.argv.includes("--listFilesOnly");process.stdout.write((coverage?"coverage":"baseline")+"-started\n");await new Promise(resolve=>setTimeout(resolve,800));if(coverage){console.log(process.cwd()+"/src/App.vue");}else{process.stdout.write("src/App.vue(1,1): error TS2322: shared\n");}process.exit(coverage?0:2);`,
+        fixture.invocationPath,
+      );
+      const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
+      assert.equal(result.error, undefined);
+      assert.equal(result.status, 1);
+      assert.equal(result.stderr, `${unusableFailure(deadlineReason)}\n`);
+      const directory = assertDeadline(fixture, budget, "vue-tsc coverage baseline");
+      assert.equal(readJson(path.join(directory, "command-1-result.json")).exitCode, 2);
+      assert.equal(
+        fs.readFileSync(path.join(directory, "command-2-stdout.bin"), "utf8"),
+        "coverage-started\n",
+      );
+      assert.equal(fs.existsSync(path.join(directory, "command-2-result.json")), false);
+    } finally {
+      cleanup(fixture);
+    }
+  },
+);
+
+test("a deadline during a broken mutation restores all original authored bytes", linuxOnly, () => {
+  const fixture = setup(),
+    budget = 2000,
+    source = path.join(fixture.fixtureRoot, "src/App.vue");
+  const original = Buffer.from("<template>\r\n世界\r\n</template>\r\n");
+  fs.writeFileSync(source, original);
+  try {
+    configureBudget(fixture, budget);
+    const fake = fs.readFileSync(fixture.vize, "utf8");
+    const marker = 'const files = listVueFiles("src").sort();';
+    assert.equal(fake.split(marker).length, 2);
+    fs.writeFileSync(
+      fixture.vize,
+      fake.replace(
+        marker,
+        String.raw`if(fs.readFileSync("src/App.vue","utf8").includes("__vize_typecheck_mutation_probe")){process.stderr.write("broken mutation entered\n");setInterval(()=>{},1000);await new Promise(()=>{}); }` +
+          "\n" +
+          marker,
+      ),
+    );
+    const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
+    assert.equal(result.error, undefined);
+    assert.equal(result.status, 1);
+    const directory = assertDeadline(fixture, budget, "Vize mutation run");
+    assert.deepEqual(fs.readFileSync(source), original);
+    assert.equal(fs.existsSync(path.join(directory, "active-mutation.json")), false);
+    assert.equal(readJson(path.join(directory, "mutation-recovery.json")).restored, true);
+    const stderr = fs
+      .readdirSync(directory)
+      .filter((f) => /^command-\d+-stderr\.bin$/.test(f))
+      .map((f) => fs.readFileSync(path.join(directory, f), "utf8"))
+      .join("");
+    assert.equal(stderr, "broken mutation entered\n");
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("failed supervisor custody quarantines an otherwise complete v7 packet", linuxOnly, () => {
+  const fixture = setup();
+  try {
+    const previous = fs.readFileSync(fixture.vueTsc, "utf8");
+    const marker = 'if (process.argv.includes("--version"))';
+    assert.equal(previous.split(marker).length, 2);
+    fs.writeFileSync(
+      fixture.vueTsc,
+      previous.replace(
+        marker,
+        `const states = ${JSON.stringify(path.join(fixture.reportDir, "typecheck-deadlines"))};
+` +
+          `fs.mkdirSync(path.join(states,fs.readdirSync(states)[0],"supervisor.json"),{recursive:true});
+` +
+          marker,
+      ),
+    );
+    const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
+    assert.equal(result.error, undefined);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Is a directory/);
+    const states = path.join(fixture.reportDir, "typecheck-deadlines");
+    const worker = readJson(path.join(states, fs.readdirSync(states)[0]!, "worker-result.json"));
+    assert.equal(worker.ok, true, "the original successful flow must have completed");
+    assert.equal(worker.artifact.version, 7);
+    assert.equal(fs.existsSync(artifactPath(fixture)), false);
+    const archived = path.join(fixture.reportDir, "previous-typecheck-comparisons", "fixture");
+    assert.equal(fs.readdirSync(archived).length, 1);
+    const packet = readJson(path.join(archived, fs.readdirSync(archived)[0]!, "comparison.json"));
+    assert.deepEqual(
+      packet,
+      worker.artifact,
+      "retain every completed byte without crediting custody failure",
+    );
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("failed cleanup cannot block the supervisor on reaping or stream joins", () => {
+  const source = fs.readFileSync(
+    path.resolve(path.dirname(script), "../../support/typecheck_project_deadline.rs"),
+    "utf8",
+  );
+  const start = source.indexOf("let status = match &cleanup {");
+  const end = source.indexOf("// Restoration is mandatory", start);
+  assert.ok(start >= 0 && end > start);
+  const failure = source.slice(start, end).split("Err(_) => {")[1];
+  assert.ok(failure);
+  const compact = failure.replace(/\s+/g, "");
+  assert.match(compact, /child\.try_wait\(\)/);
+  assert.doesNotMatch(compact, /child\.wait\(\)/);
+  assert.doesNotMatch(compact, /\.join\(\)/);
+  const cleanup = source.indexOf("cleanup?;", end);
+  assert.ok(cleanup >= 0 && source.indexOf("out.join()", end) > cleanup);
+});
+
+test(
+  "real process, CPU, session ownership and physical recovery unit controls execute",
+  linuxOnly,
+  () => {
+    const result = spawnSync("rust-script", ["--test", script], {
+      encoding: "utf8",
+      timeout: 180_000,
+      maxBuffer: 2 * 1024 * 1024,
+    });
+    assert.equal(result.error, undefined);
+    assert.equal(result.status, 0, result.stderr);
+    for (const name of [
+      "real_cpu_worker_is_stopped_and_both_raw_streams_survive",
+      "sequential_real_children_share_one_parent_deadline",
+      "separate_owned_process_groups_die_and_unrelated_sentinel_survives",
+      "deadline_recovers_every_original_authored_byte_after_stopping_writers",
+      "worker_refuses_restoration_while_a_separate_group_can_write",
+      "replaced_source_identity_refuses_recovery_without_overwriting_foreign_bytes",
+      "normal_worker_keeps_complete_raw_bytes_and_does_not_become_a_timeout",
+      "failed_supervisor_receipt_still_restores_active_mutation",
+      "unknown_authored_bytes_are_not_overwritten_by_recovery",
+      "bounded_stream_retains_an_explicit_incomplete_prefix_and_refuses_success",
+    ]) {
+      assert.ok(result.stdout.includes(name), name);
+    }
+    assert.match(result.stdout, /0 failed; 0 ignored;/);
+  },
+);
