@@ -4,7 +4,11 @@
 //! `v-slot:` -> `#`) and JS expression formatting in directive values.
 
 use crate::{options::FormatOptions, script};
-use vize_l0::{SmallVec, String, ToCompactString, cstr};
+use vize_l0::{Allocator, SmallVec, Span, String, ToCompactString, cstr};
+use vize_l1::embed::{
+    Embed, EmbedSource, Grammar, Lang, Shape,
+    syntax::{ForKeyword, parse_vue_for_head_once},
+};
 
 use super::literal_lines::{LiteralLineState, Representation, encode_reference_data};
 
@@ -51,12 +55,11 @@ pub(super) fn format_directive_value(
 
     // v-for has special syntax: "(item, index) in items"
     if name == "v-for" {
-        let formatted = format_v_for_expression(trimmed);
-        if options.normalize_v_for_parens
-            && let Some(wrapped) = parenthesize_v_for_aliases(&formatted)
-        {
-            return (format_v_for_expression(&wrapped), false, false);
-        }
+        let formatted = if options.normalize_v_for_parens {
+            format_v_for_with_parens(trimmed, true)
+        } else {
+            format_v_for_expression(trimmed)
+        };
         return (formatted, false, false);
     }
 
@@ -257,72 +260,64 @@ fn decode_expression_attribute_entities(value: &str) -> Option<DecodedExpression
 
 /// Format `v-for` expression: normalize spacing in `(item, index) in items`.
 pub(crate) fn format_v_for_expression(expr: &str) -> String {
-    // Split on " in " or " of " (respecting nested parens/brackets)
-    let (iterator_part, keyword, collection_part) =
-        if let Some(idx) = find_v_for_keyword(expr, " in ") {
-            (
-                expr.get(..idx).unwrap_or_default(),
-                " in ",
-                expr.get(idx + 4..).unwrap_or_default(),
-            )
-        } else if let Some(idx) = find_v_for_keyword(expr, " of ") {
-            (
-                expr.get(..idx).unwrap_or_default(),
-                " of ",
-                expr.get(idx + 4..).unwrap_or_default(),
-            )
-        } else {
-            return expr.to_compact_string();
-        };
-
-    let iter_trimmed = iterator_part.trim();
-    let collection_trimmed = collection_part.trim();
-
-    // Normalize parenthesized destructuring: "(item,index)" -> "(item, index)"
-    let normalized_iter: String = if iter_trimmed.starts_with('(') && iter_trimmed.ends_with(')') {
-        let inner = iter_trimmed
-            .get(1..iter_trimmed.len() - 1)
-            .unwrap_or_default();
-        let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
-        cstr!("({})", parts.join(", "))
-    } else {
-        iter_trimmed.to_compact_string()
-    };
-
-    cstr!("{normalized_iter}{keyword}{collection_trimmed}")
+    format_v_for_with_parens(expr, false)
 }
 
-/// Wrap several unparenthesized v-for aliases, `item, i in items`, in
-/// parentheses as Prettier does. A single alias stays as written.
-fn parenthesize_v_for_aliases(expr: &str) -> Option<String> {
-    let index = find_v_for_keyword(expr, " in ").or_else(|| find_v_for_keyword(expr, " of "))?;
-    let aliases = expr.get(..index)?.trim();
-    if aliases.starts_with('(') || find_v_for_keyword(aliases, ",").is_none() {
+fn format_v_for_with_parens(expr: &str, normalize_parens: bool) -> String {
+    normalized_v_for(expr, normalize_parens).unwrap_or_else(|| expr.to_compact_string())
+}
+
+/// Only commas between complete retained parameters belong to layout. Nested
+/// patterns, default expressions and literal bytes remain authored slices.
+fn normalized_v_for(expr: &str, normalize_parens: bool) -> Option<String> {
+    let allocator = Allocator::default();
+    let source = EmbedSource::authored(expr, Span::new(0, expr.len().try_into().ok()?)).ok()?;
+    let head = parse_vue_for_head_once(
+        &allocator,
+        Embed {
+            // Match the existing formatter expression provider's TS superset.
+            grammar: Grammar {
+                lang: Lang::Ts,
+                shape: Shape::ForHead,
+            },
+            source,
+        },
+    );
+    let view = head.dense()?;
+    // Parameter spans do not own trivia between parameters. Preserve comments
+    // and any refused/partial syntax instead of deleting or guessing its bytes.
+    if head.comments().next().is_some() {
         return None;
     }
-    Some(cstr!("({aliases}){}", expr.get(index..)?))
-}
-
-/// Find `keyword` in a v-for expression while respecting nested parens/brackets.
-fn find_v_for_keyword(expr: &str, keyword: &str) -> Option<usize> {
-    let bytes = expr.as_bytes();
-    let kw_bytes = keyword.as_bytes();
-    let mut depth = 0i32;
-
-    for (i, &byte) in bytes.iter().enumerate() {
-        match byte {
-            b'(' | b'[' | b'{' => depth += 1,
-            b')' | b']' | b'}' => depth -= 1,
-            _ => {}
-        }
-        if depth == 0
-            && i + kw_bytes.len() <= bytes.len()
-            && bytes.get(i..i + kw_bytes.len()).unwrap_or_default() == kw_bytes
-        {
-            return Some(i);
-        }
+    let (keyword, separator) = head.separator()?;
+    let authored_aliases = expr.get(..separator.start as usize)?.trim();
+    let parentheses =
+        authored_aliases.starts_with('(') || (normalize_parens && view.parameters().len() > 1);
+    let mut formatted = String::with_capacity(expr.len() + 2);
+    if parentheses {
+        formatted.push('(');
     }
-    None
+    if parentheses {
+        for (index, parameter) in view.parameters().iter().enumerate() {
+            if index > 0 {
+                formatted.push_str(", ");
+            }
+            let span = view.alias_authored_span(parameter.span).ok()?;
+            formatted.push_str(expr.get(span.start as usize..span.end as usize)?);
+        }
+    } else {
+        // The default profile retains unparenthesized alias spelling.
+        formatted.push_str(authored_aliases);
+    }
+    if parentheses {
+        formatted.push(')');
+    }
+    formatted.push_str(match keyword {
+        ForKeyword::In => " in ",
+        ForKeyword::Of => " of ",
+    });
+    formatted.push_str(view.collection_source().text().trim());
+    Some(formatted)
 }
 
 /// Determine attribute priority based on custom attribute groups.
@@ -354,4 +349,65 @@ pub(crate) fn matches_attr_pattern(name: &str, pattern: &str) -> bool {
         return name.starts_with(prefix);
     }
     name == pattern
+}
+
+#[cfg(test)]
+mod for_alias_tests {
+    use super::{format_v_for_expression, format_v_for_with_parens};
+
+    #[test]
+    fn only_top_level_parameter_separators_change() {
+        for (source, expected) in [
+            ("(item,index) in items", "(item, index) in items"),
+            ("item in items", "item in items"),
+            (
+                "({label = 'a,b'},index) in items",
+                "({label = 'a,b'}, index) in items",
+            ),
+            (
+                "([first = ['a,b','c,d']],index) of items",
+                "([first = ['a,b','c,d']], index) of items",
+            ),
+            (
+                "({entry: {label = `a,b`} = {}},index) in items",
+                "({entry: {label = `a,b`} = {}}, index) in items",
+            ),
+            (
+                "({label = /a,b/.source},index) in items",
+                "({label = /a,b/.source}, index) in items",
+            ),
+        ] {
+            let first = format_v_for_expression(source);
+            assert_eq!(first, expected, "{source}");
+            assert_eq!(format_v_for_expression(&first), first, "{source}");
+        }
+    }
+
+    #[test]
+    fn profile_parentheses_use_the_same_whole_parameters() {
+        let source = "{label = 'a,b'},index in items";
+        assert_eq!(format_v_for_expression(source), source);
+        assert_eq!(
+            format_v_for_with_parens(source, true),
+            "({label = 'a,b'}, index) in items"
+        );
+        assert_eq!(
+            format_v_for_with_parens("item in items", true),
+            "item in items"
+        );
+    }
+
+    #[test]
+    fn comments_partial_and_sparse_heads_keep_all_authored_bytes() {
+        for source in [
+            "(item /*a,b*/,index) in items",
+            "({label = 'a,b'},) in items",
+            "(,index) in items",
+            "(item,index in items",
+            "(item,index) in items trailing",
+        ] {
+            assert_eq!(format_v_for_expression(source), source);
+            assert_eq!(format_v_for_with_parens(source, true), source);
+        }
+    }
 }
