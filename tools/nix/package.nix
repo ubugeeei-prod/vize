@@ -49,6 +49,7 @@ let
   ];
 
   externalAssets = [
+    "/crates/vize/src/commands/inspector/official_compiler.ts"
     "/crates/vize_carton/src/config/loader/module-runtime.mjs"
     "/crates/vize_carton/src/config/loader/vite-runtime.mjs"
     "/npm/cli/schemas/vize.config.schema.json"
