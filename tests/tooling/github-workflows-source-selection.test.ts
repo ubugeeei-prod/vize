@@ -47,7 +47,7 @@ test("source planning uses Node and offline metadata before selecting affected p
   assert.equal(steps[setup].with?.cache, undefined);
   assert.ok(steps.every((step) => !step.uses?.includes("setup-vp@")));
   assert.ok(steps.every((step) => !step.uses?.includes("rust-toolchain@")));
-  assert.ok(steps.every((step) => !/\b(?:vp|pnpm|npm)\b/.test(step.run ?? "")));
+  assert.ok(steps.every((step) => !/\b(?:vp|pnpm|npm)(?=\s|$)/.test(step.run ?? "")));
   assert.equal(steps.filter((step) => step.run?.includes("plan-pr-checks.ts")).length, 1);
   assert.match(steps[sourcePlan].run ?? "", /plan-pr-checks\.ts/);
   assert.ok(steps.every((step) => !step.run?.includes("rust-plan.json")));
@@ -67,7 +67,7 @@ test("source planning uses Node and offline metadata before selecting affected p
   assert.equal(ciSelection?.if, "${{ steps.plan.outputs.tooling == 'true' }}");
   assert.equal(
     ciSelection?.run,
-    "node --test tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-test-archive.test.mjs tests/tooling/rust-build-evidence.test.mjs tests/tooling/release-input-scopes.test.mjs tests/tooling/pinned-fixture-hydration.test.ts",
+    "node --test tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-test-archive.test.mjs tests/tooling/rust-build-evidence.test.mjs tests/tooling/release-input-scopes.test.mjs tests/tooling/pinned-fixture-hydration.test.ts tests/tooling/native-preparation-identity.test.ts tests/tooling/publish-npm-package*.test.ts",
   );
 });
 
@@ -370,6 +370,8 @@ test("unchanged queue gate hydrates the same pinned fixture for all five full Ru
     "tests/tooling/rust-build-evidence.test.mjs",
     "tests/tooling/release-input-scopes.test.mjs",
     "tests/tooling/pinned-fixture-hydration.test.ts",
+    "tests/tooling/native-preparation-identity.test.ts",
+    "tests/tooling/publish-npm-package*.test.ts",
   ]);
   assert.equal(action.runs.steps.length, 1);
   assert.equal(
