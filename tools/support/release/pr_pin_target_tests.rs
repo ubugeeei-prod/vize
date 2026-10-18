@@ -114,7 +114,7 @@ fn normal_cached_driver_module_changes_require_new_entry_source_pin() {
         .unwrap();
     assert_eq!(
         pin,
-        "//! Driver source pin: release-integration-qualification-overlap-v19-prepared-tree."
+        "//! Driver source pin: release-integration-qualification-overlap-v19-prepared-tree-2."
     );
     let repo = Repo::new();
     let body = "#[path = \"dependency.rs\"] mod dependency;\nfn main() { println!(\"{}\", dependency::catalog_contract()); }\n";
@@ -145,13 +145,19 @@ fn prepared_fixture() -> (Repo, Source) {
     let repo = Repo::new();
     let cut = repo.commit(&[
         ("Cargo.toml", "[workspace.package]\nversion = \"1.2.2\"\n"),
-        ("npm/native/package.json", "{\"version\":\"1.2.2\"}\n"),
+        (
+            "npm/native/package.json",
+            "{\n  \"version\": \"1.2.2\"\n}\n",
+        ),
         ("README.md", "literal 1.2.2\n"),
         ("src/code.rs", "unchanged product\n"),
     ]);
     let head = repo.commit(&[
         ("Cargo.toml", "[workspace.package]\nversion = \"1.2.3\"\n"),
-        ("npm/native/package.json", "{\"version\":\"1.2.3\"}\n"),
+        (
+            "npm/native/package.json",
+            "{\n  \"version\": \"1.2.3\"\n}\n",
+        ),
         ("README.md", "literal 1.2.3\n"),
     ]);
     let mut source = super::tests::source(&head, &cut);
@@ -305,8 +311,10 @@ fn prepared_normal_cut_refuses_hidden_changes_omitted_versions_and_raw_parent_su
         match change {
             "product" => source.candidate.head = repo.commit(&[("src/code.rs", "hidden edit\n")]),
             "omitted" => {
-                source.candidate.head =
-                    repo.commit(&[("npm/native/package.json", "{\"version\":\"1.2.2\"}\n")])
+                source.candidate.head = repo.commit(&[(
+                    "npm/native/package.json",
+                    "{\n  \"version\": \"1.2.2\"\n}\n",
+                )])
             }
             "parent" => {
                 let tree = github::git(&["rev-parse", "HEAD^{tree}"], &repo.work).unwrap();

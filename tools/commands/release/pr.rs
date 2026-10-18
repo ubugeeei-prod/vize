@@ -7,7 +7,7 @@
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: release-integration-qualification-overlap-v19-prepared-tree.
+//! Driver source pin: release-integration-qualification-overlap-v19-prepared-tree-2.
 //! This entry change invalidates rust-script's cache of the changed path modules;
 //! the v19 lease, queue and qualification policy is unchanged.
 
