@@ -91,3 +91,44 @@ fn assert_guarded_public_base(name: &str, text: &str) {
         "{name} must guard it"
     );
 }
+
+#[test]
+fn listener_input_metadata_is_modern_only_and_legacy_keeps_constructor_inference() {
+    let allocator = vize_carton::Allocator::new();
+    let script = "import Child from './Child.vue';";
+    let (root, errors) =
+        vize_armature::parse(&allocator, r#"<Child :value="'text'" @close="() => {}" />"#);
+    assert!(errors.is_empty());
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let modern = super::generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let legacy = super::generate_virtual_ts_with_offsets_legacy_vue2(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions::default(),
+    );
+    assert!(
+        modern
+            .code
+            .contains("type __VizeEmitOwnedKeys<C> = keyof __VizePublicComponentInputProps")
+    );
+    assert!(modern.code.contains("<A>(props: __VizeEmitInput<P,"));
+    assert!(
+        legacy
+            .code
+            .contains("declare function __vizeConstructorEmitProps<P, E>")
+    );
+    assert!(
+        legacy
+            .code
+            .contains("? typeof __vizeConstructorEmitProps :")
+    );
+    assert!(!legacy.code.contains("__VizeEmitOwnedKeys"));
+    assert!(!legacy.code.contains("__VizeEmitInput<"));
+    assert!(!legacy.code.contains("__VizePublicComponentInputProps"));
+}

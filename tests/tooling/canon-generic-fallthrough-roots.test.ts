@@ -208,12 +208,12 @@ import Root from './Root.vue';
           name: `${name}-${listener ? "listener" : "no-listener"}`,
           sources: ["App.vue", "Root.vue", "Forwarding.vue", "tsconfig.json"],
         });
-        // The canonical prop owner and the listener-inference input both
-        // check this authored attribute. Retain both findings instead of
-        // claiming duplicate-count parity with vue-tsc's single owner.
+        // Typed inherited values have two diagnostic owners with a listener.
+        // Unknown schema keys belong only to the canonical checker; the
+        // inference input must not impose its own excess-prop policy.
         assert.deepEqual(
           actual.map((d) => d.code),
-          code ? Array.from({ length: listener ? 2 : 1 }, () => code) : [],
+          code ? Array.from({ length: listener && name !== "unknown" ? 2 : 1 }, () => code) : [],
         );
         const line = source.split("\n")[5];
         const attribute = name === "unknown" ? 'definitelyNotAProp="wrong"' : attributes;
@@ -247,5 +247,164 @@ defineOptions({ inheritAttrs: false });
     assert.deepEqual(actual.map(diagnosticIdentity), expected);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+// Exact negative multiplicities below are source expectations until the full
+// native Actions run qualifies their entire mapped packet. Every invocation
+// keeps its authored files, provider process and full generated output.
+test("listener inference keeps owned props/emits ahead of inherited root names", async () => {
+  const directory = project({
+    "Root.vue": `<script setup lang="ts">
+defineProps<{ bar?: string }>();
+defineEmits<{ click: [value: string]; foo: [value: string] }>();
+</script><template><span /></template>`,
+    "Forwarding.vue": `<script setup lang="ts">
+import Root from './Root.vue';
+defineProps<{ bar: number }>();
+</script><template><Root /></template>`,
+  });
+  try {
+    for (const [name, usage, code, count] of [
+      ["own-number", ':bar="1" @foo="value => takesString(value)"', undefined, 0],
+      ["wrong-own-number", 'bar="wrong" @foo="value => takesString(value)"', 2322, 3],
+      ["inherited-click", ':bar="1" @click="value => takesString(value)"', undefined, 0],
+      ["wrong-inherited-click", ':bar="1" @click="value => takesNumber(value)"', 2345, 1],
+    ] as const) {
+      fs.writeFileSync(path.join(directory, "App.vue"), parent(`<Forwarding ${usage} />`));
+      const oracle = vueTscDiagnostics(directory);
+      assert.deepEqual(
+        oracle.map((d) => d.code),
+        code ? [code] : [],
+      );
+      const actual = await check(directory, ["--show-virtual-ts"], {
+        name,
+        sources: ["App.vue", "Root.vue", "Forwarding.vue", "tsconfig.json"],
+      });
+      assert.deepEqual(
+        actual.map((d) => d.code),
+        Array.from({ length: count }, () => code),
+      );
+      for (const diagnostic of actual) {
+        assert.equal(diagnostic.file, "App.vue");
+        assert.equal(diagnostic.line, 6);
+      }
+    }
+    fs.writeFileSync(
+      path.join(directory, "Forwarding.vue"),
+      `<script setup lang="ts">
+import Root from './Root.vue';
+defineProps<{ bar: number }>();
+defineEmits<{ click: [value: number] }>();
+</script><template><Root /></template>`,
+    );
+    for (const [name, handler, codes] of [
+      ["own-click", "takesNumber", []],
+      ["wrong-own-click", "takesString", [2345]],
+    ] as const) {
+      fs.writeFileSync(
+        path.join(directory, "App.vue"),
+        parent(`<Forwarding :bar="1" @click="value => ${handler}(value)" />`),
+      );
+      const oracle = vueTscDiagnostics(directory);
+      assert.deepEqual(
+        oracle.map((d) => d.code),
+        codes,
+      );
+      const actual = await check(directory, ["--show-virtual-ts"], {
+        name,
+        sources: ["App.vue", "Root.vue", "Forwarding.vue", "tsconfig.json"],
+      });
+      assert.deepEqual(actual.map(diagnosticIdentity), oracle);
+    }
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("listener inputs leave unknown-prop policy with its canonical checker", async () => {
+  for (const checkUnknownProps of [false, true]) {
+    const directory = project(
+      {
+        "Root.vue": `<script setup lang="ts">
+defineProps<{ bar?: string }>();
+defineEmits<{ foo: [value: string] }>();
+</script><template><span /></template>`,
+        "Forwarding.vue": `<script setup lang="ts">
+import Root from './Root.vue';
+</script><template><Root /></template>`,
+      },
+      { checkUnknownProps },
+    );
+    try {
+      for (const listener of ["", ' @foo="value => takesString(value)"']) {
+        fs.writeFileSync(
+          path.join(directory, "App.vue"),
+          parent(
+            `<Forwarding bar="text" definitelyNotAProp="allowed only when configured"${listener} />`,
+          ),
+        );
+        const oracle = vueTscDiagnostics(directory);
+        assert.deepEqual(
+          oracle.map((d) => d.code),
+          checkUnknownProps ? [2353] : [],
+        );
+        const actual = await check(directory, ["--show-virtual-ts"], {
+          name: `unknown-${checkUnknownProps}-${listener ? "listener" : "no-listener"}`,
+          sources: ["App.vue", "Root.vue", "Forwarding.vue", "tsconfig.json"],
+        });
+        assert.deepEqual(actual.map(diagnosticIdentity), oracle);
+      }
+    } finally {
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
+  }
+});
+
+test("typed inherited indices still validate values and spread bags with unknown checks disabled", async () => {
+  for (const [name, props, own, extra] of [
+    ["broad", "{ [key: string]: string }", "bar", "extra"],
+    ["pattern", "Partial<Record<`data-${string}`, string>>", "data-owned", "data-extra"],
+  ]) {
+    const directory = project(
+      {
+        "Root.vue": `<script setup lang="ts">
+defineProps<${props}>();
+</script><template><span /></template>`,
+        "Forwarding.vue": `<script setup lang="ts">
+import Root from './Root.vue';
+defineProps<{ '${own}'?: number }>();
+defineEmits<{ close: [] }>();
+</script><template><Root /></template>`,
+      },
+      { checkUnknownProps: false },
+    );
+    try {
+      for (const spread of [false, true]) {
+        for (const wrong of [false, true]) {
+          const attributes = spread
+            ? `v-bind="{ '${own}': 1, '${extra}': ${wrong ? "123" : "'text'"} }"`
+            : `:${own}="1" :${extra}="${wrong ? "123" : "'text'"}"`;
+          fs.writeFileSync(
+            path.join(directory, "App.vue"),
+            parent(`<Forwarding ${attributes} @close="() => {}" />`),
+          );
+          const actual = await check(directory, ["--show-virtual-ts"], {
+            name: `index-${name}-${spread ? "spread" : "named"}-${wrong ? "wrong" : "valid"}`,
+            sources: ["App.vue", "Root.vue", "Forwarding.vue", "tsconfig.json"],
+          });
+          assert.deepEqual(
+            actual.map((d) => d.code),
+            wrong ? Array.from({ length: spread ? 1 : 2 }, () => (spread ? 2345 : 2322)) : [],
+          );
+          for (const diagnostic of actual) {
+            assert.equal(diagnostic.file, "App.vue");
+            assert.equal(diagnostic.line, 6);
+          }
+        }
+      }
+    } finally {
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
   }
 });
