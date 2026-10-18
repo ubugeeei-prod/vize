@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { publicNative } from "./installed.ts";
+import { observePublishedUnicode } from "./unicode.ts";
 
 const [version, output] = process.argv.slice(2);
 assert.ok(version && output, "published version and new receipt path are required");
@@ -55,6 +56,7 @@ for (const ssr of [false, true]) {
   assert.match(plain.code + plain.preamble, /my-thing/u);
   passed.push({ backend: ssr ? "SSR" : "DOM", original, ordinaryIsRemainsNative: true });
 }
-const receipt = { issue: 8328, version, packages, loaded, passed, success: true };
+const unicode = observePublishedUnicode(native, version, output);
+const receipt = { issue: 8328, version, packages, loaded, passed, unicode, success: true };
 writeFileSync(output, JSON.stringify(receipt, null, 2) + "\n", { flag: "wx" });
 console.log(JSON.stringify(receipt));

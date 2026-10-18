@@ -176,3 +176,98 @@ export function hostedOrBlacksmith(hostedLabel: string): string {
 export function hostedOrBlacksmithExact(hostedLabel: string): RegExp {
   return new RegExp(`^${hostedOrBlacksmith(hostedLabel)}$`);
 }
+
+export type DailySourceStep = {
+  name?: string;
+  if?: string;
+  run?: string;
+  uses?: string;
+  with?: Record<string, string | boolean>;
+  "continue-on-error"?: boolean;
+};
+type DailySourceJob = {
+  if?: string;
+  outputs?: Record<string, string>;
+  with?: Record<string, string | boolean>;
+  needs?: string[] | string;
+  steps?: DailySourceStep[];
+  "continue-on-error"?: boolean;
+};
+export type DailyRustSourceWorkflow = {
+  jobs: Record<string, DailySourceJob>;
+  on: {
+    workflow_call: {
+      inputs: Record<string, { type: string; required: boolean; default?: boolean }>;
+    };
+  };
+};
+
+export function requireDailySourceContracts(
+  planWorkflow: { jobs: Record<string, DailySourceJob> },
+  rustWorkflow: DailyRustSourceWorkflow,
+): number {
+  const plan = planWorkflow.jobs["pr-source-plan"];
+  assert.equal(plan.outputs?.["source-contracts"], "${{ steps.plan.outputs.source-contracts }}");
+  assert.equal(
+    planWorkflow.jobs["pr-rust-source"].with?.["run-source-contracts"],
+    "${{ needs.pr-source-plan.outputs.source-contracts == 'true' }}",
+  );
+  assert.deepEqual(rustWorkflow.on.workflow_call.inputs["run-source-contracts"], {
+    type: "boolean",
+    required: false,
+    default: true,
+  });
+  const job = rustWorkflow.jobs["pr-rust-build"];
+  assert.equal(job.if, "${{ inputs.run-rust }}");
+  assert.equal(job["continue-on-error"], undefined);
+  const steps = job.steps ?? [];
+  const contracts = steps.findIndex(
+    (step) => step.name === "Require current-tree source, API and reviewed-doc contracts",
+  );
+  assert.ok(contracts >= 0);
+  assert.equal(steps[contracts].if, "${{ inputs.run-source-contracts }}");
+  assert.equal(steps[contracts]["continue-on-error"], undefined);
+  assert.equal(
+    steps[contracts].run,
+    "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts tests/tooling/typecheck-divergence-report-timeout.test.ts tests/tooling/typecheck-divergence-mutation-oracle.test.ts tests/tooling/typecheck-fixture-custody.test.ts tests/tooling/davinci-canonical-corpus-native-walk.test.mjs",
+  );
+  const custody = steps[contracts + 1];
+  assert.deepEqual(custody, {
+    name: "Retain mutation deadline command and fixture evidence",
+    if: "${{ always() && inputs.run-source-contracts }}",
+    uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+    with: {
+      name: "mutation-deadline-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}",
+      path: "target/differential/typecheck-mutation/",
+      "include-hidden-files": true,
+      "if-no-files-found": "warn",
+      "retention-days": 7,
+    },
+  });
+  for (const action of [
+    "actions/setup-node@",
+    "dtolnay/rust-toolchain@",
+    "./.github/actions/setup-rust-sticky-cache",
+    "./.github/actions/setup-rust-script",
+  ]) {
+    const setup = steps.findIndex((step) => step.uses?.startsWith(action));
+    assert.ok(setup >= 0 && setup < contracts, action);
+    if (action.endsWith("setup-rust-script")) {
+      assert.equal(steps[setup].if, "${{ inputs.run-source-contracts }}");
+      assert.equal(steps[setup]["continue-on-error"], undefined);
+    }
+  }
+  const report = rustWorkflow.jobs["rust-source-report"];
+  assert.ok(report.needs?.includes("pr-rust-build"));
+  const gate = report.steps?.find((step) => step.name === "Require the complete Rust tier");
+  assert.equal(gate?.run, "node tools/support/compat/github/require-rust-tier.ts --source");
+  assert.equal(gate?.["continue-on-error"], undefined);
+  assert.ok(
+    (plan.steps ?? []).every(
+      (step) =>
+        !step.uses?.includes("rust-toolchain@") &&
+        step.uses !== "./.github/actions/setup-rust-script",
+    ),
+  );
+  return contracts;
+}

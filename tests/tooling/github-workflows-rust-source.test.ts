@@ -7,7 +7,12 @@ import { runInNewContext } from "node:vm";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { readRepoFile } from "./support/github-workflows.ts";
+import {
+  readRepoFile,
+  requireDailySourceContracts,
+  type DailyRustSourceWorkflow,
+  type DailySourceStep,
+} from "./support/github-workflows.ts";
 
 type Step = {
   id?: string;
@@ -226,20 +231,32 @@ void test("trusted main and scheduled runs seed the CI profiles while candidate 
 });
 
 // Whole parsed producer vectors from 3d93303bb615c71987394528276bd1bed7e3bc40.
-// Only the explicit product-qualification job guard is removed for comparison.
-type RustJob = { if: string; needs: string[]; steps: Array<Record<string, unknown>> };
+// Current daily source policy is checked before reversing its command/evidence additions.
+// Every other producer field and the explicit product guard retain the historical whole digest.
+type RustJob = {
+  if: string;
+  needs: string[];
+  steps: Array<DailySourceStep & Record<string, unknown>>;
+};
 const workflowRoot = fileURLToPath(new URL("../../.github/workflows/", import.meta.url));
 const yaml = createRequire(import.meta.url)("yaml") as {
-  parse: (source: string) => { jobs: Record<string, RustJob> };
+  parse: (source: string) => DailyRustSourceWorkflow & { jobs: Record<string, RustJob> };
 };
 const rustWorkflow = (name: string) => yaml.parse(readFileSync(join(workflowRoot, name), "utf8"));
 const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const productJobs = ["merge-rust-source", "pr-rust-shard"];
 const sourceJobs = ["merge-rust-differential", "pr-rust-build"];
 
-test("split Rust workflows preserve whole original producer and corpus recipes", () => {
-  const source = rustWorkflow("pr-rust-checks.yml").jobs;
-  const products = rustWorkflow("pr-rust-products.yml").jobs;
+function requireSplitRustRecipes(
+  sourceWorkflow = rustWorkflow("pr-rust-checks.yml"),
+  productWorkflow = rustWorkflow("pr-rust-products.yml"),
+) {
+  const contracts = requireDailySourceContracts(
+    rustWorkflow("pr-source-checks.yml"),
+    sourceWorkflow,
+  );
+  const source = sourceWorkflow.jobs;
+  const products = productWorkflow.jobs;
   assert.deepEqual(Object.keys(source), [...sourceJobs, "rust-source-report"]);
   assert.deepEqual(Object.keys(products), [...productJobs, "rust-product-report"]);
   const oldHashes = {
@@ -253,6 +270,11 @@ test("split Rust workflows preserve whole original producer and corpus recipes",
     if (productJobs.includes(id)) {
       assert.equal(job.if.split(" && inputs.product-qualification == ''").length, 2);
       job.if = job.if.replace(" && inputs.product-qualification == ''", "");
+    }
+    if (id === "pr-rust-build") {
+      job.steps[contracts].run =
+        "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts";
+      job.steps.splice(contracts + 1, 1);
     }
     assert.equal(digest(job), expected, id);
   }
@@ -298,6 +320,46 @@ test("split Rust workflows preserve whole original producer and corpus recipes",
     digest(artifactSteps),
     "f66b569dbbaa0f609d5dfa5bec576e5e4eab3dc845c7d74f19b4ff4c0b04a40e",
   );
+}
+
+test("split Rust workflows preserve whole original producer and corpus recipes", () => {
+  requireSplitRustRecipes();
+});
+
+test("whole split preservation refuses changed current policy and unrelated producer fields", () => {
+  for (const mutation of [
+    "missing",
+    "extra",
+    "missing-step",
+    "extra-step",
+    "guard",
+    "setup",
+    "timeout",
+    "hidden",
+    "evidence-extra",
+  ]) {
+    const changed = rustWorkflow("pr-rust-checks.yml");
+    const job = changed.jobs["pr-rust-build"];
+    const contracts = job.steps.findIndex(
+      (step) => step.name === "Require current-tree source, API and reviewed-doc contracts",
+    );
+    const step = job.steps[contracts];
+    if (mutation === "missing")
+      step.run = step.run?.replace(" tests/tooling/docs-reviewed-translations.test.ts", "");
+    if (mutation === "extra") step.run += " tests/tooling/unregistered-contract.test.ts";
+    if (mutation === "missing-step") job.steps.splice(contracts, 1);
+    if (mutation === "extra-step") job.steps.push({ run: "echo unapproved" });
+    if (mutation === "guard") step.if = "${{ false }}";
+    if (mutation === "setup")
+      job.steps.splice(
+        job.steps.findIndex((value) => value.uses?.startsWith("actions/setup-node@")),
+        1,
+      );
+    if (mutation === "timeout") Reflect.set(job, "timeout-minutes", 999);
+    if (mutation === "hidden") job.steps[contracts + 1].with!["include-hidden-files"] = false;
+    if (mutation === "evidence-extra") job.steps[contracts + 1]["continue-on-error"] = true;
+    assert.throws(() => requireSplitRustRecipes(changed), assert.AssertionError, mutation);
+  }
 });
 
 test("actual job selectors keep ordinary workers and source checks while only footprint products can skip", () => {
