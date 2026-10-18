@@ -401,6 +401,10 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install frozen workspace dependencies
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify native legacy projection compatibility
+        env:
+          VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ runner.temp }}/official-css-source/ts40-legacy
+        run: cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture
       - name: Build the real packed mapper runtime
         run: |
           vp run --filter './npm/native' build:ci
