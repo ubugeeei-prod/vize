@@ -187,7 +187,6 @@ export async function observeTrustedInstalledVrt(
               phase = `A-${title}-${capturePhase}`;
               const other = title === "Controls" ? "Keys" : "Controls";
               const prior = await wholeLiteralReports(project, other);
-              await page.getByRole("button", { name: "Variants", exact: true }).click();
               const rendered = await selectLiteral(page, title, build, galleryUrl);
               await page.getByRole("button", { name: "VRT", exact: true }).click();
               await connectPublicSession(page, session);
@@ -250,7 +249,6 @@ export async function observeTrustedInstalledVrt(
             const other = title === "Controls" ? "Keys" : "Controls";
             const prior = await wholeLiteralReports(project, other);
             if (title === "Controls") {
-              await page.getByRole("button", { name: "Variants", exact: true }).click();
               await selectLiteral(page, title, build, galleryUrl);
               await page.getByRole("button", { name: "VRT", exact: true }).click();
               await connectPublicSession(page, second);

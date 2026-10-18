@@ -49,6 +49,7 @@ export async function selectLiteral(
   gallery: string,
 ) {
   await page.locator(".art-item").filter({ hasText: title }).click();
+  await page.getByRole("button", { name: "Variants", exact: true }).click();
   const names = literalVariants[title];
   for (const [index, [, button]] of names.entries())
     await page
