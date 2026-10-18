@@ -142,3 +142,99 @@ No raw archives or giant JSON exports are duplicated in the repository. These
 are frozen source observations, not acceptance of a released package or a newer
 main commit. Preserve the failed/canceled runs and qualify the actual repaired
 source and installed release separately.
+
+## Current inventory and next two gaps: 3a4ea97
+
+This inventory pins main `3a4ea97dfde6cac13a20ff88680a507ff9b96338`. Its
+**declarations** are freshly counted from Git blobs; execution and LLVM values
+below belong only to the successful historical [Full 39032830916](https://github.com/ubugeeei-prod/vize/actions/runs/39032830916)
+at `b3665e75cb397d096c10e4d6c87c36c00828732c`, attempt 1. They are not current-main
+or released-package coverage.
+
+| Component               |                                Declarations at 3a4ea97 |      Executed Rust pass / ignored at b366 |     LLVM lines at b366 |
+| ----------------------- | -----------------------------------------------------: | ----------------------------------------: | ---------------------: |
+| Compiler                |                                   3,225 Rust functions |                                 3,081 / 2 | 68,532/78,687 (87.09%) |
+| Linter                  |                3,987 Rust functions; 214 JS call sites |                                 3,977 / 1 | 57,569/63,002 (91.38%) |
+| Typechecker             |                                   2,241 Rust functions |                                 2,233 / 2 | 61,602/68,084 (90.48%) |
+| Formatter               |                                     785 Rust functions |                                   786 / 0 |  9,814/10,494 (93.52%) |
+| LSP                     |                                   1,686 Rust functions |                                 1,427 / 3 | 44,204/52,225 (84.64%) |
+| Story                   |                  115 Rust functions; 347 JS call sites |                                   115 / 0 |   3,238/3,684 (87.89%) |
+| Editor                  |            17 ERT declarations; 11 assertion harnesses |          Separate real hosts; Emacs 17/17 |           Not measured |
+| CI / shared integration | 5,163 test call sites in 1,304 files, not CI-exclusive | 16 Tooling shards; no combined case count |           Not measured |
+
+At b366 the workspace ran 18,567 Nextest cases successfully, with 37 ignored;
+434 passed/36 ignored doctests are separate. Story's Musea JS invocation ran
+308 passed/31 skipped cases. Conditional browser skips are not browser passes.
+Static extraction masks Rust strings/comments and uses TypeScript test-call ASTs;
+fixture/vendor/generated directories and shared CLI ownership remain separate.
+Macro expansion, loops and cfg explain why declaration and runtime counts differ;
+do not divide one by the other. LLVM includes test/helper code. Glyph/Maestro
+branch coverage remains unmeasured, regardless of their line percentages.
+
+Current public evidence has another unit: published 0.463's retained Linux run
+[39049959377, attempt 2](https://github.com/ubugeeei-prod/vize/actions/runs/39049959377/attempts/2)
+executed the original 32 LSP transactions plus four 18-reply atomic sequences,
+with 36 clean process lifecycles. These are protocol contexts, not 104 independent
+unit tests or code coverage. Its separate gallery succeeded; trusted VRT still
+failed at the first Left iframe. Preserve that whole-campaign failure.
+
+### Next: whole implementation results across an unsaved edit
+
+Under existing [#3953](https://github.com/ubugeeei-prod/vize/issues/3953) and
+[#3952](https://github.com/ubugeeei-prod/vize/issues/3952), extend the existing
+`tests/tooling/lsp-implementation-capability.test.ts` scenario. It currently takes
+`firstLocation` for one implementation and checks only its start position. Add
+an interface with two implementations across authored SFC/TSX files; compare
+**every** returned URI and complete UTF-16 range, then change/remove/restore one
+implementation in an unsaved CRLF/Unicode buffer. Reject duplicates, stale
+locations and generated-only URIs anywhere in the response. Preserve real
+checker provenance and require the backend in the qualifying lane.
+
+Existing native SFC/TSX round trips already cover implementation navigation;
+0/94 historical instrumented handler lines do not mean the feature has no test.
+The missing case is the complete multi-target response through edits and a
+released/packaged-host replay, not another non-null smoke assertion. Do not
+recreate #9409's already-added CSS-module unsaved-revision source scenario.
+
+### Next: run existing formatter semantics through the published CLI
+
+Under existing [#6098](https://github.com/ubugeeei-prod/vize/issues/6098), reuse the
+frozen `authored-crlf-auto` continuation row and `deep-template-literal`
+expression-width row. Source tests already verify complete CLI outputs,
+check/write/fixed points and pinned stock DOM/SSR/event contracts. The missing
+boundary is a **fresh installed public CLI**, which the current normal public
+acceptance workflow does not invoke for formatting. Check package/archive/SRI
+and executable identity, original check refusal, complete output/config bytes,
+second/third-pass identity and the same whole DOM/SSR/runtime-value observations.
+Use the original fixtures and independent contracts unchanged; a successful
+source binary cannot substitute for the published executable.
+
+Formatter is not weak by aggregate test quantity. Historical lower-reached
+`literal_lines.rs` (141/192) is a search hint, not proof of a missing runtime
+oracle: semantic source tests already exist. The completed #9422 private preset
+constructor matrix also cannot prove an unchanged public CLI integration.
+Keep #6098/#6847/#6875 open beyond this bounded evidence improvement.
+
+### Reproduce and compare the evidence
+
+After the normal workspace install, use the existing inventory on a checkout of
+the source being compared:
+
+```sh
+mkdir -p target
+node tools/benchmarks/scripts/test-inventory.ts --root . --json target/test-inventory.json
+cargo nextest list --locked --workspace --cargo-profile ci --profile full --run-ignored all --message-format json
+vp run --workspace-root coverage:source
+```
+
+The inventory command reports static declarations using its own broader text/fixture
+heuristics; it is an independent cross-check, not an exact replay of the Git-only
+masked-Rust/TypeScript-AST counts above. The latter commands reproduce the
+runtime inventory and LLVM recipe when run in the qualifying CI environment;
+retain their exact source SHA, features, commands and artifacts. Their results
+must never be relabeled as measurements of another source or public release.
+
+The analysis that produced this snapshot was read-only: it reused retained
+reports and inspected source without creating Issues/comments, executing native
+or Cargo builds, dispatching CI, installing public packages or running browsers.
+The two follow-up cases remain proposals pending separate review and execution.
