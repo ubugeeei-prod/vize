@@ -155,6 +155,19 @@ fmt: {
 
 同時に指定したフラグはプリセットより優先されます。
 
+Node API でも同じ `vize` と `prettier` の2つを指定できます。
+
+```ts
+import { formatSfc } from "@vizejs/native";
+
+const result = formatSfc(source, {
+  preset: "prettier",
+  singleQuote: true,
+});
+```
+
+明示したオプションは `false` を含めてプリセットより優先されます。`preset` を省略すると従来の Vize の既定値を使い、未対応の名前を指定するとエラーになります。
+
 `sortAttributes: false` のときは、`<script>`、`<template>`、`<style>`、カスタムブロックのタグの属性も書いた順のまま残ります。既定値では `<script lang="ts" setup>` が `<script setup lang="ts">` になります。
 
 次の違いはプリセットを使っても残ります。

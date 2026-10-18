@@ -7,7 +7,9 @@
 
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
-use vize_glyph::{Allocator, FormatOptions, GlyphFormatter, VueVersion, resolve_sort_imports};
+use vize_glyph::{
+    Allocator, FormatOptions, FormatPreset, GlyphFormatter, VueVersion, resolve_sort_imports,
+};
 
 /// Existing formatter line-ending modes, validated at the Node boundary.
 #[napi(string_enum = "lowercase")]
@@ -22,6 +24,9 @@ pub enum EndOfLineNapi {
 #[napi(object)]
 #[derive(Default)]
 pub struct FormatOptionsNapi {
+    /// Existing formatter defaults; explicit options below take precedence.
+    #[napi(ts_type = "'vize' | 'prettier'")]
+    pub preset: Option<String>,
     /// Explicit Vue version; omitted uses Vue 3.
     pub vue_version: Option<String>,
     /// Oxfmt-compatible import sorting; false disables it.
@@ -49,8 +54,21 @@ pub struct FormatResultNapi {
     pub changed: bool,
 }
 
-fn apply_options(opts: FormatOptionsNapi) -> FormatOptions {
+fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
     let mut options = FormatOptions::default();
+    if let Some(preset) = opts.preset.as_deref() {
+        match preset {
+            "vize" => FormatPreset::Vize,
+            "prettier" => FormatPreset::Prettier,
+            _ => {
+                return Err(Error::new(
+                    Status::InvalidArg,
+                    "Unknown formatter preset; expected 'vize' or 'prettier'",
+                ));
+            }
+        }
+        .apply(&mut options);
+    }
 
     if let Some(value) = opts.print_width {
         options.print_width = value;
@@ -88,7 +106,7 @@ fn apply_options(opts: FormatOptionsNapi) -> FormatOptions {
         options.normalize_directive_shorthands = value;
     }
 
-    options
+    Ok(options)
 }
 
 /// Format a Vue SFC source string.
@@ -115,7 +133,7 @@ pub fn format_sfc_napi(
         .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
     let sorting = resolve_sort_imports(sorting.as_ref())
         .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
-    let options = apply_options(options);
+    let options = apply_options(options)?;
     let allocator = Allocator::with_capacity(source.len() * 2);
     let result = GlyphFormatter::new_with_vue_version(&options, &allocator, vue_version)
         .with_sort_imports(sorting.as_ref())
