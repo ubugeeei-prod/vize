@@ -375,6 +375,29 @@ type AnyRetained = Expect<__VizeIsAny<__VizeUnownedComponentAttrs<any>>>;
 type UnknownRetained = Expect<Equal<__VizeUnownedComponentAttrs<unknown>, unknown>>;
 type NeverRetained = Expect<Equal<__VizeUnownedComponentAttrs<never>, never>>;
 type NullishRetained = Expect<Equal<__VizeUnownedComponentAttrs<null | undefined>, null | undefined>>;
+// A root's declared members must survive forwarding beside its open index.
+declare const indexedSymbol: unique symbol;
+type Indexed = { readonly [indexedSymbol]?: number; 1?: boolean; bar?: string; onFoo?: (value: string) => void } & Record<string, unknown>;
+type IndexedForward = __VizeUnownedComponentAttrs<Partial<Indexed>, { bar?: number }>;
+type IndexedArgs = Expect<Equal<Args<IndexedForward, 'onFoo'>, [value: string]>>;
+type IndexedNumber = Expect<Equal<IndexedForward[1], boolean | undefined>>;
+type IndexedSymbol = Expect<Equal<IndexedForward[typeof indexedSymbol], number | undefined>>;
+type IndexedOwnRemoved = Expect<Equal<IndexedForward['bar'], unknown>>;
+type SymbolOwnerRemoved = Expect<Equal<typeof indexedSymbol extends keyof __VizeUnownedComponentAttrs<Indexed, { [indexedSymbol]: number }> ? true : false, false>>;
+declare const indexed: IndexedForward;
+indexed[indexedSymbol] = 1; // error 2540
+const wrongIndexedNumber: IndexedForward[1] = 'wrong'; // error 2322
+const wrongIndexedSymbol: IndexedForward[typeof indexedSymbol] = 'wrong'; // error 2322
+type NumericRoot = __VizeUnownedComponentAttrs<{ [index: number]: string; onFoo?: (value: string) => void }>;
+type NumericArgs = Expect<Equal<Args<NumericRoot, 'onFoo'>, [value: string]>>;
+type NumericIndex = Expect<Equal<NumericRoot[2], string>>;
+type RequiredIndexed = __VizeUnownedComponentAttrs<{ bar: string; onFoo: (value: string) => void } & Record<string, unknown>>;
+const requiredIndexed: RequiredIndexed = { bar: 'text', onFoo: value => value.length };
+const missingIndexed: RequiredIndexed = {}; // error 2739
+type IndexedUnion = __VizeUnownedComponentAttrs<({ kind: 'left'; value: number } | { kind: 'right'; value: string }) & Record<string, unknown>>;
+const indexedLeft: IndexedUnion = { kind: 'left', value: 1 };
+const indexedRight: IndexedUnion = { kind: 'right', value: 'text' };
+const indexedWrong: IndexedUnion = { kind: 'left', value: 'wrong' }; // error 2322
 type Augmented = __VizeUnownedComponentAttrs<{ hidden?: string; extra?: string } | null | undefined>;
 type NullableRetained = Expect<Equal<Augmented, { extra?: string } | null | undefined>>;
 const augmented: __VizePublicComponentInputProps & NonNullable<Augmented> = { hidden: true, extra: 'text' };
@@ -460,6 +483,6 @@ const wrongNormalized: Named<'camel-name', 'camelName'> = 1; // error 2322
     const marker = /\/\/ error (\d+)/.exec(line);
     return marker ? [{ line: index + 1, code: Number(marker[1]) }] : [];
   });
-  assert.equal(expected.length, 16);
+  assert.equal(expected.length, 21);
   assert.deepEqual(actual, expected);
 });

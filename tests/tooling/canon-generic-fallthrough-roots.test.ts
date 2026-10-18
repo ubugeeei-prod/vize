@@ -452,9 +452,11 @@ defineEmits<{ close: [] }>();
                 name: captureName,
                 sources: ["App.vue", "Root.vue", "Forwarding.vue", "tsconfig.json"],
               });
-              // Retain the independent oracle's complete packet before asserting
-              // parity for indexed roots or documenting an observed policy gap.
-              vueTscDiagnostics(directory, captureName);
+              // vue-tsc accepts inherited indexed values; Canon additionally
+              // validates their declared types, including values in spread bags.
+              const oracle = vueTscDiagnostics(directory, captureName);
+              assert.deepEqual(oracle, []);
+              if (!wrong) assert.deepEqual(actual.map(diagnosticIdentity), oracle);
               assert.deepEqual(
                 actual.map((d) => d.code),
                 wrong ? [spread ? 2345 : 2322] : [],
