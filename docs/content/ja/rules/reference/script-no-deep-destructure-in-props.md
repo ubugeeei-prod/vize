@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-唯一の inline `<script setup>` のトップレベルで、コンパイラーマクロの props の `user` からさらに `name` を取り出し、既定の深さ 1 を超えています。オブジェクトの内側の配列も深さに数えます。Opinionated と Nuxt では、深さの方針を検査するこの警告が既定で有効です。他のプリセットでは個別に有効化します。コンパイラーの `propsDestructure` 設定は参照せず、`withDefaults` でコンパイルできる場合も警告します。
+この SFC 内に一つだけある、内容を直接記述した `<script setup>` のトップレベルで、コンパイラーマクロの props の `user` からさらに `name` を取り出し、既定の深さ 1 を超えています。オブジェクトの内側の配列も深さに数えます。Opinionated と Nuxt では、深さの方針を検査するこの警告が既定で有効です。他のプリセットでは個別に有効化します。コンパイラーの `propsDestructure` 設定は参照せず、`withDefaults` でコンパイルできる場合も警告します。
 
 ```vue
 <script setup lang="ts">

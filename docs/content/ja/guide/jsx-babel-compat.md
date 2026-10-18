@@ -63,7 +63,7 @@ Babel プラグイン固有のオプションを、Vize の設定ファイルへ
 これらは [`vize_atelier_jsx`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_jsx) の `compile_jsx_with_babel_*` 関数へ渡す引数です。
 `jsxCompat` が `"babel"` のときにだけ適用します。
 
-| `@vue/babel-plugin-jsx` | Vize のエントリポイント |
+| `@vue/babel-plugin-jsx` | Vize のエントリーポイント |
 | --- | --- |
 | `transformOn` | `BabelJsxOptions::transform_on` |
 | `pragma` | `compile_jsx_with_babel_pragma` |

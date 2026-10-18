@@ -7,13 +7,14 @@ import { repoRoot, withPinnedFixtureWorkspace } from "../_helpers/realworld-patc
 import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
 import type { LspDiagnostic, LspRange, PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
+import { checkWorkflowJobSources } from "./support/github-workflows.ts";
 
 const CREATE_VUE_APP = "template/code/typescript-default/src/App.vue";
 const CLEAN_ATTRIBUTE = 'alt="Vue logo" class="logo"';
 const BROKEN_ATTRIBUTE = 'alt="Vue logo"  class="logo"';
 
 test("release-script CI hydrates the pinned create-vue code-action oracle", () => {
-  const workflow = parse(fs.readFileSync(`${repoRoot}/.github/workflows/check.yml`, "utf8"));
+  const workflow = parse(checkWorkflowJobSources());
   assert.equal(
     workflow.jobs["test-scripts"].steps.at(-1).uses,
     "./.github/actions/test-full-tooling",

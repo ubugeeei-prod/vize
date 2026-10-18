@@ -17,7 +17,7 @@ import {
   planAffectedJs,
   readJsWorkspace,
 } from "../../tools/support/compat/github/plan-affected-js.ts";
-import { readRepoFile, root } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile, root } from "./support/github-workflows.ts";
 
 type Manifest = {
   name: string;
@@ -46,7 +46,7 @@ type Job = {
 const jsChecks = parse(readRepoFile(".github", "workflows", "pr-js-checks.yml")) as {
   jobs: Record<string, Job>;
 };
-const check = parse(readRepoFile(".github", "workflows", "check.yml")) as {
+const check = parse(checkWorkflowJobSources()) as {
   jobs: Record<string, Job>;
 };
 const command = (name: string) => {

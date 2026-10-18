@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { parse } from "yaml";
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 import { sourceInventoryLanes } from "../../tools/support/compat/davinci/source-inventories.ts";
-import { readRepoFile, root } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile, root } from "./support/github-workflows.ts";
 const CORE = ["fmt-rust", "check-js", "security-audit", "node-engine-compat", "check-vize-apps"];
 const PR_JOBS = [
   "iteration-plan",
@@ -12,7 +12,6 @@ const PR_JOBS = [
   "pr-source-checks",
   "instruction-counts",
   "level-dependency-direction",
-  "release-integration-catalog",
 ];
 const FULL_SUITE_JOBS = [
   "nix-flake",
@@ -46,7 +45,7 @@ type Job = {
   "timeout-minutes"?: number | string;
   uses?: string;
 };
-const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as {
+const workflow = parse(checkWorkflowJobSources()) as {
   on?: Record<string, unknown>;
   jobs?: Record<string, Job>;
   concurrency?: { group?: string; "cancel-in-progress"?: boolean };
@@ -285,15 +284,15 @@ test("full JS qualification retains independent native builds and strictly gates
     full.if,
     "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
   );
-  const fullJobs = [
-    "test-js-packages",
-    "build-js-packages",
-    "test-scripts",
-    "full-source-cli",
-    "check-js",
-    "instruction-counts",
-  ];
+  const fullJobs = ["full-qualification", "check-js", "instruction-counts"];
   assert.deepEqual(full.needs, fullJobs);
+  const callee = parse(readRepoFile(".github", "workflows", "full-qualification.yml")) as {
+    jobs: Record<string, Job & { "continue-on-error"?: boolean }>;
+  };
+  for (const id of ["test-js-packages", "build-js-packages", "test-scripts", "full-source-cli"]) {
+    assert.ok(callee.jobs[id], `missing transitive original full dependency ${id}`);
+    assert.notEqual(callee.jobs[id]["continue-on-error"], true, id);
+  }
   const caller = full.steps?.at(-1);
   assert.equal(caller?.uses, "./.github/actions/report-full-js-qualification");
   assert.deepEqual(caller?.with, { "needs-json": "${{ toJSON(needs) }}" });

@@ -11,6 +11,16 @@ export interface NpmPackageInfo {
   tag: string;
 }
 
+/** Public, bounded HTTP facts only; never registry bodies or request credentials. */
+export interface RegistryProbeObservation {
+  phase: "version" | "tag" | "archive";
+  curlExit: number | null;
+  httpStatus: string | null;
+  elapsedMs: number;
+  bytes?: number;
+  reason: string;
+}
+type ProbeObserver = (observation: RegistryProbeObservation) => void;
 /** Returns `true` when a `dist-tags` JSON object maps `tag` to `version`. */
 export function jsonDistTagMatches(value: JsonValue, tag: string, version: string): boolean {
   const tagVersion = stringMember(value, tag);
@@ -30,11 +40,13 @@ export async function npmRegistryJson(
   name: string,
   version: string | null,
   probe: number,
+  observe?: ProbeObserver,
 ): Promise<JsonValue | undefined> {
   const runId = process.env.GITHUB_RUN_ID ?? "local";
   const runAttempt = process.env.GITHUB_RUN_ATTEMPT ?? "1";
   const versionPath = version === null ? "" : `/${version}`;
   const url = `https://registry.npmjs.org/${npmRegistryPackagePath(name)}${versionPath}?vize-publish-check=${runId}-${runAttempt}-${probe}`;
+  const started = performance.now();
   const { status, stdout } = await collectOutput("curl", [
     "--silent",
     "--show-error",
@@ -50,10 +62,24 @@ export async function npmRegistryJson(
     "VIZE_HTTP_STATUS:%{http_code}",
     url,
   ]);
-  if (status !== 0) return undefined;
   const parts = stdout.split("VIZE_HTTP_STATUS:");
-  if (parts.length !== 2 || parts[1] !== "200") return undefined;
-  return parseJson(parts[0]);
+  const httpStatus = parts.length === 2 && /^\d{3}$/.test(parts[1]) ? parts[1] : null;
+  const value = status === 0 && httpStatus === "200" ? parseJson(parts[0]) : undefined;
+  observe?.({
+    phase: version === null ? "tag" : "version",
+    curlExit: status,
+    httpStatus,
+    elapsedMs: Math.round(performance.now() - started),
+    reason:
+      status !== 0
+        ? "transport"
+        : httpStatus !== "200"
+          ? "http-status"
+          : value === undefined
+            ? "invalid-json"
+            : "json",
+  });
+  return value;
 }
 
 /**
@@ -84,21 +110,36 @@ function manifestMatches(value: JsonValue | undefined, name: string, version: st
 export async function npmTarballIsVisible(
   manifest: JsonValue,
   remainingMs = 6000,
+  observe?: ProbeObserver,
 ): Promise<boolean> {
+  const refuse = (reason: string) => {
+    observe?.({
+      phase: "archive",
+      curlExit: null,
+      httpStatus: null,
+      elapsedMs: 0,
+      bytes: 0,
+      reason,
+    });
+    return false;
+  };
   const timeoutMs = Math.min(6000, Math.floor(remainingMs));
-  if (!Number.isFinite(timeoutMs) || timeoutMs < 1) return false;
-  if (!isJsonObject(manifest)) return false;
+  if (!Number.isFinite(timeoutMs) || timeoutMs < 1) return refuse("budget-exhausted");
+  if (!isJsonObject(manifest)) return refuse("invalid-manifest");
   const dist = manifest.get("dist");
-  if (!isJsonObject(dist)) return false;
+  if (!isJsonObject(dist)) return refuse("invalid-dist");
   const tarball = stringMember(dist, "tarball"),
     integrity = stringMember(dist, "integrity");
-  if (!tarball || !integrity || !/^sha512-[A-Za-z0-9+/]{86}==$/.test(integrity)) return false;
+  if (!tarball || !integrity || !/^sha512-[A-Za-z0-9+/]{86}==$/.test(integrity))
+    return refuse("invalid-dist");
   try {
     const url = new URL(tarball);
-    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) return false;
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password)
+      return refuse("refused-url");
   } catch {
-    return false;
+    return refuse("invalid-url");
   }
+  const started = performance.now();
   return new Promise((resolve) => {
     // Keep the existing 3s connect / 6s total probe limits, including a stalled body.
     const child = spawn(
@@ -140,16 +181,57 @@ export async function npmTarballIsVisible(
         child.kill("SIGKILL");
       } else status += chunk.toString("utf8");
     });
-    child.once("error", () => resolve(false));
-    child.once("close", (code) =>
-      resolve(
-        code === 0 &&
-          bounded &&
-          bytes > 0 &&
-          status === "VIZE_HTTP_STATUS:200" &&
-          `sha512-${hash.digest("base64")}` === integrity,
-      ),
-    );
+    let observed = false;
+    const report: ProbeObserver = (value) => {
+      if (!observed) {
+        observed = true;
+        observe?.(value);
+      }
+    };
+    child.once("error", () => {
+      report({
+        phase: "archive",
+        curlExit: null,
+        httpStatus: null,
+        elapsedMs: Math.round(performance.now() - started),
+        bytes,
+        reason: "spawn-error",
+      });
+      resolve(false);
+    });
+    child.once("close", (code, signal) => {
+      const httpStatus = /VIZE_HTTP_STATUS:(\d{3})$/.exec(status)?.[1] ?? null;
+      const sriMatches = `sha512-${hash.digest("base64")}` === integrity;
+      const visible =
+        code === 0 && bounded && bytes > 0 && status === "VIZE_HTTP_STATUS:200" && sriMatches;
+      report({
+        phase: "archive",
+        curlExit: code,
+        httpStatus,
+        elapsedMs: Math.round(performance.now() - started),
+        bytes,
+        reason: !bounded
+          ? "bounded-output"
+          : signal !== null
+            ? "terminated"
+            : code === 28
+              ? "deadline"
+              : code !== 0 && code !== 22
+                ? "transport"
+                : httpStatus !== "200"
+                  ? "http-status"
+                  : code !== 0
+                    ? "transport"
+                    : status !== "VIZE_HTTP_STATUS:200"
+                      ? "status-frame"
+                      : bytes === 0
+                        ? "empty-body"
+                        : !sriMatches
+                          ? "sri-mismatch"
+                          : "verified",
+      });
+      resolve(visible);
+    });
   });
 }
 
@@ -164,8 +246,9 @@ export async function npmTagPointsToVersion(
   tag: string,
   version: string,
   probe: number,
+  observe?: ProbeObserver,
 ): Promise<boolean> {
-  const value = await npmRegistryJson(name, null, probe);
+  const value = await npmRegistryJson(name, null, probe, observe);
   if (!isJsonObject(value)) return false;
   const returnedName = stringMember(value, "name");
   if (returnedName === undefined || returnedName !== name) return false;
@@ -187,16 +270,31 @@ export async function waitForRegistryVisibility(
 ): Promise<number> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const deadline = performance.now() + 6000;
+    const requests: RegistryProbeObservation[] = [];
+    const observe: ProbeObserver = (value) => requests.push(value);
     const [manifest, tagVisible] = await Promise.all([
-      npmRegistryJson(info.name, info.version, attempt),
-      npmTagPointsToVersion(info.name, info.tag, info.version, attempt),
+      npmRegistryJson(info.name, info.version, attempt, observe),
+      npmTagPointsToVersion(info.name, info.tag, info.version, attempt, observe),
     ]);
-    if (
-      manifestMatches(manifest, info.name, info.version) &&
+    const versionMatches = manifestMatches(manifest, info.name, info.version);
+    const archiveVisible =
+      versionMatches &&
       tagVisible &&
       manifest !== undefined &&
-      (await npmTarballIsVisible(manifest, deadline - performance.now()))
-    ) {
+      (await npmTarballIsVisible(manifest, deadline - performance.now(), observe));
+    println(
+      `Registry visibility probe: ${JSON.stringify({
+        name: info.name,
+        version: info.version,
+        tag: info.tag,
+        attempt,
+        versionMatches,
+        tagVisible,
+        archiveVisible,
+        requests,
+      })}`,
+    );
+    if (archiveVisible) {
       println(`${info.name}@${info.version} is visible in npm with dist-tag ${info.tag}.`);
       return 0;
     }

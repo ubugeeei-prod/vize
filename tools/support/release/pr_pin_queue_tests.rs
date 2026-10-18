@@ -1,6 +1,5 @@
 use super::*;
 use std::collections::VecDeque;
-
 const HEAD: &str = "1111111111111111111111111111111111111111";
 const LEASE: &str = "2222222222222222222222222222222222222222";
 fn candidate() -> Candidate {
@@ -105,6 +104,7 @@ impl Harness {
             root: Path::new("/fixture"),
             execute: &mut execute,
             retain: &mut retain,
+            batch: None,
         };
         if let Some(owner) = cleanup_owner {
             cleanup(&candidate(), owner, &mut verify, &mut adapter).map(|()| None)

@@ -6,10 +6,10 @@ import {
   stableTypeScriptRuntimePath,
   typecheckDependencySkip,
 } from "./support/typecheck-dependency.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 test("test:scripts requires its typecheck dependencies", () => {
   const command = (testAndBenchmarkTasks["test:scripts"] as { command: string }).command;
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   assert.match(
     command,
     /&& VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests\/tooling\/\*\.test\.ts tests\/tooling\/\*\.test\.mjs tests\/tooling\/davinci\/\*\.test\.ts tests\/tooling\/davinci\/\*\.test\.mjs tests\/tooling\/release\/\*\.test\.ts$/,

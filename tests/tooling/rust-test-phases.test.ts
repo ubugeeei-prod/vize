@@ -13,10 +13,13 @@ type PhaseRecord = { phase: string; elapsed_seconds: number; exit_code: number }
 const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
   jobs: Record<string, Job>;
 };
-const caller = source.jobs["pr-rust-source"];
-// Follow the required caller into the producer and its parallel doctest job.
-assert.equal(caller.uses, "./.github/workflows/pr-rust-checks.yml");
+const caller = source.jobs["pr-rust-products"];
+// Follow both required callers into the producer and its parallel doctest job.
+assert.equal(caller.uses, "./.github/workflows/pr-rust-products.yml");
 const jobs = (parse(readRepoFile(caller.uses!)) as { jobs: Record<string, Job> }).jobs;
+const sourceCaller = source.jobs["pr-rust-source"];
+assert.equal(sourceCaller.uses, "./.github/workflows/pr-rust-checks.yml");
+const sourceJobs = (parse(readRepoFile(sourceCaller.uses!)) as { jobs: Record<string, Job> }).jobs;
 const measured = jobs["merge-rust-source"];
 const phase = (job: Job, name: string) => {
   const step = job.steps?.find((candidate) => candidate.name === name);
@@ -24,7 +27,7 @@ const phase = (job: Job, name: string) => {
   return step;
 };
 const build = phase(measured, "Build Rust workspace tests");
-const run = phase(jobs["pr-rust-build"], "Run affected Rust doctests");
+const run = phase(sourceJobs["pr-rust-build"], "Run affected Rust doctests");
 const packages = ["--package", "vize_glyph", "--package", "vize_maestro"];
 const buildArgs = [
   "nextest",
@@ -133,7 +136,7 @@ exit "$FAKE_CARGO_EXIT"
     JSON.parse(readFileSync(join(temporary, "rust-test-timings", `${name}.json`), "utf8"));
   const doctests = (exit = 0) => {
     const selected = execute(
-      phase(jobs["pr-rust-build"], "Select Clippy and doctest runtime envelope"),
+      phase(sourceJobs["pr-rust-build"], "Select Clippy and doctest runtime envelope"),
     );
     assert.equal(selected.status, 0, selected.stderr);
     const runtime = Object.fromEntries(
@@ -269,12 +272,23 @@ test("the evidence collector rejects a successful build without fresh timing HTM
 });
 
 test("required aggregation includes the independently executed doctests", () => {
-  const report = jobs["rust-source-report"] as Job & { needs: string[] };
-  assert.ok(report.needs.includes("merge-rust-source"));
-  assert.ok(report.needs.includes("pr-rust-build"));
-  const aggregate = report.steps?.find((step) => step.name === "Require the complete Rust tier");
-  assert.equal(aggregate?.env?.NEEDS_JSON, "${{ toJSON(needs) }}");
-  assert.equal(aggregate?.run, "node tools/support/compat/github/require-rust-tier.ts");
+  const productReport = jobs["rust-product-report"] as Job & { needs: string[] };
+  const sourceReport = sourceJobs["rust-source-report"] as Job & { needs: string[] };
+  assert.ok(productReport.needs.includes("merge-rust-source"));
+  assert.ok(productReport.needs.includes("pr-rust-shard"));
+  assert.ok(sourceReport.needs.includes("pr-rust-build"));
+  assert.ok(sourceReport.needs.includes("merge-rust-differential"));
+  const outer = source.jobs["source-report"] as Job & { needs: string[] };
+  for (const required of ["pr-rust-source", "pr-rust-products"])
+    assert.ok(outer.needs.includes(required));
+  for (const [report, mode] of [
+    [sourceReport, "source"],
+    [productReport, "products"],
+  ] as const) {
+    const aggregate = report.steps?.find((step) => step.name === "Require the complete Rust tier");
+    assert.equal(aggregate?.env?.NEEDS_JSON, "${{ toJSON(needs) }}");
+    assert.equal(aggregate?.run, `node tools/support/compat/github/require-rust-tier.ts --${mode}`);
+  }
   const summary = measured.steps?.find(
     (step) => step.name === "Summarize Rust test timing evidence",
   );

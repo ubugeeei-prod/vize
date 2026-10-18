@@ -1,6 +1,7 @@
 //! Mandatory native cause and explicitly required pinned-project qualification.
 #![expect(clippy::expect_used, reason = "required native fixture authority")]
 
+mod generated_diagnostics;
 mod install;
 mod minimal;
 mod packets;

@@ -4,7 +4,7 @@ title: "ecosystem/vue-test-utils-no-html-snapshot"
 
 # `ecosystem/vue-test-utils-no-html-snapshot`
 
-wrapper.html() 全体の snapshot に依存するテストを検出します。
+wrapper.html() 全体のスナップショットに依存するテストを検出します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-期待する振る舞いを検査する代わりに、wrapper の HTML 全体を snapshot にしています。
+期待する振る舞いを検査する代わりに、wrapper の HTML 全体をスナップショットにしています。
 
 ```vue
 <script setup lang="ts">

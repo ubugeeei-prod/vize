@@ -62,9 +62,12 @@ const canonDeferred = [
   },
 ];
 type Step = { name?: string; run?: string };
-const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
+const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-products.yml")) as {
   jobs: Record<string, { steps: Step[]; env: Record<string, string> }>;
 };
+const sourceWorkflow = parse(
+  readRepoFile(".github", "workflows", "pr-rust-checks.yml"),
+) as typeof workflow;
 
 test("only the present audited real-TSGO cases leave the PR default filter", () => {
   const config = parseToml(readRepoFile(".config", "nextest.toml")) as {
@@ -99,7 +102,9 @@ test("only the present audited real-TSGO cases leave the PR default filter", () 
 
   const merge = workflow.jobs["merge-rust-source"].steps;
   assert.ok(
-    workflow.jobs["pr-rust-build"].steps.some((step) => step.name === "Run affected Rust doctests"),
+    sourceWorkflow.jobs["pr-rust-build"].steps.some(
+      (step) => step.name === "Run affected Rust doctests",
+    ),
   );
   const full = (
     parseToml(readRepoFile(".config", "nextest.toml")) as {

@@ -6,7 +6,7 @@ import { delimiter, join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 
 interface WorkflowStep {
   name?: string;
@@ -21,7 +21,7 @@ interface WorkflowJob {
 }
 
 test("check workflow uploads Davinci allocation bench reports", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const action = readRepoFile(
     ".github",
     "actions",

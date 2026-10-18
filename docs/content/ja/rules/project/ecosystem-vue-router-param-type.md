@@ -71,7 +71,7 @@ export const router = createRouter({
 
 ## 悪い
 
-`postId` は一つの値を取る path parameter ですが、配列 `["2"]` を渡しています。
+`postId` は単一の値を取るパスパラメーターですが、配列 `["2"]` を渡しています。
 
 `src/UserPost.vue`
 
@@ -99,6 +99,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [ファイル間ルール一覧](../cross-file.md)

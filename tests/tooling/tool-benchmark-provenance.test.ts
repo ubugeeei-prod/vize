@@ -193,7 +193,7 @@ test("Japanese backend provenance preserves escaping, planted-diagnostic scope a
   const ready = renderProvenanceLines(data, "ja");
   assert(
     ready.includes(
-      "バックエンド: ネイティブ TypeScript エンジンを <code>/repo/&lt;native&gt;&amp;&#95;runtime</code> で利用できます。型検査の計測では、意図的に追加した診断が検出されることを tools/benchmarks/scripts/check-gate.mjs（.github/workflows/check-bench.yml）で検証します。",
+      "バックエンド: ネイティブ TypeScript エンジンのパスは <code>/repo/&lt;native&gt;&amp;&#95;runtime</code> です。型検査の計測では、意図的に追加した診断が検出されることを tools/benchmarks/scripts/check-gate.mjs（.github/workflows/check-bench.yml）で検証します。",
     ),
   );
   const unavailable = renderProvenanceLines(

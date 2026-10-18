@@ -176,3 +176,60 @@ fn full_check_jobs_fail_closed_for_every_incomplete_result() {
         }
     }
 }
+
+#[test]
+fn source_bound_full_check_requires_every_new_role_and_rejects_foreign_workflow_source() {
+    let head = "a".repeat(40);
+    let mut run = json!({
+        "name":format!("Check full @ {head}"),
+        "display_title":format!("Check full @ {head}"), "path":".github/workflows/check.yml",
+        "event":"workflow_dispatch", "head_branch":"main", "head_sha":head,
+        "repository":{"full_name":"owner/repo"},
+        "referenced_workflows":[{
+            "path":format!("owner/repo/.github/workflows/full-qualification.yml@{head}"),
+            "sha":head, "ref":"refs/heads/main"
+        }]
+    });
+    let names = [
+        "Full qualification / test-scripts",
+        "Full qualification / test-js-packages",
+        "Full qualification / build-js-packages",
+        "full-js-report",
+        "Full qualification / Full Rust workspace and doctests",
+        "Full qualification / clippy-and-test",
+        "Full qualification / full-rust-report",
+        "Full qualification / Nuxt module qualification / Nuxt 3 build and SSR",
+    ];
+    let jobs = names
+        .iter()
+        .map(|name| json!({"name":name,"status":"completed","conclusion":"success"}))
+        .collect::<Vec<_>>();
+    assert!(assert_required_workflow_jobs("Check", &jobs, &run).is_ok());
+    for (index, name) in names.iter().enumerate() {
+        for state in [
+            "missing",
+            "duplicate",
+            "skipped",
+            "failure",
+            "cancelled",
+            "in_progress",
+        ] {
+            let mut changed = jobs.clone();
+            match state {
+                "missing" => {
+                    changed.remove(index);
+                }
+                "duplicate" => changed.push(jobs[index].clone()),
+                "in_progress" => changed[index]["status"] = json!(state),
+                _ => changed[index]["conclusion"] = json!(state),
+            }
+            let error = assert_required_workflow_jobs("Check", &changed, &run).unwrap_err();
+            assert!(error.contains(name), "{name}/{state}: {error}");
+        }
+    }
+    run["referenced_workflows"][0]["sha"] = json!("b".repeat(40));
+    assert!(assert_required_workflow_jobs("Check", &jobs, &run).is_err());
+    run["referenced_workflows"][0]["sha"] = json!(head);
+    run["referenced_workflows"][0]["ref"] = json!("refs/heads/foreign");
+    assert!(assert_required_workflow_jobs("Check", &jobs, &run).is_err());
+}

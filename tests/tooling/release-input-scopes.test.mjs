@@ -53,6 +53,7 @@ const installedHttpsContracts = [
 
 void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
   const historicalUnscoped = [
+    "tests/tooling/release/integration-product.test.ts",
     "tests/tooling/release/legacy-check-qualification.test.ts",
     "tests/tooling/release/release-corsa-bootstrap-freshness.test.ts",
     "tests/tooling/release/release-corsa-bootstrap-registry.test.ts",
@@ -77,6 +78,7 @@ void test("audited release contracts have complete imports and leave unresolved 
     ...sharedPublisherContracts,
     ...installedSmokeMigrationContracts,
     "tests/tooling/release/release-public-atomic-original.test.ts",
+    "tests/tooling/release/release-public-lsp-source.test.ts",
     "tests/tooling/release/release-signing.test.ts",
     "tests/tooling/release/retirement-qualification.test.ts",
   ].sort();

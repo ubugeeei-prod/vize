@@ -82,7 +82,7 @@ vp run vize:fmt
 vp run vize:fmt:fix
 ```
 
-1 回限りの移行作業の場合、`vize fmt --write` はファイル、ディレクトリ、またはグロブをターゲットにできます。
+一度だけ実行する移行作業では、`vize fmt --write` に対象のファイル、ディレクトリ、またはグロブパターンを指定できます。
 
 <span id="糸くず"></span>
 

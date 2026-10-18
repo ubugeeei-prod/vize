@@ -120,7 +120,7 @@ src/App.vue
 
    重大度以外のオプションを受け取るルールは、[ルールのオプション](../rules/options.md)にまとめています。
 
-3. **その箇所だけ抑制する**: 対象の直前の行にコメントを書きます。ほかのディレクティブは[コメント注釈](./comment-annotations.md)で説明しています。
+3. **その箇所だけ抑制する**: 対象の直前の行にコメントを書きます。ほかのディレクティブは[コメントによる設定](./comment-annotations.md)で説明しています。
 
    ```vue
    <template>
@@ -135,7 +135,7 @@ src/App.vue
 
 ## 診断の種類
 
-| 種類                | ID の例                 | 報告するもの                                                         |
+| 種類                | ID の例                 | 診断を報告する機能                                                         |
 | ------------------- | ----------------------- | -------------------------------------------------------------------- |
 | 単一ファイルの lint | `vue/require-v-for-key` | `vize lint`、エディター、Oxlint プラグイン                           |
 | ファイル横断        | `vize:croquis/cf/*`     | `vize lint --cross-file`（プロジェクト全体の依存関係を解析したあと） |
@@ -144,7 +144,7 @@ src/App.vue
 
 単一ファイルのルールは、Vize のリンターである Patina が実行します。Vite+ の設定、共有の `vize.config.*`、CLI、JavaScript API、Oxlint プラグインから設定できます。
 
-ファイル横断の診断は、provide と inject の対応、ID の重複、コンポーネントをまたぐリアクティビティの問題を検査します。出力されるレポートは[ファイル横断の複雑性](./cross-file-complexity.md)で説明しています。
+ファイル横断の診断は、provide と inject の対応、ID の重複、コンポーネントをまたぐリアクティビティの問題を検査します。出力されるレポートは[ファイル間の複雑さ](./cross-file-complexity.md)で説明しています。
 
 型情報を使う診断には、`tsconfig.json` の `compilerOptions.types`、`paths`、プロジェクト参照など、TypeScript と同じ設定が使われます。これらの名前を Vize 用の `globals` に重ねて指定する必要はありません。
 

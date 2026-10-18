@@ -20,7 +20,7 @@ title: "型と script のルール"
 | [`script/no-boolean-default`](#script-no-boolean-default) | [悪い](#script-no-boolean-default-bad) · [良い](#script-no-boolean-default-good) | Boolean prop の冗長な default を検出します。 |
 | [`script/no-deep-destructure-in-props`](#script-no-deep-destructure-in-props) | [悪い](#script-no-deep-destructure-in-props-bad) · [良い](#script-no-deep-destructure-in-props-good) | defineProps の深い分割代入を検出します。 |
 | [`script/no-deprecated-data-object-declaration`](#script-no-deprecated-data-object-declaration) | [悪い](#script-no-deprecated-data-object-declaration-bad) · [良い](#script-no-deprecated-data-object-declaration-good) | Vue 3 で関数にすべき data オプションのオブジェクト指定を検出します。 |
-| [`script/no-deprecated-destroyed-lifecycle`](#script-no-deprecated-destroyed-lifecycle) | [悪い](#script-no-deprecated-destroyed-lifecycle-bad) · [良い](#script-no-deprecated-destroyed-lifecycle-good) | Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 の hook に置き換えます。 |
+| [`script/no-deprecated-destroyed-lifecycle`](#script-no-deprecated-destroyed-lifecycle) | [悪い](#script-no-deprecated-destroyed-lifecycle-bad) · [良い](#script-no-deprecated-destroyed-lifecycle-good) | Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 のライフサイクルフックに置き換えます。 |
 | [`script/no-deprecated-dollar-listeners-api`](#script-no-deprecated-dollar-listeners-api) | [悪い](#script-no-deprecated-dollar-listeners-api-bad) · [良い](#script-no-deprecated-dollar-listeners-api-good) | Vue 3 で $attrs に統合された $listeners を検出します。 |
 | [`script/no-deprecated-dollar-scopedslots-api`](#script-no-deprecated-dollar-scopedslots-api) | [悪い](#script-no-deprecated-dollar-scopedslots-api-bad) · [良い](#script-no-deprecated-dollar-scopedslots-api-good) | Vue 3 で $slots に統合された $scopedSlots を検出します。 |
 | [`script/no-deprecated-events-api`](#script-no-deprecated-events-api) | [悪い](#script-no-deprecated-events-api-bad) · [良い](#script-no-deprecated-events-api-good) | Vue 3 で削除された $on / $off / $once を検出します。 |
@@ -57,7 +57,7 @@ title: "型と script のルール"
 | [`script/prefer-use-id`](#script-prefer-use-id) | [悪い](#script-prefer-use-id-bad) · [良い](#script-prefer-use-id-good) | 一意な ID の生成に Vue 3.5 の useId() を使います。 |
 | [`script/prefer-use-slots`](#script-prefer-use-slots) | [悪い](#script-prefer-use-slots-bad) · [良い](#script-prefer-use-slots-good) | setup の context.slots を useSlots() に置き換えます。 |
 | [`script/prefer-use-template-ref`](#script-prefer-use-template-ref) | [悪い](#script-prefer-use-template-ref-bad) · [良い](#script-prefer-use-template-ref-good) | テンプレート参照に Vue 3.5 の useTemplateRef() を使います。 |
-| [`script/require-default-prop`](#script-require-default-prop) | [悪い](#script-require-default-prop-bad) · [良い](#script-require-default-prop-good) | 任意指定で Boolean ではない prop に default を用意します。 |
+| [`script/require-default-prop`](#script-require-default-prop) | [悪い](#script-require-default-prop-bad) · [良い](#script-require-default-prop-good) | 省略可能な、Boolean 以外の prop に default を用意します。 |
 | [`script/require-explicit-emits`](#script-require-explicit-emits) | [悪い](#script-require-explicit-emits-bad) · [良い](#script-require-explicit-emits-good) | emit するイベントを defineEmits または emits に宣言します。 |
 | [`script/require-explicit-slots`](#script-require-explicit-slots) | [悪い](#script-require-explicit-slots-bad) · [良い](#script-require-explicit-slots-good) | useSlots() で使う slot を defineSlots の型で宣言します。 |
 | [`script/require-function-return-type`](#script-require-function-return-type) | [悪い](#script-require-function-return-type-bad) · [良い](#script-require-function-return-type-good) | 関数に戻り値の型注釈を指定します。 |
@@ -72,7 +72,7 @@ title: "型と script のルール"
 | [`script/valid-define-emits`](#script-valid-define-emits) | [悪い](#script-valid-define-emits-bad) · [良い](#script-valid-define-emits-good) | defineEmits の重複や型と実行時引数の併用を検出します。 |
 | [`script/valid-define-options`](#script-valid-define-options) | [悪い](#script-valid-define-options-bad) · [良い](#script-valid-define-options-good) | defineOptions の引数と使用回数を検査します。 |
 | [`script/valid-define-props`](#script-valid-define-props) | [悪い](#script-valid-define-props-bad) · [良い](#script-valid-define-props-good) | defineProps の重複や型と実行時引数の併用を検出します。 |
-| [`script/valid-next-tick`](#script-valid-next-tick) | [悪い](#script-valid-next-tick-bad) · [良い](#script-valid-next-tick-good) | nextTick() の完了を await、then、または callback で扱います。 |
+| [`script/valid-next-tick`](#script-valid-next-tick) | [悪い](#script-valid-next-tick-bad) · [良い](#script-valid-next-tick-good) | nextTick() の完了を await、then、またはコールバックで扱います。 |
 | [`type/no-floating-promises`](#type-no-floating-promises) | [悪い](#type-no-floating-promises-bad) · [良い](#type-no-floating-promises-good) | 処理しないまま放置された Promise を検出します。 |
 | [`type/no-reactivity-loss`](#type-no-reactivity-loss) | [悪い](#type-no-reactivity-loss-bad) · [良い](#type-no-reactivity-loss-good) | リアクティブな値を代入や呼び出しで取り出し、元の更新に追従しないスナップショットになる箇所を検出します。 |
 | [`type/no-unsafe-template-binding`](#type-no-unsafe-template-binding) | [悪い](#type-no-unsafe-template-binding-bad) · [良い](#type-no-unsafe-template-binding-good) | テンプレートで安全でない型の値を使用する箇所を検出します。 |
@@ -734,7 +734,7 @@ vp run lint
 
 **悪い**
 
-唯一の inline `<script setup>` のトップレベルで、コンパイラーマクロの props の `user` からさらに `name` を取り出し、既定の深さ 1 を超えています。オブジェクトの内側の配列も深さに数えます。Opinionated と Nuxt では、深さの方針を検査するこの警告が既定で有効です。他のプリセットでは個別に有効化します。コンパイラーの `propsDestructure` 設定は参照せず、`withDefaults` でコンパイルできる場合も警告します。
+この SFC 内に一つだけある、内容を直接記述した `<script setup>` のトップレベルで、コンパイラーマクロの props の `user` からさらに `name` を取り出し、既定の深さ 1 を超えています。オブジェクトの内側の配列も深さに数えます。Opinionated と Nuxt では、深さの方針を検査するこの警告が既定で有効です。他のプリセットでは個別に有効化します。コンパイラーの `propsDestructure` 設定は参照せず、`withDefaults` でコンパイルできる場合も警告します。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -832,7 +832,7 @@ export default {
 
 ### `script/no-deprecated-destroyed-lifecycle`
 
-Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 の hook に置き換えます。
+Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 のライフサイクルフックに置き換えます。
 
 [悪い例](#script-no-deprecated-destroyed-lifecycle-bad) · [良い例](#script-no-deprecated-destroyed-lifecycle-good)
 
@@ -946,7 +946,7 @@ export default {
 
 **良い**
 
-`this.$attrs` と `v-bind="$attrs"` で Vue 3 の属性とリスナーを参照・転送します。スクリプトの受信側・参照に対する既存の広い警告範囲は維持します。
+`this.$attrs` と `v-bind="$attrs"` で Vue 3 の属性とリスナーを参照・転送します。スクリプト内の参照元のオブジェクトや参照方法に対する、既存の広い検出範囲は変わりません。
 
 ```vue annotate="add:4,8"
 <script>
@@ -3303,7 +3303,7 @@ vp run lint
 
 **悪い**
 
-null で初期化した `input` の ref がテンプレートのリテラル `ref="input"` と対応し、通常の nullable なデータではなく要素参照であることが分かります。
+null で初期化した `input` の ref がテンプレートのリテラル `ref="input"` と対応し、null を許容する通常のデータではなく、要素参照であることが分かります。
 
 ```vue annotate="remove:2,3"
 <script setup lang="ts">
@@ -3341,7 +3341,7 @@ const error = ref(null)
 
 ### `script/require-default-prop`
 
-任意指定で Boolean ではない prop に default を用意します。
+省略可能な、Boolean 以外の prop に default を用意します。
 
 [悪い例](#script-require-default-prop-bad) · [良い例](#script-require-default-prop-good)
 
@@ -3473,7 +3473,7 @@ emit("save");
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L61) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L65) · [全ルール](all.md)
 
 ### `script/require-explicit-slots`
 
@@ -3952,7 +3952,7 @@ const c = ref(undefined)  // Ref<undefined>
 
 **良い**
 
-型引数で string と nullable な User の ref を指定します。`ref(0)` には具体的な数値の初期値があり、型推論を使えます。
+型引数で string と、null を許容する User の ref を指定します。`ref(0)` には具体的な数値の初期値があり、型推論を使えます。
 
 ```vue annotate="add:4,5,6"
 <script setup lang="ts">
@@ -4358,7 +4358,7 @@ defineProps<{ title: string }>();
 
 ### `script/valid-next-tick`
 
-nextTick() の完了を await、then、または callback で扱います。
+nextTick() の完了を await、then、またはコールバックで扱います。
 
 [悪い例](#script-valid-next-tick-bad) · [良い例](#script-valid-next-tick-good)
 
@@ -4431,7 +4431,7 @@ await nextTick();
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にしても、個別の有効化が必要なルールは自動では有効になりません。
 
 **設定（Vite+）**
 
@@ -4497,7 +4497,7 @@ void save();
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にしても、個別の有効化が必要なルールは自動では有効になりません。
 
 **設定（Vite+）**
 
@@ -4565,7 +4565,7 @@ const count = toRef(state, "count");
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にしても、個別の有効化が必要なルールは自動では有効になりません。
 
 **設定（Vite+）**
 
@@ -4631,7 +4631,7 @@ defineEmits に型定義を指定します。
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にしても、個別の有効化が必要なルールは自動では有効になりません。
 
 **設定（Vite+）**
 
@@ -4695,7 +4695,7 @@ defineProps に型定義を指定します。
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にしても、個別の有効化が必要なルールは自動では有効になりません。
 
 **設定（Vite+）**
 
@@ -4761,7 +4761,7 @@ script とテンプレートの条件式で安全な真偽判定を使います�
 
 typeAware とこのルールを明示的に有効にします。既定では null または undefined を含み得る数値は許可されず、どちらも含まない数値は許可されます。
 
-型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にしても、個別の有効化が必要なルールは自動では有効になりません。
 
 **設定（Vite+）**
 

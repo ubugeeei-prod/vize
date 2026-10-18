@@ -19,8 +19,8 @@ title: "テンプレートの安全性と HTML の構造"
 | --- | --- | --- |
 | [`vue/no-duplicate-attributes`](#vue-no-duplicate-attributes) | [悪い](#vue-no-duplicate-attributes-bad) · [良い](#vue-no-duplicate-attributes-good) | 同じ要素の属性重複を検出します。 |
 | [`vue/no-textarea-mustache`](#vue-no-textarea-mustache) | [悪い](#vue-no-textarea-mustache-bad) · [良い](#vue-no-textarea-mustache-good) | textarea 内の mustache を検出し、v-model の使用を勧めます。 |
-| [`vue/no-unsafe-url`](#vue-no-unsafe-url) | [悪い](#vue-no-unsafe-url-bad) · [良い](#vue-no-unsafe-url-good) | 危険なスキームになり得る URL 属性やバインディングを検出します。 |
-| [`vue/no-v-html`](#vue-no-v-html) | [悪い](#vue-no-v-html-bad) · [良い](#vue-no-v-html-good) | XSS を防ぐため、v-html の使用に警告します。 |
+| [`vue/no-unsafe-url`](#vue-no-unsafe-url) | [悪い](#vue-no-unsafe-url-bad) · [良い](#vue-no-unsafe-url-good) | 危険なスキームを含む可能性がある URL 属性やバインディングを検出します。 |
+| [`vue/no-v-html`](#vue-no-v-html) | [悪い](#vue-no-v-html-bad) · [良い](#vue-no-v-html-good) | XSS を防ぐため、v-html を使用した箇所に警告を出します。 |
 | [`vue/no-v-text-v-html-on-component`](#vue-no-v-text-v-html-on-component) | [悪い](#vue-no-v-text-v-html-on-component-bad) · [良い](#vue-no-v-text-v-html-on-component-good) | コンポーネントでの v-text / v-html を検出します。 |
 | [`vue/permitted-contents`](#vue-permitted-contents) | [悪い](#vue-permitted-contents-bad) · [良い](#vue-permitted-contents-good) | HTML の要素ごとのコンテンツモデルを検査します。 |
 | [`vue/use-unique-element-ids`](#vue-use-unique-element-ids) | [悪い](#vue-use-unique-element-ids-bad) · [良い](#vue-use-unique-element-ids-good) | 静的 ID の代わりに useId() で一意な ID を生成します。 |
@@ -151,7 +151,7 @@ v-model で、編集可能な textarea の値と message を関連付けます�
 
 ### `vue/no-unsafe-url`
 
-危険なスキームになり得る URL 属性やバインディングを検出します。
+危険なスキームを含む可能性がある URL 属性やバインディングを検出します。
 
 [悪い例](#vue-no-unsafe-url-bad) · [良い例](#vue-no-unsafe-url-good)
 
@@ -198,7 +198,7 @@ a の移動先に、JavaScript を実行する javascript: スキームを使っ
 
 **良い**
 
-移動先を、通常のローカルの移動先 /next に変更します。
+移動先を、通常のローカルパス /next に変更します。
 
 ```vue annotate="add:2"
 <template>
@@ -212,7 +212,7 @@ a の移動先に、JavaScript を実行する javascript: スキームを使っ
 
 ### `vue/no-v-html`
 
-XSS を防ぐため、v-html の使用に警告します。
+XSS を防ぐため、v-html を使用した箇所に警告を出します。
 
 [悪い例](#vue-no-v-html-bad) · [良い例](#vue-no-v-html-good)
 
@@ -372,7 +372,7 @@ vp run lint
 
 **悪い**
 
-p にブロックを入れ、tbody を省略し、操作要素を入れ子にするか、ul に div を直接入れています。
+p にブロック要素を入れたり、tbody を省略したりしています。操作要素の入れ子や、ul の直下に div を置く例もあります。
 
 ```vue annotate="remove:2,3,4,5"
 <template>

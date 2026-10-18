@@ -9,11 +9,11 @@ import { runInNewContext } from "node:vm";
 import { parse, parseAllDocuments, stringify } from "yaml";
 
 import { runToolCommand } from "./_helpers/tool-commands.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 
 const workspacePaths = ["playground", "npm/builder/vite", "npm/cli", "npm/native", "npm/ui"];
 const oldFilters = workspacePaths.slice(0, 4).map((entry) => `./${entry}...`);
-const workflow = parse(readRepoFile(".github", "workflows", "check.yml"));
+const workflow = parse(checkWorkflowJobSources());
 const steps = workflow.jobs["playground-test"].steps;
 const install = steps.find((step: { name?: string }) => step.name === "Install JS dependencies");
 const filters = [...install.run.matchAll(/--filter '([^']+)'/gu)].map((match) => match[1]);

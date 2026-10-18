@@ -42,6 +42,28 @@ const atomicPrefixes = [
   "tests/_fixtures/differential/lsp/event-rename/8010/",
   "tests/_fixtures/differential/lsp/rename-runtime-distribution/8010/",
 ];
+
+/** Every required H anchor is present; every tracked helper/fixture is retained. */
+export function readLspSourceFiles(root: string, head: string) {
+  const tracked = (required: string[]) => {
+    const files = execFileSync(
+      "git",
+      ["--no-replace-objects", "ls-tree", "-r", "--name-only", "-z", head, "--", ...required],
+      { cwd: root, encoding: "utf8", maxBuffer: 4 * 1024 * 1024 },
+    )
+      .split("\0")
+      .filter(Boolean);
+    for (const prefix of required)
+      assert.ok(
+        prefix.endsWith("/")
+          ? files.some((file) => file.startsWith(prefix))
+          : files.includes(prefix),
+        `required LSP source anchor absent from H: ${prefix}`,
+      );
+    return files;
+  };
+  return { originalFiles: tracked(prefixes), atomicFiles: tracked(atomicPrefixes) };
+}
 export function python(script: string, args: string[]) {
   return JSON.parse(
     execFileSync("python3", ["-c", script, ...args], {
@@ -202,22 +224,7 @@ export function prepareLspSource(root: string, head: string, consumer: string, o
     { cwd: root, timeout: 30_000 },
   );
   execFileSync("tar", ["-xf", archive, "-C", sourceTree], { timeout: 30_000 });
-  const files = execFileSync(
-    "git",
-    ["--no-replace-objects", "ls-tree", "-r", "--name-only", head, "--", ...prefixes],
-    { cwd: root, encoding: "utf8", maxBuffer: 4 * 1024 * 1024 },
-  )
-    .trim()
-    .split("\n");
-  assert.equal(files.length, 53, "the complete original two-target source closure");
-  const atomicFiles = execFileSync(
-    "git",
-    ["--no-replace-objects", "ls-tree", "-r", "--name-only", head, "--", ...atomicPrefixes],
-    { cwd: root, encoding: "utf8", maxBuffer: 4 * 1024 * 1024 },
-  )
-    .trim()
-    .split("\n");
-  assert.equal(atomicFiles.length, 45, "the complete unchanged atomic-original source closure");
+  const { originalFiles: files, atomicFiles } = readLspSourceFiles(root, head);
   const atomicSourceFiles = atomicFiles.map((file) => {
     const bytes = readRawBlob(root, head, file);
     assert.equal(sha256(fs.readFileSync(path.join(sourceTree, file))), sha256(bytes), file);

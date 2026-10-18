@@ -4,7 +4,7 @@ title: "script/no-deprecated-destroyed-lifecycle"
 
 # `script/no-deprecated-destroyed-lifecycle`
 
-Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 の hook に置き換えます。
+Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 のライフサイクルフックに置き換えます。
 
 [悪い例](#悪い) · [良い例](#良い)
 

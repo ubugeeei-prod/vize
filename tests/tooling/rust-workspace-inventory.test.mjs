@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -274,4 +276,172 @@ void test("an unchanged required case identity cannot be reported as skipped exe
     () => verifyWorkspaceExecution(receipt("ci"), timing, skipped, source.sha),
     /skipped a required case/,
   );
+});
+
+const workspaceScript = fileURLToPath(
+  new URL("../../tools/support/compat/github/rust-workspace-inventory.ts", import.meta.url),
+);
+function retainedExecution(t) {
+  const cwd = mkdtempSync(join(tmpdir(), "vize-retained-workspace-"));
+  t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+  const files = {
+    "Cargo.toml": '[workspace]\nmembers = []\n[profile.ci]\ninherits = "dev"\n',
+    "Cargo.lock": "version = 4\n",
+    "rust-toolchain.toml": '[toolchain]\nchannel = "1.99.1"\n',
+    ".cargo/config.toml": "# controlled protocol source\n",
+    ".config/nextest.toml": "[profile.full]\nretries = 0\n",
+  };
+  for (const [name, bytes] of Object.entries(files)) {
+    const directory = name.slice(0, name.lastIndexOf("/"));
+    if (name.includes("/")) mkdirSync(join(cwd, directory), { recursive: true });
+    writeFileSync(join(cwd, name), bytes);
+  }
+  git("init", "-q");
+  git("config", "user.name", "Protocol Control");
+  git("config", "user.email", "control@example.invalid");
+  git("add", ".");
+  git("commit", "-qm", "controlled inventory, no native execution");
+  const current = {
+    ...source,
+    sha: git("rev-parse", "HEAD"),
+    tree: git("rev-parse", "HEAD^{tree}"),
+    files: Object.fromEntries(Object.entries(files).map(([name, bytes]) => [name, digest(bytes)])),
+  };
+  const directory = join(cwd, "retained-results");
+  mkdirSync(directory);
+  const save = (name, value) => writeFileSync(join(directory, name), JSON.stringify(value));
+  const inventories = {},
+    observations = {};
+  for (const profile of ["test", "ci"]) {
+    const rawFile = `workspace-inventory-${profile}.raw.json`;
+    inventories[profile] = join(directory, `workspace-inventory-${profile}.json`);
+    save(rawFile, list);
+    save(`workspace-inventory-${profile}.json`, {
+      ...receipt(profile),
+      schema: "vize.rust.workspace-inventory",
+      schemaVersion: 1,
+      source: current,
+      rawFile,
+      rawSha256: digest(readFileSync(join(directory, rawFile))),
+    });
+    observations[profile] = {
+      ...structuredClone(timing),
+      source: current,
+      sourceSha: current.sha,
+      cargoProfile: profile,
+      execution: { runId: "123", attempt: "1" },
+      phases: timing.phases.map((phase) => ({
+        ...phase,
+        args: phase.args.map((arg) => (arg === "ci" ? profile : arg)),
+      })),
+    };
+    save(
+      profile === "ci" ? "workspace-timing.json" : "workspace-reference-timing.json",
+      observations[profile],
+    );
+    writeFileSync(join(directory, `workspace-junit-${profile}.xml`), junit);
+  }
+  const run = (mode, producer, environment = {}) =>
+    spawnSync(
+      process.execPath,
+      [
+        workspaceScript,
+        mode,
+        ...(mode === "verify" ? [current.sha, directory] : [inventories.test, inventories.ci]),
+        ...(producer === undefined ? [] : [producer]),
+      ],
+      {
+        cwd,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          GITHUB_RUN_ID: "123",
+          GITHUB_RUN_ATTEMPT: "2",
+          NEEDS_JSON: JSON.stringify({
+            "full-rust-workspace": { result: "success" },
+            "clippy-and-test": { result: "success" },
+          }),
+          ...environment,
+        },
+      },
+    );
+  return { cwd, directory, current, observations, save, run };
+}
+
+void test("retained producer attempt is explicit and both real CLI modes preserve the current-attempt default", (t) => {
+  const f = retainedExecution(t); // Synthetic transport bytes, never native acceptance.
+  for (const mode of ["verify", "compare"]) {
+    const retained = f.run(mode, "1");
+    assert.equal(retained.status, 0, retained.stderr);
+    assert.notEqual(
+      f.run(mode).status,
+      0,
+      "missing producer output must not choose an old attempt",
+    );
+    const original = f.run(mode, undefined, { GITHUB_RUN_ATTEMPT: "1" });
+    assert.equal(original.status, 0, original.stderr);
+  }
+});
+
+void test("retained CLI custody refuses future, zero, foreign, changed or absent producer authority", (t) => {
+  const f = retainedExecution(t);
+  for (const mode of ["verify", "compare"]) {
+    for (const attempt of ["0", "3", "-1", "", "1.0", "01", "9007199254740992", "2"])
+      assert.notEqual(f.run(mode, attempt).status, 0, `${mode}: ${attempt}`);
+    for (const environment of [
+      { GITHUB_RUN_ID: "999" },
+      { GITHUB_RUN_ID: "" },
+      { GITHUB_RUN_ATTEMPT: "" },
+      { GITHUB_RUN_ATTEMPT: "0" },
+    ])
+      assert.notEqual(f.run(mode, "1", environment).status, 0, JSON.stringify(environment));
+  }
+  for (const [file, record] of [
+    ["workspace-timing.json", f.observations.ci],
+    ["workspace-reference-timing.json", f.observations.test],
+  ]) {
+    f.save(file, { ...record, execution: { runId: "123", attempt: "2" } });
+    assert.notEqual(
+      f.run("compare", "1").status,
+      0,
+      "both executions must belong to the same explicit producer",
+    );
+    f.save(file, record);
+  }
+});
+
+void test("retained attempt never relaxes whole execution, source, argv or complete JUnit requirements", (t) => {
+  const f = retainedExecution(t);
+  for (const mutate of [
+    (value) => {
+      value.phases[2].exitCode = 1;
+    },
+    (value) => {
+      value.phases.pop();
+    },
+    (value) => {
+      value.phases[1].args.pop();
+    },
+    (value) => {
+      value.inventoryOnly = true;
+    },
+    (value) => {
+      value.sourceSha = "b".repeat(40);
+    },
+    (value) => {
+      value.execution.runId = "999";
+    },
+  ]) {
+    const changed = structuredClone(f.observations.ci);
+    mutate(changed);
+    f.save("workspace-timing.json", changed);
+    for (const mode of ["verify", "compare"])
+      assert.notEqual(f.run(mode, "1").status, 0, String(mutate));
+  }
+  f.save("workspace-timing.json", f.observations.ci);
+  for (const xml of ["<testsuites />", junit.replace(" />", "><skipped /></testcase>")]) {
+    writeFileSync(join(f.directory, "workspace-junit-ci.xml"), xml);
+    for (const mode of ["verify", "compare"]) assert.notEqual(f.run(mode, "1").status, 0);
+  }
 });

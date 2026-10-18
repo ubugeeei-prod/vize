@@ -1,4 +1,5 @@
 import { realProjectJobNamesAtRevision } from "./real-project-matrix-plan.ts";
+import { fullCheckJobNames } from "./full-check-policy.ts";
 
 /**
  * Check is the release gate. Fuzz, Miri, Real Project Matrix, and Docs build
@@ -77,18 +78,6 @@ const requiredSemverCrates = [
 ];
 
 const requiredJobNames = new Map([
-  [
-    "Check",
-    [
-      "test-scripts",
-      "test-js-packages",
-      "build-js-packages",
-      "full-js-report",
-      "Full Rust workspace and doctests",
-      "clippy-and-test",
-      "full-rust-report",
-    ],
-  ],
   ["Benchmark", ["pr-benchmark-budget"]],
   [
     "Fuzz",
@@ -116,7 +105,8 @@ export function requiredWorkflowJobNames(workflowName, run, repoRoot) {
   if (workflowName === "Real Project Matrix") {
     return realProjectJobNamesAtRevision(run?.head_sha, repoRoot);
   }
-  const names = requiredJobNames.get(workflowName) ?? [];
+  const names =
+    workflowName === "Check" ? fullCheckJobNames(run) : (requiredJobNames.get(workflowName) ?? []);
   // Match check.yml: main-source full runs intentionally skip release API checks.
   if (
     workflowName === "Check" &&
@@ -218,7 +208,11 @@ function formatJobFailureSummary(summary) {
 }
 
 export function workflowRequiresJobEvidence(workflowName) {
-  return workflowName === "Real Project Matrix" || requiredJobNames.has(workflowName);
+  return (
+    workflowName === "Check" ||
+    workflowName === "Real Project Matrix" ||
+    requiredJobNames.has(workflowName)
+  );
 }
 
 export function summarizeRequiredWorkflowJobFailures(workflowName, jobs, run, repoRoot) {

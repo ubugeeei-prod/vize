@@ -13,7 +13,9 @@ LSP、IDE 管理、`check-server`、プロファイリングには [Rust バイ�
 npm パッケージは共有設定のヘルパーと、NAPI を利用する `build`、`fmt`、`lint`、`check`、`clean`、`ready`、`upgrade` を提供します。
 [エントリーポイントの比較](#npm-パッケージのスクリプトと-rust-cli-の比較) で用途に合うものを選び、具体的な作業順序は [ユーザーワークフロー](./workflows.md) を参照してください。
 
-## アプリケーションのパッケージのスクリプト
+<span id="アプリケーションのパッケージのスクリプト"></span>
+
+## package.json にスクリプトを登録する
 
 アプリでは npm からインストールし、日常のコマンドをプロジェクトのスクリプトに登録します。
 
@@ -63,7 +65,7 @@ cargo install --path crates/vize --force --locked
 | ビルド・整形・lint・型チェック・準備・アップグレードを実行するパッケージスクリプト | npm パッケージの `vp run vize:*`                 |
 | `.vue`、`.ts`、`.tsx`、`.d.ts` を含むプロジェクト全体の型チェック                  | Rust `vize check`                                |
 | LSP、IDE セットアップ、`check-server`、プロファイル出力                            | Rust `vize` バイナリ                             |
-| 共有 Vite プラグイン、npm package コマンド、および Rust CLI 設定                   | [Vite config](./configuration.md#standalone-cli) |
+| Vite プラグイン、npm パッケージのコマンド、Rust CLI で共有する設定                   | [Vite の設定](./configuration.md#standalone-cli) |
 
 ## コマンド
 
@@ -253,7 +255,7 @@ vize doctor src
 vize doctor src packages/shared --format json
 ```
 
-`vize doctor` は、Vue SFC とスクリプトモジュールを横断する、決定的なアプリケーショングラフを構築します。現在の解析対象は依存性注入、要素 ID の一意性、サーバーとクライアントの境界、リアクティビティの流れ、非同期の変更によるリスク、setup コンテキストの所有権、循環 import、コンポーネント間の props 契約です。
+`vize doctor` は、Vue SFC とスクリプトモジュールを横断するアプリケーショングラフを、同じ入力から常に同じ結果になるように構築します。現在の解析対象は依存性注入、要素 ID の一意性、サーバーとクライアントの境界、リアクティビティの流れ、非同期の変更によるリスク、setup コンテキストの所有権、循環 import、コンポーネント間の props 契約です。
 Vue の診断位置は、元の `.vue` のバイトオフセットに対応付けます。`<script>` と `<script setup>` を併用するコンポーネントのテンプレート内の props 使用箇所と、関連する `defineProps` 宣言も対象です。
 ソース管理の ignore ファイルに従って探索し、指定したワークスペース外の入力は拒否します。コンポーネントやスクリプトを解析できない場合は処理を失敗として扱い、ファイルには書き込みません。
 
@@ -264,7 +266,7 @@ Vue の診断位置は、元の `.vue` のバイトオフセットに対応付�
 | `--exit-zero`  | 通常は失敗になる、確認済みのエラーがあっても成功を返す                         |
 
 終了コード `0` は検証の通過、`1` は確実または高い確信度のエラー、`2` は探索・構文解析・解析・シリアライズ・出力の失敗を示します。警告や確信度の低い指摘は健全性スコアに影響しますが、デフォルトでは失敗にしません。
-フィルター、変更ファイル、スコア、自動化の詳しい契約は [Doctor による診断](./doctor.md) を参照してください。決定的な `--format json` レポートには形式とスコア計算のバージョンが明記され、CI や AI ツールから扱う場合に適しています。
+フィルター、変更ファイル、スコア、自動化に関する詳しい仕様は [Doctor による診断](./doctor.md) を参照してください。`--format json` のレポートは同じ入力から同じ結果が得られ、形式とスコア計算のバージョンも明記されるため、CI や AI ツールで扱う場合に適しています。
 
 ```bash
 vize doctor src --format json > doctor-report.json
@@ -281,7 +283,7 @@ vize inspector src --format json --output inspector-payload.json
 vize inspector src --format agent --output inspector-agent.json
 ```
 
-`vize inspector` は、1 つ以上の `.vue` ファイルを、プレイグラウンドのコンパイラーインスペクターが読み込めるデータにまとめます。ブラウザーでは Vue の出力、Vize の出力、Virtual TS、VIR、ファイル間のグラフを比較でき、パーマリンクと内容を入力済みの PR 作成リンクも生成できます。
+`vize inspector` は、1 つ以上の `.vue` ファイルを、プレイグラウンドのコンパイラーインスペクターが読み込めるデータにまとめます。ブラウザーでは Vue の出力、Vize の出力、Virtual TS、VIR、ファイル間のグラフを比較でき、パーマリンクや、再現情報を入力済みの PR 作成リンクも生成できます。
 
 ローカルツールや AI エージェントに同じ再現データを渡す場合は、`--format agent` を使ってください。ブラウザーを開かずに、同じデータ、プレイグラウンドの URL、概要の数値、import グラフを取得できます。データ、グラフ、行単位の差分情報はローカル用の `vize_curator` が生成し、CLI とプレイグラウンドの比較内容を揃えます。
 

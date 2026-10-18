@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { gitTrackedFiles } from "../../tools/support/git-tracked-files.mjs";
-import { readRepoFile, root } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile, root } from "./support/github-workflows.ts";
 
 type Step = { name?: string; uses?: string; with?: Record<string, string> };
 type Workflow = { jobs?: Record<string, { steps?: Step[] }> };
@@ -22,7 +22,11 @@ const CACHES = [
 const OUTPUT_GLOB = /^(?:npm\/wasm|playground\/src\/wasm)\/vize_vitrine\*$/;
 
 function wasmCacheStep(workflow: string, job: string): Step {
-  const parsed = parse(readRepoFile(".github", "workflows", workflow)) as Workflow;
+  const parsed = parse(
+    workflow === "check.yml"
+      ? checkWorkflowJobSources()
+      : readRepoFile(".github", "workflows", workflow),
+  ) as Workflow;
   const step = parsed.jobs?.[job]?.steps?.find(
     (candidate) => candidate.name === "Cache WASM build",
   );

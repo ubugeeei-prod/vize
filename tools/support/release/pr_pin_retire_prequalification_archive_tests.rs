@@ -220,7 +220,9 @@ pub(super) fn prequalification_fixture(repo: &Repo) -> (Value, String, String, S
         "tools/support/release/retirement_qualification.ts",
         "tools/support/compat/github/release-preflight-bootstrap.mjs",
         "tools/support/compat/github/release-preflight-evidence.mjs",
+        "tools/support/compat/github/full-check-policy.ts",
         "tools/support/compat/github/real-project-matrix-plan.ts",
+        "tools/support/command-runtime.ts",
     ] {
         let target = repo.work.join(file);
         std::fs::create_dir_all(target.parent().unwrap()).unwrap();

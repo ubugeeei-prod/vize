@@ -9,7 +9,7 @@ reactive オブジェクトの分割代入はフィールドをコピーし、�
 既定の重大度: error  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
 自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
+オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -48,7 +48,7 @@ createApp(Root).mount("#app");
 
 ## 悪い
 
-`props` object の通常の分割代入は現在の `item` を取り出します。Vue 3.5 の `defineProps()` から直接行う分割代入とは別です。
+`props` オブジェクトを通常の分割代入で展開すると、現在の `item` の値を取り出します。Vue 3.5 の `defineProps()` から直接行う分割代入とは別です。
 
 `UserPage.vue`
 
@@ -104,7 +104,7 @@ const item = toRef(props, "item");
 </script>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

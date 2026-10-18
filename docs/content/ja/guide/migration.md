@@ -3,6 +3,8 @@ title: 既存ツールから移行
 description: 対応表と具体的な設定差分を使って、Vue ツールを1つずつ移行する。
 ---
 
+<!-- Reviewed translation; source: guide/migration.md; scope: complete document -->
+
 # 既存ツールから移行する
 
 最初に Vite プラグインを置き換え、アプリをビルドしてから検査を導入します。
@@ -18,7 +20,7 @@ Vize は開発中です。全オプションや診断の完全な互換性を保
 | Vue の lint script | `vp run lint` | Vize の Vue ルールと Oxlint | 同じ統合パッケージ |
 | Vue の format script | `vp run fmt` | Vue は Vize、その他は Oxfmt | 同じ統合パッケージ |
 
-最後の3つは [Vite+ helper](./vite-plus.md) が生成するカスタムタスクです。
+最後の3つは [Vite+ の設定ヘルパー](./vite-plus.md) が生成するカスタムタスクです。
 組み込みの `vp lint`・`vp fmt`・`vp check` とは別に実行します。
 
 ## Vite+ プロジェクト
@@ -43,11 +45,11 @@ export default defineConfig({
 });
 ```
 
-helper が Vize コンパイラとネイティブタスクを登録します。その他の plugin、alias、
-server 設定、test はそのまま残してください。`compiler: {}` は既定値を使い、
+設定ヘルパーが Vize コンパイラとネイティブタスクを登録します。ほかのプラグイン、エイリアス、
+サーバー設定、テストはそのまま残してください。`compiler: {}` は既定値を使い、
 `compiler` 自体を省略することもできます。
 
-対応する plugin オプションは `compiler` に移します。Vue コンパイラを二重に登録しないでください。
+対応するプラグインオプションは `compiler` に移します。Vue コンパイラを二重に登録しないでください。
 
 ```ts annotate="remove:1;add:2"
   plugins: [vue({ template: { compilerOptions: { whitespace: "preserve" } } })],
@@ -67,14 +69,14 @@ vp run fmt:check
 vp run check
 ```
 
-既存の package script は保持されます。`check` がある場合は `vp run vize:check` を使います。
+既存の `package.json` のスクリプトは保持されます。`check` がある場合は `vp run vize:check` を使います。
 明示的な `run.tasks` も優先されます。CI のコマンドを変える前に[タスク名](./vite-plus.md#tasks)を確認してください。
 
 <span id="vite-plugin"></span>
 
 ## 通常の Vite: コンパイラだけ置き換える
 
-`vite` の `defineConfig` を維持し、plugin だけ置き換えます。
+`vite` の `defineConfig` を維持し、プラグインだけ置き換えます。
 
 ```ts annotate="remove:2,6;add:3,7"
 import { defineConfig } from "vite";
@@ -93,12 +95,12 @@ vp exec vite build
 ```
 
 lint・フォーマット・型チェックは既存のツールを使い続けます。
-[Vite plugin のオプション](./vite-plugin.md#compiler-options)は `vize({ ... })` に設定します。
-まとめて実行するタスクが必要になったら Vite+ helper を導入できます。
+[Vite プラグインのオプション](./vite-plugin.md#compiler-options)は `vize({ ... })` に設定します。
+まとめて実行するタスクが必要になったら、Vite+ の設定ヘルパーを導入できます。
 
 ## 結果を比較してから検査コマンドを置き換える
 
-helper を使う Vite+ プロジェクトでは、次の script 変更でネイティブタスクを利用できます。
+設定ヘルパーを使う Vite+ プロジェクトでは、次のようにスクリプトを変更するとネイティブタスクを利用できます。
 変更は1つずつ確認してください。
 
 ```json annotate="remove:1,3,5;add:2,4,6"
@@ -110,7 +112,7 @@ helper を使う Vite+ プロジェクトでは、次の script 変更でネイ�
   "format": "vp run fmt"
 ```
 
-既存の `typecheck`・`lint` script があると、helper は `vize:typecheck`・`vize:lint` を生成します。
+既存の `typecheck`・`lint` スクリプトがあると、設定ヘルパーは `vize:typecheck`・`vize:lint` を生成します。
 **実際の置き換えでは、その衝突しない名前を使ってください**。
 
 ```json

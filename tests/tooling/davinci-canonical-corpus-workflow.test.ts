@@ -190,12 +190,15 @@ await test("ordinary source and queue reports require the strict reusable execut
   );
   assert.equal(corpus.on.workflow_call.inputs.davinci_dom_corpus_mode.default, "enforce");
   assert.deepEqual(corpus.permissions, { contents: "read" });
-  for (const job of [
-    corpus.jobs["davinci-dom-corpus"],
-    parse(readRepoFile(".github", "workflows", "check.yml")).jobs["pr-source-checks"],
-  ]) {
-    assert.deepEqual(job.permissions, { contents: "read", actions: "read", checks: "read" });
-  }
+  assert.deepEqual(corpus.jobs["davinci-dom-corpus"].permissions, {
+    contents: "read",
+    actions: "read",
+    checks: "read",
+  });
+  assert.deepEqual(
+    parse(readRepoFile(".github", "workflows", "check.yml")).jobs["pr-source-checks"].permissions,
+    { contents: "read", actions: "read", checks: "read", "pull-requests": "read" },
+  );
   assert.deepEqual(corpus.env, {
     CARGO_TERM_COLOR: "always",
     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true,

@@ -44,11 +44,11 @@ const topPrior = [
   "pr-source-checks",
   "instruction-counts",
   "level-dependency-direction",
-  "release-integration-catalog",
 ];
 const prior = [
   "pr-source-plan",
   "pr-rust-source",
+  "pr-rust-products",
   "pr-js-packages",
   "pr-native-runtime",
   "pr-playground-test",
@@ -62,16 +62,27 @@ test("retiring the WIT lane preserves the required source report and existing Ch
   assert.equal(Object.hasOwn(check.jobs, "wit-contracts"), false);
   assert.deepEqual(check.jobs["pr-source-checks"], {
     name: "PR source checks",
-    permissions: { contents: "read", actions: "read", checks: "read" },
+    permissions: { contents: "read", actions: "read", checks: "read", "pull-requests": "read" },
     if: "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
     uses: "./.github/workflows/pr-source-checks.yml",
   });
-  assert.deepEqual(source.on, { workflow_call: null });
+  assert.deepEqual(source.on, {
+    workflow_call: {
+      outputs: {
+        integration: { value: "${{ jobs.release-integration-catalog.outputs.integration }}" },
+        qualification: { value: "${{ jobs.release-integration-catalog.outputs.qualification }}" },
+        "product-qualification": {
+          value: "${{ jobs.release-integration-catalog.outputs.product-qualification }}",
+        },
+      },
+    },
+  });
   assert.equal(Object.hasOwn(source.jobs, "wit-contracts"), false);
   assert.deepEqual(source.jobs["source-report"].needs, [
     ...prior,
     "nuxt-module-qualification",
     "canonical-corpus",
+    "release-integration-catalog",
   ]);
   assert.equal(
     source.jobs["source-report"].if,
@@ -121,7 +132,11 @@ test("retiring the WIT lane preserves the required source report and existing Ch
   assert.equal(custody.with?.path, "${{ runner.temp }}/vize-release-integration-final/");
   assert.equal(custody.with?.["if-no-files-found"], "error");
   assert.deepEqual(check.permissions, { contents: "read" });
-  assert.deepEqual(source.permissions, { contents: "read" });
+  assert.deepEqual(source.permissions, {
+    contents: "read",
+    "pull-requests": "read",
+    actions: "read",
+  });
   assert.equal(check.concurrency["cancel-in-progress"], true);
   assert.equal(
     check.concurrency.group,

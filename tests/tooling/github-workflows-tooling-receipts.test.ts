@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 
 type Step = {
   name?: string;
@@ -27,7 +27,7 @@ type Workflow = {
 };
 
 test("scheduled full tooling requires the original current-source CLI receipt before testing", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as Workflow;
+  const workflow = parse(checkWorkflowJobSources()) as Workflow;
   const steps = (
     parse(readRepoFile(".github", "actions", "test-full-tooling", "action.yml")) as {
       runs: { steps: Step[] };

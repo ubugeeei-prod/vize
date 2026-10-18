@@ -61,7 +61,7 @@ export const vue2Explanations: readonly ExplanationRecord[] = [
     "The named slot `mySlot` uses camelCase where the rule requires a hyphenated name.",
     "`#my-slot` uses kebab-case. Rename the corresponding slot outlet to the same name.",
     "名前付きスロット `mySlot` が camelCase で、ハイフン区切りの規約に合いません。",
-    "`#my-slot` を kebab-case にします。対応するスロットの出口の名前も合わせます。",
+    "スロット名を kebab-case の `#my-slot` にします。対応するスロットの出口の名前も合わせます。",
   ],
   [
     "vue/this-in-template",
@@ -88,7 +88,7 @@ export const vue2Explanations: readonly ExplanationRecord[] = [
     "vue/v-bind-style",
     "`v-bind:class` uses the long form where the configured binding style requires the colon shorthand.",
     "`:class` retains the same expression with the required shorthand; this rule concerns spelling rather than the value's type.",
-    "`v-bind:class` が長い形式で、設定したコロン省略形の規約に合いません。",
+    "`v-bind:class` が長い形式で、設定で指定したコロンによる省略形の規約に合いません。",
     "同じ式を `:class` にします。値の型ではなくディレクティブの書き方を検査するルールです。",
   ],
   [
@@ -159,7 +159,7 @@ export const vue2Explanations: readonly ExplanationRecord[] = [
     "The examples leave `v-else-if` without a preceding conditional branch or a condition, or give it an argument or modifier.",
     "Place `v-else-if` with a condition immediately after the `v-if` or `v-else-if` branch it continues.",
     "`v-else-if` の直前に条件分岐がない、条件式がない、引数や修飾子を渡している、といった不正な書き方です。",
-    "続きとなる `v-if` または `v-else-if` の直後に、条件式を持つ `v-else-if` を置きます。",
+    "先行する `v-if` または `v-else-if` の直後に、条件式を持つ `v-else-if` を置きます。",
   ],
   [
     "vue/valid-v-for",

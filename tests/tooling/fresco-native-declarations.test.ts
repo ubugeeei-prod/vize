@@ -6,7 +6,11 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  readRepoFile,
+  workflowJobBody,
+} from "./support/github-workflows.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const packageDir = path.join(root, "npm/fresco-native");
@@ -126,7 +130,7 @@ test("fresco-native verifier rejects declaration and loader export drift", () =>
 });
 
 test("build CI verifies generated Fresco declarations and consumer types", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const buildJob = workflowJobBody(workflow, "build-js-packages");
 
   assert.match(buildJob, /\bcheck:generated\b/);

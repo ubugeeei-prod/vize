@@ -116,7 +116,8 @@ test("integration planning rejects missing, foreign and ambiguous event identiti
 
 test("required Check report consumes the always-running catalog gate without allowing skips", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "check.yml"));
-  const wrapper = workflow.jobs["release-integration-catalog"];
+  const source = parse(readRepoFile(".github/workflows/pr-source-checks.yml"));
+  const wrapper = source.jobs["release-integration-catalog"];
   const catalogWorkflow = parse(
     readRepoFile(".github", "workflows", "release-integration-catalog.yml"),
   );
@@ -126,6 +127,7 @@ test("required Check report consumes the always-running catalog gate without all
   assert.deepEqual(wrapper.permissions, gate.permissions);
   assert.deepEqual(Object.keys(catalogWorkflow.on.workflow_call.outputs).sort(), [
     "integration",
+    "product-qualification",
     "qualification",
   ]);
   assert.equal(
@@ -137,7 +139,8 @@ test("required Check report consumes the always-running catalog gate without all
     "pull-requests": "read",
     actions: "read",
   });
-  assert.ok(workflow.jobs["test-report"].needs.includes("release-integration-catalog"));
+  assert.ok(workflow.jobs["test-report"].needs.includes("pr-source-checks"));
+  assert.ok(source.jobs["source-report"].needs.includes("release-integration-catalog"));
   const named = (name: string) => {
     const matches = gate.steps.filter((step: { name?: string }) => step.name === name);
     assert.equal(matches.length, 1, `one ${name} step`);
@@ -159,7 +162,7 @@ test("required Check report consumes the always-running catalog gate without all
   for (const step of gate.steps.filter(
     (step: object) =>
       ![initialCheckout, select, snapshot].includes(step) &&
-      !("id" in step && step.id === "qualification") &&
+      !("id" in step && ["qualification", "products"].includes(String(step.id))) &&
       !("uses" in step && String(step.uses).startsWith("actions/setup-node@")),
   )) {
     assert.equal(step.if, "${{ steps.candidate.outputs.integration != '' }}");
@@ -290,21 +293,22 @@ const originalNeeds = [
   "pr-source-checks",
   "instruction-counts",
   "level-dependency-direction",
-  "release-integration-catalog",
 ];
 
 function qualificationWorkflows() {
   return {
     check: parse(readRepoFile(".github", "workflows", "check.yml")),
     catalog: parse(readRepoFile(".github", "workflows", "release-integration-catalog.yml")),
+    source: parse(readRepoFile(".github/workflows/pr-source-checks.yml")),
   };
 }
 
 function assertRequiredQualification({
   check,
   catalog,
+  source,
 }: ReturnType<typeof qualificationWorkflows>) {
-  const wrapper = check.jobs["release-integration-catalog"];
+  const wrapper = source.jobs["release-integration-catalog"];
   const gate = catalog.jobs["release-integration-catalog"];
   const report = check.jobs["test-report"];
   const permissions = { contents: "read", "pull-requests": "read", actions: "read" };
@@ -325,8 +329,9 @@ function assertRequiredQualification({
   assert.deepEqual(gate.outputs, {
     integration: "${{ steps.candidate.outputs.integration }}",
     qualification: "${{ steps.qualification.outputs.qualification }}",
+    "product-qualification": "${{ steps.products.outputs.product-qualification }}",
   });
-  for (const name of ["integration", "qualification"]) {
+  for (const name of ["integration", "qualification", "product-qualification"]) {
     assert.equal(
       catalog.on.workflow_call.outputs[name].value,
       `\${{ jobs.release-integration-catalog.outputs.${name} }}`,
@@ -379,13 +384,10 @@ function assertRequiredQualification({
   assert.equal(select.if, mergeGroup);
   assert.equal(verify.if, mergeGroup);
   assert.equal(verify.env.CURRENT_INTEGRATION, "${{ steps.final-candidate.outputs.integration }}");
-  assert.equal(
-    verify.env.CATALOG_INTEGRATION,
-    "${{ needs.release-integration-catalog.outputs.integration }}",
-  );
+  assert.equal(verify.env.CATALOG_INTEGRATION, "${{ needs.pr-source-checks.outputs.integration }}");
   assert.equal(
     verify.env.QUALIFICATION_JSON,
-    "${{ needs.release-integration-catalog.outputs.qualification }}",
+    "${{ needs.pr-source-checks.outputs.qualification }}",
   );
   assert.ok(verify.run.includes("assert.equal(selected, catalog"));
   assert.ok(verify.run.includes("assert.equal(raw, ''"));
@@ -416,7 +418,7 @@ test("required Q wiring refuses advisory gates, missing context, stale receipt r
     (w: ReturnType<typeof qualificationWorkflows>) =>
       (w.check.jobs["test-report"].permissions.actions = "write"),
     (w: ReturnType<typeof qualificationWorkflows>) =>
-      (w.check.jobs["release-integration-catalog"].permissions.actions = "write"),
+      (w.source.jobs["release-integration-catalog"].permissions.actions = "write"),
     (w: ReturnType<typeof qualificationWorkflows>) =>
       (w.catalog.jobs["release-integration-catalog"].outputs.qualification =
         "${{ inputs.qualification }}"),

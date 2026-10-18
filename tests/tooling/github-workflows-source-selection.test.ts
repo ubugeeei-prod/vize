@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { RUST_TEST_COHORT_IDS } from "../../tools/support/compat/github/rust-test-cohorts.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { readRepoFile, requireDailySourceContracts } from "./support/github-workflows.ts";
 
 type Step = {
   name?: string;
@@ -28,6 +28,14 @@ const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml"
   jobs: Record<string, Job>;
 };
 const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
+  jobs: Record<string, Job>;
+  on: {
+    workflow_call: {
+      inputs: Record<string, { type: string; required: boolean; default?: boolean }>;
+    };
+  };
+};
+const products = parse(readRepoFile(".github", "workflows", "pr-rust-products.yml")) as {
   jobs: Record<string, Job>;
   on: {
     workflow_call: {
@@ -84,95 +92,6 @@ test("source planning uses Node and offline metadata before selecting affected p
     "vp run --workspace-root check:iteration && node --test tests/tooling/github-workflows-source-selection.test.ts",
   );
 });
-
-function requireDailySourceContracts(planWorkflow: typeof source, rustWorkflow: typeof rust) {
-  const plan = planWorkflow.jobs["pr-source-plan"];
-  assert.equal(plan.outputs?.["source-contracts"], "${{ steps.plan.outputs.source-contracts }}");
-  assert.equal(
-    planWorkflow.jobs["pr-rust-source"].with?.["run-source-contracts"],
-    "${{ needs.pr-source-plan.outputs.source-contracts == 'true' }}",
-  );
-  assert.deepEqual(rustWorkflow.on.workflow_call.inputs["run-source-contracts"], {
-    type: "boolean",
-    required: false,
-    default: true,
-  });
-  const job = rustWorkflow.jobs["pr-rust-build"];
-  assert.equal(job.if, "${{ inputs.run-rust }}");
-  assert.equal(job["continue-on-error"], undefined);
-  const steps = job.steps ?? [];
-  const contracts = steps.findIndex(
-    (step) => step.name === "Require current-tree source, API and reviewed-doc contracts",
-  );
-  assert.ok(contracts >= 0);
-  assert.equal(steps[contracts].if, "${{ inputs.run-source-contracts }}");
-  assert.equal(steps[contracts]["continue-on-error"], undefined);
-  assert.equal(
-    steps[contracts].run,
-    [
-      "node",
-      "--test",
-      "--test-concurrency=1",
-      "tests/tooling/davinci-assertion-lint.test.ts",
-      "tests/tooling/davinci-consumer-migration-surfaces.test.mjs",
-      "tests/tooling/docs-reviewed-translations.test.ts",
-      "tests/tooling/typecheck-divergence-report-timeout.test.ts",
-      "tests/tooling/typecheck-divergence-mutation-oracle.test.ts",
-      "tests/tooling/typecheck-fixture-custody.test.ts",
-      "tests/tooling/davinci-canonical-corpus-native-walk.test.mjs",
-      "tests/tooling/typecheck-divergence-baseline-ambient.test.ts",
-      "tests/tooling/typecheck-divergence-baseline-configuration.test.ts",
-      "tests/tooling/typecheck-divergence-baseline-support-corpus.test.ts",
-      "tests/tooling/typecheck-divergence-baseline-support.test.ts",
-      "tests/tooling/typecheck-divergence-baseline.test.ts",
-      "tests/tooling/typecheck-divergence-budget.test.ts",
-      "tests/tooling/typecheck-divergence-ledger.test.ts",
-      "tests/tooling/typecheck-divergence-mutation-delta.test.ts",
-      "tests/tooling/typecheck-divergence-report-enforcement.test.ts",
-      "tests/tooling/typecheck-divergence-report-ledger.test.ts",
-      "tests/tooling/typecheck-divergence-report-rejections.test.ts",
-      "tests/tooling/typecheck-divergence-report.test.ts",
-      "tests/tooling/typecheck-divergence.test.ts",
-      "tests/tooling/typecheck-baseline-usability.test.ts",
-    ].join(" "),
-  );
-  const custody = steps[contracts + 1];
-  assert.equal(custody.name, "Retain mutation deadline command and fixture evidence");
-  assert.equal(custody.if, "${{ always() && inputs.run-source-contracts }}");
-  assert.equal(custody.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
-  assert.deepEqual(custody.with, {
-    name: "mutation-deadline-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}",
-    path: "target/differential/typecheck-mutation/",
-    "include-hidden-files": true,
-    "if-no-files-found": "warn",
-    "retention-days": 7,
-  });
-  for (const action of [
-    "actions/setup-node@",
-    "dtolnay/rust-toolchain@",
-    "./.github/actions/setup-rust-sticky-cache",
-    "./.github/actions/setup-rust-script",
-  ]) {
-    const setup = steps.findIndex((step) => step.uses?.startsWith(action));
-    assert.ok(setup >= 0 && setup < contracts, action);
-    if (action.endsWith("setup-rust-script")) {
-      assert.equal(steps[setup].if, "${{ inputs.run-source-contracts }}");
-      assert.equal(steps[setup]["continue-on-error"], undefined);
-    }
-  }
-  const report = rustWorkflow.jobs["rust-source-report"];
-  assert.ok(report.needs?.includes("pr-rust-build"));
-  const gate = report.steps?.find((step) => step.name === "Require the complete Rust tier");
-  assert.equal(gate?.run, "node tools/support/compat/github/require-rust-tier.ts");
-  assert.equal(gate?.["continue-on-error"], undefined);
-  assert.ok(
-    (plan.steps ?? []).every(
-      (step) =>
-        !step.uses?.includes("rust-toolchain@") &&
-        step.uses !== "./.github/actions/setup-rust-script",
-    ),
-  );
-}
 
 test("the existing required Rust source job runs the original three contracts with strict defaults", () => {
   requireDailySourceContracts(source, rust);
@@ -275,7 +194,7 @@ test("opted-in PR and merge browser qualification retain tests and enforce merge
 });
 
 test("the Rust report waits for the builder and every named test cohort", () => {
-  const shard = rust.jobs["pr-rust-shard"];
+  const shard = products.jobs["pr-rust-shard"];
   // PR shards build in place beside the lanes; only the merge queue waits for its archive.
   assert.deepEqual(shard.needs, ["merge-rust-source"]);
   assert.equal(shard.strategy?.["fail-fast"], false);
@@ -288,16 +207,18 @@ test("the Rust report waits for the builder and every named test cohort", () => 
   assert.match(steps[run].run ?? "", /-E "\$NEXTEST_FILTER"/);
   assert.doesNotMatch(steps[run].run ?? "", /--partition/);
   assert.deepEqual(rust.jobs["rust-source-report"].needs, [
-    "merge-rust-source",
     "merge-rust-differential",
     "pr-rust-build",
+  ]);
+  assert.deepEqual(products.jobs["rust-product-report"].needs, [
+    "merge-rust-source",
     "pr-rust-shard",
   ]);
   assert.equal(
-    rust.jobs["rust-source-report"].if,
+    products.jobs["rust-product-report"].if,
     "${{ always() && !contains(needs.*.result, 'cancelled') }}",
   );
-  const reportSteps = rust.jobs["rust-source-report"].steps ?? [];
+  const reportSteps = products.jobs["rust-product-report"].steps ?? [];
   const gate = reportSteps.findIndex((step) => step.name === "Require the complete Rust tier");
   const gateRuntime = reportSteps.findIndex((step) =>
     step.uses?.startsWith("voidzero-dev/setup-vp@"),
@@ -343,19 +264,26 @@ test("the Rust report waits for the builder and every named test cohort", () => 
     contents: "read",
     actions: "read",
     checks: "read",
+    "pull-requests": "read",
   });
   for (const job of [source.jobs["pr-rust-source"], rust.jobs["rust-source-report"]])
     assert.deepEqual(job.permissions, { contents: "read", actions: "read" });
   assert.equal(reportSteps[gate].if, undefined);
-  assert.equal(reportSteps[gate].run, "node tools/support/compat/github/require-rust-tier.ts");
+  assert.equal(
+    reportSteps[gate].run,
+    "node tools/support/compat/github/require-rust-tier.ts --products",
+  );
   assert.deepEqual(reportSteps[gate].env, {
     RUN_RUST: "${{ inputs.run-rust }}",
     NEEDS_JSON: "${{ toJSON(needs) }}",
+    PRODUCT_QUALIFICATION: "${{ inputs.product-qualification }}",
+    RELEASE_QUALIFICATION: "${{ inputs.release-qualification }}",
+    GH_TOKEN: "${{ github.token }}",
   });
 });
 
 test("merge Rust timing receipts remain available after workspace failure", () => {
-  const steps = rust.jobs["merge-rust-source"].steps ?? [];
+  const steps = products.jobs["merge-rust-source"].steps ?? [];
   const summary = steps.find((step) => step.name === "Summarize Rust test timing evidence");
   const upload = steps.find((step) => step.name === "Upload Rust test timing evidence");
   assert.equal(summary?.if, "${{ !cancelled() && inputs.run-rust }}");
@@ -375,7 +303,7 @@ test("merge Rust timing receipts remain available after workspace failure", () =
 });
 
 test("unchanged queue gate hydrates the same pinned fixture for all five full Rust cohorts", () => {
-  const job = rust.jobs["pr-rust-shard"];
+  const job = products.jobs["pr-rust-shard"];
   assert.ok(job.steps);
   const step = job.steps.find(
     (value) => value.name === "Hydrate the required ElementPlus projection fixture",

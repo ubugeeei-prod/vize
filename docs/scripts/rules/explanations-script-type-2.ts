@@ -102,7 +102,7 @@ export const scriptType2Explanations: readonly ExplanationRecord[] = [
     "script/prefer-use-template-ref",
     'The nullable `input` ref is paired with the template’s literal `ref="input"`, identifying it as an element reference rather than ordinary nullable data.',
     "Vue 3.5+ `useTemplateRef<HTMLInputElement>('input')` makes that template reference explicit. The unpaired `error = ref(null)` remains ordinary data and is intentionally outside this rule.",
-    'null で初期化した `input` の ref がテンプレートのリテラル `ref="input"` と対応し、通常の nullable なデータではなく要素参照であることが分かります。',
+    'null で初期化した `input` の ref がテンプレートのリテラル `ref="input"` と対応し、null を許容する通常のデータではなく、要素参照であることが分かります。',
     "Vue 3.5 以降の `useTemplateRef<HTMLInputElement>('input')` でテンプレート参照を明示します。対応する要素参照のない `error = ref(null)` は通常のデータであり、このルールの対象外です。",
   ],
   [

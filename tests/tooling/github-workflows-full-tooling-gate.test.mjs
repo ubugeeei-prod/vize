@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
+import { checkWorkflowJobSources } from "./support/github-workflows.ts";
 import {
   planToolingTests,
   toolingTestFiles,
@@ -20,7 +21,12 @@ import {
 
 const root = new URL("../../", import.meta.url);
 const read = (file) => readFileSync(new URL(file, root), "utf8");
-const yaml = (file) => parse(read(file));
+const yaml = (file) =>
+  parse(
+    file === ".github/workflows/check.yml"
+      ? checkWorkflowJobSources(read(file), read(".github/workflows/full-qualification.yml"))
+      : read(file),
+  );
 const fullCondition =
   "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}";
 const alwaysFullCondition = fullCondition

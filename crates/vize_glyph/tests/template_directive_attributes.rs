@@ -415,3 +415,66 @@ fn l1_dynamic_name_framing_keeps_layout_profiles_and_refusal_boundaries_separate
         assert_eq!(format_template(&first, &options).unwrap(), first);
     }
 }
+
+#[test]
+fn assignment_line_breaks_preserve_literal_directive_and_component_values() {
+    let options = FormatOptions {
+        print_width: 500,
+        sort_attributes: false,
+        ..FormatOptions::default()
+    };
+    for tag in ["div", "Card"] {
+        let expected =
+            format!("<{tag} title=\"hello world\" :value=\"message\" @click=\"handler\"></{tag}>");
+        for newline in ["\n", "\r\n"] {
+            for (before, after) in [(newline, ""), ("", newline), (newline, newline)] {
+                let source = format!(
+                    "<{tag} title{before}={after}\"hello world\" :value{before}={after}\"message\" @click{before}={after}\"handler\"></{tag}>"
+                );
+                let first = format_template(&source, &options).unwrap();
+                assert_eq!(first.as_str(), expected);
+                assert_eq!(format_template(&first, &options).unwrap(), first);
+            }
+        }
+    }
+}
+
+#[test]
+fn assignment_trivia_keeps_boolean_neighbors_and_unquoted_values() {
+    let options = FormatOptions {
+        sort_attributes: false,
+        ..FormatOptions::default()
+    };
+    for newline in ["\n", "\r\n"] {
+        for (source, expected) in [
+            (
+                format!("<div hidden{newline}title{newline}={newline}hello inert>body</div>"),
+                "<div hidden title=\"hello\" inert>body</div>",
+            ),
+            (
+                format!("<div hidden{newline}inert>body</div>"),
+                "<div hidden inert>body</div>",
+            ),
+        ] {
+            let first = format_template(&source, &options).unwrap();
+            assert_eq!(first.as_str(), expected);
+            assert_eq!(format_template(&first, &options).unwrap(), first);
+        }
+    }
+}
+
+#[test]
+fn sfc_assignment_trivia_keeps_authored_quoted_newlines_and_crlf() {
+    let source = "<template>\r\n  <!-- retained -->\r\n  <div title\r\n=\r\n\"first\r\nsecond\">text</div>\r\n</template>\r\n";
+    let expected = "<template>\r\n  <!-- retained -->\r\n  <div\r\n    title=\"first\r\nsecond\"\r\n  >text</div>\r\n</template>\r\n";
+    let options = FormatOptions {
+        end_of_line: vize_glyph::EndOfLine::Crlf,
+        ..FormatOptions::default()
+    };
+    let first = format_sfc(source, &options).unwrap();
+    assert_eq!(first.code.as_str(), expected);
+    assert!(first.changed);
+    let second = format_sfc(&first.code, &options).unwrap();
+    assert_eq!(second.code, first.code);
+    assert!(!second.changed);
+}

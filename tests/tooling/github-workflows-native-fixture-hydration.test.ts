@@ -7,12 +7,10 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { parse } from "yaml";
 
-import { readRepoFile, root } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile, root } from "./support/github-workflows.ts";
 
 test("full native workspace tests hydrate the actual pinned Element Plus gitlink first", () => {
-  const job = parse(readRepoFile(".github", "workflows", "check.yml")).jobs[
-    "rust-native-differential"
-  ];
+  const job = parse(checkWorkflowJobSources()).jobs["rust-native-differential"];
   assert.equal(
     job.if,
     "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
@@ -44,7 +42,7 @@ test("full native workspace tests hydrate the actual pinned Element Plus gitlink
 
 const fixture = "tests/_fixtures/_git/element-plus";
 const hydrationCommand = `git submodule update --init --force --depth 1 -- ${fixture}`;
-const check = () => parse(readRepoFile(".github", "workflows", "check.yml"));
+const check = () => parse(checkWorkflowJobSources());
 
 function assertSourceCoverageHydration(job: {
   if?: string;

@@ -9,7 +9,7 @@ title: "vize:croquis/cf/provide-without-symbol"
 既定の重大度: warning  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
 自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
+オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -48,7 +48,7 @@ createApp(Root).mount("#app");
 
 ## 悪い
 
-両コンポーネントが文字列 `"theme"` を使い、無関係な機能と key が衝突し得ます。
+両コンポーネントが文字列 `"theme"` を使い、無関係な機能とキーが衝突する可能性があります。
 
 `ThemeProvider.vue`
 
@@ -120,7 +120,7 @@ export interface Theme {
 export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

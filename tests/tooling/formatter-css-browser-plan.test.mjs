@@ -1,3 +1,4 @@
+import { checkWorkflowJobSources } from "./support/github-workflows.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
@@ -48,7 +49,7 @@ await test("only the selected browser-owning runner needs Chromium, with complet
 
 await test("the full workflow and its shared worker provision the actual tests-package browser before execution", () => {
   const read = (file) => fs.readFileSync(new URL(`../../${file}`, import.meta.url), "utf8");
-  const check = read(".github/workflows/check.yml");
+  const check = checkWorkflowJobSources();
   const tooling = check.slice(
     check.indexOf("\n  test-scripts:"),
     check.indexOf("\n  editor-extensions:"),

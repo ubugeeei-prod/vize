@@ -15,7 +15,7 @@ title: 実験的な機能
 
 このページでは、次の機能の設定値、有効時と無効時の挙動、優先順位を説明します。
 
-- Vue RFC [#823](https://github.com/vuejs/rfcs/pull/823) のパターン付きテンプレート
+- Vue RFC [#823](https://github.com/vuejs/rfcs/pull/823) のパターンによるテンプレートの分岐
 - Vue RFC [#831](https://github.com/vuejs/rfcs/pull/831) のタグ内コメント
 - Vue RFC [#833](https://github.com/vuejs/rfcs/pull/833) の `<Self>` による自身の参照
 - Vue RFC [#734](https://github.com/vuejs/rfcs/pull/734) のスロットの子要素の型検査
@@ -150,7 +150,9 @@ API ごとの対応範囲、最小の検証例、低レベルのネイティブ 
 
 <span id="patterned-templates"></span>
 
-## パターン付きテンプレート
+<span id="パターン付きテンプレート"></span>
+
+## パターンによるテンプレートの分岐
 
 `patternedTemplate` は、Vue RFC #823 の `v-match` と、その直下に置く `v-when` の分岐を有効にします。
 
@@ -299,7 +301,7 @@ SFC のファイル名がない直接のテンプレート API では、`compone
 
 [Playground](https://vizejs.dev/play/?tab=canon) の Canon では、**Experimental** からこの設定を有効にできます。
 サンプルは、button だけを受け付けるスロットに input を渡します。
-TypeScript（Monaco）を有効にすると、生成した子要素の型が診断を出し、Virtual TS タブでも型検査のコードを確認できます。
+TypeScript（Monaco）を有効にすると、生成された子要素の型を TypeScript が検査して診断を出します。Virtual TS タブでは型検査のコードも確認できます。
 これはブラウザーで単一ファイルを検査する機能です。CLI の Corsa によるプロジェクト全体の型検査とは、検査範囲が異なります。
 
 `strictSlotChildren` は、Vue RFC #734 のスロットの子要素に対する、仮想 TypeScript コードの型検査を有効にします。

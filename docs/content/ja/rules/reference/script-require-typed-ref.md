@@ -51,7 +51,7 @@ const c = ref(undefined)  // Ref<undefined>
 
 ## 良い
 
-型引数で string と nullable な User の ref を指定します。`ref(0)` には具体的な数値の初期値があり、型推論を使えます。
+型引数で string と、null を許容する User の ref を指定します。`ref(0)` には具体的な数値の初期値があり、型推論を使えます。
 
 ```vue
 <script setup lang="ts">

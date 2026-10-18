@@ -64,9 +64,32 @@ struct Observation<'a> {
     cases: &'a [ObservedCase],
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WorkspaceObservation<'a> {
+    schema: &'static str,
+    version: u32,
+    kind: &'static str,
+    pack: &'a str,
+    test: &'a str,
+    fixture_pack_sha256: String,
+    workspace_receipt_sha256: &'a str,
+    binary_path: &'a Path,
+    binary_sha256: &'a str,
+    missing_fields: [&'static str; 3],
+    matched_contract: &'static str,
+    unbaselined_fields: [&'static str; 3],
+    cases: &'a [ObservedCase],
+}
+
+enum Provenance {
+    Archive(String),
+    Workspace(String),
+}
+
 pub(crate) struct Capture {
     directory: PathBuf,
-    archive_receipt_sha256: String,
+    provenance: Provenance,
     binary_path: PathBuf,
     binary_sha256: String,
     cases: Vec<ObservedCase>,
@@ -85,18 +108,60 @@ fn digest(bytes: &[u8]) -> String {
 
 impl Capture {
     pub(crate) fn from_environment() -> Option<Self> {
-        let directory = std::env::var_os("VIZE_TEST_FIX_HISTORY_CAPTURE_DIR")?;
-        let receipt = std::env::var_os("VIZE_TEST_FIX_HISTORY_ARCHIVE_RECEIPT")
-            .expect("receipted capture requires the verified Cargo archive receipt");
-        let executable = std::env::current_exe().expect("fixture executable identity must resolve");
+        let archive_directory = std::env::var_os("VIZE_TEST_FIX_HISTORY_CAPTURE_DIR");
+        let workspace_directory = std::env::var_os("VIZE_TEST_FIX_HISTORY_WORKSPACE_CAPTURE_DIR");
+        let (directory, workspace_namespace) = match (archive_directory, workspace_directory) {
+            (Some(path), None) => (path, false),
+            (None, Some(path)) => (path, true),
+            (None, None) => return None,
+            _ => panic!("archive and workspace capture directories conflict"),
+        };
+        assert!(!directory.is_empty(), "capture directory must not be empty");
+        let archive = std::env::var_os("VIZE_TEST_FIX_HISTORY_ARCHIVE_RECEIPT");
+        let workspace = std::env::var_os("VIZE_TEST_FIX_HISTORY_WORKSPACE_RECEIPT");
+        let (receipt, is_workspace) = match (archive, workspace) {
+            (Some(path), None) => (path, false),
+            (None, Some(path)) => (path, true),
+            _ => panic!("capture requires exactly one archive or workspace receipt"),
+        };
+        assert_eq!(
+            workspace_namespace, is_workspace,
+            "capture namespace must match receipt"
+        );
+        assert!(!receipt.is_empty(), "capture receipt must not be empty");
+        let bytes = std::fs::read(receipt).expect("capture receipt must exist");
+        let value: serde_json::Value =
+            serde_json::from_slice(&bytes).expect("capture receipt must be JSON");
+        let mut executable =
+            std::env::current_exe().expect("fixture executable identity must resolve");
+        let provenance = if is_workspace {
+            assert_eq!(value["schema"], "vize.typechecker-workspace-receipt");
+            assert_eq!(value["version"], 1);
+            assert_eq!(value["kind"], "full-workspace");
+            assert!(value.get("archiveSha256").is_none());
+            executable = std::fs::canonicalize(executable)
+                .expect("workspace fixture executable must resolve canonically");
+            assert_eq!(value["binary"]["path"].as_str(), executable.to_str());
+            Provenance::Workspace(digest(&bytes))
+        } else {
+            assert_eq!(value["schemaVersion"], 3);
+            assert!(value.get("kind").is_none());
+            assert!(value.get("workspaceReceiptSha256").is_none());
+            Provenance::Archive(digest(&bytes))
+        };
+        let binary_sha256 = digest(
+            &std::fs::read(&executable).expect("actual fixture executable must be readable"),
+        );
+        if is_workspace {
+            assert_eq!(
+                value["binary"]["sha256"].as_str(),
+                Some(binary_sha256.as_str())
+            );
+        }
         Some(Self {
             directory: PathBuf::from(directory),
-            archive_receipt_sha256: digest(
-                &std::fs::read(receipt).expect("verified Cargo archive receipt must exist"),
-            ),
-            binary_sha256: digest(
-                &std::fs::read(&executable).expect("actual fixture executable must be readable"),
-            ),
+            provenance,
+            binary_sha256,
             binary_path: executable,
             cases: Vec::new(),
         })
@@ -147,26 +212,49 @@ impl Capture {
     }
 
     pub(crate) fn finish(self, pack: &str, test: &str, fixture_pack: &[u8]) {
-        let observation = Observation {
-            schema: "vize.typechecker-fixture-observation",
-            version: 1,
-            pack,
-            test,
-            fixture_pack_sha256: digest(fixture_pack),
-            archive_receipt_sha256: self.archive_receipt_sha256,
-            binary_path: &self.binary_path,
-            binary_sha256: self.binary_sha256,
-            missing_fields: ["end", "relatedInformation", "raw backend diagnostics"],
-            matched_contract: "batch-start-diagnostics-v1",
-            unbaselined_fields: ["diagnostics[].blockType", "exitCode", "success"],
-            cases: &self.cases,
-        };
         std::fs::create_dir_all(&self.directory).expect("capture directory must be created");
         let destination = self.directory.join(pack).with_extension("json");
         let mut temporary = tempfile::NamedTempFile::new_in(&self.directory)
             .expect("atomic capture file must be created");
-        serde_json::to_writer_pretty(temporary.as_file_mut(), &observation)
-            .expect("actual fixture observations must serialize");
+        match &self.provenance {
+            Provenance::Archive(receipt) => {
+                // Original v1 field order and pretty serialization remain unchanged.
+                let observation = Observation {
+                    schema: "vize.typechecker-fixture-observation",
+                    version: 1,
+                    pack,
+                    test,
+                    fixture_pack_sha256: digest(fixture_pack),
+                    archive_receipt_sha256: receipt.clone(),
+                    binary_path: &self.binary_path,
+                    binary_sha256: self.binary_sha256.clone(),
+                    missing_fields: ["end", "relatedInformation", "raw backend diagnostics"],
+                    matched_contract: "batch-start-diagnostics-v1",
+                    unbaselined_fields: ["diagnostics[].blockType", "exitCode", "success"],
+                    cases: &self.cases,
+                };
+                serde_json::to_writer_pretty(temporary.as_file_mut(), &observation)
+            }
+            Provenance::Workspace(receipt) => {
+                let observation = WorkspaceObservation {
+                    schema: "vize.typechecker-fixture-observation",
+                    version: 2,
+                    kind: "full-workspace",
+                    pack,
+                    test,
+                    fixture_pack_sha256: digest(fixture_pack),
+                    workspace_receipt_sha256: receipt,
+                    binary_path: &self.binary_path,
+                    binary_sha256: &self.binary_sha256,
+                    missing_fields: ["end", "relatedInformation", "raw backend diagnostics"],
+                    matched_contract: "batch-start-diagnostics-v1",
+                    unbaselined_fields: ["diagnostics[].blockType", "exitCode", "success"],
+                    cases: &self.cases,
+                };
+                serde_json::to_writer_pretty(temporary.as_file_mut(), &observation)
+            }
+        }
+        .expect("actual fixture observations must serialize");
         temporary
             .as_file()
             .sync_all()

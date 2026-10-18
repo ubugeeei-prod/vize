@@ -22,7 +22,7 @@ import {
 const root = fileURLToPath(new URL("../../", import.meta.url));
 // The source-plan job has Node but deliberately installs no dependencies.
 // Execute the actual named literal shell block without importing a YAML package.
-const workflowSource = readFileSync(join(root, ".github/workflows/pr-rust-checks.yml"), "utf8");
+const workflowSource = readFileSync(join(root, ".github/workflows/pr-rust-products.yml"), "utf8");
 function workflowStep(name) {
   const marker = `      - name: ${name}\n`;
   const start = workflowSource.indexOf(marker);

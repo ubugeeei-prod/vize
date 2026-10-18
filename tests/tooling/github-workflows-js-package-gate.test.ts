@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  readRepoFile,
+  workflowJobBody,
+} from "./support/github-workflows.ts";
 
 test("check workflow runs JS package unit tests and production dependency audit", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const packageJson = JSON.parse(readRepoFile("package.json"));
   const pnpmWorkspace = readRepoFile("pnpm-workspace.yaml");
   const jsPackageJob = workflowJobBody(workflow, "full-js-package-tests");

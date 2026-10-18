@@ -11,7 +11,7 @@ title: 型ルールのオプション
 オプションを設定するだけではルールは有効になりません。
 
 下の設定と改善前・改善後の例から始め、`vp run lint` を実行して指摘された条件式を確認してください。
-重要度やファイルごとの設定の置き換えは [ルールオプションのガイド](./options.md) を参照してください。
+重大度やファイルごとの設定の置き換えは[ルールオプションのガイド](./options.md)を参照してください。
 
 ## `type/strict-boolean-expressions`
 
@@ -69,5 +69,5 @@ defineProps<{ count: number; title: string; element?: HTMLElement }>();
 `allowNullableBoolean`・`allowNullableString`・`allowNullableNumber`・`allowNullableEnum`・`allowAny` は
 `false` です。どの項目も真偽値を取ります。
 
-オプションだけではルールは有効になりません。後から一致した設定は option object 全体を置き換えます。
+オプションだけではルールは有効になりません。後から一致した設定は、オプションのオブジェクト全体を置き換えます。
 明示的な `off` が優先されます。アサーション関数、配列の述語関数、外部テンプレートと Pug はこのルールの対象外です。

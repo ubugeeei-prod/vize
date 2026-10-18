@@ -2,7 +2,11 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { changedPaths } from "./plan-source-checks.ts";
-import { aggregateCheckNeedsResults } from "./require-needs-success.ts";
+import { aggregateCheckNeedsResults, aggregateNeedsResults } from "./require-needs-success.ts";
+import {
+  qualifyIntegrationProducts,
+  integrationProductOptionsFromEnvironment,
+} from "../../release/qualify_check/integration-product.ts";
 
 // Only paths the canonical corpus jobs provably read. Keep this list honest
 // with tests/tooling/davinci-canonical-corpus-selection-inputs.test.ts, which
@@ -34,10 +38,14 @@ const inputs = [
   /^tests\/tooling\/support\/canonical-corpus-worker-inventory\.mjs$/,
   /^tools\/(?:commands\/fixtures|support\/compat\/fixtures|benchmarks)\//,
   /^tools\/support\/common\.rs$/,
+  /^tools\/support\/command-runtime\.ts$/,
+  /^tools\/support\/release\/qualify_check\/(?:check-state|integration(?:-http|-product|-release)?|overlap)\.ts$/,
   /^tools\/support\/compat\/davinci\/lib\/(?:corpus-baseline-contract|corpus-baseline-artifact|ordering|paths)\.mjs$/,
   /^tools\/support\/compat\/github\/canonical-corpus-[a-z-]+\.(?:mjs|ts|rs)$/,
   /^tools\/support\/compat\/github\/(?:comparison-base|plan-source-checks|require-needs-success|prepare-vue-benchmarks|release-preflight-github)\.mjs$/,
   /^tools\/support\/compat\/github\/(?:comparison-base|plan-source-checks)\.ts$/,
+  /^tools\/support\/compat\/github\/(?:full-check-policy|real-project-matrix-plan)\.ts$/,
+  /^tools\/support\/compat\/github\/release-preflight-(?:bootstrap|evidence)\.mjs$/,
   /^tools\/support\/compat\/github\/(?:require-needs-success|require-rust-tier)\.ts$/,
 ];
 // A symlink can make the committed fixture sweep read any directory, so a
@@ -106,13 +114,41 @@ export function canonicalSourceReport(needs, eventName) {
   return aggregateCheckNeedsResults(original, eventName);
 }
 
+// This route is available only after the existing live integration qualifier
+// reauthenticates the exact Q/R/lease and raw whole source tree. A serialized
+// marker or a successful catalog job alone cannot authorize a skipped Nuxt job.
+export async function qualifiedSourceReport(needs, eventName, input, options) {
+  if (eventName !== "merge_group") throw new Error("product reuse is queue-only");
+  if (needs?.["release-integration-catalog"]?.result !== "success")
+    throw new Error("product reuse requires the successful integration catalog");
+  if (needs?.["pr-rust-products"]?.result !== "success")
+    throw new Error("product reuse requires the strict Rust product report");
+  const verify = options ?? integrationProductOptionsFromEnvironment("verify");
+  if (verify.mode !== "verify") throw new Error("source report requires final live verification");
+  const result = await qualifyIntegrationProducts(input, verify);
+  if (result.reuse !== true || result.product === null)
+    throw new Error("live product qualification missing");
+  requireCanonicalCorpusSuccess(needs);
+  const original = Object.fromEntries(
+    Object.entries(needs).filter(([job]) => job !== "canonical-corpus"),
+  );
+  return aggregateNeedsResults(original, {
+    "nuxt-module-qualification": "actual same-tree full Nuxt qualification freshly verified",
+  });
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = process.argv.slice(2);
   if (args.length === 1 && args[0] === "--check") {
-    const report = canonicalSourceReport(
-      JSON.parse(process.env.NEEDS_JSON ?? "null"),
-      process.env.GITHUB_EVENT_NAME,
-    );
+    const needs = JSON.parse(process.env.NEEDS_JSON ?? "null");
+    const product = process.env.PRODUCT_QUALIFICATION_JSON ?? "";
+    const report =
+      product === ""
+        ? canonicalSourceReport(needs, process.env.GITHUB_EVENT_NAME)
+        : await qualifiedSourceReport(needs, process.env.GITHUB_EVENT_NAME, {
+            qualification: JSON.parse(process.env.QUALIFICATION_JSON ?? ""),
+            product: JSON.parse(product),
+          });
     process.stdout.write(`${report.message}\n`);
     process.exitCode = report.exitCode;
   } else {

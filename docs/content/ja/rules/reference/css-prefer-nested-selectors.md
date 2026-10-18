@@ -4,7 +4,7 @@ title: "css/prefer-nested-selectors"
 
 # `css/prefer-nested-selectors`
 
-子孫セレクターを CSS nesting でまとめます。
+子孫セレクターを CSS のネスト構文でまとめます。
 
 [悪い例](#悪い) · [良い例](#良い)
 

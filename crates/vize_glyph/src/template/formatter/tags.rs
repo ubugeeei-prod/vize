@@ -161,7 +161,7 @@ impl TemplateFormatter<'_> {
 
         // Skip whitespace before '='
         let mut val_pos = pos;
-        while val_pos < len && matches!(byte_at(source, val_pos), b' ' | b'\t') {
+        while val_pos < len && is_whitespace(byte_at(source, val_pos)) {
             val_pos += 1;
         }
 
@@ -170,7 +170,7 @@ impl TemplateFormatter<'_> {
             val_pos += 1; // skip '='
 
             // Skip whitespace after '='
-            while val_pos < len && matches!(byte_at(source, val_pos), b' ' | b'\t') {
+            while val_pos < len && is_whitespace(byte_at(source, val_pos)) {
                 val_pos += 1;
             }
 

@@ -134,8 +134,8 @@ const dependencyConsumers = [
   ["pr-js-checks.yml", "pr-js-package-conformance"],
   ["pr-source-checks.yml", "pr-native-runtime"],
   ["pr-source-checks.yml", "pr-playground-test"],
-  ["pr-rust-checks.yml", "merge-rust-source"],
-  ["pr-rust-checks.yml", "pr-rust-shard"],
+  ["pr-rust-products.yml", "merge-rust-source"],
+  ["pr-rust-products.yml", "pr-rust-shard"],
   ["pr-rust-differential.yml", "differential"],
   ["rust-pr-target-seed.yml", "rust-differential-target-seed"],
 ];

@@ -7,7 +7,10 @@ import { createServer } from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { npmTarballIsVisible } from "../../tools/support/release/publish_npm_package/registry.ts";
+import {
+  npmTarballIsVisible,
+  type RegistryProbeObservation,
+} from "../../tools/support/release/publish_npm_package/registry.ts";
 import { parseJson } from "../../tools/support/release/ordered_json.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 import { releaseCommandPath, repoRoot } from "./support/release-command.ts";
@@ -191,16 +194,19 @@ await test("already-created versions cannot release through metadata plus latest
     [
       "const url = new URL(process.argv.at(-1));",
       "if (url.pathname.endsWith('.tgz')) {",
+      "  if (process.env.TEST_PROBE_MODE === 'frame') process.stderr.write('unexpected diagnostic frame\\n');",
       `  const child = require('node:child_process').spawnSync(${JSON.stringify(curl)}, process.argv.slice(2), { stdio: 'inherit' });`,
       "  process.exit(child.status ?? 1);",
       "}",
       "if (process.env.TEST_METADATA_DELAY_MS && url.searchParams.get('vize-publish-check')?.endsWith('-1')) await new Promise((resolve) => setTimeout(resolve, Number(process.env.TEST_METADATA_DELAY_MS)));",
-      "const body = { name: '@vizejs/example', version: '1.2.3', 'dist-tags': { latest: '1.2.3' },",
+      "const probe = url.searchParams.get('vize-publish-check')?.endsWith('-1');",
+      "const mode = process.env.TEST_PROBE_MODE;",
+      "const body = { name: '@vizejs/example', version: probe && mode === 'version' ? '9.9.9' : '1.2.3', 'dist-tags': { latest: probe && mode === 'tag' ? '9.9.9' : '1.2.3' },",
       `  dist: { tarball: process.env.TEST_TARBALL_URL, integrity: ${JSON.stringify(integrity)} } };`,
       "process.stdout.write(JSON.stringify(body) + 'VIZE_HTTP_STATUS:200');",
     ].join("\n"),
   );
-  const run = (route: string, metadataDelayMs = 0) =>
+  const run = (route: string, metadataDelayMs = 0, mode = "") =>
     new Promise<{ code: number | null; stdout: string; stderr: string }>((resolve, reject) => {
       const child = spawn(process.execPath, [releaseCommandPath("publish_npm_package"), pkg], {
         cwd: temp,
@@ -211,6 +217,7 @@ await test("already-created versions cannot release through metadata plus latest
           NPM_TAG: "latest",
           TEST_TARBALL_URL: `${http.url}/${route}.tgz`,
           TEST_METADATA_DELAY_MS: String(metadataDelayMs),
+          TEST_PROBE_MODE: mode,
           PUBLISH_RESOLUTION_RETRY_LIMIT: "1",
           PUBLISH_RESOLUTION_RETRY_DELAY: "1",
         },
@@ -227,28 +234,84 @@ await test("already-created versions cannot release through metadata plus latest
       child.once("error", reject);
       child.once("close", (code) => resolve({ code, stdout, stderr }));
     });
+  const probe = (stdout: string) => {
+    const line = stdout.split("\n").find((line) => line.startsWith("Registry visibility probe: "));
+    assert.ok(line, stdout);
+    return JSON.parse(line.slice("Registry visibility probe: ".length)) as {
+      versionMatches: boolean;
+      tagVisible: boolean;
+      archiveVisible: boolean;
+      requests: RegistryProbeObservation[];
+    };
+  };
   try {
+    for (const mode of ["version", "tag"]) {
+      const result = await run("correct", 0, mode);
+      assert.equal(result.code, 1, result.stdout + result.stderr);
+      const observed = probe(result.stdout);
+      assert.equal(observed.versionMatches, mode !== "version");
+      assert.equal(observed.tagVisible, mode !== "tag");
+      assert.equal(observed.archiveVisible, false);
+      assert.equal(observed.requests.length, 2, "wrong metadata/tag must not request an archive");
+      assert.ok(
+        observed.requests.every((entry) => entry.httpStatus === "200" && entry.reason === "json"),
+      );
+      assert.doesNotMatch(result.stdout + result.stderr, /9\.9\.9|TEST_PROBE_MODE|dist-tags/);
+      assert.equal(http.requests.length, 0);
+    }
     for (const route of ["missing", "corrupt-tail"]) {
       const result = await run(route);
       assert.equal(result.code, 1, result.stdout + result.stderr);
       assert.match(result.stdout, /already published.*Skipping publish/);
       assert.match(result.stderr, /Timed out waiting/);
       assert.doesNotMatch(result.stdout, /is visible in npm/);
+      const observed = probe(result.stdout);
+      assert.equal(observed.versionMatches, true);
+      assert.equal(observed.tagVisible, true);
+      assert.equal(observed.archiveVisible, false);
+      const archive = observed.requests.find((entry) => entry.phase === "archive");
+      assert.ok(archive);
+      assert.equal(archive.httpStatus, route === "missing" ? "404" : "200");
+      assert.equal(archive.reason, route === "missing" ? "http-status" : "sri-mismatch");
     }
     const started = performance.now();
     const timedOut = await run("body-stall", 5000);
     assert.equal(timedOut.code, 1, timedOut.stdout + timedOut.stderr);
+    const timeoutArchive = probe(timedOut.stdout).requests.find(
+      (entry) => entry.phase === "archive",
+    );
+    assert.ok(timeoutArchive);
+    assert.ok(["terminated", "deadline"].includes(timeoutArchive.reason));
     assert.ok(
       performance.now() - started < 8500,
       "metadata and archive share the original six-second attempt budget",
     );
+    const framed = await run("correct", 0, "frame");
+    assert.equal(framed.code, 1, framed.stdout + framed.stderr);
+    const framedArchive = probe(framed.stdout).requests.find((entry) => entry.phase === "archive");
+    assert.ok(framedArchive);
+    assert.equal(framedArchive.curlExit, 0);
+    assert.equal(framedArchive.httpStatus, "200");
+    assert.equal(framedArchive.bytes, payload.length);
+    assert.equal(framedArchive.reason, "status-frame");
+    assert.equal(probe(framed.stdout).archiveVisible, false);
+    assert.doesNotMatch(framed.stdout + framed.stderr, /unexpected diagnostic frame/);
     const result = await run("correct");
     assert.equal(result.code, 0, result.stdout + result.stderr);
     assert.match(result.stdout, /is visible in npm with dist-tag latest/);
+    const success = probe(result.stdout);
+    assert.equal(success.versionMatches, true);
+    assert.equal(success.tagVisible, true);
+    assert.equal(success.archiveVisible, true);
+    const archive = success.requests.find((entry) => entry.phase === "archive");
+    assert.ok(archive);
+    assert.equal(archive.reason, "verified");
+    assert.equal(archive.bytes, payload.length);
+    assert.doesNotMatch(JSON.stringify(success), /headers|set-cookie|VIZE_HTTP_STATUS|dist-tags/);
     assert.equal(fs.existsSync(trace), false, "an existing version must never be published again");
     assert.deepEqual(
       http.requests.map((request) => request.path),
-      ["/missing.tgz", "/corrupt-tail.tgz", "/body-stall.tgz", "/correct.tgz"],
+      ["/missing.tgz", "/corrupt-tail.tgz", "/body-stall.tgz", "/correct.tgz", "/correct.tgz"],
     );
   } finally {
     await http.close();

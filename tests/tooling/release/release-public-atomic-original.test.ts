@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -18,21 +17,13 @@ import {
 import {
   atomicTarget,
   atomicTest,
+  readLspSourceFiles,
   sha256,
   supportTargets,
 } from "../../../tools/support/release/public_acceptance/lsp_source.ts";
 
 type Json = ReturnType<typeof JSON.parse>;
 const root = fileURLToPath(new URL("../../../", import.meta.url));
-const prefixes = [
-  `crates/vize/tests/${atomicTarget}.rs`,
-  `crates/vize/tests/${atomicTarget}/`,
-  "crates/vize/tests/lsp_library_rename_refusal_cli/",
-  "tests/_fixtures/differential/lsp/rename-source-authority/8009/",
-  "tests/_fixtures/differential/lsp/rename-library-refusal/8010/",
-  "tests/_fixtures/differential/lsp/event-rename/8010/",
-  "tests/_fixtures/differential/lsp/rename-runtime-distribution/8010/",
-];
 
 // Inert custody envelopes exercise refusal paths. They do not execute the Rust
 // oracle or any product and cannot establish installed/public acceptance.
@@ -49,13 +40,7 @@ function fixture() {
     fs.writeFileSync(file, value);
   };
   const save = (file: string, value: unknown) => write(file, JSON.stringify(value));
-  const files = execFileSync("git", ["ls-tree", "-r", "--name-only", "HEAD", "--", ...prefixes], {
-    cwd: root,
-    encoding: "utf8",
-  })
-    .trim()
-    .split("\n");
-  assert.equal(files.length, 45);
+  const files = readLspSourceFiles(root, "HEAD").atomicFiles;
   const atomicSourceFiles = files.map((file) => {
     const bytes = fs.readFileSync(path.join(root, file));
     write(path.join(sourceTree, file), bytes);

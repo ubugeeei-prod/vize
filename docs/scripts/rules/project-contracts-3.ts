@@ -45,11 +45,11 @@ export const contract3Examples: Record<string, ContractExample> = {
     },
     badExplanation: {
       en: "App supplies a `footer` slot, but Card declares and renders only `header`. The supplied Notice content has no matching slot outlet in this child.",
-      ja: "App が `footer` slot を渡しますが、Card が宣言して描画するのは `header` だけです。渡した Notice に対応する子の slot 出口がありません。",
+      ja: "App が `footer` スロットを渡しますが、Card が宣言して描画するのは `header` だけです。渡した Notice を表示するスロットの挿入位置が子にありません。",
     },
     goodExplanation: {
       en: "App supplies `header`, matching both the child’s typed slot declaration and its rendered outlet, so Notice appears there.",
-      ja: "子の型付き slot 宣言と描画する出口に合わせて `header` を渡し、Notice をそこへ表示できるようにします。",
+      ja: "子の型付きスロット宣言とスロットの挿入位置に合わせて `header` を渡し、Notice を表示できるようにします。",
     },
   },
   "watch-can-be-computed": {
@@ -103,11 +103,11 @@ export const contract3Examples: Record<string, ContractExample> = {
     },
     badExplanation: {
       en: "The watcher is created at module load, outside either Observer’s setup, and both instances share its refs. It is not automatically stopped when a particular Observer unmounts.",
-      ja: "watcher をいずれの Observer の setup 内でもなくモジュールの読み込み時に作り、両インスタンスが ref を共有します。個々の Observer のアンマウントでは自動停止されません。",
+      ja: "ウォッチャーを各 `Observer` の setup 内ではなく、モジュールの読み込み時に作っています。そのため、両インスタンスが ref を共有し、個々の `Observer` をアンマウントしてもウォッチャーは自動停止しません。",
     },
     goodExplanation: {
       en: "Each synchronous setup call creates its own refs and watcher inside `useObserver`. Vue associates that watcher with the calling component’s lifetime.",
-      ja: "setup からの同期的な呼び出しごとに、`useObserver` 内で個別の ref と watcher を作ります。Vue が watcher を呼び出し元のコンポーネントの寿命に結び付けます。",
+      ja: "setup からの同期的な呼び出しごとに、`useObserver` 内で個別の ref とウォッチャーを作ります。Vue がウォッチャーの有効期間を呼び出し元のコンポーネントの生存期間に結び付けます。",
     },
     note: {
       en: "Module-scope watchers are valid when their owner keeps and calls a stop handle or intentionally gives them application lifetime. This example requires component-owned lifetimes; the contract has no current producer.",

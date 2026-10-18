@@ -4,7 +4,7 @@ title: "css/no-utility-classes"
 
 # `css/no-utility-classes`
 
-コンポーネント内で utility class を定義する箇所を検出します。
+コンポーネント内でユーティリティクラスを定義する箇所を検出します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
