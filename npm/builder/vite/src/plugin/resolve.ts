@@ -817,12 +817,15 @@ export async function resolveIdHook(
   }
 
   if (pluginVisibleVirtualPath) {
+    // A fresh module graph can replay root-relative URLs from a persisted import
+    // graph. Resolve them to the same filesystem identity as the original import.
+    const resolvedPath = resolveVuePath(state, pluginVisibleVirtualPath, importer);
     if (isDependencyScan) {
-      return pluginVisibleVirtualPath;
+      return resolvedPath;
     }
     return isSsrRequest
-      ? toPluginVisibleVirtualId(pluginVisibleVirtualPath, true, request.querySuffix)
-      : id;
+      ? toPluginVisibleVirtualId(resolvedPath, true, request.querySuffix)
+      : `${resolvedPath}${request.querySuffix}`;
   }
 
   // Skip all virtual module IDs

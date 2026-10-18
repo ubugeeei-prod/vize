@@ -41,9 +41,20 @@ const lifecycle = JSON.parse(
   finalized: { action: string; body: string };
 };
 const workflow = parse(currentBytes);
-const actions: string[] = workflow.on.pull_request.types ?? ["opened", "synchronize", "reopened"];
+test("the active native phase workflow receives scheduled and explicit source runs only", () => {
+  assert.deepEqual(Object.keys(workflow.on).sort(), ["schedule", "workflow_dispatch"]);
+  assert.equal(workflow.on.workflow_dispatch.inputs.source_sha.required, true);
+  const sourceStep = workflow.jobs["native-phases"].steps.find(
+    (candidate: { name: string }) => candidate.name === STEP,
+  );
+  assert.equal(sourceStep.if, "github.event_name == 'schedule'");
+  assert.equal(sourceStep["continue-on-error"], undefined);
+  assert.deepEqual([lifecycle.opened.action, lifecycle.finalized.action], ["opened", "edited"]);
+});
 
-test("a finalized edited release event reaches the complete authenticated source recipe", () => {
+// Historical PR payloads still qualify the source-recipe helper's custody contract;
+// the active native phase workflow does not receive those events.
+test("a historical finalized release payload authenticates the complete source recipe", () => {
   fixture(
     (f: SourceFixture) => {
       const eventFor = (revision: typeof lifecycle.opened) => ({
@@ -55,18 +66,13 @@ test("a finalized edited release event reaches the complete authenticated source
         },
       });
       const opened = eventFor(lifecycle.opened);
-      const deliver = (event: ReturnType<typeof eventFor>) => {
-        assert.ok(
-          actions.includes(event.action),
-          `Native workflow did not receive ${event.action}`,
-        );
-        return selectSourceRecipe({ ...f, event });
-      };
-      assert.throws(() => deliver(opened), /Missing\/ambiguous vize-release-integration/);
+      const selectPayload = (event: ReturnType<typeof eventFor>) =>
+        selectSourceRecipe({ ...f, event });
+      assert.throws(() => selectPayload(opened), /Missing\/ambiguous vize-release-integration/);
       // A rerun receives the original event payload, even after the body is finalized.
       const finalized = eventFor(lifecycle.finalized);
-      assert.throws(() => deliver(opened), /Missing\/ambiguous vize-release-integration/);
-      const selected = deliver(finalized);
+      assert.throws(() => selectPayload(opened), /Missing\/ambiguous vize-release-integration/);
+      const selected = selectPayload(finalized);
       const step = workflow.jobs["native-phases"].steps.find(
         (candidate: { name: string }) => candidate.name === STEP,
       );
@@ -91,11 +97,10 @@ test("a finalized edited release event reaches the complete authenticated source
   );
 });
 
-test("ordinary PR events retain the current inline path and edited releases remain fail-closed", () => {
+test("historical ordinary PR payloads retain the inline path and edited releases remain fail-closed", () => {
   fixture(
     (f: SourceFixture) => {
       for (const action of ["opened", "synchronize", "reopened", "edited"]) {
-        assert.ok(actions.includes(action), action);
         const ordinary = { ...structuredClone(f.event), action };
         ordinary.pull_request.head.ref = "fix/ordinary-native";
         ordinary.pull_request.body = "Updated ordinary PR description";

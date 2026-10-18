@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
+import { loadFrozenTemplateCompiler } from "./support/patina-template-provider.ts";
 import { compileFunction } from "node:vm";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -24,7 +25,6 @@ const requireProvider = createRequire(
 const requireParser = createRequire(
   process.env.VIZE_LEGACY_API_SCRIPT_PARSER_MANIFEST ?? packageManifest,
 );
-const requireVue = createRequire(process.env.VIZE_LEGACY_API_VUE_MANIFEST ?? packageManifest);
 
 function compilerPacket(compiler, source) {
   const diagnostic = (error) =>
@@ -104,13 +104,13 @@ function erasePacket(typescript, source) {
   };
 }
 
-function runtimePacket(compiler, typescript, vueRuntime, source) {
+function runtimePacket(compiler, typescript, vueRuntime, source, requireRuntime) {
   const compiled = compilerPacket(compiler, source);
   const erase = (source) => erasePacket(typescript, source);
   const js = erase(compiled.template.code);
   const module = { exports: {} };
   compileFunction(js.outputText, ["require", "module", "exports"], { filename: "Component.js" })(
-    requireVue,
+    requireRuntime,
     module,
     module.exports,
   );
@@ -219,25 +219,18 @@ await test("the existing event object expression preserves whole independent pro
   ]) {
     assert.equal(hash(fs.readFileSync(path.join(directory, source.path))), source.sha256);
   }
-  assert.equal(requireVue("vue/package.json").version, proof.compilerProvider.vue);
-  assert.equal(
-    requireVue("@vue/compiler-sfc/package.json").version,
-    proof.compilerProvider.compiler,
+  const { compiler, vueRuntime, typescript, requireVuePackage } = loadFrozenTemplateCompiler(
+    "template-event-object-reference.json",
+    proof.compilerProvider,
+    "sfc",
   );
-  for (const source of proof.compilerProvider.sources) {
-    const directory = path.dirname(requireVue.resolve(`${source.packageName}/package.json`));
-    assert.equal(hash(fs.readFileSync(path.join(directory, source.path))), source.sha256);
-  }
-  const compiler = requireVue("@vue/compiler-sfc");
-  const typescript = requireParser("typescript");
   assert.equal(typescript.version, proof.typescriptProvider.version);
   assert.equal(
-    hash(fs.readFileSync(requireParser.resolve("typescript"))),
+    hash(fs.readFileSync(requireVuePackage.resolve("typescript"))),
     proof.typescriptProvider.source.sha256,
   );
-  const vueRuntime = requireVue("vue");
   assert.equal(vueRuntime.version, proof.runtimeProvider.vue);
-  const requireDom = createRequire(requireVue.resolve("@vue/runtime-dom/package.json"));
+  const requireDom = createRequire(requireVuePackage.resolve("@vue/runtime-dom/package.json"));
   const runtimeDirectory = path.dirname(requireDom.resolve("@vue/runtime-core/package.json"));
   assert.equal(
     hash(fs.readFileSync(path.join(runtimeDirectory, proof.runtimeProvider.source.path))),
@@ -311,7 +304,9 @@ await test("the existing event object expression preserves whole independent pro
   assert.deepEqual(compiled.template.errors, []);
   assert.ok(compiled.template.code.includes("$event => ({ ..._ctx.$listeners })"));
   const actual = JSON.parse(
-    JSON.stringify(runtimePacket(compiler, typescript, vueRuntime, proof.source)),
+    JSON.stringify(
+      runtimePacket(compiler, typescript, vueRuntime, proof.source, requireVuePackage),
+    ),
   );
   assert.deepEqual(
     actual,

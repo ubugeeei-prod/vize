@@ -2,6 +2,7 @@ use std::fs;
 use std::path::{Component, Path, PathBuf};
 use vize_l0::ToCompactString;
 
+use super::git_metadata;
 use super::{HostProfile, Refusal, RefusalKind, Request, Selection, SourceCustody, SourceRole};
 
 mod entry;
@@ -12,6 +13,8 @@ pub(super) struct Admitted {
     pub repository: PathBuf,
     pub is_dir: bool,
     pub has_vcs_boundary: bool,
+    pub git_common: Option<PathBuf>,
+    pub git_sources: Vec<SourceCustody>,
 }
 
 pub(super) fn admit(request: &Request<'_>) -> Result<Admitted, Refusal> {
@@ -80,6 +83,7 @@ pub(super) fn admit(request: &Request<'_>) -> Result<Admitted, Refusal> {
         target.parent().unwrap_or(&target)
     };
     let mut repository = None;
+    let mut git = None;
     for directory in start.ancestors() {
         match fs::symlink_metadata(directory.join(".jj")) {
             Ok(_) => {
@@ -94,7 +98,8 @@ pub(super) fn admit(request: &Request<'_>) -> Result<Admitted, Refusal> {
         }
         let marker = directory.join(".git");
         match fs::symlink_metadata(&marker) {
-            Ok(metadata) if metadata.is_dir() => {
+            Ok(metadata) if metadata.is_dir() || metadata.is_file() || metadata.is_symlink() => {
+                git = Some(git_metadata::resolve(&marker)?);
                 repository = Some(directory.to_path_buf());
                 break;
             }
@@ -190,6 +195,8 @@ pub(super) fn admit(request: &Request<'_>) -> Result<Admitted, Refusal> {
         repository,
         is_dir: metadata.is_dir(),
         has_vcs_boundary,
+        git_common: git.as_ref().map(|metadata| metadata.common.clone()),
+        git_sources: git.map(|metadata| metadata.sources).unwrap_or_default(),
     })
 }
 
@@ -264,6 +271,7 @@ pub(super) fn record_directory(
 pub(super) fn record_ancestors(
     request: &Request<'_>,
     target: &Path,
+    git_common: Option<&Path>,
     selection: &mut Selection,
 ) -> Result<(), Refusal> {
     let directory = if target.is_dir() {
@@ -281,7 +289,15 @@ pub(super) fn record_ancestors(
     if !selection.has_vcs_boundary {
         return Ok(());
     }
-    let info = repository.join(".git/info");
+    let info = git_common
+        .ok_or_else(|| {
+            Refusal::new(
+                RefusalKind::Internal,
+                &repository,
+                "Git boundary requires resolved metadata",
+            )
+        })?
+        .join("info");
     match fs::symlink_metadata(&info) {
         Ok(metadata) if metadata.is_symlink() => {
             return Err(Refusal::new(

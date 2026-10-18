@@ -23,6 +23,15 @@ import { materializeLiteralVrtInputs } from "./vrt_literal.ts";
 import { assertLspSourceRoot, prepareLspSource } from "./lsp_source.ts";
 import { archiveValidatorSha256, assertInstalledLsp } from "./lsp.ts";
 import { rejectLspOverrides } from "./lsp_assets.ts";
+import {
+  assertActorIdentity,
+  assertActorAuthority,
+  assertAxeArchive,
+  axePolicy,
+  installedAxe,
+  retainInstalledInputs,
+} from "./a11y.ts";
+import { readArchive } from "../consumer_recovery/archive.ts";
 
 rejectOverrides();
 rejectLspOverrides();
@@ -41,7 +50,39 @@ const authority = () =>
     .filter((file) => file.endsWith(".ts"))
     .sort()
     .map((file) => ({ file, sha256: digest(readFileSync(path.join(toolDirectory, file))) }));
+function actorPolicy(consumer: string) {
+  const head = execFileSync("git", ["--no-replace-objects", "-C", root, "rev-parse", "HEAD"], {
+    encoding: "utf8",
+  }).trim();
+  const identity = assertActorIdentity(head, process.env);
+  const actorAuthority = authority();
+  assertActorAuthority(actorAuthority, (file) =>
+    readRawBlob(root, head, `tools/support/release/public_acceptance/${file}`),
+  );
+  const workflow = ".github/workflows/release-public-acceptance.yml";
+  const workflowSha256 = digest(readRawBlob(root, head, workflow));
+  assert.equal(digest(readFileSync(path.join(root, workflow))), workflowSha256);
+  return {
+    identity,
+    workflow: { file: workflow, sha256: workflowSha256 },
+    frozenProductSource: source,
+    frozenInputAuthority:
+      "fixtures, vrtInputs, trustedInputs and lsp retain raw frozen H provenance",
+    generatedConsumerRecipe: {
+      commit: head,
+      files: ["package.json", "preview.setup.ts", "preview.one-argument.ts"],
+      requestedPackageSha256: digest(readFileSync(path.join(consumer, "package.json"))),
+      dependencyDelta: { ...axePolicy, reason: "required by the positive hosted A11y control" },
+      reviewedDependencyLock: {
+        file: "pnpm-lock.yaml",
+        sha256: digest(readRawBlob(root, head, "pnpm-lock.yaml")),
+        importer: "npm/builder/vite-musea",
+      },
+    },
+  };
+}
 const consumerHarness = [
+  "a11y.ts",
   "installed.ts",
   "native.ts",
   "browser.ts",
@@ -103,6 +144,7 @@ if (process.argv[2] === "prepare") {
           vue: "3.5.35",
           "vue-router": "4.5.1",
           playwright: "1.62.1",
+          [axePolicy.name]: axePolicy.version,
         },
       },
       null,
@@ -110,6 +152,7 @@ if (process.argv[2] === "prepare") {
     ) + "\n",
     { flag: "wx" },
   );
+  copyFileSync(path.join(consumer, "package.json"), path.join(output, "consumer-package.json"));
   const fixturePrefix = "examples/vite-musea/";
   const paths = execFileSync(
     "git",
@@ -175,6 +218,7 @@ export default function publicSetup(app, context) {
     ...vrtInputs.map((entry) => entry.file),
     ...trustedInputs.map((entry) => entry.file),
   ].map((file) => ({ file, sha256: digest(readFileSync(path.join(consumer, file))) }));
+  const policy = actorPolicy(consumer);
   save("preparation.json", {
     source,
     consumer,
@@ -186,9 +230,8 @@ export default function publicSetup(app, context) {
     trustedInputs,
     consumerSources,
     authority: authority(),
-    toolingCommit: execFileSync("git", ["--no-replace-objects", "-C", root, "rev-parse", "HEAD"], {
-      encoding: "utf8",
-    }).trim(),
+    actorPolicy: policy,
+    toolingCommit: policy.identity.commit,
   });
   assert.ok(!/[\r\n]/u.test(consumer));
   appendFileSync(
@@ -196,9 +239,32 @@ export default function publicSetup(app, context) {
     `PUBLIC_CONSUMER=${consumer}\nPUBLIC_VERSION=${version}\nPUBLIC_LSP_TOOLCHAIN=${lsp.metadata.toolchain}\n`,
   );
   console.log(JSON.stringify({ source, consumer, version, status: "prepared-public-observation" }));
+} else if (process.argv[2] === "installed") {
+  const preparation = load("preparation.json");
+  assert.deepEqual(preparation.source, source);
+  const consumer = realpathSync(preparation.consumer);
+  assert.equal(consumer, preparation.consumer);
+  assert.ok(!consumer.startsWith(root + path.sep));
+  const inputs = retainInstalledInputs(consumer, output);
+  try {
+    assert.deepEqual(actorPolicy(consumer), preparation.actorPolicy);
+    const axe = installedAxe(consumer);
+    const archive = await readArchive(axePolicy.resolved, axePolicy.integrity);
+    assertAxeArchive(archive, axe);
+    assert.equal(
+      axe.requestedSha256,
+      preparation.consumerSources.find((entry: { file: string }) => entry.file === "package.json")
+        ?.sha256,
+    );
+    save("installation.json", { inputs, axe, archive, success: true });
+  } catch (error) {
+    save("installation.json", { inputs, error: String(error), success: false });
+    throw error;
+  }
 } else if (process.argv[2] === "finish") {
   const preparation = load("preparation.json");
   assert.deepEqual(preparation.source, source);
+  assert.deepEqual(actorPolicy(preparation.consumer), preparation.actorPolicy);
   assert.deepEqual(authority(), preparation.authority);
   assertLspSourceRoot(preparation.lsp, { checkout: root, consumer: preparation.consumer, output });
   for (const entry of preparation.consumerSources) {
@@ -238,10 +304,11 @@ export default function publicSetup(app, context) {
   );
   assertVrtCustody(vrt, native);
   const lock = readFileSync(path.join(preparation.consumer, "package-lock.json"));
-  copyFileSync(
-    path.join(preparation.consumer, "package-lock.json"),
-    path.join(output, "package-lock.json"),
-  );
+  const installation = load("installation.json");
+  assert.equal(installation.success, true);
+  assert.equal(digest(lock), installation.axe.lockSha256);
+  assert.deepEqual(installedAxe(preparation.consumer), installation.axe);
+  assert.equal(digest(readFileSync(path.join(output, "package-lock.json"))), digest(lock));
   save("acceptance.json", {
     schema: "vize-public-third-party-release-v1",
     source,
@@ -259,5 +326,5 @@ export default function publicSetup(app, context) {
   });
   console.log(JSON.stringify({ source, version: preparation.version, success: true }));
 } else {
-  throw new Error("use prepare or finish");
+  throw new Error("use prepare, installed or finish");
 }

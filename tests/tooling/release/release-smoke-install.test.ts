@@ -9,7 +9,11 @@ import { fileURLToPath } from "node:url";
 import { preparePublishManifest } from "../../../tools/support/compat/npm/prepare-publish-manifest.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const smokeCommand = path.join(root, "tools/commands/release/npm/smoke-release-install.rs");
+const typescriptDriver = process.env.VIZE_RELEASE_SMOKE_DRIVER === "typescript";
+const smokeCommand = path.join(
+  root,
+  `tools/commands/release/npm/smoke-release-install.${typescriptDriver ? "ts" : "rs"}`,
+);
 const smokeModule = path.join(root, "tools/support/compat/npm/smoke-release-install.mjs");
 
 test("release install smoke packs and installs local package tarballs", () => {
@@ -210,7 +214,10 @@ test("release install smoke can run runtime checks for Vize packages", () => {
     "utf8",
   );
   const smokeSources = `${script}\n${runtimeScript}`;
-  const rustScript = fs.readFileSync(smokeCommand, "utf8");
+  const rustScript = fs.readFileSync(
+    path.join(root, "tools/commands/release/npm/smoke-release-install.rs"),
+    "utf8",
+  );
   const initTypecheckScript = fs.readFileSync(
     path.join(root, "tools/support/compat/npm/smoke-release-init-typecheck.mjs"),
     "utf8",
@@ -325,11 +332,15 @@ type SmokeResult = {
 };
 
 function runSmokeArgs(args: string[], options: SmokeOptions = {}): SmokeResult {
-  const result = spawnSync("rust-script", [smokeCommand, ...args], {
-    cwd: root,
-    encoding: "utf8",
-    env: { ...process.env, ...options.env },
-  });
+  const result = spawnSync(
+    typescriptDriver ? process.execPath : "rust-script",
+    [smokeCommand, ...args],
+    {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, ...options.env },
+    },
+  );
 
   if (result.error != null) {
     throw result.error;

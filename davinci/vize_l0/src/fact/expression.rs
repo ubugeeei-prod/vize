@@ -1,9 +1,9 @@
 //! `expression-facts` — P2-5b's expression duties, answered per expression
-//! by a foreign expression dialect over the `expression-dialect` contract
-//! world (Davinci P6-1b).
+//! by the producing expression dialect. The neutral representation also
+//! retains historical opaque-dialect fact pages.
 //!
 //! The in-tree JS dialect answers these questions from the retained AST; a
-//! foreign dialect (MoonBit, charter #28) answers them across the contract,
+//! foreign dialect answers them across the capability contract,
 //! and its answer travels as this group's α page. Keys are the batch's
 //! expression ids (identities the host assigned, never source offsets);
 //! values are the three answers the capability contract names: the

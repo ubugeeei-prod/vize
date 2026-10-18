@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { python, sha256, targets } from "./lsp_source.ts";
+import { python, sha256, targets, supportTargets } from "./lsp_source.ts";
 
 type Package = {
   id: string;
@@ -22,7 +22,12 @@ type Metadata = {
     }[];
   };
 };
-export function assertSupportGraph(metadata: Metadata, sourceTree: string, originalLock: string) {
+export function assertSupportGraph(
+  metadata: Metadata,
+  sourceTree: string,
+  originalLock: string,
+  expectedTargets = targets,
+) {
   const locked = python(
     "import json,sys,tomllib\nprint(json.dumps(tomllib.load(open(sys.argv[1],'rb'))['package']))",
     [originalLock],
@@ -62,7 +67,7 @@ export function assertSupportGraph(metadata: Metadata, sourceTree: string, origi
         pkg.targets
           .map((t) => ({ name: t.name, kind: t.kind }))
           .sort((a, b) => a.name.localeCompare(b.name)),
-        targets
+        expectedTargets
           .map((name) => ({ name, kind: ["test"] }))
           .sort((a, b) => a.name.localeCompare(b.name)),
       );
@@ -160,6 +165,7 @@ export function freezeSupportLock(
     metadata,
     sourceTree,
     path.join(sourceTree, "Cargo.lock"),
+    supportTargets,
   );
   const lock = fs.readFileSync(path.join(adapter, "Cargo.lock"));
   fs.writeFileSync(path.join(output, "adapter-Cargo.lock"), lock, { flag: "wx" });

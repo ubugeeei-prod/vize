@@ -17,11 +17,14 @@ fn original() -> Value {
 fn policy() -> String {
     generated(8739, C, H, "v0.447.0")
 }
+fn legacy_policy() -> String {
+    policy().replacen(QUEUE_POLICY, LEGACY_POLICY, 1)
+}
 fn decorations() -> String {
     original()["body"]
         .as_str()
         .unwrap()
-        .strip_prefix(&policy())
+        .strip_prefix(&legacy_policy())
         .unwrap()
         .into()
 }
@@ -69,10 +72,12 @@ fn original_full_body_decorations_preserve_exact_generated_policy() {
     let pr = original();
     let raw = pr["body"].as_str().unwrap();
     assert_ne!(
-        policy(),
+        legacy_policy(),
         raw,
         "the old full-string comparison refuses this authored model"
     );
+    assert_eq!(raw, format!("{}{}", legacy_policy(), decorations()));
+    assert_ne!(legacy_policy(), policy());
     assert_eq!(
         qualify(raw, &policy(), "ubugeeei-prod/vize", 8740).unwrap(),
         ["codesmith", "coderabbit"]
@@ -82,6 +87,120 @@ fn original_full_body_decorations_preserve_exact_generated_policy() {
             .unwrap()
             .is_empty()
     );
+}
+
+#[test]
+fn whole_fresh_minor_policy_and_pin_envelope_match_the_reviewed_contract() {
+    let expected = concat!(
+        "Integrate only generated v0.447.0 version metadata into moving main. ",
+        "Source PR #8739 remains an immutable draft receipt at H=ef34d1a0409fc711a6c5cefcf0708b0cce78f502. ",
+        "The official fresh minor operator may request protected queue checks under its exact versioned lease and original absolute deadline; ",
+        "ordinary required PR checks still govern actual queue admission. ",
+        "Required integration checks must freshly authenticate the existing exact-H full qualification and every required job, plus the original Release candidate-ready join of every build and full preflight, before merge. ",
+        "Legacy commands and resumes retain serial admission. ",
+        "Tag creation and publication still require all original H checks, every release build, full preflight, and the actual signed protected integration merge. ",
+        "This command never writes main directly. ",
+        "Actual delivery is checked against its final first parent, not the initial base.\n\n",
+        "<!-- vize-release-pin-source: 8739 -->\n",
+        "<!-- vize-release-pin-cut: dd188515f8ec3c51662b4f4d69adcd39c86a0907 -->\n",
+        "<!-- vize-release-pin-head: ef34d1a0409fc711a6c5cefcf0708b0cce78f502 -->\n",
+        "<!-- vize-release-pin-tag: v0.447.0 -->\n",
+    );
+    assert_eq!(policy(), expected);
+    assert!(
+        qualify(expected, &policy(), "ubugeeei-prod/vize", 8740)
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        qualify(
+            &format!("{expected}{}", decorations()),
+            &policy(),
+            "ubugeeei-prod/vize",
+            8740,
+        )
+        .unwrap(),
+        ["codesmith", "coderabbit"]
+    );
+}
+
+#[test]
+fn fresh_minor_policy_requires_every_queue_and_promotion_boundary_and_pin() {
+    let canonical = policy();
+    for (before, after) in [
+        ("official fresh minor operator", "any operator or resume"),
+        ("request protected queue checks", "merge immediately"),
+        ("exact versioned lease", "any lease"),
+        ("original absolute deadline", "a renewed absolute deadline"),
+        (
+            "ordinary required PR checks still govern actual queue admission",
+            "ordinary required PR checks may be bypassed for queue admission",
+        ),
+        ("freshly authenticate", "trust a previous success for"),
+        (
+            "existing exact-H full qualification",
+            "a newly dispatched qualification",
+        ),
+        ("every required job", "selected jobs"),
+        ("before merge", "after merge"),
+        (
+            ", plus the original Release candidate-ready join of every build and full preflight",
+            "",
+        ),
+        ("Release candidate-ready join", ""),
+        ("every build and ", ""),
+        (" and full preflight, before merge", ", before merge"),
+        (", before merge", ""),
+        (
+            "Legacy commands and resumes retain serial admission",
+            "Legacy commands and resumes may request early admission",
+        ),
+        (
+            "Tag creation and publication still require",
+            "Tag creation and publication may skip",
+        ),
+        ("all original H checks", "selected H checks"),
+        ("every release build", "some release builds"),
+        ("full preflight", "optional preflight"),
+        (
+            "actual signed protected integration merge",
+            "requested integration merge",
+        ),
+        ("never writes main directly", "may write main directly"),
+        (
+            "<!-- vize-release-pin-source: 8739 -->",
+            "<!-- vize-release-pin-source: 42 -->",
+        ),
+        (C, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+        (H, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"),
+        ("v0.447.0", "v0.448.0"),
+    ] {
+        assert!(canonical.contains(before), "{before}");
+        let mutated = canonical.replace(before, after);
+        for suffix in [String::new(), decorations()] {
+            assert!(
+                qualify(
+                    &format!("{mutated}{suffix}"),
+                    &canonical,
+                    "ubugeeei-prod/vize",
+                    8740,
+                )
+                .is_err(),
+                "{before}"
+            );
+        }
+    }
+    for body in [
+        canonical.replacen(QUEUE_POLICY, "", 1),
+        canonical.replacen(QUEUE_POLICY, &format!("{QUEUE_POLICY} {LEGACY_POLICY}"), 1),
+        canonical.replacen(QUEUE_POLICY, &format!("{LEGACY_POLICY} {QUEUE_POLICY}"), 1),
+        legacy_policy().replace("only after immutable H/R", "before immutable H/R"),
+        format!("unreviewed policy\n{canonical}"),
+        canonical.trim_end().to_owned(),
+    ] {
+        assert_ne!(body, canonical);
+        assert!(qualify(&body, &canonical, "ubugeeei-prod/vize", 8740).is_err());
+    }
 }
 
 #[test]
@@ -211,7 +330,7 @@ fn forged_and_ambiguous_body_decoration_envelopes_are_refused() {
 fn event_current_body_projection_does_not_change_other_identity_refusals() {
     let current = original();
     let mut event_pr = current.clone();
-    event_pr["body"] = json!(policy());
+    event_pr["body"] = json!(legacy_policy());
     let event = json!({"number":8740,"repository":{"full_name":"ubugeeei-prod/vize"},"pull_request":event_pr});
     let candidate = "a".repeat(40);
     let head = current["head"]["sha"].as_str().unwrap();

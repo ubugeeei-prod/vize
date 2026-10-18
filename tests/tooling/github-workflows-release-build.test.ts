@@ -99,7 +99,10 @@ test("every produced native artifact is guarded against missing output", () => {
 test("publication keeps installed-package smoke and exact promotion barriers", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const smoke = workflowJobBody(workflow, "smoke-release-packages");
-  assert.match(smoke, /smoke-release-install\.rs --prepare-manifests --runtime-checks/);
+  assert.match(
+    smoke,
+    /node tools\/commands\/release\/npm\/smoke-release-install\.ts --prepare-manifests --runtime-checks/,
+  );
   assert.deepEqual(release.jobs["smoke-release-packages"].needs, [
     "plan-release-platforms",
     "build-release-packages",
@@ -122,7 +125,9 @@ test("publication keeps installed-package smoke and exact promotion barriers", (
   }
   for (const jobName of ["release-npm-native", "release-npm-fresco-native", "release-npm-wasm"]) {
     const steps = release.jobs[jobName].steps as Step[];
-    const smokeIndex = steps.findIndex(({ run }) => run?.includes("smoke-release-install.rs"));
+    const smokeIndex = steps.findIndex(({ run }) =>
+      run?.includes("node tools/commands/release/npm/smoke-release-install.ts"),
+    );
     const publishIndex = steps.findIndex(({ run }) => run?.includes("publish_npm_package"));
     assert.ok(smokeIndex >= 0 && publishIndex > smokeIndex, jobName);
   }

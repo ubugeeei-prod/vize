@@ -21,3 +21,20 @@ runs:
         retention-days: 14
     - name: Execute original selected-template literal modules
       uses: ./.github/actions/test-native-selected-template-literals
+    - name: Verify comment-root compiler modules in the actual Vue runtime
+      shell: bash
+      env:
+        VIZE_DEV_ROOT_FRAGMENT_CAPTURE: ${{ runner.temp }}/dev-root-fragment.json
+        VIZE_DEV_ROOT_FRAGMENT_REQUIRE_CAPTURE: "1"
+      run: |
+        cargo test -p vize_atelier_dom --profile ci --test dev_root_fragment
+        NODE_ENV=development vp node --test tests/tooling/dev-root-fragment-runtime.test.ts
+        NODE_ENV=production vp node --test tests/tooling/dev-root-fragment-runtime.test.ts
+    - name: Retain comment-root compiler modules
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: dev-root-fragment-${{ github.run_id }}-${{ github.sha }}
+        path: ${{ runner.temp }}/dev-root-fragment.json
+        if-no-files-found: error
+        retention-days: 7

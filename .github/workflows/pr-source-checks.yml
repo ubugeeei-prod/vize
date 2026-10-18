@@ -3,10 +3,6 @@ on: { workflow_call: null }
 permissions: { contents: read }
 env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
 jobs:
-  wit-contracts:
-    name: Guest contracts
-    if: ${{ github.event_name == 'merge_group' }}
-    uses: ./.github/workflows/davinci-contracts.yml
   nuxt-module-qualification:
     name: Nuxt module qualification
     if: ${{ github.event_name == 'merge_group' }}
@@ -24,6 +20,7 @@ jobs:
       canonical-corpus: ${{ steps.plan.outputs.heavy == 'true' && steps.canonical-corpus-plan.outputs.canonical-corpus || 'false' }}
       rust: ${{ steps.plan.outputs.rust }}
       rust-plan: ${{ steps.plan.outputs.rust-plan }}
+      source-contracts: ${{ steps.plan.outputs.source-contracts }}
       js: ${{ steps.plan.outputs.js }}
       js-plan: ${{ steps.plan.outputs.js-plan }}
       native-runtime-matrix: ${{ steps.plan.outputs.native-runtime-matrix }}
@@ -67,6 +64,8 @@ jobs:
           tests/tooling/rust-test-cohorts.test.ts
           tests/tooling/rust-test-archive.test.mjs
           tests/tooling/rust-build-evidence.test.mjs
+          tests/tooling/release-input-scopes.test.mjs
+          tests/tooling/pinned-fixture-hydration.test.ts
   canonical-corpus:
     permissions: { contents: read, actions: read, checks: read }
     needs: pr-source-plan
@@ -83,6 +82,7 @@ jobs:
       # narrows packages; it cannot disable test or Clippy acceptance.
       run-rust: true
       rust-plan: ${{ needs.pr-source-plan.outputs.rust-plan }}
+      run-source-contracts: ${{ needs.pr-source-plan.outputs.source-contracts == 'true' }}
   pr-js-packages:
     name: PR JS packages
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -112,9 +112,14 @@ jobs:
         with: { fetch-depth: "${{ matrix.lane == 'attributes' && '0' || '1' }}" }
       - uses: ./.github/actions/cache-vp-bootstrap
         if: ${{ matrix.lane != 'none' }}
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ matrix.lane != 'none' }}
-        with: { node-version-file: "package.json", cache: true, run-install: false }
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         if: ${{ matrix.lane != 'none' }}
         with: { toolchain: "1.99.1" }
@@ -195,9 +200,14 @@ jobs:
           tool: wasm-bindgen-cli@0.2.129
       - uses: ./.github/actions/cache-vp-bootstrap
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
-        with: { node-version-file: "package.json", cache: true, run-install: false }
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: false
       - name: Build WASM
         if: ${{ env.RUN_PLAYGROUND == 'true' && steps.cache-wasm.outputs.cache-hit != 'true' }}
         run: node tools/support/github/build-vitrine-wasm.ts playground/src/wasm
@@ -248,7 +258,7 @@ jobs:
     # A superseded run reports nothing: its required check fails in test-report.
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
     # prettier-ignore
-    needs: [pr-source-plan, pr-rust-source, pr-js-packages, pr-native-runtime, pr-playground-test, wit-contracts, nuxt-module-qualification, canonical-corpus]
+    needs: [pr-source-plan, pr-rust-source, pr-js-packages, pr-native-runtime, pr-playground-test, nuxt-module-qualification, canonical-corpus]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:

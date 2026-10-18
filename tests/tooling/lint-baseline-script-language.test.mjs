@@ -12,16 +12,12 @@ import {
 } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
 import { collectBaselineFindings } from "../../tools/support/compat/fixtures/lint-divergence-records.mjs";
 import { evaluateBudget } from "../../tools/support/compat/fixtures/lint-divergence-budget.mjs";
+import { baselineScript as candidate } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const corpus = path.join(root, "tests/_fixtures/differential/lint/reference-script-language");
 const originals = JSON.parse(fs.readFileSync(path.join(corpus, "originals.json"), "utf8"));
 const frozen = fs.readFileSync(path.join(corpus, "before-script.mjs.txt"), "utf8");
-const producer = fs.readFileSync(
-  path.join(root, "tools/commands/fixtures/lint-divergence-report.rs"),
-  "utf8",
-);
-const candidate = producer.match(/let script = r#"([\s\S]*?)"#;/u)?.[1];
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 assert.ok(candidate);
 assert.equal(digest(frozen), originals.beforeScriptSha256);

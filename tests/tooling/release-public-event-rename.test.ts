@@ -17,10 +17,39 @@ import {
   bindExpected,
   assertWholeCase,
 } from "../../tools/support/release/public_acceptance/lsp_case.ts";
-import { targets } from "../../tools/support/release/public_acceptance/lsp_source.ts";
+import {
+  supportDependencyVersions,
+  targets,
+} from "../../tools/support/release/public_acceptance/lsp_source.ts";
 import { independentPublicObservationLaw } from "./support/release-public-independent-observation-law.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
+void test("all three original LSP targets inherit their direct registry imports from H", () => {
+  // runtime_distribution.rs uses url::Url even when its own tests are filtered
+  // out: Cargo must compile the complete original target before --exact runs.
+  const inherited = {
+    serde_json: "=1.2.3",
+    tempfile: { version: "=4.5.6" },
+    sha2: "=7.8.9",
+    "lsp-types": { version: "=10.11.12" },
+    url: { version: "=13.14.15" },
+  };
+  assert.deepEqual(supportDependencyVersions(inherited), {
+    serde_json: "=1.2.3",
+    tempfile: "=4.5.6",
+    sha2: "=7.8.9",
+    "lsp-types": "=10.11.12",
+    url: "=13.14.15",
+  });
+  assert.deepEqual(supportDependencyVersions({ ...inherited, url: "=16.17.18" }).url, "=16.17.18");
+  for (const name of Object.keys(inherited)) {
+    const missing = { ...inherited } as Record<string, string | { version: string }>;
+    delete missing[name];
+    assert.throws(() => supportDependencyVersions(missing), /support dependency absent from H/u);
+    for (const version of ["^1.2.3", "1.2.3", "*", "=1.2.3\nforeign = 1"])
+      assert.throws(() => supportDependencyVersions({ ...inherited, [name]: version }));
+  }
+});
 void test("public rename refuses ambient native/provider/compiler authority", () => {
   for (const key of [
     "CARGO_BIN_EXE_vize",

@@ -136,9 +136,119 @@ test("public release CLI forwards pinned start, resume and retirement through it
 
 test("release promotion rejects stale main and immutable tag conflicts atomically", () => {
   const result = spawnSync("rust-script", ["--test", script], { encoding: "utf8" });
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
   assert.equal(result.status, 0, `${result.error ?? ""}\n${result.stdout}\n${result.stderr}`);
   assert.match(result.stdout, /\b[1-9]\d* passed; 0 failed/);
   assert.match(result.stdout, /normal_cached_driver_module_changes_require_new_entry_source_pin/);
+  for (const law of [
+    "legacy_archive_receipts_logs_and_commit_messages_remain_byte_exact",
+    "pre_release_archive_roundtrips_whole_q_custody_and_actual_binary_failure_bytes",
+    "qualification_archive_replays_actual_source_policy_and_preserves_typed_failure_origin",
+    "original_hosted_operator_identity_is_required_without_status_shortcuts",
+    "shared_release_checks_accept_only_documented_pending_exit_with_actual_evidence",
+    "legacy_and_integration_checks_keep_exact_required_names_heads_apps_and_success",
+    "versioned_same_ref_lease_captures_original_budget_without_source_or_pin_mutation",
+    "changed_versioned_lease_is_preserved_on_error_and_drop",
+    "compensation_runner_sigkills_reaps_and_retains_whole_process_failure_packets",
+    "gnu_outer_timeout_bounds_hung_node_and_inherited_stdio_descendants",
+    "expired_original_budget_uses_actual_watch_finish_to_withdraw_only_acquired_entry",
+    "native_queue_acquires_only_actual_returned_entry_with_expected_head_and_whole_custody",
+    "owned_dequeue_uses_real_id_input_once_and_verifies_exact_entry_then_fresh_null",
+    "already_removed_owned_entry_needs_fresh_identity_and_authority_but_no_write",
+    "same_identity_merged_integration_allows_only_fresh_null_cleanup_noop",
+    "changed_effective_required_contexts_app_or_queue_policy_refuse_before_admission",
+    "missing_effective_grouping_refuses_without_secondary_lookup_or_mutation",
+    "existing_entries_unknown_auto_or_changed_integration_are_never_adopted_or_mutated",
+    "authentication_head_mismatch_and_graphql_failures_are_fatal_without_retry",
+    "foreign_cleanup_entries_changed_lease_attempt_or_unknown_auto_remain_untouched",
+    "ambiguous_dequeue_response_or_replacement_after_write_never_causes_second_mutation",
+    "enqueue_records_only_authenticated_response_owner_before_fallible_postwrite_reads",
+    "original_rust_readiness_adapter_preserves_pending_complete_packets_and_every_failure",
+    "fresh_minor_policy_requires_every_queue_and_promotion_boundary_and_pin",
+  ]) {
+    assert.ok(result.stdout.includes(law), `actual Rust driver must execute ${law}`);
+  }
+});
+
+test("early queue admission waits ordinary required checks and retains finite owned withdrawal evidence", () => {
+  const watch = readRepoFile("tools", "support", "release", "pr_pin_watch.rs");
+  const queue = readRepoFile("tools", "support", "release", "pr_pin_queue.rs");
+  assert.ok(!watch.includes("--auto") && !queue.includes("--auto"));
+  assert.equal(watch.split("queue::enqueue(").length, 2, "one native admission call site");
+  assert.ok(
+    watch.indexOf("pr_promote::checks_pass(candidate, root)?") < watch.indexOf("queue::enqueue("),
+  );
+  assert.ok(watch.includes("if early_candidate.is_none() {\n                    let integration"));
+  const outcome = watch.indexOf("let result = (|| {");
+  const finish = watch.indexOf("pub(super) fn finish_owned_watch(");
+  const actualWatch = watch.indexOf("pub(super) fn watch(");
+  assert.ok(finish >= 0 && finish < actualWatch && outcome > actualWatch);
+  assert.ok(
+    watch.indexOf("return finish_owned_watch(failure, &context", outcome) >
+      watch.indexOf("})();", outcome),
+  );
+  assert.ok(!watch.slice(finish, actualWatch).includes("budget.check()"));
+  assert.ok(watch.includes("(&result, &early_candidate, &owned_queue)"));
+  assert.ok(watch.includes("Owned queue withdrawal refused; preserve its complete evidence"));
+  const operator = parse(readRepoFile(".github", "workflows", "release-operator.yml"));
+  const invocation = operator.jobs.operator.steps.find(
+    (step: { env?: Record<string, string> }) => step.env?.GH_TOKEN,
+  );
+  assert.equal(
+    invocation.env.VIZE_RELEASE_INTEGRATION_QUEUE_EVIDENCE,
+    "${{ runner.temp }}/release-integration-queue/responses.jsonl",
+  );
+  const retention = operator.jobs.operator.steps.at(-1);
+  assert.equal(retention.name, "Preserve exact owned integration queue responses");
+  assert.equal(retention.if, "${{ always() }}");
+  assert.equal(retention.with.path, "${{ runner.temp }}/release-integration-queue");
+  assert.equal(retention.with["if-no-files-found"], "ignore");
+  assert.equal(retention.with["retention-days"], 30);
+});
+
+test("actual cached Rust readiness command retains whole accepted jobs and refuses malformed evidence", () => {
+  const ready = {
+    id: 9,
+    run_id: 7,
+    run_attempt: 2,
+    head_sha: "1".repeat(40),
+    name: "Release candidate ready",
+    status: "completed",
+    conclusion: "success",
+    steps: [{ name: "original", conclusion: "success" }],
+    future: { field: "preserved" },
+  };
+  const invoke = (input: string) =>
+    spawnSync("rust-script", [script, "check-release-readiness"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+      input,
+    });
+  for (const [jobs, expected] of [
+    [[ready], { ready: true, readyJob: ready }],
+    [[], { ready: false }],
+    [[{ ...ready, status: "in_progress", conclusion: null }], { ready: false }],
+  ] as const) {
+    const result = invoke(JSON.stringify(jobs));
+    assert.equal(result.status, 0, `${result.error ?? ""}\n${result.stdout}\n${result.stderr}`);
+    assert.deepEqual(JSON.parse(result.stdout), expected);
+  }
+  for (const input of [
+    ...["failure", "cancelled", "skipped"].map((conclusion) =>
+      JSON.stringify([{ ...ready, conclusion }]),
+    ),
+    JSON.stringify([ready, ready]),
+    "null",
+    "{}",
+    "[] trailing",
+    " ".repeat(2_097_153),
+  ]) {
+    const result = invoke(input);
+    assert.equal(result.status, 1, `${result.error ?? ""}\n${result.stdout}\n${result.stderr}`);
+    assert.equal(result.stdout, "");
+    assert.ok(result.stderr.length > 0);
+  }
 });
 
 test("release-only workflow validates all artifacts before promotion and preserves normal PR cost", () => {
@@ -168,7 +278,7 @@ test("release-only workflow validates all artifacts before promotion and preserv
   );
   assert.equal(workflow.jobs["candidate-preflight"].needs, "candidate");
   assert.deepEqual(workflow.jobs["candidate-preflight"].permissions, {
-    actions: "write",
+    actions: "read",
     contents: "read",
     issues: "read",
     "pull-requests": "read",
@@ -187,7 +297,7 @@ test("release-only workflow validates all artifacts before promotion and preserv
     (step: { with?: Record<string, unknown> }) => step.with?.["run-install"] === true,
   );
   const packed = wasm.findIndex((step: { run?: string }) =>
-    step.run?.includes("smoke-release-install.rs npm/wasm"),
+    step.run?.includes("node tools/commands/release/npm/smoke-release-install.ts npm/wasm"),
   );
   assert.ok(
     installed >= 0 && packed > installed,

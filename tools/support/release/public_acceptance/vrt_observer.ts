@@ -7,7 +7,7 @@ import { createVrtFixture, type VrtFixture } from "./vrt_fixtures.ts";
 import { cleanup, evidence, inventory } from "./vrt_artifacts.ts";
 import { observeVrtApi } from "./vrt_api.ts";
 import { observeHostedVrt } from "./vrt_hosted.ts";
-import { VrtSecrets } from "./vrt_secrets.ts";
+import { VrtSecrets, writeVrtDiagnostic, type VrtPhase } from "./vrt_secrets.ts";
 import { observeTrustedInstalledVrt } from "./vrt_trusted_observation.ts";
 import { assertTrustedVrtSurfacesClosed } from "./vrt_trusted_surface.ts";
 import { assertPublishedVrtChildrenClosed } from "./vrt_service_process.ts";
@@ -15,15 +15,17 @@ import { assertPublishedVrtChildrenClosed } from "./vrt_service_process.ts";
 rejectOverrides();
 const [version, output] = process.argv.slice(2);
 assert.ok(version && output);
-const secrets = new VrtSecrets();
+const secrets = new VrtSecrets(writeVrtDiagnostic);
+secrets.stage("observer-entry");
 try {
   const e = secrets.evidence(await evidence(path.join(path.dirname(output), "musea-vrt")));
   const owned: { browser?: Browser } = {};
   let fixture: VrtFixture | undefined;
   let provider: ReturnType<typeof publicNative> | undefined;
   let failure: unknown;
-  let stage = "installed-native-custody";
+  let stage: VrtPhase = "installed-native-custody";
   try {
+    secrets.stage(stage);
     provider = publicNative(version);
     await e.json("provider.json", {
       version,
@@ -31,6 +33,7 @@ try {
       loaded: provider.loaded,
     });
     stage = "sealed-delivered-inputs";
+    secrets.stage(stage);
     fixture = createVrtFixture(process.cwd());
     await e.json("inputs.json", {
       settings: fixture.settings,
@@ -38,13 +41,17 @@ try {
       delay: fixture.delay,
     });
     stage = "public-chromium";
+    secrets.stage(stage);
     const { chromium } = await import("playwright");
     const browser = (owned.browser = await chromium.launch({ headless: true }));
     stage = "configured-public-api";
+    secrets.stage(stage);
     await observeVrtApi(browser, fixture, e);
     stage = "mandatory-public-hosted-cli-and-audits";
-    await observeHostedVrt(browser, fixture, e);
+    secrets.stage(stage);
+    await observeHostedVrt(browser, fixture, e, secrets);
     stage = "mandatory-normally-trusted-public-https";
+    secrets.stage(stage);
     const assetDirectory = process.env.VRT_TUNNEL_DIRECTORY;
     assert.ok(
       assetDirectory && path.isAbsolute(assetDirectory),
@@ -61,10 +68,12 @@ try {
       secrets,
     );
     stage = "final-installed-custody";
+    secrets.stage(stage);
     const final = publicNative(version);
     assert.deepEqual(final.packages, provider.packages);
     assert.deepEqual(final.loaded, provider.loaded);
   } catch (error) {
+    secrets.failed();
     const sanitizedError = secrets.sanitizeError(error);
     failure = sanitizedError;
     await e.json("failure.json", {
@@ -73,6 +82,7 @@ try {
       stack: sanitizedError instanceof Error ? sanitizedError.stack : undefined,
     });
   } finally {
+    secrets.stage("observer-cleanup");
     try {
       await cleanup(e, "observer-cleanup", [
         { name: "chromium", run: async () => owned.browser?.close() },
@@ -87,6 +97,7 @@ try {
         },
       ]);
     } catch (error) {
+      secrets.failed("observer-cleanup");
       const sanitizedError = secrets.sanitizeError(error);
       e.records.push({ phase: "cleanup", error: String(sanitizedError) });
       failure ??= sanitizedError;
@@ -119,20 +130,15 @@ try {
     console.log(JSON.stringify({ version, scope: "installed-public-musea-vrt", success: true }));
   }
 } catch (error) {
+  secrets.failed();
   console.error(secrets.sanitizeError(error));
   process.exitCode ||= 1;
 } finally {
   try {
-    const barriers = await Promise.allSettled([
-      Promise.resolve().then(assertTrustedVrtSurfacesClosed),
-      Promise.resolve().then(assertPublishedVrtChildrenClosed),
-    ]);
-    assert.ok(
-      barriers.every((result) => result.status === "fulfilled"),
-      "Owned VRT closure barrier refused",
-    );
+    await secrets.closeBarrier(assertTrustedVrtSurfacesClosed, assertPublishedVrtChildrenClosed);
     await secrets.seal(path.join(path.dirname(output), "vrt.log"), process.env.VRT_RETAINED_OUTPUT);
   } catch {
+    secrets.failed();
     console.error("VRT retained evidence refused; log publication withheld");
     process.exitCode ||= 1;
   } finally {

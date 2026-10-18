@@ -26,6 +26,24 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     template_ast: Option<(&vize_relief::RootNode<'_>, u32)>,
     template_syntax: Option<&vize_armature::parser::TemplateSyntaxFacts<'_>>,
 ) {
+    append_builtin_script_diagnostics_with_template_context(
+        linter,
+        descriptor,
+        result,
+        template_ast,
+        template_syntax,
+        None,
+    );
+}
+
+pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
+    linter: &Linter,
+    descriptor: &SfcDescriptor<'a>,
+    result: &mut LintResult,
+    template_ast: Option<(&vize_relief::RootNode<'_>, u32)>,
+    template_syntax: Option<&vize_armature::parser::TemplateSyntaxFacts<'_>>,
+    mut template_context: Option<&mut crate::context::LintContext<'_>>,
+) {
     let registered_scripts = registered_sfc::has_active(linter);
     if (linter.script_rules.is_empty() || !has_active_builtin_script_rules(linter))
         && !registered_scripts
@@ -49,7 +67,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     // Resolve actual configured capabilities once. Script-bearing SFCs defer
     // emission until the existing clean script parses can positively witness a
     // component binding; scriptless/early returns still run the capability.
-    let append_template =
+    let mut append_template =
         |result: &mut LintResult, bindings: &crate::rules::script::TemplateComponentBindings| {
             let Some((references, offset)) = &template_references else {
                 return;
@@ -58,7 +76,16 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                 if let Some(rule) = resolved_rule(linter, entry).template_check() {
                     let mut lint = ScriptLintResult::default();
                     rule.check_template(references, bindings, *offset, &mut lint);
-                    merge_script_result(linter, result, lint);
+                    if let Some(ctx) = template_context.as_deref_mut() {
+                        if linter.report_unused_disable_directives {
+                            ctx.register_executed_template_rule(entry.rule_name);
+                        }
+                        for diagnostic in lint.diagnostics {
+                            ctx.report_template_in_sfc(diagnostic);
+                        }
+                    } else {
+                        merge_script_result(linter, result, lint);
+                    }
                 }
             }
         };
@@ -354,4 +381,57 @@ fn sfc_script_source_type(lang: Option<&str>) -> oxc_span::SourceType {
         lang,
         None | Some("js" | "javascript" | "jsx" | "tsx")
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::rules::script::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+    use crate::{LintDiagnostic, LintPreset, Linter, Severity};
+    use serde_json::json;
+
+    struct ScriptOnly;
+    static META: ScriptRuleMeta = ScriptRuleMeta {
+        name: "script/no-deprecated-dollar-scopedslots-api",
+        description: "configured script-only capability witness",
+        default_severity: Severity::Warning,
+    };
+    impl ScriptRule for ScriptOnly {
+        fn meta(&self) -> &'static ScriptRuleMeta {
+            &META
+        }
+        fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
+            assert_eq!(source, "const marker = 1;");
+            result.add_diagnostic(LintDiagnostic::warn(
+                META.name,
+                "script-only override",
+                offset as u32,
+                offset as u32 + 5,
+            ));
+        }
+    }
+
+    #[test]
+    fn a_script_only_override_never_inherits_template_pragma_usage() {
+        assert!(ScriptOnly.template_check().is_none());
+        let source = "<script>const marker = 1;</script>\n<template>\n<!-- eslint-disable-next-line vue/no-deprecated-dollar-scopedslots-api -->\n<div>{{ $scopedSlots }}</div>\n</template>\n";
+        let mut linter = Linter::with_preset(LintPreset::Incremental)
+            .with_enabled_rules(Some(vec![META.name.into()]))
+            .with_report_unused_disable_directives(true);
+        linter
+            .script_rule_overrides
+            .insert(META.name.into(), Box::new(ScriptOnly));
+        let result = linter.lint_sfc(source, "Override.vue");
+        let diagnostics = result.diagnostics.iter().map(|d| json!({
+            "rule_name":d.rule_name, "severity":d.severity, "message":d.message,
+            "start":d.start, "end":d.end, "help":d.help, "fix":d.fix,
+            "labels":d.labels.iter().map(|l| json!({"message":l.message,"start":l.start,"end":l.end})).collect::<Vec<_>>()
+        })).collect::<Vec<_>>();
+        assert_eq!(
+            json!({"filename":result.filename,"error_count":result.error_count,"warning_count":result.warning_count,"diagnostics":diagnostics}),
+            json!({
+                "filename":"Override.vue","error_count":0,"warning_count":1,
+                "diagnostics":[{"rule_name":META.name,"severity":"warning","message":"script-only override","start":8,"end":13,"help":null,"fix":null,"labels":[]}]
+            })
+        );
+    }
 }

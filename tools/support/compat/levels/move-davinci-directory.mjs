@@ -17,10 +17,6 @@ const names = [
   "vize_l4",
   "vize_l1_to_l2",
   "vize_l2_to_l3",
-  "vize_extension_contract",
-  "vize_extension_host",
-  "vize_guest",
-  "vize_dialect_moonbit",
 ];
 const mode = process.argv[2];
 if (
@@ -61,7 +57,6 @@ if (mode === "--move-only") {
     .filter(Boolean);
   for (const file of files) {
     // Captured oracle bytes and upstream provenance retain their original paths.
-    if (file.includes("/vize_guest/versions/")) continue;
     if (/\.(snap|input\.txt|expected\.json|bin)$/u.test(file)) continue;
     if (file.includes("/fixtures/") && !/\.(rs|toml)$/u.test(file)) continue;
     const absolute = path.join(root, file);

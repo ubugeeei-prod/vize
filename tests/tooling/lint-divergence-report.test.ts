@@ -1,5 +1,5 @@
 /**
- * The corpus runner behind `tools/commands/fixtures/lint-divergence-report.rs`.
+ * Legacy JavaScript controls for `tools/commands/fixtures/lint-divergence-report.ts`.
  *
  * `tests/tooling/lint-divergence*.test.ts` cover the comparator's classification.
  * This suite covers what stands between the comparator and a real repository —

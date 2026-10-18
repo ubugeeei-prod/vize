@@ -7,7 +7,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import type { Browser } from "playwright";
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 
 const sourceFiles = [
   "docs/theme/i18n/locale-switcher.js",

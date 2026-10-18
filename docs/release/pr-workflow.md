@@ -30,25 +30,28 @@ merging. The official command performs these steps:
 2. Open the associated `chore(release): integrate vVERSION version metadata`
    PR. Its body identifies the source PR and exact source commit. Keep that
    association intact throughout recovery.
-3. Dispatch Release for the frozen source. It builds and smokes the packages
-   and editor assets, validates the publish catalog, and runs preflight.
-   Required exact-source Check jobs remain mandatory. Fuzz replay, Miri,
-   Real Project Matrix and Docs build keep their own schedules; they are not
-   additional release waits under the current qualification contract.
-4. After required source checks, every release build and preflight succeed,
-   the release operator admits the generated metadata
-   PR to the protected merge queue after its own checks pass. The command
-   authenticates the actual signed delivery, exact generated metadata, author
-   permission, required protected workflows and identical publish catalog.
+3. Qualify the exact frozen source H with a full `Check` workflow using the
+   official `release-qualification` profile. Its seven full-source report/build
+   jobs and twelve crate semver checks must succeed before Release is dispatched.
+   Release then builds and smokes the shipping packages and editor assets,
+   validates the publish catalog, and runs preflight using that source evidence.
+   Fuzz, Miri, Real Project Matrix and Docs build keep their own schedules or
+   manual dispatches; they are not additional release gates.
+4. Once Release is ready and the source PR's required checks pass, the official
+   operator requests a squash merge of the metadata PR through the GitHub API.
+   GitHub applies the repository's existing merge rules to that request. The
+   runner authenticates the actual signed delivery, exact generated metadata, author
+   permission and identical publish catalog before tagging H. The current driver
+   has no separate protected full-workflow release wait.
 5. Create the immutable tag at the frozen source head, publish the existing
    Release artifacts, and verify the public result. Changes merged after the
    cut are included in a subsequent release.
 
 The source PR stays draft during qualification and closes after successful
-external verification. The metadata PR receives the
-ordinary protected merge; the official pinned runner owns source tagging and
-publication. Preserve the source branch, source commit, protocol markers and
-release run when resuming. A source that lacks the pinned workflow requires a
+external verification. The metadata PR carries the generated version changes;
+the official pinned runner owns its admission, signed-delivery verification,
+source tagging and publication. Preserve the source branch, source commit,
+protocol markers and release run when resuming. A source that lacks the pinned workflow requires a
 new prepared cut containing that implementation.
 
 ### Keep the source branch at its frozen head
@@ -87,8 +90,8 @@ GitHub, dispatch **Release Operator** on `main`. Choose `start` for the same
 official minor command or `resume` with the original source PR number. Its
 protected `release-operator` environment requires the dispatching maintainer's
 existing user credential as `RELEASE_OPERATOR_TOKEN`, with an exact `main`
-deployment branch policy. The entry installs the frozen dependency graph and
-refreshes the real Moon registry before invoking the public command.
+deployment branch policy. The entry installs the frozen JavaScript dependency
+graph before invoking the public command.
 If main advanced after the runner installed its graph, the official starter
 refuses that cut before preparation; redispatch from fresh main. A hosted resume
 installs the original H dependency graph in its isolated worktree.
@@ -122,6 +125,19 @@ Release and assets, every planned npm and crates.io version, and the VS Code
 Marketplace extension. Open VSX uses a separate workflow. Issue-specific
 installed-package reproductions remain required wherever the issue's acceptance
 criteria call for them.
+
+Publishers consume prebuilt package artifacts, but their public npm dependency
+graph also determines publication order. A package advertised under `latest`
+must wait for its exact internal dependencies and required peers to become
+visible, including native platform packages. Independent packages such as the
+plugin SDK and Musea Nuxt can publish alongside native packages; Nuxt waits for
+the Musea Vite plugin it actually imports. Each publisher retains its version
+and dist-tag visibility checks and provenance. JSR installs wait for all npm
+packages they consume, and the GitHub Release still joins every publisher.
+Sealed build artifacts alone do not justify advertising an uninstallable
+dependency graph. The v0.463.0 job durations model approximately 54 seconds of
+savings from this ordering change; a future release must measure the real
+effect, including registry propagation and queueing, against the 15-minute goal.
 
 ## Current-main promotion
 
@@ -170,8 +186,8 @@ release's exact-SHA build instead of rebuilding the site on every push.
 
 Use the release command to finish source PRs. For current-main promotion, the
 runner preserves the validated commit identity through its atomic promotion.
-For a pinned cut, deliver its separate metadata PR through the merge queue as
-described above.
+For a pinned cut, let the official runner admit its separate metadata PR and
+verify the actual signed delivery before tagging the frozen source.
 
 ## Resume after a failure or interruption
 

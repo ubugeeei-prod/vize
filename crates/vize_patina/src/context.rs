@@ -60,6 +60,8 @@ pub struct LintContext<'a> {
     disabled_rules: FxHashMap<CompactString, Vec<DisabledRange>>,
     /// ESLint/Oxlint comments, ordered so named enables can override disable-all.
     inline_suppressions: InlineSuppressionState,
+    /// Late template capabilities that actually ran in this context.
+    executed_template_rules: Vec<&'static str>,
     /// Line offsets for fast line number lookup.
     line_offsets: Vec<u32>,
     /// Optional set of enabled rule names (if None, all rules are enabled).
@@ -131,6 +133,7 @@ impl<'a> LintContext<'a> {
             disabled_all: Vec::new(),
             disabled_rules: FxHashMap::default(),
             inline_suppressions: InlineSuppressionState::default(),
+            executed_template_rules: Vec::new(),
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
             config_disabled_rules: FxHashSet::default(),
@@ -179,6 +182,7 @@ impl<'a> LintContext<'a> {
             disabled_all: Vec::new(),
             disabled_rules: FxHashMap::default(),
             inline_suppressions: InlineSuppressionState::default(),
+            executed_template_rules: Vec::new(),
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
             config_disabled_rules: FxHashSet::default(),

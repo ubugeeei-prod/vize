@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
+import { loadFrozenTemplateCompiler } from "./support/patina-template-provider.ts";
 import { compileFunction } from "node:vm";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -24,7 +25,6 @@ const requireProvider = createRequire(
 const requireParser = createRequire(
   process.env.VIZE_LEGACY_API_SCRIPT_PARSER_MANIFEST ?? packageManifest,
 );
-const requireVue = createRequire(process.env.VIZE_LEGACY_API_VUE_MANIFEST ?? packageManifest);
 
 function compilerPacket(compiler, source) {
   const diagnostic = (error) =>
@@ -104,7 +104,7 @@ function erasePacket(typescript, source) {
   };
 }
 
-function runtimePacket(compiler, typescript, vueRuntime, source, name) {
+function runtimePacket(compiler, typescript, vueRuntime, source, name, requireRuntime) {
   const erase = (source) => erasePacket(typescript, source);
   const compiled = compilerPacket(compiler, source);
   const rewritten = compiler.rewriteDefault(compiled.script.content, "__component", ["typescript"]);
@@ -113,7 +113,7 @@ function runtimePacket(compiler, typescript, vueRuntime, source, name) {
   const run = (code) => {
     const module = { exports: {} };
     compileFunction(code, ["require", "module", "exports"], { filename: "Component.js" })(
-      requireVue,
+      requireRuntime,
       module,
       module.exports,
     );
@@ -207,25 +207,18 @@ await test("declaration bindings retain complete pinned provider, compiler, eras
   ]) {
     assert.equal(hash(fs.readFileSync(path.join(directory, source.path))), source.sha256);
   }
-  assert.equal(requireVue("vue/package.json").version, fixture.compilerProvider.vue);
-  assert.equal(
-    requireVue("@vue/compiler-sfc/package.json").version,
-    fixture.compilerProvider.compiler,
+  const { compiler, vueRuntime, typescript, requireVuePackage } = loadFrozenTemplateCompiler(
+    "template-component-declaration-bindings.json",
+    fixture.compilerProvider,
+    "sfc",
   );
-  for (const source of fixture.compilerProvider.sources) {
-    const directory = path.dirname(requireVue.resolve(`${source.packageName}/package.json`));
-    assert.equal(hash(fs.readFileSync(path.join(directory, source.path))), source.sha256);
-  }
-  const compiler = requireVue("@vue/compiler-sfc");
-  const typescript = requireParser("typescript");
   assert.equal(typescript.version, fixture.typescriptProvider.version);
   assert.equal(
-    hash(fs.readFileSync(requireParser.resolve("typescript"))),
+    hash(fs.readFileSync(requireVuePackage.resolve("typescript"))),
     fixture.typescriptProvider.source.sha256,
   );
-  const vueRuntime = requireVue("vue");
   assert.equal(vueRuntime.version, fixture.runtimeProvider.vue);
-  const requireDom = createRequire(requireVue.resolve("@vue/runtime-dom/package.json"));
+  const requireDom = createRequire(requireVuePackage.resolve("@vue/runtime-dom/package.json"));
   const runtimeDirectory = path.dirname(requireDom.resolve("@vue/runtime-core/package.json"));
   assert.equal(
     hash(fs.readFileSync(path.join(runtimeDirectory, fixture.runtimeProvider.source.path))),
@@ -310,7 +303,14 @@ await test("declaration bindings retain complete pinned provider, compiler, eras
       assert.equal(hash(expected.source), expected.sourceSha256);
       const actual = JSON.parse(
         JSON.stringify(
-          runtimePacket(compiler, typescript, vueRuntime, expected.source, expected.surface),
+          runtimePacket(
+            compiler,
+            typescript,
+            vueRuntime,
+            expected.source,
+            expected.surface,
+            requireVuePackage,
+          ),
         ),
       );
       const { id, surface, form, access, qualification, source, sourceSha256, ...packet } =

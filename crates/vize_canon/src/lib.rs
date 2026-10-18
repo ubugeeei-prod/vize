@@ -46,6 +46,7 @@ mod checker;
 mod context;
 #[cfg(feature = "native")]
 pub mod corsa_session_cache;
+pub mod css_classes;
 mod diagnostic;
 #[cfg(feature = "native")]
 mod file_uri;
@@ -143,15 +144,15 @@ pub use batch::{
     BatchTopologyMetrics, BatchTypeChecker, BatchTypeCheckerOptions,
     CONTENT_MAPPER_GENERATED_DIAGNOSTIC_CODE, CONTENT_MAPPER_SFC_PARSE_ERROR_CODE,
     CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperDiagnostic, ContentMapperDiagnosticDirective,
-    ContentMapperDiagnosticDirectives, ContentMapperSemanticLink, ContentMapperSpan,
-    ContentMapperTransform, ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic,
-    CorsaError, CorsaExecutor, CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult,
-    DeclarationOutput, Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap,
-    IncrementalCheckMetrics, PackageManager, TypeCheckResult as BatchTypeCheckResult,
-    TypeChecker as BatchTypeCheckerTrait, VirtualFile, VirtualProject,
-    generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
-    legacy_project_virtual_roots, project_virtual_lock_paths, project_virtual_root,
-    snapshot_tsconfig_compiler_options,
+    ContentMapperDiagnosticDirectives, ContentMapperProjectConfiguration,
+    ContentMapperSemanticLink, ContentMapperSpan, ContentMapperTransform,
+    ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic, CorsaError, CorsaExecutor,
+    CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput,
+    Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap, IncrementalCheckMetrics,
+    PackageManager, TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait,
+    VirtualFile, VirtualProject, generate_vue_content_mapper_transform,
+    generate_vue_content_mapper_transform_with_options, legacy_project_virtual_roots,
+    project_virtual_lock_paths, project_virtual_root, snapshot_tsconfig_compiler_options,
 };
 
 #[cfg(feature = "native")]

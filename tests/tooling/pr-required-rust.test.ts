@@ -33,6 +33,45 @@ const plan = (paths: string[], eventName = "pull_request") =>
   planPrChecks({ paths, eventName, labels: [], workspace, cargoMetadata: metadata() });
 const allPackages = metadata().workspace_members.toSorted();
 
+test("daily source contracts cover the real Rust/docs failures without widening package-only inputs", () => {
+  const originalFailures = [
+    "crates/vize_atelier_dom/tests/dev_root_fragment.rs",
+    "crates/vize_canon/src/batch/virtual_project/content_mapper_config.rs",
+    "docs/content/ja/guide/content-mapper.md",
+  ];
+  for (const event of ["pull_request", "merge_group"]) {
+    for (const path of [
+      ...originalFailures,
+      "crates/vize_canon/src/batch/virtual_project/content_mapper_directive_tests.rs",
+      "docs/content/guide/content-mapper.md",
+      "docs/scripts/i18n/reviewed.ts",
+      "docs/davinci/plan/assertion-allowlist.toml",
+      "tools/commands/davinci/assertion-lint.rs",
+      "tools/support/common.rs",
+      "tools/support/compat/davinci/lib/consumer-migration-scan.mjs",
+      "tests/tooling/davinci-assertion-lint.test.ts",
+      "tests/tooling/davinci-consumer-migration-surfaces.test.mjs",
+      "tests/tooling/docs-reviewed-translations.test.ts",
+      ".github/workflows/pr-rust-checks.yml",
+      "Cargo.lock",
+      "new-runtime/lib.rs",
+    ]) {
+      const selected = plan([path], event);
+      assert.equal(selected.sourceContracts, true, `${event}: ${path}`);
+      assert.equal(prCheckOutputs(selected)["source-contracts"], "true", path);
+      if (originalFailures.includes(path)) assert.equal(selected.source.tooling, false, path);
+    }
+    const unknownBase = plan([], event);
+    assert.equal(unknownBase.sourceContracts, true, "an unknown predecessor cannot skip contracts");
+    assert.equal(prCheckOutputs(unknownBase)["source-contracts"], "true");
+    for (const path of ["npm/ui/src/Button.ts", "npm/oxlint/src/runtime.ts", "README.md"]) {
+      const selected = plan([path], event);
+      assert.equal(selected.sourceContracts, false, path);
+      assert.equal(prCheckOutputs(selected)["source-contracts"], "false", path);
+    }
+  }
+});
+
 test("every docs, tooling and JS-only PR gets the real Relief compiler baseline", () => {
   for (const path of [
     "docs/guide.md",

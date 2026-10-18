@@ -213,7 +213,12 @@ test("release stabilizes apt before installing ARM64 cross-compilation tools", (
   const release = parse(readRepoFile(".github", "workflows", "release.yml")) as {
     jobs: Record<string, { steps: Array<{ run?: string; uses?: string }> }>;
   };
-  const steps = release.jobs["build-cli"].steps;
+  const build = release.jobs["build-cli"].steps.find(
+    (step) => step.uses === "./.github/actions/build-release-cli",
+  );
+  assert.ok(build, "release CLI must execute the shared build recipe");
+  const action = parse(readRepoFile(".github", "actions", "build-release-cli", "action.yml"));
+  const steps = action.runs.steps as Array<{ run?: string; uses?: string; if?: string }>;
   const archiveSetup = steps.findIndex(
     (step) => step.uses === "./.github/actions/setup-ubuntu-archive",
   );
@@ -222,4 +227,7 @@ test("release stabilizes apt before installing ARM64 cross-compilation tools", (
   );
   assert.ok(archiveSetup >= 0);
   assert.ok(aptInstall > archiveSetup);
+  assert.equal(steps[archiveSetup].if, "inputs.target == 'aarch64-unknown-linux-gnu'");
+  assert.equal(steps[aptInstall].if, steps[archiveSetup].if);
+  assert.match(steps[aptInstall].run!, /^vize-ci-apt-retry node /);
 });

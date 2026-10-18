@@ -15,9 +15,9 @@ runs:
       with:
         # Refresh successful source builds instead of freezing the first store
         # forever under an immutable flake.lock-only key. Restore one archive.
-        primary-key: nix-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock', 'flake.nix', 'default.nix', 'tools/nix/**/*.nix', 'Cargo.lock', 'rust-toolchain.toml', '.moonbit-version') }}-${{ github.sha }}
+        primary-key: nix-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock', 'flake.nix', 'default.nix', 'tools/nix/**/*.nix', 'Cargo.lock', 'rust-toolchain.toml') }}-${{ github.sha }}
         restore-prefixes-first-match: |
-          nix-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock', 'flake.nix', 'default.nix', 'tools/nix/**/*.nix', 'Cargo.lock', 'rust-toolchain.toml', '.moonbit-version') }}-
+          nix-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock', 'flake.nix', 'default.nix', 'tools/nix/**/*.nix', 'Cargo.lock', 'rust-toolchain.toml') }}-
           nix-v2-${{ runner.os }}-${{ runner.arch }}-
           nix-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock') }}
         save: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}

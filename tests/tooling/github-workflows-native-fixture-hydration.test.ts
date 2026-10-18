@@ -10,7 +10,9 @@ import { parse } from "yaml";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 test("full native workspace tests hydrate the actual pinned Element Plus gitlink first", () => {
-  const job = parse(readRepoFile(".github", "workflows", "check.yml")).jobs["clippy-and-test"];
+  const job = parse(readRepoFile(".github", "workflows", "check.yml")).jobs[
+    "rust-native-differential"
+  ];
   assert.equal(
     job.if,
     "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
@@ -50,7 +52,7 @@ function assertSourceCoverageHydration(job: {
 }) {
   assert.equal(
     job.if,
-    "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+    "${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !(inputs.release-qualification && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')))) }}",
   );
   const consumer = job.steps.findIndex(
     (step) => step.run === "vp run --workspace-root coverage:source",

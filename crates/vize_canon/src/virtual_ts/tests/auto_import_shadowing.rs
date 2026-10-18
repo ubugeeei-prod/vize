@@ -131,3 +131,109 @@ const chartComponent = { template: '<div />' }
         0,
     );
 }
+
+// Authored setup bindings win over implicit style module names (#9376), while
+// useCssModule() retains the exact module metadata in setup scope.
+#[test]
+fn setup_css_module_names_do_not_gain_an_implicit_template_declaration() {
+    use crate::virtual_ts::{TemplateGlobal, types::CSS_MODULE_GLOBAL_MARKER};
+
+    for (name, initializer, uses_css_module) in [
+        ("$style", "useCssModule()", true),
+        ("tokens", "useCssModule('tokens')", true),
+        ("$style", "{ own: 'authored' }", false),
+    ] {
+        let script =
+            format!("import {{ useCssModule }} from 'vue';\nconst {name} = {initializer};");
+        let template = format!(r#"<div :class="{name}.active" />"#);
+        let allocator = vize_carton::Allocator::new();
+        let (root, _) = vize_armature::parse(&allocator, &template);
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(&script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+        for typed in [false, true] {
+            let options = if typed {
+                VirtualTsOptions {
+                    template_globals: vec![TemplateGlobal {
+                        name: name.into(),
+                        type_annotation: r#"{ "active": string; }"#.into(),
+                        default_value: CSS_MODULE_GLOBAL_MARKER.into(),
+                    }],
+                    ..Default::default()
+                }
+            } else {
+                VirtualTsOptions {
+                    css_modules: vec![name.into()],
+                    ..Default::default()
+                }
+            };
+            let output = generate_virtual_ts_with_offsets(
+                &summary,
+                Some(&script),
+                Some(&root),
+                0,
+                0,
+                &options,
+            );
+            assert!(
+                !output.code.contains(&format!("const {name}:")),
+                "{}",
+                output.code
+            );
+            if uses_css_module {
+                assert!(
+                    output.code.contains("type __VizeStyleModules"),
+                    "{}",
+                    output.code
+                );
+                let expected = if typed {
+                    r#"{ "active": string; }"#
+                } else {
+                    "Record<string, string>"
+                };
+                assert!(
+                    output.code.contains(&format!("\"{name}\": {expected};")),
+                    "{}",
+                    output.code
+                );
+            } else {
+                // The unused useCssModule import requests no helper. The
+                // authored object still owns this template binding.
+                assert!(
+                    output
+                        .code
+                        .contains(&format!("const {name} = {initializer};")),
+                    "{}",
+                    output.code
+                );
+                assert!(
+                    !output.code.contains("type __VizeStyleModules"),
+                    "{}",
+                    output.code
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn unshadowed_css_modules_keep_their_implicit_template_declaration() {
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, r#"<div :class="$style.active" />"#);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_template(&root);
+    let options = VirtualTsOptions {
+        css_modules: vec!["$style".into()],
+        ..Default::default()
+    };
+    let output =
+        generate_virtual_ts_with_offsets(&analyzer.finish(), None, Some(&root), 0, 0, &options);
+    assert!(
+        output
+            .code
+            .contains("const $style: __Global<'$style', Record<string, string>>"),
+        "{}",
+        output.code
+    );
+}

@@ -30,7 +30,7 @@ function range(line: number, text: string) {
   return { line, column, endLine: line, endColumn: column + text.length };
 }
 
-test("the Rust runner keeps aria/data props and unused setup imports out of the scored findings", () => {
+test("the TypeScript runner keeps aria/data props and unused setup imports out of the scored findings", () => {
   fs.mkdirSync(path.join(repoRoot, "target"), { recursive: true });
   const fixtureDir = fs.mkdtempSync(path.join(repoRoot, "target", "lint-surface-fixture-"));
   const outputDir = fs.mkdtempSync(path.join(repoRoot, "target", "lint-surface-report-"));
@@ -79,9 +79,9 @@ test("the Rust runner keeps aria/data props and unused setup imports out of the 
     );
 
     const result = spawnSync(
-      "rust-script",
+      process.execPath,
       [
-        "tools/commands/fixtures/lint-divergence-report.rs",
+        "tools/commands/fixtures/lint-divergence-report.ts",
         "--registry",
         registryPath,
         "--output-dir",

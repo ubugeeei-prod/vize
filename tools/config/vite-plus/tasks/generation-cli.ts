@@ -4,7 +4,7 @@ import { defineTasks, nodeTool, noCacheTask, runTask, shellCommand } from "../ta
  * Code generation tasks and local CLI smoke commands.
  *
  * JSON Schema remains the source of truth for public config declarations, while
- * MoonBit performs the post-processing that encodes Vize-specific API details
+ * TypeScript performs the post-processing that encodes Vize-specific API details
  * which the schema generator cannot express on its own. The CLI aliases stay in
  * the same module because they are the fastest manual way to inspect generated
  * config and compiler output after the generator changes.

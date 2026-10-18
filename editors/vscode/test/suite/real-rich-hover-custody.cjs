@@ -51,9 +51,48 @@ function retainHover(request, hovers) {
         }))
       : undefined,
   });
-  const output = path.join(getWorkspaceFolderPath(), "node_modules/.vize/rich-hover.json");
-  fs.mkdirSync(path.dirname(output), { recursive: true });
-  fs.writeFileSync(output, `${JSON.stringify({ schemaVersion: 1, packets }, null, 2)}\n`);
+  writePackets();
 }
 
-module.exports = { beginHover, retainHover };
+function beginCompletion(document, position, expected, itemResolveCount) {
+  const request = beginHover(document, position, expected);
+  request.request.method = "vscode.executeCompletionItemProvider";
+  request.request.itemResolveCount = itemResolveCount;
+  return request;
+}
+
+function retainCompletion(request, completions) {
+  // Preserve the complete real VSCode API result before checking any item.
+  // This API resolves up to itemResolveCount entries; it is not a raw LSP tap.
+  packets.push({
+    ...request,
+    resultType: completions === null ? "null" : typeof completions,
+    actual: completions,
+    publicDocumentation: completions?.items.map((item) => ({
+      label: item.label,
+      raw: item.documentation,
+      constructor: item.documentation?.constructor?.name,
+      // VSCode's MarkdownString stores its fields privately; JSON.stringify
+      // alone produces {}. Read the public getters without rewriting them.
+      language: item.documentation?.language,
+      value: item.documentation?.value,
+      isTrusted: item.documentation?.isTrusted,
+      supportThemeIcons: item.documentation?.supportThemeIcons,
+      supportHtml: item.documentation?.supportHtml,
+      baseUri: item.documentation?.baseUri?.toString(),
+    })),
+  });
+  writePackets();
+}
+
+function writePackets() {
+  const output = path.join(getWorkspaceFolderPath(), "node_modules/.vize/rich-hover.json");
+  fs.mkdirSync(path.dirname(output), { recursive: true });
+  const bytes = `${JSON.stringify({ schemaVersion: 1, packets }, null, 2)}\n`;
+  fs.writeFileSync(output, bytes);
+  if (process.env.VIZE_RICH_CUSTODY_OUTPUT) {
+    fs.writeFileSync(process.env.VIZE_RICH_CUSTODY_OUTPUT, bytes);
+  }
+}
+
+module.exports = { beginHover, retainHover, beginCompletion, retainCompletion };

@@ -52,7 +52,10 @@ void test("only the CI qualification steps opt into fixed baseline partitions", 
   assert.deepEqual(qualification.env, { VIZE_N8N_BASELINE_MODE: "partitioned" });
   assert.equal(qualification.run, controller);
   assert.equal(qualification.shell, "bash");
-  assert.equal(qualification.if, "${{ success() && job.status == 'success' }}");
+  assert.equal(
+    qualification.if,
+    "${{ success() && job.status == 'success' && (inputs.partition == 'all' || inputs.partition == 'original-project') }}",
+  );
   assert.equal(qualification["continue-on-error"], undefined);
   assert.equal(action.env?.VIZE_N8N_BASELINE_MODE, undefined);
   for (const step of action.runs.steps) {

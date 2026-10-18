@@ -18,6 +18,11 @@ on:
         required: false
         default: ""
         type: string
+      qualification_deadline:
+        description: Original absolute full-Check qualification deadline in Unix milliseconds
+        required: false
+        default: ""
+        type: string
       pinned:
         description: Publish an immutable source cut after a protected version integration
         required: false
@@ -232,7 +237,7 @@ jobs:
       - name: Smoke @vizejs/wasm package
         run: rust-script tools/commands/release/npm/smoke-wasm-package.rs npm/wasm
       - name: Smoke install WASM package tarball before promotion
-        run: rust-script tools/commands/release/npm/smoke-release-install.rs npm/wasm
+        run: node tools/commands/release/npm/smoke-release-install.ts npm/wasm
       - name: Upload WASM package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -267,10 +272,6 @@ jobs:
       - name: Setup runtime package managers
         uses: ./.github/actions/setup-runtime-package-managers
         with: { node-version-file: "package.json" }
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-script
       - name: Install native package tooling dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...'
       - name: Download vize CLI package artifact
@@ -340,7 +341,7 @@ jobs:
           node tools/support/github/collect-native-artifacts.ts npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install release package tarballs
         run: |
-          rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
+          node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks \
             npm/native npm/native/npm/* \
             npm/fresco-native \
             npm/cli \
@@ -360,12 +361,13 @@ jobs:
             npm/plugin-sdk
   candidate-preflight:
     needs: candidate
-    permissions: { actions: write, contents: read, issues: read, pull-requests: read }
+    permissions: { actions: read, contents: read, issues: read, pull-requests: read }
     uses: ./.github/workflows/release-preflight.yml
     with:
       release_pr: ${{ inputs.release_pr }}
       tag_name: ${{ inputs.tag_name }}
       pinned: ${{ inputs.pinned }}
+      qualification_deadline: ${{ inputs.qualification_deadline }}
   candidate-ready:
     name: Release candidate ready
     needs:
@@ -402,10 +404,6 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", cache: true, run-install: false }
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-script
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
       - name: Download all artifacts
@@ -429,7 +427,7 @@ jobs:
       - name: List packages
         run: ls -R npm/native/npm/
       - name: Smoke install native package tarballs
-        run: rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks npm/native npm/native/npm/*
+        run: node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks npm/native npm/native/npm/*
       - name: Publish platform packages
         run: node tools/support/release/publish_npm_package_dirs/main.ts npm/native/npm --concurrency 8 --provenance --receipt "$RUNNER_TEMP/native-platform-publish.json"
       - name: Publish
@@ -452,10 +450,6 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", cache: true, run-install: false }
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-script
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/fresco-native...'
       - name: Download all artifacts
@@ -468,7 +462,7 @@ jobs:
       - name: Stage bundled native binaries
         run: node tools/support/github/collect-native-artifacts.ts npm/fresco-native/artifacts npm/fresco-native fresco-native
       - name: Smoke install Fresco native package tarball
-        run: rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests npm/fresco-native
+        run: node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests npm/fresco-native
       - name: Publish
         run: node tools/support/release/publish_npm_package/main.ts npm/fresco-native --provenance
 
@@ -495,7 +489,7 @@ jobs:
       - name: Smoke @vizejs/wasm package
         run: rust-script tools/commands/release/npm/smoke-wasm-package.rs npm/wasm
       - name: Smoke install WASM package tarball
-        run: rust-script tools/commands/release/npm/smoke-release-install.rs npm/wasm
+        run: node tools/commands/release/npm/smoke-release-install.ts npm/wasm
       - name: Publish @vizejs/wasm
         run: node tools/support/release/publish_npm_package/main.ts npm/wasm --provenance
   release-npm-vite-plugin:
@@ -506,6 +500,7 @@ jobs:
         build-release-packages,
         release-npm-native,
         release-npm-cli,
+        release-npm-unplugin,
         smoke-release-packages,
         release-preflight,
       ]
@@ -602,7 +597,7 @@ jobs:
   release-npm-plugin-sdk:
     name: Release @vizejs/plugin-sdk to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
+    needs: [build-release-packages, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions: { contents: read, id-token: write }
@@ -663,7 +658,14 @@ jobs:
   release-npm-vite-plugin-musea:
     name: Release @vizejs/vite-plugin-musea to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
+    needs:
+      [
+        build-release-packages,
+        release-npm-native,
+        release-npm-vite-plugin,
+        smoke-release-packages,
+        release-preflight,
+      ]
     timeout-minutes: 15
     environment: npm
     permissions: { contents: read, id-token: write }
@@ -693,7 +695,7 @@ jobs:
   release-npm-musea-nuxt:
     name: Release @vizejs/musea-nuxt to npm
     runs-on: ubuntu-24.04
-    needs: [build-release-packages, release-npm-native, smoke-release-packages, release-preflight]
+    needs: [build-release-packages, smoke-release-packages, release-preflight]
     timeout-minutes: 15
     environment: npm
     permissions: { contents: read, id-token: write }
@@ -731,7 +733,6 @@ jobs:
         release-npm-vite-plugin,
         release-npm-oxlint-plugin,
         release-npm-vite-plugin-musea,
-        release-npm-musea-nuxt,
         release-npm-nuxt-lint-config,
         release-npm-cli,
         smoke-release-packages,
@@ -909,31 +910,23 @@ jobs:
               ( cd "$(dirname "$artifact")" && sha256sum "$(basename "$artifact")" ) > "${artifact}.sha256"
             fi
           done
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Sign release artifacts (keyless)
         env:
           COSIGN_YES: "true"
-        run: |
-          for artifact in \
-            cli-artifacts/*.tar.gz \
-            cli-artifacts/*.zip \
-            editor-extension-artifacts/editors/vscode/dist/*.vsix \
-            editor-extension-artifacts/*.tar.gz \
-            vize-${RELEASE_TAG_NAME}-cyclonedx.sbom.json \
-            vize-${RELEASE_TAG_NAME}-spdx.sbom.json; do
-            if [ -f "$artifact" ]; then
-              echo "Signing $artifact"
-              cosign sign-blob --yes \
-                --bundle "${artifact}.cosign.bundle" \
-                --output-certificate "${artifact}.pem" \
-                --output-signature "${artifact}.sig" \
-                "$artifact"
-            fi
-          done
+        run: node tools/support/release/sign_release_artifacts.ts "$RELEASE_TAG_NAME"
+      - name: Generate notes for the exact published version range
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SOURCE_SHA: ${{ inputs.expected_sha }}
+        run: node tools/support/release/github_release_notes.ts "$RELEASE_TAG_NAME" "$RELEASE_SOURCE_SHA" "$RUNNER_TEMP/release-notes.md"
       - name: Create Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
-          body_path: .github/release-notes/drop-in-scope.md
-          generate_release_notes: true
+          body_path: ${{ runner.temp }}/release-notes.md
+          generate_release_notes: false
+          target_commitish: ${{ inputs.expected_sha }}
           draft: false
           overwrite_files: true
           tag_name: ${{ inputs.tag_name }}

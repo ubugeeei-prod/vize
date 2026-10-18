@@ -158,9 +158,14 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     // </script
     // </style
     pub(super) fn state_before_special_s(&mut self, c: u8) {
-        if Sequence::ScriptEnd.bytes().get(3) == Some(&c) {
+        let name_byte = if P::FOLD_NAME_CASE {
+            c.to_ascii_lowercase()
+        } else {
+            c
+        };
+        if Sequence::ScriptEnd.bytes().get(3) == Some(&name_byte) {
             self.start_special(Sequence::ScriptEnd, 4);
-        } else if Sequence::StyleEnd.bytes().get(3) == Some(&c) {
+        } else if Sequence::StyleEnd.bytes().get(3) == Some(&name_byte) {
             self.start_special(Sequence::StyleEnd, 4);
         } else {
             self.state = State::InTagName;
@@ -171,9 +176,14 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     // </title>
     // </textarea>
     pub(super) fn state_before_special_t(&mut self, c: u8) {
-        if Sequence::TitleEnd.bytes().get(3) == Some(&c) {
+        let name_byte = if P::FOLD_NAME_CASE {
+            c.to_ascii_lowercase()
+        } else {
+            c
+        };
+        if Sequence::TitleEnd.bytes().get(3) == Some(&name_byte) {
             self.start_special(Sequence::TitleEnd, 4);
-        } else if Sequence::TextareaEnd.bytes().get(3) == Some(&c) {
+        } else if Sequence::TextareaEnd.bytes().get(3) == Some(&name_byte) {
             self.start_special(Sequence::TextareaEnd, 4);
         } else {
             self.state = State::InTagName;

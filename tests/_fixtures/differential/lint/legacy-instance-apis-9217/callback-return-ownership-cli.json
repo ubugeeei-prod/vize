@@ -1,0 +1,374 @@
+{
+  "schema": "vize.lint.callback-return-ownership-cli",
+  "version": 1,
+  "scope": "Only audit42–45 callback-return family. Preserve all four potential Vue-owned migration warnings. No production suppression, no closure of other four unresolved rows or whole issue9217.",
+  "frozenInputs": [
+    {
+      "path": "originals/sources.json.gz",
+      "bytes": 232473,
+      "sha256": "ef25803fc216ef88f8e08b0845cde7642fca85d9de1d4697f0c123fdcb5bd511"
+    },
+    {
+      "path": "originals/manifest.json",
+      "bytes": 13227,
+      "sha256": "53f956b1ea9d11991a228d6d339ee2d389086af67b74dc11faccfa2aa90975a0"
+    },
+    {
+      "path": "originals/independent.json.gz",
+      "bytes": 9404,
+      "sha256": "da2fcecaedf5507f318e310db6a72efdfbea63959e361e058b175568f64cd20d"
+    },
+    {
+      "path": "provenance.json.gz",
+      "bytes": 164219,
+      "sha256": "98fea186002bb8d6233022b5c057c80d4454cd0bb175ed5c17b634977536130d"
+    },
+    {
+      "path": "cli70.json",
+      "bytes": 107945,
+      "sha256": "edd8ec3befefe73060b36a2e924f3ce760dc3a0e5bea289f04f1843297c42d04"
+    },
+    {
+      "path": "native.json",
+      "bytes": 70986,
+      "sha256": "2f37da2c65d05654d85c68ca34f4fe9a9daafb72a16bda87b22578bbf4a97cd0"
+    }
+  ],
+  "historical": {
+    "legitimateVueRows": 173,
+    "unresolvedRows": 8,
+    "selectedAuditIndices": [42, 43, 44, 45],
+    "selectedClassification": "unproved-arbitrary-action-return",
+    "unchangedProviderMessages": [],
+    "oldSpan": {
+      "column": 9,
+      "endColumn": 22
+    },
+    "currentPropertySpan": {
+      "column": 19,
+      "endColumn": 22
+    }
+  },
+  "ownership": {
+    "revision": "77c342462be8f97c62f37e33abbe4824756bf057",
+    "originalSourceSha256": "d550a07ada5370ffc80f068f65c7384f5375b6e0ba85abfb95a19d9bf46f271b",
+    "authenticatedTreeBlobs": 846,
+    "sourceTreeProofSha256": "24ac39f420cc0b7a54c08886aab9bdd27cb62e17ef40ee7e406a51824328c929",
+    "upstreamFiles": [
+      {
+        "path": "example/components/select/select.vue",
+        "mode": "100644",
+        "bytes": 2655,
+        "gitBlob": "d1b71955ca717afbb3f7d6726cd6405585000a3c",
+        "sha256": "d550a07ada5370ffc80f068f65c7384f5375b6e0ba85abfb95a19d9bf46f271b",
+        "url": "https://github.com/didi/cube-ui/blob/77c342462be8f97c62f37e33abbe4824756bf057/example/components/select/select.vue"
+      },
+      {
+        "path": "document/components/docs/en-US/create-api.md",
+        "mode": "100644",
+        "bytes": 7737,
+        "gitBlob": "2dd88974cfd22fe3f6defb48e9cf996f3d56f420",
+        "sha256": "9020f36fde21403707b57e9368ea6fa968b8877ee9201eb1776b115103b84aec",
+        "url": "https://github.com/didi/cube-ui/blob/77c342462be8f97c62f37e33abbe4824756bf057/document/components/docs/en-US/create-api.md"
+      },
+      {
+        "path": "src/common/helpers/create-api.js",
+        "mode": "100644",
+        "bytes": 246,
+        "gitBlob": "6d69b2cc5604cf9e51fd344bab189dfa8ddb5ae6",
+        "sha256": "0220b1ec695563332b3dad7d1975688d4b79db5ca1643eadc9ac7f1f51531dce",
+        "url": "https://github.com/didi/cube-ui/blob/77c342462be8f97c62f37e33abbe4824756bf057/src/common/helpers/create-api.js"
+      },
+      {
+        "path": "package-lock.json",
+        "mode": "100644",
+        "bytes": 598967,
+        "gitBlob": "28e2042db0f0e4e05fe035c637c37dd4f359848f",
+        "sha256": "869c41715aa4111652d32fea72f4c7913109dce77242f46e5a25d82e54d2722c",
+        "url": "https://github.com/didi/cube-ui/blob/77c342462be8f97c62f37e33abbe4824756bf057/package-lock.json"
+      }
+    ],
+    "conclusion": "The default create-api branch returns a Vue component. An allowed arbitrary action(vm)=>vm returns the same Vue instance. Do not infer foreign identity from an unresolved callback return or local receiver name; nested and mixed return paths retain warnings."
+  },
+  "publicConsumer": {
+    "version": "0.463.0",
+    "sourceBuildUsed": false,
+    "cases": 6,
+    "fullRawPackets": "/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-9217-public-0463-DyRtC8/summary.json",
+    "fullRawPacketsSha256": "73ec01e809556414faa0d7b3124bf1e47622a0569a631a1a0d5d9515ed7a9f18",
+    "runtimeQualification": "Unchanged original script/string module; genuine Vue2.5.17; caller adds show() and real Vue input ref; exact identity callback registers all four authored listeners. No DOM/mounted defaultAction replay claimed.",
+    "packages": [
+      {
+        "name": "vize",
+        "version": "0.463.0",
+        "registry": "https://registry.npmjs.org/vize/-/vize-0.463.0.tgz",
+        "sri": "sha512-jhrLYAG1HJHDzJQdgc37n/UzXY/TTy6NPvDSkP0TMtIRv2Ms8FBSMwZ7gNDOnAxDbq4ejmZcov4/F+nAydNhOA==",
+        "tarSha256": "1365af179fcc16f09e962120a9c134a377dfe6376ad00258d96375e27c1fe44b"
+      },
+      {
+        "name": "@vizejs/native",
+        "version": "0.463.0",
+        "registry": "https://registry.npmjs.org/@vizejs/native/-/native-0.463.0.tgz",
+        "sri": "sha512-CrJ33i2cW2fy9LTwEreIsJAaJIIt6PcZqYWoZf2ycYxJvpgt3wLtm6Bde7mnJV9fvTQw6oxv8NkBWGNPJg5KkA==",
+        "tarSha256": "2f2e2b0684c98e1d8d2eb2da4c7fce760b68cc3465e6bf0490123f8d0dcec548"
+      },
+      {
+        "name": "@vizejs/native-darwin-arm64",
+        "version": "0.463.0",
+        "registry": "https://registry.npmjs.org/@vizejs/native-darwin-arm64/-/native-darwin-arm64-0.463.0.tgz",
+        "sri": "sha512-Eu5TbNRGVeaqDRv3HUAbpa2VxS1xWGK4+g0GgIChZn6UXm2+TLM+ATwgHUhrJ4mXkRkeC0pmKhofe722ohgKRQ==",
+        "tarSha256": "d5b45798dae0e32fe69e060ed1af58ac408f7eed92915a52889360e1df9fdc46"
+      },
+      {
+        "name": "vue",
+        "version": "2.5.17",
+        "registry": "https://registry.npmjs.org/vue/-/vue-2.5.17.tgz",
+        "sri": "sha512-mFbcWoDIJi0w0Za4emyLiW72Jae0yjANHbCVquMKijcavBGypqlF7zHRgMa5k4sesdv7hv2rB4JPdZfR+TPfhQ==",
+        "tarSha256": "73426769db670b0fab51fd5f55b28d600cea5c7a7e2767ea5675d285a8533546"
+      },
+      {
+        "name": "vue-create-api",
+        "version": "0.2.3",
+        "registry": "https://registry.npmjs.org/vue-create-api/-/vue-create-api-0.2.3.tgz",
+        "sri": "sha512-qMyKatsGGwOKyMmRNDEubMZLzWoPU5SMq2YxU/O5bLPDTfBsEVftpyFFDGBgD4iaRmjLAsv3Cw3X9nU+jsiY7g==",
+        "tarSha256": "f2a42c72edd9364c7da3d862da113901253d360a485a5165682857482a8b5f7c"
+      }
+    ]
+  },
+  "config": "{\n  \"linter\": {\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"script/no-deprecated-dollar-listeners-api\": \"error\",\n      \"script/no-deprecated-events-api\": \"error\"\n    }\n  }\n}\n",
+  "configBytes": 181,
+  "configSha256": "4e2ede559677781cb54d2d584dc859032eea8d5f26aae6c397ef766596f2d997",
+  "argv": [
+    "lint",
+    "Component.vue",
+    "--config",
+    "vize.config.json",
+    "--format",
+    "json",
+    "--help-level",
+    "full"
+  ],
+  "sources": [
+    {
+      "id": "original-pinned-cube-ui",
+      "source": "<template>\n  <div class=\"demo-select\" @click=\"clickHandler\">\n    <cube-input ref=\"input\" v-model=\"modelText\" v-bind=\"$attrs\">\n      <i :class=\"icon\" slot=\"append\" v-if=\"icon\"></i>\n    </cube-input>\n  </div>\n</template>\n<script>\nimport { camelize } from '../../../src/common/lang/string'\n\nexport default {\n  props: {\n    // v-model 值\n    value: null,\n    // 图标\n    icon: String,\n    // 配置项\n    options: Object,\n    // 加载数据函数\n    // default: (options) => Promise\n    loadData: Function,\n    // 控制行为函数，不建议自定义使用\n    action: Function,\n    // 格式化 value 值，用于格式化从配置组件的 select 事件中格式化结果\n    formatValue: Function\n  },\n  data() {\n    const formatedValue = this._formatValue()\n    return {\n      model: formatedValue,\n      modelText: formatedValue.text,\n      isActive: false\n    }\n  },\n  computed: {\n    computedValue() {\n      return this._formatValue()\n    }\n  },\n  watch: {\n    isActive(newV) {\n      this.$refs.input.isFocus = newV\n    },\n    model(newV) {\n      this.modelText = newV.text\n      this.modelMap[newV.value] = newV.text\n      // value 发生了变化\n      // @arg value select结果\n      this.$emit('input', newV.value)\n    }\n  },\n  beforeCreate() {\n    this.modelMap = {}\n  },\n  methods: {\n    _formatValue(value = this.value) {\n      if (value === Object(value)) {\n        return value\n      }\n      return {\n        text: this.modelMap[value] || value,\n        value: value\n      }\n    },\n    defaultAction() {\n      const { component, options } = this.options\n      return this[camelize(`$create-${component}`)](options || {})\n    },\n    showComponent() {\n      if (!this.actionComponent) {\n        const component = this.actionComponent = this.action ? this.action(this) : this.defaultAction(this)\n        component.$on('select', this.onSelect)\n        component.$on('hide', this.onHide)\n        component.$on('cancel', this.onHide)\n        component.$on('close', this.onHide)\n      }\n      this.actionComponent.show()\n      this.isActive = true\n    },\n    clickHandler() {\n      if (this.loadData) {\n        this.loadData(this.options).then(() => {\n          this.showComponent()\n        })\n      } else {\n        this.showComponent()\n      }\n    },\n    onSelect(...args) {\n      this.isActive = false\n      this.model = this._formatValue(this.formatValue ? this.formatValue(...args) : {\n        text: args[0],\n        value: args[2]\n      })\n    },\n    onHide() {\n      this.isActive = false\n    }\n  }\n}\n</script>\n<style lang=\"stylus\">\n.demo-select\n  .cube-input\n    pointer-events: none\n  .cube-input-append\n    padding: 10px\n</style>\n",
+      "sourceSha256": "d550a07ada5370ffc80f068f65c7384f5375b6e0ba85abfb95a19d9bf46f271b"
+    },
+    {
+      "id": "callback-identity-vue",
+      "source": "<script>export default { props: { action: Function }, mounted() { const component = this.action(this); component.$on('select', this.onSelect); } }</script>",
+      "sourceSha256": "cb2800830929931fa30e1ce14beabfae744b0e5ab7ddeea4c01c8f801c9759bc"
+    },
+    {
+      "id": "local-callback-identity-vue",
+      "source": "<script>const callback = vm => vm; export default { mounted() { const component = callback(this); component.$on('select', this.onSelect); } }</script>",
+      "sourceSha256": "7dc0ef795d094a5ef9943b1110fc41303f3c8be7c3e43e3c69fe8057048d644b"
+    },
+    {
+      "id": "nested-foreign-return-not-owner",
+      "source": "<script>function callback(vm) { const nested = () => ({ $on() {} }); return vm; } export default { mounted() { const component = callback(this); component.$on('select', this.onSelect); } }</script>",
+      "sourceSha256": "0f2556fdb38611246ff8ffa56454fdd25c44248d7bfedafc744a08cfec457927"
+    },
+    {
+      "id": "mixed-return-preserves-vue-path",
+      "source": "<script>function callback(vm, flag) { if (flag) return { $on() {} }; return vm; } export default { mounted() { const component = callback(this, this.flag); component.$on('select', this.onSelect); } }</script>",
+      "sourceSha256": "74321006445fffe324a31b15cd244358597afe587be61a22bbda2f87d9e23865"
+    },
+    {
+      "id": "emit-remains-supported",
+      "source": "<script>export default { mounted() { this.$emit('select'); } }</script>",
+      "sourceSha256": "20906ed75bbd5dcc5bcad6124d562bb2a5726a759a8e8f4b40cb8711e020423c"
+    }
+  ],
+  "cases": [
+    {
+      "id": "original-pinned-cube-ui",
+      "sourceSha256": "d550a07ada5370ffc80f068f65c7384f5375b6e0ba85abfb95a19d9bf46f271b",
+      "qualification": "callback-ownership-warning-preservation",
+      "expectationAuthority": "authored-exact-property-token-and-existing-rule-contract",
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-events-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
+              "line": 72,
+              "column": 19,
+              "endLine": 72,
+              "endColumn": 22,
+              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
+            },
+            {
+              "ruleId": "script/no-deprecated-events-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
+              "line": 73,
+              "column": 19,
+              "endLine": 73,
+              "endColumn": 22,
+              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
+            },
+            {
+              "ruleId": "script/no-deprecated-events-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
+              "line": 74,
+              "column": 19,
+              "endLine": 74,
+              "endColumn": 22,
+              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
+            },
+            {
+              "ruleId": "script/no-deprecated-events-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
+              "line": 75,
+              "column": 19,
+              "endLine": 75,
+              "endColumn": 22,
+              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
+            }
+          ],
+          "errorCount": 4,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "callback-identity-vue",
+      "sourceSha256": "cb2800830929931fa30e1ce14beabfae744b0e5ab7ddeea4c01c8f801c9759bc",
+      "qualification": "callback-ownership-warning-preservation",
+      "expectationAuthority": "authored-exact-property-token-and-existing-rule-contract",
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-events-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
+              "line": 1,
+              "column": 114,
+              "endLine": 1,
+              "endColumn": 117,
+              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "local-callback-identity-vue",
+      "sourceSha256": "7dc0ef795d094a5ef9943b1110fc41303f3c8be7c3e43e3c69fe8057048d644b",
+      "qualification": "callback-ownership-warning-preservation",
+      "expectationAuthority": "authored-exact-property-token-and-existing-rule-contract",
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-events-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
+              "line": 1,
+              "column": 109,
+              "endLine": 1,
+              "endColumn": 112,
+              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "nested-foreign-return-not-owner",
+      "sourceSha256": "0f2556fdb38611246ff8ffa56454fdd25c44248d7bfedafc744a08cfec457927",
+      "qualification": "callback-ownership-warning-preservation",
+      "expectationAuthority": "authored-exact-property-token-and-existing-rule-contract",
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-events-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
+              "line": 1,
+              "column": 156,
+              "endLine": 1,
+              "endColumn": 159,
+              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "mixed-return-preserves-vue-path",
+      "sourceSha256": "74321006445fffe324a31b15cd244358597afe587be61a22bbda2f87d9e23865",
+      "qualification": "callback-ownership-warning-preservation",
+      "expectationAuthority": "authored-exact-property-token-and-existing-rule-contract",
+      "status": 1,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-deprecated-events-api",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-deprecated-events-api] `$on()` was removed in Vue 3. The instance event-emitter API is no longer available.",
+              "line": 1,
+              "column": 167,
+              "endLine": 1,
+              "endColumn": 170,
+              "help": "Vue 3 removed $on / $off / $once. Use an external emitter library (such as mitt) or refactor to props/emits instead. Note: $emit is still valid."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "emit-remains-supported",
+      "sourceSha256": "20906ed75bbd5dcc5bcad6124d562bb2a5726a759a8e8f4b40cb8711e020423c",
+      "qualification": "callback-ownership-warning-preservation",
+      "expectationAuthority": "authored-exact-property-token-and-existing-rule-contract",
+      "status": 0,
+      "stderrBytes": [],
+      "expected": [
+        {
+          "file": "Component.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    }
+  ]
+}

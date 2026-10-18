@@ -18,7 +18,7 @@ import {
 } from "../../npm/ui/scripts/reference-docs/composable-examples.ts";
 import { previewComposableExamples } from "../../docs/previews/ui/build-config.ts";
 import { previewImageUrl } from "../../docs/previews/ui/screenshot-file.ts";
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 
 await import("../../docs/theme/i18n/sitemap.js");
 const sitemap = (

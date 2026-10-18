@@ -1,0 +1,313 @@
+{
+  "original": {
+    "ref": "49545646fde08ade1000c4a33b38c9dd1ac4fb99",
+    "files": [
+      [
+        "tools/support/common.rs",
+        "c23e55a197a410a899082875ffc34e4478573d855f3463ec8ebc6780644eb497",
+        8265
+      ],
+      [
+        "tools/support/lint_divergence_surface.rs",
+        "ccb05dcaabf1285f66f524276d3ab1744739c2c1cb2679691c51efb87f2ea30e",
+        4194
+      ],
+      [
+        "tools/commands/fixtures/lint-divergence-report.rs",
+        "d5ab4a8f86edcaf6934f518991d68ded8bbc50e3e1cb83217395b14faff02f5a",
+        68133
+      ]
+    ]
+  },
+  "updated": {
+    "ref": "7421901d05ac2e252636dd8ee426e8783255378d",
+    "files": [
+      [
+        "tools/support/common.rs",
+        "c23e55a197a410a899082875ffc34e4478573d855f3463ec8ebc6780644eb497",
+        8265
+      ],
+      [
+        "tools/support/lint_divergence_surface.rs",
+        "ccb05dcaabf1285f66f524276d3ab1744739c2c1cb2679691c51efb87f2ea30e",
+        4194
+      ],
+      [
+        "tools/commands/fixtures/lint-divergence-report.rs",
+        "e46b782949303b4f91132eed7f16e9cd65d3182fcbe6e21019a54752de370622",
+        72562
+      ],
+      [
+        "tools/support/lint_reference_coverage.rs",
+        "47a62d566061d742810d79a0d7cbf4fccf6fab226e6e1e50fb71df8ca5e540db",
+        3268
+      ],
+      [
+        "tests/_fixtures/differential/linter/reference-coverage-8849/contract.json",
+        "ca146c3cf3e6e64484956d3eeef959fb04b68c0f59fd3d945f5e6c4df826e955",
+        2885
+      ]
+    ]
+  },
+  "fakeVizeSource": "#!/usr/bin/env node\nimport fs from \"node:fs\";\nconst response = JSON.parse(fs.readFileSync(new URL(\"./response.json\", import.meta.url), \"utf8\"));\nconst stdin = fs.readFileSync(0);\nconst stdout = response.stdout ?? JSON.stringify(response.results);\nconst stderr = response.stderr ?? \"\";\nfs.appendFileSync(new URL(\"./processes.jsonl\", import.meta.url), JSON.stringify({ argv: process.argv.slice(2), cwd: process.cwd(), lang: process.env.LANG, lcAll: process.env.LC_ALL, stdin: stdin.toString(\"base64\"), stdout: Buffer.from(stdout).toString(\"base64\"), stderr: Buffer.from(stderr).toString(\"base64\"), status: response.status ?? 0 }) + \"\\n\");\nprocess.stdout.write(stdout); process.stderr.write(stderr); process.exitCode = response.status ?? 0;\n",
+  "invalidArguments": [
+    ["--help"],
+    ["-h"],
+    ["--unknown"],
+    ["--registry"],
+    ["--budget-mode", "silently-ignore"],
+    ["--shard-count", "0"],
+    ["--shard-index", "-1"],
+    ["--timeout-ms", "0"],
+    ["--shard-count", "2", "--shard-index", "2"]
+  ],
+  "parserVectors": [
+    {
+      "token": "1e309",
+      "reason": "number out of range",
+      "js": "JSON number is out of range"
+    },
+    {
+      "token": "\"\\ud800\"",
+      "reason": "unexpected end of hex escape",
+      "js": "JSON strings must contain valid Unicode scalar values"
+    }
+  ],
+  "missingModernPaths": [
+    ["raw"],
+    ["baseline", "runtimeVersions"],
+    ["divergence", "referenceCoverageExpectations"],
+    ["divergence", "summary", "referenceCoverageIntegrityErrorCount"],
+    ["schema"],
+    ["version"],
+    ["divergence", "schema"],
+    ["divergence", "version"]
+  ],
+  "seams": {
+    "runtime": "Exact Rust/Node name and version; machine/source unchanged",
+    "usage": "Only exact Rust/Node first header; rest/newlines unchanged",
+    "duration": "Safe monotonic baseline milliseconds in [0, 240000]",
+    "originalAdditions": "Asserted8849 raw/runtime/expectations, exact Markdown and independently bound digests",
+    "parserDiagnostics": [
+      {
+        "token": "1e309",
+        "reason": "number out of range",
+        "js": "JSON number is out of range"
+      },
+      {
+        "token": "\"\\ud800\"",
+        "reason": "unexpected end of hex escape",
+        "js": "JSON strings must contain valid Unicode scalar values"
+      }
+    ],
+    "membership": "Full explicit exempt-to-scored correction; zero budgets unchanged"
+  },
+  "selectionCases": [
+    {
+      "id": "hidden-whitelist",
+      "globs": ["."],
+      "files": {
+        ".ignore": "!.kept.vue\n",
+        ".kept.vue": "<template><div /></template>\n",
+        ".hidden.vue": "<template><div /></template>\n"
+      },
+      "expected": [".kept.vue"]
+    },
+    {
+      "id": "escaped-markers",
+      "globs": ["**/*.vue"],
+      "files": {
+        ".ignore": "\\#secret.vue\n\\!literal.vue\n",
+        "#secret.vue": "<template><div /></template>\n",
+        "!literal.vue": "<template><div /></template>\n",
+        "Keep.vue": "<template><div /></template>\n"
+      },
+      "expected": ["Keep.vue"]
+    },
+    {
+      "id": "nested-repository-boundary",
+      "globs": ["**/*.vue"],
+      "files": {
+        ".gitignore": "nested/Excluded.vue\n",
+        ".ignore": "nested/Blocked.vue\n",
+        "nested/Excluded.vue": "<template><div /></template>\n",
+        "nested/Blocked.vue": "<template><div /></template>\n"
+      },
+      "gitRoot": "nested",
+      "expected": ["nested/Excluded.vue"]
+    },
+    {
+      "id": "literal-caret",
+      "globs": ["src/[^a].vue"],
+      "files": {
+        "src/^.vue": "<template><div /></template>\n",
+        "src/a.vue": "<template><div /></template>\n",
+        "src/b.vue": "<template><div /></template>\n"
+      },
+      "expected": ["src/^.vue", "src/a.vue"]
+    },
+    {
+      "id": "literal-closing-bracket",
+      "globs": ["src/[]].vue"],
+      "files": {
+        "src/].vue": "<template><div /></template>\n"
+      },
+      "expected": ["src/].vue"]
+    }
+  ],
+  "membershipDelta": {
+    "fields": {
+      "summary": {
+        "before": {
+          "falsePositiveCount": 0,
+          "falsePositiveRatio": 0,
+          "patinaOutsideBaselineSurfaceCount": 1
+        },
+        "after": {
+          "falsePositiveCount": 1,
+          "falsePositiveRatio": 1,
+          "patinaOutsideBaselineSurfaceCount": 0
+        }
+      },
+      "budget": {
+        "before": {
+          "falsePositivePassed": true,
+          "passed": true,
+          "verdict": "passed"
+        },
+        "after": {
+          "falsePositivePassed": false,
+          "passed": false,
+          "verdict": "breached"
+        }
+      },
+      "indexTotals": {
+        "before": {
+          "falsePositiveCount": 0
+        },
+        "after": {
+          "falsePositiveCount": 1
+        }
+      },
+      "indexProject": {
+        "before": {
+          "falsePositiveCount": 0,
+          "falsePositiveRatio": 0,
+          "patinaOutsideBaselineSurfaceCount": 1
+        },
+        "after": {
+          "falsePositiveCount": 1,
+          "falsePositiveRatio": 1,
+          "patinaOutsideBaselineSurfaceCount": 0
+        }
+      },
+      "indexBudget": {
+        "before": {
+          "status": "success",
+          "passed": true,
+          "passedCount": 1,
+          "failedCount": 0,
+          "breachedCount": 0,
+          "failedProjects": []
+        },
+        "after": {
+          "status": "failure",
+          "passed": false,
+          "passedCount": 0,
+          "failedCount": 1,
+          "breachedCount": 1,
+          "failedProjects": ["gui-for-singbox"]
+        }
+      }
+    },
+    "markdown": [
+      ["False positives: 0 (0.0)\n", "False positives: 1 (1.0)\n"],
+      [
+        "\nPatina findings outside reference coverage: 1\n",
+        "\nPatina findings outside reference coverage: 0\n"
+      ],
+      ["Budget verdict: passed\n", "Budget verdict: breached\n"],
+      ["Budget passed: true\n", "Budget passed: false\n"],
+      [
+        "### False positives: none\n\n",
+        "### False positives: 1\n\n| Rule | Findings |\n| --- | ---: |\n| `vue/v-slot-style` | 1 |\n\n"
+      ],
+      [
+        "### Patina findings outside reference coverage: 1\n\n| Rule | Findings |\n| --- | ---: |\n| `vue/v-slot-style` | 1 |\n\n",
+        "### Patina findings outside reference coverage: none\n\n"
+      ]
+    ],
+    "stderr": "Lint divergence budget failed for 1 project(s):\nLint divergence budget breached for gui-for-singbox: 1 false positives exceed maxFalsePositiveCount 0\n"
+  },
+  "reviewedUnrelatedFalseNegatives": {
+    "bare-slot-shorthand": [],
+    "class-decorator-prop": [
+      {
+        "column": 16,
+        "endColumn": 40,
+        "endLine": 10,
+        "file": "src/views/home/widgets/card.vue",
+        "line": 10,
+        "message": "Attribute \"v-model\" should go before \"tag\".",
+        "ruleId": "vue/attribute-order",
+        "severity": "warning",
+        "upstreamRuleId": "vue/attributes-order"
+      },
+      {
+        "column": 13,
+        "endColumn": 48,
+        "endLine": 16,
+        "file": "src/views/home/widgets/card.vue",
+        "line": 16,
+        "message": "Attribute \"v-for\" should go before \"class\".",
+        "ruleId": "vue/attribute-order",
+        "severity": "warning",
+        "upstreamRuleId": "vue/attributes-order"
+      },
+      {
+        "column": 13,
+        "endColumn": 27,
+        "endLine": 17,
+        "file": "src/views/home/widgets/card.vue",
+        "line": 17,
+        "message": "Attribute \":key\" should go before \"class\".",
+        "ruleId": "vue/attribute-order",
+        "severity": "warning",
+        "upstreamRuleId": "vue/attributes-order"
+      },
+      {
+        "column": 29,
+        "endColumn": 33,
+        "endLine": 43,
+        "file": "src/views/home/widgets/card.vue",
+        "line": 43,
+        "message": "`slot` attributes are deprecated.",
+        "ruleId": "vue/no-deprecated-slot-attribute",
+        "severity": "error",
+        "upstreamRuleId": "vue/no-deprecated-slot-attribute"
+      },
+      {
+        "column": 29,
+        "endColumn": 46,
+        "endLine": 43,
+        "file": "src/views/home/widgets/card.vue",
+        "line": 43,
+        "message": "Attribute \"slot\" should go before \"@click.stop\".",
+        "ruleId": "vue/attribute-order",
+        "severity": "warning",
+        "upstreamRuleId": "vue/attributes-order"
+      }
+    ]
+  },
+  "reviewedUnrelatedFalseNegativesCustody": {
+    "run": 39021836053,
+    "head": "1dad07fa5e18751da310e46e9a49061a9c16aa7d",
+    "job": 117365030512,
+    "artifact": 12096594705,
+    "artifactZipSha256": "80760e1f8bb7bdeabe0b3563fa538fdd0998b31b73cda1eaa9968262801f37c0",
+    "rawFile": "102-64464696-5e25-453b-9356-6c4f2bb210a8-raw.json",
+    "rawFileSha256": "ec3e7a48fa4fc4c5cf15142143c5f2c3206c13067e06b22d7e5888afc07d99d6",
+    "report": "mobile-web-best-practice-lint-divergence.json",
+    "reportSha256": "0f445e4627562d049e41fee9569a6a0f593224c232dffcf77edbca1beecd7ab9"
+  }
+}

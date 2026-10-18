@@ -6,7 +6,7 @@ on:
       operation:
         description: Start a minor, prepare a reviewed stable patch, resume, or retire an immutable cut
         type: choice
-        options: [start, patch, resume, retire, recover-consumer]
+        options: [start, patch, resume, retire, retire-before-release, recover-consumer]
         default: start
         required: true
       source_cut:
@@ -15,17 +15,17 @@ on:
         default: ""
         required: false
       source_pr:
-        description: Original source PR number; required for resume and retire
+        description: Original source PR number; required for resume and either retirement mode
         type: string
         default: ""
         required: false
       source_head:
-        description: Exact original 40-hex source head; required only for retire
+        description: Exact original 40-hex source head; required for either retirement mode
         type: string
         default: ""
         required: false
       source_tag:
-        description: Exact original v0.minor.0 tag; required only for retire
+        description: Exact original v0.minor.0 tag; required for either retirement mode
         type: string
         default: ""
         required: false
@@ -34,8 +34,13 @@ on:
         type: string
         default: ""
         required: false
+      qualification_run:
+        description: Original failed exact-H qualification Check; required only for retire-before-release
+        type: string
+        default: ""
+        required: false
       operator_run:
-        description: Original Release Operator entry run ID; required only for retire
+        description: Original Release Operator entry run ID; required for either retirement mode
         type: string
         default: ""
         required: false
@@ -97,9 +102,11 @@ jobs:
           RELEASE_SOURCE_HEAD: ${{ inputs.source_head }}
           RELEASE_SOURCE_TAG: ${{ inputs.source_tag }}
           RELEASE_RUN: ${{ inputs.release_run }}
+          RELEASE_QUALIFICATION_RUN: ${{ inputs.qualification_run }}
           RELEASE_ORIGINAL_OPERATOR_RUN: ${{ inputs.operator_run }}
           RELEASE_CONSUMER_RECOVERY_RUN: ${{ inputs.consumer_recovery_run }}
           VIZE_RELEASE_OPERATOR_TIMEOUT_SECONDS: "14400"
+          VIZE_RELEASE_INTEGRATION_QUEUE_EVIDENCE: ${{ runner.temp }}/release-integration-queue/responses.jsonl
           VIZE_RELEASE_EXPECTED_CUT_SHA: ${{ (inputs.operation == 'start' || inputs.operation == 'patch') && github.sha || '' }}
         run: |
           set -euo pipefail
@@ -114,6 +121,9 @@ jobs:
           git config user.name "$login"
           git config user.email "$id+$login@users.noreply.github.com"
           gh auth setup-git --hostname github.com
+          if [[ "$RELEASE_OPERATION" != "retire-before-release" && -n "$RELEASE_QUALIFICATION_RUN" ]]; then
+            echo "::error::Only retire-before-release accepts a qualification run"; exit 1
+          fi
           case "$RELEASE_OPERATION" in
             start|patch|resume)
               [[ -z "$RELEASE_SOURCE_HEAD" && -z "$RELEASE_SOURCE_TAG" && -z "$RELEASE_RUN" && -z "$RELEASE_ORIGINAL_OPERATOR_RUN" ]] || { echo "::error::Only retire accepts source head, tag, Release run and original operator run inputs"; exit 1; }
@@ -145,6 +155,11 @@ jobs:
               [[ "$RELEASE_SOURCE_PR" =~ ^[1-9][0-9]*$ ]] || { echo "::error::Resume requires the original positive source PR number"; exit 1; }
               vp run release --resume "$RELEASE_SOURCE_PR" --pin
               ;;
+            retire-before-release)
+              [[ "$RELEASE_SOURCE_PR" =~ ^[1-9][0-9]*$ && "$RELEASE_QUALIFICATION_RUN" =~ ^[1-9][0-9]*$ && "$RELEASE_ORIGINAL_OPERATOR_RUN" =~ ^[1-9][0-9]*$ && -z "$RELEASE_RUN" ]] || { echo "::error::Pre-release retirement requires exact source PR, qualification Q and original O, without any Release R"; exit 1; }
+              [[ "$RELEASE_SOURCE_HEAD" =~ ^[0-9a-f]{40}$ && "$RELEASE_SOURCE_TAG" =~ ^v0\.[1-9][0-9]*\.0$ ]] || { echo "::error::Pre-release retirement requires exact H and original v0.minor.0 tag"; exit 1; }
+              rust-script tools/commands/release/pr.rs retire-before-release "$RELEASE_SOURCE_PR" "$RELEASE_SOURCE_HEAD" "$RELEASE_SOURCE_TAG" "$RELEASE_QUALIFICATION_RUN" "$RELEASE_ORIGINAL_OPERATOR_RUN"
+              ;;
             retire)
               [[ "$RELEASE_SOURCE_PR" =~ ^[1-9][0-9]*$ && "$RELEASE_RUN" =~ ^[1-9][0-9]*$ && "$RELEASE_ORIGINAL_OPERATOR_RUN" =~ ^[1-9][0-9]*$ ]] || { echo "::error::Retire requires positive source PR, Release run and original operator run IDs"; exit 1; }
               [[ "$RELEASE_SOURCE_HEAD" =~ ^[0-9a-fA-F]{40}$ ]] || { echo "::error::Retire requires the exact 40-hex source head"; exit 1; }
@@ -160,4 +175,12 @@ jobs:
           name: verified-consumer-recovery-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/verified-consumer-recovery
           if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve exact owned integration queue responses
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-integration-queue-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-integration-queue
+          if-no-files-found: ignore
           retention-days: 30

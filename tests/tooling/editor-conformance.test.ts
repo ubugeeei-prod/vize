@@ -30,6 +30,7 @@ function idealTranscript(source: Scenario = scenario): Entry[] {
   const entries: Entry[] = [];
   let id = 0;
   let version = 0;
+  let published: unknown[] = [];
   const push = (dir: "c2s" | "s2c", msg: object) =>
     entries.push({
       session: 7,
@@ -55,6 +56,7 @@ function idealTranscript(source: Scenario = scenario): Entry[] {
         params: { textDocument: { uri, languageId: source.languageId, version, text: expect } },
       });
     } else if (step.kind === "diagnostics") {
+      published = expect;
       push("s2c", {
         method: "textDocument/publishDiagnostics",
         params: { uri, version, diagnostics: expect },
@@ -63,7 +65,11 @@ function idealTranscript(source: Scenario = scenario): Entry[] {
       push("c2s", {
         id: ++id,
         method: step.method,
-        params: { textDocument: { uri }, ...step.match },
+        params: {
+          textDocument: { uri },
+          ...step.match,
+          ...(step.diagnosticsFromRequest ? { context: { diagnostics: published } } : {}),
+        },
       });
       push("s2c", { id, result: expect });
     } else if (step.kind === "text") {
@@ -246,6 +252,8 @@ test("CI runs every client at the editor-host-smoke pins and requires all four r
     name?: string;
     env?: Record<string, string>;
     uses?: string;
+    if?: string;
+    run?: string;
     with?: Record<string, unknown>;
   }>;
   const pins = Object.assign({}, ...steps.map((step) => step.env ?? {}));
@@ -266,7 +274,59 @@ test("CI runs every client at the editor-host-smoke pins and requires all four r
   const report = workflow.jobs.report.steps.at(-1).run as string;
   assert.match(report, /report\.ts "\$\{RUNNER_TEMP\}\/ts45" --require helix,neovim,vscode,zed$/u);
   assert.equal(workflow.jobs.report.if, "always()");
-  const upload = steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"));
+  const upload = steps.find((step) => step.with?.name === "ts45-${{ matrix.client }}");
+  assert.ok(upload?.uses?.startsWith("actions/upload-artifact@"));
+  const lifecycle = steps.findIndex(
+    (step) => step.name === "Exercise existing VS Code configuration and lifecycle contracts",
+  );
+  assert.ok(lifecycle > steps.findIndex((step) => step.name === "Prepare pinned VS Code"));
+  assert.ok(lifecycle < steps.findIndex((step) => step.name === "Play the TS-45 scenario"));
+  const packageExtension = steps.findIndex(
+    (step) => step.name === "Exercise original real VS Code authoring contracts",
+  );
+  assert.ok(packageExtension > lifecycle);
+  assert.ok(packageExtension < steps.findIndex((step) => step.name === "Play the TS-45 scenario"));
+  assert.equal(steps[packageExtension].if, "matrix.client == 'vscode'");
+  assert.match(
+    steps[packageExtension].run.trim(),
+    /xvfb-run -a vp run --workspace-root test:vscode-extension:host-real$/u,
+  );
+  assert.doesNotMatch(steps[packageExtension].run, /lsp-tap|rich-host-tap/);
+  assert.match(steps[packageExtension].run, /consumed-server\.sha256/);
+  const producerSteps = workflow.jobs.server.steps;
+  assert.equal(
+    producerSteps.find((step: { name?: string }) => step.name === "Build vize CLI").run,
+    "cargo build --profile ci -p vize",
+  );
+  const receipt = producerSteps.find(
+    (step: { name?: string }) =>
+      step.name === "Record the real server source and executable identity",
+  );
+  assert.match(receipt.run, /test "\$\(git rev-parse HEAD\)" = "\$\{GITHUB_SHA\}"/);
+  assert.match(
+    steps.find((step) => step.name === "Make the server executable").run,
+    /sha256sum --check vize\.sha256/,
+  );
+  assert.equal(steps[lifecycle].if, "matrix.client == 'vscode'");
+  assert.equal(
+    steps[lifecycle].run,
+    "xvfb-run -a vp run --workspace-root test:vscode-extension:host",
+  );
+  const lifecycleEvidence = steps.find(
+    (step) => step.with?.name === "vscode-configuration-lifecycle",
+  );
+  assert.ok(lifecycleEvidence?.uses?.startsWith("actions/upload-artifact@"));
+  assert.equal(lifecycleEvidence?.if, "${{ always() && matrix.client == 'vscode' }}");
+  assert.equal(lifecycleEvidence?.with?.["include-hidden-files"], true);
+  assert.equal(lifecycleEvidence?.with?.["if-no-files-found"], "error");
+  assert.deepEqual(String(lifecycleEvidence?.with?.path).trim().split("\n"), [
+    "${{ runner.temp }}/rich-host-evidence/",
+    "editors/vscode/.vscode-test/host-smoke-real/failure/",
+    "editors/vscode/.vscode-test/host-smoke/failure/",
+    "editors/vscode/.vscode-test/host-smoke/output-channel/",
+    "editors/vscode/.vscode-test/host-smoke/fake-server/events.jsonl",
+    "editors/vscode/.vscode-test/host-smoke/fake-server/existing-config-events/",
+  ]);
   // A failed-only rerun must replace its earlier result without requiring
   // fresh artifacts from the three clients GitHub does not rerun.
   assert.equal(upload?.with?.name, "ts45-${{ matrix.client }}");
@@ -287,4 +347,108 @@ test("every client has a driver and only Zed is a protocol replay", async () => 
   const zed = JSON.parse(fs.readFileSync(`${suiteRoot}/clients/zed-1.16.1.json`, "utf8"));
   assert.match(zed.source, /^zed-industries\/zed v1\.16\.1 crates\/lsp\/src\/lsp\.rs /u);
   assert.equal(zed.clientInfo.version, "1.16.1");
+});
+
+function codeActionExchange(entries: Entry[]) {
+  const request = entries.find((entry) => entry.msg?.method === "textDocument/codeAction")!.msg!;
+  const response = entries.find(
+    (entry) => entry.dir === "s2c" && entry.msg?.id === request.id,
+  )!.msg!;
+  const diagnostic = request.params.context.diagnostics.find(
+    (value: any) => value.code === "vue/no-multi-spaces",
+  );
+  return { request, response, diagnostic };
+}
+
+function echoActionDiagnostic(response: any, diagnostic: unknown) {
+  for (const action of response.result) action.diagnostics = [structuredClone(diagnostic)];
+}
+
+test("code actions compare full client diagnostic echoes while published diagnostics stay exact", () => {
+  const entries = idealTranscript();
+  const { response, diagnostic } = codeActionExchange(entries);
+  delete diagnostic.codeDescription;
+  echoActionDiagnostic(response, diagnostic);
+  assert.deepEqual(failures(entries), []);
+  response.result[0].diagnostics[0].codeDescription = { href: "https://unexpected.test/" };
+  assert.deepEqual(failures(entries), ["code-action"]);
+  delete response.result[0].diagnostics[0].codeDescription;
+  response.result[0].diagnostics[0].message = "changed by server";
+  assert.deepEqual(failures(entries), ["code-action"]);
+});
+
+test("code action echo preserves supplied metadata and rejects changed rule identity", () => {
+  const entries = idealTranscript();
+  const { response, diagnostic } = codeActionExchange(entries);
+  diagnostic.codeDescription = { href: "https://client.test/rule" };
+  diagnostic.data = { client: "retained", revision: 7 };
+  diagnostic.message = "Client explanation retained";
+  echoActionDiagnostic(response, diagnostic);
+  assert.deepEqual(failures(entries), []);
+  delete response.result[0].diagnostics[0].data;
+  assert.deepEqual(failures(entries), ["code-action"]);
+  for (const change of [
+    { code: "unknown/rule" },
+    { source: "another/linter" },
+    { range: { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } } },
+  ]) {
+    const invalid = idealTranscript();
+    const exchange = codeActionExchange(invalid);
+    Object.assign(exchange.diagnostic, change);
+    echoActionDiagnostic(exchange.response, exchange.diagnostic);
+    assert.deepEqual(failures(invalid), ["code-action"]);
+  }
+});
+
+test("corrupted canonical action documentation fails even when the client omits documentation", () => {
+  const entries = idealTranscript();
+  const { response, diagnostic } = codeActionExchange(entries);
+  delete diagnostic.codeDescription;
+  echoActionDiagnostic(response, diagnostic);
+  const corrupted = structuredClone(scenario);
+  const action = corrupted.steps.find((value) => value.id === "code-action")!;
+  (action.expect as any[])[0].diagnostics[0].codeDescription.href = "https://corrupted.test/";
+  assert.deepEqual(failures(entries, corrupted), ["code-action"]);
+});
+
+test("current completion retains authored candidates and the complete independent Vue globals vector", () => {
+  const authored = JSON.parse(fs.readFileSync(`${suiteRoot}/expected/completion.json`, "utf8"));
+  const globals = JSON.parse(
+    readRepoFile(
+      "tests",
+      "_fixtures",
+      "differential",
+      "lsp",
+      "template-expression-globals-8015",
+      "globals.expected.json",
+    ),
+  );
+  assert.deepEqual(byId("completion").expect, [...authored, ...globals]);
+});
+
+test("current initialization derives only source-backed capabilities from the complete prior vector", () => {
+  const original = JSON.parse(fs.readFileSync(`${suiteRoot}/expected/initialize.json`, "utf8"));
+  original.capabilities.codeActionProvider.codeActionKinds.push(
+    "source.organizeImports",
+    "source.sortImports",
+    "source.removeUnusedImports",
+  );
+  original.capabilities.monikerProvider = true;
+  assert.deepEqual(byId("initialize").expect, original);
+  const capabilities = readRepoFile("crates", "vize_maestro", "src", "server", "capabilities.rs");
+  assert.match(
+    capabilities,
+    /moniker_provider: features\.definition\.then_some\(OneOf::Left\(true\)\)/,
+  );
+  const kinds = readRepoFile(
+    "crates",
+    "vize_maestro",
+    "src",
+    "server",
+    "capabilities",
+    "code_action_tests.rs",
+  );
+  for (const kind of original.capabilities.codeActionProvider.codeActionKinds.slice(1)) {
+    assert.ok(kinds.includes(`CodeActionKind::from("${kind}".to_owned())`));
+  }
 });

@@ -4,7 +4,14 @@ import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promis
 import os from "node:os";
 import path from "node:path";
 import { physicalPublicBody } from "../../../tools/support/release/public_acceptance/vrt_trusted_gallery.ts";
-import { evidence } from "../../../tools/support/release/public_acceptance/vrt_artifacts.ts";
+import {
+  hostedPath,
+  staticVrtHost,
+} from "../../../tools/support/release/public_acceptance/vrt_host.ts";
+import {
+  evidence,
+  inventory,
+} from "../../../tools/support/release/public_acceptance/vrt_artifacts.ts";
 import {
   literalCaptureLaw,
   literalProjectRetainer,
@@ -18,7 +25,7 @@ import {
   type BrowserFailureRecord,
 } from "../../../tools/support/release/public_acceptance/vrt_trusted_failures.ts";
 
-/** Pure metadata/model and real filesystem laws only; no native/browser/service/tunnel factory. */
+/** Metadata, real filesystem and bounded static loopback HTTP only; no native/browser/tunnel. */
 function literalPacket(title: "Controls" | "Keys", phase: "new" | "match") {
   const n = literalVariants[title].length;
   return {
@@ -328,4 +335,90 @@ void test("real emitted-file lookup refuses foreign/query/outside-prefix/missing
     `${origin}/built/%2e%2e%2foutside.js`,
   ])
     await assert.rejects(physicalPublicBody({ directory }, url, origin));
+});
+
+void test("real static hosts retain repeated whole JS, CSS and font bodies in their own namespaces", async (t) => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "vrt-host-owned-bodies-"));
+  t.after(() => rm(temporary, { recursive: true, force: true }));
+  const directory = path.join(temporary, "dist");
+  await mkdir(directory);
+  const assets = [
+    ["index.js", Buffer.from("export const original = 1;\n")],
+    ["index.css", Buffer.from(".original { color: green; }\n")],
+    ["font.ttf", Buffer.from([0, 1, 0, 0, 0, 4, 0, 64, 0, 0, 0, 0])],
+  ] as const;
+  for (const [name, bytes] of assets) await writeFile(path.join(directory, name), bytes);
+  const e = await evidence(path.join(temporary, "evidence"));
+  const hosts = [];
+  try {
+    for (let index = 0; index < 3; index++) hosts.push(await staticVrtHost(directory, e));
+    for (const host of hosts) {
+      const origin = host.url.slice(0, -hostedPath.length);
+      for (const [name, bytes] of assets) {
+        const responses = await Promise.all([1, 2, 3].map(() => fetch(`${origin}/built/${name}`)));
+        for (const response of responses) {
+          assert.equal(response.status, 200);
+          assert.deepEqual(Buffer.from(await response.arrayBuffer()), bytes);
+        }
+      }
+    }
+    const files = await inventory(path.join(e.output, "http-bodies"));
+    assert.equal(files.length, 9, "three hosts each retain all three complete bodies");
+    assert.equal(new Set(files.map((file) => file.path.split("/")[0])).size, 3);
+    for (const hostPrefix of new Set(files.map((file) => file.path.split("/")[0]))) {
+      const saved = await Promise.all(
+        files
+          .filter((file) => file.path.startsWith(`${hostPrefix}/`))
+          .map((file) => readFile(path.join(e.output, "http-bodies", file.path))),
+      );
+      for (const [, bytes] of assets)
+        assert.equal(saved.filter((body) => body.equals(bytes)).length, 1);
+    }
+    const before = await inventory(e.output);
+    await assert.rejects(e.save(before[0].path, Buffer.from("must not overwrite")), {
+      code: "EEXIST",
+    });
+    assert.deepEqual(await inventory(e.output), before, "immutable evidence policy stays intact");
+  } finally {
+    await Promise.all(hosts.map((host) => host.close()));
+  }
+});
+
+void test("concurrent and repeated static responses all refuse an actual failed evidence write", async (t) => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "vrt-host-write-refusal-"));
+  t.after(() => rm(temporary, { recursive: true, force: true }));
+  const directory = path.join(temporary, "dist");
+  await mkdir(directory);
+  await writeFile(path.join(directory, "asset.js"), "whole asset\n");
+  const e = await evidence(path.join(temporary, "evidence"));
+  let writes = 0;
+  const host = await staticVrtHost(directory, {
+    ...e,
+    async save(name, bytes) {
+      writes++;
+      // Real filesystem refusal at the immutable target, not a substituted
+      // error or response. The second request must await this same rejection.
+      await mkdir(path.join(e.output, name));
+      await e.save(name, bytes);
+    },
+  });
+  try {
+    const origin = host.url.slice(0, -hostedPath.length);
+    const responses = await Promise.allSettled(
+      [1, 2, 3].map(() => fetch(`${origin}/built/asset.js`)),
+    );
+    assert.deepEqual(
+      responses.map((result) => result.status),
+      ["rejected", "rejected", "rejected"],
+    );
+    assert.equal(writes, 1, "one failed immutable body write remains authoritative");
+    assert.deepEqual(host.requests, [], "no request is reported as successfully served");
+    assert.deepEqual(
+      await inventory(e.output),
+      [],
+      "the failed target contains no fabricated bytes",
+    );
+  } finally {
+    await host.close();
+  }
 });

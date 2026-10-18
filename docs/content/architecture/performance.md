@@ -32,7 +32,7 @@ Files: **3,000** (12,302,100 bytes).
 | workers / max | 1.61s             | 65.0ms  | **24.7x** |
 | 1T / max      | 3.57s             | 65.0ms  | **54.8x** |
 
-[Full methodology and evidence](./performance-blacksmith)
+[Full methodology and evidence](./performance-blacksmith.md)
 
 <details class="benchmark-provenance">
 <summary>Tool versions and binary checksums</summary>
@@ -192,10 +192,11 @@ The compiler-internals work described above is measured by a per-crate microbenc
 
 **How to read these numbers.** Allocation counts are deterministic and machine-independent, so they
 are exact facts and are used as the regression ratchet. Wall times were taken on a shared
-development machine with `--quick` sampling and are **directional only** — the reference-runner
-(Blacksmith) recordings are still pending, which is why every `wall_p50_ns` and `allocs` entry in
-`docs/davinci/plan/budgets.toml` is still `0`, meaning "not yet recorded, report-only". Per-run
-result files land in `tools/benchmarks/results/davinci/` and are local artifacts, not committed baselines.
+development machine with `--quick` sampling and are **directional only** — wall-time recordings on the reference runner (Blacksmith) are still
+pending. In `docs/davinci/plan/budgets.toml`, `wall_p50_ns` and `allocs` have different meanings:
+`0` means an unrecorded baseline for wall time, but a measured zero for allocation calls.
+Allocation baselines are already recorded and enforced independently of wall-time baselines.
+Per-run result files land in `tools/benchmarks/results/davinci/` and are local artifacts, not committed baselines.
 
 Allocation calls per compile, before and after the string-and-arena work (exact, same fixtures):
 
@@ -288,7 +289,7 @@ One committed artifact supplies the README and every locale. File counts are sta
 
 Type-check ratios compare Vize with vue-tsc, the type checker Vue projects run today. vue-tsc drives the JavaScript TypeScript compiler while Vize drives native tsgo, so the ratio covers the whole toolchain rather than the Vue layer alone; the per-engine-class tables in the full snapshot rank same-engine tools against each other to isolate that layer. Each timed invocation passes diagnostic-work validation. Diagnostic coverage differs between tools; these ratios do not prove accuracy parity or a performance improvement over an earlier Vize version. Rejected comparators have no published timing or rank.
 
-[Full methodology and evidence](./performance-blacksmith)
+[Full methodology and evidence](./performance-blacksmith.md)
 
 The profiles below are historical local measurements and are not part of this reference-runner comparison.
 
@@ -341,7 +342,7 @@ Files: **1,000**.
 | ---------- | ------------------ | ------------------- | -------- |
 | Vite build | 1.66s              | 889.2ms             | **1.9x** |
 
-[Full methodology and evidence](./performance-blacksmith)
+[Full methodology and evidence](./performance-blacksmith.md)
 
 <!-- benchmark:vite:end -->
 

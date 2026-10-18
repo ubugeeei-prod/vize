@@ -325,14 +325,40 @@ void test("content-mapper L0 surface stays on the preferred physical name", () =
     (consumer) => consumer.id === "typechecker-content-mapper",
   );
   assert.ok(contentMapper);
-  assert.equal(contentMapper.surfaceCounts.l0, 15);
+  assertPreferredContentMapperL0(contentMapper);
+});
+
+function assertPreferredContentMapperL0(contentMapper) {
+  const sites = contentMapper.sites.filter((site) => site.surfaceId === "l0");
+  // This scanner counts lexical references, including test helpers, not public
+  // exports. Their cardinality can grow while the physical-name contract holds.
+  assert.ok(sites.length > 0, "content mapper must have at least one L0 site");
   assert.equal(contentMapper.nameKindCounts.compat, 0);
-  assert.equal(contentMapper.nameKindCounts.preferred, 15);
   assert.ok(
-    contentMapper.sites
-      .filter((site) => site.surfaceId === "l0")
-      .every((site) => site.matchedName === "vize_l0" && site.nameKind === "preferred"),
+    sites.every((site) => site.matchedName === "vize_l0" && site.nameKind === "preferred"),
+    "content mapper must use the preferred physical L0 name",
   );
+}
+
+void test("content-mapper physical-name contract refuses missing L0 and legacy aliases", () => {
+  const contentMapper = scanConsumerMigrationSurfaces().consumers.find(
+    (consumer) => consumer.id === "typechecker-content-mapper",
+  );
+  assert.ok(contentMapper);
+  const missing = {
+    ...contentMapper,
+    sites: contentMapper.sites.filter((site) => site.surfaceId !== "l0"),
+  };
+  assert.throws(() => assertPreferredContentMapperL0(missing), {
+    name: "AssertionError",
+    message: "content mapper must have at least one L0 site",
+  });
+  const legacy = { ...contentMapper, sites: structuredClone(contentMapper.sites) };
+  legacy.sites.find((site) => site.surfaceId === "l0").matchedName = "vize_carton";
+  assert.throws(() => assertPreferredContentMapperL0(legacy), {
+    name: "AssertionError",
+    message: "content mapper must use the preferred physical L0 name",
+  });
 });
 
 void test("LSP L0 surface stays on the preferred physical name", () => {

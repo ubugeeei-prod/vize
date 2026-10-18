@@ -12,6 +12,11 @@ on:
     - cron: "11 3 * * *"
   workflow_dispatch:
     inputs:
+      release-qualification:
+        description: Qualify an immutable release source without repeating daily source coverage
+        type: boolean
+        required: false
+        default: false
       compare-rust-test-profile:
         description: Also run the original test profile and require exact same-source ci parity
         type: boolean
@@ -36,6 +41,14 @@ jobs:
         with: { fetch-depth: 2 }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Validate explicit release qualification
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.release-qualification }}
+        env: { RELEASE_QUALIFICATION_REF: "${{ github.ref }}" }
+        run: |
+          if [[ ! "$RELEASE_QUALIFICATION_REF" =~ ^refs/(heads/release/|tags/)v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Release qualification requires an immutable release/vSEMVER branch or vSEMVER tag." >&2
+            exit 1
+          fi
       - id: plan
         name: Select product and dependency checks
         env:
@@ -55,7 +68,7 @@ jobs:
     uses: ./.github/workflows/level-dependencies.yml
   release-integration-catalog:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
-    permissions: { contents: read, pull-requests: read }
+    permissions: { contents: read, pull-requests: read, actions: read }
     uses: ./.github/workflows/release-integration-catalog.yml
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -82,10 +95,12 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { fetch-depth: 2 }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
+          version: latest
           node-version-file: "package.json"
           cache: true
+          cache-save: false
           run-install: false
       - name: Guard legacy crate deletion
         if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -170,11 +185,13 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
         with:
+          version: latest
           node-version-file: "package.json"
           cache: true
+          cache-save: false
           run-install: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
@@ -208,18 +225,20 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
         with:
+          version: latest
           node-version: ${{ matrix.node-version }}
           cache: true
+          cache-save: false
           run-install: false
       - name: Install JS dependencies
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check package engine matrix
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
-        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts tests/tooling/dependency-security-compat.test.mjs tests/tooling/comparison-base.test.ts tests/tooling/plan-source-checks.test.ts tests/tooling/plan-check-inputs.test.ts tests/tooling/warning-budget.test.ts tests/tooling/npm-audit-command.test.ts
+        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts tests/tooling/bundler-plugin-manifests.test.ts tests/tooling/dependency-security-compat.test.mjs tests/tooling/comparison-base.test.ts tests/tooling/plan-source-checks.test.ts tests/tooling/plan-check-inputs.test.ts tests/tooling/warning-budget.test.ts tests/tooling/npm-audit-command.test.ts
       - name: Report unchanged inputs
         if: ${{ needs.iteration-plan.outputs.engines != 'true' }}
         run: echo 'engines inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
@@ -318,7 +337,6 @@ jobs:
           node-version-file: "package.json"
           cache: true
           run-install: false
-      - uses: ./.github/actions/setup-moonbit
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -355,7 +373,11 @@ jobs:
           path: .artifacts/shared-js-build/
           if-no-files-found: error
           retention-days: 7
-  test-js-packages:
+  full-js-package-tests:
+    name: Full JS package tests (${{ matrix.group }})
+    strategy:
+      fail-fast: false
+      matrix: { group: [builders, ui, oxlint] }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 45
@@ -367,6 +389,32 @@ jobs:
       - name: Test JS packages
         if: ${{ !cancelled() }}
         uses: ./.github/actions/test-js-packages-with-history
+        with: { partition: "${{ matrix.group }}" }
+  full-js-original-project:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 45
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/setup-js-package-tests
+      - name: Qualify original Oxlint projects
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/test-js-packages-with-history
+        with: { partition: original-project }
+  test-js-packages:
+    runs-on: ubuntu-24.04
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    timeout-minutes: 5
+    needs: [full-js-package-tests, full-js-original-project]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", cache: false, run-install: false }
+      - name: Require every full JS partition to succeed
+        env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
+        run: node tools/support/compat/github/require-needs-success.ts --full-js-packages
   full-js-report:
     name: full-js-report
     runs-on: ubuntu-24.04
@@ -445,7 +493,7 @@ jobs:
       - name: Verify complete same-head workspace execution
         env: { SOURCE_SHA: "${{ github.sha }}", NEEDS_JSON: "${{ toJSON(needs) }}" }
         run: node tools/support/compat/github/rust-workspace-inventory.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace
-  clippy-and-test:
+  rust-clippy-portability:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 45
@@ -470,11 +518,53 @@ jobs:
         run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && rust-script tools/commands/ci/github/check-maestro-feature-contract.rs && rust-script tools/commands/ci/check-workspace-lints.rs --check && rust-script tools/commands/ci/check-skeleton-todos.rs --check
       - name: Davinci no_std stage-library portability lanes (TS-24)
         run: cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 && cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 --no-default-features
+  rust-davinci-allocations:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 45
+    env: { VIZE_NUXT_CONFIG_ITERATIONS: "100" }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, components: clippy }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: true
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: clippy-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
       - name: Davinci allocation gate
         run: cargo bench -p vize_l1_to_l2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools/commands/davinci/bench-compare.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root --bench patina_s2_markup_one_root && cargo bench -p vize_musea --bench davinci_art -- --quick && rust-script tools/commands/davinci/bench-compare.rs --bench musea_parse_art_define_art --bench musea_parse_art_legacy_attrs --bench musea_parse_art_inline
       - name: Upload Davinci allocation bench reports
         if: ${{ always() }}
         uses: ./.github/actions/upload-davinci-compact-storage-bench-reports
+  rust-native-differential:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 45
+    env: { VIZE_NUXT_CONFIG_ITERATIONS: "100" }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, components: clippy }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: true
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: clippy-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
       - name: Install Pkl CLI and hydrate pinned native fixture
         run: npm install --global @pkl-community/pkl@0.27.2 && git submodule update --init --force --depth 1 -- tests/_fixtures/_git/element-plus
       - name: Test
@@ -485,6 +575,19 @@ jobs:
         with: { workspace-already-tested: "true" }
       - uses: ./.github/actions/retain-sfc-runtime
         if: ${{ always() }}
+  clippy-and-test:
+    # Keep the release gate's identity while every original producer must succeed.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    needs: [rust-clippy-portability, rust-davinci-allocations, rust-native-differential]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Require Clippy, portability, allocations and native differential execution
+        env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
+        run: node tools/support/compat/github/require-needs-success.ts
   coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -510,8 +613,9 @@ jobs:
   source-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 50
-    # Source coverage is a daily/full-run trend metric; fast checks stay on PRs and pushes.
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    # Keep daily and ordinary manual measurement; immutable release qualification
+    # retains all correctness jobs without repeating the instrumented trend run.
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !(inputs.release-qualification && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')))) }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
@@ -526,7 +630,6 @@ jobs:
         with: { toolchain: stable, components: llvm-tools-preview }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
-      - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
@@ -579,7 +682,6 @@ jobs:
         with: { toolchain: nightly, components: llvm-tools-preview }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
-      - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
@@ -699,6 +801,8 @@ jobs:
       - release-integration-catalog
     permissions:
       contents: read
+      pull-requests: read
+      actions: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -706,3 +810,50 @@ jobs:
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
         run: node tools/support/compat/github/require-needs-success.ts --check-report
+      - name: Re-select the current integration before the required final gate
+        id: final-candidate
+        if: ${{ github.event_name == 'merge_group' }}
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: node tools/support/compat/github/release-integration-event.ts
+      - name: Freshly verify the same exact qualification at the required final gate
+        if: ${{ github.event_name == 'merge_group' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT_INTEGRATION: ${{ steps.final-candidate.outputs.integration }}
+          CATALOG_INTEGRATION: ${{ needs.release-integration-catalog.outputs.integration }}
+          QUALIFICATION_JSON: ${{ needs.release-integration-catalog.outputs.qualification }}
+          VIZE_RELEASE_INTEGRATION_EVIDENCE: ${{ runner.temp }}/vize-release-integration-final/qualification-observations.jsonl
+        run: |
+          directory="$RUNNER_TEMP/vize-release-integration-final"
+          mkdir -p "$directory"
+          cp "$GITHUB_EVENT_PATH" "$directory/event.json"
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const selected = process.env.CURRENT_INTEGRATION ?? '';
+          const catalog = process.env.CATALOG_INTEGRATION ?? '';
+          const raw = process.env.QUALIFICATION_JSON ?? '';
+          const directory = `${process.env.RUNNER_TEMP}/vize-release-integration-final`;
+          fs.writeFileSync(`${directory}/selection.json`, JSON.stringify({ selected, catalog, candidate: process.env.GITHUB_SHA }));
+          fs.writeFileSync(`${directory}/qualification.json`, raw);
+          assert.equal(selected, catalog, 'catalog selection is absent or changed');
+          if (selected === '') {
+            assert.equal(raw, '', 'ordinary queue candidate cannot carry integration authority');
+          } else {
+            assert.match(selected, /^[1-9]\d*$/);
+            assert.ok(raw.length > 0 && Buffer.byteLength(raw) <= 16384, 'selected integration needs its bounded same-run qualification');
+            const receipt = JSON.parse(raw);
+            assert.ok(receipt && typeof receipt === 'object' && !Array.isArray(receipt));
+          }
+          NODE
+          if [ -n "$CURRENT_INTEGRATION" ]; then
+            node tools/support/release/qualify_check/integration-release.ts --verify < "$directory/qualification.json" > "$directory/final-qualification.json"
+          fi
+      - name: Retain the required final qualification observations
+        if: ${{ always() && github.event_name == 'merge_group' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-integration-final-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vize-release-integration-final/
+          if-no-files-found: error
+          retention-days: 30

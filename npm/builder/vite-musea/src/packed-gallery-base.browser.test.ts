@@ -12,6 +12,7 @@ import { createServer } from "vite";
 import type { MuseaVrtOptions } from "./types/plugin.ts";
 import {
   createPackedGalleryHttpObserver,
+  drainPackedGalleryHttp,
   type PackedGalleryHttpRecord,
 } from "./packed-gallery-http.ts";
 import type { VrtResult, VrtSummary } from "./vrt/types.ts";
@@ -183,19 +184,23 @@ void test(
                 .map((element) => element.getAttribute("src") ?? element.getAttribute("href"))
                 .filter((value): value is string => Boolean(value?.startsWith("/"))),
             );
-          assert.ok(assets.length >= 2);
-          assert.ok(assets.every((asset) => asset.startsWith(`${normalized}/assets/`)));
+          const galleryAssets = assets.filter((asset) => asset !== "/@vite/client");
+          assert.ok(galleryAssets.length >= 2);
+          assert.ok(galleryAssets.every((asset) => asset.startsWith(`${normalized}/assets/`)));
           for (const title of fixture.titles) {
+            await drainPackedGalleryHttp(pending);
             await page.locator(".art-item").filter({ hasText: title }).click();
             const preview = page.frameLocator(".variant-card iframe");
             await preview.getByRole("button", { name: title, exact: true }).waitFor();
             assert.equal(await preview.locator("museacomponent").count(), 0);
           }
+          await drainPackedGalleryHttp(pending);
           await page.locator(".art-item").filter({ hasText: "Left" }).click();
           await page
             .frameLocator(".variant-card iframe")
             .getByRole("button", { name: "Left", exact: true })
             .waitFor();
+          await drainPackedGalleryHttp(pending);
           await page.getByRole("button", { name: "VRT", exact: true }).click();
           const token = await page.evaluate(() => {
             const value = crypto.randomUUID();
@@ -259,12 +264,77 @@ void test(
             );
             observations.push({ phase, packet, pngSHA256: sha256(png) });
           }
-          await Promise.all(pending);
+          const beforeEdit = await readFile(arts[0], "utf8");
+          const changed = beforeEdit.replace("#0000ff", "#00ff00");
+          assert.notEqual(changed, beforeEdit);
+          await drainPackedGalleryHttp(pending);
+          const reloaded = page.waitForEvent("framenavigated", {
+            predicate: (frame) => frame === page.mainFrame(),
+            timeout: 15000,
+          });
+          await writeFile(arts[0], changed);
+          await reloaded;
+          await page.waitForFunction(
+            async (url) => {
+              const art = await (await fetch(url)).json();
+              return art.variants[0].template.includes("#00ff00");
+            },
+            `${origin}${normalized}/api/arts/${encodeURIComponent(arts[0])}`,
+          );
+          await drainPackedGalleryHttp(pending);
+          await page.locator(".art-item").filter({ hasText: "Left" }).click();
+          const updated = page.frameLocator(".variant-card iframe").getByRole("button", {
+            name: "Left",
+            exact: true,
+          });
+          await updated.waitFor();
+          assert.equal(
+            await updated.evaluate((element) => getComputedStyle(element).backgroundColor),
+            "rgb(0, 255, 0)",
+          );
+          assert.equal(
+            await page.evaluate(() => Reflect.get(window, "__packedGalleryDocument")),
+            undefined,
+          );
+          const scripts = await page
+            .locator("script[src]")
+            .evaluateAll((elements) => elements.map((element) => element.getAttribute("src")));
+          assert.equal(scripts.filter((source) => source === "/@vite/client").length, 1);
+          const green = await updated.screenshot();
+          await writeFile(path.join(caseOutput, "physical-edit.png"), green);
+          const pixels = PNG.sync.read(green);
+          let greenPixels = 0;
+          for (let index = 0; index < pixels.data.length; index += 4) {
+            if (
+              pixels.data[index] === 0 &&
+              pixels.data[index + 1] === 255 &&
+              pixels.data[index + 2] === 0 &&
+              pixels.data[index + 3] === 255
+            )
+              greenPixels++;
+          }
+          assert.ok(
+            greenPixels > 2000,
+            "the authored physical edit must reach the real packed preview",
+          );
+          observations.push({
+            phase: "physical-edit-reload",
+            source: arts[0],
+            before: beforeEdit,
+            after: changed,
+            beforeSha256: sha256(Buffer.from(beforeEdit)),
+            afterSha256: sha256(Buffer.from(changed)),
+            url: page.url(),
+            scripts,
+            greenPixels,
+            pngSHA256: sha256(green),
+          });
+          await drainPackedGalleryHttp(pending);
           assert.deepEqual(errors, []);
           assert.deepEqual(consoleErrors, []);
           assert.deepEqual(httpErrors, []);
           assert.ok(responses.length > 0);
-          for (const asset of assets) {
+          for (const asset of galleryAssets) {
             const physical = await readFile(
               path.join(path.dirname(index), asset.slice(normalized.length + 1)),
             );
@@ -285,7 +355,7 @@ void test(
         } finally {
           const evidence = [
             async () => {
-              for (const work of pending) await work;
+              await drainPackedGalleryHttp(pending);
             },
             () =>
               writeFile(
@@ -326,6 +396,9 @@ void test(
         }
         if (evidenceErrors.length)
           throw new AggregateError(evidenceErrors, "Packed gallery evidence failed");
+        assert.deepEqual(errors, []);
+        assert.deepEqual(consoleErrors, []);
+        assert.deepEqual(httpErrors, []);
       });
     }
   },

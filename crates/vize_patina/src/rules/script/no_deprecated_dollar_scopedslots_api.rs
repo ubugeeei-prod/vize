@@ -8,6 +8,7 @@
 //! exposed only non-scoped slots. Vue 3 unified the two: every slot is now a
 //! function, so `this.$scopedSlots` was removed and `this.$slots` should be
 //! used instead. This is an opt-in Vue 2 -> 3 migration rule.
+//! Template reads reuse canonical component references and authenticated bindings.
 //!
 //! ## Examples
 //!
@@ -25,7 +26,7 @@
 //! render($slots.default)
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, ScriptTemplateRule};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     ComputedMemberExpression, Expression, IdentifierReference, Program, StaticMemberExpression,
@@ -60,6 +61,10 @@ impl ScriptRule for NoDeprecatedDollarScopedSlotsApi {
         true
     }
 
+    fn template_check(&self) -> Option<&dyn ScriptTemplateRule> {
+        Some(self)
+    }
+
     #[inline]
     fn check_program<'a>(
         &self,
@@ -70,6 +75,37 @@ impl ScriptRule for NoDeprecatedDollarScopedSlotsApi {
     ) {
         let mut visitor = NoDeprecatedDollarScopedSlotsApiVisitor { offset, result };
         visitor.visit_program(program);
+    }
+}
+
+impl ScriptTemplateRule for NoDeprecatedDollarScopedSlotsApi {
+    fn check_template(
+        &self,
+        references: &vize_croquis::drawer::TemplateReferences,
+        component_bindings: &super::TemplateComponentBindings,
+        offset: u32,
+        result: &mut ScriptLintResult,
+    ) {
+        for reference in references.references() {
+            if reference.name != SCOPED_SLOTS
+                || reference.owner != vize_croquis::drawer::TemplateReferenceOwner::ComponentContext
+                || !component_bindings.can_report_component_reference(SCOPED_SLOTS)
+            {
+                continue;
+            }
+            let span = reference.span;
+            result.add_diagnostic(
+                LintDiagnostic::error(
+                    META.name,
+                    "`$scopedSlots` was removed in Vue 3",
+                    offset + span.start,
+                    offset + span.end,
+                )
+                .with_help(
+                    "Replace `$scopedSlots` with `$slots`. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists.",
+                ),
+            );
+        }
     }
 }
 

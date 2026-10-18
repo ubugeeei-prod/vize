@@ -15,6 +15,15 @@ import {
 import { assertBuiltSupport, cargoCommand, freezeSupportLock } from "./lsp_cargo.ts";
 import { assertAllLspPackets } from "./lsp_packets.ts";
 import { assertLspSource, sha256, targets } from "./lsp_source.ts";
+import {
+  atomicArguments,
+  atomicCaptureDirectory,
+  atomicCommandName,
+  atomicInputs,
+  atomicReceiptFile,
+  observeAtomicOriginal,
+  assertAtomicOriginalReceipt,
+} from "./lsp_atomic.ts";
 
 const validator = fileURLToPath(
   new URL(
@@ -66,6 +75,16 @@ export async function assertInstalledLsp(output: string) {
   assertBuiltSupport(
     fs.readFileSync(path.join(output, "cargo-test.stdout"), "utf8"),
     receipt.cargo.allowedBuildIds,
+  );
+  assertAtomicOriginalReceipt(
+    preparation.lsp,
+    source,
+    receipt.cli,
+    receipt.provider,
+    preparation.consumer,
+    output,
+    preparation.version,
+    receipt.cargo,
   );
   return receipt;
 }
@@ -156,6 +175,28 @@ async function run() {
     fs.readFileSync(path.join(output, "cargo-test.stdout"), "utf8"),
     cargo.allowedBuildIds,
   );
+  fs.writeFileSync(
+    path.join(output, "lsp-atomic-inputs.json"),
+    JSON.stringify(atomicInputs(preparation.lsp, cli, provider), null, 2) + "\n",
+    { flag: "wx" },
+  );
+  cargoCommand(
+    atomicArguments(preparation.lsp.adapter),
+    preparation.lsp.adapter,
+    { ...environment, VIZE_INLAY_HINT_CAPTURE: path.join(output, atomicCaptureDirectory) },
+    output,
+    atomicCommandName,
+  );
+  const atomicOriginal = observeAtomicOriginal(
+    preparation.lsp,
+    source,
+    cli,
+    provider,
+    consumer,
+    output,
+    version,
+    cargo,
+  );
   assert.equal(
     sha256(fs.readFileSync(path.join(preparation.lsp.adapter, "Cargo.lock"))),
     cargo.lockSha256,
@@ -176,6 +217,11 @@ async function run() {
     consumer,
     output,
     version,
+  );
+  fs.writeFileSync(
+    path.join(output, atomicReceiptFile),
+    JSON.stringify(atomicOriginal, null, 2) + "\n",
+    { flag: "wx" },
   );
   fs.writeFileSync(
     path.join(output, "lsp.json"),

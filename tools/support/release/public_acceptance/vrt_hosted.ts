@@ -13,8 +13,14 @@ import {
 import { buildHostedVrt, staticVrtHost } from "./vrt_host.ts";
 import { captureHostedCli, installedVrtBin, runVrtCli } from "./vrt_cli.ts";
 import { observeHostedAudit } from "./vrt_audit.ts";
+import type { VrtSecrets } from "./vrt_secrets.ts";
 
-export async function observeHostedVrt(browser: Browser, f: VrtFixture, e: Evidence) {
+export async function observeHostedVrt(
+  browser: Browser,
+  f: VrtFixture,
+  e: Evidence,
+  secrets: VrtSecrets,
+) {
   const firstBuild = await buildHostedVrt(f, e, "hosted-original", false);
   const host = await staticVrtHost(firstBuild.directory, e);
   const page = await browser.newPage().catch(async (error) => {
@@ -120,10 +126,17 @@ export async function observeHostedVrt(browser: Browser, f: VrtFixture, e: Evide
       await readFile(path.join(f.root, "cli-output/vrt-report.html")),
     );
     assert.deepEqual(await readFile(path.join(f.root, "cli-output/vrt-report.json")), final.json);
-    await observeHostedAudit(page, f, e, host, () => {
-      assert.deepEqual(errors, []);
-      assert.deepEqual(consoleErrors, []);
-    });
+    await observeHostedAudit(
+      page,
+      f,
+      e,
+      host,
+      () => {
+        assert.deepEqual(errors, []);
+        assert.deepEqual(consoleErrors, []);
+      },
+      secrets,
+    );
     assert.deepEqual(errors, []);
     assert.ok(
       host.requests.every(

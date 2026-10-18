@@ -6,11 +6,45 @@ use super::{
 use serde_json::Value;
 use std::{path::Path, process::Command};
 
+pub(super) fn parse_checks_output(
+    code: Option<i32>,
+    stdout: &[u8],
+    stderr: &[u8],
+) -> Result<(Value, bool), String> {
+    let refused = || {
+        format!(
+            "Could not read required PR checks (exit {code:?}):\n{}{}",
+            String::from_utf8_lossy(stdout),
+            String::from_utf8_lossy(stderr),
+        )
+    };
+    if !matches!(code, Some(0 | 8)) {
+        return Err(refused());
+    }
+    let checks: Value = serde_json::from_slice(stdout).map_err(|_| refused())?;
+    let rows = checks.as_array().ok_or_else(refused)?;
+    let mut pending = false;
+    for check in rows {
+        pr_contract::field(check, "/name")?;
+        match check.get("bucket").and_then(Value::as_str) {
+            Some("pending") => pending = true,
+            Some("pass" | "skipping") => {}
+            _ => return Err(refused()),
+        }
+    }
+    // gh documents exit 8 for pending checks. It must never authorize success
+    // using pass-only, empty or contradictory stdout from a failing command.
+    if code == Some(8) && (!pending || !String::from_utf8_lossy(stderr).trim().is_empty()) {
+        return Err(refused());
+    }
+    Ok((checks, pending))
+}
+
 fn pull_request_checks(
     candidate: &Candidate,
     root: &Path,
     required_only: bool,
-) -> Result<Value, String> {
+) -> Result<(Value, bool), String> {
     let number = candidate.number.to_string();
     let mut args = vec![
         "pr",
@@ -28,15 +62,11 @@ fn pull_request_checks(
         .current_dir(root)
         .output()
         .map_err(|e| e.to_string())?;
-    if result.status.success() {
-        return serde_json::from_slice(&result.stdout)
-            .map_err(|_| "Could not read PR checks".to_string());
-    }
     let stderr = String::from_utf8_lossy(&result.stderr);
-    if required_only && stderr.contains("no required checks reported") {
+    if !result.status.success() && required_only && stderr.contains("no required checks reported") {
         return pull_request_checks(candidate, root, false);
     }
-    Err(format!("Could not read required PR checks: {stderr}"))
+    parse_checks_output(result.status.code(), &result.stdout, &result.stderr)
 }
 
 fn main_required_names(repository: &str, root: &Path) -> Result<Vec<String>, String> {
@@ -65,7 +95,10 @@ fn main_required_names(repository: &str, root: &Path) -> Result<Vec<String>, Str
 }
 
 pub fn checks_pass(candidate: &Candidate, root: &Path) -> Result<bool, String> {
-    let checks = pull_request_checks(candidate, root, true)?;
+    let (checks, pending) = pull_request_checks(candidate, root, true)?;
+    if pending {
+        return Ok(false);
+    }
     let checks = checks.as_array().ok_or("Missing required PR checks")?;
     let names = main_required_names(&candidate.repository, root)?;
     let checks: Vec<Value> = checks

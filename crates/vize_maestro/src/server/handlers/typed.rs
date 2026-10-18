@@ -8,6 +8,71 @@ use tower_lsp::lsp_types::{
 };
 
 impl MaestroServer {
+    pub(super) fn local_hover_response(
+        &self,
+        params: &HoverParams,
+    ) -> Result<Option<Option<Hover>>> {
+        self.local_request(|| {
+            if !self.state.lsp_features().hover {
+                return Ok(Some(None));
+            }
+            let uri = &params.text_document_position_params.text_document.uri;
+            if crate::utils::is_jsx_path(uri.path()) {
+                return Ok(None);
+            }
+            let position = params.text_document_position_params.position;
+            let Some(content) = self.state.documents.text(uri) else {
+                return Ok(Some(None));
+            };
+            let Some(offset) = position_to_offset(&content, position.line, position.character)
+            else {
+                return Ok(Some(None));
+            };
+            let ctx = IdeContext::with_content(&self.state, uri, offset, content);
+            if !ctx.is_in_style() {
+                return Ok(None);
+            }
+            let mut response = HoverService::hover(&ctx);
+            if let Some(lint) = self.get_lint_hover_at_position(uri, position) {
+                response = Some(Self::merge_hover_with_lint(response, lint));
+            }
+            Ok(Some(response))
+        })
+    }
+
+    pub(super) fn local_completion_response(
+        &self,
+        params: &CompletionParams,
+    ) -> Result<Option<Option<CompletionResponse>>> {
+        self.local_request(|| {
+            if !self.state.lsp_features().completion {
+                return Ok(Some(None));
+            }
+            let request = &params.text_document_position;
+            let uri = &request.text_document.uri;
+            if crate::utils::is_jsx_path(uri.path()) {
+                return Ok(None);
+            }
+            let Some(content) = self.state.documents.text(uri) else {
+                return Ok(Some(None));
+            };
+            let position = request.position;
+            let Some(offset) = position_to_offset(&content, position.line, position.character)
+            else {
+                return Ok(Some(None));
+            };
+            let ctx = IdeContext::completion_with_content(&self.state, uri, offset, content);
+            if ctx.is_in_style() {
+                return Ok(Some(CompletionService::complete(&ctx)));
+            }
+            #[cfg(feature = "native")]
+            if let Some(response) = CompletionService::complete_static_object_member(&ctx) {
+                return Ok(Some(Some(response)));
+            }
+            Ok(None)
+        })
+    }
+
     pub(super) async fn hover_request(&self, params: HoverParams) -> Result<Option<Hover>> {
         if !self.state.lsp_features().hover {
             return Ok(None);

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
-import { repoRoot } from "./_helpers/moonbit.ts";
+import { repoRoot } from "./_helpers/tool-commands.ts";
 import { CATALOGUE_SOURCES } from "../../docs/scripts/materialize-content.ts";
 import { defaultNavigationRenderRoutes } from "../../docs/scripts/navigation-render-routes.ts";
 import { createRenderJobs } from "../../docs/scripts/navigation-render-concurrency.ts";
@@ -17,7 +17,7 @@ const expected = [
   "vue/v-on-style",
   "vue/v-slot-style",
   "vue/warn-custom-directive",
-].toSorted();
+].sort();
 const read = (path: string) => readFileSync(join(repoRoot, path), "utf8");
 const blocks = (text: string) =>
   [...text.matchAll(/^```(\w+)[^\n]*\n([\s\S]*?)^```[^\n]*$/gm)].map((match) => [
@@ -47,7 +47,7 @@ await test("Japanese directive conventions retain six whole original packets and
       .replace(/^### /, "# ")
       .replaceAll(`<span id="${id}-bad"></span>\n\n`, "")
       .replaceAll(`<span id="${id}-good"></span>\n\n`, "")
-      .replace(/^\*\*(設定（Vite\+）|悪い|良い)\*\*$/gm, "## $1")
+      .replace(/^\*\*(設定（Vite\+）|悪い|良い|ハンドラーが重なる条件)\*\*$/gm, "## $1")
       .replace(/^(```(?:ts|sh|vue)) annotate="(?:add|remove):\d+(?:,\d+)*"$/gm, "$1")
       .replaceAll(`](#${id}-bad)`, "](#悪い)")
       .replaceAll(`](#${id}-good)`, "](#良い)")

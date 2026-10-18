@@ -11,6 +11,8 @@ import {
   verifyArchiveReceipt,
 } from "../../tools/support/compat/github/rust-test-archive.mjs";
 
+import { selectArchive } from "../../tools/support/compat/github/rust-archive-download.ts";
+
 // Only the merge queue still transfers a receipt-bound archive to its shards.
 for (const job of ["merge-rust-source"]) {
   void test(`${job} failed-only retry selects its completed producer's exact archive`, async () => {
@@ -20,9 +22,24 @@ for (const job of ["merge-rust-source"]) {
     const upload = workflow.jobs[job].steps.find((step) =>
       step.uses?.startsWith("actions/upload-artifact@"),
     );
-    const download = workflow.jobs["pr-rust-shard"].steps.find((step) =>
+    assert.ok(upload);
+    const consumer = workflow.jobs["pr-rust-shard"];
+    assert.ok(consumer);
+    const selector = consumer.steps.find((step) => step.id === "rust-archive");
+    assert.ok(selector);
+    assert.equal(selector.run, "node tools/support/compat/github/rust-archive-download.ts select");
+    const downloads = consumer.steps.filter((step) =>
       step.uses?.startsWith("actions/download-artifact@"),
     );
+    assert.equal(downloads.length, 2);
+    for (const download of downloads) {
+      assert.deepEqual(download.with, {
+        "artifact-ids": "${{ steps.rust-archive.outputs.id }}",
+        path: ".artifacts/rust-test-archive",
+        "digest-mismatch": "error",
+      });
+      assert.ok(consumer.steps.indexOf(selector) < consumer.steps.indexOf(download));
+    }
     assert.equal(upload.with.overwrite, true);
     const name = (template, context) =>
       template
@@ -61,29 +78,63 @@ for (const job of ["merge-rust-source"]) {
 
       // Retry the failed consumer only: there is deliberately no attempt-2 producer.
       const retry = { ...producer, attempt: "2" };
-      const selected = join(cwd, "artifacts", name(download.with.name, retry));
+      const artifact = {
+        id: 17,
+        name: name(upload.with.name, producer),
+        expired: false,
+        digest: `sha256:${first.archiveSha256}`,
+        workflow_run: { id: Number(producer.runId), head_sha: producer.sha },
+      };
+      const select = (context) =>
+        selectArchive([artifact], {
+          run: context.runId,
+          sha: context.sha,
+          repository: "owner/repo",
+        });
+      const directories = new Map([[artifact.id, directory]]);
+      assert.deepEqual(select(retry), { id: artifact.id, digest: artifact.digest });
+      const selected = directories.get(select(retry).id);
+      assert.ok(selected, "the failed-only consumer restores the existing producer artifact ID");
       await verifyArchiveReceipt(
         JSON.parse(readFileSync(join(selected, "receipt.json"), "utf8")),
         join(selected, "tests.tar.zst"),
         context,
       );
       for (const changed of [{ runId: "36308996673" }, { sha: "f".repeat(40) }]) {
-        const unrelated = join(
-          cwd,
-          "artifacts",
-          name(download.with.name, { ...retry, ...changed }),
-        );
-        assert.throws(() => readFileSync(join(unrelated, "receipt.json")), { code: "ENOENT" });
+        assert.throws(() => select({ ...retry, ...changed }), /Exactly one immutable Rust archive/);
       }
 
       // A completed full rerun replaces that same exact artifact and receipt together.
       assert.equal(
         name(upload.with.name, { ...producer, attempt: "3" }),
-        name(download.with.name, retry),
+        name(upload.with.name, retry),
       );
       writeFileSync(archive, "full rerun archive bytes");
       await assert.rejects(verifyArchiveReceipt(first, archive, context), /archiveSha256 mismatch/);
-      writeFileSync(receiptPath, JSON.stringify(await createArchiveReceipt(archive, context)));
+      const replacement = await createArchiveReceipt(archive, context);
+      writeFileSync(receiptPath, JSON.stringify(replacement));
+      const replacementArtifact = {
+        ...artifact,
+        id: 18,
+        digest: `sha256:${replacement.archiveSha256}`,
+      };
+      assert.deepEqual(
+        selectArchive([replacementArtifact], {
+          run: retry.runId,
+          sha: retry.sha,
+          repository: "owner/repo",
+        }),
+        { id: 18, digest: replacementArtifact.digest },
+      );
+      assert.throws(
+        () =>
+          selectArchive([artifact, replacementArtifact], {
+            run: retry.runId,
+            sha: retry.sha,
+            repository: "owner/repo",
+          }),
+        /Exactly one immutable Rust archive/,
+      );
       await verifyArchiveReceipt(JSON.parse(readFileSync(receiptPath, "utf8")), archive, context);
       writeFileSync(join(cwd, "fixture"), "different source\n");
       git("commit", "-qam", "changed source");

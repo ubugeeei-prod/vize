@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
   aggregateCheckNeedsResults,
@@ -29,19 +30,41 @@ const project = join(root, "tsconfig.ci-gates.json");
 const ledger = readFileSync(new URL("./fixtures/ci-gates/packets.json", import.meta.url), "utf8");
 const cases = JSON.parse(ledger) as Case[];
 const artifact = join(root, "target/typescript-ci-gates", `node-${process.versions.node}`);
+// #9357 retired WIT; the original ledger remains a whole historical witness.
+const currentCheckPackets = new Map<string, Packet>([
+  [
+    "check-pr-queue-only-skip",
+    {
+      result: {
+        exitCode: 1,
+        message:
+          "test-report gate: 1 of 3 needed jobs did not succeed.\n  - wit-contracts: skipped\ntest-report is a required status check, so it must not pass while a job it aggregates is red.\nOnly these jobs may skip on a pull request: nuxt-module-qualification.",
+      },
+    },
+  ],
+  [
+    "check-missing-wit",
+    {
+      error: {
+        name: "Error",
+        message: "Check needs context is missing nuxt-module-qualification",
+      },
+    },
+  ],
+]);
 
 function preserve(name: string, value: unknown): void {
   mkdirSync(artifact, { recursive: true });
   writeFileSync(join(artifact, `${name}.json`), JSON.stringify(value, null, 2));
 }
 
-function observe(row: Case): Packet {
+function observe(row: Case, gate = { aggregateNeedsResults, aggregateCheckNeedsResults }): Packet {
   try {
     const result =
       row.mode === "needs"
-        ? aggregateNeedsResults(row.needs, row.skippable)
+        ? gate.aggregateNeedsResults(row.needs, row.skippable)
         : row.mode === "check"
-          ? aggregateCheckNeedsResults(row.needs, row.event)
+          ? gate.aggregateCheckNeedsResults(row.needs, row.event)
           : requireRustTier(row.event, row.runRust, row.needs);
     return { result };
   } catch (error) {
@@ -51,6 +74,11 @@ function observe(row: Case): Packet {
 }
 
 void test("CI gates retain independently authored whole result and refusal packets", () => {
+  assert.equal(
+    createHash("sha256").update(ledger).digest("hex"),
+    "32356f6238736b58724b209e5496bcbc068522b90ee7703518525e548a83bfee",
+    "the complete archived ledger must remain unchanged",
+  );
   const nonJsonCases: Array<Case & { inputRecipe: string }> = [
     {
       name: "check-primitive-symbol-preserves-template-refusal",
@@ -73,14 +101,89 @@ void test("CI gates retain independently authored whole result and refusal packe
       },
     },
   ];
-  const observations = [...cases, ...nonJsonCases].map((row) => ({ ...row, actual: observe(row) }));
+  const observations = [...cases, ...nonJsonCases].map((row) => ({
+    ...row,
+    currentExpected: currentCheckPackets.get(row.name) ?? row.expected,
+    actual: observe(row),
+  }));
   preserve("whole-packets", {
     node: process.version,
     executable: process.execPath,
     ledger,
     observations,
   });
-  for (const row of observations) assert.deepEqual(row.actual, row.expected, row.name);
+  for (const row of observations) {
+    if (currentCheckPackets.has(row.name))
+      assert.notDeepEqual(
+        row.actual,
+        row.expected,
+        `${row.name}: refuse the obsolete WIT contract`,
+      );
+    assert.deepEqual(row.actual, row.currentExpected, row.name);
+  }
+});
+
+void test("the sole retired WIT clause replays every complete archived Check packet", async () => {
+  const source = readFileSync(
+    join(root, "tools/support/compat/github/require-needs-success.ts"),
+    "utf8",
+  );
+  const currentClause = 'const queueOnly = ["nuxt-module-qualification"];';
+  const previousClause = 'const queueOnly = ["wit-contracts", "nuxt-module-qualification"];';
+  assert.equal(source.split(currentClause).length, 2, "one exact retirement clause");
+  const historical = source.replace(currentClause, previousClause);
+  assert.equal(
+    createHash("sha256").update(historical).digest("hex"),
+    "2e8d99c057b2a184c16f4af4ee9eacfd8425afeee473bab2f19ccb0cd80456f0",
+    "whole gate source before 07f5645623a8d26d8909a9a53f8636682ce2192c",
+  );
+  const directory = mkdtempSync(join(tmpdir(), "vize-ci-gate-history-"));
+  try {
+    const original = join(directory, "original-gate.ts");
+    writeFileSync(original, historical);
+    const gate: Pick<
+      typeof import("../../tools/support/compat/github/require-needs-success.ts"),
+      "aggregateNeedsResults" | "aggregateCheckNeedsResults"
+    > = await import(pathToFileURL(original).href);
+    const observations = cases
+      .filter((row) => row.mode === "check")
+      .map((row) => ({ ...row, actual: observe(row, gate) }));
+    preserve("pre-wit-retirement-whole-packets", { historical, observations });
+    assert.equal(observations.length, 6, "all original Check cases must execute");
+    for (const row of observations) assert.deepEqual(row.actual, row.expected, row.name);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+void test("only Nuxt may skip outside the queue and no retired WIT result is required", () => {
+  const needs = {
+    "pr-source-plan": { result: "success" },
+    "nuxt-module-qualification": { result: "skipped" },
+  };
+  const green: GateReport = {
+    exitCode: 0,
+    message:
+      "test-report gate: all 2 needed jobs are accounted for. 1 succeeded; 1 skipped on a pull request by design: nuxt-module-qualification.",
+  };
+  for (const event of ["pull_request", "push", "schedule", "workflow_dispatch"])
+    assert.deepEqual(aggregateCheckNeedsResults(needs, event), green, event);
+  assert.deepEqual(aggregateCheckNeedsResults(needs, "merge_group"), {
+    exitCode: 1,
+    message:
+      "test-report gate: 1 of 2 needed jobs did not succeed.\n  - nuxt-module-qualification: skipped\ntest-report is a required status check, so it must not pass while a job it aggregates is red.\nOnly these jobs may skip on a pull request: .",
+  });
+  assert.deepEqual(
+    aggregateCheckNeedsResults(
+      { ...needs, "nuxt-module-qualification": { result: "success" } },
+      "merge_group",
+    ),
+    {
+      exitCode: 0,
+      message:
+        "test-report gate: all 2 needed jobs are accounted for. 2 succeeded; 0 skipped on a pull request by design.",
+    },
+  );
 });
 
 void test("real Node directly executes both erasable TypeScript gate entrypoints", () => {

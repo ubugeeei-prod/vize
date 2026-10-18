@@ -24,6 +24,7 @@ export const navigationRenderRoutes = [
     `${locale}/guide/testing`,
     `${locale}/guide/jsx-babel-compat`,
   ]),
+  "/ja/architecture/performance",
   "/zh-CN/getting-started",
   "/pt-BR/getting-started",
   "/fr/getting-started",

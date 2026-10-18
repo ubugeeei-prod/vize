@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { repoRoot } from "../_helpers/moonbit.ts";
+import { repoRoot } from "../_helpers/tool-commands.ts";
 import { writeFakeCommand } from "../support/fake-command.ts";
 import { dependencyCommands, dependencyShell } from "../support/release-operator-dependency-law.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
@@ -45,6 +45,7 @@ test("hosted operator keeps user authority on protected main and does not deadlo
     "patch",
     "resume",
     "retire",
+    "retire-before-release",
     "recover-consumer",
   ]);
   assert.equal(workflow.on.workflow_dispatch.inputs.operation.default, "start");
@@ -52,6 +53,7 @@ test("hosted operator keeps user authority on protected main and does not deadlo
     ["source_head", "RELEASE_SOURCE_HEAD"],
     ["source_tag", "RELEASE_SOURCE_TAG"],
     ["release_run", "RELEASE_RUN"],
+    ["qualification_run", "RELEASE_QUALIFICATION_RUN"],
     ["operator_run", "RELEASE_ORIGINAL_OPERATOR_RUN"],
     ["consumer_recovery_run", "RELEASE_CONSUMER_RECOVERY_RUN"],
   ]) {
@@ -67,6 +69,12 @@ test("hosted operator keeps user authority on protected main and does not deadlo
     false,
   );
   assert.equal(dependencies.run.trim(), "vp install --frozen-lockfile");
+  const contracts = parse(readRepoFile(".github", "workflows", "release-preflight-contracts.yml"));
+  assert.ok(contracts.on.pull_request.paths.includes(".github/workflows/release-operator.yml"));
+  assert.equal(
+    contracts.jobs.contracts.steps.at(-1).run,
+    "node --test tests/tooling/release/release-pr.test.ts tests/tooling/release/retirement-qualification.test.ts tests/tooling/release/release-stable-operator.test.ts",
+  );
 });
 
 test("actual pinned starter refuses stale cuts before mutation and installs the requested isolated frozen graph", () => {
@@ -217,7 +225,13 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
     role = "maintain",
     token = "test-user-token",
     triggeringActor = "maintainer",
-    retirement: { head?: string; tag?: string; run?: string; entry?: string } = {},
+    retirement: {
+      head?: string;
+      tag?: string;
+      run?: string;
+      entry?: string;
+      qualification?: string;
+    } = {},
   ) =>
     spawnSync("bash", ["-c", invocation.run], {
       cwd: root,
@@ -235,6 +249,7 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
         RELEASE_SOURCE_HEAD: retirement.head ?? "",
         RELEASE_SOURCE_TAG: retirement.tag ?? "",
         RELEASE_RUN: retirement.run ?? "",
+        RELEASE_QUALIFICATION_RUN: retirement.qualification ?? "",
         RELEASE_ORIGINAL_OPERATOR_RUN: retirement.entry ?? "",
         RELEASE_CONSUMER_RECOVERY_RUN: "",
         TEST_OPERATOR_LOGIN: login,
@@ -339,17 +354,75 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
         assert.equal(fs.existsSync(capture), false);
       }
     }
+    const preRelease = { ...retirement, run: "", qualification: "45" };
+    const retireBeforeRelease = (source = "42", fields = preRelease) =>
+      invoke("retire-before-release", source, undefined, undefined, undefined, undefined, fields);
+    const acceptedQ = retireBeforeRelease();
+    assert.equal(acceptedQ.status, 0, acceptedQ.stderr);
+    assert.deepEqual(JSON.parse(fs.readFileSync(capture, "utf8")), [
+      "rust-script",
+      "tools/commands/release/pr.rs",
+      "retire-before-release",
+      "42",
+      preRelease.head,
+      preRelease.tag,
+      preRelease.qualification,
+      preRelease.entry,
+    ]);
+    fs.rmSync(capture);
+    const refusedQ = [
+      ...["", "0", "-1", "042", "42; touch injected"].map((source) => retireBeforeRelease(source)),
+      ...["", "0", "-1", "045", "45; touch injected", "45\n"].map((qualification) =>
+        retireBeforeRelease("42", { ...preRelease, qualification }),
+      ),
+      ...["", "0", "-1", "044", "44; touch injected"].map((entry) =>
+        retireBeforeRelease("42", { ...preRelease, entry }),
+      ),
+      ...["", "main", "A".repeat(40), "a".repeat(39), "a".repeat(41), `${preRelease.head}\n`].map(
+        (head) => retireBeforeRelease("42", { ...preRelease, head }),
+      ),
+      ...["", "v1.440.0", "v0.0.0", "v0.0440.0", "v0.440.1", "v0.440.0-rc.1", "v0.440.0\n"].map(
+        (tag) => retireBeforeRelease("42", { ...preRelease, tag }),
+      ),
+      ...["43", "0", "43; touch injected"].map((run) =>
+        retireBeforeRelease("42", { ...preRelease, run }),
+      ),
+      invoke(
+        "retire-before-release",
+        "42",
+        "maintainer",
+        "write",
+        undefined,
+        undefined,
+        preRelease,
+      ),
+      invoke("retire-before-release", "42", "maintainer", "admin", undefined, "other", preRelease),
+    ];
+    for (const result of refusedQ) {
+      assert.notEqual(result.status, 0, `${result.stdout}\n${result.stderr}`);
+      assert.equal(fs.existsSync(capture), false);
+      assert.equal(fs.existsSync(path.join(root, "injected")), false);
+    }
+    for (const operation of ["start", "patch", "resume", "retire", "recover-consumer"]) {
+      const result = invoke(operation, "42", undefined, undefined, undefined, undefined, {
+        ...retirement,
+        qualification: preRelease.qualification,
+      });
+      assert.notEqual(result.status, 0, operation);
+      assert.match(result.stdout, /Only retire-before-release accepts a qualification run/);
+      assert.equal(fs.existsSync(capture), false);
+    }
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
-test("new publication runs wait for full Check outside the bounded verify-only preflight", () => {
+test("new release builds overlap Q while the read-only preflight retains the final qualification gate", () => {
   const runs = readRepoFile("tools", "support", "release", "pr_pin_runs.rs");
   const watcher = readRepoFile("tools", "support", "release", "pr_pin_watch.rs");
   const shared = readRepoFile("tools", "support", "release", "pr_ci.rs");
   const existing = runs.indexOf("if let Some(id) = find()?");
-  const qualify = runs.indexOf("pr_ci::qualify_check(");
+  const qualify = runs.indexOf("pr_ci::start_check(");
   const authenticate = runs.indexOf("let current = super::source(");
   const recheckRun = runs.indexOf("if let Some(id) = find()?", existing + 1);
   const dispatch = runs.indexOf('"workflow",');
@@ -366,8 +439,8 @@ test("new publication runs wait for full Check outside the bounded verify-only p
   assert.match(child, /&candidate\.branch/);
   assert.match(child, /&candidate\.head/);
   assert.match(child, /&source\.cut/);
-  assert.match(shared, /pr_budget::child_command\(&mut qualification, budget\)/);
-  assert.match(shared, /if !status\.success\(\)/);
+  assert.match(shared, /pr_budget::child_command\(&mut command, budget\)/);
+  assert.match(shared, /if !output\.status\.success\(\)/);
   assert.match(child, /operator\.verify\(\)\?/);
   const final = runs.slice(authenticate, dispatch);
   assert.match(final, /current\.cut != source\.cut/);

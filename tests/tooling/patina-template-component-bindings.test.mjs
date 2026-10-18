@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
+import { loadFrozenTemplateCompiler } from "./support/patina-template-provider.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const fixture = JSON.parse(
@@ -23,7 +24,6 @@ const requireProvider = createRequire(
 const requireParser = createRequire(
   process.env.VIZE_LEGACY_API_SCRIPT_PARSER_MANIFEST ?? packageManifest,
 );
-const requireVue = createRequire(process.env.VIZE_LEGACY_API_VUE_MANIFEST ?? packageManifest);
 
 function compilerPacket(compiler, source) {
   const diagnostic = (error) =>
@@ -104,16 +104,11 @@ await test("component-owned reserved spellings retain complete pinned compiler a
   ]) {
     assert.equal(hash(fs.readFileSync(path.join(directory, source.path))), source.sha256);
   }
-  assert.equal(requireVue("vue/package.json").version, fixture.compilerProvider.vue);
-  assert.equal(
-    requireVue("@vue/compiler-sfc/package.json").version,
-    fixture.compilerProvider.compiler,
+  const { compiler } = loadFrozenTemplateCompiler(
+    "template-component-bindings.json",
+    fixture.compilerProvider,
+    "sfc",
   );
-  for (const source of fixture.compilerProvider.sources) {
-    const directory = path.dirname(requireVue.resolve(`${source.packageName}/package.json`));
-    assert.equal(hash(fs.readFileSync(path.join(directory, source.path))), source.sha256);
-  }
-  const compiler = requireVue("@vue/compiler-sfc");
   const { Linter } = requireProvider("eslint");
   const linter = new Linter();
   const config = {

@@ -6,7 +6,7 @@ import { test } from "node:test";
 
 const repoRoot = path.resolve(import.meta.dirname, "..", "..");
 
-test("the Rust runner counts the same ignore-filtered files as vize lint", () => {
+test("the TypeScript runner counts the same ignore-filtered files as vize lint", () => {
   fs.mkdirSync(path.join(repoRoot, "target"), { recursive: true });
   const fixtureDir = fs.mkdtempSync(path.join(repoRoot, "target", "lint-ignore-fixture-"));
   const outputDir = fs.mkdtempSync(path.join(repoRoot, "target", "lint-ignore-report-"));
@@ -49,9 +49,9 @@ test("the Rust runner counts the same ignore-filtered files as vize lint", () =>
     );
 
     const result = spawnSync(
-      "rust-script",
+      process.execPath,
       [
-        "tools/commands/fixtures/lint-divergence-report.rs",
+        "tools/commands/fixtures/lint-divergence-report.ts",
         "--registry",
         registryPath,
         "--output-dir",
@@ -79,7 +79,7 @@ test("the Rust runner counts the same ignore-filtered files as vize lint", () =>
   }
 });
 
-test("the Rust runner pairs prefixed unused-component location divergences", () => {
+test("the TypeScript runner pairs prefixed unused-component location divergences", () => {
   fs.mkdirSync(path.join(repoRoot, "target"), { recursive: true });
   const fixtureDir = fs.mkdtempSync(path.join(repoRoot, "target", "lint-unused-fixture-"));
   const outputDir = fs.mkdtempSync(path.join(repoRoot, "target", "lint-unused-report-"));
@@ -147,9 +147,9 @@ test("the Rust runner pairs prefixed unused-component location divergences", () 
     );
 
     const result = spawnSync(
-      "rust-script",
+      process.execPath,
       [
-        "tools/commands/fixtures/lint-divergence-report.rs",
+        "tools/commands/fixtures/lint-divergence-report.ts",
         "--registry",
         registryPath,
         "--output-dir",
@@ -184,7 +184,7 @@ test("the Rust runner pairs prefixed unused-component location divergences", () 
   }
 });
 
-test("the Rust runner keeps embedded brackets in unused-component messages", () => {
+test("the TypeScript runner keeps embedded brackets in unused-component messages", () => {
   fs.mkdirSync(path.join(repoRoot, "target"), { recursive: true });
   const fixtureDir = fs.mkdtempSync(path.join(repoRoot, "target", "lint-unused-bracket-fixture-"));
   const outputDir = fs.mkdtempSync(path.join(repoRoot, "target", "lint-unused-bracket-report-"));
@@ -244,9 +244,9 @@ test("the Rust runner keeps embedded brackets in unused-component messages", () 
     );
 
     const result = spawnSync(
-      "rust-script",
+      process.execPath,
       [
-        "tools/commands/fixtures/lint-divergence-report.rs",
+        "tools/commands/fixtures/lint-divergence-report.ts",
         "--registry",
         registryPath,
         "--output-dir",

@@ -2,6 +2,26 @@
 
 Tracking issue: [#8335](https://github.com/ubugeeei-prod/vize/issues/8335).
 
+> **Current behavior (2026-10-17):** the operator uses Vite+, Node, Rust 1.99.1
+> and rust-script, then installs the frozen JavaScript dependency graph. MoonBit
+> tooling and registry preparation have been removed. The exact frozen H must
+> pass full `Check` qualification (seven full-source jobs plus twelve crate semver
+> checks) before Release starts. Fuzz, Miri, Real Project Matrix and Docs build
+> run on their own schedules or manual dispatches. The operator checks the source
+> PR's required statuses before requesting the metadata PR's squash merge through
+> the GitHub API. GitHub applies the repository's existing merge rules; the runner
+> verifies actual signed delivery and catalog identity. It has no independent
+> protected full-workflow release wait.
+>
+> Current authorities: [operator workflow](https://github.com/ubugeeei-prod/vize/blob/55f9b9b8706f780a6fe60e2d0144cdf2248fc089/.github/workflows/release-operator.yml),
+> [source qualification](https://github.com/ubugeeei-prod/vize/blob/55f9b9b8706f780a6fe60e2d0144cdf2248fc089/tools/support/release/pr_pin_runs.rs),
+> [required Check jobs](https://github.com/ubugeeei-prod/vize/blob/55f9b9b8706f780a6fe60e2d0144cdf2248fc089/tools/support/compat/github/release-preflight-evidence.mjs),
+> [metadata admission](https://github.com/ubugeeei-prod/vize/blob/55f9b9b8706f780a6fe60e2d0144cdf2248fc089/tools/support/release/pr_pin_watch.rs), and
+> [protected workflow selection](https://github.com/ubugeeei-prod/vize/blob/55f9b9b8706f780a6fe60e2d0144cdf2248fc089/tools/support/release/pr_pin_gates.rs).
+
+The following records the operator's introduction on 2026-10-09. Its historical
+setup and gate descriptions are superseded by the current behavior above.
+
 Third-party reports #8328 and #8329 require successful publication after their
 actual protected merges. The local environment cannot resolve the genuine Moon
 registry or perform GitHub operations from the official command's children.

@@ -10,6 +10,7 @@ import {
 } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
 
 import { runLintDivergenceReport } from "../../tools/support/compat/fixtures/lint-divergence-report.mjs";
+import { baselineScript } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 
@@ -70,10 +71,10 @@ function fixture() {
   };
 }
 
-function rust(args: string[]) {
+function report(args: string[]) {
   const result = spawnSync(
-    "rust-script",
-    ["tools/commands/fixtures/lint-divergence-report.rs", ...args],
+    process.execPath,
+    ["tools/commands/fixtures/lint-divergence-report.ts", ...args],
     {
       cwd: root,
       encoding: "utf8",
@@ -89,7 +90,7 @@ test("both real reporters enforce an explicitly expected zero-Vue corpus", async
   try {
     fs.writeFileSync(path.join(input.directory, "Unrelated.js"), "export const =\n");
     const args = input.writeRegistry(0);
-    const measured = rust(args);
+    const measured = report(args);
     assert.equal(measured.status, 0, `${measured.stdout}\n${measured.stderr}`);
     const artifactPath = path.join(input.directory, "report", "zero-vue-lint-divergence.json");
     const actual = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
@@ -123,7 +124,7 @@ test("neither reporter grants empty-input authority without the explicit zero ex
     const input = fixture();
     try {
       const args = input.writeRegistry(expected);
-      const measured = rust(args);
+      const measured = report(args);
       assert.equal(measured.status, 1, `${measured.stdout}\n${measured.stderr}`);
       assert.match(measured.stderr, /zero-vue matched no Vue files/u);
       await assert.rejects(runLintDivergenceReport(args), /zero-vue matched no Vue files/u);
@@ -143,7 +144,7 @@ test("an expected zero-Vue fixture containing a Vue input fails before either li
   try {
     fs.writeFileSync(path.join(input.directory, "Unexpected.vue"), "<template><p/></template>\n");
     const args = input.writeRegistry(0);
-    const measured = rust(args);
+    const measured = report(args);
     assert.equal(measured.status, 1, `${measured.stdout}\n${measured.stderr}`);
     assert.match(measured.stderr, /zero-vue matched 1 Vue files, expected 0/u);
     await assert.rejects(
@@ -164,7 +165,7 @@ test("a nonempty Vue surface still enforces its actual mapped diagnostic budget"
       '<template><p v-html="html"/></template>\n',
     );
     const args = input.writeRegistry(1);
-    const measured = rust(args);
+    const measured = report(args);
     assert.equal(measured.status, 1, `${measured.stdout}\n${measured.stderr}`);
     assert.match(measured.stderr, /Lint divergence budget breached for zero-vue/u);
     const artifactPath = path.join(input.directory, "report", "zero-vue-lint-divergence.json");
@@ -190,28 +191,30 @@ test("a nonempty Vue surface still enforces its actual mapped diagnostic budget"
 test("both actual ESLint entry points validate mapped rules without linting an empty corpus", async () => {
   const input = fixture();
   try {
-    const source = fs.readFileSync(
-      path.join(root, "tools/commands/fixtures/lint-divergence-report.rs"),
-      "utf8",
+    assert.ok(
+      baselineScript,
+      "the actual TypeScript runner's retained ESLint entry point must exist",
     );
-    const script = source.match(/let script = r#"([\s\S]*?)"#;/u)?.[1];
-    assert.ok(script, "the actual Rust runner's retained ESLint entry point must exist");
     const runtime = resolveBaselineRuntime();
     for (const rules of [
       { "vue/no-such-mapped-rule": "warn" },
       { "vue/no-v-html": ["warn", { invalidOption: true }] },
     ]) {
       await assert.rejects(runBaseline(runtime, input.directory, [], rules), /Key "rules"/u);
-      const measured = spawnSync(process.execPath, ["--input-type=module", "--eval", script], {
-        cwd: root,
-        encoding: "utf8",
-        input: JSON.stringify({
-          benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),
-          cwd: input.directory,
-          files: [],
-          rules,
-        }),
-      });
+      const measured = spawnSync(
+        process.execPath,
+        ["--input-type=module", "--eval", baselineScript],
+        {
+          cwd: root,
+          encoding: "utf8",
+          input: JSON.stringify({
+            benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),
+            cwd: input.directory,
+            files: [],
+            rules,
+          }),
+        },
+      );
       assert.equal(measured.error, undefined, measured.error?.message);
       assert.equal(measured.status, 1, `${measured.stdout}\n${measured.stderr}`);
       assert.match(measured.stderr, /Key "rules"/u);

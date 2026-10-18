@@ -4,6 +4,7 @@
 //! walks as separate L1 children) wrap in
 //! `_createElementBlock(_Fragment, …, 64 /* STABLE_FRAGMENT */)`.
 
+use vize_l0::PatchFlags;
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{InterpolationOp, Op, Region};
 
@@ -139,6 +140,8 @@ fn emit_fragment(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError
     // leading and trailing runs are ignorable; an internal space is a
     // text VNode, matching the legacy root fragment.
     let bounds = meaningful_bounds(root);
+    let mut non_comment_children = 0usize;
+    let mut compound_text = false;
     for (index, op) in root.ops.iter().enumerate() {
         if super::annotations::skip(cx, op) {
             continue;
@@ -153,11 +156,22 @@ fn emit_fragment(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError
             let _id = cx.walk.mint();
             continue;
         }
+        if !matches!(op, Op::Comment(_)) {
+            // Compound text emits several sibling values, not a single root.
+            non_comment_children += 1;
+            compound_text |= is_compound(op);
+        }
         emit_units(cx, op, &mut first)?;
     }
     cx.buf.deindent();
     cx.buf.newline();
-    cx.buf.push("], 64 /* STABLE_FRAGMENT */))");
+    let mut flags = PatchFlags::STABLE_FRAGMENT;
+    if non_comment_children == 1 && !compound_text {
+        flags |= PatchFlags::DEV_ROOT_FRAGMENT;
+    }
+    cx.buf.push("]");
+    super::flag::emit_patch_flag(cx, flags.bits());
+    cx.buf.push("))");
     Ok(())
 }
 

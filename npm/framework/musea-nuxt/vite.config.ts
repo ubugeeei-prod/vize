@@ -11,7 +11,11 @@ export default defineConfig({
     ignorePatterns: ["dist/**"],
   },
   pack: {
-    entry: ["src/index.ts"],
+    // One graph keeps direct exports and virtual modules on the same mock context.
+    entry: {
+      index: "src/index.ts",
+      "auto-imports": "src/auto-imports.ts",
+    },
     format: "esm",
     dts: true,
     clean: true,

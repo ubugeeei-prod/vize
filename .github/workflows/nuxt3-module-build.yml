@@ -98,7 +98,6 @@ jobs:
           run-install: false
       - name: Install workspace tooling
         run: vp install --frozen-lockfile --prefer-offline
-      - uses: ./.github/actions/setup-moonbit
       - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
         with:
           toolchain: "1.99.1"

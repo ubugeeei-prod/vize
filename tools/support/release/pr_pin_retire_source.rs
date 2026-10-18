@@ -123,14 +123,25 @@ fn operators(guards: &Value, source: &Source, identity: &Value) -> Result<(), St
     Ok(())
 }
 
-fn failure_jobs(receipt: &Value, workflow: &str) -> Result<(), String> {
+fn failure_jobs(receipt: &Value, workflow: &str, root: &Path) -> Result<(), String> {
     let guards = &receipt["guards"];
     let observations = receipt["originalEvidence"]["observations"]
         .as_array()
         .ok_or("Missing original run observations")?;
+    let before_release = receipt["identity"]["origin"] == "pre-release-qualification";
+    let failure_key = if before_release {
+        "qualification"
+    } else {
+        "release"
+    };
+    let run_key = if before_release {
+        "qualificationRun"
+    } else {
+        "releaseRun"
+    };
     let mut inventories = Vec::new();
     for (key, run) in [
-        ("release", &guards["releaseRun"]),
+        (failure_key, &guards[run_key]),
         ("operator", &guards["operatorRun"]),
     ] {
         own(run, text(&receipt["identity"], "/repository")?)?;
@@ -149,14 +160,23 @@ fn failure_jobs(receipt: &Value, workflow: &str) -> Result<(), String> {
         }
         inventories.push(jobs.into_iter().cloned().collect::<Vec<_>>());
     }
-    let publication = guards["publicationJobs"]
-        .as_array()
-        .ok_or("Missing original guard publication jobs")?;
+    let publication = guards[if before_release {
+        "qualificationJobs"
+    } else {
+        "publicationJobs"
+    }]
+    .as_array()
+    .ok_or("Missing original guard publication jobs")?;
     if publication.len() != inventories[0].len()
         || publication.iter().any(|row| !inventories[0].contains(row))
         || inventories[0].iter().any(|row| !publication.contains(row))
     {
         return Err("Guard publication jobs differ from all-attempt R inventory".into());
+    }
+    if before_release {
+        // The same policy checks all nineteen release-qualification identities,
+        // the actual current failure and complete independent R absence pages.
+        return evidence::qualification_policy(receipt, root);
     }
     evidence::original_failure_jobs(
         &guards["releaseRun"],
@@ -268,9 +288,11 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<Source, String> {
     super::stable::main_anchor(&source, &parent, root)?;
     metadata::verify_delta(&parent, integration, &source.base_version, &tag[1..], root)?;
     super::stable::main_anchor(&source, text(guards, "/mainAtGuard")?, root)?;
-    let release = positive(identity, "/releaseRun")?;
-    super::run_identity(&guards["releaseRun"], &source, release)?;
-    evidence::terminal_failed(&guards["releaseRun"])?;
+    let request = super::retire::Request::from_identity(identity)?;
+    if !request.failure.before_release() {
+        super::run_identity(&guards["releaseRun"], &source, request.failure.run())?;
+        evidence::terminal_failed(&guards["releaseRun"])?;
+    }
     evidence::original_operator(
         &guards["operatorRun"],
         &source,
@@ -292,7 +314,7 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<Source, String> {
     {
         return Err("Original operator title does not match its raw C workflow".into());
     }
-    failure_jobs(receipt, &ledger::workflow(head, root)?)?;
+    failure_jobs(receipt, &ledger::workflow(head, root)?, root)?;
     operators(guards, &source, identity)?;
     releases(guards, repository, tag)?;
     super::retire_absence::validate(receipt)?;

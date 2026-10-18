@@ -14,13 +14,22 @@ fn policy() -> String {
         "v0.448.0",
     )
 }
+fn legacy_policy() -> String {
+    policy().replacen(QUEUE_POLICY, LEGACY_POLICY, 1)
+}
 
 #[test]
 fn actual_448_catalog_snapshots_and_settled_bot_formats_keep_the_same_policy() {
     let original: Value = serde_json::from_str(ORIGINAL).unwrap();
     let event = original["eventBody"].as_str().unwrap();
     let current = original["currentBody"].as_str().unwrap();
-    assert_eq!(event, policy());
+    assert_eq!(event, legacy_policy());
+    assert_ne!(event, policy());
+    assert!(
+        qualify(event, &policy(), "ubugeeei-prod/vize", 8794)
+            .unwrap()
+            .is_empty()
+    );
     assert!(current.ends_with("<!-- /codesmith:footer -->"));
     assert!(!current.ends_with('\n'));
     assert!(!current.contains("Autofix is disabled."));
@@ -34,6 +43,22 @@ fn actual_448_catalog_snapshots_and_settled_bot_formats_keep_the_same_policy() {
         qualify(SETTLED, &policy(), "ubugeeei-prod/vize", 8794).unwrap(),
         ["codesmith", "coderabbit"]
     );
+    for (body, expected) in [
+        (current, vec!["codesmith"]),
+        (SETTLED, vec!["codesmith", "coderabbit"]),
+    ] {
+        let suffix = body.strip_prefix(&legacy_policy()).unwrap();
+        assert_eq!(
+            qualify(
+                &format!("{}{suffix}", policy()),
+                &policy(),
+                "ubugeeei-prod/vize",
+                8794,
+            )
+            .unwrap(),
+            expected
+        );
+    }
 }
 
 #[test]

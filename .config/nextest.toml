@@ -1,9 +1,9 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
-# Retain the 38 exact default/off/repair/alias CLI packets without changing selection.
+# Retain complete default/off/repair/alias CLI packets without changing selection.
 [[profile.default.overrides]]
-filter = 'package(=vize) & binary(=lint_preset_scope_cli) & test(=six_default_presets_preserve_38_complete_cli_warning_off_repair_and_alias_packets)'
+filter = 'package(=vize) & binary(=lint_preset_scope_cli) & test(=six_default_presets_preserve_complete_cli_warning_off_repair_and_alias_packets)'
 junit.store-success-output = true
 
 # Retain all 147 original/boundary/component CLI observation packets and the isolated whole-output
@@ -13,7 +13,8 @@ filter = '''(package(=vize) & binary(=lint_legacy_instance_api_cli) & (
   test(=all_original_legacy_api_controls_use_the_actual_cli_and_complete_json_formatter) |
   test(=all_template_authority_boundaries_use_the_actual_cli_and_complete_json_formatter) |
   test(=component_owned_legacy_api_values_preserve_script_warnings_and_complete_cli_packets) |
-  test(=script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_this_frontier)
+  test(=script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_this_frontier) |
+  test(=legacy_instance_cli::callback_return_ownership_keeps_all_six_whole_cli_packets)
 )) | (package(=vize_croquis) & binary(=template_semantic_reuse) &
   test(=ordinary_and_demand_semantics_keep_complete_outputs_and_observed_parse_receipts)
 )'''
@@ -76,15 +77,6 @@ path = "junit.xml"
 store-success-output = false
 store-failure-output = true
 
-[test-groups]
-# Guest builders share target/contract-guests. Their OnceLocks are process-local,
-# so nextest must limit the guest builds across test processes on each runner.
-contract-guests = { max-threads = 1 }
-
-[[profile.pr.overrides]]
-filter = 'package(=vize_extension_host)'
-test-group = "contract-guests"
-
 # Full T1 has no default-filter: every ordinary workspace case remains selected.
 [profile.full]
 fail-fast = false
@@ -96,7 +88,3 @@ slow-timeout = "60s"
 path = "junit.xml"
 store-success-output = false
 store-failure-output = true
-
-[[profile.full.overrides]]
-filter = 'package(=vize_extension_host)'
-test-group = "contract-guests"

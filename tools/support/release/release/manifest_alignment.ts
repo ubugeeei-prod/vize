@@ -9,6 +9,7 @@ function releaseNodeBin(): string {
 const MANIFEST_TESTS = [
   "--test",
   "tests/tooling/package-manifests.test.ts",
+  "tests/tooling/bundler-plugin-manifests.test.ts",
   "tests/tooling/published-snapshot-publication.test.ts",
 ];
 

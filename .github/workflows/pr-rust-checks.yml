@@ -8,6 +8,10 @@ on:
       rust-plan:
         type: string
         required: true
+      run-source-contracts:
+        type: boolean
+        required: false
+        default: true
 permissions:
   contents: read
 env:
@@ -40,11 +44,13 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/cache-vp-bootstrap
         if: ${{ inputs.run-rust }}
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         if: ${{ inputs.run-rust }}
         with:
+          version: latest
           node-version-file: "package.json"
           cache: true
+          cache-save: false
           run-install: true
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: ${{ inputs.run-rust }}
@@ -150,6 +156,15 @@ jobs:
         with:
           key: nextest-ci
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+        if: ${{ inputs.run-source-contracts }}
+      - name: Require current-tree source, API and reviewed-doc contracts
+        if: ${{ inputs.run-source-contracts }}
+        run: >-
+          node --test --test-concurrency=1
+          tests/tooling/davinci-assertion-lint.test.ts
+          tests/tooling/davinci-consumer-migration-surfaces.test.mjs
+          tests/tooling/docs-reviewed-translations.test.ts
       - name: Materialize affected Rust plan
         run: node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
       - name: Select Clippy and doctest runtime envelope
@@ -209,10 +224,12 @@ jobs:
           key: nextest-ci
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/cache-vp-bootstrap
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
+          version: latest
           node-version-file: "package.json"
           cache: true
+          cache-save: false
           run-install: true
       - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
@@ -269,7 +286,8 @@ jobs:
         run: node tools/support/compat/github/rust-test-archive.mjs verify .artifacts/rust-test-archive/tests.tar.zst .artifacts/rust-test-archive/receipt.json
       - name: Hydrate the required ElementPlus projection fixture
         if: ${{ github.event_name == 'merge_group' && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}
-        run: git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus
+        uses: ./.github/actions/hydrate-pinned-fixture
+        with: { fixture: tests/_fixtures/_git/element-plus }
       - name: Prepare required typechecker observations
         if: ${{ github.event_name == 'merge_group' && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}
         run: |

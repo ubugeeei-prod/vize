@@ -9,7 +9,7 @@ fn release_dispatch_requires_exact_full_check() {
     assert_eq!(REQUIRED_RELEASE_WORKFLOWS, &["Check"]);
     assert_eq!(plans.len(), 1);
     assert_eq!(plans[0].workflow_id, "check.yml");
-    assert_eq!(plans[0].inputs, json!({}));
+    assert_eq!(plans[0].inputs, json!({ "release-qualification": true }));
     assert_eq!(
         plans[0].expected_run_name,
         format!("Check full @ {}", target.sha)
@@ -43,7 +43,7 @@ fn explicit_check_plan(target: &ReleaseTarget) -> DispatchPlan {
         workflow_name: "Check",
         workflow_id: "check.yml",
         ref_name: "release/v0.435.1".into(),
-        inputs: json!({}),
+        inputs: json!({ "release-qualification": true }),
         expected_run_name: format!("Check full @ {}", target.sha),
         accepts_scheduled_evidence: false,
     }

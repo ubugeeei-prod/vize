@@ -1,8 +1,8 @@
 /**
  * Japanese sidebar labels and chrome strings.
  *
- * Only overrides live here; any path without an entry falls back to the
- * English label in `en.js`, which is where the blog post titles are kept.
+ * Labels are authored here; blog labels follow their reviewed Japanese page
+ * titles. Any path without an entry falls back to the English label in `en.js`.
  */
 ((locales) => {
   locales.ja = {
@@ -98,6 +98,27 @@
       "/blog": "概要",
       "/blog/notes": "ノート",
       "/blog/releases": "リリース",
+      "/blog/notes/2026-05-16-comparing-vize-with-official-vue-oxc-golar-verter-flint-and-tsslint":
+        "ツールの比較",
+      "/blog/notes/2026-05-16-performance-tuning-notes-for-a-vue-toolchain":
+        "性能を高めるための工夫",
+      "/blog/notes/2026-05-16-testing-agentic-coding-and-trust": "テストとエージェント",
+      "/blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface": "Vapor Mode",
+      "/blog/notes/2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment":
+        "UI の言語としての Vue",
+      "/blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era": "Musea と AI",
+      "/blog/notes/2026-05-16-real-world-feedback-and-the-road-to-production-ready":
+        "本番運用への道",
+      "/blog/notes/2026-05-16-personal-tooling-and-development-speed": "個人開発とスピード",
+      "/blog/notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration":
+        "ツールチェーンを垂直統合する利点",
+      "/blog/notes/2026-03-26-why-ai-needs-deterministic-fast-static-analysis":
+        "AI のための静的解析",
+      "/blog/notes/2026-03-26-where-vize-fits-in-the-vue-tooling-landscape":
+        "Vue ツールの中での Vize の位置づけ",
+      "/blog/notes/2026-03-26-why-vize-needs-notes": "開発ノートを設ける理由",
+      "/blog/releases/2026-03-26-oxlint-plugin-vize-alpha": "oxlint-plugin-vize アルファ版",
+      "/blog/releases/2026-03-26-docs-blog-support": "ドキュメントにブログを追加",
     },
     ui: {
       groups: {

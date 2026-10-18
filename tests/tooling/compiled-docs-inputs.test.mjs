@@ -19,6 +19,7 @@ import {
 } from "../../tools/support/compat/github/plan-source-checks.ts";
 import { planAffectedRust } from "../../tools/support/compat/github/plan-affected-rust.ts";
 import { planToolingTests } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
+import { planPrChecks, prCheckOutputs } from "../../tools/support/compat/github/plan-pr-checks.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const packages = ["compiler", "unrelated"].map((name) => ({
@@ -101,14 +102,47 @@ void test("the actual exempt ledger has no compiled Rust consumer and still sele
       assert.notEqual(resolve(dirname(source), literal), resolve(root, ledger), source);
     }
   }
-  assert.ok(planToolingTests([ledger]).tests.length > 0);
-  assert.deepEqual(planSourceChecks([ledger], "merge_group"), {
-    rust: true,
-    js: true,
-    tooling: true,
-    playground: true,
+  assert.ok(
+    planToolingTests([ledger]).tests.includes("tests/tooling/compiled-docs-inputs.test.mjs"),
+  );
+  for (const eventName of ["pull_request", "merge_group"]) {
+    assert.deepEqual(planSourceChecks([ledger], eventName), {
+      rust: false,
+      js: false,
+      tooling: false,
+      playground: false,
+    });
+    const affected = planAffectedRust(metadata, [ledger], eventName);
+    assert.equal(affected.scope, "none");
+    assert.deepEqual(affected.packages, []);
+  }
+  // Product dependency selection is distinct from mandatory queue Rust policy.
+  const names = ["vize_curator", "vize_relief"];
+  const queue = planPrChecks({
+    paths: [ledger],
+    eventName: "merge_group",
+    labels: [],
+    workspace: [],
+    cargoMetadata: {
+      workspace_root: root,
+      workspace_members: names,
+      packages: names.map((name) => ({
+        id: name,
+        name,
+        manifest_path: `${root}crates/${name}/Cargo.toml`,
+        dependencies: [],
+      })),
+    },
   });
-  assert.equal(planAffectedRust(metadata, [ledger], "merge_group").scope, "workspace");
+  assert.equal(queue.rust.scope, "workspace");
+  assert.deepEqual(queue.rust.packages, names);
+  assert.deepEqual(
+    queue.rust.cargoArgs,
+    names.flatMap((name) => ["--package", name]),
+  );
+  assert.equal(prCheckOutputs(queue).rust, "true");
+  assert.deepEqual(queue.js.groups, []);
+  assert.deepEqual(queue.native.matrix, { lane: ["none"] });
 });
 
 void test("mutating the compiled CLI schema selects Rust while unrelated package schemas stay narrow", () => {

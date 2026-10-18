@@ -150,7 +150,7 @@ void test("independent native and package execution stops on cancellation withou
   const independent = worker.filter(
     (step) => /inputs\.shard/.test(step.if ?? "") && /(?:always|cancelled)\(/.test(step.if ?? ""),
   );
-  assert.equal(independent.length, 3, "retain every independent capture and plugin preparation");
+  assert.equal(independent.length, 4, "retain every independent capture and plugin preparation");
   for (const step of independent)
     for (const shard of ["1", "2"])
       for (const prior of ["success", "failure", "skipped"])
@@ -166,21 +166,24 @@ void test("independent native and package execution stops on cancellation withou
           );
         }
 
-  const js = yaml(".github/workflows/check.yml").jobs["test-js-packages"].steps.find(
-    (step) => step.uses === "./.github/actions/test-js-packages-with-history",
+  const js = ["full-js-package-tests", "full-js-original-project"].map((name) =>
+    yaml(".github/workflows/check.yml").jobs[name].steps.find(
+      (step) => step.uses === "./.github/actions/test-js-packages-with-history",
+    ),
   );
-  const execution = [js];
+  const execution = [...js];
   for (const name of [
     "test-native-js-setup",
     "test-native-selected-sfc-dom",
     "test-native-attribute-values-7502",
+    "test-native-historical-sfc-documents",
   ])
     execution.push(
       ...yaml(`.github/actions/${name}/action.yml`).runs.steps.filter(
         (step) => step.if && !step.uses?.startsWith("actions/upload-artifact@"),
       ),
     );
-  assert.equal(execution.length, 6);
+  assert.equal(execution.length, 8);
   for (const step of execution)
     for (const prior of ["success", "failure", "skipped"])
       for (const cancelled of [false, true])

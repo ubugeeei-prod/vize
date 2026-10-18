@@ -46,7 +46,7 @@ jobs:
             fi
           done
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { fetch-depth: 0, persist-credentials: false }
+        with: { ref: "${{ github.workflow_sha }}", fetch-depth: 0, persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, run-install: false }
       - name: Install pinned signed consumer replacement verifier
@@ -64,6 +64,10 @@ jobs:
         working-directory: ${{ env.PUBLIC_CONSUMER }}
         shell: bash
         run: npm install --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org 2>&1 | tee "$PUBLIC_OUTPUT/install.log"
+      - name: Retain and authenticate the installed consumer
+        id: installed
+        shell: bash
+        run: node tools/support/release/public_acceptance/accept.ts installed 2>&1 | tee "$PUBLIC_OUTPUT/installed.log"
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install real Chromium
         id: chromium
@@ -77,11 +81,11 @@ jobs:
         run: node native.ts "$PUBLIC_VERSION" "$PUBLIC_OUTPUT/native.json" 2>&1 | tee "$PUBLIC_OUTPUT/native.log"
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         id: lsp_rust
-        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.install.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.install.outcome == 'success' && steps.installed.outcome == 'success' }}
         with: { toolchain: "${{ env.PUBLIC_LSP_TOOLCHAIN }}" }
       - name: Replay original 32 transactions with the installed public CLI
         id: lsp
-        if: ${{ !cancelled() && steps.guard.outcome == 'success' && steps.prepare.outcome == 'success' && steps.install.outcome == 'success' && steps.lsp_rust.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.guard.outcome == 'success' && steps.prepare.outcome == 'success' && steps.install.outcome == 'success' && steps.installed.outcome == 'success' && steps.lsp_rust.outcome == 'success' }}
         shell: bash
         run: node tools/support/release/public_acceptance/lsp.ts 2>&1 | tee "$PUBLIC_OUTPUT/lsp.log"
       - name: Replay public Musea gallery and globals
@@ -91,6 +95,7 @@ jobs:
               steps.guard.outcome == 'success' &&
               steps.prepare.outcome == 'success' &&
               steps.install.outcome == 'success' &&
+              steps.installed.outcome == 'success' &&
               steps.chromium.outcome == 'success' &&
               (steps.native.outcome == 'success' || steps.native.outcome == 'failure') }}
         working-directory: ${{ env.PUBLIC_CONSUMER }}
@@ -103,6 +108,7 @@ jobs:
               steps.guard.outcome == 'success' &&
               steps.prepare.outcome == 'success' &&
               steps.install.outcome == 'success' &&
+              steps.installed.outcome == 'success' &&
               steps.chromium.outcome == 'success' &&
               (steps.native.outcome == 'success' || steps.native.outcome == 'failure') &&
               (steps.browser.outcome == 'success' || steps.browser.outcome == 'failure') }}
@@ -115,6 +121,7 @@ jobs:
               steps.guard.outcome == 'success' &&
               steps.prepare.outcome == 'success' &&
               steps.install.outcome == 'success' &&
+              steps.installed.outcome == 'success' &&
               steps.chromium.outcome == 'success' &&
               (steps.native.outcome == 'success' || steps.native.outcome == 'failure') &&
               (steps.browser.outcome == 'success' || steps.browser.outcome == 'failure') }}
@@ -123,11 +130,14 @@ jobs:
         run: |
           export VRT_RETAINED_OUTPUT="$PUBLIC_OUTPUT"
           PUBLIC_OUTPUT="$(mktemp -d "$RUNNER_TEMP/vize-public-vrt.XXXXXX")"
-          node vrt_observer.ts "$PUBLIC_VERSION" "$PUBLIC_OUTPUT/vrt.json" > "$PUBLIC_OUTPUT/vrt.log" 2>&1 || vrt_status=$?
+          vrt_status=0
+          node vrt_observer.ts "$PUBLIC_VERSION" "$PUBLIC_OUTPUT/vrt.json" 3>&2 > "$PUBLIC_OUTPUT/vrt.log" 2>&1 || vrt_status=$?
+          printf 'VRT observer exited: %d\n' "${vrt_status:-0}" >&2
           if ! node vrt_retained.ts "$PUBLIC_OUTPUT/vrt.log" "$VRT_RETAINED_OUTPUT"; then
-            exit "${vrt_status:-1}"
+            if [ "$vrt_status" -eq 0 ]; then exit 1; fi
+            exit "$vrt_status"
           fi
-          exit "${vrt_status:-0}"
+          exit "$vrt_status"
       - name: Seal installed public acceptance
         if: ${{ success() && steps.native.outcome == 'success' && steps.browser.outcome == 'success' && steps.lsp.outcome == 'success' }}
         shell: bash

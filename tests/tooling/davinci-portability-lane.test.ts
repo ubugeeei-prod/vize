@@ -5,12 +5,10 @@ import { test } from "node:test";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 // TS-24 (docs/davinci/plan/test-suites.md): the wasm32-wasip2 portability
-// lanes for std L0 and five `no_std` stage libraries. The lanes ride `clippy-and-test`
-// as steps rather than as their own job because `.github/workflows/check.yml`
-// is over the 350-line ratchet and must not grow
-// (docs/davinci/plan/phase-2-records/p2-14.md); this file is what keeps that
-// placement from silently dissolving. L0 (`vize_l0`, with the legacy Carton facade)
-// remains the approved `std` foundation recorded in no-std-boundary.md.
+// lanes for std L0 and five `no_std` stage libraries run beside Clippy in
+// rust-clippy-portability. The same-name clippy-and-test aggregate requires
+// this producer together with allocations and native differential tests.
+// L0 remains the approved std foundation recorded in no-std-boundary.md.
 
 const portableStageCrates = [
   ["vize_l0", "vize_l0"],
@@ -27,7 +25,7 @@ const noDefaultLane = `${defaultLane} --no-default-features`;
 
 test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
-  const job = workflowJobBody(workflow, "clippy-and-test");
+  const job = workflowJobBody(workflow, "rust-clippy-portability");
   const suite = readRepoFile("docs/davinci", "plan", "test-suites.md");
   const ts24Rows = suite.split("\n").filter((line) => line.startsWith("| TS-24 "));
 
@@ -42,7 +40,7 @@ test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   assert.match(
     job,
     /^ {4}if: \$\{\{ github\.event_name == 'schedule' \|\| github\.event_name == 'workflow_dispatch' \}\}$/m,
-    "clippy-and-test must run on scheduled and manual Check",
+    "rust-clippy-portability must run on scheduled and manual Check",
   );
   assert.doesNotMatch(workflowJobBody(workflow, "test-report"), /- clippy-and-test\b/);
 
@@ -61,7 +59,7 @@ test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   );
   assert.doesNotMatch(job, /cargo build[^\n]*-p vize_carton[^\n]*wasm32-wasip2/);
   assert.match(
-    job,
+    workflowJobBody(workflow, "rust-davinci-allocations"),
     /cargo bench -p vize_l1_to_l2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root/u,
   );
 });
