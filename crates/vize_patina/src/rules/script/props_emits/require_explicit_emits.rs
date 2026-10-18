@@ -14,7 +14,8 @@
 //!
 //! * It reports only when a declaration **exists** and is **fully known**. With
 //!   no declaration, nothing is reported (the emits may be declared elsewhere, or
-//!   intentionally not at all) — flagging would be a false positive.
+//!   intentionally not at all) — flagging would be a false positive. An
+//!   untyped `defineEmits()` call likewise leaves the event surface unknown.
 //! * A declaration that cannot be fully enumerated — an array/object spread
 //!   (`defineEmits([...names])`), a computed object key, or a bare type reference
 //!   (`defineEmits<Emits>()`) — is treated as unknown, so nothing is reported.
@@ -22,7 +23,9 @@
 //!   is skipped.
 //!
 //! Script call sites are the captured `defineEmits` binding (`emit('change')`)
-//! and `this.$emit('change')`. The declaration-resolution logic lives in the
+//! and `this.$emit('change')`. Captured calls must resolve to that same lexical
+//! binding; a shadowing parameter or local dispatcher belongs to another API.
+//! The declaration-resolution logic lives in the
 //! [`declared`] submodule.
 //!
 //! ## Template call sites
@@ -49,6 +52,7 @@ mod declared;
 
 use oxc_ast::ast::{Argument, CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
+use oxc_semantic::{Semantic, SemanticBuilder};
 use oxc_span::Span;
 
 use vize_l0::{CompactString, FxHashSet};
@@ -112,7 +116,18 @@ impl ScriptRule for RequireExplicitEmits {
             return;
         };
 
+        // Only captured setup dispatchers need lexical resolution. Options API
+        // instance dispatches keep their existing path without a semantic pass.
+        let built = binding.map(|_| SemanticBuilder::new().build(program));
+        if built
+            .as_ref()
+            .is_some_and(|built| !built.diagnostics.is_empty())
+        {
+            return;
+        }
+        let semantic = built.as_ref().map(|built| &built.semantic);
         let mut visitor = EmitCallVisitor {
+            semantic,
             declared: &declared,
             binding,
             offset,
@@ -161,15 +176,16 @@ fn check_template(
 /// from the declared set. Emit call sites are the captured `defineEmits` binding
 /// and `this.$emit(...)`.
 struct EmitCallVisitor<'a, 'result> {
-    declared: &'a FxHashSet<CompactString>,
-    binding: Option<&'a str>,
+    semantic: Option<&'result Semantic<'a>>,
+    declared: &'result FxHashSet<CompactString>,
+    binding: Option<&'result str>,
     offset: usize,
     result: &'result mut ScriptLintResult,
 }
 
-impl<'a> Visit<'a> for EmitCallVisitor<'_, '_> {
+impl<'a> Visit<'a> for EmitCallVisitor<'a, '_> {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if let Some(event) = emitted_event(it, self.binding)
+        if let Some(event) = emitted_event(it, self.binding, self.semantic)
             && !self.declared.contains(event.value)
         {
             self.report(event.value, event.span);
@@ -216,8 +232,9 @@ struct EmittedEvent<'a> {
 fn emitted_event<'a>(
     call: &'a CallExpression<'a>,
     binding: Option<&str>,
+    semantic: Option<&Semantic<'_>>,
 ) -> Option<EmittedEvent<'a>> {
-    if !is_emit_callee(&call.callee, binding) {
+    if !is_emit_callee(&call.callee, binding, semantic) {
         return None;
     }
     match call.arguments.first()? {
@@ -232,11 +249,24 @@ fn emitted_event<'a>(
 /// Whether `callee` is an emit dispatcher: the captured `defineEmits` binding
 /// (when one exists), or `this.$emit`. `other.$emit(...)` emits on another
 /// instance, so its events are not this component's to declare.
-fn is_emit_callee(callee: &Expression<'_>, binding: Option<&str>) -> bool {
+fn is_emit_callee(
+    callee: &Expression<'_>,
+    binding: Option<&str>,
+    semantic: Option<&Semantic<'_>>,
+) -> bool {
     match callee {
-        Expression::Identifier(identifier) => {
-            binding.is_some_and(|binding| binding == identifier.name.as_str())
-        }
+        Expression::Identifier(identifier) => binding.is_some_and(|binding| {
+            let Some(semantic) = semantic else {
+                return false;
+            };
+            let scoping = semantic.scoping();
+            let root = scoping.get_binding(scoping.root_scope_id(), binding.into());
+            let resolved = identifier
+                .reference_id
+                .get()
+                .and_then(|reference| scoping.get_reference(reference).symbol_id());
+            root.is_some() && resolved == root
+        }),
         expression if expression.is_member_expression() => expression
             .as_member_expression()
             .filter(|member| {
@@ -248,10 +278,12 @@ fn is_emit_callee(callee: &Expression<'_>, binding: Option<&str>) -> bool {
             .and_then(|member| member.static_property_name())
             .is_some_and(|property| property == "$emit"),
         // Look through wrappers so `(emit)('x')` / `(this.$emit)('x')` count.
-        Expression::ParenthesizedExpression(paren) => is_emit_callee(&paren.expression, binding),
-        Expression::TSAsExpression(ts) => is_emit_callee(&ts.expression, binding),
-        Expression::TSSatisfiesExpression(ts) => is_emit_callee(&ts.expression, binding),
-        Expression::TSNonNullExpression(ts) => is_emit_callee(&ts.expression, binding),
+        Expression::ParenthesizedExpression(paren) => {
+            is_emit_callee(&paren.expression, binding, semantic)
+        }
+        Expression::TSAsExpression(ts) => is_emit_callee(&ts.expression, binding, semantic),
+        Expression::TSSatisfiesExpression(ts) => is_emit_callee(&ts.expression, binding, semantic),
+        Expression::TSNonNullExpression(ts) => is_emit_callee(&ts.expression, binding, semantic),
         _ => false,
     }
 }
