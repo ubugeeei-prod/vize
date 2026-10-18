@@ -61,7 +61,9 @@ fn complete_aliases_survive_five_cli_processes_and_stock_dom_ssr_per_case()
         (
             "nested-call-default",
             "({label = ((left,right) => left + right)('a,b','c,d')},index) in [{}]",
-            "({label = ((left,right) => left + right)('a,b','c,d')}, index) in [{}]",
+            // The whole head exceeds the retained provider's existing syntax
+            // budget. Preserve every authored byte on that explicit refusal.
+            "({label = ((left,right) => left + right)('a,b','c,d')},index) in [{}]",
             "{{ label }}:{{ index }}",
             "a,bc,d:0",
             false,
