@@ -462,7 +462,7 @@ void test("only the authenticated already-published integration bullet is remove
   ]) {
     const fixture = make();
     mutate(fixture);
-    assert.equal(run(fixture).notes.body, original, `unproved identity: ${mutate}`);
+    assert.equal(run(fixture).notes.body, original, `unproved identity: ${String(mutate)}`);
   }
   for (const body of [
     original.replace(url, `${url}0`),
