@@ -229,6 +229,7 @@ export function integrationProductOptionsFromEnvironment(
     candidateSha,
     api: transport.api,
     mode,
+    log: console.error,
     onPendingDeadline: transport.setPendingDeadline,
     observe: evidence
       ? (snapshot) => fs.appendFileSync(evidence, `${JSON.stringify(snapshot)}\n`)
