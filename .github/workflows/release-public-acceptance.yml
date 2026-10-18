@@ -149,6 +149,16 @@ jobs:
         if: ${{ success() && steps.native.outcome == 'success' && steps.browser.outcome == 'success' && steps.lsp.outcome == 'success' && steps.formatter.outcome == 'success' }}
         shell: bash
         run: node tools/support/release/public_acceptance/accept.ts finish 2>&1 | tee "$PUBLIC_OUTPUT/finish.log"
+      - name: Retain diagnostic public metadata first
+        if: ${{ always() && (steps.vrt.outcome == 'skipped' || ((steps.vrt.outcome == 'success' || steps.vrt.outcome == 'failure') && steps.vrt.outputs.upload-safe == 'true')) }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: public-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/public-release/**/*.json
+            artifacts/public-release/**/*.jsonl
+          if-no-files-found: error
+          retention-days: 30
       - name: Retain actual public observations
         if: ${{ always() && (steps.vrt.outcome == 'skipped' || ((steps.vrt.outcome == 'success' || steps.vrt.outcome == 'failure') && steps.vrt.outputs.upload-safe == 'true')) }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
