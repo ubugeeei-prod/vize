@@ -159,9 +159,17 @@ void test("the native runtime matrix requires SSR for affected sources and broad
   assert.equal(planNativeRuntime(["docs/unrelated.md"]).matrix.lane.includes("ssr"), false);
   assert(action.includes('VIZE_L4_SSR_REQUIRE_NATIVE: "1"'));
   assert(action.includes("VIZE_JSX_SLOTS_SSR_CAPTURE:"));
+  assert(action.includes("VIZE_JSX_VAPOR_SLOTS_SSR_CAPTURE:"));
+  const native = parse(action).runs.steps.find((step) => step.id === "native-ssr");
+  assert.notEqual(
+    native.env.VIZE_JSX_VAPOR_SLOTS_SSR_CAPTURE,
+    native.env.VIZE_JSX_SLOTS_SSR_CAPTURE,
+    "each native entrypoint owns its capture path",
+  );
   assert(action.includes("-p vize_atelier_jsx --test ssr -- --nocapture"));
   assert(action.includes("tests/tooling/jsx-runtime-slots-ssr.test.ts"));
   assert(action.includes("jsx-runtime-slots-ssr.json.runtime.json"));
+  assert(action.includes("jsx-vapor-runtime-slots-ssr.json.runtime.json"));
   assert(action.includes("--test native_scriptless_ssr -- --nocapture"));
   assert(action.includes("--test native_scriptless_setup_ssr -- --nocapture"));
   assert(action.includes("vp node --test tests/tooling/native-sfc-setup-ssr-reference.test.ts"));
