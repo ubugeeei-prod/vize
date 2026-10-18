@@ -7,10 +7,46 @@ import path from "node:path";
 import { test } from "node:test";
 import { repoRoot } from "../_helpers/tool-commands.ts";
 
+// Immutable no-SDK catalogue declaration from main 633947e89d92ab4d5df16743d48729008380cb06.
+// Original publish_crates/main.ts blob: 8cc118d83681e71ccead2d01db2261c37bf03cbe.
+const legacyCatalogue = `export const publishedCrates: readonly string[] = [
+  "vize_oxc_parser",
+  "vize_parcel_sourcemap",
+  "vize_lightningcss",
+  "vize_l0_derive",
+  "vize_l0",
+  "vize_carton",
+  "vize_relief",
+  "vize_l1",
+  "vize_armature",
+  "vize_l2",
+  "vize_l3",
+  "vize_l1_to_l2",
+  "vize_l4",
+  "vize_l2_to_l3",
+  "vize_croquis",
+  "vize_atelier_core",
+  "vize_atelier_dom",
+  "vize_atelier_vapor",
+  "vize_atelier_ssr",
+  "vize_atelier_sfc",
+  "vize_musea",
+  "vize_fresco",
+  "vize_croquis_cf",
+  "vize_atelier_jsx",
+  "vize_marquette",
+  "vize_doctor",
+  "vize_canon",
+  "vize_patina",
+];`;
+
 const cases = [
   "cold",
   "overlap-source",
   "failed-check",
+  "catalogue-unavailable",
+  "new-catalogue-without-gate",
+  "budget-gate",
   "existing-run",
   "existing-merged-run",
   "merged-without-run",
@@ -46,6 +82,7 @@ test("actual legacy driver starts Q before R and retains resume and drift safety
       .update(fs.readFileSync(watch))
       .update(fs.readFileSync(contract))
       .update(fs.readFileSync(ci))
+      .update(legacyCatalogue)
       .update(
         fs.readFileSync(path.join(repoRoot, "tools/support/release/qualify_check/capability.ts")),
       )
@@ -88,6 +125,7 @@ const CUT: &str = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const OTHER: &str = "cccccccccccccccccccccccccccccccccccccccc";
 const BRANCH: &str = "release/v1.2.3";
 const TAG: &str = "v1.2.3";
+const LEGACY_CATALOGUE: &str = ${JSON.stringify(legacyCatalogue)};
 #[path = ${JSON.stringify(watch)}] mod pr_watch;
 #[path = ${JSON.stringify(contract)}] mod pr_contract;
 #[path = ${JSON.stringify(ci)}] mod actual_ci;
@@ -101,7 +139,7 @@ fn unused<T>() -> Result<T, String> { panic!("unexpected backend operation outsi
 mod pr_budget {
     use super::*;
     pub struct Budget;
-    pub fn check(_: Option<&Budget>) -> Result<(), String> { unused() }
+    pub fn check(budget: Option<&Budget>) -> Result<(), String> { budget.map_or(Ok(()), Budget::check) }
     pub fn child_command(_: &mut std::process::Command, _: Option<&Budget>) -> Result<(), String> { unused() }
     pub fn configured() -> Result<Option<Budget>, String> { unused() }
     impl Budget {
@@ -109,8 +147,8 @@ mod pr_budget {
         pub fn check(&self) -> Result<(), String> {
             let count = STATE.with(|s| { let mut s = s.borrow_mut(); s.budget_checks += 1; s.budget_checks });
             event("budget");
-            if (mode("budget-before") && count == 1) || (mode("budget-after") && count == 2)
-                || (mode("budget-final") && count == 3) { Err("budget expired".into()) } else { Ok(()) }
+            if (mode("budget-before") && count == 1) || (mode("budget-gate") && count == 2)
+                || (mode("budget-after") && count == 3) || (mode("budget-final") && count == 4) { Err("budget expired".into()) } else { Ok(()) }
         }
         pub fn sleep(&self, _: Duration) -> Result<(), String> { self.check() }
     }
@@ -130,6 +168,11 @@ mod pr_pin {
 } }
 mod pr_ci {
     use super::*;
+    pub fn corsa_first_publication(repository: &str, number: u64, branch: &str, head: &str,
+        cut: &str, tag: &str, budget: Option<&pr_budget::Budget>, root: &Path) -> Result<(), String> {
+        assert_eq!((repository, number, branch, head, cut, tag), (REPO, 42, BRANCH, HEAD, CUT, TAG));
+        actual_ci::corsa_first_publication(repository, number, branch, head, cut, tag, budget, root)
+    }
     pub fn start_check(repo: &str, branch: &str, head: &str, cut: &str,
         budget: Option<&pr_budget::Budget>, _: &Path) -> Result<Option<u64>, String> {
         assert_eq!((repo, branch, head, cut), (REPO, BRANCH, HEAD, CUT));
@@ -176,6 +219,15 @@ mod pr_github {
         Ok(if mode("parent-drift") && reads > 1 {OTHER} else {CUT}.into())
     }
     pub fn git(args: &[&str], _: &Path) -> Result<String, String> {
+        if args == ["--no-replace-objects", "show", &format!("{HEAD}:tools/support/release/publish_crates/main.ts")] {
+            event("catalogue");
+            if mode("catalogue-unavailable") { return Err("immutable catalogue unavailable".into()); }
+            return Ok(if mode("new-catalogue-without-gate") { r#"["vize_corsa"]"# } else {LEGACY_CATALOGUE}.into());
+        }
+        if args == ["--no-replace-objects", "cat-file", "-e", &format!("{HEAD}:tools/support/release/corsa_bootstrap/main.ts")] {
+            assert!(mode("new-catalogue-without-gate")); event("gate-missing");
+            return Err("gate absent at immutable H".into());
+        }
         if args == ["rev-parse", "HEAD"] { event("local-head"); return Ok(if mode("local-drift") {OTHER} else {HEAD}.into()); }
         assert_eq!(args, ["ls-remote", "--heads", "origin", &format!("refs/heads/{BRANCH}")]);
         event("remote-head");
@@ -228,12 +280,14 @@ fn actual_legacy_driver_handoff() {
                 "cold" | "overlap-source" => {
                     assert_eq!(result,Ok(Some(303)));
                     assert_eq!(s.dispatches,1);
-                    assert_eq!(s.events, ["find-run","parent","budget","lease","qualify","budget","lease",
+                    assert_eq!(s.events, ["find-run","parent","budget","lease","budget","catalogue","qualify","budget","lease",
                         "reauth-pr","local-head","remote-head","candidate","main","parent","version","tag",
                         "find-run","budget","lease","dispatch","budget","find-run"]);
                 }
                 "existing-run" | "existing-merged-run" => { assert_eq!(result,Ok(Some(101))); assert_eq!(s.events,["find-run"]); }
                 "concurrent-run" => { assert_eq!(result,Ok(Some(202))); assert_eq!(s.dispatches,0); }
+                "catalogue-unavailable" => { assert_eq!(result,Err("immutable catalogue unavailable".into())); }
+                "new-catalogue-without-gate" => { assert!(result.unwrap_err().contains("no reviewed first-publication gate at H")); assert!(s.events.iter().any(|e| e == "gate-missing")); }
                 "failed-check" => { assert_eq!(result,Err("Check failed".into())); assert!(s.events.iter().any(|e| e == "reauth-pr")); }
                 "merged-without-run" => { assert!(result.unwrap_err().contains("Merged release PR")); assert_eq!(s.events,["find-run"]); }
                 "version-drift" | "candidate-drift" => { assert!(result.unwrap_err().contains("identity or version changed")); }
@@ -242,8 +296,9 @@ fn actual_legacy_driver_handoff() {
                 _ => assert_eq!(result,Ok(None),"{scenario}"),
             }
             if scenario != "cold" && scenario != "overlap-source" { assert_eq!(s.dispatches,0,"{scenario} dispatched stale R"); }
-            if scenario.ends_with("-before") { assert!(!s.events.iter().any(|e| e == "qualify")); }
-            if scenario != "existing-run" && scenario != "existing-merged-run" && scenario != "merged-without-run" && !scenario.ends_with("-before") {
+            let gate_refused = scenario == "budget-gate" || scenario == "catalogue-unavailable" || scenario == "new-catalogue-without-gate";
+            if scenario.ends_with("-before") || gate_refused { assert!(!s.events.iter().any(|e| e == "qualify")); }
+            if scenario != "existing-run" && scenario != "existing-merged-run" && scenario != "merged-without-run" && !scenario.ends_with("-before") && !gate_refused {
                 assert_eq!(s.events.iter().filter(|e| *e == "qualify").count(),1);
             }
         });

@@ -61,7 +61,7 @@ impl<'a> Emitter<'a, '_> {
                 self.conditional_slot(&branches)
             }
             Content::For(body) => {
-                let body = *body;
+                let body = **body;
                 let [child] = node.children.as_slice() else {
                     self.invariant_broken();
                     return None;

@@ -1,0 +1,128 @@
+name: Release Corsa first publication
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/release-corsa-bootstrap.yml
+      - tools/support/release/corsa_bootstrap/**
+      - tools/support/release/pr_ci.rs
+      - tools/support/release/pr_pin_runs.rs
+      - tools/support/release/pr_watch.rs
+      - tests/tooling/release/release-corsa-bootstrap*.test.ts
+  merge_group:
+    types: [checks_requested]
+  workflow_dispatch:
+    inputs:
+      source_pr:
+        description: Existing paused Draft source PR
+        required: true
+        type: string
+      source_head:
+        description: Qualified immutable H, never a historical release
+        required: true
+        type: string
+      source_cut:
+        description: Original immutable C and current main
+        required: true
+        type: string
+      source_tag:
+        description: Future minor release tag
+        required: true
+        type: string
+      qualification_run:
+        description: Actual successful full Check workflow_dispatch at H
+        required: true
+        type: string
+      crates_io_user_id:
+        description: Intended authenticated direct user owner, independently verified before dispatch
+        required: true
+        type: string
+      confirmation:
+        description: "Exact first-publication:H:vTAG authority confirmation"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: release-corsa-first-publication
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: false
+      - run: vp install --frozen-lockfile
+      - run: node --test tests/tooling/release/release-corsa-bootstrap*.test.ts
+  bootstrap:
+    needs: contracts
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize' && startsWith(github.ref, 'refs/heads/release/v') && github.sha == inputs.source_head
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: crates-io
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: false
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master
+        with: { toolchain: "1.99.1" }
+      - name: Install the frozen tooling graph
+        run: vp install --frozen-lockfile
+      - name: Publish only the six source-bound SDK crates and verify handoff
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CORSA_BOOTSTRAP_TOKEN }}
+          VIZE_CORSA_OWNER_ID: ${{ inputs.crates_io_user_id }}
+          VIZE_CORSA_QUALIFICATION_RUN: ${{ inputs.qualification_run }}
+          VIZE_CORSA_CONFIRM: ${{ inputs.confirmation }}
+          CORSA_SOURCE_PR: ${{ inputs.source_pr }}
+          CORSA_SOURCE_HEAD: ${{ inputs.source_head }}
+          CORSA_SOURCE_CUT: ${{ inputs.source_cut }}
+          CORSA_SOURCE_TAG: ${{ inputs.source_tag }}
+          CARGO_TARGET_DIR: ${{ runner.temp }}/corsa-bootstrap-target
+          PUBLISH_RETRY_LIMIT: "1"
+          PUBLISH_RESOLUTION_RETRY_LIMIT: "12"
+          PUBLISH_RESOLUTION_RETRY_DELAY: "5"
+        run: |
+          set -euo pipefail
+          # Include setup and queue time; never reset a partial carrier's budget.
+          created=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --jq .created_at)
+          export VIZE_RELEASE_OPERATOR_DEADLINE_UNIX_MILLIS=$(node -e 'process.stdout.write(String(Date.parse(process.argv[1]) + 900000))' "$created")
+          node tools/support/release/corsa_bootstrap/carrier.ts \
+            "$GITHUB_REPOSITORY" "$CORSA_SOURCE_PR" "release/$CORSA_SOURCE_TAG" \
+            "$CORSA_SOURCE_HEAD" "$CORSA_SOURCE_CUT" "$CORSA_SOURCE_TAG" \
+            "$RUNNER_TEMP/corsa-first-publication"
+      - name: Retain the exact single-member authenticated handoff
+        if: success()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: corsa-first-publication
+          path: ${{ runner.temp }}/corsa-first-publication/receipt.json
+          if-no-files-found: error
+      - name: Preserve partial archives and original failure custody
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: corsa-first-publication-custody
+          path: |
+            ${{ runner.temp }}/corsa-first-publication
+            ${{ runner.temp }}/corsa-sdk-consumer-*/evidence
+          if-no-files-found: ignore

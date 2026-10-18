@@ -58,7 +58,7 @@ pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
         };
         let child = at(nodes, *child)?;
         let root = if group {
-            let Content::For(body) = child.content else {
+            let Content::For(body) = &child.content else {
                 return Err(LegacyReason::Component.into());
             };
             if body.template || body.key_prop.is_none() || body.source.text.parse::<f64>().is_ok() {

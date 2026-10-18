@@ -18,6 +18,27 @@ const prefix =
 test("passive native LSP capture retains the complete original Matrix workflow", () => {
   const original = parse(originalBytes);
   const current = parse(read("../../.github/workflows/real-project-matrix.yml"));
+  // Only the explicit nonempty selector changes scope. Invert its exact additive
+  // wiring before comparing every original tool, gate, upload and timeout below.
+  assert.deepEqual(current.on.workflow_dispatch.inputs.project, {
+    description: "Optional exact fixture ID for a scoped diagnostic; empty runs the full matrix",
+    required: false,
+    default: "",
+    type: "string",
+  });
+  delete current.on.workflow_dispatch.inputs.project;
+  assert.equal(
+    current.concurrency.group,
+    "real-project-matrix-${{ github.ref }}${{ inputs.project && format('-scoped-{0}', inputs.project) || '' }}",
+  );
+  current.concurrency.group = original.concurrency.group;
+  assert.equal(
+    current.jobs["real-project-matrix"].env.FIXTURE_SHARD_COUNT,
+    "${{ matrix.shardCount || '22' }}",
+  );
+  current.jobs["real-project-matrix"].env.FIXTURE_SHARD_COUNT =
+    original.jobs["real-project-matrix"].env.FIXTURE_SHARD_COUNT;
+  assert.match(current["run-name"], /inputs\.project && 'scoped-diagnostic' \|\| /);
   // Descriptive labels preserve the numeric fixture, cache and artifact routing.
   const matrixJob = current.jobs["real-project-matrix"];
   assert.equal(matrixJob.name, "real projects (${{ matrix.name }})");

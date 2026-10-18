@@ -59,7 +59,7 @@ impl<'a> Emitter<'a, '_> {
                 OperationNode::If(Box::new_in(node, &self.allocator))
             }
             Content::For(body) => {
-                let body = *body;
+                let body = **body;
                 let members = take(self.allocator, &mut node.children);
                 let wrapped_rows = body.template
                     && !matches!(

@@ -48,6 +48,16 @@ pub(super) fn find_or_dispatch(
     if let Some(id) = find()? {
         return Ok(id);
     }
+    pr_ci::corsa_first_publication(
+        &candidate.repository,
+        candidate.number,
+        &candidate.branch,
+        &candidate.head,
+        &source.cut,
+        &candidate.tag,
+        budget,
+        root,
+    )?;
     // Start Q separately; R builds overlap its read-only qualification join.
     // Existing immutable R resumes above retain their original evidence.
     operator.verify()?;

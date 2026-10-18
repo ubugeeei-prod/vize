@@ -13,6 +13,7 @@ Compiler Inspector は、同じ `.vue` ファイルから Vue と Vize が生成
 生成された仮想 TypeScript、VIR（Vue の中間表現）、複数ファイルの依存関係も確認できます。
 
 [プレイグラウンドの Compiler Inspector](https://vizejs.dev/play/?tab=inspector)を開いてください。
+再現例を共有するときは、[テストとフィードバック](./testing.md)の手順に沿って情報をまとめてください。
 
 ```bash
 https://vizejs.dev/play/?tab=inspector

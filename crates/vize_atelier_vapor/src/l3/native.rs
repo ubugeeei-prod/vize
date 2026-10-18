@@ -5,7 +5,7 @@ mod emit;
 pub(super) mod validate;
 
 use vize_atelier_core::RetainedJsAst;
-use vize_carton::{Allocator, Vec};
+use vize_carton::{Allocator, Box, Vec};
 use vize_l2_to_l3::Lowered;
 
 use super::{AdmissionFailure, retained::Retained};
@@ -43,7 +43,9 @@ enum Content<'a> {
     /// Authored branch order; each branch body is its own block.
     If { branches: Vec<'a, Branch<'a>> },
     /// One loop; `children` is its body (one element, or a template fragment).
-    For(Loop<'a>),
+    /// Keep its larger metadata in the same output arena so ordinary text and
+    /// element nodes do not move an inline loop payload through admission.
+    For(Box<'a, Loop<'a>>),
     /// A resolved component; `children` is its slot content. `is` is the
     /// `:is` expression of a `<component>`, which is created dynamically.
     /// `tag_span` is the whole component; its tag name starts after `<`.
