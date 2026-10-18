@@ -58,23 +58,30 @@ function ownerIsAlive(receipt) {
   }
 }
 
-export function nativePreparationIsActive(directory) {
+// Return only an identity verified from the current owner, source and addon.
+// Callers may reuse this observation within the call, never across calls.
+export function readActiveNativePreparation(directory) {
   try {
     const receipt = JSON.parse(readFileSync(receiptPath(directory), "utf8"));
-    if (receipt.schemaVersion !== 1 || receipt.nativeDir !== realpathSync(directory)) return false;
-    if (!ownerIsAlive(receipt)) return false;
+    if (receipt.schemaVersion !== 1 || receipt.nativeDir !== realpathSync(directory)) return null;
+    if (!ownerIsAlive(receipt)) return null;
     const source = sourceIdentity(directory);
     if (
       receipt.head !== source.head ||
       receipt.tree !== source.tree ||
       receipt.workingDiff !== source.workingDiff
     )
-      return false;
+      return null;
     const identity = bindingIdentity(directory);
-    return receipt.binding === identity.binding && receipt.sha256 === identity.sha256;
+    if (receipt.binding !== identity.binding || receipt.sha256 !== identity.sha256) return null;
+    return receipt;
   } catch {
-    return false;
+    return null;
   }
+}
+
+export function nativePreparationIsActive(directory) {
+  return readActiveNativePreparation(directory) !== null;
 }
 
 export function withPreparedNative(directory, ownerArgument, command, args, run = spawnSync) {
