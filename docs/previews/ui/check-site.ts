@@ -114,6 +114,7 @@ try {
           await page.screenshot({
             path: path.join(values.output, `ja-${route.split("/").at(-2)}-${width}.png`),
             fullPage: true,
+            animations: "disabled",
           });
         }
         if (route === "/ja/guide/composables/") {

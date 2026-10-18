@@ -13,6 +13,8 @@ Read both complete Japanese guides and their English source documents at main
   with the data or branch the reader actually chooses. Keep all original complete
   fenced examples and the three original heading targets; renamed headings retain
   explicit aliases. Clarify the existing Vue 3-only development comparison limit.
+  Align its authored Japanese sidebar label with the page title, and name GitHub's
+  `base` and `compare` selectors explicitly.
 - `guide/testing.md`: connect compiler inspection, type/lint/editor reports,
   performance measurements and project proposals. Add a small counter SFC as a
   starting point, a copyable report outline, and the existing profiling command.
@@ -40,6 +42,13 @@ desktop/mobile loop, keeping all 11 previous routes and composable examples.
 Its real-page heading, body-overflow and local-link checks cover the edited
 reading paths. Four full-page screenshots join its existing uploaded evidence;
 wait for the Japanese fonts before capturing them. No workflow or job is added.
+
+The first exact-source Docs build passed, but its captured pages still showed
+the article's finite fade-in animation. Preserve those initial images separately;
+use the same screenshot `animations: "disabled"` option as `capture-page-render.ts`
+to finish finite animations when capturing the successor. Fresh source checks,
+Docs and four actual successor images are required; initial green CI does not
+qualify the changed source.
 
 Exact-source Actions, rendered-page review, protected merge and deployed-page
 verification remain delivery evidence to collect; this source record does not
