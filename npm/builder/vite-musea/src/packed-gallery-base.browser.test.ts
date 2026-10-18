@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { chromium, type ElementHandle } from "playwright";
+import { chromium, type Locator } from "playwright";
 import { PNG } from "pngjs";
 import { createServer } from "vite";
 import type { MuseaVrtOptions } from "./types/plugin.ts";
@@ -149,7 +149,7 @@ void test(
           pending: Promise<void>[] = [];
         const responses: PackedGalleryHttpRecord[] = [];
         const observations: unknown[] = [];
-        let previousPreview: ElementHandle<HTMLElement | SVGElement> | undefined;
+        let previousPreview: Awaited<ReturnType<Locator["elementHandle"]>> | undefined;
         async function recordPreviewOwner(title: string) {
           const frame = await page.locator(".variant-card iframe").elementHandle();
           assert.ok(frame);
