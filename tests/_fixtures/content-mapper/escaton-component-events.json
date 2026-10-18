@@ -1,0 +1,291 @@
+{
+  "schema": 1,
+  "reporter": "escaton (Egor Blinov)",
+  "typescript": "7.1.0-dev.20261017.1",
+  "vue": "3.5.20",
+  "baselineVize": "0.463.0",
+  "originals": [
+    {
+      "issue": 9427,
+      "issueBodySha256": "4a29d7592bdfcb995f5a2fe09444433ff4f20048c001c5aafd961f00ac8c9b42",
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { defineComponent } from 'vue'\nconst Child = defineComponent({ emits: { close: () => true } })\n</script>\n<template><Child @close=\"() => {}\" /></template>\n"
+      },
+      "baselineCodes": [2493, 2493],
+      "baselineTerms": [],
+      "expectedCodes": [],
+      "expectedTerms": [],
+      "baselineStdout": "App.vue(160,140): error TS2493: Tuple type '[]' of length '0' has no element at index '0'.\n  This location is in virtual code produced by the content mapper 'vize@0.463.0' and has no corresponding location in the original file.\nApp.vue(170,38): error TS2493: Tuple type '[]' of length '0' has no element at index '0'.\n  This location is in virtual code produced by the content mapper 'vize@0.463.0' and has no corresponding location in the original file.\n",
+      "baselineStderr": "",
+      "expectedStdout": "",
+      "expectedStderr": "",
+      "baselineStatus": 2,
+      "expectedStatus": 0
+    },
+    {
+      "issue": 9429,
+      "issueBodySha256": "a49b2cfb5248ddf8d5e16c426e3a5e3cf6d1eee2cbbfedc6e26d15f876fd8595",
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\ndefineEmits(['click'])\n</script>\n"
+      },
+      "baselineCodes": [2339],
+      "baselineTerms": [],
+      "expectedCodes": [],
+      "expectedTerms": [],
+      "baselineStdout": "App.vue(134,33): error TS2339: Property 'click' does not exist on type '{ length: (...args: any[]) => any; toString: (...args: any[]) => any; toLocaleString: (...args: any[]) => any; pop: (...args: any[]) => any; push: (...args: any[]) => any; concat: (...args: any[]) => any; join: (...args: any[]) => any; ... 31 more ...; with: ...; }'.\n  This location is in virtual code produced by the content mapper 'vize@0.463.0' and has no corresponding location in the original file.\n",
+      "baselineStderr": "",
+      "expectedStdout": "",
+      "expectedStderr": "",
+      "baselineStatus": 2,
+      "expectedStatus": 0
+    },
+    {
+      "issue": 9430,
+      "issueBodySha256": "a5aba045a68b797cffd24a964a8d79d00f21e6905e9813c782080dec4dcd3d54",
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends 'number' | 'text'\">\ntype Value = T extends 'number' ? number : string\ndefineProps<{ type: T }>()\ndefineEmits<{ 'change': [value: Value] }>()\n</script>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nfunction update(value: number) {}\n</script>\n<template><Child type=\"number\" @change=\"update($event)\" /></template>\n"
+      },
+      "baselineCodes": [2345],
+      "baselineTerms": [],
+      "expectedCodes": [],
+      "expectedTerms": [],
+      "baselineStdout": "App.vue(5,48): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'number'.\n  Type 'string' is not assignable to type 'number'.\n",
+      "baselineStderr": "",
+      "expectedStdout": "",
+      "expectedStderr": "",
+      "baselineStatus": 2,
+      "expectedStatus": 0
+    }
+  ],
+  "controls": [
+    {
+      "name": "events-negative-9427",
+      "original": 9427,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { defineComponent } from 'vue'\nconst Child = defineComponent({ emits: { close: () => true } })\n</script>\n<template><Child @close=\"(value: number) => {}\" /></template>\n"
+      },
+      "codes": [2322],
+      "terms": [],
+      "stdout": "App.vue(5,19): error TS2322: Type '(value: number) => void' is not assignable to type '() => any'.\n  Target signature provides too few arguments. Expected 1 or more, but got 0.\n",
+      "stderr": "",
+      "status": 2,
+      "publicBaseline": {
+        "stdout": "App.vue(160,140): error TS2493: Tuple type '[]' of length '0' has no element at index '0'.\n  This location is in virtual code produced by the content mapper 'vize@0.463.0' and has no corresponding location in the original file.\nApp.vue(170,38): error TS2493: Tuple type '[]' of length '0' has no element at index '0'.\n  This location is in virtual code produced by the content mapper 'vize@0.463.0' and has no corresponding location in the original file.\nApp.vue(5,19): error TS2322: Type '(value: number) => void' is not assignable to type '() => any'.\n  Target signature provides too few arguments. Expected 1 or more, but got 0.\n",
+        "stderr": "",
+        "status": 2
+      }
+    },
+    {
+      "name": "events-negative-9429",
+      "original": 9429,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits(['click'])\nemit('unknown')\n</script>\n"
+      },
+      "codes": [2345],
+      "terms": [],
+      "stdout": "App.vue(3,6): error TS2345: Argument of type '\"unknown\"' is not assignable to parameter of type '\"click\"'.\n",
+      "stderr": "",
+      "status": 2,
+      "publicBaseline": {
+        "stdout": "App.vue(3,6): error TS2345: Argument of type '\"unknown\"' is not assignable to parameter of type '\"click\"'.\nApp.vue(138,33): error TS2339: Property 'click' does not exist on type '{ length: (...args: any[]) => any; toString: (...args: any[]) => any; toLocaleString: (...args: any[]) => any; pop: (...args: any[]) => any; push: (...args: any[]) => any; concat: (...args: any[]) => any; join: (...args: any[]) => any; ... 31 more ...; with: ...; }'.\n  This location is in virtual code produced by the content mapper 'vize@0.463.0' and has no corresponding location in the original file.\n",
+        "stderr": "",
+        "status": 2
+      }
+    },
+    {
+      "name": "events-negative-9430",
+      "original": 9430,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends 'number' | 'text'\">\ntype Value = T extends 'number' ? number : string\ndefineProps<{ type: T }>()\ndefineEmits<{ 'change': [value: Value] }>()\n</script>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nfunction update(value: number) {}\n</script>\n<template><Child type=\"text\" @change=\"update($event)\" /></template>\n"
+      },
+      "codes": [2345],
+      "terms": [],
+      "stdout": "App.vue(5,46): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.\n",
+      "stderr": "",
+      "status": 2,
+      "publicBaseline": {
+        "stdout": "App.vue(5,46): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'number'.\n  Type 'string' is not assignable to type 'number'.\n",
+        "stderr": "",
+        "status": 2
+      }
+    },
+    {
+      "name": "events-indirect-alias-number",
+      "original": 9430,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends 'number' | 'text'\">\ntype Value = T extends 'number' ? number : string\ntype Alias = Value\ndefineProps<{ type: T }>()\ndefineEmits<{ 'change': [value: Alias] }>()\n</script>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nfunction update(value: number) {}\n</script>\n<template><Child type=\"number\" @change=\"update($event)\" /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0,
+      "publicBaseline": {
+        "stdout": "App.vue(5,48): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'number'.\n  Type 'string' is not assignable to type 'number'.\n",
+        "stderr": "",
+        "status": 2
+      }
+    },
+    {
+      "name": "events-own-generic-default-boolean",
+      "original": 9430,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends 'number' | 'text'\">\ntype Value<T = boolean> = T\ndefineProps<{ type: T }>()\ndefineEmits<{ 'change': [value: Value] }>()\n</script>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nfunction update(value: boolean) {}\n</script>\n<template><Child type=\"number\" @change=\"update($event)\" /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0,
+      "publicBaseline": {
+        "stdout": "",
+        "stderr": "",
+        "status": 0
+      }
+    },
+    {
+      "name": "events-own-generic-default-wrong-number",
+      "original": 9430,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends 'number' | 'text'\">\ntype Value<T = boolean> = T\ndefineProps<{ type: T }>()\ndefineEmits<{ 'change': [value: Value] }>()\n</script>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nfunction update(value: number) {}\n</script>\n<template><Child type=\"number\" @change=\"update($event)\" /></template>\n"
+      },
+      "codes": [2345],
+      "terms": [],
+      "stdout": "App.vue(5,48): error TS2345: Argument of type 'boolean' is not assignable to parameter of type 'number'.\n",
+      "stderr": "",
+      "status": 2,
+      "publicBaseline": {
+        "stdout": "App.vue(5,48): error TS2345: Argument of type 'boolean' is not assignable to parameter of type 'number'.\n",
+        "stderr": "",
+        "status": 2
+      }
+    },
+    {
+      "name": "events-imported-boolean-alias",
+      "original": 9430,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends 'number' | 'text'\">\nimport type { Value } from './types'\ndefineProps<{ type: T }>()\ndefineEmits<{ 'change': [value: Value] }>()\n</script>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nfunction update(value: boolean) {}\n</script>\n<template><Child type=\"number\" @change=\"update($event)\" /></template>\n",
+        "types.ts": "export type Value = boolean\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0,
+      "publicBaseline": {
+        "stdout": "",
+        "stderr": "",
+        "status": 0
+      }
+    },
+    {
+      "name": "events-call-signature-generic-alias",
+      "original": 9430,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends 'number' | 'text'\">\ntype Value = T extends 'number' ? number : string\ndefineProps<{ type: T }>()\ndefineEmits<{ (event: 'change', value: Value): void }>()\n</script>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nfunction update(value: number) {}\n</script>\n<template><Child type=\"number\" @change=\"update($event)\" /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0,
+      "publicBaseline": {
+        "stdout": "App.vue(5,48): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'number'.\n  Type 'string' is not assignable to type 'number'.\n",
+        "stderr": "",
+        "status": 2
+      }
+    },
+    {
+      "name": "events-optional-first-and-two-args",
+      "original": 9427,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { defineComponent } from 'vue'\nconst Child = defineComponent({ emits: { close: (value?: number) => true, pair: (value: number, label: string) => true } })\n</script>\n<template><Child @close=\"(value?: number) => {}\" @pair=\"(value: number, label: string) => {}\" /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0,
+      "publicBaseline": {
+        "stdout": "",
+        "stderr": "",
+        "status": 0
+      }
+    },
+    {
+      "name": "events-two-args-wrong-second",
+      "original": 9427,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport { defineComponent } from 'vue'\nconst Child = defineComponent({ emits: { close: (value?: number) => true, pair: (value: number, label: string) => true } })\n</script>\n<template><Child @close=\"(value?: number) => {}\" @pair=\"(value: number, label: number) => {}\" /></template>\n"
+      },
+      "codes": [2322],
+      "terms": [],
+      "stdout": "App.vue(5,51): error TS2322: Type '(value: number, label: number) => void' is not assignable to type '(value: number, label: string) => any'.\n  Types of parameters 'label' and 'label' are incompatible.\n    Type 'string' is not assignable to type 'number'.\n",
+      "stderr": "",
+      "status": 2,
+      "publicBaseline": {
+        "stdout": "App.vue(5,51): error TS2322: Type '(value: number, label: number) => void' is not assignable to type '(value: number, label: string) => any'.\n  Types of parameters 'label' and 'label' are incompatible.\n    Type 'string' is not assignable to type 'number'.\n",
+        "stderr": "",
+        "status": 2
+      }
+    },
+    {
+      "name": "events-validator-number-and-empty-array",
+      "original": 9429,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits({ click: (value: number) => true })\nemit('click', 1)\n</script>\n",
+        "Empty.vue": "<script setup lang=\"ts\">\ndefineEmits([])\n</script>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0,
+      "publicBaseline": {
+        "stdout": "",
+        "stderr": "",
+        "status": 0
+      }
+    },
+    {
+      "name": "events-validator-wrong-payload-and-empty-array",
+      "original": 9429,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits({ click: (value: number) => true })\nemit('click', 'wrong')\n</script>\n",
+        "Empty.vue": "<script setup lang=\"ts\">\ndefineEmits([])\n</script>\n"
+      },
+      "codes": [2345],
+      "terms": [],
+      "stdout": "App.vue(3,15): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.\n",
+      "stderr": "",
+      "status": 2,
+      "publicBaseline": {
+        "stdout": "App.vue(3,15): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.\n",
+        "stderr": "",
+        "status": 2
+      }
+    }
+  ]
+}

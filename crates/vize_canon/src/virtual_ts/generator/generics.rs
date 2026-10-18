@@ -1,7 +1,9 @@
 //! Helpers for splicing `<script setup generic="...">` type parameters into
 //! hoisted type/interface declarations lifted to module scope.
 
-use vize_carton::{String, append, cstr};
+use std::collections::VecDeque;
+
+use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, cstr};
 use vize_croquis::{Croquis, ScopeData, ScopeKind};
 
 use crate::text_scan::{byte_before, starts_with_at};
@@ -39,6 +41,7 @@ pub(super) struct HoistedGenericAliases {
     generic_decl: String,
     generic_names: String,
     type_names: Vec<String>,
+    dependent_declarations: Vec<String>,
 }
 
 impl HoistedGenericAliases {
@@ -55,26 +58,68 @@ impl HoistedGenericAliases {
             .filter(|name| !name.is_empty())
             .map(String::from)
             .collect();
-        let type_names: Vec<String> = summary
+        let candidates: Vec<_> = summary
             .type_exports
             .iter()
             .filter(|export| export.hoisted)
             .filter_map(|export| {
                 let source = script.get(export.start as usize..export.end as usize)?;
-                (references_any_identifier(source, &names)
-                    && generic_injection_point(source, export.name.as_str()).is_some())
-                .then(|| String::from(export.name.as_str()))
+                let (declaration, references) =
+                    crate::virtual_ts::type_dependencies::local_type_declaration(source)?;
+                Some((export, declaration, references))
             })
+            .collect();
+        let type_names: Vec<String> = candidates
+            .iter()
+            .filter(|(export, source, references)| {
+                names.iter().any(|name| references.contains(name.as_str()))
+                    && generic_injection_point(source, export.name.as_str()).is_some()
+            })
+            .map(|(export, _, _)| String::from(export.name.as_str()))
             .collect();
 
         if type_names.is_empty() {
             return None;
         }
 
+        // A module-level `Alias = Value` would instantiate Value's fallback
+        // parameters before setup can bind T. Retain the original dependent
+        // declaration inside setup instead, preserving its own generic scope.
+        let mut dependents: FxHashMap<CompactString, Vec<usize>> = FxHashMap::default();
+        for (index, (_, _, references)) in candidates.iter().enumerate() {
+            for reference in references {
+                dependents.entry(reference.clone()).or_default().push(index);
+            }
+        }
+        let mut reached: FxHashSet<CompactString> = type_names
+            .iter()
+            .map(|name| CompactString::from(name.as_str()))
+            .collect();
+        let mut queue: VecDeque<_> = reached.iter().cloned().collect();
+        while let Some(name) = queue.pop_front() {
+            for &index in dependents.get(&name).into_iter().flatten() {
+                let (export, _, _) = &candidates[index];
+                if reached.insert(export.name.clone()) {
+                    queue.push_back(export.name.clone());
+                }
+            }
+        }
+        let dependent_declarations = candidates
+            .iter()
+            .filter(|(export, _, _)| {
+                reached.contains(&export.name)
+                    && !type_names
+                        .iter()
+                        .any(|name| name.as_str() == export.name.as_str())
+            })
+            .map(|(_, source, _)| String::from(*source))
+            .collect();
+
         Some(Self {
             generic_decl: strip_const_modifiers(&add_generic_defaults(generic_param)),
             generic_names,
             type_names,
+            dependent_declarations,
         })
     }
 
@@ -96,6 +141,9 @@ impl HoistedGenericAliases {
                 "  type {type_name} = __VizeHoistedGeneric{index}<{}>;\n",
                 self.generic_names
             );
+        }
+        for declaration in &self.dependent_declarations {
+            append!(*ts, "  {declaration}\n");
         }
     }
 }
@@ -299,8 +347,40 @@ pub(in crate::virtual_ts) fn generic_injection(
 
 #[cfg(test)]
 mod tests {
-    use super::{generic_fallback_args, module_alias_generic_suffix};
+    use super::{HoistedGenericAliases, generic_fallback_args, module_alias_generic_suffix};
     use vize_carton::String;
+
+    #[test]
+    fn setup_keeps_transitive_local_types_without_capturing_shadowed_parameters() {
+        let script = "import type { External } from './types';\ntype Value = T extends 'number' ? number : string;\nexport type Alias = Value;\nexport interface Payload { value: Alias }\ntype Shadow<Value> = Value;\ntype Imported = External;";
+        let mut analyzer =
+            vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
+        analyzer.analyze_script_setup_with_generic(script, Some("T extends 'number' | 'text'"));
+        let summary = analyzer.finish();
+        let aliases = HoistedGenericAliases::collect(
+            &summary,
+            Some(script),
+            Some("T extends 'number' | 'text'"),
+        )
+        .expect("Value captures the SFC parameter");
+        let mut setup = String::default();
+        aliases.emit_setup_aliases(&mut setup);
+        assert!(
+            setup.contains("type Value = __VizeHoistedGeneric0<T>;"),
+            "{setup}"
+        );
+        assert!(setup.contains("type Alias = Value;"), "{setup}");
+        assert!(
+            setup.contains("interface Payload { value: Alias }"),
+            "{setup}"
+        );
+        assert!(!setup.contains("type Shadow"), "{setup}");
+        assert!(
+            !setup.contains("export type") && !setup.contains("export interface"),
+            "{setup}"
+        );
+        assert!(!setup.contains("type Imported"), "{setup}");
+    }
 
     #[test]
     fn fallback_args_use_constraints_and_keep_unconstrained_params_inferable() {

@@ -99,6 +99,54 @@ defineEmits<{ select: [key: string, path: string[]] }>()
 }
 
 #[test]
+fn zero_argument_event_projection_defers_tuple_indexing() {
+    let source = r#"<script setup lang="ts">
+import { defineComponent } from 'vue'
+const Child = defineComponent({ emits: { close: () => true } })
+</script>
+<template><Child @close="() => {}" /></template>"#;
+    let virtual_ts = type_check_sfc(
+        source,
+        &SfcTypeCheckOptions::new("App.vue").with_virtual_ts(),
+    )
+    .virtual_ts
+    .expect("virtual TypeScript should be generated");
+    assert!(
+        virtual_ts.contains("extends infer __A extends unknown[] ? __A extends []"),
+        "concrete zero-argument tuples must not be indexed in an unselected type branch:\n{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains("(__vize_args as unknown[])[0]"),
+        "reading a possibly absent runtime argument must not index a concrete empty tuple:\n{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains("...__vize_args: Parameters<"),
+        "the listener must retain the complete original argument tuple:\n{virtual_ts}"
+    );
+}
+
+#[test]
+fn runtime_array_events_use_the_literal_emit_function_contract() {
+    let source = r#"<script setup lang="ts">
+defineEmits(['click'])
+</script>"#;
+    let virtual_ts = type_check_sfc(
+        source,
+        &SfcTypeCheckOptions::new("Child.vue").with_virtual_ts(),
+    )
+    .virtual_ts
+    .expect("virtual TypeScript should be generated");
+    assert!(
+        virtual_ts.contains("const __vize_emits = defineEmits(['click']);"),
+        "const-generic inference must see the original runtime array:\n{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains("type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>"),
+        "array methods must not become event names:\n{virtual_ts}"
+    );
+}
+
+#[test]
 fn native_events_still_reject_extra_required_arguments() {
     let source = r#"<script setup lang="ts">
 function handleClick(event: PointerEvent, required: string) {

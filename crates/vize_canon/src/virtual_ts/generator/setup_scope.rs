@@ -24,6 +24,27 @@ pub(in crate::virtual_ts) fn define_props_type_requires_setup_scope(summary: &Cr
         })
 }
 
+/// A generic setup's local aliases are rebound to that invocation's type
+/// parameters. Copying their bare names into a module-level `Emits<T>` would
+/// instead instantiate the hoisted aliases with their fallback defaults.
+pub(super) fn define_emits_type_requires_setup_scope(summary: &Croquis) -> bool {
+    super::generics::setup_signature(summary).1.is_some()
+        && summary
+            .macros
+            .define_emits()
+            .and_then(|call| call.type_args.as_deref())
+            .is_some_and(|args| {
+                let inner = super::emits::inner_type_of(args);
+                type_dependencies::free_names(inner).is_none_or(|names| {
+                    names.iter().any(|name| {
+                        !binding_is_import(summary, name)
+                            && (summary.types.definitions().interfaces.contains_key(name)
+                                || summary.types.definitions().type_aliases.contains_key(name))
+                    })
+                })
+            })
+}
+
 /// Imports and hoisted declarations are visible to module-level aliases.
 /// Setup values (including classes/enums in type position) and dependent local
 /// types must be evaluated inside setup. The AST query excludes property names,
