@@ -73,6 +73,11 @@ pub use retire::{retire, retire_before_release, validate_preparation_target};
 #[cfg(test)]
 #[path = "pr_pin_recovery_tests.rs"]
 mod recovery_tests;
+#[path = "pr_pin_rollback.rs"]
+mod rollback;
+#[cfg(test)]
+#[path = "pr_pin_rollback_tests.rs"]
+mod rollback_tests;
 #[path = "pr_pin_runs.rs"]
 mod runs;
 #[path = "pr_pin_stable.rs"]

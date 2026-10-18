@@ -185,3 +185,23 @@ fn changed_versioned_lease_is_preserved_on_error_and_drop() {
     // Only test-fixture teardown; production never steals the foreign lease.
     fs::remove_dir_all(directory).unwrap();
 }
+
+impl Operator {
+    pub(in super::super) fn compensation_fixture(
+        source: &Source,
+        deadline: u64,
+        root: &Path,
+    ) -> Result<Self, String> {
+        acquire_with_admission(
+            &source.candidate.tag,
+            &source.candidate.head,
+            Some(Admission {
+                run: 7,
+                attempt: 2,
+                source: source.cut.clone(),
+                deadline,
+            }),
+            root,
+        )
+    }
+}

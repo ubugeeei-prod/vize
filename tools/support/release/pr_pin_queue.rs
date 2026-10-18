@@ -27,34 +27,40 @@ pub(super) struct QueueOwner {
 
 type Execute<'a> = dyn FnMut(&str, &[&str], &Path) -> Result<String, String> + 'a;
 type Retain<'a> = dyn FnMut(&str, &Value) -> Result<(), String> + 'a;
+type Batch<'a> = dyn FnMut(&str, &[&str], &Path) -> Result<Vec<Value>, String> + 'a;
 pub(super) struct Adapter<'a> {
     pub root: &'a Path,
     pub execute: &'a mut Execute<'a>,
     pub retain: &'a mut Retain<'a>,
+    pub batch: Option<&'a mut Batch<'a>>,
 }
 
 impl Adapter<'_> {
-    pub(super) fn commit(
+    /// Only independent identity GETs belong in one group. Dependency groups
+    /// and all mutations remain ordered by the original authentication caller.
+    pub(super) fn read_group(
         &mut self,
         repository: &str,
-        id: &str,
-        parent: &str,
-        expected: Option<(&str, &str)>,
-    ) -> Result<Value, String> {
-        let value = self.read("rollback-commit", repository, &format!("git/commits/{id}"))?;
-        pr_contract::sha(pr_contract::field(&value, "/tree/sha")?)?;
-        if value["sha"] != id
-            || value["parents"]
-                .as_array()
-                .is_none_or(|p| p.len() != 1 || p[0]["sha"] != parent)
-            || expected.is_some_and(|(tree, message)| {
-                value["tree"]["sha"] != tree
-                    || (value["message"] != message && value["message"] != format!("{message}\n"))
-            })
-        {
-            return Err("Original rollback commit tree/parent/message changed".into());
+        requests: &[(&str, String)],
+    ) -> Result<Vec<Value>, String> {
+        let Some(batch) = &mut self.batch else {
+            return requests
+                .iter()
+                .map(|(stage, endpoint)| self.read(stage, repository, endpoint))
+                .collect();
+        };
+        let endpoints: Vec<_> = requests
+            .iter()
+            .map(|(_, endpoint)| endpoint.as_str())
+            .collect();
+        let values = batch(repository, &endpoints, self.root)?;
+        if values.len() != requests.len() {
+            return Err("Incomplete independent rollback read group".into());
         }
-        Ok(value)
+        for ((stage, _), value) in requests.iter().zip(&values) {
+            (self.retain)(stage, &json!({"raw":value.to_string()}))?;
+        }
+        Ok(values)
     }
     fn call(
         &mut self,
@@ -124,6 +130,27 @@ impl Adapter<'_> {
         }
         self.call(stage, &args, observed)
     }
+}
+
+pub(super) fn commit_value(
+    value: &Value,
+    id: &str,
+    parent: &str,
+    expected: Option<(&str, &str)>,
+) -> Result<(), String> {
+    pr_contract::sha(pr_contract::field(value, "/tree/sha")?)?;
+    if value["sha"] != id
+        || value["parents"]
+            .as_array()
+            .is_none_or(|p| p.len() != 1 || p[0]["sha"] != parent)
+        || expected.is_some_and(|(tree, message)| {
+            value["tree"]["sha"] != tree
+                || (value["message"] != message && value["message"] != format!("{message}\n"))
+        })
+    {
+        return Err("Original rollback commit tree/parent/message changed".into());
+    }
+    Ok(())
 }
 
 fn authenticate(

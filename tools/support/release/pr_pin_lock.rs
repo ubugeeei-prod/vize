@@ -253,40 +253,43 @@ impl Operator {
         }
         let repository = &source.candidate.repository;
         let h = &source.candidate.head;
-        let lease_ref = adapter.read(
-            "rollback-lease-ref",
+        let tag = &source.candidate.tag;
+        let lease_path = format!("git/ref/heads/release-operator/{tag}");
+        let run_path = format!("actions/runs/{}", admission.run);
+        let permission_path = format!("collaborators/{actor}/permission");
+        let pin_path = format!("git/ref/heads/release-pin/{tag}");
+        let observed = adapter.read_group(
             repository,
-            &format!("git/ref/heads/release-operator/{}", source.candidate.tag),
+            &[
+                ("rollback-lease-ref", lease_path),
+                ("rollback-operator", run_path),
+                ("rollback-operator-permission", permission_path),
+                ("rollback-commit", format!("git/commits/{h}")),
+                ("rollback-pin-ref", pin_path),
+            ],
         )?;
+        let [lease_ref, run, permission, head, pin_ref] = observed.as_slice() else {
+            return Err("Incomplete original operator observations".into());
+        };
         if lease_ref["ref"] != self.remote_ref
             || lease_ref["object"]["type"] != "commit"
             || lease_ref["object"]["sha"] != self.remote_head
         {
             return Err("Original operator lease changed; compensation forbidden".into());
         }
-        let run = adapter.read(
-            "rollback-operator",
-            repository,
-            &format!("actions/runs/{}", admission.run),
-        )?;
         validate_operator_run(
-            &run,
+            run,
             admission.run,
             admission.attempt,
             repository,
             &source.cut,
             actor,
         )?;
-        pr_contract::maintainer(&adapter.read(
-            "rollback-operator-permission",
-            repository,
-            &format!("collaborators/{actor}/permission"),
-        )?)?;
-        let head = adapter.commit(repository, h, &source.cut, None)?;
-        let tree = pr_contract::field(&head, "/tree/sha")?;
+        pr_contract::maintainer(permission)?;
+        super::queue::commit_value(head, h, &source.cut, None)?;
+        let tree = pr_contract::field(head, "/tree/sha")?;
         let owned =
             fs::read_to_string(self.directory.join("owner.txt")).map_err(|e| e.to_string())?;
-        let tag = &source.candidate.tag;
         let Admission {
             run,
             attempt,
@@ -299,45 +302,31 @@ impl Operator {
         if !owned.starts_with(&prefix) {
             return Err("Original lease deadline changed".into());
         }
-        adapter.commit(repository, &self.remote_head, h, Some((tree, &owned)))?;
-        let pin_ref = adapter.read(
-            "rollback-pin-ref",
-            repository,
-            &format!("git/ref/heads/release-pin/{}", source.candidate.tag),
-        )?;
         if pin_ref["ref"] != format!("refs/heads/release-pin/{}", source.candidate.tag)
             || pin_ref["object"]["type"] != "commit"
         {
             return Err("Original pin ref changed".into());
         }
-        let pin_sha = pr_contract::field(&pin_ref, "/object/sha")?;
+        let pin_sha = pr_contract::field(pin_ref, "/object/sha")?;
         pr_contract::sha(pin_sha)?;
         let expected = pin_message(source);
-        adapter.commit(repository, pin_sha, h, Some((tree, &expected)))?;
+        let commits = adapter.read_group(
+            repository,
+            &[
+                (
+                    "rollback-commit",
+                    format!("git/commits/{}", self.remote_head),
+                ),
+                ("rollback-commit", format!("git/commits/{pin_sha}")),
+            ],
+        )?;
+        super::queue::commit_value(&commits[0], &self.remote_head, h, Some((tree, &owned)))?;
+        super::queue::commit_value(&commits[1], pin_sha, h, Some((tree, &expected)))?;
         Ok(super::queue::Authority {
             lease: self.remote_head.clone(),
             operator_run: admission.run,
             operator_attempt: admission.attempt,
         })
-    }
-
-    #[cfg(test)]
-    pub(super) fn compensation_fixture(
-        source: &Source,
-        deadline: u64,
-        root: &Path,
-    ) -> Result<Self, String> {
-        acquire_with_admission(
-            &source.candidate.tag,
-            &source.candidate.head,
-            Some(Admission {
-                run: 7,
-                attempt: 2,
-                source: source.cut.clone(),
-                deadline,
-            }),
-            root,
-        )
     }
 
     pub(super) fn queue_authority(
