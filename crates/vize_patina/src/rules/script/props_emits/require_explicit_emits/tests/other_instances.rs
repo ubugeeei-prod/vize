@@ -156,3 +156,21 @@ fn untyped_define_emits_does_not_invent_template_event_restrictions() {
     assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
     assert_eq!((result.error_count, result.warning_count), (0, 0));
 }
+
+#[test]
+fn an_explicit_empty_event_type_is_known_despite_having_no_runtime_argument() {
+    let source = "const emit = defineEmits<{}>(); emit('save')";
+    let result = create_linter().lint(source, 13);
+    assert_eq!((result.error_count, result.warning_count), (0, 1));
+    assert_eq!(result.diagnostics.len(), 1);
+    let diagnostic = &result.diagnostics[0];
+    let start = source.find("'save'").unwrap() as u32 + 13;
+    assert_eq!(diagnostic.rule_name, "script/require-explicit-emits");
+    assert_eq!(diagnostic.severity, crate::Severity::Warning);
+    assert_eq!((diagnostic.start, diagnostic.end), (start, start + 6));
+    assert_eq!(
+        diagnostic.message,
+        "The emitted event 'save' is not declared in defineEmits or the emits option."
+    );
+    assert!(diagnostic.fix.is_none());
+}
