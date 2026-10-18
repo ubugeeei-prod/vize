@@ -35,7 +35,9 @@ they are decoded `LspDiagnostic` values, not untouched RPC frames. Native image
 bytes/hash, Vue manifest and the returning client's selected-project receipt
 identify the observed backend and program.
 
-The two valid sources must be clean in both raw and public results. Separate
+The two valid sources must have no raw errors or public findings. Their complete
+raw suggestion vectors must match the named, unused generated declarations,
+including TS6196, severity 4, source, full messages and generated ranges. Separate
 authored TS2493 and TS2353 controls require their complete messages, generated
 ranges and authored positions to survive. One counterfactual restores only the
 pre-#9435 runtime expression in the current generated program; it must produce
@@ -64,3 +66,14 @@ TS2493/TS2353 finding. Cases now retain their packets independently before the
 overall gate: a caught assertion continues evidence collection, and every such
 failure still fails the test at its final gate. No raw suggestion is filtered
 or accepted by that observation change.
+
+The next genuine capture reached all four cases and the replay. The empty-event
+source had four TS6196 suggestions; the data-attribute source had two. Both had
+no errors and no mapped findings. Each authored negative retained its one error
+and the same four suggestions; the old runtime expression produced one generated
+TS2493 and four suggestions. The expectation repair describes these whole
+vectors, including their request URI owners, without filtering or sorting the
+observed vectors. Every missing, extra or altered diagnostic still fails.
+Those captures used TypeScript 7.0.2 and the locked test Vue 3.6.0-beta.10,
+not the official Content Mapper fixture's Vue 3.5.20. Successful execution of
+the repaired source remains required; the captures themselves were failed tests.
