@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "allowJs": true
+  },
+  "include": [],
+  "files": [
+    "tools/support/compat/github/canonical-corpus-logical-walk.ts",
+    "tools/support/compat/github/canonical-corpus-native-walk.ts",
+    "tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts"
+  ]
+}

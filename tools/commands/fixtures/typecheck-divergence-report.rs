@@ -1206,6 +1206,7 @@ fn collect_vue_tsc_diagnostics(
 ) -> Result<DiagnosticInput, String> {
     let positioned = Regex::new(r"^(.+)\((\d+),(\d+)\): (error|warning) TS(\d+): (.+)$").unwrap();
     let project = Regex::new(r"^(error|warning) TS(\d+): (.+)$").unwrap();
+    let diagnostic_marker = Regex::new(r"\b(?:error|warning) TS\d+:").unwrap();
     let mut diagnostics = Vec::new();
     let mut excluded_non_vue_count = 0;
     let mut excluded_project_count = 0;
@@ -1246,10 +1247,7 @@ fn collect_vue_tsc_diagnostics(
             excluded_project_count += 1;
             continue;
         }
-        if Regex::new(r"\b(?:error|warning) TS\d+:")
-            .unwrap()
-            .is_match(line)
-        {
+        if diagnostic_marker.is_match(line) {
             invalid_divergence(&format!("unparseable vue-tsc diagnostic: {line}"))?;
         }
     }
@@ -4976,5 +4974,95 @@ mod native_hint_contract_tests {
             assert!(validate_typechecker_output(&project, &report, 0, None, None).is_err());
             assert!(collect_vize_diagnostics(&report, &cwd).is_err());
         }
+    }
+}
+
+#[cfg(test)]
+mod native_baseline_contract_tests {
+    use super::*;
+
+    #[test]
+    fn large_baseline_continuations_preserve_whole_diagnostics_and_exclusions() {
+        let cwd = env::current_dir().unwrap();
+        let comparable = BTreeSet::from(["src/App.vue".to_string(), "src/Ω.vue".to_string()]);
+        let support = SupportVueClassifier::new(&cwd, &[]);
+        let mut output = "  continuation detail Ω😀\r\n".repeat(16_384);
+        output.push_str(concat!(
+            "αerror TS9999: part of a Unicode word\r\n",
+            "πwarning TS9999: also not a word boundary\r\n",
+            "src/App.vue(12,34): error TS2322: expected   string\r\n",
+            "src/Ω.vue(3,7): warning TS6133: unused  value\r\n",
+            "src/App.vue(12,34): error TS2322: expected string\r\n",
+            "src/helper.ts(2,3): error TS2345: TypeScript support\r\n",
+            "error TS2688: project-level diagnostic\r\n",
+            "../External.vue(1,1): warning TS6133: external\r\n",
+            "docs/.vitepress/Hidden.vue(1,1): warning TS6133: support\r\n",
+        ));
+        let actual = collect_vue_tsc_diagnostics(&output, &cwd, &comparable, &support).unwrap();
+        let app = Diagnostic {
+            file: "src/App.vue".to_string(),
+            severity: "error".to_string(),
+            line: 12,
+            column: 34,
+            code: 2322,
+            message: "expected string".to_string(),
+        };
+        assert_eq!(
+            actual.diagnostics,
+            vec![
+                app.clone(),
+                Diagnostic {
+                    file: "src/Ω.vue".to_string(),
+                    severity: "warning".to_string(),
+                    line: 3,
+                    column: 7,
+                    code: 6133,
+                    message: "unused value".to_string(),
+                },
+                app
+            ]
+        );
+        assert_eq!(
+            (
+                actual.excluded_non_vue_count,
+                actual.excluded_project_count,
+                actual.excluded_external_count,
+                actual.excluded_support_vue_count,
+            ),
+            (1, 1, 1, 1)
+        );
+    }
+
+    #[test]
+    fn baseline_marker_and_positioned_range_refusals_survive_ignored_lines() {
+        let cwd = env::current_dir().unwrap();
+        let comparable = BTreeSet::from(["src/App.vue".to_string()]);
+        let support = SupportVueClassifier::new(&cwd, &[]);
+        for line in [
+            "prefix error TS2322: malformed position",
+            "prefix warning TS6133: malformed position",
+            "Ω error TS１２３: Unicode decimal marker",
+        ] {
+            let output = format!("{}{line}\r\n", "  continuation Ω😀\r\n".repeat(256));
+            assert_eq!(
+                collect_vue_tsc_diagnostics(&output, &cwd, &comparable, &support)
+                    .err()
+                    .unwrap(),
+                divergence_error(&format!("unparseable vue-tsc diagnostic: {line}")),
+            );
+        }
+        assert_eq!(
+            collect_vue_tsc_diagnostics(
+                "src/App.vue(0,2): error TS2322: invalid line\r\n",
+                &cwd,
+                &comparable,
+                &support,
+            )
+            .err()
+            .unwrap(),
+            divergence_error(
+                "diagnostic range and code must be positive safe integers: src/App.vue"
+            ),
+        );
     }
 }

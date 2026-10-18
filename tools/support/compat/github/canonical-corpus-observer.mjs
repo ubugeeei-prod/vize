@@ -3,7 +3,7 @@ import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { recoverFixtureCheckout, validateHydration } from "./canonical-corpus-hydration.mjs";
-import { validateNativeWalk } from "./canonical-corpus-native-walk.mjs";
+import { validateNativeWalk } from "./canonical-corpus-native-walk.ts";
 import { verifyCommittedInventory } from "./canonical-corpus-inventory.mjs";
 import {
   expectedOldErrorReasons,
