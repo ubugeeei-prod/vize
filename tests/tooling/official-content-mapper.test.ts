@@ -187,7 +187,21 @@ test("public-prop reproduction changes only the listener or the invalid prop val
     assert.equal(invalid.status, 2);
     assert.ok(invalid.codes.every((code) => code === 2322));
   }
-  assert.equal(officialCases(fixture).length, 10);
+  const defaultAttrs = control("unknown-prop");
+  const strictAttrs = control("unknown-prop-strict");
+  assert.deepEqual(defaultAttrs.codes, []);
+  assert.equal(defaultAttrs.status, 0);
+  assert.equal(defaultAttrs.stdout, "");
+  assert.equal(defaultAttrs.stderr, "");
+  const strictConfig = JSON.parse(defaultAttrs.files["tsconfig.json"]);
+  strictConfig.vueCompilerOptions.checkUnknownProps = true;
+  assert.deepEqual(strictAttrs.files, {
+    ...defaultAttrs.files,
+    "tsconfig.json": `${JSON.stringify(strictConfig, null, 2)}\n`,
+  });
+  assert.deepEqual(strictAttrs.codes, [2353]);
+  assert.equal(strictAttrs.status, 2);
+  assert.equal(officialCases(fixture).length, 11);
   const workflow = fs.readFileSync(
     new URL("../../.github/workflows/content-mapper-conformance.yml", import.meta.url),
     "utf8",
