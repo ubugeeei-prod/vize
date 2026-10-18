@@ -139,6 +139,9 @@ void test("binding parser captures retain exact rejected history without replaci
     assert.ok(capture.run?.includes(authority));
   assert.match(capture.run ?? "", /VIZE_TOKENIZER_CAPTURE_DIR="\$binding_capture"/);
   assert.match(capture.run ?? "", /for binding_repeat in 1 2/);
+  assert.ok(capture.run?.includes('binding_target="$RUNNER_TEMP/binding-target-$binding_side"'));
+  assert.ok(capture.run?.includes('CARGO_TARGET_DIR="$binding_target" cargo test --locked'));
+  assert.ok(!capture.run?.includes('CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target"'));
   assert.match(
     capture.run ?? "",
     /--lib parser::tokenizer_contract_tests::complete_fixture_asts_and_utf8_cuts_keep_the_frozen_tokenizer_contract -- --exact --nocapture/,

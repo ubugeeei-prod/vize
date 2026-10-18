@@ -192,6 +192,7 @@ jobs:
           for binding_pair in 'before 54400c86c8a224777640d9554c220dccf8f53b90 0' 'after bf006b1c11996197296c4344eeb9153a6289fdad 101'; do
             read -r binding_side binding_revision binding_expected <<< "$binding_pair"
             binding_source="$RUNNER_TEMP/binding-parser-$binding_side"
+            binding_target="$RUNNER_TEMP/binding-target-$binding_side"
             mkdir -p "$binding_source"
             git archive "$binding_revision" | tar -x -C "$binding_source"
             git ls-tree -r "$binding_revision" > "$binding_output/$binding_side-source-tree.txt"
@@ -199,7 +200,7 @@ jobs:
             for binding_repeat in 1 2; do
               binding_capture="$binding_output/$binding_side-$binding_repeat"
               mkdir -p "$binding_capture"
-              if (cd "$binding_source" && VIZE_TOKENIZER_CAPTURE_DIR="$binding_capture" CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target" cargo test --locked --profile ci -p vize_armature --features native-lex-parity,legacy --lib parser::tokenizer_contract_tests::complete_fixture_asts_and_utf8_cuts_keep_the_frozen_tokenizer_contract -- --exact --nocapture) > "$binding_capture/stdout.bin" 2> "$binding_capture/stderr.bin"; then binding_status=0; else binding_status=$?; fi
+              if (cd "$binding_source" && VIZE_TOKENIZER_CAPTURE_DIR="$binding_capture" CARGO_TARGET_DIR="$binding_target" cargo test --locked --profile ci -p vize_armature --features native-lex-parity,legacy --lib parser::tokenizer_contract_tests::complete_fixture_asts_and_utf8_cuts_keep_the_frozen_tokenizer_contract -- --exact --nocapture) > "$binding_capture/stdout.bin" 2> "$binding_capture/stderr.bin"; then binding_status=0; else binding_status=$?; fi
               printf '{"source":"%s","repeat":%s,"actualExit":%s,"expectedCaptureExit":%s}\n' "$binding_revision" "$binding_repeat" "$binding_status" "$binding_expected" > "$binding_capture/process.json"
               if ! node --input-type=module - "$binding_capture/fixtures.bin" "$binding_source/crates/vize_armature/tests/_fixtures/tokenizer_parser_fixtures.bin" <<'JS_CAPTURE'
           import assert from 'node:assert/strict';
