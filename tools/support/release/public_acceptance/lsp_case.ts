@@ -27,14 +27,8 @@ const publication = (uri: string, version: number, diagnostics: Json) => ({
   params: { uri, version, diagnostics },
 });
 const reply = (id: number, result: Json) => ({ jsonrpc: "2.0", id, result });
-export function assertWholeCase(
-  packet: Json,
-  oracle: Json,
-  uris: Record<string, string>,
-  model: boolean,
-) {
-  assert.deepEqual(packet.oracle, oracle, "whole literal pre-query corpus");
-  const actual = packet.actual;
+/** One independent whole-envelope authority shared by case and lifecycle checks. */
+export function diagnosticContract(uris: Record<string, string>) {
   const guardUri = uris["NativeGuard.vue"];
   const invalid = publication(guardUri, 1, [
     {
@@ -46,6 +40,22 @@ export function assertWholeCase(
     },
   ]);
   const repaired = publication(guardUri, 2, []);
+  const allowed = [
+    invalid,
+    repaired,
+    ...files.flatMap((file) => [1, 2, 3].map((version) => publication(uris[file], version, []))),
+  ];
+  return { invalid, repaired, allowed };
+}
+export function assertWholeCase(
+  packet: Json,
+  oracle: Json,
+  uris: Record<string, string>,
+  model: boolean,
+) {
+  assert.deepEqual(packet.oracle, oracle, "whole literal pre-query corpus");
+  const actual = packet.actual;
+  const { invalid, repaired, allowed } = diagnosticContract(uris);
   assert.deepEqual(actual.nativeGuard, {
     invalidDiagnostics: invalid,
     repairedDiagnostics: repaired,
@@ -72,11 +82,6 @@ export function assertWholeCase(
   assert.deepEqual(actual.appliedFiles, installed(2));
   assert.deepEqual(actual.independentGoldenFiles, installed(3));
   assert.equal(oracle.sources["Other.vue"], oracle.completeGoldenFiles["Other.vue"]);
-  const allowed = [
-    invalid,
-    repaired,
-    ...files.flatMap((file) => [1, 2, 3].map((version) => publication(uris[file], version, []))),
-  ];
   assert.ok(Array.isArray(actual.allDiagnosticPublications));
   for (const message of actual.allDiagnosticPublications)
     assert.ok(
