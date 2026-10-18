@@ -66,7 +66,12 @@ export function expectedRuleReferences(route: string) {
       const graphs = [...source.matchAll(/```text\n([\s\S]*?)\n```/g)];
       if (file === "vize-croquis-cf-circular-reactive-dependency.md") {
         assert.equal(graphs.length, 2, "both retained Bad/Good graph packets are rendered");
-        assert.match(source, /Example qualification: `illustrative-source-pair`/);
+        assert.match(
+          source,
+          ja
+            ? /例の検証状況: `illustrative-source-pair`/
+            : /Example qualification: `illustrative-source-pair`/,
+        );
       }
       const id = source.match(/^# `([^`]+)`/m)?.[1];
       assert.ok(id, `${file}: authored rule heading`);
