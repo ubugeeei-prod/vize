@@ -10,6 +10,14 @@ import {
 
 const EXCLUDED_DIRECTORIES = ["node_modules", ".git", "target", "dist", "build"];
 
+type ParentWatch = {
+  owner: string;
+  paths: Set<string>;
+  files: Map<string, Uri>;
+  watcher?: fs.FSWatcher;
+  active: boolean;
+};
+
 export class WorkspaceLspConfigDiscovery {
   private discovered = false;
   private refreshGeneration = 0;
@@ -63,10 +71,13 @@ export class WorkspaceLspConfigDiscovery {
   watch(onChange: (reason: string) => void): Disposable[] {
     let disposed = false;
     const leases = new Map<string, { watcher: FileSystemWatcher; subscriptions: Disposable[] }>();
-    const parents = new Map<
-      string,
-      { owner: string; paths: Set<string>; subscriptions: Disposable[] }
-    >();
+    const parents = new Map<string, ParentWatch>();
+    const closeParent = (key: string, lease: ParentWatch) => {
+      if (parents.get(key) !== lease) return;
+      parents.delete(key);
+      lease.active = false;
+      lease.watcher?.close();
+    };
     const changed = (kind: string, uri: Uri, key: string, active: boolean) => {
       const owner =
         disposed || !active ? undefined : workspace.getWorkspaceFolder(uri)?.uri.toString();
@@ -80,47 +91,78 @@ export class WorkspaceLspConfigDiscovery {
     };
     const reconcileParents = () => {
       if (disposed) return;
-      const current = new Map<string, { uri: Uri; owner: string; paths: Set<string> }>();
+      const current = new Map<
+        string,
+        { uri: Uri; owner: string; paths: Set<string>; files: Map<string, Uri> }
+      >();
       for (const uri of this.knownConfigurations) {
         const owner = workspace.getWorkspaceFolder(uri)?.uri.toString();
-        if (!owner || uri.path.split("/").some((part) => EXCLUDED_DIRECTORIES.includes(part))) {
+        if (
+          uri.scheme !== "file" ||
+          !owner ||
+          uri.path.split("/").some((part) => EXCLUDED_DIRECTORIES.includes(part))
+        ) {
           continue;
         }
         const parent = Uri.joinPath(uri, "..");
         const key = parent.toString();
-        const group = current.get(key) ?? { uri: parent, owner, paths: new Set<string>() };
+        const group = current.get(key) ?? {
+          uri: parent,
+          owner,
+          paths: new Set<string>(),
+          files: new Map<string, Uri>(),
+        };
         group.paths.add(uri.toString());
+        group.files.set(path.basename(uri.fsPath), uri);
         current.set(key, group);
       }
       for (const [key, lease] of parents) {
         if (current.get(key)?.owner !== lease.owner) {
-          parents.delete(key);
-          for (const subscription of lease.subscriptions) subscription.dispose();
+          closeParent(key, lease);
         }
       }
       for (const [key, group] of current) {
         const previous = parents.get(key);
         if (previous) {
           previous.paths = group.paths;
+          previous.files = group.files;
           continue;
         }
-        // Existing files must not depend on a recursive watcher discovering a
-        // newly created ancestor. Request their concrete parent before startup.
-        this.trace(`watch register parent=${key} workspace=${group.owner}`);
-        const watcher = workspace.createFileSystemWatcher(new RelativePattern(group.uri, "*"));
-        const lease = { owner: group.owner, paths: group.paths, subscriptions: [] as Disposable[] };
-        const notify = (kind: string, uri: Uri) => {
-          if (lease.paths.has(uri.toString())) {
-            changed(kind, uri, lease.owner, parents.get(key) === lease);
-          }
-        };
+        // VS Code restricts nonrecursive workspace watches to watcherExclude
+        // paths. A direct native handle also covers ordinary existing configs.
+        this.trace(`watch register native parent=${key} workspace=${group.owner}`);
+        const lease: ParentWatch = { ...group, active: false };
         parents.set(key, lease);
-        lease.subscriptions = [
-          watcher,
-          watcher.onDidCreate((uri) => notify("create", uri)),
-          watcher.onDidChange((uri) => notify("change", uri)),
-          watcher.onDidDelete((uri) => notify("delete", uri)),
-        ];
+        try {
+          lease.watcher = fs.watch(
+            group.uri.fsPath,
+            { recursive: false, persistent: false, encoding: "utf8" },
+            (kind, filename) => {
+              if (parents.get(key) !== lease || !lease.active) return;
+              if (typeof filename !== "string" || filename.length === 0) {
+                this.trace(`watch native filename unavailable parent=${key}`);
+                closeParent(key, lease);
+                return;
+              }
+              const uri = lease.files.get(filename);
+              if (uri) changed(kind, uri, lease.owner, true);
+            },
+          );
+          lease.active = true;
+          lease.watcher.on("error", (error) => {
+            if (parents.get(key) !== lease) return;
+            this.trace(`watch native error parent=${key} error=${String(error)}`);
+            closeParent(key, lease);
+          });
+          lease.watcher.on("close", () => {
+            if (parents.get(key) !== lease) return;
+            this.trace(`watch native closed parent=${key}`);
+            closeParent(key, lease);
+          });
+        } catch (error) {
+          this.trace(`watch native error parent=${key} error=${String(error)}`);
+          closeParent(key, lease);
+        }
       }
     };
     const reconcile = () => {
@@ -143,7 +185,7 @@ export class WorkspaceLspConfigDiscovery {
         );
         const notify = (kind: string, uri: Uri) => {
           const parent = parents.get(Uri.joinPath(uri, "..").toString());
-          if (parent?.owner === key && parent.paths.has(uri.toString())) return;
+          if (parent?.active && parent.owner === key && parent.paths.has(uri.toString())) return;
           changed(kind, uri, key, leases.get(key)?.watcher === watcher);
         };
         leases.set(key, {
@@ -175,10 +217,7 @@ export class WorkspaceLspConfigDiscovery {
             for (const subscription of lease.subscriptions) subscription.dispose();
           }
           leases.clear();
-          for (const lease of parents.values()) {
-            for (const subscription of lease.subscriptions) subscription.dispose();
-          }
-          parents.clear();
+          for (const [key, lease] of parents) closeParent(key, lease);
         },
       },
     ];
