@@ -33,8 +33,6 @@ impl CorsaServer {
         flags: &str,
     ) -> Result<Vec<Diagnostic>, String> {
         let report_unused = reports_unused(&self.working_dir(), source_path);
-        let virtual_line_index = LineIndex::new(&project.host.code);
-        let source_line_index = LineIndex::new(source);
         self.with_project_session(source_path, flags, |client| {
             if let Some(project_root) = project.session_project_root.as_deref() {
                 client.synchronize_materialized_project(
@@ -50,19 +48,8 @@ impl CorsaServer {
                 .collect();
             client.did_open_batch_fast(&documents)?;
             let corsa_diagnostics = client.request_diagnostics(&project.host.request_uri)?;
-            let mut diagnostics = corsa_diagnostics
-                .into_iter()
-                .filter_map(|diagnostic| {
-                    map_corsa_diagnostic(
-                        project,
-                        source,
-                        &virtual_line_index,
-                        &source_line_index,
-                        diagnostic,
-                    )
-                })
-                .filter(|diagnostic| check_reports(diagnostic, report_unused))
-                .collect::<Vec<_>>();
+            let mut diagnostics =
+                map_corsa_diagnostics(project, source, corsa_diagnostics, report_unused);
             diagnostics.sort_by(|left, right| {
                 left.line
                     .cmp(&right.line)
@@ -73,6 +60,29 @@ impl CorsaServer {
             Ok(diagnostics)
         })
     }
+}
+
+fn map_corsa_diagnostics(
+    project: &CorsaVueVirtualProject,
+    source: &str,
+    diagnostics: Vec<LspDiagnostic>,
+    report_unused: bool,
+) -> Vec<Diagnostic> {
+    let virtual_line_index = LineIndex::new(&project.host.code);
+    let source_line_index = LineIndex::new(source);
+    diagnostics
+        .into_iter()
+        .filter_map(|diagnostic| {
+            map_corsa_diagnostic(
+                project,
+                source,
+                &virtual_line_index,
+                &source_line_index,
+                diagnostic,
+            )
+        })
+        .filter(|diagnostic| check_reports(diagnostic, report_unused))
+        .collect()
 }
 
 /// `vize check` drops `TS6133` unless the tsconfig asks for unused declarations.
@@ -195,7 +205,7 @@ mod tests {
     use serde_json::json;
     use vize_carton::line_index::LineIndex;
 
-    use super::{dedup_diagnostics, map_corsa_diagnostic, one_based};
+    use super::{dedup_diagnostics, map_corsa_diagnostic, map_corsa_diagnostics, one_based};
     use crate::batch::ImportSourceMap;
     use crate::corsa_bridge::{CorsaVueVirtualDocument, CorsaVueVirtualProject};
     use crate::corsa_client::{LspDiagnostic, LspPosition, LspRange};
@@ -330,5 +340,74 @@ mod tests {
         assert_eq!(diagnostics.len(), 2);
         assert_eq!(diagnostics[0].severity, "error");
         assert_eq!(diagnostics[1].severity, "warning");
+    }
+
+    #[test]
+    fn generated_checker_give_ups_reach_the_complete_server_packet() {
+        for (raw_code, code) in [
+            (json!(2563), 2563),
+            (json!("TS2589"), 2589),
+            (json!("2590"), 2590),
+        ] {
+            let mut raw = diagnostic(0, 0, 4);
+            raw.code = Some(raw_code);
+            let actual = map_corsa_diagnostics(&project(), SOURCE, vec![raw], true);
+            assert_eq!(
+                serde_json::to_value(actual).unwrap(),
+                json!([{
+                    "message": format!("Vize internal error: the type-check code generated for this file made the checker give up (TS{code}). Types in this and other files may be degraded. Please report this file to Vize."),
+                    "severity": "error",
+                    "line": 1,
+                    "column": 1,
+                    "code": format!("TS{code}")
+                }])
+            );
+        }
+    }
+
+    #[test]
+    fn server_assembly_keeps_one_generated_give_up_and_normal_authored_findings() {
+        let source = "<script setup>const n = 1</script>\r\n<template><p>mapped</p></template>";
+        let mut project = project();
+        let mapped = source.find("mapped").unwrap();
+        project.host.mapping =
+            crate::virtual_ts::ProjectionMapping::from_spans(vec![VizeMapping::new(
+                7..13,
+                mapped..mapped + 6,
+            )]);
+        let raws = [
+            (0, 0, 2563, 1),
+            (0, 1, 2589, 1),
+            (0, 2, 2590, 1),
+            (0, 3, 2493, 1),
+            (0, 4, 2353, 1),
+            (1, 0, 2589, 2),
+            (1, 1, 2322, 1),
+        ]
+        .into_iter()
+        .map(|(line, character, code, severity)| {
+            let mut raw = diagnostic(line, character, severity);
+            raw.code = Some(json!(code));
+            raw
+        })
+        .collect();
+        let actual = map_corsa_diagnostics(&project, source, raws, true);
+        assert_eq!(
+            serde_json::to_value(actual).unwrap(),
+            json!([
+                {
+                    "message": "Vize internal error: the type-check code generated for this file made the checker give up (TS2563). Types in this and other files may be degraded. Please report this file to Vize.",
+                    "severity": "error", "line": 2, "column": 11, "code": "TS2563"
+                },
+                {
+                    "message": "generated diagnostic",
+                    "severity": "warning", "line": 2, "column": 14, "code": "TS2589"
+                },
+                {
+                    "message": "generated diagnostic",
+                    "severity": "error", "line": 2, "column": 15, "code": "TS2322"
+                }
+            ])
+        );
     }
 }
