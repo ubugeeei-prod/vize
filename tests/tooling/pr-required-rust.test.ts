@@ -11,6 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { runInNewContext } from "node:vm";
 import type { CargoMetadata } from "../../tools/support/compat/github/plan-affected-rust.ts";
 import { planPrChecks, prCheckOutputs } from "../../tools/support/compat/github/plan-pr-checks.ts";
 
@@ -278,7 +279,7 @@ test("split Rust workflows preserve whole original producer and corpus recipes",
     "merge-rust-source": "d607059b87aae591d6f83cb6be640da086eb70cda213fcbbef47732d9ff5a754",
     "merge-rust-differential": "13c78bc5c1872dffc8af00f380e4b65177e524cf516b5914d808aa0bdea1194e",
     "pr-rust-build": "b6196b2390e511fcbe60021124f07e84642e0d3d377d489316241575df3ffea5",
-    "pr-rust-shard": "af4b97cfdae29725e28edc85ea2683cf6861928a1cf404766625bce18c7a0515",
+    "pr-rust-shard": "fac12385c01201bbb2645d0424c6ceb5a3083aad90e58fdc8c4d605ffdc93397",
   };
   for (const [id, expected] of Object.entries(oldHashes)) {
     const job = structuredClone(source[id] ?? products[id]);
@@ -459,22 +460,20 @@ test("the production product CLI cannot accept self-declared JSON as live qualif
 test("actual job selectors keep ordinary workers and source checks while only footprint products can skip", () => {
   const source = rustWorkflow("pr-rust-checks.yml").jobs;
   const products = rustWorkflow("pr-rust-products.yml").jobs;
-  const selector = (job: RustJob) =>
-    Function(
-      "event",
-      "runRust",
-      "product",
-      "result",
-      "cancelled",
-      `return (${job.if
-        .slice(3, -2)
-        .replaceAll("github.event_name", "event")
-        .replaceAll("inputs.run-rust", "runRust")
-        .replaceAll("inputs.product-qualification", "product")
-        .replaceAll("needs.merge-rust-source.result", "result")
-        .replaceAll("always()", "true")
-        .replaceAll("cancelled()", "cancelled")})`,
-    );
+  const selector =
+    (job: RustJob) =>
+    (context: Record<string, string | boolean>): unknown =>
+      runInNewContext(
+        `(${job.if
+          .slice(3, -2)
+          .replaceAll("github.event_name", "event")
+          .replaceAll("inputs.run-rust", "runRust")
+          .replaceAll("inputs.product-qualification", "product")
+          .replaceAll("needs.merge-rust-source.result", "result")
+          .replaceAll("always()", "true")
+          .replaceAll("cancelled()", "cancelled")})`,
+        context,
+      );
   const archive = selector(products["merge-rust-source"]),
     cohort = selector(products["pr-rust-shard"]);
   const clippy = selector(source["pr-rust-build"]),
@@ -484,16 +483,16 @@ test("actual job selectors keep ordinary workers and source checks while only fo
       for (const product of ["", "untrusted-nonempty"])
         for (const result of ["success", "failure", "skipped"])
           for (const cancelled of [true, false]) {
-            const args = [event, runRust, product, result, cancelled];
-            assert.equal(archive(...args), event === "merge_group" && runRust && product === "");
+            const args = { event, runRust, product, result, cancelled };
+            assert.equal(archive(args), event === "merge_group" && runRust && product === "");
             assert.equal(
-              cohort(...args),
+              cohort(args),
               !cancelled &&
                 runRust &&
                 product === "" &&
                 (event === "pull_request" || result === "success"),
             );
-            assert.equal(clippy(...args), runRust);
-            assert.equal(differential(...args), event === "merge_group" && runRust);
+            assert.equal(clippy(args), runRust);
+            assert.equal(differential(args), event === "merge_group" && runRust);
           }
 });

@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import {
   lstatSync,
   mkdirSync,
+  mkdtempSync,
   readFileSync,
   readdirSync,
   realpathSync,
@@ -73,18 +74,27 @@ export function collectorHarness(bytes) {
 
 // This shallow walk authenticates symlinks before native traversal; it never
 // follows them or removes logical aliases from the actual collector output.
-function validatePhysicalLinks(root, nodes) {
+function validatePhysicalLinks(root, nodes, observed = null) {
   const visit = (directory) => {
     for (const name of readdirSync(directory)) {
       if (excluded(name)) continue;
       const path = join(directory, name);
       const stat = lstatSync(path);
+      const entry = {
+        path: relative(root, path).split(sep).join("/"),
+        mode: stat.mode,
+        size: stat.size,
+        mtimeMs: stat.mtimeMs,
+        ctimeMs: stat.ctimeMs,
+      };
+      observed?.push(entry);
       if (stat.isDirectory()) {
         if (!excluded(name)) visit(path);
       } else if (stat.isSymbolicLink()) {
         const logical = relative(root, path).split(sep).join("/");
         const node = nodes.get(logical);
         const bytes = readlinkSync(path, { encoding: "buffer" });
+        entry.targetBase64 = bytes.toString("base64");
         assert(node?.mode === "120000", `Foreign physical canonical symlink: ${logical}`);
         assert.equal(gitObjectId("blob", bytes), node.id, "Physical symlink bytes changed");
         assert.equal(bytes.toString("utf8"), node.target, "Physical symlink target changed");
@@ -94,9 +104,10 @@ function validatePhysicalLinks(root, nodes) {
   visit(root);
 }
 
-export function collectNativePhysical(root, nodes, children) {
+export function collectNativePhysical(root, nodes, children, observe = null) {
   validateLogicalGraph(nodes, children);
-  validatePhysicalLinks(root, nodes);
+  const physical = observe ? [] : null;
+  const metadata = observe ? [] : null;
   const files = [];
   const rejected = [];
   let successfulFollows = 0;
@@ -110,29 +121,62 @@ export function collectNativePhysical(root, nodes, children) {
       const physicalPath = join(physicalDirectory, name);
       const logical = relative(root, path).split(sep).join("/");
       let isDirectory;
+      const observed = { path: logical };
+      metadata?.push(observed);
       try {
         isDirectory = statSync(path).isDirectory();
+        observed.isDirectory = isDirectory;
       } catch (error) {
+        observed.error = {
+          code: error.code,
+          errno: error.errno,
+          syscall: error.syscall,
+          path: error.path,
+          message: error.message,
+        };
         assert.equal(error.code, "ELOOP", "Unexpected physical corpus metadata failure");
         const node = resolveLogical(nodes, logical);
         assert(node.allowed, "Foreign physical kernel boundary");
         rejected.push({ path: logical, code: error.code, followed: node.followed });
+        observed.followed = node.followed;
         isDirectory = false;
       }
       if (isDirectory) {
         // Untracked Git metadata has no committed source node and no Vue inputs.
-        if (nodes.has(logical))
-          successfulFollows = Math.max(successfulFollows, resolveLogical(nodes, logical).followed);
+        if (nodes.has(logical)) {
+          observed.followed = resolveLogical(nodes, logical).followed;
+          successfulFollows = Math.max(successfulFollows, observed.followed);
+        }
         if (!excluded(name)) visit(path, realpathSync(physicalPath));
       } else if (extname(name) === ".vue") {
         const bytes = readFileSync(physicalPath); // Any unreadable Vue remains fatal.
         const node = resolveLogical(nodes, logical);
+        observed.followed = node.followed;
         successfulFollows = Math.max(successfulFollows, node.followed);
         files.push([logical, digest(bytes), bytes.length, gitObjectId("blob", bytes)]);
       }
     }
   };
-  visit(root, realpathSync(root));
+  // Persist the unmodified observations even when traversal or the strict boundary
+  // comparisons refuse this capture. These rows never authorize a boundary.
+  let traversalFailure = null;
+  try {
+    validatePhysicalLinks(root, nodes, physical);
+    visit(root, realpathSync(root));
+  } catch (error) {
+    traversalFailure = { error };
+  }
+  try {
+    observe?.({ physical, metadata, files, rejected, successfulFollows });
+  } catch (observationError) {
+    if (traversalFailure)
+      throw new AggregateError(
+        [traversalFailure.error, observationError],
+        "Native traversal and observation persistence both failed",
+      );
+    throw observationError;
+  }
+  if (traversalFailure) throw traversalFailure.error;
   assert(rejected.length > 0, "Missing actual native kernel boundary observation");
   const firstRejected = rejected[0].followed;
   assert(
@@ -194,7 +238,22 @@ export function captureNativeWalk(cwd, identity, proof, directory) {
     cwd,
     maxBuffer: 64 * 1024 * 1024,
   });
-  const original = collectNativePhysical(root, nodes, children);
+  // Each recapture has a distinct evidence directory: a later refusal must not
+  // overwrite the initial successful vector/graph or require a valid receipt.
+  const observation = mkdtempSync(join(directory, "native-observation-"));
+  for (const [name, bytes] of [
+    ["identity.json", JSON.stringify(identity)],
+    ["committed-corpus.json", JSON.stringify(proof)],
+    ["native-vector.nul", vector],
+    ["native-collector-source.rs", source],
+    ["native-collector.rs", harness],
+    ["native-rustc.txt", toolchain],
+    ["native-collector", readFileSync(join(directory, "native-collector"))],
+  ])
+    writeFileSync(join(observation, name), bytes, { flag: "wx" });
+  const original = collectNativePhysical(root, nodes, children, (raw) => {
+    writeFileSync(join(observation, "physical.json"), JSON.stringify(raw), { flag: "wx" });
+  });
   proof.kernelBoundary = original.boundary;
   proof.traversal = "finite-physical-edges";
   const { files, committed, originalVector } = captureFiniteObservation(

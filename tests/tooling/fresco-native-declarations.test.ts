@@ -6,7 +6,11 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { checkWorkflowJobSources, readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  readRepoFile,
+  workflowJobBody,
+} from "./support/github-workflows.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const packageDir = path.join(root, "npm/fresco-native");

@@ -291,6 +291,7 @@ test("the real command preserves generated notes and evergreen scope and refuses
           previous_tag_name: "v0.457.0",
         }),
       },
+      { args: ["api", "repos/owner/repo/git/ref/tags/v0.457.0"], body: "" },
     ]);
     const refused = spawnSync(
       process.execPath,
@@ -301,11 +302,188 @@ test("the real command preserves generated notes and evergreen scope and refuses
     assert.match(refused.stderr, /checkout differs from the pinned source/);
     assert.equal(
       readFileSync(join(root, "api.jsonl"), "utf8").trim().split("\n").length,
-      2,
+      3,
       "mismatched source must not invoke GitHub",
     );
     assert.equal(readFileSync(output, "utf8"), `${scope.trim()}\n\n${generated.trim()}\n`);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+void test("only the authenticated already-published integration bullet is removed byte-for-byte", () => {
+  const repository = "owner/repo";
+  const tag = "v0.457.0";
+  const [object, head, cut, integrationHead, merge, tree, gate] = "abcdef0"
+    .split("")
+    .map((x) => x.repeat(40));
+  const url = `https://github.com/${repository}/pull/73`;
+  const row = `* Any title, not a classification by @reporter in ${url}`;
+  const original = `## What's Changed\n* Real fix by @user in https://github.com/${repository}/pull/74\n${row}\n\n**Full Changelog**: https://github.com/${repository}/compare/${tag}...v0.458.0\n`;
+  const expected = original.replace(`${row}\n`, "");
+  const make = () => ({
+    reference: { ref: `refs/tags/${tag}`, object: { type: "tag", sha: object } },
+    annotated: {
+      sha: object,
+      tag,
+      object: { type: "commit", sha: head },
+      message: `Release ${tag}\n\nRelease-Mode: pinned\nRelease-PR: #72\nValidated-run: 19\nValidated-head: ${head}\nValidated-base: ${cut}\nIntegration-PR: #73\nIntegration-head: ${integrationHead}\nIntegration-merge: ${merge}\nIntegration-parent: ${cut}\nProtected-candidate: ${gate}\n`,
+    },
+    pr: {
+      number: 73,
+      merged: true,
+      state: "closed",
+      merged_at: "2026-10-17T00:00:00Z",
+      merge_commit_sha: merge,
+      base: { ref: "main", repo: { full_name: repository } },
+      head: { sha: integrationHead, repo: { full_name: repository } },
+      body: `<!-- vize-release-pin-source: 72 -->\n<!-- vize-release-pin-cut: ${cut} -->\n<!-- vize-release-pin-head: ${head} -->\n<!-- vize-release-pin-tag: ${tag} -->`,
+    },
+    h: { sha: head, parents: [{ sha: cut }], commit: { tree: { sha: tree } } },
+    m: {
+      sha: merge,
+      parents: [{ sha: cut }],
+      commit: { tree: { sha: tree }, verification: { verified: true, reason: "valid" } },
+    },
+  });
+  const run = (fixture = make(), body = original) => {
+    const calls: string[] = [];
+    const objects: Record<string, unknown> = {
+      [`git/ref/tags/${tag}`]: fixture.reference,
+      [`git/tags/${object}`]: fixture.annotated,
+      "pulls/73": fixture.pr,
+      [`commits/${head}`]: fixture.h,
+      [`commits/${merge}`]: fixture.m,
+    };
+    const notes = generateReleaseNotes(
+      (path, request) => {
+        calls.push(path);
+        if (request) return { body };
+        if (path.includes("/releases?")) return [release(tag)];
+        const key = path.slice(`repos/${repository}/`.length);
+        if (!(key in objects)) throw new Error("unavailable identity");
+        return objects[key];
+      },
+      repository,
+      "v0.458.0",
+      "1".repeat(40),
+    );
+    return { notes, calls };
+  };
+  const positive = run();
+  assert.deepEqual(positive.notes, { body: expected, previousTag: tag });
+  assert.deepEqual(positive.calls, [
+    `repos/${repository}/releases?per_page=100&page=1`,
+    `repos/${repository}/releases/generate-notes`,
+    ...[
+      `git/ref/tags/${tag}`,
+      `git/tags/${object}`,
+      "pulls/73",
+      `commits/${head}`,
+      `commits/${merge}`,
+    ].map((path) => `repos/${repository}/${path}`),
+  ]);
+  for (const mutate of [
+    (f: ReturnType<typeof make>) => {
+      f.reference.object.type = "commit";
+    },
+    (f: ReturnType<typeof make>) => {
+      f.reference.ref += "-other";
+    },
+    (f: ReturnType<typeof make>) => {
+      f.annotated.sha = gate;
+    },
+    (f: ReturnType<typeof make>) => {
+      f.annotated.object.sha = gate;
+    },
+    (f: ReturnType<typeof make>) => {
+      f.annotated.tag = "v0.456.0";
+    },
+    (f: ReturnType<typeof make>) => {
+      f.annotated.message += "Release-PR: #72\n";
+    },
+    (f: ReturnType<typeof make>) => {
+      f.annotated.message = f.annotated.message.replace("Validated-run: 19", "Validated-run: 0");
+    },
+    (f: ReturnType<typeof make>) => {
+      f.annotated.message = f.annotated.message.replace(
+        `Integration-parent: ${cut}`,
+        `Integration-parent: ${gate}`,
+      );
+    },
+    (f: ReturnType<typeof make>) => {
+      f.pr.number = 74;
+    },
+    (f: ReturnType<typeof make>) => {
+      f.pr.merged = false;
+    },
+    (f: ReturnType<typeof make>) => {
+      f.pr.state = "open";
+    },
+    (f: ReturnType<typeof make>) => {
+      f.pr.merge_commit_sha = gate;
+    },
+    (f: ReturnType<typeof make>) => {
+      f.pr.head.sha = gate;
+    },
+    (f: ReturnType<typeof make>) => {
+      f.pr.base.ref = "other";
+    },
+    (f: ReturnType<typeof make>) => {
+      f.pr.base.repo.full_name = "foreign/repo";
+    },
+    (f: ReturnType<typeof make>) => {
+      f.pr.head.repo.full_name = "foreign/repo";
+    },
+    (f: ReturnType<typeof make>) => {
+      f.pr.body = f.pr.body.replace(head, gate);
+    },
+    (f: ReturnType<typeof make>) => {
+      f.pr.body += "\n<!-- vize-release-pin-source: 99 -->";
+    },
+    (f: ReturnType<typeof make>) => {
+      f.h.parents[0].sha = gate;
+    },
+    (f: ReturnType<typeof make>) => {
+      f.m.parents.push({ sha: gate });
+    },
+    (f: ReturnType<typeof make>) => {
+      f.m.parents[0].sha = gate;
+    },
+    (f: ReturnType<typeof make>) => {
+      f.m.commit.verification.verified = false;
+    },
+    (f: ReturnType<typeof make>) => {
+      f.m.commit.verification.reason = "unsigned";
+    },
+    (f: ReturnType<typeof make>) => {
+      f.m.commit.tree.sha = gate;
+    },
+  ]) {
+    const fixture = make();
+    mutate(fixture);
+    assert.equal(run(fixture).notes.body, original, `unproved identity: ${String(mutate)}`);
+  }
+  for (const body of [
+    original.replace(url, `${url}0`),
+    original.replace(url, `${url}?other`),
+    original.replace(row, `- ${row.slice(2)}`),
+    original.replace(row, `${row}\n${row}`),
+    original.replace(row, `${row}\nExtra mention: ${url}`),
+    original.replace(url, url.replace(repository, "foreign/repo")),
+  ])
+    assert.equal(run(make(), body).notes.body, body, "unrecognized/ambiguous rows stay whole");
+  for (const [body, removed] of [
+    [original.replaceAll("\n", "\r\n"), `${row}\r\n`],
+    [original.trimEnd(), `${row}\n`],
+    [original.replace(row, `${row} with unexpected suffix`), ""],
+  ]) {
+    assert.equal(run(make(), body).notes.body, removed ? body.replace(removed, "") : body);
+  }
+  const titledRow = row.replace(
+    "Any title, not a classification",
+    "chore(release): genuine product content",
+  );
+  const titledBody = original.replace(row, titledRow);
+  assert.equal(run(make(), titledBody).notes.body, titledBody.replace(`${titledRow}\n`, ""));
 });

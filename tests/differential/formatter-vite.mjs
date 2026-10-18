@@ -240,7 +240,7 @@ export async function runPublicViteFormatter(root) {
                 persist();
               }
               assert.deepEqual(pass.observationErrors, []);
-              currentAddon(root, receipt, require);
+              custody.observe();
               const nativeLoads = pass.loads.loads.filter(
                 (load) => load.realpath === fs.realpathSync(custody.local),
               );

@@ -198,10 +198,7 @@ test("server-bound full workflow requires eight actual product jobs and the unch
           { ...job, ...(state === "pending" ? { status: "in_progress" } : { conclusion: state }) },
         ];
       });
-      assert.throws(
-        () => assertRequiredWorkflowJobs("Check", changed, run),
-        `${name}/${state}`,
-      );
+      assert.throws(() => assertRequiredWorkflowJobs("Check", changed, run), `${name}/${state}`);
     }
   }
   for (const changed of [
