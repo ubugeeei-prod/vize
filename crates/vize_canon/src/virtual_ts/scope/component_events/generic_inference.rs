@@ -7,7 +7,11 @@ use crate::virtual_ts::{
     scope::is_inline_callback_prop,
 };
 
-use crate::virtual_ts::expressions::generated_prop_value;
+use crate::virtual_ts::expressions::{
+    ComponentPropSource, append_props_literal, generated_prop_span, map_rewritten_template_binding,
+    prop_entry_sub_spans, prop_value_source_range,
+};
+use crate::virtual_ts::types::VizeMapping;
 
 pub(super) struct EmitInferenceContext<'a> {
     pub(super) summary: &'a Croquis,
@@ -19,11 +23,13 @@ pub(super) struct EmitInferenceContext<'a> {
     pub(super) safe_event_name: &'a str,
     pub(super) prop_key: &'a str,
     pub(super) template_binding_access: &'a TemplateBindingAccess,
+    pub(super) source_context: ComponentPropSource<'a>,
     pub(super) indent: &'a str,
 }
 
 pub(super) fn generate_inferred_emit_args(
     ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
     ctx: &EmitInferenceContext<'_>,
 ) -> Option<String> {
     super::super::super::script_facts::binding_span(ctx.summary, ctx.component_ref)?;
@@ -93,11 +99,12 @@ pub(super) fn generate_inferred_emit_args(
         );
     }
     if !usage.spread_props.is_empty() {
-        crate::virtual_ts::expressions::append_inference_props_literal(
+        append_props_literal(
             ts,
+            mappings,
             &usage,
             ctx.template_binding_access,
-            crate::virtual_ts::expressions::ComponentPropSource::new(None, 0, &ctx.summary.scopes),
+            ctx.source_context,
             call_indent,
         );
         ts.push_str(");\n");
@@ -107,7 +114,7 @@ pub(super) fn generate_inferred_emit_args(
             if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
                 continue;
             }
-            let Some(generated_value) = generated_prop_value(prop, ctx.template_binding_access)
+            let Some(generated_value) = generated_prop_span(prop, ctx.template_binding_access)
             else {
                 continue;
             };
@@ -118,11 +125,45 @@ pub(super) fn generate_inferred_emit_args(
                     "{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
                 );
             }
-            append!(
-                *ts,
-                "{call_indent}  \"{camel_prop_name}\": {},\n",
-                generated_value.as_str(),
-            );
+            append!(*ts, "{call_indent}  ");
+            let entry_start = ts.len();
+            append!(*ts, "\"{camel_prop_name}\"");
+            let key_end = ts.len();
+            ts.push_str(": ");
+            let value_start = ts.len();
+            ts.push_str(generated_value.text.as_str());
+            let entry_end = if generated_value.omits_tail() {
+                generated_value.mapped_limit(value_start)
+            } else {
+                ts.len()
+            };
+            ts.push_str(",\n");
+            mappings.push(VizeMapping {
+                gen_range: entry_start..entry_end,
+                src_range: (ctx.source_context.offset + prop.start) as usize
+                    ..(ctx.source_context.offset + prop.end) as usize,
+                sub_spans: prop_entry_sub_spans(
+                    ctx.source_context,
+                    prop,
+                    entry_start..key_end,
+                    value_start..entry_end,
+                ),
+            });
+            if !ctx.template_binding_access.is_empty()
+                && prop.is_dynamic
+                && !is_inline_callback_prop(prop)
+                && let Some(value) = prop.value.as_ref()
+                && let Some(source) = prop_value_source_range(ctx.source_context, prop)
+            {
+                map_rewritten_template_binding(
+                    ts,
+                    mappings,
+                    value_start,
+                    source.start,
+                    value.as_str(),
+                    ctx.template_binding_access,
+                );
+            }
         }
         append!(*ts, "{call_indent}}});\n");
     }

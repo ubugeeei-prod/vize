@@ -5,6 +5,7 @@
 use vize_carton::{String, append, profile};
 use vize_croquis::{EventHandlerScopeData, Scope};
 
+use crate::virtual_ts::expressions::ComponentPropSource;
 use crate::virtual_ts::types::VizeMapping;
 
 use super::super::component_events::{ComponentEventTypeContext, generate_component_event_types};
@@ -32,6 +33,7 @@ pub(super) fn generate_component_handler_scope(
     // no event contract to declare.
     let Some(event_types) = generate_component_event_types(
         ts,
+        mappings,
         ComponentEventTypeContext {
             summary: ctx.summary,
             virtual_ts_options: ctx.virtual_ts_options,
@@ -39,6 +41,11 @@ pub(super) fn generate_component_handler_scope(
             scope,
             syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
             template_binding_access: ctx.template_binding_access,
+            source_context: ComponentPropSource::new(
+                ctx.template_source,
+                ctx.template_offset,
+                &ctx.summary.scopes,
+            ),
             legacy_vue2: ctx.legacy_vue2,
             needs_typed_handler_assignment,
             fallthrough_listeners: ctx.check_options.fallthrough_attributes,
