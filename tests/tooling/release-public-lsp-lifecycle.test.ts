@@ -3,6 +3,10 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import test from "node:test";
 import { assertDecodedLspLifecycle } from "../../tools/support/release/public_acceptance/lsp_packets.ts";
+import {
+  atomicDiagnosticContract,
+  diagnosticContract,
+} from "../../tools/support/release/public_acceptance/lsp_case.ts";
 
 const fixture = JSON.parse(
   fs.readFileSync(
@@ -16,6 +20,15 @@ const original = (): ReturnType<typeof JSON.parse>[] =>
     .split("\n")
     .map((row: string) => JSON.parse(row));
 type Ledger = ReturnType<typeof original>;
+const originalUris = Object.fromEntries(
+  original().flatMap((row) => {
+    const document = row.message.params?.textDocument;
+    return row.direction === "request" && row.message.method === "textDocument/didOpen"
+      ? [[new URL(document.uri).pathname.split("/").at(-1)!, document.uri]]
+      : [];
+  }),
+);
+const originalAuthority = diagnosticContract(originalUris).allowed;
 const request = (rows: Ledger, method: string) =>
   rows.findIndex((row) => row.direction === "request" && row.message.method === method);
 const shutdownResponse = (rows: Ledger) => {
@@ -31,7 +44,7 @@ test("actual public 0.458 decoded ledger ends at exit without rewriting rows", (
   assert.equal(fixture.provenance.version, "0.458.0");
   const rows = original(),
     before = structuredClone(rows);
-  assertDecodedLspLifecycle(rows, fixture.terminal);
+  assertDecodedLspLifecycle(rows, fixture.terminal, originalAuthority);
   assert.deepEqual(rows, before);
   assert.equal(rows.length, 94);
   assert.deepEqual(rows.at(-1), {
@@ -75,6 +88,7 @@ test("historical 0.457 error ledger remains evidence, not an accepted successor 
     assertDecodedLspLifecycle(
       historical.protocol.trim().split("\n").map(JSON.parse),
       historical.terminal,
+      originalAuthority,
     ),
   );
 });
@@ -213,7 +227,7 @@ for (const [label, mutate] of Object.entries(invalid))
   test(`decoded lifecycle refuses ${label}`, () => {
     const rows = original();
     mutate(rows);
-    assert.throws(() => assertDecodedLspLifecycle(rows, fixture.terminal));
+    assert.throws(() => assertDecodedLspLifecycle(rows, fixture.terminal, originalAuthority));
   });
 
 for (const [key, value] of [
@@ -227,6 +241,209 @@ for (const [key, value] of [
 ] as const)
   test(`boundary EOF cannot qualify terminal ${key}=${value}`, () => {
     assert.throws(() =>
-      assertDecodedLspLifecycle(original(), { ...fixture.terminal, [key]: value }),
+      assertDecodedLspLifecycle(
+        original(),
+        { ...fixture.terminal, [key]: value },
+        originalAuthority,
+      ),
     );
+  });
+
+const delayedUris = Object.fromEntries(
+  ["NativeGuard.vue", "Child.vue", "Parent.vue", "Other.vue"].map((file) => [
+    file,
+    `file:///controlled-project/src/${file}`,
+  ]),
+);
+const delayedAuthority = diagnosticContract(delayedUris).allowed;
+const delayedDiagnostic = {
+  direction: "response",
+  message: {
+    jsonrpc: "2.0",
+    method: "textDocument/publishDiagnostics",
+    params: { uri: delayedUris["Parent.vue"], version: 3, diagnostics: [] },
+  },
+};
+const delayed = (duplicate: boolean): Ledger => [
+  { direction: "request", message: { jsonrpc: "2.0", id: 1, method: "initialize" } },
+  { direction: "response", message: { jsonrpc: "2.0", id: 1, result: {} } },
+  { direction: "request", message: { jsonrpc: "2.0", method: "initialized", params: {} } },
+  ...(duplicate ? [structuredClone(delayedDiagnostic)] : []),
+  { direction: "request", message: { jsonrpc: "2.0", id: 2, method: "shutdown" } },
+  { direction: "response", message: { jsonrpc: "2.0", id: 2, result: null } },
+  { direction: "request", message: { jsonrpc: "2.0", method: "exit" } },
+  structuredClone(delayedDiagnostic),
+];
+for (const duplicate of [false, true])
+  test(`authorized ${duplicate ? "duplicate" : "first-observed"} notification may be decoded after outbound exit`, () => {
+    // Deterministic reader scheduling: queue the server's authored envelope,
+    // observe the sender's exit, then release the independent inbound row.
+    // No sleeps, server runtime, or cross-direction clock assumption is used.
+    const rows = delayed(duplicate),
+      before = structuredClone(rows);
+    assertDecodedLspLifecycle(rows, fixture.terminal, delayedAuthority);
+    assert.deepEqual(rows, before);
+    assert.deepEqual(rows.at(-1), delayedDiagnostic);
+  });
+const invalidDelayed: Record<string, (rows: Ledger) => void> = {
+  "an unknown diagnostic URI": (rows) => {
+    rows.at(-1)!.message.params.uri = "file:///foreign-project/src/Parent.vue";
+  },
+  "a changed owned URI with incompatible diagnostic payload": (rows) => {
+    rows.at(-1)!.message.params.uri = delayedUris["NativeGuard.vue"];
+  },
+  "an unauthorized diagnostic version": (rows) => {
+    rows.at(-1)!.message.params.version = 4;
+  },
+  "changed diagnostics": (rows) => {
+    rows.at(-1)!.message.params.diagnostics = [{ message: "foreign" }];
+  },
+  "extra diagnostic fields": (rows) => {
+    rows.at(-1)!.message.params.extra = true;
+  },
+  "a notification of an unapproved method": (rows) => {
+    rows.at(-1)!.message.method = "window/logMessage";
+  },
+  "a late error reply": (rows) => {
+    rows.push({
+      direction: "response",
+      message: { jsonrpc: "2.0", id: 3, error: { code: -32603, message: "failed" } },
+    });
+  },
+  "a late successful reply": (rows) => {
+    rows.push({ direction: "response", message: { jsonrpc: "2.0", id: 3, result: null } });
+  },
+  "a late reply for an actual earlier request": (rows) => {
+    rows.splice(request(rows, "shutdown"), 0, {
+      direction: "request",
+      message: { jsonrpc: "2.0", id: 3, method: "textDocument/hover", params: {} },
+    });
+    rows.push({ direction: "response", message: { jsonrpc: "2.0", id: 3, result: null } });
+  },
+  "a real reply after shutdown acknowledgement but before exit": (rows) => {
+    rows.splice(request(rows, "shutdown"), 0, {
+      direction: "request",
+      message: { jsonrpc: "2.0", id: 3, method: "textDocument/hover", params: {} },
+    });
+    rows.splice(request(rows, "exit"), 0, {
+      direction: "response",
+      message: { jsonrpc: "2.0", id: 3, result: null },
+    });
+  },
+  "an unknown reply before shutdown": (rows) => {
+    rows.splice(request(rows, "shutdown"), 0, {
+      direction: "response",
+      message: { jsonrpc: "2.0", id: 99, result: null },
+    });
+  },
+  "a missing ordinary reply": (rows) => {
+    rows.splice(request(rows, "shutdown"), 0, {
+      direction: "request",
+      message: { jsonrpc: "2.0", id: 3, method: "textDocument/hover", params: {} },
+    });
+  },
+  "a reused ordinary request ID": (rows) => {
+    rows.splice(request(rows, "shutdown"), 0, {
+      direction: "request",
+      message: { jsonrpc: "2.0", id: 1, method: "textDocument/hover", params: {} },
+    });
+  },
+  "a reply observed before its own request": (rows) => {
+    rows.splice(
+      request(rows, "shutdown"),
+      0,
+      { direction: "response", message: { jsonrpc: "2.0", id: 3, result: null } },
+      {
+        direction: "request",
+        message: { jsonrpc: "2.0", id: 3, method: "textDocument/hover", params: {} },
+      },
+    );
+  },
+  "a missing shutdown acknowledgement": (rows) => {
+    rows.splice(shutdownResponse(rows), 1);
+  },
+  "a client notification after exit": (rows) => {
+    rows.push({
+      direction: "request",
+      message: { jsonrpc: "2.0", method: "textDocument/didClose", params: {} },
+    });
+  },
+  "a client request after shutdown": (rows) => {
+    rows.splice(request(rows, "exit"), 0, {
+      direction: "request",
+      message: { jsonrpc: "2.0", id: 3, method: "textDocument/hover", params: {} },
+    });
+  },
+};
+for (const [label, mutate] of Object.entries(invalidDelayed))
+  test(`delayed decoded lifecycle refuses ${label}`, () => {
+    const rows = delayed(false);
+    mutate(rows);
+    assert.throws(() => assertDecodedLspLifecycle(rows, fixture.terminal, delayedAuthority));
+  });
+
+const atomicUris = Object.fromEntries(
+  ["NativeGuard.vue", "Toggle.vue", "App.vue"].map((file) => [
+    file,
+    `file:///controlled-project/src/${file}`,
+  ]),
+);
+const atomicAuthority = atomicDiagnosticContract(atomicUris);
+test("atomic original has its own exact six whole diagnostic envelopes", () => {
+  const envelope = (file: string, version: number, diagnostics: unknown[]) => ({
+    jsonrpc: "2.0",
+    method: "textDocument/publishDiagnostics",
+    params: { uri: atomicUris[file], version, diagnostics },
+  });
+  assert.deepEqual(atomicAuthority, [
+    envelope("NativeGuard.vue", 1, [
+      {
+        range: { start: { line: 1, character: 6 }, end: { line: 1, character: 17 } },
+        severity: 1,
+        code: 2322,
+        source: "vize/types",
+        message: "Type 'string' is not assignable to type 'number'.",
+      },
+    ]),
+    envelope("NativeGuard.vue", 2, []),
+    envelope("Toggle.vue", 1, []),
+    envelope("Toggle.vue", 2, []),
+    envelope("Toggle.vue", 3, []),
+    envelope("App.vue", 1, []),
+  ]);
+  for (const publication of atomicAuthority) {
+    const rows = delayed(false);
+    rows.at(-1)!.message = structuredClone(publication);
+    assertDecodedLspLifecycle(rows, fixture.terminal, atomicAuthority);
+  }
+  // The original32 and atomic72 corpora retain different URI/version authorities.
+  assert.throws(() => assertDecodedLspLifecycle(delayed(false), fixture.terminal, atomicAuthority));
+  const rows = delayed(false);
+  rows.at(-1)!.message = structuredClone(atomicAuthority[4]);
+  assert.throws(() => assertDecodedLspLifecycle(rows, fixture.terminal, delayedAuthority));
+});
+const invalidAtomic: Record<string, (message: ReturnType<typeof JSON.parse>) => void> = {
+  "an unknown URI": (message) => {
+    message.params.uri = "file:///foreign/Toggle.vue";
+  },
+  "an unqueried Toggle revision": (message) => {
+    message.params.version = 4;
+  },
+  "an unedited App revision": (message) => {
+    message.params.uri = atomicUris["App.vue"];
+    message.params.version = 2;
+  },
+  "changed diagnostic contents": (message) => {
+    message.params.diagnostics = [{ message: "foreign" }];
+  },
+  "extra envelope data": (message) => {
+    message.extra = true;
+  },
+};
+for (const [label, mutate] of Object.entries(invalidAtomic))
+  test(`atomic original lifecycle refuses ${label}`, () => {
+    const rows = delayed(false);
+    rows.at(-1)!.message = structuredClone(atomicAuthority[4]);
+    mutate(rows.at(-1)!.message);
+    assert.throws(() => assertDecodedLspLifecycle(rows, fixture.terminal, atomicAuthority));
   });

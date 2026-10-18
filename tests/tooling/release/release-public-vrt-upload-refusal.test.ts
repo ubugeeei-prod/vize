@@ -192,15 +192,68 @@ test("verified success and private refusal emit only the fixed safe-output flag"
   }
 });
 
+const uploadCondition =
+  "if: ${{ always() && (steps.vrt.outcome == 'skipped' || ((steps.vrt.outcome == 'success' || steps.vrt.outcome == 'failure') && steps.vrt.outputs.upload-safe == 'true')) }}";
+const uploader = "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a";
+const diagnosticTitle = "Retain diagnostic public metadata first";
+const completeTitle = "Retain actual public observations";
+const diagnosticName = "public-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}";
+const completeName = "public-release-${{ github.run_id }}-${{ github.run_attempt }}";
+
+function workflowStep(workflow: string, name: string) {
+  const marker = `      - name: ${name}\n`;
+  assert.equal(workflow.split(marker).length - 1, 1, `exactly one ${name}`);
+  const start = workflow.indexOf(marker);
+  const next = workflow.indexOf("\n      - ", start + marker.length);
+  return workflow.slice(start, next < 0 ? undefined : next + 1);
+}
+
+function assertDiagnosticUploads(workflow: string) {
+  assert.equal(workflow.split(uploadCondition).length - 1, 2);
+  assert.equal(workflow.split("uses: actions/upload-artifact@").length - 1, 2);
+  assert.equal(
+    workflowStep(workflow, diagnosticTitle),
+    `      - name: ${diagnosticTitle}
+        ${uploadCondition}
+        uses: ${uploader} # v7.0.1
+        with:
+          name: ${diagnosticName}
+          path: |
+            artifacts/public-release/**/*.json
+            artifacts/public-release/**/*.jsonl
+          if-no-files-found: error
+          retention-days: 30
+`,
+    "diagnostics retain complete JSON/JSONL only, under the original safety gate",
+  );
+  assert.equal(
+    workflowStep(workflow, completeTitle),
+    `      - name: ${completeTitle}
+        ${uploadCondition}
+        uses: ${uploader} # v7.0.1
+        with:
+          name: ${completeName}
+          path: artifacts/public-release
+          if-no-files-found: error
+          retention-days: 30
+`,
+    "the original complete artifact is mandatory and unchanged",
+  );
+  const seal = workflowStep(workflow, "Seal installed public acceptance");
+  assert.ok(workflow.indexOf(seal) < workflow.indexOf(workflowStep(workflow, diagnosticTitle)));
+  assert.ok(
+    workflow.indexOf(workflowStep(workflow, diagnosticTitle)) <
+      workflow.indexOf(workflowStep(workflow, completeTitle)),
+    "diagnostic upload completes before the original large artifact upload",
+  );
+}
+
 test("the actual upload condition fails closed for cancelled/incomplete VRT and permits only safe or precredential skipped output", async () => {
   const workflow = await readFile(
     new URL("../../../.github/workflows/release-public-acceptance.yml", import.meta.url),
     "utf8",
   );
-  const condition =
-    "if: ${{ always() && (steps.vrt.outcome == 'skipped' || ((steps.vrt.outcome == 'success' || steps.vrt.outcome == 'failure') && steps.vrt.outputs.upload-safe == 'true')) }}";
-  assert.equal(workflow.split(condition).length - 1, 1);
-  assert.ok(workflow.includes(`- name: Retain actual public observations\n        ${condition}`));
+  assertDiagnosticUploads(workflow);
   const cases = [
     ["cancelled", undefined, false],
     ["cancelled", "true", false],
@@ -222,4 +275,61 @@ test("the actual upload condition fails closed for cancelled/incomplete VRT and 
       ((outcome === "success" || outcome === "failure") && flag === "true");
     assert.equal(allowed, expected, `${outcome}/${flag ?? "absent"}`);
   }
+});
+
+test("diagnostic transport rejects unsafe guards, partial evidence and replacement of the full artifact", async (t) => {
+  const workflow = await readFile(
+    new URL("../../../.github/workflows/release-public-acceptance.yml", import.meta.url),
+    "utf8",
+  );
+  assertDiagnosticUploads(workflow);
+  const diagnostic = workflowStep(workflow, diagnosticTitle);
+  const complete = workflowStep(workflow, completeTitle);
+  const mutations: Array<[string, (source: string) => string]> = [
+    [
+      "unguarded metadata cannot bypass credential quarantine",
+      (source) => source.replace(diagnostic, diagnostic.replace(uploadCondition, "if: always()")),
+    ],
+    [
+      "metadata cannot broaden to source archives, images or binaries",
+      (source) =>
+        source.replace(
+          diagnostic,
+          diagnostic.replace("artifacts/public-release/**/*.json\n", "artifacts/public-release\n"),
+        ),
+    ],
+    [
+      "complete protocol JSONL cannot be omitted",
+      (source) =>
+        source.replace(
+          diagnostic,
+          diagnostic.replace("            artifacts/public-release/**/*.jsonl\n", ""),
+        ),
+    ],
+    [
+      "small diagnostics cannot replace the full artifact",
+      (source) => source.replace(complete, ""),
+    ],
+    [
+      "the full artifact cannot become metadata-only",
+      (source) =>
+        source.replace(
+          complete,
+          complete.replace(
+            "path: artifacts/public-release\n",
+            "path: artifacts/public-release/**/*.json\n",
+          ),
+        ),
+    ],
+    [
+      "diagnostics must be available before the full upload",
+      (source) => source.replace(diagnostic + complete, complete + diagnostic),
+    ],
+  ];
+  for (const [name, mutate] of mutations)
+    await t.test(name, () => {
+      const changed = mutate(workflow);
+      assert.notEqual(changed, workflow, "the negative control must change the actual recipe");
+      assert.throws(() => assertDiagnosticUploads(changed), assert.AssertionError);
+    });
 });

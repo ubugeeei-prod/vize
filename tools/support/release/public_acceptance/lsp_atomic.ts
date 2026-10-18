@@ -6,6 +6,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { contained } from "./lsp_assets.ts";
 import { assertBuiltSupport, assertSupportGraph } from "./lsp_cargo.ts";
+import { atomicDiagnosticContract } from "./lsp_case.ts";
 import { assertDecodedLspLifecycle } from "./lsp_packets.ts";
 import { atomicTarget, atomicTest, sha256, supportTargets } from "./lsp_source.ts";
 
@@ -113,12 +114,20 @@ export function assertAtomicSession(
   originalApp: string,
   printed: Json[],
 ) {
-  assertDecodedLspLifecycle(protocol, terminal);
+  const uri = (file: string) => pathToFileURL(path.join(project, "src", file)).href;
+  assertDecodedLspLifecycle(
+    protocol,
+    terminal,
+    atomicDiagnosticContract(
+      Object.fromEntries(
+        ["NativeGuard.vue", "Toggle.vue", "App.vue"].map((file) => [file, uri(file)]),
+      ),
+    ),
+  );
   const requests = protocol.filter((row) => row.direction === "request").map((row) => row.message);
   const responses = protocol
     .filter((row) => row.direction === "response")
     .map((row) => row.message);
-  const uri = (file: string) => pathToFileURL(path.join(project, "src", file)).href;
   const initialize = requests[0];
   assert.equal(initialize.params.rootUri, pathToFileURL(project).href);
   assert.deepEqual(initialize.params.initializationOptions, {
