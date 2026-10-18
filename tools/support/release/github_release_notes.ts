@@ -78,6 +78,112 @@ export function previousPublishedTag(
 
 type GitHubApi = (path: string, body?: object) => unknown;
 
+// The published tag receipt is the existing release identity, not a PR title or
+// label. Historical receipts outside this exact normal-cut format are left alone.
+function publishedIntegration(api: GitHubApi, repository: string, tag: string): string | null {
+  try {
+    const prefix = `repos/${repository}`;
+    const reference = api(`${prefix}/git/ref/tags/${tag}`) as {
+      ref: string;
+      object: { type: string; sha: string };
+    };
+    if (
+      reference.ref !== `refs/tags/${tag}` ||
+      reference.object.type !== "tag" ||
+      !/^[a-f0-9]{40}$/.test(reference.object.sha)
+    )
+      return null;
+    const annotated = api(`${prefix}/git/tags/${reference.object.sha}`) as {
+      sha: string;
+      tag: string;
+      object: { type: string; sha: string };
+      message: string;
+    };
+    if (
+      annotated.sha !== reference.object.sha ||
+      annotated.tag !== tag ||
+      annotated.object.type !== "commit"
+    )
+      return null;
+    const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const sha = "([a-f0-9]{40})";
+    const match = new RegExp(
+      `^Release ${escaped}\\n\\nRelease-Mode: pinned\\nRelease-PR: #([1-9]\\d*)` +
+        `\\nValidated-run: ([1-9]\\d*)\\nValidated-head: ${sha}\\nValidated-base: ${sha}` +
+        `\\nIntegration-PR: #([1-9]\\d*)\\nIntegration-head: ${sha}\\nIntegration-merge: ${sha}` +
+        `\\nIntegration-parent: ${sha}\\nProtected-candidate: ${sha}$`,
+    ).exec(annotated.message.trimEnd());
+    if (!match) return null;
+    const [, source, , head, cut, integration, integrationHead, merge, parent] = match;
+    if (annotated.object.sha !== head || parent !== cut) return null;
+    const pr = api(`${prefix}/pulls/${integration}`) as {
+      number: number;
+      merged: boolean;
+      state: string;
+      merged_at: string | null;
+      merge_commit_sha: string;
+      body: string;
+      base: { ref: string; repo: { full_name: string } };
+      head: { sha: string; repo: { full_name: string } };
+    };
+    if (
+      String(pr.number) !== integration ||
+      pr.merged !== true ||
+      pr.state !== "closed" ||
+      !pr.merged_at ||
+      pr.merge_commit_sha !== merge ||
+      pr.base.ref !== "main" ||
+      pr.base.repo.full_name !== repository ||
+      pr.head.repo.full_name !== repository ||
+      pr.head.sha !== integrationHead
+    )
+      return null;
+    for (const [key, value] of Object.entries({ source, cut, head, tag })) {
+      const marker = `<!-- vize-release-pin-${key}: `;
+      const lines = pr.body.split("\n").filter((line) => line.startsWith(marker));
+      if (lines.length !== 1 || lines[0] !== `${marker}${value} -->`) return null;
+    }
+    interface Commit {
+      sha: string;
+      parents: { sha: string }[];
+      commit: { tree: { sha: string }; verification: { verified: boolean; reason: string } };
+    }
+    const h = api(`${prefix}/commits/${head}`) as Commit;
+    const m = api(`${prefix}/commits/${merge}`) as Commit;
+    if (
+      h.sha !== head ||
+      m.sha !== merge ||
+      h.parents.length !== 1 ||
+      h.parents[0].sha !== cut ||
+      m.parents.length !== 1 ||
+      m.parents[0].sha !== cut ||
+      m.commit.verification.verified !== true ||
+      m.commit.verification.reason !== "valid" ||
+      !/^[a-f0-9]{40}$/.test(h.commit.tree.sha) ||
+      h.commit.tree.sha !== m.commit.tree.sha
+    )
+      return null;
+    // Whole-tree equality proves all of I's content was already published in H.
+    // It does not reclassify the delta as version-only or qualify shipping gates.
+    return `https://github.com/${repository}/pull/${integration}`;
+  } catch {
+    // Cosmetic cleanup must not suppress rows when old identity is unavailable,
+    // malformed, or from a protocol outside this conservative historical scope.
+    return null;
+  }
+}
+
+function omitPublishedIntegration(body: string, url: string | null): string {
+  if (!url || body.split(url).length !== 2) return body;
+  const escaped = url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Recognize exactly one complete GitHub-generated PR bullet. Unknown layouts,
+  // duplicates, URL suffixes, and other mentions retain the entire original body.
+  return body.replace(
+    new RegExp(`^\\* [^\\r\\n]+ by @[\\w-]+ in ${escaped}(?:\\r?\\n|$)`, "m"),
+    "",
+  );
+}
+
 /** Enumerate every page: high release frequency can put the predecessor past page one. */
 export function generateReleaseNotes(
   api: GitHubApi,
@@ -114,7 +220,10 @@ export function generateReleaseNotes(
   ) {
     throw new Error("Invalid generated release notes response");
   }
-  return { body: response.body, previousTag };
+  const integration = response.body.includes(`https://github.com/${repository}/pull/`)
+    ? publishedIntegration(api, repository, previousTag)
+    : null;
+  return { body: omitPublishedIntegration(response.body, integration), previousTag };
 }
 
 function main(): void {
@@ -135,7 +244,9 @@ function main(): void {
       // through a file descriptor so the generated notes also remain complete.
       const args = body
         ? ["--method", "POST", "--input", "-"]
-        : ["--jq", "map({tag_name, draft, prerelease, published_at})"];
+        : path.includes("/releases?")
+          ? ["--jq", "map({tag_name, draft, prerelease, published_at})"]
+          : [];
       execFileSync("gh", ["api", path, ...args], {
         input: body ? JSON.stringify(body) : undefined,
         stdio: ["pipe", fd, "inherit"],
