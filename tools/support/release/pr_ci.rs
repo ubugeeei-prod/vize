@@ -123,6 +123,54 @@ pub fn wait_for_promotion_pinned(
     super::pr_pin::wait_for_promotion(number, head, tag, root)
 }
 
+/// First-publication checks apply only to a new R. Existing R resumes return
+/// before this function in both dispatch paths, preserving historical custody.
+pub(super) fn corsa_first_publication(
+    repository: &str,
+    number: u64,
+    branch: &str,
+    head: &str,
+    cut: &str,
+    tag: &str,
+    budget: Option<&Budget>,
+    root: &Path,
+) -> Result<(), String> {
+    pr_budget::check(budget)?;
+    let catalog = github::git(
+        &[
+            "--no-replace-objects",
+            "show",
+            &format!("{head}:tools/support/release/publish_crates/main.ts"),
+        ],
+        root,
+    )?;
+    // Older releases without the new catalogue keep their original operator.
+    if !catalog.contains("\"vize_corsa") {
+        return Ok(());
+    }
+    github::git(
+        &["--no-replace-objects", "cat-file", "-e", &format!("{head}:tools/support/release/corsa_bootstrap/main.ts")],
+        root,
+    ).map_err(|_| "Corsa catalogue has no reviewed first-publication gate at H; no new R was dispatched. Prepare a qualified new source instead of bypassing the gate.".to_string())?;
+    let mut command = Command::new("node");
+    command
+        .arg("tools/support/release/corsa_bootstrap/main.ts")
+        .args([repository, &number.to_string(), branch, head, cut, tag])
+        .current_dir(root)
+        .stdin(Stdio::null())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit());
+    pr_budget::child_command(&mut command, budget)?;
+    if !command
+        .status()
+        .map_err(|error| error.to_string())?
+        .success()
+    {
+        return Err("Corsa first-publication precondition is paused or failed. Preserve the same H and operator evidence; no new Release was dispatched.".into());
+    }
+    pr_budget::check(budget)
+}
+
 /// New H overlaps Q/R; legacy H keeps its original blocking qualification API.
 pub(super) fn start_check(
     repository: &str,

@@ -198,6 +198,16 @@ pub(super) fn find_or_dispatch(
     let cut = github::parent(head, root)?;
     budget.check()?;
     operator.verify()?;
+    pr_ci::corsa_first_publication(
+        repository,
+        number,
+        branch,
+        head,
+        &cut,
+        tag,
+        Some(budget),
+        root,
+    )?;
     let qualification = pr_ci::start_check(repository, branch, head, &cut, Some(budget), root);
     budget.check()?;
     operator.verify()?;
