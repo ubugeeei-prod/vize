@@ -124,3 +124,104 @@ pub(super) fn cleanup_session(session: u32) -> Result<Value, String> {
         json!({"members":members,"groups":groups,"allWritersStopped":true,"elapsedMs":started.elapsed().as_millis()}),
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{cleanup_session, proc_stat_bytes, session_members};
+    use std::{
+        fs,
+        io::{self, Read},
+        os::unix::process::CommandExt,
+        path::Path,
+        process::{Child, Command, Stdio},
+    };
+
+    struct Process(Child);
+    impl Drop for Process {
+        fn drop(&mut self) {
+            let _ = self.0.kill();
+            let _ = self.0.wait();
+        }
+    }
+    fn idle_process(own_session: bool) -> Process {
+        let mut command = Command::new("node");
+        command
+            .args(["-e", "setInterval(()=>{},1000)"])
+            .stdin(Stdio::null());
+        if own_session {
+            unsafe {
+                command.pre_exec(|| {
+                    if libc::setsid() == -1 {
+                        Err(io::Error::last_os_error())
+                    } else {
+                        Ok(())
+                    }
+                });
+            }
+        }
+        Process(command.spawn().unwrap())
+    }
+
+    #[test]
+    fn proc_stat_disappearance_is_the_only_per_entry_io_exception() {
+        let path = Path::new("/proc/123/stat");
+        for code in [libc::ENOENT, libc::ESRCH] {
+            assert!(
+                proc_stat_bytes(path, Err(io::Error::from_raw_os_error(code)))
+                    .unwrap()
+                    .is_none()
+            );
+        }
+        for code in [
+            libc::EPERM,
+            libc::EACCES,
+            libc::EIO,
+            libc::EINVAL,
+            libc::EINTR,
+        ] {
+            let error = io::Error::from_raw_os_error(code);
+            let expected = format!("read process stat /proc/123/stat: {error}");
+            assert_eq!(proc_stat_bytes(path, Err(error)).unwrap_err(), expected);
+        }
+        let bytes = b"123 (whole authored stat) R 1 123 123".to_vec();
+        assert_eq!(
+            proc_stat_bytes(path, Ok(bytes.clone())).unwrap(),
+            Some(bytes)
+        );
+    }
+
+    #[test]
+    fn reaped_proc_fd_does_not_hide_live_owned_writers_or_signal_a_sentinel() {
+        let mut sentinel = idle_process(false);
+        let mut writer = idle_process(true);
+        let mut disappearing = idle_process(false);
+        let stat_path = std::path::PathBuf::from(format!("/proc/{}/stat", disappearing.0.id()));
+        let mut stat = fs::File::open(&stat_path).unwrap();
+        disappearing.0.kill().unwrap();
+        disappearing.0.wait().unwrap();
+        let error = stat.read_to_end(&mut Vec::new()).unwrap_err();
+        assert_eq!(error.raw_os_error(), Some(libc::ESRCH));
+        assert!(proc_stat_bytes(&stat_path, Err(error)).unwrap().is_none());
+
+        let session = writer.0.id();
+        let members = session_members(session).unwrap();
+        assert!(
+            members
+                .iter()
+                .any(|m| m.0 == session as i32 && !matches!(m.2, 'Z' | 'X'))
+        );
+        assert!(sentinel.0.try_wait().unwrap().is_none());
+        let receipt = cleanup_session(session).unwrap();
+        assert_eq!(receipt["allWritersStopped"], true);
+        assert!(
+            receipt["members"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|m| m[0] == session)
+        );
+        writer.0.wait().unwrap();
+        assert!(session_members(session).unwrap().is_empty());
+        assert!(sentinel.0.try_wait().unwrap().is_none());
+    }
+}

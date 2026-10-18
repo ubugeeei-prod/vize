@@ -431,6 +431,8 @@ test(
         "failed_supervisor_receipt_still_restores_active_mutation",
         "unknown_authored_bytes_are_not_overwritten_by_recovery",
         "bounded_stream_retains_an_explicit_incomplete_prefix_and_refuses_success",
+        "proc_stat_disappearance_is_the_only_per_entry_io_exception",
+        "reaped_proc_fd_does_not_hide_live_owned_writers_or_signal_a_sentinel",
         "large_baseline_continuations_preserve_whole_diagnostics_and_exclusions",
         "baseline_marker_and_positioned_range_refusals_survive_ignored_lines",
       ]) {
