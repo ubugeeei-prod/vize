@@ -357,7 +357,7 @@ fn sfc_dynamic_directive_arrow_keeps_comments_crlf_and_formatter_options() {
     let source = "<template>\r\n  <!-- retained -->\r\n  <Card v-bind:[(name=>name)(outside)]=\"value\" id=\"next\"></Card>\r\n</template>\r\n";
     let options = FormatOptions {
         print_width: 500,
-        end_of_line: vize_glyph::EndOfLine::CrLf,
+        end_of_line: vize_glyph::EndOfLine::Crlf,
         sort_attributes: false,
         ..FormatOptions::default()
     };
