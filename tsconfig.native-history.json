@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "allowJs": true
+  },
+  "include": [],
+  "files": [
+    "npm/native/scripts/build-local.mts",
+    "npm/native/scripts/formatter-history-build.mts",
+    "tests/tooling/native-history-profile.test.ts"
+  ]
+}
