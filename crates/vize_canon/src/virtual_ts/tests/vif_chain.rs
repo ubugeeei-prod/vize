@@ -15,7 +15,36 @@ fn interrupted_sibling_chain_keeps_exclusions_outside_the_remaining_branches() {
     let template = descriptor.template.as_ref().unwrap().content.as_ref();
     let allocator = vize_carton::Allocator::new();
     let (root, errors) = vize_armature::parse(&allocator, template);
-    assert!(errors.is_empty());
+    // The original Vue SFC uses two self-closing non-void HTML elements.
+    // Standard parsing retains their exact compatibility notices; no other
+    // notice or error may pass this admission check.
+    let notice = "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.";
+    assert_eq!(
+        errors
+            .iter()
+            .map(|error| (
+                error.code,
+                error.message.as_str(),
+                error.loc.as_ref().map(|loc| (loc.span.start, loc.span.end)),
+                error.is_recoverable(),
+            ))
+            .collect::<Vec<_>>(),
+        [
+            (
+                vize_armature::ErrorCode::ExtendPoint,
+                notice,
+                Some((33, 50)),
+                true
+            ),
+            (
+                vize_armature::ErrorCode::ExtendPoint,
+                notice,
+                Some((64, 96)),
+                true
+            ),
+        ],
+        "the original parser packet must remain complete: {errors:?}"
+    );
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
     analyzer.analyze_template(&root);
