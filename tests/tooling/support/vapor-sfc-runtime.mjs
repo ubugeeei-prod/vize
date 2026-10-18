@@ -23,9 +23,14 @@ for (const key of [
 ])
   globalThis[key] = key === "window" ? window : window[key];
 
-const vue = await loadRuntime({
-  production: input.production ?? process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
-});
+const unicode = input.unicodeKeyScope
+  ? await (await import("./vapor-unicode-key-scope.ts")).prepareUnicodeKeyScope(input)
+  : null;
+const vue =
+  unicode?.vue ??
+  (await loadRuntime({
+    production: input.production ?? process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
+  }));
 const events = [];
 const state = vue.reactive({ label: "initial", ready: true, ...input.context });
 const record = (value) => events.push(value);
@@ -79,7 +84,7 @@ async function evaluate(code) {
 
 const child = await evaluate(input.child);
 globalThis.__vaporSfcModules[input.childModule ?? "./Child.vue"] = { default: child };
-const component = await evaluate(input.code);
+const component = await evaluate(unicode?.code ?? input.code);
 if (input.scopedSelectors) component.__scopeId = "data-v-probe";
 const createApp = input.backend === "vapor" ? vue.createVaporApp : vue.createApp;
 const app = Object.hasOwn(input, "rootProps")
@@ -100,6 +105,11 @@ const exposedValues = () =>
     }),
   );
 const snapshot = () => {
+  if (unicode)
+    process.stderr.write(
+      JSON.stringify({ unicodeKeyScope: "dom", html: host.innerHTML, diagnostics, events, state }) +
+        "\n",
+    );
   assert.deepEqual(diagnostics, [], "mounted SFC diagnostics");
   for (const selector of input.scopedSelectors ?? []) {
     const elements = host.querySelectorAll(selector);

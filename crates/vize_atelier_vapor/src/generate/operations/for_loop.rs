@@ -258,7 +258,7 @@ fn is_simple_local_alias(alias: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::restore_current_alias_reference;
+    use super::{is_simple_local_alias, restore_current_alias_reference};
     use vize_carton::ToCompactString;
 
     #[test]
@@ -272,5 +272,103 @@ mod tests {
         );
 
         assert_eq!(expr, "label + userId");
+    }
+
+    #[test]
+    fn restores_unicode_key_parameters_using_javascript_identifier_rules() {
+        for alias in [
+            "kind",
+            "café",
+            "種類",
+            "行",
+            "番号",
+            "index番号",
+            "e\u{301}",
+            "a\u{200c}",
+            "a\u{200d}",
+            "𐐀",
+        ] {
+            assert!(is_simple_local_alias(alias), "{alias}");
+            for reference in ["_for_item0.value", "_for_key0.value", "_for_index0.value"] {
+                let mut expression = vize_carton::cstr!("{reference}.id + _ctx.種類別");
+                restore_current_alias_reference(&mut expression, reference, alias);
+                assert_eq!(expression, vize_carton::cstr!("{alias}.id + _ctx.種類別"));
+            }
+        }
+        for non_identifier in ["", "1行", "行-種類", "🧭", "行.id", "{ 行 }", "[行]"] {
+            assert!(!is_simple_local_alias(non_identifier), "{non_identifier}");
+        }
+    }
+
+    #[test]
+    fn unicode_loop_keys_capture_their_own_parameters_and_parse_as_javascript() {
+        let cases = [
+            (
+                r#"<p v-for="kind in ['x', 'y']" :key="kind">{{ kind }}</p>"#,
+                "(kind) => (kind)",
+            ),
+            (
+                r#"<p v-for="café in ['x']" :key="café">{{ café }}</p>"#,
+                "(café) => (café)",
+            ),
+            (
+                r#"<p v-for="種類 in ['x', 'y']" :key="種類">{{ 種類 }}</p>"#,
+                "(種類) => (種類)",
+            ),
+            (
+                r#"<p v-for="行 in items" :key="行.id">{{ 行.id }}</p>"#,
+                "(行) => (行.id)",
+            ),
+            (
+                r#"<p v-for="(r, 番号) in items" :key="番号">{{ r.id }}</p>"#,
+                "(r, 番号) => (番号)",
+            ),
+            (
+                r#"<p v-for="(行, i) in items" :key="i">{{ 行.id }}</p>"#,
+                "(行, i) => (i)",
+            ),
+            (
+                r#"<p v-for="種類 in items" :key="種類.id + 種類別">{{ 種類 }}</p>"#,
+                "(種類) => (種類.id + _ctx.種類別)",
+            ),
+            (
+                r#"<p v-for="{ id: 行 } in items" :key="行">{{ 行 }}</p>"#,
+                "({ id: 行 }) => (行)",
+            ),
+            (
+                r#"<p v-for="行 in items" :key="\u884c.id">{{ 行.id }}</p>"#,
+                "(行) => (行.id)",
+            ),
+            (
+                r#"<p v-for="(行, 番号, index番号) in items" :key="index番号">{{ 行.id }}</p>"#,
+                "(行, 番号, index番号) => (index番号)",
+            ),
+            (
+                r#"<div v-for="外側 in items" :key="外側.id"><p v-for="内側 in 外側.children" :key="外側.id + 内側.id">{{ 内側.id }}</p></div>"#,
+                "(内側) => (_for_item0.value.id + 内側.id)",
+            ),
+        ];
+        for (source, key) in cases {
+            let allocator = vize_carton::Allocator::new();
+            let result = crate::compile_vapor(&allocator, source, Default::default());
+            assert!(
+                result.error_messages.is_empty(),
+                "{:?}",
+                result.error_messages
+            );
+            assert!(result.code.contains(key), "{source}\n{}", result.code);
+            let parsed = oxc_parser::Parser::new(
+                allocator.as_oxc(),
+                &result.code,
+                oxc_span::SourceType::mjs(),
+            )
+            .parse();
+            assert!(
+                parsed.diagnostics.is_empty(),
+                "{:?}\n{}",
+                parsed.diagnostics,
+                result.code
+            );
+        }
     }
 }
