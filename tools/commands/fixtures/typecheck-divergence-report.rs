@@ -1206,6 +1206,7 @@ fn collect_vue_tsc_diagnostics(
 ) -> Result<DiagnosticInput, String> {
     let positioned = Regex::new(r"^(.+)\((\d+),(\d+)\): (error|warning) TS(\d+): (.+)$").unwrap();
     let project = Regex::new(r"^(error|warning) TS(\d+): (.+)$").unwrap();
+    let diagnostic_marker = Regex::new(r"\b(?:error|warning) TS\d+:").unwrap();
     let mut diagnostics = Vec::new();
     let mut excluded_non_vue_count = 0;
     let mut excluded_project_count = 0;
@@ -1246,10 +1247,7 @@ fn collect_vue_tsc_diagnostics(
             excluded_project_count += 1;
             continue;
         }
-        if Regex::new(r"\b(?:error|warning) TS\d+:")
-            .unwrap()
-            .is_match(line)
-        {
+        if diagnostic_marker.is_match(line) {
             invalid_divergence(&format!("unparseable vue-tsc diagnostic: {line}"))?;
         }
     }
