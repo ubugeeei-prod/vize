@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { inspect } from "node:util";
 import { root, testOutputRoot } from "../lsp/paths.ts";
 import { resolveVizeLaunchCommand } from "../lsp/launch.ts";
 
@@ -27,9 +28,14 @@ export function workspace(prefix: string): string {
   return directory;
 }
 
-export async function check(directory: string, args: string[] = []): Promise<Diagnostic[]> {
+export async function check(
+  directory: string,
+  args: string[] = [],
+  capture?: { name: string; sources: string[] },
+): Promise<Diagnostic[]> {
   const launch = resolveVizeLaunchCommand();
-  const child = spawn(launch[0], [...launch.slice(1, -1), "check", ...args, "--format", "json"], {
+  const argv = [...launch.slice(1, -1), "check", ...args, "--format", "json"];
+  const child = spawn(launch[0], argv, {
     cwd: directory,
     env: process.env,
     stdio: ["ignore", "pipe", "pipe"],
@@ -40,10 +46,58 @@ export async function check(directory: string, args: string[] = []): Promise<Dia
   child.stderr.setEncoding("utf8").on("data", (chunk) => (stderr += chunk));
   const timeout = setTimeout(() => child.kill("SIGKILL"), 60_000);
   try {
-    const status = await new Promise<number | null>((resolve, reject) => {
-      child.on("error", reject);
-      child.on("close", resolve);
-    });
+    let status: number | null = null;
+    let signal: NodeJS.Signals | null = null;
+    let closeObserved = false;
+    let error: Error | undefined;
+    try {
+      status = await new Promise<number | null>((resolve, reject) => {
+        child.on("error", (original) => {
+          error = original;
+          reject(original);
+        });
+        child.on("close", (code, receivedSignal) => {
+          closeObserved = true;
+          signal = receivedSignal;
+          resolve(code);
+        });
+      });
+    } finally {
+      if (capture) {
+        const output = path.join(
+          root,
+          "target/differential/fallthrough-listener-inputs",
+          capture.name,
+        );
+        fs.mkdirSync(output, { recursive: true });
+        fs.writeFileSync(path.join(output, "stdout.json"), stdout);
+        fs.writeFileSync(path.join(output, "stderr.txt"), stderr);
+        fs.writeFileSync(
+          path.join(output, "process.json"),
+          JSON.stringify({
+            executable: launch[0],
+            argv,
+            cwd: directory,
+            pid: child.pid ?? null,
+            status,
+            signal,
+            closeObserved,
+            sourceRevision: process.env.GITHUB_SHA,
+            error: error
+              ? {
+                  name: error.name,
+                  message: error.message,
+                  stack: error.stack,
+                  ownProperties: Object.getOwnPropertyNames(error),
+                  raw: inspect(error, { showHidden: true, depth: null, customInspect: false }),
+                }
+              : null,
+          }),
+        );
+        for (const file of capture.sources)
+          fs.copyFileSync(path.join(directory, file), path.join(output, file));
+      }
+    }
     assert.ok(status === 0 || status === 1, `checker failed (${status}): ${stderr}\n${stdout}`);
     assert.ok(stdout.trim().startsWith("{"), `checker did not return JSON: ${stderr}\n${stdout}`);
     const result = JSON.parse(stdout) as {

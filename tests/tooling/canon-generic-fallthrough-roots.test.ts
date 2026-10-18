@@ -175,3 +175,77 @@ defineProps<{ bar?: T }>();
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test("a non-generic listener retains typed root props and strict excess checks", async () => {
+  const directory = project(
+    {
+      "Root.vue": `<script setup lang="ts">
+defineProps<{ bar?: string }>();
+defineEmits<{ foo: [value: string] }>();
+</script><template><span /></template>`,
+      "Forwarding.vue": `<script setup lang="ts">
+import Root from './Root.vue';
+</script><template><Root /></template>`,
+      "App.vue": parent('<Forwarding bar="text" @foo="(value) => takesString(value)" />'),
+    },
+    { checkUnknownProps: true },
+  );
+  try {
+    for (const listener of ["", ' @foo="(value) => takesString(value)"']) {
+      for (const [name, attributes, code] of [
+        ["valid", 'bar="text"', undefined],
+        ["wrong-bar", ':bar="1"', 2322],
+        ["unknown", 'bar="text" definitelyNotAProp="wrong"', 2353],
+      ] as const) {
+        const source = parent(`<Forwarding ${attributes}${listener} />`);
+        fs.writeFileSync(path.join(directory, "App.vue"), source);
+        const expected = vueTscDiagnostics(directory);
+        assert.deepEqual(
+          expected.map((d) => d.code),
+          code ? [code] : [],
+        );
+        const actual = await check(directory, ["--show-virtual-ts"], {
+          name: `${name}-${listener ? "listener" : "no-listener"}`,
+          sources: ["App.vue", "Root.vue", "Forwarding.vue", "tsconfig.json"],
+        });
+        // The canonical prop owner and the listener-inference input both
+        // check this authored attribute. Retain both findings instead of
+        // claiming duplicate-count parity with vue-tsc's single owner.
+        assert.deepEqual(
+          actual.map((d) => d.code),
+          code ? Array.from({ length: listener ? 2 : 1 }, () => code) : [],
+        );
+        const line = source.split("\n")[5];
+        const attribute = name === "unknown" ? 'definitelyNotAProp="wrong"' : attributes;
+        const start = line.indexOf(attribute);
+        assert.ok(start >= 0);
+        for (const diagnostic of actual) {
+          assert.equal(diagnostic.file, "App.vue");
+          assert.equal(diagnostic.line, 6);
+          assert.ok(diagnostic.column >= start + 1);
+          assert.ok(diagnostic.column <= start + attribute.length);
+        }
+      }
+    }
+    fs.writeFileSync(
+      path.join(directory, "Forwarding.vue"),
+      `<script setup lang="ts">
+import Root from './Root.vue';
+defineOptions({ inheritAttrs: false });
+</script><template><Root /></template>`,
+    );
+    fs.writeFileSync(path.join(directory, "App.vue"), parent('<Forwarding bar="text" />'));
+    const expected = vueTscDiagnostics(directory);
+    assert.deepEqual(
+      expected.map((d) => d.code),
+      [2353],
+    );
+    const actual = await check(directory, ["--show-virtual-ts"], {
+      name: "inherit-attrs-false",
+      sources: ["App.vue", "Root.vue", "Forwarding.vue", "tsconfig.json"],
+    });
+    assert.deepEqual(actual.map(diagnosticIdentity), expected);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});

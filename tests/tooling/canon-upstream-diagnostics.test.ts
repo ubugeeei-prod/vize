@@ -154,7 +154,13 @@ test(
           for (let project = queue.shift(); project != null; project = queue.shift()) {
             await t.test(project, async () => {
               const projectRoot = path.join(directory, "test-workspace/tsc", project);
-              const actual = (await check(projectRoot)).filter((d) => d.severity === "error");
+              const capture =
+                project === "fallthroughAttributes"
+                  ? { name: "upstream-original", sources: fs.readdirSync(projectRoot) }
+                  : undefined;
+              const actual = (
+                await check(projectRoot, capture ? ["--show-virtual-ts"] : [], capture)
+              ).filter((d) => d.severity === "error");
               const expected = [...manifest.expectedDiagnostics, ...vizeOnly]
                 .filter((d) => d.file.startsWith(`${project}/`))
                 .map((d) => ({ ...d, file: d.file.slice(project.length + 1) }));
