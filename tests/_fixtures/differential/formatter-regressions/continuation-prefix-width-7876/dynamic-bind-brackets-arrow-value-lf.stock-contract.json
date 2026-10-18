@@ -1,0 +1,116 @@
+{
+  "schema": "vize.authored-stock-vue-whole-runtime-contract",
+  "version": 1,
+  "case": "dynamic-bind-brackets-arrow-value-lf",
+  "inputSha256": "a0a3bf3eeb6ab78a25847dfcb555905b4de71eeefc512b59f17a0e47848f5407",
+  "expectedSourceSha256": "7dc91205c20e1ee8f76daefbae6247abf42c4822ac0f7b9c9582b752b1586335",
+  "stockVersions": {
+    "compilerDom": "3.5.35",
+    "compilerSsr": "3.5.35",
+    "compilerSfc": "3.5.35",
+    "renderer": "3.5.35",
+    "vue": "3.5.35",
+    "happyDom": "20.11.2"
+  },
+  "scope": "Official stock Vue only: whole DOM, text, SSR and direct click observations from the authored input, independently equal for authored reference. No Vize/native output or ancestor propagation claim.",
+  "observations": [
+    {
+      "state": {
+        "id": "false-page-zero",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 0
+      },
+      "domHtml": "<button title=\"0\" data-next=\"kept\">0</button>",
+      "domText": "0",
+      "ssrHtml": "<button title=\"0\" data-next=\"kept\">0</button>",
+      "emittedClickCalls": 1
+    },
+    {
+      "state": {
+        "id": "true-page-one",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 1
+      },
+      "domHtml": "<button title=\"1\" data-next=\"kept\">1</button>",
+      "domText": "1",
+      "ssrHtml": "<button title=\"1\" data-next=\"kept\">1</button>",
+      "emittedClickCalls": 1
+    },
+    {
+      "state": {
+        "id": "true-page-two",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 2
+      },
+      "domHtml": "<button title=\"2\" data-next=\"kept\">2</button>",
+      "domText": "2",
+      "ssrHtml": "<button title=\"2\" data-next=\"kept\">2</button>",
+      "emittedClickCalls": 1
+    },
+    {
+      "state": {
+        "id": "false-empty-pages",
+        "pages": [],
+        "page": 0
+      },
+      "domHtml": "<button title=\"0\" data-next=\"kept\">0</button>",
+      "domText": "0",
+      "ssrHtml": "<button title=\"0\" data-next=\"kept\">0</button>",
+      "emittedClickCalls": 1
+    },
+    {
+      "state": {
+        "id": "true-page-unicode-items",
+        "pages": [
+          "日本語",
+          "a&b"
+        ],
+        "page": 10
+      },
+      "domHtml": "<button title=\"10\" data-next=\"kept\">10</button>",
+      "domText": "10",
+      "ssrHtml": "<button title=\"10\" data-next=\"kept\">10</button>",
+      "emittedClickCalls": 1
+    },
+    {
+      "state": {
+        "id": "false-negative-page",
+        "pages": [
+          9
+        ],
+        "page": -1
+      },
+      "domHtml": "<button title=\"-1\" data-next=\"kept\">-1</button>",
+      "domText": "-1",
+      "ssrHtml": "<button title=\"-1\" data-next=\"kept\">-1</button>",
+      "emittedClickCalls": 1
+    },
+    {
+      "state": {
+        "id": "back-to-zero",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 0
+      },
+      "domHtml": "<button title=\"0\" data-next=\"kept\">0</button>",
+      "domText": "0",
+      "ssrHtml": "<button title=\"0\" data-next=\"kept\">0</button>",
+      "emittedClickCalls": 1
+    }
+  ]
+}

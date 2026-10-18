@@ -1,0 +1,5 @@
+<template>
+  <button v-on:[Object.keys({click:0})[0]].stop
+=
+"openSettingsDialogForTheCurrentlySelectedItem" title="kept">{{ page }}</button>
+</template>

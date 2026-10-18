@@ -1,0 +1,116 @@
+{
+  "schema": "vize.authored-stock-vue-whole-runtime-contract",
+  "version": 1,
+  "case": "dynamic-event-brackets-modifier-lf",
+  "inputSha256": "b8125856946c90d9cdbf9f35fb5404948fbadb18b6a83087eeffc0e9c044d7f1",
+  "expectedSourceSha256": "fecc332dff1a0e91097d9cbc087bd41ab0a000e9d86ba5c73a8f9e6ee6acfc54",
+  "stockVersions": {
+    "compilerDom": "3.5.35",
+    "compilerSsr": "3.5.35",
+    "compilerSfc": "3.5.35",
+    "renderer": "3.5.35",
+    "vue": "3.5.35",
+    "happyDom": "20.11.2"
+  },
+  "scope": "Official stock Vue only: whole DOM, text, SSR and direct click observations from the authored input, independently equal for authored reference. No Vize/native output or ancestor propagation claim.",
+  "observations": [
+    {
+      "state": {
+        "id": "false-page-zero",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 0
+      },
+      "domHtml": "<button title=\"kept\">0</button>",
+      "domText": "0",
+      "ssrHtml": "<button title=\"kept\">0</button>",
+      "emittedClickCalls": 1
+    },
+    {
+      "state": {
+        "id": "true-page-one",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 1
+      },
+      "domHtml": "<button title=\"kept\">1</button>",
+      "domText": "1",
+      "ssrHtml": "<button title=\"kept\">1</button>",
+      "emittedClickCalls": 1
+    },
+    {
+      "state": {
+        "id": "true-page-two",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 2
+      },
+      "domHtml": "<button title=\"kept\">2</button>",
+      "domText": "2",
+      "ssrHtml": "<button title=\"kept\">2</button>",
+      "emittedClickCalls": 1
+    },
+    {
+      "state": {
+        "id": "false-empty-pages",
+        "pages": [],
+        "page": 0
+      },
+      "domHtml": "<button title=\"kept\">0</button>",
+      "domText": "0",
+      "ssrHtml": "<button title=\"kept\">0</button>",
+      "emittedClickCalls": 1
+    },
+    {
+      "state": {
+        "id": "true-page-unicode-items",
+        "pages": [
+          "日本語",
+          "a&b"
+        ],
+        "page": 10
+      },
+      "domHtml": "<button title=\"kept\">10</button>",
+      "domText": "10",
+      "ssrHtml": "<button title=\"kept\">10</button>",
+      "emittedClickCalls": 1
+    },
+    {
+      "state": {
+        "id": "false-negative-page",
+        "pages": [
+          9
+        ],
+        "page": -1
+      },
+      "domHtml": "<button title=\"kept\">-1</button>",
+      "domText": "-1",
+      "ssrHtml": "<button title=\"kept\">-1</button>",
+      "emittedClickCalls": 1
+    },
+    {
+      "state": {
+        "id": "back-to-zero",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 0
+      },
+      "domHtml": "<button title=\"kept\">0</button>",
+      "domText": "0",
+      "ssrHtml": "<button title=\"kept\">0</button>",
+      "emittedClickCalls": 1
+    }
+  ]
+}

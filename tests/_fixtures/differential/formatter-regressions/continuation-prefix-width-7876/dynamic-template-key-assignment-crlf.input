@@ -1,0 +1,10 @@
+<template>
+  <!-- framing retained -->
+  <button :[`data-${Object.keys({page:0})[0]}`]
+=
+"page" title
+=
+"kept" @click
+=
+"openSettingsDialogForTheCurrentlySelectedItem">{{ page }}</button>
+</template>

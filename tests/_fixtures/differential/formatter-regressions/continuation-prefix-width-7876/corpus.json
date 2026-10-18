@@ -194,6 +194,49 @@
       },
       "referenceAuthority": "self-closing-reference-authority.json: exact 42-column compact header; Oxfmt header probe plus authored text gap; stock whole DOM/text/SSR/event contract",
       "nativeSupported": false
+    },
+    {
+      "id": "dynamic-bind-brackets-arrow-value-lf",
+      "input": "dynamic-bind-brackets-arrow-value-lf.input",
+      "output": "dynamic-bind-brackets-arrow-value-lf.expected",
+      "inputSha256": "a0a3bf3eeb6ab78a25847dfcb555905b4de71eeefc512b59f17a0e47848f5407",
+      "outputSha256": "7dc91205c20e1ee8f76daefbae6247abf42c4822ac0f7b9c9582b752b1586335",
+      "options": {
+        "printWidth": 500,
+        "sortAttributes": false,
+        "normalizeDirectiveShorthands": false
+      },
+      "referenceAuthority": "Authored assignment-trivia normalization; independent official Vue3.5.35 whole AST, DOM/SSR and direct click contract; Vize qualification pending",
+      "nativeSupported": false
+    },
+    {
+      "id": "dynamic-event-brackets-modifier-lf",
+      "input": "dynamic-event-brackets-modifier-lf.input",
+      "output": "dynamic-event-brackets-modifier-lf.expected",
+      "inputSha256": "b8125856946c90d9cdbf9f35fb5404948fbadb18b6a83087eeffc0e9c044d7f1",
+      "outputSha256": "fecc332dff1a0e91097d9cbc087bd41ab0a000e9d86ba5c73a8f9e6ee6acfc54",
+      "options": {
+        "printWidth": 500,
+        "sortAttributes": false,
+        "normalizeDirectiveShorthands": false
+      },
+      "referenceAuthority": "Authored assignment-trivia normalization; independent official Vue3.5.35 whole AST, DOM/SSR and direct click contract; Vize qualification pending",
+      "nativeSupported": false
+    },
+    {
+      "id": "dynamic-template-key-assignment-crlf",
+      "input": "dynamic-template-key-assignment-crlf.input",
+      "output": "dynamic-template-key-assignment-crlf.expected",
+      "inputSha256": "69f0875367d0edd5b63c9dea9415dba0a2f55164b4c96b62dcaf564f9be0ddd7",
+      "outputSha256": "17f873685b30bdc69f7574d7557d707e895002b3e261f304986f562e1e8dbd8f",
+      "options": {
+        "printWidth": 500,
+        "sortAttributes": false,
+        "normalizeDirectiveShorthands": false,
+        "endOfLine": "crlf"
+      },
+      "referenceAuthority": "Authored assignment-trivia normalization; independent official Vue3.5.35 whole AST, DOM/SSR and direct click contract; Vize qualification pending",
+      "nativeSupported": false
     }
   ],
   "deferredReports": [

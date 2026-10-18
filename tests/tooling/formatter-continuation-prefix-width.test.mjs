@@ -5,6 +5,11 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+import {
+  compareTemplateAstEquivalence,
+  templateAstSemanticSignature,
+} from "./support/sfc-equivalence.ts";
 import { formatterCliTarget } from "../differential/formatter-cli-target.ts";
 import { sha256 } from "../differential/manifest.mjs";
 import { observeSource, providerIdentities } from "./support/formatter-continuation-semantics.mjs";
@@ -17,17 +22,34 @@ const fixtureRoot = path.join(
 const indexBytes = fs.readFileSync(path.join(fixtureRoot, "contracts-index.json"));
 assert.equal(
   sha256(indexBytes),
-  "cf6a10c97dcf83c411816432be301e3f30ba7f43cd406fbf2a6d891bcb33ddd1",
+  "091ba20a0035ca8bd08433e5d63a94b89301abf98856651d69a52262b7eff35a",
 );
 const index = JSON.parse(indexBytes);
-assert.equal(index.contracts.length, 10);
+assert.equal(index.contracts.length, 13);
 const corpusBytes = fs.readFileSync(path.join(fixtureRoot, "corpus.json"));
 assert.equal(
   sha256(corpusBytes),
-  "f120d2fb5696bdd0c6dc9efad9d3a91e5ddd54bb97db3ad38d58a7a3c4a08457",
+  "01110cd1256ab49fe407547567b43300f41b32be5859cd6fc3b81c9c8b4b6b62",
 );
 const corpus = JSON.parse(corpusBytes);
-assert.equal(corpus.cases.length, 11);
+assert.equal(corpus.cases.length, 14);
+
+const framingIds = new Set([
+  "dynamic-bind-brackets-arrow-value-lf",
+  "dynamic-event-brackets-modifier-lf",
+  "dynamic-template-key-assignment-crlf",
+]);
+const { parse } = createRequire(import.meta.url)(providerIdentities.compilerSfc.entry);
+function stockTemplate(source, id) {
+  const parsed = parse(source, { filename: id + ".vue", sourceMap: false });
+  assert.deepEqual(parsed.errors, []);
+  assert.ok(parsed.descriptor.template?.ast);
+  return parsed.descriptor.template.ast;
+}
+function templateEvidence(source, id) {
+  const ast = stockTemplate(source, id);
+  return { ast, signature: templateAstSemanticSignature(ast) };
+}
 
 void test("source CLI keeps complete authored DOM text SSR and event contracts", async (t) => {
   const target = await formatterCliTarget(root, "formatter-continuation-prefix-width.json");
@@ -76,6 +98,20 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
       assert.deepEqual(before.observations, contract.observations);
       assert.deepEqual(reference.observations, contract.observations);
       const row = { id: selected.id, before, reference, cli: [], after: [] };
+      if (framingIds.has(selected.id)) {
+        row.template = {
+          before: templateEvidence(input.toString(), selected.id),
+          reference: templateEvidence(expected.toString(), selected.id),
+          after: [],
+        };
+        assert.deepEqual(
+          compareTemplateAstEquivalence(row.template.before.ast, row.template.reference.ast),
+          [],
+        );
+        assert.equal(row.template.before.signature, row.template.reference.signature);
+        assert.equal(before.domCode, reference.domCode);
+        assert.equal(before.ssrCode, reference.ssrCode);
+      }
       report.rows.push(row);
       persist();
       const file = path.join(directory, "Example.vue");
@@ -119,19 +155,43 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
           `${selected.id}-${row.cli.length}`,
           states,
         );
+        if (row.template) {
+          const evidence = templateEvidence(after.toString(), selected.id);
+          row.template.after.push(evidence);
+          persist();
+          assert.deepEqual(
+            compareTemplateAstEquivalence(row.template.before.ast, evidence.ast),
+            [],
+          );
+          assert.equal(evidence.signature, row.template.before.signature);
+        }
         row.after.push(observed);
         persist();
         assert.deepEqual(observed.observations, contract.observations);
       }
     });
   }
-  assert.equal(report.rows.length, 10);
+  assert.equal(report.rows.length, 13);
+  const originalRows = report.rows.slice(0, 10);
+  const framingRows = report.rows.slice(10);
+  assert.deepEqual(
+    framingRows.map((row) => row.id),
+    [...framingIds],
+  );
   assert.equal(
-    report.rows.reduce((sum, row) => sum + row.cli.length, 0),
+    framingRows.reduce((sum, row) => sum + row.cli.length, 0),
+    15,
+  );
+  assert.equal(
+    framingRows.reduce((sum, row) => sum + row.after.length, 0),
+    15,
+  );
+  assert.equal(
+    originalRows.reduce((sum, row) => sum + row.cli.length, 0),
     50,
   );
   assert.equal(
-    report.rows.reduce((sum, row) => sum + row.after.length, 0),
+    originalRows.reduce((sum, row) => sum + row.after.length, 0),
     50,
   );
   for (const configuration of [

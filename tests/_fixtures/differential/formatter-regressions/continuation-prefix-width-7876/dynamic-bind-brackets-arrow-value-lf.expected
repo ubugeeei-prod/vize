@@ -1,0 +1,3 @@
+<template>
+  <button :[Object.keys({title:0})[0]]="page" data-next="kept" @click="(event) => openSettingsDialogForTheCurrentlySelectedItem()">{{ page }}</button>
+</template>
