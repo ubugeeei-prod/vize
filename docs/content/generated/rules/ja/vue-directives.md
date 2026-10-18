@@ -210,7 +210,7 @@ vp run lint
 
 **悪い**
 
-`v-bind:class` が長い形式で、設定したコロン省略形の規約に合いません。
+`v-bind:class` が長い形式で、設定で指定したコロンによる省略形の規約に合いません。
 
 ```vue annotate="remove:2"
 <template>

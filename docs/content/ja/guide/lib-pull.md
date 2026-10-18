@@ -93,7 +93,7 @@ node_modules/@vizejs/ui/
 | `vize lib remove <name>...`              | アイテムと、他に必要とされない依存を削除します。`--dry-run`、`--force`。                |
 | `vize lib outdated`                      | ロックされたバージョンをインストール済み・最新のレジストリと比較します。                |
 
-すべてのコマンドは機械可読な出力のための `--json` と、別のプロジェクトを対象にする `--root <dir>` を受け付けます。
+すべてのコマンドで、ほかのツールが処理しやすい形式で出力する `--json` と、別のプロジェクトを対象にする `--root <dir>` を使えます。
 
 ### アイテムの指定
 
@@ -129,7 +129,7 @@ export default defineConfig({
 
 既存の専用設定の `lib` も利用できます。優先順位と公開済みバージョンの対応範囲は[設定ガイド](./configuration.md)を参照してください。
 
-ある種類を一度ディレクトリに取得すると、その種類の以降の取得は同じディレクトリを使います。依存グラフを分割
+ある種類のアイテムを一度取得すると、その種類のアイテムは以降も同じディレクトリに配置されます。依存グラフを分割
 してしまう競合する `--dir` は拒否されます。
 
 取得したソースが import するのは相対パスと `vue` などの npm パッケージだけです。`pull` は `package.json` に
@@ -248,7 +248,7 @@ import している間は拒否し、`--force` がない限りローカルで編
 [`vize-lib-lock.schema.json`](https://github.com/ubugeeei-prod/vize/blob/main/npm/cli/schemas/vize-lib-lock.schema.json)
 で定義されています。どちらも `vize` npm パッケージの `schemas/` に同梱されています。
 
-- `registryDependencies` はビルド時に相対 import グラフから計算した完全な推移閉包です。共有の基盤は別アイテム
+- `registryDependencies` は、ビルド時に相対 import グラフをたどり、間接的な依存関係も含めて計算した完全な依存一覧です。共有の基盤は別アイテム
   なので、どちらも `id` を必要とする 2 つのコンポーネントを取得しても `id` は一度だけコピーされます。
 - 各ファイルは `sha256` を持ち、`vize lib` はコピーするすべてのバイトをそれで検証します。
 - `contentHash` はアイテムのファイルが変わったときだけ変化するため、`status` はバージョン間で実際にソースが

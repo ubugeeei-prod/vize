@@ -213,11 +213,6 @@ test("manual focused campaigns preserve the full default and upload before gatin
       }
     >;
   };
-  assert.equal(
-    workflow.concurrency.group,
-    "content-mapper-${{ github.event.pull_request.number || github.ref }}${{ inputs.official-css-options-only && '-official-css-options' || inputs.directive-owners-only && '-directive-owners' || inputs.event-rename-only && '-event-rename' || '' }}",
-    "a focused campaign must not cancel the full conformance campaign",
-  );
   const input = workflow.on.workflow_dispatch.inputs["event-rename-only"];
   assert.equal(input.type, "boolean");
   assert.equal(input.default, false);
@@ -267,12 +262,12 @@ test("manual focused campaigns preserve the full default and upload before gatin
   assert.equal(new Set(groups).size, 4, "all four campaigns must run without canceling each other");
   assert.equal(
     workflow.jobs["exact-tsgo-project"].if,
-    "${{ !inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only }}",
+    "${{ !inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only && !inputs.published-defaults-only }}",
   );
   const focused = workflow.jobs["event-rename"];
   assert.equal(
     focused.if,
-    "github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only",
+    "github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only && !inputs.published-defaults-only",
   );
   const rust = focused.steps.find((step) => step.name === "Setup Rust");
   const pinned = /^channel = "([^"]+)"$/mu.exec(readRepoFile("rust-toolchain.toml"))?.[1];
@@ -310,7 +305,7 @@ test("official TypeScript acceptance keeps the reported host and complete instal
   const job = workflow.jobs["official-css-options"];
   assert.equal(
     job.if,
-    "github.event_name == 'workflow_dispatch' && inputs.official-css-options-only",
+    "github.event_name == 'workflow_dispatch' && (inputs.official-css-options-only || inputs.published-defaults-only)",
   );
   assert.equal(job["timeout-minutes"], 15);
   const setup = job.steps.find((step) => step.name === "Setup pinned Node and Vite Plus")!;

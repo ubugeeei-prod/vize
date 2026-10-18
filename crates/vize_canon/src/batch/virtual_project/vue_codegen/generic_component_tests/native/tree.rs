@@ -176,7 +176,7 @@ fn qualify(root: &Path, native: &Path, pinned: bool) {
             Some(packets::Replay {
                 path: &file.virtual_path,
                 code: &before_code,
-                scope: "equal-width erasure of only unmapped synthetic event-inference spread entries in the actual story; original failed App packet is separately retained; not an old factory/native execution",
+                scope: "equal-width erasure of synthetic event-inference spread copies only; any diagnostic-only mapping requires an unchanged byte-identical ALL-owned primary copy with identical authored spans; original failed App packet is separately retained; not an old factory/native execution",
             }),
             (&project_paths.0, &project_paths.1),
             &paths,

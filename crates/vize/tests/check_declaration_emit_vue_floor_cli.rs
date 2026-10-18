@@ -1,6 +1,10 @@
 //! `vize check --declaration` against a `vue` whose typings predate
-//! `NativeElements` and `Directive` (Vue 2.7, an older Vue 3 minor, a trimmed or
-//! shimmed package).
+//! `NativeElements`, `Directive`, and the `PublicProps` alias (older or
+//! trimmed Vue type packages).
+//!
+//! Vue 3.0 and 3.3 publicly export `VNodeProps`, `AllowedComponentProps`, and
+//! `ComponentCustomProps`, but their runtime-core barrels do not re-export
+//! `PublicProps`. Keep that alias absent so declaration emit protects this floor.
 //!
 //! Native prop checking uses Vue's `NativeElements` when it is available. A
 //! missing export must not prevent declaration emit. Custom directives retain
@@ -68,8 +72,33 @@ const INDEX_TS: &str = "export { default as App } from './App.vue'\n";
 
 /// A `vue` that stops short of `NativeElements` and `Directive`, keeping only
 /// the surface the generated virtual modules name (`ComponentPublicInstance`,
-/// `Ref`, `ShallowRef`, `DefineComponent`).
-const VUE_WITHOUT_NATIVE_ELEMENTS_OR_DIRECTIVE: &str = r#"export interface ComponentPublicInstance<Props = {}> {
+/// `Ref`, `ShallowRef`, `DefineComponent`, and the three public-prop interfaces).
+const VUE_WITHOUT_NATIVE_ELEMENTS_OR_DIRECTIVE: &str = r#"export interface VNode {
+  readonly __v_isVNode: true;
+}
+// Public input contracts mirror Vue 3.5.20; VNode remains opaque in these fixtures.
+type VNodeMountHook = (vnode: VNode) => void;
+type VNodeUpdateHook = (vnode: VNode, oldVNode: VNode) => void;
+type VNodeRef = string | Ref | ((ref: Element | ComponentPublicInstance | null, refs: Record<string, unknown>) => void);
+export type VNodeProps = {
+  key?: PropertyKey;
+  ref?: VNodeRef;
+  ref_for?: boolean;
+  ref_key?: string;
+  onVnodeBeforeMount?: VNodeMountHook | VNodeMountHook[];
+  onVnodeMounted?: VNodeMountHook | VNodeMountHook[];
+  onVnodeBeforeUpdate?: VNodeUpdateHook | VNodeUpdateHook[];
+  onVnodeUpdated?: VNodeUpdateHook | VNodeUpdateHook[];
+  onVnodeBeforeUnmount?: VNodeMountHook | VNodeMountHook[];
+  onVnodeUnmounted?: VNodeMountHook | VNodeMountHook[];
+};
+export interface AllowedComponentProps {
+  class?: unknown;
+  style?: unknown;
+}
+export interface ComponentCustomProps {}
+
+export interface ComponentPublicInstance<Props = {}> {
   $props: Props;
   $attrs: Record<string, unknown>;
   $slots: Record<string, unknown>;

@@ -60,6 +60,7 @@ pub(crate) async fn open_canonical_script_document(
             source_mappings: opened.mappings,
             semantic_links: Vec::new(),
             prop_default_key_links: Vec::new(),
+            diagnostic_mappings: Vec::new(),
             import_source_map: opened.import_source_map,
         },
         dependencies: Vec::new(),

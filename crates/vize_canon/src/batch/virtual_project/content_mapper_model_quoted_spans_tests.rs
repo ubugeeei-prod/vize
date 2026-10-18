@@ -52,7 +52,7 @@ fn native_inner_rows_preserve_complete_protocol_model_prop_and_event_packets() {
                 )
             };
             assert_eq!(
-                serde_json::to_value(protocol_spans(&source, &generated, &mappings)).unwrap(),
+                serde_json::to_value(protocol_spans(&source, &generated, &mappings, &[])).unwrap(),
                 json!([
                     [
                         2,
@@ -127,7 +127,7 @@ fn quoted_model_restoration_requires_the_exact_retained_event_triplet() {
     }
 
     // An unowned quote rewrite retains the ordinary inner verbatim row.
-    let spans = protocol_spans(&source, &generated, &mappings[..2]);
+    let spans = protocol_spans(&source, &generated, &mappings[..2], &[]);
     assert_eq!(
         serde_json::to_value(spans).unwrap(),
         json!([[

@@ -35,6 +35,7 @@ use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 pub(super) fn generate_component_props(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
+    diagnostic_mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     ctx: &ComponentPropsContext<'_, '_>,
     checkable_usages: &[(usize, &ComponentUsage)],
@@ -204,7 +205,7 @@ pub(super) fn generate_component_props(
                 usage,
             );
             generate_root_usage_checks(&mut packet.text, &mut packet.mappings, ctx, idx, usage);
-            packet.append_to(ts, mappings, semantic_links);
+            packet.append_to(ts, mappings, diagnostic_mappings, semantic_links);
         }
     }
 }

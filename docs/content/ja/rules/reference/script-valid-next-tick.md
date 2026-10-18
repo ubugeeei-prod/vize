@@ -4,7 +4,7 @@ title: "script/valid-next-tick"
 
 # `script/valid-next-tick`
 
-nextTick() の完了を await、then、または callback で扱います。
+nextTick() の完了を await、then、またはコールバックで扱います。
 
 [悪い例](#悪い) · [良い例](#良い)
 

@@ -86,7 +86,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2", tab: "a" } 
 
 ## 良い
 
-params から `tab` を除き、path の key だけを渡します。タブ選択が必要なら別途 query を使います。
+`params` から `tab` を除き、ルートのパスで宣言されたキーだけを渡します。タブ選択が必要なら、別途 `query` を使います。
 
 `src/UserPost.vue`
 
@@ -99,6 +99,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [ファイル間ルール一覧](../cross-file.md)

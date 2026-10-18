@@ -71,7 +71,7 @@ export const router = createRouter({
 
 ## 悪い
 
-`user-post` の必須 `postId` を省略しています。Vue Router は現在の route から値を継承する場合があるため warning です。
+`user-post` の必須パラメーター `postId` を省略しています。Vue Router は現在のルートから値を継承する場合があるため、診断の重大度は `warning` です。
 
 `src/UserPost.vue`
 
@@ -99,6 +99,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [ファイル間ルール一覧](../cross-file.md)

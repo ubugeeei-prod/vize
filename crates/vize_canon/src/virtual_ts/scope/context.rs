@@ -9,7 +9,8 @@ use vize_carton::String;
 use vize_croquis::{Croquis, EventHandlerScopeData, ScopeId, analysis::ComponentUsage};
 
 use crate::virtual_ts::expressions::{ComponentPropSource, TemplateValueChecks};
-use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions};
+use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
+use std::ops::{Deref, DerefMut};
 
 use super::explicit_generics::ExplicitGenerics;
 use super::slot_outlet_props::SlotOutletChecks;
@@ -193,5 +194,37 @@ impl<'a> ComponentPropsContext<'a, '_> {
             &self.summary.scopes,
         )
         .with_model_modifiers(self.model_modifiers)
+    }
+}
+
+/// Existing emitters write normal mappings through the dereference. The
+/// additional inference copy of component inputs serves diagnostics only.
+pub(crate) struct ScopeMappings<'a> {
+    pub(crate) navigation: &'a mut Vec<VizeMapping>,
+    pub(crate) diagnostics: &'a mut Vec<VizeMapping>,
+}
+
+impl<'a> ScopeMappings<'a> {
+    pub(crate) fn new(
+        navigation: &'a mut Vec<VizeMapping>,
+        diagnostics: &'a mut Vec<VizeMapping>,
+    ) -> Self {
+        Self {
+            navigation,
+            diagnostics,
+        }
+    }
+}
+
+impl Deref for ScopeMappings<'_> {
+    type Target = Vec<VizeMapping>;
+    fn deref(&self) -> &Self::Target {
+        self.navigation
+    }
+}
+
+impl DerefMut for ScopeMappings<'_> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.navigation
     }
 }

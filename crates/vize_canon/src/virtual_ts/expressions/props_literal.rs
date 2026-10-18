@@ -1,12 +1,10 @@
 //! The object literal that reproduces a component usage's authored props.
 //!
 //! Split out of [`super::generic_props_call`] so the same literal can be
-//! assembled twice: once as the mapped argument of the child's prop checker,
-//! and once as the *unmapped* argument of the child's slot resolver, which only
-//! exists so TypeScript instantiates the child's generic parameters from the
-//! authored props (see `scope::slot_scope`). Keeping one builder is what makes
-//! the two arguments identical, which is the whole premise of the slot type
-//! matching the checked props.
+//! assembled for the mapped prop checker and listener inference, and for the
+//! unmapped slot resolver that instantiates the child's generic parameters
+//! from the authored props (see `scope::slot_scope`). One builder keeps their
+//! authored ordering and spread semantics identical.
 
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::component_props::{
@@ -24,6 +22,7 @@ use vize_croquis::{
 };
 
 mod prop_entry;
+pub(crate) use prop_entry::entry_sub_spans as prop_entry_sub_spans;
 
 /// An inference-only argument uses the same authored ordering and lexical
 /// spread binding authority as the mapped prop checker and slot resolver.
@@ -50,7 +49,7 @@ pub(crate) fn append_inference_props_literal(
 /// source order (last binding wins), exactly as an object literal does.
 /// Spreading first unconditionally would check `1` for the `count` of
 /// `:count="1" v-bind="bag"`, a key the runtime takes from `bag` instead.
-pub(super) fn append_props_literal(
+pub(crate) fn append_props_literal(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     usage: &ComponentUsage,

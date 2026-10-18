@@ -2,9 +2,11 @@
 title: Musea
 ---
 
+<!-- Reviewed translation; source: guide/musea.md; scope: complete document -->
+
 # Musea
 
-> **⚠️ 進行中の作業:** Musea はまだ進化中です。ファイル形式、API、UI の動作は変更される可能性があります。
+> **⚠️ 開発中:** Musea は開発を続けています。ファイル形式、API、UI の動作は変更される可能性があります。
 
 Musea は、自分のコンポーネントをギャラリーで一覧し、状態の違いを比較・検証するためのツールです。
 [すぐに使える UI の使用例](./ui/index.md)を試してから、自分のコンポーネントのバリエーションを `*.art.vue` に書きます。
@@ -36,7 +38,7 @@ vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
 
 ## Vite+ で設定する
 
-[Vite+ 連携 (英語)](/guide/vite-plus/)を使うプロジェクトでは、既存の `plugins` に `musea()` を追加します。
+[Vite+ 連携](./vite-plus.md)を使うプロジェクトでは、既存の `plugins` に `musea()` を追加します。
 ヘルパーが Vize の Vue コンパイラーを設定します。
 
 ```ts
@@ -169,7 +171,9 @@ render 関数で書いたコンポーネントには、`.ts`、`.tsx`、`.js`、
 
 `<art title="..." component="...">` も互換性のために引き続き使えます。両方を指定した場合、明示的な `<art>` の属性が `defineArt` のメタデータより優先されます。
 
-### バリアントローカル状態
+<span id="バリアントローカル状態"></span>
+
+### バリアントごとの状態
 
 ルートの `<script setup>` の状態は、デフォルトでバリアントごとに分離されます。各バリアントで別々にセットアップを実行するため、あるバリアントの ref や computed の値が、別のバリアントと共有されることはありません。
 
@@ -289,7 +293,9 @@ musea({
 });
 ```
 
-## 構成をプレビューする
+<span id="構成をプレビューする"></span>
+
+## プレビューに CSS とプラグインを追加する
 
 プレビューにプロジェクトの CSS を読み込み、セットアップ用のコードを実行できます。
 
@@ -363,7 +369,9 @@ vp exec musea-vrt generate src/components/Button.vue
 
 生成されたファイルは、使用例を作るための下書きです。コミットする前に、バリエーション、タイトル、タグ、Props の範囲を確認してください。
 
-## ストーリーブックの出力
+<span id="ストーリーブックの出力"></span>
+
+## Storybook 向けに出力する
 
 Musea の art ファイルを Storybook で使う場合は、Storybook 互換の CSF 生成を有効にします。
 

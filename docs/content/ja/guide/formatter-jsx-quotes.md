@@ -5,7 +5,7 @@
 JSX 属性の引用符を、通常の JavaScript 文字列とは別に選びます。
 JSX/TSX のコードや Vue のスクリプトブロックで、文字列と属性に異なる規則を使いたいときに設定します。
 
-設定の置き場所を選ぶ前に、[CLI・エディタとの共有方法と現在のリリースで使える設定](./configuration.md)を確認してください。
+設定の置き場所を選ぶ前に、[CLI・エディターとの設定共有と、リリースごとの対応範囲](./configuration.md)を確認してください。
 
 ## JSX の引用符を設定する
 
@@ -34,7 +34,7 @@ const view = <div title='world' />;
 
 この設定は JSX/TSX のスクリプトに適用され、Vue の `<script lang="tsx">` と `<script lang="jsx">` も対象です。
 通常の Vue テンプレートの HTML 属性は、従来の引用符の規則を保ちます。
-CLI・エディタの設定と WASM の SFC オプションでは使えますが、native Node のフォーマッタオプションでは `jsxSingleQuote` をまだ指定できません。
+CLI・エディターの設定と WASM の SFC オプションでは使えますが、Node 向けネイティブ API のフォーマッタオプションでは `jsxSingleQuote` をまだ指定できません。
 
 [プロパティの引用符の設定](./formatter-property-quotes.md)では、どのオブジェクトキーに引用符を付けるかを選びます。
 JSX 属性の引用符とは独立した設定です。

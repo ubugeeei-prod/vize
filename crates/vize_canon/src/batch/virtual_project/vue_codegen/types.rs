@@ -8,6 +8,9 @@ use vize_carton::{String as CompactString, config::VueVersion};
 pub(in crate::batch::virtual_project) struct GeneratedVueFile {
     pub(in crate::batch::virtual_project) code: CompactString,
     pub(in crate::batch::virtual_project) mappings: Vec<crate::virtual_ts::VizeMapping>,
+    /// Row-aligned producer feature ownership. Style diagnostics may append
+    /// ordinary rows after this prefix; JSX shifts coordinates without reordering.
+    pub(in crate::batch::virtual_project) mapping_meta: Vec<crate::virtual_ts::ProjectionMeta>,
     pub(in crate::batch::virtual_project) semantic_links: Vec<crate::virtual_ts::VizeSemanticLink>,
     pub(in crate::batch::virtual_project) prop_default_key_links:
         Vec<crate::virtual_ts::VizeSemanticLink>,

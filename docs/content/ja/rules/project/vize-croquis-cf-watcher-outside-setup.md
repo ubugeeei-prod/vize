@@ -9,7 +9,7 @@ title: "vize:croquis/cf/watcher-outside-setup"
 既定の重大度: 現在は生成されません  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
 自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
+オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
 
 この公開診断コードには現在の生成元がありません。悪い例・良い例はリスクと修正の説明です。このコードを検出させる設定は現在ありません。
 
@@ -66,7 +66,7 @@ const { count, observed } = useObserver();
 
 ## 悪い
 
-watcher をいずれの Observer の setup 内でもなくモジュールの読み込み時に作り、両インスタンスが ref を共有します。個々の Observer のアンマウントでは自動停止されません。
+ウォッチャーを各 `Observer` の setup 内ではなく、モジュールの読み込み時に作っています。そのため、両インスタンスが ref を共有し、個々の `Observer` をアンマウントしてもウォッチャーは自動停止しません。
 
 `use-observer.ts`
 
@@ -81,7 +81,7 @@ export function useObserver() { return { count, observed }; }
 
 ## 良い
 
-setup からの同期的な呼び出しごとに、`useObserver` 内で個別の ref と watcher を作ります。Vue が watcher を呼び出し元のコンポーネントの寿命に結び付けます。
+setup からの同期的な呼び出しごとに、`useObserver` 内で個別の ref とウォッチャーを作ります。Vue がウォッチャーの有効期間を呼び出し元のコンポーネントの生存期間に結び付けます。
 
 `use-observer.ts`
 
@@ -96,7 +96,7 @@ export function useObserver() {
 
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

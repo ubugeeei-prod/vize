@@ -68,7 +68,7 @@ use self::type_only_imports::syntactic_type_only_imported_names;
 use self::unresolved_components::emit_unresolved_components;
 use super::{
     macro_type_mappings::MacroTypeMappings,
-    scope::{ScopeGenerationOptions, generate_scope_closures},
+    scope::{ScopeGenerationOptions, ScopeMappings, generate_scope_closures},
     template_binding_access::TemplateBindingAccess,
     types::{
         DEFAULT_LIB_REFERENCES, VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput,
@@ -107,6 +107,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .map(|(start, _)| start),
     );
     let mut mappings: Vec<VizeMapping> = Vec::new();
+    let mut diagnostic_mappings = Vec::new();
     let mut semantic_links = Vec::new();
     let mut prop_default_key_links = Vec::new();
     let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
@@ -690,7 +691,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     "canon.virtual_ts.generate_scope_closures",
                     generate_scope_closures(
                         &mut ts,
-                        &mut mappings,
+                        &mut ScopeMappings::new(&mut mappings, &mut diagnostic_mappings),
                         &mut semantic_links,
                         summary,
                         &template_binding_access,
@@ -847,5 +848,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         ),
     );
     component_export::emit_component_default_export(&mut ts, generation_options.component_name);
-    binding_output::publish(ts, mappings, semantic_links, prop_default_key_links)
+    binding_output::publish(
+        ts,
+        mappings,
+        diagnostic_mappings,
+        semantic_links,
+        prop_default_key_links,
+    )
 }

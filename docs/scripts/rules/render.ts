@@ -68,7 +68,7 @@ export function generateRulePages({
         : "Severity is the implementation default; override it with `off`, `warn`, or `error`. See [Rule Options](./options.md) for rule-option support and [Cross-file rules](./cross-file.md) for project-graph findings.",
       "",
       ja
-        ? "プリセットが `_none_` のルールは明示的な有効化または追加の設定が必要です。"
+        ? "プリセット欄が「none」のルールは、明示的な有効化または追加の設定が必要です。"
         : "`_none_` means explicit enablement or host configuration is required. `general-recommended` is displayed as `happy-path`.",
       "",
       ja
@@ -176,7 +176,7 @@ function detail(rule: RuleMetadata, example: RuleExample, ja: boolean) {
     lines.push(
       label(
         "Type-aware checks use the native Corsa runtime and the TypeScript project. `typeAware` alone does not enable an opt-in rule.",
-        "型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。",
+        "型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にしても、個別の有効化が必要なルールは自動では有効になりません。",
       ),
       "",
     );

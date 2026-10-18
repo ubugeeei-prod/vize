@@ -23,8 +23,7 @@ npm コマンドと `@vizejs/vite-plugin` は、プロジェクトのルート�
 - `vize.config.mjs`
 - `vize.config.json`
 
-Rust CLIは、次のようなコマンドネイティブ設定に対して、同じ構成ファイル名を上記の順序で読み取ります。
-`check`、`lint`、`lsp`、および `fmt`。
+Rust CLI の `check`、`lint`、`lsp`、`fmt` も、コマンドの設定を上記のファイル名と優先順位で読み込みます。
 
 ## TypeScript 設定
 
@@ -70,7 +69,9 @@ export default defineConfig(({ command, mode, isSsrBuild }) => ({
 }));
 ```
 
-## Vue タイプの解決
+<span id="vue-タイプの解決"></span>
+
+## Vue の型の解決
 
 `vize check`、言語サーバー、npm コマンドは、解析対象のプロジェクトから `vue`、`@vue/compiler-sfc`、関連するアンビエント型を解決します。Vue の型を、公開された `vize` パッケージや Vize のビルド時のバージョンに固定することはありません。Vue 3 のパッチ版・マイナー版・プレリリース版は、利用するプロジェクト側で選べます。
 
@@ -78,7 +79,9 @@ export default defineConfig(({ command, mode, isSsrBuild }) => ({
 
 複数の Vue バージョンをサポートするプロジェクトでは、各バージョンをパッケージのテスト行列で検証してください。Vize は固定された型ファイルのパスではなく、その検証環境で有効な依存関係をたどります。
 
-## 試験的なフラット エントリ
+<span id="試験的なフラット-エントリ"></span>
+
+## 実験的なフラット形式のエントリー
 
 モノレポでは、`entries` でルートの既定値とパッケージごとの上書きを指定できます。通常のオブジェクト形式の設定は、内部で1つのエントリーに正規化されます。`defineConfig` は配列のエクスポートにも対応するため、ESLint の flat config のように設定を書けます。
 
@@ -131,7 +134,9 @@ export default defineConfig({
 
 継承元には JSON、JavaScript、TypeScript、PKL を使えます。`extends` を合成するのは `vize` CLI（`check`、`lint`、`fmt`、`lsp`）と言語サーバーです。言語サーバーは `vize.config.*` の変更で再読み込みしますが、継承元ファイルの変更では再読み込みしません。Vite プラグインはまだ `extends` を読みません。共通の設定オブジェクトを TypeScript で import し、スプレッドしてください。
 
-## PKL 構成
+<span id="pkl-構成"></span>
+
+## PKL の設定
 
 ```pkl
 amends "node_modules/vize/pkl/vize.pkl"
@@ -177,7 +182,9 @@ lsp {
 }
 ```
 
-## JSON 構成
+<span id="json-構成"></span>
+
+## JSON の設定
 
 ```json
 {
@@ -212,7 +219,7 @@ lsp {
 
 ## 静的解析オプション
 
-npm lint パスには `linter` を使用します。
+npm パッケージの lint コマンドには `linter` を使います。
 
 ```ts
 export default defineConfig({
@@ -227,13 +234,15 @@ export default defineConfig({
 });
 ```
 
-### Lint Rule Options
+<span id="lint-rule-options"></span>
+
+### lint ルールのオプション
 
 一部のルールは、`linter.ruleOptions` で型付きの設定を受け取ります。全項目は
-[ルール オプション](../rules/options.md)を参照してください。診断の重大度は
+[ルールのオプション](../rules/options.md)を参照してください。診断の重大度は
 引き続き `linter.rules` で指定します。
 
-npm チェック パスには `typeChecker` を使用します。
+npm パッケージの型チェックコマンドには `typeChecker` を使います。
 
 ```ts
 export default defineConfig({
@@ -271,7 +280,7 @@ Vue 2.7・Nuxt 2 への対応は、別途 `legacy` ビルドで有効にする�
 
 ## Musea のオプション
 
-共有構成は現在、ギャラリー ファイル セットとルートをカバーしています。
+現在、共通設定ではギャラリーの対象ファイルとルートを指定できます。
 
 ```ts
 export default defineConfig({

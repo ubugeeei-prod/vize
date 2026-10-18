@@ -4,7 +4,7 @@ title: "vue/no-v-html"
 
 # `vue/no-v-html`
 
-XSS を防ぐため、v-html の使用に警告します。
+XSS を防ぐため、v-html を使用した箇所に警告を出します。
 
 [悪い例](#悪い) · [良い例](#良い)
 

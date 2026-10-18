@@ -79,6 +79,16 @@ impl ProjectionMapping {
         }
     }
 
+    /// Restore a raw transport's row metadata. Producers may append ordinary
+    /// rows after capturing the metadata prefix; their ownership stays ALL.
+    #[cfg(any(feature = "native", test))]
+    pub(crate) fn restore_row_metadata(&mut self, mut metadata: Vec<ProjectionMeta>) {
+        if !metadata.is_empty() {
+            metadata.resize(self.spans.len(), ProjectionMeta::default());
+        }
+        self.meta = metadata;
+    }
+
     /// Append one row with default metadata.
     pub fn push(&mut self, span: VizeMapping) {
         self.push_with(span, ProjectionMeta::default());

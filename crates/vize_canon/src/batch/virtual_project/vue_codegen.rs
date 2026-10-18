@@ -74,6 +74,7 @@ pub(super) fn generate_vue_virtual_ts(
                 module_exports: None,
                 code: invalid_sfc_fallback_virtual_ts(),
                 mappings: Vec::new(),
+                mapping_meta: Vec::new(),
                 semantic_links: Vec::new(),
                 prop_default_key_links: Vec::new(),
                 diagnostics: vec![diagnostic_for_offset(
@@ -154,6 +155,7 @@ pub(super) fn generate_vue_virtual_ts(
             module_exports: None,
             code: invalid_sfc_fallback_virtual_ts(),
             mappings: Vec::new(),
+            mapping_meta: Vec::new(),
             semantic_links: Vec::new(),
             prop_default_key_links: Vec::new(),
             diagnostics,
@@ -298,8 +300,8 @@ pub(super) fn generate_vue_virtual_ts(
     }
 
     let mut code = output.code;
-    let (mut mappings, semantic_links, prop_default_key_links) =
-        output.mapping.into_binding_parts();
+    let (mut mappings, mapping_meta, semantic_links, prop_default_key_links) =
+        output.mapping.into_binding_parts_with_metadata();
     style_modules::append_style_scoped_classes(
         &mut code,
         source,
@@ -317,6 +319,7 @@ pub(super) fn generate_vue_virtual_ts(
     Ok(GeneratedVueFile {
         code,
         mappings,
+        mapping_meta,
         semantic_links,
         prop_default_key_links,
         diagnostics,

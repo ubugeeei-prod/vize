@@ -74,11 +74,34 @@ impl VirtualTsResult {
         mapping: vize_canon::virtual_ts::ProjectionMapping,
         import_source_map: ImportSourceMap,
     ) -> Self {
-        let (source_mappings, semantic_links, prop_default_key_links) =
+        // Inference copies report authored diagnostics, but must not replace
+        // the original declared-property owner for hover, completion or edits.
+        // Move each row once; keeping a second complete navigation Vec would
+        // double mapping storage for every synced SFC.
+        let mut diagnostic_indices = mapping
+            .rows()
+            .enumerate()
+            .filter_map(|(index, row)| {
+                (row.meta.features == vize_canon::virtual_ts::ProjectionFeatures::DIAGNOSTICS)
+                    .then_some(index)
+            })
+            .collect::<Vec<_>>()
+            .into_iter()
+            .peekable();
+        let (mut source_mappings, semantic_links, prop_default_key_links) =
             mapping.into_binding_parts();
+        let mut index = 0;
+        let diagnostic_mappings = source_mappings
+            .extract_if(.., |_| {
+                let diagnostic_only = diagnostic_indices.next_if_eq(&index).is_some();
+                index += 1;
+                diagnostic_only
+            })
+            .collect();
         Self {
             code,
             source_mappings,
+            diagnostic_mappings,
             semantic_links: semantic_links_after_import_rewrite(semantic_links, &import_source_map),
             prop_default_key_links: semantic_links_after_import_rewrite(
                 prop_default_key_links,

@@ -9,6 +9,7 @@ import {
 } from "../../docs/scripts/i18n/reviewed.ts";
 import { defaultNavigationRenderRoutes } from "../../docs/scripts/navigation-render-routes.ts";
 import { updatePerformance } from "../../tools/benchmarks/scripts/published-snapshot-sections.mjs";
+import { currentEditorialWitness } from "../../docs/scripts/config-editorial-succession.ts";
 
 const root = resolve(import.meta.dirname, "../..");
 const path = "architecture/performance.md";
@@ -40,10 +41,18 @@ void test("Japanese performance review survives both translation and benchmark r
     "benchmark publication changes only its three marked blocks and preserves the complete authored context",
   );
   assert.equal(completeBlocks(japanese).length, 3);
+  const { cases } = JSON.parse(
+    readFileSync(resolve(root, "tests/_fixtures/docs-ja-nonrule-editorial.json"), "utf8"),
+  ) as { cases: { case: string; after: string }[] };
+  const originalBackend = cases.find((entry) => entry.case === "N31");
+  assert.ok(originalBackend, "the original complete backend paragraph remains frozen");
+  const reviewedBackend = currentEditorialWitness(originalBackend);
+  assert.equal(japanese.split(reviewedBackend.after).length, 2);
+  const originalProse = japanese.replace(reviewedBackend.after, originalBackend.after);
   assert.equal(
-    digest(completeBlocks(japanese).map(restoreOriginalSnapshotLinks)),
+    digest(completeBlocks(originalProse).map(restoreOriginalSnapshotLinks)),
     "22cbc8705fdfe99e3d7901fa24759fa0125b98ee4453e140022d1168ba51a25f",
-    "all original complete blocks after reversing only the three declared snapshot-link repairs",
+    "all original complete blocks after reversing the declared snapshot links and whole backend paragraph",
   );
 });
 

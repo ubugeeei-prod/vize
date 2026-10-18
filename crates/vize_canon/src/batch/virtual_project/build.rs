@@ -168,6 +168,7 @@ pub(super) fn build_vue_registered_file(
     let GeneratedVueFile {
         mut code,
         mut mappings,
+        mapping_meta,
         mut semantic_links,
         mut prop_default_key_links,
         diagnostics,
@@ -204,6 +205,7 @@ pub(super) fn build_vue_registered_file(
     let preserve_module_source = !context.allow_javascript
         && rewritten.source_map != crate::batch::import_rewriter::ImportSourceMap::empty();
     let mut projection = crate::virtual_ts::ProjectionMapping::from_parts(mappings, semantic_links);
+    projection.restore_row_metadata(mapping_meta);
     projection.set_prop_default_key_links(prop_default_key_links);
     let source_map = CompositeSourceMap::new_vue(
         SfcSourceMap::from_projection(projection, collect_sfc_block_ranges(&descriptor)),

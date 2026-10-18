@@ -4,7 +4,7 @@ title: "script/require-default-prop"
 
 # `script/require-default-prop`
 
-任意指定で Boolean ではない prop に default を用意します。
+省略可能な、Boolean 以外の prop に default を用意します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
