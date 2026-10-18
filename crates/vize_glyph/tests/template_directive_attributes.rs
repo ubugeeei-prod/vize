@@ -381,10 +381,21 @@ fn l1_dynamic_name_framing_keeps_layout_profiles_and_refusal_boundaries_separate
         ..FormatOptions::default()
     };
     let source = "<Card :[(name=>name)(outside)]=\"value\" id=\"next\"></Card>";
-    let expected = "<Card\n\t:[(name=>name)(outside)]=\"value\"\n\tid=\"next\"></Card>";
+    // At width 20 the existing value-layout policy owns the quote break as
+    // well as the attribute break; a long name does not bypass that policy.
+    let expected = "<Card\n\t:[(name=>name)(outside)]=\"\n\t\tvalue\n\t\"\n\tid=\"next\"></Card>";
     let first = format_template(source, &options).unwrap();
     assert_eq!(first.as_str(), expected);
     assert_eq!(format_template(&first, &options).unwrap(), first);
+
+    let wide = FormatOptions {
+        print_width: 80,
+        ..options
+    };
+    let expected = "<Card\n\t:[(name=>name)(outside)]=\"value\"\n\tid=\"next\"></Card>";
+    let first = format_template(source, &wide).unwrap();
+    assert_eq!(first.as_str(), expected);
+    assert_eq!(format_template(&first, &wide).unwrap(), first);
 
     let options = FormatOptions {
         print_width: 500,
