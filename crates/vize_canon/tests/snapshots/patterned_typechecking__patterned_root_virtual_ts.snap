@@ -430,7 +430,7 @@ function __setup() {
   
   const result = {} as Result<number>;
   
-  // @vize-map: 26426:26471 -> 0:110
+  // @vize-map: 26497:26542 -> 0:110
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

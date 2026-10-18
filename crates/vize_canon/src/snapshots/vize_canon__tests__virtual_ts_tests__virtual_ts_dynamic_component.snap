@@ -131,7 +131,7 @@ function __setup() {
     currentComponent.value = currentComponent.value === CompA ? markRaw(CompB) : markRaw(CompA)
   }
   
-  // @vize-map: 14551:14741 -> 0:272
+  // @vize-map: 14622:14812 -> 0:272
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

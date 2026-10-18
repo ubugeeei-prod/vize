@@ -124,7 +124,7 @@ function __setup() {
   const status = ref('loading')
   const message = ref('')
   
-  // @vize-map: 14478:14539 -> 0:80
+  // @vize-map: 14549:14610 -> 0:80
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

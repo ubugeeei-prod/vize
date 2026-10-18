@@ -124,7 +124,7 @@ function __setup() {
   const props = defineProps<{ count: number }>();
   const message = ref('Hello');
   
-  // @vize-map: 14467:14555 -> 0:79
+  // @vize-map: 14538:14626 -> 0:79
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

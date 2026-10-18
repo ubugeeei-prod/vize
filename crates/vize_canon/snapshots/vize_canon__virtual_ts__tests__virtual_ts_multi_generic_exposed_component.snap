@@ -134,7 +134,7 @@ function __setup<Mode extends 'row' | 'cell', TEvent extends Mode>() {
     current: () => Mode;
   }>();
   
-  // @vize-map: 14539:14775 -> 0:207
+  // @vize-map: 14610:14846 -> 0:207
 
 
   // Setup-scoped props type artifact

@@ -126,7 +126,7 @@ function __setup() {
   const users = ref([{ id: 1 }])
   const inputRef = useTemplateRef<HTMLInputElement>('input')
   
-  // @vize-map: 14594:14691 -> 0:132
+  // @vize-map: 14665:14762 -> 0:132
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

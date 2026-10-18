@@ -62,9 +62,14 @@ const modules = JSON.parse(fs.readFileSync(path.join(directory, 'modules.json'),
 const host = ts.createCompilerHost(options);
 // This checks complete native modules with the declared JS compiler, not the
 // external mapper protocol. The official TS7 carrier checks that separately.
-host.resolveModuleNames = (names, containing) => names.map(name =>
-  ts.resolveModuleName(modules[path.resolve(path.dirname(containing), name)] ?? name,
-    containing, options, host).resolvedModule);
+host.resolveModuleNames = (names, containing) => names.map(name => {
+  const virtual = modules[path.resolve(path.dirname(containing), name)];
+  // The authored specifier is .vue, not a TypeScript-extension import. Return
+  // the registered virtual module instead of resolving a fabricated .tsx import.
+  if (virtual) return { resolvedFileName: virtual, extension: path.extname(virtual),
+    isExternalLibraryImport: false };
+  return ts.resolveModuleName(name, containing, options, host).resolvedModule;
+});
 const files = fs.readdirSync(directory).filter(file => /\.tsx?$/.test(file));
 const program = ts.createProgram(files.map(file => path.join(directory, file)), options, host);
 const diagnostics = ts.getPreEmitDiagnostics(program).map(d => ({

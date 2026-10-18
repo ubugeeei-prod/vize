@@ -125,7 +125,7 @@ function __setup() {
   
   const { x, y } = useMouse()
   
-  // @vize-map: 14492:14531 -> 0:70
+  // @vize-map: 14563:14602 -> 0:70
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

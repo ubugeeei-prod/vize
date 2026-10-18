@@ -127,7 +127,7 @@ function __setup() {
   
   const props = defineProps<Props>()
   
-  // @vize-map: 14481:14527 -> 0:90
+  // @vize-map: 14552:14598 -> 0:90
 
   // ========== Template Scope (inherits from setup) ==========
   // Anchor before the template scope shadows `props`
