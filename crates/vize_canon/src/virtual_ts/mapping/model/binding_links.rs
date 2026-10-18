@@ -1,6 +1,8 @@
 //! Binding metadata accessors for the projection mapping.
 
-use super::{ProjectionMapping, ProjectionMeta, VizeMapping, VizeSemanticLink};
+#[cfg(any(feature = "native", test))]
+use super::ProjectionMeta;
+use super::{ProjectionMapping, VizeMapping, VizeSemanticLink};
 
 impl ProjectionMapping {
     /// Semantic links between generated ranges.
@@ -16,6 +18,7 @@ impl ProjectionMapping {
 
     /// Preserve the producer's compact metadata column across internal raw
     /// transports. The older public accessors retain their existing contract.
+    #[cfg(any(feature = "native", test))]
     pub(crate) fn into_binding_parts_with_metadata(
         self,
     ) -> (
