@@ -16,11 +16,13 @@ import { extname, join, relative, resolve, sep } from "node:path";
 import { committedGraph, gitObjectId } from "./canonical-corpus-inventory.mjs";
 import {
   needsNativeWalk,
+  kernelPrefixWitness,
+  qualifyKernelBoundary,
   pathOrder,
   resolveLogical,
   validateLogicalGraph,
   walkCommittedGraph,
-} from "./canonical-corpus-logical-walk.mjs";
+} from "./canonical-corpus-logical-walk.ts";
 
 import {
   captureFiniteObservation,
@@ -31,12 +33,35 @@ import {
 } from "./canonical-corpus-finite-walk.mjs";
 export { collectFinitePhysical } from "./canonical-corpus-finite-walk.mjs";
 
-export const collectorSource = "tests/davinci_test_support/src/corpus.rs";
-const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const gitSource = (cwd, sha, path) => execFileSync("git", ["show", `${sha}:${path}`], { cwd });
-const excluded = (name) => ["node_modules", "_git-worktrees"].includes(name);
+import type {
+  Boundary,
+  CorpusChildren,
+  CorpusNodes,
+  VueFile,
+  KernelPrefixWitness,
+  CorpusProof,
+  CorpusIdentity,
+  NativeReceipt,
+  NativeWalkIdentity,
+  NativeObservation,
+  PhysicalEntry,
+  MetadataEntry,
+} from "./canonical-corpus-types.ts";
+export type {
+  CorpusProof,
+  CorpusIdentity,
+  NativeReceipt,
+  NativeWalkIdentity,
+  NativeObservation,
+} from "./canonical-corpus-types.ts";
 
-export function collectorHarness(bytes) {
+export const collectorSource = "tests/davinci_test_support/src/corpus.rs";
+const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
+const gitSource = (cwd: string, sha: string, path: string) =>
+  execFileSync("git", ["show", `${sha}:${path}`], { cwd });
+const excluded = (name: string) => ["node_modules", "_git-worktrees"].includes(name);
+
+export function collectorHarness(bytes: Uint8Array): { body: string; harness: Buffer } {
   const source = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   const bodies = source.match(
     /pub fn collect_vue_files\(root: &Path, out: &mut Vec<PathBuf>\) \{[\s\S]*?\n\}\n/g,
@@ -74,13 +99,17 @@ export function collectorHarness(bytes) {
 
 // This shallow walk authenticates symlinks before native traversal; it never
 // follows them or removes logical aliases from the actual collector output.
-function validatePhysicalLinks(root, nodes, observed = null) {
-  const visit = (directory) => {
+function validatePhysicalLinks(
+  root: string,
+  nodes: CorpusNodes,
+  observed: PhysicalEntry[] | null = null,
+) {
+  const visit = (directory: string): void => {
     for (const name of readdirSync(directory)) {
       if (excluded(name)) continue;
       const path = join(directory, name);
       const stat = lstatSync(path);
-      const entry = {
+      const entry: PhysicalEntry = {
         path: relative(root, path).split(sep).join("/"),
         mode: stat.mode,
         size: stat.size,
@@ -104,40 +133,60 @@ function validatePhysicalLinks(root, nodes, observed = null) {
   visit(root);
 }
 
-export function collectNativePhysical(root, nodes, children, observe = null) {
+export function collectNativePhysical(
+  root: string,
+  nodes: CorpusNodes,
+  children: CorpusChildren,
+  observe: ((raw: NativeObservation) => void) | null = null,
+): { files: VueFile[]; boundary: Boundary; committed: Array<[string, string]> } {
   validateLogicalGraph(nodes, children);
-  const physical = observe ? [] : null;
-  const metadata = observe ? [] : null;
-  const files = [];
-  const rejected = [];
+  const physical: PhysicalEntry[] | null = observe ? [] : null;
+  const metadata: MetadataEntry[] | null = observe ? [] : null;
+  const files: VueFile[] = [];
+  const rejected: Boundary["rejected"] = [];
+  const witnesses: KernelPrefixWitness[] = [];
   let successfulFollows = 0;
   // Retain raw logical metadata calls for the witnessed original kernel boundary.
   // Directory enumeration and whole-byte reads use the already shortened parent,
   // so those syscalls cannot exhaust a different lookup budget on the same alias.
-  const visit = (directory, physicalDirectory) => {
+  const visit = (directory: string, physicalDirectory: string): void => {
     for (const name of readdirSync(physicalDirectory).sort(pathOrder)) {
       if (excluded(name)) continue;
       const path = join(directory, name);
       const physicalPath = join(physicalDirectory, name);
       const logical = relative(root, path).split(sep).join("/");
       let isDirectory;
-      const observed = { path: logical };
+      const observed: MetadataEntry = { path: logical };
       metadata?.push(observed);
       try {
         isDirectory = statSync(path).isDirectory();
         observed.isDirectory = isDirectory;
       } catch (error) {
         observed.error = {
-          code: error.code,
-          errno: error.errno,
-          syscall: error.syscall,
-          path: error.path,
-          message: error.message,
+          code: (error as NodeJS.ErrnoException).code,
+          errno: (error as NodeJS.ErrnoException).errno,
+          syscall: (error as NodeJS.ErrnoException).syscall,
+          path: (error as NodeJS.ErrnoException).path,
+          message: (error as NodeJS.ErrnoException).message,
         };
-        assert.equal(error.code, "ELOOP", "Unexpected physical corpus metadata failure");
+        assert.equal(
+          (error as NodeJS.ErrnoException).code,
+          "ELOOP",
+          "Unexpected physical corpus metadata failure",
+        );
         const node = resolveLogical(nodes, logical);
         assert(node.allowed, "Foreign physical kernel boundary");
-        rejected.push({ path: logical, code: error.code, followed: node.followed });
+        rejected.push({
+          path: logical,
+          code: (error as NodeJS.ErrnoException).code!,
+          followed: node.followed,
+        });
+        const witness = kernelPrefixWitness(
+          nodes,
+          logical,
+          relative(root, directory).split(sep).join("/"),
+        );
+        if (witness) witnesses.push(witness);
         observed.followed = node.followed;
         isDirectory = false;
       }
@@ -159,7 +208,7 @@ export function collectNativePhysical(root, nodes, children, observe = null) {
   };
   // Persist the unmodified observations even when traversal or the strict boundary
   // comparisons refuse this capture. These rows never authorize a boundary.
-  let traversalFailure = null;
+  let traversalFailure: { error: unknown } | null = null;
   try {
     validatePhysicalLinks(root, nodes, physical);
     visit(root, realpathSync(root));
@@ -177,18 +226,7 @@ export function collectNativePhysical(root, nodes, children, observe = null) {
     throw observationError;
   }
   if (traversalFailure) throw traversalFailure.error;
-  assert(rejected.length > 0, "Missing actual native kernel boundary observation");
-  const firstRejected = rejected[0].followed;
-  assert(
-    rejected.every((row) => row.followed === firstRejected),
-    "Inconsistent native kernel boundary",
-  );
-  assert.equal(
-    successfulFollows + 1,
-    firstRejected,
-    "Native kernel boundary lacks preceding success",
-  );
-  const boundary = { code: "ELOOP", firstRejected, rejected };
+  const boundary = qualifyKernelBoundary(nodes, rejected, successfulFollows, witnesses);
   const committed = walkCommittedGraph(nodes, children, boundary).files;
   assert.deepEqual(
     files.map(([path, , , blob]) => [path, blob]),
@@ -198,11 +236,21 @@ export function collectNativePhysical(root, nodes, children, observe = null) {
   return { files, boundary, committed };
 }
 
-export function validateFiniteNativeVector(vector, nodes, children, boundary) {
+export function validateFiniteNativeVector(
+  vector: Uint8Array,
+  nodes: CorpusNodes,
+  children: CorpusChildren,
+  boundary: Boundary,
+): string[] {
   return validateFinitePaths(parseNativeVector(vector), nodes, children, boundary);
 }
 
-export function captureNativeWalk(cwd, identity, proof, directory) {
+export function captureNativeWalk(
+  cwd: string,
+  identity: CorpusIdentity,
+  proof: CorpusProof,
+  directory: string,
+): { files: VueFile[]; nativeWalk: NativeWalkIdentity } {
   const { nodes, children } = committedGraph(proof, identity.gitlinks);
   validateLogicalGraph(nodes, children);
   const root = resolve(cwd, "tests/_fixtures/_git");
@@ -249,20 +297,22 @@ export function captureNativeWalk(cwd, identity, proof, directory) {
     ["native-collector.rs", harness],
     ["native-rustc.txt", toolchain],
     ["native-collector", readFileSync(join(directory, "native-collector"))],
-  ])
+  ] satisfies Array<[string, string | Uint8Array]>)
     writeFileSync(join(observation, name), bytes, { flag: "wx" });
   const original = collectNativePhysical(root, nodes, children, (raw) => {
     writeFileSync(join(observation, "physical.json"), JSON.stringify(raw), { flag: "wx" });
   });
   proof.kernelBoundary = original.boundary;
   proof.traversal = "finite-physical-edges";
-  const { files, committed, originalVector } = captureFiniteObservation(
-    root,
-    nodes,
-    children,
-    original,
-    directory,
-  );
+  const {
+    files,
+    committed,
+    originalVector,
+  }: {
+    files: VueFile[];
+    committed: Array<[string, string]>;
+    originalVector: Buffer;
+  } = captureFiniteObservation(root, nodes, children, original, directory);
   const nativePaths = validateFiniteNativeVector(vector, nodes, children, original.boundary);
   assert.deepEqual(
     nativePaths,
@@ -276,7 +326,7 @@ export function captureNativeWalk(cwd, identity, proof, directory) {
   );
   writeFileSync(join(directory, "native-vector.nul"), vector);
   writeFileSync(join(directory, "native-rustc.txt"), toolchain);
-  const receipt = {
+  const receipt: NativeReceipt = {
     schema: "vize.canonical-native-walk",
     version: 1,
     sha: identity.sha,
@@ -305,7 +355,7 @@ export function captureNativeWalk(cwd, identity, proof, directory) {
   };
 }
 
-export function parseNativeVector(vector) {
+export function parseNativeVector(vector: Uint8Array): string[] {
   assert(vector.length > 0 && vector.at(-1) === 0, "Incomplete original Rust path vector");
   const paths = new TextDecoder("utf-8", { fatal: true }).decode(vector).slice(0, -1).split("\0");
   assert(
@@ -321,11 +371,17 @@ export function parseNativeVector(vector) {
   return paths;
 }
 
-export function validateNativeSource(directory, identity, cwd = process.cwd()) {
-  const receipt = JSON.parse(readFileSync(join(directory, "native-walk.json"), "utf8"));
+export function validateNativeSource(
+  directory: string,
+  identity: CorpusIdentity,
+  cwd = process.cwd(),
+): { receipt: NativeReceipt; paths: string[]; original?: VueFile[] } {
+  const receipt: NativeReceipt = JSON.parse(
+    readFileSync(join(directory, "native-walk.json"), "utf8"),
+  );
   assert.equal(receipt.schema, "vize.canonical-native-walk", "Foreign native walk receipt");
   assert.equal(receipt.version, 1, "Unknown native walk receipt version");
-  for (const key of ["sha", "tree", "runId", "attempt"])
+  for (const key of ["sha", "tree", "runId", "attempt"] as const)
     assert.equal(receipt[key], identity[key], `Native walk ${key} changed`);
   const source = gitSource(cwd, identity.sha, collectorSource);
   const { body, harness } = collectorHarness(source);
@@ -351,7 +407,7 @@ export function validateNativeSource(directory, identity, cwd = process.cwd()) {
     ["native-collector", "binarySha256"],
     ["native-rustc.txt", "toolchainSha256"],
     ["native-vector.nul", "vectorSha256"],
-  ])
+  ] as const)
     assert.equal(
       digest(readFileSync(join(directory, name))),
       receipt[key],
@@ -367,14 +423,20 @@ export function validateNativeSource(directory, identity, cwd = process.cwd()) {
   );
   const paths = parseNativeVector(readFileSync(join(directory, "native-vector.nul")));
   assert.equal(receipt.files, paths.length, "Native vector census changed");
-  const original =
+  const original: VueFile[] | undefined =
     receipt.traversal === "finite-physical-edges"
       ? validateOriginalArchive(directory, receipt, parseNativeVector)
       : undefined;
   return { receipt, paths, ...(original ? { original } : {}) };
 }
 
-export function validateNativeWalk(directory, identity, proof, files, cwd = process.cwd()) {
+export function validateNativeWalk(
+  directory: string,
+  identity: CorpusIdentity,
+  proof: CorpusProof,
+  files: VueFile[],
+  cwd = process.cwd(),
+): void {
   if (!needsNativeWalk(identity.gitlinks) && identity.nativeWalk === undefined) return;
   const { receipt, paths, original } = validateNativeSource(directory, identity, cwd);
   assert.deepEqual(

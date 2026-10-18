@@ -16,9 +16,9 @@ import {
   verifyCommittedInventory,
   gitObjectId,
 } from "./canonical-corpus-inventory.mjs";
-import { captureNativeWalk } from "./canonical-corpus-native-walk.mjs";
+import { captureNativeWalk } from "./canonical-corpus-native-walk.ts";
 import { commandOutput, runChain, runChainsSync } from "./canonical-corpus-batch.ts";
-import { needsNativeWalk } from "./canonical-corpus-logical-walk.mjs";
+import { needsNativeWalk } from "./canonical-corpus-logical-walk.ts";
 import { rustCachePolicy } from "../../../../.github/actions/setup-rust-sticky-cache/cache-policy.ts";
 
 export { corpusRoot } from "./canonical-corpus-inventory.mjs";

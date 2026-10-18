@@ -17,9 +17,9 @@ import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { checkoutIdentity, parseGitlinks } from "./canonical-corpus-identity.mjs";
 import { gitObjectId } from "./canonical-corpus-inventory.mjs";
-import { cycleOwner } from "./canonical-corpus-logical-walk.mjs";
+import { cycleOwner } from "./canonical-corpus-logical-walk.ts";
 import { qualifyProbeVectors } from "./canonical-corpus-finite-walk.mjs";
-import { collectorHarness, parseNativeVector } from "./canonical-corpus-native-walk.mjs";
+import { collectorHarness, parseNativeVector } from "./canonical-corpus-native-walk.ts";
 
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const json = (path) => JSON.parse(readFileSync(path, "utf8"));

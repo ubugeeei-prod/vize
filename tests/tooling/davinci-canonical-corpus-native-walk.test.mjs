@@ -14,14 +14,14 @@ import {
   resolveLogical,
   validateLogicalGraph,
   walkCommittedGraph,
-} from "../../tools/support/compat/github/canonical-corpus-logical-walk.mjs";
+} from "../../tools/support/compat/github/canonical-corpus-logical-walk.ts";
 import {
   collectorHarness,
   collectFinitePhysical,
   collectNativePhysical,
   parseNativeVector,
   validateFiniteNativeVector,
-} from "../../tools/support/compat/github/canonical-corpus-native-walk.mjs";
+} from "../../tools/support/compat/github/canonical-corpus-native-walk.ts";
 
 // Authored small controls exercise the frozen original and current real Rust functions, actual
 // local kernel boundary and raw bytes. They are not the licensed full corpus.
