@@ -87,7 +87,13 @@ jobs:
       JSR_VERSION: ${{ inputs.version }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ inputs.source_sha || github.sha }}", persist-credentials: false }
+        with:
+          ref: "${{ inputs.source_sha || github.sha }}"
+          persist-credentials: false
+          sparse-checkout: |
+            tools/support/release/jsr/consumer.ts
+            tools/support/release/jsr/consumer-deno.json
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "${{ matrix.node }}", package-manager-cache: false }
       - if: matrix.runtime == 'deno'

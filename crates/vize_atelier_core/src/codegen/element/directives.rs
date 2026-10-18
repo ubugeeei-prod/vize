@@ -112,16 +112,20 @@ fn generate_vshow_entry(ctx: &mut CodegenContext, dir: &crate::DirectiveNode<'_>
 }
 
 fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::DirectiveNode<'_>) {
+    let expression = dir
+        .exp
+        .as_ref()
+        .filter(|expression| !crate::steps::expression::is_empty_dynamic_expression(expression));
     ctx.push("  [");
     ctx.push(&to_valid_asset_identifier("directive", dir.name));
 
-    if let Some(exp) = &dir.exp {
+    if let Some(exp) = expression {
         ctx.push(", ");
         generate_expression(ctx, exp);
     }
 
     if let Some(arg) = &dir.arg {
-        if dir.exp.is_none() {
+        if expression.is_none() {
             ctx.push(", void 0");
         }
         ctx.push(", ");
@@ -143,7 +147,7 @@ fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::Direct
     }
 
     if !dir.modifiers.is_empty() {
-        if dir.exp.is_none() && dir.arg.is_none() {
+        if expression.is_none() && dir.arg.is_none() {
             ctx.push(", void 0, void 0");
         } else if dir.arg.is_none() {
             ctx.push(", void 0");

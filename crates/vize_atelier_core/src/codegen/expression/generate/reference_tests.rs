@@ -11,6 +11,9 @@ mod tests {
     #[test]
     fn whole_handler_reference_and_non_reference_outputs_keep_cache_semantics() {
         let cases = [
+            ("", false, "() => {}"),
+            (" \t ", false, "() => {}"),
+            ("", true, "() => {}"),
             ("handler00", false, "handler00"),
             (
                 "handler00",
@@ -42,6 +45,21 @@ mod tests {
                 assert_eq!(ctx.into_code().as_str(), expected, "{source}, {cached}");
             }
         }
+    }
+
+    #[test]
+    fn a_static_empty_string_is_a_value_instead_of_a_missing_handler() {
+        let allocator = Allocator::new();
+        let expression = ExpressionNode::Simple(Box::new_in(
+            SimpleExpressionNode::new("", true, SourceLocation::STUB),
+            &&allocator,
+        ));
+        assert!(!crate::steps::expression::is_empty_dynamic_expression(
+            &expression
+        ));
+        let mut ctx = CodegenContext::new(CodegenOptions::default());
+        generate_event_handler(&mut ctx, &expression, false);
+        assert_eq!(ctx.into_code().as_str(), "\"\"");
     }
 
     #[test]

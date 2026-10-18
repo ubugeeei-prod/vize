@@ -291,8 +291,12 @@ fn is_is_prop(prop: &PropNode<'_>) -> bool {
 }
 
 fn has_inline_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
+    let expression = dir
+        .exp
+        .as_ref()
+        .filter(|expression| !crate::steps::expression::is_empty_dynamic_expression(expression));
     if ctx.cache_handlers_in_current_scope()
-        && dir.exp.is_some()
+        && expression.is_some()
         && !is_setup_const_handler(ctx, dir)
     {
         return true;
@@ -305,7 +309,7 @@ fn has_inline_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
         return true;
     }
 
-    dir.exp.as_ref().is_some_and(|exp| {
+    expression.is_some_and(|exp| {
         if let ExpressionNode::Simple(simple) = exp {
             let content = simple.content;
             content.contains('(')
