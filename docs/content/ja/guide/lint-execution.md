@@ -48,3 +48,18 @@ export default defineConfig({
 Vite+ の Lint タスクには、対象のパスと `--fix` を渡せます。
 Vize 固有のオプションは、Oxlint に渡すのではなく `lint.vize` に指定してください。
 たとえば `vp run lint -- src` を実行すると、それぞれの設定を使って両方の Lint が実行されます。
+
+## 静的な class 属性の既定のチェック
+
+`html/no-duplicate-class` は、`class="button button"` のように、静的な
+`class` 属性で同じクラス名が繰り返されている場合に警告します。
+動的なバインディングは対象にせず、自動修正も行いません。
+
+| プリセット | 変更前の既定値 | 変更後の既定値 |
+| --- | --- | --- |
+| `happy-path`、`ecosystem` | 無効 | 警告 |
+| `opinionated`、`nuxt` | 警告 | 警告 |
+| `essential`、`incremental` | 無効 | 無効 |
+
+`rules` で個別に指定すると、警告を無効にしたり、重大度を変更したりできます。
+`incremental` は引き続き空の状態から始まります。採用する場合は、このルールを明示的に有効にしてください。

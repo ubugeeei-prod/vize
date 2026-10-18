@@ -340,7 +340,7 @@ vp run lint
 [错误示例](#html-no-duplicate-class-bad) · [正确示例](#html-no-duplicate-class-good)
 
 默认严重程度: `warning`  
-预设: `nuxt`, `opinionated`  
+预设: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
 选项: 没有规则专属选项。可以配置严重程度和预设。

@@ -38,3 +38,18 @@ when any warning remains. Negative limits are invalid.
 Vite+ lint tasks accept paths and `--fix`. Put native-only flags in `lint.vize`
 instead of passing them through to Oxlint. For example, `vp run lint -- src`
 runs both linters with their own configuration.
+
+## Static class defaults
+
+`html/no-duplicate-class` warns when the same token appears more than once in a
+literal `class` attribute, such as `class="button button"`. Dynamic bindings
+remain unchecked, and the rule does not apply an automatic fix.
+
+| Preset | Previous default | Current default |
+| --- | --- | --- |
+| `happy-path`, `ecosystem` | Off | Warning |
+| `opinionated`, `nuxt` | Warning | Warning |
+| `essential`, `incremental` | Off | Off |
+
+An explicit `rules` entry can disable the warning or change its severity.
+`incremental` continues to start empty; enable this rule explicitly when adopting it.
