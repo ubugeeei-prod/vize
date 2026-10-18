@@ -12,8 +12,8 @@ use vize_l2::expr::{ExprRef, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{
     Attribute, BindOp, BindingContract, BindingOp, CommentOp, ComponentOp, DynamicName, ElementOp,
     ForBinding, ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region,
-    SlotContentOp, SlotOp, TextOp, VueCloakOp, VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp,
-    VueOnceOp, VueShowOp, VueSlotScopeOp, VueSyncOp, VueTextOp,
+    SlotContentOp, SlotOp, SlotsObjectOp, TextOp, VueCloakOp, VueCssBindOp, VueDirectiveOp,
+    VueHtmlOp, VueMemoOp, VueOnceOp, VueShowOp, VueSlotScopeOp, VueSyncOp, VueTextOp,
 };
 
 /// The escape payload standing in for "some expression" wherever the op
@@ -48,6 +48,7 @@ fn binding_keyword(op: &BindingOp<'_>) -> &'static str {
         BindingOp::On(_) => "ui.on",
         BindingOp::Model(_) => "ui.model",
         BindingOp::SlotContent(_) => "ui.slot-content",
+        BindingOp::SlotsObject(_) => "ui.slots-object",
         BindingOp::VueDirective(_) => "vue.directive",
         BindingOp::VueCssBind(_) => "vue.css-bind",
         BindingOp::VueSync(_) => "vue.sync",
@@ -225,6 +226,7 @@ fn every_binding<'a>(allocator: &'a Allocator) -> Vec<'a, BindingOp<'a>> {
                 },
                 &allocator,
             )),
+            BindingOp::SlotsObject(Box::new_in(SlotsObjectOp { value: expr, span }, &allocator)),
             BindingOp::VueDirective(Box::new_in(
                 VueDirectiveOp {
                     name: "pin",
@@ -311,6 +313,7 @@ fn every_attached_op_variant_is_matched_without_a_wildcard() {
             "ui.on",
             "ui.model",
             "ui.slot-content",
+            "ui.slots-object",
             "vue.directive",
             "vue.css-bind",
             "vue.sync",

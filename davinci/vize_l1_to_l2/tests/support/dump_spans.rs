@@ -115,6 +115,10 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[DumpBinding],
                     assert_expr(source, root, params, context);
                 }
             }
+            DumpBinding::SlotsObject(object) => {
+                assert_span(source, root, object.span, "slots object", context);
+                assert_expr(source, root, &object.value, context);
+            }
             DumpBinding::VueDirective(directive) => {
                 assert_span(source, root, directive.span, "vue directive", context);
                 if let Some(argument) = &directive.argument {

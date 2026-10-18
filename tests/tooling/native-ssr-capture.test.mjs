@@ -85,6 +85,11 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     "tests/tooling/native-sfc-scriptless-ssr-reference.test.ts",
     "tests/tooling/native-sfc-setup-ssr-reference.test.ts",
     "tests/tooling/native-sfc-setup-ssr-direct-child-reference.test.ts",
+    "crates/vize_atelier_jsx/src/ssr.rs",
+    "crates/vize_atelier_jsx/src/lower/v_slots.rs",
+    "crates/vize_atelier_ssr/src/l4/emit/component.rs",
+    "crates/vize_atelier_jsx/tests/ssr.rs",
+    "tests/tooling/jsx-runtime-slots-ssr.test.ts",
     "tests/tooling/l4-native-ssr-reference.test.ts",
     "tests/tooling/native-ssr-static-class-reference.test.ts",
     "tests/tooling/l4-selected-ssr-reference.test.ts",
@@ -153,6 +158,10 @@ void test("the native runtime matrix requires SSR for affected sources and broad
   assert.ok(planNativeRuntime(["davinci/vize_l1/src/css.rs"]).matrix.lane.includes("ssr"));
   assert.equal(planNativeRuntime(["docs/unrelated.md"]).matrix.lane.includes("ssr"), false);
   assert(action.includes('VIZE_L4_SSR_REQUIRE_NATIVE: "1"'));
+  assert(action.includes("VIZE_JSX_SLOTS_SSR_CAPTURE:"));
+  assert(action.includes("-p vize_atelier_jsx --test ssr -- --nocapture"));
+  assert(action.includes("tests/tooling/jsx-runtime-slots-ssr.test.ts"));
+  assert(action.includes("jsx-runtime-slots-ssr.json.runtime.json"));
   assert(action.includes("--test native_scriptless_ssr -- --nocapture"));
   assert(action.includes("--test native_scriptless_setup_ssr -- --nocapture"));
   assert(action.includes("vp node --test tests/tooling/native-sfc-setup-ssr-reference.test.ts"));

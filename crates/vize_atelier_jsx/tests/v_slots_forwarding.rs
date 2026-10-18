@@ -209,7 +209,7 @@ fn vapor_output_reports_the_gap_instead_of_dropping_the_slots() {
 }
 
 #[test]
-fn ssr_output_reports_the_gap_instead_of_dropping_the_slots() {
+fn ssr_output_forwards_the_typed_slots_object() {
     let bump = Allocator::new();
     let out = compile_to_ssr(
         &bump,
@@ -217,18 +217,21 @@ fn ssr_output_reports_the_gap_instead_of_dropping_the_slots() {
         JsxLang::Jsx,
         SsrCompileOptions::default(),
     );
+    assert_eq!(out.diagnostics.len(), 0);
+    assert_eq!(out.components.len(), 1);
     assert_eq!(
-        out.diagnostics
-            .iter()
-            .map(|d| d.message.as_str().to_string())
-            .collect::<Vec<_>>(),
-        vec![
-            "v-slots forwards a slots object the compiler cannot see inside, which SSR \
-             output cannot express: the server renderer inlines each slot's content. \
-             Write the slots inline, e.g. v-slots={{ default: () => <div/> }}, or render \
-             this component on the client."
-                .to_string()
-        ]
+        out.components
+            .first()
+            .expect("one SSR component")
+            .code
+            .as_str(),
+        r#"import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { resolveComponent as _resolveComponent } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("B"), _attrs, slots, _parent))
+}
+"#
     );
 }
 
@@ -294,7 +297,10 @@ fn camel_slots_forwarding_keeps_whole_modules_and_backend_diagnostics() {
                 ..Default::default()
             },
         ] {
-            let errors = usize::from(config.ssr || config.default_mode == JsxOutputMode::Vapor);
+            let errors = usize::from(
+                (!config.ssr && config.default_mode == JsxOutputMode::Vapor)
+                    || source == "const A = () => <B v-slots:default={slots}/>;",
+            );
             assert_camel_alias(source, &config, errors);
         }
     }

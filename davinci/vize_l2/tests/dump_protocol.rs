@@ -189,3 +189,74 @@ fn recipe3_preserves_relative_offsets_and_before_base_injectivity() {
         ArtifactKey::of(&text_page("same", Span::new(3, 6)), 0)
     );
 }
+
+#[test]
+fn typed_slots_project_only_to_the_identical_frozen_legacy_wire_record() {
+    use vize_l2::dump::{Binding, Component, SlotsObject, VueDirective};
+    let value = Expr::Js {
+        source: String::from(r#"pick("猫&")"#),
+        span: Span::new(9, 21),
+    };
+    let span = Span::new(0, 31);
+    let page = |binding| Page {
+        ops: vec![Op::Component(Component {
+            name: String::from("B"),
+            attributes: vec![],
+            bindings: vec![binding],
+            children: vec![],
+            span: Span::new(0, 32),
+        })],
+    };
+    let typed = page(Binding::SlotsObject(SlotsObject {
+        value: value.clone(),
+        span,
+    }));
+    let legacy = page(Binding::VueDirective(VueDirective {
+        name: String::from("slots"),
+        argument: None,
+        modifiers: vec![],
+        value: Some(value),
+        span,
+    }));
+    let old = r#"[disegno]
+ops=2
+
+[disegno.ops]
+ui.component B @0:32
+  vue.directive "slots" value=js("pick(\"猫&\")" @9:21) @0:31
+
+"#;
+    let current = r#"[l2-dump-v2]
+ops=2
+
+[l2-dump-v2.ops]
+ui.component B @0:32
+  ui.slots-object value=js("pick(\"猫&\")" @9:21) @0:31
+
+"#;
+    assert_eq!(typed.print_to_string(Mode::Full).as_str(), current);
+    assert_eq!(Page::parse(current), Ok(typed.clone()));
+    assert_eq!(
+        HistoricalPage::from_current(typed)
+            .print_to_string(Mode::Full)
+            .as_str(),
+        old
+    );
+    assert_eq!(
+        HistoricalPage::from_current(legacy.clone())
+            .print_to_string(Mode::Full)
+            .as_str(),
+        old
+    );
+    assert_eq!(
+        HistoricalPage::parse(old)
+            .expect("old grammar")
+            .into_current(),
+        legacy
+    );
+    let forged = old.replace("vue.directive \"slots\"", "ui.slots-object");
+    assert!(
+        HistoricalPage::parse(&forged).is_err(),
+        "old header does not grant the typed opcode"
+    );
+}

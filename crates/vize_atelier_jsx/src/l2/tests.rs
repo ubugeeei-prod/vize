@@ -342,3 +342,108 @@ fn custom_directive_projects_with_its_argument_and_value() {
         Some("x")
     );
 }
+
+#[test]
+fn runtime_slots_keep_their_typed_expression_owner_span_and_folio() {
+    use vize_l0::dump::{Dump, Mode};
+    use vize_l2::dump::Page;
+    use vize_l2::walk::NodeRef;
+    use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
+
+    let allocator = Allocator::new();
+    let source = "const App = () => <B v-slots={getSlots(owner)} />;";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let root = lowered.roots.first().expect("one root");
+    let l2 = root.l2.as_ref().expect("typed L2");
+    let Op::Component(component) = l2.root.ops.first().expect("component") else {
+        panic!("component owner");
+    };
+    assert_eq!(component.bindings.len(), 1);
+    let binding = component.bindings.first().expect("one binding");
+    let BindingOp::SlotsObject(object) = binding else {
+        panic!("runtime slots are not a custom directive");
+    };
+    assert_eq!(binding.mnemonic(), "ui.slots-object");
+    assert_eq!(object.value.source(), "getSlots(owner)");
+    let value = object.value.span();
+    assert_eq!(
+        source.get(value.start as usize..value.end as usize),
+        Some("getSlots(owner)")
+    );
+    assert_eq!(
+        source.get(object.span.start as usize..object.span.end as usize),
+        Some("getSlots(owner)")
+    );
+    assert_eq!(object.span, value);
+    let TemplateChildNode::Element(legacy) = root.root.children.first().expect("legacy owner")
+    else {
+        panic!("legacy component");
+    };
+    let legacy = legacy
+        .props
+        .iter()
+        .find_map(|prop| match prop {
+            PropNode::Directive(directive) if directive.name == "slots" => Some(directive),
+            _ => None,
+        })
+        .expect("original forwarding record");
+    let Some(ExpressionNode::Simple(legacy_value)) = legacy.exp.as_ref() else {
+        panic!("retained legacy value");
+    };
+    assert_eq!(
+        (object.span, "slots", object.value.source()),
+        (legacy.loc.span, legacy.name, legacy_value.content),
+        "typed lowering preserves the genuine old name/value/span tuple"
+    );
+    let mut visited = std::vec::Vec::new();
+    NodeRef::Binding(binding)
+        .for_each_expression(&mut |expr| visited.push((expr.source(), expr.span())));
+    assert_eq!(visited, [("getSlots(owner)", value)]);
+    let page = Page::of(&l2.root.ops);
+    let printed = page.print_to_string(Mode::Full);
+    assert_eq!(Page::parse(&printed).expect("complete typed folio"), page);
+    let misplaced = printed.replace("ui.component", "ui.element");
+    assert!(
+        Page::parse(&misplaced).is_err(),
+        "slot object cannot be moved to a native element"
+    );
+}
+
+#[test]
+fn historical_slots_view_cannot_silently_gain_native_ssr_admission() {
+    use vize_l0::{Box, Vec};
+    use vize_l2::op::VueDirectiveOp;
+    let allocator = Allocator::new();
+    let source = "const App = () => <B v-slots={slots}/>;";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let mut roots = lowered.roots.into_iter();
+    let mut root = roots.next().expect("one root");
+    assert!(roots.next().is_none());
+    let l2 = root.l2.as_mut().expect("typed root");
+    let options = vize_atelier_ssr::SsrCompilerOptions::default();
+    assert!(
+        vize_atelier_ssr::compile_l2_to_ssr(&allocator, l2.source, &l2.root, &options).is_some()
+    );
+    let Op::Component(component) = l2.root.ops.first_mut().expect("component") else {
+        panic!("component owner");
+    };
+    let binding = component.bindings.first_mut().expect("one binding");
+    let BindingOp::SlotsObject(object) = binding else {
+        panic!("typed slots object");
+    };
+    let (value, span) = (object.value, object.span);
+    *binding = BindingOp::VueDirective(Box::new_in(
+        VueDirectiveOp {
+            name: "slots",
+            argument: None,
+            modifiers: Vec::new_in(&allocator),
+            value: Some(value),
+            span,
+        },
+        &allocator,
+    ));
+    assert!(
+        vize_atelier_ssr::compile_l2_to_ssr(&allocator, l2.source, &l2.root, &options).is_none(),
+        "a legacy view must refuse rather than emit a component with its slots dropped"
+    );
+}

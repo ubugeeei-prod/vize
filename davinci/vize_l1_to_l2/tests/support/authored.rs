@@ -143,6 +143,10 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[BindingOp<'_>
                     assert_expr(source, root, params);
                 }
             }
+            BindingOp::SlotsObject(object) => {
+                assert_span(source, root, object.span, "slots object");
+                assert_expr(source, root, object.value);
+            }
             BindingOp::VueDirective(directive) => {
                 assert_span(source, root, directive.span, "vue directive");
                 if let Some(argument) = directive.argument {

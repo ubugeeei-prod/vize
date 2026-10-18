@@ -120,6 +120,12 @@ pub fn surface_of(
                 });
             }
             DumpBinding::SlotContent(_) => {}
+            DumpBinding::SlotsObject(object) => surface.directives.push(PDirective {
+                name: "slots".into(),
+                arg: None,
+                mods: Vec::new(),
+                value: Some(Some(expr_text(&object.value))),
+            }),
             DumpBinding::VueDirective(directive) => surface.directives.push(PDirective {
                 name: directive.name.as_str().into(),
                 arg: directive.argument.as_ref().map(p_name),

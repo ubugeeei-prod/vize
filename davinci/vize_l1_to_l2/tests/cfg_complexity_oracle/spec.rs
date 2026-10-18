@@ -279,6 +279,7 @@ impl Eval {
                     cur = self.opt_name(directive.argument.as_ref(), id, cur);
                     cur = self.opt_expr(directive.value.as_ref(), id, cur);
                 }
+                DumpBinding::SlotsObject(object) => cur = self.expr(&object.value, id, cur),
                 DumpBinding::VueSync(sync) => cur = self.expr(&sync.value, id, cur),
                 DumpBinding::VueMemo(memo) => cur = self.expr(&memo.value, id, cur),
                 DumpBinding::VueShow(show) => cur = self.expr(&show.value, id, cur),
