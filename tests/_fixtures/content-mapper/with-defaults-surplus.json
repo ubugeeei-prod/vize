@@ -1,0 +1,114 @@
+{
+  "issue": 9499,
+  "cases": [
+    {
+      "name": "inline-surplus",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\">\nwithDefaults(defineProps<{ size?: string }>(), {\n  size: 'normal',\n  hasCloseBtn: true,\n})\n</script>\n<template><div /></template>\n"
+      },
+      "codes": []
+    },
+    {
+      "name": "inline-no-surplus",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\">\nwithDefaults(defineProps<{ size?: string }>(), {\n  size: 'normal',\n})\n</script>\n<template><div /></template>\n"
+      },
+      "codes": []
+    },
+    {
+      "name": "inline-wrong-type",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\">\nwithDefaults(defineProps<{ size?: string }>(), {\n  size: 123,\n  hasCloseBtn: true,\n})\n</script>\n<template><div /></template>\n"
+      },
+      "codes": [
+        2322
+      ]
+    },
+    {
+      "name": "imported-surplus",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\">\nimport type { Props } from './props'\nwithDefaults(defineProps<Props>(), {\n  size: 'normal',\n  hasCloseBtn: true,\n})\n</script>\n<template><div /></template>\n",
+        "props.ts": "export interface Props { size?: string }\n"
+      },
+      "codes": []
+    },
+    {
+      "name": "imported-no-surplus",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\">\nimport type { Props } from './props'\nwithDefaults(defineProps<Props>(), {\n  size: 'normal',\n})\n</script>\n<template><div /></template>\n",
+        "props.ts": "export interface Props { size?: string }\n"
+      },
+      "codes": []
+    },
+    {
+      "name": "imported-wrong-type",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\">\nimport type { Props } from './props'\nwithDefaults(defineProps<Props>(), {\n  size: 123,\n  hasCloseBtn: true,\n})\n</script>\n<template><div /></template>\n",
+        "props.ts": "export interface Props { size?: string }\n"
+      },
+      "codes": [
+        2322
+      ]
+    },
+    {
+      "name": "mapped-surplus",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\">\ntype Props = { [K in 'size']?: string }\nwithDefaults(defineProps<Props>(), {\n  size: 'normal',\n  hasCloseBtn: true,\n})\n</script>\n<template><div /></template>\n"
+      },
+      "codes": []
+    },
+    {
+      "name": "mapped-no-surplus",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\">\ntype Props = { [K in 'size']?: string }\nwithDefaults(defineProps<Props>(), {\n  size: 'normal',\n})\n</script>\n<template><div /></template>\n"
+      },
+      "codes": []
+    },
+    {
+      "name": "mapped-wrong-type",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\">\ntype Props = { [K in 'size']?: string }\nwithDefaults(defineProps<Props>(), {\n  size: 123,\n  hasCloseBtn: true,\n})\n</script>\n<template><div /></template>\n"
+      },
+      "codes": [
+        2322
+      ]
+    },
+    {
+      "name": "generic-surplus",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\" generic=\"T\">\nwithDefaults(defineProps<{ size?: string; value?: T }>(), {\n  size: 'normal',\n  hasCloseBtn: true,\n})\n</script>\n<template><div /></template>\n"
+      },
+      "codes": []
+    },
+    {
+      "name": "generic-no-surplus",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\" generic=\"T\">\nwithDefaults(defineProps<{ size?: string; value?: T }>(), {\n  size: 'normal',\n})\n</script>\n<template><div /></template>\n"
+      },
+      "codes": []
+    },
+    {
+      "name": "generic-wrong-type",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\" generic=\"T\">\nwithDefaults(defineProps<{ size?: string; value?: T }>(), {\n  size: 123,\n  hasCloseBtn: true,\n})\n</script>\n<template><div /></template>\n"
+      },
+      "codes": [
+        2322
+      ]
+    },
+    {
+      "name": "boolean-casting",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ size?: string; disabled?: boolean }>(), { size: 'normal', hasCloseBtn: true });\n</script>\n<template>{{ props.size.toUpperCase() }}{{ props.disabled.valueOf() }}</template>\n"
+      },
+      "codes": []
+    },
+    {
+      "name": "opaque-defaults",
+      "files": {
+        "App.vue": "<script setup lang=\"ts\">\nconst defaults = { size: 'normal', hasCloseBtn: true };\nconst props = withDefaults(defineProps<{ size?: string }>(), defaults);\n</script>\n<template>{{ props.size.toUpperCase() }}</template>\n"
+      },
+      "codes": []
+    }
+  ]
+}

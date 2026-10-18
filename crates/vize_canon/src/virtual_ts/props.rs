@@ -381,18 +381,18 @@ mod tests {
 
         assert_eq!(
             template_props_type_ref("Props", &names, None),
-            r#"__WithDefaultsResult<Props, Pick<Props, "label" | "thickness">>"#
+            r#"__WithDefaultsResult<Props, Pick<Props, Extract<"label" | "thickness", keyof Props>>>"#
         );
         let no_undefined = FxHashSet::default();
         assert_eq!(
             template_props_type_ref("Props", &names, Some(&no_undefined)),
-            r#"__WithDefaultsResult<Props, Pick<Props, "label" | "thickness">, __VizeBooleanKey<Props>>"#
+            r#"__WithDefaultsResult<Props, Pick<Props, Extract<"label" | "thickness", keyof Props>>, __VizeBooleanKey<Props>>"#
         );
         let mut undefined: FxHashSet<String> = FxHashSet::default();
         undefined.insert("open".into());
         assert_eq!(
             template_props_type_ref("Props", &names, Some(&undefined)),
-            r#"__WithDefaultsResult<Props, Pick<Props, "label" | "thickness">, Exclude<__VizeBooleanKey<Props>, "open">>"#
+            r#"__WithDefaultsResult<Props, Pick<Props, Extract<"label" | "thickness", keyof Props>>, Exclude<__VizeBooleanKey<Props>, "open">>"#
         );
     }
 

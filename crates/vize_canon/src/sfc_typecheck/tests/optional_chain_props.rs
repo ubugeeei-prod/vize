@@ -54,9 +54,9 @@ void props
         !result.diagnostics.iter().any(|diagnostic| {
             diagnostic.code.as_deref() == Some("TS7053")
                 && diagnostic.message.contains("\"to\"")
-                && diagnostic
-                    .message
-                    .contains("__WithDefaultsResult<Props, Pick<Props, \"timeout\">>")
+                && diagnostic.message.contains(
+                    "__WithDefaultsResult<Props, Pick<Props, Extract<\"timeout\", keyof Props>>>",
+                )
         }),
         "optional-chain member must not report a top-level prop TS7053: {:#?}",
         result.diagnostics
