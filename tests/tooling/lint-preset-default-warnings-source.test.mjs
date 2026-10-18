@@ -16,7 +16,10 @@ const manifest = JSON.parse(bytes);
 // Keep the original retirement/receipt edits and this additive class-default
 // successor pinned as finite source audits, never runtime acceptance adapters.
 const retentionBytes = read(`${directory}/source-retention-successors.json`);
-assert.equal(sha(retentionBytes), "3f9a60c0a76c5e6ed8cddf9aa42654f584fca734dcdad4b5780303abce378c74");
+assert.equal(
+  sha(retentionBytes),
+  "3f9a60c0a76c5e6ed8cddf9aa42654f584fca734dcdad4b5780303abce378c74",
+);
 const {
   retiredExtensionHost,
   presetCaseName,
