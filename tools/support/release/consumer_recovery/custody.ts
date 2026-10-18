@@ -5,7 +5,13 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { captureCommand, strictUtf8, verifyOriginalLogDirectory } from "./runtime.ts";
-import { custodyProbe, assertOracleFiles, policyFiles, type OraclePolicy } from "./oracles.ts";
+import {
+  custodyProbe,
+  assertOracleFiles,
+  sourceAuthority,
+  assertCheckoutAuthority,
+  type OraclePolicy,
+} from "./oracles.ts";
 import { revalidatePublicArchives, type InstalledArchive } from "./archive.ts";
 import {
   admitOriginal,
@@ -75,11 +81,9 @@ export async function pages(endpoint: string, key: string): Promise<Json[]> {
 }
 export { policyFiles } from "./oracles.ts";
 export function authority(sha: string) {
-  return policyFiles.map((file) => {
-    const bytes = readFileSync(path.join(root, file));
-    same(sha256(gitBlob(sha, file)), sha256(bytes), "policy checkout differs from reviewed source");
-    return { file, sha256: sha256(bytes) };
-  });
+  const entries = sourceAuthority(sha, gitBlob);
+  assertCheckoutAuthority(entries, (file) => readFileSync(path.join(root, file)));
+  return entries;
 }
 export function policyOnMain(sha: string) {
   assert.match(sha, /^[0-9a-f]{40}$/);
@@ -116,9 +120,17 @@ export async function collectOriginal(
   policySha: string,
   logDirectory?: string,
 ): Promise<Original> {
+  return collectOriginalSnapshot(expected, policySha, policyOnMain(policySha), logDirectory);
+}
+async function collectOriginalSnapshot(
+  expected: Identity,
+  policySha: string,
+  policyAuthority: { file: string; sha256: string }[],
+  logDirectory?: string,
+): Promise<Original> {
   const policy = {
     sha: policySha,
-    authority: policyOnMain(policySha),
+    authority: policyAuthority,
     ...fixture,
     custodyProbeSha256: sha256(custodyProbe),
   };
@@ -332,7 +344,8 @@ export async function verifiedRecovery(
     evidencePolicy === "legacy-v1"
       ? (reviewedPolicy(policySha, api(`compare/${policySha}...main`), api(`commits/${policySha}`)),
         legacyAuthority(policySha))
-      : policyOnMain(policySha);
+      : (reviewedPolicy(policySha, api(`compare/${policySha}...main`), api(`commits/${policySha}`)),
+        sourceAuthority(policySha, gitBlob));
   const jobs = await pages(`actions/runs/${recoveryRun}/jobs?filter=latest`, "jobs");
   same(jobs.length, 9, "admission contracts, prepare, six consumers and signed finalizer required");
   same(
@@ -446,7 +459,7 @@ export async function verifiedRecovery(
   const live =
     evidencePolicy === "legacy-v1"
       ? await collectLegacyOriginal(expected, policySha)
-      : await collectOriginal(expected, policySha);
+      : await collectOriginalSnapshot(expected, policySha, policyAuthority);
   for (const key of [
     "policy",
     "run",

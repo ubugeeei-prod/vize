@@ -73,6 +73,35 @@ export const policyFiles = [
   "tools/support/release/windows_hover_acceptance.ts",
 ] as const;
 
+/** Read an authenticated historical policy as data, never as an imported module. */
+export function sourceAuthority(sha: string, read: (sha: string, file: string) => string) {
+  assert.match(sha, /^[0-9a-f]{40}$/);
+  const declaration = `export const policyFiles = [\n${policyFiles
+    .map((file) => `  ${JSON.stringify(file)},`)
+    .join("\n")}\n] as const;`;
+  const inventory = read(sha, "tools/support/release/consumer_recovery/oracles.ts");
+  same(
+    inventory.match(/^export const policyFiles = \[\n(?: {2}"[^"\r\n]*",\n)*\] as const;$/gm),
+    [declaration],
+    "unsupported historical recovery source inventory",
+  );
+  return policyFiles.map((file) => ({ file, sha256: sha256(read(sha, file)) }));
+}
+
+/** New collections must still execute exactly their own reviewed source bytes. */
+export function assertCheckoutAuthority(
+  entries: ReturnType<typeof sourceAuthority>,
+  read: (file: string) => Uint8Array,
+) {
+  same(
+    entries.map((entry) => entry.file),
+    [...policyFiles],
+    "complete checkout policy required",
+  );
+  for (const entry of entries)
+    same(sha256(read(entry.file)), entry.sha256, "policy checkout differs from reviewed source");
+}
+
 export interface OraclePolicy {
   consumerSha256: string;
   denoConfigSha256: string;
