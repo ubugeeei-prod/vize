@@ -149,7 +149,15 @@ test("full Docs checks real preview resources before building and retains the ra
   );
   assert.match(readiness.run!, /\| tee docs-render-evidence\/resource-readiness\/tests\.tap/);
   assert.match(readiness.run!, /receipt\.json/);
+  const reading = namedStep(job, "Verify rendered navigation and Japanese reading paths");
+  assert.equal(reading.if, "${{ inputs.links-only != true }}");
+  assert.equal(
+    reading.run,
+    "node docs/scripts/verify-navigation-render.ts\nnode docs/scripts/verify-ja-editorial-render.ts\n",
+  );
+  assert(steps.indexOf(reading) > steps.indexOf(namedStep(job, "Build docs")));
   const upload = namedStep(job, "Upload rendered docs screenshots");
+  assert(steps.indexOf(reading) < steps.indexOf(upload));
   assert.equal(upload.if, "${{ always() }}");
   assert.equal(upload.with?.path, "docs-render-evidence");
 });
