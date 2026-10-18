@@ -3,7 +3,8 @@
 Record execution counts separately from test declarations, LLVM coverage, editor
 conformance, and released-package acceptance. These snapshots identify where to
 investigate; neither a large count nor a high line percentage proves completion.
-Observations below were verified on 2026-10-17 UTC.
+Historical observations were verified on 2026-10-17 UTC. The dated 2026-10-19
+update below adds retained execution evidence without relabeling older sources.
 
 ## Frozen execution snapshot: 8356b40
 
@@ -143,7 +144,7 @@ are frozen source observations, not acceptance of a released package or a newer
 main commit. Preserve the failed/canceled runs and qualify the actual repaired
 source and installed release separately.
 
-## Current inventory and next two gaps: 3a4ea97
+## Historical declaration inventory: 3a4ea97
 
 This inventory pins main `3a4ea97dfde6cac13a20ff88680a507ff9b96338`. Its
 **declarations** are freshly counted from Git blobs; execution and LLVM values
@@ -171,12 +172,55 @@ Macro expansion, loops and cfg explain why declaration and runtime counts differ
 do not divide one by the other. LLVM includes test/helper code. Glyph/Maestro
 branch coverage remains unmeasured, regardless of their line percentages.
 
-Current public evidence has another unit: published 0.463's retained Linux run
+Historical public evidence has another unit: published 0.463's retained Linux run
 [39049959377, attempt 2](https://github.com/ubugeeei-prod/vize/actions/runs/39049959377/attempts/2)
 executed the original 32 LSP transactions plus four 18-reply atomic sequences,
 with 36 clean process lifecycles. These are protocol contexts, not 104 independent
 unit tests or code coverage. Its separate gallery succeeded; trusted VRT still
 failed at the first Left iframe. Preserve that whole-campaign failure.
+
+## 2026-10-19 update: latest complete retained quantity sample
+
+The latest **complete workspace inventory retained for this comparison** is
+`793fd6fbb80c40505af9510b5afdd00ae79d1d94`,
+[Full 39132001467](https://github.com/ubugeeei-prod/vize/actions/runs/39132001467),
+attempt 1. Its inventory and JUnit match every nonignored test name:
+**18,621 passed, zero failed, 37 ignored**, from 18,658 registered cases in
+1,208 binaries (1,182 nonempty executed suites). The whole workflow nevertheless
+**failed** in the Editor/aggregate boundary; successful Rust results do not waive it.
+
+| Product ownership                                         | Executed Rust passed | Ignored | Other measurement unit             |
+| --------------------------------------------------------- | -------------------: | ------: | ---------------------------------- |
+| Compiler: Armature and Atelier core/dom/jsx/sfc/ssr/vapor |                3,087 |       2 | 331 registered binaries            |
+| Patina / linter                                           |                3,991 |       1 | 103 registered binaries            |
+| Canon / typechecker                                       |                2,252 |       2 | 61 registered binaries             |
+| Glyph / formatter                                         |                  789 |       0 | 82 registered binaries             |
+| Maestro / LSP                                             |                1,429 |       3 | 6 registered binaries              |
+| Musea / Story                                             |                  115 |       0 | 3 registered binaries              |
+| Editor integrations                                       |         Not combined |       — | Separate real-host observations    |
+| CI / shared integration                                   |         Not combined |       — | 16 successful mixed-tooling shards |
+
+The six product rows total 11,663; the remaining 6,958 workspace tests belong to
+shared CLI, language stages, parser, vendor and support packages. The separate
+compiler cohort's 6,983 passes at source `f6b9e8bf` include shared packages and
+must not be added to the compiler-product row. Likewise one Unicode regression
+contains 15 authored SFCs × two providers × two modes: 60 child processes are
+not 60 additional Rust tests. Binaries, declarations, fixture rows, protocol
+replies and editor assertion strings are distinct units.
+
+These counts apply only to that run's package/feature resolution, not an
+all-feature/platform matrix or newer main. They do not replace the historical
+835/06a/b366 observations or provide new LLVM percentages. LLVM includes measured
+test/helper source; branch coverage was not workspace-instrumented.
+
+The [793 inventory/JUnit artifact 12138496683](https://github.com/ubugeeei-prod/vize/actions/runs/39132001467/artifacts/12138496683)
+contains 18,706,250 bytes, archive SHA256
+`97b4facb9e6aa21be52c81572339534ace4687f1fa3fa677f2bf574730c961a6`.
+The retained inventory SHA256 is
+`7f64d7478b08a4e8b9c1471ccfd82048e1e15f12abf87ceb946de2342cdf447f`;
+JUnit SHA256 is
+`66ad87a730d8404e17d8ae09748ee31f07ed972717a2057cb5a597b6ea9e7583`.
+No new inventory, native build, download or coverage run was made for this update.
 
 ### Next: whole implementation results across an unsaved edit
 
