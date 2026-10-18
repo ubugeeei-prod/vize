@@ -222,6 +222,10 @@ declare module "vue/jsx-runtime" {
 type ImplementationLocation = { uri: string; range: LspRange };
 
 function assertImplementationPacket(raw: unknown, expected: ImplementationLocation[]): void {
+  if (expected.length === 0) {
+    assert.equal(raw, null, "Vize returns None as null when no implementation remains");
+    return;
+  }
   const actual: unknown[] = Array.isArray(raw) ? raw : [raw];
   assert.equal(
     new Set(actual.map((entry) => JSON.stringify(entry))).size,
@@ -279,6 +283,9 @@ test("complete implementation packets reject missing, duplicate, stale and gener
     [...expected, expected[0]],
   ])
     assert.throws(() => assertImplementationPacket(raw, expected));
+  assertImplementationPacket(null, []);
+  for (const raw of [undefined, [], expected[0], expected])
+    assert.throws(() => assertImplementationPacket(raw, []));
 });
 
 function implementationText(
@@ -427,18 +434,21 @@ test("native implementation retains every SFC and TSX target through unsaved Uni
         "initial",
         files.map((file) => implementationLocation(file.path, file.initial)),
       );
+      const change = async (file: (typeof files)[number], text: string) => {
+        const uri = pathToFileURL(file.path).href;
+        session.notify("textDocument/didChange", {
+          textDocument: { uri, version: ++file.version },
+          contentChanges: [{ text }],
+        });
+        await barrier(uri, file.version);
+      };
       for (const changed of files) {
         for (const phase of ["changed", "removed", "initial"] as const) {
           const text =
             phase === "initial"
               ? changed.initial
               : implementationText(changed.kind, contract, phase);
-          const uri = pathToFileURL(changed.path).href;
-          session.notify("textDocument/didChange", {
-            textDocument: { uri, version: ++changed.version },
-            contentChanges: [{ text }],
-          });
-          await barrier(uri, changed.version);
+          await change(changed, text);
           await query(
             `${changed.kind}-${phase === "initial" ? "restored" : phase}`,
             files.flatMap((file) =>
@@ -450,6 +460,15 @@ test("native implementation retains every SFC and TSX target through unsaved Uni
             ),
           );
         }
+      }
+      for (const file of files)
+        await change(file, implementationText(file.kind, contract, "removed"));
+      await query("all-removed", []);
+      const restored: ImplementationLocation[] = [];
+      for (const file of files) {
+        await change(file, file.initial);
+        restored.push(implementationLocation(file.path, file.initial));
+        await query(`${file.kind}-restored-after-all-removed`, restored);
       }
     } finally {
       try {
