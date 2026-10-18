@@ -106,6 +106,7 @@ export async function observeTrustedInstalledVrt(
             consoles,
             publicBodies: bodies.records,
             expectedFailures: expected.records,
+            expectedTerminals: expected.terminals,
           });
           assertRunning();
           const origin = new URL(galleryUrl).origin;

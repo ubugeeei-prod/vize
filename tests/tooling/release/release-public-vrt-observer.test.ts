@@ -44,6 +44,10 @@ function refusalLifetime(
     responseStatus?: number;
     status?: 400 | 401;
     triggerError?: Error;
+    missingNetworkId?: boolean;
+    responseNetworkId?: string;
+    responseFrame?: string;
+    responseResourceType?: string;
   } = {},
 ) {
   const url = "http://127.0.0.1:43210/capture";
@@ -141,6 +145,10 @@ function refusalLifetime(
             listener({
               requestId: "response",
               request,
+              networkId:
+                options.responseNetworkId ?? (options.missingNetworkId ? undefined : "network"),
+              frameId: options.responseFrame ?? "frame",
+              resourceType: options.responseResourceType ?? "Fetch",
               responseStatusCode: options.responseStatus ?? options.status ?? 401,
             });
           } else {
@@ -167,7 +175,13 @@ function refusalLifetime(
   const trigger = async () => {
     assert.ok(listener);
     listener({ requestId: "preflight", request: { ...request, method: "OPTIONS" } });
-    listener({ requestId: "request", request });
+    listener({
+      requestId: "request",
+      request,
+      networkId: "network",
+      frameId: "frame",
+      resourceType: "Fetch",
+    });
     if (options.triggerError) throw options.triggerError;
   };
   return { page, cdp, trigger, body, calls, response, url, stages: () => stages.slice() };
@@ -177,13 +191,28 @@ test("the same original refusal body is owned before resuming and disabling inte
   for (const base64 of [false, true])
     for (const status of [400, 401] as const) {
       const f = refusalLifetime({ base64, status });
+      let responseOwned = false;
       const captured = await actualRequestRefusal(
         f.page,
         f.cdp,
         f.url,
         status === 400 ? { postData: '{"bad":true}' } : { wrongBearer: "wrong" },
         f.trigger,
+        (owner) => {
+          assert.equal(f.calls.at(-1), "body-owned");
+          assert.deepEqual(owner, {
+            networkId: "network",
+            frameId: "frame",
+            resourceType: "Fetch",
+            url: f.url,
+            method: "POST",
+            status,
+            body: f.body,
+          });
+          responseOwned = true;
+        },
       );
+      assert.equal(responseOwned, true);
       assert.deepEqual(captured.body, f.body);
       assert.deepEqual(f.stages(), ["Request", "Response"]);
       assert.equal(captured.response.status(), status);
@@ -233,6 +262,12 @@ test("missing original response pause, malformed body and mismatched status cann
   for (const options of [
     { missingResponsePause: true },
     { responseStatus: 200 },
+    { missingNetworkId: true },
+    { responseNetworkId: "foreign" },
+    { responseNetworkId: "" },
+    { responseFrame: "foreign" },
+    { responseFrame: "" },
+    { responseResourceType: "Document" },
     { packet: null },
     { packet: { body: 4, base64Encoded: true } },
     { packet: { body: "same", base64Encoded: "false" } },
