@@ -80,7 +80,7 @@ function createDiscovery(findFiles = async () => [], initialFolders = ["/workspa
     fs,
     path,
     workspace,
-    Uri: { file: fileUri },
+    Uri: { file: fileUri, joinPath: (uri, part) => fileUri(path.posix.join(uri.path, part)) },
     RelativePattern,
     WORKSPACE_PROJECT_CONFIG_FILES: [],
     WORKSPACE_PROJECT_CONFIG_GLOB: CONFIG_GLOB,
@@ -158,7 +158,7 @@ await test("actual watcher traces original accepted/rejected create/change/delet
   );
 });
 
-await test("actual findFiles keeps original arguments, commits only completed result, and rethrows identical rejection", async () => {
+await test("actual findFiles enumerates configs with original glob/exclusions, commits completed result, and rethrows identical rejection", async () => {
   let resolve;
   const pending = new Promise((complete) => {
     resolve = complete;
@@ -171,7 +171,7 @@ await test("actual findFiles keeps original arguments, commits only completed re
   await refresh;
   assert.equal(discovery.hasConfig, true);
   assert.deepEqual(operations, [
-    ["findFiles", "original-project-config-glob", "**/{node_modules,.git,target,dist,build}/**", 1],
+    ["findFiles", "original-project-config-glob", "**/{node_modules,.git,target,dist,build}/**"],
   ]);
   assert.deepEqual(trace, [
     "findFiles enter generation=7",
@@ -382,4 +382,108 @@ await test("raw watcher events retain URI and lifecycle before the original owne
     "watch event kind=change uri=file:///workspace/packages/app/tsconfig.app.json workspace=file:///workspace disposed=true active=false owner=undefined",
   );
   assert.deepEqual(reasons, []);
+});
+
+await test("awaited discovery anchors every known parent before startup and keeps recursive discovery", async () => {
+  const first = fileUri("/workspace/packages/app/tsconfig.app.json");
+  const sibling = fileUri("/workspace/packages/app/vite.config.ts");
+  const second = fileUri("/workspace/packages/other/tsconfig.json");
+  let files = [
+    first,
+    sibling,
+    second,
+    first,
+    fileUri("/workspace/node_modules/tsconfig.json"),
+    fileUri("/outside/tsconfig.json"),
+  ];
+  const { discovery, watchers, operations, setFolders } = createDiscovery(async () => files);
+  const reasons = [];
+  const subscriptions = discovery.watch((reason) => reasons.push(reason));
+  await discovery.refresh(1);
+  assert.deepEqual(
+    watchers.map(({ glob }) => [glob.baseUri.fsPath, glob.pattern]),
+    [
+      ["/workspace", CONFIG_GLOB],
+      ["/workspace/packages/app", "*"],
+      ["/workspace/packages/other", "*"],
+    ],
+  );
+  const parent = watchers[1];
+  // Both backends may report a known file; its active parent owns dispatch.
+  for (const kind of ["create", "change", "delete"]) {
+    watchers[0].callbacks[kind](first);
+    parent.callbacks[kind](first);
+  }
+  parent.callbacks.change(sibling);
+  parent.callbacks.change(fileUri("/workspace/packages/app/unrelated.ts"));
+  parent.callbacks.change(fileUri("/workspace/packages/other/tsconfig.json"));
+  assert.deepEqual(reasons, Array(4).fill("project configuration changed"));
+  watchers[0].callbacks.create(fileUri("/workspace/new/tsconfig.json"));
+  assert.equal(reasons.at(-1), "project configuration changed");
+  await discovery.refresh(2);
+  assert.equal(watchers.length, 3, "unchanged parents retain their leases");
+  files = [sibling];
+  await discovery.refresh(3);
+  reasons.length = 0;
+  parent.callbacks.change(first);
+  parent.callbacks.change(sibling);
+  watchers[2].callbacks.change(second);
+  assert.deepEqual(reasons, ["project configuration changed"]);
+  assert.equal(
+    operations.filter(([kind, name]) => kind === "dispose" && name === "2:watcher").length,
+    1,
+  );
+  setFolders(["/workspace", "/workspace/packages/app"]);
+  const nestedOwner = watchers.at(-1);
+  assert.notEqual(nestedOwner, parent);
+  reasons.length = 0;
+  parent.callbacks.change(sibling);
+  nestedOwner.callbacks.change(sibling);
+  assert.deepEqual(reasons, ["project configuration changed"]);
+  setFolders(["/workspace"]);
+  const activeParent = watchers.at(-1);
+  reasons.length = 0;
+  nestedOwner.callbacks.change(sibling);
+  activeParent.callbacks.change(sibling);
+  assert.deepEqual(reasons, ["project configuration changed"]);
+  setFolders([]);
+  reasons.length = 0;
+  activeParent.callbacks.change(sibling);
+  assert.deepEqual(reasons, []);
+  setFolders(["/workspace"]);
+  const replacement = watchers.at(-1);
+  assert.notEqual(replacement, parent);
+  reasons.length = 0;
+  parent.callbacks.change(sibling);
+  replacement.callbacks.change(sibling);
+  assert.deepEqual(reasons, ["project configuration changed"]);
+  for (const subscription of subscriptions) subscription.dispose();
+  reasons.length = 0;
+  replacement.callbacks.change(sibling);
+  await discovery.refresh(4);
+  assert.deepEqual(reasons, []);
+  assert.equal(watchers.at(-1), replacement, "disposed discovery cannot recreate a lease");
+});
+
+await test("superseded and disposed searches cannot install stale parent leases", async () => {
+  const searches = [];
+  const { discovery, watchers } = createDiscovery(
+    () => new Promise((resolve) => searches.push(resolve)),
+  );
+  const subscriptions = discovery.watch(() => {});
+  const stale = discovery.refresh(1);
+  const current = discovery.refresh(2);
+  searches[1]([fileUri("/workspace/current/tsconfig.json")]);
+  await current;
+  searches[0]([fileUri("/workspace/stale/tsconfig.json")]);
+  await stale;
+  assert.deepEqual(
+    watchers.map(({ glob }) => glob.baseUri.fsPath),
+    ["/workspace", "/workspace/current"],
+  );
+  const pending = discovery.refresh(3);
+  for (const subscription of subscriptions) subscription.dispose();
+  searches[2]([fileUri("/workspace/late/tsconfig.json")]);
+  await pending;
+  assert.equal(watchers.length, 2);
 });
