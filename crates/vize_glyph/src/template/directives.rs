@@ -4,7 +4,7 @@
 //! `v-slot:` -> `#`) and JS expression formatting in directive values.
 
 use crate::{options::FormatOptions, script};
-use vize_l0::{Allocator, SmallVec, Span, String, ToCompactString, cstr};
+use vize_l0::{Allocator, SmallVec, Span, String, ToCompactString};
 use vize_l1::embed::{
     Embed, EmbedSource, Grammar, Lang, Shape,
     syntax::{ForKeyword, parse_vue_for_head_once},
