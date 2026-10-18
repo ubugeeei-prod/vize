@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
+import { Script } from "node:vm";
 
 type Probe = {
   code: string;
@@ -107,7 +108,9 @@ export async function prepareUnicodeKeyScope(input: Probe) {
   const values = keys.map((key, index) => {
     // Standalone invocation makes a key's dependency on a sibling render
     // callback fail with its genuine ReferenceError, before any DOM assertion.
-    const value = Function(`return (${key.code})`)()(...samples[index].args);
+    const keyFunction: unknown = new Script(`(${key.code})`).runInNewContext();
+    assert.ok(typeof keyFunction === "function");
+    const value = keyFunction(...samples[index].args);
     assert.deepEqual(value, samples[index].value);
     return value;
   });
