@@ -21,11 +21,226 @@ import {
   cleanup,
   evidence,
 } from "../../../tools/support/release/public_acceptance/vrt_artifacts.ts";
+import { actualRequestRefusal } from "../../../tools/support/release/public_acceptance/vrt_trusted_network.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const head = execFileSync("git", ["--no-replace-objects", "-C", root, "rev-parse", "HEAD"], {
   encoding: "utf8",
 }).trim();
+
+/** Inert CDP lifetime model only: no browser, renderer, server or HTTP response is substituted. */
+function refusalLifetime(
+  options: {
+    base64?: boolean;
+    bodyError?: Error;
+    disableError?: Error;
+    packet?: unknown;
+    missingResponsePause?: boolean;
+    responseStatus?: number;
+    status?: 400 | 401;
+    triggerError?: Error;
+  } = {},
+) {
+  const url = "http://127.0.0.1:43210/capture";
+  const body = Buffer.from('{"error":"original unauthorized — 原本"}\n');
+  const calls: string[] = [];
+  type Listener = Parameters<Parameters<typeof actualRequestRefusal>[1]["on"]>[1];
+  let listener: Listener | undefined;
+  let stages: string[] = [];
+  let enabled = false;
+  let pausedResponse = false;
+  const response = {
+    url: () => url,
+    request: () => ({ method: () => "POST" }),
+    status: () => options.status ?? 401,
+    async body() {
+      assert.ok(
+        enabled && pausedResponse,
+        "late original body unavailable after response resume or Fetch.disable",
+      );
+      return body;
+    },
+  };
+  let deliver: (() => void) | undefined;
+  const page = {
+    waitForResponse(predicate: (value: typeof response) => boolean) {
+      return new Promise<typeof response>((resolve) => {
+        deliver = () => {
+          assert.ok(predicate(response));
+          resolve(response);
+        };
+      });
+    },
+  };
+  const request = { url, method: "POST", headers: { Authorization: "Bearer original" } };
+  const cdp: Parameters<typeof actualRequestRefusal>[1] = {
+    on(_event, callback) {
+      listener = callback;
+      return this;
+    },
+    off(_event, callback) {
+      assert.equal(listener, callback);
+      listener = undefined;
+      calls.push("off");
+      return this;
+    },
+    async send(
+      method: string,
+      params?: {
+        patterns?: Array<{ urlPattern: string; requestStage: string }>;
+        requestId?: string;
+        postData?: string;
+        headers?: Array<{ name: string; value: string }>;
+      },
+    ) {
+      calls.push(method);
+      if (method === "Fetch.enable") {
+        enabled = true;
+        assert.ok(params?.patterns);
+        assert.ok(params.patterns.every((pattern) => pattern.urlPattern === url));
+        stages = params.patterns.map((p) => p.requestStage);
+      } else if (method === "Fetch.getResponseBody") {
+        assert.ok(enabled && pausedResponse);
+        assert.deepEqual(params, { requestId: "response" });
+        if (options.triggerError) await new Promise<void>((resolve) => setImmediate(resolve));
+        assert.ok(enabled && pausedResponse, "Fetch remains valid throughout body acquisition");
+        if (options.bodyError) throw options.bodyError;
+        calls.push("body-owned");
+        return Object.hasOwn(options, "packet")
+          ? options.packet
+          : {
+              body: body.toString(options.base64 === false ? "utf8" : "base64"),
+              base64Encoded: options.base64 !== false,
+            };
+      } else if (method === "Fetch.continueRequest") {
+        assert.ok(params);
+        if (params.requestId === "preflight") {
+          assert.deepEqual(params, { requestId: "preflight" });
+          if (stages.includes("Response")) {
+            assert.ok(listener);
+            listener({
+              requestId: "preflight-response",
+              request: { ...request, method: "OPTIONS" },
+              responseStatusCode: 204,
+            });
+          }
+        } else if (params.requestId === "preflight-response") {
+          assert.deepEqual(params, { requestId: "preflight-response" });
+        } else if (params.requestId === "request") {
+          if (options.status === 400)
+            assert.equal(params.postData, Buffer.from('{"bad":true}').toString("base64"));
+          else assert.deepEqual(params.headers, [{ name: "Authorization", value: "Bearer wrong" }]);
+          if (stages.includes("Response") && !options.missingResponsePause) {
+            pausedResponse = true;
+            assert.ok(listener);
+            listener({
+              requestId: "response",
+              request,
+              responseStatusCode: options.responseStatus ?? options.status ?? 401,
+            });
+          } else {
+            assert.ok(deliver);
+            deliver();
+          }
+        } else {
+          assert.deepEqual(
+            params,
+            { requestId: "response" },
+            "resume original response without overrides",
+          );
+          assert.ok(deliver);
+          pausedResponse = false;
+          deliver();
+        }
+      } else if (method === "Fetch.disable") {
+        enabled = false;
+        if (options.disableError) throw options.disableError;
+      } else assert.fail(`unexpected protocol operation: ${method}`);
+      return {};
+    },
+  };
+  const trigger = async () => {
+    assert.ok(listener);
+    listener({ requestId: "preflight", request: { ...request, method: "OPTIONS" } });
+    listener({ requestId: "request", request });
+    if (options.triggerError) throw options.triggerError;
+  };
+  return { page, cdp, trigger, body, calls, response, url, stages: () => stages.slice() };
+}
+
+test("the same original refusal body is owned before resuming and disabling interception", async () => {
+  for (const base64 of [false, true])
+    for (const status of [400, 401] as const) {
+      const f = refusalLifetime({ base64, status });
+      const captured = await actualRequestRefusal(
+        f.page,
+        f.cdp,
+        f.url,
+        status === 400 ? { postData: '{"bad":true}' } : { wrongBearer: "wrong" },
+        f.trigger,
+      );
+      assert.deepEqual(captured.body, f.body);
+      assert.deepEqual(f.stages(), ["Request", "Response"]);
+      assert.equal(captured.response.status(), status);
+      const acquired = f.calls.indexOf("Fetch.getResponseBody"),
+        disabled = f.calls.indexOf("Fetch.disable");
+      assert.ok(acquired > 0 && acquired < disabled && disabled < f.calls.indexOf("off"));
+      assert.ok(acquired < f.calls.lastIndexOf("Fetch.continueRequest"));
+      await assert.rejects(f.response.body(), /late original body unavailable/);
+    }
+});
+
+test("original body read and cleanup failures stay failures and release the paused response", async () => {
+  for (const disableError of [undefined, new Error("disable refused")]) {
+    const bodyError = new Error("original body unavailable");
+    const f = refusalLifetime({ bodyError, disableError });
+    await assert.rejects(
+      actualRequestRefusal(f.page, f.cdp, f.url, { wrongBearer: "wrong" }, f.trigger),
+      (error: unknown) => {
+        assert.ok(error instanceof AggregateError);
+        assert.ok(error.errors.includes(bodyError));
+        if (disableError) assert.ok(error.errors.includes(disableError));
+        return true;
+      },
+    );
+    assert.equal(f.calls.filter((x) => x === "Fetch.continueRequest").length, 4);
+    assert.ok(f.calls.includes("Fetch.disable") && f.calls.includes("off"));
+  }
+});
+
+test("trigger failure cannot disable Fetch while its original body is being acquired", async () => {
+  const triggerError = new Error("trigger failed after starting original request");
+  const f = refusalLifetime({ triggerError });
+  await assert.rejects(
+    actualRequestRefusal(f.page, f.cdp, f.url, { wrongBearer: "wrong" }, f.trigger),
+    (error: unknown) => {
+      assert.ok(error instanceof AggregateError);
+      assert.deepEqual(error.errors, [triggerError]);
+      return true;
+    },
+  );
+  const owned = f.calls.indexOf("body-owned");
+  assert.ok(owned >= 0 && owned < f.calls.indexOf("Fetch.disable"));
+  assert.ok(f.calls.includes("off"));
+});
+
+test("missing original response pause, malformed body and mismatched status cannot qualify", async () => {
+  for (const options of [
+    { missingResponsePause: true },
+    { responseStatus: 200 },
+    { packet: null },
+    { packet: { body: 4, base64Encoded: true } },
+    { packet: { body: "same", base64Encoded: "false" } },
+    { packet: { body: "not canonical base64!", base64Encoded: true } },
+    { packet: { body: "", base64Encoded: false, extra: true } },
+  ]) {
+    const f = refusalLifetime(options);
+    await assert.rejects(
+      actualRequestRefusal(f.page, f.cdp, f.url, { wrongBearer: "wrong" }, f.trigger),
+    );
+    assert.ok(f.calls.includes("Fetch.disable") && f.calls.includes("off"));
+  }
+});
 async function consumer(t: TestContext) {
   const directory = await mkdtemp(path.join(os.tmpdir(), "vize-vrt-guard-law-"));
   t.after(() => rm(directory, { recursive: true, force: true }));
