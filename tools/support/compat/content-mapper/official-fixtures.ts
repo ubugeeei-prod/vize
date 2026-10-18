@@ -138,18 +138,16 @@ function surplusDefaultsPublicFixture(source: {
         expectedStatus: 0,
       },
     ],
-    controls: source.cases
-      .slice(1)
-      .map((row) => ({
-        name: `defaults-9499-${row.name}`,
-        original: 9499,
-        files: files(row),
-        codes: [...row.codes],
-        terms: row.codes.length ? ["not assignable"] : [],
-        status: row.codes.length ? 2 : 0,
-        stderr: "",
-        ...(row.codes.length ? {} : { stdout: "" }),
-      })),
+    controls: source.cases.slice(1).map((row) => ({
+      name: `defaults-9499-${row.name}`,
+      original: 9499,
+      files: files(row),
+      codes: [...row.codes],
+      terms: row.codes.length ? ["not assignable"] : [],
+      status: row.codes.length ? 2 : 0,
+      stderr: "",
+      ...(row.codes.length ? {} : { stdout: "" }),
+    })),
   };
 }
 
