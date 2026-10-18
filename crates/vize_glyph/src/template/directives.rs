@@ -4,7 +4,7 @@
 //! `v-slot:` -> `#`) and JS expression formatting in directive values.
 
 use crate::{options::FormatOptions, script};
-use vize_l0::{Allocator, SmallVec, Span, String, ToCompactString};
+use vize_l0::{Allocator, SmallVec, Span, String, ToCompactString, is_simple_identifier};
 use vize_l1::embed::{
     Embed, EmbedSource, Grammar, Lang, Shape,
     syntax::{ForKeyword, parse_vue_for_head_once},
@@ -264,6 +264,19 @@ pub(crate) fn format_v_for_expression(expr: &str) -> String {
 }
 
 fn format_v_for_with_parens(expr: &str, normalize_parens: bool) -> String {
+    // A single plain alias with canonical separator spacing prints identically
+    // under both profiles. The collection is preserved, never formatted here.
+    // This recognizes unchanged output, not language or native admission.
+    if let Some((alias, tail)) = expr.split_once(' ')
+        && is_simple_identifier(alias)
+        && let Some(collection) = tail
+            .strip_prefix("in ")
+            .or_else(|| tail.strip_prefix("of "))
+        && !collection.is_empty()
+        && collection.trim() == collection
+    {
+        return expr.to_compact_string();
+    }
     normalized_v_for(expr, normalize_parens).unwrap_or_else(|| expr.to_compact_string())
 }
 
@@ -360,6 +373,9 @@ mod for_alias_tests {
         for (source, expected) in [
             ("(item,index) in items", "(item, index) in items"),
             ("item in items", "item in items"),
+            ("item  in  items", "item in items"),
+            ("item in ['a,b','c,d']", "item in ['a,b','c,d']"),
+            ("item of nested('a,b','c,d')", "item of nested('a,b','c,d')"),
             (
                 "({label = 'a,b'},index) in items",
                 "({label = 'a,b'}, index) in items",
@@ -394,6 +410,10 @@ mod for_alias_tests {
         assert_eq!(
             format_v_for_with_parens("item in items", true),
             "item in items"
+        );
+        assert_eq!(
+            format_v_for_with_parens("item of ['a,b','c,d']", true),
+            "item of ['a,b','c,d']"
         );
     }
 
