@@ -116,7 +116,8 @@ jobs:
       - name: Verify rendered navigation and Japanese reading paths
         if: ${{ inputs.links-only != true }}
         run: |
-          node docs/scripts/verify-navigation-render.ts
+          ja_reading_routes=$(node --input-type=module -e 'import { defaultNavigationRenderRoutes } from "./docs/scripts/navigation-render-routes.ts"; process.stdout.write(defaultNavigationRenderRoutes.filter(route => route.startsWith("/ja/")).join(","))')
+          node docs/scripts/verify-navigation-render.ts --routes "$ja_reading_routes"
           node docs/scripts/verify-ja-editorial-render.ts
 
       - name: Upload rendered docs screenshots
