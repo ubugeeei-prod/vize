@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { createHash } from "node:crypto";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { performance } from "node:perf_hooks";
 import { captureProjectCommand } from "./project-command-capture.mjs";
 import { PUBLIC_OVERRIDE_KEYS } from "../src/test-support/original-sfc-host-matrix.ts";
@@ -277,6 +277,8 @@ async function qualifyOriginalSfcPublicBaseline({ packageDir, output, receipt, b
       sourceManifest.main,
       sourceManifest.bin["oxlint-vize"],
       "dist/cli.mjs",
+      "scripts/project-native-staging.ts",
+      "../native/index.js",
     ].map((file) => {
       const physical = fs.realpathSync(path.resolve(packageDir, file));
       return { path: physical, sha256: hash(fs.readFileSync(physical)) };
@@ -386,7 +388,23 @@ export function originalSfcSourceCommand({
   assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
   const env = plainHostEnvironment(environment);
   for (const key of PUBLIC_OVERRIDE_KEYS) delete env[key];
-  env.NAPI_RS_NATIVE_LIBRARY_PATH = fs.realpathSync(binary);
+  const wrapper = fs.realpathSync(path.resolve(packageDir, "../native/index.js"));
+  const configuration = path.join(output, "source-preload.json");
+  fs.writeFileSync(
+    configuration,
+    JSON.stringify(
+      {
+        schema: "vize.oxlint.original-sfc-preload",
+        source: receipt.source,
+        wrapper: { path: wrapper, sha256: hash(fs.readFileSync(wrapper)) },
+        binary: { path: fs.realpathSync(binary), sha256: receipt.frozen.sha256 },
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+  env.VIZE_OXLINT_NATIVE_CUSTODY = configuration;
+  env.NODE_OPTIONS = `--import=${pathToFileURL(path.join(packageDir, "scripts/project-native-staging.ts")).href}`;
   env.VIZE_PREFER_WORKSPACE_BINDING = "1";
   return {
     command: process.execPath,

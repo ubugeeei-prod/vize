@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { captureProjectCommand } from "./project-command-capture.mjs";
 import {
   originalSfcSourceCommand,
@@ -196,7 +197,18 @@ function sourceMatrixAuthority(t) {
     fs.writeFileSync(physical, bytes);
     return { path: physical, bytes: Buffer.byteLength(bytes), sha256: digest(bytes) };
   };
-  const native = file("source.node", "authored source image control\0");
+  const native = file("source.cjs", "module.exports={authoredImage:true};\n");
+  const packageDir = path.join(root, "npm/oxlint");
+  fs.mkdirSync(path.join(packageDir, "scripts"), { recursive: true });
+  fs.mkdirSync(path.join(root, "npm/native"));
+  fs.copyFileSync(
+    fileURLToPath(new URL("./project-native-staging.ts", import.meta.url)),
+    path.join(packageDir, "scripts/project-native-staging.ts"),
+  );
+  fs.writeFileSync(
+    path.join(root, "npm/native/index.js"),
+    "module.exports=require(process.env.NAPI_RS_NATIVE_LIBRARY_PATH);\n",
+  );
   const plugin = file("plugin.mjs", "// authored plugin control\n");
   const manifest = file("host-package.json", '{"name":"oxlint","version":"1.86.0"}\n');
   const stream = file("stdout.bin", "whole output 日本語\0\n");
@@ -237,6 +249,7 @@ function sourceMatrixAuthority(t) {
   const baseline = { hostVersion: "1.86.0", manifests: [{}, manifest], cells, projects, packet };
   return {
     root,
+    packageDir,
     plugin,
     binary: native.path,
     receipt: { source: { head: "a".repeat(40) }, frozen: { sha256: native.sha256 } },
@@ -270,16 +283,17 @@ void test("source command isolates overrides and uses the one existing host/addo
   };
   const input = {
     ...fixture,
-    packageDir: "/source/npm/oxlint",
+    packageDir: fixture.packageDir,
     installation: fixture.root,
     output: path.join(fixture.root, "candidate-1.86"),
     environment,
   };
+  fs.mkdirSync(input.output);
   const actual = originalSfcSourceCommand(input);
   assert.deepEqual(actual.args, [
-    "/source/npm/oxlint/src/test-support/original-sfc-host-matrix.ts",
+    path.join(fixture.packageDir, "src/test-support/original-sfc-host-matrix.ts"),
     "--plugin-package",
-    "/source/npm/oxlint",
+    fixture.packageDir,
     "--oxlint-package",
     path.join(fixture.root, "node_modules/oxlint"),
     "--output",
@@ -298,7 +312,8 @@ void test("source command isolates overrides and uses the one existing host/addo
       ),
     ),
     {
-      NAPI_RS_NATIVE_LIBRARY_PATH: fixture.binary,
+      NODE_OPTIONS: `--import=${pathToFileURL(path.join(fixture.packageDir, "scripts/project-native-staging.ts")).href}`,
+      VIZE_OXLINT_NATIVE_CUSTODY: path.join(input.output, "source-preload.json"),
       VIZE_PREFER_WORKSPACE_BINDING: "1",
     },
   );
@@ -308,12 +323,17 @@ void test("source command isolates overrides and uses the one existing host/addo
     process.execPath,
     [
       "-e",
-      "process.stdout.write(JSON.stringify([process.cwd(),process.env.NAPI_RS_NATIVE_LIBRARY_PATH,process.env.VIZE_PREFER_WORKSPACE_BINDING,process.env.NODE_OPTIONS??null]));process.stderr.write('whole stderr\\n');",
+      "process.stdout.write(JSON.stringify([process.cwd(),process.env.NAPI_RS_NATIVE_LIBRARY_PATH??null,process.env.VIZE_PREFER_WORKSPACE_BINDING,process.env.NODE_OPTIONS??null]));process.stderr.write('whole stderr\\n');",
     ],
     actual.options,
   );
   assert.equal(observed.status, 0);
-  assert.deepEqual(JSON.parse(observed.stdout), [fixture.root, fixture.binary, "1", null]);
+  assert.deepEqual(JSON.parse(observed.stdout), [
+    fixture.root,
+    null,
+    "1",
+    actual.options.env.NODE_OPTIONS,
+  ]);
   assert.equal(observed.stderr.toString(), "whole stderr\n");
   assert.throws(() =>
     originalSfcSourceCommand({
