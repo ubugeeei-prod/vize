@@ -6,8 +6,8 @@
 //! idempotent. (#3247)
 
 use super::TemplateFormatter;
-use crate::template::helpers::byte_at;
 use crate::template::helpers::sub_slice;
+use crate::template::helpers::{byte_at, find_bytes};
 use crate::{options::FormatOptions, script};
 use vize_l0::{String, ToCompactString};
 
@@ -163,26 +163,13 @@ pub(super) fn parse_interpolation_range(
         return None;
     }
 
+    // Vue interpolation is delimited by the first authored `}}`, including
+    // when its expression contains `{{` in a string, comment or template literal.
+    // Match L1's Interpolation/InterpolationClose states rather than balancing
+    // a second template grammar inside the JavaScript expression.
     let expr_start = start + 2;
-    let mut depth = 1;
-    let mut pos = expr_start;
-
-    while pos + 1 < len {
-        if byte_at(source, pos) == b'{' && byte_at(source, pos + 1) == b'{' {
-            depth += 1;
-            pos += 2;
-        } else if byte_at(source, pos) == b'}' && byte_at(source, pos + 1) == b'}' {
-            depth -= 1;
-            if depth == 0 {
-                return Some((expr_start, pos, pos + 2));
-            }
-            pos += 2;
-        } else {
-            pos += 1;
-        }
-    }
-
-    None
+    let expr_end = expr_start + find_bytes(source.get(expr_start..)?, b"}}")?;
+    Some((expr_start, expr_end, expr_end + 2))
 }
 
 /// Format interpolations in text content: `{{expr}}` -> `{{ expr }}`.
@@ -212,33 +199,13 @@ pub(super) fn format_interpolations_with_vue_version(
 
     while pos < len {
         if pos + 1 < len && byte_at(bytes, pos) == b'{' && byte_at(bytes, pos + 1) == b'{' {
-            // Find closing }}
-            let expr_start = pos + 2;
-            let mut depth = 1;
-            let mut expr_end = expr_start;
-
-            while expr_end + 1 < len {
-                if byte_at(bytes, expr_end) == b'{' && byte_at(bytes, expr_end + 1) == b'{' {
-                    depth += 1;
-                    expr_end += 2;
-                } else if byte_at(bytes, expr_end) == b'}' && byte_at(bytes, expr_end + 1) == b'}' {
-                    depth -= 1;
-                    if depth == 0 {
-                        break;
-                    }
-                    expr_end += 2;
-                } else {
-                    expr_end += 1;
-                }
-            }
-
-            if depth == 0 {
+            if let Some((expr_start, expr_end, end)) = parse_interpolation_range(bytes, pos) {
                 let expr = text.get(expr_start..expr_end).unwrap_or_default();
                 let formatted_expr = format_interpolation_expression(expr, options, vue_version);
                 result.push_str("{{ ");
                 result.push_str(&formatted_expr);
                 result.push_str(" }}");
-                pos = expr_end + 2;
+                pos = end;
             } else {
                 // Unclosed interpolation -- keep as-is
                 result.push('{');

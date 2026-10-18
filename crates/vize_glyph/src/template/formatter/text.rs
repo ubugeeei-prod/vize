@@ -78,29 +78,11 @@ impl TemplateFormatter<'_> {
         let mut i = 0;
         while i + 1 < bytes.len() {
             if bytes.get(i..i + 2) == Some(b"{{".as_slice()) {
-                let mut j = i + 2;
-                let mut depth_in = 1;
-                let mut saw_newline = false;
-                while j + 1 < bytes.len() {
-                    if bytes.get(j) == Some(&b'\n') {
-                        saw_newline = true;
-                    }
-                    if bytes.get(j..j + 2) == Some(b"{{".as_slice()) {
-                        depth_in += 1;
-                        j += 2;
-                    } else if bytes.get(j..j + 2) == Some(b"}}".as_slice()) {
-                        depth_in -= 1;
-                        if depth_in == 0 {
-                            has_multiline_interp = saw_newline;
-                            j += 2;
-                            break;
-                        }
-                        j += 2;
-                    } else {
-                        j += 1;
-                    }
-                }
-                i = j;
+                let Some((expr_start, expr_end, end)) = parse_interpolation_range(bytes, i) else {
+                    return None;
+                };
+                has_multiline_interp = bytes.get(expr_start..expr_end)?.contains(&b'\n');
+                i = end;
                 if has_multiline_interp {
                     break;
                 }
@@ -130,29 +112,11 @@ impl TemplateFormatter<'_> {
             // syntax and may be expanded for layout.
             out.push_str(text.get(cursor..next).unwrap_or_default());
 
-            let mut k = next + 2;
-            let mut interpolation_depth = 1;
-            while k + 1 < bytes.len() {
-                if bytes.get(k..k + 2) == Some(b"{{".as_slice()) {
-                    interpolation_depth += 1;
-                    k += 2;
-                } else if bytes.get(k..k + 2) == Some(b"}}".as_slice()) {
-                    interpolation_depth -= 1;
-                    if interpolation_depth == 0 {
-                        break;
-                    }
-                    k += 2;
-                } else {
-                    k += 1;
-                }
-            }
-            if interpolation_depth != 0 {
-                return None;
-            }
-            let expr = text.get(next + 2..k).unwrap_or_default();
+            let (expr_start, expr_end, end) = parse_interpolation_range(bytes, next)?;
+            let expr = text.get(expr_start..expr_end)?;
             if !expr.contains('\n') {
-                out.push_str(text.get(next..k + 2).unwrap_or_default());
-                cursor = k + 2;
+                out.push_str(text.get(next..end).unwrap_or_default());
+                cursor = end;
                 continue;
             }
             out.push_str("{{");
@@ -160,7 +124,7 @@ impl TemplateFormatter<'_> {
             out.push_str(self.render_interpolation_expr_lines(expr, depth).as_str());
             self.write_indent_string(&mut out, depth);
             out.push_str("}}");
-            cursor = k + 2;
+            cursor = end;
         }
         Some(out)
     }

@@ -2,7 +2,7 @@
 //! verbatim so its semantically significant value is not corrupted and
 //! formatting stays a fixed point. (#3247)
 
-use vize_glyph::{FormatOptions, format_template};
+use vize_glyph::{FormatOptions, format_sfc, format_template};
 
 #[test]
 fn multiline_template_literal_in_interpolation_is_idempotent() {
@@ -102,4 +102,47 @@ fn plain_multiline_interpolation_still_indents() {
         first,
         "plain multiline interpolation must be idempotent"
     );
+}
+
+#[test]
+fn literal_open_delimiters_keep_their_complete_authored_values() {
+    let options = FormatOptions::default();
+    for (source, expected) in [
+        (r#"{{'{{'}}"#, r#"{{ "{{" }}"#),
+        (r#"<p>{{'{{<i>'}}</p>"#, r#"<p>{{ "{{<i>" }}</p>"#),
+        (r#"{{'{{'}}{{ value }}"#, r#"{{ "{{" }}{{ value }}"#),
+        (r#"{{ `{{<i>` }}"#, r#"{{ `{{<i>` }}"#),
+        ("{{ value", "{{ value"),
+    ] {
+        let first = format_template(source, &options).unwrap();
+        assert_eq!(first, expected, "complete source: {source}");
+        assert_eq!(format_template(&first, &options).unwrap(), expected);
+    }
+}
+
+#[test]
+fn multiline_literal_open_delimiters_preserve_crlf_and_quote_policy() {
+    let options = FormatOptions {
+        end_of_line: vize_glyph::EndOfLine::Crlf,
+        single_quote: true,
+        ..FormatOptions::default()
+    };
+    let source = "<p>\r\n  {{\r\n    \"{{<i>\"\r\n  }}\r\n</p>";
+    let expected = "<p>\r\n  {{\r\n    '{{<i>'\r\n  }}\r\n</p>";
+    let first = format_template(source, &options).unwrap();
+    assert_eq!(first, expected);
+    assert_eq!(format_template(&first, &options).unwrap(), expected);
+}
+
+#[test]
+fn sfc_literal_open_delimiters_stay_inside_the_authored_interpolation() {
+    let source = r#"<template><p>{{'{{<i>'}}</p></template>"#;
+    let expected = "<template>\n  <p>{{ \"{{<i>\" }}</p>\n</template>";
+    let options = FormatOptions::default();
+    let first = format_sfc(source, &options).unwrap();
+    assert_eq!(first.code.as_str(), expected);
+    assert!(first.changed);
+    let second = format_sfc(expected, &options).unwrap();
+    assert_eq!(second.code.as_str(), expected);
+    assert!(!second.changed);
 }
