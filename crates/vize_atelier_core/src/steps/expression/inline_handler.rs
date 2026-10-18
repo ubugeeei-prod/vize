@@ -26,7 +26,7 @@ pub fn process_inline_handler<'a>(
 
     let normalized = normalize_expression(exp, allocator, ctx.source);
 
-    if normalized.is_static {
+    if normalized.is_static || normalized.content.trim().is_empty() {
         return ExpressionNode::Simple(normalized);
     }
 

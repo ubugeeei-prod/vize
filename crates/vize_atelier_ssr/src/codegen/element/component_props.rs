@@ -304,6 +304,9 @@ impl SsrCodegenContext<'_> {
     }
 
     fn event_handler_to_string(&mut self, exp: &ExpressionNode) -> String {
+        if vize_atelier_core::steps::expression::is_empty_dynamic_expression(exp) {
+            return "() => {}".to_compact_string();
+        }
         let rendered = self.expression_to_string(exp);
         if matches!(exp, ExpressionNode::Simple(simple) if simple.is_static) {
             return rendered;
