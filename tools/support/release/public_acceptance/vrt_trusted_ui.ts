@@ -3,10 +3,10 @@ import { cp, mkdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import type { Page } from "playwright";
 import {
-  assertApiReport,
+  assertSessionReport,
   inventory,
   pngDetails,
-  type ApiCapture,
+  type SessionCapture,
   type Evidence,
   type VrtReport,
 } from "./vrt_artifacts.ts";
@@ -19,14 +19,28 @@ export interface PublicSession {
   token: string;
   assertRunning(): void;
 }
-interface HostedCapture extends Pick<ApiCapture, "success" | "summary"> {
-  results: Array<ApiCapture["results"][number] & { images: Record<string, string> }>;
-  reports: { json: string; html: string };
-}
+type HostedCapture = SessionCapture;
 const sectionIds = {
   Controls: ["variant-default", "variant-custom-theme"],
   Keys: ["variant-proto", "variant-constructor", "variant-hasownproperty"],
 };
+
+/** A rebuilt gallery is on Home: select its Art before requiring component-only tabs. */
+export async function selectPublicColorArt(
+  page: {
+    locator(selector: string): {
+      filter(options: { hasText: string }): { click(): Promise<unknown> };
+    };
+    getByRole(
+      role: "button",
+      options: { name: string; exact: true },
+    ): { click(): Promise<unknown> };
+  },
+  title: "Left" | "Right",
+) {
+  await page.locator(".art-item").filter({ hasText: title }).click();
+  await page.getByRole("button", { name: "Variants", exact: true }).click();
+}
 
 export async function selectLiteral(
   page: Page,
@@ -126,7 +140,7 @@ export async function publicArtifact(
   return bytes;
 }
 
-/** Concrete names/counts complement unchanged original Default-only assertSummary. */
+/** Authored names and counts complement the strict public summary and artifact checks. */
 export function literalCaptureLaw(
   data: HostedCapture,
   title: LiteralTitle,
@@ -199,8 +213,21 @@ export async function capturePublicLiteral(input: {
   assert.ok(physical.json && physical.html);
   const report = JSON.parse(physical.json.toString()) as VrtReport;
   assert.deepEqual(report.reportOwner, { version: 1, artIdentity: `src/${title}.art.vue` });
-  // The accurately typed shared-field law receives the original real packet unchanged.
-  assertApiReport(report, data, 320, 180);
+  await e.save(`${prefix}/physical-report.json`, physical.json);
+  await e.save(`${prefix}/physical-report.html`, physical.html);
+  const artifacts = await assertSessionReport({
+    report: { data: report, json: physical.json, html: physical.html },
+    packet: data,
+    variantNames: literalVariants[title].map(([name]) => name),
+    root: build.root,
+    width: 320,
+    height: 180,
+    fetch: async (route, type) => {
+      const bytes = await publicArtifact(session, new URL(gallery).origin, route, type);
+      await e.save(`${prefix}/opaque-${route.split("/").at(-1)}.bin`, bytes);
+      return bytes;
+    },
+  });
   const baselines: Buffer[] = [],
     images: unknown[] = [];
   for (const [index, result] of data.results.entries()) {
@@ -211,7 +238,8 @@ export async function capturePublicLiteral(input: {
           ? report.results[index].snapshotPath
           : report.results[index].currentPath;
       assert.ok(file && path.isAbsolute(file) && file.startsWith(build.root + path.sep));
-      const bytes = await publicArtifact(session, new URL(gallery).origin, route, "image/png");
+      const bytes = artifacts.get(route);
+      assert.ok(bytes);
       assert.deepEqual(bytes, await readFile(file));
       await e.save(`${prefix}/${index}-${kind}.png`, bytes);
       const details = pngDetails(bytes);
@@ -268,12 +296,8 @@ export async function capturePublicLiteral(input: {
   );
   const reports: unknown[] = [];
   for (const kind of ["json", "html"] as const) {
-    const bytes = await publicArtifact(
-      session,
-      new URL(gallery).origin,
-      data.reports[kind],
-      kind === "json" ? "application/json" : "text/html",
-    );
+    const bytes = artifacts.get(data.reports[kind]);
+    assert.ok(bytes);
     assert.deepEqual(bytes, physical[kind]);
     await e.save(`${prefix}/authenticated-report.${kind}`, bytes);
     const [download] = await Promise.all([
