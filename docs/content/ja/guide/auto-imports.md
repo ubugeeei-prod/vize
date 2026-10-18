@@ -35,7 +35,7 @@ export default defineNuxtConfig({
 - `ui` は `addComponent` で `@vizejs/ui` のコンポーネント（`<VzDialogTrigger>`、`<VzButton>` など）を登録し、各ファミリーが公開する `use*` 関数（`useFieldWiring`、`useSafeAreaInsets` など）も自動インポートします。`prefix`、ファミリー単位の `include` / `exclude`、関数の登録を省く `composables: false`、[ローカルソースのオプション](#コピーしたソースを使う) を指定できます。
 - `composables` は `addImports` で `@vizejs/composable` の実行時エクスポートを登録します。対象は `include` / `exclude` のエントリー名（例: `"use-toggle"`）や `names` で絞れ、ローカルソースのオプションも使えます。両方が同じ名前を提供する場合は `@vizejs/ui` の登録が優先されます。
 
-Nuxt は型付きの `components.d.ts` と `imports.d.ts` を生成するため、テンプレートとスクリプトで型情報を利用できます。登録対象はプロジェクトからパッケージを解決して決まるので、インストールしたバージョンに従います。
+Nuxt は型付きの `components.d.ts` と `imports.d.ts` を生成するため、テンプレートとスクリプトで型情報を利用できます。登録対象は、プロジェクトから解決されるパッケージのバージョンに従います。
 
 ## Vite
 

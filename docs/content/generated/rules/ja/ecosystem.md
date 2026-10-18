@@ -18,7 +18,7 @@ title: "エコシステムのルール"
 | [`ecosystem/vue-i18n-no-missing-key`](#ecosystem-vue-i18n-no-missing-key) | [悪い](#ecosystem-vue-i18n-no-missing-key-bad) · [良い](#ecosystem-vue-i18n-no-missing-key-good) | SFC 内の翻訳データに存在しない静的キーを検出します。 |
 | [`ecosystem/vue-router-prefer-named-link`](#ecosystem-vue-router-prefer-named-link) | [悪い](#ecosystem-vue-router-prefer-named-link-bad) · [良い](#ecosystem-vue-router-prefer-named-link-good) | RouterLink の文字列パスを名前付きルートの指定に置き換えます。 |
 | [`ecosystem/vue-router-prefer-named-push`](#ecosystem-vue-router-prefer-named-push) | [悪い](#ecosystem-vue-router-prefer-named-push-bad) · [良い](#ecosystem-vue-router-prefer-named-push-good) | Vue Router のプログラムによる移動に名前付きルートを使います。 |
-| [`ecosystem/vue-test-utils-no-html-snapshot`](#ecosystem-vue-test-utils-no-html-snapshot) | [悪い](#ecosystem-vue-test-utils-no-html-snapshot-bad) · [良い](#ecosystem-vue-test-utils-no-html-snapshot-good) | wrapper.html() 全体の snapshot に依存するテストを検出します。 |
+| [`ecosystem/vue-test-utils-no-html-snapshot`](#ecosystem-vue-test-utils-no-html-snapshot) | [悪い](#ecosystem-vue-test-utils-no-html-snapshot-bad) · [良い](#ecosystem-vue-test-utils-no-html-snapshot-good) | wrapper.html() 全体のスナップショットに依存するテストを検出します。 |
 | [`nuxt/no-nuxt-config-test-key`](#nuxt-no-nuxt-config-test-key) | [悪い](#nuxt-no-nuxt-config-test-key-bad) · [良い](#nuxt-no-nuxt-config-test-key-good) | Nuxt 設定の test キーに旧形式の真偽値を指定する箇所を検出します。 |
 | [`nuxt/no-page-meta-runtime-values`](#nuxt-no-page-meta-runtime-values) | [悪い](#nuxt-no-page-meta-runtime-values-bad) · [良い](#nuxt-no-page-meta-runtime-values-good) | definePageMeta の即時評価部分で実行時コンテキストを使う箇所を検出します。 |
 | [`nuxt/nuxt-config-keys-order`](#nuxt-nuxt-config-keys-order) | [悪い](#nuxt-nuxt-config-keys-order-bad) · [良い](#nuxt-nuxt-config-keys-order-good) | Nuxt 設定のプロパティを推奨順に並べます。 |
@@ -539,7 +539,7 @@ router.push({ name: "settings" });
 
 ### `ecosystem/vue-test-utils-no-html-snapshot`
 
-wrapper.html() 全体の snapshot に依存するテストを検出します。
+wrapper.html() 全体のスナップショットに依存するテストを検出します。
 
 [悪い例](#ecosystem-vue-test-utils-no-html-snapshot-bad) · [良い例](#ecosystem-vue-test-utils-no-html-snapshot-good)
 
@@ -574,7 +574,7 @@ vp run lint
 
 **悪い**
 
-期待する振る舞いを検査する代わりに、wrapper の HTML 全体を snapshot にしています。
+期待する振る舞いを検査する代わりに、wrapper の HTML 全体をスナップショットにしています。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">

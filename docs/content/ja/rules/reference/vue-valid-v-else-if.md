@@ -50,7 +50,7 @@ vp run lint
 
 ## 良い
 
-続きとなる `v-if` または `v-else-if` の直後に、条件式を持つ `v-else-if` を置きます。
+先行する `v-if` または `v-else-if` の直後に、条件式を持つ `v-else-if` を置きます。
 
 ```vue
 <template>

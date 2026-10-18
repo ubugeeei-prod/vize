@@ -33,8 +33,8 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     "a11y/aria-role",
     "`datepicker` is not a recognized ARIA role for this section.",
     "The section uses the recognized `dialog` role and a label describing the date selection.",
-    "`datepicker` は認識される ARIA role ではありません。",
-    "認識される `dialog` を使い、日付を選択する領域の名前も指定します。",
+    "`datepicker` は有効な ARIA ロールではありません。",
+    "有効な ARIA ロールである `dialog` を使い、日付を選択する領域の名前も指定します。",
   ],
   [
     "a11y/aria-unsupported-elements",
@@ -47,7 +47,7 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     "a11y/click-events-have-key-events",
     "The non-interactive `div` has a click handler but no keyboard event handling.",
     "A native `button` provides keyboard activation for the same `activate` handler.",
-    "通常の `div` に click handler だけを指定し、キーボード操作に対応していません。",
+    "通常の `div` にクリックハンドラーだけを指定し、キーボード操作に対応していません。",
     "同じ `activate` を button に指定し、標準のキーボード操作を使います。",
   ],
   [
@@ -89,7 +89,7 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     "a11y/interactive-supports-focus",
     "Giving a `span` the button role and a click handler does not make the element keyboard-focusable.",
     "The native button is focusable and retains the same `open` action.",
-    "span に button の role と click handler を付けても、キーボードでフォーカスできる要素にはなりません。",
+    "span に button のロールとクリックハンドラーを付けても、キーボードでフォーカスできる要素にはなりません。",
     "フォーカスできる標準の button に変更し、同じ `open` を実行します。",
   ],
   [
@@ -201,7 +201,7 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     "a11y/tabindex-no-positive",
     "A positive tabindex of 3 creates a custom focus order ahead of ordinary controls.",
     "The button uses its native focus order without a positive tabindex.",
-    "正の tabindex 3 で、通常の操作要素より先に独自のフォーカス順を作っています。",
+    "tabindex に正の値 3 を指定し、通常の操作要素より先にフォーカスが移動するようにしています。",
     "正の tabindex を取り除き、button の標準のフォーカス順を使います。",
   ],
   [

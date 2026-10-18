@@ -4,7 +4,7 @@ title: "css/no-hardcoded-values"
 
 # `css/no-hardcoded-values`
 
-CSS の直接指定値を CSS 変数にまとめます。
+CSS に直接記述した値を CSS 変数にまとめます。
 
 [悪い例](#悪い) · [良い例](#良い)
 

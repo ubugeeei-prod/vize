@@ -54,7 +54,7 @@ export function uiHub(locale: string, linkPrefix: string): string {
   return blocks(
     ja ? "## 作りたい画面から選ぶ" : "## Choose what you want to build",
     ja
-      ? "各リンクには、公開 import でコピーできる Vue の使用例、操作できるプレビュー、props・イベント・スロットの仕様があります。"
+      ? "リンク先では、公開 API から import する Vue の使用例をコピーし、プレビューを操作して試せます。props・イベント・スロットの仕様も確認できます。"
       : "Open a component for a copyable Vue example with public imports, an interactive preview, and its props, events, and slots.",
     `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:16px">\n${goals.map(([goal, families]) => `<section style="padding:16px;border:1px solid #8885;border-radius:8px"><strong>${goal}</strong><p>${families.map((family) => `<a href="${linkPrefix}${family}.md">${title(family)}</a>`).join(" · ")}</p></section>`).join("\n")}\n</div>`,
     ja ? "## 最初のコンポーネント" : "## Add your first component",
@@ -73,11 +73,11 @@ export function uiHub(locale: string, linkPrefix: string): string {
     `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px">\n${cards}\n</div>`,
     ja ? "## 自分のコンポーネントも並べる" : "## Explore your own components",
     ja
-      ? "[Musea](../musea.md) は `*.art.vue` の使用例をコンポーネントギャラリーにします。[コンポーザブル](../composables/index.md)で振る舞いを組み合わせ、[Source Distribution](../lib-pull.md)で必要なソースを取得できます。"
+      ? "[Musea](../musea.md) は `*.art.vue` の使用例をコンポーネントギャラリーにします。[コンポーザブル](../composables/index.md)で振る舞いを組み合わせ、[ソース配布](../lib-pull.md)で必要なソースを取得できます。"
       : "[Musea](../musea.md) turns your `*.art.vue` examples into a component gallery. Use [composables](../composables/index.md) to compose behavior, or [Source Distribution](../lib-pull.md) to own a component's source.",
     ja ? "## 全コンポーネントの API" : "## All component APIs",
     ja
-      ? "用途別にまとめた全ファミリーの仕様です。maturity は各ファミリーの現在のサポート段階を示します。"
+      ? "用途別にまとめたコンポーネント群の仕様です。表の Maturity は、各コンポーネント群の現在のサポート段階を示します。"
       : "The complete source-generated reference follows, grouped by use case. Maturity describes each family's current support tier.",
   );
 }

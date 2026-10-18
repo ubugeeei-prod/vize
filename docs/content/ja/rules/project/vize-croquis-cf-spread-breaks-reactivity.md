@@ -9,7 +9,7 @@ reactive オブジェクトのスプレッドは値をコピーし、追跡を�
 既定の重大度: error  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
 自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
+オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -48,7 +48,7 @@ createApp(Root).mount("#app");
 
 ## 悪い
 
-`UserSummary.vue` が `props.user` を新しい object に展開し、渡された reactive な値をその時点でコピーします。
+`UserSummary.vue` が `props.user` を新しいオブジェクトに展開し、渡されたリアクティブな値をその時点でコピーします。
 
 `UserPage.vue`
 
@@ -76,7 +76,7 @@ const copiedUser = { ...props.user };
 
 ## 良い
 
-`toRef(props, "user")` で field をコピーせず、受け取る prop の参照を維持します。
+`toRef(props, "user")` でプロパティの値をコピーせず、受け取る prop の参照を維持します。
 
 `UserPage.vue`
 
@@ -104,7 +104,7 @@ const user = toRef(props, "user");
 </script>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

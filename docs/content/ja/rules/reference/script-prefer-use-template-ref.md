@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-null で初期化した `input` の ref がテンプレートのリテラル `ref="input"` と対応し、通常の nullable なデータではなく要素参照であることが分かります。
+null で初期化した `input` の ref がテンプレートのリテラル `ref="input"` と対応し、null を許容する通常のデータではなく、要素参照であることが分かります。
 
 ```vue
 <script setup lang="ts">

@@ -9,7 +9,7 @@ async な依存が Suspense 境界の外で使われています。
 既定の重大度: 現在は生成されません  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
 自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
+オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
 
 この公開診断コードには現在の生成元がありません。悪い例・良い例はリスクと修正の説明です。このコードを検出させる設定は現在ありません。
 
@@ -50,7 +50,7 @@ const message = await Promise.resolve('Ready');
 
 ## 悪い
 
-`AsyncCard` の top-level await が setup を非同期にしますが、App はその依存を調整する Suspense の境界なしで描画しています。
+`AsyncCard` のトップレベルの `await` が setup を非同期にしますが、App は非同期処理の完了を待つ `Suspense` の境界なしで描画しています。
 
 `App.vue`
 
@@ -67,7 +67,7 @@ import AsyncCard from './AsyncCard.vue';
 
 ## 良い
 
-App が非同期の子を `Suspense` で包み、子の setup が完了するまでローディングの fallback を表示します。
+App が非同期の子を `Suspense` で包み、子の setup が完了するまで読み込み中の代替表示を出します。
 
 `App.vue`
 
@@ -83,7 +83,7 @@ import AsyncCard from './AsyncCard.vue';
 
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

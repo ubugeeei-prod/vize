@@ -9,7 +9,7 @@ title: "vize:croquis/cf/uncaught-error"
 既定の重大度: info  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
 自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
+オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -27,7 +27,7 @@ export default defineConfig({
 vp run lint
 ```
 
-現在の生成元は JSON.parse(input) などのテンプレート式を検査します。script ブロックだけにある throw 文は対象外です。
+現在の生成元は `JSON.parse(input)` などのテンプレート式を検査します。script ブロックだけにある `throw` 文は対象外です。
 
 ## 共通のプロジェクト ファイル
 
@@ -94,7 +94,7 @@ const input = "{";
 <template><button @click="JSON.parse(input)">Parse</button></template>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

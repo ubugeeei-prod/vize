@@ -101,4 +101,4 @@ Vite 設定を使い、入力引数なしで `build`・`lint`・`fmt`・`check` 
 
 ## 詳細リファレンス
 
-[共通設定のリファレンス](./configuration-reference.md)に、検索規則、専用の TypeScript・JSON・PKL 設定、スコープ別の設定、Vue の型解決、LSP・Musea の設定をまとめています。コンパイラの設定と構文は[コンパイラのリファレンス](./compiler-configuration-reference.md)、実験的な機能は [Experimentals](./experimentals.md)を参照してください。
+[共通設定のリファレンス](./configuration-reference.md)に、検索規則、専用の TypeScript・JSON・PKL 設定、スコープ別の設定、Vue の型解決、LSP・Musea の設定をまとめています。コンパイラの設定と構文は[コンパイラのリファレンス](./compiler-configuration-reference.md)、実験的な機能は[実験的な機能のガイド](./experimentals.md)を参照してください。

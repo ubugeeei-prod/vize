@@ -10,17 +10,17 @@ title: "Musea と CSS のルール"
 | ルール | 例 | 目的 |
 | --- | --- | --- |
 | [`css/no-display-none`](#css-no-display-none) | [悪い](#css-no-display-none-bad) · [良い](#css-no-display-none-good) | 表示切り替えに display: none を使う箇所で v-show を検討します。 |
-| [`css/no-hardcoded-values`](#css-no-hardcoded-values) | [悪い](#css-no-hardcoded-values-bad) · [良い](#css-no-hardcoded-values-good) | CSS の直接指定値を CSS 変数にまとめます。 |
+| [`css/no-hardcoded-values`](#css-no-hardcoded-values) | [悪い](#css-no-hardcoded-values-bad) · [良い](#css-no-hardcoded-values-good) | CSS に直接記述した値を CSS 変数にまとめます。 |
 | [`css/no-id-selectors`](#css-no-id-selectors) | [悪い](#css-no-id-selectors-bad) · [良い](#css-no-id-selectors-good) | 詳細度が高い CSS の ID セレクターを検出します。 |
 | [`css/no-important`](#css-no-important) | [悪い](#css-no-important-bad) · [良い](#css-no-important-good) | 通常のカスケードを上書きする !important を検出します。 |
-| [`css/no-utility-classes`](#css-no-utility-classes) | [悪い](#css-no-utility-classes-bad) · [良い](#css-no-utility-classes-good) | コンポーネント内で utility class を定義する箇所を検出します。 |
+| [`css/no-utility-classes`](#css-no-utility-classes) | [悪い](#css-no-utility-classes-bad) · [良い](#css-no-utility-classes-good) | コンポーネント内でユーティリティクラスを定義する箇所を検出します。 |
 | [`css/no-v-bind-performance`](#css-no-v-bind-performance) | [悪い](#css-no-v-bind-performance-bad) · [良い](#css-no-v-bind-performance-good) | CSS v-bind() の実行時コストを検討するための警告です。 |
 | [`css/prefer-logical-properties`](#css-prefer-logical-properties) | [悪い](#css-prefer-logical-properties-bad) · [良い](#css-prefer-logical-properties-good) | 書字方向に対応する CSS の論理プロパティを使います。 |
-| [`css/prefer-nested-selectors`](#css-prefer-nested-selectors) | [悪い](#css-prefer-nested-selectors-bad) · [良い](#css-prefer-nested-selectors-good) | 子孫セレクターを CSS nesting でまとめます。 |
+| [`css/prefer-nested-selectors`](#css-prefer-nested-selectors) | [悪い](#css-prefer-nested-selectors-bad) · [良い](#css-prefer-nested-selectors-good) | 子孫セレクターを CSS のネスト構文でまとめます。 |
 | [`css/prefer-slotted`](#css-prefer-slotted) | [悪い](#css-prefer-slotted-bad) · [良い](#css-prefer-slotted-good) | slot や子コンポーネントに対する scoped CSS のセレクターを検査します。 |
 | [`css/require-font-display`](#css-require-font-display) | [悪い](#css-require-font-display-bad) · [良い](#css-require-font-display-good) | @font-face に font-display を指定します。 |
 | [`musea/no-empty-variant`](#musea-no-empty-variant) | [悪い](#musea-no-empty-variant-bad) · [良い](#musea-no-empty-variant-good) | 内容のない variant ブロックを検出します。 |
-| [`musea/prefer-design-tokens`](#musea-prefer-design-tokens) | [悪い](#musea-prefer-design-tokens-bad) · [良い](#musea-prefer-design-tokens-good) | 登録したデザイントークンの値に一致する CSS の直接指定値を、対応する CSS 変数で表現します。 |
+| [`musea/prefer-design-tokens`](#musea-prefer-design-tokens) | [悪い](#musea-prefer-design-tokens-bad) · [良い](#musea-prefer-design-tokens-good) | CSS に直接記述した値が登録済みのデザイントークンの値に一致する場合、対応する CSS 変数で表現します。 |
 | [`musea/require-component`](#musea-require-component) | [悪い](#musea-require-component-bad) · [良い](#musea-require-component-good) | art ブロックに対象の component を指定します。 |
 | [`musea/require-title`](#musea-require-title) | [悪い](#musea-require-title-bad) · [良い](#musea-require-title-good) | art ブロックに title を指定します。 |
 | [`musea/unique-variant-names`](#musea-unique-variant-names) | [悪い](#musea-unique-variant-names-bad) · [良い](#musea-unique-variant-names-good) | 同じ Art ファイル内の variant 名を一意にします。 |
@@ -97,7 +97,7 @@ vp run lint
 
 ### `css/no-hardcoded-values`
 
-CSS の直接指定値を CSS 変数にまとめます。
+CSS に直接記述した値を CSS 変数にまとめます。
 
 [悪い例](#css-no-hardcoded-values-bad) · [良い例](#css-no-hardcoded-values-good)
 
@@ -294,7 +294,7 @@ important を使わず、カスタムプロパティから色を参照します�
 
 ### `css/no-utility-classes`
 
-コンポーネント内で utility class を定義する箇所を検出します。
+コンポーネント内でユーティリティクラスを定義する箇所を検出します。
 
 [悪い例](#css-no-utility-classes-bad) · [良い例](#css-no-utility-classes-good)
 
@@ -485,7 +485,7 @@ margin-inline-start を使い、インライン方向の開始側に余白を指
 
 ### `css/prefer-nested-selectors`
 
-子孫セレクターを CSS nesting でまとめます。
+子孫セレクターを CSS のネスト構文でまとめます。
 
 [悪い例](#css-prefer-nested-selectors-bad) · [良い例](#css-prefer-nested-selectors-good)
 
@@ -738,7 +738,7 @@ variant の中に tone="primary" の Button を置き、Save を表示します�
 
 ### `musea/prefer-design-tokens`
 
-登録したデザイントークンの値に一致する CSS の直接指定値を、対応する CSS 変数で表現します。
+CSS に直接記述した値が登録済みのデザイントークンの値に一致する場合、対応する CSS 変数で表現します。
 
 [悪い例](#musea-prefer-design-tokens-bad) · [良い例](#musea-prefer-design-tokens-good)
 
@@ -748,7 +748,7 @@ variant の中に tone="primary" の Button を置き、Save を表示します�
 適用範囲: Musea の .art.vue ファイルの art / variant / style  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
-.art.vue ファイルと下記の token 一覧が必要です。任意の色から token を推測するルールではありません。
+.art.vue ファイルと下記のデザイントークン一覧が必要です。任意の色からトークンを推測するルールではありません。
 
 **設定（Vite+）**
 

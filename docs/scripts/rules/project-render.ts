@@ -80,7 +80,7 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
   if (name === "hydration-risk")
     info.purpose = label(
       "This code groups several reactivity findings, including a prop copied into a ref. It does not imply that every Date.now() expression is detected by the cross-file pass.",
-      "このコードはprop を ref にコピーする操作など、複数のリアクティビティ検出をまとめています。ファイル間検査がすべての Date.now() 式を検出するという意味ではありません。",
+      "この診断コードは、prop を ref にコピーする操作など、リアクティビティに関する複数の検出結果をまとめています。ファイル間検査がすべての `Date.now()` 式を検出するという意味ではありません。",
     );
   const lines = [
     "---",
@@ -94,7 +94,7 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
     `${label("Default severity", "既定の重大度")}: ${status === "contract" ? label("Not emitted", "現在は生成されません") : severity}  `,
     `${label("Applies to", "適用範囲")}: ${label("Analyzed component graph and the supported facts described below", "解析対象のコンポーネント構成と、下記に示す対応済みの情報")}  `,
     `${label("Automatic fix", "自動修正")}: ${label("None; review related files and apply the repair", "なし。関連ファイルを確認して修正してください")}  `,
-    `${label("Options", "オプション")}: ${label("No per-code options; supported CLI findings accept severity overrides", "コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます")}`,
+    `${label("Options", "オプション")}: ${label("No per-code options; supported CLI findings accept severity overrides", "コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます")}`,
     "",
   ];
   if (status === "cli") lines.push(...config(code.slice(5), ja), "");
@@ -112,7 +112,7 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
     );
   if (name === "async-no-suspense")
     lines.push(
-      "Current support: `no-source-async-fact`",
+      label("Current support: `no-source-async-fact`", "現在の対応状況: `no-source-async-fact`"),
       "",
       label(
         "The boundary producer reads macros.is_async(), but source parsing currently records top-level await on the script-setup scope instead. The complete Bad/Good source pair below therefore produces no async-no-suspense finding through the current CLI. It explains the Suspense convention; supplying the missing macro fact is implementation follow-up work.",
@@ -122,7 +122,10 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
     );
   if (name === "circular-reactive-dependency")
     lines.push(
-      "Example qualification: `illustrative-source-pair`",
+      label(
+        "Example qualification: `illustrative-source-pair`",
+        "例の検証状況: `illustrative-source-pair`",
+      ),
       "",
       label(
         "The complete Vue project below illustrates update feedback and its repair. It is not a qualified CLI finding witness: the diagnostic producer requires retained reactive-flow reference identities and edges, as shown by the accompanying graph. These sources do not establish that the current source path will emit this exact code. Dedicated tracked-ID graph finding controls remain separate from source grammar checks.",
@@ -134,7 +137,7 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
     lines.push(
       label(
         "This check compares explicit provider/consumer type annotations, not inferred literal value types. Keep the provider's `as string` annotation in this example.",
-        "この検査は提供元と使用側の明示的な型注釈を比較し、リテラルからの型推論は使いません。この例の提供元の as string 注釈を残してください。",
+        "この検査は提供元と使用側の明示的な型注釈を比較し、リテラルからの型推論は使いません。この例の提供元の `as string` 注釈を残してください。",
       ),
       "",
     );
@@ -142,7 +145,7 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
     lines.push(
       label(
         "The current producer scans template expressions such as JSON.parse(input). It does not report a throw statement that exists only in the script block.",
-        "現在の生成元は JSON.parse(input) などのテンプレート式を検査します。script ブロックだけにある throw 文は対象外です。",
+        "現在の生成元は `JSON.parse(input)` などのテンプレート式を検査します。script ブロックだけにある `throw` 文は対象外です。",
       ),
       "",
     );
@@ -249,7 +252,7 @@ function fixture(example: ProjectExample, ja: boolean) {
   lines.push(
     label(
       "The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.",
-      "良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。",
+      "良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。",
     ),
     "",
   );

@@ -9,7 +9,7 @@ reactive な計算が互いに循環して依存しています。
 既定の重大度: context-dependent  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
 自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
+オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -27,7 +27,7 @@ export default defineConfig({
 vp run lint
 ```
 
-Example qualification: `illustrative-source-pair`
+例の検証状況: `illustrative-source-pair`
 
 以下の完全な Vue プロジェクトは、更新の循環とその修正を具体的に示します。このソースによる CLI の検出は検証済みではありません。診断の生成元には、併記したグラフのように保持された参照の ID と流れが必要です。このソースだけで現在の処理がこの診断コードを生成すると断定しません。参照 ID を保持したグラフに対する専用の検出検証と、ソースの構文検査は分けて扱います。
 
@@ -116,7 +116,7 @@ Tracked references: A = provider source; B = consumer reference
 Tracked flows: A -> B
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

@@ -18,13 +18,20 @@ on:
         type: boolean
         default: false
       expected-source-sha:
-        description: "Exact reviewed Vize source for official-css-options-only"
+        description: "Exact reviewed actor F for either official mode"
         type: string
         required: false
+      published-defaults-only:
+        { description: "Only 14 published surplus-default cases", type: boolean, default: false }
+      cut: { description: "Published source cut C", type: string, required: false }
+      head: { description: "Published source H", type: string, required: false }
+      tag: { description: "Published stable minor tag", type: string, required: false }
+      source_pr: { description: "Published frozen source PR", type: string, required: false }
+      release_run: { description: "Successful official Release R", type: string, required: false }
 
 concurrency:
-  group: content-mapper-${{ github.event.pull_request.number || github.ref }}${{ inputs.official-css-options-only && '-official-css-options' || inputs.directive-owners-only && '-directive-owners' || inputs.event-rename-only && '-event-rename' || '' }}
-  cancel-in-progress: true
+  group: content-mapper-${{ inputs.published-defaults-only && github.run_id || github.event.pull_request.number || github.ref }}${{ inputs.published-defaults-only && '-published-defaults' || inputs.official-css-options-only && '-official-css-options' || inputs.directive-owners-only && '-directive-owners' || inputs.event-rename-only && '-event-rename' || '' }}
+  cancel-in-progress: ${{ !inputs.published-defaults-only }}
 
 permissions:
   contents: read
@@ -36,7 +43,7 @@ env:
 
 jobs:
   exact-tsgo-project:
-    if: ${{ !inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only }}
+    if: ${{ !inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only && !inputs.published-defaults-only }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -160,7 +167,7 @@ jobs:
           done
 
   event-rename:
-    if: github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only
+    if: github.event_name == 'workflow_dispatch' && inputs.event-rename-only && !inputs.directive-owners-only && !inputs.official-css-options-only && !inputs.published-defaults-only
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -258,7 +265,7 @@ jobs:
         run: test "$TRANSACTIONS_OUTCOME" = success
 
   directive-owners:
-    if: github.event_name == 'workflow_dispatch' && inputs.directive-owners-only && !inputs.official-css-options-only
+    if: github.event_name == 'workflow_dispatch' && inputs.directive-owners-only && !inputs.official-css-options-only && !inputs.published-defaults-only
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -342,12 +349,22 @@ jobs:
           if-no-files-found: warn
 
   official-css-options:
-    if: github.event_name == 'workflow_dispatch' && inputs.official-css-options-only
+    if: github.event_name == 'workflow_dispatch' && (inputs.official-css-options-only || inputs.published-defaults-only)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
       EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
     steps:
+      - name: Require the explicit public scope and absent runtime overrides
+        if: inputs.published-defaults-only
+        env: { SOURCE_MODE: "${{ inputs.official-css-options-only }}" }
+        shell: bash
+        run: |
+          test "$SOURCE_MODE" != true
+          [[ "$GITHUB_REF" == refs/heads/* ]]
+          for key in NODE_OPTIONS VIZE_PREFER_WORKSPACE_BINDING NAPI_RS_NATIVE_LIBRARY_PATH NAPI_RS_FORCE_WASI VIZE_ALLOW_NATIVE_VERSION_MISMATCH CORSA_PATH CORSA_EXECUTABLE TSGO_PATH TSGO_EXECUTABLE VIZE_PUBLIC_NATIVE_CUSTODY VIZE_OXLINT_NATIVE_CUSTODY VIZE_CORSA_DEV_PATHS CARGO_BIN_EXE_vize SOURCE_SHA VIZE_TEST_REQUIRE_TSGO VIZE_TEST_DISABLE_TSGO VIZE_TEST_FIX_HISTORY_CAPTURE_DIR VIZE_INLAY_HINT_CAPTURE VIZE_LSP_PASSIVE_EVIDENCE RUSTC_WRAPPER RUSTC_WORKSPACE_WRAPPER RUSTFLAGS CARGO_ENCODED_RUSTFLAGS CARGO_BUILD_RUSTC RUSTC RUSTUP_TOOLCHAIN; do
+            test -z "${!key:-}"
+          done
       - name: Require an unambiguous focused campaign
         env:
           EVENT_RENAME_ONLY: ${{ inputs.event-rename-only }}
@@ -356,9 +373,14 @@ jobs:
           test "$EVENT_RENAME_ONLY" != true
           test "$DIRECTIVE_OWNERS_ONLY" != true
       - name: Checkout the reviewed Vize source
+        if: ${{ !inputs.published-defaults-only }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
+      - name: Checkout the actual public validation actor
+        if: inputs.published-defaults-only
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.workflow_sha }}", fetch-depth: 0, persist-credentials: false }
       - name: Authenticate source and recipe before any build
         shell: bash
         run: |
@@ -381,6 +403,7 @@ jobs:
             .github/workflows/content-mapper-conformance.yml \
             > "$RUNNER_TEMP/official-css-source/inputs.sha256"
       - name: Setup pinned Node and Vite Plus
+        if: ${{ !inputs.published-defaults-only }}
         uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
           version: latest
@@ -388,24 +411,34 @@ jobs:
           cache: true
           cache-save: false
           run-install: false
+      - name: Setup pinned Node for public packages only
+        if: inputs.published-defaults-only
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
       - name: Setup repository Rust toolchain
+        if: ${{ !inputs.published-defaults-only }}
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with:
           toolchain: "1.99.1"
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: ${{ !inputs.published-defaults-only }}
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ !inputs.published-defaults-only }}
         with:
           key: content-mapper-official-css-options
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install frozen workspace dependencies
+        if: ${{ !inputs.published-defaults-only }}
         run: vp install --frozen-lockfile --prefer-offline
       - name: Verify native legacy projection compatibility
+        if: ${{ !inputs.published-defaults-only }}
         env:
           VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ runner.temp }}/official-css-source/ts40-legacy
         run: cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture
       - name: Build the real packed mapper runtime
+        if: ${{ !inputs.published-defaults-only }}
         run: |
           vp run --filter './npm/native' build:ci
           (cd npm/cli && vp pack)
@@ -414,6 +447,7 @@ jobs:
           cp npm/native/vize-vitrine.linux-x64-gnu.node npm/native/npm/linux-x64-gnu/
           sha256sum npm/native/vize-vitrine.linux-x64-gnu.node > "$RUNNER_TEMP/official-css-source/native-image.sha256"
       - name: Run original public failures and fresh packed official host controls
+        if: ${{ !inputs.published-defaults-only }}
         id: official
         run: >-
           node tools/support/compat/content-mapper/official-css-options.ts
@@ -422,6 +456,28 @@ jobs:
           --fixture tests/_fixtures/content-mapper/escaton-component-props.json
           --fixture tests/_fixtures/content-mapper/escaton-nested-flow-9433.json
           --fixture tests/_fixtures/content-mapper/escaton-public-props-9498.json
+      - name: Run only the fourteen exact published surplus-default cases
+        if: inputs.published-defaults-only
+        env:
+          PUBLIC_CUT: ${{ inputs.cut }}
+          PUBLIC_HEAD: ${{ inputs.head }}
+          PUBLIC_TAG: ${{ inputs.tag }}
+          PUBLIC_SOURCE_PR: ${{ inputs.source_pr }}
+          PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
+          PUBLIC_ACTOR: ${{ github.workflow_sha }}
+          PUBLIC_INPUTS: ${{ runner.temp }}/official-css-source/public-inputs.json
+        shell: bash
+        run: |
+          sha256sum tests/_fixtures/content-mapper/with-defaults-surplus.json >> "$RUNNER_TEMP/official-css-source/inputs.sha256"
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          import { officialActorInputs } from './tools/support/compat/content-mapper/official-fixtures.ts';
+          const keys = ['PUBLIC_CUT', 'PUBLIC_HEAD', 'PUBLIC_TAG', 'PUBLIC_SOURCE_PR', 'PUBLIC_RELEASE_RUN', 'PUBLIC_ACTOR'];
+          const inputs = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+          officialActorInputs(inputs);
+          fs.writeFileSync(process.env.PUBLIC_INPUTS, JSON.stringify(inputs, null, 2) + '\n');
+          JS
+          node tools/support/compat/content-mapper/official-css-options.ts --candidate-only --explicit-fixtures-only --public-version "${PUBLIC_TAG#v}" --public-inputs "$PUBLIC_INPUTS" --fixture tests/_fixtures/content-mapper/with-defaults-surplus.json --output "$RUNNER_TEMP/official-css-options"
       - name: Retain complete official compiler diagnostics and package evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

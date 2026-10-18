@@ -99,7 +99,7 @@ and package mapping, use the [Crate Reference](./crates.md).
 
 ## Source Length
 
-Aim to keep handwritten source files at 350 lines or less. The repository still has historical
+Aim to keep handwritten source files at 500 lines or less. The repository still has historical
 exceptions, so the first guard is incremental: a pull request should not add a new over-limit file,
 push an under-limit file past the limit, or grow an existing over-limit file.
 
@@ -112,28 +112,31 @@ vp run --workspace-root source:lengths
 The `test:scripts` GitHub Actions job runs the same Rust Script tool in check mode against the pull
 request base commit. Generated files, snapshots, fixtures, lockfiles, vendor output, coverage output,
 and build directories are excluded from the source inventory. When an existing exception needs work,
-prefer splitting by ownership boundary first: helpers, fixtures, snapshots, and command handlers
-usually make better extraction targets than shared data structures.
+keep related behavior together so it remains easy to follow. If splitting is necessary, use clear
+responsibility boundaries and avoid separating closely related code just to create smaller files.
 
 ## Tooling Scripts
 
-Repository automation prefers Rust Script commands under `tools/commands/`, with shared support code
-under `tools/support/` by use case. Root tasks invoke them with the `rustTool` helper in
-`tools/config/vite-plus/task-commands.ts`, so each consumer stays a stable task name rather than an
-inline command.
+Repository automation should use TypeScript (`.ts`). Put commands under `tools/commands/`
+and shared support code under `tools/support/`, grouped by use case.
 
-Good Rust Script candidates are small, pure, and dependency-light: argument parsing, JSON or text
-transforms, inventories, and pass/fail checks whose correctness can be proved with a direct
-`rust-script` test.
+Existing Rust Script (`.rs`) and Node (`.mjs`) scripts remain in the repository; the migration
+is not complete. Write new automation in TypeScript. When migrating an existing script,
+preserve its public task name, arguments, output, and caller compatibility.
 
-Keep a script in Node (`.mjs`) when Rust Script would add friction rather than remove it:
+Root tasks centralize command invocation in `tools/config/vite-plus/task-commands.ts`.
+Existing Rust Script commands still use the `rustTool` helper; retain those invocations until
+the corresponding scripts are migrated. Consumers should use stable task names rather than
+inline commands.
 
-- It is imported as a module by other JavaScript or by a `node --test` suite, so rewriting it
-  would split one source across two languages.
-- It depends on the npm ecosystem (globbing libraries, package tooling, GitHub Action SDKs) or on
-  Node-only APIs that have no direct Rust equivalent.
-- It is large or exploratory enough that its behavior is not yet pinned by a full-output test; do not
-  migrate anything that could break CI without such a test.
+Use TypeScript for small tasks such as argument parsing, JSON or text transforms, inventories,
+and pass/fail checks. Scripts using npm libraries, GitHub Action SDKs, or Node-only APIs can
+use the same language. Check callers when migrating a script imported by other JavaScript
+or a `node --test` suite.
+
+Before migrating a large or exploratory script, make its existing output and behavior
+verifiable. Do not change behavior merely to change languages, or replace CI automation
+without validating it.
 
 ## Reading Generated Output
 

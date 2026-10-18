@@ -26,7 +26,7 @@ export const scriptType3Explanations: readonly ExplanationRecord[] = [
     "The imported `ref` calls have neither a type argument nor a useful initial value: no argument, `null`, and `undefined` cannot infer the intended future value type.",
     "Explicit type arguments describe the string and nullable User refs. `ref(0)` already has a concrete numeric initializer and can rely on inference.",
     "インポートした `ref` に型引数がなく、引数なし、`null`、`undefined` からは将来代入する値の型を推論できません。",
-    "型引数で string と nullable な User の ref を指定します。`ref(0)` には具体的な数値の初期値があり、型推論を使えます。",
+    "型引数で string と、null を許容する User の ref を指定します。`ref(0)` には具体的な数値の初期値があり、型推論を使えます。",
   ],
   [
     "script/require-valid-default-prop",

@@ -9,7 +9,7 @@ title: "vize:croquis/cf/shallow-deep-access"
 既定の重大度: 現在は生成されません  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
 自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
+オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
 
 この公開診断コードには現在の生成元がありません。悪い例・良い例はリスクと修正の説明です。このコードを検出させる設定は現在ありません。
 
@@ -63,7 +63,7 @@ export function makeProfile() { return shallowReactive({ user: { name: 'Ada' } }
 
 ## 良い
 
-深い `reactive` で内側の user オブジェクトも包み、同じ名前の代入を表示の更新につなげます。
+`reactive` で内側の `user` オブジェクトまでリアクティブにし、同じ代入で表示が更新されるようにします。
 
 `profile.ts`
 
@@ -73,7 +73,7 @@ export function makeProfile() { return reactive({ user: { name: 'Ada' } }); }
 
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
