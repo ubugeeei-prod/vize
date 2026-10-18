@@ -3,6 +3,32 @@ export type Slots = Readonly<Record<string, Slot | undefined>>;
 export interface VNode {
   readonly __v_isVNode: true;
 }
+// Public input contracts mirror Vue 3.5.20; VNode remains opaque in these fixtures.
+type VNodeMountHook = (vnode: VNode) => void;
+type VNodeUpdateHook = (vnode: VNode, oldVNode: VNode) => void;
+type VNodeRef =
+  | string
+  | Ref
+  | ((ref: Element | ComponentPublicInstance | null, refs: Record<string, unknown>) => void);
+export type VNodeProps = {
+  key?: PropertyKey;
+  ref?: VNodeRef;
+  ref_for?: boolean;
+  ref_key?: string;
+  onVnodeBeforeMount?: VNodeMountHook | VNodeMountHook[];
+  onVnodeMounted?: VNodeMountHook | VNodeMountHook[];
+  onVnodeBeforeUpdate?: VNodeUpdateHook | VNodeUpdateHook[];
+  onVnodeUpdated?: VNodeUpdateHook | VNodeUpdateHook[];
+  onVnodeBeforeUnmount?: VNodeMountHook | VNodeMountHook[];
+  onVnodeUnmounted?: VNodeMountHook | VNodeMountHook[];
+};
+export interface AllowedComponentProps {
+  class?: unknown;
+  style?: unknown;
+}
+export interface ComponentCustomProps {}
+export type PublicProps = VNodeProps & AllowedComponentProps & ComponentCustomProps;
+
 type DistributeRef<T> = T extends Ref<infer V> ? V : T;
 export type ShallowUnwrapRef<T> = { [K in keyof T]: DistributeRef<T[K]> };
 
