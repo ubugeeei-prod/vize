@@ -7,7 +7,11 @@ use corsa_lsp::LspClient;
 use lsp_types::request::Shutdown;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use std::{fs, path::Path};
+use std::{
+    fs::File,
+    io::{self, Read},
+    path::Path,
+};
 
 const LINUX_X64: &str = "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4";
 const DARWIN_ARM64: &str = "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2";
@@ -16,14 +20,27 @@ pub(super) fn eof_capability(executable: &Path, initialized: &Value) -> bool {
     if !known_initialize(initialized) {
         return false;
     }
-    let Ok(bytes) = fs::read(executable) else {
+    let Ok(digest) = File::open(executable).and_then(image_digest) else {
         return false;
     };
-    let digest: vize_l0::String = Sha256::digest(bytes)
+    let digest: vize_l0::String = digest
         .iter()
         .map(|byte| vize_l0::cstr!("{byte:02x}"))
         .collect();
     known_binary(digest.as_str())
+}
+
+fn image_digest(mut image: impl Read) -> io::Result<[u8; 32]> {
+    let mut hasher = Sha256::new();
+    let mut buffer = [0_u8; 64 * 1024];
+    loop {
+        match image.read(&mut buffer) {
+            Ok(0) => return Ok(hasher.finalize().into()),
+            Ok(count) => hasher.update(buffer.get(..count).ok_or(io::ErrorKind::InvalidData)?),
+            Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
+            Err(error) => return Err(error),
+        }
+    }
 }
 
 pub(super) async fn close(client: &LspClient, shutdown_to_eof: bool) -> corsa_lsp::Result<()> {

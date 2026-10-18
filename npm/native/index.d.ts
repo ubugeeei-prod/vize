@@ -1021,6 +1021,10 @@ export declare function parseDesignTokensFromJson(source: string): string;
 
 export declare function parseDesignTokensFromPath(tokensPath: string): string;
 
+/**
+ * Parse the original SFC, including content/tag geometry in UTF-8 bytes.
+ * Invalid SFC syntax throws `InvalidSfc` with the unchanged parser reason.
+ */
 export declare function parseSfc(
   source: string,
   options?: SfcParseOptionsNapi | undefined | null,

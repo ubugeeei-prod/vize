@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
   integrationIdentity,
+  integrationReference,
   sha256,
   type Json,
 } from "../../tools/support/release/consumer_recovery/policy.ts";
@@ -368,4 +369,31 @@ test("an older red original Check remains bound when a newer Check succeeds", ()
   assert.equal(retainedOriginal.conclusion, "failure");
   raw.gates.workflow_runs = raw.gates.workflow_runs.filter((value) => value !== run);
   assert.notDeepEqual(integrationIdentity(raw), changed);
+});
+
+test("tag and source PR references reject malformed, hybrid and unsafe identities without normalization", () => {
+  for (const invalid of [
+    "",
+    "0",
+    "09197",
+    "9197 ",
+    " 9197",
+    "9197\n",
+    "9197\r\n",
+    "+9197",
+    "9197.0",
+    "9.197e3",
+    "9197/9198",
+    "9197abc",
+    "９１９７",
+    "9007199254740992",
+  ]) {
+    assert.throws(() => integrationReference(`#${invalid}`, invalid), invalid);
+    assert.throws(() => integrationReference(`#${invalid}`, "9197"), invalid);
+    assert.throws(() => integrationReference("#9197", invalid), invalid);
+  }
+  for (const source of [9197, null, {}, ["9197"], "#9197"])
+    assert.throws(() => integrationReference("#9197", source));
+  for (const tag of [9197, null, {}, ["#9197"], "9197", "##9197", "#9198"])
+    assert.throws(() => integrationReference(tag, "9197"));
 });

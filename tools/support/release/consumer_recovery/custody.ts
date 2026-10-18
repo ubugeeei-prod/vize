@@ -4,12 +4,11 @@ import { lstatSync, mkdtempSync, readFileSync, readdirSync, realpathSync } from 
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { verifyConsumer } from "./consumer.ts";
-import { custodyProbe, assertOracleFiles, type OraclePolicy } from "./oracles.ts";
+import { captureCommand, strictUtf8, verifyOriginalLogDirectory } from "./runtime.ts";
+import { custodyProbe, assertOracleFiles, policyFiles, type OraclePolicy } from "./oracles.ts";
 import { revalidatePublicArchives, type InstalledArchive } from "./archive.ts";
 import {
   admitOriginal,
-  assertFresh,
   compareText,
   consumerAttempt,
   fixture,
@@ -29,6 +28,17 @@ import {
   type Identity,
   type Json,
 } from "./policy.ts";
+
+import {
+  assertLegacyOracleFiles,
+  assertRecoveryReceiptPolicy,
+  collectLegacyOriginal,
+  legacyAdmission,
+  legacyAuthority,
+  recoveryEvidencePolicy,
+  verifyLegacyConsumer,
+  verifyConsumerDirectory,
+} from "./evidence.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 export function command(executable: string, args: string[], cwd = root): Buffer {
@@ -63,23 +73,9 @@ export async function pages(endpoint: string, key: string): Promise<Json[]> {
   }
   throw new Error("incomplete inventory");
 }
+export { policyFiles } from "./oracles.ts";
 export function authority(sha: string) {
-  const directory = fileURLToPath(new URL("./", import.meta.url));
-  const files = readdirSync(directory)
-    .filter((file) => file.endsWith(".ts"))
-    .map((file) => `tools/support/release/consumer_recovery/${file}`);
-  files.push(
-    workflow,
-    "npm/cli/src/corsa-runtime.ts",
-    ".github/workflows/release-operator.yml",
-    ".github/workflows/release-public-acceptance.yml",
-    ...["github", "registry", "plan", "http", "inputs", "installed"].map(
-      (name) => `tools/support/release/public_acceptance/${name}.ts`,
-    ),
-    "tools/support/release/windows_hover_acceptance.ts",
-    "tools/support/release/marketplace_query.ts",
-  );
-  return files.sort().map((file) => {
+  return policyFiles.map((file) => {
     const bytes = readFileSync(path.join(root, file));
     same(sha256(gitBlob(sha, file)), sha256(bytes), "policy checkout differs from reviewed source");
     return { file, sha256: sha256(bytes) };
@@ -100,11 +96,12 @@ export interface Original extends Json {
   jobs: Json[];
   failed: Json;
   log: string;
+  logCustody?: Json;
   blobs: Json;
   artifacts: Json[];
 }
 export function admission(original: Original): Admission {
-  same(original.schema, "vize-consumer-recovery-original-v1", "original schema mismatch");
+  same(original.schema, "vize-consumer-recovery-original-v2", "original schema mismatch");
   return admitOriginal(
     original.identity,
     original.run,
@@ -114,7 +111,11 @@ export function admission(original: Original): Admission {
     original.blobs,
   );
 }
-export async function collectOriginal(expected: Identity, policySha: string): Promise<Original> {
+export async function collectOriginal(
+  expected: Identity,
+  policySha: string,
+  logDirectory?: string,
+): Promise<Original> {
   const policy = {
     sha: policySha,
     authority: policyOnMain(policySha),
@@ -143,11 +144,17 @@ export async function collectOriginal(expected: Identity, policySha: string): Pr
   const failures = jobs.filter((job) => job.conclusion === "failure");
   same(failures.length, 1, "one known failed consumer required");
   const failed = api(`actions/jobs/${positive(failures[0].id)}`);
-  const logBytes = command("gh", failureLogArguments(failed.id));
-  const log = logBytes.toString("utf8");
-  assert.ok(Buffer.from(log, "utf8").equals(logBytes), "raw failure log cannot be lossily decoded");
+  const logOutput =
+    logDirectory ?? path.join(mkdtempSync(path.join(os.tmpdir(), "vize-original-log-")), "capture");
+  const captured = await captureCommand("gh", failureLogArguments(failed.id), logOutput);
+  // Whole raw stdout/stderr and process packet exist even if any following gate refuses.
+  same(captured.error, undefined, "failed log transport error");
+  same(captured.signal, null, "failed log transport signal");
+  same(captured.status, 0, "failed log transport exit");
+  const log = strictUtf8(captured.stdout);
+  const logBytes = captured.stdout;
   assert.ok(
-    Buffer.byteLength(log) > 0 && Buffer.byteLength(log) <= 16 * 1024 * 1024,
+    captured.stdout.length > 0 && captured.stdout.length <= 16 * 1024 * 1024,
     "bounded complete failed log required",
   );
   const blobs = {
@@ -170,13 +177,18 @@ export async function collectOriginal(expected: Identity, policySha: string): Pr
     );
   }
   const original: Original = {
-    schema: "vize-consumer-recovery-original-v1",
+    schema: "vize-consumer-recovery-original-v2",
     identity: expected,
     policy,
     run,
     jobs,
     failed,
     log,
+    // The raw process packet retains its actual transport cwd. That local path
+    // is not an original Release identity and may differ between trusted hosts.
+    logCustody: Object.fromEntries(
+      Object.entries(captured.custody).filter(([key]) => key !== "cwd"),
+    ),
     logIdentity: { sha256: sha256(logBytes), bytes: logBytes.byteLength, encoding: "utf8" },
     blobs,
     artifacts,
@@ -298,6 +310,7 @@ export function files(directory: string) {
   visit("");
   return found;
 }
+export { verifyConsumerDirectory } from "./evidence.ts";
 export async function verifiedRecovery(
   expected: Identity,
   recoveryRun: string,
@@ -312,7 +325,14 @@ export async function verifiedRecovery(
   recoveryRunIdentity(run, recoveryRun);
   const attempt = positive(run.run_attempt);
   const policySha = String(run.head_sha);
-  const policyAuthority = policyOnMain(policySha);
+  const evidencePolicy = recoveryEvidencePolicy(run);
+  // Legacy routing is bound to the actual workflow run and reviewed signed main
+  // source, then to Cosign workflow SHA below before any packet is consumed.
+  const policyAuthority =
+    evidencePolicy === "legacy-v1"
+      ? (reviewedPolicy(policySha, api(`compare/${policySha}...main`), api(`commits/${policySha}`)),
+        legacyAuthority(policySha))
+      : policyOnMain(policySha);
   const jobs = await pages(`actions/runs/${recoveryRun}/jobs?filter=latest`, "jobs");
   same(jobs.length, 9, "admission contracts, prepare, six consumers and signed finalizer required");
   same(
@@ -374,7 +394,7 @@ export async function verifiedRecovery(
     "workflow_dispatch",
     receiptFile,
   ]);
-  assertFresh(receipt, expected);
+  assertRecoveryReceiptPolicy(receipt, run, expected);
   same(
     receipt.recovery,
     { run: recoveryRun, attempt, policySha },
@@ -399,13 +419,19 @@ export async function verifiedRecovery(
     readFileSync(path.join(directory, "original.json"), "utf8"),
   ) as Original;
   same(original.identity, expected, "original identity reused");
-  const admitted = admission(original);
+  const admitted = evidencePolicy === "legacy-v1" ? legacyAdmission(original) : admission(original);
+  if (evidencePolicy === "current-v2") {
+    verifyOriginalLogDirectory(directory, "original-log-capture", original);
+    verifyOriginalLogDirectory(directory, "final-log-capture", original);
+  }
   for (const role of roles) {
-    const packet = object(
-      JSON.parse(readFileSync(path.join(directory, "consumers", role, "consumer.json"), "utf8")),
-    );
-    verifyConsumer(packet, original);
-    assertOracleFiles(
+    const consumerDirectory = path.join(directory, "consumers", role);
+    const packet =
+      evidencePolicy === "legacy-v1"
+        ? object(JSON.parse(readFileSync(path.join(consumerDirectory, "consumer.json"), "utf8")))
+        : verifyConsumerDirectory(consumerDirectory, original);
+    if (evidencePolicy === "legacy-v1") verifyLegacyConsumer(packet, original);
+    (evidencePolicy === "legacy-v1" ? assertLegacyOracleFiles : assertOracleFiles)(
       path.join(directory, "consumers", role),
       original.policy,
       role === "deno-linux",
@@ -417,7 +443,10 @@ export async function verifiedRecovery(
     same(packet.role, role, "replacement role substituted");
     consumerAttempt(packet.run, recoveryRun, attempt, policySha);
   }
-  const live = await collectOriginal(expected, policySha);
+  const live =
+    evidencePolicy === "legacy-v1"
+      ? await collectLegacyOriginal(expected, policySha)
+      : await collectOriginal(expected, policySha);
   for (const key of [
     "policy",
     "run",
@@ -425,6 +454,7 @@ export async function verifiedRecovery(
     "failed",
     "log",
     "logIdentity",
+    ...(evidencePolicy === "legacy-v1" ? [] : ["logCustody"]),
     "blobs",
     "artifacts",
     "pin",

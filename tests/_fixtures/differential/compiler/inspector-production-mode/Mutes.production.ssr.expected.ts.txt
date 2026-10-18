@@ -1,0 +1,76 @@
+import { defineComponent as _defineComponent } from 'vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'mutes',
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+definePageMeta({
+  middleware: 'auth',
+})
+
+const { t } = useI18n()
+
+useHydratedHead({
+  title: () => t('nav.muted_users'),
+})
+
+const __returned__ = { t }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+})
+
+import { resolveComponent as _resolveComponent, withCtx as _withCtx, toDisplayString as _toDisplayString, createTextVNode as _createTextVNode, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, mergeProps as _mergeProps } from "vue"
+import { ssrRenderComponent as _ssrRenderComponent, ssrInterpolate as _ssrInterpolate } from "vue/server-renderer"
+
+export function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  const _component_MainContent = _resolveComponent("MainContent")
+  const _component_MainTitle = _resolveComponent("MainTitle")
+  const _component_TimelineMutes = _resolveComponent("TimelineMutes")
+
+  _push(_ssrRenderComponent(_component_MainContent, _mergeProps({ back: "" }, _attrs), {
+    title: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(_ssrRenderComponent(_component_MainTitle, null, {
+          default: _withCtx((_, _push, _parent, _scopeId) => {
+            if (_push) {
+              _push(`${_ssrInterpolate(_ctx.$t('nav.muted_users'))}`)
+            } else {
+              return [
+                _createTextVNode(_toDisplayString(_ctx.$t('nav.muted_users')), 1)
+              ]
+            }
+          }),
+          _: 1
+        }, _parent, _scopeId))
+      } else {
+        return [
+          _createVNode(_component_MainTitle, null, {
+            default: _withCtx(() => [
+              _createTextVNode(_toDisplayString(_ctx.$t('nav.muted_users')), 1)
+            ]),
+            _: 1
+          })
+        ]
+      }
+    }),
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        if (_ctx.isHydrated) {
+          _push(_ssrRenderComponent(_component_TimelineMutes, null, null, _parent, _scopeId))
+        } else {
+          _push(`<!---->`)
+        }
+      } else {
+        return [
+          (_ctx.isHydrated)
+            ? (_openBlock(), _createBlock(_component_TimelineMutes, { key: 0 }))
+            : _createCommentVNode("", true)
+        ]
+      }
+    }),
+    _: 1
+  }, _parent))
+}

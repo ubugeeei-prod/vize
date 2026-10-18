@@ -5,15 +5,16 @@ import path from "node:path";
 import { test } from "node:test";
 import {
   admitOriginal,
+  fixture,
+  integrationReference,
+  sha256,
   assertFresh,
   consumerAttempt,
   failureLogArguments,
-  integrationReference,
   object,
   roles,
   recoveryRunIdentity,
   reviewedPolicy,
-  sha256,
   type Identity,
   type Json,
 } from "../../tools/support/release/consumer_recovery/policy.ts";
@@ -22,6 +23,7 @@ import { verifyGithub } from "../../tools/support/release/public_acceptance/gith
 import YAML from "yaml";
 import { commandPlan } from "../../tools/support/release/consumer_recovery/consumer.ts";
 import { verifyIntegration } from "../../tools/support/release/consumer_recovery/custody.ts";
+import { effectiveDenoConfig } from "../../tools/support/release/consumer_recovery/runtime.ts";
 import {
   assertOracleFiles,
   custodyProbe,
@@ -98,33 +100,6 @@ test("actual retained official tag #PR and source marker PR authenticate the sam
   );
 });
 
-test("tag and source PR references reject malformed, hybrid and unsafe identities without normalization", () => {
-  for (const invalid of [
-    "",
-    "0",
-    "09197",
-    "9197 ",
-    " 9197",
-    "9197\n",
-    "9197\r\n",
-    "+9197",
-    "9197.0",
-    "9.197e3",
-    "9197/9198",
-    "9197abc",
-    "９１９７",
-    "9007199254740992",
-  ]) {
-    assert.throws(() => integrationReference(`#${invalid}`, invalid), invalid);
-    assert.throws(() => integrationReference(`#${invalid}`, "9197"), invalid);
-    assert.throws(() => integrationReference("#9197", invalid), invalid);
-  }
-  for (const source of [9197, null, {}, ["9197"], "#9197"])
-    assert.throws(() => integrationReference("#9197", source));
-  for (const tag of [9197, null, {}, ["#9197"], "9197", "##9197", "#9198"])
-    assert.throws(() => integrationReference(tag, "9197"));
-});
-
 test("complete raw GitHub logs explicitly retain ANSI bytes before fingerprint normalization", () => {
   assert.deepEqual(failureLogArguments(117254411511), [
     "api",
@@ -149,12 +124,12 @@ test("installation or invocation side effects and forged retained oracle claims 
   const directory = mkdtempSync(path.join(os.tmpdir(), "vize-consumer-oracle-"));
   const bytes = {
     "consumer.ts": String(retained.blobs.consumerSha256),
-    "deno.json": String(retained.blobs.denoConfigSha256),
+    "deno.json": effectiveDenoConfig,
     "custody.ts": custodyProbe,
   };
   const policy = {
     consumerSha256: sha256(bytes["consumer.ts"]),
-    denoConfigSha256: sha256(bytes["deno.json"]),
+    denoConfigSha256: fixture.denoConfigSha256,
     custodyProbeSha256: sha256(custodyProbe),
   };
   try {

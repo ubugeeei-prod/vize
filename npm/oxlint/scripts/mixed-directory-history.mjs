@@ -49,7 +49,8 @@ const authorities = (cwd) => {
   }
 };
 
-export async function installMixedHost(directory, output, version) {
+export async function installMixedHost(directory, output, version, hostVersion = "1.81.0") {
+  assert.ok(["1.81.0", "1.86.0"].includes(hostVersion), "unknown historical Oxlint host");
   fs.mkdirSync(output, { recursive: true });
   const args = [
     "install",
@@ -57,7 +58,7 @@ export async function installMixedHost(directory, output, version) {
     "--no-audit",
     "--no-fund",
     "--legacy-peer-deps",
-    "oxlint@1.81.0",
+    `oxlint@${hostVersion}`,
     ...(version ? [`oxlint-plugin-vize@${version}`] : []),
   ];
   const result = await captureProjectCommand("npm", args, {
@@ -86,7 +87,7 @@ export async function installMixedHost(directory, output, version) {
   fs.writeFileSync(path.join(output, "package-lock.json"), lock);
   const packages = JSON.parse(lock).packages;
   for (const [name, expected] of [
-    ["oxlint", "1.81.0"],
+    ["oxlint", hostVersion],
     ...(version ? [["oxlint-plugin-vize", version]] : []),
   ]) {
     const item = packages[`node_modules/${name}`];
