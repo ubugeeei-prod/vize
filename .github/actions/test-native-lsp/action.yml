@@ -30,6 +30,7 @@ runs:
         node --test --test-concurrency=1 \
           tests/tooling/lsp-vue-language-tools-oracles.test.ts \
           tests/tooling/lsp-editor-feature-isolation.test.ts \
+          tests/tooling/lsp-diagnostics-lifecycle.test.ts \
           tests/tooling/lsp-editor-jsconfig.test.ts \
           tests/tooling/lsp-package-private-imports.test.ts \
           tests/tooling/lsp-package-private-imports-js.test.ts \

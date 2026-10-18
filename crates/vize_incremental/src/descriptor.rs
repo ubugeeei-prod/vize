@@ -48,9 +48,13 @@ impl PartialEq for SharedDescriptor {
 
 impl Eq for SharedDescriptor {}
 
-/// Line/column span of a rejected parse, one-based, as the parser reported it.
+/// Full-source byte span and one-based line/column span, as the parser reported them.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DescriptorParseLoc {
+    /// Byte offset of the first byte in the full authored SFC.
+    pub start: usize,
+    /// Exclusive byte offset just after the span in the full authored SFC.
+    pub end: usize,
     /// One-based line of the first byte.
     pub start_line: usize,
     /// One-based column of the first byte.
@@ -79,6 +83,8 @@ impl DescriptorParseError {
             message: error.message.clone(),
             code: error.code.clone(),
             loc: error.loc.as_ref().map(|loc| DescriptorParseLoc {
+                start: loc.start,
+                end: loc.end,
                 start_line: loc.start_line,
                 start_column: loc.start_column,
                 end_line: loc.end_line,
