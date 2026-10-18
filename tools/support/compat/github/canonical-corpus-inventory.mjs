@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { join, posix } from "node:path";
-import { finiteCommittedInventory, walkCommittedGraph } from "./canonical-corpus-logical-walk.mjs";
+import { finiteCommittedInventory, walkCommittedGraph } from "./canonical-corpus-logical-walk.ts";
 import { commandOutput, runChainsSync } from "./canonical-corpus-batch.ts";
 
 export const corpusRoot = "tests/_fixtures/_git";

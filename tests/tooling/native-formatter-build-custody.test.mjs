@@ -9,7 +9,7 @@ import {
   captureNativeHistoryBuild,
   nativeHistoryBuildEnvironment,
   validateNativeHistoryEnvironment,
-} from "../../npm/native/scripts/formatter-history-build.mjs";
+} from "../../npm/native/scripts/formatter-history-build.mts";
 
 // Synthetic admission controls only. Real emitted addon custody is proved by
 // the mandatory existing hosted native build, not these generated vectors.

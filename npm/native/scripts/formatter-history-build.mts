@@ -1,17 +1,63 @@
 import assert from "node:assert/strict";
 import { validateCiBuild } from "./formatter-history-ci-build.mjs";
-import { execFileSync } from "node:child_process";
+import { execFileSync, type SpawnSyncReturns } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 
-export const nativeHistoryDirectory = (nativeDir) =>
+interface CargoArtifact extends Record<string, unknown> {
+  target: { name: string; kind: string[]; src_path?: unknown };
+  profile: { test: boolean; [key: string]: unknown };
+  features: string[];
+  filenames: string[];
+}
+
+type BuildEnvironment = Record<string, string | null>;
+type BeforeBuild = {
+  source: ReturnType<typeof nativeHistorySource>;
+  environment: BuildEnvironment;
+};
+
+function assertRecord(value: unknown): asserts value is Record<string, unknown> {
+  assert(value !== null && typeof value === "object" && !Array.isArray(value));
+}
+function assertStrings(value: unknown): asserts value is string[] {
+  assert(Array.isArray(value) && value.every((entry: unknown) => typeof entry === "string"));
+}
+function assertArtifact(value: Record<string, unknown>): asserts value is CargoArtifact {
+  assertRecord(value.target);
+  assert.equal(typeof value.target.name, "string");
+  assertStrings(value.target.kind);
+  assertRecord(value.profile);
+  assert.equal(typeof value.profile.test, "boolean");
+  assertStrings(value.features);
+  assertStrings(value.filenames);
+}
+
+// Only the captured Linux Actions dev build uses this override. Retain useful
+// source backtraces without embedding full type/variable DWARF.
+export const nativeHistoryCargoOptions = Object.freeze([
+  "--message-format=json-render-diagnostics",
+  "--locked",
+  "--config",
+  'profile.dev.debug="line-tables-only"',
+]);
+export function validateNativeHistoryProfile(profile: unknown) {
+  assertRecord(profile);
+  assert.equal(profile.test, false);
+  assert.equal(profile.opt_level, "0");
+  assert.equal(profile.debuginfo, "line-tables-only");
+  assert.equal(profile.debug_assertions, true);
+  assert.equal(profile.overflow_checks, true);
+}
+
+export const nativeHistoryDirectory = (nativeDir: string) =>
   path.join(nativeDir, ".artifacts/native/formatter-history");
-export const nativeHistoryReceipt = (nativeDir) =>
+export const nativeHistoryReceipt = (nativeDir: string) =>
   path.join(nativeHistoryDirectory(nativeDir), "build-receipt.json");
-export const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
-export const bytes = (value) => ({ base64: value.toString("base64"), sha256: hash(value) });
+export const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
+export const bytes = (value: Buffer) => ({ base64: value.toString("base64"), sha256: hash(value) });
 
 const buildEnvironmentKeys = [
   "CARGO",
@@ -29,9 +75,11 @@ export function nativeHistoryBuildEnvironment() {
     buildEnvironmentKeys.map((key) => [key, globalThis.process.env[key] ?? null]),
   );
 }
-export function validateNativeHistoryEnvironment(environment) {
+export function validateNativeHistoryEnvironment(environment: unknown) {
+  assertRecord(environment);
   assert.deepEqual(Object.keys(environment), ["before", "after"]);
   for (const observed of [environment.before, environment.after]) {
+    assertRecord(observed);
     assert.deepEqual(Object.keys(observed), buildEnvironmentKeys);
     for (const value of Object.values(observed))
       assert(value === null || typeof value === "string");
@@ -47,19 +95,24 @@ function cargoVersion() {
   return execFileSync(globalThis.process.env.CARGO ?? "cargo", ["-V"]).toString();
 }
 
-export function napiToolchain(nativeDir) {
+export function napiToolchain(nativeDir: string) {
   const entry = createRequire(path.join(nativeDir, "package.json")).resolve("@napi-rs/cli");
   const packageRoot = path.resolve(path.dirname(entry), "..");
-  const metadata = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json")));
+  const metadata: unknown = JSON.parse(
+    fs.readFileSync(path.join(packageRoot, "package.json"), "utf8"),
+  );
+  assertRecord(metadata);
+  assert(typeof metadata.version === "string");
   return {
     version: metadata.version,
     cliSha256: hash(fs.readFileSync(path.join(packageRoot, "dist/cli.js"))),
   };
 }
 
-export function nativeHistorySource(nativeDir) {
+export function nativeHistorySource(nativeDir: string) {
   const root = path.resolve(nativeDir, "../..");
-  const git = (...args) => execFileSync("git", args, { cwd: root, maxBuffer: 64 * 1024 * 1024 });
+  const git = (...args: string[]) =>
+    execFileSync("git", args, { cwd: root, maxBuffer: 64 * 1024 * 1024 });
   const workingDiff = git("diff", "--binary", "HEAD");
   assert.equal(workingDiff.length, 0, "public native capture requires committed clean source");
   const untracked = git(
@@ -86,28 +139,33 @@ export function nativeHistorySource(nativeDir) {
   };
 }
 
-export function emittedNativeArtifact(stdout) {
+export function emittedNativeArtifact(stdout: Buffer) {
   const messages = stdout
     .toString()
     .split("\n")
     .flatMap((line) => {
+      let message: unknown;
       try {
-        return [JSON.parse(line)];
+        message = JSON.parse(line);
       } catch {
         return [];
       }
+      assertRecord(message);
+      return [message];
     });
   const finished = messages.filter(({ reason }) => reason === "build-finished");
   assert.equal(finished.length, 1, "missing genuine Cargo completion");
   assert.equal(finished[0].success, true);
-  const artifacts = messages.filter(
-    ({ reason, target }) =>
-      reason === "compiler-artifact" &&
-      target?.name === "vize_vitrine" &&
-      target.kind.includes("cdylib"),
-  );
+  const artifacts = messages.filter(({ reason, target }) => {
+    if (reason !== "compiler-artifact" || target === null || target === undefined) return false;
+    assertRecord(target);
+    if (target.name !== "vize_vitrine") return false;
+    assertStrings(target.kind);
+    return target.kind.includes("cdylib");
+  });
   assert.equal(artifacts.length, 1, "ambiguous or absent actual native artifact");
   const artifact = artifacts[0];
+  assertArtifact(artifact);
   assert.equal(artifact.profile.test, false);
   assert(artifact.features.includes("napi") && artifact.features.includes("legacy"));
   const candidates = artifact.filenames.filter((file) => /\.(so|dylib|dll)$/.test(file));
@@ -115,7 +173,12 @@ export function emittedNativeArtifact(stdout) {
   return { cargo: artifact, filename: candidates[0] };
 }
 
-export function captureNativeHistoryBuild(nativeDir, before, command, result) {
+export function captureNativeHistoryBuild(
+  nativeDir: string,
+  before: BeforeBuild | null,
+  command: string[],
+  result: SpawnSyncReturns<Buffer>,
+) {
   const directory = nativeHistoryDirectory(nativeDir);
   fs.mkdirSync(directory, { recursive: true });
   const stdout = result.stdout ?? Buffer.alloc(0);
@@ -134,6 +197,8 @@ export function captureNativeHistoryBuild(nativeDir, before, command, result) {
   assert.equal(process.exitStatus, 0);
   assert.equal(process.signal, null);
   assert.equal(process.error, null);
+  validateNativeHistoryCommand(nativeDir, command);
+  assert(before !== null);
   assert.deepEqual(
     nativeHistorySource(nativeDir),
     before.source,
@@ -144,6 +209,8 @@ export function captureNativeHistoryBuild(nativeDir, before, command, result) {
     after: nativeHistoryBuildEnvironment(),
   });
   const emitted = emittedNativeArtifact(stdout);
+  validateNativeHistoryProfile(emitted.cargo.profile);
+  assert(typeof emitted.cargo.target.src_path === "string");
   const generated = fs
     .readdirSync(path.join(nativeDir, ".artifacts/native"))
     .filter((name) => name.startsWith("vize-vitrine.") && name.endsWith(".node"));
@@ -177,14 +244,8 @@ export function captureNativeHistoryBuild(nativeDir, before, command, result) {
   return receipt;
 }
 
-export function validateNativeHistoryBuild(nativeDir, receipt) {
-  if (receipt.schema === "vize.public-native-formatter-ci-build")
-    return validateCiBuild(nativeDir, receipt);
-  assert.equal(receipt.schema, "vize.public-native-formatter-build");
-  assert.equal(receipt.version, 1);
-  assert.deepEqual(receipt.source, nativeHistorySource(nativeDir));
-  validateNativeHistoryEnvironment(receipt.environment);
-  assert.deepEqual(receipt.process.command, [
+export function validateNativeHistoryCommand(nativeDir: string, command: unknown) {
+  assert.deepEqual(command, [
     "pnpm",
     "exec",
     "napi",
@@ -200,33 +261,56 @@ export function validateNativeHistoryBuild(nativeDir, receipt) {
     path.join(nativeDir, ".artifacts/native"),
     "--no-js",
     "--",
-    "--message-format=json-render-diagnostics",
-    "--locked",
+    ...nativeHistoryCargoOptions,
   ]);
+}
+
+export function validateNativeHistoryBuild(nativeDir: string, receipt: unknown): unknown {
+  assertRecord(receipt);
+  if (receipt.schema === "vize.public-native-formatter-ci-build")
+    return validateCiBuild(nativeDir, receipt);
+  assert.equal(receipt.schema, "vize.public-native-formatter-build");
+  assert.equal(receipt.version, 1);
+  assert.deepEqual(receipt.source, nativeHistorySource(nativeDir));
+  validateNativeHistoryEnvironment(receipt.environment);
+  assertRecord(receipt.process);
+  validateNativeHistoryCommand(nativeDir, receipt.process.command);
   assert.equal(receipt.process.exitStatus, 0);
   assert.equal(receipt.process.signal, null);
   assert.equal(receipt.process.error, null);
-  for (const stream of ["stdout", "stderr"]) {
+  for (const stream of ["stdout", "stderr"] as const) {
     const raw = fs.readFileSync(
       path.join(nativeHistoryDirectory(nativeDir), `cargo.${stream}.bin`),
     );
     assert.deepEqual(receipt.process[stream], bytes(raw));
   }
+  assertRecord(receipt.process.stdout);
+  assert(typeof receipt.process.stdout.base64 === "string");
   assert.deepEqual(
     receipt.emitted,
     emittedNativeArtifact(Buffer.from(receipt.process.stdout.base64, "base64")),
   );
+  assertRecord(receipt.emitted);
+  assertRecord(receipt.emitted.cargo);
+  assertArtifact(receipt.emitted.cargo);
+  validateNativeHistoryProfile(receipt.emitted.cargo.profile);
+  assert(typeof receipt.emitted.cargo.target.src_path === "string");
   assert.equal(
     fs.realpathSync(receipt.emitted.cargo.target.src_path),
     fs.realpathSync(path.join(nativeDir, "../../crates/vize_vitrine/src/lib.rs")),
   );
+  assert(typeof receipt.emitted.filename === "string");
+  assertRecord(receipt.generated);
   assert.equal(hash(fs.readFileSync(receipt.emitted.filename)), receipt.generated.sha256);
+  assertRecord(receipt.frozen);
+  assert(typeof receipt.frozen.path === "string");
   assert.equal(
     fs.realpathSync(receipt.frozen.path),
     fs.realpathSync(path.join(nativeHistoryDirectory(nativeDir), "formatter-observe.node")),
   );
   assert.equal(hash(fs.readFileSync(receipt.frozen.path)), receipt.frozen.sha256);
   assert.equal(receipt.frozen.sha256, receipt.generated.sha256);
+  assertRecord(receipt.toolchain);
   assert.equal(receipt.toolchain.rustc, execFileSync("rustc", ["-Vv"]).toString());
   assert.equal(receipt.toolchain.cargo, cargoVersion());
   assert.equal(receipt.toolchain.node, globalThis.process.version);

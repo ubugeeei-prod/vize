@@ -145,7 +145,7 @@ export function rustItems(source, { library = false } = {}) {
   return parse(0, tokens.length);
 }
 
-export function registrations(source, roots) {
+export function registrations(source, roots, features) {
   const files = new Set();
   const cases = [];
   const edges = [];
@@ -157,7 +157,7 @@ export function registrations(source, roots) {
     );
     const text = source.read(file);
     const items = rustItems(text);
-    validateRegistrationSyntax(text, items);
+    validateRegistrationSyntax(text, items, features);
     files.add(file);
     const walk = (members, names, defaultDir, pathDir) => {
       for (const item of members) {

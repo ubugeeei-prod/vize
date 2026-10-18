@@ -6,7 +6,7 @@
 //! those keep the legacy lane rather than being re-derived from text here.
 
 use vize_atelier_core::steps::expression::is_template_global;
-use vize_carton::{Allocator, Span, Vec};
+use vize_carton::{Allocator, Box, Span, Vec};
 use vize_l3::{
     op::{OpId, OpKind, Program, RegionId},
     operand::{Operand, OperandRole as Role, OperandValue, ValueKind},
@@ -125,16 +125,19 @@ pub(super) fn for_loop<'a>(
         }
         None => None,
     };
-    Ok(Content::For(Loop {
-        source,
-        value,
-        key,
-        index,
-        key_prop,
-        template: carrier.is_some(),
-        spans,
-        carrier_start: carrier_span.start,
-    }))
+    Ok(Content::For(Box::new_in(
+        Loop {
+            source,
+            value,
+            key,
+            index,
+            key_prop,
+            template: carrier.is_some(),
+            spans,
+            carrier_start: carrier_span.start,
+        },
+        &retained.allocator(),
+    )))
 }
 
 fn alias(kind: ValueKind, text: &str) -> Result<Option<&str>> {

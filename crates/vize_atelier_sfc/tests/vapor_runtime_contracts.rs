@@ -283,3 +283,128 @@ fn bound_event_factories_keep_prop_evaluation_semantics() {
     assert_eq!(dom[3]["events"], json!(["initial", "updated"]));
     assert_eq!(trace(source, "vapor", extra), dom);
 }
+
+#[test]
+fn unicode_v_for_keys_use_their_own_parameters_in_whole_native_and_official_sfcs() {
+    // Preserve all five reported templates verbatim. Their source wrapper uses
+    // genuine LF characters, independently of the issue's escaped presentation.
+    let reported = [
+        (
+            r#"<p v-for="kind in ['x', 'y']" :key="kind">{{ kind }}</p>"#,
+            json!(["x", "y"]),
+            json!(["x", 0]),
+            json!("x"),
+        ),
+        (
+            r#"<p v-for="café in ['x']" :key="café">{{ café }}</p>"#,
+            json!(["x"]),
+            json!(["x", 0]),
+            json!("x"),
+        ),
+        (
+            r#"<p v-for="種類 in ['x', 'y']" :key="種類">{{ 種類 }}</p>"#,
+            json!(["x", "y"]),
+            json!(["x", 0]),
+            json!("x"),
+        ),
+        (
+            r#"<p v-for="行 in items" :key="行.id">{{ 行.id }}</p>"#,
+            json!(["1"]),
+            json!([{"id": 1}, 0]),
+            json!(1),
+        ),
+        (
+            r#"<p v-for="(r, 番号) in items" :key="番号">{{ r.id }}</p>"#,
+            json!(["1"]),
+            json!([{"id": 1}, 0]),
+            json!(0),
+        ),
+    ];
+    for production in [false, true] {
+        for (template, texts, args, value) in &reported {
+            let source = format!(
+                "<script setup vapor>\nconst items = [{{ id: 1 }}]\n</script>\n<template>{template}</template>\n"
+            );
+            let extra = json!({"production": production, "unicodeKeyScope": {
+                "source": source, "official": false, "samples": [{"args": args, "value": value}]
+            }});
+            let native = trace(&source, "vapor", extra.clone());
+            let mut official = extra;
+            official["unicodeKeyScope"]["official"] = json!(true);
+            assert_eq!(trace(&source, "vapor", official), native, "{template}");
+            let actual = native[0]["tree"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|node| node["children"][0].clone())
+                .collect::<Vec<_>>();
+            assert_eq!(json!(actual), *texts, "{template}");
+            assert_eq!(native[1]["tree"], json!([]));
+        }
+        // Identifier_Start/Continue and destructuring are separate boundaries;
+        // no neighboring accepted spelling may regain a render-scope reference.
+        for alias in [
+            "種類",
+            "café",
+            "e\u{301}",
+            "a\u{200c}",
+            "a\u{200d}",
+            "𐐀",
+            "$種類",
+            "_種類",
+            "{ id: 種類, label }",
+            "[種類, label]",
+        ] {
+            let (key, label, rows, updated) = if alias.starts_with(['{', '[']) {
+                (
+                    "種類".to_owned(),
+                    "label".to_owned(),
+                    if alias.starts_with('[') {
+                        json!([["a", "A"], ["b", "B"]])
+                    } else {
+                        json!([{"id":"a","label":"A"}, {"id":"b","label":"B"}])
+                    },
+                    if alias.starts_with('[') {
+                        json!([["b", "B2"], ["a", "A2"]])
+                    } else {
+                        json!([{"id":"b","label":"B2"}, {"id":"a","label":"A2"}])
+                    },
+                )
+            } else {
+                (
+                    format!("{alias}.id"),
+                    format!("{alias}.label"),
+                    json!([{"id":"a","label":"A"}, {"id":"b","label":"B"}]),
+                    json!([{"id":"b","label":"B2"}, {"id":"a","label":"A2"}]),
+                )
+            };
+            let source = format!(
+                r#"<script setup vapor>import {{ state }} from './fixture';</script><template><section><p v-for="{alias} in state.items" :key="{key}" :data-id="{key}">{{{{ {label} }}}}</p></section></template>"#
+            );
+            let sample = if alias.starts_with('[') {
+                json!(["probe", "sample"])
+            } else {
+                json!({"id":"probe", "label":"sample"})
+            };
+            let extra = json!({"production": production, "context": {"items": rows},
+                "steps": [
+                    {"patch": {"items": updated}, "preserve": ["[data-id=a]", "[data-id=b]"]},
+                    {"patch": {"items": []}},
+                    {"patch": {"items": rows}}
+                ],
+                "unicodeKeyScope": {"source": source, "official": false,
+                    "samples": [{"args": [sample, 0], "value": "probe"}]}
+            });
+            let native = trace(&source, "vapor", extra.clone());
+            let mut official = extra;
+            official["unicodeKeyScope"]["official"] = json!(true);
+            assert_eq!(trace(&source, "vapor", official), native, "{alias}");
+            assert_eq!(native[2]["tree"][0]["children"], json!([]));
+            assert_eq!(
+                native[0], native[3],
+                "re-add restores the original whole DOM"
+            );
+            assert_eq!(native[4]["tree"], json!([]));
+        }
+    }
+}

@@ -8,7 +8,7 @@ import {
   bytes,
   hash,
   nativeHistoryBuildEnvironment,
-} from "../../npm/native/scripts/formatter-history-build.mjs";
+} from "../../npm/native/scripts/formatter-history-build.mts";
 import {
   loadPublicNativeManifest,
   NATIVE_FORMATTER_MANIFEST,

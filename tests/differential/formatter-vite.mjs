@@ -8,7 +8,7 @@ import {
   nativeHistoryDirectory,
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
-} from "../../npm/native/scripts/formatter-history-build.mjs";
+} from "../../npm/native/scripts/formatter-history-build.mts";
 import { viteConfigurationPlans, originalViteSources } from "./formatter-vite-source.mjs";
 import {
   qualifyPublicCore,

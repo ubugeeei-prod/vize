@@ -75,7 +75,7 @@ test("source planning uses Node and offline metadata before selecting affected p
   assert.equal(ciSelection?.if, "${{ steps.plan.outputs.tooling == 'true' }}");
   assert.equal(
     ciSelection?.run,
-    "node --test tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-test-archive.test.mjs tests/tooling/rust-build-evidence.test.mjs tests/tooling/release-input-scopes.test.mjs tests/tooling/pinned-fixture-hydration.test.ts tests/tooling/native-preparation-identity.test.ts tests/tooling/publish-npm-package*.test.ts",
+    "node --test tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-test-archive.test.mjs tests/tooling/rust-build-evidence.test.mjs tests/tooling/release-input-scopes.test.mjs tests/tooling/pinned-fixture-hydration.test.ts tests/tooling/native-preparation-identity.test.ts tests/tooling/publish-npm-package*.test.ts tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts",
   );
 });
 
@@ -103,8 +103,19 @@ function requireDailySourceContracts(planWorkflow: typeof source, rustWorkflow: 
   assert.equal(steps[contracts]["continue-on-error"], undefined);
   assert.equal(
     steps[contracts].run,
-    "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts tests/tooling/typecheck-divergence-report-timeout.test.ts",
+    "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts tests/tooling/typecheck-divergence-report-timeout.test.ts tests/tooling/typecheck-divergence-mutation-oracle.test.ts tests/tooling/typecheck-fixture-custody.test.ts",
   );
+  const custody = steps[contracts + 1];
+  assert.equal(custody.name, "Retain mutation deadline command and fixture evidence");
+  assert.equal(custody.if, "${{ always() && inputs.run-source-contracts }}");
+  assert.equal(custody.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
+  assert.deepEqual(custody.with, {
+    name: "mutation-deadline-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}",
+    path: "target/differential/typecheck-mutation/",
+    "include-hidden-files": true,
+    "if-no-files-found": "warn",
+    "retention-days": 7,
+  });
   for (const action of [
     "actions/setup-node@",
     "dtolnay/rust-toolchain@",
@@ -389,6 +400,7 @@ test("unchanged queue gate hydrates the same pinned fixture for all five full Ru
     "tests/tooling/pinned-fixture-hydration.test.ts",
     "tests/tooling/native-preparation-identity.test.ts",
     "tests/tooling/publish-npm-package*.test.ts",
+    "tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts",
   ]);
   assert.equal(action.runs.steps.length, 1);
   assert.equal(

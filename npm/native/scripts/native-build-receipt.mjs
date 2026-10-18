@@ -29,7 +29,7 @@ const scriptPaths = [
   "crates/vize_vitrine/src/napi/build_token.rs",
   "npm/native/scripts/native-build-environment.mjs",
   "npm/native/scripts/build-ci.mjs",
-  "npm/native/scripts/build-local.mjs",
+  "npm/native/scripts/build-local.mts",
   "npm/native/scripts/native-build-receipt.mjs",
   "npm/native/native-binding.js",
   "npm/native/native-binding-identity.js",

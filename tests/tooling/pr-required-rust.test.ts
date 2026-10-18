@@ -57,6 +57,8 @@ test("daily source contracts cover the real Rust/docs failures without widening 
       "tests/tooling/davinci-consumer-migration-surfaces.test.mjs",
       "tests/tooling/docs-reviewed-translations.test.ts",
       "tests/tooling/typecheck-divergence-report-timeout.test.ts",
+      "tests/tooling/typecheck-divergence-mutation-oracle.test.ts",
+      "tests/tooling/typecheck-fixture-custody.test.ts",
       ".github/workflows/pr-rust-checks.yml",
       "Cargo.lock",
       "new-runtime/lib.rs",

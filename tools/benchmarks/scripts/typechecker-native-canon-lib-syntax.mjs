@@ -106,7 +106,54 @@ export function validateScopeAuthority(items, { library = false } = {}) {
   return flat;
 }
 
-export function validateRegistrationSyntax(source, items) {
+function validateCfg(attribute, features) {
+  const condition = attribute.match(/^#\s*!?\s*\[\s*cfg\s*\(([\s\S]*)\)\s*\]$/u)?.[1];
+  assert.ok(condition, "opaque conditional registration");
+  let cursor = 0;
+  const next = () => {
+    while (/\s/u.test(condition[cursor] ?? "")) cursor += 1;
+    return condition[cursor];
+  };
+  const predicate = () => {
+    next();
+    const name = condition.slice(cursor).match(/^[A-Za-z_]\w*/u)?.[0];
+    assert.ok(name, "opaque conditional registration");
+    cursor += name.length;
+    if (["all", "any", "not"].includes(name)) {
+      assert.equal(next(), "(", "opaque conditional registration");
+      cursor += 1;
+      let count = 0;
+      while (next() !== ")") {
+        predicate();
+        count += 1;
+        if (next() !== ",") break;
+        cursor += 1;
+      }
+      assert.equal(next(), ")", "opaque conditional registration");
+      cursor += 1;
+      if (name === "not") assert.equal(count, 1, "opaque conditional registration");
+      return;
+    }
+    if (["test", "unix", "windows"].includes(name)) return;
+    assert.ok(["feature", "target_os"].includes(name), "opaque conditional registration");
+    assert.equal(next(), "=", "opaque conditional registration");
+    cursor += 1;
+    next();
+    const literal = condition.slice(cursor).match(/^"([^"\\]*)"/u);
+    assert.ok(literal, "opaque conditional registration");
+    const value = literal[1];
+    cursor += literal[0].length;
+    if (name === "feature") assert.ok(features.has(value), "undeclared Cargo cfg feature");
+    else assert.equal(value, "linux", "opaque conditional registration");
+  };
+  // Validate declarations only: every recognized branch remains in the union,
+  // including disabled features and contradictory predicates.
+  predicate();
+  next();
+  assert.equal(cursor, condition.length, "opaque conditional registration");
+}
+
+export function validateRegistrationSyntax(source, items, features) {
   const code = maskRustNonCode(source);
   assert.doesNotMatch(code, /\b(?:macro_rules\s*!|include\s*!)/u, "opaque Rust generator");
   const flat = validateScopeAuthority(items);
@@ -143,12 +190,7 @@ export function validateRegistrationSyntax(source, items) {
         new RegExp(`^#${key === "expect" ? "!?" : ""}\\[${key}\\([\\s\\S]+\\)\\]$`, "u"),
         "opaque helper attribute shape",
       );
-    if (key === "cfg")
-      assert.match(
-        normalizeAttribute(attr),
-        /^#!?\[cfg\((?:test|unix|windows|target_os="linux")\)\]$/u,
-        "opaque conditional registration",
-      );
+    if (key === "cfg") validateCfg(attr, features);
     if (key === "derive") {
       const names = attr
         .match(/^#\[derive\(([^()]*)\)\]$/u)?.[1]

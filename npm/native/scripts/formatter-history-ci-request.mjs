@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { nativeHistorySource, nativeHistoryDirectory } from "./formatter-history-build.mjs";
+import { nativeHistorySource, nativeHistoryDirectory } from "./formatter-history-build.mts";
 
 export const ciRequestPath = (nativeDir) =>
   path.join(nativeHistoryDirectory(nativeDir), "ci-build-request.json");

@@ -108,6 +108,108 @@ await test("platform branch union refuses a matching case even in an inactive wi
   );
 });
 
+await test("Cargo-declared literal feature cfg retains ordinary integration targets", () => {
+  const file = "crates/vize_canon/tests/declared_feature.rs";
+  for (const feature of ["native", "future-registration"]) {
+    const changes = {
+      ...manifestChange(canonManifest, (m) => {
+        m.features["future-registration"] = [];
+      }),
+      [file]: `#![cfg(feature = "${feature}")]\n#[test] fn ordinary_feature_case() {}`,
+    };
+    const packet = qualifyCanonLibScope(source(changes));
+    assert.ok(packet.targets.some((target) => target.file === file));
+    assert.ok(
+      packet.cases.some((entry) => entry.file === file && entry.name === "ordinary_feature_case"),
+    );
+    assert.deepEqual(packet.originalCases, qualifyCanonLibScope(actual).originalCases);
+  }
+  for (const cfg of [
+    'feature = "undeclared"',
+    'not(feature = "undeclared")',
+    'any(feature = "native", feature = "undeclared")',
+  ])
+    assert.throws(
+      () => qualifyCanonLibScope(source(append(integration, `#[cfg(${cfg})] fn ordinary() {}`))),
+      /undeclared Cargo cfg feature/u,
+    );
+});
+
+await test("feature and platform predicates union every registration without evaluating active branches", () => {
+  for (const cfg of [
+    'feature = "native"',
+    'not(feature = "native")',
+    'feature = "future-registration"',
+    'all(feature = "native", not(feature = "native"))',
+    'any(windows, all(unix, feature = "future-registration",),)',
+    'all(test, target_os = "linux",)',
+    "any()",
+    "all()",
+  ]) {
+    const changes = manifestChange(canonManifest, (m) => {
+      m.features["future-registration"] = [];
+    });
+    for (const filter of canonLibFilters) {
+      for (const registration of [
+        `#[cfg(${cfg})] #[test] fn ${filter}() {}`,
+        `#[cfg(${cfg})] mod ${filter} { #[test] fn ordinary() {} }`,
+      ])
+        assert.throws(
+          () => qualifyCanonLibScope(source({ ...changes, ...append(integration, registration) })),
+          /outside-library selected/u,
+        );
+    }
+  }
+});
+
+await test("feature-gated external modules remain in the outside-library closure", () => {
+  const file = "crates/vize_canon/tests/feature_child.rs";
+  assert.throws(
+    () =>
+      qualifyCanonLibScope(
+        source({
+          ...append(integration, '#[cfg(not(feature = "native"))] mod feature_child;'),
+          [file]: `#[test] fn ${canonLibFilters[0]}() {}`,
+        }),
+      ),
+    /outside-library selected/u,
+  );
+});
+
+await test("malformed or opaque cfg predicates cannot establish registration authority", () => {
+  for (const cfg of [
+    "feature",
+    'fea ture = "native"',
+    "a ll(unix)",
+    "n ot(unix)",
+    "te st",
+    'target_ os = "linux"',
+    "feature = native",
+    'feature = r#"native"#',
+    'feature = "\\x6eative"',
+    'feature = "native" = "native"',
+    'all(feature = "native" feature = "native")',
+    'any(,feature = "native")',
+    'all(feature = "native",,)',
+    "not()",
+    "not(unix, windows)",
+    "unknown(unix)",
+    'target_os = "windows"',
+  ])
+    assert.throws(() =>
+      qualifyCanonLibScope(source(append(integration, `#[cfg(${cfg})] #[test] fn ordinary() {}`))),
+    );
+  assert.throws(
+    () =>
+      qualifyCanonLibScope(
+        source({
+          [library]: texts.get(library).replace("#[test]", '#[cfg(feature = "native")] #[test]'),
+        }),
+      ),
+    /inactive original library case/u,
+  );
+});
+
 await test("comments, raw literals and ordinary body edits do not freeze product source", () => {
   qualifyCanonLibScope(
     source(

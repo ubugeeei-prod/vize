@@ -14,7 +14,7 @@ import {
   nativeHistoryBuildEnvironment,
   validateNativeHistoryEnvironment,
   napiToolchain,
-} from "./formatter-history-build.mjs";
+} from "./formatter-history-build.mts";
 
 export const ciBuildCommand = [
   "napi",

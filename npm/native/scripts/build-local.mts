@@ -8,7 +8,8 @@ import {
   captureNativeHistoryBuild,
   nativeHistorySource,
   nativeHistoryBuildEnvironment,
-} from "./formatter-history-build.mjs";
+  nativeHistoryCargoOptions,
+} from "./formatter-history-build.mts";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const packageDir = path.resolve(scriptDir, "..");
@@ -42,7 +43,7 @@ const resolveDarwinBuildEnv = () => {
     return process.env;
   }
 
-  const env = {
+  const env: NodeJS.ProcessEnv = {
     ...process.env,
     CC: process.env.CC ?? "clang",
     CXX: process.env.CXX ?? "clang++",
@@ -91,7 +92,7 @@ const captureHistory =
 const before = captureHistory
   ? { source: nativeHistorySource(packageDir), environment: nativeHistoryBuildEnvironment() }
   : null;
-if (captureHistory) buildArgs.push("--", "--message-format=json-render-diagnostics", "--locked");
+if (captureHistory) buildArgs.push("--", ...nativeHistoryCargoOptions);
 
 const buildResult = spawnSync("pnpm", buildArgs, {
   cwd: packageDir,
@@ -110,7 +111,7 @@ if (buildResult.status !== 0) {
   process.exit(buildResult.status ?? 1);
 }
 
-const signDarwinBinary = (filePath) => {
+const signDarwinBinary = (filePath: string) => {
   if (process.platform !== "darwin") {
     return;
   }
