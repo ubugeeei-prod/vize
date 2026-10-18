@@ -173,15 +173,54 @@ fn generated_tuple_and_property_references_keep_raw_and_authored_diagnostics_dis
                 .into_iter()
                 .map(|(code, message)| (json!(code), json!(1), json!(message)))
                 .collect();
+            let app = files
+                .iter()
+                .find(|file| file.original_path == root.join("App.vue"))
+                .unwrap();
+            let mut expected_raw = Vec::new();
+            if let Some((code, message)) = expected {
+                let (needle, relative, length) = if code == 2493 {
+                    ("empty[0]", "empty[".len(), 1)
+                } else {
+                    ("extra: 1", 0, "extra".len())
+                };
+                let start = app.content.find(needle).unwrap() + relative;
+                expected_raw.push(native_diagnostic(
+                    &app.content,
+                    start,
+                    start + length,
+                    code,
+                    1,
+                    message,
+                ));
+            }
+            expected_raw.extend(known_hints(
+                &app.content,
+                match case {
+                    "inferred-data-attribute" => PROP_HINTS,
+                    "empty-event" | "authored-tuple" | "authored-property" => EVENT_HINTS,
+                    _ => panic!("unknown reference case"),
+                },
+            ));
+            let app_uri = json!(path_to_file_uri(&app.virtual_path));
+            let expected_response: Vec<_> = packet["requestedUris"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|uri| {
+                    json!([
+                        uri,
+                        if uri == &app_uri {
+                            json!(expected_raw)
+                        } else {
+                            json!([])
+                        }
+                    ])
+                })
+                .collect();
             assert_eq!(
-                raw.iter()
-                    .map(|d| (
-                        d["code"].clone(),
-                        d["severity"].clone(),
-                        d["message"].clone()
-                    ))
-                    .collect::<Vec<_>>(),
-                expected_rows,
+                packet["wholeRawDiagnosticVector"],
+                json!(expected_response),
                 "{packet}"
             );
             assert_eq!(public.diagnostics.len(), expected_rows.len(), "{public:#?}");
@@ -321,7 +360,7 @@ fn replay_prior_runtime_tuple_read(
         .iter()
         .flat_map(|(_, diagnostics)| diagnostics)
         .collect();
-    assert_eq!(diagnostics.len(), 1, "{raw:#?}");
+    assert_eq!(diagnostics.len(), EVENT_HINTS.len() + 1, "{raw:#?}");
     let diagnostic = diagnostics.first().unwrap();
     assert_eq!(diagnostic.code, Some(json!(2493)));
     assert_eq!(diagnostic.severity, Some(1));
@@ -343,4 +382,57 @@ fn replay_prior_runtime_tuple_read(
         (diagnostic.range.end.line, diagnostic.range.end.character),
         end
     );
+    let mut expected = vec![native_diagnostic(
+        &replay,
+        index,
+        index + 1,
+        2493,
+        1,
+        "Tuple type '[]' of length '0' has no element at index '0'.",
+    )];
+    expected.extend(known_hints(&replay, EVENT_HINTS));
+    assert_eq!(json!(raw), json!([[uri, expected]]));
+}
+
+// Exact suggestion vectors from the authenticated source qualification. These
+// are generated declarations, not arbitrary diagnostic-name exemptions.
+const EVENT_HINTS: &[&str] = &[
+    "__VizeHasRawProps",
+    "__VizeFallthroughValue",
+    "__VizeNavigationSlots",
+    "__VizeEmitPropsFactory",
+];
+const PROP_HINTS: &[&str] = &["__VizeHasRawProps", "__VizeNavigationSlots"];
+
+fn known_hints(generated: &str, names: &[&str]) -> Vec<Value> {
+    names
+        .iter()
+        .map(|name| {
+            let declaration = cstr!("type {name}<");
+            assert_eq!(generated.matches(declaration.as_str()).count(), 1);
+            let start = generated.find(declaration.as_str()).unwrap() + "type ".len();
+            native_diagnostic(
+                generated,
+                start,
+                start + name.len(),
+                6196,
+                4,
+                &cstr!("'{name}' is declared but never used."),
+            )
+        })
+        .collect()
+}
+
+fn native_diagnostic(
+    generated: &str,
+    start: usize,
+    end: usize,
+    code: u32,
+    severity: i32,
+    message: &str,
+) -> Value {
+    let start = LineBreaks::Lsp.offset_to_position(generated, start);
+    let end = LineBreaks::Lsp.offset_to_position(generated, end);
+    json!({"code":code,"severity":severity,"source":"ts","message":message,
+        "range":{"start":{"line":start.0,"character":start.1},"end":{"line":end.0,"character":end.1}}})
 }
