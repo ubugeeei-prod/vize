@@ -70,6 +70,7 @@ export function authority(sha: string) {
     .map((file) => `tools/support/release/consumer_recovery/${file}`);
   files.push(
     workflow,
+    "npm/cli/src/corsa-runtime.ts",
     ".github/workflows/release-operator.yml",
     ".github/workflows/release-public-acceptance.yml",
     ...["github", "registry", "plan", "http", "inputs", "installed"].map(

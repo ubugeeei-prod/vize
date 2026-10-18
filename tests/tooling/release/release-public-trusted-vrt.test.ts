@@ -17,6 +17,10 @@ import {
   literalProjectRetainer,
 } from "../../../tools/support/release/public_acceptance/vrt_trusted_ui.ts";
 import { literalVariants } from "../../../tools/support/release/public_acceptance/vrt_literal.ts";
+import {
+  colorPreviewAddress,
+  retainColorPreviewFailure,
+} from "../../../tools/support/release/public_acceptance/vrt_trusted_color_capture.ts";
 import { assertRealPublicLoopback } from "../../../tools/support/release/public_acceptance/vrt_trusted_network.ts";
 import {
   assertExpectedBrowserFailures,
@@ -62,6 +66,78 @@ void test("literal model: exact two/three names, own status and full counters", 
   for (const title of ["Controls", "Keys"] as const)
     for (const phase of ["new", "match"] as const)
       literalCaptureLaw(literalPacket(title, phase), title, `/owned/${title}.art.vue`, phase);
+});
+void test("preview failure retains diagnostics and propagates the original refusal", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "vize-preview-refusal-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const e = await evidence(path.join(root, "evidence")),
+    original = new Error("original preview timeout");
+  // A filesystem-backed inspection/refusal control; this does not claim browser execution.
+  await writeFile(path.join(root, "inspection.json"), '{"heading":"Left","frames":[]}\n');
+  const inspect = async () =>
+    JSON.parse(await readFile(path.join(root, "inspection.json"), "utf8"));
+  await assert.rejects(
+    retainColorPreviewFailure(original, inspect, e, "first"),
+    (error) => error === original,
+  );
+  const retained = JSON.parse(
+    await readFile(path.join(e.output, "first/preview-refusal.json"), "utf8"),
+  );
+  assert.deepEqual(retained, {
+    error: { name: original.name, message: original.message, stack: original.stack },
+    observation: { page: { heading: "Left", frames: [] } },
+  });
+  const inspectionError = new Error("inspection refused");
+  await assert.rejects(
+    retainColorPreviewFailure(
+      original,
+      async () => {
+        throw inspectionError;
+      },
+      e,
+      "second",
+    ),
+    (error) => error === original,
+  );
+  assert.deepEqual(
+    JSON.parse(await readFile(path.join(e.output, "second/preview-refusal.json"), "utf8")),
+    {
+      error: retained.error,
+      observation: { inspectionError: String(inspectionError) },
+    },
+  );
+  // A real immutable writer collision cannot hide either refusal or become a successful capture.
+  await assert.rejects(retainColorPreviewFailure(original, inspect, e, "first"), (error) => {
+    assert.ok(error instanceof AggregateError);
+    assert.equal(error.errors[0], original);
+    assert.equal(error.errors[1].code, "EEXIST");
+    return true;
+  });
+});
+void test("preview URL evidence preserves absent, empty and about:blank identities", () => {
+  const base = "https://owned.trycloudflare.com/built/gallery/vrt/";
+  assert.equal(colorPreviewAddress(null, base), null);
+  assert.equal(colorPreviewAddress("", base), "");
+  for (const value of [
+    "about:blank",
+    "/preview/left.html",
+    "https://user:private@owned.trycloudflare.com/preview?private=1#private",
+  ]) {
+    const actual = colorPreviewAddress(value, base);
+    assert.ok(actual && "value" in actual);
+    assert.deepEqual(actual, {
+      value:
+        value === "about:blank"
+          ? value
+          : `https://owned.trycloudflare.com/${value.startsWith("/") ? "preview/left.html" : "preview"}`,
+      protocol: value === "about:blank" ? "about:" : "https:",
+      query: value.includes("?"),
+      fragment: value.includes("#"),
+      credentials: value.includes("@"),
+    });
+  }
+  assert.deepEqual(colorPreviewAddress("data:private", base), { protocol: "data:", opaque: true });
+  assert.deepEqual(colorPreviewAddress("http://[invalid", base), { invalid: true });
 });
 void test("literal model refuses wrong count/name/status/viewport/images/duration", () => {
   for (const mutate of [

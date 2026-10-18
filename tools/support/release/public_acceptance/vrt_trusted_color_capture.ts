@@ -20,6 +20,53 @@ interface ColorPacket extends Pick<ApiCapture, "success" | "summary"> {
   results: Array<ApiCapture["results"][number] & { images: Record<string, string> }>;
   reports: { json: string; html: string };
 }
+
+/** Distinguish absent/empty attributes and about:blank without retaining URL credentials. */
+export function colorPreviewAddress(value: string | null, base: string) {
+  if (value === null || value === "") return value;
+  try {
+    const url = new URL(value, base),
+      protocol = url.protocol;
+    if (!["http:", "https:", "about:"].includes(protocol)) return { protocol, opaque: true };
+    const query = !!url.search,
+      fragment = !!url.hash,
+      credentials = !!(url.username || url.password);
+    url.username = url.password = url.search = url.hash = "";
+    return { value: url.href, protocol, query, fragment, credentials };
+  } catch {
+    return { invalid: true };
+  }
+}
+
+/** Preserve the original refusal even when inspecting or retaining the live page also fails. */
+export async function retainColorPreviewFailure(
+  error: unknown,
+  inspect: () => Promise<unknown>,
+  e: Pick<Evidence, "json">,
+  prefix: string,
+): Promise<never> {
+  let observation: unknown;
+  try {
+    observation = { page: await inspect() };
+  } catch (inspectionError) {
+    observation = { inspectionError: String(inspectionError) };
+  }
+  try {
+    await e.json(`${prefix}/preview-refusal.json`, {
+      error:
+        error instanceof Error
+          ? { name: error.name, message: error.message, stack: error.stack }
+          : { kind: typeof error },
+      observation,
+    });
+  } catch (retentionError) {
+    throw new AggregateError(
+      [error, retentionError],
+      "Color preview and failure retention refused",
+    );
+  }
+  throw error;
+}
 export function colorCaptureLaw(data: ColorPacket, art: string, side: Side, phase: ColorPhase) {
   const failed = side === "left" && (phase === "diff" || phase === "update");
   assert.equal(data.success, true);
@@ -146,7 +193,100 @@ export async function capturePublicColor(input: {
   const button = page
     .frameLocator(".variant-card iframe")
     .getByRole("button", { name: title, exact: true });
-  await button.waitFor({ timeout: 15000 });
+  try {
+    await button.waitFor({ timeout: 15000 });
+  } catch (error) {
+    await retainColorPreviewFailure(
+      error,
+      async () => {
+        // No input values, query, fragment, credentials, request headers or session data.
+        const raw = await page.evaluate(() => ({
+          location: location.href,
+          heading: document.querySelector(".component-title")?.textContent,
+          activeArts: [...document.querySelectorAll(".art-item.active")].map((art) => ({
+            tag: art.tagName,
+            text: art.textContent,
+            href: art.getAttribute("href"),
+          })),
+          tabs: [...document.querySelectorAll(".component-tabs button")].map((tab) => ({
+            text: tab.textContent,
+            pressed: tab.getAttribute("aria-pressed"),
+          })),
+          scroll: { x: scrollX, y: scrollY, width: innerWidth, height: innerHeight },
+          frames: [...document.querySelectorAll<HTMLIFrameElement>(".variant-card iframe")].map(
+            (frame) => {
+              const rect = frame.getBoundingClientRect(),
+                css = getComputedStyle(frame);
+              const content = (() => {
+                try {
+                  const doc = frame.contentDocument;
+                  return doc
+                    ? {
+                        location: doc.URL,
+                        readyState: doc.readyState,
+                        buttons: [...doc.querySelectorAll("button")].map(
+                          (item) => item.textContent,
+                        ),
+                        message: doc.querySelector(".musea-loading, .musea-error")?.textContent,
+                      }
+                    : { accessible: false, reason: "contentDocument is null" };
+                } catch (accessError) {
+                  return { accessible: false, error: String(accessError) };
+                }
+              })();
+              return {
+                tag: frame.tagName,
+                src: frame.getAttribute("src"),
+                currentSrc: frame.src,
+                loading: frame.loading,
+                connected: frame.isConnected,
+                rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+                css: { display: css.display, visibility: css.visibility, opacity: css.opacity },
+                intersectsViewport:
+                  rect.bottom > 0 &&
+                  rect.right > 0 &&
+                  rect.top < innerHeight &&
+                  rect.left < innerWidth,
+                content,
+              };
+            },
+          ),
+        }));
+        const observation = {
+          ...raw,
+          location: colorPreviewAddress(raw.location, raw.location),
+          activeArts: raw.activeArts.map((art) => ({
+            ...art,
+            href: colorPreviewAddress(art.href, raw.location),
+          })),
+          frames: raw.frames.map((frame) => ({
+            ...frame,
+            src: colorPreviewAddress(frame.src, raw.location),
+            currentSrc: colorPreviewAddress(frame.currentSrc, raw.location),
+            content:
+              "location" in frame.content && typeof frame.content.location === "string"
+                ? {
+                    ...frame.content,
+                    location: colorPreviewAddress(frame.content.location, raw.location),
+                  }
+                : frame.content,
+          })),
+        };
+        if ((await page.getByLabel("Session token", { exact: true }).count()) === 0) {
+          // The original connected-session law already removes the credential input.
+          try {
+            const screenshot = await page.screenshot({ timeout: 5000 });
+            await e.save(`${prefix}/preview-refusal.png`, screenshot);
+          } catch (screenshotError) {
+            return { ...observation, screenshotError: String(screenshotError) };
+          }
+        }
+        return observation;
+      },
+      e,
+      prefix,
+    );
+  }
   const actualPreview = await button.evaluate((element) => ({
     color: getComputedStyle(element).backgroundColor,
     url: element.ownerDocument.URL,
