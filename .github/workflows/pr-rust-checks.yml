@@ -206,6 +206,7 @@ jobs:
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
       RUST_TEST_THREADS: "4"
       NEXTEST_PROFILE: ${{ github.event_name == 'merge_group' && 'full' || 'pr' }}
+      VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ github.workspace }}/target/nextest/${{ github.event_name == 'merge_group' && 'full' || 'pr' }}/template-emit-ts40-projection
       COHORT: ${{ matrix.cohort }}
       NEXTEST_FILTER: ${{ matrix.filter }}
       RUST_PLAN_JSON: ${{ inputs.rust-plan }}
