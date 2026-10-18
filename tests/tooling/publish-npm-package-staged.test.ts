@@ -7,7 +7,7 @@ import { test } from "node:test";
 
 import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
-import { writeFakeNpmRegistry } from "./support/fake-npm-registry.ts";
+import { fakeNpmArchiveSource, writeFakeNpmRegistry } from "./support/fake-npm-registry.ts";
 
 // Run the actual registry peer unchanged, but admit one complete transaction
 // before the other. Both orders are legal for Promise.all visibility requests.
@@ -18,6 +18,7 @@ function orderRegistryProbes(binDir: string, first: "version" | "metadata"): voi
     binDir,
     "curl",
     [
+      fakeNpmArchiveSource,
       "const fs = require('node:fs');",
       "const path = require('node:path');",
       "const { spawnSync } = require('node:child_process');",
@@ -141,6 +142,7 @@ function assertStagedPublish(first: "version" | "metadata"): void {
       "staged publish",
       `${versionUrl}${query}-1`,
       ...(first === "version" ? [versionProbe, metadataProbe] : [metadataProbe, versionProbe]),
+      "https://registry.npmjs.org/@vizejs/example/-/fixture-1.2.3.tgz",
     ]);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
