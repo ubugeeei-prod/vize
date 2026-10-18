@@ -34,7 +34,28 @@ fn complete_original_and_prefix_controls_keep_three_fixed_points() -> Result<(),
     let corpus: Corpus = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/differential/formatter-regressions/continuation-prefix-width-7876/corpus.json"
     ))?;
-    assert_eq!(corpus.cases.len(), 11);
+    let ids: Vec<_> = corpus.cases.iter().map(|case| case.id.as_str()).collect();
+    assert_eq!(ids.len(), 14);
+    assert_eq!(
+        ids.as_slice(),
+        &[
+            "original-example",
+            "original-paragraph",
+            "exact-40",
+            "over-41",
+            "unicode-display-41",
+            "tabs-four-columns",
+            "authored-crlf-auto",
+            "bracket-same-line",
+            "suppression-lock",
+            "one-line-p-no-leading-gap",
+            "continued-self-closing-img",
+            // Append-only directive framing cases; keep the original eleven above.
+            "dynamic-bind-brackets-arrow-value-lf",
+            "dynamic-event-brackets-modifier-lf",
+            "dynamic-template-key-assignment-crlf",
+        ]
+    );
     let directory = Path::new(env!("CARGO_MANIFEST_DIR")).join(
         "../../tests/_fixtures/differential/formatter-regressions/continuation-prefix-width-7876",
     );

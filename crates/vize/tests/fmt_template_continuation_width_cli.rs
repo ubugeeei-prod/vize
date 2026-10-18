@@ -48,7 +48,31 @@ fn all_whole_vectors_and_original_json_ts_configs_keep_complete_bytes() -> Resul
         "../../tests/_fixtures/differential/formatter-regressions/continuation-prefix-width-7876",
     );
     let cases = corpus["cases"].as_array().ok_or("missing cases")?;
-    assert_eq!(cases.len(), 11);
+    let ids: Vec<_> = cases
+        .iter()
+        .map(|case| case["id"].as_str().expect("missing case id"))
+        .collect();
+    assert_eq!(ids.len(), 14);
+    assert_eq!(
+        ids.as_slice(),
+        &[
+            "original-example",
+            "original-paragraph",
+            "exact-40",
+            "over-41",
+            "unicode-display-41",
+            "tabs-four-columns",
+            "authored-crlf-auto",
+            "bracket-same-line",
+            "suppression-lock",
+            "one-line-p-no-leading-gap",
+            "continued-self-closing-img",
+            // Append-only directive framing cases; keep the original eleven above.
+            "dynamic-bind-brackets-arrow-value-lf",
+            "dynamic-event-brackets-modifier-lf",
+            "dynamic-template-key-assignment-crlf",
+        ]
+    );
     for case in cases {
         let source = fs::read(directory.join(case["input"].as_str().ok_or("missing input")?))?;
         let expected = fs::read(directory.join(case["output"].as_str().ok_or("missing output")?))?;
