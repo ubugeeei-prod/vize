@@ -88,6 +88,12 @@ jobs:
         if: ${{ !cancelled() && steps.guard.outcome == 'success' && steps.prepare.outcome == 'success' && steps.install.outcome == 'success' && steps.installed.outcome == 'success' && steps.lsp_rust.outcome == 'success' }}
         shell: bash
         run: node tools/support/release/public_acceptance/lsp.ts 2>&1 | tee "$PUBLIC_OUTPUT/lsp.log"
+      - name: Replay complete formatter CLI stock semantics with the installed public CLI
+        id: formatter
+        if: ${{ !cancelled() && steps.guard.outcome == 'success' && steps.prepare.outcome == 'success' && steps.install.outcome == 'success' && steps.installed.outcome == 'success' && steps.lsp.outcome == 'success' }}
+        shell: bash
+        run: |
+          node --test tests/tooling/formatter-expression-width-semantics.test.mjs tests/tooling/formatter-continuation-prefix-width.test.mjs 2>&1 | tee "$PUBLIC_OUTPUT/formatter.log"
       - name: Replay public Musea gallery and globals
         id: browser
         if: >-
@@ -140,7 +146,7 @@ jobs:
           exit "$vrt_status"
       - name: Seal installed public acceptance
         env: { GH_TOKEN: "${{ github.token }}" }
-        if: ${{ success() && steps.native.outcome == 'success' && steps.browser.outcome == 'success' && steps.lsp.outcome == 'success' }}
+        if: ${{ success() && steps.native.outcome == 'success' && steps.browser.outcome == 'success' && steps.lsp.outcome == 'success' && steps.formatter.outcome == 'success' }}
         shell: bash
         run: node tools/support/release/public_acceptance/accept.ts finish 2>&1 | tee "$PUBLIC_OUTPUT/finish.log"
       - name: Retain actual public observations

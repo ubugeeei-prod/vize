@@ -8,7 +8,16 @@ import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 import { readRepoFile } from "./github-workflows.ts";
 
-type Step = { id?: string; name?: string; if?: string; "continue-on-error"?: boolean };
+type Step = {
+  id?: string;
+  name?: string;
+  if?: string;
+  run?: string;
+  shell?: string;
+  env?: Record<string, string>;
+  "working-directory"?: string;
+  "continue-on-error"?: boolean;
+};
 type Workflow = { jobs: { "public-consumer": { steps: Step[]; "continue-on-error"?: boolean } } };
 type Outcome = "success" | "failure" | "skipped" | "cancelled";
 
@@ -19,11 +28,12 @@ export function independentPublicObservationLaw() {
   ) as Workflow;
   const job = workflow.jobs["public-consumer"];
   const prerequisiteIds = ["guard", "prepare", "install", "installed", "chromium"];
-  const ids = [...prerequisiteIds, "native", "browser", "lsp"];
+  const ids = [...prerequisiteIds, "native", "browser", "lsp", "formatter"];
   for (const id of ids) assert.equal(job.steps.filter((step) => step.id === id).length, 1);
   assert.ok(!job["continue-on-error"]);
   assert.ok(job.steps.every((step) => !step["continue-on-error"]));
   const browser = job.steps.find((step) => step.id === "browser")!;
+  const formatter = job.steps.find((step) => step.id === "formatter")!;
   const seal = job.steps.find((step) => step.name === "Seal installed public acceptance")!;
   const evaluate = (
     condition: string | undefined,
@@ -54,9 +64,26 @@ export function independentPublicObservationLaw() {
     assert.equal(evaluate(browser.if, { native: outcome }, false, false), false);
   assert.equal(evaluate(browser.if, { native: "failure" }, true, false), false);
   assert.equal(evaluate(browser.if, {}, true), false);
+  assert.equal(formatter.shell, "bash");
+  assert.equal(formatter.env, undefined, "reuse authentic public consumer and workflow identity");
+  assert.equal(formatter["working-directory"], undefined, "run reviewed stock tests from checkout");
+  assert.equal(
+    formatter.run,
+    'node --test tests/tooling/formatter-expression-width-semantics.test.mjs tests/tooling/formatter-continuation-prefix-width.test.mjs 2>&1 | tee "$PUBLIC_OUTPUT/formatter.log"\n',
+  );
+  const position = (id: string) => job.steps.findIndex((step) => step.id === id);
+  assert.ok(position("lsp") < position("formatter") && position("formatter") < position("browser"));
+  assert.equal(evaluate(formatter.if), true);
+  assert.equal(evaluate(formatter.if, { native: "failure" }, false, false), true);
+  for (const id of ["guard", "prepare", "install", "installed", "lsp"])
+    for (const outcome of ["failure", "skipped", "cancelled"] as const)
+      assert.equal(evaluate(formatter.if, { [id]: outcome }), false);
+  assert.equal(evaluate(formatter.if, {}, true), false);
+  for (const outcome of ["failure", "skipped", "cancelled"] as const)
+    assert.equal(evaluate(browser.if, { formatter: outcome }, false, false), true);
   assert.equal(evaluate(seal.if), true);
   assert.equal(evaluate(seal.if, {}, false, false), false);
-  for (const id of ["native", "browser", "lsp"]) {
+  for (const id of ["native", "browser", "lsp", "formatter"]) {
     for (const outcome of ["failure", "skipped", "cancelled"] as const)
       assert.equal(evaluate(seal.if, { [id]: outcome }), false);
   }

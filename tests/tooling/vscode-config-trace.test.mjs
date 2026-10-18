@@ -125,7 +125,8 @@ await test("actual watcher traces original accepted/rejected create/change/delet
     "project configuration changed",
     "workspace changed",
   ]);
-  assert.equal(trace.length, 19);
+  assert.equal(trace.length, 38);
+  assert.equal(trace[0], `watch register workspace=file:///workspace pattern=${CONFIG_GLOB}`);
   for (const kind of ["create", "change", "delete"]) {
     assert.ok(
       trace.includes(
@@ -266,8 +267,8 @@ await test("folder updates retain existing watchers, register additions and reti
   assert.deepEqual(reasons, []);
   assert.equal(
     trace.length,
-    traceLength,
-    "removed watcher callbacks are closed before tracing or dispatch",
+    traceLength + 3,
+    "removed watcher callbacks retain only passive raw events, never dispatch",
   );
   watchers[1].callbacks.change(fileUri("/another/packages/app/vite.config.ts"));
   assert.deepEqual(reasons, ["project configuration changed"]);
@@ -355,6 +356,30 @@ await test("disposal closes every watcher and ignores retained workspace-folder 
   }
   assert.equal(watchers.length, 2);
   assert.equal(operations.length, operationsLength);
-  assert.equal(trace.length, traceLength);
+  assert.equal(trace.length, traceLength + 6);
+  assert.ok(
+    trace
+      .slice(traceLength)
+      .every((line) => line.includes("disposed=true active=false owner=undefined")),
+  );
+  assert.deepEqual(reasons, []);
+});
+
+await test("raw watcher events retain URI and lifecycle before the original ownership rejection", () => {
+  const { discovery, callbacks, trace } = createDiscovery();
+  const reasons = [];
+  const subscriptions = discovery.watch((reason) => reasons.push(reason));
+  callbacks.change(fileUri("/outside/packages/app/tsconfig.app.json"));
+  assert.equal(
+    trace.at(-1),
+    "watch event kind=change uri=file:///outside/packages/app/tsconfig.app.json workspace=file:///workspace disposed=false active=true owner=undefined",
+  );
+  assert.deepEqual(reasons, []);
+  for (const subscription of subscriptions) subscription.dispose();
+  callbacks.change(fileUri("/workspace/packages/app/tsconfig.app.json"));
+  assert.equal(
+    trace.at(-1),
+    "watch event kind=change uri=file:///workspace/packages/app/tsconfig.app.json workspace=file:///workspace disposed=true active=false owner=undefined",
+  );
   assert.deepEqual(reasons, []);
 });

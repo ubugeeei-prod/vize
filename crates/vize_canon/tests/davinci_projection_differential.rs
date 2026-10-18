@@ -102,24 +102,32 @@ fn check_diagnostics_land_inside_the_projection() {
     );
     let mut compared = 0usize;
     let mut added = 0usize;
+    let mut svg_added = 0usize;
     let mut carriers = projection_carriers::Carriers::new(&root, &files);
+    let mut svg_carriers = projection_carriers::Carriers::svg(&root, &files);
     let mut divergences = Vec::new();
     for path in &files {
         let Ok(source) = std::fs::read_to_string(path) else {
             continue;
         };
         let carrier = carriers.source(path, &source);
+        let svg_carrier = svg_carriers.source(path, &source);
+        let observer = if svg_carrier {
+            &svg_carriers
+        } else {
+            &carriers
+        };
         let Ok(descriptor) = parse_sfc(&source, SfcParseOptions::default()) else {
-            carriers.record(path, serde_json::json!({"phase": "SFC parse refused"}));
+            observer.record(path, serde_json::json!({"phase": "SFC parse refused"}));
             continue;
         };
         let Some(template) = descriptor.template.as_ref() else {
-            carriers.record(path, serde_json::json!({"phase": "no template"}));
+            observer.record(path, serde_json::json!({"phase": "no template"}));
             continue;
         };
         let body: &str = template.content.as_ref();
         if body.is_empty() {
-            carriers.record(path, serde_json::json!({"phase": "empty template"}));
+            observer.record(path, serde_json::json!({"phase": "empty template"}));
             continue;
         }
         let base = template.loc.start;
@@ -138,7 +146,10 @@ fn check_diagnostics_land_inside_the_projection() {
                 continue;
             }
             if contains(&new, &span) {
-                if carrier {
+                if svg_carrier {
+                    svg_added += 1;
+                    additions.push(diagnostic);
+                } else if carrier {
                     added += 1;
                     additions.push(diagnostic);
                 } else {
@@ -153,7 +164,7 @@ fn check_diagnostics_land_inside_the_projection() {
                 ));
             }
         }
-        carriers.record(
+        observer.record(
             path,
             serde_json::json!({
                 "phase": "checked",
@@ -163,12 +174,13 @@ fn check_diagnostics_land_inside_the_projection() {
         );
     }
     carriers.finish();
+    svg_carriers.finish();
     assert!(
         divergences.is_empty(),
         "check diagnostics missed by the projection:\n{}",
         divergences.join("\n")
     );
-    eprintln!("check diagnostic comparisons={compared} additive={added}");
+    eprintln!("check diagnostic comparisons={compared} additive={added} svg={svg_added}");
     assert_eq!(
         compared, CHECK_DIAGNOSTIC_COMPARISONS,
         "vize check diagnostic comparisons changed; a zero run fails"
@@ -176,6 +188,10 @@ fn check_diagnostics_land_inside_the_projection() {
     assert_eq!(
         added, 7,
         "registered carrier comparisons changed; additions do not replace the original 64"
+    );
+    assert_eq!(
+        svg_added, 2,
+        "SVG carrier comparisons changed; additions do not replace the original 64 or registered 7"
     );
 }
 

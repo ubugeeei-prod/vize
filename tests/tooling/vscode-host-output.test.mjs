@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
+import { parse } from "yaml";
 import {
   retainHostOutput,
   retainHostOutputBeforeCleanup,
@@ -116,11 +117,16 @@ await test("actual runner retains native output on success and failure while pre
       async runTests(options) {
         assert.equal(options.version, process.env.VIZE_TEST_VSCODE_VERSION ?? "1.107.1");
         assert.equal(options.extensionTestsEnv.VIZE_TEST_ENABLE_HOST_COMMANDS, "1");
+        assert.equal(options.launchArgs[options.launchArgs.indexOf("--log") + 1], "trace");
         const userData = options.launchArgs.find((argument) =>
           argument.startsWith("--user-data-dir="),
         );
         profile = path.dirname(userData.slice("--user-data-dir=".length));
         write(nativeLog(profile), bytes);
+        write(
+          path.join(profile, "user-data/logs/session/sharedprocess.log"),
+          "complete native watcher registration\n",
+        );
         if (mode === "retention-failure")
           write(path.join(extension, ".vscode-test/host-smoke/output-channel"), "blocked");
         if (mode !== "success") throw originalError;
@@ -136,6 +142,10 @@ await test("actual runner retains native output on success and failure while pre
       assert.equal(fs.existsSync(profile), false);
       if (mode !== "retention-failure") {
         const output = path.join(extension, ".vscode-test/host-smoke/output-channel");
+        assert.equal(
+          fs.readFileSync(path.join(output, "session/sharedprocess.log"), "utf8"),
+          "complete native watcher registration\n",
+        );
         assert.deepEqual(
           fs.readFileSync(
             path.join(
@@ -161,4 +171,58 @@ await test("actual runner retains native output on success and failure while pre
       fs.rmSync(temporary, { recursive: true, force: true });
     }
   }
+});
+
+await test("complete diagnostic logs preserve native bytes while excluding the rest of the profile", () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-output-native-"));
+  const profile = path.join(temporary, "profile");
+  const destination = path.join(temporary, "retained");
+  const logs = [
+    "session/main.log",
+    "session/sharedprocess.log",
+    "session/window1/renderer.log",
+    "session/window1/exthost/exthost.log",
+  ];
+  const bytes = Buffer.from("native watcher\0\xff\n");
+  try {
+    write(nativeLog(profile), "Vize output");
+    for (const log of logs) write(path.join(profile, "user-data/logs", log), bytes);
+    write(path.join(profile, "user-data/User/settings.json"), "not a log");
+    write(path.join(profile, "extensions/private.txt"), "not a log");
+    retainHostOutput(profile, destination, true);
+    for (const log of logs) assert.deepEqual(fs.readFileSync(path.join(destination, log)), bytes);
+    assert.equal(fs.existsSync(path.join(destination, "User")), false);
+    assert.equal(fs.existsSync(path.join(destination, "extensions")), false);
+    fs.symlinkSync(
+      path.join(profile, "extensions/private.txt"),
+      path.join(profile, "user-data/logs/escaped.log"),
+    );
+    assert.throws(() => retainHostOutput(profile, destination, true), /Refusing symbolic link/);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+await test("existing host routes retain configuration packets and native logs unconditionally", () => {
+  const action = parse(
+    fs.readFileSync(path.join(root, ".github/actions/vscode-host-smoke/action.yml"), "utf8"),
+  );
+  const upload = action.runs.steps.find((step) => step.with?.name === "vscode-real-host-failure");
+  assert.equal(upload.if, "${{ always() }}");
+  for (const required of [
+    "editors/vscode/.vscode-test/host-smoke/output-channel/",
+    "editors/vscode/.vscode-test/host-smoke/fake-server/existing-config-events/",
+  ]) {
+    assert.ok(upload.with.path.split("\n").includes(required));
+  }
+  const workflow = parse(
+    fs.readFileSync(path.join(root, ".github/workflows/editor-conformance.yml"), "utf8"),
+  );
+  const hostSteps = Object.values(workflow.jobs)
+    .flatMap((job) => job.steps ?? [])
+    .filter(
+      (step) => step.run === "xvfb-run -a vp run --workspace-root test:vscode-extension:host",
+    );
+  assert.equal(hostSteps.length, 1);
+  assert.equal(hostSteps[0].if, "matrix.client == 'vscode'");
 });

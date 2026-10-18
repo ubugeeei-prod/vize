@@ -65,6 +65,8 @@ try {
       VIZE_TEST_SERVER_VERSION: packageJson.version,
     },
     launchArgs: [
+      "--log",
+      "trace",
       `--extensions-dir=${path.join(profilePath, "extensions")}`,
       `--user-data-dir=${path.join(profilePath, "user-data")}`,
       "--disable-extensions",
@@ -88,5 +90,5 @@ try {
   });
   throw error;
 } finally {
-  retainHostOutputBeforeCleanup(profilePath, path.join(testDataPath, "output-channel"));
+  retainHostOutputBeforeCleanup(profilePath, path.join(testDataPath, "output-channel"), true);
 }

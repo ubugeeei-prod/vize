@@ -4,7 +4,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { bytes, hash } from "../../npm/native/scripts/formatter-history-build.mjs";
-import { nativePreparationIsActive } from "../../npm/native/scripts/test-preparation.mjs";
+import { readActiveNativePreparation } from "../../npm/native/scripts/test-preparation.mjs";
 import { requirePreparedNative } from "../../npm/builder/vite/scripts/run-tests.mjs";
 
 // Preserve undefined, symbols and the actual callable config source. This is
@@ -123,27 +123,102 @@ export function qualifiedConsumerPeer(root, workspace, packageRequire, rootRequi
   };
 }
 
-export function currentAddon(root, receipt, require) {
+function readCurrentAddon(root, receipt, require) {
   const nativeDir = path.join(root, "npm/native");
-  assert(nativePreparationIsActive(nativeDir), "original preparation owner is no longer live");
-  requirePreparedNative(nativeDir);
   for (const key of ["NAPI_RS_NATIVE_LIBRARY_PATH", "NAPI_RS_FORCE_WASI"])
     assert.equal(process.env[key], undefined, `native loader override: ${key}`);
   const local = path.join(nativeDir, receipt.generated.name);
-  assert.equal(hash(fs.readFileSync(local)), receipt.frozen.sha256);
   const entry = require.resolve("@vizejs/native");
   assert.equal(fs.realpathSync(entry), fs.realpathSync(path.join(nativeDir, "index.js")));
-  const direct = require(local);
-  const publicNative = require(entry);
-  for (const key of ["runCli", "normalizeVizeConfig"])
-    assert.equal(publicNative[key], direct[key], `public native API bypassed local addon: ${key}`);
-  const preparation = JSON.parse(
-    fs.readFileSync(path.join(nativeDir, ".artifacts/native/js-test-preparation.json")),
-  );
+  const preparation = readActiveNativePreparation(nativeDir);
+  assert(preparation, "original preparation owner is no longer live");
+  assert.equal(preparation.binding, receipt.generated.name);
   assert.equal(preparation.sha256, receipt.frozen.sha256);
   for (const key of ["head", "tree", "workingDiff"])
     assert.equal(preparation[key], receipt.source[key]);
   return { local, entry, preparation };
+}
+
+function samePreparation(root, preparation) {
+  assert.deepEqual(
+    JSON.parse(
+      fs.readFileSync(path.join(root, "npm/native/.artifacts/native/js-test-preparation.json")),
+    ),
+    preparation,
+    "preparation receipt changed during observation",
+  );
+}
+
+function dataProperty(object, key) {
+  const descriptor = Object.getOwnPropertyDescriptor(object, key);
+  assert(
+    descriptor && Object.hasOwn(descriptor, "value"),
+    `prepared data property changed: ${key}`,
+  );
+  return descriptor;
+}
+
+export function currentAddon(root, receipt, require) {
+  // Keep the expected build identity private from callers of later observations.
+  const expected = {
+    generated: { name: receipt.generated.name },
+    frozen: { sha256: receipt.frozen.sha256 },
+    source: Object.fromEntries(
+      ["head", "tree", "workingDiff"].map((key) => [key, receipt.source[key]]),
+    ),
+  };
+  const custody = readCurrentAddon(root, expected, require);
+  requirePreparedNative(path.join(root, "npm/native"));
+  const keys = ["runCli", "normalizeVizeConfig"];
+  const providers = [custody.local, custody.entry].map((file) => {
+    const exports = require(file);
+    const realpath = fs.realpathSync(file);
+    const module = dataProperty(require.cache, realpath).value;
+    const properties = Object.fromEntries(
+      ["loaded", "exports"].map((key) => [key, dataProperty(module, key)]),
+    );
+    assert.equal(properties.loaded.value, true);
+    assert.equal(properties.exports.value, exports);
+    const api = Object.fromEntries(keys.map((key) => [key, dataProperty(exports, key)]));
+    return { file, realpath, module, properties, exports, api };
+  });
+  for (const key of keys)
+    assert.equal(
+      providers[1].api[key].value,
+      providers[0].api[key].value,
+      `public native API bypassed local addon: ${key}`,
+    );
+  // Initial loading and descriptor observation can execute code. Keep its
+  // independent post-load hash and receipt check after all provider access.
+  assert.equal(hash(fs.readFileSync(custody.local)), expected.frozen.sha256);
+  samePreparation(root, custody.preparation);
+  return {
+    ...custody,
+    observe() {
+      for (const provider of providers) {
+        assert.equal(fs.realpathSync(provider.file), provider.realpath);
+        assert(
+          dataProperty(require.cache, provider.realpath).value === provider.module,
+          "prepared module changed",
+        );
+        for (const [object, properties] of [
+          [provider.module, provider.properties],
+          [provider.exports, provider.api],
+        ]) {
+          for (const [key, saved] of Object.entries(properties)) {
+            const current = dataProperty(object, key);
+            for (const field of ["value", "writable", "enumerable", "configurable"])
+              assert(current[field] === saved[field], `prepared property changed: ${key}.${field}`);
+          }
+        }
+      }
+      // Verify handles first, then hash fresh bytes. No require/dlopen or export
+      // getter runs after this hash; each child retains its own load observations.
+      const current = readCurrentAddon(root, expected, require);
+      samePreparation(root, current.preparation);
+      return current;
+    },
+  };
 }
 
 export function childFrame(command, argv, env, cwd, frame) {
