@@ -1,11 +1,15 @@
 # Release qualification requires Check at the immutable source
 
 The original 2026-10-15 statement that a release does not wait for Check is
-superseded by the current exact-source qualification contract. Before creating
-a new publishing run R, the operator qualifies frozen source H on its release
-branch. The latest matching Check must finish with whole-workflow success and
-all nineteen required jobs successful: seven full jobs and twelve published-crate
-SemVer checks. Failed, cancelled, skipped or pending required evidence blocks R.
+superseded by the current exact-source qualification contract. The operator
+starts or finds Check at frozen source H on its release branch before creating
+publishing run R. R's artifact builds may overlap that pending qualification;
+publication and official integration success require the latest matching Check
+to finish with whole-workflow success and every source-bound required job
+successful. Legacy sources retain seven full jobs plus twelve published-crate
+SemVer checks. The current reusable full profile adds genuine Nuxt qualification
+as an eighth full role. Failed, cancelled, skipped or pending required evidence
+blocks publication and integration; a pending run is never qualified.
 Check evidence from the cut C, integration merge M, or another source is not a
 substitute for H. Existing-R resume preserves the original R and source identities.
 
@@ -30,7 +34,9 @@ still on main's first-parent history, that main still has that parent's
 version, and that the tag does not exist yet. This publishing preflight rechecks
 live qualified H evidence; it does not dispatch or wait for a cold Check. The
 operator's source qualifier dispatches Check on `release/<tag>` before R exists,
-because the tag ref does not exist until publication.
+because the tag ref does not exist until publication. The publishing preflight
+joins that existing Q before its unchanged verify-only command; it cannot
+bootstrap or rerun qualification.
 The package build sequencer is `node tools/support/github/run-many.ts`.
 Node's stable type stripping runs that TypeScript file. Package builds still
 install `rust-script` because tasks such as `generate:rule-types` call the

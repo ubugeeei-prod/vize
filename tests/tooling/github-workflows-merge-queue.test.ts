@@ -5,7 +5,7 @@ import { aggregateNeedsResults } from "../../tools/support/compat/github/require
 import { requireRustTier } from "../../tools/support/compat/github/require-rust-tier.ts";
 import { canonicalSourceReport } from "../../tools/support/compat/github/canonical-corpus-selection.mjs";
 import { rustDifferentialLanes } from "../../tools/support/compat/github/rust-differential-lanes.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 type Step = {
   name?: string;
   if?: string;
@@ -27,7 +27,7 @@ type Job = {
 const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
   jobs: Record<string, Job>;
 };
-const check = parse(readRepoFile(".github", "workflows", "check.yml")) as {
+const check = parse(checkWorkflowJobSources()) as {
   jobs: Record<string, Job>;
 };
 const jsChecks = parse(readRepoFile(".github", "workflows", "pr-js-checks.yml")) as {
@@ -42,6 +42,7 @@ const recipe = parse(
 const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
   jobs: Record<string, Job>;
 };
+const products = parse(readRepoFile(".github/workflows/pr-rust-products.yml")) as typeof rust;
 const differential = parse(readRepoFile(".github", "workflows", "pr-rust-differential.yml")) as {
   jobs: Record<string, Job>;
 };
@@ -82,9 +83,12 @@ test("queue scope reaches the planner and every selected source lane remains req
     'node tools/support/compat/github/plan-pr-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"',
   );
   assert.deepEqual(source.jobs["source-report"].needs, [
-    ...lanes,
+    ...lanes.slice(0, 2),
+    "pr-rust-products",
+    ...lanes.slice(2),
     "nuxt-module-qualification",
     "canonical-corpus",
+    "release-integration-catalog",
   ]);
   assert.equal(
     source.jobs["source-report"].if,
@@ -259,34 +263,51 @@ void test("a failed or disabled Rust tier cannot reach a green required Check re
     return Object.fromEntries(job.needs.map((name) => [name, { result: "success" }]));
   };
   for (const event of ["pull_request", "merge_group"]) {
-    const rustNeeds = success(rust.jobs["rust-source-report"]);
-    const propagate = (runRust: string, results: unknown) => {
-      let rustResult = "failure";
-      try {
-        if (requireRustTier(event, runRust, results).exitCode === 0) rustResult = "success";
-      } catch {
-        // A thrown CLI refusal fails its report step in Actions.
+    for (const [mode, report, sourceJob, ordinary, queue] of [
+      [
+        "source",
+        rust.jobs["rust-source-report"],
+        "pr-rust-source",
+        "pr-rust-build",
+        "merge-rust-differential",
+      ],
+      [
+        "products",
+        products.jobs["rust-product-report"],
+        "pr-rust-products",
+        "pr-rust-shard",
+        "merge-rust-source",
+      ],
+    ] as const) {
+      const rustNeeds = success(report);
+      const propagate = (runRust: string, results: unknown) => {
+        let rustResult = "failure";
+        try {
+          if (requireRustTier(event, runRust, results, mode).exitCode === 0) rustResult = "success";
+        } catch {
+          // A thrown CLI refusal fails its report step in Actions.
+        }
+        const sourceNeeds = success(source.jobs["source-report"]);
+        sourceNeeds["pr-source-plan"].outputs = { "canonical-corpus": "false" };
+        sourceNeeds["canonical-corpus"].result = "skipped";
+        sourceNeeds["nuxt-module-qualification"].result =
+          event === "merge_group" ? "success" : "skipped";
+        sourceNeeds[sourceJob].result = rustResult;
+        const sourceResult = canonicalSourceReport(sourceNeeds, event);
+        const topNeeds = success(check.jobs["test-report"]);
+        topNeeds["pr-source-checks"].result = sourceResult.exitCode === 0 ? "success" : "failure";
+        return aggregateNeedsResults(topNeeds).exitCode;
+      };
+      assert.equal(propagate("true", rustNeeds), 0);
+      assert.equal(propagate("false", rustNeeds), 1);
+      assert.equal(propagate("", rustNeeds), 1);
+      for (const job of event === "merge_group" ? [ordinary, queue] : [ordinary]) {
+        for (const result of ["failure", "cancelled", "skipped"])
+          assert.equal(propagate("true", { ...rustNeeds, [job]: { result } }), 1);
+        const omitted = { ...rustNeeds };
+        delete omitted[job];
+        assert.equal(propagate("true", omitted), 1);
       }
-      const sourceNeeds = success(source.jobs["source-report"]);
-      sourceNeeds["pr-source-plan"].outputs = { "canonical-corpus": "false" };
-      sourceNeeds["canonical-corpus"].result = "skipped";
-      sourceNeeds["nuxt-module-qualification"].result =
-        event === "merge_group" ? "success" : "skipped";
-      sourceNeeds["pr-rust-source"].result = rustResult;
-      const sourceResult = canonicalSourceReport(sourceNeeds, event);
-      const topNeeds = success(check.jobs["test-report"]);
-      topNeeds["pr-source-checks"].result = sourceResult.exitCode === 0 ? "success" : "failure";
-      return aggregateNeedsResults(topNeeds).exitCode;
-    };
-    assert.equal(propagate("true", rustNeeds), 0);
-    assert.equal(propagate("false", rustNeeds), 1);
-    assert.equal(propagate("", rustNeeds), 1);
-    for (const job of ["pr-rust-build", "pr-rust-shard"]) {
-      for (const result of ["failure", "cancelled", "skipped"])
-        assert.equal(propagate("true", { ...rustNeeds, [job]: { result } }), 1);
-      const omitted = { ...rustNeeds };
-      delete omitted[job];
-      assert.equal(propagate("true", omitted), 1);
     }
   }
 });

@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile, root } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile, root } from "./support/github-workflows.ts";
 
 interface Step {
   readonly name?: string;
@@ -82,7 +82,7 @@ test("a failed source plan blocks every source build and cannot pass the source 
 });
 
 test("full checks retain required inventory preflights and exhaustive tooling behind shared callers", () => {
-  const check = parse(readRepoFile(".github", "workflows", "check.yml")) as {
+  const check = parse(checkWorkflowJobSources()) as {
     jobs: Record<string, Job & { uses?: string }>;
   };
   const steps = check.jobs["check-js"].steps ?? [];

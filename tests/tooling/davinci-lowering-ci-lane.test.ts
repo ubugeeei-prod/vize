@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { rustDifferentialLanes } from "../../tools/support/compat/github/rust-differential-lanes.ts";
 
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  readRepoFile,
+  workflowJobBody,
+} from "./support/github-workflows.ts";
 
 const s1ToL2LoweringCorpusCommand =
   "cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_lowering_corpus -- --nocapture";
@@ -32,7 +36,7 @@ function containsCommand(command: string): boolean {
 }
 
 test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const nativeJob = workflowJobBody(workflow, "rust-native-differential");
   const recipe = readRepoFile(
     ".github",

@@ -2,10 +2,14 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  readRepoFile,
+  workflowJobBody,
+} from "./support/github-workflows.ts";
 
 test("Check jobs bound runner time explicitly", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as {
+  const workflow = parse(checkWorkflowJobSources()) as {
     jobs: Record<string, { "runs-on"?: string; "timeout-minutes"?: number }>;
   };
   for (const [jobName, job] of Object.entries(workflow.jobs)) {
@@ -18,7 +22,7 @@ test("Check jobs bound runner time explicitly", () => {
 });
 
 test("SemVer checks run on exact-SHA release dispatches", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const job = workflowJobBody(workflow, "semver-checks");
 
   assert.match(
@@ -37,7 +41,7 @@ test("SemVer checks run on exact-SHA release dispatches", () => {
 });
 
 test("check workflow gates PRs and merge groups without report dependencies", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const reportJob = workflowJobBody(workflow, "test-report");
 
   assert.match(
@@ -67,7 +71,7 @@ test("check workflow gates PRs and merge groups without report dependencies", ()
 });
 
 test("check workflow runs the editor extension host smoke against a real vize server", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const smokeAction = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
 
   assert.match(
@@ -84,7 +88,7 @@ test("check workflow runs the editor extension host smoke against a real vize se
 });
 
 test("check workflow blocks on Rust source and branch coverage budgets", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const clippyJob = workflowJobBody(workflow, "rust-clippy-portability");
   const sourceJob = workflowJobBody(workflow, "source-coverage");
   const branchJob = workflowJobBody(workflow, "branch-coverage");
@@ -119,7 +123,7 @@ test("check workflow blocks on Rust source and branch coverage budgets", () => {
 });
 
 test("check workflow only installs Playwright browsers on cache misses", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
 
   assert.match(workflow, /- name: Cache Playwright browsers\s+id: cache-playwright/);
   assert.match(
@@ -129,7 +133,7 @@ test("check workflow only installs Playwright browsers on cache misses", () => {
 });
 
 test("check workflow builds local native bindings before JS checks", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const checkJsJob = workflowJobBody(workflow, "check-js");
   const buildJob = workflowJobBody(workflow, "build-js-packages");
   const playgroundJob = workflowJobBody(workflow, "playground-test");
@@ -157,7 +161,7 @@ test("check workflow builds local native bindings before JS checks", () => {
 });
 
 test("check workflow uploads the VRT HTML report when snapshots fail", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
 
   assert.match(workflow, /- name: Upload VRT report\s+if: steps\.vrt\.outcome == 'failure'/);
   assert.match(workflow, /name:\s*playground-vrt-report/);

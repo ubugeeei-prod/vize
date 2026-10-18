@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { parse } from "yaml";
 import { canonicalSourceReport } from "../../tools/support/compat/github/canonical-corpus-selection.mjs";
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 
 type Step = {
   name?: string;
@@ -24,7 +24,7 @@ type Job = {
   outputs?: Record<string, string>;
 };
 type Action = { inputs: Record<string, { required?: boolean }>; runs: { steps: Step[] } };
-const full = parse(readRepoFile(".github", "workflows", "check.yml")) as {
+const full = parse(checkWorkflowJobSources()) as {
   jobs: Record<string, Job>;
 };
 const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
@@ -43,11 +43,13 @@ const toolingAction = parse(
 const sourceNeeds = [
   "pr-source-plan",
   "pr-rust-source",
+  "pr-rust-products",
   "pr-js-packages",
   "pr-native-runtime",
   "pr-playground-test",
   "nuxt-module-qualification",
   "canonical-corpus",
+  "release-integration-catalog",
 ];
 const fullNeeds = ["full-source-cli", "tooling-plan", "test-scripts"];
 const fullCondition =

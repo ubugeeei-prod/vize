@@ -13,6 +13,57 @@ export function readRepoFile(...segments: string[]): string {
   return normalizeRepoText(fs.readFileSync(path.join(root, ...segments), "utf8"));
 }
 
+/** Inspect the actual caller and its closed full-only callee without rewriting jobs. */
+export function checkWorkflowJobSources(
+  caller = readRepoFile(".github", "workflows", "check.yml"),
+  callee = readRepoFile(".github", "workflows", "full-qualification.yml"),
+): string {
+  const expectedCaller = `  full-qualification:
+    name: Full qualification
+    if: \${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/full-qualification.yml
+    with:
+      compare-rust-test-profile: \${{ inputs.compare-rust-test-profile == true }}`;
+  assert.equal(workflowJobBody(caller, "full-qualification"), expectedCaller);
+  const header = `name: Full qualification
+on:
+  workflow_call:
+    inputs:
+      compare-rust-test-profile: { type: boolean, default: false }
+permissions: { contents: read }
+env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
+jobs:
+`;
+  assert.ok(callee.startsWith(header), "full-only workflow authority changed");
+  const jobs = callee.slice(header.length);
+  const ids = [...jobs.matchAll(/^  ([a-z0-9-]+):$/gm)].map((match) => match[1]);
+  assert.deepEqual(ids, [
+    "full-source-cli",
+    "tooling-plan",
+    "test-scripts",
+    "test-scripts-gate",
+    "build-js-packages",
+    "full-js-package-tests",
+    "full-js-original-project",
+    "test-js-packages",
+    "full-rust-workspace",
+    "full-rust-report",
+    "rust-clippy-portability",
+    "rust-davinci-allocations",
+    "rust-native-differential",
+    "clippy-and-test",
+    "playground-test",
+    "editor-extensions",
+    "editor-host-smoke",
+    "nuxt-module-qualification",
+  ]);
+  for (const id of ids)
+    assert.ok(!caller.includes(`\n  ${id}:\n`), `duplicate caller/callee job: ${id}`);
+  // Every returned producer is the original actual job object. The caller's
+  // invocation remains visible and is required above to gate all of them.
+  return `${caller}\n${jobs}`;
+}
+
 export function readGithubYamlFiles(): Array<{ relativePath: string; content: string }> {
   const files: Array<{ relativePath: string; content: string }> = [];
   const visit = (directory: string) => {

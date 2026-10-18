@@ -11,7 +11,7 @@ import {
   checkReleaseGates,
   planReleaseGates,
 } from "../../tools/support/compat/github/plan-release-gates.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 import {
   requiredReleaseWorkflows,
   requiredWorkflowJobNames,
@@ -86,7 +86,7 @@ void test("dormant queue workflow retains each planned gate and its original pre
       { needs?: string[]; if?: string; uses?: string; with?: object; steps?: unknown[] }
     >;
   };
-  const check = parse(readRepoFile(".github", "workflows", "check.yml")) as Workflow;
+  const check = parse(checkWorkflowJobSources()) as Workflow;
   const workflow = parse(
     readRepoFile(".github", "workflows", "queue-release-gates.yml"),
   ) as Workflow;
@@ -126,7 +126,7 @@ void test("publication requires the actual full Check aggregates and ordinary qu
     if?: string;
     steps?: Array<{ uses?: string; with?: Record<string, string>; run?: string }>;
   };
-  const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as {
+  const workflow = parse(checkWorkflowJobSources()) as {
     jobs: Record<string, Job>;
   };
   const job = (key: string) => {
@@ -153,17 +153,7 @@ void test("publication requires the actual full Check aggregates and ordinary qu
   }
   for (const [owner, dependencies] of [
     ["test-scripts-gate", ["full-source-cli", "tooling-plan", "test-scripts"]],
-    [
-      "full-js-report",
-      [
-        "test-js-packages",
-        "build-js-packages",
-        "test-scripts",
-        "full-source-cli",
-        "check-js",
-        "instruction-counts",
-      ],
-    ],
+    ["full-js-report", ["full-qualification", "check-js", "instruction-counts"]],
     ["full-rust-report", ["full-rust-workspace", "clippy-and-test"]],
   ] as const) {
     const report = job(owner);

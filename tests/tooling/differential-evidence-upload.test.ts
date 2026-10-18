@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 
 type Step = {
   name?: string;
@@ -59,7 +59,7 @@ test("evidence artifact identity preserves its prefix and separates jobs, shards
 });
 
 test("the full tooling gate retains failed observations after its extracted tests", () => {
-  const full = parse(readRepoFile(".github", "workflows", "check.yml")) as Workflow;
+  const full = parse(checkWorkflowJobSources()) as Workflow;
   const fullProducer = parse(
     readRepoFile(".github", "workflows", "full-source-cli.yml"),
   ) as Workflow;
@@ -124,7 +124,7 @@ test("the full tooling gate retains failed observations after its extracted test
 // #9198 retired the broad PR tooling shard. The live PR path still executes
 // selected native product actions and remains required by both report levels.
 test("the current PR native runtime lane remains connected to required source and Check reports", () => {
-  const full = parse(readRepoFile(".github", "workflows", "check.yml")) as Workflow;
+  const full = parse(checkWorkflowJobSources()) as Workflow;
   const pr = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as Workflow;
   assert.equal(full.jobs["pr-source-checks"].uses, "./.github/workflows/pr-source-checks.yml");
   const outerNeeds = full.jobs["test-report"].needs;

@@ -17,7 +17,10 @@ import { selectArchive } from "../../tools/support/compat/github/rust-archive-do
 for (const job of ["merge-rust-source"]) {
   void test(`${job} failed-only retry selects its completed producer's exact archive`, async () => {
     const workflow = parse(
-      readFileSync(new URL("../../.github/workflows/pr-rust-checks.yml", import.meta.url), "utf8"),
+      readFileSync(
+        new URL("../../.github/workflows/pr-rust-products.yml", import.meta.url),
+        "utf8",
+      ),
     );
     const upload = workflow.jobs[job].steps.find((step) =>
       step.uses?.startsWith("actions/upload-artifact@"),

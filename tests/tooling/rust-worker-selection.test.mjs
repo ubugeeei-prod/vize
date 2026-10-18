@@ -349,3 +349,23 @@ void test("source or attempt changes during official inventory reads fail closed
     );
   }
 });
+
+void test("only the exact new product workflow names can select all real cohorts", () => {
+  const current = "PR source checks / PR Rust workspace products / Rust tests (";
+  const value = fixture();
+  assert(value.jobs.every((worker) => worker.name.startsWith(current)));
+  assert.equal(select(value).workers.length, cohorts.length);
+  for (const prefix of [
+    "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (",
+    "PR source checks / unrelated successful report / Rust tests (",
+    "Unrelated run / PR Rust workspace products / Rust tests (",
+  ]) {
+    const changed = fixture();
+    for (const worker of changed.jobs) worker.name = worker.name.replace(current, prefix);
+    assert.throws(() => select(changed), /Missing Rust worker compiler/);
+  }
+  const report = fixture();
+  for (const worker of report.jobs)
+    worker.name = "PR source checks / PR Rust workspace products / Rust product report";
+  assert.throws(() => select(report), /Missing Rust worker compiler/);
+});

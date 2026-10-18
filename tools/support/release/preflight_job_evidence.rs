@@ -1,5 +1,42 @@
 use super::{REQUIRED_SEMVER_CRATES, flatten_collection, matrix_selection, repo_root};
 use serde_json::Value;
+use std::{
+    io::Write,
+    process::{Command, Stdio},
+};
+
+fn source_bound_check_names(run: &Value) -> Result<Vec<String>, String> {
+    let mut child = Command::new("node")
+        .arg(repo_root()?.join("tools/support/compat/github/full-check-policy.ts"))
+        .arg("job-names")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|error| format!("Cannot read full Check source profile: {error}"))?;
+    let written = child
+        .stdin
+        .take()
+        .ok_or_else(|| "Missing full Check profile input".to_owned())
+        .and_then(|mut stdin| {
+            stdin
+                .write_all(run.to_string().as_bytes())
+                .map_err(|e| e.to_string())
+        });
+    // Reap even if the pipe closes early: the diagnostic must not leave a child.
+    let output = child
+        .wait_with_output()
+        .map_err(|error| format!("Cannot finish full Check source profile: {error}"))?;
+    if !output.status.success() {
+        return Err(String::from_utf8_lossy(&output.stderr).trim().to_owned());
+    }
+    written?;
+    let names: Vec<String> = serde_json::from_slice(&output.stdout).map_err(|e| e.to_string())?;
+    if ![7, 8].contains(&names.len()) {
+        return Err("Full Check source profile omits product roles".into());
+    }
+    Ok(names)
+}
 
 fn required_workflow_job_names(workflow_name: &str, run: &Value) -> Result<Vec<String>, String> {
     if workflow_name == "Real Project Matrix" {
@@ -7,18 +44,23 @@ fn required_workflow_job_names(workflow_name: &str, run: &Value) -> Result<Vec<S
     }
     Ok(match workflow_name {
         "Check" => {
-            let mut names = [
-                "test-scripts",
-                "test-js-packages",
-                "build-js-packages",
-                "full-js-report",
-                "Full Rust workspace and doctests",
-                "clippy-and-test",
-                "full-rust-report",
-            ]
-            .into_iter()
-            .map(str::to_string)
-            .collect::<Vec<_>>();
+            let mut names = if run.get("referenced_workflows").is_some() {
+                source_bound_check_names(run)?
+            } else {
+                // Original receipts without server callee metadata retain v1.
+                [
+                    "test-scripts",
+                    "test-js-packages",
+                    "build-js-packages",
+                    "full-js-report",
+                    "Full Rust workspace and doctests",
+                    "clippy-and-test",
+                    "full-rust-report",
+                ]
+                .into_iter()
+                .map(str::to_string)
+                .collect::<Vec<_>>()
+            };
             let branch = run.get("head_branch").and_then(Value::as_str).unwrap_or("");
             if run.get("event").and_then(Value::as_str) == Some("workflow_dispatch")
                 && (branch.starts_with("release/v") || branch.starts_with('v'))

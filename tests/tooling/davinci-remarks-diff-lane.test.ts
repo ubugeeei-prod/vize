@@ -2,13 +2,17 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { differentialSteps } from "../../tools/support/compat/github/rust-differential-lanes.ts";
 
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  readRepoFile,
+  workflowJobBody,
+} from "./support/github-workflows.ts";
 
 // TS-32 (P3-13): the corpus remarks-diff rides the required rust-native-differential
 // job beside the sibling feature-gated L1-to-L2 corpus lanes, and the plan's
 // suite row names exactly the command CI runs.
 test("the TS-32 remarks-diff lane is wired and documented", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const nativeJob = workflowJobBody(workflow, "rust-native-differential");
   const recipe = readRepoFile(
     ".github",

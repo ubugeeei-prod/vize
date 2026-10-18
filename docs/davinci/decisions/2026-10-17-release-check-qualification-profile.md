@@ -3,7 +3,7 @@
 ## Decision
 
 An explicit `release-qualification` Check dispatch profile runs every existing
-correctness lane, including the seven required full jobs, twelve published-crate
+correctness lane, including the source-bound full roles, twelve published-crate
 SemVer checks, real editor host, all tooling shards, full Rust workspace tests and
 doctests. Only the instrumented `source-coverage` trend job is omitted in this
 profile. The default is `false`; daily and ordinary manual Full Check continue
@@ -12,8 +12,8 @@ Fixture coverage and nightly branch coverage remain in both profiles.
 
 The existing release gate dispatch plan opts into this profile. It still binds
 the actual H, release ref, workflow, event, latest run and attempt. Publication
-still requires the entire Check workflow to finish successfully and all nineteen
-named jobs to succeed. Pending, failed, cancelled and duplicate evidence remain
+still requires the entire Check workflow to finish successfully and every
+source-bound named job to succeed. Pending, failed, cancelled and duplicate evidence remain
 refusals. The profile does not reuse C or a previous source's Check evidence.
 
 The profile is restricted to `release/vSEMVER` branches and `vSEMVER` tags. Its
@@ -105,7 +105,7 @@ its inherited effective deadline and Q's authenticated creation time plus the
 existing 345-minute full-gate cap. Polls and jobs cannot restart that budget.
 Missing, failed, cancelled or changed Q evidence refuses. An expired pending Q
 cannot wait again. An official resume may immediately authenticate an already
-successful latest Q and every one of its nineteen required jobs, without renewed
+successful latest Q and every source-bound required job, without renewed
 waiting or dispatch. The unchanged verify-only step rechecks live evidence before
 publication. A manually dispatched new candidate must supply a valid bounded
 deadline; it cannot extend the authenticated Q cap.
@@ -114,3 +114,46 @@ This removes the serial Q-then-R build dependency. It does not establish a
 fifteen-minute release: the historical Windows ARM build and native npm publish
 critical paths above remain separate optimization work. Actual-source Q/R overlap,
 total release duration and installed acceptance still require measurement.
+
+## Reuse exact-H product execution at official integration
+
+The closed `full-qualification.yml` callee preserves all seventeen original
+full-only jobs and adds the existing Nuxt build/SSR consumer. The actual run's
+GitHub `referenced_workflows` record must bind this callee to the same repository,
+H, and release ref. This profile requires eight actual successful full roles:
+Tooling, JS package aggregate, JS build, full JS report, workspace tests/doctests,
+Clippy aggregate, full Rust report, and Nuxt consumer. The twelve SemVer jobs are
+unchanged. A reference alone grants no success. Legacy runs without this callee
+retain their original seven-role contract and cannot use the product reuse path.
+
+The existing integration catalog still authenticates the source, pin, operator
+lease, latest whole-success Q and release readiness. Its strict v1 receipt and
+legacy resume behavior remain unchanged. An adjacent product proof additionally
+checks raw Git commit object hashes, H's sole parent C, the merge candidate's
+actual sole parent, and equality of their complete tree IDs. Shipping-catalog
+identity alone is insufficient. A valid different tree or legacy Q runs the
+ordinary product checks; malformed authority or changed evidence refuses.
+
+Only the duplicate archive plus five ordinary Rust workspace cohorts and Nuxt
+consumer may use this proof. Q's real workspace execution now captures all
+registered typechecker fixture cases and the default-feature TS40 projections.
+An explicit workspace receipt binds the source/runtime, original raw inventory,
+actual pre-run executable SHA, post-run SHA, complete JUnit, ordered diagnostics,
+public results and all projection bytes. The full report checks the actual
+successful producer attempt's immutable artifact; a retained successful job is
+not claimed as a new execution. Existing archive-v1 receipts and the five real
+worker aggregation remain the unchanged ordinary route.
+
+Clippy, native lexer parity, isolated feature/differential jobs, JS/conformance,
+real native hosts, playground and canonical observers still execute in the
+queue. They start beside qualification rather than waiting for it. The strict
+source/product reports and required final Check report freshly verify the same
+live authority before accepting any reused result. Every ordinary PR, unknown
+candidate or unsupported source keeps its actual product route. None of the
+four required Check contexts is removed or made advisory.
+
+These changes target duplicate build and test work. The first same-tree official
+integration must earn real hosted execution and reuse evidence; pure fixtures
+are not native qualification or a measured speedup. Pre-Q startup, publication,
+registry visibility, JSR consumers and installed acceptance remain part of total
+release time. The fifteen-minute end-to-end target remains unearned.

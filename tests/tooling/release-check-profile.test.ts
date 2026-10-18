@@ -3,8 +3,11 @@ import { spawnSync } from "node:child_process";
 import { runInNewContext } from "node:vm";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { requiredWorkflowJobNames } from "../../tools/support/compat/github/release-preflight-evidence.mjs";
-import { readRepoFile } from "./support/github-workflows.ts";
+import {
+  assertRequiredWorkflowJobs,
+  requiredWorkflowJobNames,
+} from "../../tools/support/compat/github/release-preflight-evidence.mjs";
+import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 
 type Step = { name?: string; uses?: string; run?: string; if?: string; env?: object };
 type Job = {
@@ -14,7 +17,7 @@ type Job = {
   steps: Step[];
   strategy?: { matrix?: { crate?: string[] } };
 };
-const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as {
+const workflow = parse(checkWorkflowJobSources()) as {
   jobs: Record<string, Job>;
 };
 const jobs = workflow.jobs;
@@ -106,7 +109,7 @@ test("explicit profile refuses nonrelease and malformed release refs through its
   assert.equal(condition(step.if, "workflow_dispatch", "refs/heads/main", false), false);
 });
 
-test("release profile retains all nineteen named jobs and the real editor, tooling and coverage lanes", () => {
+test("release profile retains legacy nineteen roles and the real editor, tooling and coverage lanes", () => {
   const retained = [
     "test-scripts-gate",
     "test-js-packages",
@@ -145,6 +148,78 @@ test("release profile retains all nineteen named jobs and the real editor, tooli
     assert.equal(condition(jobs[id].if, "schedule", "refs/heads/main", false), true);
     assert.equal(condition(jobs[id].if, "pull_request", "refs/pull/1/merge", false), false);
   }
+});
+
+test("server-bound full workflow requires eight actual product jobs and the unchanged twelve API jobs", () => {
+  const head = "a".repeat(40);
+  const referenced = {
+    path: `owner/repo/.github/workflows/full-qualification.yml@${head}`,
+    sha: head,
+    ref: "refs/heads/release/v0.500.0",
+  };
+  const run = {
+    name: "Check",
+    path: ".github/workflows/check.yml",
+    event: "workflow_dispatch",
+    head_sha: head,
+    head_branch: "release/v0.500.0",
+    repository: { full_name: "owner/repo" },
+    referenced_workflows: [referenced],
+  };
+  const products = [
+    "Full qualification / test-scripts",
+    "Full qualification / test-js-packages",
+    "Full qualification / build-js-packages",
+    "full-js-report",
+    "Full qualification / Full Rust workspace and doctests",
+    "Full qualification / clippy-and-test",
+    "Full qualification / full-rust-report",
+    "Full qualification / Nuxt module qualification / Nuxt 3 build and SSR",
+  ];
+  const names = requiredWorkflowJobNames("Check", run);
+  assert.deepEqual(names.slice(0, 8), products);
+  assert.deepEqual(
+    names.slice(8),
+    requiredWorkflowJobNames("Check", {
+      event: "workflow_dispatch",
+      head_branch: run.head_branch,
+    }).slice(7),
+  );
+  assert.equal(names.length, 20);
+  const successful = names.map((name) => ({ name, status: "completed", conclusion: "success" }));
+  assert.doesNotThrow(() => assertRequiredWorkflowJobs("Check", successful, run));
+  for (const name of names) {
+    for (const state of ["missing", "duplicate", "skipped", "failure", "cancelled", "pending"]) {
+      const changed = successful.flatMap((job) => {
+        if (job.name !== name) return [job];
+        if (state === "missing") return [];
+        if (state === "duplicate") return [job, job];
+        return [
+          { ...job, ...(state === "pending" ? { status: "in_progress" } : { conclusion: state }) },
+        ];
+      });
+      assert.throws(
+        () => assertRequiredWorkflowJobs("Check", changed, run),
+        `${name}/${state}`,
+      );
+    }
+  }
+  for (const changed of [
+    { ...run, name: "Other" },
+    { ...run, path: ".github/workflows/other.yml" },
+    { ...run, referenced_workflows: [referenced, referenced] },
+    { ...run, referenced_workflows: [{ ...referenced, sha: "b".repeat(40) }] },
+    { ...run, referenced_workflows: [{ ...referenced, ref: "refs/heads/main" }] },
+    {
+      ...run,
+      referenced_workflows: [
+        { ...referenced, path: `foreign/repo/.github/workflows/full-qualification.yml@${head}` },
+      ],
+    },
+    { ...run, referenced_workflows: [] },
+    { ...run, referenced_workflows: null },
+  ])
+    assert.throws(() => assertRequiredWorkflowJobs("Check", successful, changed));
 });
 
 test("parallel Rust jobs preserve every original step, command byte and runtime setting", () => {

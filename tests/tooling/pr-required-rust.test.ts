@@ -1,3 +1,9 @@
+import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
+import {
+  requireRustTier,
+  requireRustProducts,
+} from "../../tools/support/compat/github/require-rust-tier.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -247,4 +253,247 @@ process.stdout.write(fs.readFileSync(process.env.CARGO_METADATA, "utf8"));
   } finally {
     rmSync(cwd, { recursive: true, force: true });
   }
+});
+
+// Whole parsed producer vectors from 3d93303bb615c71987394528276bd1bed7e3bc40.
+// Only the explicit product-qualification job guard is removed for comparison.
+type RustJob = { if: string; needs: string[]; steps: Array<Record<string, unknown>> };
+const workflowRoot = fileURLToPath(new URL("../../.github/workflows/", import.meta.url));
+const yaml = createRequire(import.meta.url)("yaml") as {
+  parse: (source: string) => { jobs: Record<string, RustJob> };
+};
+const rustWorkflow = (name: string) => yaml.parse(readFileSync(join(workflowRoot, name), "utf8"));
+const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+const results = (jobs: string[], result = "success") =>
+  Object.fromEntries(jobs.map((job) => [job, { result, outputs: {} }]));
+const productJobs = ["merge-rust-source", "pr-rust-shard"];
+const sourceJobs = ["merge-rust-differential", "pr-rust-build"];
+
+test("split Rust workflows preserve whole original producer and corpus recipes", () => {
+  const source = rustWorkflow("pr-rust-checks.yml").jobs;
+  const products = rustWorkflow("pr-rust-products.yml").jobs;
+  assert.deepEqual(Object.keys(source), [...sourceJobs, "rust-source-report"]);
+  assert.deepEqual(Object.keys(products), [...productJobs, "rust-product-report"]);
+  const oldHashes = {
+    "merge-rust-source": "d607059b87aae591d6f83cb6be640da086eb70cda213fcbbef47732d9ff5a754",
+    "merge-rust-differential": "13c78bc5c1872dffc8af00f380e4b65177e524cf516b5914d808aa0bdea1194e",
+    "pr-rust-build": "b6196b2390e511fcbe60021124f07e84642e0d3d377d489316241575df3ffea5",
+    "pr-rust-shard": "af4b97cfdae29725e28edc85ea2683cf6861928a1cf404766625bce18c7a0515",
+  };
+  for (const [id, expected] of Object.entries(oldHashes)) {
+    const job = structuredClone(source[id] ?? products[id]);
+    if (productJobs.includes(id)) {
+      assert.equal(job.if.split(" && inputs.product-qualification == ''").length, 2);
+      job.if = job.if.replace(" && inputs.product-qualification == ''", "");
+    }
+    assert.equal(digest(job), expected, id);
+  }
+  for (const report of [source["rust-source-report"], products["rust-product-report"]]) {
+    assert.equal(report.if, "${{ always() && !contains(needs.*.result, 'cancelled') }}");
+    assert.equal(
+      digest(report.steps.slice(0, 3)),
+      "649b94e358e52ae35218f47ec18138006bbc76d571f9f8bbb0aa58af7156acc7",
+    );
+  }
+  assert.deepEqual(source["rust-source-report"].needs, sourceJobs);
+  assert.deepEqual(products["rust-product-report"].needs, productJobs);
+  assert.equal(source["rust-source-report"].steps.length, 4);
+  assert.equal(
+    source["rust-source-report"].steps[3].run,
+    "node tools/support/compat/github/require-rust-tier.ts --source",
+  );
+  const productReport = products["rust-product-report"];
+  assert.deepEqual(Reflect.get(productReport, "permissions"), {
+    contents: "read",
+    actions: "read",
+    "pull-requests": "read",
+  });
+  assert.equal(
+    productReport.steps[3].run,
+    "node tools/support/compat/github/require-rust-tier.ts --products",
+  );
+  assert.deepEqual(productReport.steps[3].env, {
+    RUN_RUST: "${{ inputs.run-rust }}",
+    NEEDS_JSON: "${{ toJSON(needs) }}",
+    PRODUCT_QUALIFICATION: "${{ inputs.product-qualification }}",
+    RELEASE_QUALIFICATION: "${{ inputs.release-qualification }}",
+    GH_TOKEN: "${{ github.token }}",
+  });
+  const artifactSteps = structuredClone(productReport.steps.slice(4));
+  for (const step of artifactSteps) {
+    assert.equal(typeof step.if, "string");
+    const guard = String(step.if);
+    assert.equal(guard.split(" && inputs.product-qualification == ''").length, 2);
+    step.if = guard.replace(" && inputs.product-qualification == ''", "");
+  }
+  assert.equal(
+    digest(artifactSteps),
+    "f66b569dbbaa0f609d5dfa5bec576e5e4eab3dc845c7d74f19b4ff4c0b04a40e",
+  );
+});
+
+test("source and product modes strictly require all actual jobs, including failures and unknown results", () => {
+  for (const [mode, ids, inactive] of [
+    ["source", sourceJobs, "merge-rust-differential"],
+    ["products", productJobs, "merge-rust-source"],
+  ] as const)
+    for (const event of ["pull_request", "merge_group"]) {
+      const needs = results(ids);
+      if (event === "pull_request") needs[inactive].result = "skipped";
+      assert.equal(requireRustTier(event, "true", needs, mode).exitCode, 0);
+      for (const id of ids) {
+        const missing = { ...needs };
+        delete missing[id];
+        assert.throws(() => requireRustTier(event, "true", missing, mode), /Missing Rust tier job/);
+        for (const result of ["failure", "cancelled", "pending", "unknown", "skipped"]) {
+          if (event === "pull_request" && id === inactive && result === "skipped") continue;
+          assert.equal(
+            requireRustTier(event, "true", { ...needs, [id]: { result } }, mode).exitCode,
+            1,
+          );
+        }
+      }
+      assert.throws(() => requireRustTier(event, "false", needs, mode));
+      assert.throws(() =>
+        requireRustTier(event, "true", { ...needs, unknown: { result: "success" } }, mode),
+      );
+    }
+  assert.throws(() =>
+    requireRustTier("merge_group", "true", results(sourceJobs), "unknown" as "source"),
+  );
+  assert.throws(() => requireRustTier("push", "true", results(sourceJobs), "source"));
+  assert.equal(
+    requireRustTier("merge_group", "true", results([...sourceJobs, ...productJobs])).exitCode,
+    0,
+  );
+});
+
+test("product reuse invokes both original and adjacent live proofs and refuses every unproved shortcut", () => {
+  // Controlled protocol objects grant no genuine GitHub/native qualification.
+  const product = { kind: "controlled product proof" };
+  const qualification = { kind: "controlled original proof" };
+  const needs = results(productJobs, "skipped");
+  const footprint = JSON.stringify(product),
+    original = JSON.stringify(qualification);
+  const observed: unknown[] = [];
+  const verify = (input: unknown) => {
+    observed.push(input);
+    return product;
+  };
+  assert.equal(
+    requireRustProducts("merge_group", "true", needs, footprint, original, verify).exitCode,
+    0,
+  );
+  assert.deepEqual(observed, [{ qualification, product }]);
+  for (const rejected of [null, {}, { ...product, changed: true }])
+    assert.throws(() =>
+      requireRustProducts("merge_group", "true", needs, footprint, original, () => rejected),
+    );
+  assert.throws(
+    () =>
+      requireRustProducts("merge_group", "true", needs, footprint, original, () => {
+        throw new Error("live refusal");
+      }),
+    /live refusal/,
+  );
+  for (const [event, runRust, jobs, adjacent, release] of [
+    ["pull_request", "true", needs, footprint, original],
+    ["merge_group", "false", needs, footprint, original],
+    ["merge_group", "true", {}, footprint, original],
+    ["merge_group", "true", needs, footprint, ""],
+    ["merge_group", "true", needs, "null", original],
+    ["merge_group", "true", needs, "[]", original],
+    ["merge_group", "true", needs, "broken", original],
+    ["merge_group", "true", needs, footprint, "broken"],
+    ["merge_group", "true", needs, footprint, " ".repeat(24_576)],
+  ] as const)
+    assert.throws(() => requireRustProducts(event, runRust, jobs, adjacent, release, verify));
+  for (const id of productJobs)
+    for (const result of ["success", "failure", "cancelled", "pending"])
+      assert.throws(() =>
+        requireRustProducts(
+          "merge_group",
+          "true",
+          { ...needs, [id]: { result } },
+          footprint,
+          original,
+          verify,
+        ),
+      );
+  // Empty footprint never calls a provider and instead requires actual workers.
+  assert.equal(
+    requireRustProducts("merge_group", "true", results(productJobs), "", "", () => {
+      throw new Error("must not call");
+    }).exitCode,
+    0,
+  );
+  assert.equal(requireRustProducts("merge_group", "true", needs, "", "").exitCode, 1);
+});
+
+test("the production product CLI cannot accept self-declared JSON as live qualification", () => {
+  const script = fileURLToPath(
+    new URL("../../tools/support/compat/github/require-rust-tier.ts", import.meta.url),
+  );
+  const result = spawnSync(process.execPath, [script, "--products"], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      GITHUB_EVENT_NAME: "merge_group",
+      RUN_RUST: "true",
+      NEEDS_JSON: JSON.stringify(
+        Object.fromEntries(productJobs.map((job) => [job, { result: "skipped" }])),
+      ),
+      PRODUCT_QUALIFICATION: '{"kind":"forged"}',
+      RELEASE_QUALIFICATION: '{"kind":"forged"}',
+      GITHUB_TOKEN: "",
+      GH_TOKEN: "",
+    },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /current read-only GitHub authority required|Live integration product verification failed/,
+  );
+});
+
+test("actual job selectors keep ordinary workers and source checks while only footprint products can skip", () => {
+  const source = rustWorkflow("pr-rust-checks.yml").jobs;
+  const products = rustWorkflow("pr-rust-products.yml").jobs;
+  const selector = (job: RustJob) =>
+    Function(
+      "event",
+      "runRust",
+      "product",
+      "result",
+      "cancelled",
+      `return (${job.if
+        .slice(3, -2)
+        .replaceAll("github.event_name", "event")
+        .replaceAll("inputs.run-rust", "runRust")
+        .replaceAll("inputs.product-qualification", "product")
+        .replaceAll("needs.merge-rust-source.result", "result")
+        .replaceAll("always()", "true")
+        .replaceAll("cancelled()", "cancelled")})`,
+    );
+  const archive = selector(products["merge-rust-source"]),
+    cohort = selector(products["pr-rust-shard"]);
+  const clippy = selector(source["pr-rust-build"]),
+    differential = selector(source["merge-rust-differential"]);
+  for (const event of ["pull_request", "merge_group"])
+    for (const runRust of [true, false])
+      for (const product of ["", "untrusted-nonempty"])
+        for (const result of ["success", "failure", "skipped"])
+          for (const cancelled of [true, false]) {
+            const args = [event, runRust, product, result, cancelled];
+            assert.equal(archive(...args), event === "merge_group" && runRust && product === "");
+            assert.equal(
+              cohort(...args),
+              !cancelled &&
+                runRust &&
+                product === "" &&
+                (event === "pull_request" || result === "success"),
+            );
+            assert.equal(clippy(...args), runRust);
+            assert.equal(differential(...args), event === "merge_group" && runRust);
+          }
 });

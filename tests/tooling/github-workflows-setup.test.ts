@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  hostedOrBlacksmith,
+  readRepoFile,
+  workflowJobBody,
+} from "./support/github-workflows.ts";
 
 type WorkflowJob = {
   steps?: Array<{ uses?: string; with?: Record<string, unknown> }>;
@@ -37,10 +42,7 @@ test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () =>
   const editorApt = editor.indexOf("sudo apt-get update");
   assert.ok(editorSetup >= 0 && editorSetup < editorApt);
 
-  const check = workflowJobBody(
-    readRepoFile(".github", "workflows", "check.yml"),
-    "playground-test",
-  );
+  const check = workflowJobBody(checkWorkflowJobSources(), "playground-test");
   assert.ok(check.includes("uses: ./.github/actions/install-playwright-browsers"));
 
   const playground = readRepoFile(
@@ -101,7 +103,7 @@ test("docs build isolates musea example cargo checks in a dedicated sticky disk"
 test("WASM build jobs set up Node before invoking the TypeScript builders", () => {
   const cases = [
     {
-      workflowName: "check.yml",
+      workflowName: "full-qualification.yml",
       jobName: "playground-test",
       setup: "- name: Setup Vite+ and Node.js",
       command: "run: node tools/support/github/build-vitrine-wasm.ts playground/src/wasm",

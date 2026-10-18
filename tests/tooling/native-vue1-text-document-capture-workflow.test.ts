@@ -1,3 +1,4 @@
+import { checkWorkflowJobSources } from "./support/github-workflows.ts";
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -10,7 +11,7 @@ const read = (path: string) => readFileSync(new URL(`../../${path}`, import.meta
 const action = parse(read(".github/actions/test-native-vue1-text-document/action.yml"));
 const combined = parse(read(".github/actions/test-native-historical-text-documents/action.yml"));
 const outer = parse(read(".github/actions/test-native-historical-sfc-documents/action.yml"));
-const workflow = parse(read(".github/workflows/check.yml"));
+const workflow = parse(checkWorkflowJobSources());
 const fullTooling = parse(read(".github/actions/test-full-tooling/action.yml"));
 const select = action.runs.steps.find((step: { id?: string }) => step.id === "select");
 

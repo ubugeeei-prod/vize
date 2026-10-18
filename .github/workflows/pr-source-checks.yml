@@ -1,11 +1,24 @@
 name: PR source checks
-on: { workflow_call: null }
-permissions: { contents: read }
+on:
+  workflow_call:
+    outputs:
+      integration:
+        value: ${{ jobs.release-integration-catalog.outputs.integration }}
+      qualification:
+        value: ${{ jobs.release-integration-catalog.outputs.qualification }}
+      product-qualification:
+        value: ${{ jobs.release-integration-catalog.outputs.product-qualification }}
+permissions: { contents: read, pull-requests: read, actions: read }
 env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
 jobs:
+  release-integration-catalog:
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    permissions: { contents: read, pull-requests: read, actions: read }
+    uses: ./.github/workflows/release-integration-catalog.yml
   nuxt-module-qualification:
     name: Nuxt module qualification
-    if: ${{ github.event_name == 'merge_group' }}
+    needs: release-integration-catalog
+    if: ${{ github.event_name == 'merge_group' && needs.release-integration-catalog.outputs.product-qualification == '' }}
     uses: ./.github/workflows/nuxt3-module-build.yml
   pr-source-plan:
     name: Plan PR source checks
@@ -83,6 +96,17 @@ jobs:
       run-rust: true
       rust-plan: ${{ needs.pr-source-plan.outputs.rust-plan }}
       run-source-contracts: ${{ needs.pr-source-plan.outputs.source-contracts == 'true' }}
+  pr-rust-products:
+    name: PR Rust workspace products
+    permissions: { contents: read, actions: read, pull-requests: read }
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    needs: [pr-source-plan, release-integration-catalog]
+    uses: ./.github/workflows/pr-rust-products.yml
+    with:
+      run-rust: true
+      rust-plan: ${{ needs.pr-source-plan.outputs.rust-plan }}
+      release-qualification: ${{ needs.release-integration-catalog.outputs.qualification }}
+      product-qualification: ${{ needs.release-integration-catalog.outputs.product-qualification }}
   pr-js-packages:
     name: PR JS packages
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -255,10 +279,11 @@ jobs:
         run: exit 1
   source-report:
     name: PR source report
+    permissions: { contents: read, actions: read, pull-requests: read }
     # A superseded run reports nothing: its required check fails in test-report.
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
     # prettier-ignore
-    needs: [pr-source-plan, pr-rust-source, pr-js-packages, pr-native-runtime, pr-playground-test, nuxt-module-qualification, canonical-corpus]
+    needs: [pr-source-plan, pr-rust-source, pr-rust-products, pr-js-packages, pr-native-runtime, pr-playground-test, nuxt-module-qualification, canonical-corpus, release-integration-catalog]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:
@@ -266,5 +291,9 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Require every source gate to succeed
-        env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          GH_TOKEN: ${{ github.token }}
+          QUALIFICATION_JSON: ${{ needs.release-integration-catalog.outputs.qualification }}
+          PRODUCT_QUALIFICATION_JSON: ${{ needs.release-integration-catalog.outputs.product-qualification }}
         run: node tools/support/compat/github/canonical-corpus-selection.mjs --check

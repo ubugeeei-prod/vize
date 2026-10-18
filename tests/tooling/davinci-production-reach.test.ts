@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { differentialSteps } from "../../tools/support/compat/github/rust-differential-lanes.ts";
 
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  readRepoFile,
+  workflowJobBody,
+} from "./support/github-workflows.ts";
 
 // P3-17: the production-reach gate rides the required rust-native-differential job,
 // its floors live in reach-budgets.toml [reach] for exactly the measured shapes,
@@ -20,7 +24,7 @@ function reachSection(budgets: string): string {
 }
 
 test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const nativeJob = workflowJobBody(workflow, "rust-native-differential");
   const recipe = readRepoFile(
     ".github",

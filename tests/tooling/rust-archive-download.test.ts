@@ -56,7 +56,7 @@ test("only a clean first success or a single successful retry can qualify", () =
 });
 
 test("workflow bounds both attempts, pins the same ID and requires cleanup plus every original gate", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml"));
+  const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-products.yml"));
   const job = workflow.jobs["pr-rust-shard"];
   const first = job.steps.find((step: { id?: string }) => step.id === "rust-archive-first");
   const retry = job.steps.find((step: { id?: string }) => step.id === "rust-archive-retry");

@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { test } from "node:test";
 
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  readRepoFile,
+  workflowJobBody,
+} from "./support/github-workflows.ts";
 
 // TS-24 (docs/davinci/plan/test-suites.md): the wasm32-wasip2 portability
 // lanes for std L0 and five `no_std` stage libraries run beside Clippy in
@@ -24,7 +28,7 @@ const defaultLane = `cargo build ${packageArgs} --lib --target wasm32-wasip2`;
 const noDefaultLane = `${defaultLane} --no-default-features`;
 
 test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = checkWorkflowJobSources();
   const job = workflowJobBody(workflow, "rust-clippy-portability");
   const suite = readRepoFile("docs/davinci", "plan", "test-suites.md");
   const ts24Rows = suite.split("\n").filter((line) => line.startsWith("| TS-24 "));

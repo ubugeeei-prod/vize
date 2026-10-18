@@ -24,7 +24,7 @@ export function job(cohort, attempt) {
     run_id: context.runId,
     run_attempt: attempt,
     head_sha: context.sha,
-    name: `PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (${definition.name})`,
+    name: `PR source checks / PR Rust workspace products / Rust tests (${definition.name})`,
     status: "completed",
     conclusion: "success",
     started_at: time(attempt, 0),

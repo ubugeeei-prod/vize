@@ -31,6 +31,7 @@ const workflow = (name: string): Workflow => parse(readRepoFile(".github", "work
 const check = workflow("check.yml");
 const source = workflow("pr-source-checks.yml");
 const rust = workflow("pr-rust-checks.yml");
+const products = workflow("pr-rust-products.yml");
 const js = workflow("pr-js-checks.yml");
 const commands = (job: Job): string => (job.steps ?? []).map((step) => step.run ?? "").join("\n");
 const needs = (job: Job): string[] =>
@@ -44,6 +45,7 @@ void test("required source reports include selected product gates and mandatory 
   assert.ok(needs(check.jobs["test-report"]).includes("pr-source-checks"));
   for (const name of [
     "pr-rust-source",
+    "pr-rust-products",
     "pr-js-packages",
     "pr-native-runtime",
     "pr-playground-test",
@@ -63,6 +65,12 @@ void test("required source reports include selected product gates and mandatory 
   assert.equal(source.jobs["pr-rust-source"].with?.["run-rust"], true);
   assert.equal(
     source.jobs["pr-rust-source"].with?.["rust-plan"],
+    "${{ needs.pr-source-plan.outputs.rust-plan }}",
+  );
+  assert.equal(source.jobs["pr-rust-products"].uses, "./.github/workflows/pr-rust-products.yml");
+  assert.equal(source.jobs["pr-rust-products"].with?.["run-rust"], true);
+  assert.equal(
+    source.jobs["pr-rust-products"].with?.["rust-plan"],
     "${{ needs.pr-source-plan.outputs.rust-plan }}",
   );
   assert.equal(source.jobs["pr-js-packages"].uses, "./.github/workflows/pr-js-checks.yml");
@@ -102,7 +110,7 @@ void test("Clippy and doctests start beside affected cohort execution and stay r
   );
   assert.match(validation, /cargo test @packages@ --profile ci --doc/);
   assert.doesNotMatch(validation, /nextest archive/);
-  const producer = rust.jobs["merge-rust-source"];
+  const producer = products.jobs["merge-rust-source"];
   assert.match(producer.if ?? "", /github\.event_name == 'merge_group'/);
   assert.match(commands(producer), /nextest archive @packages@ --cargo-profile ci/);
   const producerSteps = producer.steps ?? [];
@@ -111,18 +119,17 @@ void test("Clippy and doctests start beside affected cohort execution and stay r
     /npm install --global @pkl-community\/pkl@/.test(step.run ?? ""),
   );
   assert.ok(pkl >= 0 && pkl < build, "Pkl is available before archive compilation");
-  for (const name of [
-    "merge-rust-source",
-    "merge-rust-differential",
-    "pr-rust-build",
-    "pr-rust-shard",
-  ])
-    assert.ok(needs(rust.jobs["rust-source-report"]).includes(name), `${name} is required`);
-  assert.match(commands(rust.jobs["rust-source-report"]), /require-rust-tier\.ts/);
+  for (const [report, names] of [
+    [rust.jobs["rust-source-report"], ["merge-rust-differential", "pr-rust-build"]],
+    [products.jobs["rust-product-report"], ["merge-rust-source", "pr-rust-shard"]],
+  ] as const)
+    for (const name of names) assert.ok(needs(report).includes(name), `${name} is required`);
+  assert.match(commands(rust.jobs["rust-source-report"]), /require-rust-tier\.ts --source/);
+  assert.match(commands(products.jobs["rust-product-report"]), /require-rust-tier\.ts --products/);
 });
 
 void test("named Rust cohorts preserve filtered execution and receipt-bound queue archives", () => {
-  const workers = rust.jobs["pr-rust-shard"];
+  const workers = products.jobs["pr-rust-shard"];
   assert.equal(workers.strategy?.matrix, "${{ fromJSON(inputs.rust-plan).testMatrix }}");
   assert.equal(workers.strategy?.["fail-fast"], false);
   assert.equal(workers.env?.COHORT, "${{ matrix.cohort }}");
@@ -165,8 +172,17 @@ void test("named Rust cohorts preserve filtered execution and receipt-bound queu
 });
 
 void test("full repository ratchets and coverage remain scheduled or explicitly requested", () => {
-  for (const command of [/check-skeleton-todos\.rs --check/, /write-coverage-summary\.rs/]) {
-    const jobs = Object.values(check.jobs).filter((job) => command.test(commands(job)));
+  const caller = check.jobs["full-qualification"];
+  assert.equal(caller.uses, "./.github/workflows/full-qualification.yml");
+  assert.ok(caller.if?.includes("github.event_name == 'schedule'"));
+  assert.ok(caller.if?.includes("github.event_name == 'workflow_dispatch'"));
+  assert.ok(!caller.if?.includes("pull_request"));
+  const full = workflow("full-qualification.yml");
+  for (const [physical, command] of [
+    [full, /check-skeleton-todos\.rs --check/],
+    [check, /write-coverage-summary\.rs/],
+  ] as const) {
+    const jobs = Object.values(physical.jobs).filter((job) => command.test(commands(job)));
     assert.ok(jobs.length > 0, `${command} remains available in full checks`);
     for (const job of jobs) {
       assert.ok(job.if?.includes("github.event_name == 'schedule'"));

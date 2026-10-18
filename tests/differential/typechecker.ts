@@ -109,6 +109,64 @@ export type Capture = {
     };
   }>;
 };
+export type WorkspaceCapture = Omit<Capture, "archiveReceiptSha256"> & {
+  version: 2;
+  kind: "full-workspace";
+  workspaceReceiptSha256: string;
+};
+
+export type WorkspaceExecution = { runId: number; runAttempt: number };
+export type WorkspaceSource = {
+  sha: string;
+  tree: string;
+  files: Record<string, string>;
+  rustc: string;
+  cargo: string;
+  platform: string;
+  arch: string;
+  workspaceRoot: string;
+  runtime: Record<string, string | null>;
+  inferredProfileDefaults: unknown;
+};
+export type WorkspaceReceipt = {
+  schema: "vize.typechecker-workspace-receipt";
+  version: 1;
+  kind: "full-workspace";
+  source: WorkspaceSource;
+  execution: WorkspaceExecution;
+  cargoProfile: "ci";
+  nextestVersion: "0.9.146";
+  inventorySha256: string;
+  rawInventorySha256: string;
+  manifestSha256: string;
+  ts40MatrixSha256: string;
+  binary: {
+    id: string;
+    package: string;
+    name: string;
+    listedPath: string;
+    path: string;
+    sha256: string;
+  };
+};
+
+export function validateWorkspaceProducerExecution(value: WorkspaceExecution) {
+  for (const number of Object.values(value)) assert(Number.isSafeInteger(number) && number > 0);
+  assert.deepEqual(Object.keys(value).sort(), ["runAttempt", "runId"]);
+}
+
+export type WorkspaceInventory = {
+  source: WorkspaceSource;
+  cargoProfile: string;
+  rawFile: string;
+  rawSha256: string;
+  binaries: Array<{
+    id: string;
+    package: string;
+    binary: string;
+    cases: Array<{ name: string; ignored: boolean }>;
+  }>;
+};
 export type LoadedTypechecker = {
   manifest: { product: string; baseRevision: string };
   manifestSha256: string;
@@ -235,12 +293,22 @@ export function validateTypecheckerCapture(
 ) {
   assert.equal(capture.schema, "vize.typechecker-fixture-observation");
   assert.equal(capture.version, 1);
+  assert(!Object.hasOwn(capture, "workspaceReceiptSha256") && !Object.hasOwn(capture, "kind"));
+  assert.equal(capture.archiveReceiptSha256, sha256(receipt));
+  validateCaptureBody(loaded, capture, binarySha256);
+  return capture;
+}
+
+function validateCaptureBody(
+  loaded: LoadedTypechecker,
+  capture: Capture | WorkspaceCapture,
+  binarySha256: string,
+) {
   assert(Object.hasOwn(TYPECHECKER_TESTS, capture.pack));
   const planned = loaded.cases.filter((fixture) => fixture.pack === capture.pack);
   assert(planned.length > 0);
   assert.equal(capture.test, TYPECHECKER_TESTS[capture.pack]);
   assert.equal(capture.fixturePackSha256, planned[0].packReference.sha256);
-  assert.equal(capture.archiveReceiptSha256, sha256(receipt));
   assert.equal(capture.binarySha256, binarySha256);
   assert.deepEqual(capture.missingFields, contract.missingFields);
   assert.equal(capture.matchedContract, matchedContract);
@@ -266,6 +334,37 @@ export function validateTypecheckerCapture(
     );
     for (const input of observed.inputs) relativePath(input.file);
   }
+}
+
+export function validateWorkspaceTypecheckerCapture(
+  loaded: LoadedTypechecker,
+  capture: WorkspaceCapture,
+  { receipt, binarySha256 }: { receipt: Buffer; binarySha256: string },
+) {
+  assert.equal(capture.schema, "vize.typechecker-fixture-observation");
+  assert.equal(capture.version, 2);
+  assert.equal(capture.kind, "full-workspace");
+  assert.deepEqual(
+    Object.keys(capture).sort(),
+    [
+      "schema",
+      "version",
+      "kind",
+      "pack",
+      "test",
+      "fixturePackSha256",
+      "workspaceReceiptSha256",
+      "binarySha256",
+      "binaryPath",
+      "missingFields",
+      "matchedContract",
+      "unbaselinedFields",
+      "cases",
+    ].sort(),
+  );
+  assert(!Object.hasOwn(capture, "archiveReceiptSha256"));
+  assert.equal(capture.workspaceReceiptSha256, sha256(receipt));
+  validateCaptureBody(loaded, capture, binarySha256);
   return capture;
 }
 
@@ -277,8 +376,33 @@ export function typecheckerReport(
   captures: Capture[],
   sourceRevision: string,
 ) {
+  for (const capture of captures) {
+    assert.equal(capture.version, 1);
+    assert(!Object.hasOwn(capture, "workspaceReceiptSha256") && !Object.hasOwn(capture, "kind"));
+  }
+  return capturedReport(loaded, captures, sourceRevision);
+}
+
+export function workspaceTypecheckerReport(
+  loaded: LoadedTypechecker,
+  captures: WorkspaceCapture[],
+  sourceRevision: string,
+) {
+  for (const capture of captures) {
+    assert.equal(capture.version, 2);
+    assert.equal(capture.kind, "full-workspace");
+    assert(!Object.hasOwn(capture, "archiveReceiptSha256"));
+  }
+  return capturedReport(loaded, captures, sourceRevision);
+}
+
+function capturedReport(
+  loaded: LoadedTypechecker,
+  captures: Array<Capture | WorkspaceCapture>,
+  sourceRevision: string,
+) {
   assert.match(sourceRevision, /^[a-f0-9]{40}$/);
-  const byPack = new Map<string, Capture>();
+  const byPack = new Map<string, Capture | WorkspaceCapture>();
   for (const capture of captures) {
     assert(!byPack.has(capture.pack), "duplicate captured test body");
     assert.equal(capture.matchedContract, matchedContract);
@@ -304,13 +428,23 @@ export function typecheckerReport(
         matchedContract,
         unbaselinedFields,
         observation: observed,
-        provenance: {
-          sourceRevision,
-          test: capture.test,
-          archiveReceiptSha256: capture.archiveReceiptSha256,
-          binarySha256: capture.binarySha256,
-          fixturePackSha256: capture.fixturePackSha256,
-        },
+        provenance:
+          "workspaceReceiptSha256" in capture
+            ? {
+                sourceRevision,
+                test: capture.test,
+                kind: "full-workspace",
+                workspaceReceiptSha256: capture.workspaceReceiptSha256,
+                binarySha256: capture.binarySha256,
+                fixturePackSha256: capture.fixturePackSha256,
+              }
+            : {
+                sourceRevision,
+                test: capture.test,
+                archiveReceiptSha256: capture.archiveReceiptSha256,
+                binarySha256: capture.binarySha256,
+                fixturePackSha256: capture.fixturePackSha256,
+              },
       },
       native: { state: "unsupported", reason: "whole-product native typechecker path unavailable" },
       comparison: { state: "not-compared" },

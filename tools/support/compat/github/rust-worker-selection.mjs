@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { RUST_TEST_COHORTS, RUST_TEST_COHORT_IDS } from "./rust-test-cohorts.ts";
 
-const workerPrefix = "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (";
+const workerPrefix = "PR source checks / PR Rust workspace products / Rust tests (";
 const workerNames = new Map(
   RUST_TEST_COHORTS.map(({ id, name }) => [`${workerPrefix}${name})`, id]),
 );

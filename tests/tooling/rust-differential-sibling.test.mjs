@@ -19,6 +19,7 @@ import { parse } from "yaml";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const workflow = (path) => parse(readFileSync(join(root, path), "utf8"));
 const rust = workflow(".github/workflows/pr-rust-checks.yml");
+const products = workflow(".github/workflows/pr-rust-products.yml");
 const differential = workflow(".github/workflows/pr-rust-differential.yml");
 const job = differential.jobs.differential;
 const recipePath = ".github/actions/test-rust-workspace-differential";
@@ -39,19 +40,17 @@ const disk = (steps) =>
 
 await test("affected differential lanes share the full recipe and remain required beside the producer", () => {
   const sibling = rust.jobs["merge-rust-differential"];
-  const producer = rust.jobs["merge-rust-source"];
+  const producer = products.jobs["merge-rust-source"];
   assert.equal(sibling.needs, undefined);
   assert.equal(sibling.if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
   assert.equal(sibling.uses, "./.github/workflows/pr-rust-differential.yml");
   assert.equal(sibling.with["rust-plan"], "${{ inputs.rust-plan }}");
   assert.equal(sibling.with["run-rust"], "${{ inputs.run-rust }}");
-  for (const required of [
-    "merge-rust-source",
-    "merge-rust-differential",
-    "pr-rust-build",
-    "pr-rust-shard",
+  for (const [report, requiredJobs] of [
+    [rust.jobs["rust-source-report"], ["merge-rust-differential", "pr-rust-build"]],
+    [products.jobs["rust-product-report"], ["merge-rust-source", "pr-rust-shard"]],
   ])
-    assert(rust.jobs["rust-source-report"].needs.includes(required), required);
+    for (const required of requiredJobs) assert(report.needs.includes(required), required);
   assert.equal(job.if, sibling.if);
   assert.equal(job.needs, undefined);
   assert.equal(job["continue-on-error"], undefined);

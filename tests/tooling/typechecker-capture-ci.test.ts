@@ -16,7 +16,10 @@ test("capture and CI selection retain unchanged diagnostic assertions and the fu
     assertion >= 0 && capture > assertion,
     "expected data must never substitute for actual diagnostics",
   );
-  const workflow = fs.readFileSync(path.join(root, ".github/workflows/pr-rust-checks.yml"), "utf8");
+  const workflow = fs.readFileSync(
+    path.join(root, ".github/workflows/pr-rust-products.yml"),
+    "utf8",
+  );
   assert(workflow.includes("Prepare required typechecker observations"));
   assert(workflow.includes("Verify actual typechecker fixture observations"));
   assert(workflow.includes("Require all registered typechecker observations"));
