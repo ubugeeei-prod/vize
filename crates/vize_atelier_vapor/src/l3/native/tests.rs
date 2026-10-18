@@ -5,6 +5,11 @@ use crate::compile::native::emit_accepted;
 use vize_carton::Allocator;
 
 #[test]
+fn ordinary_admission_content_does_not_inline_loop_metadata() {
+    assert!(size_of::<super::Content<'static>>() < size_of::<super::Loop<'static>>());
+}
+
+#[test]
 fn inconsistent_accepted_payload_returns_no_render_or_map() {
     for source_map in [false, true] {
         for damage in 0..2 {
