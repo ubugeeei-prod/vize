@@ -148,7 +148,16 @@ export function pngDetails(bytes: Buffer) {
   return { width: png.width, height: png.height, colors, sha256: sha256(bytes) };
 }
 
-export function assertSummary(report: VrtReport | ApiCapture, total: number, counts: VrtCounts) {
+export function assertSummary(
+  report: VrtReport | ApiCapture,
+  total: number,
+  counts: VrtCounts,
+  variantNames?: readonly string[],
+) {
+  if (variantNames !== undefined) {
+    assert.equal(variantNames.length, total);
+    for (const name of variantNames) assert.ok(typeof name === "string" && name.length > 0);
+  }
   assert.equal(report.summary.total, total);
   assert.equal(report.summary.errors, 0);
   assert.equal(report.summary.skipped, 0);
@@ -158,9 +167,9 @@ export function assertSummary(report: VrtReport | ApiCapture, total: number, cou
   assert.equal(report.results.length, total);
   const fromApi = "success" in report;
   if (fromApi) assert.equal(report.success, true);
-  const statuses = report.results.map((result) => {
+  const statuses = report.results.map((result, index) => {
     assert.equal(result.error, undefined);
-    assert.equal(result.variantName, "Default");
+    assert.equal(result.variantName, variantNames === undefined ? "Default" : variantNames[index]);
     assert.equal(result.viewport, "authored-compact");
     if (fromApi) {
       const actual = result as VrtResult;
@@ -252,6 +261,7 @@ export function assertApiReport(
 export async function assertSessionReport(input: {
   report: { data: VrtReport; json: Buffer; html: Buffer };
   packet: SessionCapture;
+  variantNames?: readonly string[];
   root: string;
   width: number;
   height: number;
@@ -262,7 +272,7 @@ export async function assertSessionReport(input: {
   assert.deepEqual(Object.keys(packet).sort(), ["reports", "results", "success", "summary"]);
   assert.equal(packet.success, true);
   assert.deepEqual(report.data.summary, packet.summary);
-  assertSummary(report.data, packet.results.length, packet.summary);
+  assertSummary(report.data, packet.results.length, packet.summary, input.variantNames);
   assert.deepEqual(Object.keys(packet.reports).sort(), ["html", "json"]);
   assert.equal(path.resolve(root), root);
   const physicalRoot = await realpath(root);

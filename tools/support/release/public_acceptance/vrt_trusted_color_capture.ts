@@ -12,7 +12,12 @@ import {
 } from "./vrt_artifacts.ts";
 import { sha256, type Side } from "./vrt_fixtures.ts";
 import type { TrustedColorBuild } from "./vrt_trusted_color_build.ts";
-import { connectPublicSession, publicArtifact, type PublicSession } from "./vrt_trusted_ui.ts";
+import {
+  connectPublicSession,
+  publicArtifact,
+  selectPublicColorArt,
+  type PublicSession,
+} from "./vrt_trusted_ui.ts";
 import type { PublicBodyCustody } from "./vrt_trusted_gallery.ts";
 
 export type ColorPhase = "new" | "match" | "diff" | "update" | "updated-match";
@@ -183,8 +188,7 @@ export async function capturePublicColor(input: {
   for (const [index, image] of otherPNGs.entries())
     await e.save(`${prefix}/other-before-${index}-${image.field}.png`, image.bytes);
   session.assertRunning();
-  await page.getByRole("button", { name: "Variants", exact: true }).click();
-  await page.locator(".art-item").filter({ hasText: title }).click();
+  await selectPublicColorArt(page, title);
   const preview = new URL(build.manifest.previews[art].Default, gallery);
   const physical = await bodies.fetch(preview);
   const button = page

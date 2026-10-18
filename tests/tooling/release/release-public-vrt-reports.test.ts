@@ -16,6 +16,12 @@ import {
   type SessionCapture,
 } from "../../../tools/support/release/public_acceptance/vrt_artifacts.ts";
 
+import { literalVariants } from "../../../tools/support/release/public_acceptance/vrt_literal.ts";
+import {
+  literalCaptureLaw,
+  selectPublicColorArt,
+} from "../../../tools/support/release/public_acceptance/vrt_trusted_ui.ts";
+
 // Inert envelope laws: no product, compiler, renderer, HTTP API or native provider is substituted.
 function envelopes(status: "error" | "new" | "passed" | "failed" = "passed") {
   const shared = {
@@ -169,6 +175,9 @@ test("new API and CLI phases pin every counter and exact new/passed result flags
     Reflect.set(altered.results[0], key, changed);
     assert.throws(() => assertSummary(altered, 1, expected), { name: "AssertionError" });
   }
+  const named = structuredClone(report);
+  named.results[0].variantName = "Custom theme";
+  assert.throws(() => assertSummary(named, 1, expected), /Default/);
   const missingFlag = structuredClone(packet);
   delete missingFlag.results[0].isNew;
   assert.throws(() => assertSummary(missingFlag, 1, expected), { name: "AssertionError" });
@@ -178,32 +187,54 @@ test("new API and CLI phases pin every counter and exact new/passed result flags
 });
 
 /** Actual product projector and frozen HTTP artifact registrations; no renderer/native substitute. */
-async function sessionFixture(t: TestContext, status: "new" | "passed" | "failed" = "new") {
+async function sessionFixture(
+  t: TestContext,
+  status: "new" | "passed" | "failed" = "new",
+  variants?: readonly string[],
+  title = "Button",
+) {
   const root = await mkdtemp(path.join(os.tmpdir(), "vize-public-session-law-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const { packet: privatePacket, report } = envelopes(status);
-  const result = privatePacket.results[0],
-    written = report.results[0];
-  for (const field of ["snapshotPath", "currentPath", "diffPath"] as const) {
-    if (!result[field]) continue;
-    const file = path.join(root, `${field}.png`);
-    // The bridge compares opaque complete bytes; PNG decoding remains a separate original law.
-    await writeFile(file, Buffer.from(`${status}/${field}/whole artifact bytes`));
-    result[field] = written[field] = file;
+  const names = variants ?? ["Default"];
+  const original = privatePacket.results[0],
+    template = report.results[0];
+  privatePacket.results = names.map((variantName) => ({
+    ...original,
+    artPath: path.join(root, "src", `${title}.art.vue`),
+    variantName,
+  }));
+  report.results = privatePacket.results.map((result) => ({
+    ...template,
+    art: title,
+    artPath: result.artPath,
+    variant: result.variantName,
+    variantName: result.variantName,
+  }));
+  for (const key of ["total", "new", "passed", "failed", "errors", "skipped"] as const)
+    report.summary[key] *= names.length;
+  for (const [index, result] of privatePacket.results.entries()) {
+    for (const field of ["snapshotPath", "currentPath", "diffPath"] as const) {
+      if (!result[field]) continue;
+      const file = path.join(root, `${index}-${field}.png`);
+      // The bridge compares complete bytes; PNG decoding stays in the original browser law.
+      await writeFile(file, Buffer.from(`${status}/${index}/${field}/whole artifact bytes`));
+      result[field] = report.results[index][field] = file;
+    }
   }
   const jsonFile = path.join(root, "report.json");
   await writeFile(jsonFile, JSON.stringify(report));
   const json = await readFile(jsonFile),
     html = Buffer.from("<html>whole physical report</html>");
   const service = new SessionArtifacts();
-  const projected = await service.results([
-    {
+  const projected = await service.results(
+    privatePacket.results.map((result, index) => ({
       ...result,
       viewport: { name: "authored-compact", width: 320, height: 180 },
-      diffPixels: written.diffPixels,
-      totalPixels: written.totalPixels,
-    },
-  ]);
+      diffPixels: report.results[index].diffPixels,
+      totalPixels: report.results[index].totalPixels,
+    })),
+  );
   const packet: SessionCapture = JSON.parse(
     JSON.stringify({
       success: true,
@@ -238,6 +269,7 @@ async function sessionFixture(t: TestContext, status: "new" | "passed" | "failed
     service,
     width: 320,
     height: 180,
+    ...(variants === undefined ? {} : { variantNames: variants }),
     report: { data: JSON.parse(json.toString()) as VrtReport, json, html },
     fetch: fetchArtifact,
   };
@@ -370,4 +402,87 @@ test("frozen session bodies refuse changed image/report bytes and symlinked phys
   input.report.data.results[0].snapshotPath = link;
   input.report.json = Buffer.from(JSON.stringify(input.report.data));
   await assert.rejects(assertSessionReport(input));
+});
+
+test("Home requires an Art before its Variants tab, including after a physical rebuild", async () => {
+  const pageAt = (initial: "Home" | "component", absent = false) => {
+    let route = initial;
+    const calls: string[] = [];
+    return {
+      calls,
+      locator(selector: string) {
+        assert.equal(selector, ".art-item");
+        return {
+          filter({ hasText }: { hasText: string }) {
+            return {
+              async click() {
+                calls.push(`Art:${hasText}`);
+                assert.equal(absent, false, "required Art absent");
+                route = "component";
+              },
+            };
+          },
+        };
+      },
+      getByRole(role: "button", options: { name: string; exact: true }) {
+        assert.deepEqual([role, options], ["button", { name: "Variants", exact: true }]);
+        return {
+          async click() {
+            assert.equal(route, "component", "component-only Variants absent on Home");
+            calls.push("Variants");
+          },
+        };
+      },
+    };
+  };
+  for (const route of ["Home", "component", "Home"] as const) {
+    const page = pageAt(route);
+    await selectPublicColorArt(page, "Left");
+    assert.deepEqual(page.calls, ["Art:Left", "Variants"]);
+  }
+  const old = pageAt("Home");
+  await assert.rejects(
+    old.getByRole("button", { name: "Variants", exact: true }).click(),
+    /component-only Variants absent on Home/,
+  );
+  const missing = pageAt("Home", true);
+  await assert.rejects(selectPublicColorArt(missing, "Right"), /required Art absent/);
+  assert.deepEqual(missing.calls, ["Art:Right"]);
+});
+
+test("real public Controls/Keys projections preserve every named variant and opaque body", async (t) => {
+  for (const title of ["Controls", "Keys"] as const) {
+    const names = literalVariants[title].map(([name]) => name);
+    for (const status of ["new", "passed"] as const) {
+      const input = await sessionFixture(t, status, names, title);
+      const phase = status === "new" ? "new" : "match";
+      literalCaptureLaw(input.packet, title, input.report.data.results[0].artPath, phase);
+      const bodies = await assertSessionReport(input);
+      assert.equal(bodies.size, names.length * 2 + 2);
+      assert.deepEqual(
+        input.packet.results.map((result) => result.variantName),
+        names,
+      );
+      for (const row of input.packet.results)
+        assert.equal(Object.hasOwn(row, "snapshotPath"), false);
+      await assert.rejects(assertSessionReport({ ...input, variantNames: undefined }), /Default/);
+      for (const expected of [
+        names.slice(1),
+        [...names, "extra"],
+        [...names].reverse(),
+        names.map(() => "wrong"),
+      ])
+        await assert.rejects(assertSessionReport({ ...input, variantNames: expected }));
+      for (const mutation of ["order", "missing", "duplicate-name", "alias-image"]) {
+        const packet = structuredClone(input.packet);
+        if (mutation === "order") packet.results.reverse();
+        if (mutation === "missing") packet.results.pop();
+        if (mutation === "duplicate-name")
+          packet.results[1].variantName = packet.results[0].variantName;
+        if (mutation === "alias-image")
+          packet.results[1].images.current = packet.results[0].images.current;
+        await assert.rejects(assertSessionReport({ ...input, packet }));
+      }
+    }
+  }
 });
