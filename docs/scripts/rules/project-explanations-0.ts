@@ -18,7 +18,7 @@ export const projectExplanations0: readonly ExplanationRecord[] = [
     "provide-without-symbol",
     'Both components use the string `"theme"`; unrelated features can accidentally reuse that key.',
     "Export one typed `ThemeKey` symbol and import that same value at both provide and inject sites. Creating separate symbols with the same description would not connect them.",
-    '両コンポーネントが文字列 `"theme"` を使い、無関係な機能と key が衝突し得ます。',
+    '両コンポーネントが文字列 `"theme"` を使い、無関係な機能とキーが衝突する可能性があります。',
     "型付きのシンボル `ThemeKey` を一つだけ export し、provide 側と inject 側で同じ値を import します。説明文字列が同じでも、別々に作ったシンボルでは両者を結び付けられません。",
   ],
   [
@@ -39,7 +39,7 @@ export const projectExplanations0: readonly ExplanationRecord[] = [
     "duplicate-id",
     'The reachable shipping and billing components both render `id="postal-code"`, so their labels share an ambiguous document target.',
     "Each component calls `useId()` and binds its own value to both label and input, preserving the association without a repeated literal ID.",
-    '描画する shipping と billing の両方が `id="postal-code"` を使い、label の文書内の参照先が重複します。',
+    '描画する `ShippingAddress.vue` と `BillingAddress.vue` の両方が `id="postal-code"` を使い、label の文書内の参照先が重複します。',
     "各コンポーネントが `useId()` を呼び、その戻り値を label の `for` と input の `id` にバインドします。ラベルと入力欄の対応を保ちながら、固定 ID の重複をなくします。",
   ],
   [
@@ -53,8 +53,8 @@ export const projectExplanations0: readonly ExplanationRecord[] = [
     "spread-breaks-reactivity",
     "`UserSummary.vue` spreads `props.user` into a new object, taking a snapshot of the incoming reactive data.",
     '`toRef(props, "user")` keeps a reference to the incoming prop instead of copying its fields.',
-    "`UserSummary.vue` が `props.user` を新しい object に展開し、渡された reactive な値をその時点でコピーします。",
-    '`toRef(props, "user")` で field をコピーせず、受け取る prop の参照を維持します。',
+    "`UserSummary.vue` が `props.user` を新しいオブジェクトに展開し、渡されたリアクティブな値をその時点でコピーします。",
+    '`toRef(props, "user")` でプロパティの値をコピーせず、受け取る prop の参照を維持します。',
   ],
   [
     "reassignment-breaks-reactivity",
@@ -67,14 +67,14 @@ export const projectExplanations0: readonly ExplanationRecord[] = [
     "value-extraction-breaks-reactivity",
     "Vue 3.5's reactive destructured `item` is read into `itemSnapshot` once; later prop replacement does not update that snapshot.",
     "Read `item` inside `computed`, so Vue's reactive props-destructuring transform can track each evaluation.",
-    "Vue 3.5 の reactive な props 分割代入で得た `item` を、`itemSnapshot` に一度だけ読み取っています。後の prop の置き換えは snapshot に反映されません。",
+    "Vue 3.5 の reactive な props 分割代入で得た `item` を、`itemSnapshot` に一度だけ読み取っています。後の prop の置き換えは、そのスナップショットに反映されません。",
     "`computed` 内で `item` を読み取ります。Vue がリアクティブな props の分割代入を変換することで、評価のたびにその依存を追跡できるようにします。",
   ],
   [
     "destructuring-breaks-reactivity",
     "Ordinary destructuring of the `props` object copies its current `item` value; this is separate from direct Vue 3.5 `defineProps()` destructuring.",
     '`toRef(props, "item")` retains the connection to the property on `props`.',
-    "`props` object の通常の分割代入は現在の `item` を取り出します。Vue 3.5 の `defineProps()` から直接行う分割代入とは別です。",
+    "`props` オブジェクトを通常の分割代入で展開すると、現在の `item` の値を取り出します。Vue 3.5 の `defineProps()` から直接行う分割代入とは別です。",
     '`toRef(props, "item")` を使い、`props` のプロパティとのつながりを保ちます。',
   ],
   [
@@ -82,7 +82,7 @@ export const projectExplanations0: readonly ExplanationRecord[] = [
     "The child initializes `ref(props.count)` once, so its local count no longer follows later parent prop changes. This is the current prop-to-ref producer, not a general nondeterministic-SSR example.",
     '`toRef(props, "count")` points to the prop instead of copying its initial value into independent state.',
     "子の `ref(props.count)` は初期値を一度コピーし、後の親の prop 変更には追従しません。現在の prop-to-ref 生成元の例で、非決定的な SSR 全般の例ではありません。",
-    '初期値を独立した state にコピーせず、`toRef(props, "count")` で prop を参照します。',
+    '初期値を独立した状態にコピーせず、`toRef(props, "count")` で prop を参照します。',
   ],
   [
     "async-boundary",
@@ -95,7 +95,7 @@ export const projectExplanations0: readonly ExplanationRecord[] = [
     "watcheffect-async",
     "The async `watchEffect` mixes implicit dependency collection with an awaited request and no invalidation guard.",
     "An explicit `watch(() => props.query, ...)` declares the source, registers request cleanup, and refuses a stale response after invalidation.",
-    "async `watchEffect` に暗黙の依存収集と await する request が混在し、無効化後の応答を防ぐ処理がありません。",
+    "非同期の `watchEffect` で、暗黙の依存関係の収集と `await` によるリクエストの待機を行っています。無効化後に届く応答への対処はありません。",
     "`watch(() => props.query, ...)` で監視対象を明示し、リクエストのクリーンアップ処理を登録します。無効化されたリクエストの古い応答は反映しません。",
   ],
   [
@@ -130,7 +130,7 @@ export const projectExplanations0: readonly ExplanationRecord[] = [
     "provide-inject-type",
     "The provider explicitly annotates `title` as `string`, while the descendant requests `inject<number>` for the same key.",
     "The consumer's explicit `inject<string>` agrees with the provider annotation. Keep `as string`: this producer compares explicit annotations, not inferred literal types.",
-    "提供側の `title` は明示的な `string` ですが、子孫が同じ key を `inject<number>` で要求します。",
+    "提供側の `title` は明示的な `string` ですが、子孫が同じキーを `inject<number>` で要求します。",
     "使用側の型注釈を `inject<string>` にし、提供側の注釈と一致させます。この生成元は推論されたリテラル型ではなく明示的な注釈を比較するため、`as string` を残します。",
   ],
   [

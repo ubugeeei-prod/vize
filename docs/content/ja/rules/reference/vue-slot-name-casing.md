@@ -47,7 +47,7 @@ vp run lint
 
 ## 良い
 
-`#my-slot` を kebab-case にします。対応するスロットの出口の名前も合わせます。
+スロット名を kebab-case の `#my-slot` にします。対応するスロットの出口の名前も合わせます。
 
 ```vue
 <template>

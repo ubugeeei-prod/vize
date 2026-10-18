@@ -327,7 +327,7 @@ vp run lint
 
 **悪い**
 
-`datepicker` は認識される ARIA role ではありません。
+`datepicker` は有効な ARIA ロールではありません。
 
 ```vue annotate="remove:2"
 <template>
@@ -339,7 +339,7 @@ vp run lint
 
 **良い**
 
-認識される `dialog` を使い、日付を選択する領域の名前も指定します。
+有効な ARIA ロールである `dialog` を使い、日付を選択する領域の名前も指定します。
 
 ```vue annotate="add:2"
 <template>
@@ -451,7 +451,7 @@ vp run lint
 
 **悪い**
 
-通常の `div` に click handler だけを指定し、キーボード操作に対応していません。
+通常の `div` にクリックハンドラーだけを指定し、キーボード操作に対応していません。
 
 ```vue annotate="remove:2"
 <template>
@@ -822,7 +822,7 @@ vp run lint
 
 **悪い**
 
-span に button の role と click handler を付けても、キーボードでフォーカスできる要素にはなりません。
+span に button のロールとクリックハンドラーを付けても、キーボードでフォーカスできる要素にはなりません。
 
 ```vue annotate="remove:2"
 <template>
@@ -1824,7 +1824,7 @@ vp run lint
 
 **悪い**
 
-正の tabindex 3 で、通常の操作要素より先に独自のフォーカス順を作っています。
+tabindex に正の値 3 を指定し、通常の操作要素より先にフォーカスが移動するようにしています。
 
 ```vue annotate="remove:2"
 <template>

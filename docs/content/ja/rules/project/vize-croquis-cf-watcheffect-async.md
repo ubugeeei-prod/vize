@@ -9,7 +9,7 @@ title: "vize:croquis/cf/watcheffect-async"
 既定の重大度: error  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
 自動修正: なし。関連ファイルを確認して修正してください  
-オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
+オプション: コード固有のオプションはありません。対応済みの CLI の診断は、重大度を変更できます
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -58,7 +58,7 @@ export async function load(query: string, options?: { signal?: AbortSignal }): P
 
 ## 悪い
 
-async `watchEffect` に暗黙の依存収集と await する request が混在し、無効化後の応答を防ぐ処理がありません。
+非同期の `watchEffect` で、暗黙の依存関係の収集と `await` によるリクエストの待機を行っています。無効化後に届く応答への対処はありません。
 
 `SearchPage.vue`
 
@@ -138,7 +138,7 @@ watch(
 </script>
 ```
 
-良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体を検査すると、ほかの診断が出る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

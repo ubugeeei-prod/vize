@@ -23,11 +23,11 @@ export const contract2Examples: Record<string, ContractExample> = {
     },
     goodExplanation: {
       en: "`storeToRefs(store)` supplies a reactive getter ref that can be destructured and unwrapped by the template while staying connected to the store.",
-      ja: "`storeToRefs(store)` からリアクティブな getter の ref を受け取り、分割代入とテンプレートの unwrap 後も store とのつながりを保ちます。",
+      ja: "`storeToRefs(store)` からリアクティブな getter の ref を受け取り、分割代入やテンプレートでの自動アンラップ後もストアとのつながりを保ちます。",
     },
     note: {
       en: "Pinia must be installed, and main.ts installs its plugin before mounting. Reading `store.doubled` directly inside a tracked computation or template is valid; the defect here is taking a plain snapshot. This contract currently has no producer.",
-      ja: "Pinia のインストールを前提とし、main.ts がマウント前に plugin を登録します。追跡される計算やテンプレートの中で `store.doubled` を直接読むことは有効です。ここでの問題は通常の値としてスナップショットを取ることであり、現在この契約の生成元はありません。",
+      ja: "Pinia のインストールを前提とし、`main.ts` がマウント前にプラグインを登録します。追跡される計算やテンプレートの中で `store.doubled` を直接読むことは有効です。ここでの問題は通常の値としてスナップショットを取ることであり、現在この契約の生成元はありません。",
     },
   },
   "reactive-export": {
@@ -54,7 +54,7 @@ export const contract2Examples: Record<string, ContractExample> = {
     },
     goodExplanation: {
       en: "The module exports a factory, and App invokes it inside setup. Each instance obtains a fresh reactive count rather than the exported singleton.",
-      ja: "モジュールから factory を公開し、App が setup 内で呼びます。公開された singleton ではなく、インスタンスごとに新しいリアクティブな count を得ます。",
+      ja: "モジュールから状態を作る関数を公開し、App が setup 内で呼びます。共有する一つのインスタンスを公開する形から、コンポーネントのインスタンスごとに新しいリアクティブな `count` を作る形に変更します。",
     },
     note: {
       en: "Intentional shared application stores may export reactive state. This scenario requires isolated state and does not claim every reactive export is invalid. No current producer emits this contract.",
@@ -112,15 +112,15 @@ export const contract2Examples: Record<string, ContractExample> = {
     },
     badExplanation: {
       en: "The process-level cache retains the component’s live count ref. It can keep that instance state reachable after unmount and can observe later edits, although this cache is intended to store a snapshot.",
-      ja: "プロセス全体の cache がコンポーネントの count ref をそのまま保持し、アンマウント後もインスタンスの状態を参照できるようにします。スナップショットを保存する意図にもかかわらず、後の変更も観測できます。",
+      ja: "プロセス全体のキャッシュがコンポーネントの `count` の ref をそのまま保持し、アンマウント後もインスタンスの状態を参照できる状態にしています。スナップショットを保存する意図にもかかわらず、後の変更も観測できます。",
     },
     goodExplanation: {
       en: "The cache receives the current plain number, so it keeps a snapshot without retaining the component-owned ref.",
-      ja: "cache に現在の通常の数値を渡し、コンポーネントが持つ ref を保持せずスナップショットを保存します。",
+      ja: "キャッシュに現在の数値を渡し、コンポーネントが持つ ref を保持せずスナップショットを保存します。",
     },
     note: {
       en: "Refs may legitimately be returned from composables or shared across scopes. This example explicitly requires a snapshot cache; it does not claim that unmount invalidates a ref. No current producer emits this contract.",
-      ja: "ref を composable から返したり、スコープをまたいで共有したりすることは有効です。この例では cache にスナップショットを求めており、アンマウントで ref 自体が無効になると主張するものではありません。現在この契約の生成元はありません。",
+      ja: "ref を composable から返したり、スコープをまたいで共有したりすることは有効です。この例では、キャッシュにスナップショットを保存することを前提としています。アンマウントで ref 自体が無効になるという意味ではありません。現在この契約の生成元はありません。",
     },
   },
   "shallow-deep-access": {
@@ -146,7 +146,7 @@ export const contract2Examples: Record<string, ContractExample> = {
     },
     goodExplanation: {
       en: "Deep `reactive` wraps the nested user object, so the same name assignment can trigger the displayed name’s update.",
-      ja: "深い `reactive` で内側の user オブジェクトも包み、同じ名前の代入を表示の更新につなげます。",
+      ja: "`reactive` で内側の `user` オブジェクトまでリアクティブにし、同じ代入で表示が更新されるようにします。",
     },
   },
   "suspense-no-fallback": {

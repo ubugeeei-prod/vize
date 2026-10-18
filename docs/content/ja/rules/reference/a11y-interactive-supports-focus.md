@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-span に button の role と click handler を付けても、キーボードでフォーカスできる要素にはなりません。
+span に button のロールとクリックハンドラーを付けても、キーボードでフォーカスできる要素にはなりません。
 
 ```vue
 <template>

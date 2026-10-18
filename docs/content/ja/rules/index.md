@@ -41,7 +41,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 ルール数にファイル横断のルールは含みません。各ルールの所属は[全ルールの一覧](./all.md)の「プリセット」列で確認できます。
 `compiler.compatibility.vueVersion` が `2` または `2.7` のときは、Vue 3 で削除された構文と API の検査を無効にします。
 
-`vue/no-use-v-else-with-v-for` は、同じ要素に条件とループを置く、Vue が受け付ける構文への警告です。条件をラッパーに分け、役割を明確にします。`script/no-deep-destructure-in-props` は `opinionated` と `nuxt` で有効な深さの規約です。コンパイラーの `propsDestructure` 設定は参照せず、リアクティブな分割代入を無効にした場合や `withDefaults` を使った場合は、入れ子の代入もコンパイルできます。どちらも警告であり、ルール名を指定して無効にできます。`essential` と、空の `incremental` は変更しません。
+`vue/no-use-v-else-with-v-for` は、同じ要素に条件とループを置く、Vue が受け付ける構文への警告です。条件をラッパーに分け、役割を明確にします。`script/no-deep-destructure-in-props` は `opinionated` と `nuxt` で有効な深さの規約です。コンパイラーの `propsDestructure` 設定は参照せず、リアクティブな分割代入を無効にした場合や `withDefaults` を使った場合は、入れ子の代入もコンパイルできます。どちらも警告であり、ルール名を指定して無効にできます。これらのルールは、`essential` と `incremental` では既定で無効です。
 
 型を使うルールには TypeScript プロジェクトと `typeAware` が必要です。グローバル名の型は
 `tsconfig.json` の `compilerOptions.types` や project references で管理してください。

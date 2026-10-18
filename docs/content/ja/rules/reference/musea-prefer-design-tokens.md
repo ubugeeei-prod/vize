@@ -4,7 +4,7 @@ title: "musea/prefer-design-tokens"
 
 # `musea/prefer-design-tokens`
 
-登録したデザイントークンの値に一致する CSS の直接指定値を、対応する CSS 変数で表現します。
+CSS に直接記述した値が登録済みのデザイントークンの値に一致する場合、対応する CSS 変数で表現します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
@@ -14,7 +14,7 @@ title: "musea/prefer-design-tokens"
 適用範囲: Musea の .art.vue ファイルの art / variant / style  
 オプション: [型付きオプションと既定値](../options.md)を参照してください。
 
-.art.vue ファイルと下記の token 一覧が必要です。任意の色から token を推測するルールではありません。
+.art.vue ファイルと下記のデザイントークン一覧が必要です。任意の色からトークンを推測するルールではありません。
 
 ## 設定（Vite+）
 
