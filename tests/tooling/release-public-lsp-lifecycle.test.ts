@@ -3,7 +3,10 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import test from "node:test";
 import { assertDecodedLspLifecycle } from "../../tools/support/release/public_acceptance/lsp_packets.ts";
-import { diagnosticContract } from "../../tools/support/release/public_acceptance/lsp_case.ts";
+import {
+  atomicDiagnosticContract,
+  diagnosticContract,
+} from "../../tools/support/release/public_acceptance/lsp_case.ts";
 
 const fixture = JSON.parse(
   fs.readFileSync(
@@ -377,4 +380,70 @@ for (const [label, mutate] of Object.entries(invalidDelayed))
     const rows = delayed(false);
     mutate(rows);
     assert.throws(() => assertDecodedLspLifecycle(rows, fixture.terminal, delayedAuthority));
+  });
+
+const atomicUris = Object.fromEntries(
+  ["NativeGuard.vue", "Toggle.vue", "App.vue"].map((file) => [
+    file,
+    `file:///controlled-project/src/${file}`,
+  ]),
+);
+const atomicAuthority = atomicDiagnosticContract(atomicUris);
+test("atomic original has its own exact six whole diagnostic envelopes", () => {
+  const envelope = (file: string, version: number, diagnostics: unknown[]) => ({
+    jsonrpc: "2.0",
+    method: "textDocument/publishDiagnostics",
+    params: { uri: atomicUris[file], version, diagnostics },
+  });
+  assert.deepEqual(atomicAuthority, [
+    envelope("NativeGuard.vue", 1, [
+      {
+        range: { start: { line: 1, character: 6 }, end: { line: 1, character: 17 } },
+        severity: 1,
+        code: 2322,
+        source: "vize/types",
+        message: "Type 'string' is not assignable to type 'number'.",
+      },
+    ]),
+    envelope("NativeGuard.vue", 2, []),
+    envelope("Toggle.vue", 1, []),
+    envelope("Toggle.vue", 2, []),
+    envelope("Toggle.vue", 3, []),
+    envelope("App.vue", 1, []),
+  ]);
+  for (const publication of atomicAuthority) {
+    const rows = delayed(false);
+    rows.at(-1)!.message = structuredClone(publication);
+    assertDecodedLspLifecycle(rows, fixture.terminal, atomicAuthority);
+  }
+  // The original32 and atomic72 corpora retain different URI/version authorities.
+  assert.throws(() => assertDecodedLspLifecycle(delayed(false), fixture.terminal, atomicAuthority));
+  const rows = delayed(false);
+  rows.at(-1)!.message = structuredClone(atomicAuthority[4]);
+  assert.throws(() => assertDecodedLspLifecycle(rows, fixture.terminal, delayedAuthority));
+});
+const invalidAtomic: Record<string, (message: ReturnType<typeof JSON.parse>) => void> = {
+  "an unknown URI": (message) => {
+    message.params.uri = "file:///foreign/Toggle.vue";
+  },
+  "an unqueried Toggle revision": (message) => {
+    message.params.version = 4;
+  },
+  "an unedited App revision": (message) => {
+    message.params.uri = atomicUris["App.vue"];
+    message.params.version = 2;
+  },
+  "changed diagnostic contents": (message) => {
+    message.params.diagnostics = [{ message: "foreign" }];
+  },
+  "extra envelope data": (message) => {
+    message.extra = true;
+  },
+};
+for (const [label, mutate] of Object.entries(invalidAtomic))
+  test(`atomic original lifecycle refuses ${label}`, () => {
+    const rows = delayed(false);
+    rows.at(-1)!.message = structuredClone(atomicAuthority[4]);
+    mutate(rows.at(-1)!.message);
+    assert.throws(() => assertDecodedLspLifecycle(rows, fixture.terminal, atomicAuthority));
   });

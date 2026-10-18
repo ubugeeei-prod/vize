@@ -27,9 +27,7 @@ const publication = (uri: string, version: number, diagnostics: Json) => ({
   params: { uri, version, diagnostics },
 });
 const reply = (id: number, result: Json) => ({ jsonrpc: "2.0", id, result });
-/** One independent whole-envelope authority shared by case and lifecycle checks. */
-export function diagnosticContract(uris: Record<string, string>) {
-  const guardUri = uris["NativeGuard.vue"];
+function nativeGuardContract(guardUri: string) {
   const invalid = publication(guardUri, 1, [
     {
       range: { start: { line: 1, character: 6 }, end: { line: 1, character: 17 } },
@@ -40,12 +38,27 @@ export function diagnosticContract(uris: Record<string, string>) {
     },
   ]);
   const repaired = publication(guardUri, 2, []);
+  return { invalid, repaired };
+}
+/** One independent whole-envelope authority shared by case and lifecycle checks. */
+export function diagnosticContract(uris: Record<string, string>) {
+  const { invalid, repaired } = nativeGuardContract(uris["NativeGuard.vue"]);
   const allowed = [
     invalid,
     repaired,
     ...files.flatMap((file) => [1, 2, 3].map((version) => publication(uris[file], version, []))),
   ];
   return { invalid, repaired, allowed };
+}
+/** H's unchanged atomic original opens App optionally at v1 and queries Toggle v1-v3. */
+export function atomicDiagnosticContract(uris: Record<string, string>) {
+  const { invalid, repaired } = nativeGuardContract(uris["NativeGuard.vue"]);
+  return [
+    invalid,
+    repaired,
+    ...[1, 2, 3].map((version) => publication(uris["Toggle.vue"], version, [])),
+    publication(uris["App.vue"], 1, []),
+  ];
 }
 export function assertWholeCase(
   packet: Json,
