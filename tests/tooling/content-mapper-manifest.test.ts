@@ -78,7 +78,11 @@ const publishedWorkflow = () =>
   parse(readRepoFile(".github", "workflows", "content-mapper-conformance.yml")) as {
     permissions: Record<string, string>;
     concurrency: { group: string; "cancel-in-progress": string };
-    on: { workflow_dispatch: { inputs: Record<string, { type: string; default?: boolean }> } };
+    on: {
+      workflow_dispatch: {
+        inputs: Record<string, { type: string; default?: boolean | string; options?: string[] }>;
+      };
+    };
     jobs: Record<
       string,
       { if: string; env?: Record<string, string>; "timeout-minutes": number; steps: PublicStep[] }
@@ -108,7 +112,7 @@ function evaluates(expression: string, inputs = publicScope, runId = "7001"): un
   );
 }
 
-test("published mapper workflow selects fourteen public cases without source builds or baselines", () => {
+test("published mapper workflow selects fixed reports without source builds or baselines", () => {
   const workflow = publishedWorkflow();
   assert.deepEqual(workflow.permissions, { contents: "read" });
   const selection = workflow.on.workflow_dispatch.inputs["published-defaults-only"];
@@ -186,8 +190,51 @@ test("published mapper workflow selects fourteen public cases without source bui
   assert.match(run.run!, /--candidate-only --explicit-fixtures-only/u);
   assert.deepEqual(
     [...run.run!.matchAll(/--fixture ([^\s]+)/gu)].map((m) => m[1]),
-    ["tests/_fixtures/content-mapper/with-defaults-surplus.json"],
+    ['"$public_fixture"'],
   );
+  const report = workflow.on.workflow_dispatch.inputs["published-report"];
+  assert.deepEqual(report, {
+    description: "Report",
+    type: "choice",
+    options: ["9499", "9498"],
+    default: "9499",
+  });
+  assert.equal(run.env?.PUBLIC_REPORT, "${{ inputs.published-report }}");
+  const selector = run.run!.match(/case "\$PUBLIC_REPORT" in[\s\S]*?\n\s*esac/u)?.[0];
+  assert.ok(selector, "fixture selection must run before the public actor");
+  assert.ok(run.run!.indexOf(selector) < run.run!.indexOf("officialActorInputs(inputs)"));
+  assert.ok(run.run!.includes('sha256sum "$public_fixture"'));
+  const choose = (value: string) =>
+    spawnSync(
+      "bash",
+      ["-eu", "-o", "pipefail", "-c", `${selector}\nprintf '%s' "$public_fixture"`],
+      {
+        encoding: "utf8",
+        env: { ...process.env, PUBLIC_REPORT: value },
+      },
+    );
+  for (const [value, fixture] of [
+    [String(report.default), "tests/_fixtures/content-mapper/with-defaults-surplus.json"],
+    ["9498", "tests/_fixtures/content-mapper/escaton-public-props-9498.json"],
+  ]) {
+    const selected = choose(value);
+    assert.equal(selected.status, 0, selected.stderr);
+    assert.equal(selected.stdout, fixture);
+    assert.equal(selected.stderr, "");
+  }
+  for (const value of [
+    "",
+    "9497",
+    "9499/../9498",
+    "../fixture.json",
+    "9498; echo injected",
+    " 9498",
+  ]) {
+    const selected = choose(value);
+    assert.equal(selected.status, 2, value);
+    assert.equal(selected.stdout, "");
+    assert.equal(selected.stderr, "Unsupported published report\n");
+  }
   assert.match(
     run.run!,
     /--public-version "\$\{PUBLIC_TAG#v\}" --public-inputs "\$PUBLIC_INPUTS"/u,

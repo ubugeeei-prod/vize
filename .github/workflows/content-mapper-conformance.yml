@@ -22,7 +22,9 @@ on:
         type: string
         required: false
       published-defaults-only:
-        { description: "Only 14 published surplus-default cases", type: boolean, default: false }
+        { description: "Only published reporter fixtures", type: boolean, default: false }
+      published-report:
+        { description: "Report", type: choice, options: ["9499", "9498"], default: "9499" }
       cut: { description: "Published source cut C", type: string, required: false }
       head: { description: "Published source H", type: string, required: false }
       tag: { description: "Published stable minor tag", type: string, required: false }
@@ -456,9 +458,10 @@ jobs:
           --fixture tests/_fixtures/content-mapper/escaton-component-props.json
           --fixture tests/_fixtures/content-mapper/escaton-nested-flow-9433.json
           --fixture tests/_fixtures/content-mapper/escaton-public-props-9498.json
-      - name: Run only the fourteen exact published surplus-default cases
+      - name: Run exact published reporter fixtures
         if: inputs.published-defaults-only
         env:
+          PUBLIC_REPORT: ${{ inputs.published-report }}
           PUBLIC_CUT: ${{ inputs.cut }}
           PUBLIC_HEAD: ${{ inputs.head }}
           PUBLIC_TAG: ${{ inputs.tag }}
@@ -468,7 +471,12 @@ jobs:
           PUBLIC_INPUTS: ${{ runner.temp }}/official-css-source/public-inputs.json
         shell: bash
         run: |
-          sha256sum tests/_fixtures/content-mapper/with-defaults-surplus.json >> "$RUNNER_TEMP/official-css-source/inputs.sha256"
+          case "$PUBLIC_REPORT" in
+            9499) public_fixture=tests/_fixtures/content-mapper/with-defaults-surplus.json ;;
+            9498) public_fixture=tests/_fixtures/content-mapper/escaton-public-props-9498.json ;;
+            *) echo "Unsupported published report" >&2; exit 2 ;;
+          esac
+          sha256sum "$public_fixture" >> "$RUNNER_TEMP/official-css-source/inputs.sha256"
           node --input-type=module - <<'JS'
           import fs from 'node:fs';
           import { officialActorInputs } from './tools/support/compat/content-mapper/official-fixtures.ts';
@@ -477,7 +485,7 @@ jobs:
           officialActorInputs(inputs);
           fs.writeFileSync(process.env.PUBLIC_INPUTS, JSON.stringify(inputs, null, 2) + '\n');
           JS
-          node tools/support/compat/content-mapper/official-css-options.ts --candidate-only --explicit-fixtures-only --public-version "${PUBLIC_TAG#v}" --public-inputs "$PUBLIC_INPUTS" --fixture tests/_fixtures/content-mapper/with-defaults-surplus.json --output "$RUNNER_TEMP/official-css-options"
+          node tools/support/compat/content-mapper/official-css-options.ts --candidate-only --explicit-fixtures-only --public-version "${PUBLIC_TAG#v}" --public-inputs "$PUBLIC_INPUTS" --fixture "$public_fixture" --output "$RUNNER_TEMP/official-css-options"
       - name: Retain complete official compiler diagnostics and package evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

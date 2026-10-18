@@ -484,6 +484,6 @@ test("public-prop reproduction changes only the listener or the invalid prop val
     "utf8",
   );
   const fixturePath = "tests/_fixtures/content-mapper/escaton-public-props-9498.json";
-  assert.equal(workflow.split(fixturePath).length - 1, 2);
+  assert.equal(workflow.split(fixturePath).length - 1, 3);
   assert.ok(workflow.includes(`--fixture ${fixturePath}`));
 });
