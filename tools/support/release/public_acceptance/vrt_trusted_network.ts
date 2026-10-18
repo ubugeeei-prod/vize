@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import type { CDPSession, Page } from "playwright";
 import { type Evidence } from "./vrt_artifacts.ts";
+import { sha256 } from "./vrt_fixtures.ts";
 import {
   browserRequestMetadata,
   type BrowserFailureRecord,
@@ -91,6 +92,14 @@ export async function publicAddressCustody(cdp: CDPSession, phase: () => string 
     }
     throw primary;
   }
+}
+
+/** The published authorization handler returns an original, strictly empty 401 body. */
+export function emptyAuthenticationRefusal(status: number, body: Buffer) {
+  assert.equal(status, 401);
+  assert.ok(Buffer.isBuffer(body));
+  assert.equal(body.length, 0, "Original unauthorized response body must be empty");
+  return { status, bodyBytes: body.length, bodySha256: sha256(body) };
 }
 
 /** Current granular permission only; unsupported pinned Chrome is an honest campaign refusal. */
@@ -378,7 +387,7 @@ export async function authorityRefusals(input: {
   );
   const raw401 = deniedCapture.body;
   await e.save("trusted-public/authority/actual-401.json", raw401);
-  assert.equal(deniedCapture.response.status(), 401);
+  const actual401 = emptyAuthenticationRefusal(deniedCapture.response.status(), raw401);
   await page.getByRole("textbox", { name: "VRT endpoint", exact: true }).waitFor();
   for (const selector of [".vrt-summary", ".vrt-results", ".vrt-error"])
     assert.equal(await page.locator(selector).count(), 0, selector);
@@ -393,7 +402,7 @@ export async function authorityRefusals(input: {
     oldBlobCount: blobs.length,
     allRevoked: true,
     actual400: error400,
-    actual401: JSON.parse(raw401.toString()),
+    actual401,
     noStaleResults: true,
   });
 
