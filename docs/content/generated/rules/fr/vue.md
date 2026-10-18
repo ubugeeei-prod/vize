@@ -1114,7 +1114,7 @@ Interdire la syntaxe obsolète des filtres de Vue 2 utilisant l’opérateur pip
 [Mauvais](#vue-no-deprecated-filter-bad) · [Bon](#vue-no-deprecated-filter-good)
 
 Gravité par défaut: `error`  
-Préréglages: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -1175,7 +1175,7 @@ Interdire l’attribut `functional` sur le `<template>` d’un SFC
 [Mauvais](#vue-no-deprecated-functional-template-bad) · [Bon](#vue-no-deprecated-functional-template-good)
 
 Gravité par défaut: `error`  
-Préréglages: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -1236,7 +1236,7 @@ Interdire l’attribut `is` sur les éléments HTML natifs
 [Mauvais](#vue-no-deprecated-html-element-is-bad) · [Bon](#vue-no-deprecated-html-element-is-good)
 
 Gravité par défaut: `error`  
-Préréglages: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -1298,7 +1298,7 @@ Interdire l’attribut obsolète `inline-template`
 [Mauvais](#vue-no-deprecated-inline-template-bad) · [Bon](#vue-no-deprecated-inline-template-good)
 
 Gravité par défaut: `error`  
-Préréglages: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -1359,7 +1359,7 @@ Interdire la prop `tag` sur &lt;router-link&gt;
 [Mauvais](#vue-no-deprecated-router-link-tag-prop-bad) · [Bon](#vue-no-deprecated-router-link-tag-prop-good)
 
 Gravité par défaut: `error`  
-Préréglages: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -1800,7 +1800,7 @@ Interdire les modificateurs numériques obsolètes `keyCode` sur `v-on`
 [Mauvais](#vue-no-deprecated-v-on-number-modifiers-bad) · [Bon](#vue-no-deprecated-v-on-number-modifiers-good)
 
 Gravité par défaut: `error`  
-Préréglages: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
+Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Disponible pour les diagnostics pris en charge  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -2576,7 +2576,7 @@ Interdire les enveloppes d’éléments ordinaires directement sous `<KeepAlive>
 [Mauvais](#vue-no-non-component-keep-alive-child-bad) · [Bon](#vue-no-non-component-keep-alive-child-good)
 
 Gravité par défaut: `warning`  
-Préréglages: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -3870,7 +3870,7 @@ Interdire `v-else-if` ou `v-else` sur le même élément que `v-for`
 [Mauvais](#vue-no-use-v-else-with-v-for-bad) · [Bon](#vue-no-use-v-else-with-v-for-good)
 
 Gravité par défaut: `warning`  
-Préréglages: `ecosystem`, `happy-path`, `nuxt`, `opinionated`  
+Préréglages: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
