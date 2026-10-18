@@ -162,23 +162,26 @@ fn forwarded_v_slots_projects_to_l2_slots_spread() {
     let l2 = root.l2.as_ref().expect("forwarded slots project to L2");
     assert_eq!(l2.op_count, 2);
     assert!(l2.features.has_slot_carriers());
-    let Op::Component(component) = &l2.root.ops[0] else {
+    let Op::Component(component) = l2.root.ops.first().expect("root component") else {
         panic!("root is a component");
     };
     assert_eq!(component.name, "Panel");
     assert_eq!(component.bindings.len(), 1);
-    let BindingOp::VueDirective(directive) = &component.bindings[0] else {
-        panic!("binding is vue.directive slots spread");
+    let binding = component.bindings.first().expect("one binding");
+    let BindingOp::SlotsObject(object) = binding else {
+        panic!("binding is the typed slots object");
     };
-    assert_eq!(directive.name, "slots");
-    assert!(directive.argument.is_none());
-    assert!(directive.modifiers.is_empty());
-    let value = directive
-        .value
-        .as_ref()
-        .expect("forwarded slots has a value");
-    assert_eq!(value.source(), "slots");
-    assert_eq!(value.span().start, source.find("slots}").unwrap() as u32);
+    assert_eq!(binding.mnemonic(), "ui.slots-object");
+    assert_eq!(object.value.source(), "slots");
+    assert_eq!(
+        object.value.span().start,
+        source.find("slots}").unwrap() as u32
+    );
+    assert_eq!(object.span, object.value.span());
+    assert_eq!(
+        source.get(object.span.start as usize..object.span.end as usize),
+        Some("slots")
+    );
 }
 
 #[test]

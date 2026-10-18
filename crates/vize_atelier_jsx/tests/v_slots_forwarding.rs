@@ -297,10 +297,7 @@ fn camel_slots_forwarding_keeps_whole_modules_and_backend_diagnostics() {
                 ..Default::default()
             },
         ] {
-            let errors = usize::from(
-                (!config.ssr && config.default_mode == JsxOutputMode::Vapor)
-                    || source == "const A = () => <B v-slots:default={slots}/>;",
-            );
+            let errors = usize::from(!config.ssr && config.default_mode == JsxOutputMode::Vapor);
             assert_camel_alias(source, &config, errors);
         }
     }
@@ -392,6 +389,43 @@ fn slots_alias_lookalikes_remain_ordinary_props() {
         assert_eq!(
             common::simple_content(prop.exp.as_ref().expect("prop value")),
             "slots"
+        );
+    }
+}
+
+/// The original namespace spelling was accepted by legacy lowering, which
+/// discarded its argument. This preserves that behavior, not slot selection.
+#[test]
+fn legacy_namespace_spellings_forward_the_same_whole_ssr_module() {
+    let allocator = Allocator::new();
+    let expected = compile_to_ssr(
+        &allocator,
+        "const A = () => <B v-slots={slots}/>;",
+        JsxLang::Jsx,
+        SsrCompileOptions::default(),
+    );
+    assert!(expected.diagnostics.is_empty());
+    assert_eq!(expected.components.len(), 1);
+    let expected = expected
+        .components
+        .first()
+        .expect("golden-pinned bare module");
+    for source in [
+        "const A = () => <B v-slots:default={slots}/>;",
+        "const A = () => <B vSlots:default={slots}/>;",
+    ] {
+        let output = compile_to_ssr(
+            &allocator,
+            source,
+            JsxLang::Jsx,
+            SsrCompileOptions::default(),
+        );
+        assert!(output.diagnostics.is_empty(), "{source}");
+        assert_eq!(output.components.len(), 1, "{source}");
+        assert_eq!(
+            output.components.first().expect("one SSR module").code,
+            expected.code,
+            "{source}"
         );
     }
 }
