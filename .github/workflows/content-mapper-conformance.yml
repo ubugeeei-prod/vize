@@ -377,6 +377,7 @@ jobs:
             tests/_fixtures/content-mapper/escaton-component-events.json \
             tests/_fixtures/content-mapper/escaton-component-props.json \
             tests/_fixtures/content-mapper/escaton-nested-flow-9433.json \
+            tests/_fixtures/content-mapper/escaton-public-props-9498.json \
             .github/workflows/content-mapper-conformance.yml \
             > "$RUNNER_TEMP/official-css-source/inputs.sha256"
       - name: Setup pinned Node and Vite Plus
@@ -400,6 +401,10 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install frozen workspace dependencies
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify native legacy projection compatibility
+        env:
+          VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ runner.temp }}/official-css-source/ts40-legacy
+        run: cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture
       - name: Build the real packed mapper runtime
         run: |
           vp run --filter './npm/native' build:ci
@@ -416,6 +421,7 @@ jobs:
           --fixture tests/_fixtures/content-mapper/escaton-component-events.json
           --fixture tests/_fixtures/content-mapper/escaton-component-props.json
           --fixture tests/_fixtures/content-mapper/escaton-nested-flow-9433.json
+          --fixture tests/_fixtures/content-mapper/escaton-public-props-9498.json
       - name: Retain complete official compiler diagnostics and package evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

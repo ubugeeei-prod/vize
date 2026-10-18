@@ -16,6 +16,7 @@ use crate::virtual_ts::{VizeSemanticLink, types::VizeMapping};
 pub(super) struct RootOwnerPacket {
     pub(super) text: String,
     pub(super) mappings: Vec<VizeMapping>,
+    pub(super) diagnostic_mappings: Vec<VizeMapping>,
     pub(super) semantic_links: Vec<VizeSemanticLink>,
 }
 
@@ -24,19 +25,25 @@ impl RootOwnerPacket {
         self,
         text: &mut String,
         mappings: &mut Vec<VizeMapping>,
+        diagnostic_mappings: &mut Vec<VizeMapping>,
         links: &mut Vec<VizeSemanticLink>,
     ) {
         let offset = text.len();
         text.push_str(self.text.as_str());
-        mappings.extend(self.mappings.into_iter().map(|mut mapping| {
-            mapping.gen_range.start += offset;
-            mapping.gen_range.end += offset;
-            for span in &mut mapping.sub_spans {
-                span.gen_range.start += offset;
-                span.gen_range.end += offset;
-            }
-            mapping
-        }));
+        for (target, rows) in [
+            (mappings, self.mappings),
+            (diagnostic_mappings, self.diagnostic_mappings),
+        ] {
+            target.extend(rows.into_iter().map(|mut mapping| {
+                mapping.gen_range.start += offset;
+                mapping.gen_range.end += offset;
+                for span in &mut mapping.sub_spans {
+                    span.gen_range.start += offset;
+                    span.gen_range.end += offset;
+                }
+                mapping
+            }));
+        }
         links.extend(self.semantic_links.into_iter().map(|mut link| {
             link.source_range.start += offset;
             link.source_range.end += offset;

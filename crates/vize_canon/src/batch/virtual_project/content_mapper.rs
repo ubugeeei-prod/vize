@@ -9,7 +9,9 @@ use vize_l0::{ToCompactString, config::VueVersion};
 
 use crate::batch::Diagnostic;
 use crate::batch::error::CorsaResult;
-use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
+use crate::virtual_ts::{
+    ProjectionFeatures, ProjectionMeta, VirtualTsCheckOptions, VirtualTsOptions, VizeMapping,
+};
 
 #[path = "content_mapper_alias.rs"]
 mod alias;
@@ -149,6 +151,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
     let GeneratedVueFile {
         mut code,
         mut mappings,
+        mapping_meta,
         mut semantic_links,
         mut prop_default_key_links,
         diagnostics,
@@ -193,7 +196,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
         );
     }
 
-    let spans = protocol_spans(content, &code, &mappings);
+    let spans = protocol_spans(content, &code, &mappings, &mapping_meta);
     Ok(ContentMapperTransform {
         extension: CONTENT_MAPPER_VIRTUAL_EXTENSION,
         diagnostic_directives: template_diagnostic_directives(descriptor.template.as_ref(), &spans),
@@ -258,7 +261,28 @@ fn protocol_spans(
     source: &str,
     generated: &str,
     mappings: &[VizeMapping],
+    metadata: &[ProjectionMeta],
 ) -> Vec<ContentMapperSpan> {
+    // Protocol diagnostics have no feature bit. Preserve all diagnostic
+    // geometry while withholding editor operations from inference-only rows.
+    let mut diagnostic_ranges = mappings
+        .iter()
+        .zip(metadata)
+        .filter_map(|(row, meta)| {
+            (meta.features == ProjectionFeatures::DIAGNOSTICS).then_some(row.gen_range.clone())
+        })
+        .collect::<Vec<_>>();
+    diagnostic_ranges.sort_by_key(|range| range.start);
+    let mut diagnostic_regions: Vec<Range<usize>> = Vec::new();
+    for range in diagnostic_ranges {
+        if let Some(previous) = diagnostic_regions.last_mut()
+            && range.start <= previous.end
+        {
+            previous.end = previous.end.max(range.end);
+        } else {
+            diagnostic_regions.push(range);
+        }
+    }
     let mut candidates = quoted_spans::candidates(source, generated, mappings);
 
     masked_spans::expand(&mut candidates, source, generated);
@@ -267,8 +291,17 @@ fn protocol_spans(
     accepted
         .into_iter()
         .map(|candidate| {
-            let features =
-                content_mapper_span_features(generated, candidate.generated.start, candidate.kind);
+            let after = diagnostic_regions
+                .partition_point(|range| range.start <= candidate.generated.start);
+            let diagnostic_only = after
+                .checked_sub(1)
+                .and_then(|index| diagnostic_regions.get(index))
+                .is_some_and(|range| candidate.generated.end <= range.end);
+            let features = if diagnostic_only {
+                0
+            } else {
+                content_mapper_span_features(generated, candidate.generated.start, candidate.kind)
+            };
             ContentMapperSpan([
                 candidate.generated.start,
                 candidate.generated.len(),

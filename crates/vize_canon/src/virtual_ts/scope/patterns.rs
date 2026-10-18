@@ -1,5 +1,6 @@
 //! Typed RFC 823 scopes shared by expression and component-prop generation.
 
+use crate::virtual_ts::scope::ScopeMappings;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 mod descriptor;
 mod source;
@@ -14,7 +15,7 @@ use source::{PatternEmitter, map_range};
 
 pub(super) fn generate_expression_match(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    mappings: &mut ScopeMappings<'_>,
     ctx: &super::context::ScopeGenContext<'_, '_>,
     scope: &Scope,
     indent: &str,
@@ -27,9 +28,13 @@ pub(super) fn generate_expression_match(
         template_binding_access: ctx.template_binding_access,
         verification: ctx.check_options.check_template_bindings,
     };
+    let ScopeMappings {
+        navigation,
+        diagnostics,
+    } = mappings;
     emit_match(
         ts,
-        mappings,
+        navigation,
         &patterns,
         scope,
         indent,
@@ -37,7 +42,13 @@ pub(super) fn generate_expression_match(
             if matches!(scope.data(), ScopeData::VMatch(_)) {
                 super::node::generate_scope_contents(ts, mappings, ctx, scope, indent);
             } else {
-                super::closures::generate_scope_node(ts, mappings, ctx, scope, indent);
+                super::closures::generate_scope_node(
+                    ts,
+                    &mut ScopeMappings::new(mappings, diagnostics),
+                    ctx,
+                    scope,
+                    indent,
+                );
             }
         },
     );

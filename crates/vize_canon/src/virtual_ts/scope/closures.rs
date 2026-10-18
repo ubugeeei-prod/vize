@@ -1,12 +1,13 @@
+use crate::virtual_ts::scope::ScopeMappings;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{FxHashMap, FxHashSet, String, profile};
 use vize_croquis::{Croquis, ScopeId, ScopeKind};
 
+use crate::virtual_ts::VizeSemanticLink;
 use crate::virtual_ts::component_reference::component_binding_reference;
 use crate::virtual_ts::expressions::{
     ExpressionListEmitContext, TemplateValueCheckTables, generate_expressions,
 };
-use crate::virtual_ts::{VizeSemanticLink, types::VizeMapping};
 
 use super::component_event_navigation::emit_event_references;
 use super::component_prop_expressions::collect_component_prop_expression_ranges;
@@ -21,7 +22,7 @@ use super::vif_guard::common_vif_guard_prefix_outside_v_for_scope;
 
 pub(crate) fn generate_scope_closures(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    mappings: &mut ScopeMappings<'_>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     summary: &Croquis,
     template_binding_access: &TemplateBindingAccess,
@@ -41,7 +42,7 @@ pub(crate) fn generate_scope_closures(
 
 pub(super) fn emit_scope_closures(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    mappings: &mut ScopeMappings<'_>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     summary: &Croquis,
     template_binding_access: &TemplateBindingAccess,
@@ -299,7 +300,13 @@ pub(super) fn emit_scope_closures(
         }
         profile!("canon.virtual_ts.scope_node", {
             if let Some(packet) = root_packets.for_scope(scope) {
-                generate_scope_node(&mut packet.text, &mut packet.mappings, &ctx, scope, "  ")
+                generate_scope_node(
+                    &mut packet.text,
+                    &mut ScopeMappings::new(&mut packet.mappings, &mut packet.diagnostic_mappings),
+                    &ctx,
+                    scope,
+                    "  ",
+                )
             } else {
                 generate_scope_node(ts, mappings, &ctx, scope, "  ")
             }
@@ -323,7 +330,8 @@ pub(super) fn emit_scope_closures(
             "canon.virtual_ts.component_props",
             generate_component_props(
                 ts,
-                mappings,
+                mappings.navigation,
+                mappings.diagnostics,
                 semantic_links,
                 &props_ctx,
                 usages,

@@ -169,7 +169,7 @@ pub(super) fn append_prop_entry(
     }
 }
 
-fn entry_sub_spans(
+pub(crate) fn entry_sub_spans(
     source_context: ComponentPropSource<'_>,
     prop: &PassedProp,
     key_gen_range: std::ops::Range<usize>,

@@ -1,0 +1,174 @@
+{
+  "typescript": "7.1.0-dev.20261017.1",
+  "vue": "3.5.20",
+  "baselineVize": "0.467.0",
+  "originals": [
+    {
+      "issue": 9498,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\", \"*.d.ts\"]\n}\n",
+        "env.d.ts": "import '@vue/runtime-core'\ndeclare module '@vue/runtime-core' {\n  interface AllowedComponentProps {\n    hidden?: boolean\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [] }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child :hidden=\"true\" @close=\"() => {}\" /></template>\n"
+      },
+      "baselineCodes": [2353],
+      "expectedCodes": [],
+      "baselineTerms": ["hidden"],
+      "expectedTerms": [],
+      "issueBodySha256": "688bbdb6d8c90b23e188d7cd8a6649b5d3bc8daf426848e7f481168513560019",
+      "expectedStdout": "",
+      "expectedStderr": "",
+      "expectedStatus": 0
+    }
+  ],
+  "controls": [
+    {
+      "name": "public-props-9498-without-listener",
+      "original": 9498,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\", \"*.d.ts\"]\n}\n",
+        "env.d.ts": "import '@vue/runtime-core'\ndeclare module '@vue/runtime-core' {\n  interface AllowedComponentProps {\n    hidden?: boolean\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [] }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child :hidden=\"true\" /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0
+    },
+    {
+      "name": "public-props-9498-wrong-allowed-prop-listener",
+      "original": 9498,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\", \"*.d.ts\"]\n}\n",
+        "env.d.ts": "import '@vue/runtime-core'\ndeclare module '@vue/runtime-core' {\n  interface AllowedComponentProps {\n    hidden?: boolean\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [] }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child :hidden=\"'wrong'\" @close=\"() => {}\" /></template>\n"
+      },
+      "codes": [2322, 2322, 2322],
+      "terms": ["boolean"],
+      "stderr": "",
+      "status": 2,
+      "stdout": "App.vue(4,34): error TS2322: Type 'string' is not assignable to type 'boolean | undefined'.\nApp.vue(4,19): error TS2322: Type '\"wrong\"' is not assignable to type 'boolean | undefined'.\nApp.vue(4,34): error TS2322: Type 'string' is not assignable to type 'boolean | undefined'.\n"
+    },
+    {
+      "name": "public-props-9498-wrong-allowed-prop",
+      "original": 9498,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\", \"*.d.ts\"]\n}\n",
+        "env.d.ts": "import '@vue/runtime-core'\ndeclare module '@vue/runtime-core' {\n  interface AllowedComponentProps {\n    hidden?: boolean\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [] }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child :hidden=\"'wrong'\" /></template>\n"
+      },
+      "codes": [2322, 2322],
+      "terms": ["boolean"],
+      "stderr": "",
+      "status": 2,
+      "stdout": "App.vue(4,19): error TS2322: Type '\"wrong\"' is not assignable to type 'boolean | undefined'.\nApp.vue(4,34): error TS2322: Type 'string' is not assignable to type 'boolean | undefined'.\n"
+    },
+    {
+      "name": "public-props-9498-unknown-prop",
+      "original": 9498,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\", \"*.d.ts\"]\n}\n",
+        "env.d.ts": "import '@vue/runtime-core'\ndeclare module '@vue/runtime-core' {\n  interface AllowedComponentProps {\n    hidden?: boolean\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [] }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child definitely-not-a-prop=\"wrong\" /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stderr": "",
+      "status": 0,
+      "stdout": ""
+    },
+    {
+      "name": "public-props-9498-unknown-prop-strict",
+      "original": 9498,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"vueCompilerOptions\": {\n    \"strictTemplates\": true,\n    \"checkUnknownProps\": true\n  },\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ],\n  \"include\": [\n    \"*.vue\",\n    \"*.d.ts\"\n  ]\n}\n",
+        "env.d.ts": "import '@vue/runtime-core'\ndeclare module '@vue/runtime-core' {\n  interface AllowedComponentProps {\n    hidden?: boolean\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [] }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child definitely-not-a-prop=\"wrong\" /></template>\n"
+      },
+      "codes": [2353],
+      "terms": ["definitelyNotAProp"],
+      "stderr": "",
+      "status": 2
+    },
+    {
+      "name": "public-props-9498-custom-props-listener",
+      "original": 9498,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\", \"*.d.ts\"]\n}\n",
+        "env.d.ts": "import '@vue/runtime-core'\ndeclare module '@vue/runtime-core' {\n  interface AllowedComponentProps {\n    hidden?: boolean\n  }\n  interface ComponentCustomProps {\n    globalToken?: string\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [] }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child :hidden=\"true\" global-token=\"session\" @close=\"() => {}\" /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0
+    },
+    {
+      "name": "public-props-9498-wrong-custom-prop",
+      "original": 9498,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\", \"*.d.ts\"]\n}\n",
+        "env.d.ts": "import '@vue/runtime-core'\ndeclare module '@vue/runtime-core' {\n  interface AllowedComponentProps {\n    hidden?: boolean\n  }\n  interface ComponentCustomProps {\n    globalToken?: string\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [] }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child :hidden=\"true\" :global-token=\"42\" /></template>\n"
+      },
+      "codes": [2322, 2322],
+      "terms": ["string"],
+      "stderr": "",
+      "status": 2,
+      "stdout": "App.vue(4,34): error TS2322: Type 'number' is not assignable to type 'string'.\nApp.vue(4,31): error TS2322: Type 'number' is not assignable to type 'string'.\n"
+    },
+    {
+      "name": "public-props-9498-vnode-props-listener",
+      "original": 9498,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\", \"*.d.ts\"]\n}\n",
+        "env.d.ts": "import '@vue/runtime-core'\ndeclare module '@vue/runtime-core' {\n  interface AllowedComponentProps {\n    hidden?: boolean\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [] }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child :hidden=\"true\" key=\"child\" ref=\"child\" @close=\"() => {}\" /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0
+    },
+    {
+      "name": "public-props-9498-generic-listener",
+      "original": 9498,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\", \"*.d.ts\"]\n}\n",
+        "env.d.ts": "import '@vue/runtime-core'\ndeclare module '@vue/runtime-core' {\n  interface AllowedComponentProps {\n    hidden?: boolean\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T\">\ndefineProps<{ item: T }>()\ndefineEmits<{ close: [value: T] }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child :hidden=\"true\" :item=\"42\" @close=\"value => value.toFixed()\" /></template>\n"
+      },
+      "codes": [],
+      "terms": [],
+      "stdout": "",
+      "stderr": "",
+      "status": 0
+    },
+    {
+      "name": "public-props-9498-wrong-listener-payload",
+      "original": 9498,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"skipLibCheck\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"contentMappers\": [{ \"package\": \"vize\", \"extensions\": [\".vue\"] }],\n  \"include\": [\"*.vue\", \"*.d.ts\"]\n}\n",
+        "env.d.ts": "import '@vue/runtime-core'\ndeclare module '@vue/runtime-core' {\n  interface AllowedComponentProps {\n    hidden?: boolean\n  }\n}\n",
+        "Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ close: [value: number] }>()\n</script>\n<template><div /></template>\n",
+        "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nfunction needsString(value: string) {}\n</script>\n<template><Child :hidden=\"true\" @close=\"needsString($event)\" /></template>\n"
+      },
+      "codes": [2345],
+      "terms": ["number", "string"],
+      "stderr": "",
+      "status": 2
+    }
+  ]
+}

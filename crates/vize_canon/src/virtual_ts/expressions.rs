@@ -27,7 +27,9 @@ mod native_props_tests;
 mod prop_name_casing_tests;
 mod prop_sources;
 mod props_literal;
-pub(crate) use props_literal::{append_inference_props_literal, append_spread_value};
+pub(crate) use props_literal::{
+    append_inference_props_literal, append_props_literal, append_spread_value, prop_entry_sub_spans,
+};
 mod reserved_props;
 #[cfg(test)]
 mod sequence_prop_tests;

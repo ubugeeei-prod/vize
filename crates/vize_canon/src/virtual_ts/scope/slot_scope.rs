@@ -10,6 +10,7 @@
 //! equivalent call — see [`crate::virtual_ts::expressions::generate_slot_host_binding`]
 //! — and annotates the slot function from its result.
 
+use crate::virtual_ts::scope::ScopeMappings;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::FxHashSet;
 use vize_carton::String;
@@ -120,7 +121,7 @@ fn slot_payload_type(
 /// the expressions authored inside it and its nested scopes.
 pub(super) fn generate_v_slot_scope(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    mappings: &mut ScopeMappings<'_>,
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
     data: &VSlotScopeData,
