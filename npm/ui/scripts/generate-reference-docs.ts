@@ -49,10 +49,10 @@ const indexCopy = {
   ja: {
     ui: [
       "コンポーネントを探す",
-      "@vizejs/ui でフォーム、ナビゲーション、ダイアログを作る。使用例、操作できるプレビュー、各コンポーネントの API を確認できます。",
+      "@vizejs/ui でフォーム、ナビゲーション、ダイアログを作れます。使用例、操作できるプレビュー、各コンポーネントの API を確認できます。個別の API 説明は英語です。",
     ],
     composables: [
-      "コンポーザブル リファレンス",
+      "コンポーザブルのリファレンス",
       "`@vizejs/composable` の各エントリーポイントの API をソースから生成したリファレンスです。SSR とハイドレーション時の動作、リソースの解放、対応する実行環境も確認できます。個別の API 説明は英語です。",
     ],
   },
@@ -130,6 +130,7 @@ export function renderReferenceDocs(): Map<string, string> {
       blocks(
         frontmatter(composableTitle, composableIntro),
         GENERATED_NOTICE,
+        locale === "ja" ? '<span id="コンポーザブル-リファレンス"></span>' : "",
         `# ${composableTitle}`,
         composableIntro,
         composableHub(locale, linkPrefix("composables")),

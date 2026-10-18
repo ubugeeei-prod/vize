@@ -18,7 +18,7 @@ Vue 3 SFC では **`@vitejs/plugin-vue` を置き換える**設計になって�
 ## Vite+ から始める
 
 コンパイル、ネイティブの Vue 型チェック、lint、フォーマットをまとめて使う場合は、
-[Vite+ helper](./vite-plus.md) で `vite.config.ts` に設定します。
+[Vite+ 用の設定ヘルパー](./vite-plus.md) で `vite.config.ts` に設定します。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -65,7 +65,9 @@ export default defineConfig({
 `@vitejs/plugin-vue` を `@vizejs/vite-plugin` に置き換えると、Rust でコンパイルします。
 Vite+ の型チェック、lint、フォーマット、ビルドをまとめる場合は、[Vite+ の `defineConfig()`](./vite-plus.md) を使ってください。
 
-## TypeScript Vue インポート
+<span id="typescript-vue-インポート"></span>
+
+## TypeScript から Vue ファイルをインポートする
 
 `compilerOptions.types` にプラグインのパッケージを追加すると、ローカルの `env.d.ts` に型宣言を手書きせずに、TypeScript から `.vue` ファイルを直接 import できます。
 

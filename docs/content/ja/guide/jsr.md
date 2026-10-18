@@ -50,7 +50,7 @@ const plugin = vize();
 
 ## Deno 2.9.7
 
-次の確認コマンドは、Ubuntu 24.04 の Linux x64（glibc）と Deno 2.9.7 で検証しています。新しいディレクトリを作り、共通の consumer 設定と[公開 API の小さなサンプル](https://github.com/ubugeeei-prod/vize/blob/main/tools/support/release/jsr/consumer.ts)を取得します。
+次の確認コマンドは、Ubuntu 24.04 の Linux x64（glibc）と Deno 2.9.7 で検証しています。新しいディレクトリを作り、共通の検証用設定と[公開 API の小さなサンプル](https://github.com/ubugeeei-prod/vize/blob/main/tools/support/release/jsr/consumer.ts)を取得します。
 
 ```bash
 mkdir vize-jsr-example
@@ -69,9 +69,9 @@ Verified jsr:@vizejs/vize@0.457.0 (no flags)
 
 サンプルは設定・ネイティブ API を読み込み、Vue コンポーネントをコンパイルして結果を確認します。自分の Deno コードでは、`jsr:@vizejs/vize@0.457.0/native` のようにバージョン付きの指定を使えます。
 
-[共通設定](https://github.com/ubugeeei-prod/vize/blob/main/tools/support/release/jsr/consumer-deno.json)は、外部依存に `P1D`（24 時間）の公開後待機期間を維持します。リリース直後に取得できる例外は、明示した 13 個の Vize 所有パッケージだけです。`@vizejs` 名前空間全体への例外ではありません。`nodeModulesDir: "none"` も指定し、検証済みの consumer と同じ解決方法を使います。これにより、`package.json` がある場合に未インストールの手動 `node_modules` を参照する問題を避けます。既存プロジェクトでは、他の設定を残したままこれらの項目を統合してください。
+[共通設定](https://github.com/ubugeeei-prod/vize/blob/main/tools/support/release/jsr/consumer-deno.json)は、外部依存に `P1D`（24 時間）の公開後待機期間を維持します。リリース直後に取得できる例外は、明示した 13 個の Vize 所有パッケージだけです。`@vizejs` 名前空間全体への例外ではありません。`nodeModulesDir: "none"` も指定し、検証に使ったサンプルと同じ解決方法を使います。これにより、`package.json` がある場合に未インストールの手動 `node_modules` を参照する問題を避けます。既存プロジェクトでは、他の設定を残したままこれらの項目を統合してください。
 
-コマンドは検証済み consumer と同じ `--allow-all` を使います。Node-API のネイティブコードを読み込む [FFI 権限](https://docs.deno.com/runtime/fundamentals/ffi/)を含め、すべての権限を許可するため、信頼するビルド依存に対して使ってください。この確認だけで、より小さな権限の組み合わせや、すべてのネイティブ対象での Deno 動作を保証するものではありません。[読み取り専用の Actions 検証](https://github.com/ubugeeei-prod/vize/actions/runs/38904123567)では、空キャッシュから公開済みの 0.457.0 を読み込み、SFC をコンパイルしています。公開直後の外部パッケージが拒否されることは、別の制御ケースで確認しています。
+コマンドは検証に使ったサンプルと同じ `--allow-all` を使います。Node-API のネイティブコードを読み込む [FFI 権限](https://docs.deno.com/runtime/fundamentals/ffi/)を含め、すべての権限を許可するため、信頼するビルド依存に対して使ってください。この確認だけで、より小さな権限の組み合わせや、すべてのネイティブ対象での Deno 動作を保証するものではありません。[読み取り専用の Actions 検証](https://github.com/ubugeeei-prod/vize/actions/runs/38904123567)では、空キャッシュから公開済みの 0.457.0 を読み込み、SFC をコンパイルしています。公開直後の外部パッケージが拒否されることは、別の検証ケースで確認しています。
 
 ## ランタイムとパッケージの範囲
 

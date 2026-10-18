@@ -10,6 +10,16 @@
       "case": "N12",
       "previous": "共有設定に指定できる項目は、`include`、`exclude`、`basePath`、`storybookCompat`、`inlineArt` です。`previewCss`、`previewSetup`、`tokensPath`、`theme`、`storybookOutDir` は、`musea()` に直接渡してください。",
       "after": "共有設定に指定できるのは `include`、`exclude`、`basePath`、`storybookCompat`、`inlineArt` です。`previewCss`、`previewSetup`、`tokensPath`、`theme`、`storybookOutDir` は `musea()` に直接渡します。"
+    },
+    {
+      "case": "N04",
+      "previous": "一部のルールは、`linter.ruleOptions` で型付きの設定を受け取ります。全項目は\n[ルール オプション](../rules/options.md)を参照してください。診断の重大度は\n引き続き `linter.rules` で指定します。",
+      "after": "一部のルールは、`linter.ruleOptions` で型付きの設定を受け取ります。全項目は\n[ルールのオプション](../rules/options.md)を参照してください。診断の重大度は\n引き続き `linter.rules` で指定します。"
+    },
+    {
+      "case": "N31",
+      "previous": "バックエンド: ネイティブ TypeScript エンジンを <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code> で利用できます。型検査の計測では、意図的に追加した診断が検出されることを tools/benchmarks/scripts/check-gate.mjs（.github/workflows/check-bench.yml）で検証します。",
+      "after": "バックエンド: ネイティブ TypeScript エンジンのパスは <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code> です。型検査の計測では、意図的に追加した診断が検出されることを tools/benchmarks/scripts/check-gate.mjs（.github/workflows/check-bench.yml）で検証します。"
     }
   ]
 }
