@@ -83,7 +83,7 @@ before(() => {
   ) as NativeCustody;
   assert.equal(custody.schema, "vize.oxlint.source-native");
   assert.equal(custody.version, 1);
-  const history = require("../../native/scripts/formatter-history-build.mjs") as {
+  const history = require("../../native/scripts/formatter-history-build.mts") as {
     nativeHistoryReceipt(directory: string): string;
     validateNativeHistoryBuild(directory: string, receipt: unknown): void;
   };

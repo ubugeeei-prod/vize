@@ -20,7 +20,7 @@ import { parsePreparationOptions, runPreparationBranches } from "./n8n-preparati
 import {
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
-} from "../../native/scripts/formatter-history-build.mjs";
+} from "../../native/scripts/formatter-history-build.mts";
 
 const preparation = parsePreparationOptions(process.argv.slice(2));
 const options = parseHostOptions(preparation.args);

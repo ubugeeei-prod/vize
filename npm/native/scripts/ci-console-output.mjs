@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { hash, nativeHistoryDirectory } from "./formatter-history-build.mjs";
+import { hash, nativeHistoryDirectory } from "./formatter-history-build.mts";
 
 export function ciConsoleOutput(nativeDir, label, processPacket) {
   const directory = nativeHistoryDirectory(nativeDir);

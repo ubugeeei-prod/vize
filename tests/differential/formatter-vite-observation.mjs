@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
-import { bytes, hash } from "../../npm/native/scripts/formatter-history-build.mjs";
+import { bytes, hash } from "../../npm/native/scripts/formatter-history-build.mts";
 import { readActiveNativePreparation } from "../../npm/native/scripts/test-preparation.mjs";
 import { requirePreparedNative } from "../../npm/builder/vite/scripts/run-tests.mjs";
 

@@ -9,7 +9,7 @@ import {
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
   nativeHistoryBuildEnvironment,
-} from "./formatter-history-build.mjs";
+} from "./formatter-history-build.mts";
 
 const nativeDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 assert(

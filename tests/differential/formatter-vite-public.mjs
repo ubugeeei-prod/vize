@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
-import { bytes, hash } from "../../npm/native/scripts/formatter-history-build.mjs";
+import { bytes, hash } from "../../npm/native/scripts/formatter-history-build.mts";
 import { completeConfig } from "./formatter-vite-observation.mjs";
 
 // Independently read from the lock-pinned public core's compatibility source,
