@@ -404,29 +404,35 @@ test(
   "real process, CPU, session ownership and physical recovery unit controls execute",
   linuxOnly,
   () => {
-    const result = spawnSync("rust-script", ["--test", script], {
-      encoding: "utf8",
-      timeout: 180_000,
-      maxBuffer: 2 * 1024 * 1024,
-    });
-    if (result.stdout != null) process.stdout.write(result.stdout);
-    if (result.stderr != null) process.stderr.write(result.stderr);
-    assert.equal(result.error, undefined, commandStreams(result));
-    assert.equal(result.status, 0, result.stderr);
-    for (const name of [
-      "real_cpu_worker_is_stopped_and_both_raw_streams_survive",
-      "sequential_real_children_share_one_parent_deadline",
-      "separate_owned_process_groups_die_and_unrelated_sentinel_survives",
-      "deadline_recovers_every_original_authored_byte_after_stopping_writers",
-      "worker_refuses_restoration_while_a_separate_group_can_write",
-      "replaced_source_identity_refuses_recovery_without_overwriting_foreign_bytes",
-      "normal_worker_keeps_complete_raw_bytes_and_does_not_become_a_timeout",
-      "failed_supervisor_receipt_still_restores_active_mutation",
-      "unknown_authored_bytes_are_not_overwritten_by_recovery",
-      "bounded_stream_retains_an_explicit_incomplete_prefix_and_refuses_success",
-    ]) {
-      assert.ok(result.stdout.includes(name), name);
+    const started = performance.now();
+    for (let execution = 1; execution <= 8; execution++) {
+      const remaining = Math.ceil(180_000 - (performance.now() - started));
+      assert.ok(remaining > 0, "all control executions share the original 180-second envelope");
+      console.log(`deadline control execution ${execution}/8: unfiltered Rust tests`);
+      const result = spawnSync("rust-script", ["--test", script], {
+        encoding: "utf8",
+        timeout: remaining,
+        maxBuffer: 2 * 1024 * 1024,
+      });
+      if (result.stdout != null) process.stdout.write(result.stdout);
+      if (result.stderr != null) process.stderr.write(result.stderr);
+      assert.equal(result.error, undefined, commandStreams(result));
+      assert.equal(result.status, 0, result.stderr);
+      for (const name of [
+        "real_cpu_worker_is_stopped_and_both_raw_streams_survive",
+        "sequential_real_children_share_one_parent_deadline",
+        "separate_owned_process_groups_die_and_unrelated_sentinel_survives",
+        "deadline_recovers_every_original_authored_byte_after_stopping_writers",
+        "worker_refuses_restoration_while_a_separate_group_can_write",
+        "replaced_source_identity_refuses_recovery_without_overwriting_foreign_bytes",
+        "normal_worker_keeps_complete_raw_bytes_and_does_not_become_a_timeout",
+        "failed_supervisor_receipt_still_restores_active_mutation",
+        "unknown_authored_bytes_are_not_overwritten_by_recovery",
+        "bounded_stream_retains_an_explicit_incomplete_prefix_and_refuses_success",
+      ]) {
+        assert.ok(result.stdout.includes(name), name);
+      }
+      assert.match(result.stdout, /0 failed; 0 ignored;/);
     }
-    assert.match(result.stdout, /0 failed; 0 ignored;/);
   },
 );
