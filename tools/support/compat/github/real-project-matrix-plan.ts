@@ -10,7 +10,10 @@ export const realProjectJobTemplate = "real projects (${{ matrix.name }})";
 const legacyJobTemplate = "real projects (${{ matrix.shard }}/22)";
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
-export function realProjectMatrix(registry: unknown): { shard: number; name: string }[] {
+export function realProjectMatrix(
+  registry: unknown,
+  projectId = "",
+): { shard: number; name: string; shardCount?: number }[] {
   const projects = (registry as { projects?: { id?: unknown }[] } | null)?.projects;
   if (!Array.isArray(projects) || projects.length < realProjectShardCount) {
     throw new Error("Real Project Matrix requires a complete fixture registry");
@@ -21,6 +24,13 @@ export function realProjectMatrix(registry: unknown): { shard: number; name: str
   }
   if (new Set(ids).size !== ids.length) {
     throw new Error("Real Project Matrix requires unique project IDs");
+  }
+  if (projectId !== "") {
+    const shard = ids.indexOf(projectId);
+    if (shard < 0) throw new Error(`Unknown Real Project Matrix project: ${projectId}`);
+    // All producers select original registry indices modulo the supplied count.
+    // A count equal to the complete registry length selects this one original row.
+    return [{ shard, name: `scoped diagnostic: ${projectId}`, shardCount: ids.length }];
   }
   // Match tool-matrix-report.rs: registry order, partitioned by index modulo 22.
   return Array.from({ length: realProjectShardCount }, (_, shard) => ({
@@ -38,7 +48,9 @@ export function realProjectJobNames(workflow: string, registry: unknown): string
   if (template !== legacyJobTemplate && template !== realProjectJobTemplate) {
     throw new Error("Unknown Real Project Matrix job name template");
   }
-  if (!/^      FIXTURE_SHARD_COUNT: "22"$/m.test(job)) {
+  if (
+    !/^      FIXTURE_SHARD_COUNT: (?:"22"|\$\{\{ matrix\.shardCount \|\| '22' \}\})$/m.test(job)
+  ) {
     throw new Error("Unknown Real Project Matrix shard routing");
   }
   return realProjectMatrix(registry).map(({ shard, name }) =>
@@ -73,10 +85,15 @@ export function realProjectJobNamesAtRevision(revision: string, root = repositor
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [command, flag, revision, rootFlag, root] = process.argv.slice(2);
-  if (command === "matrix" && flag === undefined) {
+  if (
+    command === "matrix" &&
+    (flag === undefined || (flag === "--project" && revision !== undefined)) &&
+    process.argv.length <= 5
+  ) {
     const matrix = {
       include: realProjectMatrix(
         JSON.parse(readFileSync(join(repositoryRoot, realProjectRegistryPath), "utf8")),
+        revision,
       ),
     };
     const value = JSON.stringify(matrix);
@@ -92,7 +109,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     console.log(JSON.stringify(realProjectJobNamesAtRevision(revision, root)));
   } else {
     throw new Error(
-      "Usage: real-project-matrix-plan.ts matrix | job-names --revision SHA [--root PATH]",
+      "Usage: real-project-matrix-plan.ts matrix [--project ID] | job-names --revision SHA [--root PATH]",
     );
   }
 }
