@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { mkdir, readFile, readdir, lstat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, lstat, realpath, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { sha256 } from "./vrt_fixtures.ts";
 
@@ -51,6 +51,16 @@ export interface RetainedCapture {
   json: Buffer;
   html: Buffer;
   png: Buffer;
+}
+export interface SessionCapture {
+  success: boolean;
+  results: Array<
+    Omit<VrtResult, "snapshotPath" | "currentPath" | "diffPath"> & {
+      images: Record<string, string>;
+    }
+  >;
+  summary: VrtSummary;
+  reports: { json: string; html: string };
 }
 export interface Evidence {
   output: string;
@@ -236,6 +246,89 @@ export function assertApiReport(
       assert.equal(written.diffPercentage, (written.diffPixels! / written.totalPixels!) * 100);
     }
   }
+}
+
+/** The public session exposes opaque artifacts, never the private API's filesystem paths. */
+export async function assertSessionReport(input: {
+  report: { data: VrtReport; json: Buffer; html: Buffer };
+  packet: SessionCapture;
+  root: string;
+  width: number;
+  height: number;
+  fetch: (route: string, type: string) => Promise<Buffer>;
+}) {
+  const { report, packet, root } = input;
+  assert.deepEqual(report.data, JSON.parse(report.json.toString()));
+  assert.deepEqual(Object.keys(packet).sort(), ["reports", "results", "success", "summary"]);
+  assert.equal(packet.success, true);
+  assert.deepEqual(report.data.summary, packet.summary);
+  assertSummary(report.data, packet.results.length, packet.summary);
+  assert.deepEqual(Object.keys(packet.reports).sort(), ["html", "json"]);
+  assert.equal(path.resolve(root), root);
+  const physicalRoot = await realpath(root);
+  const bodies = new Map<string, Buffer>();
+  const acquire = async (route: string, type: string, expected: Buffer) => {
+    assert.equal(typeof route, "string");
+    assert.match(
+      route,
+      /^\/artifacts\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
+    assert.equal(bodies.has(route), false, "distinct artifact registrations must not alias");
+    const bytes = await input.fetch(route, type);
+    assert.deepEqual(bytes, expected, "opaque artifact preserves whole physical bytes");
+    bodies.set(route, bytes);
+  };
+  for (const [index, written] of report.data.results.entries()) {
+    const actual = packet.results[index];
+    const { images, ...metadata } = actual;
+    assert.ok(images && typeof images === "object" && !Array.isArray(images));
+    const expected = {
+      artPath: written.artPath,
+      variantName: written.variantName,
+      viewport: written.viewport,
+      passed: written.status === "new" || written.status === "passed",
+      ...(written.status === "new" ? { isNew: true } : {}),
+      ...(Object.hasOwn(written, "diffPercentage")
+        ? { diffPercentage: written.diffPercentage }
+        : {}),
+      ...(Object.hasOwn(written, "error") ? { error: written.error } : {}),
+    };
+    assert.deepEqual(
+      metadata,
+      expected,
+      "exact public projection, including absent private fields",
+    );
+    assert.equal(written.art, path.basename(written.artPath, ".art.vue"));
+    assert.equal(written.variant, written.variantName);
+    if (written.status !== "new") {
+      assert.equal(written.totalPixels, input.width * input.height);
+      assert.ok(
+        Number.isSafeInteger(written.diffPixels) &&
+          written.diffPixels! >= 0 &&
+          written.diffPixels! <= written.totalPixels!,
+      );
+      assert.equal(written.diffPercentage, (written.diffPixels! / written.totalPixels!) * 100);
+    }
+    assert.equal(typeof written.snapshotPath, "string");
+    assert.equal(typeof written.currentPath, "string");
+    const candidates: Array<[string, string | undefined]> = [
+      ["snapshot", written.snapshotPath],
+      ["current", written.currentPath],
+      ["diff", written.diffPath],
+    ];
+    const files = candidates.filter((entry) => entry[1] !== undefined);
+    assert.deepEqual(Object.keys(images).sort(), files.map(([kind]) => kind).sort());
+    for (const [kind, file] of files) {
+      assert.ok(file && path.isAbsolute(file) && file.startsWith(root + path.sep));
+      const info = await lstat(file);
+      assert.ok(info.isFile() && !info.isSymbolicLink());
+      assert.ok((await realpath(file)).startsWith(physicalRoot + path.sep));
+      await acquire(images[kind], "image/png", await readFile(file));
+    }
+  }
+  await acquire(packet.reports.json, "application/json", report.json);
+  await acquire(packet.reports.html, "text/html", report.html);
+  return bodies;
 }
 
 export async function retainReport(

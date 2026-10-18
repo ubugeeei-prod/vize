@@ -3,12 +3,12 @@ import { lstat, mkdir, readFile, readdir, realpath } from "node:fs/promises";
 import path from "node:path";
 import type { Page } from "playwright";
 import {
-  assertApiReport,
+  assertSessionReport,
   assertSummary,
   pngDetails,
-  type ApiCapture,
   type Evidence,
   type VrtReport,
+  type SessionCapture,
 } from "./vrt_artifacts.ts";
 import { sha256, type Side } from "./vrt_fixtures.ts";
 import type { TrustedColorBuild } from "./vrt_trusted_color_build.ts";
@@ -16,10 +16,7 @@ import { connectPublicSession, publicArtifact, type PublicSession } from "./vrt_
 import type { PublicBodyCustody } from "./vrt_trusted_gallery.ts";
 
 export type ColorPhase = "new" | "match" | "diff" | "update" | "updated-match";
-interface ColorPacket extends Pick<ApiCapture, "success" | "summary"> {
-  results: Array<ApiCapture["results"][number] & { images: Record<string, string> }>;
-  reports: { json: string; html: string };
-}
+type ColorPacket = SessionCapture;
 
 /** Distinguish absent/empty attributes and about:blank without retaining URL credentials. */
 export function colorPreviewAddress(value: string | null, base: string) {
@@ -321,28 +318,43 @@ export async function capturePublicColor(input: {
   colorCaptureLaw(data, art, side, phase);
   const written = await colorReports(build, side);
   assert.ok(written);
-  assertApiReport(written.data, data, 320, 180);
+  await e.save(`${prefix}/physical-report.json`, written.json);
+  await e.save(`${prefix}/physical-report.html`, written.html);
+  const artifacts = await assertSessionReport({
+    report: written,
+    packet: data,
+    root: build.literal.root,
+    width: 320,
+    height: 180,
+    fetch: async (route, type) => {
+      const bytes = await publicArtifact(session, new URL(gallery).origin, route, type);
+      await e.save(`${prefix}/opaque-${path.basename(route)}.bin`, bytes);
+      return bytes;
+    },
+  });
   assertSummary(written.data, 1, {
     new: data.summary.new,
     passed: data.summary.passed,
     failed: data.summary.failed,
   });
   const result = data.results[0],
+    physicalResult = written.data.results[0],
     images: unknown[] = [];
   assert.equal(
-    path.dirname(result.snapshotPath),
+    path.dirname(physicalResult.snapshotPath),
     path.join(build.literal.root, "trusted-baselines"),
   );
   let baseline: Buffer | undefined;
   for (const [kind, route] of Object.entries(result.images)) {
     const file =
       kind === "snapshot"
-        ? result.snapshotPath
+        ? physicalResult.snapshotPath
         : kind === "current"
-          ? result.currentPath
-          : result.diffPath;
+          ? physicalResult.currentPath
+          : physicalResult.diffPath;
     assert.ok(file && path.isAbsolute(file) && file.startsWith(build.literal.root + path.sep));
-    const bytes = await publicArtifact(session, new URL(gallery).origin, route, "image/png");
+    const bytes = artifacts.get(route);
+    assert.ok(bytes);
     assert.deepEqual(bytes, await readFile(file));
     await e.save(`${prefix}/${kind}.png`, bytes);
     const details = pngDetails(bytes);
@@ -417,12 +429,8 @@ export async function capturePublicColor(input: {
 
   const reports: Array<{ kind: "json" | "html"; file: string; bytes: number; sha256: string }> = [];
   for (const kind of ["json", "html"] as const) {
-    const bytes = await publicArtifact(
-      session,
-      new URL(gallery).origin,
-      data.reports[kind],
-      kind === "json" ? "application/json" : "text/html",
-    );
+    const bytes = artifacts.get(data.reports[kind]);
+    assert.ok(bytes);
     assert.deepEqual(bytes, written[kind]);
     await e.save(`${prefix}/authenticated-report.${kind}`, bytes);
     const [download] = await Promise.all([
@@ -467,7 +475,7 @@ export async function capturePublicColor(input: {
       preview: { ...actualPreview, sha256: sha256(physical) },
       otherWholePNGAndReportsUnchanged: other,
       layout,
-      snapshotPath: result.snapshotPath,
+      snapshotPath: physicalResult.snapshotPath,
       reportOwner: written.data.reportOwner,
     },
   };
