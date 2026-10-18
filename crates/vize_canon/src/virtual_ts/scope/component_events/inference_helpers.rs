@@ -11,8 +11,7 @@ const EMIT_INFERENCE_HELPERS: &str = r#"type __VizeEmitRequiredKeys<T> = { [K in
 type __VizeEmitRequiredFields<T> = T extends unknown ? Pick<T, __VizeEmitRequiredKeys<T>> : never;
 type __VizeEmitFiniteFields<T> = { [K in keyof T as {} extends Record<K, unknown> ? never : K]: T[K] };
 type __VizeEmitFallthrough<F> = __VizeIsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>;
-type __VizeEmitMetadataKeys<T> = __VizeIsAny<T> extends true ? never : T extends unknown ? keyof NonNullable<T> : never;
-type __VizeEmitOwnedKeys<C> = keyof __VizePublicComponentInputProps | (C extends { readonly __vizeRawProps?: infer P } ? __VizeEmitMetadataKeys<P> : never) | (C extends { readonly __vizeEmitProps?: infer E } ? __VizeEmitMetadataKeys<E> : never);
+type __VizeEmitOwnedKeys<C> = __VizeComponentOwnKeys<C extends { readonly __vizeRawProps?: infer P } ? P : {}, C extends { readonly __vizeEmitProps?: infer E } ? E : {}>;
 type __VizeEmitInput<P, F, O extends PropertyKey, A> = P extends unknown ? F extends unknown ? { [K in keyof A]: K extends O ? K extends keyof P ? P[K] : never : K extends keyof F ? F[K] : K extends keyof P ? P[K] : unknown } & __VizeEmitRequiredFields<P> & __VizeEmitRequiredFields<Omit<__VizeEmitFiniteFields<F>, O>> : never : never;
 declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
 type __VizeConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: __VizeEmitInput<P, __VizeEmitFallthrough<F>, O, A>) => __EmitProps<E>;

@@ -99,7 +99,7 @@ pub(super) fn generate_inferred_emit_args(
         );
     }
     if !usage.spread_props.is_empty() {
-        append_props_literal(
+        let literal_range = append_props_literal(
             ts,
             mappings,
             &usage,
@@ -108,6 +108,20 @@ pub(super) fn generate_inferred_emit_args(
             call_indent,
         );
         ts.push_str(");\n");
+        // Argument assignability errors cover the whole literal, rather than
+        // one spread expression. Preserve the same authored tag owner as the
+        // canonical props call; these inference rows remain diagnostics-only.
+        if let Some(src_range) = crate::virtual_ts::component_tag::source_range(
+            ctx.source_context.template,
+            ctx.source_context.offset,
+            &usage,
+        ) {
+            mappings.push(VizeMapping {
+                gen_range: literal_range,
+                src_range,
+                sub_spans: Vec::new(),
+            });
+        }
     } else {
         ts.push_str("{\n");
         for prop in &usage.props {

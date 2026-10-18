@@ -85,6 +85,10 @@ pub(super) fn generate_component_event_types(
     let component_type_name = to_safe_identifier_fragment(component_name.as_str());
     let pascal_event = to_pascal_case(data.event_name.as_str());
     let on_handler = cstr!("on{pascal_event}");
+    let mut owned_listener_key = String::default();
+    if fallthrough_listeners && !legacy_vue2 {
+        push_ts_string_literal(&mut owned_listener_key, on_handler.as_str());
+    }
     let prop_key = if on_handler.contains(':') {
         cstr!("\"{}\"", on_handler.as_str())
     } else {
@@ -123,23 +127,46 @@ pub(super) fn generate_component_event_types(
         *ts,
         "{indent}type {prop_args}_library = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
     );
-    append!(
-        *ts,
-        "{indent}type {prop_args} = {prop_args}_library extends true ? unknown[] : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }}\n",
-    );
+    // Constructor `$props` contains ambient DOM listeners. For a generated,
+    // non-generic child, an unowned listener can instead belong to its typed
+    // root. Select that contract once for arguments, returns and arrays.
+    let contextual_props = (fallthrough_listeners && !legacy_vue2).then(|| {
+        let public_props = cstr!("{prop_args}_public_props");
+        let resolved_props = cstr!("{prop_args}_resolved_props");
+        append!(
+            *ts,
+            "{indent}type {public_props} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? __P : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? __P : {{}};\n",
+        );
+        append!(
+            *ts,
+            "{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends __VizeEmitOwnedKeys<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? NonNullable<__F> : {public_props} : {public_props};\n",
+        );
+        resolved_props
+    });
     // A listener prop may also accept an array of listeners (`onClick?: Fn |
     // Fn[]`, as Nuxt UI's Button declares); its function member still
     // supplies the payload.
     let prop_listener_args = cstr!(
         "__P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : __P extends {{ {prop_key}?: infer __H }} ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? {missing_prop_args} : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : {missing_prop_args} : {missing_prop_args}"
     );
-    append!(*ts, "{indent}  ? {prop_listener_args}\n");
-    append!(
-        *ts,
-        "{indent}  : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any\n",
-    );
-    append!(*ts, "{indent}    ? {prop_listener_args}\n");
-    append!(*ts, "{indent}    : unknown[];\n");
+    if let Some(props) = contextual_props.as_ref() {
+        append!(
+            *ts,
+            "{indent}type {prop_args} = {prop_args}_library extends true ? unknown[] : {props} extends infer __P ? {prop_listener_args} : unknown[];\n",
+        );
+    } else {
+        append!(
+            *ts,
+            "{indent}type {prop_args} = {prop_args}_library extends true ? unknown[] : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }}\n",
+        );
+        append!(*ts, "{indent}  ? {prop_listener_args}\n");
+        append!(
+            *ts,
+            "{indent}  : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any\n",
+        );
+        append!(*ts, "{indent}    ? {prop_listener_args}\n");
+        append!(*ts, "{indent}    : unknown[];\n");
+    }
     // Under `fallthroughAttributes`, a listener the child neither declares
     // nor emits can still be a fallthrough attribute of its root: `<child
     // @input>` over a `<input />` root receives the `InputEvent` that
@@ -157,10 +184,17 @@ pub(super) fn generate_component_event_types(
         // imposed: the root's own declaration may be looser than the child's
         // documented payload, and a zero-parameter contextual type would make
         // an authored `(event) => ...` callback implicitly `any` (TS7006).
-        append!(
-            *ts,
-            "{indent}  ? __VizeIsAny<__F> extends true ? unknown[] : NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[]\n",
-        );
+        if legacy_vue2 {
+            append!(
+                *ts,
+                "{indent}  ? __VizeIsAny<__F> extends true ? unknown[] : NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[]\n",
+            );
+        } else {
+            append!(
+                *ts,
+                "{indent}  ? __VizeIsAny<__F> extends true ? unknown[] : NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[]\n",
+            );
+        }
         append!(*ts, "{indent}  : unknown[];\n");
         fallthrough_args.as_str()
     } else {
@@ -249,23 +283,30 @@ pub(super) fn generate_component_event_types(
     let listener_type_expr = if legacy_vue2 {
         cstr!("(...args: {listener_args_type}) => unknown")
     } else {
-        append!(
-            *ts,
-            "{indent}type {return_type} = unknown[] extends {prop_args} ? any : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }}\n",
-        );
-        append!(
-            *ts,
-            "{indent}  ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any)\n",
-        );
-        append!(
-            *ts,
-            "{indent}  : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any\n",
-        );
-        append!(
-            *ts,
-            "{indent}    ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any)\n",
-        );
-        append!(*ts, "{indent}    : any;\n");
+        if let Some(props) = contextual_props.as_ref() {
+            append!(
+                *ts,
+                "{indent}type {return_type} = unknown[] extends {prop_args} ? any : {props} extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any;\n",
+            );
+        } else {
+            append!(
+                *ts,
+                "{indent}type {return_type} = unknown[] extends {prop_args} ? any : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }}\n",
+            );
+            append!(
+                *ts,
+                "{indent}  ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any)\n",
+            );
+            append!(
+                *ts,
+                "{indent}  : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any\n",
+            );
+            append!(
+                *ts,
+                "{indent}    ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any)\n",
+            );
+            append!(*ts, "{indent}    : any;\n");
+        }
         cstr!(
             "unknown[] extends {args_type} ? ((...args: any[]) => any) : ((...args: {listener_args_type}) => {return_type})"
         )
@@ -287,10 +328,17 @@ pub(super) fn generate_component_event_types(
                 let arrays = cstr!(
                     "__P extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, readonly unknown[]> : never"
                 );
-                append!(
-                    *ts,
-                    "{indent}type {arrays_type} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? {arrays} : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? {arrays} : never;\n",
-                );
+                if let Some(props) = contextual_props.as_ref() {
+                    append!(
+                        *ts,
+                        "{indent}type {arrays_type} = {props} extends infer __P ? {arrays} : never;\n",
+                    );
+                } else {
+                    append!(
+                        *ts,
+                        "{indent}type {arrays_type} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? {arrays} : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? {arrays} : never;\n",
+                    );
+                }
                 prop_arrays = Some(arrays_type);
                 cstr!("unknown[] extends {args_type} ? ((...args: any[]) => any) : {listener_type}")
             } else {
