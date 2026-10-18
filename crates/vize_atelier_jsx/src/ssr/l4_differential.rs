@@ -198,6 +198,7 @@ fn compile(source: &str, lang: JsxLang, lane: SsrLane) -> std::vec::Vec<String> 
                 JsxOutputMode::Vdom,
                 source,
                 lane,
+                &mut Vec::new(),
             )
             .code
         })

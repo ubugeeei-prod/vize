@@ -155,6 +155,7 @@ pub(in crate::markup) fn op_span(binding: &BindingOp<'_>) -> Span {
         BindingOp::On(on) => on.span,
         BindingOp::Model(model) => model.span,
         BindingOp::SlotContent(content) => content.span,
+        BindingOp::SlotsObject(object) => object.span,
         BindingOp::VueDirective(directive) => directive.span,
         BindingOp::VueCssBind(bind) => bind.span,
         BindingOp::VueSync(sync) => sync.span,

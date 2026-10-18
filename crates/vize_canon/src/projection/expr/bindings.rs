@@ -34,6 +34,7 @@ pub(super) fn project_bindings<D: ExprDialect>(
                 project_name(document, dialect, directive.argument);
                 directive.value
             }
+            BindingOp::SlotsObject(object) => Some(object.value),
             BindingOp::VueCssBind(bind) => Some(bind.value),
             BindingOp::VueSync(sync) => Some(sync.value),
             BindingOp::VueMemo(memo) => Some(memo.value),

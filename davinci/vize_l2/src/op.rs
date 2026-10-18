@@ -54,7 +54,7 @@ pub use element::{Attribute, ComponentOp, ElementOp, Namespace};
 pub use handler::{HandlerId, OnHandlerRef};
 pub use model::{BindingContract, ModelOp};
 pub use original_for::{OriginalForId, OriginalForOp};
-pub use slot::{DynamicName, SlotContentOp, SlotOp};
+pub use slot::{DynamicName, SlotContentOp, SlotOp, SlotsObjectOp};
 pub use text::{CommentOp, InterpolationOp, TextOp};
 pub use vue::{
     VueCloakOp, VueCssBindOp, VueDirectiveOp, VueHtmlOp, VueMemoOp, VueOnceOp, VueShowOp,
@@ -134,6 +134,8 @@ pub enum BindingOp<'a> {
     /// `ui.slot-content` - one authored `v-slot` spelling on its carrier
     /// (the syntactic surface; grouping is the slot pass's fact).
     SlotContent(Box<'a, SlotContentOp<'a>>),
+    /// `ui.slots-object` - a runtime object supplying component slots.
+    SlotsObject(Box<'a, SlotsObjectOp<'a>>),
     /// `vue.directive` - a Vue custom directive carried through as a
     /// dialect op.
     VueDirective(Box<'a, VueDirectiveOp<'a>>),
@@ -167,6 +169,7 @@ impl BindingOp<'_> {
             Self::On(_) => "ui.on",
             Self::Model(_) => "ui.model",
             Self::SlotContent(_) => "ui.slot-content",
+            Self::SlotsObject(_) => "ui.slots-object",
             Self::VueDirective(_) => "vue.directive",
             Self::VueCssBind(_) => "vue.css-bind",
             Self::VueSync(_) => "vue.sync",

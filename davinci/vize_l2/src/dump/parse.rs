@@ -189,6 +189,22 @@ impl Parser {
                 self.guard_binding(line_no)?;
                 self.push_leaf_binding(Binding::SlotContent(content), line_no)
             }
+            Item::SlotsObject(object) => {
+                if matches!(self.grammar, Grammar::HistoricalV1) {
+                    return Err(line::err(
+                        line_no,
+                        cstr!("typed slots object is not a historical operation"),
+                    ));
+                }
+                if !matches!(self.stack.last(), Some(Frame::Component(_, _))) {
+                    return Err(line::err(
+                        line_no,
+                        cstr!("slots object outside a component"),
+                    ));
+                }
+                self.guard_binding(line_no)?;
+                self.push_leaf_binding(Binding::SlotsObject(object), line_no)
+            }
             Item::Directive(directive) => {
                 self.guard_binding(line_no)?;
                 self.push_leaf_binding(Binding::VueDirective(directive), line_no)

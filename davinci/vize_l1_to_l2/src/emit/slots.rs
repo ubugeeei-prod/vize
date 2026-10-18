@@ -33,6 +33,11 @@ pub(super) fn slots_spread<'a>(
     bindings: &'a [BindingOp<'a>],
 ) -> Result<Option<RawJs<'a>>, EmitError> {
     for binding in bindings.iter() {
+        if let BindingOp::SlotsObject(object) = binding {
+            return expr_source(&object.value, false).map(Some).ok_or_else(|| {
+                EmitError::unsupported_at(Reason::SlotsSpreadValueNotJs, object.value.span())
+            });
+        }
         let BindingOp::VueDirective(directive) = binding else {
             continue;
         };
@@ -59,7 +64,8 @@ pub(super) fn slots_spread<'a>(
 }
 
 pub(super) fn is_slots_spread(binding: &BindingOp<'_>) -> bool {
-    matches!(binding, BindingOp::VueDirective(directive) if directive.name == "slots")
+    matches!(binding, BindingOp::SlotsObject(_))
+        || matches!(binding, BindingOp::VueDirective(directive) if directive.name == "slots")
 }
 
 pub(super) fn has_implicit_default(children: &Region<'_>) -> bool {

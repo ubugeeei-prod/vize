@@ -10,9 +10,9 @@ pub(super) fn binding_kind(binding: &l2::BindingOp<'_>) -> SsrStringSegmentKind 
         }
         l2::BindingOp::VueHtml(_) => SsrStringSegmentKind::RawHtml,
         l2::BindingOp::VueText(_) => SsrStringSegmentKind::DynamicText,
-        l2::BindingOp::SlotContent(_) | l2::BindingOp::VueSlotScope(_) => {
-            SsrStringSegmentKind::SlotContent
-        }
+        l2::BindingOp::SlotContent(_)
+        | l2::BindingOp::SlotsObject(_)
+        | l2::BindingOp::VueSlotScope(_) => SsrStringSegmentKind::SlotContent,
         l2::BindingOp::On(_)
         | l2::BindingOp::VueCssBind(_)
         | l2::BindingOp::VueDirective(_)
@@ -29,6 +29,7 @@ pub(super) fn binding_span(binding: &l2::BindingOp<'_>) -> Span {
         l2::BindingOp::On(op) => op.span,
         l2::BindingOp::Model(op) => op.span,
         l2::BindingOp::SlotContent(op) => op.span,
+        l2::BindingOp::SlotsObject(op) => op.span,
         l2::BindingOp::VueDirective(op) => op.span,
         l2::BindingOp::VueCssBind(op) => op.span,
         l2::BindingOp::VueSync(op) => op.span,
@@ -70,6 +71,7 @@ pub(super) fn binding_payload<'a>(binding: &l2::BindingOp<'a>) -> Option<SsrStri
             .map(|value| expression_payload(value.source()))
             .or_else(|| op.argument.and_then(name_source).map(directive_payload))
             .or_else(|| Some(directive_payload(op.name))),
+        l2::BindingOp::SlotsObject(op) => Some(expression_payload(op.value.source())),
         l2::BindingOp::VueCssBind(op) => Some(expression_payload(op.value.source())),
         l2::BindingOp::VueSync(op) => Some(expression_payload(op.value.source())),
         l2::BindingOp::VueSlotScope(op) => op

@@ -163,6 +163,7 @@ fn binding_contains_filter(binding: &BindingOp<'_>) -> bool {
                 .is_some_and(name_contains_filter)
                 || directive.value.as_ref().is_some_and(expr_contains_filter)
         }
+        BindingOp::SlotsObject(object) => expr_contains_filter(&object.value),
         BindingOp::VueCssBind(bind) => expr_contains_filter(&bind.value),
         BindingOp::VueSync(sync) => expr_contains_filter(&sync.value),
         BindingOp::VueSlotScope(scope) => scope.params.as_ref().is_some_and(expr_contains_filter),
@@ -227,6 +228,7 @@ fn rewrite_bindings<'a>(
                     rewrite_expr(allocator, value, filters);
                 }
             }
+            BindingOp::SlotsObject(object) => rewrite_expr(allocator, &mut object.value, filters),
             BindingOp::VueCssBind(bind) => rewrite_expr(allocator, &mut bind.value, filters),
             BindingOp::VueSync(sync) => rewrite_expr(allocator, &mut sync.value, filters),
             BindingOp::VueSlotScope(scope) => {

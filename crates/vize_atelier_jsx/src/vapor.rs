@@ -82,23 +82,25 @@ pub fn compile_to_vapor(
     // Park the analysis on the allocator so the transform can borrow it.
     let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
 
-    let backend = if options.ssr {
-        SlotsForwardingBackend::Ssr
-    } else {
-        SlotsForwardingBackend::Vapor
-    };
     let mut components = Vec::with_capacity(lowered.roots.len());
     for mut lowered_root in lowered.roots {
         reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
         // Vapor slots are built from the component's children, so a forwarded
         // slots object has nowhere to go; report it rather than drop it (#3467).
-        reject_forwarded_slots(&lowered_root.root, backend, &mut diagnostics);
+        if !options.ssr {
+            reject_forwarded_slots(
+                &lowered_root.root,
+                SlotsForwardingBackend::Vapor,
+                &mut diagnostics,
+            );
+        }
         components.push(compile_root_to_vapor(
             allocator,
             lowered_root,
             analysis,
             &options,
             source,
+            &mut diagnostics,
         ));
     }
 
@@ -116,6 +118,7 @@ pub(crate) fn compile_root_to_vapor(
     analysis: &Croquis,
     options: &VaporCompileOptions,
     source: &str,
+    diagnostics: &mut Vec<JsxDiagnostic>,
 ) -> VaporComponent {
     if options.ssr {
         let ssr = crate::ssr::compile_lowered_root_to_ssr(
@@ -124,6 +127,7 @@ pub(crate) fn compile_root_to_vapor(
             analysis,
             JsxOutputMode::Vapor,
             source,
+            diagnostics,
         );
         return VaporComponent {
             component_name: ssr.component_name,

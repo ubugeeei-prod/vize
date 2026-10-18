@@ -188,19 +188,13 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
         ));
         let component = if config.ssr {
             reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
-            // Only VDOM can forward an opaque slots object; the other backends
-            // name the gap rather than drop the directive (#3467).
-            reject_forwarded_slots(
-                &lowered_root.root,
-                SlotsForwardingBackend::Ssr,
-                &mut diagnostics,
-            );
             JsxComponent::Ssr(compile_lowered_root_to_ssr(
                 allocator,
                 lowered_root,
                 analysis,
                 config.default_mode,
                 source,
+                &mut diagnostics,
             ))
         } else {
             let mode = resolve_mode(lowered_root.mode, config.default_mode);
@@ -246,6 +240,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
                     analysis,
                     &config.vapor,
                     source,
+                    &mut diagnostics,
                 )),
             }
         };

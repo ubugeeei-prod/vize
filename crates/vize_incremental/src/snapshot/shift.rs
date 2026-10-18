@@ -143,6 +143,10 @@ fn shift_binding(binding: &mut DumpBinding, shift: &mut Shift<'_>) {
             shift_opt_name(&mut directive.argument, shift);
             shift_opt_expr(&mut directive.value, shift);
         }
+        DumpBinding::SlotsObject(object) => {
+            shift(&mut object.span);
+            shift_expr(&mut object.value, shift);
+        }
         DumpBinding::VueCssBind(bind) => {
             shift(&mut bind.span);
             shift_expr(&mut bind.value, shift);

@@ -73,19 +73,13 @@ pub fn compile_to_ssr(
     let mut components = Vec::with_capacity(lowered.roots.len());
     for mut lowered_root in lowered.roots {
         reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
-        // The server renderer inlines each slot's content, so a forwarded slots
-        // object has nowhere to go; report it rather than drop it (#3467).
-        reject_forwarded_slots(
-            &lowered_root.root,
-            SlotsForwardingBackend::Ssr,
-            &mut diagnostics,
-        );
         components.push(compile_lowered_root_to_ssr(
             allocator,
             lowered_root,
             analysis,
             options.default_mode,
             source,
+            &mut diagnostics,
         ));
     }
 
@@ -106,6 +100,7 @@ pub(crate) fn compile_lowered_root_to_ssr(
     analysis: &Croquis,
     default_mode: JsxOutputMode,
     source: &str,
+    diagnostics: &mut Vec<JsxDiagnostic>,
 ) -> SsrComponent {
     compile_root_on_lane(
         allocator,
@@ -114,6 +109,7 @@ pub(crate) fn compile_lowered_root_to_ssr(
         default_mode,
         source,
         SsrLane::Plan,
+        diagnostics,
     )
 }
 
@@ -136,6 +132,7 @@ fn compile_root_on_lane(
     default_mode: JsxOutputMode,
     source: &str,
     lane: SsrLane,
+    diagnostics: &mut Vec<JsxDiagnostic>,
 ) -> SsrComponent {
     let LoweredRoot {
         mut root,
@@ -159,8 +156,12 @@ fn compile_root_on_lane(
         (Ok(l2), SsrLane::Plan) => compile_l2_to_ssr(allocator, l2.source, &l2.root, &ssr_options),
         _ => None,
     };
-    let generated =
-        planned.unwrap_or_else(|| legacy_ssr(allocator, &mut root, analysis, source, &ssr_options));
+    let generated = planned.unwrap_or_else(|| {
+        // Legacy emission cannot represent runtime slots. Keep the original
+        // error whenever any unsupported shape prevents complete L4 admission.
+        reject_forwarded_slots(&root, SlotsForwardingBackend::Ssr, diagnostics);
+        legacy_ssr(allocator, &mut root, analysis, source, &ssr_options)
+    });
 
     let mut code = generated.preamble;
     if !code.is_empty() && !generated.code.is_empty() {

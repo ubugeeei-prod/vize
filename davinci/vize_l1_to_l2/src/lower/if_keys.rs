@@ -204,6 +204,7 @@ fn key_bind<'b, 'a>(binding: &'b BindingOp<'a>) -> Option<&'b BindOp<'a>> {
         BindingOp::On(_)
         | BindingOp::Model(_)
         | BindingOp::SlotContent(_)
+        | BindingOp::SlotsObject(_)
         | BindingOp::VueDirective(_)
         | BindingOp::VueCssBind(_)
         | BindingOp::VueSync(_)

@@ -49,6 +49,8 @@ pub(super) struct ComponentSlots {
     pub(super) forwards: bool,
     /// `createSlots` entries, in content order.
     pub(super) dynamic: std::vec::Vec<super::create_slots::Dynamic>,
+    /// Rewritten in the component owner scope, evaluated once after child slots.
+    pub(super) forwarded: Option<String>,
 }
 
 /// The `v-slot` binding of a slot carrier.
@@ -98,6 +100,23 @@ pub(super) fn slot_pattern(file: &str, content: &l2::SlotContentOp<'_>) -> Resul
 }
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+    /// Read the typed value once in the current component/slot/loop scope.
+    pub(super) fn forwarded_slots(
+        &self,
+        component: &l2::ComponentOp<'_>,
+    ) -> Result<Option<String>> {
+        component
+            .bindings
+            .iter()
+            .find_map(|binding| match binding {
+                l2::BindingOp::SlotsObject(object) => {
+                    Some(self.expr(&object.value, vize_l1_to_l2::TransformContent::Decoded))
+                }
+                _ => None,
+            })
+            .transpose()
+    }
+
     /// Classify the component content region starting at `start`.
     pub(super) fn component_slots(
         &self,
@@ -126,6 +145,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             named: std::vec::Vec::new(),
             forwards,
             dynamic: std::vec::Vec::new(),
+            forwarded: self.forwarded_slots(component)?,
         };
         if let Some(content) = slot_content(&component.bindings) {
             let (name, pattern) = slot_head(self.ctx.source, content)?;
@@ -173,6 +193,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 }
                 slots.default.push((child, child_end));
             }
+        }
+        if slots.forwarded.is_some() && !slots.dynamic.is_empty() {
+            return Err(LegacyReason::Operation.into());
         }
         Ok(slots)
     }
@@ -241,8 +264,19 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
         }
         self.ctx.push_indent();
-        let flag = self.slot_flag(slots);
-        self.ctx.push(flag);
+        match &slots.forwarded {
+            Some(expression) => {
+                // No synthesized compiled flag: Vue must normalize raw forwarded
+                // functions with the component owner's rendering context.
+                self.ctx.push("...(");
+                self.ctx.push(expression);
+                self.ctx.push(")");
+            }
+            None => {
+                let flag = self.slot_flag(slots);
+                self.ctx.push(flag);
+            }
+        }
         self.ctx.push("\n");
         self.ctx.indent_level -= 1;
         self.ctx.push_indent();

@@ -9,7 +9,9 @@ pub(super) fn binding_kind(binding: &l2::BindingOp<'_>) -> OpKind {
         l2::BindingOp::Bind(_) => OpKind::SetProp,
         l2::BindingOp::On(_) => OpKind::SetEvent,
         l2::BindingOp::Model(_) | l2::BindingOp::VueSync(_) => OpKind::SetProp,
-        l2::BindingOp::SlotContent(_) | l2::BindingOp::VueSlotScope(_) => OpKind::SlotOutlet,
+        l2::BindingOp::SlotContent(_)
+        | l2::BindingOp::SlotsObject(_)
+        | l2::BindingOp::VueSlotScope(_) => OpKind::SlotOutlet,
         l2::BindingOp::VueDirective(_)
         | l2::BindingOp::VueOnce(_)
         | l2::BindingOp::VueMemo(_)
@@ -34,6 +36,7 @@ pub(super) fn binding_span(binding: &l2::BindingOp<'_>) -> Span {
         l2::BindingOp::On(op) => op.span,
         l2::BindingOp::Model(op) => op.span,
         l2::BindingOp::SlotContent(op) => op.span,
+        l2::BindingOp::SlotsObject(op) => op.span,
         l2::BindingOp::VueDirective(op) => op.span,
         l2::BindingOp::VueCssBind(op) => op.span,
         l2::BindingOp::VueSync(op) => op.span,

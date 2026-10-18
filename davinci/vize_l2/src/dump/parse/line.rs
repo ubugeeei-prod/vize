@@ -13,8 +13,8 @@ use vize_l0::{Span, String, cstr};
 
 use crate::dump::owned::{
     Attribute, Bind, Branch, Comment, Component, Element, For, ForBinding, If, Interpolation,
-    Model, Name, On, Op, OriginalFor, Slot, SlotContent, Text, VueCloak, VueCssBind, VueDirective,
-    VueHtml, VueMemo, VueOnce, VueShow, VueSlotScope, VueSync, VueText,
+    Model, Name, On, Op, OriginalFor, Slot, SlotContent, SlotsObject, Text, VueCloak, VueCssBind,
+    VueDirective, VueHtml, VueMemo, VueOnce, VueShow, VueSlotScope, VueSync, VueText,
 };
 use crate::dump::parse::expr_token::take_expr;
 use crate::op::Namespace;
@@ -26,6 +26,7 @@ pub(in crate::dump) enum Item {
     On(On),
     Model(Model),
     SlotContent(SlotContent),
+    SlotsObject(SlotsObject),
     Directive(VueDirective),
     CssBind(VueCssBind),
     Sync(VueSync),
@@ -118,6 +119,7 @@ pub(in crate::dump) fn parse_item(content: &str, line_no: usize) -> Result<Item,
         "ui.bind" => crate::dump::parse::binding_line::bind(rest, line_no),
         "ui.on" => crate::dump::parse::binding_line::on(rest, line_no),
         "ui.slot-content" => crate::dump::parse::binding_line::slot_content(rest, line_no),
+        "ui.slots-object" => crate::dump::parse::binding_line::slots_object(rest, line_no),
         "ui.model" => crate::dump::parse::binding_line::model(rest, line_no),
         "vue.directive" => crate::dump::parse::binding_line::directive(rest, line_no),
         "vue.css-bind" => crate::dump::parse::binding_line::css_bind(rest, line_no),

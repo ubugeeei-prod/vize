@@ -158,6 +158,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             | BindingOp::Model(_)
             | BindingOp::SlotContent(_)
             | BindingOp::VueDirective(_)
+            | BindingOp::SlotsObject(_)
             | BindingOp::VueCssBind(_)
             | BindingOp::VueSync(_)
             | BindingOp::VueSlotScope(_)

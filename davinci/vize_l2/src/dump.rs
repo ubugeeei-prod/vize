@@ -41,8 +41,9 @@ pub mod provenance;
 
 pub use crate::dump::owned::{
     Attribute, Bind, Binding, Branch, Comment, Component, Contract, Element, Expr, For, ForBinding,
-    If, Interpolation, Model, Name, On, Op, OriginalFor, Slot, SlotContent, Text, VueCloak,
-    VueCssBind, VueDirective, VueHtml, VueMemo, VueOnce, VueShow, VueSlotScope, VueSync, VueText,
+    If, Interpolation, Model, Name, On, Op, OriginalFor, Slot, SlotContent, SlotsObject, Text,
+    VueCloak, VueCssBind, VueDirective, VueHtml, VueMemo, VueOnce, VueShow, VueSlotScope, VueSync,
+    VueText,
 };
 pub use crate::dump::provenance::{Page as ProvenancePage, Record as DumpProvenance};
 

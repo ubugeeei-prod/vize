@@ -197,6 +197,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     ) -> Result<String> {
         let open = self.segment(self.pos)?;
         let name = plan_source(&open, SsrStringPayloadKind::ComponentName)?;
+        super::component::admit_slots(component, name)?;
         self.pos += 1;
         let attached = self.take_attached(component.attributes.len() + component.bindings.len())?;
         let attached = attached.as_slice();
@@ -233,7 +234,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             || !slots.named.is_empty()
             || !slots.dynamic.is_empty();
         if !has_content {
-            return Ok("null".to_compact_string());
+            return Ok(slots
+                .forwarded
+                .unwrap_or_else(|| "null".to_compact_string()));
         }
         if !slots.dynamic.is_empty() {
             let out = self.vnode_create_slots(&slots)?;
@@ -256,7 +259,14 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 out.push_str("), ");
             }
         }
-        out.push_str(self.slot_flag(&slots));
+        match &slots.forwarded {
+            Some(expression) => {
+                out.push_str("...(");
+                out.push_str(expression);
+                out.push(')');
+            }
+            None => out.push_str(self.slot_flag(&slots)),
+        }
         out.push_str(" }");
         self.pos = self.region_end(start)?;
         Ok(out)

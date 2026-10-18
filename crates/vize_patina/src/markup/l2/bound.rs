@@ -40,6 +40,7 @@ impl<'a> L2Bound<'a> {
             BindingOp::On(_) => "on",
             BindingOp::Model(_) => "model",
             BindingOp::SlotContent(_) => "slot",
+            BindingOp::SlotsObject(_) => "slots",
             BindingOp::VueDirective(directive) => directive.name,
             BindingOp::VueSlotScope(_) => "slot-scope",
             BindingOp::VueOnce(_) => "once",
@@ -60,6 +61,7 @@ impl<'a> L2Bound<'a> {
             BindingOp::Model(model) => dynamic_name(model.argument.as_ref()),
             BindingOp::SlotContent(content) => dynamic_name(content.name.as_ref()),
             BindingOp::VueDirective(directive) => dynamic_name(directive.argument.as_ref()),
+            BindingOp::SlotsObject(_) => None,
             BindingOp::VueSync(sync) => Some((sync.name, true)),
             BindingOp::VueCssBind(_)
             | BindingOp::VueSlotScope(_)
@@ -82,6 +84,7 @@ impl<'a> L2Bound<'a> {
             BindingOp::Bind(bind) => &bind.modifiers,
             BindingOp::On(on) => &on.modifiers,
             BindingOp::SlotContent(content) => &content.modifiers,
+            BindingOp::SlotsObject(_) => &[],
             BindingOp::VueDirective(directive) => &directive.modifiers,
             BindingOp::Model(model) => {
                 for attribute in model.attributes.iter() {
@@ -121,6 +124,7 @@ impl<'a> L2Bound<'a> {
             BindingOp::On(on) => return on.expression().map(|expression| expression.source()),
             BindingOp::Model(model) => Some(&model.contract.read),
             BindingOp::SlotContent(content) => content.params.as_ref(),
+            BindingOp::SlotsObject(object) => Some(&object.value),
             BindingOp::VueDirective(directive) => directive.value.as_ref(),
             BindingOp::VueSync(sync) => Some(&sync.value),
             BindingOp::VueSlotScope(scope) => scope.params.as_ref(),

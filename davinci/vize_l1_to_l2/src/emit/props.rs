@@ -76,7 +76,7 @@ fn admit_bindings_inner(bindings: &[BindingOp<'_>], allow_once: bool) -> Result<
             }
             BindingOp::On(on) => admit_on(on)?,
             BindingOp::Model(model) => super::model::admit(model)?,
-            BindingOp::SlotContent(_) => {}
+            BindingOp::SlotContent(_) | BindingOp::SlotsObject(_) => {}
             BindingOp::VueDirective(_) if super::slots::is_slots_spread(binding) => {}
             BindingOp::VueDirective(directive) => super::directive::admit(directive)?,
             BindingOp::VueShow(show) => super::directive::admit_show(show)?,

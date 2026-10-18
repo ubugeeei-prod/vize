@@ -128,6 +128,7 @@ fn binding_span(binding: &BindingOp<'_>) -> Span {
         BindingOp::On(op) => op.span,
         BindingOp::Model(op) => op.span,
         BindingOp::SlotContent(op) => op.span,
+        BindingOp::SlotsObject(op) => op.span,
         BindingOp::VueDirective(op) => op.span,
         BindingOp::VueCssBind(op) => op.span,
         BindingOp::VueSync(op) => op.span,

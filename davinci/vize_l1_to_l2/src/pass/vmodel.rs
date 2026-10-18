@@ -293,6 +293,7 @@ fn owner_bindings<'a>(
             BindingOp::Bind(_)
             | BindingOp::On(_)
             | BindingOp::VueDirective(_)
+            | BindingOp::SlotsObject(_)
             | BindingOp::VueCssBind(_)
             | BindingOp::VueSync(_)
             | BindingOp::VueSlotScope(_)

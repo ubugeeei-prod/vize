@@ -298,6 +298,11 @@ fn binding_parts(binding: &BindingOp<'_>) -> (Span, Option<String>, Option<Strin
             Some(directive.name.to_owned()),
             value(directive.value.as_ref()),
         ),
+        BindingOp::SlotsObject(object) => (
+            object.span,
+            Some("slots".to_owned()),
+            value(Some(&object.value)),
+        ),
         BindingOp::VueCssBind(op) => (op.span, None, None),
         BindingOp::VueSync(op) => (op.span, None, None),
         BindingOp::VueSlotScope(op) => (op.span, None, None),
@@ -307,5 +312,43 @@ fn binding_parts(binding: &BindingOp<'_>) -> (Span, Option<String>, Option<Strin
         BindingOp::VueHtml(op) => (op.span, None, None),
         BindingOp::VueText(op) => (op.span, None, None),
         BindingOp::VueCloak(op) => (op.span, None, None),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::binding_parts;
+    use vize_l0::{Allocator, Box, Span, Vec};
+    use vize_l2::expr::ExprRef;
+    use vize_l2::op::{BindingOp, SlotsObjectOp, VueDirectiveOp};
+
+    #[test]
+    fn typed_slots_preserve_the_complete_plugin_name_value_and_span_tuple() {
+        let allocator = Allocator::new();
+        let span = Span::new(0, 25);
+        let value = ExprRef::parse_js_in(&allocator, "getSlots(owner)", Span::new(9, 24));
+        let typed = BindingOp::SlotsObject(Box::new_in(SlotsObjectOp { value, span }, &allocator));
+        let legacy = BindingOp::VueDirective(Box::new_in(
+            VueDirectiveOp {
+                name: "slots",
+                argument: None,
+                modifiers: Vec::new_in(&allocator),
+                value: Some(value),
+                span,
+            },
+            &allocator,
+        ));
+        assert_eq!(
+            binding_parts(&typed),
+            (
+                span,
+                Some("slots".to_owned()),
+                Some("getSlots(owner)".to_owned())
+            )
+        );
+        assert_eq!(binding_parts(&typed), binding_parts(&legacy));
+        // The typed internal operation has its own explicit AST kind. This is
+        // not a claim that the entire plugin document protocol is unchanged.
+        assert_eq!(typed.mnemonic(), "ui.slots-object");
     }
 }

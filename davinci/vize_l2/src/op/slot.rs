@@ -74,6 +74,19 @@ pub struct SlotContentOp<'a> {
     pub span: Span,
 }
 
+/// Runtime component slots whose entries are unavailable at compile time.
+/// The expression stays borrowed from its original File/arena owner and is
+/// evaluated once, after authored child slots; its entries override them.
+/// This is not a custom directive or a prop and carries no invented stability.
+#[derive(Debug)]
+pub struct SlotsObjectOp<'a> {
+    /// The original runtime object expression.
+    pub value: ExprRef<'a>,
+    /// The retained authored forwarding range. JSX preserves the original
+    /// expression location rather than widening it to the attribute spelling.
+    pub span: Span,
+}
+
 /// See [`crate::op`] for the guard rationale. `SlotOp` moved 56 → 104
 /// when the outlet gained its props surface (two 24-byte arena vectors).
 #[cfg(target_pointer_width = "64")]
@@ -81,4 +94,5 @@ const _: () = {
     assert!(core::mem::size_of::<DynamicName<'_>>() == 24);
     assert!(core::mem::size_of::<SlotOp<'_>>() == 104);
     assert!(core::mem::size_of::<SlotContentOp<'_>>() == 72);
+    assert!(core::mem::size_of::<SlotsObjectOp<'_>>() == 24);
 };

@@ -36,6 +36,7 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                 BindingOp::On(it) => it.span,
                 BindingOp::Model(it) => it.span,
                 BindingOp::SlotContent(it) => it.span,
+                BindingOp::SlotsObject(it) => it.span,
                 BindingOp::VueDirective(it) => it.span,
                 BindingOp::VueCssBind(it) => it.span,
                 BindingOp::VueSync(it) => it.span,
@@ -70,6 +71,7 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                 BindingOp::Bind(_)
                 | BindingOp::On(_)
                 | BindingOp::SlotContent(_)
+                | BindingOp::SlotsObject(_)
                 | BindingOp::VueDirective(_)
                 | BindingOp::VueCssBind(_)
                 | BindingOp::VueSync(_)
@@ -128,6 +130,7 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                     name(it.name, visit);
                     optional(it.params, visit);
                 }
+                BindingOp::SlotsObject(it) => visit(it.value),
                 BindingOp::VueDirective(it) => {
                     name(it.argument, visit);
                     optional(it.value, visit);

@@ -61,6 +61,19 @@ pub(super) fn print_binding<W: Write>(
             Ok(())
         }
         Binding::SlotContent(content) => print_slot_content(w, content, depth, mode),
+        Binding::SlotsObject(object) => {
+            indent(w, depth)?;
+            // The explicit historical writer retains its published generic
+            // record. Only current pages convey the typed operation.
+            match mode.grammar {
+                crate::dump::codec::Grammar::CurrentV2 => w.write_str("ui.slots-object value=")?,
+                crate::dump::codec::Grammar::HistoricalV1 => {
+                    w.write_str("vue.directive \"slots\" value=")?
+                }
+            }
+            print_expr(w, &object.value, mode)?;
+            end_line(w, object.span, mode)
+        }
         Binding::VueDirective(directive) => print_directive(w, directive, depth, mode),
         Binding::VueCssBind(bind) => print_css_bind(w, bind, depth, mode),
         Binding::VueSync(sync) => print_sync(w, sync, depth, mode),

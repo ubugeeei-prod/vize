@@ -59,6 +59,34 @@ fn is_transparent_builtin(name: &str) -> bool {
     )
 }
 
+/// A historical generic slots record is not typed forwarding authority.
+/// Built-ins use their own slot ABIs and remain unsupported in this slice.
+pub(super) fn admit_slots(component: &l2::ComponentOp<'_>, name: &str) -> Result<()> {
+    for binding in &component.bindings {
+        match binding {
+            l2::BindingOp::VueDirective(directive) if directive.name == "slots" => {
+                return Err(LegacyReason::Operation.into());
+            }
+            l2::BindingOp::SlotsObject(_)
+                if is_transparent_builtin(name)
+                    || matches!(
+                        name,
+                        "Suspense"
+                            | "suspense"
+                            | "TransitionGroup"
+                            | "transition-group"
+                            | "Teleport"
+                            | "teleport"
+                    ) =>
+            {
+                return Err(LegacyReason::Operation.into());
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
 /// Component attachments the plan emitter owns. `v-slot` carriers and Vue 2
 /// sugar keep the legacy lane; directives the legacy prop walk ignores stay
 /// ignored.
@@ -75,6 +103,7 @@ fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
                         | l2::BindingOp::On(_)
                         | l2::BindingOp::Model(_)
                         | l2::BindingOp::VueShow(_)
+                        | l2::BindingOp::SlotsObject(_)
                 ) {
                     require_dynamic(segment)?;
                 }
@@ -97,6 +126,7 @@ fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
                     | l2::BindingOp::VueMemo(_)
                     | l2::BindingOp::VueCloak(_) => {}
                     l2::BindingOp::SlotContent(_) => {}
+                    l2::BindingOp::SlotsObject(object) => admit_value(Some(&object.value))?,
                     l2::BindingOp::VueSlotScope(_) => {
                         return Err(LegacyReason::Operation.into());
                     }
@@ -124,6 +154,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         css_vars: bool,
     ) -> Result<()> {
         let name = plan_source(&open, SsrStringPayloadKind::ComponentName)?;
+        admit_slots(component, name)?;
         self.pos += 1;
         let attached = self.take_attached(component.attributes.len() + component.bindings.len())?;
         let attached = attached.as_slice();
@@ -195,7 +226,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push(", ");
         match &slots {
             Some(slots) => self.emit_slots_object(slots)?,
-            None => self.ctx.push("null"),
+            None => {
+                let forwarded = self.forwarded_slots(component)?;
+                self.ctx.push(forwarded.as_deref().unwrap_or("null"));
+            }
         }
         self.ctx.push(", _parent");
         if self.ctx.with_slot_scope_id {
@@ -221,7 +255,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.component_props_with_css_vars(&without_is(attached), css_vars && !inherit)?;
         // createVNode captures the rendering component's scope ID itself.
         let props = self.with_fallthrough_attrs(props, inherit);
-        let slots = if component.children.ops.is_empty() {
+        let slots = if component.children.ops.is_empty()
+            && !component
+                .bindings
+                .iter()
+                .any(|binding| matches!(binding, l2::BindingOp::SlotsObject(_)))
+        {
             "null".to_compact_string()
         } else {
             self.vnode_slots(component)?

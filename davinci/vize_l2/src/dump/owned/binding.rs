@@ -23,6 +23,8 @@ pub enum Binding {
     Model(Model),
     /// `ui.slot-content`.
     SlotContent(SlotContent),
+    /// `ui.slots-object`.
+    SlotsObject(SlotsObject),
     /// `vue.directive`.
     VueDirective(VueDirective),
     /// `vue.css-bind`.
@@ -96,6 +98,15 @@ pub struct SlotContent {
     /// The authored params position, when non-blank.
     pub params: Option<Expr>,
     /// Source range.
+    pub span: Span,
+}
+
+/// Mirror of [`crate::op::SlotsObjectOp`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SlotsObject {
+    /// Original runtime expression, never reconstructed from a directive name.
+    pub value: Expr,
+    /// Retained authored forwarding range, matching the source lowering.
     pub span: Span,
 }
 
@@ -229,6 +240,10 @@ pub(super) fn own_binding(binding: &BindingOp<'_>) -> Binding {
             modifiers: own_modifiers(&content.modifiers),
             params: content.params.as_ref().map(own_expr),
             span: content.span,
+        }),
+        BindingOp::SlotsObject(object) => Binding::SlotsObject(SlotsObject {
+            value: own_expr(&object.value),
+            span: object.span,
         }),
         BindingOp::VueDirective(directive) => Binding::VueDirective(VueDirective {
             name: String::from(directive.name),

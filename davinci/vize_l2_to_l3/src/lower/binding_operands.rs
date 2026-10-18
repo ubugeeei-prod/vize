@@ -68,6 +68,10 @@ impl<'a> Cx<'a> {
                 );
                 "slot-content"
             }
+            l2::BindingOp::SlotsObject(op) => {
+                self.binding_value(id, target, Some(op.value), span);
+                "slots-object"
+            }
             l2::BindingOp::VueDirective(op) => {
                 self.named_binding(id, target, op.argument, op.value, &op.modifiers, span);
                 self.add_operand(

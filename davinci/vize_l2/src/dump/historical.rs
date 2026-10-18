@@ -19,12 +19,15 @@ pub mod v1 {
 
     impl Page {
         /// Select the historical wire writer without copying the tree.
+        /// Runtime slots objects retain the old generic directive record;
+        /// reading that wire grants only its legacy view, not the typed op.
         #[must_use]
         pub fn from_current(page: CurrentPage) -> Self {
             Self(page)
         }
 
-        /// Recover the identical owned tree after historical acceptance.
+        /// Recover the accepted legacy tree. New typed slots objects are
+        /// projected to the historical generic record by this codec.
         #[must_use]
         pub fn into_current(self) -> CurrentPage {
             self.0

@@ -180,6 +180,7 @@ fn owner_bindings(
                     score(value, id, depth, facts);
                 }
             }
+            BindingOp::SlotsObject(object) => score(object.value, id, depth, facts),
             BindingOp::VueSync(sync) => score(sync.value, id, depth, facts),
             BindingOp::VueMemo(memo) => score(memo.value, id, depth, facts),
             BindingOp::VueShow(show) => score(show.value, id, depth, facts),

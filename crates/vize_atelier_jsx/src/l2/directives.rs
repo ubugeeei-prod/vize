@@ -1,6 +1,6 @@
-use vize_l0::{Allocator, Box, Vec};
+use vize_l0::{Allocator, Box};
 use vize_l2::expr::ExprRef;
-use vize_l2::op::{BindingOp, VueDirectiveOp, VueHtmlOp, VueShowOp, VueTextOp};
+use vize_l2::op::{BindingOp, SlotsObjectOp, VueDirectiveOp, VueHtmlOp, VueShowOp, VueTextOp};
 use vize_relief::{DirectiveNode, ElementType};
 
 use super::{L2Refusal, lower_dynamic_name, lower_expression, lower_modifiers};
@@ -63,12 +63,9 @@ fn lower_slots_spread<'a>(
 ) -> Result<BindingOp<'a>, L2Refusal> {
     let value = required_value(allocator, directive)?;
 
-    Ok(BindingOp::VueDirective(Box::new_in(
-        VueDirectiveOp {
-            name: directive.name,
-            argument: None,
-            modifiers: Vec::new_in(&allocator),
-            value: Some(value),
+    Ok(BindingOp::SlotsObject(Box::new_in(
+        SlotsObjectOp {
+            value,
             span: directive.loc.span,
         },
         &allocator,

@@ -19,8 +19,8 @@ mod binding;
 mod expr;
 
 pub use crate::dump::owned::binding::{
-    Bind, Binding, Model, On, SlotContent, VueCloak, VueCssBind, VueDirective, VueHtml, VueMemo,
-    VueOnce, VueShow, VueSlotScope, VueSync, VueText,
+    Bind, Binding, Model, On, SlotContent, SlotsObject, VueCloak, VueCssBind, VueDirective,
+    VueHtml, VueMemo, VueOnce, VueShow, VueSlotScope, VueSync, VueText,
 };
 pub use crate::dump::owned::expr::{Contract, Expr, ForBinding};
 

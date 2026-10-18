@@ -285,6 +285,7 @@ fn component_binding_is_supported(binding: &BindingOp<'_>, dynamic_component: bo
         }
         BindingOp::Model(model) => component_model_is_supported(model),
         BindingOp::VueShow(_) => true,
+        BindingOp::SlotsObject(object) => matches!(object.value, ExprRef::Js(_)),
         BindingOp::VueDirective(directive) => component_slots_spread_is_supported(directive),
         _ => false,
     }

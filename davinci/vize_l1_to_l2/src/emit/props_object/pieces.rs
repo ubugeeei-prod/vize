@@ -66,7 +66,7 @@ pub(in crate::emit) fn pieces<'a>(
             BindingOp::Model(model_op) => model::expand(model_op, &mut out)?,
             BindingOp::VueHtml(html) => out.push(Piece::VueHtml(html)),
             BindingOp::VueText(text) => out.push(Piece::VueText(text)),
-            BindingOp::SlotContent(_) => {}
+            BindingOp::SlotContent(_) | BindingOp::SlotsObject(_) => {}
             BindingOp::VueDirective(_) => {}
             BindingOp::VueOnce(_) => {}
             BindingOp::VueMemo(_) => {}

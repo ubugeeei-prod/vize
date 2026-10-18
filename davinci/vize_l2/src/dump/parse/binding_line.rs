@@ -8,8 +8,8 @@ use vize_l0::dump::Error as DumpError;
 use vize_l0::{String, cstr};
 
 use crate::dump::owned::{
-    Bind, Contract, Expr, Model, Name, On, SlotContent, VueCloak, VueCssBind, VueDirective,
-    VueHtml, VueMemo, VueOnce, VueShow, VueSlotScope, VueSync, VueText,
+    Bind, Contract, Expr, Model, Name, On, SlotContent, SlotsObject, VueCloak, VueCssBind,
+    VueDirective, VueHtml, VueMemo, VueOnce, VueShow, VueSlotScope, VueSync, VueText,
 };
 use crate::dump::parse::expr_token::take_expr;
 use crate::dump::parse::line::{Item, err, final_span, name_value, tail_span, take_quoted};
@@ -299,6 +299,17 @@ pub(super) fn memo(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     };
     let (value, rest) = take_expr(rest, line_no)?;
     Ok(Item::Memo(VueMemo {
+        value,
+        span: tail_span(rest, line_no)?,
+    }))
+}
+
+pub(super) fn slots_object(rest: &str, line_no: usize) -> Result<Item, DumpError> {
+    let Some(rest) = rest.strip_prefix("value=") else {
+        return Err(err(line_no, cstr!("expected `value=`")));
+    };
+    let (value, rest) = take_expr(rest, line_no)?;
+    Ok(Item::SlotsObject(SlotsObject {
         value,
         span: tail_span(rest, line_no)?,
     }))

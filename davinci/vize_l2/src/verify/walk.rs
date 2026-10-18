@@ -167,6 +167,9 @@ fn body(
             DumpBinding::SlotContent(content) => {
                 line_checks("ui.slot-content", content.span, owner, out);
             }
+            DumpBinding::SlotsObject(object) => {
+                line_checks("ui.slots-object", object.span, owner, out);
+            }
             DumpBinding::VueDirective(directive) => {
                 line_checks("vue.directive", directive.span, owner, out);
             }
