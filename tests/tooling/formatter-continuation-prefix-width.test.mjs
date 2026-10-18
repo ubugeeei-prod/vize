@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
+import { formatterCliTarget } from "../differential/formatter-cli-target.ts";
 import { sha256 } from "../differential/manifest.mjs";
 import { observeSource, providerIdentities } from "./support/formatter-continuation-semantics.mjs";
 
@@ -30,17 +30,14 @@ const corpus = JSON.parse(corpusBytes);
 assert.equal(corpus.cases.length, 11);
 
 void test("source CLI keeps complete authored DOM text SSR and event contracts", async (t) => {
-  const identity = expectedBuildIdentity(root);
-  const buildReceipt = JSON.parse(
-    fs.readFileSync(path.join(root, `${identity.binaryPath}.differential-build.json`)),
-  );
-  validateBuildReceipt(buildReceipt, identity);
+  const target = await formatterCliTarget(root, "formatter-continuation-prefix-width.json");
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-continuation-prefix-"));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   const report = {
     schema: "vize.formatter-continuation-prefix-observation",
     version: 1,
-    buildReceipt,
+    buildReceipt: target.kind === "source-built-cli" ? target.receipt : null,
+    publicCliReceipt: target.kind === "installed-public-cli" ? target.receipt : null,
     corpusSha256: sha256(corpusBytes),
     contractsSha256: sha256(indexBytes),
     providerIdentities,
@@ -50,10 +47,7 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
     rows: [],
     configuredCli: [],
   };
-  const reportPath = path.join(
-    root,
-    "target/differential/formatter-continuation-prefix-width.json",
-  );
+  const reportPath = target.reportPath;
   fs.mkdirSync(path.dirname(reportPath), { recursive: true });
   const persist = () => fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   for (const selected of index.contracts) {
@@ -91,7 +85,7 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
       fs.writeFileSync(configPath, config);
       for (const mode of ["--check", "--write", "--write", "--write", "--check"]) {
         const result = spawnSync(
-          path.join(root, identity.binaryPath),
+          target.binary,
           ["fmt", mode, "Example.vue"],
           {
             cwd: directory,
@@ -187,7 +181,7 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
         mode,
         "Example.vue",
       ];
-      const result = spawnSync(path.join(root, identity.binaryPath), args, {
+      const result = spawnSync(target.binary, args, {
         cwd: project,
         timeout: 30000,
         maxBuffer: 1048576,
@@ -221,4 +215,5 @@ void test("source CLI keeps complete authored DOM text SSR and event contracts",
     }
   }
   assert.equal(report.configuredCli.length, 20);
+  target.assertUnchanged();
 });
