@@ -31,6 +31,10 @@ pub(crate) fn merge_authored_locations(
             .cmp(&b.range.start.line)
             .then(a.range.start.character.cmp(&b.range.start.character))
             .then_with(|| a.uri.as_str().cmp(b.uri.as_str()))
+            // Keep the existing position/URI order, but group identical full
+            // ranges even when another hit starts at the same position.
+            .then(a.range.end.line.cmp(&b.range.end.line))
+            .then(a.range.end.character.cmp(&b.range.end.character))
     });
     locations.dedup_by(|a, b| a.uri == b.uri && a.range == b.range);
 
