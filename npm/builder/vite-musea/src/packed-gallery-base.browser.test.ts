@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { chromium } from "playwright";
+import { chromium, type ElementHandle } from "playwright";
 import { PNG } from "pngjs";
 import { createServer } from "vite";
 import type { MuseaVrtOptions } from "./types/plugin.ts";
@@ -149,6 +149,41 @@ void test(
           pending: Promise<void>[] = [];
         const responses: PackedGalleryHttpRecord[] = [];
         const observations: unknown[] = [];
+        let previousPreview: ElementHandle<HTMLElement | SVGElement> | undefined;
+        async function recordPreviewOwner(title: string) {
+          const frame = await page.locator(".variant-card iframe").elementHandle();
+          assert.ok(frame);
+          releases.push(() => frame.dispose());
+          const state = await frame.evaluate((element) => {
+            const frame = element as HTMLIFrameElement;
+            return {
+              url: frame.src,
+              documentURL: frame.contentDocument?.URL,
+              connected: frame.isConnected,
+              buttons: [...(frame.contentDocument?.querySelectorAll("button") ?? [])].map(
+                (button) => button.textContent,
+              ),
+            };
+          });
+          const previousConnected = previousPreview
+            ? await previousPreview.evaluate((frame) => frame.isConnected)
+            : null;
+          observations.push({
+            phase: "preview-document-owner",
+            title,
+            previousConnected,
+            ...state,
+          });
+          assert.equal(state.connected, true);
+          assert.equal(
+            state.url,
+            `${origin}${normalized}/preview?art=${encodeURIComponent(arts[fixture.titles.indexOf(title)])}&variant=Default`,
+          );
+          assert.equal(state.documentURL, state.url);
+          assert.deepEqual(state.buttons, [title]);
+          if (previousPreview) assert.equal(previousConnected, false);
+          previousPreview = frame;
+        }
         page.on("pageerror", (error) => errors.push(String(error)));
         page.on("console", (message) => {
           if (message.type() === "error") consoleErrors.push(message.text());
@@ -193,6 +228,7 @@ void test(
             const preview = page.frameLocator(".variant-card iframe");
             await preview.getByRole("button", { name: title, exact: true }).waitFor();
             assert.equal(await preview.locator("museacomponent").count(), 0);
+            await recordPreviewOwner(title);
           }
           await drainPackedGalleryHttp(pending);
           await page.locator(".art-item").filter({ hasText: "Left" }).click();
@@ -200,6 +236,7 @@ void test(
             .frameLocator(".variant-card iframe")
             .getByRole("button", { name: "Left", exact: true })
             .waitFor();
+          await recordPreviewOwner("Left");
           await drainPackedGalleryHttp(pending);
           await page.getByRole("button", { name: "VRT", exact: true }).click();
           const token = await page.evaluate(() => {
