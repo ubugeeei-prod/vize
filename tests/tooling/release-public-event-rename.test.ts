@@ -298,3 +298,63 @@ void test("all 160 declaration-origin definitions require the whole authored sou
   }
   assert.equal(declarationCursors, 160);
 });
+
+void test("real Cargo script and artifact JSON retain all projected fields through storage", () => {
+  // Whole rows from public acceptance 39122208580/a1 cargo-atomic-original.stdout,
+  // SHA256 815e3aaca01f916f66b01ccc5309ff38ea41e472a735a9da086ae0ac39ee8350.
+  // These bytes exercise receipt projection only; no local Cargo is executed.
+  const stdout = String.raw`{"reason":"build-script-executed","package_id":"registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107","linked_libs":[],"linked_paths":[],"cfgs":["wrap_proc_macro","proc_macro_span_location","proc_macro_span_file"],"env":[],"out_dir":"/home/runner/_work/_temp/vize-public-consumer-DFCJ1l/target/lsp-support/debug/build/proc-macro2-ef41e94ab0f532d9/out"}
+{"reason":"compiler-artifact","package_id":"registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107","manifest_path":"/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro2-1.0.107/Cargo.toml","target":{"kind":["custom-build"],"crate_types":["bin"],"name":"build-script-build","src_path":"/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro2-1.0.107/build.rs","edition":"2021","doc":false,"doctest":false,"test":false},"profile":{"opt_level":"0","debuginfo":0,"debug_assertions":true,"overflow_checks":true,"test":false},"features":["default","proc-macro"],"filenames":["/home/runner/_work/_temp/vize-public-consumer-DFCJ1l/target/lsp-support/debug/build/proc-macro2-ab005e1b49b4395b/build-script-build"],"executable":null,"fresh":true}
+{"reason":"build-finished","success":true}`;
+  const allowed = ["registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107"];
+  const observed = assertBuiltSupport(stdout, allowed);
+  assert.deepEqual(observed, [
+    {
+      packageId: "registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107",
+    },
+    {
+      packageId: "registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107",
+      target: {
+        kind: ["custom-build"],
+        crate_types: ["bin"],
+        name: "build-script-build",
+        src_path:
+          "/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/proc-macro2-1.0.107/build.rs",
+        edition: "2021",
+        doc: false,
+        doctest: false,
+        test: false,
+      },
+      filenames: [
+        "/home/runner/_work/_temp/vize-public-consumer-DFCJ1l/target/lsp-support/debug/build/proc-macro2-ab005e1b49b4395b/build-script-build",
+      ],
+    },
+  ]);
+  assert.deepEqual(JSON.parse(JSON.stringify(observed)), assertBuiltSupport(stdout, allowed));
+  assert.throws(() => assertBuiltSupport(stdout, []), /outside support graph/u);
+});
+
+void test("Cargo optional fields preserve absent, null, empty and present identities", () => {
+  const finished = { reason: "build-finished", success: true };
+  const observe = (fields: object) =>
+    assertBuiltSupport(
+      [
+        JSON.stringify({ reason: "compiler-artifact", package_id: "adapter", ...fields }),
+        JSON.stringify(finished),
+      ].join("\n"),
+      ["adapter"],
+    );
+  for (const fields of [{}, { target: null }, { filenames: [] }, { target: {}, filenames: null }]) {
+    const observed = observe(fields);
+    assert.deepEqual(observed, [{ packageId: "adapter", ...fields }]);
+    assert.deepEqual(JSON.parse(JSON.stringify(observed)), observed);
+    assert.equal(Object.hasOwn(observed[0], "target"), Object.hasOwn(fields, "target"));
+    assert.equal(Object.hasOwn(observed[0], "filenames"), Object.hasOwn(fields, "filenames"));
+  }
+  const artifact = JSON.stringify({ reason: "compiler-artifact", package_id: "adapter" });
+  assert.throws(() => assertBuiltSupport(artifact, ["adapter"]));
+  assert.throws(() =>
+    assertBuiltSupport(artifact + '\n{"reason":"build-finished","success":false}', ["adapter"]),
+  );
+  assert.throws(() => assertBuiltSupport(JSON.stringify(finished), ["adapter"]));
+});

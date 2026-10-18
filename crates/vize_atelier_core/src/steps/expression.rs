@@ -44,6 +44,13 @@ use shape_checks::{is_function_shape, is_handler_reference_shape};
 pub use typescript::strip_typescript_from_expression;
 pub use vize_relief::{ExpressionScope, for_each_function_var};
 
+/// An authored empty directive value has no runtime expression, while its
+/// presence and location remain meaningful to parser and lint consumers.
+pub fn is_empty_dynamic_expression(expression: &ExpressionNode<'_>) -> bool {
+    matches!(expression, ExpressionNode::Simple(simple)
+        if !simple.is_static && simple.content.trim().is_empty())
+}
+
 /// Returns true if an expression is a callable reference that should be passed
 /// through directly as an event handler, not wrapped as `$event => (...)`.
 pub fn is_event_handler_reference_expression(content: &str) -> bool {

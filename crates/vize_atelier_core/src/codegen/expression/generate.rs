@@ -37,6 +37,11 @@ pub fn generate_event_handler(
                 return;
             }
 
+            if simple.content.trim().is_empty() {
+                ctx.push("() => {}");
+                return;
+            }
+
             let processed: String = if simple.is_ref_transformed {
                 simple.content.into()
             } else {

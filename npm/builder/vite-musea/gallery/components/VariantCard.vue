@@ -135,6 +135,7 @@ watch(measureEnabled, (enabled) => {
   <div class="variant-card">
     <div class="variant-preview" :class="{ 'viewport-mode': isCustomViewport }">
       <iframe
+        :key="previewUrl"
         ref="iframeRef"
         v-musea-globals
         :src="safeUrl(previewUrl)"

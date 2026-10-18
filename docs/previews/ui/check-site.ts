@@ -81,6 +81,8 @@ try {
         "/guide/ui/",
         "/ja/guide/ui/",
         "/ja/getting-started/",
+        "/ja/guide/compiler-inspector/",
+        "/ja/guide/testing/",
         "/guide/ui/button/",
         "/guide/ui/dialog/",
         "/guide/ui-styles/",
@@ -107,6 +109,14 @@ try {
               tocOutput,
             ),
           });
+        if (route === "/ja/guide/compiler-inspector/" || route === "/ja/guide/testing/") {
+          await page.evaluate(() => document.fonts.ready);
+          await page.screenshot({
+            path: path.join(values.output, `ja-${route.split("/").at(-2)}-${width}.png`),
+            fullPage: true,
+            animations: "disabled",
+          });
+        }
         if (route === "/ja/guide/composables/") {
           for (const [name, goal] of Object.entries(japaneseComposableGoals)) {
             const link = page.locator("main").getByRole("link", { name: goal, exact: true });
@@ -233,7 +243,7 @@ try {
     path.resolve(values.output),
   );
   process.stdout.write(
-    `Verified ${11 + previewComposableExamples.length} generated component/composable documentation routes at desktop/mobile widths and ${checkedLinks.size} local links\n`,
+    `Verified ${13 + previewComposableExamples.length} documentation routes at desktop/mobile widths and ${checkedLinks.size} local links\n`,
   );
 } finally {
   mkdirSync(tocOutput, { recursive: true });

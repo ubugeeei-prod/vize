@@ -1,3 +1,5 @@
+import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { collectOutput, println, sleepSeconds, writeStderr } from "../command_io.ts";
 import { replaceEvery } from "../command_runtime.ts";
 import { isJsonObject, parseJson, stringMember, type JsonValue } from "../ordered_json.ts";
@@ -67,11 +69,88 @@ export async function npmVersionIsVisible(
 ): Promise<boolean> {
   const value = await npmRegistryJson(name, version, probe);
   if (!isJsonObject(value)) return false;
-  const returnedName = stringMember(value, "name");
-  if (returnedName === undefined) return false;
-  const returnedVersion = stringMember(value, "version");
-  if (returnedVersion === undefined) return false;
-  return returnedName === name && returnedVersion === version;
+  return manifestMatches(value, name, version);
+}
+
+function manifestMatches(value: JsonValue | undefined, name: string, version: string): boolean {
+  return (
+    isJsonObject(value) &&
+    stringMember(value, "name") === name &&
+    stringMember(value, "version") === version
+  );
+}
+
+/** Require the ordinary manifest URL to serve the complete archive with its exact SRI. */
+export async function npmTarballIsVisible(
+  manifest: JsonValue,
+  remainingMs = 6000,
+): Promise<boolean> {
+  const timeoutMs = Math.min(6000, Math.floor(remainingMs));
+  if (!Number.isFinite(timeoutMs) || timeoutMs < 1) return false;
+  if (!isJsonObject(manifest)) return false;
+  const dist = manifest.get("dist");
+  if (!isJsonObject(dist)) return false;
+  const tarball = stringMember(dist, "tarball"),
+    integrity = stringMember(dist, "integrity");
+  if (!tarball || !integrity || !/^sha512-[A-Za-z0-9+/]{86}==$/.test(integrity)) return false;
+  try {
+    const url = new URL(tarball);
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) return false;
+  } catch {
+    return false;
+  }
+  return new Promise((resolve) => {
+    // Keep the existing 3s connect / 6s total probe limits, including a stalled body.
+    const child = spawn(
+      "curl",
+      [
+        "--silent",
+        "--show-error",
+        "--fail",
+        "--connect-timeout",
+        String(Math.min(3000, timeoutMs) / 1000),
+        "--max-time",
+        String(timeoutMs / 1000),
+        "--proto",
+        "=http,https",
+        "--header",
+        "Cache-Control: no-cache",
+        "--write-out",
+        "%{stderr}VIZE_HTTP_STATUS:%{http_code}",
+        tarball,
+      ],
+      { stdio: ["ignore", "pipe", "pipe"], timeout: timeoutMs, killSignal: "SIGKILL" },
+    );
+    const hash = createHash("sha512");
+    let bytes = 0,
+      status = "",
+      statusBytes = 0,
+      bounded = true;
+    child.stdout.on("data", (chunk: Buffer) => {
+      bytes += chunk.length;
+      if (bytes > 512 * 1024 * 1024) {
+        bounded = false;
+        child.kill("SIGKILL");
+      } else hash.update(chunk);
+    });
+    child.stderr.on("data", (chunk: Buffer) => {
+      statusBytes += chunk.length;
+      if (statusBytes > 4096) {
+        bounded = false;
+        child.kill("SIGKILL");
+      } else status += chunk.toString("utf8");
+    });
+    child.once("error", () => resolve(false));
+    child.once("close", (code) =>
+      resolve(
+        code === 0 &&
+          bounded &&
+          bytes > 0 &&
+          status === "VIZE_HTTP_STATUS:200" &&
+          `sha512-${hash.digest("base64")}` === integrity,
+      ),
+    );
+  });
 }
 
 /**
@@ -96,7 +175,7 @@ export async function npmTagPointsToVersion(
 }
 
 /**
- * Polls the registry until both the version and dist-tag become visible.
+ * Polls until exact metadata, dist-tag and the whole SRI-verified archive are visible.
  * Publishing to npm is eventually consistent. This helper turns that
  * propagation window into an explicit, bounded retry loop so workflow failures
  * point to a real timeout rather than a transient post-publish race.
@@ -107,11 +186,17 @@ export async function waitForRegistryVisibility(
   delaySeconds: number,
 ): Promise<number> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const [versionVisible, tagVisible] = await Promise.all([
-      npmVersionIsVisible(info.name, info.version, attempt),
+    const deadline = performance.now() + 6000;
+    const [manifest, tagVisible] = await Promise.all([
+      npmRegistryJson(info.name, info.version, attempt),
       npmTagPointsToVersion(info.name, info.tag, info.version, attempt),
     ]);
-    if (versionVisible && tagVisible) {
+    if (
+      manifestMatches(manifest, info.name, info.version) &&
+      tagVisible &&
+      manifest !== undefined &&
+      (await npmTarballIsVisible(manifest, deadline - performance.now()))
+    ) {
       println(`${info.name}@${info.version} is visible in npm with dist-tag ${info.tag}.`);
       return 0;
     }

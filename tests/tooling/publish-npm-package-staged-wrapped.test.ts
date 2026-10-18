@@ -5,6 +5,8 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 
+import { fakeNpmArchiveSource } from "./support/fake-npm-registry.ts";
+
 import { repoRoot, runReleaseCommand } from "./support/release-command.ts";
 import { fakeJsonStateTransaction, writeFakeCommand } from "./support/fake-command.ts";
 
@@ -103,6 +105,7 @@ for (const row of cases) {
         binDir,
         "curl",
         [
+          fakeNpmArchiveSource,
           "const fs = require('node:fs');",
           "const url = new URL(process.argv.at(-1));",
           "const exact = url.pathname.endsWith('/0.433.0');",
@@ -115,7 +118,7 @@ for (const row of cases) {
           "if (!visible) { process.stdout.write('{}VIZE_HTTP_STATUS:404'); process.exit(0); }",
           "const name = '@vizejs/native-darwin-arm64';",
           "const tag = process.env.WRAP_WRONG_TAG === '1' ? '0.432.0' : '0.433.0';",
-          "const body = exact ? { name, version: '0.433.0' } : { name, 'dist-tags': { latest: tag } };",
+          "const body = exact ? { name, version: '0.433.0', dist: fakeDist(name, '0.433.0') } : { name, 'dist-tags': { latest: tag } };",
           "process.stdout.write(JSON.stringify(body) + 'VIZE_HTTP_STATUS:200');",
         ].join("\n"),
       );
