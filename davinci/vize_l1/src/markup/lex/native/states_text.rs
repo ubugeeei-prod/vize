@@ -141,7 +141,7 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             State::BeforeAttrValue => {
                 self.sink
                     .on_error(LexErrorCode::MissingAttributeValue, self.index);
-                self.sink.on_attrib_end(QuoteType::Unquoted, self.index);
+                self.sink.on_missing_attribute_value_at_eof(self.index);
                 self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::InAttrValueDq => {

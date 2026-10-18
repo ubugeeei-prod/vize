@@ -36,6 +36,8 @@ mod template_syntax;
 #[cfg(all(test, feature = "legacy"))]
 mod tokenizer_contract_tests;
 #[cfg(all(test, feature = "legacy"))]
+mod tokenizer_empty_value_witness;
+#[cfg(all(test, feature = "legacy"))]
 mod tokenizer_first_newline_witness;
 #[cfg(test)]
 mod v_pre_tests;

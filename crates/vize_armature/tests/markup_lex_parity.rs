@@ -294,6 +294,23 @@ mod markup_lex_parity_support {
     }
 
     #[test]
+    fn eof_missing_value_keeps_the_complete_published_default_stream() {
+        let expected = [
+            "open-name:1..4",
+            "dir-name:5..6",
+            "dir-arg:6..8",
+            "attr-name-end:8",
+            "error:EofInTag:9",
+            "error:MissingAttributeValue:9",
+            "attr-end:NoValue:9",
+            "open-end:8",
+            "end",
+        ];
+        assert_events::<Component>("<div :id=", &expected);
+        assert_events::<Document>("<div :id=", &expected);
+    }
+
+    #[test]
     fn document_rawtext_names_fold_both_leading_bytes() {
         for name in ["script", "Script", "sCript", "SCRIPT"] {
             assert_events::<Document>(
