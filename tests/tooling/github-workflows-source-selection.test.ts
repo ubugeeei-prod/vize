@@ -89,7 +89,7 @@ test("source planning uses Node and offline metadata before selecting affected p
   assert.equal(js[fast]["continue-on-error"], undefined);
   assert.equal(
     js[fast].run,
-    "vp run --workspace-root check:iteration && node --test tests/tooling/github-workflows-source-selection.test.ts",
+    "vp run --workspace-root check:iteration && node --test tests/tooling/github-workflows-source-selection.test.ts tests/tooling/vp-bootstrap-cache.test.mjs",
   );
 });
 
