@@ -40,6 +40,7 @@ jobs:
           tests/tooling/release-public-a11y.test.ts
           tests/tooling/release-public-vrt-diagnostics.test.ts
           tests/tooling/release/release-public-acceptance.test.ts
+          tests/tooling/release/release-public-native-invocation.test.ts
           tests/tooling/release/release-public-atomic-original.test.ts
           tests/tooling/release/release-public-trusted-vrt.test.ts
           tests/tooling/release/release-public-vrt-log-barrier.test.ts

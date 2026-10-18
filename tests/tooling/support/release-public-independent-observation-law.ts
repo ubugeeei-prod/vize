@@ -102,6 +102,10 @@ export function nativeProviderFailureReceiptLaw(t: TestContext) {
     readRepoFile("tools", "support", "release", "public_acceptance", "native.ts"),
   );
   writeFileSync(
+    path.join(directory, "unicode.ts"),
+    'export function observePublishedUnicode() { throw new Error("failing provider must stop before Unicode cases"); }\n',
+  );
+  writeFileSync(
     path.join(directory, "installed.ts"),
     `import { appendFileSync } from "node:fs";
 export function publicNative() {
