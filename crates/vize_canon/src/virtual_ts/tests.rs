@@ -1441,8 +1441,8 @@ function eventHandler(event: Event) {
         &VirtualTsOptions::default(),
     );
     assert!(
-        standard_output.code.contains("unknown[] extends __Child_")
-            && standard_output.code.contains("? any : __Child_"),
+        standard_output.code.contains("unknown[] extends __A")
+            && standard_output.code.contains("? any : __A[0]"),
         "standard component event fallback should stay loose when args stay unknown:\n{}",
         standard_output.code
     );

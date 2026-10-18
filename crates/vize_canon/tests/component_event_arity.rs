@@ -100,29 +100,37 @@ defineEmits<{ select: [key: string, path: string[]] }>()
 
 #[test]
 fn zero_argument_event_projection_defers_tuple_indexing() {
-    let source = r#"<script setup lang="ts">
+    for source in [
+        r#"<script setup lang="ts">
 import { defineComponent } from 'vue'
 const Child = defineComponent({ emits: { close: () => true } })
 </script>
-<template><Child @close="() => {}" /></template>"#;
-    let virtual_ts = type_check_sfc(
-        source,
-        &SfcTypeCheckOptions::new("App.vue").with_virtual_ts(),
-    )
-    .virtual_ts
-    .expect("virtual TypeScript should be generated");
-    assert!(
-        virtual_ts.contains("extends infer __A extends unknown[] ? __A extends []"),
-        "concrete zero-argument tuples must not be indexed in an unselected type branch:\n{virtual_ts}"
-    );
-    assert!(
-        virtual_ts.contains("(__vize_args as unknown[])[0]"),
-        "reading a possibly absent runtime argument must not index a concrete empty tuple:\n{virtual_ts}"
-    );
-    assert!(
-        virtual_ts.contains("...__vize_args: Parameters<"),
-        "the listener must retain the complete original argument tuple:\n{virtual_ts}"
-    );
+<template><Child @close="() => {}" /></template>"#,
+        r#"<script setup lang="ts">
+const Child = {} as new () => { $props: { onChange?: (...args: [] | [number]) => void } }
+function needsString(value: string) {}
+</script>
+<template><Child @change="needsString($event)" /></template>"#,
+    ] {
+        let virtual_ts = type_check_sfc(
+            source,
+            &SfcTypeCheckOptions::new("App.vue").with_virtual_ts(),
+        )
+        .virtual_ts
+        .expect("virtual TypeScript should be generated");
+        assert!(
+            virtual_ts.contains("extends infer __A extends unknown[] ? [__A] extends [[]]"),
+            "concrete zero-argument tuples must not be indexed in an unselected type branch:\n{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains("(__vize_args as unknown[])[0]"),
+            "reading a possibly absent runtime argument must not index a concrete empty tuple:\n{virtual_ts}"
+        );
+        assert!(
+            virtual_ts.contains("...__vize_args: Parameters<"),
+            "the listener must retain the complete original argument tuple:\n{virtual_ts}"
+        );
+    }
 }
 
 #[test]

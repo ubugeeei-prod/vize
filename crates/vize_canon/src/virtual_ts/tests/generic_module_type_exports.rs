@@ -193,7 +193,7 @@ defineEmits<{ 'change': [value: Value] }>()
 #[test]
 fn generic_event_alias_keeps_indirect_callable_and_model_contracts() {
     for (emits, model, expected) in [
-        ("{ change: [value: Alias] }", "", "type Alias = Value;"),
+        ("{ change: [value: Alias] }", "", "type Alias = Value\n"),
         (
             "(event: 'change', value: Value) => void",
             "",

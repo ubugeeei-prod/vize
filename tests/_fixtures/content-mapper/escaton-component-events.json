@@ -286,6 +286,24 @@
         "stderr": "",
         "status": 2
       }
+    },
+    {
+      "name": "events-union-empty-or-number-wrong-string",
+      "original": 9427,
+      "files": {
+        "tsconfig.json": "{\n  \"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"skipLibCheck\": true},\n  \"contentMappers\": [{\"package\": \"vize\", \"extensions\": [\".vue\"]}],\n  \"include\": [\"*.vue\"]\n}\n",
+        "App.vue": "<script setup lang=\"ts\">\nfunction needsString(value: string) {}\nconst Child = {} as new () => { $props: { onChange?: (...args: [] | [number]) => void } }\n</script>\n<template><Child @change=\"needsString($event)\" /></template>\n"
+      },
+      "codes": [2345],
+      "terms": [],
+      "stdout": "App.vue(5,39): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'string'.\n  Type 'undefined' is not assignable to type 'string'.\n",
+      "stderr": "",
+      "status": 2,
+      "publicBaseline": {
+        "stdout": "App.vue(5,39): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'string'.\n  Type 'undefined' is not assignable to type 'string'.\n",
+        "stderr": "",
+        "status": 2
+      }
     }
   ]
 }
