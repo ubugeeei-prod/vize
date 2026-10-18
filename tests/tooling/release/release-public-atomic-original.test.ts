@@ -337,6 +337,28 @@ test("the separate original receipt is mandatory and cannot borrow the successfu
   assert.throws(() => assertAtomicOriginalReceipt(...f.args), /mandatory/u);
 });
 
+test("a build-script row survives the atomic receipt JSON seal without losing artifact custody", (t) => {
+  const f = fixture();
+  t.after(f.clean);
+  // Cargo build-script messages do not carry compiler-artifact target/filenames.
+  f.rewriteStdout(
+    JSON.stringify({ reason: "build-script-executed", package_id: "adapter" }) + "\n" + f.stdout(),
+  );
+  const observed = f.observe();
+  assert.deepEqual(observed.built, [
+    { packageId: "adapter" },
+    { packageId: "adapter", target: f.artifact.target, filenames: f.artifact.filenames },
+  ]);
+  const receipt = path.join(f.output, atomicReceiptFile);
+  fs.writeFileSync(receipt, JSON.stringify(observed));
+  assert.deepEqual(JSON.parse(fs.readFileSync(receipt, "utf8")), f.observe());
+  assert.doesNotThrow(() => assertAtomicOriginalReceipt(...f.args));
+  const tampered = JSON.parse(fs.readFileSync(receipt, "utf8"));
+  tampered.built[1].filenames = ["foreign-test"];
+  fs.writeFileSync(receipt, JSON.stringify(tampered));
+  assert.throws(() => assertAtomicOriginalReceipt(...f.args), /receipt is mandatory/u);
+});
+
 const corruptions: Record<string, (f: ReturnType<typeof fixture>) => void> = {
   "wrong executable identity": (f) => {
     f.sessions[0].process.executableSha256 = "wrong";
