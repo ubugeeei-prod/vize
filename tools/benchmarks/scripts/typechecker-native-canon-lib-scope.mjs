@@ -156,6 +156,7 @@ export function qualifyCanonLibScope(source) {
   const inventory = registrations(
     source,
     targets.map((target) => target.file),
+    new Set(Object.keys(manifest.features)),
   );
   for (const entry of inventory.cases) {
     assert.ok(

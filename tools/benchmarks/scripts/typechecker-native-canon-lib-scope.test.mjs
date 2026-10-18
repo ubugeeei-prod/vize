@@ -108,6 +108,33 @@ await test("platform branch union refuses a matching case even in an inactive wi
   );
 });
 
+await test("Cargo-declared literal feature cfg retains ordinary integration targets", () => {
+  const file = "crates/vize_canon/tests/declared_feature.rs";
+  for (const feature of ["native", "future-registration"]) {
+    const changes = {
+      ...manifestChange(canonManifest, (m) => {
+        m.features["future-registration"] = [];
+      }),
+      [file]: `#![cfg(feature = "${feature}")]\n#[test] fn ordinary_feature_case() {}`,
+    };
+    const packet = qualifyCanonLibScope(source(changes));
+    assert.ok(packet.targets.some((target) => target.file === file));
+    assert.ok(
+      packet.cases.some((entry) => entry.file === file && entry.name === "ordinary_feature_case"),
+    );
+    assert.deepEqual(packet.originalCases, qualifyCanonLibScope(actual).originalCases);
+  }
+  for (const cfg of [
+    'feature = "undeclared"',
+    'not(feature = "undeclared")',
+    'any(feature = "native", feature = "undeclared")',
+  ])
+    assert.throws(
+      () => qualifyCanonLibScope(source(append(integration, `#[cfg(${cfg})] fn ordinary() {}`))),
+      /undeclared Cargo cfg feature/u,
+    );
+});
+
 await test("comments, raw literals and ordinary body edits do not freeze product source", () => {
   qualifyCanonLibScope(
     source(
