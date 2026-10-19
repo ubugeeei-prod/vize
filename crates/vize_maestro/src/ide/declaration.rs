@@ -265,18 +265,6 @@ const product = {} as Product
     }
 
     fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
-        if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
-            return None;
-        }
-        let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .parent()
-            .and_then(std::path::Path::parent)?;
-        vize_carton::corsa_resolver::resolve_corsa_executable(
-            vize_carton::corsa_resolver::CorsaResolveRequest {
-                project_root: Some(workspace_root),
-                ..Default::default()
-            },
-        )
-        .ok()
+        crate::test_support::tsgo()
     }
 }

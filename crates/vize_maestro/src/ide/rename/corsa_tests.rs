@@ -7,7 +7,6 @@ use vize_canon::{CorsaBridge, CorsaBridgeConfig};
 use crate::{ide::IdeContext, ide::rename::RenameService, server::ServerState};
 
 mod component_props;
-mod native_requirement_tests;
 mod package_routes;
 #[test]
 fn canonical_rename_edits_authored_cross_vue_files() {
@@ -335,5 +334,5 @@ fn authored_text(source: &str, range: Range) -> &str {
 }
 
 pub(super) fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
-    native_requirement_tests::resolve_tsgo_binary()
+    crate::test_support::tsgo()
 }

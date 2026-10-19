@@ -280,17 +280,5 @@ fn incomplete_template_expression_does_not_drop_sibling_vue_import() {
 }
 
 fn resolve_test_tsgo_binary() -> Option<std::path::PathBuf> {
-    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
-        return None;
-    }
-
-    let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(std::path::Path::parent)?;
-    let sibling_cache = workspace_root.parent()?.join("corsa-bind/.cache/tsgo");
-    if sibling_cache.exists() {
-        return Some(sibling_cache);
-    }
-
-    vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
+    crate::test_support::tsgo()
 }
