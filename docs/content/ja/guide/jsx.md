@@ -6,13 +6,14 @@ title: JSX と TSX
 
 # JSX と TSX
 
-> **対応状況:** JSX/TSX はコンパイラ、リンター、型チェッカー、LSP、フォーマッタで扱えます。
+> [!NOTE]
+> JSX/TSX はコンパイラ、リンター、型チェッカー、LSP、フォーマッタで扱えます。
 > Vue JSX の型チェックはプロジェクトの既定値で有効です。`vite.config.*` の `vue.typeChecker.jsxTypecheck` で変更できます。
 > 新規プロジェクトの既定値のリリース検証は未完了です。React が混在するプロジェクトでは、Vue JSX の型チェックを明示的に無効にしてください。
 > スタンドアロンの `.jsx`/`.tsx` モジュールでは、HMR 対応が主な未完了項目です。
 
 Vize は `.jsx`/`.tsx` の Vue コンポーネントを、`.vue` ファイルと同じコンパイラクレートでコンパイルします。
-VDOM/Vapor のコード生成、Croquis の解析、Canon の型チェック、Patina の lint、Maestro の言語サーバーを利用できます。
+VDOM と Vapor のコード生成、意味解析、型チェック、lint、言語サーバーを利用できます。
 VDOM のモジュールでは、元の import、宣言、export、パラメータ、コンポーネント内のレキシカルな束縛を保持します。
 
 ## JSX/TSX の有効化
@@ -109,7 +110,7 @@ Vue 固有の追加として、[後述の `<style scoped>`](#scoped-styles) が�
 
 ## 対応する JSX 構文
 
-JSX は SFC テンプレートと同じ Relief IR に変換され、VDOM または Vapor のバックエンドへ渡されます。
+JSX は SFC テンプレートと同じ中間表現に変換され、VDOM または Vapor のバックエンドへ渡されます。
 JSX/TSX のテストで確認している構文は次のとおりです。
 
 - フラグメントと要素の入れ子
@@ -366,7 +367,7 @@ export default defineConfig({
 });
 ```
 
-有効にすると、`vize check` は Canon で `.jsx`/`.tsx` の Vue コンポーネントを型チェックします。
+有効にすると、`vize check` は `.jsx`/`.tsx` の Vue コンポーネントを型チェックします。
 生成する仮想ファイルは TSX ではなく通常の TypeScript で、次のように元のコンポーネントの型情報を保持します。
 
 - 第 1 引数の型を props の型として保持します。
@@ -398,7 +399,7 @@ vize check src
 スタンドアロンの JSX/TSX は、型チェック用の通常の TypeScript へ変換します。
 一方、SFC の `<script lang="jsx">`、`<script lang="tsx">`、対応する `script setup` は `.vue.tsx` の仮想ファイルにします。
 これにより、TypeScript はスクリプトブロック内の JSX を解析できます。
-LSP と CLI は同じ変換を使うため、Corsa の診断はエディターでもコマンドラインでも同じソース範囲を指します。
+LSP と CLI は同じ変換を使うため、TypeScript の診断はエディターでもコマンドラインでも同じソース範囲を指します。
 
 ## エディター / LSP
 
@@ -424,10 +425,10 @@ React が混在するプロジェクトでは、エディターでも Vue JSX �
 
 ## lint
 
-Patina の JSX/TSX 用 lint は、OXC AST から直接投影したルール用 IR を使います。
+Vize の lint ルールは JSX/TSX を直接検査します。
 マークアップ用ルールは疑似的な SFC テンプレートを作らず、JSX の要素と属性を直接読み取ります。
-`.map(...)` の key 検査など、Vue テンプレートの形が必要なルールは変換後の Relief ツリーを使います。
-セマンティックなルールは、SFC と同じ Croquis の解析を利用します。
+`.map(...)` の key 検査など、Vue テンプレートの形が必要なルールは変換後のテンプレートのツリーを使います。
+セマンティックなルールは、SFC と同じ解析を利用します。
 
 そのため、文字列の部分一致に頼らず、JSX/TSX の構文から次の問題を検出できます。
 

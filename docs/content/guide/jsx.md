@@ -4,12 +4,13 @@ title: JSX & TSX
 
 # JSX & TSX
 
-> **Status:** JSX/TSX is covered across the compiler, linter, type checker, LSP, and formatter.
-> Fresh projects enable Vue JSX checking; dedicated configs retain opt-in. Release qualification remains pending, and mixed React projects need an explicit opt-out.
-> HMR for standalone `.jsx`/`.tsx` modules is still the main remaining integration gap.
+> [!NOTE]
+> JSX/TSX works in the compiler, linter, type checker, language server, and formatter.
+> Vue JSX type checking is on by default for projects configured in `vite.config.*`; a dedicated config keeps it opt-in. The new default is still in release testing, and projects that also use React JSX must turn it off.
+> HMR for standalone `.jsx`/`.tsx` modules is not wired yet.
 
 Vize compiles `.jsx` and `.tsx` Vue components through the compiler crates used by `.vue` files:
-VDOM/Vapor backends, Croquis analysis, Canon type checking, Patina lint, and the Maestro language server.
+VDOM and Vapor output, semantic analysis, type checking, lint, and the language server.
 VDOM modules retain authored imports, declarations, exports, parameters, and lexical component bindings.
 
 ## Enabling JSX/TSX
@@ -107,7 +108,7 @@ Vue-specific addition is the `<style scoped>` element described [below](#scoped-
 
 ## Supported JSX surface
 
-The compiler lowers JSX to the same Relief IR used by SFC templates, then sends that IR to the VDOM
+The compiler lowers JSX to the same intermediate representation used by SFC templates, then sends that IR to the VDOM
 or Vapor backend. These forms are covered by the JSX/TSX test matrix:
 
 - fragments and nested elements
@@ -358,7 +359,7 @@ vize fmt src --write
 ## Type-checking
 
 Project defaults enable Vue JSX checking; configure `vue.typeChecker.jsxTypecheck` in `vite.config.*` to override it.
-Release qualification of the fresh default remains pending. For mixed React projects, [explicitly disable Vue JSX checking](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md#react-owned-projects); Vue SFC checking remains available.
+This default is still in release testing. For mixed React projects, [explicitly disable Vue JSX checking](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md#react-owned-projects); Vue SFC checking remains available.
 
 ```ts
 // vite.config.ts
@@ -374,7 +375,7 @@ export default defineConfig({
 });
 ```
 
-When enabled, `vize check` type-checks `.jsx`/`.tsx` Vue components through Canon. The generated
+When enabled, `vize check` type-checks `.jsx`/`.tsx` Vue components. The generated
 virtual file is plain TypeScript, not TSX, and it preserves the authored component contract:
 
 - the typed first parameter remains the props type;
@@ -411,7 +412,7 @@ vize check src
 Standalone JSX/TSX components lower to plain virtual TypeScript for checking. SFCs that contain
 `<script lang="jsx">`, `<script lang="tsx">`, or matching `script setup` blocks are materialized as
 `.vue.tsx` virtual files so TypeScript parses JSX syntax in the script block. The LSP and CLI share
-the same lowering, so a Corsa diagnostic lands at the identical source range in the editor and on the
+the same lowering, so a TypeScript diagnostic lands at the identical source range in the editor and on the
 command line.
 
 ## Editor / LSP
@@ -437,11 +438,9 @@ enabled. React-owned projects need the same explicit opt-out in the editor.
 
 ## Linting
 
-Vize's Patina lint rules run on JSX/TSX through a **zero-cost rule IR projected straight from the OXC
-AST**. Markup-oriented rules do not reconstruct a synthetic SFC template; they read JSX elements and
-attributes directly. Rules that need the Vue template shape, such as `.map(...)` list key checks, run
-over the lowered Relief tree. Semantic rules are backed by Croquis, the same analysis layer used for
-SFCs.
+Vize's lint rules run on JSX/TSX directly. Markup rules read JSX elements and attributes without
+building a synthetic SFC template. Rules that need the Vue template shape, such as `.map(...)` list
+key checks, run on the lowered template tree. Semantic rules use the same analysis as SFCs.
 
 This means JSX/TSX linting catches the same classes of problems without relying on partial string
 matching:
@@ -490,8 +489,8 @@ See [Static Analysis](./static-analysis.md) for the lint and type-check model, a
 
 Be aware of the current edges:
 
-- **Fresh default qualification remains pending.** Dedicated configs retain the opt-in default;
-  mixed Vue/React projects must explicitly disable Vize's Vue JSX checker.
+- **The new type-checking default is still in release testing.** A dedicated config keeps it
+  opt-in; mixed Vue/React projects must set `vue.typeChecker.jsxTypecheck: false`.
 - **HMR is not yet wired for `.jsx`/`.tsx` modules.** VDOM compilation preserves authored
   imports and exports. Block-body setup state and JSX parameter defaults retain their scopes.
   Edits still trigger a normal reload because the bundler adapters do not register Vue HMR boundaries.

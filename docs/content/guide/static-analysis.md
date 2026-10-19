@@ -13,13 +13,13 @@ is the recommended workflow for applications.
 
 ## Pipeline
 
-| Layer    | What it does                                                              | Used by                                        |
+| Codename | What it does                                                              | Used by                                        |
 | -------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
-| Armature | Tokenizes and parses Vue templates and SFC structure                      | compiler, linter, formatter                    |
-| Croquis  | Builds scopes, binding metadata, macro information, and cross-file graphs | compiler, lint, type-aware checks              |
-| Patina   | Runs Vue, script, CSS, a11y, SSR, Vapor, Musea, and type-aware lint rules | `vize lint`, editor diagnostics, Oxlint bridge |
-| Canon    | Generates virtual TypeScript and maps diagnostics back to Vue files       | `vize check`, editor type checking             |
-| Maestro  | Exposes diagnostics and editor features through LSP                       | `vize lsp`, VS Code, Zed                       |
+| Armature | Parser: tokenizes and parses Vue templates and SFC structure                      | compiler, linter, formatter                    |
+| Croquis  | Analyzer: builds scopes, binding metadata, macro information, and cross-file graphs | compiler, lint, type-aware checks              |
+| Patina   | Linter: runs Vue, script, CSS, a11y, SSR, Vapor, Musea, and type-aware lint rules | `vize lint`, editor diagnostics, Oxlint bridge |
+| Canon    | Type checker: generates virtual TypeScript and maps diagnostics back to Vue files       | `vize check`, editor type checking             |
+| Maestro  | Language server: exposes diagnostics and editor features through LSP                       | `vize lsp`, VS Code, Zed                       |
 
 This means static analysis is not only linting. Template bindings, compiler macros, component
 metadata, provide/inject relationships, reactivity flow, generated virtual TypeScript, and
@@ -44,7 +44,7 @@ Start with the default preset:
 vp run vize:lint
 ```
 
-Use `essential` for correctness-only CI, `happy-path` for the default recommended bundle,
+Use `essential` for correctness-only CI, `happy-path` for the default recommended bundle, `ecosystem` to add Router, Pinia, Nuxt, and i18n rules on top,
 `opinionated` when you want stronger conventions, `nuxt` for Nuxt-aware assumptions, and
 `incremental` when you only want explicitly configured rules to run.
 
@@ -90,13 +90,13 @@ to be slower than ordinary template and script lint rules.
 
 ## Reactivity Overlay
 
-Croquis exposes a stable reactivity overlay for each analyzed SFC: reactive sources, `.value`
-requirements, reactivity-loss sites, and effect-graph edges with source mappings. The same compact
-JSON model feeds diagnostics, reports, editor surfaces, and the Playground's **Reactivity** tab.
+For each SFC, the analyzer records where reactive values come from, where `.value` is needed, where
+reactivity is lost, and which effects depend on which values, all mapped to the source. The same
+data feeds diagnostics, reports, the editor, and the Playground's **Reactivity** tab.
 
 ## Patina Rule Model
 
-Patina is the lint rule layer. Rules are small visitors over the SFC source, template root,
+Patina is Vize's linter (`vize patina` is an alias of `vize lint`). Rules are small visitors over the SFC source, template root,
 template elements, directives, `v-for`, `v-if`, and interpolations. Each rule carries metadata for
 its rule name, category, default severity, help text, and whether it is fixable. Presets are just
 registries that decide which rules are enabled together.
@@ -121,6 +121,7 @@ The built-in presets are meant to support adoption in stages:
 | ------------- | -------------------------------------------------------------------- |
 | `essential`   | Error-focused Vue correctness, security, and minimal HTML checks     |
 | `happy-path`  | Default bundle for correctness, security, a11y, SSR, semantic checks |
+| `ecosystem`   | `happy-path` plus Router, Pinia, Nuxt, and i18n rules                |
 | `opinionated` | `happy-path` plus stronger conventions, script rules, and type rules |
 | `nuxt`        | Opinionated rules adjusted for Nuxt auto-import assumptions          |
 | `incremental` | Empty starting point for host-driven, rule-by-rule adoption          |
@@ -309,7 +310,7 @@ vize lsp
 
 Use npm package scripts to manage the tool and runtime with your application dependencies. The npm
 launcher calls the Rust CLI through NAPI and resolves its bundled TypeScript runtime, respecting
-explicit runtime settings such as `CORSA_PATH`. A direct Rust CLI installation is also available
+explicit runtime settings such as `CORSA_PATH` (the native TypeScript executable). A direct Rust CLI installation is also available
 through Nix and other installation methods.
 
 ## Oxlint
