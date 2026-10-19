@@ -2,18 +2,7 @@
 //! compare byte-for-byte against the shipped DOM lane, while non-JS event
 //! names stay typed refusals.
 
-#[expect(
-    dead_code,
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::string_slice,
-    clippy::expect_used,
-    clippy::indexing_slicing,
-    clippy::panic,
-    reason = "shared test support; each binary uses a subset"
-)]
-mod support;
+use crate::support;
 
 use vize_l1_to_l2::UnsupportedReason as Reason;
 

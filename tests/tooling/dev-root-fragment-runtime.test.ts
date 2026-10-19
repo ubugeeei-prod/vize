@@ -166,7 +166,7 @@ test("source changes and runtime witnesses require the executable native carrier
     "${{ runner.temp }}/dev-root-fragment.json",
   );
   assert.deepEqual(step.run.trim().split("\n"), [
-    "cargo test -p vize_atelier_dom --profile ci --test dev_root_fragment",
+    "cargo test -p vize_atelier_dom --profile ci --test integration dev_root_fragment::",
     "NODE_ENV=development vp node --test tests/tooling/dev-root-fragment-runtime.test.ts",
     "NODE_ENV=production vp node --test tests/tooling/dev-root-fragment-runtime.test.ts",
   ]);

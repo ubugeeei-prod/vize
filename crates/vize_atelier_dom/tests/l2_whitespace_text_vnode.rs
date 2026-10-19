@@ -7,15 +7,7 @@
     reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
-#[expect(
-    dead_code,
-    clippy::string_slice,
-    clippy::expect_used,
-    clippy::indexing_slicing,
-    clippy::panic,
-    reason = "shared test support; each binary uses a subset"
-)]
-mod support;
+use crate::support;
 
 const BATTERY: &[(&str, &str)] = &[
     (

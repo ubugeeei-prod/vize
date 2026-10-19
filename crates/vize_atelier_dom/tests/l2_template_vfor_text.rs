@@ -1,17 +1,6 @@
 //! Template v-for fragments need text vnodes for interpolation children.
 
-#[expect(
-    dead_code,
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::string_slice,
-    clippy::expect_used,
-    clippy::indexing_slicing,
-    clippy::panic,
-    reason = "shared test support; each binary uses a subset"
-)]
-mod support;
+use crate::support;
 
 #[test]
 fn template_v_for_text_children_match_the_shipped_lane() {
