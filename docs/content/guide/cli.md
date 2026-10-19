@@ -274,6 +274,8 @@ Key options:
 | `--root`       | Workspace boundary and base for report paths; defaults to the current directory |
 | `-f, --format` | Output format: `text` (default), versioned `json`, or `sarif` for code hosts    |
 | `--exit-zero`  | Return success even when a proven error would normally block                    |
+| `--tui`        | Explore the report in an interactive terminal view                              |
+| `--public-sfc` | Also enforce the public component SFC contract (off by default)                 |
 
 Exit status `0` means the gate passed, `1` means a certain or high-confidence error, and `2` means
 discovery, parsing, analysis, serialization, or output failed. Warnings and lower-confidence findings
@@ -335,6 +337,7 @@ generated TypeScript project used by `vize check`.
 | `--dry-run`                         | Print what would be removed                               |
 | `--scope node-modules` / `project` | Clean only `node_modules/.vize` or only `.vize`           |
 | `--force`                           | Also remove unknown entries by deleting the whole folder |
+| `-q, --quiet`                       | Suppress status output                                    |
 
 ## Ready
 
@@ -403,3 +406,6 @@ vize --help
 vize --version
 vize <command> --help
 ```
+
+Project commands (`build`, `fmt`, `lint`, `check`, and `ready`) also accept
+`-c, --config <path>` to read a specific Vite config and `--no-config` to ignore project settings.
