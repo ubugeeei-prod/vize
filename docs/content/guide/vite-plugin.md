@@ -33,7 +33,7 @@ The drop-in claim is deliberately bounded, so it is worth stating what it does a
 
 - **In scope** — Vue 3 single-file components compiled through Vite, in both `<script setup>` and
   Options API style, including scoped styles, CSS Modules, SSR, and HMR.
-- **Incubating** — Vue 2 and 2.7 (`vueVersion: 2` / `"2.7"`). The legacy dialects are off by
+- **Incubating** — Vue 2 and 2.7 (`vue.version: "2"` / `"2.7"`, or `vize({ vueVersion: 2 })`). The legacy dialects are off by
   default and non-invasive: Vize does not compile `.vue` files in those modes, so your existing Vue
   compiler, `vue-loader`, or Nuxt 2 setup stays in charge. See
   [Compiler Options](#compiler-options).

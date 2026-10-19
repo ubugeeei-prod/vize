@@ -37,7 +37,7 @@ export default defineConfig({});
 既存プラグインを置き換えられる範囲には、次の制限があります。
 
 - **対応範囲:** Vite でコンパイルする Vue 3 SFC が対象です。`<script setup>` と Options API の両方に加え、scoped style、CSS Modules、SSR、HMR に対応します。
-- **開発中:** Vue 2 と 2.7（`vueVersion: 2` / `"2.7"`）の互換モードは既定で無効です。このモードでは Vize は `.vue` ファイルをコンパイルせず、既存の Vue コンパイラ、`vue-loader`、Nuxt 2 が引き続き処理を担当します。[コンパイラ オプション](#compiler-options)を参照してください。
+- **開発中:** Vue 2 と 2.7（`vue.version: "2"` / `"2.7"`、または `vize({ vueVersion: 2 })`）の互換モードは既定で無効です。このモードでは Vize は `.vue` ファイルをコンパイルせず、既存の Vue コンパイラ、`vue-loader`、Nuxt 2 が引き続き処理を担当します。[コンパイラ オプション](#compiler-options)を参照してください。
 - **保証の対象外:** webpack、rollup、esbuild、Rspack 向けの `@vizejs/unplugin` と `@vizejs/rspack-plugin` は実験段階であり、既存プラグインをそのまま置き換えられる保証はありません。[実験的なバンドラー統合](./unplugin.md)を参照してください。
 - **未完成:** `@vitejs/plugin-vue` の全オプションとの互換性はまだありません。現在は `include`、`exclude`、`isProduction` を反映します。その他の公開オプション、挙動が異なる理由、残る課題は [#3227](https://github.com/ubugeeei-prod/vize/issues/3227) で追跡しています。
 
