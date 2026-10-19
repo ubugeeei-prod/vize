@@ -59,9 +59,7 @@ const strictRepoCheckCommand = [
   "node tools/support/typescript/check-project.ts tsconfig.native-history.json",
   "node tools/support/typescript/check-project.ts tsconfig.compat-davinci.json",
   "node tools/support/typescript/check-project.ts tsconfig.source-build-receipt.json",
-  "node tools/support/typescript/check-project.ts tsconfig.release-observers.json",
   "node tools/support/typescript/check-project.ts tsconfig.css-catalog.json",
-  "node tools/support/typescript/check-project.ts tsconfig.public-vrt.json",
   "node tools/support/typescript/check-project.ts tsconfig.vuefes-compat.json",
 ].join(" && ");
 const ciVizeAppCheckCommand = [

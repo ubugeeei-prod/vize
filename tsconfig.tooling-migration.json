@@ -90,8 +90,6 @@
     "tests/performance/support/warm-type-backed-release-bridge-verifier.ts",
     "tools/support/archive/tar.ts",
     "tools/support/archive/zip.ts",
-    "tools/support/release/lint_reports/package_members.ts",
-    "tools/support/release/typed_defaults/archive.ts",
     "tools/support/release/public_install/archive.ts",
     "tools/support/release/public_install/collect.ts",
     "tools/support/release/public_install/identity.ts",

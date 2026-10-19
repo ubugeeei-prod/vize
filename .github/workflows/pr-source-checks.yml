@@ -99,7 +99,6 @@ jobs:
           tests/tooling/pr-required-rust.test.ts
           tests/tooling/rust-test-cohorts.test.ts
           tests/tooling/rust-build-evidence.test.mjs
-          tests/tooling/release-input-scopes.test.mjs
           tests/tooling/pinned-fixture-hydration.test.ts
           tests/tooling/native-preparation-identity.test.ts tests/tooling/native-formatter-build-custody.test.mjs tests/tooling/native-ci-formatter-custody.test.mjs tests/tooling/native-history-profile.test.ts
           tests/tooling/publish-npm-package*.test.ts
