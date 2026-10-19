@@ -55,6 +55,7 @@
     "tests/editor-conformance/drivers/pty-bridge.ts",
     "tools/support/release/qualify_check/main.ts",
     "tools/support/archive/tar.ts",
+    "tools/support/archive/zip.ts",
     "tools/support/release/lint_reports/package_members.ts",
     "tools/support/release/typed_defaults/archive.ts",
     "tools/support/release/public_install/archive.ts",

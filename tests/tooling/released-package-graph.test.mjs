@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { writeTarGz } from "../../tools/support/archive/tar.ts";
 import { verifyPackageGraph } from "../../tools/support/release/lint_reports/package_graph.mjs";
 
 function fixture(t, dependencies = { "@parcel/watcher-wasm": "2.6.0", "@isaacs/cliui": "8.0.2" }) {
@@ -30,27 +30,24 @@ function fixture(t, dependencies = { "@parcel/watcher-wasm": "2.6.0", "@isaacs/c
       fs.mkdirSync(path.dirname(path.join(directory, file)), { recursive: true });
       fs.writeFileSync(path.join(directory, file), bytes);
     }
-    const archive = spawnSync(
-      "python3",
-      [
-        "-c",
-        "import io,json,sys,tarfile; f=json.load(sys.stdin); b=io.BytesIO(); t=tarfile.open(fileobj=b,mode='w:gz');\nfor n,s in f.items():\n d=s.encode(); m=tarfile.TarInfo('package/'+n); m.size=len(d); t.addfile(m,io.BytesIO(d))\nt.close(); sys.stdout.buffer.write(b.getvalue())",
-      ],
-      { input: JSON.stringify(files) },
+    const archive = writeTarGz(
+      Object.entries(files).map(([file, text]) => ({
+        name: `package/${file}`,
+        data: Buffer.from(text),
+      })),
     );
-    assert.equal(archive.status, 0, archive.stderr.toString());
     const resolved = `https://registry.npmjs.org/${name}/-/fixture-${version}.tgz`;
-    const integrity = `sha512-${createHash("sha512").update(archive.stdout).digest("base64")}`;
+    const integrity = `sha512-${createHash("sha512").update(archive).digest("base64")}`;
     const metadata = { name, version, dist: { tarball: resolved, integrity } };
     responses.set(`https://registry.npmjs.org/${encodeURIComponent(name)}/${version}`, metadata);
-    responses.set(resolved, archive.stdout);
+    responses.set(resolved, archive);
     packages[location] = {
       version,
       resolved,
       integrity,
       ...(extras.dependencies ? { dependencies: extras.dependencies } : {}),
     };
-    return { directory, files, metadata, archive: archive.stdout };
+    return { directory, files, metadata, archive: archive };
   }
   const bundle = add(
     "node_modules/@parcel/watcher-wasm/node_modules/napi-wasm",

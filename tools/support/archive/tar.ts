@@ -76,7 +76,12 @@ function paxRecords(data: Buffer): Map<string, string> {
 
 /** Every member of a .tar.gz payload, in archive order. */
 export function readTarGz(payload: Uint8Array): TarMember[] {
-  const tar = zlib.gunzipSync(payload);
+  return readTar(zlib.gunzipSync(payload));
+}
+
+/** Every member of an uncompressed tar payload, in archive order. */
+export function readTar(payload: Uint8Array): TarMember[] {
+  const tar = Buffer.from(payload.buffer, payload.byteOffset, payload.byteLength);
   const members: TarMember[] = [];
   let longName: string | null = null;
   let longLink: string | null = null;
@@ -143,8 +148,12 @@ function octal(header: Buffer, offset: number, length: number, value: number): v
   header.write(`${value.toString(8).padStart(length - 1, "0")}\0`, offset, length, "ascii");
 }
 
-/** A minimal ustar writer for inert test archives; names must fit 100 bytes. */
 export function writeTarGz(entries: readonly TarEntry[]): Buffer {
+  return zlib.gzipSync(writeTar(entries));
+}
+
+/** A minimal ustar writer for inert test archives; names must fit 100 bytes. */
+export function writeTar(entries: readonly TarEntry[]): Buffer {
   const blocks: Buffer[] = [];
   for (const entry of entries) {
     const data = Buffer.from(entry.data ?? new Uint8Array());
@@ -165,5 +174,5 @@ export function writeTarGz(entries: readonly TarEntry[]): Buffer {
     blocks.push(header, data, Buffer.alloc((block - (data.length % block)) % block));
   }
   blocks.push(Buffer.alloc(block * 2));
-  return zlib.gzipSync(Buffer.concat(blocks));
+  return Buffer.concat(blocks);
 }

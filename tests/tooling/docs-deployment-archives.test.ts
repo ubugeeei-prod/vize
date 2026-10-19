@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import {
   archiveMember,
@@ -7,31 +6,24 @@ import {
   sha256,
   stableJson,
 } from "../../tools/support/compat/github/docs-deployment-api.ts";
+import { writeTar } from "../../tools/support/archive/tar.ts";
+import { writeZip } from "../../tools/support/archive/zip.ts";
 import { artifact, manifest, run } from "./support/docs-deployment.ts";
 
 function archive(mode: string, path = "_og/manifest.json", content = JSON.stringify(manifest)) {
-  const script = `import io,json,sys,tarfile,zipfile
-mode,path,content=json.loads(sys.stdin.read())
-buffer=io.BytesIO()
-with zipfile.ZipFile(buffer,'w') as archive:
- if mode.startswith('pages'):
-  tar=io.BytesIO()
-  with tarfile.open(fileobj=tar,mode='w') as site:
-   member=tarfile.TarInfo('./'+path)
-   member.size=len(content.encode())
-   if mode=='pages-link': member.type=tarfile.SYMTYPE;member.linkname='elsewhere'
-   site.addfile(member,io.BytesIO(content.encode()))
-  archive.writestr('artifact.tar',tar.getvalue())
- else:
-  archive.writestr(path,content)
-  if mode=='duplicate': archive.writestr(path,content)
-sys.stdout.buffer.write(buffer.getvalue())`;
-  const result = spawnSync("python3", ["-c", script], {
-    input: JSON.stringify([mode, path, content]),
-    maxBuffer: 1024 * 1024,
-  });
-  assert.equal(result.status, 0, result.stderr.toString());
-  return result.stdout;
+  if (mode.startsWith("pages")) {
+    const link = mode === "pages-link";
+    const site = writeTar([
+      {
+        name: `./${path}`,
+        data: Buffer.from(content),
+        ...(link ? { typeflag: "2", linkname: "elsewhere" } : {}),
+      },
+    ]);
+    return writeZip([{ name: "artifact.tar", data: site }]);
+  }
+  const member = { name: path, data: content };
+  return writeZip(mode === "duplicate" ? [member, member] : [member]);
 }
 
 test("native archive reads bind whole primary digests and preserve the original manifest bytes", async () => {
@@ -41,7 +33,7 @@ test("native archive reads bind whole primary digests and preserve the original 
   assert.equal(archiveMember(docs, false).toString(), native);
   assert.equal(archiveMember(pages, true).toString(), native);
   const api = new GitHub("ubugeeei-prod/vize", "fixture-credential");
-  api.binary = async () => docs;
+  api.binary = async () => new Uint8Array(docs);
   const metadata = { ...artifact(run(), "docs"), digest: "sha256:" + sha256(docs) };
   assert.deepEqual(await api.manifest(metadata), {
     sourceSha: manifest.sourceSha,

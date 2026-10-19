@@ -1,9 +1,7 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { readTar } from "../../archive/tar.ts";
+import { readZipEntry, zipEntries } from "../../archive/zip.ts";
 import {
   validateRun,
   type Artifact,
@@ -103,32 +101,26 @@ export async function preparationMetadata<T extends { publisher: WorkflowRun; jo
 
 // Read a single member; neither archive can write paths, symlinks or executable code.
 export function archiveMember(bytes: Uint8Array, pages: boolean, member = "_og/manifest.json") {
-  const directory = mkdtempSync(join(tmpdir(), "vize-pages-custody-"));
-  const file = join(directory, "artifact.zip");
+  const names = new Set([member, `./${member}`]);
+  const limit = 16 * 1024 * 1024;
   try {
-    writeFileSync(file, bytes);
-    const script = `import io,sys,tarfile,zipfile
-with zipfile.ZipFile(sys.argv[1]) as archive:
- if sys.argv[2] == 'pages':
-  with tarfile.open(fileobj=io.BytesIO(archive.read('artifact.tar'))) as site:
-   members=[m for m in site.getmembers() if m.name in (sys.argv[3], './'+sys.argv[3])]
-   assert len(members)==1 and members[0].isfile() and members[0].size<=16777216
-   sys.stdout.buffer.write(site.extractfile(members[0]).read())
- else:
-  members=[m for m in archive.infolist() if m.filename in (sys.argv[3], './'+sys.argv[3])]
-  assert len(members)==1 and not members[0].is_dir() and members[0].file_size<=16777216
-  sys.stdout.buffer.write(archive.read(members[0]))`;
-    const result = spawnSync("python3", ["-c", script, file, pages ? "pages" : "docs", member], {
-      maxBuffer: 16 * 1024 * 1024,
+    const entries = zipEntries(bytes);
+    if (pages) {
+      const site = entries.filter((entry) => entry.name === "artifact.tar").at(-1);
+      assert(site, "Pages artifact.tar member");
+      const members = readTar(readZipEntry(bytes, site)).filter((entry) => names.has(entry.name));
+      const [only] = members;
+      assert(members.length === 1 && only?.kind === "file" && only.size <= limit);
+      return only.data;
+    }
+    const members = entries.filter((entry) => names.has(entry.name));
+    const [only] = members;
+    assert(members.length === 1 && !only?.isDirectory && only.size <= limit);
+    return readZipEntry(bytes, only);
+  } catch (error) {
+    throw new Error(`One bounded ordinary native archive member: ${String(error)}`, {
+      cause: error,
     });
-    assert.equal(
-      result.status,
-      0,
-      "One bounded ordinary native archive member: " + result.stderr.toString(),
-    );
-    return result.stdout;
-  } finally {
-    rmSync(directory, { recursive: true, force: true });
   }
 }
 

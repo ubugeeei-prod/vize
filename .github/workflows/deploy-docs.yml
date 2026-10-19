@@ -58,8 +58,11 @@ jobs:
         run: |
           set -euo pipefail
           # Preserve trusted main validators when the completed source is older.
-          cp tools/support/compat/github/docs-deployment-*.ts "$RUNNER_TEMP/"
-          vp node "$RUNNER_TEMP/docs-deployment-entry.ts" prepare
+          validator="$RUNNER_TEMP/docs-deployment/compat/github"
+          mkdir -p "$validator" "$RUNNER_TEMP/docs-deployment/archive"
+          cp tools/support/compat/github/docs-deployment-*.ts "$validator/"
+          cp tools/support/archive/tar.ts tools/support/archive/zip.ts "$RUNNER_TEMP/docs-deployment/archive/"
+          vp node "$validator/docs-deployment-entry.ts" prepare
 
       - name: Checkout docs build
         if: ${{ steps.main.outputs.eligible == 'true' }}
@@ -96,7 +99,7 @@ jobs:
         if: ${{ steps.main.outputs.eligible == 'true' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: vp node "$RUNNER_TEMP/docs-deployment-entry.ts" record
+        run: vp node "$RUNNER_TEMP/docs-deployment/compat/github/docs-deployment-entry.ts" record
 
       - name: Deploy to GitHub Pages
         id: deployment
@@ -110,4 +113,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PAGES_URL: ${{ steps.deployment.outputs.page_url }}
-        run: vp node "$RUNNER_TEMP/docs-deployment-entry.ts" finish
+        run: vp node "$RUNNER_TEMP/docs-deployment/compat/github/docs-deployment-entry.ts" finish
