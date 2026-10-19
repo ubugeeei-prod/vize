@@ -20,8 +20,6 @@ on:
             n8n-baseline,
             n8n-preparation,
             artifact-payload,
-            owned-worker-fault,
-            owned-worker-controls,
           ]
         default: all
       artifact_id:
@@ -32,7 +30,6 @@ on:
         description: Exact source SHA of the original artifact, checked against API custody
         type: string
         default: a49936db24d9540e0630b42474654190d575294b
-      owned_worker_source_sha: { description: Fresh full SDK source SHA, type: string }
 permissions: { contents: read }
 concurrency:
   group: ci-walltime-${{ github.sha }}-${{ inputs.component || 'all' }}
@@ -52,12 +49,6 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ github.sha }}" }
       - uses: ./.github/actions/check-nix
-  owned-worker-fault:
-    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.component == 'owned-worker-fault' || inputs.component == 'owned-worker-controls') }}
-    uses: ./.github/workflows/owned-worker-fault.yml
-    with:
-      source-sha: ${{ inputs.owned_worker_source_sha }}
-      controls-only: ${{ inputs.component == 'owned-worker-controls' }}
   js:
     if: ${{ (github.event_name == 'pull_request' && (github.event.label.name == 'ci-walltime-benchmark' || (github.event.action != 'labeled' && startsWith(github.head_ref, 'ci/optimize-')))) || (github.event_name == 'workflow_dispatch' && (inputs.component == 'all' || inputs.component == 'js')) }}
     runs-on: blacksmith-32vcpu-ubuntu-2404

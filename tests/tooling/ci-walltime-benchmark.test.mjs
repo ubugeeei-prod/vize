@@ -64,8 +64,6 @@ void test("baseline input partitions are manual-only, build once and retain both
     "n8n-baseline",
     "n8n-preparation",
     "artifact-payload",
-    "owned-worker-fault",
-    "owned-worker-controls",
   ])
     assert.ok(input.options.includes(component));
   assert.equal(workflow.concurrency["cancel-in-progress"], false);
