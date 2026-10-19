@@ -10,11 +10,77 @@ import {
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
 } from "../../../../npm/native/scripts/formatter-history-build.mts";
+import {
+  asArray,
+  asNumber,
+  asRecord,
+  asString,
+  asStringArray,
+  at,
+  readJson,
+} from "../../json-value.ts";
 
-const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+export interface SourceFixture {
+  filename: string;
+  source: string;
+}
+export interface SourceBindingCustody {
+  schema: string;
+  version: number;
+  source: { head: string; [key: string]: unknown };
+  profile: string;
+  features: unknown;
+  binary: { path: string; sha256: string };
+  calls: string;
+  backends?: readonly string[];
+  fixtures: SourceFixture[];
+}
+/** Narrow a custody file written by `prepareNuxtSourceBinding`. */
+export function parseSourceBindingCustody(value: unknown): SourceBindingCustody {
+  const custody = asRecord(value, "source-binding custody");
+  const source = asRecord(custody.source, "custody.source");
+  const binary = asRecord(custody.binary, "custody.binary");
+  return {
+    ...custody,
+    schema: asString(custody.schema, "custody.schema"),
+    version: asNumber(custody.version, "custody.version"),
+    source: { ...source, head: asString(source.head, "custody.source.head") },
+    profile: asString(custody.profile, "custody.profile"),
+    features: custody.features,
+    binary: {
+      path: asString(binary.path, "custody.binary.path"),
+      sha256: asString(binary.sha256, "custody.binary.sha256"),
+    },
+    calls: asString(custody.calls, "custody.calls"),
+    backends:
+      custody.backends === undefined ? undefined : asStringArray(custody.backends, "backends"),
+    fixtures: asArray(custody.fixtures, "custody.fixtures").map((entry) => {
+      const fixture = asRecord(entry, "fixture");
+      return {
+        filename: asString(fixture.filename, "fixture.filename"),
+        source: asString(fixture.source, "fixture.source"),
+      };
+    }),
+  };
+}
+
+export function readSourceBindingCustody(file: string): SourceBindingCustody {
+  return parseSourceBindingCustody(readJson(file));
+}
+
+export interface SourceBindingOptions {
+  backends?: readonly string[];
+  fixtureDirectory?: string;
+}
+
+const sha256 = (bytes: Uint8Array): string => createHash("sha256").update(bytes).digest("hex");
 const preload = fileURLToPath(new URL("./source-binding-preload.cjs", import.meta.url));
 
-export function prepareNuxtSourceBinding(root, artifacts, options = {}) {
+export function prepareNuxtSourceBinding(
+  root: string,
+  artifacts: string,
+  options: SourceBindingOptions = {},
+) {
   for (const key of [
     "NAPI_RS_NATIVE_LIBRARY_PATH",
     "NAPI_RS_FORCE_WASI",
@@ -22,14 +88,18 @@ export function prepareNuxtSourceBinding(root, artifacts, options = {}) {
   ])
     assert.ok(!process.env[key], `ambient ${key} cannot qualify the source binding`);
   const nativeDir = path.join(root, "npm/native");
-  const receipt = JSON.parse(fs.readFileSync(nativeHistoryReceipt(nativeDir), "utf8"));
+  const receipt = asRecord(readJson(nativeHistoryReceipt(nativeDir)), "native history receipt");
   validateNativeHistoryBuild(nativeDir, receipt);
-  if (process.env.GITHUB_SHA) assert.equal(receipt.source.head, process.env.GITHUB_SHA);
+  const source = asRecord(receipt.source, "receipt.source");
+  const head = asString(source.head, "receipt.source.head");
+  if (process.env.GITHUB_SHA) assert.equal(head, process.env.GITHUB_SHA);
+  const frozenPath = asString(at(receipt, "frozen", "path"), "receipt.frozen.path");
+  const frozenSha256 = asString(at(receipt, "frozen", "sha256"), "receipt.frozen.sha256");
   const directory = path.join(artifacts, "source-native");
   fs.mkdirSync(directory);
   const binary = path.join(directory, "source-native.node");
-  fs.copyFileSync(receipt.frozen.path, binary, fs.constants.COPYFILE_EXCL);
-  assert.equal(sha256(fs.readFileSync(binary)), receipt.frozen.sha256);
+  fs.copyFileSync(frozenPath, binary, fs.constants.COPYFILE_EXCL);
+  assert.equal(sha256(fs.readFileSync(binary)), frozenSha256);
   for (const name of [
     "build-receipt.json",
     "cargo.stdout.bin",
@@ -37,13 +107,13 @@ export function prepareNuxtSourceBinding(root, artifacts, options = {}) {
     "build-process.json",
   ])
     fs.copyFileSync(path.join(nativeHistoryDirectory(nativeDir), name), path.join(directory, name));
-  const custody = {
+  const custody: SourceBindingCustody = {
     schema: "vize.nuxt.source-binding",
     version: 1,
-    source: receipt.source,
+    source: { ...source, head },
     profile: "dev",
-    features: receipt.emitted.cargo.features,
-    binary: { path: fs.realpathSync(binary), sha256: receipt.frozen.sha256 },
+    features: at(receipt, "emitted", "cargo", "features"),
+    binary: { path: fs.realpathSync(binary), sha256: frozenSha256 },
     calls: path.join(directory, "native-calls.jsonl"),
     backends: options.backends ?? ["client", "ssr"],
     fixtures: execFileSync(
@@ -80,46 +150,63 @@ export function prepareNuxtSourceBinding(root, artifacts, options = {}) {
         .readFileSync(custody.calls, "utf8")
         .trim()
         .split("\n")
-        .map((line) => JSON.parse(line));
+        .map((line): unknown => JSON.parse(line));
       return verifyNuxtSourceBindingEvents(custody, events);
     },
   };
 }
 
-export function verifyNuxtSourceBindingEvents(custody, events) {
+interface CompilerInput {
+  filename: unknown;
+  source: unknown;
+}
+
+function compilerInputs(entrypoint: unknown, args: unknown[]): CompilerInput[] {
+  if (entrypoint === "compileSfc") return [{ filename: at(args, 1, "filename"), source: args[0] }];
+  return asArray(args[0], "batch inputs").map((input) => ({
+    filename: at(input, "path"),
+    source: at(input, "source"),
+  }));
+}
+
+export function verifyNuxtSourceBindingEvents(
+  custody: SourceBindingCustody,
+  events: readonly unknown[],
+) {
   assert.equal(custody.schema, "vize.nuxt.source-binding");
   assert.equal(custody.version, 1);
   assert.match(custody.source.head, /^[a-f0-9]{40}$/);
   assert.match(custody.binary.sha256, /^[a-f0-9]{64}$/);
   assert.ok(events.length > 0, "no physical source-addon load was recorded");
-  const loaded = new Set();
-  const compiled = new Set();
+  const loaded = new Set<number>();
+  const compiled = new Set<string>();
   const backends = custody.backends ?? ["client", "ssr"];
   assert.ok(Array.isArray(backends) && backends.length > 0);
   assert.equal(new Set(backends).size, backends.length);
   for (const backend of backends) assert.ok(["client", "ssr"].includes(backend));
   assert.ok(custody.fixtures.length > 0, "no original fixture SFCs were retained");
   let calls = 0;
-  for (const event of events) {
+  for (const value of events) {
+    const event = asRecord(value, "native event");
     assert.equal(event.sourceHead, custody.source.head);
     assert.equal(event.binary, custody.binary.path);
     assert.equal(event.sha256, custody.binary.sha256);
-    assert.ok(Number.isSafeInteger(event.pid) && event.pid > 0);
-    if (event.kind === "load") loaded.add(event.pid);
+    const pid = event.pid;
+    assert.ok(typeof pid === "number" && Number.isSafeInteger(pid) && pid > 0);
+    if (event.kind === "load") loaded.add(pid);
     else {
       assert.equal(event.kind, "call");
-      assert.ok(loaded.has(event.pid), "compiler call has no original process load");
-      assert.ok(["compileSfc", "compileSfcBatchWithResults"].includes(event.entrypoint));
+      assert.ok(loaded.has(pid), "compiler call has no original process load");
+      assert.ok(
+        event.entrypoint === "compileSfc" || event.entrypoint === "compileSfcBatchWithResults",
+      );
       assert.equal(event.outcome, "return", "source compiler threw during the fixture build");
-      assert.ok(Array.isArray(event.args));
-      assert.ok(event.result && typeof event.result === "object");
-      if (event.entrypoint === "compileSfcBatchWithResults")
-        assert.ok(Array.isArray(event.args[0]));
-      const inputs =
-        event.entrypoint === "compileSfc"
-          ? [{ filename: event.args[1]?.filename, source: event.args[0] }]
-          : event.args[0].map((input) => ({ filename: input.path, source: input.source }));
-      const backend = event.args[1]?.ssr === true ? "ssr" : "client";
+      const args = asArray(event.args, "event.args");
+      const result = event.result;
+      assert.ok(result && typeof result === "object");
+      if (event.entrypoint === "compileSfcBatchWithResults") assert.ok(Array.isArray(args[0]));
+      const inputs = compilerInputs(event.entrypoint, args);
+      const backend = at(args, 1, "ssr") === true ? "ssr" : "client";
       for (const input of inputs) {
         const original = custody.fixtures.find((fixture) => fixture.filename === input.filename);
         if (original) {
@@ -128,21 +215,26 @@ export function verifyNuxtSourceBindingEvents(custody, events) {
             original.source,
             "compiler input differs from original fixture bytes",
           );
-          const results =
+          const batch = at(result, "results");
+          const results: unknown[] | undefined =
             event.entrypoint === "compileSfc"
-              ? [event.result]
-              : event.result.results?.filter((result) => result.path === original.filename);
+              ? [result]
+              : Array.isArray(batch)
+                ? batch.filter((entry: unknown) => at(entry, "path") === original.filename)
+                : undefined;
           assert.ok(
             Array.isArray(results) && results.length === 1,
             "missing original native result",
           );
+          const native: unknown = results[0];
           assert.deepEqual(
-            results[0].errors,
+            at(native, "errors"),
             [],
             "original fixture returned native compiler errors",
           );
-          assert.equal(typeof results[0].code, "string");
-          assert.ok(results[0].code.trim(), "original fixture returned no native generated code");
+          const code = at(native, "code");
+          assert.ok(typeof code === "string", "native generated code must be a string");
+          assert.ok(code.trim(), "original fixture returned no native generated code");
           compiled.add(`${backend}:${original.filename}`);
         }
       }

@@ -2,10 +2,11 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
-import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { readJsonRecord } from "../../json-value.ts";
+import { freePort } from "./host-types.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixture = path.join(root, "tests/_fixtures/_projects/nuxt-scoped-style-build");
@@ -21,10 +22,8 @@ for (const [name, version] of [
   ["@vizejs/nuxt", "0.428.1"],
   ["@vizejs/native", "0.428.1"],
   ["@vizejs/vite-plugin", "0.428.1"],
-]) {
-  const actual = JSON.parse(
-    fs.readFileSync(path.join(fixture, "node_modules", name, "package.json"), "utf8"),
-  );
+] as const) {
+  const actual = readJsonRecord(path.join(fixture, "node_modules", name, "package.json"));
   assert.equal(actual.version, version, `fixture must use the exact ${name} version`);
 }
 assert.equal(
@@ -36,12 +35,12 @@ fs.cpSync(path.join(packageRoot, "dist"), published, { recursive: true });
 const publishedNuxt = path.join(artifacts, "published-nuxt-dist");
 fs.cpSync(path.join(nuxtPackageRoot, "dist"), publishedNuxt, { recursive: true });
 
-function build(label) {
+function build(label: string): { status: number | null; output: string } {
   for (const name of [".nuxt", ".output"])
     fs.rmSync(path.join(fixture, name), { recursive: true, force: true });
   const log = path.join(artifacts, `${label}.log`);
   const fd = fs.openSync(log, "w");
-  let result;
+  let result: ReturnType<typeof spawnSync>;
   try {
     result = spawnSync(
       process.execPath,
@@ -74,13 +73,7 @@ try {
   const fixed = build("candidate");
   assert.equal(fixed.status, 0, `candidate Nuxt build failed; see ${artifacts}/candidate.log`);
   console.log("Candidate client and SSR builds passed (compiler enabled)");
-  const portServer = net.createServer();
-  await new Promise((resolve, reject) => {
-    portServer.once("error", reject);
-    portServer.listen(0, "127.0.0.1", resolve);
-  });
-  const port = portServer.address().port;
-  await new Promise((resolve) => portServer.close(resolve));
+  const port = await freePort();
   const serverLog = fs.openSync(path.join(artifacts, "server.log"), "w");
   const server = spawn(process.execPath, [path.join(fixture, ".output/server/index.mjs")], {
     cwd: fixture,
@@ -90,7 +83,7 @@ try {
   const exited = new Promise((resolve) => server.once("exit", resolve));
   try {
     const origin = `http://127.0.0.1:${port}`;
-    let response;
+    let response: Response | undefined;
     for (let attempt = 0; attempt < 100; attempt++) {
       try {
         response = await fetch(origin, { signal: AbortSignal.timeout(1000) });
@@ -105,11 +98,13 @@ try {
     fs.writeFileSync(path.join(artifacts, "ssr.html"), html);
     const paragraph = html.match(/<p (data-v-[a-f\d]+)>hi<\/p>/);
     assert.ok(paragraph, "SSR must render the authored paragraph with its scope attribute");
-    const stylesheets = [...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*>/g)].map(
-      ([tag]) => tag.match(/href="([^"]+)"/)[1],
-    );
+    const stylesheets = [...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*>/g)].map(([tag]) => {
+      const href = tag.match(/href="([^"]+)"/)?.[1];
+      assert.ok(href, "stylesheet links carry an href");
+      return href;
+    });
     const inlineStyles = [...html.matchAll(/<style\b[^>]*>([^<]*)<\/style>/g)].map(
-      ([_, css]) => css,
+      ([, css]) => css ?? "",
     );
     assert.equal(stylesheets.length + inlineStyles.length, 1);
     const delivered = [...inlineStyles];

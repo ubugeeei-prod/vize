@@ -106,7 +106,7 @@ await test("the current Nuxt probe carries every authored scoped compiler policy
   assert.deepEqual(original, frozen);
   assert.deepEqual(bytes("vize.config.json.txt"), frozen);
   const activeProbe = fs.readFileSync(
-    new URL("../../tools/support/compat/nuxt/compiler-defaults-probe.mjs", import.meta.url),
+    new URL("../../tools/support/compat/nuxt/compiler-defaults-probe.ts", import.meta.url),
     "utf8",
   );
   assert.ok(activeProbe.includes("inlineVuePluginFixtureOptions(scenario.module, shared)"));

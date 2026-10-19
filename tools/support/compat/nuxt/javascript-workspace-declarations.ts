@@ -3,9 +3,12 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
-import { files, save, sha } from "./javascript-workspace-project.mjs";
+import { readJson } from "../../json-value.ts";
+import type { Command } from "./javascript-workspace-cli.ts";
+import { files, save, sha } from "./javascript-workspace-project.ts";
+import type { WorkspaceContext } from "./javascript-workspace-project.ts";
 
-export function packageDeclarations(root, context, command) {
+export function packageDeclarations(root: string, context: WorkspaceContext, command: Command) {
   const require = createRequire(path.join(root, "tests/package.json"));
   const manifestPath = require.resolve("vue-tsc/package.json");
   const compiler = path.join(path.dirname(manifestPath), "bin/vue-tsc.js");
@@ -21,7 +24,7 @@ export function packageDeclarations(root, context, command) {
   save(context.artifacts, "package-declarations.json", {
     compiler: fs.realpathSync(compiler),
     manifestPath: fs.realpathSync(manifestPath),
-    manifest: JSON.parse(fs.readFileSync(manifestPath, "utf8")),
+    manifest: readJson(manifestPath),
     configuration: fs.readFileSync(
       path.join(context.project, "workspace-declarations.tsconfig.json"),
       "utf8",

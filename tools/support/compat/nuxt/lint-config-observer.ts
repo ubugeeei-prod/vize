@@ -2,7 +2,11 @@
 // absolute reported filename for files outside the process cwd.
 import path from "node:path";
 
-export function expectedCliDiagnostic(corpus, project, name) {
+export function expectedCliDiagnostic(
+  corpus: Readonly<Record<string, unknown>>,
+  project: string,
+  name: string,
+) {
   const absolute = path.resolve(project, name);
   const relative = path.relative(project, absolute);
   const outside = relative === ".." || relative.startsWith(`..${path.sep}`);

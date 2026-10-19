@@ -11,9 +11,9 @@ on:
       - crates/vize_carton/src/config/**
       - davinci/vize_l0/src/config/**
       - tools/support/compat/nuxt/fixtures/nuxt2-module-build/**
-      - tools/support/compat/nuxt/nuxt2-module-build.mjs
-      - tools/support/compat/nuxt/nuxt2-lint-config.mjs
-      - tools/support/compat/nuxt/nuxt-auto-init-config.mjs
+      - tools/support/compat/nuxt/nuxt2-module-build.ts
+      - tools/support/compat/nuxt/nuxt2-lint-config.ts
+      - tools/support/compat/nuxt/nuxt-auto-init-config.ts
   push:
     branches: [main]
     paths:
@@ -25,9 +25,9 @@ on:
       - crates/vize_carton/src/config/**
       - davinci/vize_l0/src/config/**
       - tools/support/compat/nuxt/fixtures/nuxt2-module-build/**
-      - tools/support/compat/nuxt/nuxt2-module-build.mjs
-      - tools/support/compat/nuxt/nuxt2-lint-config.mjs
-      - tools/support/compat/nuxt/nuxt-auto-init-config.mjs
+      - tools/support/compat/nuxt/nuxt2-module-build.ts
+      - tools/support/compat/nuxt/nuxt2-lint-config.ts
+      - tools/support/compat/nuxt/nuxt-auto-init-config.ts
   workflow_dispatch:
 
 permissions:
@@ -83,7 +83,7 @@ jobs:
         working-directory: tools/support/compat/nuxt/fixtures/nuxt2-module-build
         run: npm ci --legacy-peer-deps --no-audit --no-fund
       - name: Verify candidate webpack build and SSR routes
-        run: vp env exec node tools/support/compat/nuxt/nuxt2-module-build.mjs "$RUNNER_TEMP/nuxt2-module-proof"
+        run: vp env exec node tools/support/compat/nuxt/nuxt2-module-build.ts "$RUNNER_TEMP/nuxt2-module-proof"
       - name: Upload Nuxt 2 build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

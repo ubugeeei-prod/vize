@@ -6,17 +6,19 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { assertCriticalCss, observeCriticalCss } from "./critical-css-observe.mjs";
+import { readJsonRecord } from "../../json-value.ts";
+import { assertCriticalCss, observeCriticalCss } from "./critical-css-observe.ts";
+import type { CriticalCssResult } from "./critical-css-observe.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixture = path.join(root, "tests/_fixtures/_projects/nuxt-critical-css-build");
 const artifacts = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), "vize-nuxt-critical-css"));
 const dependencies = fs.realpathSync(process.argv[3] ?? path.join(fixture, "node_modules"));
 fs.mkdirSync(artifacts, { recursive: true });
-const sha256 = (data) => createHash("sha256").update(data).digest("hex");
-const write = (name, data) =>
+const sha256 = (data: Uint8Array) => createHash("sha256").update(data).digest("hex");
+const write = (name: string, data: unknown) =>
   fs.writeFileSync(path.join(artifacts, name), JSON.stringify(data, null, 2) + "\n");
-const versions = {};
+const versions: Record<string, unknown> = {};
 for (const [name, version] of [
   ["nuxt", "4.5.2"],
   ["vue", "3.5.43"],
@@ -25,8 +27,8 @@ for (const [name, version] of [
   ["@vizejs/nuxt", "0.429.0"],
   ["@vizejs/native", "0.429.0"],
   ["@vizejs/vite-plugin", "0.429.0"],
-]) {
-  const actual = JSON.parse(fs.readFileSync(path.join(dependencies, name, "package.json"), "utf8"));
+] as const) {
+  const actual = readJsonRecord(path.join(dependencies, name, "package.json"));
   assert.equal(actual.version, version);
   versions[name] = actual.version;
 }
@@ -34,19 +36,19 @@ const inputs = ["nuxt.config.ts", "app/app.vue", "app/layouts/default.vue", "app
 const inputHashes = Object.fromEntries(
   inputs.map((name) => [name, sha256(fs.readFileSync(path.join(fixture, name)))]),
 );
-const packageFiles = (dir) =>
+const packageFiles = (dir: string): string[] =>
   fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const filename = path.join(dir, entry.name);
     return entry.isDirectory() ? packageFiles(filename) : [filename];
   });
-const originalPackages = {};
+const originalPackages: Record<string, string> = {};
 for (const name of ["nuxt", "vite-plugin"]) {
   const dir = path.join(dependencies, "@vizejs", name);
   for (const filename of packageFiles(dir))
     originalPackages[filename] = sha256(fs.readFileSync(filename));
 }
 
-function linkDependencies(workspace, candidate) {
+function linkDependencies(workspace: string, candidate: boolean): void {
   const dir = path.join(workspace, "node_modules");
   fs.mkdirSync(path.join(dir, "@vizejs"), { recursive: true });
   for (const entry of fs.readdirSync(dependencies)) {
@@ -78,7 +80,7 @@ function linkDependencies(workspace, candidate) {
   }
 }
 
-const results = {};
+const results: Record<string, CriticalCssResult> = {};
 for (const variant of ["stock", "published", "candidate"]) {
   const workspace = path.join(artifacts, variant);
   assert.equal(fs.existsSync(workspace), false, "use a new artifact directory per proof run");
@@ -96,7 +98,7 @@ for (const variant of ["stock", "published", "candidate"]) {
   }
   linkDependencies(workspace, variant === "candidate");
   const log = fs.openSync(path.join(artifacts, `${variant}-build.log`), "w");
-  let build;
+  let build: ReturnType<typeof spawnSync>;
   try {
     build = spawnSync(
       process.execPath,
@@ -116,13 +118,14 @@ for (const variant of ["stock", "published", "candidate"]) {
   for (const name of inputs.filter((name) => name !== "nuxt.config.ts")) {
     assert.equal(sha256(fs.readFileSync(path.join(workspace, name))), inputHashes[name]);
   }
-  results[variant] = await observeCriticalCss(workspace, root);
-  assertCriticalCss(results[variant], variant === "published");
+  const result = await observeCriticalCss(workspace, root);
+  results[variant] = result;
+  assertCriticalCss(result, variant === "published");
   fs.copyFileSync(
     path.join(workspace, ".output/public/index.html"),
     path.join(artifacts, `${variant}-prerender.html`),
   );
-  write(`${variant}-observation.json`, results[variant]);
+  write(`${variant}-observation.json`, result);
   console.log(`${variant}: full style manifest and no-JavaScript computed CSS verified`);
 }
 for (const [filename, hash] of Object.entries(originalPackages))
@@ -134,8 +137,8 @@ const target =
 const addonDir = path.join(dependencies, "@vizejs", target);
 const addons = fs.readdirSync(addonDir).filter((name) => name.endsWith(".node"));
 assert.equal(addons.length, 1);
-const addon = path.join(addonDir, addons[0]);
-const candidateFiles = {};
+const addon = path.join(addonDir, addons[0] ?? "");
+const candidateFiles: Record<string, string> = {};
 for (const dir of ["npm/builder/vite/dist", "npm/framework/nuxt/dist"]) {
   for (const filename of packageFiles(path.join(root, dir)))
     candidateFiles[path.relative(root, filename)] = sha256(fs.readFileSync(filename));

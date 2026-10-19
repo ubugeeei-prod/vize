@@ -2,29 +2,47 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { createRequire } from "node:module";
-import { pathToFileURL } from "node:url";
-import { browserOutput } from "./javascript-workspace-runtime.mjs";
-import { save, sha } from "./javascript-workspace-project.mjs";
+import { asArray, asRecord, asString, at } from "../../json-value.ts";
+import {
+  importChecked,
+  importDefault,
+  loadChromium,
+  previewPort,
+  viteRuntimeFunctions,
+} from "./host-types.ts";
+import type { PreviewServer, ViteRuntimeHost } from "./host-types.ts";
+import { browserOutput } from "./javascript-workspace-runtime.ts";
+import { save, sha } from "./javascript-workspace-project.ts";
+import type { WorkspaceContext } from "./javascript-workspace-project.ts";
 
-export async function cliViteRuntime(root, context, compiled) {
+export async function cliViteRuntime(root: string, context: WorkspaceContext, compiled: unknown) {
   assert.equal(context.cohort.id, "vite");
   const application = path.join(context.project, "apps/vite");
-  const api = await import(pathToFileURL(path.join(application, "workspace-runtime.mjs")).href);
-  const { chromium } = createRequire(path.join(root, "tests/package.json"))("@playwright/test");
-  const browser = await chromium.launch();
-  const rows = [];
+  const api = await importChecked<ViteRuntimeHost>(
+    path.join(application, "workspace-runtime.mjs"),
+    viteRuntimeFunctions,
+  );
+  const browser = await loadChromium(root).launch();
+  const rows: Record<string, unknown>[] = [];
   try {
-    for (const entry of compiled) {
-      const directory = path.join(context.artifacts, `cli-runtime-${entry.backend}`);
+    for (const value of asArray(compiled, "compiled packets")) {
+      const entry = asRecord(value, "compiled entry");
+      const backend = asString(entry.backend, "entry.backend");
+      const directory = path.join(context.artifacts, `cli-runtime-${backend}`);
       fs.mkdirSync(directory);
-      const modules = {};
-      for (const packet of entry.packets) {
-        const file = path.join(directory, packet.filename + ".mjs");
-        fs.writeFileSync(file, packet.code);
-        assert.equal(sha(fs.readFileSync(file)), sha(Buffer.from(packet.code)));
-        modules[packet.filename] = file;
+      const modules: Record<string, string> = {};
+      for (const item of asArray(entry.packets, "entry.packets")) {
+        const packet = asRecord(item, "packet");
+        const filename = asString(packet.filename, "packet.filename");
+        const code = asString(packet.code, "packet.code");
+        const file = path.join(directory, filename + ".mjs");
+        fs.writeFileSync(file, code);
+        assert.equal(sha(fs.readFileSync(file)), sha(Buffer.from(code)));
+        modules[filename] = file;
       }
+      const app = modules["App.vue"];
+      const badge = modules["BadgeCard.vue"];
+      assert.ok(app && badge, "both CLI packets were compiled");
       fs.symlinkSync(
         path.join(context.project, "node_modules"),
         path.join(directory, "node_modules"),
@@ -32,19 +50,19 @@ export async function cliViteRuntime(root, context, compiled) {
       const host = path.join(directory, "entry.mjs");
       fs.writeFileSync(
         host,
-        entry.backend === "ssr"
-          ? `export { default } from ${JSON.stringify(modules["App.vue"])};\n`
-          : `import { createApp } from "vue";\nimport App from ${JSON.stringify(modules["App.vue"])};\ncreateApp(App).mount("#app");\n`,
+        backend === "ssr"
+          ? `export { default } from ${JSON.stringify(app)};\n`
+          : `import { createApp } from "vue";\nimport App from ${JSON.stringify(app)};\ncreateApp(App).mount("#app");\n`,
       );
       const common = {
         root: directory,
         configFile: false,
         logLevel: "warn",
-        resolve: { alias: { "@workspace/ui/BadgeCard.vue": modules["BadgeCard.vue"] } },
+        resolve: { alias: { "@workspace/ui/BadgeCard.vue": badge } },
       };
-      let server;
+      let server: PreviewServer | undefined;
       try {
-        if (entry.backend === "ssr") {
+        if (backend === "ssr") {
           const result = await api.build({
             ...common,
             build: {
@@ -57,18 +75,16 @@ export async function cliViteRuntime(root, context, compiled) {
               },
             },
           });
-          save(directory, "bundle.json", result.output);
+          save(directory, "bundle.json", at(result, "output"));
           fs.symlinkSync(
             path.join(context.project, "node_modules"),
             path.join(directory, "dist/node_modules"),
           );
-          const { default: component } = await import(
-            pathToFileURL(path.join(directory, "dist/entry.mjs")).href
-          );
+          const component = await importDefault(path.join(directory, "dist/entry.mjs"));
           const html = await api.renderToString(api.createSSRApp(component));
           fs.writeFileSync(path.join(directory, "rendered.html"), html);
           assert.equal(html, context.corpus.expected.Vite.initial);
-          rows.push({ backend: entry.backend, html });
+          rows.push({ backend, html });
         } else {
           fs.writeFileSync(
             path.join(directory, "index.html"),
@@ -78,18 +94,17 @@ export async function cliViteRuntime(root, context, compiled) {
             ...common,
             build: { minify: false, outDir: path.join(directory, "dist") },
           });
-          save(directory, "bundle.json", result.output);
+          save(directory, "bundle.json", at(result, "output"));
           server = await api.preview({
             ...common,
             build: { outDir: path.join(directory, "dist") },
             preview: { host: "127.0.0.1", port: 0 },
           });
-          const address = server.httpServer.address();
           rows.push({
-            backend: entry.backend,
+            backend,
             ...(await browserOutput(
               browser,
-              `http://127.0.0.1:${address.port}/`,
+              `http://127.0.0.1:${previewPort(server)}/`,
               context.corpus.expected.Vite,
               directory,
             )),

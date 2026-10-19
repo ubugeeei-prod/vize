@@ -35,7 +35,7 @@ function runsOn(step: Step, event: string) {
 const campaigns = (event: string) =>
   steps
     .filter((step) => runsOn(step, event))
-    .flatMap((step) => step.run?.match(/compat\/nuxt\/([\w-]+-build\.mjs)/)?.[1] ?? []);
+    .flatMap((step) => step.run?.match(/compat\/nuxt\/([\w-]+-build\.(?:mjs|ts))/)?.[1] ?? []);
 
 test("every affected PR retains source-built Nuxt 3 SSR, hydration and navigation", () => {
   assert.ok(workflow.on.pull_request.paths?.includes("crates/**"));
@@ -43,11 +43,11 @@ test("every affected PR retains source-built Nuxt 3 SSR, hydration and navigatio
   assert.ok(workflow.on.pull_request.paths?.includes("npm/framework/nuxt/**"));
   assert.equal(job.if, undefined);
   assert.notEqual(job["continue-on-error"], true);
-  assert.deepEqual(campaigns("pull_request"), ["nuxt3-module-build.mjs"]);
+  assert.deepEqual(campaigns("pull_request"), ["nuxt3-module-build.ts"]);
   const native = steps.findIndex(
     (step) => step.name === "Build and capture the actual source native compiler",
   );
-  const core = steps.findIndex((step) => step.run?.includes("nuxt3-module-build.mjs"));
+  const core = steps.findIndex((step) => step.run?.includes("nuxt3-module-build.ts"));
   assert.ok(native >= 0 && core > native);
   assert.match(steps[native].run ?? "", /--no-cache --filter '\.\/npm\/native' build:debug/);
   for (const step of [steps[native], steps[core]]) {
@@ -88,12 +88,12 @@ test("merge, main and manual runs retain every extended campaign and source rece
   for (const event of ["merge_group", "push", "workflow_dispatch"]) {
     if (event !== "merge_group") assert.ok(Object.hasOwn(workflow.on, event));
     assert.deepEqual(campaigns(event), [
-      "nuxt3-module-build.mjs",
+      "nuxt3-module-build.ts",
       "prefetch-manifest-build.mjs",
-      "lint-config-build.mjs",
-      "compiler-defaults-build.mjs",
-      "relative-glob-build.mjs",
-      "javascript-workspace-build.mjs",
+      "lint-config-build.ts",
+      "compiler-defaults-build.ts",
+      "relative-glob-build.ts",
+      "javascript-workspace-build.ts",
     ]);
     for (const step of steps.filter((item) => item.run?.includes("compat/nuxt/"))) {
       assert.notEqual(step["continue-on-error"], true);

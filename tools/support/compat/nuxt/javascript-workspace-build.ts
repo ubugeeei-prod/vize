@@ -4,14 +4,16 @@ import { execFileSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { inputCorpus, prepareProject, save, sha } from "./javascript-workspace-project.mjs";
+import { inputCorpus, prepareProject, save, sha } from "./javascript-workspace-project.ts";
+import type { Cohort, WorkspaceContext } from "./javascript-workspace-project.ts";
+import { readSourceBindingCustody } from "./source-binding.ts";
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const [destination, custodyPath] = process.argv.slice(2);
 assert.ok(destination && custodyPath);
 const output = path.resolve(destination);
 assert.equal(fs.existsSync(output), false);
 fs.mkdirSync(output, { recursive: true });
-const custody = JSON.parse(fs.readFileSync(custodyPath));
+const custody = readSourceBindingCustody(custodyPath);
 assert.equal(custody.schema, "vize.nuxt.source-binding");
 assert.equal(custody.source.head, process.env.GITHUB_SHA);
 assert.equal(
@@ -31,14 +33,19 @@ for (const name of [
   assert.ok(!process.env[name], `unbound ambient ${name}`);
 
 // Each cohort owns its staged project and artifacts, so their probes overlap.
-function probe(context) {
+interface ProbeResult {
+  status: number | null;
+  signal: string | null;
+  error: Error | undefined;
+}
+function probe(context: WorkspaceContext): Promise<ProbeResult> {
   const fd = fs.openSync(path.join(context.artifacts, "process.log"), "w");
   const serialized = JSON.stringify({ ...context, environment: undefined, finish: undefined });
-  return new Promise((resolve) => {
+  return new Promise<ProbeResult>((resolve) => {
     const child = spawn(
       process.execPath,
       [
-        fileURLToPath(new URL("./javascript-workspace-probe.mjs", import.meta.url)),
+        fileURLToPath(new URL("./javascript-workspace-probe.ts", import.meta.url)),
         root,
         serialized,
       ],
@@ -54,9 +61,9 @@ function probe(context) {
   }).finally(() => fs.closeSync(fd));
 }
 
-async function run(cohort) {
-  const failures = [];
-  let context;
+async function run(cohort: Cohort): Promise<Record<string, string>[]> {
+  const failures: Record<string, string>[] = [];
+  let context: WorkspaceContext | undefined;
   try {
     context = prepareProject(root, output, cohort, custody);
     const result = await probe(context);
@@ -75,7 +82,7 @@ async function run(cohort) {
     });
   } finally {
     try {
-      context?.finish();
+      context?.finish?.();
     } catch (error) {
       failures.push({
         cohort: cohort.id,

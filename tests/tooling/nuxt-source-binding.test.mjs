@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import vm from "node:vm";
-import { verifyNuxtSourceBindingEvents } from "../../tools/support/compat/nuxt/source-binding.mjs";
+import { verifyNuxtSourceBindingEvents } from "../../tools/support/compat/nuxt/source-binding.ts";
 
 const custody = {
   schema: "vize.nuxt.source-binding",

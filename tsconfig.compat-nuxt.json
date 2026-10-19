@@ -1,0 +1,36 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "allowJs": true
+  },
+  "include": [],
+  "files": [
+    "tools/support/compat/nuxt/compiler-defaults-build.ts",
+    "tools/support/compat/nuxt/compiler-defaults-probe.ts",
+    "tools/support/compat/nuxt/critical-css-build.ts",
+    "tools/support/compat/nuxt/critical-css-observe.ts",
+    "tools/support/compat/nuxt/host-types.ts",
+    "tools/support/compat/nuxt/javascript-workspace-build.ts",
+    "tools/support/compat/nuxt/javascript-workspace-cli-runtime.ts",
+    "tools/support/compat/nuxt/javascript-workspace-cli.ts",
+    "tools/support/compat/nuxt/javascript-workspace-config.ts",
+    "tools/support/compat/nuxt/javascript-workspace-declarations.ts",
+    "tools/support/compat/nuxt/javascript-workspace-probe.ts",
+    "tools/support/compat/nuxt/javascript-workspace-project.ts",
+    "tools/support/compat/nuxt/javascript-workspace-providers.ts",
+    "tools/support/compat/nuxt/javascript-workspace-runtime.ts",
+    "tools/support/compat/nuxt/lint-config-build.ts",
+    "tools/support/compat/nuxt/lint-config-observer.ts",
+    "tools/support/compat/nuxt/lint-config-probe.ts",
+    "tools/support/compat/nuxt/nuxt-auto-init-config.ts",
+    "tools/support/compat/nuxt/nuxt2-lint-config.ts",
+    "tools/support/compat/nuxt/nuxt2-module-build.ts",
+    "tools/support/compat/nuxt/nuxt3-module-build.ts",
+    "tools/support/compat/nuxt/relative-glob-build.ts",
+    "tools/support/compat/nuxt/relative-glob-probe.ts",
+    "tools/support/compat/nuxt/source-binding.ts",
+    "tools/support/compat/nuxt/style-build.ts"
+  ]
+}

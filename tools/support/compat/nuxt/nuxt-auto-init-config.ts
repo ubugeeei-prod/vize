@@ -7,22 +7,25 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { asArray, asRecord, at, parseJson, readJson } from "../../json-value.ts";
+import { loadNuxt2 } from "./host-types.ts";
+import type { Nuxt2 } from "./host-types.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const inputDir = path.join(root, "npm/framework/nuxt/src/lint/fixtures/auto-init-vite-lint");
-const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 
-function distHashes(directory) {
+function distHashes(directory: string): Record<string, string> {
   return Object.fromEntries(
     fs
-      .readdirSync(directory, { recursive: true })
+      .readdirSync(directory, { recursive: true, encoding: "utf8" })
       .sort((left, right) => left.localeCompare(right))
       .filter((file) => fs.statSync(path.join(directory, file)).isFile())
       .map((file) => [file, hash(fs.readFileSync(path.join(directory, file)))]),
   );
 }
 
-export function verifyNuxtAutoInitConfig(fixture, artifacts) {
+export function verifyNuxtAutoInitConfig(fixture: string, artifacts: string): void {
   // Vite+ 0.1.24 selects workspace-root lint settings. A nested reproduction
   // otherwise runs this repository's rules instead of the issue's Vite config.
   const project = fs.mkdtempSync(path.join(os.tmpdir(), "vize-nuxt-auto-init-"));
@@ -33,7 +36,7 @@ export function verifyNuxtAutoInitConfig(fixture, artifacts) {
     });
     assert.equal(tracked.error, undefined);
     assert.equal(tracked.status, 0);
-    const original = {};
+    const original: Record<string, string> = {};
     for (const file of tracked.stdout.split("\0").filter(Boolean)) {
       const relative = path.relative(fixture, path.join(root, file));
       const bytes = fs.readFileSync(path.join(root, file));
@@ -71,21 +74,21 @@ export function verifyNuxtAutoInitConfig(fixture, artifacts) {
   }
 }
 
-async function runProbe(fixture, artifacts) {
+async function runProbe(fixture: string, artifacts: string): Promise<void> {
   const configBytes = fs.readFileSync(path.join(fixture, "nuxt.config.js"));
   const viteBytes = fs.readFileSync(path.join(inputDir, "vite.config.ts"));
   const source = fs.readFileSync(path.join(inputDir, "NoKey.vue.txt"));
   const viteFile = path.join(fixture, "vite.config.ts");
   const input = path.join(fixture, "issue-7829-no-key.vue");
   const wrapper = path.join(fixture, "oxlint.config.mts");
-  const files = [];
-  let nuxt;
+  const files: string[] = [];
+  let nuxt: Nuxt2 | undefined;
   try {
     assert.equal(fs.existsSync(wrapper), false);
     for (const [file, bytes] of [
       [viteFile, viteBytes],
       [input, source],
-    ]) {
+    ] as const) {
       fs.writeFileSync(file, bytes, { flag: "wx" });
       files.push(file);
     }
@@ -96,7 +99,7 @@ async function runProbe(fixture, artifacts) {
     const candidate = distHashes(installedDist);
     assert.deepEqual(candidate, distHashes(path.join(root, "npm/framework/nuxt/dist")));
     const vpRoot = path.join(root, "node_modules/vite-plus");
-    const runLint = (phase) => {
+    const runLint = (phase: string): unknown[] => {
       const run = spawnSync(
         process.execPath,
         [path.join(vpRoot, "bin/vp"), "lint", input, "--format", "json"],
@@ -107,17 +110,18 @@ async function runProbe(fixture, artifacts) {
       assert.equal(run.error, undefined);
       assert.equal(run.signal, null);
       assert.equal(run.status, 1, run.stderr || run.stdout);
-      const report = JSON.parse(run.stdout);
+      const report = asRecord(parseJson(run.stdout), "lint report");
       assert.equal(report.number_of_files, 1);
-      assert.equal(report.diagnostics.length, 1);
-      assert.equal(report.diagnostics[0].code, "vize(vue/require-v-for-key)");
-      assert.equal(report.diagnostics[0].severity, "error");
-      assert.equal(report.diagnostics[0].filename, "issue-7829-no-key.vue");
-      return report.diagnostics;
+      const diagnostics = asArray(report.diagnostics, "report.diagnostics");
+      assert.equal(diagnostics.length, 1);
+      assert.equal(at(diagnostics, 0, "code"), "vize(vue/require-v-for-key)");
+      assert.equal(at(diagnostics, 0, "severity"), "error");
+      assert.equal(at(diagnostics, 0, "filename"), "issue-7829-no-key.vue");
+      return diagnostics;
     };
     const initial = runLint("before");
     const requireFixture = createRequire(path.join(fixture, "package.json"));
-    nuxt = await requireFixture("nuxt").loadNuxt({
+    nuxt = await loadNuxt2(fixture, {
       rootDir: fixture,
       for: "build",
       configOverrides: {
@@ -125,13 +129,10 @@ async function runProbe(fixture, artifacts) {
         vize: { compiler: false, lint: true, musea: false },
       },
     });
-    assert.equal(nuxt.constructor.version, "v2.17.3");
+    assert.equal(at(nuxt, "constructor", "version"), "v2.17.3");
     const generated = path.join(fixture, ".oxlint.vize.json");
     files.push(generated);
-    assert.equal(
-      JSON.parse(fs.readFileSync(generated, "utf8")).settings.vize.preset,
-      "incremental",
-    );
+    assert.equal(at(readJson(generated), "settings", "vize", "preset"), "incremental");
     const wrapperAdded = fs.existsSync(wrapper);
     if (wrapperAdded) {
       const bytes = fs.readFileSync(wrapper);
@@ -149,17 +150,16 @@ async function runProbe(fixture, artifacts) {
       JSON.stringify(
         {
           executionHead: process.env.GITHUB_SHA ?? null,
-          nuxt: requireFixture("nuxt/package.json").version,
-          vitePlus: JSON.parse(fs.readFileSync(path.join(vpRoot, "package.json"), "utf8")).version,
-          plugin: JSON.parse(
-            fs.readFileSync(
-              path.join(fixture, "node_modules/oxlint-plugin-vize/package.json"),
-              "utf8",
-            ),
-          ).version,
-          native: JSON.parse(
-            fs.readFileSync(path.join(fixture, "node_modules/@vizejs/native/package.json"), "utf8"),
-          ).version,
+          nuxt: at(requireFixture("nuxt/package.json"), "version"),
+          vitePlus: at(readJson(path.join(vpRoot, "package.json")), "version"),
+          plugin: at(
+            readJson(path.join(fixture, "node_modules/oxlint-plugin-vize/package.json")),
+            "version",
+          ),
+          native: at(
+            readJson(path.join(fixture, "node_modules/@vizejs/native/package.json")),
+            "version",
+          ),
           candidate,
           originalConfigSha256: hash(configBytes),
           viteConfigSha256: hash(viteBytes),
@@ -186,5 +186,7 @@ async function runProbe(fixture, artifacts) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  await runProbe(path.resolve(process.argv[2]), path.resolve(process.argv[3]));
+  const [fixture, artifacts] = process.argv.slice(2);
+  assert.ok(fixture && artifacts, "usage: nuxt-auto-init-config.ts FIXTURE ARTIFACTS");
+  await runProbe(path.resolve(fixture), path.resolve(artifacts));
 }

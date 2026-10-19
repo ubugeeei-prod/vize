@@ -3,14 +3,55 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { nuxt3TypeProviders } from "./javascript-workspace-providers.mjs";
+import { asArray, asNumber, asRecord, asString, readJson } from "../../json-value.ts";
+import { nuxt3TypeProviders } from "./javascript-workspace-providers.ts";
+import { parseSourceBindingCustody } from "./source-binding.ts";
+import type { SourceBindingCustody } from "./source-binding.ts";
 
-export const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
-export const lexical = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
-export const save = (directory, name, value) =>
+export interface FilePin {
+  bytes: number;
+  sha256: string;
+}
+export type FilePins = Record<string, FilePin>;
+export interface Cohort {
+  id: string;
+  path: string;
+  vue: string;
+  nuxt?: string;
+  vite?: string;
+  inputs: FilePins;
+}
+export interface RenderedPair {
+  initial: string;
+  clicked: string;
+}
+export interface Corpus {
+  schema: string;
+  version: number;
+  files: FilePins;
+  cohorts: Cohort[];
+  scope: unknown;
+  expected: { Vite: RenderedPair; Nuxt: RenderedPair };
+  nodeTypes: { node: string; undici: string };
+}
+export interface WorkspaceContext {
+  project: string;
+  artifacts: string;
+  cohort: Cohort;
+  corpus: Corpus;
+  binding: SourceBindingCustody;
+  bindingFile: string;
+  environment: NodeJS.ProcessEnv;
+  finish?: () => void;
+}
+
+export const sha = (bytes: string | Uint8Array): string =>
+  createHash("sha256").update(bytes).digest("hex");
+export const lexical = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+export const save = (directory: string, name: string, value: unknown): void =>
   fs.writeFileSync(path.join(directory, name), JSON.stringify(value, null, 2) + "\n");
-export function files(directory) {
-  const result = {};
+export function files(directory: string): FilePins {
+  const result: FilePins = {};
   for (const name of fs.readdirSync(directory).sort(lexical)) {
     const file = path.join(directory, name);
     const stat = fs.lstatSync(file);
@@ -22,12 +63,82 @@ export function files(directory) {
   }
   return result;
 }
-export function inputCorpus(root) {
+function filePins(value: unknown, label: string): FilePins {
+  const pins: FilePins = {};
+  for (const [name, pin] of Object.entries(asRecord(value, label))) {
+    const { bytes, sha256 } = asRecord(pin, `${label}.${name}`);
+    assert.ok(typeof bytes === "number" && typeof sha256 === "string", `${label}.${name}`);
+    pins[name] = { bytes, sha256 };
+  }
+  return pins;
+}
+function optionalString(value: unknown, label: string): string | undefined {
+  return value === undefined ? undefined : asString(value, label);
+}
+function renderedPair(value: unknown, label: string): RenderedPair {
+  const pair = asRecord(value, label);
+  return { initial: asString(pair.initial, label), clicked: asString(pair.clicked, label) };
+}
+function parseCorpus(value: unknown): Corpus {
+  const corpus = asRecord(value, "corpus");
+  const expected = asRecord(corpus.expected, "corpus.expected");
+  const nodeTypes = asRecord(corpus.nodeTypes, "corpus.nodeTypes");
+  return {
+    ...corpus,
+    schema: asString(corpus.schema, "corpus.schema"),
+    version: asNumber(corpus.version, "corpus.version"),
+    files: filePins(corpus.files, "corpus.files"),
+    cohorts: asArray(corpus.cohorts, "corpus.cohorts").map((entry: unknown, index: number) => {
+      const cohort = asRecord(entry, `cohort ${index}`);
+      return {
+        ...cohort,
+        id: asString(cohort.id, "cohort.id"),
+        path: asString(cohort.path, "cohort.path"),
+        vue: asString(cohort.vue, "cohort.vue"),
+        nuxt: optionalString(cohort.nuxt, "cohort.nuxt"),
+        vite: optionalString(cohort.vite, "cohort.vite"),
+        inputs: filePins(cohort.inputs, "cohort.inputs"),
+      };
+    }),
+    scope: corpus.scope,
+    expected: {
+      Vite: renderedPair(expected.Vite, "expected.Vite"),
+      Nuxt: renderedPair(expected.Nuxt, "expected.Nuxt"),
+    },
+    nodeTypes: {
+      node: asString(nodeTypes.node, "nodeTypes.node"),
+      undici: asString(nodeTypes.undici, "nodeTypes.undici"),
+    },
+  };
+}
+/** Rebuild a context that a parent process serialized for a probe child. */
+export function parseWorkspaceContext(
+  value: unknown,
+  environment: NodeJS.ProcessEnv,
+): WorkspaceContext {
+  const context = asRecord(value, "context");
+  const corpus = parseCorpus(context.corpus);
+  const id = asString(asRecord(context.cohort, "context.cohort").id, "context.cohort.id");
+  const cohort = corpus.cohorts.find((entry) => entry.id === id);
+  assert.ok(cohort, `cohort ${id} belongs to the corpus`);
+  return {
+    project: asString(context.project, "context.project"),
+    artifacts: asString(context.artifacts, "context.artifacts"),
+    cohort,
+    corpus,
+    binding: parseSourceBindingCustody(context.binding),
+    bindingFile: asString(context.bindingFile, "context.bindingFile"),
+    environment,
+  };
+}
+export function inputCorpus(root: string): { corpus: Corpus; directory: string } {
   const directory = path.join(
     root,
     "tests/_fixtures/differential/compat/javascript-workspace-products",
   );
-  const corpus = JSON.parse(fs.readFileSync(path.join(directory, "corpus.json"), "utf8"));
+  const raw = readJson(path.join(directory, "corpus.json"));
+  assert.equal(asRecord(raw, "corpus").version, 1);
+  const corpus = parseCorpus(raw);
   assert.equal(corpus.schema, "vize.compat.javascript-workspace-products");
   assert.equal(corpus.version, 1);
   for (const [name, pin] of Object.entries(corpus.files)) {
@@ -43,28 +154,30 @@ export function inputCorpus(root) {
     }
   return { corpus, directory };
 }
-function copyModules(installed, target) {
+function copyModules(installed: string, target: string): void {
   // Preserve the installed dependency layout inside this owned workspace. External
   // absolute links make Nuxt-generated includes escape its node_modules exclusions.
   fs.cpSync(installed, target, { recursive: true, dereference: false, verbatimSymlinks: true });
 }
-export function prepareProject(root, output, cohort, custody) {
+export function prepareProject(
+  root: string,
+  output: string,
+  cohort: Cohort,
+  custody: SourceBindingCustody,
+): WorkspaceContext {
   const { corpus, directory } = inputCorpus(root);
   const installed = path.join(root, cohort.path, "node_modules");
   for (const [name, version] of [
     ["vue", cohort.vue],
     [cohort.nuxt ? "nuxt" : "vite", cohort.nuxt ?? cohort.vite],
-  ])
-    assert.equal(
-      JSON.parse(fs.readFileSync(path.join(installed, name, "package.json"))).version,
-      version,
-    );
+  ] as const)
+    assert.equal(asRecord(readJson(path.join(installed, name, "package.json"))).version, version);
   const artifacts = path.join(output, cohort.id);
   fs.mkdirSync(artifacts);
   const project = path.join(artifacts, "project");
   fs.mkdirSync(project);
   copyModules(installed, path.join(project, "node_modules"));
-  const sources = {
+  const sources: Record<string, string> = {
     "package.json.txt": "package.json",
     "pnpm-workspace.yaml.txt": "pnpm-workspace.yaml",
     "root-tsconfig.json.txt": "tsconfig.json",
@@ -96,9 +209,9 @@ export function prepareProject(root, output, cohort, custody) {
     fs.copyFileSync(path.join(directory, source), path.join(project, target));
   }
   const verifyTypes = nuxt3TypeProviders(root, project, artifacts, cohort, corpus);
-  const originalDist = {},
-    candidateDist = {};
-  const packages = [["@vizejs/vite-plugin", "npm/builder/vite"]];
+  const originalDist: Record<string, FilePins> = {},
+    candidateDist: Record<string, FilePins> = {};
+  const packages: [string, string][] = [["@vizejs/vite-plugin", "npm/builder/vite"]];
   if (cohort.nuxt) packages.push(["@vizejs/nuxt", "npm/framework/nuxt"]);
   for (const [name, source] of packages) {
     originalDist[name] = files(path.join(installed, name, "dist"));
@@ -110,9 +223,10 @@ export function prepareProject(root, output, cohort, custody) {
     fs.cpSync(path.join(root, source, "dist"), path.join(target, "dist"), { recursive: true });
     assert.deepEqual(files(path.join(target, "dist")), candidateDist[name]);
   }
-  const links = JSON.parse(fs.readFileSync(path.join(directory, "links.json")));
-  const witnessedLinks = [];
-  for (const [name, target] of Object.entries(links)) {
+  const links = asRecord(readJson(path.join(directory, "links.json")), "links.json");
+  const witnessedLinks: { name: string; target: string; physical: string }[] = [];
+  for (const [name, value] of Object.entries(links)) {
+    const target = asString(value, `links.${name}`);
     const filename = path.join(project, name);
     fs.mkdirSync(path.dirname(filename), { recursive: true });
     fs.symlinkSync(target, filename);
@@ -125,7 +239,7 @@ export function prepareProject(root, output, cohort, custody) {
   const targets = cohort.nuxt
     ? ["apps/nuxt/src/app.vue", "apps/nuxt/src/pages/index.vue", "packages/ui/src/BadgeCard.vue"]
     : ["apps/vite/src/App.vue", "packages/ui/src/BadgeCard.vue"];
-  const binding = {
+  const binding: SourceBindingCustody = {
     ...custody,
     calls: path.join(artifacts, "native-calls.jsonl"),
     fixtures: targets.map((name) => ({

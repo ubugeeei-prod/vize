@@ -8,20 +8,44 @@ import {
   expectedBuildIdentity,
   validateBuildReceipt,
 } from "../../../../tests/differential/build-receipt.ts";
-import { lexical, save, sha } from "./javascript-workspace-project.mjs";
-import { expectedCheckMembership, projectEvidence } from "./javascript-workspace-config.mjs";
-import { packageDeclarations } from "./javascript-workspace-declarations.mjs";
+import { asRecord, asString, parseJson, readJson } from "../../json-value.ts";
+import { lexical, save, sha } from "./javascript-workspace-project.ts";
+import type { WorkspaceContext } from "./javascript-workspace-project.ts";
+import { expectedCheckMembership, projectEvidence } from "./javascript-workspace-config.ts";
+import { packageDeclarations } from "./javascript-workspace-declarations.ts";
 
-export function sourceCli(root, artifacts) {
+export interface CommandResult {
+  status: number | null;
+  stdout: string;
+  stderr: string;
+}
+export type Command = (
+  binary: string,
+  args: readonly string[],
+  cwd: string,
+  artifacts: string,
+  name: string,
+  environment?: NodeJS.ProcessEnv,
+) => CommandResult;
+interface CheckCase {
+  id: string;
+  file: string;
+  source: string;
+  needle?: string;
+  code?: number;
+  message?: string;
+}
+
+export function sourceCli(root: string, artifacts: string): string {
   const identity = expectedBuildIdentity(root);
   assert.equal(identity.sourceRevision, process.env.GITHUB_SHA);
   const binary = path.join(root, identity.binaryPath);
-  const receipt = JSON.parse(fs.readFileSync(`${binary}.differential-build.json`, "utf8"));
+  const receipt = readJson(`${binary}.differential-build.json`);
   validateBuildReceipt(receipt, identity);
   save(artifacts, "cli-source.json", { identity, receipt });
   return binary;
 }
-export function command(binary, args, cwd, artifacts, name, environment = {}) {
+export const command: Command = (binary, args, cwd, artifacts, name, environment = {}) => {
   const started = performance.now();
   const result = spawnSync(binary, args, {
     cwd,
@@ -49,19 +73,19 @@ export function command(binary, args, cwd, artifacts, name, environment = {}) {
     stdout: result.stdout.toString(),
     stderr: result.stderr.toString(),
   };
-}
-export function position(source, needle) {
+};
+export function position(source: string, needle: string): { line: number; character: number } {
   const offset = source.indexOf(needle);
   assert.ok(offset >= 0);
   assert.equal(source.indexOf(needle, offset + 1), -1);
   const prefix = source.slice(0, offset).split("\n");
-  return { line: prefix.length - 1, character: prefix.at(-1).length };
+  return { line: prefix.length - 1, character: (prefix.at(-1) ?? "").length };
 }
 export const missingMessage =
   "Cannot find module '@workspace/ui/Missing.vue' or its corresponding type declarations.";
 export const argumentMessage =
   "Argument of type 'string' is not assignable to parameter of type 'number'.";
-export async function cliProducts(root, context, provider) {
+export async function cliProducts(root: string, context: WorkspaceContext, provider: string) {
   const binary = sourceCli(root, context.artifacts);
   const app = path.join(context.project, "apps", context.cohort.nuxt ? "nuxt" : "vite");
   const main = path.join(app, "src", context.cohort.nuxt ? "pages/index.vue" : "App.vue");
@@ -78,7 +102,7 @@ export async function cliProducts(root, context, provider) {
   );
   assert.equal(lint.status, 0);
   assert.deepEqual(
-    JSON.parse(lint.stdout),
+    parseJson(lint.stdout),
     ownFiles.map((file) => ({ file, messages: [], errorCount: 0, warningCount: 0 })),
   );
   const lintFile = path.join(context.project, "lint-options.js");
@@ -121,7 +145,7 @@ export async function cliProducts(root, context, provider) {
     ];
     save(context.artifacts, "lint-negative-expected.json", expected);
     assert.equal(negative.status, 1);
-    assert.deepEqual(JSON.parse(negative.stdout), expected);
+    assert.deepEqual(parseJson(negative.stdout), expected);
   } finally {
     fs.unlinkSync(lintFile);
   }
@@ -170,7 +194,7 @@ export async function cliProducts(root, context, provider) {
     fs.writeFileSync(label, oldLabel);
     fs.writeFileSync(shared, oldShared);
   }
-  const compiled = [];
+  const compiled: { backend: string; packets: Record<string, unknown>[] }[] = [];
   for (const backend of ["client", "ssr"]) {
     const output = path.join(context.artifacts, `cli-${backend}`);
     const build = command(
@@ -191,10 +215,10 @@ export async function cliProducts(root, context, provider) {
     );
     assert.equal(build.status, 0);
     const packets = fs
-      .readdirSync(output, { recursive: true })
+      .readdirSync(output, { recursive: true, encoding: "utf8" })
       .filter((name) => name.endsWith(".json"))
       .sort(lexical)
-      .map((name) => JSON.parse(fs.readFileSync(path.join(output, name), "utf8")));
+      .map((name) => asRecord(readJson(path.join(output, name)), name));
     assert.equal(packets.length, 2);
     for (const packet of packets) {
       assert.deepEqual(Object.keys(packet).sort(lexical), [
@@ -211,10 +235,10 @@ export async function cliProducts(root, context, provider) {
       assert.equal(packet.css, null);
       assert.deepEqual(packet.macro_artifacts, []);
       assert.equal(packet.script_lang, "js");
-      assert.ok(packet.code.length > 0);
+      assert.ok(asString(packet.code, "packet.code").length > 0);
     }
     assert.deepEqual(
-      packets.map((packet) => packet.filename).sort(lexical),
+      packets.map((packet) => asString(packet.filename, "packet.filename")).sort(lexical),
       [path.basename(main), path.basename(shared)].sort(lexical),
     );
     compiled.push({ backend, packets });
@@ -224,10 +248,10 @@ export async function cliProducts(root, context, provider) {
   const { original, stockPrograms, missingModuleFiles } = projectEvidence(root, context, app);
   const oldMain = fs.readFileSync(main, "utf8");
   const oldPricing = fs.readFileSync(pricing, "utf8");
-  const records = [];
+  const records: unknown[] = [];
   const testsRequire = createRequire(path.join(root, "tests/package.json"));
   const vueTscManifestPath = testsRequire.resolve("vue-tsc/package.json");
-  const vueTscManifest = JSON.parse(fs.readFileSync(vueTscManifestPath, "utf8"));
+  const vueTscManifest = readJson(vueTscManifestPath);
   const vueTsc = path.join(path.dirname(vueTscManifestPath), "bin/vue-tsc.js");
   const stockTypescriptManifestPath = createRequire(vueTsc).resolve("typescript/package.json");
   save(context.artifacts, "stock-checker-provider.json", {
@@ -235,13 +259,11 @@ export async function cliProducts(root, context, provider) {
     vueTscManifestPath: fs.realpathSync(vueTscManifestPath),
     vueTscManifest,
     typescriptManifestPath: fs.realpathSync(stockTypescriptManifestPath),
-    typescriptManifest: JSON.parse(fs.readFileSync(stockTypescriptManifestPath, "utf8")),
-    vueManifest: JSON.parse(
-      fs.readFileSync(path.join(context.project, "node_modules/vue/package.json"), "utf8"),
-    ),
+    typescriptManifest: readJson(stockTypescriptManifestPath),
+    vueManifest: readJson(path.join(context.project, "node_modules/vue/package.json")),
   });
   const wrongPrice = oldPricing.replace("unitPrice = 6", 'unitPrice = "wrong"');
-  const cases = [
+  const cases: CheckCase[] = [
     { id: "clean", file: main, source: oldMain },
     {
       id: "wrong-argument",
@@ -272,11 +294,11 @@ export async function cliProducts(root, context, provider) {
     { id: "repair-ordinary-js", file: pricing, source: oldPricing },
   ];
   try {
-    const mismatches = [];
+    const mismatches: { id: string; error: string }[] = [];
     for (const testCase of cases) {
       try {
         fs.writeFileSync(testCase.file, testCase.source);
-        const stock = [];
+        const stock: CommandResult[] = [];
         for (const [index, program] of stockPrograms.entries())
           stock.push(
             command(
@@ -295,8 +317,9 @@ export async function cliProducts(root, context, provider) {
           `check-${testCase.id}`,
         );
         const expected = expectedCheckMembership(original, missingModuleFiles, testCase.id);
+        const needle = testCase.needle ?? "";
         if (testCase.code) {
-          const at = position(testCase.source, testCase.needle);
+          const at = position(testCase.source, needle);
           const file = testCase.file.startsWith(app + path.sep)
             ? path.relative(app, testCase.file).split(path.sep).join("/")
             : testCase.file;
@@ -306,15 +329,15 @@ export async function cliProducts(root, context, provider) {
             expected.files.push(item);
           }
           item.diagnostics.push(
-            `error:${at.line + 1}:${at.character + 1} [TS${testCase.code}] ${testCase.message}`,
+            `error:${at.line + 1}:${at.character + 1} [TS${testCase.code}] ${testCase.message ?? ""}`,
           );
           expected.errorCount = 1;
         }
-        const report = JSON.parse(actual.stdout);
+        const report = parseJson(actual.stdout);
         let stockExpected = "";
         if (testCase.code) {
-          const at = position(testCase.source, testCase.needle);
-          stockExpected = `${path.relative(app, testCase.file).split(path.sep).join("/")}(${at.line + 1},${at.character + 1}): error TS${testCase.code}: ${testCase.message}\n`;
+          const at = position(testCase.source, needle);
+          stockExpected = `${path.relative(app, testCase.file).split(path.sep).join("/")}(${at.line + 1},${at.character + 1}): error TS${testCase.code}: ${testCase.message ?? ""}\n`;
         }
         records.push({
           id: testCase.id,

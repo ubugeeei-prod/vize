@@ -3,54 +3,110 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
 import { inlineVuePluginFixtureOptions } from "../../../../tests/tooling/support/vue-config-fixture.ts";
-import { verifyNuxtSourceBindingEvents } from "./source-binding.mjs";
+import {
+  asArray,
+  asRecord,
+  asString,
+  asStringArray,
+  at,
+  parseJson,
+  readJsonRecord,
+} from "../../json-value.ts";
+import type { JsonRecord } from "../../json-value.ts";
+import {
+  bundleOutput,
+  importChecked,
+  importDefault,
+  recordVizeLoads,
+  vitePlugin,
+} from "./host-types.ts";
+import type { LoadRow, VitePlugin } from "./host-types.ts";
+import { readSourceBindingCustody, verifyNuxtSourceBindingEvents } from "./source-binding.ts";
+
+interface NuxtInstance {
+  options: JsonRecord;
+  close(): Promise<void>;
+}
+interface CompilerDefaultsHost {
+  loadNuxt: (options: Record<string, unknown>) => Promise<NuxtInstance>;
+  build: (config: Record<string, unknown>) => Promise<unknown>;
+  vize: (options: Record<string, unknown>) => unknown;
+  createSSRApp: (component: unknown) => unknown;
+  renderToString: (
+    application: unknown,
+    context?: { modules?: Iterable<string> },
+  ) => Promise<string>;
+}
+interface Scenario {
+  id: string;
+  forward: boolean;
+  nuxtWhitespace?: string;
+  config: JsonRecord | string;
+  module: JsonRecord;
+  expected: string[];
+  html: string;
+}
+function parseScenario(value: unknown): Scenario {
+  const scenario = asRecord(value, "scenario");
+  const { config, nuxtWhitespace } = scenario;
+  assert.ok(nuxtWhitespace === undefined || typeof nuxtWhitespace === "string");
+  return {
+    id: asString(scenario.id, "scenario.id"),
+    forward: scenario.forward === true,
+    nuxtWhitespace,
+    config: typeof config === "string" ? config : asRecord(config, "scenario.config"),
+    module: asRecord(scenario.module, "scenario.module"),
+    expected: asStringArray(scenario.expected, "scenario.expected"),
+    html: asString(scenario.html, "scenario.html"),
+  };
+}
+interface Rendered {
+  html: string;
+  modules: string[];
+}
 
 const [project, artifacts, inputs, version, scenarioId] = process.argv.slice(2);
-const corpus = JSON.parse(fs.readFileSync(path.join(inputs, "corpus.json"), "utf8"));
+assert.ok(
+  project && artifacts && inputs && version && scenarioId,
+  "usage: PROJECT ARTIFACTS INPUTS VERSION SCENARIO",
+);
+const corpus = readJsonRecord(path.join(inputs, "corpus.json"));
+const corpusPaths = asStringArray(corpus.paths, "corpus.paths");
 const require = createRequire(path.join(project, "package.json"));
-assert.equal(require("nuxt/package.json").version, version);
-assert.equal(require("vue/package.json").version, "3.5.43");
+assert.equal(at(require("nuxt/package.json"), "version"), version);
+assert.equal(at(require("vue/package.json"), "version"), "3.5.43");
 const host = path.join(project, "runtime-api.mjs");
 fs.writeFileSync(
   host,
   'export { loadNuxt } from "nuxt";\nexport { build } from "vite";\nexport { default as vize } from "@vizejs/vite-plugin";\nexport { createSSRApp } from "vue";\nexport { renderToString } from "vue/server-renderer";\n',
 );
-const { loadNuxt, build, vize, createSSRApp, renderToString } = await import(
-  pathToFileURL(host).href
-);
-const json = (directory, name, value) =>
+const { loadNuxt, build, vize, createSSRApp, renderToString } =
+  await importChecked<CompilerDefaultsHost>(host, [
+    "loadNuxt",
+    "build",
+    "vize",
+    "createSSRApp",
+    "renderToString",
+  ]);
+const json = (directory: string, name: string, value: unknown) =>
   fs.writeFileSync(
     path.join(directory, name),
     JSON.stringify(value, (_key, item) => (item instanceof Set ? [...item] : item), 2) + "\n",
   );
-const sources = corpus.paths.map((name) => path.join(project, name));
+const sources = corpusPaths.map((name) => path.join(project, name));
+const entry = sources[2];
+assert.ok(entry, "the third authored path is the app entry");
 const sourceRoot = path.join(project, "app");
 const originalConfig = fs.readFileSync(path.join(inputs, "vize.config.json.txt"));
 const originalNuxt = fs.readFileSync(path.join(project, "nuxt.config.ts"));
 
-function recordLoads(plugins, rows) {
-  return plugins.map((plugin) => {
-    if (plugin.name !== "vite-plugin-vize") return plugin;
-    const original = typeof plugin.load === "function" ? plugin.load : plugin.load.handler;
-    const observed = async function (...args) {
-      const result = await original.apply(this, args);
-      if (result && sources.some((source) => args[0].includes(source))) rows.push({ args, result });
-      return result;
-    };
-    return {
-      ...plugin,
-      load: typeof plugin.load === "function" ? observed : { ...plugin.load, handler: observed },
-    };
-  });
-}
-async function compile(directory, plugins, ssr) {
-  const loads = [];
+async function compile(directory: string, plugins: readonly VitePlugin[], ssr: boolean) {
+  const loads: LoadRow[] = [];
   const result = await build({
     root: project,
     configFile: false,
-    plugins: recordLoads(plugins, loads),
+    plugins: recordVizeLoads(plugins, loads, sources),
     logLevel: "warn",
     define: {
       __VUE_OPTIONS_API__: "true",
@@ -61,30 +117,31 @@ async function compile(directory, plugins, ssr) {
       write: false,
       minify: false,
       sourcemap: false,
-      ssr: ssr ? sources[2] : false,
-      ...(ssr ? {} : { lib: { entry: sources[2], formats: ["es"] } }),
+      ssr: ssr ? entry : false,
+      ...(ssr ? {} : { lib: { entry, formats: ["es"] } }),
       rollupOptions: {
         external: ["vue", "vue/server-renderer", "@vue/server-renderer"],
         output: { entryFileNames: "entry.mjs" },
       },
     },
   });
-  const output = Array.isArray(result) ? result.flatMap((item) => item.output) : result.output;
+  const output = bundleOutput(result);
   json(directory, "loads.json", loads);
   json(directory, "bundle.json", output);
   assert.equal(output.length, 1, "all original imports must form one complete runnable module");
-  assert.equal(output[0].type, "chunk");
-  fs.writeFileSync(path.join(directory, "entry.mjs"), output[0].code);
+  assert.equal(at(output, 0, "type"), "chunk");
+  fs.writeFileSync(
+    path.join(directory, "entry.mjs"),
+    asString(at(output, 0, "code"), "chunk code"),
+  );
   // ESM resolution must use the actual pinned project dependencies.
   fs.symlinkSync(path.join(project, "node_modules"), path.join(directory, "node_modules"));
   try {
-    const { default: component } = await import(
-      pathToFileURL(path.join(directory, "entry.mjs")).href
-    );
+    const component = await importDefault(path.join(directory, "entry.mjs"));
     assert.ok(component, "the whole original app must remain the default component");
-    const context = {};
+    const context: { modules?: Iterable<string> } = {};
     const html = await renderToString(createSSRApp(component), context);
-    const rendered = {
+    const rendered: Rendered = {
       html,
       modules: [...(context.modules ?? [])].sort((left, right) =>
         left < right ? -1 : left > right ? 1 : 0,
@@ -96,34 +153,43 @@ async function compile(directory, plugins, ssr) {
     fs.unlinkSync(path.join(directory, "node_modules"));
   }
 }
-const sortedLoads = (rows) => [...rows].sort((a, b) => a.args[0].localeCompare(b.args[0]));
-const observations = [];
-const selected = corpus.scenarios.filter((scenario) => scenario.id === scenarioId);
+const sortedLoads = (rows: readonly LoadRow[]) =>
+  [...rows].sort((a, b) => String(a.args[0]).localeCompare(String(b.args[0])));
+const observations: unknown[] = [];
+const selected = asArray(corpus.scenarios, "corpus.scenarios")
+  .map(parseScenario)
+  .filter((scenario) => scenario.id === scenarioId);
 assert.equal(selected.length, 1, "execute exactly one frozen scenario per fresh process");
-const binding = JSON.parse(fs.readFileSync(process.env.VIZE_NUXT_NATIVE_CUSTODY, "utf8"));
-const readEvents = () =>
+const custodyFile = process.env.VIZE_NUXT_NATIVE_CUSTODY;
+assert.ok(custodyFile, "VIZE_NUXT_NATIVE_CUSTODY names the custody file");
+const binding = readSourceBindingCustody(custodyFile);
+const readEvents = (): JsonRecord[] =>
   fs.existsSync(binding.calls)
     ? fs
         .readFileSync(binding.calls, "utf8")
         .trim()
         .split("\n")
-        .map((line) => JSON.parse(line))
+        .map((line) => asRecord(parseJson(line), "native event"))
     : [];
-const results = (events) =>
+const callFilename = (event: JsonRecord): string =>
+  asString(at(event, "args", 1, "filename"), "compileSfc filename");
+const results = (events: readonly JsonRecord[]) =>
   events
     .filter((event) => event.kind === "call")
     .map((event) => {
       assert.equal(event.entrypoint, "compileSfc");
       assert.equal(event.outcome, "return");
-      assert.ok(sources.includes(event.args[1].filename));
-      assert.equal(event.args[0], fs.readFileSync(event.args[1].filename, "utf8"));
-      assert.deepEqual(event.result.errors, []);
-      assert.deepEqual(event.result.warnings, []);
-      return { filename: event.args[1].filename, result: event.result };
+      const filename = callFilename(event);
+      assert.ok(sources.includes(filename));
+      assert.equal(at(event, "args", 0), fs.readFileSync(filename, "utf8"));
+      assert.deepEqual(at(event, "result", "errors"), []);
+      assert.deepEqual(at(event, "result", "warnings"), []);
+      return { filename, result: event.result };
     })
     .sort((a, b) => a.filename.localeCompare(b.filename));
 for (const scenario of selected) {
-  const directory = path.join(artifacts, scenario.id);
+  const { id, expected: expectedWhitespace } = scenario;
+  const directory = path.join(artifacts, id);
   fs.mkdirSync(directory);
   // Scoped compiler entries belong to the JavaScript plugin API. Canonical
   // Vue entries expose native lint scopes; do not claim compiler scopes there.
@@ -133,7 +199,7 @@ for (const scenario of selected) {
   json(directory, "inline-plugin-config.json", compiler);
   if (scenario.forward) process.env.FORWARD = "1";
   else delete process.env.FORWARD;
-  let nuxt;
+  let nuxt: NuxtInstance | undefined;
   try {
     nuxt = await loadNuxt({
       cwd: project,
@@ -147,8 +213,10 @@ for (const scenario of selected) {
       },
     });
     assert.equal(nuxt.options.rootDir, project);
-    assert.equal(path.resolve(nuxt.options.srcDir), sourceRoot);
-    const plugins = nuxt.options.vite.plugins.flat(Infinity);
+    assert.equal(path.resolve(asString(nuxt.options.srcDir, "srcDir")), sourceRoot);
+    const plugins = asArray(at(nuxt.options, "vite", "plugins"), "vite.plugins")
+      .flat(Infinity)
+      .map(vitePlugin);
     assert.equal(plugins.filter((plugin) => plugin.name === "vite-plugin-vize").length, 1);
     json(directory, "nuxt-options.json", {
       version,
@@ -168,23 +236,27 @@ for (const scenario of selected) {
       const currentEvents = readEvents().slice(before);
       json(current, "native-events.json", currentEvents);
       for (const event of currentEvents.filter((event) => event.kind === "call")) {
-        assert.equal(event.args[1].ssr, ssr);
+        assert.equal(at(event, "args", 1, "ssr"), ssr);
         assert.equal(
-          event.args[1].whitespace ?? "condense",
-          scenario.expected[sources.indexOf(event.args[1].filename)],
+          at(event, "args", 1, "whitespace") ?? "condense",
+          expectedWhitespace[sources.indexOf(callFilename(event))],
         );
       }
       const literal = sources.flatMap((filename, index) =>
-        vize({
-          ...scenario.module,
-          root: project,
-          configMode: false,
-          scanPatterns: [],
-          include: [filename],
-          whitespace: scenario.expected[index],
-          nuxtPageMeta: true,
-          ssrModuleIdRoot: sourceRoot,
-        }),
+        [
+          vize({
+            ...scenario.module,
+            root: project,
+            configMode: false,
+            scanPatterns: [],
+            include: [filename],
+            whitespace: expectedWhitespace[index],
+            nuxtPageMeta: true,
+            ssrModuleIdRoot: sourceRoot,
+          }),
+        ]
+          .flat()
+          .map(vitePlugin),
       );
       const referenceStart = readEvents().length;
       const control = await compile(reference, literal, ssr);
@@ -201,7 +273,7 @@ for (const scenario of selected) {
       const expected = {
         html: scenario.html,
         modules: ssr
-          ? corpus.paths
+          ? corpusPaths
               .map((name) => name.slice(4))
               .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0))
           : [],
@@ -209,7 +281,7 @@ for (const scenario of selected) {
       assert.deepEqual(observed.rendered, expected);
       assert.deepEqual(control.rendered, expected);
       observations.push({
-        scenario: scenario.id,
+        scenario: id,
         backend,
         completeLoadResults: 3,
         completeBundleOutputs: observed.output.length,
@@ -221,16 +293,16 @@ for (const scenario of selected) {
   }
   assert.deepEqual(fs.readFileSync(path.join(project, "nuxt.config.ts")), originalNuxt);
 }
-const custody = JSON.parse(fs.readFileSync(process.env.VIZE_NUXT_NATIVE_CUSTODY, "utf8"));
+const custody = readSourceBindingCustody(custodyFile);
 const events = fs
   .readFileSync(custody.calls, "utf8")
   .trim()
   .split("\n")
-  .map((line) => JSON.parse(line));
+  .map((line): unknown => parseJson(line));
 json(path.join(artifacts, scenarioId), "proof.json", {
   issue: 7959,
   version,
-  vue: require("vue/package.json").version,
+  vue: at(require("vue/package.json"), "version"),
   observations,
   sourceBinding: verifyNuxtSourceBindingEvents(custody, events),
   scope:

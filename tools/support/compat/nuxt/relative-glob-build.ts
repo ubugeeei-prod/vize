@@ -5,13 +5,18 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { asArray, asRecord, asString, at, readJsonRecord } from "../../json-value.ts";
+import { readSourceBindingCustody } from "./source-binding.ts";
+import type { SourceBindingCustody } from "./source-binding.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
-const output = path.resolve(process.argv[2]);
-const custody = JSON.parse(fs.readFileSync(path.resolve(process.argv[3]), "utf8"));
+const [outputArgument, custodyArgument] = process.argv.slice(2);
+assert.ok(outputArgument && custodyArgument, "usage: relative-glob-build.ts OUTPUT CUSTODY");
+const output = path.resolve(outputArgument);
+const custody = readSourceBindingCustody(path.resolve(custodyArgument));
 const inputs = path.join(root, "tests/_fixtures/differential/compiler/vite-relative-glob");
-const corpus = JSON.parse(fs.readFileSync(path.join(inputs, "corpus.json"), "utf8"));
-const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const corpus = readJsonRecord(path.join(inputs, "corpus.json"));
+const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 assert.equal(custody.schema, "vize.nuxt.source-binding");
 assert.equal(custody.source.head, process.env.GITHUB_SHA);
 assert.equal(
@@ -25,32 +30,34 @@ assert.equal(
 assert.equal(hash(fs.readFileSync(custody.binary.path)), custody.binary.sha256);
 for (const key of ["NAPI_RS_NATIVE_LIBRARY_PATH", "NAPI_RS_FORCE_WASI", "VIZE_NUXT_NATIVE_CUSTODY"])
   assert.ok(!process.env[key], `ambient ${key} cannot qualify source`);
-for (const [name, pin] of Object.entries(corpus.files)) {
+for (const [name, pin] of Object.entries(asRecord(corpus.files, "corpus.files"))) {
   const bytes = fs.readFileSync(path.join(inputs, name));
-  assert.equal(bytes.length, pin.bytes);
-  assert.equal(hash(bytes), pin.sha256);
+  assert.equal(bytes.length, at(pin, "bytes"));
+  assert.equal(hash(bytes), at(pin, "sha256"));
 }
 assert.equal(fs.existsSync(output), false, "one fresh complete packet");
 fs.mkdirSync(output, { recursive: true });
 fs.cpSync(inputs, path.join(output, "original-inputs"), { recursive: true });
-const hashes = (directory) =>
+const hashes = (directory: string): Record<string, string> =>
   Object.fromEntries(
     fs
-      .readdirSync(directory, { recursive: true })
+      .readdirSync(directory, { recursive: true, encoding: "utf8" })
       .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
       .flatMap((name) => {
         const file = path.join(directory, name);
         return fs.statSync(file).isFile() ? [[name, hash(fs.readFileSync(file))]] : [];
       }),
   );
-for (const cohort of corpus.cohorts) {
-  const installed = path.join(root, cohort.path, "node_modules");
-  const artifacts = path.join(output, cohort.id);
+for (const value of asArray(corpus.cohorts, "corpus.cohorts")) {
+  const cohort = asRecord(value, "cohort");
+  const cohortId = asString(cohort.id, "cohort.id");
+  const installed = path.join(root, asString(cohort.path, "cohort.path"), "node_modules");
+  const artifacts = path.join(output, cohortId);
   fs.mkdirSync(artifacts);
   const project = fs.mkdtempSync(path.join(artifacts, "project-"));
   const modules = path.join(project, "node_modules");
-  const originalDist = {},
-    candidateDist = {};
+  const originalDist: Record<string, Record<string, string>> = {},
+    candidateDist: Record<string, Record<string, string>> = {};
   const mapping = {
     "package.json.txt": "package.json",
     "vite.config.ts.txt": "vite.config.ts",
@@ -76,11 +83,12 @@ for (const cohort of corpus.cohorts) {
           fs.symlinkSync(path.join(installed, name, child), path.join(modules, name, child));
       } else fs.symlinkSync(path.join(installed, name), path.join(modules, name));
     }
-    const packages = [["@vizejs/vite-plugin", "npm/builder/vite"]];
+    const packages: [string, string][] = [["@vizejs/vite-plugin", "npm/builder/vite"]];
     if (cohort.nuxt) packages.push(["@vizejs/nuxt", "npm/framework/nuxt"]);
     for (const [name, source] of packages) {
       originalDist[name] = hashes(path.join(installed, name, "dist"));
-      candidateDist[name] = hashes(path.join(root, source, "dist"));
+      const candidate = hashes(path.join(root, source, "dist"));
+      candidateDist[name] = candidate;
       const target = path.join(modules, name);
       fs.rmSync(target, { recursive: true, force: true });
       fs.mkdirSync(target);
@@ -89,7 +97,7 @@ for (const cohort of corpus.cohorts) {
         path.join(target, "package.json"),
       );
       fs.cpSync(path.join(root, source, "dist"), path.join(target, "dist"), { recursive: true });
-      assert.deepEqual(hashes(path.join(target, "dist")), candidateDist[name]);
+      assert.deepEqual(hashes(path.join(target, "dist")), candidate);
     }
     for (const [input, target] of Object.entries(mapping)) {
       fs.mkdirSync(path.dirname(path.join(project, target)), { recursive: true });
@@ -126,7 +134,7 @@ for (const cohort of corpus.cohorts) {
       "src/pages/demo/Options.vue",
       "control-fixtures/First.vue",
     ];
-    const binding = {
+    const binding: SourceBindingCustody = {
       ...custody,
       calls: path.join(artifacts, "native-calls.jsonl"),
       fixtures: fixturePaths.map((name) => ({
@@ -137,12 +145,12 @@ for (const cohort of corpus.cohorts) {
     const bindingFile = path.join(artifacts, "custody.json");
     fs.writeFileSync(bindingFile, JSON.stringify(binding, null, 2) + "\n");
     const log = fs.openSync(path.join(artifacts, "process.log"), "w");
-    let run;
+    let run: ReturnType<typeof spawnSync>;
     try {
       run = spawnSync(
         process.execPath,
         [
-          fileURLToPath(new URL("./relative-glob-probe.mjs", import.meta.url)),
+          fileURLToPath(new URL("./relative-glob-probe.ts", import.meta.url)),
           project,
           artifacts,
           inputs,
@@ -199,7 +207,7 @@ for (const cohort of corpus.cohorts) {
       assert.deepEqual(hashes(path.join(installed, name, "dist")), originalDist[name]);
     assert.equal(run.error, undefined);
     assert.equal(run.signal, null);
-    assert.equal(run.status, 0, `retain complete ${cohort.id}/process.log`);
+    assert.equal(run.status, 0, `retain complete ${cohortId}/process.log`);
     for (const [input, target] of Object.entries(mapping))
       assert.deepEqual(
         fs.readFileSync(path.join(project, target)),

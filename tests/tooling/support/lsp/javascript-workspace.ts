@@ -9,8 +9,8 @@ import {
   argumentMessage,
   missingMessage,
   position,
-} from "../../../../tools/support/compat/nuxt/javascript-workspace-cli.mjs";
-import { save, sha } from "../../../../tools/support/compat/nuxt/javascript-workspace-project.mjs";
+} from "../../../../tools/support/compat/nuxt/javascript-workspace-cli.ts";
+import { save, sha } from "../../../../tools/support/compat/nuxt/javascript-workspace-project.ts";
 
 type Context = { project: string; artifacts: string; cohort: { nuxt?: string } };
 const lintHelp =

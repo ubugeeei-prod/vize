@@ -42,6 +42,7 @@
     "tests/tooling/comparison-base.test.ts",
     "tests/tooling/plan-source-checks.test.ts",
     "tools/support/compat/github/plan-release-gates.ts",
+    "tools/support/json-value.ts",
     "tests/tooling/plan-release-gates.test.ts",
     "docs/scripts/verify-static-links.ts",
     "tests/tooling/typescript-tooling-project.test.ts",

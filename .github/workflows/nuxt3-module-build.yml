@@ -9,7 +9,7 @@ on:
       - npm/oxlint/**
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
-      - tools/support/compat/nuxt/nuxt3-module-build.mjs
+      - tools/support/compat/nuxt/nuxt3-module-build.ts
       - tools/support/compat/nuxt/source-binding*
       - tools/support/compat/nuxt/prefetch-manifest-*
       - tools/support/compat/nuxt/lint-config-*
@@ -46,7 +46,7 @@ on:
       - npm/oxlint/**
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
-      - tools/support/compat/nuxt/nuxt3-module-build.mjs
+      - tools/support/compat/nuxt/nuxt3-module-build.ts
       - tools/support/compat/nuxt/source-binding*
       - tools/support/compat/nuxt/prefetch-manifest-*
       - tools/support/compat/nuxt/lint-config-*
@@ -207,7 +207,7 @@ jobs:
           sudo find "$archive_dir" -maxdepth 1 -type f -name '*.deb' -print0 | sort -z | xargs -0 -r sha256sum
           (cd tests && vize-ci-apt-retry vp exec playwright install --with-deps chromium)
       - name: Verify candidate build and SSR routes
-        run: vp env exec node tools/support/compat/nuxt/nuxt3-module-build.mjs "$RUNNER_TEMP/nuxt3-module-proof"
+        run: vp env exec node tools/support/compat/nuxt/nuxt3-module-build.ts "$RUNNER_TEMP/nuxt3-module-proof"
       # Source-bound Nuxt 3 SSR, hydration and navigation remain on every
       # affected PR. The complete historical and multi-host campaign runs
       # before merging, and on main/manual qualification.
@@ -220,23 +220,23 @@ jobs:
         run: vp env exec node tools/support/compat/nuxt/prefetch-manifest-build.mjs "$RUNNER_TEMP/nuxt-prefetch-proof"
       - name: Verify original Nuxt lint configuration with the source linter
         if: ${{ github.event_name != 'pull_request' }}
-        run: vp env exec node tools/support/compat/nuxt/lint-config-build.mjs "$RUNNER_TEMP/nuxt-lint-config-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
+        run: vp env exec node tools/support/compat/nuxt/lint-config-build.ts "$RUNNER_TEMP/nuxt-lint-config-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Verify original Nuxt scoped compiler defaults and whole rendered outputs
         if: ${{ github.event_name != 'pull_request' }}
-        run: vp env exec node tools/support/compat/nuxt/compiler-defaults-build.mjs "$RUNNER_TEMP/nuxt-compiler-defaults-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
+        run: vp env exec node tools/support/compat/nuxt/compiler-defaults-build.ts "$RUNNER_TEMP/nuxt-compiler-defaults-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Install the unchanged reported Vite 8.2.2 dependency cohort
         if: ${{ github.event_name != 'pull_request' }}
         working-directory: tools/support/compat/nuxt/fixtures/vite-relative-glob
         run: npm ci --no-audit --no-fund
       - name: Verify original relative glob keys and outside-root Vite and Nuxt runtime
         if: ${{ github.event_name != 'pull_request' }}
-        run: vp env exec node tools/support/compat/nuxt/relative-glob-build.mjs "$RUNNER_TEMP/vite-relative-glob-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
+        run: vp env exec node tools/support/compat/nuxt/relative-glob-build.ts "$RUNNER_TEMP/vite-relative-glob-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Capture the current CLI for the JavaScript workspace consumers
         if: ${{ github.event_name != 'pull_request' }}
         run: vp env exec node tests/differential/build-receipt.ts
       - name: Verify real JavaScript Nuxt and Vite workspace products
         if: ${{ github.event_name != 'pull_request' }}
-        run: vp env exec node tools/support/compat/nuxt/javascript-workspace-build.mjs "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
+        run: vp env exec node tools/support/compat/nuxt/javascript-workspace-build.ts "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Upload Nuxt 3 build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -55,12 +55,12 @@ jobs:
         include:
           - case: scoped CSS
             fixture: tests/_fixtures/_projects/nuxt-scoped-style-build
-            script: style-build.mjs
+            script: style-build.ts
             proof: nuxt-style-proof
             browser: false
           - case: critical CSS
             fixture: tests/_fixtures/_projects/nuxt-critical-css-build
-            script: critical-css-build.mjs
+            script: critical-css-build.ts
             proof: nuxt-critical-css-proof
             browser: true
           - case: dev SSR styles

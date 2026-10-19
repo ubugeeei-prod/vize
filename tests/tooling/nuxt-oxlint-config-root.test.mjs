@@ -4,7 +4,7 @@ import fs from "node:fs";
 import test from "node:test";
 
 import { renderNuxtOxlintConfig } from "../../npm/framework/nuxt/src/lint/emitter.ts";
-import { expectedCliDiagnostic } from "../../tools/support/compat/nuxt/lint-config-observer.mjs";
+import { expectedCliDiagnostic } from "../../tools/support/compat/nuxt/lint-config-observer.ts";
 
 const directory = new URL(
   "../_fixtures/differential/linter/nuxt-oxlint-config-root/",

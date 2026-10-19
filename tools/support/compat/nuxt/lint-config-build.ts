@@ -5,10 +5,14 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { asRecord, readJson } from "../../json-value.ts";
+import { readSourceBindingCustody } from "./source-binding.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
-const output = path.resolve(process.argv[2]);
-const compilerCustody = JSON.parse(fs.readFileSync(path.resolve(process.argv[3]), "utf8"));
+const [outputArgument, custodyArgument] = process.argv.slice(2);
+assert.ok(outputArgument && custodyArgument, "usage: lint-config-build.ts OUTPUT CUSTODY");
+const output = path.resolve(outputArgument);
+const compilerCustody = readSourceBindingCustody(path.resolve(custodyArgument));
 assert.equal(compilerCustody.schema, "vize.nuxt.source-binding");
 assert.equal(compilerCustody.version, 1);
 for (const key of [
@@ -27,16 +31,16 @@ assert.equal(
   execFileSync("git", ["rev-parse", "HEAD^{tree}"], { cwd: root, encoding: "utf8" }).trim(),
   compilerCustody.source.tree,
 );
-const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 assert.equal(hash(fs.readFileSync(compilerCustody.binary.path)), compilerCustody.binary.sha256);
 const inputDir = path.join(root, "tests/_fixtures/differential/linter/nuxt-oxlint-config-root");
-const corpus = JSON.parse(fs.readFileSync(path.join(inputDir, "corpus.json"), "utf8"));
-for (const [name, digest] of Object.entries(corpus.files)) {
+const corpus = asRecord(readJson(path.join(inputDir, "corpus.json")), "lint corpus");
+for (const [name, digest] of Object.entries(asRecord(corpus.files, "corpus.files"))) {
   assert.equal(hash(fs.readFileSync(path.join(inputDir, name))), digest);
 }
 fs.mkdirSync(output, { recursive: true });
 fs.cpSync(inputDir, path.join(output, "original-inputs"), { recursive: true });
-const packages = [
+const packages: readonly (readonly [string, string])[] = [
   ["@vizejs/nuxt", "npm/framework/nuxt"],
   ["@vizejs/nuxt-lint-config", "npm/framework/nuxt-lint-config"],
   ["oxlint-plugin-vize", "npm/oxlint"],
@@ -49,10 +53,10 @@ for (const [name, source] of packages) {
   if (name === "oxlint-plugin-vize")
     fs.cpSync(path.join(root, source, "bin"), path.join(target, "bin"), { recursive: true });
 }
-const distHashes = (directory) =>
+const distHashes = (directory: string): Record<string, string> =>
   Object.fromEntries(
     fs
-      .readdirSync(directory, { recursive: true })
+      .readdirSync(directory, { recursive: true, encoding: "utf8" })
       .sort((a, b) => a.localeCompare(b))
       .flatMap((name) => {
         const file = path.join(directory, name);
@@ -62,7 +66,7 @@ const distHashes = (directory) =>
 for (const [cohort, fixture, version] of [
   ["nuxt3", "tools/support/compat/nuxt/fixtures/nuxt3-module-build", "3.19.3"],
   ["nuxt4", "tests/_fixtures/_projects/nuxt-critical-css-build", "4.5.2"],
-]) {
+] as const) {
   const installed = path.join(root, fixture, "node_modules");
   const artifacts = path.join(output, cohort);
   fs.mkdirSync(artifacts);
@@ -83,7 +87,7 @@ for (const [cohort, fixture, version] of [
         }
       } else fs.symlinkSync(path.join(installed, name), path.join(modulePackages, name));
     }
-    const originals = {};
+    const originals: Record<string, Record<string, string>> = {};
     for (const [name, source] of packages) {
       const target = path.join(modulePackages, name);
       fs.rmSync(target, { recursive: true, force: true });
@@ -95,8 +99,9 @@ for (const [cohort, fixture, version] of [
       fs.cpSync(path.join(root, source, "dist"), path.join(target, "dist"), { recursive: true });
       if (name === "oxlint-plugin-vize")
         fs.cpSync(path.join(root, source, "bin"), path.join(target, "bin"), { recursive: true });
-      originals[name] = distHashes(path.join(root, source, "dist"));
-      assert.deepEqual(distHashes(path.join(target, "dist")), originals[name]);
+      const original = distHashes(path.join(root, source, "dist"));
+      originals[name] = original;
+      assert.deepEqual(distHashes(path.join(target, "dist")), original);
     }
     // The exact workspace engine is already installed by this automatic job.
     const engine = path.join(modulePackages, "oxlint");
@@ -114,7 +119,7 @@ for (const [cohort, fixture, version] of [
     const run = spawnSync(
       process.execPath,
       [
-        fileURLToPath(new URL("./lint-config-probe.mjs", import.meta.url)),
+        fileURLToPath(new URL("./lint-config-probe.ts", import.meta.url)),
         project,
         artifacts,
         inputDir,
