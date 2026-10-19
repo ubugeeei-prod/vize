@@ -12,7 +12,8 @@ export function moveFoundation(root: string, mode: string): void {
     return;
   }
   const read = (base: string, file: string): string => readFileSync(path.join(base, file), "utf8");
-  const write = (base: string, file: string, source: string): void => writeFileSync(path.join(base, file), source);
+  const write = (base: string, file: string, source: string): void =>
+    writeFileSync(path.join(base, file), source);
   const oldLib = read(before, "src/lib.rs");
   if (oldLib.includes("pub use vize_l0::*;")) return;
   const levelLib = read(after, "src/lib.rs");

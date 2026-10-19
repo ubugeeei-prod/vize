@@ -3,7 +3,8 @@ import path from "node:path";
 
 export function moveSharedTypes(root: string, mode: string): void {
   const read = (file: string): string => readFileSync(path.join(root, file), "utf8");
-  const write = (file: string, source: string): void => writeFileSync(path.join(root, file), source);
+  const write = (file: string, source: string): void =>
+    writeFileSync(path.join(root, file), source);
   const carton = "davinci/vize_l0/src/",
     substrate = "davinci/vize_davinci/src/";
   if (mode === "--shared-moves-only") {

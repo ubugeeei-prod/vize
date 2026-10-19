@@ -9,7 +9,8 @@ const command = path.join(root, "tools/commands/ci/fuzz/enforce-result.rs");
 
 test("fuzz result policy keeps PRs advisory and release evidence strict", () => {
   const status = (eventName: string, outcome: string): number | null =>
-    spawnSync("rust-script", [command, eventName, "sfc_parse", outcome], { encoding: "utf8" }).status;
+    spawnSync("rust-script", [command, eventName, "sfc_parse", outcome], { encoding: "utf8" })
+      .status;
   for (const outcome of ["failure", "cancelled", "skipped"]) {
     assert.equal(status("pull_request", outcome), 0, `advisory ${outcome}`);
     for (const eventName of ["merge_group", "schedule", "workflow_dispatch"])
