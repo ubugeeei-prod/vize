@@ -140,3 +140,17 @@ fn on_props_bind_listeners() {
         );
     }
 }
+
+/// Beside `v-bind="obj"`, a bound listener joins the spread's sources, so the
+/// runtime's `mergeProps` calls both it and `obj.onClick`, as upstream does.
+#[test]
+fn listener_props_merge_into_a_spread() {
+    for retained in [false, true] {
+        let code = compile(r#"<p v-bind="obj" :onClick="f" :id="x"/>"#, retained);
+        assert!(
+            code.contains(r#"_setDynamicProps(n0, [_ctx.obj, { onClick: _ctx.f, id: _ctx.x }])"#),
+            "{code}"
+        );
+        assert!(!code.contains("_setListener"), "{code}");
+    }
+}

@@ -19,6 +19,7 @@ pub(super) fn uses_computed_props(el: &ElementNode<'_>) -> bool {
     let mut computed = false;
     let mut object = false;
     let mut forced = false;
+    let mut listener = false;
     for prop in &el.props {
         if let PropNode::Directive(dir) = prop
             && dir.name == "bind"
@@ -40,6 +41,7 @@ pub(super) fn uses_computed_props(el: &ElementNode<'_>) -> bool {
                         forced = true;
                     }
                     computed |= !key.is_static;
+                    listener |= key.is_static && crate::ir::is_on(key.content);
                 }
                 None if dir.modifiers.is_empty() => object = true,
                 None => return false,
@@ -47,7 +49,9 @@ pub(super) fn uses_computed_props(el: &ElementNode<'_>) -> bool {
             }
         }
     }
-    computed || object && forced
+    // Beside an object spread, a bound listener joins the spread's sources so
+    // the runtime's `mergeProps` chains it with the object's own handler.
+    computed || object && (forced || listener)
 }
 
 pub(super) fn transform<'a>(
