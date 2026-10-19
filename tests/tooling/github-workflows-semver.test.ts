@@ -17,12 +17,9 @@ test("release SemVer checks classify the exact candidate without push metadata",
   );
   assert.match(job, /- name:\s*Use candidate version for SemVer classification/);
   assert.doesNotMatch(job, /- name:\s*Resolve SemVer change marker/);
-  assert.match(job, /bash tools\/commands\/ci\/github\/check-semver\.sh/);
-  const script = readRepoFile("tools", "commands", "ci", "github", "check-semver.sh");
-  assert.match(
-    script,
-    /SEMVER_CHANGE_MARKER="\$\(cat "\$RUNNER_TEMP\/semver-change-marker\.txt"\)"/,
-  );
+  assert.match(job, /node tools\/commands\/ci\/github\/check-semver\.ts/);
+  const script = readRepoFile("tools", "commands", "ci", "github", "check-semver.ts");
+  assert.match(script, /path\.join\(runnerTemp, "semver-change-marker\.txt"\)/);
   assert.doesNotMatch(job, /git log -1 --format=%B/);
 });
 

@@ -197,11 +197,11 @@ test("release SemVer invokes the required check with the immutable baseline and 
   );
   // This dispatch fixture has no merge parent; the exact-base test uses real Git.
   writeFakeCommand(bin, "git", "process.exit(1);");
-  const script = path.join(repoRoot, "tools/commands/ci/github/check-semver.sh");
+  const script = path.join(repoRoot, "tools/commands/ci/github/check-semver.ts");
   const run = (extra: NodeJS.ProcessEnv = {}) => {
     fs.writeFileSync(log, "");
     fs.writeFileSync(helperLog, "");
-    return spawnSync("bash", [script, "vize_l1_to_l2"], {
+    return spawnSync(process.execPath, [script, "vize_l1_to_l2"], {
       cwd: root,
       encoding: "utf8",
       env: {
@@ -284,6 +284,24 @@ test("release SemVer invokes the required check with the immutable baseline and 
       ],
     ]);
     assert.equal(JSON.parse(fs.readFileSync(helperLog, "utf8").trim()).at(-1), "verified-old-base");
+    fs.writeFileSync(
+      path.join(runnerTemp, "semver-change-marker.txt"),
+      "chore(x): drop a field\n\nBREAKING CHANGE: removed.\n",
+    );
+    const breaking = run();
+    assert.equal(breaking.status, 0, breaking.stderr);
+    assert.deepEqual(logged(), [
+      [
+        "semver-checks",
+        "check-release",
+        "--package",
+        "vize_l1_to_l2",
+        "--color",
+        "never",
+        "--release-type",
+        "major",
+      ],
+    ]);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
