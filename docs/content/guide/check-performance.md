@@ -46,4 +46,4 @@ vpx vize check --checkers 4 --servers 1
 
 `--checkers` accepts a positive integer and overrides the `VIZE_CHECKERS` environment variable.
 `--servers` (`1`–`32`) sets how many separate TypeScript processes run; automatic sizing accounts for
-the checker workers in each process. Set the server count for every run with `typeChecker.servers`.
+the checker workers in each process. Set the server count for every run with `vue.typeChecker.servers`.

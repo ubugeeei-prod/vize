@@ -54,4 +54,4 @@ vpx vize check --checkers 4 --servers 1
 
 `--checkers` は正の整数を受け取り、環境変数 `VIZE_CHECKERS` より優先されます。`--servers`（`1`〜`32`）は
 別々に起動する TypeScript プロセスの数で、自動で決める場合は各プロセス内のチェッカー数も考慮します。
-すべての実行でサーバー数を固定する場合は `typeChecker.servers` を設定してください。
+すべての実行でサーバー数を固定する場合は `vue.typeChecker.servers` を設定してください。
