@@ -49,15 +49,15 @@ jobs:
           [[ "$(git -C base rev-parse HEAD)" == "$COMPARISON_BASE" ]]
           mkdir -p measurements
           export COMPARISON_BASE
-          python3 - <<'PY'
-          import json, os
-          from pathlib import Path
-          Path('measurements/commits.json').write_text(json.dumps({
-              'base': os.environ['COMPARISON_BASE'],
-              'head': os.environ['REQUESTED_HEAD'],
-              'requested_base': os.environ['REQUESTED_BASE'],
-          }, indent=2))
-          PY
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          const commits = {
+            base: process.env.COMPARISON_BASE,
+            head: process.env.REQUESTED_HEAD,
+            requested_base: process.env.REQUESTED_BASE,
+          };
+          fs.writeFileSync('measurements/commits.json', JSON.stringify(commits, null, 2));
+          JS
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with:
           toolchain: stable
@@ -85,14 +85,14 @@ jobs:
         run: |
           mkdir -p base/crates/vize_croquis_cf/examples
           cp head/crates/vize_croquis_cf/examples/compact_collections.rs base/crates/vize_croquis_cf/examples/
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('base/crates/vize_croquis_cf/Cargo.toml')
-          source = path.read_text()
-          if 'davinci_harness.workspace = true' not in source:
-              source = source.replace('[dev-dependencies]', '[dev-dependencies]\ndavinci_harness.workspace = true')
-          path.write_text(source)
-          PY
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          const path = 'base/crates/vize_croquis_cf/Cargo.toml';
+          const source = fs.readFileSync(path, 'utf8');
+          const dependency = 'davinci_harness.workspace = true';
+          if (!source.includes(dependency))
+            fs.writeFileSync(path, source.replaceAll('[dev-dependencies]', `[dev-dependencies]\n${dependency}`));
+          JS
       - name: Build exact production base and head
         run: |
           (cd base && CARGO_TARGET_DIR=../head/target/base cargo build --release -p vize_croquis_cf --example compact_collections)
@@ -109,16 +109,18 @@ jobs:
               head/target/base/release/examples/compact_collections "measurements/base-$pass.json"
             fi
           done
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          for i in range(1, 6):
-              base = json.loads(Path(f'measurements/base-{i}.json').read_text())
-              head = json.loads(Path(f'measurements/head-{i}.json').read_text())
-              assert base['cycle_fingerprints'] == head['cycle_fingerprints']
-              assert base['semantic_fingerprints'] == head['semantic_fingerprints']
-              assert base['scope_id_bytes'] == head['scope_id_bytes'] == 4
-          PY
+          node --input-type=module - <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const read = (path) => JSON.parse(fs.readFileSync(path, 'utf8'));
+          for (let i = 1; i <= 5; i += 1) {
+            const base = read(`measurements/base-${i}.json`);
+            const head = read(`measurements/head-${i}.json`);
+            assert.deepEqual(base.cycle_fingerprints, head.cycle_fingerprints);
+            assert.deepEqual(base.semantic_fingerprints, head.semantic_fingerprints);
+            assert.ok(base.scope_id_bytes === 4 && head.scope_id_bytes === 4);
+          }
+          JS
       - name: Upload raw samples
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
