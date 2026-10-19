@@ -377,7 +377,7 @@ fn known_path_membership_matches_original_vec_with_absence_duplicates_and_new_pa
 
 #[test]
 fn workspace_watch_union_preserves_per_root_dependencies_and_failed_observations() {
-    let fixture = tempfile::tempdir().unwrap();
+    let fixture = crate::test_support::tempdir().unwrap();
     let canonical_root = fixture.path().canonicalize().unwrap();
     let root = canonical_root.as_path();
     let state = Arc::new(ServerState::new());

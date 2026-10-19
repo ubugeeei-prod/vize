@@ -39,7 +39,7 @@ fn hover_and_diagnostics_share_native_mirrors_across_declaration_and_source_chan
         return;
     };
     crate::runtime::block_on(async {
-        let project = tempfile::tempdir().unwrap();
+        let project = crate::test_support::tempdir().unwrap();
         let root = project.path();
         std::fs::create_dir_all(root.join("src")).unwrap();
         std::fs::create_dir(root.join(".nuxt")).unwrap();

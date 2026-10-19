@@ -3,7 +3,7 @@ use vize_l0::config::TypeCheckerConfig;
 
 #[test]
 fn native_checker_snapshot_retains_resolved_values_and_separate_origin_on_reload() {
-    let directory = tempfile::tempdir().unwrap();
+    let directory = crate::test_support::tempdir().unwrap();
     let config_path = directory.path().join("vite.config.mjs");
     std::fs::create_dir(directory.path().join("app")).unwrap();
     std::fs::write(directory.path().join("app/tsconfig.json"), "{}").unwrap();

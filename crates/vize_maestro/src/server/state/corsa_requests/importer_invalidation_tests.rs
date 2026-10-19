@@ -27,7 +27,7 @@ fn fixture() -> Fixture {
 }
 
 fn fixture_with_declaration(declaration_name: &str) -> Fixture {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::test_support::tempdir().unwrap();
     file(
         root.path(),
         "vite.config.mjs",

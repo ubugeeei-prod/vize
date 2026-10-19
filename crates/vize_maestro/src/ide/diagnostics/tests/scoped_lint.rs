@@ -2,7 +2,7 @@ use super::{DiagnosticService, NumberOrString, Url, sources, state_with_lsp_diag
 
 #[test]
 fn diagnostics_follow_scoped_rules_and_global_ignores() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::test_support::tempdir().unwrap();
     std::fs::write(
         root.path().join("vite.config.mjs"),
         r#"export default { vue: {"entries":[{"files":["src/legacy/**/*.vue"],"linter":{"rules":{"vue/permitted-contents":"off"}}}],"ignores":["src/generated/**"]} };"#,

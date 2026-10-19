@@ -5,7 +5,7 @@ use crate::server::ServerState;
 
 #[test]
 fn scoped_rules_and_global_ignores_match_document_paths() {
-    let parent = tempfile::tempdir().unwrap();
+    let parent = crate::test_support::tempdir().unwrap();
     let root = folder_with_config(
         parent.path(),
         "project",
@@ -154,7 +154,7 @@ fn workspace_folder_changes_select_only_open_documents_under_changed_roots() {
 
 #[test]
 fn invalid_project_configuration_refuses_lint_without_borrowing_a_sibling_policy() {
-    let parent = tempfile::tempdir().unwrap();
+    let parent = crate::test_support::tempdir().unwrap();
     let valid = folder_with_config(
         parent.path(),
         "valid",
@@ -185,7 +185,7 @@ fn invalid_project_configuration_refuses_lint_without_borrowing_a_sibling_policy
 
 #[test]
 fn invalid_native_project_initialization_refuses_lint_until_valid_configuration_is_loaded() {
-    let project = tempfile::tempdir().unwrap();
+    let project = crate::test_support::tempdir().unwrap();
     let config = project.path().join("vite.config.mjs");
     std::fs::write(&config, "throw new Error('invalid configuration');").unwrap();
     let state = ServerState::new();
@@ -219,7 +219,7 @@ fn invalid_native_project_initialization_refuses_lint_until_valid_configuration_
     reason = "the asynchronous admission worker retains its shared editor owner"
 )]
 fn invalid_primary_initialization_loads_other_folders_on_the_same_worker() {
-    let project = tempfile::tempdir().unwrap();
+    let project = crate::test_support::tempdir().unwrap();
     let invalid = folder_with_config(project.path(), "invalid", "{formatter:{printWidth:'bad'}}");
     let valid = folder_with_config(
         project.path(),

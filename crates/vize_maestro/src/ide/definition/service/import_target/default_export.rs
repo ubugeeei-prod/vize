@@ -166,7 +166,7 @@ mod tests {
             ),
         ] {
             for local in ["Widget", "Renamed"] {
-                let project = tempfile::tempdir().unwrap();
+                let project = crate::test_support::tempdir().unwrap();
                 let target = project.path().join("index.ts");
                 fs::write(&target, target_source).unwrap();
                 let source: std::string::String = vize_l0::cstr!(

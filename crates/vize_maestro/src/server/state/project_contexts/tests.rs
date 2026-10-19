@@ -4,7 +4,7 @@ use tower_lsp::lsp_types::{FileChangeType, FileEvent};
 use vize_l0::cstr;
 
 pub(super) fn fixture() -> (tempfile::TempDir, Arc<ServerState>, Url, Url) {
-    let fixture = tempfile::tempdir().unwrap();
+    let fixture = crate::test_support::tempdir().unwrap();
     let root = fixture.path();
     std::fs::write(
         root.join("package.json"),
@@ -342,7 +342,7 @@ fn initializing_multiple_editor_folders_does_not_import_unused_packages() {
 
 #[test]
 fn malformed_workspace_config_keeps_the_complete_historical_feature_defaults() {
-    let dir = tempfile::tempdir().expect("workspace");
+    let dir = crate::test_support::tempdir().expect("workspace");
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         "export default { vue: not valid json };",

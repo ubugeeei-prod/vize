@@ -7,7 +7,7 @@ fn continuation_union_keeps_common_disjoint_absent_and_conflicting_inputs_in_bot
     use super::super::{ProjectContextKey, freshness::ConfigurationObservation};
     use vize_canon::{CompilerConfigurationSnapshot, ConfigurationObservations};
 
-    let fixture = tempfile::tempdir().unwrap();
+    let fixture = crate::test_support::tempdir().unwrap();
     let root = super::super::paths::physical_path(fixture.path());
     let common = root.join("policy.mjs");
     let absent = root.join("optional.mjs");
@@ -105,7 +105,7 @@ fn initial_continuation_rechecks_physical_and_queue_identity_after_its_first_rea
         Routing,
         Replacement,
     ] {
-        let directory = tempfile::tempdir().unwrap();
+        let directory = crate::test_support::tempdir().unwrap();
         let config = directory.path().join("vite.config.mjs");
         std::fs::write(&config, "export default {vue:{}};").unwrap();
         #[cfg(unix)]
@@ -185,7 +185,7 @@ fn initial_continuation_rechecks_physical_and_queue_identity_after_its_first_rea
 
 #[test]
 fn primary_replacement_is_lazy_unique_and_respects_explicit_options() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::test_support::tempdir().unwrap();
     let config = root.path().join("vite.config.mjs");
     std::fs::write(
         &config,
@@ -229,7 +229,7 @@ fn primary_replacement_is_lazy_unique_and_respects_explicit_options() {
 #[test]
 fn initial_api_entry_keeps_all_diagnostic_providers_off_even_when_native_typecheck_is_enabled() {
     use crate::server::MaestroServer;
-    let directory = tempfile::tempdir().unwrap();
+    let directory = crate::test_support::tempdir().unwrap();
     std::fs::write(directory.path().join("vite.config.mjs"), "export default {vue:{typeChecker:{corsaPath:'./vize-must-not-start-for-disabled-providers'}}};").unwrap();
     let owner = Arc::new(ServerState::new());
     owner.set_workspace_root(directory.path().to_path_buf());

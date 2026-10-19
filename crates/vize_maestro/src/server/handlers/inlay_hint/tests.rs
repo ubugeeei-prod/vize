@@ -180,7 +180,7 @@ fn disabled_checker_keeps_proven_builtin_facts_without_guessing_computed_types()
 #[cfg(feature = "native")]
 #[test]
 fn unavailable_checker_keeps_known_builtin_without_rendering_computed_placeholders() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::test_support::tempdir().unwrap();
     std::fs::write(
         root.path().join("vite.config.mjs"),
         vize_l0::cstr!(

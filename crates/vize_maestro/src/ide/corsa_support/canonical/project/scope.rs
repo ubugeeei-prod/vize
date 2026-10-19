@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn configured_project_does_not_feed_workspace_sources_to_excluded_query() {
-        let project = tempfile::TempDir::new().expect("temp project");
+        let project = crate::test_support::tempdir().expect("temp project");
         let src = project.path().join("src");
         let ignored = project.path().join("ignored");
         fs::create_dir_all(&src).expect("src directory");
@@ -121,7 +121,7 @@ mod javascript_admission_tests {
 
     #[test]
     fn configured_js_sources_honor_authored_allow_js_and_project_boundaries() {
-        let root = tempfile::tempdir().unwrap();
+        let root = crate::test_support::tempdir().unwrap();
         let src = root.path().join("src");
         std::fs::create_dir_all(&src).unwrap();
         let uri = Url::from_file_path(src.join("App.vue")).unwrap();

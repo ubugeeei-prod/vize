@@ -171,7 +171,7 @@ fn watched_marker_transfers_to_checked_full_key_without_reloading_or_retiring_si
     use tower_lsp::lsp_types::{FileChangeType, FileEvent};
 
     for (primary, referenced) in [(true, false), (true, true), (false, false), (false, true)] {
-        let fixture = tempfile::tempdir().unwrap();
+        let fixture = crate::test_support::tempdir().unwrap();
         let workspace = fixture.path();
         let root = if primary {
             workspace.to_path_buf()

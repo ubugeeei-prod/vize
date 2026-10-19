@@ -47,7 +47,7 @@ mod tests {
         include_str!("../../../tests/fixtures/component-definition-hover/Parent.vue");
 
     fn markdown(parent: &str, unsaved_child: Option<&str>) -> std::io::Result<String> {
-        let directory = tempfile::tempdir()?;
+        let directory = crate::test_support::tempdir()?;
         let child_path = directory.path().join("Child.vue");
         fs::write(&child_path, CHILD)?;
         fs::write(

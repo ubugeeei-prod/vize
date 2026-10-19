@@ -63,7 +63,7 @@ fn assert_options(state: &ServerState, expected: &VirtualTsOptions) {
 
 #[test]
 fn editor_options_preserve_config_and_all_workspace_declaration_kinds() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::test_support::tempdir().unwrap();
     let nuxt = root.path().join(".nuxt");
     let dependency = root.path().join("node_modules/pkg");
     std::fs::create_dir_all(&nuxt).unwrap();
@@ -84,7 +84,7 @@ fn editor_options_preserve_config_and_all_workspace_declaration_kinds() {
 
 #[test]
 fn editor_options_refresh_create_rename_delete_and_workspace_changes() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::test_support::tempdir().unwrap();
     let nuxt = root.path().join(".nuxt");
     std::fs::create_dir(&nuxt).unwrap();
     let state = configured_state(root.path());
@@ -110,7 +110,7 @@ fn editor_options_refresh_create_rename_delete_and_workspace_changes() {
     assert!(state.invalidate_global_component_references([renamed_uri.as_str()]));
     assert_options(&state, &expected(&[]));
 
-    let next_root = tempfile::tempdir().unwrap();
+    let next_root = crate::test_support::tempdir().unwrap();
     let next = next_root.path().join("globals.d.cts");
     std::fs::write(&next, DECLARATION).unwrap();
     state.set_workspace_root(next_root.path().to_path_buf());
@@ -119,7 +119,7 @@ fn editor_options_refresh_create_rename_delete_and_workspace_changes() {
 
 #[test]
 fn editor_options_reload_template_globals_without_losing_declarations() {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::test_support::tempdir().unwrap();
     let declaration = root.path().join("globals.d.ts");
     std::fs::write(&declaration, DECLARATION).unwrap();
     let state = configured_state(root.path());

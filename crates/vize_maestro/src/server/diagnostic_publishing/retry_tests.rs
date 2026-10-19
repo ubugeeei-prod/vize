@@ -56,7 +56,7 @@ impl Fixture {
 }
 
 fn fixture(held: bool) -> Fixture {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::test_support::tempdir().unwrap();
     std::fs::write(root.path().join("App.vue"), APP).unwrap();
     std::fs::write(root.path().join("useToast.ts"), TOAST).unwrap();
     std::fs::write(root.path().join("tsconfig.json"), r#"{"compilerOptions":{"strict":true,"moduleResolution":"Bundler"},"include":["*.ts","*.vue"]}"#).unwrap();

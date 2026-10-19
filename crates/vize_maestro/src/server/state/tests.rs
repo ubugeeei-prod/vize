@@ -34,7 +34,7 @@ fn default_format_options() {
 #[cfg(feature = "glyph")]
 #[test]
 fn load_format_config_no_file() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     let state = ServerState::new();
     state.load_format_config(dir.path());
     // options remain default
@@ -45,7 +45,7 @@ fn load_format_config_no_file() {
 #[cfg(feature = "glyph")]
 #[test]
 fn load_format_config_from_file() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         r#"export default { vue: {
@@ -73,7 +73,7 @@ fn load_format_config_from_file() {
 #[cfg(feature = "glyph")]
 #[test]
 fn load_format_config_partial() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         r#"export default { vue: { "formatter": { "printWidth": 120 } } };"#,
@@ -92,7 +92,7 @@ fn load_format_config_partial() {
 #[cfg(feature = "glyph")]
 #[test]
 fn load_format_config_no_formatter_section() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         r#"export default { vue: { "check": { "globals": ["$t"] } } };"#,
@@ -109,7 +109,7 @@ fn load_format_config_no_formatter_section() {
 #[cfg(feature = "glyph")]
 #[test]
 fn load_format_config_invalid_module() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         "export default { vue: not valid json };",
@@ -140,7 +140,7 @@ fn lsp_features_enable_non_opinionated_defaults() {
 
 #[test]
 fn load_lsp_config_from_vite() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         r#"export default { vue: {
@@ -169,7 +169,7 @@ fn load_lsp_config_from_vite() {
 
 #[test]
 fn load_lsp_config_updates_type_checker_config() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(dir.path().join("tsconfig.app.json"), "{}").unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
@@ -213,7 +213,7 @@ fn options_api_enabled_by_default() {
 
 #[test]
 fn type_checker_options_api_opt_out_from_config() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         r#"export default { vue: { "typeChecker": { "optionsApi": false } } };"#,
@@ -230,7 +230,7 @@ fn type_checker_options_api_opt_out_from_config() {
 
 #[test]
 fn type_checker_options_api_explicit_opt_in_from_config() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         r#"export default { vue: { "typeChecker": { "optionsApi": true } } };"#,
@@ -247,7 +247,7 @@ fn type_checker_options_api_explicit_opt_in_from_config() {
 
 #[test]
 fn legacy_vue2_config_implies_options_api() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         r#"export default { vue: { "typeChecker": { "legacyVue2": true } } };"#,
@@ -277,7 +277,7 @@ fn jsx_typecheck_defaults_off() {
 
 #[test]
 fn jsx_typecheck_config_opts_in() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         r#"export default { vue: { "typeChecker": { "jsxTypecheck": true } } };"#,
@@ -294,7 +294,7 @@ fn jsx_typecheck_config_opts_in() {
 
 #[test]
 fn load_lsp_config_updates_linter_config() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         r#"export default { vue: {
@@ -317,7 +317,7 @@ fn load_lsp_config_updates_linter_config() {
 
 #[test]
 fn load_lsp_config_invalid_module_keeps_default() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = crate::test_support::tempdir().unwrap();
     std::fs::write(
         dir.path().join("vite.config.mjs"),
         "export default { vue: not valid json };",

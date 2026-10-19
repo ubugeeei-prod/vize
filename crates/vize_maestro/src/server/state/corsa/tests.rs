@@ -45,7 +45,7 @@ fn await_condition(mut ready: impl FnMut() -> bool) {
 }
 
 fn held_backend(timeout_ms: u64) -> (tempfile::TempDir, ServerState) {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::test_support::tempdir().unwrap();
     let backend = root.path().join("held-corsa");
     std::fs::write(
         &backend,
@@ -179,7 +179,7 @@ fn superseded_startup_failure_cannot_poison_the_replacement_workspace() {
     let mut startup = Box::pin(state.get_corsa_bridge());
     assert!(startup.as_mut().now_or_never().is_none());
     await_condition(|| root.path().join("backend.pids").exists());
-    let replacement = tempfile::tempdir().unwrap();
+    let replacement = crate::test_support::tempdir().unwrap();
     state.set_workspace_root(replacement.path().to_owned());
     cleanup.stop();
     assert!(futures::executor::block_on(startup).is_none());

@@ -68,6 +68,8 @@ pub mod source_folding;
 pub mod source_project;
 #[cfg(feature = "experimental-sfc-folding")]
 pub mod source_sfc_folding;
+#[cfg(test)]
+pub(crate) mod test_support;
 pub mod utils;
 pub mod virtual_code;
 

@@ -27,7 +27,7 @@ struct QueuedOpen {
     reason = "the real didOpen handler queues into one owned paused diagnostics consumer"
 )]
 fn queued_open() -> QueuedOpen {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::test_support::tempdir().unwrap();
     file(root.path(), "app/policy.mjs", "export const hover = true;");
     file(
         root.path(),
@@ -258,7 +258,7 @@ fn file(root: &Path, name: &str, source: &str) -> Url {
 }
 
 fn fixture(name: &str, source: &'static str, cross_owner: bool) -> Fixture {
-    let root = tempfile::tempdir().unwrap();
+    let root = crate::test_support::tempdir().unwrap();
     file(
         root.path(),
         "vite.config.mjs",

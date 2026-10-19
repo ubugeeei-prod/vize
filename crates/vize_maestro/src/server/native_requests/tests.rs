@@ -266,7 +266,7 @@ fn authored_revision_precedes_admission_but_valid_policy_reload_remains_usable()
             Request::Workspace,
             Request::LocalCompletion,
         ] {
-            let project = tempfile::tempdir().unwrap();
+            let project = crate::test_support::tempdir().unwrap();
             let root = vize_carton::path::canonicalize_non_verbatim(project.path());
             let config = root.join("vite.config.mjs");
             std::fs::write(&config, "export default {vue:{languageServer:{hover:false,typecheck:false,lint:false,ecosystem:false}}};").unwrap();

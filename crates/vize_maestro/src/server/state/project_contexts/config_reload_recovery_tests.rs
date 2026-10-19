@@ -316,7 +316,7 @@ fn failed_incidental_retry_keeps_shared_tsconfig_included_global_source_events_o
 
 #[test]
 fn queued_or_unavailable_worker_after_workspace_removal_does_not_retain_retry_metadata() {
-    let fixture = tempfile::tempdir().unwrap();
+    let fixture = crate::test_support::tempdir().unwrap();
     let primary = fixture.path().join("primary");
     let secondary = fixture.path().join("secondary");
     std::fs::create_dir_all(&primary).unwrap();
@@ -370,7 +370,7 @@ fn queued_or_unavailable_worker_after_workspace_removal_does_not_retain_retry_me
 fn first_failed_admission_observations_route_external_base_creation_to_primary_and_nested_owners() {
     for primary in [false, true] {
         let (fixture, state, nested, sibling) = tests::fixture();
-        let external = tempfile::tempdir().unwrap();
+        let external = crate::test_support::tempdir().unwrap();
         let base = external.path().join("base.json");
         let (root, uri) = if primary {
             (
