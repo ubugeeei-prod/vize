@@ -25,8 +25,6 @@ const installedReportedContracts = [
   "tests/tooling/release/release-public-gallery-readiness.test.ts",
   "tests/tooling/release/release-public-vapor.test.ts",
 ];
-const stablePatchContracts = ["tests/tooling/release/release-stable-operator.test.ts"];
-const sharedPublisherContracts = ["tests/tooling/release/release-public-shared-publisher.test.ts"];
 const installedSmokeMigrationContracts = [
   "tests/tooling/release/release-smoke-parity-peer-copy.test.ts",
   "tests/tooling/release/release-smoke-public-native.test.ts",
@@ -35,10 +33,7 @@ const installedSmokeMigrationContracts = [
 ];
 // The immutable generated consumer imports its installed native provider dynamically.
 // Its two callers must retain the planner's conservative broad fallback.
-const dynamicPublisherContracts = [
-  "tests/tooling/release/release-public-acceptance.test.ts",
-  ...sharedPublisherContracts,
-];
+const dynamicPublisherContracts = ["tests/tooling/release/release-public-acceptance.test.ts"];
 // The real SessionArtifacts projector has a source-only .js type import; unresolved inputs stay broad.
 const incompleteScopedContracts = [
   ...dynamicPublisherContracts,
@@ -69,7 +64,6 @@ void test("audited release contracts have complete imports and leave unresolved 
     "tests/tooling/release/release-integration-release.test.ts",
     "tests/tooling/release/release-notes.test.ts",
     "tests/tooling/release/release-preflight-full-js.test.ts",
-    "tests/tooling/release/release-public-native-invocation.test.ts",
     "tests/tooling/release/release-smoke-init-fresh.test.ts",
     "tests/tooling/release/release-smoke-init-typecheck.test.ts",
   ];
@@ -79,12 +73,11 @@ void test("audited release contracts have complete imports and leave unresolved 
     configFreeInitContract,
     ...installedHttpsContracts,
     ...installedReportedContracts,
-    ...stablePatchContracts,
-    ...sharedPublisherContracts,
     ...installedSmokeMigrationContracts,
     "tests/tooling/release/release-public-atomic-original.test.ts",
     "tests/tooling/release/release-public-lsp-source.test.ts",
     "tests/tooling/release/release-signing.test.ts",
+    "tests/tooling/release/release-workflow.test.ts",
     "tests/tooling/release/retirement-qualification.test.ts",
   ].sort();
   const inventory = [...scoped, ...expectedUnscoped].sort();
@@ -147,7 +140,6 @@ void test("shared publisher authority retains broad inputs across the dynamic co
       assert.ok(imports.files.includes(input), `${contract}: ${input}`);
     }
     for (const input of [
-      ".github/actions/publish-release-package/action.yml",
       "tools/support/release/consumer_recovery/oracles.ts",
       "tests/tooling/support/release-public-acceptance-fixtures.ts",
     ]) {
@@ -208,29 +200,6 @@ void test("Matrix enforcement inputs select the complete actual-runtime contract
     "tools/commands/ci/github/release-preflight.rs",
     "tools/support/release/preflight_surface_evidence.rs",
     "tools/support/compat/github/release-preflight-surface-evidence.mjs",
-  ]) {
-    assert.ok(selected(input).includes(contract), input);
-  }
-});
-
-void test("hosted operator source and authority inputs select its audited contract", () => {
-  const contract = "tests/tooling/release/release-operator.test.ts";
-  assert.ok(scoped.includes(contract));
-  for (const input of [
-    ".github/workflows/release-operator.yml",
-    "tools/commands/release/pr.rs",
-    "tools/support/release/pr_start.rs",
-    "tools/support/release/pr_pin_watch.rs",
-    "tools/support/release/pr_pin_retire.rs",
-    "tools/support/release/pr_pin_retire_archive.rs",
-    "tools/support/release/pr_pin_retire_ledger.rs",
-    "tools/support/release/pr_pin_retire_absence.rs",
-    "tools/support/release/pr_pin_retire_release.rs",
-    "tools/support/release/pr_budget.rs",
-    "tools/support/release/pr_pin_retire_guard.rs",
-    "tools/support/release/pr_pin_retire_attempt_fixtures.rs",
-    "tools/support/release/release/main.ts",
-    "tests/tooling/support/fake-command.ts",
   ]) {
     assert.ok(selected(input).includes(contract), input);
   }

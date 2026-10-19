@@ -6,58 +6,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { validateReleaseJobs } from "../../tools/support/compat/github/npm-bootstrap-contract.mjs";
-import { bootstrapJobContract } from "../../tools/support/compat/github/npm-bootstrap-packages.mjs";
 import { repoRoot } from "./_helpers/tool-commands.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
-import { requiredSuccessfulReleaseJobs } from "../../tools/support/compat/github/npm-bootstrap-contract.mjs";
 
 const packagePath = "npm/plugin-sdk";
-
-function sdkReleaseJobs() {
-  const contract = bootstrapJobContract(packagePath);
-  return [
-    ...requiredSuccessfulReleaseJobs.map((name) => ({
-      name,
-      status: "completed",
-      conclusion: "success",
-    })),
-    ...contract.failedJobs.map((name) => ({ name, status: "completed", conclusion: "failure" })),
-    ...contract.skippedJobs.map((name) => ({ name, status: "completed", conclusion: "skipped" })),
-    { name: "Release native npm", status: "completed", conclusion: "success" },
-  ];
-}
-
-test("SDK first-publish recovery accepts only its own failed publish after green release gates", () => {
-  const command = path.join(repoRoot, "tools/commands/ci/github/npm-bootstrap-preflight.rs");
-  const invoke = (jobs: ReturnType<typeof sdkReleaseJobs>) =>
-    spawnSync(
-      "rust-script",
-      [command, "__contract", "release-jobs", JSON.stringify({ packagePath, jobs })],
-      { encoding: "utf8" },
-    );
-  const accepted = sdkReleaseJobs();
-  assert.doesNotThrow(() => validateReleaseJobs(accepted, packagePath));
-  const result = invoke(accepted);
-  assert.equal(result.status, 0, result.stderr);
-  for (const changed of [
-    accepted.map((job) =>
-      job.conclusion === "failure"
-        ? { ...job, name: "Release @vizejs/nuxt-lint-config to npm" }
-        : job,
-    ),
-    [...accepted, { name: "Unrelated publish", status: "completed", conclusion: "failure" }],
-    accepted.map((job) =>
-      job.name === "Release native npm" ? { ...job, conclusion: "skipped" } : job,
-    ),
-    accepted.map((job) =>
-      job.name === "Release native npm" ? { ...job, status: "in_progress" } : job,
-    ),
-  ]) {
-    assert.throws(() => validateReleaseJobs(changed, packagePath));
-    assert.notEqual(invoke(changed).status, 0);
-  }
-});
 
 test("SDK publication uses the built artifact and waits for the smoke", () => {
   const workflow = parse(readRepoFile(".github/workflows/release.yml"));

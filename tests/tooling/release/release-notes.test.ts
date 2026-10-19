@@ -191,10 +191,7 @@ test("the workflow publishes only the prepared body for the release tag commit",
     job.indexOf("actions/setup-node@") <
       job.indexOf("node tools/support/release/github_release_notes.ts"),
   );
-  assert.ok(
-    job.indexOf("name: Generate release notes") <
-      job.indexOf("name: Create Release"),
-  );
+  assert.ok(job.indexOf("name: Generate release notes") < job.indexOf("name: Create Release"));
   const preflight = readFileSync(
     new URL("../../../.github/workflows/release-contracts.yml", import.meta.url),
     "utf8",

@@ -34,12 +34,7 @@ test("controlled platform publish benchmark", { skip: !receiptPath }, () => {
         const started = performance.now();
         const result = runReleaseCommand(
           "publish_npm_package_dirs",
-          [
-            fixture.baseDir,
-            "--concurrency",
-            String(concurrency),
-            "--provenance",
-          ],
+          [fixture.baseDir, "--concurrency", String(concurrency), "--provenance"],
           {
             env: { ...fixture.env, MOCK_PUBLISH_DELAY_MS: "1000" },
           },

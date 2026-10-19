@@ -133,10 +133,7 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
     workflowJobBody(release, "build-cli"),
     /matrix:?[\s\S]*needs\.version\.outputs\.cli_matrix/,
   );
-  assert.match(
-    workflowJobBody(release, "build-native"),
-    /needs\.version\.outputs\.native_matrix/,
-  );
+  assert.match(workflowJobBody(release, "build-native"), /needs\.version\.outputs\.native_matrix/);
 });
 
 test("GitHub workflows use Node 24-compatible artifact downloads", () => {

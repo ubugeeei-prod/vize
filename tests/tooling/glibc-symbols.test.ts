@@ -46,10 +46,7 @@ test("glibc verifier accepts binaries at the Debian bookworm ceiling", () => {
 });
 
 test("release workflow gates GNU native binaries against the Debian bookworm glibc ceiling", () => {
-  const job = workflowJobBody(
-    readRepoFile(".github", "workflows", "release.yml"),
-    "build-native",
-  );
+  const job = workflowJobBody(readRepoFile(".github", "workflows", "release.yml"), "build-native");
   assert.match(job, /uses: \.\/\.github\/actions\/build-release-native/);
   assert.match(job, /target: \$\{\{ matrix\.settings\.target \}\}/);
   assert.match(job, /cross-compile: \$\{\{ matrix\.settings\.cross_compile \}\}/);

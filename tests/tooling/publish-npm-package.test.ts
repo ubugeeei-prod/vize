@@ -369,7 +369,7 @@ test("publish_npm_package_dirs publishes only subdirectories that contain packag
       ].join("\n"),
     );
 
-    const result = runReleaseCommand("publish_npm_package_dirs", [baseDir], {
+    const result = runReleaseCommand("publish_npm_package_dirs", [baseDir, "--concurrency", "1"], {
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
         VP_STATE_PATH: statePath,
