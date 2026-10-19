@@ -6,7 +6,8 @@ title: 実験的なバンドラー統合
 
 # 実験的なバンドラー統合
 
-> **⚠️ 実験版:** `@vizejs/unplugin` および `@vizejs/rspack-plugin` はまだ不安定です。
+> [!WARNING]
+> `@vizejs/unplugin` および `@vizejs/rspack-plugin` はまだ不安定です。
 > 通常は、検証範囲が最も広い `@vizejs/vite-plugin` を使ってください。
 
 Vize は、`rollup`、`webpack`、および `esbuild` 用の実験的な [unplugin](https://unplugin.unjs.io/) パッケージと、専用の `Rspack` パッケージを提供します。

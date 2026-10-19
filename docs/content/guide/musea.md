@@ -4,11 +4,19 @@ title: Musea
 
 # Musea
 
-> **⚠️ Work in Progress:** Musea is still evolving. File formats, APIs, and UI behavior may change.
+> [!WARNING]
+> Musea is still evolving. File formats, APIs, and UI behavior may change.
 
-Browse [UI examples](./ui/index.md), then use `*.art.vue` variants to compare your components in Musea's gallery.
+Musea is a component gallery for listing your components and comparing their states. Try the
+[ready-made UI examples](./ui/index.md), then write variants of your own components in `*.art.vue`
+files using plain Vue syntax.
 
-- `vize_musea` parses `*.art.vue`, generates docs and prop palettes, autogenerates variants, and prepares VRT data.
+| Goal                                                   | Feature                                  |
+| ------------------------------------------------------ | ---------------------------------------- |
+| Compare default, loading, disabled, and error states  | Art files with named variants            |
+| Check props and design tokens                          | The gallery's props palette and token view |
+| Catch visual changes and accessibility problems        | `musea-vrt` in CI                        |
+
 - `@vizejs/vite-plugin-musea` is the recommended gallery and dev-server workflow today.
 - `musea-vrt` provides visual regression snapshots, a11y audits, approvals, cleanup, and generated art files.
 

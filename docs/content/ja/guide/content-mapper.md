@@ -24,7 +24,8 @@ Vize の Content Mapper は `vize` npm パッケージに同梱されていま�
 名前の変更、補完、診断の位置は、元の SFC に対応づけられます。別の `.vue.ts` プロジェクトを
 生成する必要はありません。
 
-> **⚠️ プレビュー:** この連携には、Content Mapper と `--runExternalCode` に対応した
+> [!WARNING]
+> この連携には、Content Mapper と `--runExternalCode` に対応した
 > ネイティブ TypeScript ホストが必要です。バージョン番号だけでは対応を判断できません。
 > マッパーの動作確認には、このページで示す検証済みのホストを使ってください。
 > 本番の型チェックでは、引き続きサポート対象の [`vize check`](./cli.md#check) を使えます。

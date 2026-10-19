@@ -4,7 +4,8 @@ title: Philosophy
 
 # Philosophy
 
-> **⚠️ Work in Progress:** Vize is under active development and is not yet ready for production use. The design principles below describe the project's vision and direction.
+> [!WARNING]
+> Vize is under active development and is not yet ready for production use. The design principles below describe the project's vision and direction.
 
 Vize is more than a compiler — it is a design statement about how Vue.js tooling should work.
 

@@ -22,7 +22,8 @@ content-mapper support spawns `vize content-mapper` and checks `.vue` files dire
 go-to-definition, rename, completions, and diagnostics all map back to your authored SFC, with no
 parallel `.vue.ts` project to materialize.
 
-> **⚠️ Preview:** This integration requires a native TypeScript host that exposes Content Mappers
+> [!WARNING]
+> This integration requires a native TypeScript host that exposes Content Mappers
 > and accepts `--runExternalCode`. A native TypeScript version number alone does not establish
 > that support. Use the exact host revision described below for the qualified mapper route;
 > keep [`vize check`](./cli.md#check) as the supported production typecheck path.

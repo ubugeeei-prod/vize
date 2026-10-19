@@ -4,7 +4,8 @@ title: Experimental Bundler Integrations
 
 # Experimental Bundler Integrations
 
-> **⚠️ Experimental:** `@vizejs/unplugin` and `@vizejs/rspack-plugin` are still unstable.
+> [!WARNING]
+> `@vizejs/unplugin` and `@vizejs/rspack-plugin` are still unstable.
 > `@vizejs/vite-plugin` remains the recommended and best-tested bundler integration today.
 
 Vize provides an experimental [unplugin](https://unplugin.unjs.io/) package for `rollup`, `webpack`, and `esbuild`, plus a dedicated `Rspack` package:
