@@ -13,10 +13,13 @@ runs:
         VIZE_L4_SELECTED_SSR_RUNTIME_CAPTURE: ${{ runner.temp }}/native-selected-ssr-runtime.json
         VIZE_L4_SSR_REQUIRE_NATIVE: "1"
         VIZE_JSX_SLOTS_SSR_CAPTURE: ${{ runner.temp }}/jsx-runtime-slots-ssr.json
+        VIZE_JSX_VALUE_CAPTURE: ${{ runner.temp }}/jsx-value-sensitive-modules.json
+        VIZE_JSX_FALSY_RECEIPT: ${{ runner.temp }}/jsx-value-sensitive-runtime.json
         VIZE_JSX_VAPOR_SLOTS_SSR_CAPTURE: ${{ runner.temp }}/jsx-vapor-runtime-slots-ssr.json
       run: |
         cargo test --locked --profile ci -p vize_l4 --test native_ssr --test native_ssr_roles --test native_selected_ssr -- --nocapture
         cargo test --locked --profile ci -p vize_atelier_jsx --test ssr -- --nocapture
+        cargo test --locked --profile ci -p vize_atelier_jsx --test falsy_and actual_values_updates_and_hydration_match_jsx_child_semantics -- --exact --nocapture
         vp node --test tests/tooling/l4-native-ssr-reference.test.ts tests/tooling/l4-selected-ssr-reference.test.ts tests/tooling/native-ssr-static-class-reference.test.ts tests/tooling/jsx-runtime-slots-ssr.test.ts
         NODE_ENV=production vp node --test tests/tooling/native-ssr-static-class-reference.test.ts
     - name: Test fresh whole scriptless SFC SSR modules
@@ -58,6 +61,8 @@ runs:
         name: native-ssr-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
         path: |
           ${{ runner.temp }}/native-ssr-modules.json
+          ${{ runner.temp }}/jsx-value-sensitive-modules.json
+          ${{ runner.temp }}/jsx-value-sensitive-runtime.json
           ${{ runner.temp }}/jsx-runtime-slots-ssr.json
           ${{ runner.temp }}/jsx-runtime-slots-ssr.json.runtime.json
           ${{ runner.temp }}/jsx-vapor-runtime-slots-ssr.json

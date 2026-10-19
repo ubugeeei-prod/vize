@@ -89,6 +89,8 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     "crates/vize_atelier_jsx/src/lower/v_slots.rs",
     "crates/vize_atelier_ssr/src/l4/emit/component.rs",
     "crates/vize_atelier_jsx/tests/ssr.rs",
+    "crates/vize_atelier_jsx/tests/falsy_and.rs",
+    "tests/tooling/support/jsx-falsy-and-runtime.mjs",
     "tests/tooling/jsx-runtime-slots-ssr.test.ts",
     "tests/tooling/l4-native-ssr-reference.test.ts",
     "tests/tooling/native-ssr-static-class-reference.test.ts",
@@ -182,4 +184,30 @@ void test("the native runtime matrix requires SSR for affected sources and broad
     action.includes("native-sfc-ssr-modules.json") &&
       action.includes("native-sfc-ssr-runtime.json"),
   );
+});
+
+void test("NativeSSR retains complete value-sensitive JSX modules and runtime outcomes", () => {
+  const action = parse(fs.readFileSync(".github/actions/test-native-ssr/action.yml", "utf8"));
+  const native = action.runs.steps.find((step) => step.id === "native-ssr");
+  assert.equal(
+    native.env.VIZE_JSX_VALUE_CAPTURE,
+    "${{ runner.temp }}/jsx-value-sensitive-modules.json",
+  );
+  assert.equal(
+    native.env.VIZE_JSX_FALSY_RECEIPT,
+    "${{ runner.temp }}/jsx-value-sensitive-runtime.json",
+  );
+  assert(
+    native.run
+      .split("\n")
+      .includes(
+        "cargo test --locked --profile ci -p vize_atelier_jsx --test falsy_and actual_values_updates_and_hydration_match_jsx_child_semantics -- --exact --nocapture",
+      ),
+  );
+  const upload = action.runs.steps.find((step) =>
+    step.uses?.startsWith("actions/upload-artifact@"),
+  );
+  for (const capture of [native.env.VIZE_JSX_VALUE_CAPTURE, native.env.VIZE_JSX_FALSY_RECEIPT])
+    assert(upload.with.path.split("\n").includes(capture));
+  assert.equal(upload.if, "${{ always() && steps.native-ssr.outcome != 'skipped' }}");
 });
