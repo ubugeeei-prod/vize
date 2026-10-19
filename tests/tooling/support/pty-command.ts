@@ -2,7 +2,7 @@
 // usage: node pty-command.ts PROMPT RESPONSE COMMAND [ARG ...]
 import fs, { type Dir } from "node:fs";
 import path from "node:path";
-import { spawn, type IPty } from "zigpty";
+import { spawn, Terminal, type IPty } from "zigpty";
 
 const gitFlags = new Set([
   "--no-pager",
@@ -259,6 +259,18 @@ async function terminateProcessGroup(child: IPty, exited: Promise<unknown>): Pro
   await within(exited, 1000);
 }
 
+/** Wait until the master has been quiet briefly, so output written just before exit is kept. */
+async function outputSettled(
+  lastOutput: () => number,
+  quietMs = 100,
+  limitMs = 2000,
+): Promise<void> {
+  const deadline = performance.now() + limitMs;
+  while (performance.now() < deadline && performance.now() - lastOutput() < quietMs) {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+}
+
 async function main(argv: readonly string[]): Promise<number> {
   const [prompt, response, file, ...args] = argv;
   if (prompt === undefined || response === undefined || file === undefined) {
@@ -267,15 +279,19 @@ async function main(argv: readonly string[]): Promise<number> {
   }
   const env: Record<string, string> = {};
   for (const [key, value] of Object.entries(process.env)) if (value !== undefined) env[key] = value;
-  const child = spawn(file, args, { encoding: null, env, cwd: process.cwd() });
+  let lastOutput = performance.now();
+  // A terminal-backed reader keeps draining the master after the child exits;
+  // the plain reader is destroyed on exit and drops the last writes on Linux.
+  const terminal = new Terminal({ data: (_terminal, data) => onOutput(Buffer.from(data)) });
+  const child = spawn(file, args, { env, cwd: process.cwd(), terminal });
   const exited = new Promise<{ exitCode: number; signal: number }>((resolve) => {
     child.onExit(resolve);
   });
   const evidence = new LifecycleEvidence(child.pid);
   let output = Buffer.alloc(0);
   let answered = false;
-  child.onData((chunk) => {
-    const bytes = typeof chunk === "string" ? Buffer.from(chunk) : chunk;
+  function onOutput(bytes: Buffer): void {
+    lastOutput = performance.now();
     fs.writeSync(1, bytes);
     if (answered) return;
     output = Buffer.concat([output, bytes]);
@@ -284,7 +300,7 @@ async function main(argv: readonly string[]): Promise<number> {
     child.write(response);
     answered = true;
     evidence.record("answered", true);
-  });
+  }
   const snapshots = setInterval(() => evidence.record("waiting"), 100);
   const finished = await within(exited, 25_000);
   clearInterval(snapshots);
@@ -294,12 +310,15 @@ async function main(argv: readonly string[]): Promise<number> {
     evidence.record("terminated", true);
     evidence.close();
     child.close();
+    terminal.close();
     return 124;
   }
   const { exitCode, signal } = await exited;
+  await outputSettled(() => lastOutput);
   evidence.record("child-exit", true);
   evidence.close();
   child.close();
+  terminal.close();
   if (!answered) return 125;
   return signal ? 128 + signal : exitCode;
 }
