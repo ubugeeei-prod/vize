@@ -37,7 +37,7 @@ await test("only the actual default-branch trusted checkout can write existing s
       const plan = rustCachePolicy(context, { cwd: fixture.cwd });
       assert.equal(plan.sticky, "true");
       assert.equal(plan["sticky-registry-key"], "example/repo-cargo-registry-Linux-X64");
-      assert.equal(plan["sticky-target-key"], "example/repo-test-scripts-target-Linux-X64");
+      assert.equal(plan["sticky-target-key"], "example/repo-test-scripts-target-Linux-X64-1.98.0");
       context.event.repository.default_branch = "trunk";
       assert.equal(rustCachePolicy(context, { cwd: fixture.cwd }).sticky, "false");
       context.ref = "refs/heads/trunk";
@@ -335,4 +335,19 @@ await test("fixture conditions reject unsupported atoms and unbalanced groups", 
         /Unsupported fixture expression|Unbalanced fixture expression/,
       );
     });
+});
+
+await test("each pinned toolchain mounts its own target disk lineage", () => {
+  cacheFixture((fixture) => {
+    const context = fixture.context();
+    const before = rustCachePolicy(context, { cwd: fixture.cwd });
+    writeFileSync(join(fixture.cwd, "Cargo.lock"), "changed lock\n");
+    const locked = rustCachePolicy(context, { cwd: fixture.cwd });
+    assert.equal(locked["sticky-target-key"], before["sticky-target-key"]);
+    assert.equal(locked["sticky-registry-key"], before["sticky-registry-key"]);
+    writeFileSync(join(fixture.cwd, "rust-toolchain.toml"), '[toolchain]\nchannel = "1.99.1"\n');
+    const bumped = rustCachePolicy(context, { cwd: fixture.cwd });
+    assert.equal(bumped["sticky-target-key"], "example/repo-test-scripts-target-Linux-X64-1.99.1");
+    assert.equal(bumped["sticky-registry-key"], before["sticky-registry-key"]);
+  });
 });

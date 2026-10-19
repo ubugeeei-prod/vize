@@ -74,6 +74,16 @@ function fingerprint(cwd: string, fallback = cwd) {
   return hash.digest("hex");
 }
 
+// A target built by another compiler is never reused, and Cargo never deletes
+// it, so each pinned toolchain gets its own disk lineage. Abandoned lineages
+// stop growing instead of pushing one disk past what can still be committed.
+function toolchainChannel(cwd: string, fallback = cwd) {
+  const root = existsSync(resolve(cwd, "rust-toolchain.toml")) ? cwd : fallback;
+  const toml = readFileSync(resolve(root, "rust-toolchain.toml"), "utf8");
+  const channel = /^channel\s*=\s*"([^"]+)"/m.exec(toml)?.[1] ?? "unpinned";
+  return requireToken(channel, "toolchain channel");
+}
+
 export function rustCachePolicy(
   context: RustCacheContext,
   { cwd = sourceRoot, workspace = cwd }: { cwd?: string; workspace?: string } = {},
@@ -140,7 +150,7 @@ export function rustCachePolicy(
     "target-save": String(trusted && !restoreOnlyTargetRoles.has(role)),
     "sticky-registry-key": `${repository}-cargo-registry-${suffix}`,
     "sticky-git-key": `${repository}-cargo-git-${suffix}`,
-    "sticky-target-key": `${repository}-${role}-target-${suffix}`,
+    "sticky-target-key": `${repository}-${role}-target-${suffix}-${toolchainChannel(cwd)}`,
     secondary: String(Boolean(context.secondaryPath)),
   };
   if (context.secondaryPath) {
@@ -164,7 +174,8 @@ export function rustCachePolicy(
     output["secondary-restore"] = secondary;
     output["secondary-path"] = secondaryPath;
     output["secondary-save"] = String(trusted && !restoreOnlyTargetRoles.has(secondaryRole));
-    output["sticky-secondary-key"] = `${repository}-${secondaryRole}-target-${secondarySuffix}`;
+    output["sticky-secondary-key"] =
+      `${repository}-${secondaryRole}-target-${secondarySuffix}-${toolchainChannel(parent, cwd)}`;
   } else if (context.secondaryRole || context.secondarySuffix) {
     throw new Error("Secondary cache metadata requires a target path");
   }
