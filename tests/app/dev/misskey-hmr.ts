@@ -13,7 +13,11 @@ import {
   type MisskeyHmrTarget,
 } from "./misskey-hmr-targets";
 import { installSourceRestores } from "./source-restore";
-import { isVizeClientModuleUrl, logVizeClientModules } from "./vize-client-module";
+import {
+  isVizeClientCompletion,
+  isVizeClientModuleUrl,
+  logVizeClientModules,
+} from "./vize-client-module";
 
 const targets = MISSKEY_HMR_TARGETS;
 
@@ -196,8 +200,9 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
   goto: (pathname: string) => Promise<unknown>;
   mountSelector: string;
   page: Page;
+  viteBaseUrl: string;
 }): Promise<void> {
-  const { appName, cwd, devServer, goto, mountSelector, page } = options;
+  const { appName, cwd, devServer, goto, mountSelector, page, viteBaseUrl } = options;
   const sources = targets.map((target) => {
     const sourcePath = path.join(cwd, target.sourceRelativePath);
     const originalSource = fs.readFileSync(sourcePath, "utf8");
@@ -227,7 +232,18 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
     ),
   );
   await goto("");
-  logVizeClientModules("Misskey", await Promise.all(initialModules));
+  const initialResponses = await Promise.all(initialModules);
+  logVizeClientModules("Misskey", initialResponses);
+  const completionTargets = targets.map((target, index) => {
+    const initialResponse = initialResponses[index];
+    assert.ok(initialResponse, `${target.moduleSuffix} must have an initial response`);
+    assert.equal(
+      new URL(initialResponse.url()).pathname,
+      new URL(target.moduleSuffix.slice(1), viteBaseUrl).pathname,
+      `${target.moduleSuffix} must use the configured Vite base`,
+    );
+    return { ...target, clientModuleUrl: initialResponse.url() };
+  });
   await expect(page.locator(mountSelector)).toBeAttached();
   await expect(page.locator("[data-cy-signup]")).toBeVisible();
 
@@ -236,6 +252,7 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
   const moduleRequests = new Map(targets.map((target) => [target.marker, [] as string[]]));
   const moduleResponses = new Map(targets.map((target) => [target.marker, [] as string[]]));
   const completedUpdates = new Map(targets.map((target) => [target.marker, [] as string[]]));
+  const completedClientUpdates: string[] = [];
   const leakedMarkerLogs: string[] = [];
   page.on("request", (request) => {
     for (const target of targets) {
@@ -261,17 +278,16 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
     }
   });
   page.on("console", (message) => {
-    for (const target of targets) {
+    if (message.text().startsWith("[vite] hot updated: "))
+      completedClientUpdates.push(message.text());
+    for (const target of completionTargets) {
       if (
         message.text().includes("[vite] hot updated:") &&
         message.text().includes(target.marker)
       ) {
         leakedMarkerLogs.push(message.text());
       }
-      if (
-        message.text().includes("[vite] hot updated:") &&
-        message.text().includes(target.moduleSuffix)
-      ) {
+      if (isVizeClientCompletion(message.text(), target.clientModuleUrl, viteBaseUrl)) {
         completedUpdates.get(target.marker)?.push(message.text());
       }
     }
@@ -316,6 +332,19 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
       await assertPageIdentity(page, sentinel, navigations);
     }
   } finally {
+    console.log(
+      `${appName} authored HMR observations:`,
+      JSON.stringify({
+        viteBaseUrl,
+        initialModuleUrls: completionTargets.map(({ clientModuleUrl }) => clientModuleUrl),
+        frames: hmrFrames,
+        requests: Object.fromEntries(moduleRequests),
+        responses: Object.fromEntries(moduleResponses),
+        completedClientUpdates,
+        completedUpdates: Object.fromEntries(completedUpdates),
+        navigations,
+      }),
+    );
     for (const source of sources) {
       if (fs.readFileSync(source.sourcePath, "utf8") !== source.originalSource) {
         fs.writeFileSync(source.sourcePath, source.originalSource);

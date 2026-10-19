@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { MISSKEY_HMR_TARGETS } from "../app/dev/misskey-hmr-targets.ts";
-import { isVizeClientModuleUrl, NUXT_UI_HMR_MODULE_PATH } from "../app/dev/vize-client-module.ts";
+import {
+  isVizeClientCompletion,
+  isVizeClientModuleUrl,
+  NUXT_UI_HMR_MODULE_PATH,
+} from "../app/dev/vize-client-module.ts";
 
 const origin = "http://localhost:5173";
 const suffixes = [
@@ -54,5 +58,90 @@ test("App HMR observers require a fresh timestamp only for hot requests", () => 
     assert.equal(isVizeClientModuleUrl(url, suffix, origin), true);
     assert.equal(isVizeClientModuleUrl(url, suffix, origin, true), false);
     assert.equal(isVizeClientModuleUrl(`${url}&t=123`, suffix, origin, true), true);
+  }
+});
+
+test("Vite completion identity keeps component and imported CSS owners separate", () => {
+  const base = `${origin}/vite/`;
+  const component = "/src/ui/visitor.vue?vue&vize";
+  const style = "/src/ui/visitor.vue.__vize_style_0.css?vue=&type=style&index=0&lang=css";
+  // Authored combined update control, not a recovered failed-run payload.
+  const combined = {
+    type: "update",
+    updates: [
+      { type: "js-update", path: component, acceptedPath: component },
+      { type: "js-update", path: style, acceptedPath: style },
+    ],
+  };
+  const messages = combined.updates.map(
+    ({ acceptedPath }) => `[vite] hot updated: ${acceptedPath}`,
+  );
+  assert.deepEqual(
+    messages.filter((message) =>
+      isVizeClientCompletion(message, `${origin}/vite${component}`, base),
+    ),
+    [`[vite] hot updated: ${component}`],
+  );
+  assert.deepEqual(messages, [`[vite] hot updated: ${component}`, `[vite] hot updated: ${style}`]);
+});
+
+test("two actual component completions still violate the unchanged once contract", () => {
+  const base = `${origin}/vite/`;
+  const initial = `${origin}/vite/src/ui/visitor.vue?vue&vize`;
+  const messages = [
+    "[vite] hot updated: /src/ui/visitor.vue?vue&vize",
+    "[vite] hot updated: /src/ui/visitor.vue?vue&vize via /src/importer.ts",
+  ];
+  const completed = messages.filter((message) => isVizeClientCompletion(message, initial, base));
+  assert.deepEqual(completed, messages);
+  assert.throws(() => assert.equal(completed.length, 1), {
+    code: "ERR_ASSERTION",
+    actual: 2,
+    expected: 1,
+    operator: "strictEqual",
+  });
+});
+
+test("completion matching preserves the full initial URL, query flags and origin", () => {
+  const base = `${origin}/vite/`;
+  const initial = `${origin}/vite/src/ui/visitor.vue?vue&vize`;
+  const candidates = [
+    ["/src/ui/visitor.vue?vize=&vue=", true],
+    ["/src/ui/visitor.vue", false],
+    ["/src/ui/visitor.vue?vue", false],
+    ["/src/ui/visitor.vue?vize", false],
+    ["/src/ui/visitor.vue?vue&vize&vize-ssr", false],
+    ["/src/ui/visitor.vue?vue&vize&type=style", false],
+    ["/src/ui/visitor.vue?vue&vize&t=123", false],
+    ["/other/src/ui/visitor.vue?vue&vize", false],
+    ["/vite/src/ui/visitor.vue?vue&vize", false],
+    ["/src/ui/visitor.vue.__vize_style_0.css?vue&vize", false],
+    ["/src/ui/visitor.vue.ts?vue&vize", false],
+    ["https://foreign.invalid/src/ui/visitor.vue?vue&vize", false],
+    ["/src/ui/visitor.vue?vue&vize#different", false],
+  ] as const;
+  assert.deepEqual(
+    candidates.map(([path]) =>
+      isVizeClientCompletion(`[vite] hot updated: ${path}`, initial, base),
+    ),
+    candidates.map(([, expected]) => expected),
+  );
+  assert.equal(isVizeClientCompletion(`[vite] css hot updated: ${initial}`, initial, base), false);
+  assert.equal(isVizeClientCompletion(`[vite] hot updated: ${initial}`, "not a URL", base), false);
+  const message = "[vite] hot updated: /src/ui/visitor.vue?vue&vize";
+  for (const invalidBase of [origin + "/", origin + "/wrong/", "https://foreign.invalid/vite/"])
+    assert.equal(isVizeClientCompletion(message, initial, invalidBase), false);
+});
+
+test("completion URLs follow the configured Vite base at root, non-root and escaped bases", () => {
+  const path = "src/ui/visitor.vue?vue&vize";
+  const message = `[vite] hot updated: /${path}`;
+  for (const base of ["/", "/vite/", "/preview%20space/"]) {
+    const baseUrl = origin + base;
+    assert.equal(isVizeClientCompletion(message, origin + base + path, baseUrl), true);
+    assert.equal(
+      isVizeClientCompletion(message, origin + base + path, origin + "/different/"),
+      false,
+    );
   }
 });

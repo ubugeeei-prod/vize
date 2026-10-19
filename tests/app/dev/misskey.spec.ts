@@ -176,6 +176,7 @@ test.describe("misskey dev", () => {
       cwd: app.cwd,
       mountSelector: app.mountSelector,
       appName: app.name,
+      viteBaseUrl: app.url,
       goto: (pathname) => gotoMisskey(page, pathname),
     });
   });
