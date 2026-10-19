@@ -63,6 +63,14 @@ vp run fmt:check
 
 ## 不使用 Vite+ 的场景
 
+无需安装即可试用 CLI：
+
+```bash
+vpx vize lint src
+vpx vize check
+vpx vize fmt --check src
+```
+
 [独立 CLI](./guide/cli.md)提供 `vize lint`、`vize fmt` 和 `vize check`。从目标包的根目录运行，并将 TypeScript 项目保留在 `tsconfig.json` 中。原生命令也可以共享 `vite.config.*` 中的 `vue:` 设置；搜索规则和当前限制请参阅 [CLI 配置](./guide/configuration.md#standalone-cli)。
 
 先用 `vpx vize init --dry-run` 预览交互式设置，再运行 `vpx vize init` 选择功能。[项目设置](/guide/init.md)介绍检测和编辑限制。init 使用项目设置和默认值，不会创建专用的 Vize 配置文件。

@@ -63,6 +63,14 @@ Les guides qui ne sont pas encore traduits s'ouvrent en anglais.
 
 ## Utiliser Vize sans Vite+
 
+Essayez la CLI sans rien installer :
+
+```bash
+vpx vize lint src
+vpx vize check
+vpx vize fmt --check src
+```
+
 La [CLI autonome](./guide/cli.md) fournit `vize lint`, `vize fmt` et `vize check`. Lancez-les depuis la racine du paquet ciblé et gardez le projet TypeScript dans `tsconfig.json`. Les commandes natives peuvent partager l'objet `vue` à la racine de `vite.config.*` ; consultez la [configuration CLI](./guide/configuration.md#standalone-cli) pour la recherche et ses limites actuelles.
 
 Prévisualisez l'installation interactive avec `vpx vize init --dry-run`, puis lancez `vpx vize init` pour choisir les fonctions. Le [guide d'installation](/guide/init.md) décrit la détection et les limites d'édition. Init utilise les réglages du projet et les valeurs par défaut, sans créer de configuration Vize dédiée.
