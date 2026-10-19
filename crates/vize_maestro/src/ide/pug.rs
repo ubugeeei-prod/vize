@@ -77,6 +77,42 @@ pub(crate) fn opening_tag_context_at_offset(
     })
 }
 
+/// Start of the Vue expression (`:prop`, `@event`, `#slot`, `v-*`) whose quoted
+/// value in a single-line Pug attribute list (`button(@click="inc")`) holds the cursor.
+pub(crate) fn directive_value_start_at_offset(content: &str, offset: usize) -> Option<usize> {
+    let cursor = offset.min(content.len());
+    let (_, line_end, _, name_end) = tag_name_span_at_offset(content, cursor)?;
+    let open = read_tag_suffix_end(content, name_end, line_end);
+    if content.as_bytes().get(open) != Some(&b'(')
+        || cursor > find_attribute_end(content, open, line_end)?
+    {
+        return None;
+    }
+    let mut quote = None;
+    let mut name_start = open + 1;
+    let mut value_start = None;
+    let mut pos = open + 1;
+    while pos < cursor {
+        let ch = content.get(pos..)?.chars().next()?;
+        if let Some(open_quote) = quote {
+            if ch == open_quote {
+                quote = None;
+                value_start = None;
+            }
+        } else if ch == '"' || ch == '\'' {
+            quote = Some(ch);
+            value_start = Some(pos + 1);
+        } else if ch.is_ascii_whitespace() || ch == ',' {
+            name_start = pos + 1;
+        }
+        pos += ch.len_utf8();
+    }
+    let value_start = value_start?;
+    let name = content.get(name_start..value_start.checked_sub(1)?)?;
+    let name = name.trim().strip_suffix('=')?.trim_end();
+    (name.starts_with([':', '@', '#']) || name.starts_with("v-")).then_some(value_start)
+}
+
 fn read_tag_name_end(content: &str, mut pos: usize, line_end: usize) -> usize {
     while pos < line_end
         && content
@@ -286,7 +322,9 @@ fn is_attribute_name_byte(byte: u8) -> bool {
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
-    use super::{opening_tag_context_at_offset, tag_name_span_at_offset};
+    use super::{
+        directive_value_start_at_offset, opening_tag_context_at_offset, tag_name_span_at_offset,
+    };
 
     #[test]
     fn reads_pug_component_tag_names() {
@@ -338,5 +376,28 @@ mod tests {
 
         assert!(tag_name_span_at_offset(source, offset).is_none());
         assert!(opening_tag_context_at_offset(source, offset).is_none());
+    }
+
+    #[test]
+    fn directive_values_in_attribute_lists_are_expressions() {
+        let source = "<template lang=\"pug\">\n  pane.w-flex(title=\"plain\", :size=\"pane.size\" @click='inc(1)' v-if=\"ok\") text\n</template>\n";
+        for (needle, expected) in [
+            ("pane.size", Some("pane.size")),
+            ("inc(1)", Some("inc(1)")),
+            ("ok\"", Some("ok")),
+            ("plain", None),
+            ("text", None),
+        ] {
+            let offset = source.find(needle).unwrap() + 1;
+            let start = directive_value_start_at_offset(source, offset);
+            assert_eq!(
+                start.map(|start| &source[start..start + expected.map_or(0, str::len)]),
+                expected,
+                "{needle}"
+            );
+        }
+        let html = "<template>\n  pane(:size=\"pane.size\")\n</template>\n";
+        let offset = html.find("pane.size").unwrap() + 1;
+        assert_eq!(directive_value_start_at_offset(html, offset), None);
     }
 }

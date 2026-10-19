@@ -21,6 +21,7 @@ pub(crate) fn is_in_vue_template_expression(content: &str, offset: usize) -> boo
 
     is_in_mustache_expression(content, offset)
         || directive_expression_start(content, offset).is_some()
+        || crate::ide::pug::directive_value_start_at_offset(content, offset).is_some()
 }
 
 /// Check if a cursor offset completes a *member* of the expression to its left,

@@ -17,3 +17,4 @@ fn scalar_location(response: GotoDefinitionResponse) -> Location {
         GotoDefinitionResponse::Link(_) => panic!("expected location result"),
     }
 }
+mod pug_template;
