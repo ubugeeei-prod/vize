@@ -91,24 +91,20 @@ fn eligible_target(el: &ElementNode<'_>) -> bool {
 /// fragment (upstream's `isStaticExpression`), even when no parsed tree is
 /// retained for it.
 fn is_literal_key(text: &str) -> bool {
-    if text.parse::<f64>().is_ok() {
-        return true;
+    // The first byte rejects ordinary keys (`item.id`) before any parsing.
+    match text.as_bytes() {
+        [b'0'..=b'9' | b'.' | b'-' | b'+', ..] => text.parse::<f64>().is_ok(),
+        [quote @ (b'"' | b'\''), body @ .., last] if last == quote => {
+            !body.contains(quote) && !body.contains(&b'\\')
+        }
+        _ => false,
     }
-    let Some(quote) = text.chars().next().filter(|c| matches!(c, '"' | '\'')) else {
-        return false;
-    };
-    text.len() >= 2
-        && text.ends_with(quote)
-        && text
-            .get(1..text.len() - 1)
-            .is_some_and(|body| !body.contains(quote) && !body.contains('\\'))
 }
 
 fn eligible_value(value: &SimpleExpressionNode<'_>) -> bool {
     !(value.is_static
         || value.const_type != vize_atelier_core::ConstantType::NotConstant
         || matches!(value.content.trim(), "true" | "false" | "null")
-        || is_literal_key(value.content.trim())
         || value
             .js_ast
             .and_then(|js| js.as_expression())
@@ -122,7 +118,8 @@ fn eligible_value(value: &SimpleExpressionNode<'_>) -> bool {
                             | Expression::NullLiteral(_)
                             | Expression::BigIntLiteral(_)
                     )
-            }))
+            })
+        || is_literal_key(value.content.trim()))
 }
 
 #[expect(
