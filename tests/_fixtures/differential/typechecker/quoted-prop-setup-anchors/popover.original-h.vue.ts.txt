@@ -841,7 +841,7 @@ export type Exposed = Awaited<ReturnType<typeof __setup>>["__vize_exposed"];
 declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
 type __VizeNativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? typeof __vizeConstructorEmitProps : (component: C) => (props: any) => {};
 type __VizeEmitPropsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeEmitPropsFactory<C> : __VizeNativeEmitPropsFactory<C>;
-type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K>]?: __EmitOptions<T>[K] };
+type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };
 
 type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>["__vize_emit_options"]>;
 

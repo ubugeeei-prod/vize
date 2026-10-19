@@ -25,7 +25,7 @@ defineEmits<{
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("as __VizeHandlerKey<K>"),
-        "{virtual_ts}"
+        virtual_ts.contains("as __VizeHandlerKey<K> | `on${Capitalize<K>}`]"),
+        "Vue keys kebab events as `onScroll-top`; the camelized key alone rejects it:\n{virtual_ts}"
     );
 }

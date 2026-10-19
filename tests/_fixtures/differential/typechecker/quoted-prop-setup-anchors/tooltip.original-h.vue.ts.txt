@@ -505,7 +505,7 @@ type __VizeSlots = Awaited<ReturnType<typeof __setup>>['__vize_template_slots'];
 export type { __VizeSlots as Slots };
 export type Exposed = Awaited<ReturnType<typeof __setup>>["__vize_exposed"];
 
-type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K>]?: __EmitOptions<T>[K] };
+type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };
 
 type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>["__vize_emit_options"]>;
 

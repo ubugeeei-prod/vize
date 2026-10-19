@@ -102,7 +102,9 @@ macro_rules! emit_overload_helpers_text {
 
 pub const VUE_TYPE_HELPERS: &str = vue_type_helpers_text!();
 pub(crate) const EMIT_OVERLOAD_HELPERS: &str = emit_overload_helpers_text!();
-pub(crate) const EMIT_PROPS_HELPER: &str = "type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K>]?: __EmitOptions<T>[K] };\n";
+/// Vue's `EmitsToProps` keys handlers as `on${Capitalize<K>}` (`onScroll-top`);
+/// the camelized key is the spelling templates bind, so both are accepted.
+pub(crate) const EMIT_PROPS_HELPER: &str = "type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };\n";
 
 pub const SHARED_PREAMBLE_FILE_NAME: &str = "__vize_helpers.d.ts";
 

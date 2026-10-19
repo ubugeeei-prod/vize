@@ -225,7 +225,7 @@ type __VizeParametersToFns<T extends any[]> = string extends T[0] ? { [K in stri
 type __EmitOptions<T, S = __EmitShape<T>> = { [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? __VizeParametersToFns<__VizeOverloadParameters<__EmitShape<T>>> : {});
 type __VizeCamelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<__VizeCamelize<Tail>>}` : S;
 type __VizeHandlerKey<K extends string> = `on${Capitalize<__VizeCamelize<K>>}`;
-type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K>]?: __EmitOptions<T>[K] };
+type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as __VizeHandlerKey<K> | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };
 
 type __VizeStaticEmitProps = __EmitProps<Emits>;
 
