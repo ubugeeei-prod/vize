@@ -1,6 +1,6 @@
 {
   "originalSha256": "7224fb9ad0a406f927bb6cb68dd3dfb492ee647faad32a60bcbc6b000cd557c8",
-  "previousSuccessionSha256": "3d7f27e0ffc938958aec7160cfbb25907c209e06491e6d8adceaa5128646fd3c",
+  "previousSuccessionSha256": "6b5c5205c9f94527265a98d5d66b4656edd9488db847899ea27aeae39a752900",
   "witnesses": [
     {
       "case": "N01",
@@ -19,8 +19,8 @@
     },
     {
       "case": "N04",
-      "previous": "一部のルールは、`linter.ruleOptions` で型付きの設定を受け取ります。全項目は\n[ルール オプション](../rules/options.md)を参照してください。診断の重大度は\n引き続き `linter.rules` で指定します。",
-      "after": "一部のルールは、`vue.linter.ruleOptions` で型付きの設定を受け取ります。全項目は\n[ルール オプション](../rules/options.md)を参照してください。診断の重大度は\n引き続き `vue.linter.rules` で指定します。"
+      "previous": "一部のルールは、`linter.ruleOptions` で型付きの設定を受け取ります。全項目は\n[ルールのオプション](../rules/options.md)を参照してください。診断の重大度は\n引き続き `linter.rules` で指定します。",
+      "after": "一部のルールは、`vue.linter.ruleOptions` で型付きの設定を受け取ります。全項目は\n[ルールのオプション](../rules/options.md)を参照してください。診断の重大度は\n引き続き `vue.linter.rules` で指定します。"
     },
     {
       "case": "N05",

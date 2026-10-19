@@ -168,7 +168,7 @@ Vue のルールは `vue.linter.rules`、Oxlint のルールは従来どおり `
 <span id="lint-rule-options"></span>
 
 一部のルールは、`vue.linter.ruleOptions` で型付きの設定を受け取ります。全項目は
-[ルール オプション](../rules/options.md)を参照してください。診断の重大度は
+[ルールのオプション](../rules/options.md)を参照してください。診断の重大度は
 引き続き `vue.linter.rules` で指定します。
 
 `vue.typeChecker.tsconfig` と `vue.typeChecker.corsaPath` は共有スキーマに含まれます。プロジェクトの型情報を使う Corsa の実行経路は、現在の Rust CLI で利用できます。`corsaPath` は `vize check`、型情報を使う `vize lint`、`vize lsp` で共有します。`vue.typeChecker.tsgoPath` は非推奨の別名です。実行時は TypeScript 7 のネイティブプラットフォームパッケージ（`typescript` / `@typescript/typescript-*`）と、Corsa / corsa-bind の API を使います。
