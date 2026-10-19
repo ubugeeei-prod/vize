@@ -284,6 +284,9 @@ catalogs:
     tinyglobby:
       specifier: 0.2.17
       version: 0.2.17
+    zigpty:
+      specifier: 0.2.1
+      version: 0.2.1
   testing:
     '@playwright/test':
       specifier: 1.62.1
@@ -499,6 +502,9 @@ importers:
       yaml:
         specifier: 2.9.0
         version: 2.9.0
+      zigpty:
+        specifier: catalog:repo-tooling
+        version: 0.2.1
     optionalDependencies:
       '@typescript/typescript-darwin-arm64':
         specifier: catalog:corsa-runtime

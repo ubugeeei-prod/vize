@@ -136,6 +136,7 @@ catalogs:
     prettier: "3.8.3"
     semver: "7.8.5"
     tinyglobby: "0.2.17"
+    zigpty: "0.2.1"
 
   # TypeScript toolchain shared across workspace packages.
   typescript:

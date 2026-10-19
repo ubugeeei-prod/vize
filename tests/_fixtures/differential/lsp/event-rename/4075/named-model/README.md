@@ -7,7 +7,7 @@ The 224 authored UTF-16 cursor positions include every character of the selected
 origin sites. One parent site follows an astral glyph on the same line.
 
 The complete input and updated files are authored independently. The source-only
-`author_contracts.py` enumerates literal coordinates and expected packets; it
+`author_contracts.ts` enumerates literal coordinates and expected packets; it
 does not run or inspect the product. Frozen `cases.json.txt` has SHA-256
 `dce60b59a09de699b8ba9aa928463790ff14627c8d5f6d46c8a50e23886c70b8`.
 

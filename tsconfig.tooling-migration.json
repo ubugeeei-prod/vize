@@ -48,6 +48,8 @@
     "tests/fixtures/typechecker/page-route-types/provider-archive.ts",
     "tests/fixtures/typechecker/page-route-types/provider-archive.test.ts",
     "tests/performance/support/current-baseline/sample-rss.ts",
+    "tests/_fixtures/differential/lsp/event-rename/4075/named-model/author_contracts.ts",
+    "tests/editor-conformance/drivers/pty-bridge.ts",
     "tools/support/release/qualify_check/main.ts",
     "tools/support/release/qualify_check/check-state.ts",
     "tools/support/release/qualify_check/overlap.ts",

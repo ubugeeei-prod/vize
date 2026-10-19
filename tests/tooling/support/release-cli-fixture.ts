@@ -55,9 +55,9 @@ export function releaseCliFixture(authenticate = false) {
       const childEnv: NodeJS.ProcessEnv = { ...process.env, ...env };
       delete childEnv.NODE_TEST_CONTEXT;
       return spawnSync(
-        "python3",
+        process.execPath,
         [
-          path.join(repoRoot, "tests/tooling/support/pty-command.py"),
+          path.join(repoRoot, "tests/tooling/support/pty-command.ts"),
           "Proceed with release? [y/N]",
           answer,
           process.execPath,

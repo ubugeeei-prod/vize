@@ -107,9 +107,9 @@ async function run(context: DriverContext): Promise<void> {
   );
   const screen = path.join(context.scratch, "helix-screen.log");
   const editor = spawn(
-    "python3",
+    process.execPath,
     [
-      path.join(suiteRoot, "drivers", "pty-bridge.py"),
+      path.join(suiteRoot, "drivers", "pty-bridge.ts"),
       "--cols",
       "120",
       "--rows",

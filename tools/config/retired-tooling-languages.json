@@ -3,10 +3,7 @@
   "permanent": [],
   "retiring": {
     "py": [
-      "tests/_fixtures/differential/lsp/event-rename/4075/named-model/author_contracts.py",
-      "tests/editor-conformance/drivers/pty-bridge.py",
       "tests/performance/support/warm-type-backed-release-bridge.py",
-      "tests/tooling/support/pty-command.py",
       "tests/tooling/support/public-install/controls.py",
       "tests/tooling/support/public-install/source_controls.py",
       "tools/support/compat/github/artifact_payload.py",

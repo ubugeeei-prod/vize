@@ -157,7 +157,6 @@ jobs:
             echo "HELIX_RUNTIME=${RUNNER_TEMP}/helix/runtime"
           } >> "$GITHUB_ENV"
           "${RUNNER_TEMP}/helix/hx" --version
-          python3 --version
 
       - name: Install the repository Rust toolchain for VS Code packaging
         if: matrix.client == 'vscode'

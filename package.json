@@ -32,7 +32,8 @@
     "vite-plus": "catalog:vite-stack",
     "vscode-languageclient": "9.0.1",
     "vue-computed-inlay-oracle": "npm:vue@3.5.41",
-    "yaml": "2.9.0"
+    "yaml": "2.9.0",
+    "zigpty": "catalog:repo-tooling"
   },
   "optionalDependencies": {
     "@typescript/typescript-darwin-arm64": "catalog:corsa-runtime",

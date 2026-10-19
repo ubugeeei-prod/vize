@@ -90,9 +90,9 @@ test(
   () => {
     const before = gitRepositoryState();
     const result = spawnSync(
-      "python3",
+      process.execPath,
       [
-        "tests/tooling/support/pty-command.py",
+        "tests/tooling/support/pty-command.ts",
         "Proceed with release? [y/N]",
         "n\n",
         localVp,
