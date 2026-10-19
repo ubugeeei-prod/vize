@@ -150,7 +150,8 @@ export function restoreSourceCli(
       sourceRevision: checkout.sourceRevision,
       binaryPath: CLI_MEMBERS[0],
       binarySha256: envelope.members[0].sha256,
-      cliVersion: `vize ${version[1]}`,
+      // Source builds report `<version>-dev` (#9714).
+      cliVersion: `vize ${version[1]}-dev`,
     };
     validateBuildReceipt(
       JSON.parse(fs.readFileSync(path.join(stage, CLI_MEMBERS[1]), "utf8")),
