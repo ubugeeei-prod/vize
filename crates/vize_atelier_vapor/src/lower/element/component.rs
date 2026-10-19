@@ -178,7 +178,7 @@ pub(super) fn transform_component<'a>(
                 }
             }
             PropNode::Attribute(attr) => {
-                if attr.name == "key" || is_runtime_only_attr(attr.name) {
+                if is_runtime_only_attr(attr.name) {
                     has_template_ref |= attr.name == "ref";
                     continue;
                 }

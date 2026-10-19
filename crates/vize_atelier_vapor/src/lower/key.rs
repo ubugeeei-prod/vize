@@ -102,24 +102,26 @@ fn is_literal_key(text: &str) -> bool {
 }
 
 fn eligible_value(value: &SimpleExpressionNode<'_>) -> bool {
-    !(value.is_static
-        || value.const_type != vize_atelier_core::ConstantType::NotConstant
-        || matches!(value.content.trim(), "true" | "false" | "null")
-        || value
-            .js_ast
-            .and_then(|js| js.as_expression())
-            .is_some_and(|js| {
-                js.raw == value.content
-                    && matches!(
-                        js.ast,
-                        Expression::NumericLiteral(_)
-                            | Expression::StringLiteral(_)
-                            | Expression::BooleanLiteral(_)
-                            | Expression::NullLiteral(_)
-                            | Expression::BigIntLiteral(_)
-                    )
-            })
-        || is_literal_key(value.content.trim()))
+    if value.is_static || value.const_type != vize_atelier_core::ConstantType::NotConstant {
+        return false;
+    }
+    let text = value.content.trim();
+    if matches!(text, "true" | "false" | "null") {
+        return false;
+    }
+    // A retained tree for these exact bytes decides literalness; only keys
+    // without one fall back to the byte check.
+    match value.js_ast.and_then(|js| js.as_expression()) {
+        Some(js) if js.raw == value.content => !matches!(
+            js.ast,
+            Expression::NumericLiteral(_)
+                | Expression::StringLiteral(_)
+                | Expression::BooleanLiteral(_)
+                | Expression::NullLiteral(_)
+                | Expression::BigIntLiteral(_)
+        ),
+        _ => !is_literal_key(text),
+    }
 }
 
 #[expect(
