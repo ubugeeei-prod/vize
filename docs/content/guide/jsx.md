@@ -6,7 +6,7 @@ title: JSX & TSX
 
 > [!NOTE]
 > JSX/TSX works in the compiler, linter, type checker, language server, and formatter.
-> Vue JSX type checking is on by default for projects configured in `vite.config.*`; a dedicated config keeps it opt-in. The new default is still in release testing, and projects that also use React JSX must turn it off.
+> Vue JSX type checking is on by default; change it with `vue.typeChecker.jsxTypecheck` in `vite.config.*`. The new default is still in release testing, and projects that also use React JSX must turn it off.
 > HMR for standalone `.jsx`/`.tsx` modules is not wired yet.
 
 Vize compiles `.jsx` and `.tsx` Vue components through the compiler crates used by `.vue` files:
@@ -489,8 +489,8 @@ See [Static Analysis](./static-analysis.md) for the lint and type-check model, a
 
 Be aware of the current edges:
 
-- **The new type-checking default is still in release testing.** A dedicated config keeps it
-  opt-in; mixed Vue/React projects must set `vue.typeChecker.jsxTypecheck: false`.
+- **The new type-checking default is still in release testing.** Mixed Vue/React projects must set
+  `vue.typeChecker.jsxTypecheck: false`.
 - **HMR is not yet wired for `.jsx`/`.tsx` modules.** VDOM compilation preserves authored
   imports and exports. Block-body setup state and JSX parameter defaults retain their scopes.
   Edits still trigger a normal reload because the bundler adapters do not register Vue HMR boundaries.
