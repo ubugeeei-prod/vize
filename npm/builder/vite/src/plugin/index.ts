@@ -324,6 +324,7 @@ export function vize(
     mainPlugin,
     createStylePostTransformPlugin(),
     createPostTransformPlugin(state),
-    createManifestPlugin(),
+    // Nuxt restores source identities in its own client manifest.
+    ...(hostContext === "nuxt" ? [] : [createManifestPlugin()]),
   ];
 }
