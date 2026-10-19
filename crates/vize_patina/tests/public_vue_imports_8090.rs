@@ -102,6 +102,11 @@ fn minimal_import_routes_retain_full_preset_config_and_order_diagnostics() {
         "../../../tests/_fixtures/differential/lint/public-vue-imports-8090/default-route-controls.json"
     ))
     .unwrap();
+    // Later preset changes name the route whose vector a route now shares.
+    let successor: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/public-vue-imports-8090/default-route-controls-successor.json"
+    ))
+    .unwrap();
     let projection: Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/n8n-cli-adoption.json"
     ))
@@ -154,11 +159,12 @@ fn minimal_import_routes_retain_full_preset_config_and_order_diagnostics() {
         ];
         assert_eq!(control["routes"].as_array().unwrap().len(), routes.len());
         for (name, linter) in routes {
+            let authored = successor["routes"][name].as_str().unwrap_or(name);
             let route = control["routes"]
                 .as_array()
                 .unwrap()
                 .iter()
-                .find(|route| route["id"] == name)
+                .find(|route| route["id"] == authored)
                 .unwrap();
             assert_eq!(
                 whole(&query(

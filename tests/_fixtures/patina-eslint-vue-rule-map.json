@@ -1251,6 +1251,7 @@
     "vue/prefer-import-from-vue": {
       "patinaPresets": [
         "ecosystem",
+        "essential",
         "general-recommended",
         "nuxt",
         "opinionated"

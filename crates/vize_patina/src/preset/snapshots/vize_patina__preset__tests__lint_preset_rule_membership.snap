@@ -211,6 +211,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-unsafe-url",
     "html/id-duplication",
     "script/no-async-in-computed",
+    "script/prefer-import-from-vue",
     "script/no-internal-imports",
     "script/no-import-compiler-macros",
     "script/no-reserved-identifiers",

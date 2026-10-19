@@ -2942,7 +2942,7 @@ export default {
 [错误示例](#script-prefer-import-from-vue-bad) · [正确示例](#script-prefer-import-from-vue-good)
 
 默认严重程度: `warning`  
-预设: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+预设: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自动修复: 适用于已支持的诊断  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。

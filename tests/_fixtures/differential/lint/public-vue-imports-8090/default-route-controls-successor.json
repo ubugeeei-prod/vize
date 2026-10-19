@@ -1,0 +1,12 @@
+{
+  "schema": "vize.lint.public-vue-imports-route-successor",
+  "version": 1,
+  "reason": "essential enables script/prefer-import-from-vue, as eslint-plugin-vue's Vue 3 essential config does. The essential route now reports exactly what the recommended route reports.",
+  "predecessor": {
+    "path": "default-route-controls.json",
+    "sha256": "412dc8a553f58e3feda1d9ffc572cc89e5f08929d134c8943ee11a8689db888f"
+  },
+  "routes": {
+    "essential": "recommended"
+  }
+}

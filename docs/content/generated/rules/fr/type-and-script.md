@@ -2941,7 +2941,7 @@ Préférer les imports depuis 'vue' plutôt que depuis les packages internes
 [Mauvais](#script-prefer-import-from-vue-bad) · [Bon](#script-prefer-import-from-vue-good)
 
 Gravité par défaut: `warning`  
-Préréglages: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Préréglages: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correction automatique: Disponible pour les diagnostics pris en charge  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.

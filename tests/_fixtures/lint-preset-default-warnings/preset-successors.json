@@ -306,5 +306,59 @@
         "after": "    RULE_PREFER_IMPORT_FROM_VUE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES,\n    RULE_REQUIRE_TYPED_REF, RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,\n    RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,"
       }
     ]
+  },
+  {
+    "reason": "essential: script/prefer-import-from-vue, as in eslint-plugin-vue's Vue 3 essential config",
+    "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+    "before": {
+      "bytes": 22110,
+      "sha256": "c47c827bf6984d372d2603e633bed579c5919bc1b6bb53d92eff3c975061a659"
+    },
+    "after": {
+      "bytes": 22109,
+      "sha256": "c25eeb913b064992ceedaef75c6c05e46c0528a9eb84d3524983da70f875511c"
+    },
+    "hunks": [
+      {
+        "before": "    BuiltinScriptRuleEntry { rule_name: RULE_PREFER_USE_ID, profile_name: \"patina.script_rule.prefer_use_id\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &PreferUseId },\n    BuiltinScriptRuleEntry { rule_name: RULE_PREFER_IMPORT_FROM_VUE, profile_name: \"patina.script_rule.prefer_import_from_vue\", category: \"Script\", fixable: true, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &PreferImportFromVue },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_WITH_DEFAULTS, profile_name: \"patina.script_rule.no_with_defaults\", category: \"Script\", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoWithDefaults },",
+        "after": "    BuiltinScriptRuleEntry { rule_name: RULE_PREFER_USE_ID, profile_name: \"patina.script_rule.prefer_use_id\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &PreferUseId },\n    BuiltinScriptRuleEntry { rule_name: RULE_PREFER_IMPORT_FROM_VUE, profile_name: \"patina.script_rule.prefer_import_from_vue\", category: \"Script\", fixable: true, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &PreferImportFromVue },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_WITH_DEFAULTS, profile_name: \"patina.script_rule.no_with_defaults\", category: \"Script\", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &NoWithDefaults },"
+      }
+    ]
+  },
+  {
+    "reason": "essential: script/prefer-import-from-vue, as in eslint-plugin-vue's Vue 3 essential config",
+    "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "before": {
+      "bytes": 30993,
+      "sha256": "39e34177acb3af8702875dd51d0f02cc8c653340e08a8562dce3d310f5fbfbb7"
+    },
+    "after": {
+      "bytes": 31030,
+      "sha256": "1bf347379b73a6beb4168dfae6e42887424eabd1643b9173b7c05f8b0879f093"
+    },
+    "hunks": [
+      {
+        "before": "    \"html/id-duplication\",\n    \"script/no-async-in-computed\",\n    \"script/no-internal-imports\",\n    \"script/no-import-compiler-macros\",",
+        "after": "    \"html/id-duplication\",\n    \"script/no-async-in-computed\",\n    \"script/prefer-import-from-vue\",\n    \"script/no-internal-imports\",\n    \"script/no-import-compiler-macros\","
+      }
+    ]
+  },
+  {
+    "reason": "essential: script/prefer-import-from-vue, as in eslint-plugin-vue's Vue 3 essential config",
+    "path": "tests/_fixtures/patina-eslint-vue-rule-map.json",
+    "before": {
+      "bytes": 46851,
+      "sha256": "21df64bde7451415d294ab1beb8f32e0e045a92dd149d55d1da598750e3c354d"
+    },
+    "after": {
+      "bytes": 46872,
+      "sha256": "033a5285518ca9bfd450d0dd322f5a7991560d9d15e038fffaa10b666adcf4c9"
+    },
+    "hunks": [
+      {
+        "before": "    \"vue/prefer-import-from-vue\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"",
+        "after": "    \"vue/prefer-import-from-vue\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\""
+      }
+    ]
   }
 ]

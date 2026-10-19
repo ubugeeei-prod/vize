@@ -9,7 +9,7 @@ Prefer importing from 'vue' instead of internal packages
 [Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
-Presets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: Available for supported findings  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: No rule-specific options. Severity and preset selection are configurable.

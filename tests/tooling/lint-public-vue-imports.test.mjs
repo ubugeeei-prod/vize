@@ -16,6 +16,10 @@ await test("public Vue imports preserve whole CLI packets and safe final file by
   const corpus = JSON.parse(corpusBytes);
   const controlsBytes = fs.readFileSync(path.join(fixture, "default-route-controls.json"));
   const controls = JSON.parse(controlsBytes);
+  // Later preset changes name the route whose vector a route now shares.
+  const successor = JSON.parse(
+    fs.readFileSync(path.join(fixture, "default-route-controls-successor.json"), "utf8"),
+  );
   const projectionBytes = fs.readFileSync(path.join(root, "tests/_fixtures/n8n-cli-adoption.json"));
   const projection = JSON.parse(projectionBytes);
   const primaryBytes = fs.readFileSync(path.join(fixture, "primary-sources.json"));
@@ -92,7 +96,9 @@ await test("public Vue imports preserve whole CLI packets and safe final file by
             : route.id,
           config,
           fix: false,
-          findings: route.diagnostics,
+          findings: control.routes.find(
+            (authored) => authored.id === (successor.routes[route.id] ?? route.id),
+          ).diagnostics,
           finalSource: entry.source,
         });
       }

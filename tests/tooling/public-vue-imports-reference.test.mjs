@@ -328,6 +328,16 @@ await test("complete initial failure and corrected reference packets remain dist
     }
   const controls = json("default-route-controls.json");
   assert.equal(controls.corpusSha256, sha256(read("cases.json")));
+  const successor = json("default-route-controls-successor.json");
+  assert.deepEqual(successor.predecessor, {
+    path: "default-route-controls.json",
+    sha256: sha256(read("default-route-controls.json")),
+  });
+  for (const [route, authored] of Object.entries(successor.routes)) {
+    for (const c of controls.cases) {
+      assert.ok(c.routes.some((r) => r.id === route) && c.routes.some((r) => r.id === authored));
+    }
+  }
   assert.equal(controls.cases.length, 4);
   for (const c of controls.cases) assert.equal(c.routes.length, 7);
   assert.equal(

@@ -2941,7 +2941,7 @@ Preferir importar de 'vue' em vez de pacotes internos
 [Incorreto](#script-prefer-import-from-vue-bad) · [Correto](#script-prefer-import-from-vue-good)
 
 Severidade padrão: `warning`  
-Predefinições: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Predefinições: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correção automática: Disponível para os diagnósticos compatíveis  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
