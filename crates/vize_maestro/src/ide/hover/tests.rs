@@ -176,6 +176,7 @@ fn test_binding_type_to_description() {
 }
 
 mod boundaries;
+mod directives;
 
 fn hover_markdown(hover: tower_lsp::lsp_types::Hover) -> String {
     match hover.contents {

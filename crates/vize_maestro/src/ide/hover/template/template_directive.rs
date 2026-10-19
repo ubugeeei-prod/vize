@@ -56,7 +56,11 @@ impl HoverService {
             );
         }
 
-        if attr_name.starts_with(':') || attr_name.starts_with("v-bind:") || attr_name == "v-bind" {
+        // `.prop` is the `v-bind:prop.prop` shorthand.
+        if attr_name.starts_with([':', '.'])
+            || attr_name.starts_with("v-bind:")
+            || attr_name == "v-bind"
+        {
             return Some(
                 HoverBuilder::new()
                     .title("v-bind")
