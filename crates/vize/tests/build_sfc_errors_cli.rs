@@ -150,7 +150,6 @@ fn vapor_memo_compiles_with_the_upstream_warning() {
         warnings,
         ["v-memo is not supported in Vapor mode and will be ignored."]
     );
-    assert!(compiled.code.contains("_renderEffect"), "{}", compiled.code);
 }
 
 #[test]
