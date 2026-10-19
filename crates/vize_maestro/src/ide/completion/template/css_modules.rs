@@ -5,7 +5,7 @@ use std::collections::BTreeSet;
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, Documentation, MarkupContent, MarkupKind,
 };
-use vize_canon::css_classes::authored_local_css_classes;
+use vize_canon::css_classes::{authored_local_css_classes, authored_local_scss_classes};
 
 use crate::ide::IdeContext;
 
@@ -32,18 +32,20 @@ pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<Compl
     }
     let mut classes = BTreeSet::new();
     for style in descriptor.styles.iter() {
-        if style.module.as_deref() != Some(module)
-            || style.src.is_some()
-            || style
-                .lang
-                .as_deref()
-                .is_some_and(|language| !language.eq_ignore_ascii_case("css"))
-        {
+        if style.module.as_deref() != Some(module) || style.src.is_some() {
             continue;
         }
-        if let Some(names) = authored_local_css_classes(&style.content) {
-            classes.extend(names);
-        }
+        let names = match style.lang.as_deref() {
+            None => authored_local_css_classes(&style.content),
+            Some(language) if language.eq_ignore_ascii_case("css") => {
+                authored_local_css_classes(&style.content)
+            }
+            Some(language) if language.eq_ignore_ascii_case("scss") => {
+                authored_local_scss_classes(&style.content)
+            }
+            Some(_) => None,
+        };
+        classes.extend(names.into_iter().flatten());
     }
     Some(
         classes

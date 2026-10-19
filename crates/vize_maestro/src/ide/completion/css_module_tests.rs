@@ -51,14 +51,19 @@ const STYLES: &str = r#"
 <style module lang="scss">
 .from-scss { color: green }
 </style>
+
+<style module lang="sass">
+.from-sass
+  color: green
+</style>
 "#;
 
 #[test]
-fn style_dot_lists_only_plain_css_module_classes_sorted() {
+fn style_dot_lists_css_and_scss_module_classes_sorted() {
     let source = vize_l0::cstr!("<template>\n  <div :class=\"$style.\" />\n</template>\n{STYLES}");
     assert_eq!(
         complete(&source, "$style."),
-        fields(&["card", "icon", "title", "wide"])
+        fields(&["card", "from-scss", "icon", "title", "wide"])
     );
 }
 
@@ -67,7 +72,7 @@ fn style_dot_in_an_interpolation_lists_module_classes() {
     let source = vize_l0::cstr!("<template>\n  <p>{{{{ $style. }}}}</p>\n</template>\n{STYLES}");
     assert_eq!(
         complete(&source, "$style."),
-        fields(&["card", "icon", "title", "wide"])
+        fields(&["card", "from-scss", "icon", "title", "wide"])
     );
 }
 
@@ -77,7 +82,16 @@ fn a_partially_typed_class_still_lists_module_classes() {
         vize_l0::cstr!("<template>\n  <div :class=\"$style.ti\" />\n</template>\n{STYLES}");
     assert_eq!(
         complete(&source, "$style.ti"),
-        fields(&["card", "icon", "title", "wide"])
+        fields(&["card", "from-scss", "icon", "title", "wide"])
+    );
+}
+
+#[test]
+fn scss_modules_resolve_nested_parent_references() {
+    let source = "<template>\n  <div :class=\"$style.\" />\n</template>\n<style module lang=\"scss\">\n.card {\n  &__title { color: red; }\n  // .commented {}\n  .icon {}\n}\n</style>\n";
+    assert_eq!(
+        complete(source, "$style."),
+        fields(&["card", "card__title", "icon"])
     );
 }
 

@@ -334,13 +334,16 @@ const count = ref(0)
         "<style>.plainOnly {}</style>",
         '<style module="theme">.themeOnly {}</style>',
         '<style module src="./foreign.css"></style>',
-        '<style module lang="scss">.scssOnly {}</style>',
+        '<style module lang="sass">.sassOnly\n  color: red</style>',
       ];
       for (const [index, style] of unsupported.entries()) {
         const text = `${template}\n${style}\n`;
         await changeStyle(text, index + 4);
         await requestItems(text, []);
       }
+      const scss = `${template}\n<style module lang="scss">.card { &__title {} // .lineOnly {}\n}</style>\n`;
+      await changeStyle(scss, unsupported.length + 4);
+      await requestItems(scss, ["card", "card__title"]);
     });
 
     await t.test("inside a native opening tag surfaces HTML attrs and Vue events", async () => {
