@@ -4,6 +4,7 @@ import {
   createLegacyVueCompatibilityPlugin,
   hasHostVueSfcCompilerPlugin,
   isLegacyVueCompatibilityMode,
+  removeHostVueSfcCompilers,
 } from "./vue-version.ts";
 
 {
@@ -84,6 +85,19 @@ import {
       } as never),
     /host Vue SFC compiler plugin/,
   );
+}
+
+{
+  // `@void/vue`'s `voidVue()` bundles @vitejs/plugin-vue. Both compiling the
+  // same SFC made plugin-vue read Vize's style virtual IDs from disk (ENOENT).
+  const hostVue = { name: "vite:vue", transform() {} };
+  const vizeShim = { name: "vite:vue" };
+  const pages = { name: "void-vue:pages", transform() {} };
+  const plugins = [hostVue, vizeShim, pages];
+
+  assert.equal(removeHostVueSfcCompilers([...plugins], { exclude: /legacy/ }), 0);
+  assert.equal(removeHostVueSfcCompilers(plugins, {}), 1);
+  assert.deepEqual(plugins, [vizeShim, pages], "only the compiling plugin-vue is removed");
 }
 
 console.log("✅ vite-plugin-vize index tests passed!");
