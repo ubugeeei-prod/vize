@@ -276,6 +276,8 @@ jobs:
     environment: open-vsx-registry
     env:
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
+      # The publisher runs ovsx through `vp dlx`, whose deps have build scripts.
+      PNPM_CONFIG_STRICT_DEP_BUILDS: "false"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }

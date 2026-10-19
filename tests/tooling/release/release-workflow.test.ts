@@ -178,3 +178,8 @@ test("the stamp rewrites aliased fork pins and keeps upstream versions", () => {
     input.replaceAll("0.430.0", "0.430.1"),
   );
 });
+
+test("Open VSX publication tolerates ovsx dependency build scripts", () => {
+  const job = (workflow.jobs["publish-open-vsx"] as Job & { env?: Record<string, string> }).env;
+  assert.equal(job?.PNPM_CONFIG_STRICT_DEP_BUILDS, "false");
+});
