@@ -16,7 +16,7 @@ use oxc_ast_visit::{
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_syntax::scope::ScopeFlags;
-use vize_croquis::builtins::is_global_allowed;
+use vize_croquis::builtins::is_constant_global;
 use vize_l0::{FxHashSet, String};
 
 fn is_constant_binding(binding_type: BindingType) -> bool {
@@ -113,7 +113,7 @@ impl<'a> Visit<'_> for RuntimeDependencyVisitor<'a> {
         }
 
         let name = ident.name.as_str();
-        if self.is_local(name) || is_global_allowed(name) || is_runtime_helper_ident(name) {
+        if self.is_local(name) || is_constant_global(name) || is_runtime_helper_ident(name) {
             return;
         }
 

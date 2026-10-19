@@ -24,7 +24,7 @@ use vize_l0::String;
 
 use super::options::BindingKind;
 use super::prefix::PrefixScope;
-use super::prefix::globals::is_global_allowed;
+use super::prefix::globals::is_constant_global;
 
 /// Whether `expr` is free of runtime dependencies, as the shipped
 /// codegen's `is_constant_simple_expression` decides it.
@@ -127,7 +127,7 @@ impl Visit<'_> for RuntimeDependencyVisitor<'_> {
             return;
         }
         let name = ident.name.as_str();
-        if self.is_local(name) || is_global_allowed(name) || is_runtime_helper_ident(name) {
+        if self.is_local(name) || is_constant_global(name) || is_runtime_helper_ident(name) {
             return;
         }
         if matches!(name, "_ctx" | "$setup" | "__props" | "$props") {

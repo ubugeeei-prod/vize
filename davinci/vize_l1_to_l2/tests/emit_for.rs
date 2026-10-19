@@ -304,3 +304,16 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         assert_eq!(legacy(template), legacy(direct), "legacy {template}");
     }
 }
+
+/// #9684: a loop alias named like a host global (`document`, `window`) is the
+/// loop item, so the props it feeds stay inline like Vue instead of being
+/// hoisted to module scope, where they would read the real global.
+#[test]
+fn v_for_alias_named_like_a_host_global_is_not_hoisted() {
+    let source = r#"<div><NodeListInline v-for="document of filteredNodes" :key="document.id" :document="document" class="line-item" /><Foo v-for="window in wins" :w="window" /><span v-for="navigator in navs" :title="navigator.name" /></div>"#;
+    let out = assembled(source);
+    assert!(!out.contains("_hoisted"), "{out}");
+    assert!(out.contains("key: document.id"), "{out}");
+    assert!(out.contains("{ w: window }"), "{out}");
+    assert_shipped_parity(source);
+}

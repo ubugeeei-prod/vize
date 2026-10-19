@@ -193,6 +193,31 @@ pub fn is_global_allowed(name: &str) -> bool {
     GLOBAL_ALLOWLIST_SET.contains(name)
 }
 
+/// Host-provided globals (browser/Node module environment). They may be
+/// absent at module evaluation (SSR) and are commonly shadowed by template
+/// names such as `v-for="document of docs"`, so an expression reading one is
+/// never a hoistable constant even though it is left unprefixed.
+#[inline]
+pub fn is_host_global(name: &str) -> bool {
+    matches!(
+        name,
+        "window"
+            | "document"
+            | "navigator"
+            | "globalThis"
+            | "require"
+            | "import"
+            | "exports"
+            | "module"
+    )
+}
+
+/// An unprefixed global whose value is stable for constant folding and hoisting.
+#[inline]
+pub fn is_constant_global(name: &str) -> bool {
+    is_global_allowed(name) && !is_host_global(name)
+}
+
 // =============================================================================
 // Tests
 // =============================================================================

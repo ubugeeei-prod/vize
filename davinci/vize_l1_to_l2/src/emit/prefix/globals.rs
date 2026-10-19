@@ -57,6 +57,27 @@ pub(crate) fn is_global_allowed(name: &str) -> bool {
     )
 }
 
+/// Host-provided globals: unprefixed, but never hoistable constants. Matches
+/// `vize_croquis::builtins::is_host_global`.
+pub(crate) fn is_host_global(name: &str) -> bool {
+    matches!(
+        name,
+        "window"
+            | "document"
+            | "navigator"
+            | "globalThis"
+            | "require"
+            | "import"
+            | "exports"
+            | "module"
+    )
+}
+
+/// An unprefixed global whose value is stable for constant folding and hoisting.
+pub(crate) fn is_constant_global(name: &str) -> bool {
+    is_global_allowed(name) && !is_host_global(name)
+}
+
 pub(super) fn is_generated_filter_helper(name: &str) -> bool {
     name.strip_prefix("_filter_")
         .is_some_and(|suffix| !suffix.is_empty())

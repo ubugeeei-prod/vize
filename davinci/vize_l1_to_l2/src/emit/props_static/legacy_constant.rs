@@ -87,7 +87,7 @@ struct LegacyGlobalConstWalk {
 
 impl<'a> Visit<'a> for LegacyGlobalConstWalk {
     fn visit_identifier_reference(&mut self, ident: &IdentifierReference<'a>) {
-        if !super::super::props_bind::is_global_key_name(ident.name.as_str()) {
+        if !super::super::prefix::is_constant_global(ident.name.as_str()) {
             self.dynamic = true;
         }
     }
