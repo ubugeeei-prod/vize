@@ -11,6 +11,7 @@ use super::{
     is_template_instance_global_name,
     member_root::{is_call_root_occurrence, is_member_root_occurrence},
     strict_candidate::is_strict_template_context_candidate,
+    strict_receiver,
     template_scope::{is_inside_template_scope, is_visible_template_binding_in_scope},
 };
 
@@ -22,6 +23,7 @@ pub(super) fn generate_strict_expression_refs(
     template_offset: u32,
     options: &VirtualTsOptions,
     template_binding_access: &TemplateBindingAccess,
+    keyed_prop_bindings: &FxHashSet<String>,
     type_export_names: &FxHashSet<&str>,
     seen_names: &mut FxHashSet<String>,
     seen_strict_occurrences: &mut FxHashSet<(String, usize)>,
@@ -57,12 +59,13 @@ pub(super) fn generate_strict_expression_refs(
             if !seen_strict_occurrences.insert((String::from(name), src_start)) {
                 continue;
             }
-            let already_declared = member_root || !seen_names.insert(String::from(name));
+            let keyed = keyed_prop_bindings.contains(name);
+            let already_declared = member_root || keyed || !seen_names.insert(String::from(name));
             emit_header(ts, emitted_header);
             emit_strict_template_context_ref(
                 ts,
                 mappings,
-                name,
+                (strict_receiver(keyed), name),
                 src_start,
                 src_start + name.len(),
                 already_declared,

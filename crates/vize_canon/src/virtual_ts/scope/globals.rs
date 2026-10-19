@@ -145,12 +145,13 @@ pub(super) fn generate_undefined_refs(
             if !seen_strict_occurrences.insert((undef.name.clone(), src_start)) {
                 continue;
             }
-            let already_declared = member_root || !seen_names.insert(String::from(name));
+            let keyed = options.keyed_prop_bindings.contains(name);
+            let already_declared = member_root || keyed || !seen_names.insert(String::from(name));
             emit_header(ts, &mut emitted_header);
             emit_strict_template_context_ref(
                 ts,
                 mappings,
-                name,
+                (strict_receiver(keyed), name),
                 src_start,
                 src_end,
                 already_declared,
@@ -215,6 +216,7 @@ pub(super) fn generate_undefined_refs(
             template_offset,
             options.virtual_ts_options,
             template_binding_access,
+            options.keyed_prop_bindings,
             &type_export_names,
             &mut seen_names,
             &mut seen_strict_occurrences,
@@ -230,20 +232,29 @@ pub(super) fn emit_header(ts: &mut String, emitted_header: &mut bool) {
     }
 }
 
+/// A keyed props local is declared from an opaque props type the analyzer
+/// cannot list, so the typed props object, not the strict instance context,
+/// decides whether the template name exists.
+pub(super) fn strict_receiver(keyed_prop: bool) -> &'static str {
+    if keyed_prop {
+        "props"
+    } else {
+        "__vize_strict_template_context"
+    }
+}
+
 pub(super) fn emit_strict_template_context_ref(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    name: &str,
+    (receiver, name): (&str, &str),
     src_start: usize,
     src_end: usize,
     already_declared: bool,
 ) {
     let expr_code = if already_declared {
-        cstr!("  void (__vize_strict_template_context.{name});\n")
+        cstr!("  void ({receiver}.{name});\n")
     } else {
-        cstr!(
-            "  var {name}: any = undefined; void ({name});\n  void (__vize_strict_template_context.{name});\n"
-        )
+        cstr!("  var {name}: any = undefined; void ({name});\n  void ({receiver}.{name});\n")
     };
     let gen_start = ts.len();
     let name_offset = expr_code.rfind(name).unwrap_or(0);

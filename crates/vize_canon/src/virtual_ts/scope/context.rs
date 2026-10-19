@@ -83,6 +83,9 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     /// Names already declared by the conservative Options API setup-spread fallback.
     /// Instance-global generation shares the same template scope and must not redeclare them.
     pub(crate) setup_spread_bindings: &'a [String],
+    /// Template names the props projection declared as keyed locals because
+    /// an opaque props type hides them from the analyzer.
+    pub(crate) keyed_prop_bindings: &'a FxHashSet<String>,
     pub(crate) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(crate) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(crate) component_binding_check: ComponentBindingCheck<'a>,

@@ -203,7 +203,7 @@ impl SetupPropsPlan {
         semantic_links: &mut Vec<crate::virtual_ts::VizeSemanticLink>,
         prop_default_key_links: &mut Vec<crate::virtual_ts::VizeSemanticLink>,
         props_shadow_anchor: Option<&std::ops::Range<usize>>,
-    ) {
+    ) -> vize_carton::FxHashSet<String> {
         let summary = source.summary;
         let mut binding_mappings = PropBindingMappings::new(
             source.mappings,
@@ -219,7 +219,7 @@ impl SetupPropsPlan {
             summary,
             check_props,
             props_shadow_anchor,
-        );
+        )
     }
 
     pub(super) fn component_props_type_ref(&self) -> &'static str {

@@ -176,16 +176,20 @@ fn collect_with_defaults_default_names(
     (names, undefined)
 }
 
+/// Returns the template names declared only as keyed props locals: the
+/// analyzer never bound them, yet each one is now a template local whose
+/// `satisfies keyof` key reports a name the props do not declare.
 pub(crate) fn generate_props_variables(
     ts: &mut String,
     binding_mappings: &mut PropBindingMappings<'_>,
     summary: &Croquis,
     check_props: bool,
     props_shadow_anchor: Option<&std::ops::Range<usize>>,
-) {
+) -> FxHashSet<String> {
+    let mut keyed_names = FxHashSet::default();
     let model = TemplatePropsModel::new(summary);
     if !model.declares_props {
-        return;
+        return keyed_names;
     }
 
     let props = summary.macros.props();
@@ -258,6 +262,7 @@ pub(crate) fn generate_props_variables(
                 } else {
                     emit_unchecked_template_prop_binding(ts, name.as_str());
                 }
+                keyed_names.insert(name);
             }
         }
     } else if has_props {
@@ -287,6 +292,7 @@ pub(crate) fn generate_props_variables(
         emitted_names.insert(model.name.as_str().into());
     }
     ts.push('\n');
+    keyed_names
 }
 
 fn emit_keyed_template_prop_binding(

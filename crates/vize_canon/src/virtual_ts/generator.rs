@@ -658,7 +658,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             );
             let maps = &mut mappings;
             let src = prop_source(maps, summary, script_content, &script_source_offset);
-            profile!("canon.virtual_ts.generate_props_variables", {
+            let keyed_prop_bindings = profile!("canon.virtual_ts.generate_props_variables", {
                 setup_props_plan.generate_props_variables(
                     &mut ts,
                     src,
@@ -700,6 +700,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             check_options,
                             virtual_ts_options: options,
                             setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
+                            keyed_prop_bindings: &keyed_prop_bindings,
                             syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
                             template_ast,
                             component_binding_check: global_components.component_check(),

@@ -40,6 +40,7 @@ fn render(script: &str, template: &str, packets: bool, navigation: bool) -> Outp
                 },
                 virtual_ts_options: &options,
                 setup_spread_bindings: &[],
+                keyed_prop_bindings: &FxHashSet::default(),
                 syntactic_type_only_imported_names: &names,
                 template_ast: Some(&root),
                 component_binding_check: ComponentBindingCheck {

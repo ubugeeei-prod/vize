@@ -157,3 +157,29 @@ fn same_element_v_if_still_cannot_read_v_for_alias() {
         assert_eq!(strict_context_reads(template, Some(script)), vec!["part"]);
     }
 }
+
+/// An imported props alias in an intersection hides its members from the
+/// analyzer, so the props projection declares them as keyed locals. The typed
+/// props object, not the strict instance context, then decides whether a
+/// scoped bare read or a member root exists: real props resolve, while an
+/// undeclared name still reports on the props type.
+#[test]
+fn keyed_imported_props_are_read_through_the_props_object() {
+    let script = "import type { Selection } from './selection';\ndefineProps<{ groups: { id: string }[] } & Selection>();\n";
+    let template = "<section>\n  <template v-for=\"group in groups\" :key=\"group.id\">\n    <Card :selectable=\"selectable\" :picked=\"picked.size\" :missing=\"missingKey\" />\n  </template>\n</section>";
+    let code = strict_virtual_ts(template, Some(script));
+    assert!(
+        code.contains("const selectable = props[(\"selectable\" satisfies keyof"),
+        "the case needs the keyed props projection:\n{code}"
+    );
+    assert_eq!(
+        strict_context_reads(template, Some(script)),
+        Vec::<String>::new()
+    );
+    for name in ["selectable", "picked", "missingKey"] {
+        assert!(
+            code.contains(&format!("  void (props.{name});\n")),
+            "{name} must be read through the props object:\n{code}"
+        );
+    }
+}
