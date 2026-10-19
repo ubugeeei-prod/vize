@@ -1,7 +1,7 @@
 name: Queue release gates
-# Release preflight waits on Check full, Docs build, Miri and Fuzz at the exact
-# release SHA. Queue candidates run the ones their changed paths can affect, so
-# main cannot merge what the release would reject. Pull requests only plan.
+# Every main commit is releasable as-is (release.yml does not re-run checks), so
+# queue candidates run the Vue parity, docs, Miri and fuzz gates their changed
+# paths can affect. Pull requests only plan.
 on: { workflow_call: null }
 permissions: { contents: read }
 env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }

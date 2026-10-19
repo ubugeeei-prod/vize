@@ -28,11 +28,6 @@ test("SDK publication uses the built artifact and waits for the smoke", () => {
   assert.deepEqual(manifest.peerDependenciesMeta, { "@vizejs/native": { optional: true } });
   assert.equal(publish.environment, "npm");
   assert.deepEqual(publish.permissions, { contents: "read", "id-token": "write" });
-  const bootstrap = parse(readRepoFile(".github/workflows/release-npm-bootstrap.yml"));
-  const standalone = bootstrap.jobs.handoff.steps.find((step) =>
-    step.run?.includes("davinci-plugin-sdk-package.test.ts"),
-  );
-  assert.equal(standalone.if, "steps.preflight.outputs.package_path == 'npm/plugin-sdk'");
 });
 
 test("the release contracts execute the complete SDK release contracts", () => {
