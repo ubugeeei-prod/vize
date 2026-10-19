@@ -12,7 +12,7 @@ are here to report findings rather than open a PR, start with the
 ## Setup
 
 Use the Node.js development runtime from `package.json#devEngines.runtime` and the Rust version from
-`rust-toolchain.toml`. The workspace declares a minimum supported Rust version (MSRV) of `1.99.0` in `Cargo.toml`
+`rust-toolchain.toml`. The workspace declares a minimum supported Rust version (MSRV) of `1.99.1` in `Cargo.toml`
 (`[workspace.package].rust-version`); contributions must compile under that version.
 
 The default Nix shell contains the reproducible local toolchain. Blacksmith Testbox support is

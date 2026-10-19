@@ -21,9 +21,9 @@
       _module.args = {
         inherit pkgs;
         # Pinned here rather than read from `rust-toolchain.toml`: the flake
-        # builds against the `rust-version` the workspace declares (1.99.0),
+        # builds against the `rust-version` the workspace declares (1.99.1),
         # which that file may run ahead of when contributors adopt a newer toolchain.
-        rustToolchain = pkgs.rust-bin.stable."1.99.0".default.override {
+        rustToolchain = pkgs.rust-bin.stable."1.99.1".default.override {
           extensions = [
             "clippy"
             "rust-src"

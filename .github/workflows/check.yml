@@ -149,7 +149,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { fetch-depth: 0 }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: 1.99.0 }
+        with: { toolchain: 1.99.1 }
       - uses: ./.github/actions/setup-rust-script
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
@@ -170,7 +170,7 @@ jobs:
       - name: Check public API SemVer compatibility
         env:
           BASELINE_REV: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}
-          RUSTUP_TOOLCHAIN: 1.99.0
+          RUSTUP_TOOLCHAIN: 1.99.1
         run: node tools/commands/ci/github/check-semver.ts "${{ matrix.crate }}"
   security-audit:
     needs: iteration-plan

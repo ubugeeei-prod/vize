@@ -17,7 +17,7 @@ Vize の改善に協力するための、開発環境の準備、検証、プル
 
 Node.js は `package.json#devEngines.runtime`、Rust は `rust-toolchain.toml` に指定されたバージョンを使います。
 サポートする Rust の最小バージョン（MSRV）は、`Cargo.toml` の
-`[workspace.package].rust-version` で `1.99.0` と定めています。変更後もこのバージョンでコンパイルできる必要があります。
+`[workspace.package].rust-version` で `1.99.1` と定めています。変更後もこのバージョンでコンパイルできる必要があります。
 
 通常の Nix シェルには、ローカル開発用のツールが含まれています。
 Blacksmith Testbox を使う場合は、バージョンを固定した Blacksmith CLI、`rsync`、GitHub CLI を含む専用シェルを選びます。
