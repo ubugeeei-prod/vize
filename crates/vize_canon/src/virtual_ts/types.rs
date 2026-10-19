@@ -300,10 +300,6 @@ fn default_plugin_globals() -> Vec<TemplateGlobal> {
     vec![]
 }
 
-#[cfg(test)]
-#[path = "types_tests.rs"]
-mod tests;
-
 /// Output of virtual TypeScript generation.
 #[derive(Debug)]
 pub struct VirtualTsOutput {
@@ -312,4 +308,21 @@ pub struct VirtualTsOutput {
     /// Span links from virtual TS positions to SFC positions, with the
     /// stable semantic links between generated ranges.
     pub mapping: super::mapping::ProjectionMapping,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::emit_lib_reference_directives;
+    use vize_carton::String;
+
+    #[test]
+    fn virtual_ts_lib_references_are_pluggable() {
+        let mut output = String::default();
+        emit_lib_reference_directives(&mut output, &["es2021", "webworker", "bad\" />"]);
+
+        assert_eq!(
+            output.as_str(),
+            "/// <reference lib=\"es2021\" />\n/// <reference lib=\"webworker\" />\n"
+        );
+    }
 }

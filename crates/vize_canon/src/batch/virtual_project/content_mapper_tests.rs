@@ -13,16 +13,10 @@ use crate::batch::{
     generate_vue_content_mapper_transform_with_options,
 };
 
-#[path = "content_mapper_art_variant_tests.rs"]
-mod art_variant;
-#[path = "content_mapper_component_export_tests.rs"]
-mod component_exports;
 #[path = "content_mapper_model_tests.rs"]
 mod models;
 #[path = "content_mapper_navigation_tests.rs"]
 mod navigation;
-#[path = "content_mapper_offset_tests.rs"]
-mod offsets;
 #[path = "content_mapper_protocol_tests.rs"]
 mod protocol;
 #[path = "content_mapper_scoped_event_navigation_tests.rs"]
@@ -332,3 +326,145 @@ export default { data() { return { count: 1 } } }
 
 #[path = "content_mapper_semantic_link_tests.rs"]
 mod semantic_links;
+
+mod art_variant {
+    use std::path::Path;
+
+    use crate::batch::generate_vue_content_mapper_transform;
+
+    #[test]
+    fn art_variant_markup_is_projected_like_a_template() {
+        let normal = r#"<script setup lang="ts">
+import Child from './Child.vue'
+const title = "heading"
+</script>
+<template>
+  <Child :label="1" />
+  <span>{{ title }}</span>
+</template>
+"#;
+        let art = r#"<script setup lang="ts">
+import Child from './Child.vue'
+const title = "heading"
+</script>
+<art>
+  <variant name="Broken">
+    <Child :label="1" />
+    <span>{{ title }}</span>
+  </variant>
+</art>
+"#;
+        let normal_ts = virtual_ts("Normal.vue", normal);
+        let art_ts = virtual_ts("Button.art.vue", art);
+        let needle = label_prop_needle(&normal_ts);
+        assert!(
+            art_ts.contains(needle),
+            "variant markup must be in the checked template projection.\nnormal needle: {needle}\nart:\n{art_ts}"
+        );
+        assert!(
+            art_ts.contains("title"),
+            "script-setup bindings stay in scope for variant markup:\n{art_ts}"
+        );
+    }
+
+    fn virtual_ts(filename: &str, source: &str) -> String {
+        generate_vue_content_mapper_transform(Path::new(filename), source)
+            .expect("transform")
+            .text
+            .to_string()
+    }
+
+    fn label_prop_needle(virtual_ts: &str) -> &str {
+        for needle in ["\"label\": 1", "\"label\": (1)", "label: 1"] {
+            if virtual_ts.contains(needle) {
+                return needle;
+            }
+        }
+        panic!("normal template did not project the label prop:\n{virtual_ts}");
+    }
+}
+
+mod component_exports {
+    #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+    use std::path::Path;
+
+    use crate::batch::generate_vue_content_mapper_transform;
+
+    #[test]
+    fn names_the_default_export_from_the_sfc_filename() {
+        let source = "<script setup lang=\"ts\"></script>";
+        for (file_name, component_name) in [
+            ("Child.vue", "Child"),
+            ("user-card.vue", "UserCard"),
+            ("user_card.vue", "UserCard"),
+            ("component.name.vue", "Component_name"),
+            ("123-widget.vue", "_123Widget"),
+            ("日本語.vue", "VueComponent"),
+        ] {
+            let result = generate_vue_content_mapper_transform(Path::new(file_name), source)
+                .expect("transform");
+            assert!(
+            result.text.contains(&format!(
+                "declare const {component_name}: typeof __vize_component__;\nexport default {component_name};"
+            )),
+            "{}",
+            result.text
+        );
+        }
+    }
+
+    #[test]
+    fn avoids_a_filename_collision_with_an_authored_module_binding() {
+        let source = r#"<script setup lang="ts">
+import Child from "./dependency";
+void Child;
+</script>"#;
+        let result = generate_vue_content_mapper_transform(Path::new("Child.vue"), source)
+            .expect("transform");
+
+        assert!(
+        result.text.contains(
+            "declare const ChildVueComponent: typeof __vize_component__;\nexport default ChildVueComponent;"
+        ),
+        "{}",
+        result.text
+    );
+
+        let setup_local = r#"<script setup lang="ts">
+const Child = 1;
+</script>"#;
+        let result = generate_vue_content_mapper_transform(Path::new("Child.vue"), setup_local)
+            .expect("transform");
+        assert!(
+            result.text.contains("export default Child;"),
+            "{}",
+            result.text
+        );
+    }
+}
+
+mod offsets {
+    use std::path::Path;
+
+    use crate::batch::generate_vue_content_mapper_transform;
+
+    #[test]
+    fn keeps_mapper_offsets_in_utf8_bytes() {
+        let source = r#"<script setup lang="ts">
+const emoji = "😀"
+</script>
+<template>{{ emoji }}</template>
+"#;
+        let result = generate_vue_content_mapper_transform(Path::new("Unicode.vue"), source)
+            .expect("transform");
+        let original = source.rfind("emoji").expect("template identifier");
+        assert!(
+            result
+                .mappings
+                .iter()
+                .any(|mapping| mapping.0[2] == original),
+            "expected a UTF-8 byte mapping at {original}: {:?}",
+            result.mappings
+        );
+    }
+}

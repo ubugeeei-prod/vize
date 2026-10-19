@@ -324,4 +324,5 @@ fn component_ref_kind_for_element_tag(
 }
 
 #[cfg(test)]
+#[path = "template_ref_registry_tests.rs"]
 mod tests;
