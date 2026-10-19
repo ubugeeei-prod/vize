@@ -114,7 +114,7 @@ paths = [
   "crates/vize/tests/plain_script_cli.rs",
   "crates/vize/tests/source_write_atomic_cli.rs",
   "crates/vize_atelier_core/src/runtime_helpers.rs",
-  "crates/vize_atelier_core/src/steps/legacy/tests.rs",
+  "crates/vize_atelier_core/src/steps/legacy_tests.rs",
   "crates/vize_atelier_core/src/steps/expression/tests.rs",
   "crates/vize_atelier_core/src/steps/expression/inline_handler.rs",
   "crates/vize_atelier_core/tests/dynamic_slot_forwarding.rs",
