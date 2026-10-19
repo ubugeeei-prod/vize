@@ -202,7 +202,9 @@ pub(crate) fn is_static_element(el: &ElementNode<'_>) -> bool {
     for prop in el.props.iter() {
         match prop {
             PropNode::Directive(_) => return false,
-            PropNode::Attribute(attr) if is_runtime_only_attr(attr.name) => return false,
+            PropNode::Attribute(attr) if matches!(attr.name, "ref" | "ref_for" | "ref_key") => {
+                return false;
+            }
             _ => {}
         }
     }
@@ -288,8 +290,10 @@ fn has_static_ref_for(el: &ElementNode<'_>) -> bool {
     })
 }
 
+/// Reserved attributes (`@vue/compiler-vapor`'s `isReservedProp`): they
+/// configure the runtime and never render as DOM attributes.
 pub(in crate::lower) fn is_runtime_only_attr(name: &str) -> bool {
-    matches!(name, "ref" | "ref_for" | "ref_key")
+    matches!(name, "key" | "ref" | "ref_for" | "ref_key")
 }
 
 /// Check if an element is a void (self-closing) HTML element

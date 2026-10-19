@@ -80,3 +80,26 @@ fn kebab_case_builtins_resolve_like_their_pascal_names() {
         }
     }
 }
+
+#[test]
+fn reserved_keys_never_render_and_constant_keys_need_no_fragment() {
+    // Upstream's `isReservedProp`: a static `key` is not a DOM attribute; a
+    // key that cannot change (`isStaticExpression`) never remounts its block.
+    for retained in [false, true] {
+        let code = compiled(r#"<div key="a"><span key="b" class="c" /></div>"#, retained);
+        assert!(
+            code.contains(r#"_template("<div><span class=\"c\"></span></div>", true)"#),
+            "{code}"
+        );
+        for source in [r#"<div :key="1" />"#, r#"<div :key="'a'" />"#] {
+            let code = compiled(source, retained);
+            assert!(!code.contains("createKeyedFragment"), "{source}: {code}");
+            assert!(!code.contains("\"key\""), "{source}: {code}");
+        }
+        let code = compiled(r#"<div :key="k" />"#, retained);
+        assert!(
+            code.contains("_createKeyedFragment(() => (_ctx.k)"),
+            "{code}"
+        );
+    }
+}

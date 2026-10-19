@@ -87,10 +87,28 @@ fn eligible_target(el: &ElementNode<'_>) -> bool {
         )
 }
 
+/// A number or one quoted string: a key that never changes needs no keyed
+/// fragment (upstream's `isStaticExpression`), even when no parsed tree is
+/// retained for it.
+fn is_literal_key(text: &str) -> bool {
+    if text.parse::<f64>().is_ok() {
+        return true;
+    }
+    let Some(quote) = text.chars().next().filter(|c| matches!(c, '"' | '\'')) else {
+        return false;
+    };
+    text.len() >= 2
+        && text.ends_with(quote)
+        && text
+            .get(1..text.len() - 1)
+            .is_some_and(|body| !body.contains(quote) && !body.contains('\\'))
+}
+
 fn eligible_value(value: &SimpleExpressionNode<'_>) -> bool {
     !(value.is_static
         || value.const_type != vize_atelier_core::ConstantType::NotConstant
         || matches!(value.content.trim(), "true" | "false" | "null")
+        || is_literal_key(value.content.trim())
         || value
             .js_ast
             .and_then(|js| js.as_expression())
