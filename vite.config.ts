@@ -110,6 +110,8 @@ const config = {
       "**/__ubugeeei__/**",
       ...vscodeExtensionLintIgnorePatterns,
       "tests/_fixtures/**",
+      // Its tsconfig extends `.void/tsconfig.json`, which `void prepare` generates.
+      "tools/support/compat/void/fixtures/**",
     ],
     options: {
       typeAware: true,
