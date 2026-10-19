@@ -3540,7 +3540,7 @@ sandbox 施加限制；需要脚本能力时，allow-scripts 显式允许这一�
 [错误示例](#vue-no-unused-components-bad) · [正确示例](#vue-no-unused-components-good)
 
 默认严重程度: `warning`  
-预设: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+预设: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
 选项: 没有规则专属选项。可以配置严重程度和预设。

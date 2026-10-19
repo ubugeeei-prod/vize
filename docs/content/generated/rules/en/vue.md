@@ -3539,7 +3539,7 @@ Disallow registering components that are not used inside templates
 [Bad](#vue-no-unused-components-bad) · [Good](#vue-no-unused-components-good)
 
 Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.

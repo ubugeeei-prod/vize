@@ -1,0 +1,64 @@
+[
+  {
+    "reason": "essential: vue/no-unused-components and script/valid-next-tick (eslint-plugin-vue Vue 3 essential)",
+    "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+    "before": {
+      "bytes": 22000,
+      "sha256": "d3efb87f27844191918b5a14c069c4d2839fe0b97171c3637702748782689229"
+    },
+    "after": {
+      "bytes": 21999,
+      "sha256": "12795a16977882d28637bba12be03bb5170192ca0b87426bd639f0bb21498cba"
+    },
+    "hunks": [
+      {
+        "before": "    BuiltinScriptRuleEntry { rule_name: RULE_NO_BOOLEAN_DEFAULT, profile_name: \"patina.script_rule.no_boolean_default\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoBooleanDefault },\n    BuiltinScriptRuleEntry { rule_name: RULE_VALID_NEXT_TICK, profile_name: \"patina.script_rule.valid_next_tick\", category: \"Script\", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &ValidNextTick },\n    BuiltinScriptRuleEntry { rule_name: RULE_VALID_DEFINE_OPTIONS, profile_name: \"patina.script_rule.valid_define_options\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &ValidDefineOptions },",
+        "after": "    BuiltinScriptRuleEntry { rule_name: RULE_NO_BOOLEAN_DEFAULT, profile_name: \"patina.script_rule.no_boolean_default\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoBooleanDefault },\n    BuiltinScriptRuleEntry { rule_name: RULE_VALID_NEXT_TICK, profile_name: \"patina.script_rule.valid_next_tick\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &ValidNextTick },\n    BuiltinScriptRuleEntry { rule_name: RULE_VALID_DEFINE_OPTIONS, profile_name: \"patina.script_rule.valid_define_options\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &ValidDefineOptions },"
+      }
+    ]
+  },
+  {
+    "reason": "essential: vue/no-unused-components and script/valid-next-tick (eslint-plugin-vue Vue 3 essential)",
+    "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "before": {
+      "bytes": 30088,
+      "sha256": "ee25f8d46985e51ef826759f40d5b8d3d7177b275cd8ec459b102bcf6e8b10e9"
+    },
+    "after": {
+      "bytes": 30150,
+      "sha256": "09e735cfdaa45a5cbf2986cd1d3af30cb4bb79675f47aee3688edf012c5985fc"
+    },
+    "hunks": [
+      {
+        "before": "    \"vue/no-unused-vars\",\n    \"vue/no-mutating-props\",",
+        "after": "    \"vue/no-unused-vars\",\n    \"vue/no-unused-components\",\n    \"vue/no-mutating-props\","
+      },
+      {
+        "before": "    \"script/return-in-computed-property\",\n    \"script/no-deprecated-dollar-scopedslots-api\",\n    \"script/no-deprecated-data-object-declaration\",\n    \"script/no-deprecated-destroyed-lifecycle\",\n    \"script/no-deprecated-events-api\",\n    \"script/require-prop-type-constructor\",\n    \"script/no-use-computed-property-like-method\",\n    \"script/no-required-prop-with-default\",\n    \"script/no-deprecated-props-default-this\",\n    \"script/valid-define-options\",\n    \"script/no-reserved-props\",\n    \"script/return-in-emits-validator\",\n    \"script/valid-define-props\",\n    \"script/valid-define-emits\",\n    \"script/require-valid-default-prop\",\n    \"script/no-ref-as-operand\",\n    \"script/no-duplicate-attr-inheritance\"\n  ],",
+        "after": "    \"script/return-in-computed-property\",\n    \"script/no-deprecated-dollar-scopedslots-api\",\n    \"script/no-deprecated-data-object-declaration\",\n    \"script/no-deprecated-destroyed-lifecycle\",\n    \"script/no-deprecated-events-api\",\n    \"script/require-prop-type-constructor\",\n    \"script/no-use-computed-property-like-method\",\n    \"script/no-required-prop-with-default\",\n    \"script/no-deprecated-props-default-this\",\n    \"script/valid-next-tick\",\n    \"script/valid-define-options\",\n    \"script/no-reserved-props\",\n    \"script/return-in-emits-validator\",\n    \"script/valid-define-props\",\n    \"script/valid-define-emits\",\n    \"script/require-valid-default-prop\",\n    \"script/no-ref-as-operand\",\n    \"script/no-duplicate-attr-inheritance\"\n  ],"
+      }
+    ]
+  },
+  {
+    "reason": "essential: vue/no-unused-components and script/valid-next-tick (eslint-plugin-vue Vue 3 essential)",
+    "path": "tests/_fixtures/patina-eslint-vue-rule-map.json",
+    "before": {
+      "bytes": 46277,
+      "sha256": "d8b5962599c0653349803dfa6abf7a502697c06fff2e6e87bfc03c2033b9f7ff"
+    },
+    "after": {
+      "bytes": 46319,
+      "sha256": "1a52318537c973b1d517773650b84b1b051d80f61d5f6364adafa348d5b889ef"
+    },
+    "hunks": [
+      {
+        "before": "    \"vue/no-unused-components\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"",
+        "after": "    \"vue/no-unused-components\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\""
+      },
+      {
+        "before": "    \"vue/valid-next-tick\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"",
+        "after": "    \"vue/valid-next-tick\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\""
+      }
+    ]
+  }
+]

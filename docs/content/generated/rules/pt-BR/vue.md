@@ -3541,7 +3541,7 @@ Proibir o registro de componentes não usados nos templates
 [Incorreto](#vue-no-unused-components-bad) · [Correto](#vue-no-unused-components-good)
 
 Severidade padrão: `warning`  
-Predefinições: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
+Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.

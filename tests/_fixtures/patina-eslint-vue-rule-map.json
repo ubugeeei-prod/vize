@@ -1018,6 +1018,7 @@
     "vue/no-unused-components": {
       "patinaPresets": [
         "ecosystem",
+        "essential",
         "general-recommended",
         "nuxt",
         "opinionated"
@@ -1630,6 +1631,7 @@
     "vue/valid-next-tick": {
       "patinaPresets": [
         "ecosystem",
+        "essential",
         "general-recommended",
         "nuxt",
         "opinionated"

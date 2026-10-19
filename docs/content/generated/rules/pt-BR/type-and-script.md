@@ -4364,7 +4364,7 @@ Exigir que o resultado de uma chamada de nextTick() seja aguardado, encadeado ou
 [Incorreto](#script-valid-next-tick-bad) · [Correto](#script-valid-next-tick-good)
 
 Severidade padrão: `warning`  
-Predefinições: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Predefinições: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.

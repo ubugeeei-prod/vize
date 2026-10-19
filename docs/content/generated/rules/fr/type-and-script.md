@@ -4364,7 +4364,7 @@ Exiger que le résultat d’un appel nextTick() soit attendu, chaîné ou associ
 [Mauvais](#script-valid-next-tick-bad) · [Bon](#script-valid-next-tick-good)
 
 Gravité par défaut: `warning`  
-Préréglages: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Préréglages: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.

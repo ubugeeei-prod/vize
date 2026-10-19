@@ -6,9 +6,19 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const read = (name) => fs.readFileSync(path.join(root, name));
 const sha = (body) => createHash("sha256").update(body).digest("hex");
 const directory = "tests/_fixtures/lint-preset-default-warnings";
+// Later preset-default changes are finite successor rows, newest last. Each
+// row pins both byte identities and is undone before the audits below, so they
+// keep judging the tree they reviewed while presets grow.
+const presetSuccessors = JSON.parse(
+  fs.readFileSync(path.join(root, directory, "preset-successors.json"), "utf8"),
+);
+const read = (name) =>
+  presetSuccessors.reduceRight(
+    (body, row) => (row.path === name ? inverse(row, body) : body),
+    fs.readFileSync(path.join(root, name)),
+  );
 const bytes = read(`${directory}/successor.json`);
 assert.equal(sha(bytes), "30d630da3f38e9eb667e2097bda2b65d8e0e3b82bb5f62c61e4aead8a4cdc295");
 const manifest = JSON.parse(bytes);
