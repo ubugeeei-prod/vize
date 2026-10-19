@@ -1,38 +1,48 @@
 ---
-title: Vue RFC Experimental Details
+title: Vue RFC Experiments
 ---
 
-# Vue RFC Experimental Details
+# Vue RFC Experiments
 
-This page expands [Experimentals](./experimentals.md) with opt-in contracts, examples, and tooling boundaries.
-Upstream RFCs remain the design sources; no RFC feature is enabled unless the matching Vize flag is explicitly on.
+Vize can try four Vue RFCs before they land in Vue. Each one is off until you turn on its own flag,
+and turning on one never enables another. The RFC on GitHub is the design source; this page shows
+what Vize implements today and where it stops.
 
-## Opt-in Contract
+> [!WARNING]
+> These features follow open proposals. Syntax and behavior can change with the RFC, and code that
+> uses them only compiles with Vize.
 
-Every RFC flag is independent. Enabling one proposal never enables another proposal.
+## Enable an experiment
 
-| RFC | Vize config flag | Direct compiler field | Applies to | When the flag is off |
+| RFC | What it adds | Flag | Compiler field | Works in |
 | --- | --- | --- | --- | --- |
-| [#823](https://github.com/vuejs/rfcs/pull/823) patterned templates | `experimentals.patternedTemplate` | `experimentalPatternedTemplate` | DOM, SSR, Vapor, SFC, WASM compile APIs | `v-match`, `v-when`, and `v-case` report that the opt-in is required |
-| [#831](https://github.com/vuejs/rfcs/pull/831) in-tag comments | `experimentals.inTagComment` | `experimentalInTagComments` | Parser, DOM, SSR, Vapor, SFC, WASM compile APIs | `//` inside an opening tag is parsed as invalid tag syntax |
-| [#833](https://github.com/vuejs/rfcs/pull/833) self references | `experimentals.selfComponent` | `experimentalSelfComponent` | DOM, SSR, Vapor, SFC, WASM compile APIs | `<Self>` is an ordinary component tag |
-| [#734](https://github.com/vuejs/rfcs/pull/734) strict slot children | `experimentals.strictSlotChildren` | `experimentalStrictSlotChildren` | `vize check`, LSP, and virtual-TS project APIs | no extra child-type assertions are generated |
+| [#823](https://github.com/vuejs/rfcs/pull/823) | `v-match` / `v-when` pattern matching in templates | `patternedTemplate` | `experimentalPatternedTemplate` | DOM, SSR, Vapor, `vize check`, LSP diagnostics |
+| [#831](https://github.com/vuejs/rfcs/pull/831) | `//` comments inside an opening tag | `inTagComment` | `experimentalInTagComments` | Parser and every compile target; no runtime output |
+| [#833](https://github.com/vuejs/rfcs/pull/833) | `<Self>` for the current component | `selfComponent` | `experimentalSelfComponent` | DOM, SSR, Vapor |
+| [#734](https://github.com/vuejs/rfcs/pull/734) | Type checks for the children passed to a slot | `strictSlotChildren` | `experimentalStrictSlotChildren` | `vize check` and the language server only |
 
-Use `experimentals` in shared config and plugin config. Use the direct compiler fields only in an
-integration that has already resolved aliases, precedence, and `{}` switch objects to final booleans.
+Turn flags on under `vue.experimentals` in `vite.config.ts`:
 
 ```ts
-import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  experimentals: {
-    inTagComment: true,
-    patternedTemplate: true,
-    selfComponent: true,
-    strictSlotChildren: true,
+  vue: {
+    experimentals: {
+      inTagComment: true,
+      patternedTemplate: true,
+      selfComponent: true,
+      strictSlotChildren: true,
+    },
   },
 });
 ```
+
+With a flag off, Vize treats the syntax as it would without the RFC: `v-match`, `v-when`, and
+`v-case` report that the opt-in is required, `//` in a tag is invalid syntax, `<Self>` is an
+ordinary component tag, and no extra slot child types are generated.
+
+Integrations that call the compiler directly pass the resolved booleans instead:
 
 ```ts
 compile(templateSource, { experimentalPatternedTemplate: true });
@@ -41,29 +51,17 @@ parseTemplate(templateSource, { experimentalInTagComments: true });
 compileSfc(sfcSource, { filename: "TreeNode.vue", experimentalStrictSlotChildren: true });
 ```
 
-Direct native fields on `compile`, `compileVapor`, `parseTemplate`, and `compileSfc*` do not
-understand aliases such as `pattenedTemplate` or `intagComment`, and they do not accept `{}` switch
-objects. Direct Vite plugin values still win over shared config, including explicit opt-outs.
-
-## Current Scope
-
-| RFC | Vize ships today | Boundary to keep explicit |
-| --- | --- | --- |
-| #823 | parser support, runtime lowering, branch-local bindings, guards, rest/as patterns, diagnostics for flag-off and invalid placement | Canon checks narrowing/coverage; complete editor navigation and compiler grammar convergence remain deferred |
-| #831 | parser support for in-tag `//`, source text in `root.comments`, and compile pipelines that preserve the AST comment | no runtime output, no child comment node, and no browser in-DOM template support |
-| #833 | exact `<Self>` current-component resolution in DOM, SSR, and Vapor compilation | no render-function or JSX macro; a local/imported component named `Self` is shadowed when the flag is enabled |
-| #734 | virtual TypeScript assertions for provided default and named slot children | no template codegen change; open slot contracts and `any` degrade to TypeScript's own permissive checks |
-
-For entry-point and proof checklists, see [Experimentals Reference](./experimentals-reference.md).
+These direct fields on `compile`, `compileVapor`, `parseTemplate`, and `compileSfc*` take final
+booleans only. They do not understand aliases such as `pattenedTemplate` or `intagComment`, or `{}`
+switch objects. A value passed directly to the Vite plugin still wins over shared config, including an
+explicit `false`. [Experimentals](./experimentals.md) covers precedence, and the
+[Experimentals Reference](./experimentals-reference.md) lists every entry point.
 
 ## Patterned Templates
 
-`patternedTemplate` implements the long-form `v-match` / `v-when` syntax from RFC #823. The subject expression is evaluated once, direct branch children are tested in source order, and only the first matching branch renders. Pattern property reads are captured once per attempted arm. Guards and rendered bindings receive the same captured values, including rest-copy identity. Rest copies are deferred until the entire shape matches; failed shapes and later arms do not evaluate their guards. `v-when` cannot share its host with `v-if`, `v-else-if`, `v-else`, `v-for`, or `v-match`. The match lowers to a lexical scope rather than a list, so DOM, SSR and Vapor render no fragment or list marker for it: a single-root match keeps attribute fallthrough, works as the child of `Transition` or `KeepAlive`, and hydrates node for node. An arm's `:key` is evaluated inside the arm's bindings.
-
-Inline HTML SFCs accept outer `<template v-match>` with nested-match semantics in DOM, SSR, and Vapor. Header-only subject edits invalidate HMR; parsed `template.content` remains the original block body.
-External `src`, preprocessors, and descriptors missing original source metadata are rejected. Canon supports opt-in narrowing and coverage checks below; assembled compiler SFC source maps remain script-only.
-
-Croquis accepts `analyzeSfc(source, { experimentalPatternedTemplate: true })` and the Playground Croquis checkbox for root and nested matches. Its strict RFC parser records branch-local declarations, enclosing value lookups, guard references, and syntax diagnostics with authored ranges (including HTML entities). Canon uses the same parser through `typeCheck(source, { experimentalPatternedTemplate: true, includeVirtualTs: true })`, the Playground Canon checkbox, and `vize check` with `experimentals.patternedTemplate`. Native Maestro reads the same workspace opt-in: it reports structural and missing-coverage errors, preserves unreachable-arm warnings, and rechecks unsaved edits. Root-pattern binding hover and definition return the narrowed type and authored declaration. Restart the language server after changing the workspace flag. The VS Code grammar reads a `v-when` value as a pattern rather than an expression: `const` / `as` declarations, the `_` wildcard, rest, alternatives and the guard carry the scope names of the reference grammar, so themes color them without the flag. DOM, Vapor, and SSR now share this pattern parser and use `pattern as name`; the obsolete `as const name` spelling is rejected. Content Mapper opt-in routing and complete LSP rename/completion coverage for guards, nested closures, and or-pattern bindings remain tracked in [#6176](https://github.com/ubugeeei-prod/vize/issues/6176).
+`patternedTemplate` adds the long-form `v-match` / `v-when` syntax from RFC #823. Put `v-match` on a
+container and `v-when` on each direct child. Vize evaluates the subject once, tries the branches in
+order, and renders only the first one that matches.
 
 ```vue
 <script setup lang="ts">
@@ -91,28 +89,36 @@ const result = ref<Result>({ status: "loading" });
 </template>
 ```
 
-Bindings are branch-local. They are visible to the element carrying `v-when`, its attributes and
-directives, its guard expression, and its children. Sibling branches cannot read them.
+How it behaves:
 
-Supported branch patterns:
+- Bindings declared with `const` are branch-local. The branch element, its attributes, its guard,
+  and its children can read them; sibling branches cannot.
+- Each property is read once per attempted branch, and guards see the same values as the rendered
+  branch. A guard only runs after its pattern matched.
+- `v-match` renders no extra fragment or list marker in DOM, SSR, or Vapor. A single-root match keeps
+  attribute fallthrough, works inside `Transition` and `KeepAlive`, and hydrates node for node.
+- A branch's `:key` is evaluated with that branch's bindings.
+- An outer `<template v-match>` works in SFCs too. External `src` templates and preprocessors are
+  rejected.
 
-| Pattern | Example | Runtime check |
+| Pattern | Example | Matches when |
 | --- | --- | --- |
-| Literal | `v-when="'ready'"`, `v-when="404"` | strict equality |
-| Value | `v-when="Status.Ready"` | SameValueZero comparison with an identifier or member expression, including `NaN` |
-| Wildcard | `v-when="_"` | always matches and introduces no binding |
-| Const binding | `v-when="const value"` | always matches and binds `value` in this branch |
-| Object | `v-when="{ kind: 'ok', value: const data }"` | open structural object match; extra properties are allowed |
-| Object shorthand | `v-when="{ kind: 'ok', const data }"` | `{ const data }` means `{ data: const data }` |
-| Object rest | `v-when="{ kind: 'error', ...const payload }"` | binds remaining own enumerable properties; lone `...` is accepted |
-| Array / tuple | `v-when="[const first, ...const rest]"` | requires `Array.isArray`; rest allows additional items |
-| Or | `v-when="'idle' \| 'loading'"` | tries alternatives from left to right |
-| As binding | `v-when="{ kind: 'ok' } as whole"` | binds the matched value as `whole` |
-| Guard | `v-when="{ error: const e } if (e.retriable)"` | runs after the pattern succeeds |
+| Literal | `v-when="'ready'"`, `v-when="404"` | strictly equal |
+| Value | `v-when="Status.Ready"` | equal to an identifier or member expression (SameValueZero, so `NaN` matches) |
+| Wildcard | `v-when="_"` | always; binds nothing |
+| Const binding | `v-when="const value"` | always; binds `value` |
+| Object | `v-when="{ kind: 'ok', value: const data }"` | the listed properties match; extra properties are allowed |
+| Object shorthand | `v-when="{ kind: 'ok', const data }"` | same as `{ data: const data }` |
+| Object rest | `v-when="{ kind: 'error', ...const payload }"` | binds the remaining own enumerable properties |
+| Array / tuple | `v-when="[const first, ...const rest]"` | the value is an array (`Array.isArray`); rest allows more items |
+| Or | `v-when="'idle' \| 'loading'"` | any alternative matches, tried left to right |
+| As binding | `v-when="{ kind: 'ok' } as whole"` | the pattern matches; binds the whole value as `whole` |
+| Guard | `v-when="{ error: const e } if (e.retriable)"` | the pattern matches and the guard is truthy |
 
 ### Patterned Diagnostics
 
-Without the flag, Vize reports the required opt-in instead of passing unknown directives through:
+Vize reports misuse instead of passing unknown directives through. Without the flag, it says the
+opt-in is required:
 
 ```vue
 <template v-match="status">
@@ -130,7 +136,7 @@ Without the flag, Vize reports the required opt-in instead of passing unknown di
 </template>
 ```
 
-An unguarded top-level fallback must be unique and last:
+An unguarded fallback must be unique and last:
 
 ```vue
 <template v-match="status">
@@ -152,23 +158,45 @@ modifiers:
 </template>
 ```
 
-`let` and `var` bindings are rejected. `const` is the only binding declaration Vize accepts today.
-`v-when` also rejects directive arguments and modifiers. `v-case` and `v-case.default` are kept only
-as compatibility aliases for older Vize experiments; new templates should use `v-when` and `_`.
+Also rejected:
+
+- `let` and `var` bindings are rejected; `const` is the only binding declaration.
+- `v-when` on the same element as `v-if`, `v-else-if`, `v-else`, `v-for`, or `v-match`.
+- The old `as const name` spelling; write `pattern as name`.
+- `v-case` and `v-case.default` are kept only as aliases for older Vize experiments; use `v-when`
+  and `_` in new templates.
 
 ### Patterned Type Boundary
 
-Canon narrows arm bindings and the original subject, checks missing coverage, and reports unreachable arms as warnings. The ordinary checked `pattern_matching.d.ts` declarations are shared once per TypeScript program, not copied into each template.
-Guards never prove coverage; optional property presence retains `undefined` and the missing-key space. Finite object/tuple unions, readonly arrays and rest bindings are supported. Open primitives, `any`, `unknown`, and union-valued value patterns remain conservative; use an unguarded `v-when="_"` when coverage cannot be proven.
-Missing coverage is an error anchored to the authored subject and fails `vize check`; warning-only unreachable arms do not fail it.
-WASM alone supplies structural diagnostics and virtual TypeScript; full type diagnostics require the Playground's Monaco TypeScript worker (or the native checker). Other virtual-TS hosts must register `virtualTsHelpers` once as an ambient declaration file.
-The full upstream type-tooling acceptance contract for narrowing and exhaustiveness also includes editor navigation and completion. Editor diagnostics still use the disabled opt-in; editor/Content Mapper option routing, navigation and completion are not enabled by this Canon support.
-Binding inside an or-pattern alternative is also deferred: split cases needing bindings into separate branches. The RFC shorthand candidates `?=`, `|=`, and `~=` are not public Vize branch syntax.
+With the flag on, `vize check` understands patterns:
+
+- Branch bindings and the subject are narrowed to the matched shape.
+- Missing coverage is an error anchored to the authored subject and fails `vize check`; add an
+  unguarded `v-when="_"` when coverage cannot be proven.
+- Unreachable branches are warnings and do not fail the check.
+- Guards never prove coverage. Optional properties keep `undefined` in the remaining cases.
+- Finite object and tuple unions, readonly arrays, and rest bindings are supported. Open primitives,
+  `any`, `unknown`, and union-valued value patterns stay conservative.
+- Binding inside an or-pattern alternative is also deferred; split cases that need bindings into
+  separate branches. The RFC shorthands `?=`, `|=`, and `~=` are not supported.
+
+| Tool | Support today |
+| --- | --- |
+| Compiler (DOM, SSR, Vapor) | Full RFC syntax |
+| `vize check` | Narrowing, coverage errors, unreachable-branch warnings |
+| Language server | Structural and coverage diagnostics, hover and go to definition for root-pattern bindings; restart the server after changing the flag |
+| Playground | Croquis and Canon checkboxes; full type diagnostics use the Monaco TypeScript worker |
+| VS Code grammar | Highlights `v-when` patterns without the flag |
+| Not yet | Content Mapper routing, and full rename and completion for guards, nested closures, and or-pattern bindings ([#6176](https://github.com/ubugeeei-prod/vize/issues/6176)) |
+
+The full upstream type-tooling acceptance contract for narrowing and exhaustiveness also includes
+editor navigation and completion, which are still in progress. Virtual-TS hosts other than Vize must
+register `virtualTsHelpers` once as an ambient declaration file.
 
 ## In-Tag Comments
 
-`inTagComment` implements compile-time-only `//` comments inside an opening tag's attribute list from
-RFC #831. Vize keeps their source text for parser/tooling fidelity and does not emit runtime code.
+`inTagComment` allows `//` comments inside an opening tag's attribute list (RFC #831). They exist only
+at compile time: Vize keeps their text for tools and emits no runtime code.
 
 ```vue
 <template>
@@ -180,15 +208,11 @@ RFC #831. Vize keeps their source text for parser/tooling fidelity and does not 
 </template>
 ```
 
-Allowed placements are after the tag name, between complete attributes/directives, and after the
-last attribute before `>` or `/>`. Put the closing delimiter on the next line after a trailing
-comment: `//` consumes the closing delimiter when `>` or `/>` stays on the same line. The syntax is
-not valid inside a tag name, attribute name, directive name, argument, modifier, or attribute value.
-
-The comment is stored on the template root `comments` list with `CommentKind::InTag`. It is not an
-element prop, not a child `<!-- ... -->` node, and not controlled by the normal template `comments`
-option; `comments: false` still preserves in-tag comments for tooling. `//` inside an attribute value
-remains text:
+- Put them after the tag name, between complete attributes, or after the last attribute.
+- Put `>` or `/>` on the next line after a trailing comment: `//` consumes the closing delimiter when
+  `>` or `/>` stays on the same line.
+- They are not valid inside a tag name, attribute name, directive name or argument, modifier, or
+  attribute value. `//` inside an attribute value stays text:
 
 ```vue
 <template>
@@ -196,12 +220,14 @@ remains text:
 </template>
 ```
 
-This syntax is intended for SFC and tooling pipelines that parse templates themselves. Raw in-DOM
-templates are parsed by the browser first, so do not rely on in-tag comments there.
+For tools, the comment is stored in `root.comments` with `CommentKind::InTag`. It is not an element
+prop or a `<!-- -->` child, and `comments: false` does not remove it.
+Raw in-DOM templates are parsed by the browser first, so do not rely on in-tag comments there.
 
 ## Self Component
 
-`selfComponent` reserves the exact tag `<Self>` for the current component from RFC #833.
+`selfComponent` reserves the exact tag `<Self>` for the current component (RFC #833), which makes
+recursive components easy to write:
 
 ```vue
 <template>
@@ -214,19 +240,15 @@ templates are parsed by the browser first, so do not rely on in-tag comments the
 </template>
 ```
 
-Resolution rules:
-
-| Context | How Vize resolves `<Self>` |
+| Context | What `<Self>` resolves to |
 | --- | --- |
-| SFC build with compiler metadata | uses the current component name from metadata |
-| SFC build without metadata | derives the component name from the file name |
-| Direct template API | uses `componentName` when provided |
-| No name available | keeps normal component resolution semantics |
+| SFC build with compiler metadata | the current component name from metadata |
+| SFC build without metadata | a name derived from the file name |
+| Direct template API | `componentName` when provided |
+| No name available | normal component resolution |
 
-When the flag is enabled, `<Self>` is resolved before local, imported, or global components named
-`Self`. Avoid naming a component import `Self`; rename the import if you need the other component.
-Props, attrs, events, directives, refs, `v-if`, `v-for`, `v-show`, and slots behave like any other
-component usage. Recursive templates still need a termination condition.
+With the flag on, `<Self>` wins over a local/imported component named `Self` (which is shadowed).
+Avoid naming a component import `Self`; rename it instead:
 
 ```vue
 <script setup lang="ts">
@@ -239,10 +261,11 @@ import OtherSelf from "./OtherSelf.vue";
 </template>
 ```
 
-The tag is exact and case-sensitive. `<Self>` is reserved only when the flag is enabled; `<self>` is
-not special. Render functions and JSX are outside this flag.
+`<Self>` is exact and case-sensitive; `<self>` is not special. Props, attrs, events, directives,
+refs, `v-if`, `v-for`, `v-show`, and slots work as on any component, and recursion still needs an end
+condition. Render functions and JSX are not covered.
 
-Low-level template calls must provide a name explicitly when no SFC filename is available:
+Low-level template calls without an SFC file name must pass the name:
 
 ```ts
 import { compile } from "@vizejs/native";
@@ -255,9 +278,10 @@ compile("<Self :node=\"node\" />", {
 
 ## Strict Slot Children
 
-`strictSlotChildren` implements the tooling side of RFC #734. It adds virtual TypeScript assertions
-for the child nodes a parent provides to a component slot. It does not change template codegen or
-runtime rendering.
+`strictSlotChildren` adds type checks for the children a parent passes into a slot (RFC #734). It only
+affects `vize check` and the language server; compiled output does not change.
+
+A component declares what each slot accepts:
 
 ```ts
 import TabItem from "./TabItem.vue";
@@ -270,7 +294,7 @@ declare const Tabs: {
 };
 ```
 
-The same public contract can come from `defineSlots` in an SFC:
+The same contract can come from `defineSlots` in an SFC:
 
 ```ts
 defineSlots<{
@@ -278,6 +302,8 @@ defineSlots<{
   footer(): [HTMLButtonElement];
 }>();
 ```
+
+Children are then checked against it:
 
 ```vue
 <template>
@@ -292,10 +318,9 @@ defineSlots<{
 </template>
 ```
 
-With the flag enabled, Vize represents the provided default slot as
-`__VizeProvidedSlotChildren<[typeof TabItem, HTMLButtonElement]>` and asks TypeScript to compare it
-with the component's `__vizeSlots.default` return type. A mismatched child becomes a TypeScript
-diagnostic:
+Vize represents the default slot above as
+`__VizeProvidedSlotChildren<[typeof TabItem, HTMLButtonElement]>` and lets TypeScript compare it with
+the slot's return type. A wrong child becomes a TypeScript error:
 
 ```vue
 <template>
@@ -305,46 +330,30 @@ diagnostic:
 </template>
 ```
 
-Child mapping:
-
-| Provided child | Virtual TypeScript type |
+| Child | Checked as |
 | --- | --- |
 | Native element such as `<button>` | `HTMLButtonElement` |
-| SVG or MathML element | `SVGElement` or `MathMLElement` fallback when no narrower DOM type is known |
+| SVG or MathML element | `SVGElement` or `MathMLElement` when no narrower type is known |
 | Imported component such as `<TabItem>` | `typeof TabItem` |
 | Text or interpolation | `string` |
-| Named `<template #footer>` | checked against the named slot |
-| Comments and structural-only wrappers | skipped when they do not contribute a child value |
+| Named `<template #footer>` | against the named slot |
+| Comments and wrappers that add no child | skipped |
 
-RFC #734's return shapes are preserved as TypeScript cardinality contracts:
-
-| Slot return contract | Meaning in Vize virtual TS |
+| Slot return type | Meaning |
 | --- | --- |
-| `() => HTMLInputElement` | one input child, accepting the single-child shorthand |
-| `() => HTMLInputElement[]` | zero or more input children |
-| `() => [HTMLInputElement, HTMLInputElement]` | exactly two input children in tuple order |
-| `() => (typeof TabItem)[]` | zero or more `TabItem` component children |
-| `() => [typeof TabItem, HTMLButtonElement]` | one `TabItem` child followed by one button child |
+| `() => HTMLInputElement` | one input child |
+| `() => HTMLInputElement[]` | any number of input children |
+| `() => [HTMLInputElement, HTMLInputElement]` | exactly two input children, in order |
+| `() => (typeof TabItem)[]` | any number of `TabItem` children |
+| `() => [typeof TabItem, HTMLButtonElement]` | one `TabItem`, then one button |
 
-`__VizeProvidedSlotChildren<__T>` accepts a single child as either `Only` or `[Only]` when the slot
-contract has one accepted child type, and preserves tuple/array shapes for multi-child contracts.
-Open slot index signatures and `any` degrade to `any`, so TypeScript will not produce strict child
-diagnostics there. Built-ins, dynamic components, `KeepAlive`, `Teleport`, `Transition`,
-`TransitionGroup`, and `Suspense` do not currently contribute strict component child types.
+Limits:
 
-Advanced component libraries can expose `__vizeResolveSlots` when the slot contract depends on props.
-Components that use `defineSlots` export a `__vizeSlots` marker for parents. Required slot-name
-checks are separate; this flag adds child node type checks on top of the existing virtual-TS slot
-model.
-
-## Verification Checklist
-
-Before documenting a new experimental behavior, pin all of these facts in tests:
-
-- the flag defaults to off
-- shared config and direct plugin options resolve with the documented precedence
-- direct compiler fields are final booleans
-- low-level docs name the real entry points: `compile`, `compileVapor`, `parseTemplate`, and `compileSfc*`
-- bad syntax produces diagnostics instead of silently compiling
-- DOM, SSR, Vapor, SFC, WASM, or `vize check` coverage matches the surface matrix
-- docs include a good example, a flag-off or invalid-placement example, and an implementation boundary
+- `__VizeProvidedSlotChildren<__T>` accepts a single child as either `Only` or `[Only]` when the slot
+  accepts one child type.
+- Open slot index signatures and `any` degrade to `any`, so there is no strict check there.
+- Built-ins, dynamic components, `KeepAlive`, `Teleport`, `Transition`, `TransitionGroup`, and
+  `Suspense` do not contribute strict child types yet.
+- Advanced component libraries can expose `__vizeResolveSlots` when the contract depends on props.
+  Components using `defineSlots` export a `__vizeSlots` marker for parents.
+- Required slot-name checks are separate; this flag only adds child type checks.
