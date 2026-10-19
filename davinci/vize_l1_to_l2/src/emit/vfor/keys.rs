@@ -56,7 +56,7 @@ pub(super) fn item_key_js(
     Ok(None)
 }
 
-pub(super) fn has_dynamic_item_key(bindings: &[BindingOp<'_>]) -> bool {
+pub(in crate::emit) fn has_dynamic_item_key(bindings: &[BindingOp<'_>]) -> bool {
     bindings.iter().any(|binding| {
         matches!(
             binding,

@@ -18,6 +18,7 @@ use static_type::{has_only_native_element_descendants, has_only_static_nested_ch
 use vize_l0::{Allocator, Box, String, Vec, ensure_sufficient_stack};
 
 use crate::lane::TransformContext;
+use crate::steps::v_for::{is_key_bind, template_item_component};
 use crate::{
     AttributeNode, ElementNode, ElementType, JsChildNode, Namespace, PropNode, RuntimeHelper,
     SourceLocation, TemplateChildNode, TemplateTextChildNode, TextNode, VNodeCall, VNodeChildren,
@@ -149,7 +150,18 @@ fn hoist_for_children<'a>(
 ) {
     match children.as_mut_slice() {
         [TemplateChildNode::Element(el)] if el.tag_type == ElementType::Template => {
-            hoist_for_children(ctx, &mut el.children, allocator);
+            // A keyed template's sole component carries the loop key in its
+            // props, so only its descendants can be hoisted.
+            if template_item_component(el).is_some()
+                && el.props.iter().any(is_key_bind)
+                && let [TemplateChildNode::Element(component)] = el.children.as_mut_slice()
+            {
+                ensure_sufficient_stack(|| {
+                    hoist_static_inner(ctx, &mut component.children, false, true);
+                });
+            } else {
+                hoist_for_children(ctx, &mut el.children, allocator);
+            }
         }
         [TemplateChildNode::Element(el)] => {
             // A single v-for child is the loop item's block root, so the VNode

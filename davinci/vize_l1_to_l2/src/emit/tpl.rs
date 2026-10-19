@@ -154,19 +154,18 @@ pub(super) fn emit_for_template_item(
         cx.suppress_template_for_child_key = previous;
         return result;
     }
-    // A sole component is the loop item's vnode, like a sole element.
-    // Keep the existing fragment carrier for authored wrapper attributes.
+    // A sole key-less component is the loop item's vnode, as in Vue's
+    // transformFor. Wrapper attributes or an authored child key keep the
+    // fragment carrier. Nothing is suppressed: the component has no key of
+    // its own, and its directives and slot contents emit normally.
     if let [Op::Component(component)] = ops
         && attributes.is_empty()
         && class.is_none()
+        && !super::vfor::has_dynamic_item_key(&component.bindings)
     {
         let id = cx.walk.mint();
         cx.walk.skip(component.bindings.len());
-        let previous = cx.suppress_template_for_child_key;
-        cx.suppress_template_for_child_key = true;
-        let result = super::component::emit_for_item(cx, component, id, key);
-        cx.suppress_template_for_child_key = previous;
-        return result;
+        return super::component::emit_for_item(cx, component, id, key);
     }
     if matches!(ops, [Op::Component(_)]) {
         let previous = cx.template_for_item_single_root;

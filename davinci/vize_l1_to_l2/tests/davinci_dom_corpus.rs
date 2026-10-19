@@ -99,6 +99,29 @@ const BATTERY: &[(&str, &str)] = &[
         "non_null_event_call_keeps_inline_handler_wrapper",
         r#"<template><div @contextmenu.prevent="options!.tippy?.show()" /></template>"#,
     ),
+    // A sole key-less component under `<template v-for>` is the item vnode on
+    // both lanes (#9455): keyed props stay inline, an authored child key keeps
+    // the fragment, and slot contents keep their own keys and directives.
+    (
+        "template_for_single_component_item",
+        r#"<template><div><template v-for="item in list" :key="item.id"><Foo :item="item" /></template><template v-for="item in list"><Bar>{{ item }}</Bar></template></div></template>"#,
+    ),
+    (
+        "template_for_child_keyed_component_keeps_fragment",
+        r#"<template><p><template v-for="tag in tags"><b-tag v-bind:key="tag" type="is-info">{{ tag }}</b-tag></template></p></template>"#,
+    ),
+    (
+        "template_for_keyed_component_static_props_stay_inline",
+        r#"<template><div><template v-for="val of value" :key="val.label"><Card class="flex-1"><template #content><span>x</span></template></Card></template></div></template>"#,
+    ),
+    (
+        "template_for_component_slot_keeps_nested_key",
+        r#"<template><span><template v-for="(item, index) of q" :key="item.Id"><JHover v-slot="{ h }"><VListItem><template #prepend><VListItemAction :key="index" class="a" start>x</VListItemAction></template></VListItem></JHover></template></span></template>"#,
+    ),
+    (
+        "template_for_component_slot_keeps_directives",
+        r#"<template><el-tabs><template v-for="(item, index) of list" :key="item.key"><el-tab-pane :lazy="true"><template #label><span v-tippy="{ a: 1 }">{{ item.title }}</span></template></el-tab-pane></template></el-tabs></template>"#,
+    ),
 ];
 
 #[test]

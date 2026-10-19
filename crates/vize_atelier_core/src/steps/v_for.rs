@@ -6,9 +6,43 @@ use vize_l0::{Allocator, Box};
 
 use crate::lane::TransformContext;
 use crate::{
-    ElementNode, ExpressionNode, ForParseResult, PropNode, RuntimeHelper, SimpleExpressionNode,
-    SourceLocation,
+    ElementNode, ElementType, ExpressionNode, ForParseResult, PropNode, RuntimeHelper,
+    SimpleExpressionNode, SourceLocation, TemplateChildNode,
 };
+
+/// The component a bare `<template v-for>` renders as its loop item.
+///
+/// Like Vue's transformFor, a template carrying only `v-for` and `:key` around
+/// one key-less component renders that component as the item vnode, keyed by
+/// the template; there is no Fragment, so its props cannot be hoisted.
+pub(crate) fn template_item_component<'a, 'b>(
+    template: &'b ElementNode<'a>,
+) -> Option<&'b ElementNode<'a>> {
+    if template.tag_type != ElementType::Template
+        || !template.props.iter().all(|prop| {
+            is_key_bind(prop) || matches!(prop, PropNode::Directive(dir) if dir.name == "for")
+        })
+    {
+        return None;
+    }
+    match template.children.as_slice() {
+        [TemplateChildNode::Element(child)]
+            if child.tag_type == ElementType::Component && !child.props.iter().any(is_key_bind) =>
+        {
+            Some(child)
+        }
+        _ => None,
+    }
+}
+
+pub(crate) fn is_key_bind(prop: &PropNode<'_>) -> bool {
+    matches!(
+        prop,
+        PropNode::Directive(dir)
+            if dir.name == "bind"
+                && matches!(&dir.arg, Some(ExpressionNode::Simple(arg)) if arg.content == "key")
+    )
+}
 
 /// Check if an element has a v-for directive
 pub fn has_v_for(el: &ElementNode<'_>) -> bool {

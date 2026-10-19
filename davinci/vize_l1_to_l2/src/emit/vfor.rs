@@ -14,7 +14,8 @@ use super::buf::Buf;
 use super::helper::Helper;
 use super::js::{RawJs, expr_source};
 use super::prefix::Site;
-use keys::{has_dynamic_item_key, item_key_js, memo_item_key_js};
+pub(super) use keys::has_dynamic_item_key;
+use keys::{item_key_js, memo_item_key_js};
 
 pub(super) fn emit_for(
     cx: &mut EmitCx<'_>,

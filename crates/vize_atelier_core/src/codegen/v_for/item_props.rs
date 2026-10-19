@@ -1,11 +1,8 @@
 //! Property helpers shared by the v-for item generation paths.
 
-use crate::{ElementNode, ElementType, PropNode, TemplateChildNode, steps::v_memo::has_v_memo};
+use crate::{ElementNode, ElementType, PropNode, TemplateChildNode};
 
-use super::{
-    generate::generate_single_prop,
-    helpers::{has_other_props, should_skip_prop},
-};
+use super::{generate::generate_single_prop, helpers::should_skip_prop};
 use crate::codegen::{
     context::CodegenContext,
     element::helpers::is_is_prop,
@@ -87,16 +84,9 @@ pub(super) fn is_for_item_segment_skip_prop(prop: &PropNode<'_>, skip_is_prop: b
     )
 }
 
-/// Like a sole element, Vue makes a sole component the keyed item of an
-/// otherwise bare `<template v-for :key>`; authored wrapper props keep the fragment.
+/// A bare `<template v-for>` around one key-less component renders it directly.
 pub(super) fn unwrap_template_sole_component<'a>(el: &'a ElementNode<'a>) -> &'a ElementNode<'a> {
-    if el.tag_type != ElementType::Template || has_other_props(el) || has_v_memo(el) {
-        return el;
-    }
-    match el.children.as_slice() {
-        [TemplateChildNode::Element(child)] if child.tag_type == ElementType::Component => child,
-        _ => el,
-    }
+    crate::steps::v_for::template_item_component(el).unwrap_or(el)
 }
 
 pub(super) fn unwrap_template_single_element<'a>(
