@@ -16,8 +16,8 @@ compiler, so the same Vite plugin, CLI, linter, and inspector handle Vapor compo
 ## Which components compile to Vapor
 
 ```mermaid
-flowchart TD
-  A["Component"] --> B{"script block has the vapor attribute?"}
+flowchart LR
+  A["SFC"] --> B{"vapor attribute on script?"}
   B -- yes --> V["Vapor output"]
   B -- no --> C{"vue.compiler.vapor: true?"}
   C -- yes --> V

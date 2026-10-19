@@ -17,8 +17,8 @@ description: Vize で Vue コンポーネントを Vapor 出力にコンパイ�
 ## どのコンポーネントが Vapor になるか
 
 ```mermaid
-flowchart TD
-  A["コンポーネント"] --> B{"script ブロックに vapor 属性がある?"}
+flowchart LR
+  A["SFC"] --> B{"script に vapor 属性?"}
   B -- はい --> V["Vapor 出力"]
   B -- いいえ --> C{"vue.compiler.vapor: true?"}
   C -- はい --> V
