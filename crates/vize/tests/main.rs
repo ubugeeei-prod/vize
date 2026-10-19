@@ -91,6 +91,7 @@ mod check_packed_declaration_consumer_cli;
 mod check_patterned_template_cli;
 mod check_plain_script_named_exports_cli;
 mod check_plain_script_namespace_cli;
+mod check_pug_template_cli;
 mod check_ref_enum_template_cli;
 mod check_reference_path_cli;
 mod check_reference_types_cli;

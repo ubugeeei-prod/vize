@@ -125,6 +125,9 @@ pub fn generate_vue_content_mapper_transform_with_options(
     content: &str,
     transform_options: ContentMapperTransformOptions,
 ) -> CorsaResult<ContentMapperTransform> {
+    let authored_content = content;
+    let authored = crate::authored_sfc::AuthoredSfc::new(content);
+    let content = authored.analyzed();
     let descriptor = match parse_sfc(
         content,
         SfcParseOptions {
@@ -154,7 +157,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
         mapping_meta,
         mut semantic_links,
         mut prop_default_key_links,
-        diagnostics,
+        mut diagnostics,
         ..
     } = generate_vue_virtual_ts(
         path,
@@ -196,10 +199,19 @@ pub fn generate_vue_content_mapper_transform_with_options(
         );
     }
 
+    authored.remap_mappings(&mut mappings);
+    for diagnostic in &mut diagnostics {
+        (diagnostic.line, diagnostic.column) =
+            authored.to_authored_line_column(diagnostic.line, diagnostic.column);
+    }
+    let content = authored_content;
     let spans = protocol_spans(content, &code, &mappings, &mapping_meta);
     Ok(ContentMapperTransform {
         extension: CONTENT_MAPPER_VIRTUAL_EXTENSION,
-        diagnostic_directives: template_diagnostic_directives(descriptor.template.as_ref(), &spans),
+        // Directive comments are read from HTML templates only.
+        diagnostic_directives: (!authored.is_derived())
+            .then(|| template_diagnostic_directives(descriptor.template.as_ref(), &spans))
+            .flatten(),
         mappings: spans,
         semantic_links: protocol_semantic_links(&semantic_links),
         diagnostics: diagnostics

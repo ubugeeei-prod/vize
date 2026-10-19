@@ -70,6 +70,8 @@ pub mod legacy;
 
 // Batch type checking module (requires native feature)
 #[cfg(feature = "native")]
+mod authored_sfc;
+#[cfg(feature = "native")]
 pub mod batch;
 #[cfg(feature = "native")]
 pub mod corsa_bridge;

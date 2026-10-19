@@ -92,9 +92,11 @@ pub(super) fn build_registered_file(
 
 pub(super) fn build_vue_registered_file(
     path: &Path,
-    content: &str,
+    authored_content: &str,
     context: VirtualBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
+    let authored = crate::authored_sfc::AuthoredSfc::new(authored_content);
+    let content = authored.analyzed();
     let descriptor = profile!(
         "canon.sfc.parse",
         parse_sfc(
@@ -171,7 +173,7 @@ pub(super) fn build_vue_registered_file(
         mapping_meta,
         mut semantic_links,
         mut prop_default_key_links,
-        diagnostics,
+        mut diagnostics,
         typed_router_import,
         empty_module_exports,
         module_exports,
@@ -183,6 +185,11 @@ pub(super) fn build_vue_registered_file(
             &mut semantic_links,
             &mut prop_default_key_links,
         );
+    }
+    authored.remap_mappings(&mut mappings);
+    for diagnostic in &mut diagnostics {
+        (diagnostic.line, diagnostic.column) =
+            authored.to_authored_line_column(diagnostic.line, diagnostic.column);
     }
     let (rewritten, stars) = profile!(
         "canon.import.rewrite.vue",
@@ -208,7 +215,10 @@ pub(super) fn build_vue_registered_file(
     projection.restore_row_metadata(mapping_meta);
     projection.set_prop_default_key_links(prop_default_key_links);
     let source_map = CompositeSourceMap::new_vue(
-        SfcSourceMap::from_projection(projection, collect_sfc_block_ranges(&descriptor)),
+        SfcSourceMap::from_projection(
+            projection,
+            authored.remap_block_ranges(collect_sfc_block_ranges(&descriptor)),
+        ),
         rewritten.source_map,
     );
     let virtual_path = virtual_vue_path(
@@ -238,14 +248,14 @@ pub(super) fn build_vue_registered_file(
             virtual_path,
         },
         extra_virtual_files,
-        original_content: content.to_compact_string(),
+        original_content: authored_content.to_compact_string(),
         pre_rewrite_code: (context.editor_document_options.is_some()
             || context.jsx_typecheck
             || preserve_module_source)
             .then_some(code),
         passthrough_files: collect_passthrough_modules(
             path,
-            content,
+            authored_content,
             context.project_root,
             context.virtual_root,
         ),
