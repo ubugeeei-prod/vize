@@ -34,6 +34,28 @@ pub(crate) fn has_static_inert(element: &MarkupElement<'_>) -> bool {
     element.kind() == MarkupElementKind::Element && has_static_boolean(element, "inert")
 }
 
+/// The HTML `hidden` attribute in its Hidden state (`hidden`, `hidden=""` or
+/// `hidden="hidden"`) on a physical element: the element is not rendered and is
+/// not in the accessibility tree. `hidden="until-found"` can be revealed, and a
+/// binding (`:hidden` or `v-bind="attrs"`) can clear it, so neither counts.
+pub(crate) fn has_static_hidden(element: &MarkupElement<'_>) -> bool {
+    if element.kind() != MarkupElementKind::Element || has_unknown_binding(element, "hidden") {
+        return false;
+    }
+    let mut hidden = false;
+    element.walk_bindings(&mut |binding| {
+        if binding.kind() == MarkupBindingKind::Attribute
+            && binding.is_unqualified_arg_exact("hidden")
+            && binding
+                .static_value()
+                .is_none_or(|value| value.is_empty() || value.eq_ignore_ascii_case("hidden"))
+        {
+            hidden = true;
+        }
+    });
+    hidden
+}
+
 /// Component placement and modal-dialog state are unknown at lint time.
 pub(crate) fn blocks_inert_inheritance(element: &MarkupElement<'_>) -> bool {
     matches!(

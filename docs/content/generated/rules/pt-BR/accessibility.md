@@ -537,7 +537,7 @@ Envolver o campo em um rótulo associa o texto visível `Search` ao controle.
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/form_control_has_label.rs#L19) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/form_control_has_label.rs#L21) · [Todas as regras](all.md)
 
 ### `a11y/heading-has-content`
 

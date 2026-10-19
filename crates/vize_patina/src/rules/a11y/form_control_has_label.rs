@@ -4,7 +4,8 @@
 //!
 //! Form controls (input, select, textarea) must have associated labels
 //! for screen reader users. This can be via <label>, aria-label, or
-//! aria-labelledby.
+//! aria-labelledby. A control with the `hidden` attribute is not rendered or
+//! exposed to assistive technology, so it needs no label.
 //!
 //! Based on eslint-plugin-vuejs-accessibility form-control-has-label rule.
 
@@ -15,6 +16,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
 use super::helpers::string_literal_value;
+use super::markup_helpers::has_static_hidden;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/form-control-has-label",
@@ -150,8 +152,9 @@ impl FormControlHasLabel {
             return;
         }
 
-        // Skip inputs that don't need labels
-        if Self::is_exempt_input_type(element) {
+        // Skip inputs that don't need labels, and controls the `hidden`
+        // attribute keeps out of rendering and the accessibility tree.
+        if Self::is_exempt_input_type(element) || has_static_hidden(element) {
             return;
         }
 
@@ -271,6 +274,35 @@ mod tests {
             r#"<label><span><input type="checkbox" /></span></label>"#,
             0,
         );
+    }
+
+    #[test]
+    fn hidden_controls_need_no_label() {
+        for control in [
+            r#"<input hidden type="file" />"#,
+            r#"<input hidden="" />"#,
+            r#"<input hidden="HIDDEN" type="text" />"#,
+            r#"<select hidden><option>A</option></select>"#,
+            r#"<textarea hidden></textarea>"#,
+        ] {
+            assert_template_warnings(control, 0);
+        }
+    }
+
+    #[test]
+    fn controls_that_can_be_shown_still_need_a_label() {
+        for control in [
+            r#"<input :hidden="collapsed" type="text" />"#,
+            r#"<input hidden :hidden="false" type="text" />"#,
+            r#"<input hidden="until-found" type="text" />"#,
+        ] {
+            assert_template_warnings(control, 1);
+        }
+    }
+
+    #[test]
+    fn test_valid_jsx_hidden_input() {
+        assert_jsx_warnings(r#"const Field = () => <input hidden type="file" />;"#, 0);
     }
 
     #[test]
