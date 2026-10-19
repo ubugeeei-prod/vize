@@ -173,7 +173,18 @@ pub(crate) fn generate_vapor_with_spans(
 
     if block_has_template_refs(&ir.block) {
         ctx.use_helper("createTemplateRefSetter");
-        ctx.push_line("const _setRef = _ctx.vaporTemplateRefSetter || _createTemplateRefSetter()");
+        // Only a `<script setup>` returns the SFC's binding-aware setter; reading
+        // it elsewhere warns in development that `_ctx` lacks the property.
+        if ctx
+            .binding_metadata
+            .is_some_and(|bindings| bindings.is_script_setup)
+        {
+            ctx.push_line(
+                "const _setRef = _ctx.vaporTemplateRefSetter || _createTemplateRefSetter()",
+            );
+        } else {
+            ctx.push_line("const _setRef = _createTemplateRefSetter()");
+        }
     }
 
     let custom_directives = collect_custom_directives(&ir.block);

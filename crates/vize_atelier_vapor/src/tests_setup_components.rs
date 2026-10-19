@@ -265,3 +265,44 @@ fn empty_component_name_keeps_experimental_self_registry_resolution() {
         vec!["const _component_Self = _resolveComponent(\"Self\")"]
     );
 }
+
+/// Only a `<script setup>` SFC returns `vaporTemplateRefSetter`; reading it
+/// from any other component's `_ctx` warns in development that the property
+/// is undefined, so those use the runtime setter directly, as upstream does.
+#[test]
+fn template_ref_setter_reads_setup_state_only_for_script_setup() {
+    for (is_script_setup, expected) in [
+        (
+            Some(true),
+            "const _setRef = _ctx.vaporTemplateRefSetter || _createTemplateRefSetter()",
+        ),
+        (Some(false), "const _setRef = _createTemplateRefSetter()"),
+        (None, "const _setRef = _createTemplateRefSetter()"),
+    ] {
+        let allocator = Allocator::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<div ref="el"><span :ref="setEl" /></div>"#,
+            VaporCompilerOptions {
+                binding_metadata: is_script_setup.map(|is_script_setup| BindingMetadata {
+                    bindings: FxHashMap::default(),
+                    props_aliases: FxHashMap::default(),
+                    is_script_setup,
+                }),
+                ..Default::default()
+            },
+        );
+        assert!(
+            result.error_messages.is_empty(),
+            "{:?}",
+            result.error_messages
+        );
+        assert!(result.code.contains(expected), "{}", result.code);
+        assert_eq!(
+            result.code.matches("_setRef = ").count(),
+            1,
+            "{}",
+            result.code
+        );
+    }
+}
