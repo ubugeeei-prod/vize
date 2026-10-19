@@ -20,7 +20,7 @@ ARIA の role を追加したときや、操作に使う要素を変更したと
 | --- | --- | --- |
 | [`a11y/no-role-presentation-on-focusable`](#a11y-no-role-presentation-on-focusable) | [悪い](#a11y-no-role-presentation-on-focusable-bad) · [良い](#a11y-no-role-presentation-on-focusable-good) | フォーカス可能な要素への role="presentation" または role="none" の指定を検出します。 |
 | [`a11y/no-static-element-interactions`](#a11y-no-static-element-interactions) | [悪い](#a11y-no-static-element-interactions-bad) · [良い](#a11y-no-static-element-interactions-good) | 操作部品ではない要素へのイベント指定を検出します。 |
-| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [悪い](#a11y-placeholder-label-option-bad) · [良い](#a11y-placeholder-label-option-good) | select のプレースホルダー option に disabled または hidden を指定します。 |
+| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [悪い](#a11y-placeholder-label-option-bad) · [良い](#a11y-placeholder-label-option-good) | required の select を値が空のプレースホルダー option から始めます。 |
 | [`a11y/role-has-required-aria-props`](#a11y-role-has-required-aria-props) | [悪い](#a11y-role-has-required-aria-props-bad) · [良い](#a11y-role-has-required-aria-props-good) | ARIA role が必要とする属性を指定します。 |
 | [`a11y/tabindex-no-positive`](#a11y-tabindex-no-positive) | [悪い](#a11y-tabindex-no-positive-bad) · [良い](#a11y-tabindex-no-positive-good) | 通常のフォーカス順序を変える正の tabindex を検出します。 |
 | [`a11y/use-list`](#a11y-use-list) | [悪い](#a11y-use-list-bad) · [良い](#a11y-use-list-good) | 箇条書きに見えるテキストをリスト要素で表現します。 |
@@ -152,7 +152,7 @@ vp run lint
 
 ### `a11y/placeholder-label-option`
 
-select のプレースホルダー option に disabled または hidden を指定します。
+required の select を値が空のプレースホルダー option から始めます。
 
 [悪い例](#a11y-placeholder-label-option-bad) · [良い例](#a11y-placeholder-label-option-good)
 
@@ -187,13 +187,13 @@ vp run lint
 
 **悪い**
 
-空の値を持つ案内の option が、国の選択肢と同じように選択できる状態です。
+select は `required` ですが、最初の option が Japan のため、国が選ばれた状態でフォームが始まり、`required` が送信を止めることはありません。
 
-```vue annotate="remove:3"
+```vue annotate="remove:4"
 <template>
-  <select v-model="country">
-    <option value="">Choose a country</option>
+  <select v-model="country" required>
     <option value="jp">Japan</option>
+    <option value="fr">France</option>
   </select>
 </template>
 ```
@@ -202,12 +202,12 @@ vp run lint
 
 **良い**
 
-disabled を追加して案内の option を選択できなくし、選択可能な Japan の option と区別します。
+値が空の最初の option がプレースホルダーになり、select は値のない状態から始まるため、`required` によって国の選択が必要になります。
 
 ```vue annotate="add:3"
 <template>
-  <select v-model="country">
-    <option value="" disabled>Choose a country</option>
+  <select v-model="country" required>
+    <option value="">Choose a country</option>
     <option value="jp">Japan</option>
   </select>
 </template>
@@ -215,7 +215,7 @@ disabled を追加して案内の option を選択できなくし、選択可能
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L47) · [全ルール](all.md)
 
 ### `a11y/role-has-required-aria-props`
 

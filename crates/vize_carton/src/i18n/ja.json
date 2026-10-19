@@ -460,8 +460,8 @@
   "a11y/use-list.message": "テキストがリスト項目のように見えます。適切なリストセマンティクスには<ul>または<ol>を使用してください",
   "a11y/use-list.help": "スクリーンリーダーは箇条書き文字をリスト項目として識別できません。代わりにセマンティックな<ul>/<ol>と<li>要素を使用してください。",
 
-  "a11y/placeholder-label-option.message": "プレースホルダー<option>にはdisabledまたはhidden属性が必要です",
-  "a11y/placeholder-label-option.help": "プレースホルダー<option>にdisabledまたはhiddenを追加して、選択されないようにしてください:\n<option value=\"\" disabled>選択してください</option>",
+  "a11y/placeholder-label-option.message": "required の <select> は、値が空のプレースホルダー <option> から始める必要があります",
+  "a11y/placeholder-label-option.help": "required を指定した場合、最初の <option> を空の選択肢にして、値のない状態から始まるようにしてください:\n<option value=\"\">選択してください</option>\ndisabled や hidden を付けることもできますが、必須ではありません。",
 
   "a11y/landmark-roles.duplicate_main": "ページごとに<main>ランドマークは1つのみ許可されます",
   "a11y/landmark-roles.help_duplicate_main": "ページには<main>ランドマークが1つだけ必要です。重複する<main>要素を削除するか、role=\"main\"を1つの要素にのみ使用してください。",

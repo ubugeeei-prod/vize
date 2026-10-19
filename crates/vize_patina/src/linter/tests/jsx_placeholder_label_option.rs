@@ -21,7 +21,7 @@ fn diagnostic_rules(result: &LintResult) -> Vec<&str> {
 #[test]
 fn placeholder_label_option_fires_on_jsx_and_tsx_ir() {
     let linter = linter_with(Box::new(PlaceholderLabelOption));
-    let source = r#"const A = () => <select><option value="">Choose</option></select>;"#;
+    let source = r#"const A = () => <select required><option value="a">Choose</option></select>;"#;
     let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
 
     assert_eq!(
@@ -33,7 +33,7 @@ fn placeholder_label_option_fires_on_jsx_and_tsx_ir() {
     assert_eq!(result.error_count, 0);
 
     let diag = &result.diagnostics[0];
-    let option = r#"<option value="">Choose</option>"#;
+    let option = r#"<option value="a">Choose</option>"#;
     let option_start = source.find(option).unwrap() as u32;
     assert_eq!(diag.start, option_start);
     assert_eq!(
@@ -45,7 +45,7 @@ fn placeholder_label_option_fires_on_jsx_and_tsx_ir() {
     assert!(diag.help.is_some(), "diagnostic should keep rule help");
 
     let tsx = linter.lint_jsx(
-        r#"const A = (): JSX.Element => <select><option value="">Choose</option></select>;"#,
+        r#"const A = (): JSX.Element => <select required><option value="a">Choose</option></select>;"#,
         "test.tsx",
         JsxLang::Tsx,
     );
@@ -60,17 +60,16 @@ fn placeholder_label_option_fires_on_jsx_and_tsx_ir() {
 fn placeholder_label_option_preserves_legacy_jsx_boundaries() {
     let linter = linter_with(Box::new(PlaceholderLabelOption));
     for source in [
-        r#"const A = () => <select><option value="" disabled>Choose</option></select>;"#,
-        r#"const A = () => <select><option value="" hidden>Choose</option></select>;"#,
+        r#"const A = () => <select required><option value="" disabled>Choose</option></select>;"#,
+        r#"const A = () => <select required><option value="" hidden>Choose</option></select>;"#,
         r#"const A = () => <select><option>Choose</option></select>;"#,
-        r#"const A = () => <select><option value={""}>Choose</option></select>;"#,
-        r#"const A = () => <Select><option value="">Choose</option></Select>;"#,
-        r#"const A = () => <Forms.select><option value="">Choose</option></Forms.select>;"#,
-        r#"const A = () => <svg:select><option value="">Choose</option></svg:select>;"#,
-        r#"const A = () => <select><Option value="">Choose</Option></select>;"#,
-        r#"const A = () => <select><svg:option value="">Choose</svg:option></select>;"#,
-        r#"const A = () => <select><span><option value="">Nested</option></span></select>;"#,
-        r#"const A = () => <select><option VALUE="">Choose</option></select>;"#,
+        r#"const A = () => <select required><option value={""}>Choose</option></select>;"#,
+        r#"const A = () => <Select required><option value="a">Choose</option></Select>;"#,
+        r#"const A = () => <Forms.select required><option value="a">Choose</option></Forms.select>;"#,
+        r#"const A = () => <svg:select required><option value="a">Choose</option></svg:select>;"#,
+        r#"const A = () => <select required><Option value="a">Choose</Option></select>;"#,
+        r#"const A = () => <select required><svg:option value="a">Choose</svg:option></select>;"#,
+        r#"const A = () => <select required><span><option value="a">Nested</option></span></select>;"#,
     ] {
         let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
         assert_eq!(
@@ -82,10 +81,10 @@ fn placeholder_label_option_preserves_legacy_jsx_boundaries() {
     }
 
     for source in [
-        r#"const A = () => <select><option value>Choose</option></select>;"#,
-        r#"const A = () => <select><option value="">Choose</option></select>;"#,
-        r#"const A = () => <select><option value="" disabled={true}>Choose</option></select>;"#,
-        r#"const A = () => <select><option value="" DISABLED>Choose</option></select>;"#,
+        r#"const A = () => <select required><option>Choose</option></select>;"#,
+        r#"const A = () => <select required><option value="a">Choose</option></select>;"#,
+        r#"const A = () => <select required><option VALUE="">Choose</option></select>;"#,
+        r#"const A = () => <select required><optgroup label="G"><option value="">Choose</option></optgroup></select>;"#,
     ] {
         let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
         assert_eq!(
@@ -101,7 +100,7 @@ fn placeholder_label_option_preserves_legacy_jsx_boundaries() {
 fn migrated_placeholder_label_option_reports_once_not_per_backend() {
     let linter = linter_with(Box::new(PlaceholderLabelOption));
     let result = linter.lint_jsx(
-        r#"const A = () => <select><option value="">Choose</option></select>;"#,
+        r#"const A = () => <select required><option value="a">Choose</option></select>;"#,
         "test.jsx",
         JsxLang::Jsx,
     );
@@ -123,8 +122,8 @@ const choices = ["A"];
 </script>
 
 <template>
-  <select>
-    <option value="">Choose</option>
+  <select required>
+    <option value="b">Choose</option>
     <option value="a">A</option>
   </select>
 </template>
@@ -140,7 +139,7 @@ const choices = ["A"];
     );
 
     let diag = &result.diagnostics[0];
-    let option = r#"<option value="">"#;
+    let option = r#"<option value="b">"#;
     let option_start = source.find(option).unwrap() as u32;
     assert_eq!(
         diag.start, option_start,
@@ -156,7 +155,7 @@ const choices = ["A"];
 #[test]
 fn placeholder_label_option_sfc_does_not_lint_script_tsx() {
     let source = r#"<script setup lang="tsx">
-const A = () => <select><option value="">Choose</option></select>;
+const A = () => <select required><option value="a">Choose</option></select>;
 </script>
 "#;
     let linter = linter_with(Box::new(PlaceholderLabelOption));

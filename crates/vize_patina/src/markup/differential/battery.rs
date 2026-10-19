@@ -259,7 +259,7 @@ pub struct BatteryCensus {
 /// The committed census. Re-pinned deliberately, in both lanes at once.
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
-    rule_fixtures: 869 + 38 + 1 + 1 + 5 + 1,
+    rule_fixtures: 869 + 38 + 1 + 1 + 5 + 1 - 5,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -274,10 +274,12 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // Empty binding values add one nonliteral call over seven real-parser
     // inputs; that loop and the complete CLI reports run in ordinary tests.
     // The `@vue:` vnode-hook exemption adds one literal template over two calls.
-    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2,
-    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1,
+    // placeholder-label-option's rewritten unit tests (#9749) loop over
+    // template lists: five fewer literal templates and one more nonliteral call.
+    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5,
+    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1,
     matrix: 90,
-    template_lines: 6316 + 233 + 5 + 10 + 25 + 7,
+    template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

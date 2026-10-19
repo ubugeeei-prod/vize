@@ -62,7 +62,7 @@ title: "全部规则"
 | [`a11y/no-refer-to-non-existent-id`](#a11y-no-refer-to-non-existent-id) | [错误示例](#a11y-no-refer-to-non-existent-id-bad) · [正确示例](#a11y-no-refer-to-non-existent-id-good) | 禁止引用不存在的 ID |
 | [`a11y/no-role-presentation-on-focusable`](#a11y-no-role-presentation-on-focusable) | [错误示例](#a11y-no-role-presentation-on-focusable-bad) · [正确示例](#a11y-no-role-presentation-on-focusable-good) | 禁止在可获得焦点的元素上使用 role="presentation" 或 role="none" |
 | [`a11y/no-static-element-interactions`](#a11y-no-static-element-interactions) | [错误示例](#a11y-no-static-element-interactions-bad) · [正确示例](#a11y-no-static-element-interactions-good) | 禁止在静态元素上设置事件处理器 |
-| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [错误示例](#a11y-placeholder-label-option-bad) · [正确示例](#a11y-placeholder-label-option-good) | 要求 select 的占位选项具有 disabled 或 hidden |
+| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [错误示例](#a11y-placeholder-label-option-bad) · [正确示例](#a11y-placeholder-label-option-good) | 要求 required 的 select 带有占位选项 |
 | [`a11y/role-has-required-aria-props`](#a11y-role-has-required-aria-props) | [错误示例](#a11y-role-has-required-aria-props-bad) · [正确示例](#a11y-role-has-required-aria-props-good) | 要求 ARIA 角色具有必需属性 |
 | [`a11y/tabindex-no-positive`](#a11y-tabindex-no-positive) | [错误示例](#a11y-tabindex-no-positive-bad) · [正确示例](#a11y-tabindex-no-positive-good) | 禁止正数 tabindex 值 |
 | [`a11y/use-list`](#a11y-use-list) | [错误示例](#a11y-use-list-bad) · [正确示例](#a11y-use-list-good) | 建议为类似项目符号的文本使用列表元素 |
@@ -729,7 +729,7 @@ title: "全部规则"
 
 ### `a11y/placeholder-label-option`
 
-要求 select 的占位选项具有 disabled 或 hidden
+要求 required 的 select 带有占位选项
 
 <span id="a11y-placeholder-label-option-bad"></span>
 

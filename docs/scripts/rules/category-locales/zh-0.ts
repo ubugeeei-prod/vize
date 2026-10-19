@@ -130,9 +130,9 @@ export const chineseRules0: Record<string, readonly [string, string, string]> = 
     "原生按钮以适当的交互元素承载相同操作。",
   ],
   "a11y/placeholder-label-option": [
-    "要求 select 的占位选项具有 disabled 或 hidden",
-    "空值提示仍可被选择，仿佛它是一个国家值。",
-    "添加 `disabled`，将提示与可选择的 Japan 选项区分开。",
+    "要求 required 的 select 带有占位选项",
+    "select 设置了 `required`，但第一个选项是 Japan，表单一开始就已选中国家，`required` 永远不会阻止提交。",
+    "值为空的第一个选项就是占位选项：select 从无值状态开始，`required` 会要求用户选择国家。",
   ],
   "a11y/role-has-required-aria-props": [
     "要求 ARIA 角色具有必需属性",

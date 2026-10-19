@@ -28,7 +28,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
     'フォーカス可能な要素への role="presentation" または role="none" の指定を検出します。',
   "a11y/no-static-element-interactions": "操作部品ではない要素へのイベント指定を検出します。",
   "a11y/placeholder-label-option":
-    "select のプレースホルダー option に disabled または hidden を指定します。",
+    "required の select を値が空のプレースホルダー option から始めます。",
   "a11y/role-has-required-aria-props": "ARIA role が必要とする属性を指定します。",
   "a11y/tabindex-no-positive": "通常のフォーカス順序を変える正の tabindex を検出します。",
   "a11y/use-list": "箇条書きに見えるテキストをリスト要素で表現します。",

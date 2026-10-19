@@ -4,7 +4,7 @@ title: "a11y/placeholder-label-option"
 
 # `a11y/placeholder-label-option`
 
-Require disabled or hidden on select placeholder option
+Require a placeholder label option in a required select
 
 [Bad](#bad) · [Good](#good)
 
@@ -37,25 +37,25 @@ vp run lint
 
 ## Bad
 
-The empty-value prompt remains selectable as if it were a country value.
+The select is `required`, but its first option is Japan, so the form starts with a country already chosen and `required` never blocks submission.
 
 ```vue
 <template>
-  <select v-model="country">
-    <option value="">Choose a country</option>
+  <select v-model="country" required>
     <option value="jp">Japan</option>
+    <option value="fr">France</option>
   </select>
 </template>
 ```
 
 ## Good
 
-Adding `disabled` distinguishes the prompt from the selectable Japan option.
+An empty first option is the placeholder label option: the select starts with no value, so `required` makes the user pick a country.
 
 ```vue
 <template>
-  <select v-model="country">
-    <option value="" disabled>Choose a country</option>
+  <select v-model="country" required>
+    <option value="">Choose a country</option>
     <option value="jp">Japan</option>
   </select>
 </template>
@@ -63,4 +63,4 @@ Adding `disabled` distinguishes the prompt from the selectable Japan option.
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) · [All rules](../all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L47) · [All rules](../all.md)

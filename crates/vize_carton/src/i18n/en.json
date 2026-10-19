@@ -460,8 +460,8 @@
   "a11y/use-list.message": "Text appears to be a list item. Use <ul> or <ol> for proper list semantics",
   "a11y/use-list.help": "Screen readers cannot identify bullet characters as list items. Use semantic <ul>/<ol> with <li> elements instead.",
 
-  "a11y/placeholder-label-option.message": "Placeholder <option> should have disabled or hidden attribute",
-  "a11y/placeholder-label-option.help": "Add disabled or hidden to the placeholder <option> to prevent it from being selected:\n<option value=\"\" disabled>Choose one</option>",
+  "a11y/placeholder-label-option.message": "A required <select> must start with a placeholder <option> whose value is empty",
+  "a11y/placeholder-label-option.help": "With `required`, the first <option> must be an empty choice so the select starts without a value:\n<option value=\"\">Choose one</option>\nThe option may also be disabled or hidden, but need not be.",
 
   "a11y/landmark-roles.duplicate_main": "Only one <main> landmark is allowed per page",
   "a11y/landmark-roles.help_duplicate_main": "A page should have exactly one <main> landmark. Remove duplicate <main> elements or use role=\"main\" on only one element.",

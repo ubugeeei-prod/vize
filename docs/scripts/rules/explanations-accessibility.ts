@@ -185,10 +185,10 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
   ],
   [
     "a11y/placeholder-label-option",
-    "The empty-value prompt remains selectable as if it were a country value.",
-    "Adding `disabled` distinguishes the prompt from the selectable Japan option.",
-    "空の値を持つ案内の option が、国の選択肢と同じように選択できる状態です。",
-    "disabled を追加して案内の option を選択できなくし、選択可能な Japan の option と区別します。",
+    "The select is `required`, but its first option is Japan, so the form starts with a country already chosen and `required` never blocks submission.",
+    "An empty first option is the placeholder label option: the select starts with no value, so `required` makes the user pick a country.",
+    "select は `required` ですが、最初の option が Japan のため、国が選ばれた状態でフォームが始まり、`required` が送信を止めることはありません。",
+    "値が空の最初の option がプレースホルダーになり、select は値のない状態から始まるため、`required` によって国の選択が必要になります。",
   ],
   [
     "a11y/role-has-required-aria-props",

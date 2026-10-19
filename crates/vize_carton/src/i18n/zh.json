@@ -460,8 +460,8 @@
   "a11y/use-list.message": "文本看起来是列表项。请使用<ul>或<ol>实现正确的列表语义",
   "a11y/use-list.help": "屏幕阅读器无法将项目符号字符识别为列表项。请使用语义化的<ul>/<ol>和<li>元素代替。",
 
-  "a11y/placeholder-label-option.message": "占位符<option>应具有disabled或hidden属性",
-  "a11y/placeholder-label-option.help": "为占位符<option>添加disabled或hidden以防止其被选中：\n<option value=\"\" disabled>请选择</option>",
+  "a11y/placeholder-label-option.message": "required 的 <select> 必须以值为空的占位 <option> 开头",
+  "a11y/placeholder-label-option.help": "设置 required 时，第一个 <option> 必须是空选项，使 select 从无值状态开始：\n<option value=\"\">请选择</option>\n该选项可以设置 disabled 或 hidden，但不是必需的。",
 
   "a11y/landmark-roles.duplicate_main": "每个页面只允许一个<main>地标",
   "a11y/landmark-roles.help_duplicate_main": "页面应该只有一个<main>地标。删除重复的<main>元素或仅在一个元素上使用role=\"main\"。",

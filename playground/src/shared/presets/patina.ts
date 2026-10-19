@@ -30,7 +30,7 @@
  * - a11y/aria-role: Invalid/abstract ARIA role
  * - a11y/heading-levels: Skipped heading level
  * - a11y/use-list: Bullet-like text without list markup
- * - a11y/placeholder-label-option: Placeholder option without disabled
+ * - a11y/placeholder-label-option: Required select without a placeholder option
  * - a11y/landmark-roles: Duplicate landmark without label
  *
  * Note: This file is separate from the Vue component to avoid
@@ -153,10 +153,10 @@ const handleClick = () => {}
         <p>- Item three</p>
       </div>
 
-      <!-- a11y/placeholder-label-option: Missing disabled on placeholder -->
-      <select>
-        <option value="">Choose...</option>
+      <!-- a11y/placeholder-label-option: Required select without a placeholder -->
+      <select required>
         <option value="a">Option A</option>
+        <option value="b">Option B</option>
       </select>
 
       <!-- a11y/landmark-roles: Duplicate landmarks without aria-label -->

@@ -1079,7 +1079,7 @@ help:
     </div>
 === a11y/placeholder-label-option
 a11y/placeholder-label-option · lint rule
-Require disabled or hidden on select placeholder option
+Require a placeholder label option in a required select
 
 tier: exact
 domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
@@ -1090,23 +1090,24 @@ docs: docs/content/rules/accessibility.md
 
 invalid:
   <template>
-    <select>
-      <option value="">Choose one</option>
-      <option value="a">A</option>
+    <select required>
+      <option value="jp">Japan</option>
+      <option value="fr">France</option>
     </select>
   </template>
 
 valid:
   <template>
-    <select>
-      <option value="" disabled>Choose one</option>
-      <option value="a">A</option>
+    <select required>
+      <option value="">Choose a country</option>
+      <option value="jp">Japan</option>
     </select>
   </template>
 
 help:
-  Add disabled or hidden to the placeholder <option> to prevent it from being selected:
-  <option value="" disabled>Choose one</option>
+  With required, the first <option> must be an empty choice so the select starts without a value:
+  <option value="">Choose one</option>
+  The option may also be disabled or hidden, but need not be.
 === a11y/role-has-required-aria-props
 a11y/role-has-required-aria-props · lint rule
 Require ARIA roles to have required properties

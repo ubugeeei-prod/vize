@@ -50,69 +50,74 @@ fn placeholder_label_option_template_boundaries() {
     let rule = PlaceholderLabelOption;
     for (source, expected, label) in [
         (
-            r#"<select><option value="">Choose</option><option value="a">A</option></select>"#,
+            r#"<select required><option value="a">A</option><option value="b">B</option></select>"#,
             1,
-            "first empty-valued option requires disabled or hidden",
+            "a required select must start with an empty option",
         ),
         (
-            r#"<select><option value>Choose</option><option value="a">A</option></select>"#,
+            r#"<select><option value="a">A</option></select>"#,
+            0,
+            "a select that is not required has no placeholder",
+        ),
+        (
+            r#"<select><option value="">Any</option><option value="a">A</option></select>"#,
+            0,
+            "an empty option in a select that is not required is an ordinary choice",
+        ),
+        (
+            r#"<select required><option value="">Choose</option><option value="a">A</option></select>"#,
+            0,
+            "an empty first option is the placeholder",
+        ),
+        (
+            r#"<select required><option value>Choose</option></select>"#,
+            0,
+            "a valueless value attribute is empty",
+        ),
+        (
+            r#"<select required><option>Choose</option></select>"#,
             1,
-            "valueless value attribute is a placeholder",
+            "without value, the text is the value",
         ),
         (
-            r#"<select><option value="" disabled>Choose</option></select>"#,
+            r#"<select required><option :value="choice">Choose</option></select>"#,
             0,
-            "disabled placeholder is valid",
+            "a dynamic value is not judged",
         ),
         (
-            r#"<select><option value="" hidden>Choose</option></select>"#,
+            r#"<select required multiple><option value="a">A</option></select>"#,
             0,
-            "hidden placeholder is valid",
+            "a multiple select has no placeholder",
         ),
         (
-            r#"<select><option>Choose</option><option value="a">A</option></select>"#,
+            r#"<select required size="4"><option value="a">A</option></select>"#,
             0,
-            "missing value attribute stays outside the legacy placeholder check",
+            "a select with a display size above 1 has no placeholder",
         ),
         (
-            r#"<select><option :value="choice">Choose</option></select>"#,
-            0,
-            "dynamic value does not prove a static placeholder",
-        ),
-        (
-            r#"<select><option value="" :disabled="disabled">Choose</option></select>"#,
+            r#"<select required><option VALUE="">Choose</option></select>"#,
             1,
-            "bound disabled does not satisfy the static disabled check",
-        ),
-        (
-            r#"<select><option VALUE="">Choose</option></select>"#,
-            0,
             "value attribute name remains exact",
         ),
         (
-            r#"<select><option value="" DISABLED>Choose</option></select>"#,
-            1,
-            "disabled attribute name remains exact",
-        ),
-        (
-            r#"<SELECT><option value="">Choose</option></SELECT>"#,
+            r#"<SELECT required><option value="a">A</option></SELECT>"#,
             0,
             "select tag name remains exact",
         ),
         (
-            r#"<select><OPTION value="">Choose</OPTION></select>"#,
+            r#"<select required><OPTION value="a">A</OPTION></select>"#,
             0,
-            "option tag name remains exact",
+            "an unknown child leaves the options undecided",
         ),
         (
-            r#"<select><span></span><option value="">Choose</option></select>"#,
+            r#"<select required><span></span><option value="a">A</option></select>"#,
+            0,
+            "other elements leave the options undecided",
+        ),
+        (
+            r#"<select required><optgroup label="G"><option value="">Choose</option></optgroup></select>"#,
             1,
-            "first direct option is found after non-option children",
-        ),
-        (
-            r#"<select><span><option value="">Nested</option></span></select>"#,
-            0,
-            "nested option is not a direct child",
+            "an option inside optgroup is not a placeholder",
         ),
     ] {
         assert_eq!(
@@ -128,67 +133,67 @@ fn placeholder_label_option_jsx_direct_matches_lowered() {
     let rule = PlaceholderLabelOption;
     for (source, expected, label) in [
         (
-            r#"const A = () => <select><option value="">Choose</option><option value="a">A</option></select>;"#,
+            r#"const A = () => <select required><option value="a">A</option></select>;"#,
             1,
-            "first empty-valued option requires disabled or hidden",
+            "a required select must start with an empty option",
         ),
         (
-            r#"const A = () => <select><option value>Choose</option></select>;"#,
+            r#"const A = () => <select><option value="">Any</option></select>;"#,
+            0,
+            "a select that is not required has no placeholder",
+        ),
+        (
+            r#"const A = () => <select required><option value="">Choose</option></select>;"#,
+            0,
+            "an empty first option is the placeholder",
+        ),
+        (
+            r#"const A = () => <select required><option value>Choose</option></select>;"#,
+            0,
+            "a valueless value attribute is empty",
+        ),
+        (
+            r#"const A = () => <select required><option value={""}>Choose</option></select>;"#,
+            0,
+            "a literal empty value is empty",
+        ),
+        (
+            r#"const A = () => <select required><option value={choice}>Choose</option></select>;"#,
+            0,
+            "a dynamic value is not judged",
+        ),
+        (
+            r#"const A = () => <select required><option>Choose</option></select>;"#,
             1,
-            "valueless value attribute is a placeholder",
+            "without value, the text is the value",
         ),
         (
-            r#"const A = () => <select><option value="" disabled>Choose</option></select>;"#,
+            r#"const A = () => <select required={strict}><option value="a">A</option></select>;"#,
             0,
-            "disabled placeholder is valid",
+            "a bound required is not judged",
         ),
         (
-            r#"const A = () => <select><option value="" hidden>Choose</option></select>;"#,
-            0,
-            "hidden placeholder is valid",
-        ),
-        (
-            r#"const A = () => <select><option value="" disabled={disabled}>Choose</option></select>;"#,
-            1,
-            "bound disabled does not satisfy the static disabled check",
-        ),
-        (
-            r#"const A = () => <select><option value={""}>Choose</option></select>;"#,
-            0,
-            "dynamic value expression does not prove a static placeholder",
-        ),
-        (
-            r#"const A = () => <select><option>Choose</option></select>;"#,
-            0,
-            "missing value attribute stays outside the legacy placeholder check",
-        ),
-        (
-            r#"const A = () => <Select><option value="">Choose</option></Select>;"#,
+            r#"const A = () => <Select required><option value="a">A</option></Select>;"#,
             0,
             "capitalized select is a component",
         ),
         (
-            r#"const A = () => <Forms.select><option value="">Choose</option></Forms.select>;"#,
+            r#"const A = () => <Forms.select required><option value="a">A</option></Forms.select>;"#,
             0,
             "member select is not an unqualified select tag",
         ),
         (
-            r#"const A = () => <svg:select><option value="">Choose</option></svg:select>;"#,
+            r#"const A = () => <svg:select required><option value="a">A</option></svg:select>;"#,
             0,
             "namespaced select is not an unqualified select tag",
         ),
         (
-            r#"const A = () => <select><Option value="">Choose</Option></select>;"#,
+            r#"const A = () => <select required><Option value="a">A</Option></select>;"#,
             0,
-            "capitalized option is a component",
+            "a component child leaves the options undecided",
         ),
         (
-            r#"const A = () => <select><svg:option value="">Choose</svg:option></select>;"#,
-            0,
-            "namespaced option is not an unqualified option tag",
-        ),
-        (
-            r#"const A = () => <select><><option value="">Choose</option></></select>;"#,
+            r#"const A = () => <select required><><option value="a">A</option></></select>;"#,
             1,
             "JSX fragments under select are transparent like the lowering fallback",
         ),

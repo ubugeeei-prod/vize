@@ -1083,7 +1083,7 @@ a11y/no-static-element-interactions · lint 规则
     </div>
 === a11y/placeholder-label-option
 a11y/placeholder-label-option · lint 规则
-要求 select 的占位 option 带有 disabled 或 hidden
+要求 required 的 select 带有占位 option
 
 精度层级: exact
 适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
@@ -1094,23 +1094,24 @@ a11y/placeholder-label-option · lint 规则
 
 错误示例:
   <template>
-    <select>
-      <option value="">Choose one</option>
-      <option value="a">A</option>
+    <select required>
+      <option value="jp">Japan</option>
+      <option value="fr">France</option>
     </select>
   </template>
 
 正确示例:
   <template>
-    <select>
-      <option value="" disabled>Choose one</option>
-      <option value="a">A</option>
+    <select required>
+      <option value="">Choose a country</option>
+      <option value="jp">Japan</option>
     </select>
   </template>
 
 帮助:
-  为占位符<option>添加disabled或hidden以防止其被选中：
-  <option value="" disabled>请选择</option>
+  设置 required 时，第一个 <option> 必须是空选项，使 select 从无值状态开始：
+  <option value="">请选择</option>
+  该选项可以设置 disabled 或 hidden，但不是必需的。
 === a11y/role-has-required-aria-props
 a11y/role-has-required-aria-props · lint 规则
 要求ARIA角色具有必需的属性

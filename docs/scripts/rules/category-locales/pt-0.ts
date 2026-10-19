@@ -130,9 +130,9 @@ export const portugueseRules0: Record<string, readonly [string, string, string]>
     "Um botão nativo executa a mesma ação usando um elemento interativo adequado.",
   ],
   "a11y/placeholder-label-option": [
-    "Exigir disabled ou hidden na opção de orientação de um select",
-    "A opção de orientação com valor vazio permanece selecionável como se fosse um valor de país.",
-    "Adicionar `disabled` distingue a orientação da opção Japão, que pode ser selecionada.",
+    "Exigir uma opção de orientação em um select required",
+    "O select é `required`, mas a primeira opção é Japão, então o formulário começa com um país já escolhido e `required` nunca bloqueia o envio.",
+    "Uma primeira opção vazia é a orientação: o select começa sem valor, e `required` obriga a escolher um país.",
   ],
   "a11y/role-has-required-aria-props": [
     "Exigir as propriedades obrigatórias dos papéis ARIA",

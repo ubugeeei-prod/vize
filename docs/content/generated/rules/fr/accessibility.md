@@ -36,7 +36,7 @@ Chaque règle présente sur cette page son objectif, sa configuration et ses exe
 | [`a11y/no-refer-to-non-existent-id`](#a11y-no-refer-to-non-existent-id) | [Mauvais](#a11y-no-refer-to-non-existent-id-bad) · [Bon](#a11y-no-refer-to-non-existent-id-good) | Interdire les références à des identifiants inexistants |
 | [`a11y/no-role-presentation-on-focusable`](#a11y-no-role-presentation-on-focusable) | [Mauvais](#a11y-no-role-presentation-on-focusable-bad) · [Bon](#a11y-no-role-presentation-on-focusable-good) | Interdire role="presentation" ou role="none" sur les éléments pouvant recevoir le focus |
 | [`a11y/no-static-element-interactions`](#a11y-no-static-element-interactions) | [Mauvais](#a11y-no-static-element-interactions-bad) · [Bon](#a11y-no-static-element-interactions-good) | Interdire les gestionnaires d’événements sur les éléments statiques |
-| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [Mauvais](#a11y-placeholder-label-option-bad) · [Bon](#a11y-placeholder-label-option-good) | Exiger disabled ou hidden sur l’option d’invite d’un select |
+| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [Mauvais](#a11y-placeholder-label-option-bad) · [Bon](#a11y-placeholder-label-option-good) | Exiger une option d’invite dans un select required |
 | [`a11y/role-has-required-aria-props`](#a11y-role-has-required-aria-props) | [Mauvais](#a11y-role-has-required-aria-props-bad) · [Bon](#a11y-role-has-required-aria-props-good) | Exiger les propriétés obligatoires des rôles ARIA |
 | [`a11y/tabindex-no-positive`](#a11y-tabindex-no-positive) | [Mauvais](#a11y-tabindex-no-positive-bad) · [Bon](#a11y-tabindex-no-positive-good) | Interdire les valeurs positives de tabindex |
 | [`a11y/use-list`](#a11y-use-list) | [Mauvais](#a11y-use-list-bad) · [Bon](#a11y-use-list-good) | Suggérer des éléments de liste pour les textes ressemblant à des listes à puces |
@@ -1661,7 +1661,7 @@ Le bon exemple évite le diagnostic de cette règle avec la configuration ci-des
 
 ### `a11y/placeholder-label-option`
 
-Exiger disabled ou hidden sur l’option d’invite d’un select
+Exiger une option d’invite dans un select required
 
 [Mauvais](#a11y-placeholder-label-option-bad) · [Bon](#a11y-placeholder-label-option-good)
 
@@ -1696,13 +1696,13 @@ vp run lint
 
 **Mauvais**
 
-L’invite à valeur vide reste sélectionnable comme s’il s’agissait d’une valeur de pays.
+Le select est `required`, mais sa première option est Japan : le formulaire démarre avec un pays déjà choisi et `required` ne bloque jamais l’envoi.
 
-```vue annotate="remove:3"
+```vue annotate="remove:4"
 <template>
-  <select v-model="country">
-    <option value="">Choose a country</option>
+  <select v-model="country" required>
     <option value="jp">Japan</option>
+    <option value="fr">France</option>
   </select>
 </template>
 ```
@@ -1711,12 +1711,12 @@ L’invite à valeur vide reste sélectionnable comme s’il s’agissait d’un
 
 **Bon**
 
-Ajouter `disabled` distingue l’invite de l’option Japan sélectionnable.
+Une première option vide sert d’invite : le select démarre sans valeur, et `required` oblige à choisir un pays.
 
 ```vue annotate="add:3"
 <template>
-  <select v-model="country">
-    <option value="" disabled>Choose a country</option>
+  <select v-model="country" required>
+    <option value="">Choose a country</option>
     <option value="jp">Japan</option>
   </select>
 </template>
@@ -1724,7 +1724,7 @@ Ajouter `disabled` distingue l’invite de l’option Japan sélectionnable.
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L47) · [Toutes les règles](all.md)
 
 ### `a11y/role-has-required-aria-props`
 

@@ -60,7 +60,7 @@ A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os có
 | [`a11y/no-refer-to-non-existent-id`](#a11y-no-refer-to-non-existent-id) | [Incorreto](#a11y-no-refer-to-non-existent-id-bad) · [Correto](#a11y-no-refer-to-non-existent-id-good) | Proibir referências a IDs inexistentes |
 | [`a11y/no-role-presentation-on-focusable`](#a11y-no-role-presentation-on-focusable) | [Incorreto](#a11y-no-role-presentation-on-focusable-bad) · [Correto](#a11y-no-role-presentation-on-focusable-good) | Proibir role="presentation" ou role="none" em elementos que podem receber foco |
 | [`a11y/no-static-element-interactions`](#a11y-no-static-element-interactions) | [Incorreto](#a11y-no-static-element-interactions-bad) · [Correto](#a11y-no-static-element-interactions-good) | Proibir manipuladores de eventos em elementos estáticos |
-| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [Incorreto](#a11y-placeholder-label-option-bad) · [Correto](#a11y-placeholder-label-option-good) | Exigir disabled ou hidden na opção de orientação de um select |
+| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [Incorreto](#a11y-placeholder-label-option-bad) · [Correto](#a11y-placeholder-label-option-good) | Exigir uma opção de orientação em um select required |
 | [`a11y/role-has-required-aria-props`](#a11y-role-has-required-aria-props) | [Incorreto](#a11y-role-has-required-aria-props-bad) · [Correto](#a11y-role-has-required-aria-props-good) | Exigir as propriedades obrigatórias dos papéis ARIA |
 | [`a11y/tabindex-no-positive`](#a11y-tabindex-no-positive) | [Incorreto](#a11y-tabindex-no-positive-bad) · [Correto](#a11y-tabindex-no-positive-good) | Proibir valores positivos de tabindex |
 | [`a11y/use-list`](#a11y-use-list) | [Incorreto](#a11y-use-list-bad) · [Correto](#a11y-use-list-good) | Sugerir elementos de lista para textos que parecem itens de lista |
@@ -727,7 +727,7 @@ Proibir manipuladores de eventos em elementos estáticos
 
 ### `a11y/placeholder-label-option`
 
-Exigir disabled ou hidden na opção de orientação de um select
+Exigir uma opção de orientação em um select required
 
 <span id="a11y-placeholder-label-option-bad"></span>
 

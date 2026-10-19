@@ -64,12 +64,12 @@ export const manual2: Record<string, RuleExample> = {
     bad: {
       language: "vue",
       source:
-        '<template>\n  <select v-model="country">\n    <option value="">Choose a country</option>\n    <option value="jp">Japan</option>\n  </select>\n</template>',
+        '<template>\n  <select v-model="country" required>\n    <option value="jp">Japan</option>\n    <option value="fr">France</option>\n  </select>\n</template>',
     },
     good: {
       language: "vue",
       source:
-        '<template>\n  <select v-model="country">\n    <option value="" disabled>Choose a country</option>\n    <option value="jp">Japan</option>\n  </select>\n</template>',
+        '<template>\n  <select v-model="country" required>\n    <option value="">Choose a country</option>\n    <option value="jp">Japan</option>\n  </select>\n</template>',
     },
     evidence: "docs/content/rules/accessibility-integrity.md",
   },

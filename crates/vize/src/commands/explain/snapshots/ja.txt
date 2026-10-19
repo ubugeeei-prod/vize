@@ -1030,7 +1030,7 @@ a11y/no-static-element-interactions · lint ルール
     </div>
 === a11y/placeholder-label-option
 a11y/placeholder-label-option · lint ルール
-select のプレースホルダー用 option に disabled か hidden を必須にする
+required の select にプレースホルダーの option を必須にする
 
 精度: exact
 対象: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
@@ -1041,23 +1041,24 @@ select のプレースホルダー用 option に disabled か hidden を必須�
 
 不正な例:
   <template>
-    <select>
-      <option value="">Choose one</option>
-      <option value="a">A</option>
+    <select required>
+      <option value="jp">Japan</option>
+      <option value="fr">France</option>
     </select>
   </template>
 
 正しい例:
   <template>
-    <select>
-      <option value="" disabled>Choose one</option>
-      <option value="a">A</option>
+    <select required>
+      <option value="">Choose a country</option>
+      <option value="jp">Japan</option>
     </select>
   </template>
 
 ヒント:
-  プレースホルダー<option>にdisabledまたはhiddenを追加して、選択されないようにしてください:
-  <option value="" disabled>選択してください</option>
+  required を指定した場合、最初の <option> を空の選択肢にして、値のない状態から始まるようにしてください:
+  <option value="">選択してください</option>
+  disabled や hidden を付けることもできますが、必須ではありません。
 === a11y/role-has-required-aria-props
 a11y/role-has-required-aria-props · lint ルール
 ARIAロールに必須プロパティを要求する

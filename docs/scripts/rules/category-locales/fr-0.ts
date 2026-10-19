@@ -130,9 +130,9 @@ export const frenchRules0 = {
     "Un bouton natif porte la même action dans un élément interactif approprié.",
   ],
   "a11y/placeholder-label-option": [
-    "Exiger disabled ou hidden sur l’option d’invite d’un select",
-    "L’invite à valeur vide reste sélectionnable comme s’il s’agissait d’une valeur de pays.",
-    "Ajouter `disabled` distingue l’invite de l’option Japan sélectionnable.",
+    "Exiger une option d’invite dans un select required",
+    "Le select est `required`, mais sa première option est Japan : le formulaire démarre avec un pays déjà choisi et `required` ne bloque jamais l’envoi.",
+    "Une première option vide sert d’invite : le select démarre sans valeur, et `required` oblige à choisir un pays.",
   ],
   "a11y/role-has-required-aria-props": [
     "Exiger les propriétés obligatoires des rôles ARIA",

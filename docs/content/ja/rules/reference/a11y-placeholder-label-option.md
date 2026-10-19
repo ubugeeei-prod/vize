@@ -4,7 +4,7 @@ title: "a11y/placeholder-label-option"
 
 # `a11y/placeholder-label-option`
 
-select のプレースホルダー option に disabled または hidden を指定します。
+required の select を値が空のプレースホルダー option から始めます。
 
 [悪い例](#悪い) · [良い例](#良い)
 
@@ -37,25 +37,25 @@ vp run lint
 
 ## 悪い
 
-空の値を持つ案内の option が、国の選択肢と同じように選択できる状態です。
+select は `required` ですが、最初の option が Japan のため、国が選ばれた状態でフォームが始まり、`required` が送信を止めることはありません。
 
 ```vue
 <template>
-  <select v-model="country">
-    <option value="">Choose a country</option>
+  <select v-model="country" required>
     <option value="jp">Japan</option>
+    <option value="fr">France</option>
   </select>
 </template>
 ```
 
 ## 良い
 
-disabled を追加して案内の option を選択できなくし、選択可能な Japan の option と区別します。
+値が空の最初の option がプレースホルダーになり、select は値のない状態から始まるため、`required` によって国の選択が必要になります。
 
 ```vue
 <template>
-  <select v-model="country">
-    <option value="" disabled>Choose a country</option>
+  <select v-model="country" required>
+    <option value="">Choose a country</option>
     <option value="jp">Japan</option>
   </select>
 </template>
@@ -63,4 +63,4 @@ disabled を追加して案内の option を選択できなくし、選択可能
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) · [全ルール](../all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L47) · [全ルール](../all.md)

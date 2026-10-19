@@ -36,7 +36,7 @@ title: "无障碍规则"
 | [`a11y/no-refer-to-non-existent-id`](#a11y-no-refer-to-non-existent-id) | [错误示例](#a11y-no-refer-to-non-existent-id-bad) · [正确示例](#a11y-no-refer-to-non-existent-id-good) | 禁止引用不存在的 ID |
 | [`a11y/no-role-presentation-on-focusable`](#a11y-no-role-presentation-on-focusable) | [错误示例](#a11y-no-role-presentation-on-focusable-bad) · [正确示例](#a11y-no-role-presentation-on-focusable-good) | 禁止在可获得焦点的元素上使用 role="presentation" 或 role="none" |
 | [`a11y/no-static-element-interactions`](#a11y-no-static-element-interactions) | [错误示例](#a11y-no-static-element-interactions-bad) · [正确示例](#a11y-no-static-element-interactions-good) | 禁止在静态元素上设置事件处理器 |
-| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [错误示例](#a11y-placeholder-label-option-bad) · [正确示例](#a11y-placeholder-label-option-good) | 要求 select 的占位选项具有 disabled 或 hidden |
+| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [错误示例](#a11y-placeholder-label-option-bad) · [正确示例](#a11y-placeholder-label-option-good) | 要求 required 的 select 带有占位选项 |
 | [`a11y/role-has-required-aria-props`](#a11y-role-has-required-aria-props) | [错误示例](#a11y-role-has-required-aria-props-bad) · [正确示例](#a11y-role-has-required-aria-props-good) | 要求 ARIA 角色具有必需属性 |
 | [`a11y/tabindex-no-positive`](#a11y-tabindex-no-positive) | [错误示例](#a11y-tabindex-no-positive-bad) · [正确示例](#a11y-tabindex-no-positive-good) | 禁止正数 tabindex 值 |
 | [`a11y/use-list`](#a11y-use-list) | [错误示例](#a11y-use-list-bad) · [正确示例](#a11y-use-list-good) | 建议为类似项目符号的文本使用列表元素 |
@@ -1661,7 +1661,7 @@ vp run lint
 
 ### `a11y/placeholder-label-option`
 
-要求 select 的占位选项具有 disabled 或 hidden
+要求 required 的 select 带有占位选项
 
 [错误示例](#a11y-placeholder-label-option-bad) · [正确示例](#a11y-placeholder-label-option-good)
 
@@ -1696,13 +1696,13 @@ vp run lint
 
 **错误示例**
 
-空值提示仍可被选择，仿佛它是一个国家值。
+select 设置了 `required`，但第一个选项是 Japan，表单一开始就已选中国家，`required` 永远不会阻止提交。
 
-```vue annotate="remove:3"
+```vue annotate="remove:4"
 <template>
-  <select v-model="country">
-    <option value="">Choose a country</option>
+  <select v-model="country" required>
     <option value="jp">Japan</option>
+    <option value="fr">France</option>
   </select>
 </template>
 ```
@@ -1711,12 +1711,12 @@ vp run lint
 
 **正确示例**
 
-添加 `disabled`，将提示与可选择的 Japan 选项区分开。
+值为空的第一个选项就是占位选项：select 从无值状态开始，`required` 会要求用户选择国家。
 
 ```vue annotate="add:3"
 <template>
-  <select v-model="country">
-    <option value="" disabled>Choose a country</option>
+  <select v-model="country" required>
+    <option value="">Choose a country</option>
     <option value="jp">Japan</option>
   </select>
 </template>
@@ -1724,7 +1724,7 @@ vp run lint
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L47) · [全部规则](all.md)
 
 ### `a11y/role-has-required-aria-props`
 

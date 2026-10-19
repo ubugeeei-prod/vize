@@ -59,7 +59,7 @@ Le CLI public expose la même passe avec `vize lint --cross-file`. Les codes aff
 | [`a11y/no-refer-to-non-existent-id`](#a11y-no-refer-to-non-existent-id) | [Mauvais](#a11y-no-refer-to-non-existent-id-bad) · [Bon](#a11y-no-refer-to-non-existent-id-good) | Interdire les références à des identifiants inexistants |
 | [`a11y/no-role-presentation-on-focusable`](#a11y-no-role-presentation-on-focusable) | [Mauvais](#a11y-no-role-presentation-on-focusable-bad) · [Bon](#a11y-no-role-presentation-on-focusable-good) | Interdire role="presentation" ou role="none" sur les éléments pouvant recevoir le focus |
 | [`a11y/no-static-element-interactions`](#a11y-no-static-element-interactions) | [Mauvais](#a11y-no-static-element-interactions-bad) · [Bon](#a11y-no-static-element-interactions-good) | Interdire les gestionnaires d’événements sur les éléments statiques |
-| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [Mauvais](#a11y-placeholder-label-option-bad) · [Bon](#a11y-placeholder-label-option-good) | Exiger disabled ou hidden sur l’option d’invite d’un select |
+| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [Mauvais](#a11y-placeholder-label-option-bad) · [Bon](#a11y-placeholder-label-option-good) | Exiger une option d’invite dans un select required |
 | [`a11y/role-has-required-aria-props`](#a11y-role-has-required-aria-props) | [Mauvais](#a11y-role-has-required-aria-props-bad) · [Bon](#a11y-role-has-required-aria-props-good) | Exiger les propriétés obligatoires des rôles ARIA |
 | [`a11y/tabindex-no-positive`](#a11y-tabindex-no-positive) | [Mauvais](#a11y-tabindex-no-positive-bad) · [Bon](#a11y-tabindex-no-positive-good) | Interdire les valeurs positives de tabindex |
 | [`a11y/use-list`](#a11y-use-list) | [Mauvais](#a11y-use-list-bad) · [Bon](#a11y-use-list-good) | Suggérer des éléments de liste pour les textes ressemblant à des listes à puces |
@@ -726,7 +726,7 @@ Interdire les gestionnaires d’événements sur les éléments statiques
 
 ### `a11y/placeholder-label-option`
 
-Exiger disabled ou hidden sur l’option d’invite d’un select
+Exiger une option d’invite dans un select required
 
 <span id="a11y-placeholder-label-option-bad"></span>
 

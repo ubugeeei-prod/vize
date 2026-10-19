@@ -35,7 +35,7 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 | [`a11y/no-refer-to-non-existent-id`](#a11y-no-refer-to-non-existent-id) | [Bad](#a11y-no-refer-to-non-existent-id-bad) · [Good](#a11y-no-refer-to-non-existent-id-good) | Disallow references to non-existent IDs |
 | [`a11y/no-role-presentation-on-focusable`](#a11y-no-role-presentation-on-focusable) | [Bad](#a11y-no-role-presentation-on-focusable-bad) · [Good](#a11y-no-role-presentation-on-focusable-good) | Disallow role="presentation" or role="none" on focusable elements |
 | [`a11y/no-static-element-interactions`](#a11y-no-static-element-interactions) | [Bad](#a11y-no-static-element-interactions-bad) · [Good](#a11y-no-static-element-interactions-good) | Disallow event handlers on static elements |
-| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [Bad](#a11y-placeholder-label-option-bad) · [Good](#a11y-placeholder-label-option-good) | Require disabled or hidden on select placeholder option |
+| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [Bad](#a11y-placeholder-label-option-bad) · [Good](#a11y-placeholder-label-option-good) | Require a placeholder label option in a required select |
 | [`a11y/role-has-required-aria-props`](#a11y-role-has-required-aria-props) | [Bad](#a11y-role-has-required-aria-props-bad) · [Good](#a11y-role-has-required-aria-props-good) | Require ARIA roles to have required properties |
 | [`a11y/tabindex-no-positive`](#a11y-tabindex-no-positive) | [Bad](#a11y-tabindex-no-positive-bad) · [Good](#a11y-tabindex-no-positive-good) | Disallow positive tabindex values |
 | [`a11y/use-list`](#a11y-use-list) | [Bad](#a11y-use-list-bad) · [Good](#a11y-use-list-good) | Suggest using list elements for bullet-like text |
@@ -1660,7 +1660,7 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 ### `a11y/placeholder-label-option`
 
-Require disabled or hidden on select placeholder option
+Require a placeholder label option in a required select
 
 [Bad](#a11y-placeholder-label-option-bad) · [Good](#a11y-placeholder-label-option-good)
 
@@ -1695,13 +1695,13 @@ vp run lint
 
 **Bad**
 
-The empty-value prompt remains selectable as if it were a country value.
+The select is `required`, but its first option is Japan, so the form starts with a country already chosen and `required` never blocks submission.
 
-```vue annotate="remove:3"
+```vue annotate="remove:4"
 <template>
-  <select v-model="country">
-    <option value="">Choose a country</option>
+  <select v-model="country" required>
     <option value="jp">Japan</option>
+    <option value="fr">France</option>
   </select>
 </template>
 ```
@@ -1710,12 +1710,12 @@ The empty-value prompt remains selectable as if it were a country value.
 
 **Good**
 
-Adding `disabled` distinguishes the prompt from the selectable Japan option.
+An empty first option is the placeholder label option: the select starts with no value, so `required` makes the user pick a country.
 
 ```vue annotate="add:3"
 <template>
-  <select v-model="country">
-    <option value="" disabled>Choose a country</option>
+  <select v-model="country" required>
+    <option value="">Choose a country</option>
     <option value="jp">Japan</option>
   </select>
 </template>
@@ -1723,7 +1723,7 @@ Adding `disabled` distinguishes the prompt from the selectable Japan option.
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L47) · [All rules](all.md)
 
 ### `a11y/role-has-required-aria-props`
 

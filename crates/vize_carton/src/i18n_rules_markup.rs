@@ -45,9 +45,9 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "a11y/placeholder-label-option.description",
-        "Require disabled or hidden on select placeholder option",
-        "select のプレースホルダー用 option に disabled か hidden を必須にする",
-        "要求 select 的占位 option 带有 disabled 或 hidden",
+        "Require a placeholder label option in a required select",
+        "required の select にプレースホルダーの option を必須にする",
+        "要求 required 的 select 带有占位 option",
     ),
     (
         "a11y/use-list.description",

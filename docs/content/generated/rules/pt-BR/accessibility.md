@@ -36,7 +36,7 @@ Cada regra desta categoria reúne nesta página sua finalidade, configuração e
 | [`a11y/no-refer-to-non-existent-id`](#a11y-no-refer-to-non-existent-id) | [Incorreto](#a11y-no-refer-to-non-existent-id-bad) · [Correto](#a11y-no-refer-to-non-existent-id-good) | Proibir referências a IDs inexistentes |
 | [`a11y/no-role-presentation-on-focusable`](#a11y-no-role-presentation-on-focusable) | [Incorreto](#a11y-no-role-presentation-on-focusable-bad) · [Correto](#a11y-no-role-presentation-on-focusable-good) | Proibir role="presentation" ou role="none" em elementos que podem receber foco |
 | [`a11y/no-static-element-interactions`](#a11y-no-static-element-interactions) | [Incorreto](#a11y-no-static-element-interactions-bad) · [Correto](#a11y-no-static-element-interactions-good) | Proibir manipuladores de eventos em elementos estáticos |
-| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [Incorreto](#a11y-placeholder-label-option-bad) · [Correto](#a11y-placeholder-label-option-good) | Exigir disabled ou hidden na opção de orientação de um select |
+| [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [Incorreto](#a11y-placeholder-label-option-bad) · [Correto](#a11y-placeholder-label-option-good) | Exigir uma opção de orientação em um select required |
 | [`a11y/role-has-required-aria-props`](#a11y-role-has-required-aria-props) | [Incorreto](#a11y-role-has-required-aria-props-bad) · [Correto](#a11y-role-has-required-aria-props-good) | Exigir as propriedades obrigatórias dos papéis ARIA |
 | [`a11y/tabindex-no-positive`](#a11y-tabindex-no-positive) | [Incorreto](#a11y-tabindex-no-positive-bad) · [Correto](#a11y-tabindex-no-positive-good) | Proibir valores positivos de tabindex |
 | [`a11y/use-list`](#a11y-use-list) | [Incorreto](#a11y-use-list-bad) · [Correto](#a11y-use-list-good) | Sugerir elementos de lista para textos que parecem itens de lista |
@@ -1661,7 +1661,7 @@ O exemplo correto evita o diagnóstico desta regra com a configuração acima; o
 
 ### `a11y/placeholder-label-option`
 
-Exigir disabled ou hidden na opção de orientação de um select
+Exigir uma opção de orientação em um select required
 
 [Incorreto](#a11y-placeholder-label-option-bad) · [Correto](#a11y-placeholder-label-option-good)
 
@@ -1696,13 +1696,13 @@ vp run lint
 
 **Incorreto**
 
-A opção de orientação com valor vazio permanece selecionável como se fosse um valor de país.
+O select é `required`, mas a primeira opção é Japão, então o formulário começa com um país já escolhido e `required` nunca bloqueia o envio.
 
-```vue annotate="remove:3"
+```vue annotate="remove:4"
 <template>
-  <select v-model="country">
-    <option value="">Choose a country</option>
+  <select v-model="country" required>
     <option value="jp">Japan</option>
+    <option value="fr">France</option>
   </select>
 </template>
 ```
@@ -1711,12 +1711,12 @@ A opção de orientação com valor vazio permanece selecionável como se fosse 
 
 **Correto**
 
-Adicionar `disabled` distingue a orientação da opção Japão, que pode ser selecionada.
+Uma primeira opção vazia é a orientação: o select começa sem valor, e `required` obriga a escolher um país.
 
 ```vue annotate="add:3"
 <template>
-  <select v-model="country">
-    <option value="" disabled>Choose a country</option>
+  <select v-model="country" required>
+    <option value="">Choose a country</option>
     <option value="jp">Japan</option>
   </select>
 </template>
@@ -1724,7 +1724,7 @@ Adicionar `disabled` distingue a orientação da opção Japão, que pode ser se
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L47) · [Todas as regras](all.md)
 
 ### `a11y/role-has-required-aria-props`
 
