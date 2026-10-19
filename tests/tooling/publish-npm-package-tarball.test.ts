@@ -321,10 +321,12 @@ await test("already-created versions cannot release through metadata plus latest
 
 await test("ordinary PR and merge-group source plans execute the complete publisher regression family", () => {
   const workflow = readRepoFile(".github", "workflows", "pr-source-checks.yml");
-  const job = workflowJobBody(workflow, "pr-source-plan");
-  assert.match(job, /github.event_name == 'pull_request' \|\| github.event_name == 'merge_group'/);
+  const plan = workflowJobBody(workflow, "pr-source-plan");
+  assert.match(plan, /github.event_name == 'pull_request' \|\| github.event_name == 'merge_group'/);
+  const job = workflowJobBody(workflow, "ci-selection-tests");
+  assert.match(job, /needs: pr-source-plan/);
   const step = job.slice(job.indexOf("      - name: Test CI selection when its inputs change"));
-  assert.match(step, /if: \$\{\{ steps.plan.outputs.tooling == 'true' \}\}/);
+  assert.match(step, /if: \$\{\{ needs.pr-source-plan.outputs.tooling == 'true' \}\}/);
   const run = step.split("run: >-\n")[1];
   assert.ok(run?.trim().startsWith("node --test "));
   const patterns = run.trim().split(/\s+/).slice(2);

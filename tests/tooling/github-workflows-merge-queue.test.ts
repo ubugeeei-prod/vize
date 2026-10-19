@@ -89,6 +89,7 @@ test("queue scope reaches the planner and every selected source lane remains req
     "nuxt-module-qualification",
     "canonical-corpus",
     "release-integration-catalog",
+    "ci-selection-tests",
   ]);
   assert.equal(
     source.jobs["source-report"].if,

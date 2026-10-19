@@ -72,10 +72,15 @@ test("source planning uses Node and offline metadata before selecting affected p
     source.jobs["pr-js-packages"].with?.["js-plan"],
     "${{ needs.pr-source-plan.outputs.js-plan }}",
   );
-  const ciSelection = steps.find(
+  assert.equal(plan.outputs?.tooling, "${{ steps.plan.outputs.tooling }}");
+  assert.ok(steps.every((step) => step.name !== "Test CI selection when its inputs change"));
+  const selectionJob = source.jobs["ci-selection-tests"];
+  assert.equal(selectionJob.needs, "pr-source-plan");
+  assert.ok(source.jobs["source-report"].needs?.includes("ci-selection-tests"));
+  const ciSelection = selectionJob.steps?.find(
     (step) => step.name === "Test CI selection when its inputs change",
   );
-  assert.equal(ciSelection?.if, "${{ steps.plan.outputs.tooling == 'true' }}");
+  assert.equal(ciSelection?.if, "${{ needs.pr-source-plan.outputs.tooling == 'true' }}");
   assert.equal(
     ciSelection?.run,
     "node --test tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-test-archive.test.mjs tests/tooling/rust-build-evidence.test.mjs tests/tooling/release-input-scopes.test.mjs tests/tooling/pinned-fixture-hydration.test.ts tests/tooling/native-preparation-identity.test.ts tests/tooling/native-formatter-build-custody.test.mjs tests/tooling/native-ci-formatter-custody.test.mjs tests/tooling/native-history-profile.test.ts tests/tooling/publish-npm-package*.test.ts tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts",
@@ -335,11 +340,11 @@ test("unchanged queue gate hydrates the same pinned fixture for all five full Ru
   ) as {
     runs: { steps: Record<string, unknown>[] };
   };
-  const selection = source.jobs["pr-source-plan"].steps?.find(
+  const selection = source.jobs["ci-selection-tests"].steps?.find(
     (step) => step.name === "Test CI selection when its inputs change",
   );
   assert.ok(selection);
-  assert.equal(selection.if, "${{ steps.plan.outputs.tooling == 'true' }}");
+  assert.equal(selection.if, "${{ needs.pr-source-plan.outputs.tooling == 'true' }}");
   assert.equal(selection["continue-on-error"], undefined);
   assert.deepEqual(selection.run?.split(/\s+/), [
     "node",

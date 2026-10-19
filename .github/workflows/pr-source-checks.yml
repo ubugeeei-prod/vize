@@ -38,6 +38,7 @@ jobs:
       js-plan: ${{ steps.plan.outputs.js-plan }}
       native-runtime-matrix: ${{ steps.plan.outputs.native-runtime-matrix }}
       playground: ${{ steps.plan.outputs.playground }}
+      tooling: ${{ steps.plan.outputs.tooling }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -69,8 +70,24 @@ jobs:
         id: canonical-corpus-plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
         run: node tools/support/compat/github/canonical-corpus-selection.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
+  # Beside the lanes, not before them: every lane already waits for the source
+  # report, which requires this job.
+  ci-selection-tests:
+    name: CI selection tests
+    needs: pr-source-plan
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - name: Explain unrelated skip
+        if: ${{ needs.pr-source-plan.outputs.tooling != 'true' }}
+        run: echo 'No CI selection inputs changed.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Test CI selection when its inputs change
-        if: ${{ steps.plan.outputs.tooling == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         run: >-
           node --test tests/tooling/ci-iteration-plans.test.ts
           tests/tooling/pr-required-rust.test.ts
@@ -304,7 +321,7 @@ jobs:
     # A superseded run reports nothing: its required check fails in test-report.
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
     # prettier-ignore
-    needs: [pr-source-plan, pr-rust-source, pr-rust-products, pr-js-packages, pr-native-runtime, pr-playground-test, nuxt-module-qualification, canonical-corpus, release-integration-catalog]
+    needs: [pr-source-plan, pr-rust-source, pr-rust-products, pr-js-packages, pr-native-runtime, pr-playground-test, nuxt-module-qualification, canonical-corpus, release-integration-catalog, ci-selection-tests]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:

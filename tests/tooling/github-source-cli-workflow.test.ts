@@ -50,6 +50,7 @@ const sourceNeeds = [
   "nuxt-module-qualification",
   "canonical-corpus",
   "release-integration-catalog",
+  "ci-selection-tests",
 ];
 const fullNeeds = ["full-source-cli", "tooling-plan", "test-scripts"];
 const fullCondition =
@@ -74,6 +75,7 @@ void test("scheduled tooling owns the CLI producer without delaying independent 
     "pr-js-packages",
     "pr-native-runtime",
     "pr-playground-test",
+    "ci-selection-tests",
   ]) {
     assert.equal(source.jobs[name].needs, "pr-source-plan", name);
   }
