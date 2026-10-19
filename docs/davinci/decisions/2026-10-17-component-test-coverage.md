@@ -348,12 +348,16 @@ Corsa-backed handlers (`implementation.rs` 0/94, `declaration.rs` 40/109,
 
 Behavior tests added against these files, each with the bugs they exposed:
 
-| PR    | Area                     | Tests | Fixed                                                      |
-| ----- | ------------------------ | ----: | ---------------------------------------------------------- |
-| #9584 | Glyph directive literals |     9 | a quoted backtick dedented every later template line       |
-| #9595 | Maestro art completion   |     9 | `<article`/`<variant-card` read as `<art`/`<variant`       |
-| #9609 | Maestro slot definition  |     5 | `=>` in `defineSlots` hid later slots; nested keys matched |
-| #9610 | Maestro directive hover  |     3 | `.prop` shorthand had no hover                             |
+| PR     | Area                     | Tests | Fixed                                                                            |
+| ------ | ------------------------ | ----: | -------------------------------------------------------------------------------- |
+| #9584  | Glyph directive literals |     9 | a quoted backtick dedented every later template line                             |
+| #9595  | Maestro art completion   |     9 | `<article`/`<variant-card` read as `<art`/`<variant`                             |
+| #9609  | Maestro slot definition  |     5 | `=>` in `defineSlots` hid later slots; nested keys matched                       |
+| #9610  | Maestro directive hover  |     3 | `.prop` shorthand had no hover                                                   |
+| #9622  | Maestro `.value` fixes   |     6 | wrap on declarations and `x.value`; unwrap inside `value`; auto-import placement |
+| #9623  | Maestro CSS modules      |     5 | named `module="x"` and partially typed members                                   |
+| TBD-ST | Maestro style tokens     |     4 | `v-bind(` in comments/strings; quoted `)`                                        |
+| TBD-GS | Glyph CSS at-rules       |     7 | none (probe filed #9608)                                                         |
 
 Open from the same work: #9583 (in-attribute dedent after a quoted backtick)
 and #9608 (compact CSS rules get a blank line except before a selector list).
