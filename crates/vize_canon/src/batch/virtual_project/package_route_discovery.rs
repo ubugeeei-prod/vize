@@ -3,16 +3,24 @@
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::FxHashSet;
+use vize_carton::{FxHashMap, FxHashSet, String};
 
 use super::VirtualProject;
 use super::dependency_scan::resolve_dependency;
 use super::package_route_reachability::{PackageRouteReachability, package_route_reaches_vue};
 
+/// Reachability scans of one registration pass, keyed like the check walk's
+/// memo: a route's scan resolves from the package's own files, never from the
+/// importer, so every importer of `(manifest, specifier, context)` shares it.
+/// Lives only while the filesystem is treated as stable (one pass).
+pub(crate) type ReachabilityMemo =
+    FxHashMap<(PathBuf, String, crate::PackageResolutionContext), PackageRouteReachability>;
+
 impl VirtualProject {
     pub(super) fn reconcile_package_routes_for_importers_inner(
         &mut self,
         changed: &FxHashSet<PathBuf>,
+        memo: &mut ReachabilityMemo,
     ) {
         if changed.is_empty() {
             return;
@@ -86,21 +94,27 @@ impl VirtualProject {
                 let watchable_negative = lookup.is_watchable_negative();
                 let (route, mut invalidation_paths) = lookup.into_parts();
                 let has_route = route.is_some();
-                let reachability =
-                    route
-                        .as_ref()
-                        .map_or_else(PackageRouteReachability::default, |route| {
-                            package_route_reaches_vue(
+                let reachability = match route.as_ref() {
+                    None => PackageRouteReachability::default(),
+                    Some(route) => memo
+                        .entry((
+                            route.manifest_path.clone(),
+                            specifier.clone(),
+                            context.clone(),
+                        ))
+                        .or_insert_with(|| {
+                            let scanned = package_route_reaches_vue(
                                 route,
                                 &aliases,
                                 &resolution,
                                 &mut resolver,
                                 source_options,
-                            )
-                        });
-                if has_route {
-                    reachability.record_work(&mut resolver);
-                }
+                            );
+                            scanned.record_work(&mut resolver);
+                            scanned
+                        })
+                        .clone(),
+                };
                 // Private `#` mappings require the authored scope manifest in
                 // the mirror even when they resolve only ordinary `.ts` files.
                 // The synthetic root manifest has no `imports` map.

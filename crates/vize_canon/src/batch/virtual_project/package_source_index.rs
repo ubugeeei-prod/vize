@@ -28,6 +28,15 @@ impl VirtualProject {
     }
 
     pub(crate) fn reconcile_package_routes_for_importers(&mut self, changed: &[PathBuf]) {
+        self.reconcile_package_routes_for_importers_with(changed, &mut Default::default());
+    }
+
+    /// Reconcile with reachability scans shared across one registration pass.
+    pub(crate) fn reconcile_package_routes_for_importers_with(
+        &mut self,
+        changed: &[PathBuf],
+        memo: &mut super::package_route_discovery::ReachabilityMemo,
+    ) {
         let changed = changed
             .iter()
             .map(|path| {
@@ -50,7 +59,7 @@ impl VirtualProject {
             .cloned()
             .collect();
         let retained = self.take_rebound_package_sources(&keys);
-        self.reconcile_package_routes_for_importers_inner(&changed);
+        self.reconcile_package_routes_for_importers_inner(&changed, memo);
         self.restore_rebound_package_sources(retained);
     }
 
