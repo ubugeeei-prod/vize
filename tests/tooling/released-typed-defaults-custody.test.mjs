@@ -21,6 +21,7 @@ import {
   verifyAssets,
 } from "../../tools/support/release/typed_defaults/distribution.mjs";
 import { officialFixture } from "./support/released-typed-defaults-fixtures.mjs";
+import { writeTarGz } from "../../tools/support/archive/tar.ts";
 
 await test("official C/H/source PR/R tag custody accepts inert bindings and refuses every changed authority", async () => {
   await authenticate(officialFixture().options, officialFixture().read);
@@ -178,10 +179,19 @@ function archiveFixture(t, kind = "regular") {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "typed-public-archive-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const archive = path.join(root, archiveName);
-  const script =
-    "import io,sys,tarfile\npayload=bytearray(128);payload[:6]=b'\\x7fELF\\x02\\x01';payload[18:20]=b'\\x3e\\x00'\nkind=sys.argv[2]\nif kind=='fake': payload=bytearray(b'#!/bin/sh\\necho fake\\n'+b'x'*100)\nwith tarfile.open(sys.argv[1],'w:gz') as t:\n m=tarfile.TarInfo('vize');m.mode=0o755;m.size=len(payload)\n if kind=='symlink': m.type=tarfile.SYMTYPE;m.linkname='/outside/foreign';m.size=0\n t.addfile(m,io.BytesIO(payload) if m.isreg() else None)\n if kind=='extra':\n  extra=tarfile.TarInfo('extra');extra.size=1;t.addfile(extra,io.BytesIO(b'x'))\n";
-  const result = spawnSync("python3", ["-c", script, archive, kind], { encoding: "utf8" });
-  assert.equal(result.status, 0, result.stderr);
+  const elf = Buffer.alloc(128);
+  elf.set([0x7f, 0x45, 0x4c, 0x46, 0x02, 0x01], 0);
+  elf.set([0x3e, 0x00], 18);
+  const payload =
+    kind === "fake"
+      ? Buffer.concat([Buffer.from("#!/bin/sh\necho fake\n"), Buffer.alloc(100, "x")])
+      : elf;
+  const members =
+    kind === "symlink"
+      ? [{ name: "vize", mode: 0o755, typeflag: "2", linkname: "/outside/foreign" }]
+      : [{ name: "vize", mode: 0o755, data: payload }];
+  if (kind === "extra") members.push({ name: "extra", data: Buffer.from("x") });
+  fs.writeFileSync(archive, writeTarGz(members));
   const bytes = fs.readFileSync(archive),
     checksum = Buffer.from(`${sha256(bytes)}  ${archiveName}\n`);
   const tag = "v0.445.0";
@@ -194,10 +204,10 @@ function archiveFixture(t, kind = "regular") {
   }));
   const extract = (destination) =>
     spawnSync(
-      "python3",
+      process.execPath,
       [
         fileURLToPath(
-          new URL("../../tools/support/release/typed_defaults/archive.py", import.meta.url),
+          new URL("../../tools/support/release/typed_defaults/archive.ts", import.meta.url),
         ),
         archive,
         destination,

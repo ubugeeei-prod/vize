@@ -4,7 +4,8 @@ on:
   pull_request:
     paths:
       - "tools/support/release/lint_reports/package_graph.mjs"
-      - "tools/support/release/lint_reports/package_members.py"
+      - "tools/support/release/lint_reports/package_members.ts"
+      - "tools/support/archive/tar.ts"
       - "tests/tooling/released-package-graph.test.mjs"
       - "tests/tooling/released-lint-reports.test.mjs"
       - "tests/tooling/released-nuxt-dev-ssr.test.mjs"

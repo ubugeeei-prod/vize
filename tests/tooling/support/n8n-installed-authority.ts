@@ -30,12 +30,13 @@ interface PayloadManifest {
 }
 const collectorPaths = [
   "tools/commands/release/npm/collect-public-install.rs",
+  "tools/support/archive/tar.ts",
   ...[
-    "collect.py",
-    "identity.py",
-    "registry.py",
-    "archive.py",
-    "probe.py",
+    "collect.ts",
+    "identity.ts",
+    "registry.ts",
+    "archive.ts",
+    "probe.ts",
     "native-custody.cjs",
     "authority-schema.ts",
   ].map((name) => "tools/support/release/public_install/" + name),

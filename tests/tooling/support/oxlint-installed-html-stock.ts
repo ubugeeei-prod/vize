@@ -10,52 +10,59 @@ import {
 import { exactPath, sha256 } from "./n8n-installed-authority.ts";
 
 // Adapt the unchanged reviewed collector libraries; never extract or execute a public archive.
+export const stockModules = [
+  "tools/support/release/public_install/identity.ts",
+  "tools/support/release/public_install/registry.ts",
+  "tools/support/release/public_install/archive.ts",
+  "tools/support/archive/tar.ts",
+];
 export const stockArchiveProgram = String.raw`
-import hashlib, importlib.util, json, pathlib, sys
-sys.dont_write_bytecode = True
-plans = json.load(sys.stdin)
-if (not isinstance(plans, list) or not 2 <= len(plans) <= 10
-    or {item.get("version") for item in plans} not in ({"1.78.0"}, {"1.86.0"})
-    or "oxlint" not in {item.get("name") for item in plans}
-    or "@oxlint/binding-darwin-arm64" not in {item.get("name") for item in plans}
-    or any(item.get("name") != "oxlint" and not item.get("name", "").startswith("@oxlint/binding-") for item in plans)):
-    raise ValueError("finite pinned stock wrapper and native public archive plans required")
-root = pathlib.Path(sys.argv[1])
-modules = []
-for name in ("identity", "registry", "archive"):
-    filename = root / "tools/support/release/public_install" / (name + ".py")
-    if filename.resolve(strict=True) != filename:
-        raise ValueError("reviewed collector module path redirected")
-    data = filename.read_bytes()
-    modules.append({"path": str(filename), "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)})
-    spec = importlib.util.spec_from_file_location(name, filename)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    spec.loader.exec_module(module)
-identity = sys.modules["identity"]
-registry = sys.modules["registry"]
-archive = sys.modules["archive"]
-identity.reject_overrides(__import__("os").environ)
-proofs = []
-for item in plans:
-    metadata = []
-    def observed_read(url):
-        value = registry.read(url)
-        metadata.append({"url": url, "metadata": value})
-        return value
-    registry.package_metadata(item["name"], item["version"], item, reader=observed_read)
-    payload = registry.read_bytes(item["resolved"])
-    if len(payload) > 64 * 1024 * 1024:
-        raise ValueError("pinned stock archive exceeds its finite 64 MiB bound")
-    comparison = archive.archive_comparison(pathlib.Path(item["directory"]), payload, item["integrity"])
-    proofs.append({"input": item, "metadataResponses": metadata,
-                   "archiveByteLength": len(payload), "archiveSHA256": hashlib.sha256(payload).hexdigest(),
-                   "comparison": comparison,
-                   "scope": "third-party stock public archive equality; no Vize provenance or semantic oracle claim"})
-interpreter = pathlib.Path(sys.executable).resolve(strict=True)
-print(json.dumps({"schema": "vize.oxlint.stock-public-archives-v1", "modules": modules,
-                  "python": {"path": str(interpreter), "version": sys.version, "sha256": hashlib.sha256(interpreter.read_bytes()).hexdigest()},
-                  "packages": proofs}))
+import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+const digest = (data) => createHash("sha256").update(data).digest("hex");
+const plans = JSON.parse(fs.readFileSync(0, "utf8"));
+const names = Array.isArray(plans) ? plans.map((item) => item?.name) : [];
+const versions = new Set(Array.isArray(plans) ? plans.map((item) => item?.version) : []);
+if (!Array.isArray(plans) || plans.length < 2 || plans.length > 10
+    || versions.size !== 1 || !(versions.has("1.78.0") || versions.has("1.86.0"))
+    || !names.includes("oxlint") || !names.includes("@oxlint/binding-darwin-arm64")
+    || names.some((name) => name !== "oxlint" && !String(name ?? "").startsWith("@oxlint/binding-")))
+  throw new Error("finite pinned stock wrapper and native public archive plans required");
+const root = process.argv[1];
+const modules = [];
+for (const name of ${JSON.stringify(stockModules)}) {
+  const filename = path.join(root, name);
+  if (fs.realpathSync(filename) !== filename) throw new Error("reviewed collector module path redirected");
+  const data = fs.readFileSync(filename);
+  modules.push({ path: filename, sha256: digest(data), bytes: data.length });
+}
+const load = (name) => import(pathToFileURL(path.join(root, "tools/support/release/public_install", name)).href);
+const identity = await load("identity.ts");
+const registry = await load("registry.ts");
+const archive = await load("archive.ts");
+identity.rejectOverrides(process.env);
+const proofs = [];
+for (const item of plans) {
+  const metadata = [];
+  const observedRead = async (url) => {
+    const value = await registry.read(url);
+    metadata.push({ url, metadata: value });
+    return value;
+  };
+  await registry.packageMetadata(item.name, item.version, item, undefined, observedRead);
+  const payload = await registry.readBytes(item.resolved);
+  if (payload.length > 64 * 1024 * 1024) throw new Error("pinned stock archive exceeds its finite 64 MiB bound");
+  const comparison = archive.archiveComparison(item.directory, payload, item.integrity);
+  proofs.push({ input: item, metadataResponses: metadata, archiveByteLength: payload.length,
+    archiveSHA256: digest(payload), comparison,
+    scope: "third-party stock public archive equality; no Vize provenance or semantic oracle claim" });
+}
+const runtime = fs.realpathSync(process.execPath);
+process.stdout.write(JSON.stringify({ schema: "vize.oxlint.stock-public-archives-v1", modules,
+  node: { path: runtime, version: process.version, sha256: digest(fs.readFileSync(runtime)) },
+  packages: proofs }) + "\n");
 `;
 
 export interface StockArchiveInput {
@@ -71,8 +78,8 @@ export interface StockArchiveInput {
 export function verifyStockArchives(packages: StockArchiveInput[], receiptPath: string) {
   installedHtmlPreflight();
   const input = JSON.stringify(packages);
-  const args = ["-I", "-c", stockArchiveProgram, sourceRoot];
-  const result = spawnSync("python3", args, {
+  const args = ["--input-type=module", "-e", stockArchiveProgram, sourceRoot];
+  const result = spawnSync(process.execPath, args, {
     cwd: sourceRoot,
     input,
     timeout: 60_000,
@@ -80,7 +87,7 @@ export function verifyStockArchives(packages: StockArchiveInput[], receiptPath: 
   });
   const packet = {
     scope: "stock public archive custody only; no installed Vize execution or semantic credit",
-    command: "python3",
+    command: process.execPath,
     args,
     input,
     adapterSha256: sha256(stockArchiveProgram),
@@ -98,14 +105,14 @@ export function verifyStockArchives(packages: StockArchiveInput[], receiptPath: 
   assert.equal(result.stderr.length, 0);
   const proof = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(result.stdout));
   assert.equal(proof.schema, "vize.oxlint.stock-public-archives-v1");
-  assert.equal(exactPath(proof.python.path), proof.python.path);
-  assert.equal(sha256(fs.readFileSync(proof.python.path)), proof.python.sha256);
-  assert.equal(typeof proof.python.version, "string");
+  assert.equal(exactPath(proof.node.path), proof.node.path);
+  assert.equal(sha256(fs.readFileSync(proof.node.path)), proof.node.sha256);
+  assert.equal(typeof proof.node.version, "string");
   assert.equal(proof.packages.length, packages.length);
   assert.deepEqual(
     proof.modules,
-    ["identity", "registry", "archive"].map((name) => {
-      const filename = path.join(sourceRoot, "tools/support/release/public_install", name + ".py");
+    stockModules.map((name) => {
+      const filename = path.join(sourceRoot, name);
       const bytes = fs.readFileSync(filename);
       return { path: filename, sha256: sha256(bytes), bytes: bytes.length };
     }),

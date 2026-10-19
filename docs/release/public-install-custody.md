@@ -35,10 +35,10 @@ The official entry is the non-Node
 rejects nonempty `NODE_OPTIONS`, `VIZE_PREFER_WORKSPACE_BINDING`,
 `NAPI_RS_NATIVE_LIBRARY_PATH`, `NAPI_RS_FORCE_WASI`,
 `VIZE_ALLOW_NATIVE_VERSION_MISMATCH`, `CORSA_PATH`, `CORSA_EXECUTABLE`,
-`TSGO_PATH` and `TSGO_EXECUTABLE` before launching Python or any Node process.
-Existing custody configurations are also rejected. Python is started with `-I`
-and its owned sibling modules are compiled directly from reviewed source bytes;
-matching timestamp/size `.pyc` caches cannot substitute executed code. The Python producer and
+`TSGO_PATH` and `TSGO_EXECUTABLE` before launching any Node process.
+Existing custody configurations are also rejected. The TypeScript producer runs
+from its reviewed source bytes, which are hashed before and after collection;
+Node's compile cache is keyed by source content. The producer and
 the hook independently reject their initial overrides. Nonempty overrides are
 never silently removed to manufacture evidence.
 
@@ -71,7 +71,7 @@ rust-script tools/commands/release/npm/collect-public-install.rs --print-collect
 
 The snapshot SHA256 hashes the sorted relative file path, a NUL, its SHA256 and
 a newline for every fixed producer file. The list includes the Rust entry,
-all five Python modules, the hook and the schema. A reviewer pins this value
+the shared tar reader, all five TypeScript modules, the hook and the schema. A reviewer pins this value
 before any later collection. The receipt's `collectorAuthority` identifies
 these reviewed tool bytes; it does not claim those tools are included in H.
 
@@ -145,9 +145,7 @@ successful authority receipt.
 ## Inert rejection qualification
 
 ```sh
-node --test tests/tooling/public-install-custody.test.ts
-python3 -I tests/tooling/support/public-install/controls.py
-python3 -I tests/tooling/support/public-install/source_controls.py
+node --test tests/tooling/public-install-custody.test.ts tests/tooling/public-install-controls.test.ts tests/tooling/public-install-source-controls.test.ts
 rust-script tools/commands/ci/verify-tool-layout.rs
 rust-script tools/commands/ci/source-file-lengths.rs --check --base-ref origin/main
 node tools/benchmarks/scripts/test-inventory.ts --json /tmp/public-install-test-inventory.json
@@ -159,9 +157,7 @@ Node loader rejects that text, and its journal must contain `failed` with no
 `returned` event. Additional controls reject tampered JS/native/Corsa, archive
 file-set changes, genuine committed H manifest shapes, wrong H versions/edges/catalogs,
 replacement/graft substitution, wrong source/run/workflow/subject,
-ambient overrides before startup, path escapes and overwrites. They include a
-matching same-size/same-mtime stale Python cache that ordinary import
-really executes, while the official source-only producer ignores it. Network
+ambient overrides before startup, path escapes and overwrites. Network
 access is denied throughout the inert parser controls. These tests do
 not simulate a successful native load and establish no public product credit.
 The ordinary tooling selector discovers the test in its existing broad PR and

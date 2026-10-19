@@ -115,7 +115,8 @@ export async function run(version, target) {
       "fixtures.mjs",
       "observe.mjs",
       "../lint_reports/package_graph.mjs",
-      "../lint_reports/package_members.py",
+      "../lint_reports/package_members.ts",
+      "../../archive/tar.ts",
       "../typed_defaults/custody.mjs",
       "../typed_defaults/packet.mjs",
     ];

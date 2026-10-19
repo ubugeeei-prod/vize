@@ -25,7 +25,7 @@ const OVERRIDES: [&str; 11] = [
 ];
 
 fn main() -> ExitCode {
-    // This boundary executes before Python and, crucially, before any Node startup.
+    // This boundary executes before any Node startup.
     for key in OVERRIDES {
         if env::var_os(key).is_some_and(|value| !value.is_empty()) {
             eprintln!("initial source/runtime override must be empty: {key}");
@@ -45,9 +45,8 @@ fn main() -> ExitCode {
         eprintln!("cannot locate the repository-owned collector");
         return ExitCode::FAILURE;
     };
-    match Command::new("python3")
-        .arg("-I")
-        .arg(root.join("tools/support/release/public_install/collect.py"))
+    match Command::new("node")
+        .arg(root.join("tools/support/release/public_install/collect.ts"))
         .args(env::args_os().skip(1))
         .status()
     {

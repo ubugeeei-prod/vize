@@ -16,6 +16,7 @@ import {
   reportOptions,
 } from "../../tools/support/release/lint_reports/custody.mjs";
 import { verifyReportPacket } from "../../tools/support/release/lint_reports/observe.ts";
+import { writeTarGz } from "../../tools/support/archive/tar.ts";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const source = new Map(
   Object.keys(pins).map((name) => [name, fs.readFileSync(path.join(root, name))]),
@@ -166,23 +167,23 @@ await test("source runtime overrides cannot satisfy an installed report observat
 await test("registry archive members require the actual unchanged installed bytes", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-package-law-"));
   try {
-    const setup = spawnSync("python3", [
-      "-c",
-      "import io,tarfile,pathlib,sys; p=pathlib.Path(sys.argv[1]);(p/'installed').mkdir();(p/'installed/package.json').write_bytes(b'original');t=tarfile.open(p/'package.tgz','w:gz');m=tarfile.TarInfo('package/package.json');m.size=8;t.addfile(m,io.BytesIO(b'original'));t.close()",
-      directory,
-    ]);
-    assert.equal(setup.status, 0);
+    fs.mkdirSync(path.join(directory, "installed"));
+    fs.writeFileSync(path.join(directory, "installed/package.json"), "original");
+    fs.writeFileSync(
+      path.join(directory, "package.tgz"),
+      writeTarGz([{ name: "package/package.json", data: Buffer.from("original") }]),
+    );
     const argv = [
-      path.join(root, "tools/support/release/lint_reports/package_members.py"),
+      path.join(root, "tools/support/release/lint_reports/package_members.ts"),
       path.join(directory, "package.tgz"),
       path.join(directory, "installed"),
     ];
-    assert.equal(spawnSync("python3", argv).status, 0);
+    assert.equal(spawnSync(process.execPath, argv).status, 0);
     fs.writeFileSync(path.join(directory, "installed/package.json"), "changed!");
-    assert.notEqual(spawnSync("python3", argv).status, 0);
+    assert.notEqual(spawnSync(process.execPath, argv).status, 0);
     fs.writeFileSync(path.join(directory, "installed/package.json"), "original");
     fs.writeFileSync(path.join(directory, "installed/injected.js"), "injected");
-    assert.notEqual(spawnSync("python3", argv).status, 0);
+    assert.notEqual(spawnSync(process.execPath, argv).status, 0);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }

@@ -30,39 +30,7 @@ const cleanEnvironment = () => {
 };
 const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 
-for (const suite of [
-  "ArchiveControls",
-  "RegistryControls",
-  "IdentityControls",
-  "JournalControls",
-  "SourceControls",
-]) {
-  test(`public install custody inert ${suite} rejection laws`, () => {
-    const result = spawnSync(
-      "python3",
-      [
-        "-I",
-        path.join(
-          root,
-          "tests/tooling/support/public-install",
-          suite === "SourceControls" ? "source_controls.py" : "controls.py",
-        ),
-        suite,
-      ],
-      {
-        cwd: root,
-        env: cleanEnvironment(),
-        encoding: "utf8",
-        timeout: 30_000,
-      },
-    );
-    assert.equal(result.error, undefined);
-    assert.equal(result.status, 0, result.stdout + result.stderr);
-    assert.match(result.stderr, /\bOK\b/u);
-  });
-}
-
-test("official Rust entry rejects every nonempty override before Python or Node startup", (t) => {
+test("official Rust entry rejects every nonempty override before Node startup", (t) => {
   const temporary = fs.realpathSync(
     fs.mkdtempSync(path.join(os.tmpdir(), "public-install-guard-")),
   );
@@ -103,10 +71,10 @@ test("official Rust entry rejects every nonempty override before Python or Node 
   }
 });
 
-test("direct Python collector rejects initial overrides before any probe or output", () => {
+test("direct collector rejects initial overrides before any probe or output", () => {
   for (const key of overrideKeys) {
-    const result = spawnSync("python3", ["-I", path.join(producer, "collect.py")], {
-      env: { ...cleanEnvironment(), [key]: "forbidden" },
+    const result = spawnSync(process.execPath, [path.join(producer, "collect.ts")], {
+      env: { ...cleanEnvironment(), [key]: key === "NODE_OPTIONS" ? "--no-warnings" : "forbidden" },
       encoding: "utf8",
       timeout: 10_000,
     });

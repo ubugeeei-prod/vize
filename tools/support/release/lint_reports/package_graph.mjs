@@ -226,8 +226,8 @@ async function registryPackage(location, { entry, directory, manifest }, output,
   const filename = path.join(output, "packages", `${sequence}.tgz`);
   fs.writeFileSync(filename, archive, { flag: "wx" });
   const comparison = spawnSync(
-    "python3",
-    [fileURLToPath(new URL("./package_members.py", import.meta.url)), filename, directory],
+    process.execPath,
+    [fileURLToPath(new URL("./package_members.ts", import.meta.url)), filename, directory],
     { encoding: "utf8", timeout: 60_000, maxBuffer: 8 * 1024 * 1024 },
   );
   assert.equal(comparison.error, undefined);

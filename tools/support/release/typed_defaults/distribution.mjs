@@ -86,9 +86,9 @@ export async function acquireDistribution(release, tag, consumer) {
     fs.writeFileSync(path.join(consumer, assets[i].name), payloads[i], { flag: "wx" });
   const archive = path.join(consumer, archiveName);
   const result = spawnSync(
-    "python3",
+    process.execPath,
     [
-      fileURLToPath(new URL("./archive.py", import.meta.url)),
+      fileURLToPath(new URL("./archive.ts", import.meta.url)),
       archive,
       path.join(consumer, "distribution"),
     ],
