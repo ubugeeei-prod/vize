@@ -37,30 +37,18 @@ The default Node.js floor for public npm runtime packages is Node 22, including
 `oxlint-plugin-vize`. The Oxlint plugin declares `^22 || >= 24` so Node 22 and Node 24 or newer are
 allowed while Node 23 stays outside the tested compatibility matrix.
 
-The release workflow builds native packages for macOS, Linux, and Windows across x64 and arm64
-where the package declares support. CI compatibility jobs cover the declared Node floor and the
-current project Node version.
+Native packages ship for macOS, Linux, and Windows on x64 and arm64:
 
-The full fresh-install smoke matrix (`.github/workflows/native-smoke.yml`) runs on a weekly
-cadence and on demand, not on every PR push. It exercises the published package install path on
-GitHub-hosted runners for linux-x64-gnu, linux-arm64-gnu, darwin-arm64, and win32-x64-msvc; the
-remaining darwin-x64 and win32-arm64-msvc targets stay on architecture-specific hosted runners.
-The matrix runs against Node 22 and Node 24. Release tags remain blocked by the release workflow's
-tarball install smoke before npm packages publish. The runtime smoke checks `vize --version`,
-`vize check`, `@vizejs/native` through both `require` and `import`, and a
-`@vizejs/vite-plugin` `vite build` from installed tarballs.
+| Platform                           | How it is verified                                                  |
+| ---------------------------------- | ------------------------------------------------------------------- |
+| darwin-arm64, darwin-x64           | Fresh install on hosted runners, Node 22 and 24                     |
+| linux-x64-gnu, linux-arm64-gnu     | Fresh install on hosted runners, Node 22 and 24                     |
+| win32-x64-msvc, win32-arm64-msvc   | Fresh install on hosted runners, Node 22 and 24                     |
+| linux-x64-musl, linux-arm64-musl   | Built every release; install checked manually on Alpine ([#493](https://github.com/ubugeeei-prod/vize/issues/493)) |
 
-Two declared Linux musl targets are not currently exercised by a hosted fresh-install runner.
-They are covered by per-platform build artifacts plus the `@vizejs/native-*`
-optional-dependency resolver until a containerized Alpine smoke can stage the matching native
-tarball:
-
-| Target           | Hosted runner gap                                                 | Compensating coverage                                              |
-| ---------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
-| linux-x64-musl   | No GitHub-hosted Alpine/musl VM is available as a native runner   | Build job emits the musl tarball; manual `node:alpine` smoke.      |
-| linux-arm64-musl | Arm64 hosted runners are Ubuntu GNU, not Alpine/musl native hosts | Build job emits the arm64 musl tarball; manual Alpine arm64 smoke. |
-
-Closing these gaps is tracked alongside [#493](https://github.com/ubugeeei-prod/vize/issues/493).
+Before any npm release, the packed tarballs are installed and must pass `vize --version`,
+`vize check`, loading `@vizejs/native` through both `require` and `import`, and a `vite build` with
+`@vizejs/vite-plugin`. The full fresh-install matrix also runs weekly.
 
 The minimum supported Rust version (MSRV) for the workspace is declared in `Cargo.toml` under
 `[workspace.package].rust-version`. The development toolchain pinned by `rust-toolchain.toml`
@@ -75,13 +63,14 @@ the move is called out in release notes when it changes. Downstream packagers sh
 | Alpha-supported               | `vize`, `@vizejs/native`, `@vizejs/vite-plugin`, `@vizejs/plugin-sdk`                                         | Intended for early production trials with release-note-backed breaking changes.                                    |
 | Compatibility preview         | `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/nuxt-lint-config`, `@vizejs/musea-nuxt` | Expected to work for common host setups, but host-framework compatibility can move quickly.                        |
 | Experimental                  | `oxlint-plugin-vize`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/wasm`                 | Public packages, but APIs, commands, output, and workflow shape may change during alpha.                           |
-| Experimental                  | `@vizejs/composable`, `@vizejs/ui`, `@vizejs/marquette`                                                       | Public libraries, but API families and generated evidence contracts may change during alpha.                       |
+| Experimental                  | `@vizejs/composable`, `@vizejs/ui`, `@vizejs/marquette`                                                       | Public libraries, but API families and generated reference data may change during alpha.                       |
 | Experimental (workspace only) | `@vizejs/data`, `@vizejs/devtools`, `@vizejs/router`, `@vizejs/state`                                         | Implemented in this repository but not yet published to npm. These packages cannot be installed from the registry. |
 | Incubating                    | `@vizejs/fresco`, `@vizejs/fresco-native`, editor extension packages                                          | Useful for development and feedback, but not yet part of the v1 alpha production-ready target.                     |
 
 ## Rust Crate Support Tiers
 
-This table is the canonical compatibility contract for crates.io consumers. It covers every crate
+This section is for Rust developers who depend on Vize crates from crates.io; Vue app developers
+can skip it. This table is the canonical compatibility contract for crates.io consumers. It covers every crate
 whose Cargo metadata permits publishing, including crates temporarily deferred by the release
 publisher while their first crates.io release is prepared. Private modules and implementation
 details are not compatibility surfaces.

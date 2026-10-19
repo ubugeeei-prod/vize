@@ -34,26 +34,16 @@ Vize は v1 アルファ版を目指して開発中です。早期に導入で�
 公開 npm パッケージが必要とする Node.js の最低バージョンは、原則として Node 22 です。
 `oxlint-plugin-vize` は `^22 || >= 24` を指定しており、Node 22 と Node 24 以降に対応します。Node 23 は検証対象に含みません。
 
-リリース時は、各パッケージが対応を宣言している macOS・Linux・Windows の x64 / arm64 向けにネイティブパッケージをビルドします。
-CI では、最低対応バージョンとプロジェクトで使う Node.js バージョンを検証します。
+ネイティブパッケージは macOS・Linux・Windows の x64 / arm64 向けに提供しています。
 
-新規インストールの全体検証（`.github/workflows/native-smoke.yml`）は、毎週および必要に応じて実行します。
-すべての PR で実行するわけではありません。公開パッケージを GitHub のホストランナーでインストールし、
-linux-x64-gnu、linux-arm64-gnu、darwin-arm64、win32-x64-msvc を検証します。
-darwin-x64 と win32-arm64-msvc は、各アーキテクチャのホストランナーで検証します。対象の Node.js は 22 と 24 です。
-npm への公開前には、リリース用 tarball のインストール検証も必要です。
-`vize --version`、`vize check`、`@vizejs/native` の `require` / `import`、インストールした `@vizejs/vite-plugin` による `vite build` を確認します。
+| プラットフォーム                   | 検証方法                                                            |
+| ---------------------------------- | ------------------------------------------------------------------- |
+| darwin-arm64, darwin-x64           | ホストランナーで新規インストールを検証（Node 22 と 24）             |
+| linux-x64-gnu, linux-arm64-gnu     | ホストランナーで新規インストールを検証（Node 22 と 24）             |
+| win32-x64-msvc, win32-arm64-msvc   | ホストランナーで新規インストールを検証（Node 22 と 24）             |
+| linux-x64-musl, linux-arm64-musl   | 毎リリースでビルドし、Alpine で手動検証（[#493](https://github.com/ubugeeei-prod/vize/issues/493)） |
 
-Linux musl の 2 つのターゲットには、新規インストールを実行するホストランナーの検証がありません。
-現時点では、対象別のビルド成果物と `@vizejs/native-*` の optional dependency 解決を検証しています。
-対応するネイティブ tarball を Alpine コンテナーで検証できるようになるまでの制約です。
-
-| 対象 | ホストランナーの制約 | 代わりに行う検証 |
-| --- | --- | --- |
-| linux-x64-musl | GitHub に Alpine / musl のネイティブランナーがない | musl tarball をビルドし、`node:alpine` で手動検証する |
-| linux-arm64-musl | arm64 ホストランナーは Ubuntu GNU で、Alpine / musl ではない | arm64 musl tarball をビルドし、Alpine arm64 で手動検証する |
-
-これらの不足は [#493](https://github.com/ubugeeei-prod/vize/issues/493) と関連する課題で追跡します。
+npm に公開する前に、リリース用 tarball をインストールし、`vize --version`、`vize check`、`@vizejs/native` の `require` / `import`、`@vizejs/vite-plugin` による `vite build` がすべて通ることを確認します。新規インストールの全体検証は毎週も実行します。
 
 Rust の最低対応バージョン（MSRV）は、`Cargo.toml` の `[workspace.package].rust-version` に記載しています。
 開発用の `rust-toolchain.toml` は、同じバージョンか、それより新しいバージョンを指定します。
@@ -67,12 +57,13 @@ Rust の最低対応バージョン（MSRV）は、`Cargo.toml` の `[workspace.
 | アルファ版対応 | `vize`、`@vizejs/native`、`@vizejs/vite-plugin`、`@vizejs/plugin-sdk` | 早期の本番導入を対象とする。破壊的変更はリリースノートで案内する |
 | 互換性プレビュー | `@vizejs/unplugin`、`@vizejs/rspack-plugin`、`@vizejs/nuxt`、`@vizejs/nuxt-lint-config`、`@vizejs/musea-nuxt` | 一般的な構成での動作を想定するが、フレームワークとの互換性は変化する可能性がある |
 | 実験的 | `oxlint-plugin-vize`、`@vizejs/vite-plugin-musea`、`@vizejs/musea-mcp-server`、`@vizejs/wasm` | 公開済みだが、API・コマンド・生成結果・ワークフローはアルファ版の間に変わる可能性がある |
-| 実験的 | `@vizejs/composable`、`@vizejs/ui`、`@vizejs/marquette` | 公開ライブラリだが、API の構成と生成結果の検証基準は変わる可能性がある |
+| 実験的 | `@vizejs/composable`、`@vizejs/ui`、`@vizejs/marquette` | 公開ライブラリだが、API の構成と生成されるリファレンスデータは変わる可能性がある |
 | 実験的（ワークスペース内のみ） | `@vizejs/data`、`@vizejs/devtools`、`@vizejs/router`、`@vizejs/state` | リポジトリ内に実装があるが npm には未公開。レジストリからはインストールできない |
 | 開発初期 | `@vizejs/fresco`、`@vizejs/fresco-native`、エディター拡張 | 開発と評価に使えるが、v1 アルファ版の本番対応対象には含まれない |
 
 ## Rust クレートのサポート区分
 
+この節は crates.io から Vize のクレートを使う Rust 開発者向けです。Vue アプリの開発者は読み飛ばしてかまいません。
 以下の表は、crates.io の利用者向けの互換性の方針です。Cargo メタデータで公開が許可されたクレートをすべて含みます。
 初回公開の準備などでリリースが延期されているクレートも対象です。非公開のモジュールや実装の詳細には、同じ互換性を保証しません。
 
