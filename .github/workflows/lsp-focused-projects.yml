@@ -47,71 +47,13 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
-      - name: Freeze the exact source, registry selection, and fixture pins
-        shell: python
-        run: |
-          import hashlib, json, os, pathlib, re, subprocess
-          root = pathlib.Path.cwd()
-          out = root / os.environ['CAMPAIGN_DIR']
-          out.mkdir(parents=True)
-          expected = os.environ['EXPECTED_SOURCE']
-          assert re.fullmatch('[0-9a-f]{40}', expected)
-          assert os.environ['GITHUB_REF'] == 'refs/heads/main'
-          def git(*args):
-              return subprocess.check_output(['git', *args], text=True).strip()
-          assert git('rev-parse', 'HEAD') == expected == os.environ['GITHUB_SHA']
-          assert os.environ['GITHUB_WORKFLOW_SHA'] == expected
-          pins = {
-              'varlet': '1007097bde3f6c06326e0057ac6a7cf4ab7ff519',
-              'primevue-volt': 'd4374cb7c1267f35eba7cee5d0a266f50ca8ec84',
-              'vue3-antd-admin': '64c03db76710e70b85aedf40a9ca87101946d70d',
-              'misskey': '810faa8e5db4bbf9d6d408a61df148559340ee99',
-          }
-          scopes = {
-              'original-four': list(pins),
-              'residual-two': ['vue3-antd-admin', 'misskey'],
-              'misskey-only': ['misskey'],
-          }
-          scope = os.environ['PACKET_SCOPE']
-          assert scope in scopes
-          registry_path = root / 'tests/_fixtures/vue-ecosystem-fixtures.json'
-          registry_bytes = registry_path.read_bytes()
-          registry = json.loads(registry_bytes)['projects']
-          projects = []
-          for identifier, revision in pins.items():
-              matches = [(i, p) for i, p in enumerate(registry) if p['id'] == identifier]
-              assert len(matches) == 1, identifier
-              index, project = matches[0]
-              assert project['revision'] == revision
-              assert 'lsp' in project['coverage']
-              assert git('ls-tree', 'HEAD', project['fixturePath']).split()[2] == revision
-              if identifier in scopes[scope]:
-                  projects.append({**project, 'shardIndex': index})
-          assert [project['id'] for project in projects] == scopes[scope]
-          plan = {
-              'sourceRevision': expected, 'sourceTree': git('rev-parse', 'HEAD^{tree}'),
-              'workflowRevision': os.environ['GITHUB_WORKFLOW_SHA'],
-              'registrySha256': hashlib.sha256(registry_bytes).hexdigest(),
-              'shardCount': len(registry), 'projects': projects,
-              'packetScope': scope,
-              'preparationTrace': os.environ['VIZE_TRACE_EDITOR_PREPARATION'] == '1',
-              'sourceBlobs': {path: git('rev-parse', 'HEAD:' + path) for path in [
-                  'crates/vize_canon/src', 'crates/vize_maestro/src',
-                  'tests/tooling/real-project-lsp.test.ts', 'tests/tooling/support',
-              ]},
-              'scope': 'selected complete original Matrix LSP packets only; no full-Matrix or paired-performance claim',
-              'timingPolicy': 'elapsed times include optional trace and raw recording overhead; no matched performance acceptance',
-          }
-          (out / 'plan.json').write_text(json.dumps(plan, indent=2) + '\n')
-          subprocess.run(['git', 'submodule', 'update', '--init', '--depth', '1', '--',
-                          *[p['fixturePath'] for p in projects]], check=True)
-          for project in projects:
-              assert git('-C', project['fixturePath'], 'rev-parse', 'HEAD') == project['revision']
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
           cache: true
           run-install: false
+      - name: Freeze the exact source, registry selection, and fixture pins
+        run: node tools/support/compat/github/lsp-focused-campaign.ts plan
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with:
           toolchain: "1.99.1"
@@ -131,25 +73,7 @@ jobs:
       - name: Prepare the original pinned project dependencies
         id: dependencies
         continue-on-error: true
-        shell: python
-        run: |
-          import json, os, pathlib, subprocess, time
-          out = pathlib.Path(os.environ['CAMPAIGN_DIR'])
-          plan = json.loads((out / 'plan.json').read_text())
-          results = []
-          for project in plan['projects']:
-              directory = out / project['id']
-              directory.mkdir()
-              command = ['rust-script', 'tools/commands/fixtures/typecheck-dependency-prepare.rs',
-                         '--output-dir', str(directory), '--shard-count', str(plan['shardCount']),
-                         '--shard-index', str(project['shardIndex']), '--timeout-ms', '600000']
-              started = time.monotonic_ns()
-              with (directory / 'prepare.stdout').open('wb') as stdout, (directory / 'prepare.stderr').open('wb') as stderr:
-                  result = subprocess.run(command, stdout=stdout, stderr=stderr)
-              results.append({'id': project['id'], 'command': command, 'exitStatus': result.returncode,
-                              'durationMs': (time.monotonic_ns() - started) / 1e6})
-              (out / 'dependencies.json').write_text(json.dumps(results, indent=2) + '\n')
-          assert all(r['exitStatus'] == 0 for r in results), 'raw dependency failures retained'
+        run: node tools/support/compat/github/lsp-focused-campaign.ts dependencies
       - name: Build and receipt one exact-source production server
         run: |
           cargo build --profile ci -p vize
@@ -167,142 +91,7 @@ jobs:
         run: |
           test -x "$CORSA_PATH"
           node tests/tooling/support/lsp/verify-session-captures.ts snapshot "$CAMPAIGN_DIR/lsp-wire-before.json"
-          python3 - <<'PY'
-          import hashlib, json, os, pathlib, shutil, signal, subprocess, sys, time, traceback
-          out = pathlib.Path(os.environ['CAMPAIGN_DIR'])
-          plan = json.loads((out / 'plan.json').read_text())
-          provider = pathlib.Path(os.environ['CORSA_PATH']).resolve(strict=True)
-          (out / 'provider.json').write_text(json.dumps({
-              'path': str(provider), 'sha256': hashlib.sha256(provider.read_bytes()).hexdigest(),
-              'lockfileSha256': hashlib.sha256(pathlib.Path('pnpm-lock.yaml').read_bytes()).hexdigest(),
-          }, indent=2) + '\n')
-          # Reuse the existing Linux sampler without changing the packet or
-          # its own Maestro-tree resource oracle. This observer's root also
-          # includes the harness and observer; raw PID/birth/exe rows preserve
-          # the distinction from native Vize/Corsa work. Trace-only overhead
-          # makes these observations unsuitable for paired speed claims.
-          resource_observer = r'''
-          import fs from 'node:fs';
-          import crypto from 'node:crypto';
-          import { createSampler } from './tools/support/compat/davinci/lib/lsp-resource-sampler.mjs';
-          const [rootPid, directory] = process.argv.slice(1);
-          const source = 'tools/support/compat/davinci/lib/lsp-resource-sampler.mjs';
-          const sampler = createSampler(Number(rootPid));
-          const started = process.hrtime.bigint();
-          let count = 0;
-          const metadata = {
-            sourceRevision: process.env.GITHUB_SHA,
-            samplerSource: source,
-            samplerSha256: crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex'),
-            rootPid: Number(rootPid),
-            scope: 'workflow harness and sampled descendants, including observer; reparented CPU after leaving the tree is excluded',
-            instrumented: true,
-          };
-          function record() {
-            const snapshot = sampler.sample();
-            const processes = snapshot.processes.map((entry) => {
-              let executable = null;
-              try { executable = fs.readlinkSync(`/proc/${entry.pid}/exe`); } catch {}
-              return { ...entry, executable };
-            });
-            fs.appendFileSync(`${directory}/resource-samples.jsonl`, JSON.stringify({
-              ...snapshot, processes, wallTime: new Date().toISOString(),
-              elapsedNs: String(process.hrtime.bigint() - started),
-            }) + '\n');
-            count++;
-            return snapshot;
-          }
-          record();
-          const interval = setInterval(record, 500);
-          process.once('SIGTERM', () => {
-            clearInterval(interval);
-            let final;
-            let result;
-            let failure;
-            try { final = record(); } catch (error) { failure = error; }
-            try { result = sampler.stop(); } catch (error) { failure ??= error; }
-            if (failure) {
-              fs.writeFileSync(`${directory}/resource-error.txt`, String(failure));
-              process.exitCode = 1;
-              return;
-            }
-            try {
-              fs.writeFileSync(`${directory}/resource-summary.json`, JSON.stringify({
-                ...metadata, ...result, final, rawSamples: count,
-              }, null, 2) + '\n');
-            } catch (error) {
-              fs.writeFileSync(`${directory}/resource-error.txt`, String(error));
-              process.exitCode = 1;
-            }
-          });
-          '''
-          results = []
-          for project in plan['projects']:
-              directory = out / project['id']
-              environment = {**os.environ, 'FIXTURE_SHARD_COUNT': str(plan['shardCount']),
-                             'FIXTURE_SHARD_INDEX': str(project['shardIndex']), 'FIXTURE_REPORT_DIR': str(directory)}
-              subprocess.run(['node', 'tests/tooling/support/lsp/verify-session-captures.ts',
-                              'snapshot', str(directory / 'lsp-wire-before.json')], check=True)
-              command = ['node', '--test', '--test-concurrency=1', 'tests/tooling/real-project-lsp.test.ts']
-              observer = None
-              resource_status = None
-              resource_streams = []
-              if plan['preparationTrace']:
-                  try:
-                      for stream in ['stdout', 'stderr']:
-                          resource_streams.append((directory / ('resource-observer.' + stream)).open('wb'))
-                      observer = subprocess.Popen(
-                          ['node', '--input-type=module', '--eval', resource_observer, str(os.getpid()), str(directory)],
-                          stdout=resource_streams[0], stderr=resource_streams[1])
-                  except Exception:
-                      (directory / 'resource-error.txt').write_text(traceback.format_exc())
-                      resource_status = -1
-              started = time.monotonic_ns()
-              result = None
-              command_error = None
-              try:
-                  with (directory / 'test.stdout').open('wb') as stdout, (directory / 'test.stderr').open('wb') as stderr:
-                      try:
-                          result = subprocess.run(command, env=environment, stdout=stdout, stderr=stderr)
-                      except Exception:
-                          command_error = traceback.format_exc()
-                          stderr.write(command_error.encode())
-              finally:
-                  duration = (time.monotonic_ns() - started) / 1e6
-                  try:
-                      if observer is not None:
-                          try:
-                              if observer.poll() is None:
-                                  observer.send_signal(signal.SIGTERM)
-                              resource_status = observer.wait(timeout=10)
-                          except subprocess.TimeoutExpired:
-                              observer.kill()
-                              resource_status = observer.wait()
-                          except Exception:
-                              (directory / 'resource-error.txt').write_text(traceback.format_exc())
-                              resource_status = -1
-                          finally:
-                              if observer.poll() is None:
-                                  observer.kill()
-                                  observer.wait()
-                  finally:
-                      for stream in resource_streams:
-                          stream.close()
-              with (directory / 'wire.stdout').open('wb') as stdout, (directory / 'wire.stderr').open('wb') as stderr:
-                  wire = subprocess.run(['node', 'tests/tooling/support/lsp/verify-session-captures.ts',
-                                         'verify', str(directory / 'lsp-wire-before.json'),
-                                         str(directory / 'lsp-wire-integrity.json')], stdout=stdout, stderr=stderr)
-              results.append({'id': project['id'], 'command': command,
-                              'exitStatus': result.returncode if result is not None else None,
-                              'commandError': command_error,
-                              'wireExitStatus': wire.returncode, 'durationMs': duration,
-                              'resourceExitStatus': resource_status})
-              (out / 'sessions.json').write_text(json.dumps(results, indent=2) + '\n')
-              for stream in ['stdout', 'stderr']:
-                  with (directory / ('test.' + stream)).open('rb') as raw:
-                      shutil.copyfileobj(raw, getattr(sys, stream).buffer)
-          assert len(results) == len(plan['projects']) and all(r['exitStatus'] == r['wireExitStatus'] == 0 for r in results), 'all selected raw packet outcomes retained'
-          PY
+          node tools/support/compat/github/lsp-focused-lifecycle.ts
       - name: Verify every source-bound raw session
         if: ${{ always() }}
         run: node tests/tooling/support/lsp/verify-session-captures.ts verify "$CAMPAIGN_DIR/lsp-wire-before.json" "$CAMPAIGN_DIR/lsp-wire-integrity.json"
@@ -311,49 +100,10 @@ jobs:
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
           VIZE_LSP_BIN: target/ci/vize
-        shell: python
-        run: |
-          import hashlib, json, os, pathlib
-          out = pathlib.Path(os.environ['CAMPAIGN_DIR'])
-          plan = json.loads((out / 'plan.json').read_text())
-          results = json.loads((out / 'sessions.json').read_text())
-          assert plan['preparationTrace'] is True
-          assert [r['id'] for r in results] == [p['id'] for p in plan['projects']]
-          assert all(r['resourceExitStatus'] == 0 for r in results)
-          for project in plan['projects']:
-              directory = out / project['id']
-              resource = json.loads((directory / 'resource-summary.json').read_text())
-              assert resource['sourceRevision'] == plan['sourceRevision']
-              assert resource['samplerSha256'] == hashlib.sha256(pathlib.Path(resource['samplerSource']).read_bytes()).hexdigest()
-              samples = [json.loads(line) for line in (directory / 'resource-samples.jsonl').read_text().splitlines()]
-              assert len(samples) == resource['rawSamples'] and len(samples) > 0
-              executables = {entry['executable'] for sample in samples for entry in sample['processes']}
-              assert str(pathlib.Path(os.environ['VIZE_LSP_BIN']).resolve()) in executables
-              assert str(pathlib.Path(os.environ['CORSA_PATH']).resolve()) in executables
+        run: node tools/support/compat/github/lsp-focused-campaign.ts verify-resources
       - name: Refuse missing selected projects, stale binaries, or failed preparation
         if: ${{ always() }}
-        shell: python
-        run: |
-          import json, os, pathlib, subprocess
-          out = pathlib.Path(os.environ['CAMPAIGN_DIR'])
-          plan = json.loads((out / 'plan.json').read_text())
-          receipt = json.loads(pathlib.Path('target/ci/vize.differential-build.json').read_text())
-          assert receipt['sourceRevision'] == plan['sourceRevision'] == os.environ['EXPECTED_SOURCE']
-          for kind in ['dependencies', 'sessions']:
-              results = json.loads((out / (kind + '.json')).read_text())
-              assert [r['id'] for r in results] == [p['id'] for p in plan['projects']]
-              assert all(r['exitStatus'] == 0 for r in results)
-              if kind == 'sessions':
-                  assert all(r['wireExitStatus'] == 0 for r in results)
-          for project in plan['projects']:
-              report = json.loads((out / project['id'] / 'lsp-lifecycle-summary.json').read_text())
-              assert report['commitSha'] == plan['sourceRevision']
-              assert report['evidence']['vizeBinary']['sha256'] == receipt['binarySha256']
-              assert report['shard'] == {'count': plan['shardCount'], 'index': project['shardIndex']}
-              assert len(report['projects']) == 1 and report['projects'][0]['id'] == project['id']
-              assert report['projects'][0]['revision'] == project['revision']
-              assert report['projects'][0]['status'] == 'ok'
-          subprocess.run(['git', 'diff', '--exit-code', '--ignore-submodules=all', 'HEAD'], check=True)
+        run: node tools/support/compat/github/lsp-focused-campaign.ts refuse
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:

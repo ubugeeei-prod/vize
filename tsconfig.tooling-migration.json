@@ -9,6 +9,8 @@
     "tools/support/typescript/check-project.ts",
     "tools/support/compat/github/comparison-base.ts",
     "tools/support/compat/github/plan-source-checks.ts",
+    "tools/support/compat/github/lsp-focused-campaign.ts",
+    "tools/support/compat/github/lsp-focused-lifecycle.ts",
     "tests/tooling/comparison-base.test.ts",
     "tests/tooling/plan-source-checks.test.ts",
     "tools/support/compat/github/plan-release-gates.ts",
