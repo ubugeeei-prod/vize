@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { assertAppE2eAggregate } from "../../tools/support/compat/github/app-e2e-aggregate.mjs";
+import { assertAppE2eAggregate } from "../../tools/support/compat/github/app-e2e-aggregate.ts";
 
 test("stable aggregators fail closed for every incomplete producer state", () => {
   assert.deepEqual(

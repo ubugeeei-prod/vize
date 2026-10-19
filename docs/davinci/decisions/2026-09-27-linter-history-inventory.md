@@ -11,7 +11,7 @@ This change neither runs the linter nor measures native acceptance.
 From a complete repository checkout, run:
 
 ```sh
-node tools/support/compat/fixtures/linter-fix-history.mjs \
+node tools/support/compat/fixtures/linter-fix-history.ts \
   b4f25fb6511075aa531be80d645bb0db8cc151e0 \
   /tmp/vize-linter-history-inventory
 ```

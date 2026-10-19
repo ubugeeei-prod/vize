@@ -19,12 +19,12 @@ import {
   retainEnabledFindings,
   selectComparableRules,
 } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
-import { renderMarkdown } from "../../tools/support/compat/fixtures/lint-divergence-markdown.mjs";
+import { renderMarkdown } from "../../tools/support/compat/fixtures/lint-divergence-markdown.ts";
 import {
   reconcileCorpus,
   runLintDivergenceReport,
 } from "../../tools/support/compat/fixtures/lint-divergence-report.mjs";
-import { readRuleMap } from "../../tools/support/compat/fixtures/patina-rule-map.mjs";
+import { readRuleMap } from "../../tools/support/compat/fixtures/patina-rule-map.ts";
 
 const repoRoot = path.resolve(import.meta.dirname, "..", "..");
 const vizeBin = process.env.VIZE_TEST_BIN ?? process.env.VIZE_BIN ?? null;

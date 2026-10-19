@@ -6,16 +6,43 @@
  * strict: documented divergences are already removed by the comparator, so any
  * remaining false positive or false negative is an unreviewed parity gap.
  */
-const budgetModes = ["enforce", "record-only"];
+const budgetModes = ["enforce", "record-only"] as const;
+export type BudgetMode = (typeof budgetModes)[number];
 
-export function parseBudgetMode(value) {
-  if (!budgetModes.includes(value)) {
-    throw new Error(`--budget-mode must be one of: ${budgetModes.join(", ")}`);
-  }
-  return value;
+export interface LintBudget {
+  readonly maxFalsePositiveCount: number;
+  readonly maxFalseNegativeCount: number;
+  readonly falsePositivePassed: boolean;
+  readonly falseNegativePassed: boolean;
+  readonly unusableReason: string | null;
+  readonly verdict: "unusable" | "passed" | "breached";
+  readonly passed: boolean;
 }
 
-export function evaluateBudget(artifact) {
+export interface BudgetArtifact {
+  readonly project: string;
+  readonly files: { readonly expectedCount?: number; readonly comparedCount: number };
+  readonly baseline: { readonly comparedRuleCount: number };
+  readonly divergence: {
+    readonly summary: {
+      readonly falsePositiveCount: number;
+      readonly falseNegativeCount: number;
+      readonly baselineParseErrorCount: number;
+      readonly baselineInvalidRangeCount: number;
+    };
+  };
+  readonly budget?: LintBudget;
+}
+
+export function parseBudgetMode(value: unknown): BudgetMode {
+  const mode = budgetModes.find((candidate) => candidate === value);
+  if (mode === undefined) {
+    throw new Error(`--budget-mode must be one of: ${budgetModes.join(", ")}`);
+  }
+  return mode;
+}
+
+export function evaluateBudget(artifact: BudgetArtifact): LintBudget {
   const summary = artifact.divergence.summary;
   const unusableReason = unusableLintReason(artifact);
   const falsePositivePassed = summary.falsePositiveCount === 0;
@@ -37,11 +64,14 @@ export function evaluateBudget(artifact) {
   };
 }
 
-export function attachBudget(artifact) {
+export function attachBudget<T extends BudgetArtifact>(artifact: T): T & { budget: LintBudget } {
   return { ...artifact, budget: evaluateBudget(artifact) };
 }
 
-export function assertBudgetsPassed(artifacts, budgetMode = "enforce") {
+export function assertBudgetsPassed(
+  artifacts: readonly BudgetArtifact[],
+  budgetMode: unknown = "enforce",
+): void {
   const mode = parseBudgetMode(budgetMode);
   if (artifacts.length === 0) {
     const detail = "Lint divergence budget has no measured projects";
@@ -62,7 +92,7 @@ export function assertBudgetsPassed(artifacts, budgetMode = "enforce") {
   }
 }
 
-export function summarizeBudgets(artifacts) {
+export function summarizeBudgets(artifacts: readonly BudgetArtifact[]) {
   const failures = artifacts.filter((artifact) => artifact.budget?.passed !== true);
   const unusable = artifacts.filter((artifact) => artifact.budget?.verdict === "unusable");
   const breached = artifacts.filter((artifact) => artifact.budget?.verdict === "breached");
@@ -78,7 +108,7 @@ export function summarizeBudgets(artifacts) {
   };
 }
 
-function unusableLintReason(artifact) {
+function unusableLintReason(artifact: BudgetArtifact): string | null {
   if (artifact.files.expectedCount === 0 && artifact.files.comparedCount !== 0) {
     return "the project expected zero Vue files but selected a nonempty corpus";
   }
@@ -99,13 +129,15 @@ function unusableLintReason(artifact) {
   return null;
 }
 
-function describeFailure(artifact) {
+function describeFailure(artifact: BudgetArtifact): string {
   const budget = artifact.budget;
+  if (budget === undefined)
+    return `Lint divergence budget was not evaluated for ${artifact.project}`;
   const summary = artifact.divergence.summary;
   if (budget.verdict === "unusable") {
     return `Lint divergence baseline is unusable for ${artifact.project}: ${budget.unusableReason}`;
   }
-  const breaches = [];
+  const breaches: string[] = [];
   if (!budget.falsePositivePassed) {
     breaches.push(`${summary.falsePositiveCount} false positives exceed maxFalsePositiveCount 0`);
   }

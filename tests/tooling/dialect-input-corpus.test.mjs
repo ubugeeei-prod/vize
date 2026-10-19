@@ -4,7 +4,7 @@ import { test } from "node:test";
 import {
   buildDialectInputs,
   checkDialectInputs,
-} from "../../tools/support/compat/fixtures/generate-dialect-inputs.mjs";
+} from "../../tools/support/compat/fixtures/generate-dialect-inputs.ts";
 
 void test("rare dialect input inventory is generated from pinned grammar rules", () => {
   checkDialectInputs();

@@ -11,7 +11,37 @@
  * and the per-rule breakdown, because an aggregate ratio never says which rule
  * to fix.
  */
-export function renderMarkdown(artifact) {
+interface RuleFinding {
+  readonly ruleId: string;
+  readonly upstreamRuleId?: string | null;
+}
+
+type Count = number | string;
+
+export interface LintDivergenceArtifact {
+  readonly project: string;
+  readonly revision: string;
+  readonly preset: string;
+  readonly evidence: { readonly commitSha: string };
+  readonly baseline: {
+    readonly package: string;
+    readonly version: string;
+    readonly comparedRuleCount: number;
+    readonly mappedRuleCount: number;
+    readonly droppedConfigMessageCount: number;
+  };
+  readonly files: { readonly comparedCount: number };
+  readonly budget?: { readonly verdict?: string; readonly passed?: boolean } | null;
+  readonly divergence: {
+    readonly summary: Readonly<Record<string, Count | undefined>>;
+    readonly falsePositives: readonly RuleFinding[];
+    readonly falseNegatives: readonly RuleFinding[];
+    readonly ruleLocationDivergences?: readonly RuleFinding[];
+    readonly unimplemented: readonly RuleFinding[];
+  };
+}
+
+export function renderMarkdown(artifact: LintDivergenceArtifact): string {
   const summary = artifact.divergence.summary;
   const lines = [
     `## ${artifact.project} lint divergence`,
@@ -54,9 +84,9 @@ export function renderMarkdown(artifact) {
   return `${lines.join("\n")}\n`;
 }
 
-function ruleTable(title, findings) {
+function ruleTable(title: string, findings: readonly RuleFinding[]): string[] {
   if (findings.length === 0) return [`### ${title}: none`, ""];
-  const counts = new Map();
+  const counts = new Map<string, number>();
   for (const finding of findings) {
     const key = finding.upstreamRuleId ?? finding.ruleId;
     counts.set(key, (counts.get(key) ?? 0) + 1);

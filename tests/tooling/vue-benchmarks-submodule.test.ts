@@ -8,7 +8,7 @@ import {
   createCompatibilityContext,
   readCompatibilityLedger,
   validateCompatibilityLedger,
-} from "../../tools/support/compat/fixtures/fixture-compatibility-ledger.mjs";
+} from "../../tools/support/compat/fixtures/fixture-compatibility-ledger.ts";
 import manifest from "../_fixtures/vue-benchmarks-upstream.json" with { type: "json" };
 
 const fixture = "tests/_fixtures/_git/vue-benchmarks";

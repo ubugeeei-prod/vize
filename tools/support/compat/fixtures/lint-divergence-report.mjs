@@ -13,15 +13,15 @@ import {
   attachBudget,
   parseBudgetMode,
   summarizeBudgets,
-} from "./lint-divergence-budget.mjs";
-import { renderMarkdown } from "./lint-divergence-markdown.mjs";
-import { compareLintFindings } from "./lint-divergence.mjs";
+} from "./lint-divergence-budget.ts";
+import { renderMarkdown } from "./lint-divergence-markdown.ts";
+import { compareLintFindings } from "./lint-divergence.ts";
 import { collectRunEvidence } from "./run-evidence.mjs";
 import { collectVueInputPaths } from "./tool-matrix-inputs.mjs";
 import { resolveVizeLaunch } from "./tool-matrix-run.mjs";
 
 /**
- * Run `tools/fixtures/lint-divergence.mjs` over the pinned real-project corpus.
+ * Run `tools/fixtures/lint-divergence.ts` over the pinned real-project corpus.
  *
  * This is the linter's counterpart to `typecheck-divergence-report.mjs`: the
  * comparator that classifies patina against `eslint-plugin-vue` existed and was

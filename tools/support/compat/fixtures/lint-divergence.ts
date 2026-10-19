@@ -3,13 +3,82 @@ import { isAbsolute } from "node:path";
 
 import {
   byteOrder,
+  isRecord,
   collectBaselineFindings,
   collectPatinaFindings,
   compareRecords,
   indexRuleMap,
   invalid,
   normalizePath,
-} from "./lint-divergence-records.mjs";
+  type LintRange,
+  type LintRecord,
+  type Severity,
+} from "./lint-divergence-records.ts";
+
+type Compared = LintRecord & { readonly upstreamRuleId?: string };
+
+interface SharedPair extends LintRange {
+  readonly file: string;
+  readonly ruleId: string;
+  readonly upstreamRuleId: string | undefined;
+  readonly severity: Severity;
+  readonly patinaMessage: string;
+  readonly baselineMessage: string;
+}
+
+interface DocumentedSide extends LintRange {
+  readonly severity: Severity;
+}
+
+interface DocumentedDivergence {
+  readonly file: string;
+  readonly ruleId: string;
+  readonly patina: DocumentedSide;
+  readonly baseline: DocumentedSide;
+  readonly issue: number;
+  readonly reason: string;
+}
+
+interface LocationSide extends LintRange {
+  readonly message: string;
+}
+
+interface RuleLocationDivergence {
+  readonly file: string;
+  readonly ruleId: string;
+  readonly upstreamRuleId: string | undefined;
+  readonly severity: Severity;
+  readonly subject: string;
+  readonly reason: string;
+  readonly patina: LocationSide;
+  readonly baseline: LocationSide;
+}
+
+interface RuleLocationMatch {
+  readonly negativeIndex: number;
+  readonly reason: string;
+  readonly subject: string;
+}
+
+interface RuleLocationRule {
+  readonly reason: string;
+  subject(positive: Compared, negative: Compared): string | null;
+}
+
+export interface CompareLintInput {
+  readonly projectId: unknown;
+  readonly cwd: unknown;
+  readonly ruleMap: unknown;
+  readonly patinaFindings: unknown;
+  readonly eslintResults: unknown;
+  readonly documentedDivergences?: unknown;
+}
+
+function upstreamOf(ruleMap: unknown): { package: unknown; version: unknown } {
+  const upstream = isRecord(ruleMap) ? ruleMap.upstream : undefined;
+  if (!isRecord(upstream)) return invalid("rule map must name its upstream package");
+  return { package: upstream.package, version: upstream.version };
+}
 
 /**
  * Compare a patina lint run against an `eslint-plugin-vue` run over the same
@@ -56,20 +125,21 @@ export function compareLintFindings({
   patinaFindings,
   eslintResults,
   documentedDivergences = [],
-}) {
-  if (typeof projectId !== "string" || projectId.length === 0) invalid("project id is required");
-  if (typeof cwd !== "string" || !isAbsolute(cwd)) invalid("cwd must be absolute");
+}: CompareLintInput) {
+  if (typeof projectId !== "string" || projectId.length === 0)
+    return invalid("project id is required");
+  if (typeof cwd !== "string" || !isAbsolute(cwd)) return invalid("cwd must be absolute");
   const { byUpstream, patinaTargets } = indexRuleMap(ruleMap);
   const patina = collectPatinaFindings(patinaFindings, cwd);
   const baselineInput = collectBaselineFindings(eslintResults, cwd);
 
-  const unimplemented = [];
-  const intentionalDivergences = [];
-  const comparableBaseline = [];
+  const unimplemented: (LintRecord & { issue: unknown })[] = [];
+  const intentionalDivergences: (LintRecord & { reason: unknown })[] = [];
+  const comparableBaseline: Compared[] = [];
   for (const finding of baselineInput.findings) {
     const entry = byUpstream.get(finding.ruleId);
     if (entry == null) {
-      invalid(`baseline rule ${finding.ruleId} is absent from the pinned rule map`);
+      return invalid(`baseline rule ${finding.ruleId} is absent from the pinned rule map`);
     }
     if (entry.status === "unimplemented") {
       unimplemented.push({ ...finding, issue: entry.issue });
@@ -81,13 +151,13 @@ export function compareLintFindings({
     }
     comparableBaseline.push({
       ...finding,
-      ruleId: entry.patinaRule,
+      ruleId: String(entry.patinaRule),
       upstreamRuleId: finding.ruleId,
     });
   }
 
-  const patinaOnlyRuleFindings = [];
-  const comparablePatina = [];
+  const patinaOnlyRuleFindings: LintRecord[] = [];
+  const comparablePatina: Compared[] = [];
   for (const finding of patina) {
     (patinaTargets.has(finding.ruleId) ? comparablePatina : patinaOnlyRuleFindings).push(finding);
   }
@@ -97,10 +167,10 @@ export function compareLintFindings({
   const identities = [...new Set([...patinaGroups.keys(), ...baselineGroups.keys()])].sort(
     byteOrder,
   );
-  const shared = [];
-  const messageDifferences = [];
-  const falsePositives = [];
-  const falseNegatives = [];
+  const shared: SharedPair[] = [];
+  const messageDifferences: SharedPair[] = [];
+  const falsePositives: Compared[] = [];
+  const falseNegatives: Compared[] = [];
 
   for (const identity of identities) {
     const candidates = patinaGroups.get(identity) ?? [];
@@ -108,17 +178,19 @@ export function compareLintFindings({
     const commonCount = Math.min(candidates.length, expected.length);
     for (let index = 0; index < commonCount; index += 1) {
       const candidate = candidates[index];
-      const pair = {
+      const baseline = expected[index];
+      if (candidate === undefined || baseline === undefined) continue;
+      const pair: SharedPair = {
         file: candidate.file,
         ruleId: candidate.ruleId,
-        upstreamRuleId: expected[index].upstreamRuleId,
+        upstreamRuleId: baseline.upstreamRuleId,
         severity: candidate.severity,
         line: candidate.line,
         column: candidate.column,
         endLine: candidate.endLine,
         endColumn: candidate.endColumn,
         patinaMessage: candidate.message,
-        baselineMessage: expected[index].message,
+        baselineMessage: baseline.message,
       };
       shared.push(pair);
       if (pair.patinaMessage !== pair.baselineMessage) messageDifferences.push(pair);
@@ -175,7 +247,7 @@ export function compareLintFindings({
     schema: "vize.fixtureLintDivergence",
     version: 1,
     project: projectId,
-    upstream: { package: ruleMap.upstream.package, version: ruleMap.upstream.version },
+    upstream: upstreamOf(ruleMap),
     summary,
     ...classified,
     sha256: createHash("sha256")
@@ -184,38 +256,43 @@ export function compareLintFindings({
   };
 }
 
-function selectDocumentedDivergences(values, projectId, cwd) {
-  if (!Array.isArray(values)) invalid("documented divergences must be an array");
-  const selected = [];
-  const identities = new Set();
-  for (const [index, value] of values.entries()) {
+function selectDocumentedDivergences(
+  values: unknown,
+  projectId: string,
+  cwd: string,
+): DocumentedDivergence[] {
+  if (!Array.isArray(values)) return invalid("documented divergences must be an array");
+  const selected: DocumentedDivergence[] = [];
+  const identities = new Set<string>();
+  for (const [index, value] of (values as readonly unknown[]).entries()) {
     const label = `documented divergence ${index}`;
-    if (value == null || typeof value !== "object") invalid(`${label} must be an object`);
+    if (!isRecord(value)) return invalid(`${label} must be an object`);
     if (typeof value.project !== "string" || value.project.length === 0) {
       invalid(`${label} must name a project`);
     }
     const file = normalizePath(value.file, cwd, `${label}.file`);
     if (!file.endsWith(".vue")) invalid(`${label} must reference a .vue file`);
-    if (typeof value.ruleId !== "string" || value.ruleId.length === 0) {
-      invalid(`${label}.ruleId must name the patina rule`);
+    const { ruleId, issue } = value;
+    if (typeof ruleId !== "string" || ruleId.length === 0) {
+      return invalid(`${label}.ruleId must name the patina rule`);
     }
     const patina = documentedSide(value.patina, `${label}.patina`);
     const baseline = documentedSide(value.baseline, `${label}.baseline`);
     if (sameSpan(patina, baseline) && patina.severity === baseline.severity) {
       invalid(`${label} must record a difference between the two linters`);
     }
-    if (!Number.isSafeInteger(value.issue) || value.issue < 1) {
-      invalid(`${label}.issue must be the tracking issue number`);
+    if (typeof issue !== "number" || !Number.isSafeInteger(issue) || issue < 1) {
+      return invalid(`${label}.issue must be the tracking issue number`);
     }
     // A ledger entry suppresses a real divergence, so it has to carry a written
     // rationale a reviewer can check rather than a placeholder.
     const reason = typeof value.reason === "string" ? value.reason.replace(/\s+/g, " ").trim() : "";
     if (reason.length < 40) invalid(`${label}.reason must explain why the divergence is expected`);
-    const identity = [value.project, file, value.ruleId, patina.line, patina.column].join("\0");
+    const identity = [String(value.project), file, ruleId, patina.line, patina.column].join("\0");
     if (identities.has(identity)) invalid(`${label} duplicates an earlier documented divergence`);
     identities.add(identity);
     if (value.project !== projectId) continue;
-    selected.push({ file, ruleId: value.ruleId, patina, baseline, issue: value.issue, reason });
+    selected.push({ file, ruleId, patina, baseline, issue, reason });
   }
   return selected.sort(
     (left, right) =>
@@ -226,8 +303,12 @@ function selectDocumentedDivergences(values, projectId, cwd) {
   );
 }
 
-function pairDocumentedDivergences(expected, falsePositives, falseNegatives) {
-  const paired = [];
+function pairDocumentedDivergences(
+  expected: readonly DocumentedDivergence[],
+  falsePositives: Compared[],
+  falseNegatives: Compared[],
+): DocumentedDivergence[] {
+  const paired: DocumentedDivergence[] = [];
   for (const divergence of expected) {
     const positiveIndex = findDocumented(falsePositives, divergence, divergence.patina);
     const negativeIndex = findDocumented(falseNegatives, divergence, divergence.baseline);
@@ -239,7 +320,11 @@ function pairDocumentedDivergences(expected, falsePositives, falseNegatives) {
   return paired;
 }
 
-function findDocumented(records, divergence, side) {
+function findDocumented(
+  records: readonly Compared[],
+  divergence: DocumentedDivergence,
+  side: DocumentedSide,
+): number {
   return records.findIndex(
     (candidate) =>
       candidate.file === divergence.file &&
@@ -249,43 +334,59 @@ function findDocumented(records, divergence, side) {
   );
 }
 
-function documentedSide(value, label) {
-  if (value == null || typeof value !== "object") invalid(`${label} must be an object`);
-  if (value.severity !== "error" && value.severity !== "warning") {
-    invalid(`${label}.severity must be error or warning`);
+function documentedSide(value: unknown, label: string): DocumentedSide {
+  if (!isRecord(value)) return invalid(`${label} must be an object`);
+  const { severity } = value;
+  if (severity !== "error" && severity !== "warning") {
+    return invalid(`${label}.severity must be error or warning`);
   }
-  const span = {};
-  for (const field of ["line", "column", "endLine", "endColumn"]) {
-    if (!Number.isSafeInteger(value[field]) || value[field] < 1) {
-      invalid(`${label}.${field} must be a positive safe integer`);
+  const position = (field: keyof LintRange): number => {
+    const number = value[field];
+    if (typeof number !== "number" || !Number.isSafeInteger(number) || number < 1) {
+      return invalid(`${label}.${field} must be a positive safe integer`);
     }
-    span[field] = value[field];
-  }
-  return { severity: value.severity, ...span };
+    return number;
+  };
+  return {
+    severity,
+    line: position("line"),
+    column: position("column"),
+    endLine: position("endLine"),
+    endColumn: position("endColumn"),
+  };
 }
 
-function pairRuleLocationDivergences(falsePositives, falseNegatives) {
-  const paired = [];
+function pairRuleLocationDivergences(
+  falsePositives: Compared[],
+  falseNegatives: Compared[],
+): RuleLocationDivergence[] {
+  const paired: RuleLocationDivergence[] = [];
   for (let positiveIndex = 0; positiveIndex < falsePositives.length;) {
     const positive = falsePositives[positiveIndex];
+    if (positive === undefined) break;
     const match = findRuleLocationDivergence(positive, falseNegatives);
     if (match == null) {
       positiveIndex += 1;
       continue;
     }
     const [negative] = falseNegatives.splice(match.negativeIndex, 1);
+    if (negative === undefined) break;
     falsePositives.splice(positiveIndex, 1);
     paired.push(ruleLocationDivergence(positive, negative, match));
   }
   return paired.sort(compareRuleLocationDivergences);
 }
 
-function findRuleLocationDivergence(positive, falseNegatives) {
+function findRuleLocationDivergence(
+  positive: Compared,
+  falseNegatives: readonly Compared[],
+): RuleLocationMatch | null {
   const rule = ruleLocationDivergenceRules[positive.ruleId];
   if (rule == null) return null;
   for (let negativeIndex = 0; negativeIndex < falseNegatives.length; negativeIndex += 1) {
     const negative = falseNegatives[negativeIndex];
     if (
+      negative === undefined ||
       positive.file !== negative.file ||
       positive.ruleId !== negative.ruleId ||
       positive.severity !== negative.severity
@@ -299,7 +400,7 @@ function findRuleLocationDivergence(positive, falseNegatives) {
   return null;
 }
 
-const ruleLocationDivergenceRules = {
+const ruleLocationDivergenceRules: Readonly<Record<string, RuleLocationRule>> = {
   "vue/no-unused-components": {
     reason:
       "patina reports the SFC/script anchor while eslint-plugin-vue reports the component registration property.",
@@ -323,7 +424,11 @@ const ruleLocationDivergenceRules = {
   },
 };
 
-function ruleLocationDivergence(positive, negative, match) {
+function ruleLocationDivergence(
+  positive: Compared,
+  negative: Compared,
+  match: RuleLocationMatch,
+): RuleLocationDivergence {
   return {
     file: positive.file,
     ruleId: positive.ruleId,
@@ -336,7 +441,7 @@ function ruleLocationDivergence(positive, negative, match) {
   };
 }
 
-function side(value) {
+function side(value: LintRecord): LocationSide {
   return {
     line: value.line,
     column: value.column,
@@ -346,7 +451,7 @@ function side(value) {
   };
 }
 
-function unusedComponentName(message) {
+function unusedComponentName(message: string): string | null {
   return (
     message.match(/Component '([^']+)' is registered but never used(?: in template)?/u)?.[1] ??
     message.match(/The "([^"]+)" component has been registered but not used\./u)?.[1] ??
@@ -354,7 +459,7 @@ function unusedComponentName(message) {
   );
 }
 
-function sameSpan(left, right) {
+function sameSpan(left: LintRange, right: LintRange): boolean {
   return (
     left.line === right.line &&
     left.column === right.column &&
@@ -363,20 +468,20 @@ function sameSpan(left, right) {
   );
 }
 
-function containsSpan(outer, inner) {
+function containsSpan(outer: LintRange, inner: LintRange): boolean {
   return compareSpanStart(outer, inner) <= 0 && compareSpanEnd(outer, inner) >= 0;
 }
 
-function compareSpanStart(left, right) {
+function compareSpanStart(left: LintRange, right: LintRange): number {
   return left.line - right.line || left.column - right.column;
 }
 
-function compareSpanEnd(left, right) {
+function compareSpanEnd(left: LintRange, right: LintRange): number {
   return left.endLine - right.endLine || left.endColumn - right.endColumn;
 }
 
-function groupByIdentity(records) {
-  const groups = new Map();
+function groupByIdentity(records: readonly Compared[]): Map<string, Compared[]> {
+  const groups = new Map<string, Compared[]>();
   for (const value of records) {
     const identity = [
       value.file,
@@ -395,7 +500,7 @@ function groupByIdentity(records) {
   return groups;
 }
 
-function compareShared(left, right) {
+function compareShared(left: SharedPair, right: SharedPair): number {
   return (
     byteOrder(left.file, right.file) ||
     left.line - right.line ||
@@ -408,7 +513,10 @@ function compareShared(left, right) {
   );
 }
 
-function compareRuleLocationDivergences(left, right) {
+function compareRuleLocationDivergences(
+  left: RuleLocationDivergence,
+  right: RuleLocationDivergence,
+): number {
   return (
     byteOrder(left.file, right.file) ||
     byteOrder(left.ruleId, right.ruleId) ||
@@ -422,6 +530,6 @@ function compareRuleLocationDivergences(left, right) {
   );
 }
 
-function ratio(count, total) {
+function ratio(count: number, total: number): number {
   return total === 0 ? 0 : count / total;
 }

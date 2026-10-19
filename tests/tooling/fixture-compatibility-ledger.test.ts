@@ -5,11 +5,11 @@ import {
   createCompatibilityContext,
   readCompatibilityLedger,
   validateCompatibilityLedger,
-} from "../../tools/support/compat/fixtures/fixture-compatibility-ledger.mjs";
+} from "../../tools/support/compat/fixtures/fixture-compatibility-ledger.ts";
 import {
   createCompatibilityReport,
   formatCompatibilityReport,
-} from "../../tools/support/compat/fixtures/fixture-compatibility-report.mjs";
+} from "../../tools/support/compat/fixtures/fixture-compatibility-report.ts";
 import { capabilityCounts as counts } from "./support/fixture-compatibility-counts.ts";
 
 const context = createCompatibilityContext();

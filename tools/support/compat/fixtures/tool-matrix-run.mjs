@@ -28,7 +28,7 @@ import {
   prepareScriptSourceScope,
 } from "./tool-matrix-inputs.mjs";
 import { validateLinterOutput } from "./tool-matrix-linter.mjs";
-import { validatedFileCount } from "./tool-matrix-metrics.mjs";
+import { validatedFileCount } from "./tool-matrix-metrics.ts";
 import {
   summarizeTypecheckerCoverage,
   validateTypecheckerOutput,

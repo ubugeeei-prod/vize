@@ -10,7 +10,25 @@ import {
   record,
   string,
   unique,
-} from "./fixture-compatibility-validation.mjs";
+  type Fixture,
+  type JsonObject,
+} from "./fixture-compatibility-validation.ts";
+
+export interface RegistryProject {
+  readonly fixturePath: string;
+  readonly note?: string;
+  readonly repository?: string;
+  readonly revision?: string;
+  readonly vueGlobs?: readonly string[];
+  readonly lspAuthoredOracle?: unknown;
+  readonly typecheckPerformance?: { readonly enabled?: boolean };
+  readonly [field: string]: unknown;
+}
+
+export interface DialectContext {
+  readonly registry: { readonly projects: readonly RegistryProject[] };
+  readonly rootDir: string;
+}
 
 // These are presence claims about a pinned project, not classifications of
 // every source file in it. Per-case manifests must carry their own dialects.
@@ -31,7 +49,11 @@ export const dialectLabels = [
   "vue-quirks",
 ];
 
-export function validateDialectCoverage(coverage, fixturePath, context) {
+export function validateDialectCoverage(
+  coverage: unknown,
+  fixturePath: string,
+  context: DialectContext,
+): void {
   record(coverage, `${fixturePath}.dialectCoverage`);
   exactKeys(coverage, ["state", "evidence"]);
   enumValue(coverage.state, ["unknown", "partial"], "dialect coverage state");
@@ -41,7 +63,7 @@ export function validateDialectCoverage(coverage, fixturePath, context) {
       `${fixturePath} unknown dialect coverage must have no evidence; partial must have evidence`,
     );
   }
-  const identities = [];
+  const identities: string[] = [];
   for (const item of coverage.evidence) {
     record(item, `${fixturePath}.dialectCoverage.evidence`);
     if (item.kind === "registry-note") {
@@ -66,7 +88,7 @@ export function validateDialectCoverage(coverage, fixturePath, context) {
       ]);
       validatePinnedPackage(item, fixturePath, context);
     } else {
-      invalid(`${fixturePath} unknown dialect evidence kind ${item.kind}`);
+      invalid(`${fixturePath} unknown dialect evidence kind ${String(item.kind)}`);
     }
     array(item.dialects, `${fixturePath}.dialects`);
     if (item.dialects.length === 0) invalid(`${fixturePath} dialect evidence must name a dialect`);
@@ -79,15 +101,22 @@ export function validateDialectCoverage(coverage, fixturePath, context) {
   unique(identities, `${fixturePath} dialect claims`);
 }
 
-function validatePinnedPackage(item, fixturePath, context) {
+function validatePinnedPackage(
+  item: JsonObject,
+  fixturePath: string,
+  context: DialectContext,
+): void {
   const project = context.registry.projects.find((row) => row.fixturePath === fixturePath);
   if (project == null || !project.vueGlobs?.length) {
     invalid(`${fixturePath} pinned package claim needs a registered Vue source corpus`);
   }
+  const { value, dialects } = item;
+  string(value, `${fixturePath} pinned Vue package value`);
+  array(dialects, `${fixturePath}.dialects`);
   if (item.repository !== project.repository || item.revision !== project.revision) {
     invalid(`${fixturePath} pinned package receipt drifted from fixture registry`);
   }
-  if (item.file !== "package.json" || !/^[a-f0-9]{40}$/.test(item.blobSha)) {
+  if (item.file !== "package.json" || !/^[a-f0-9]{40}$/.test(String(item.blobSha))) {
     invalid(`${fixturePath} pinned package receipt must name a package.json Git blob`);
   }
   enumValue(
@@ -95,18 +124,18 @@ function validatePinnedPackage(item, fixturePath, context) {
     ["dependencies.vue", "devDependencies.vue", "peerDependencies.vue"],
     "Vue package field",
   );
-  if (!/^(?:\^|~)?2(?:\.(?:[0-9]+|x)(?:\.[0-9]+)?)?(?:$|\s)/.test(item.value)) {
+  if (!/^(?:\^|~)?2(?:\.(?:[0-9]+|x)(?:\.[0-9]+)?)?(?:$|\s)/.test(value)) {
     invalid(`${fixturePath} pinned Vue package value does not select Vue 2`);
   }
-  if (item.dialects.includes("vue2.7-sfc") && !/(?:\^|~)?2\.7\./.test(item.value)) {
+  if (dialects.includes("vue2.7-sfc") && !/(?:\^|~)?2\.7\./.test(value)) {
     invalid(`${fixturePath} Vue 2.7 claim needs a Vue 2.7 package value`);
   }
-  if (item.dialects.some((dialect) => !["vue2-sfc", "vue2.7-sfc"].includes(dialect))) {
+  if (dialects.some((dialect) => dialect !== "vue2-sfc" && dialect !== "vue2.7-sfc")) {
     invalid(`${fixturePath} package version cannot prove a template syntax dialect`);
   }
 }
 
-export function dialectCoverageSummary(fixtures) {
+export function dialectCoverageSummary(fixtures: readonly Fixture[]) {
   return {
     unknownFixtureCount: fixtures.filter((fixture) => fixture.dialectCoverage.state === "unknown")
       .length,
@@ -125,16 +154,17 @@ export function dialectCoverageSummary(fixtures) {
   };
 }
 
-function validateTestOracle(item, rootDir) {
-  string(item.file, "dialect evidence file");
-  string(item.selector, "dialect evidence selector");
-  if (path.isAbsolute(item.file) || item.file.split(/[\\/]/).includes("..")) {
-    invalid(`dialect evidence path must stay repository-relative: ${item.file}`);
+function validateTestOracle(item: JsonObject, rootDir: string): void {
+  const { file, selector } = item;
+  string(file, "dialect evidence file");
+  string(selector, "dialect evidence selector");
+  if (path.isAbsolute(file) || file.split(/[\\/]/).includes("..")) {
+    invalid(`dialect evidence path must stay repository-relative: ${file}`);
   }
-  const absolute = path.join(rootDir, item.file);
+  const absolute = path.join(rootDir, file);
   if (!fs.statSync(absolute, { throwIfNoEntry: false })?.isFile()) {
-    invalid(`dialect evidence file does not exist: ${item.file}`);
+    invalid(`dialect evidence file does not exist: ${file}`);
   }
-  const occurrences = fs.readFileSync(absolute, "utf8").split(item.selector).length - 1;
-  deepEqual(occurrences, 1, `dialect evidence selector is stale in ${item.file}`);
+  const occurrences = fs.readFileSync(absolute, "utf8").split(selector).length - 1;
+  deepEqual(occurrences, 1, `dialect evidence selector is stale in ${file}`);
 }

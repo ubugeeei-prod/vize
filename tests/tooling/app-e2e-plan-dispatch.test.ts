@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import {
   createAppE2ePlanEvidence,
   validateAppE2eTarget,
-} from "../../tools/support/compat/github/app-e2e-plan.mjs";
+} from "../../tools/support/compat/github/app-e2e-plan.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 

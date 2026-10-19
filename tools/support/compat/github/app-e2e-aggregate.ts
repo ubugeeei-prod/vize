@@ -1,6 +1,15 @@
 import { fileURLToPath } from "node:url";
 
-import { planAppE2eRows } from "./app-e2e-plan.mjs";
+import { planAppE2eRows } from "./app-e2e-plan.ts";
+
+export interface AppE2eAggregateInput {
+  readonly profile: string;
+  readonly suite: string;
+  readonly runRequired: boolean;
+  readonly planResult: string;
+  readonly producerResult: string;
+  readonly plannedCount: number;
+}
 
 export function assertAppE2eAggregate({
   profile,
@@ -9,7 +18,7 @@ export function assertAppE2eAggregate({
   planResult,
   producerResult,
   plannedCount,
-}) {
+}: AppE2eAggregateInput): { expectedCount: number; outcome: "success" } {
   if (planResult !== "success") throw new Error(`App E2E planner is ${planResult}`);
   if (runRequired === false) {
     if (profile !== "readiness") throw new Error("Only readiness may be a successful no-op");
@@ -28,13 +37,20 @@ export function assertAppE2eAggregate({
   return { expectedCount, outcome: "success" };
 }
 
-function main(argv) {
+function main(argv: readonly string[]): void {
   if (argv.length !== 6) {
     throw new Error(
-      "Usage: app-e2e-aggregate.mjs <profile> <suite> <run-required> <plan-result> <producer-result> <planned-count>",
+      "Usage: app-e2e-aggregate.ts <profile> <suite> <run-required> <plan-result> <producer-result> <planned-count>",
     );
   }
-  const [profile, suite, runRequiredText, planResult, producerResult, plannedCountText] = argv;
+  const [
+    profile = "",
+    suite = "",
+    runRequiredText = "",
+    planResult = "",
+    producerResult = "",
+    plannedCountText = "",
+  ] = argv;
   if (runRequiredText !== "true" && runRequiredText !== "false") {
     throw new Error(`run-required must be true or false, got ${runRequiredText}`);
   }

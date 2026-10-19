@@ -3,8 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { fullAppE2eRows } from "../github/app-e2e-plan.mjs";
-import { validateDialectCoverage } from "./fixture-dialect-coverage.mjs";
+import { fullAppE2eRows, type AppE2eRow } from "../github/app-e2e-plan.ts";
+import {
+  validateDialectCoverage,
+  type DialectContext,
+  type RegistryProject,
+} from "./fixture-dialect-coverage.ts";
 import {
   array,
   compareCodepoints,
@@ -19,7 +23,60 @@ import {
   string,
   unique,
   validateCapabilityRuntimeClaims,
-} from "./fixture-compatibility-validation.mjs";
+  type Capability,
+  type Evidence,
+  type Fixture,
+} from "./fixture-compatibility-validation.ts";
+
+export interface CompatibilityContext extends DialectContext {
+  readonly appRows: readonly AppE2eRow[];
+  readonly gitlinkPaths: readonly string[];
+}
+
+type FixtureMap = ReadonlyMap<string, Fixture>;
+
+export interface UnresolvedItem {
+  readonly dimension: string;
+  readonly value: string;
+  readonly state: string;
+  readonly reason: string;
+  readonly trackingIssue: number;
+}
+
+/** The checked-in JSON document as read; nothing is validated yet. */
+export interface LedgerDocument {
+  fixtures: {
+    fixturePath: string;
+    memberships: string[];
+    dialectCoverage: Record<string, unknown>;
+  }[];
+  capabilities: {
+    fixturePath: string;
+    dimension: string;
+    value: string;
+    levels: string[];
+    evidence: Record<string, unknown>;
+  }[];
+  oracles: {
+    kind: string;
+    selection: Record<string, unknown>;
+    evidence: Record<string, unknown>;
+  }[];
+  unresolved: Record<string, unknown>[];
+  [field: string]: unknown;
+}
+
+/** The ledger after `validateCompatibilityLedger` checked every closed shape. */
+export interface CompatibilityLedger {
+  readonly fixtures: readonly Fixture[];
+  readonly capabilities: readonly Capability[];
+  readonly oracles: readonly {
+    readonly kind: string;
+    readonly selection: unknown;
+    readonly evidence: Evidence;
+  }[];
+  readonly unresolved: readonly UnresolvedItem[];
+}
 
 const moduleRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 export const compatibilityLedgerPath = path.join(
@@ -27,7 +84,7 @@ export const compatibilityLedgerPath = path.join(
   "tests/_fixtures/fixture-compatibility-ledger.json",
 );
 
-export const capabilityValues = {
+export const capabilityValues: Readonly<Record<string, readonly string[]>> = {
   "vue-generation": ["0.x", "1.x", "2.x", "2.7", "3.x"],
   "api-style": ["options-api", "class-api", "composition-api", "script-setup"],
   "nuxt-macro": ["define-page-meta", "use-head", "use-seo-meta"],
@@ -56,22 +113,28 @@ const unresolvedDimensions = [
   "corpus-capability-classification",
   "oracle-coverage",
 ];
-const unresolvedValues = {
+const unresolvedValues: Readonly<Record<string, readonly string[]>> = {
   "vue-generation": capabilityValues["vue-generation"],
   "vue-generation-runtime": capabilityValues["vue-generation"],
   "corpus-capability-classification": ["remaining-gitlinks"],
   "oracle-coverage": ["preview"],
 };
+
+function lastField(line: string, separator: RegExp | string): string {
+  return line.trim().split(separator).at(-1) ?? "";
+}
 const runtimeOracleKinds = new Set(["ssr", "hydration", "preview", "vrt", "real-vite-hmr"]);
 
-export function readCompatibilityLedger(file = compatibilityLedgerPath) {
-  return JSON.parse(fs.readFileSync(file, "utf8"));
+export function readCompatibilityLedger(file = compatibilityLedgerPath): LedgerDocument {
+  // Callers pass the document to validateCompatibilityLedger, which checks it.
+  return JSON.parse(fs.readFileSync(file, "utf8")) as LedgerDocument;
 }
 
-export function createCompatibilityContext(rootDir = moduleRoot) {
+export function createCompatibilityContext(rootDir = moduleRoot): CompatibilityContext {
+  // The checked-in registry is validated by its own fixture-registry tests.
   const registry = JSON.parse(
     fs.readFileSync(path.join(rootDir, "tests/_fixtures/vue-ecosystem-fixtures.json"), "utf8"),
-  );
+  ) as { projects: readonly RegistryProject[] };
   const gitmodulePaths = execFileSync(
     "git",
     ["config", "-f", ".gitmodules", "--get-regexp", "^submodule\\..*\\.path$"],
@@ -79,7 +142,7 @@ export function createCompatibilityContext(rootDir = moduleRoot) {
   )
     .trim()
     .split("\n")
-    .map((line) => line.trim().split(/\s+/).at(-1))
+    .map((line) => lastField(line, /\s+/))
     .sort(compareCodepoints);
   const gitlinkPaths = execFileSync("git", ["ls-files", "-s", "tests/_fixtures/_git"], {
     cwd: rootDir,
@@ -88,13 +151,20 @@ export function createCompatibilityContext(rootDir = moduleRoot) {
     .trim()
     .split("\n")
     .filter((line) => line.startsWith("160000 "))
-    .map((line) => line.split("\t").at(-1))
+    .map((line) => lastField(line, "\t"))
     .sort(compareCodepoints);
   deepEqual(gitmodulePaths, gitlinkPaths, ".gitmodules and gitlink inventory drifted");
   return { appRows: fullAppE2eRows, gitlinkPaths, registry, rootDir };
 }
 
-export function validateCompatibilityLedger(ledger, context = createCompatibilityContext()) {
+export function validateCompatibilityLedger(
+  ledger: unknown,
+  context: CompatibilityContext = createCompatibilityContext(),
+): {
+  ledger: CompatibilityLedger;
+  fixtureMap: Map<string, Fixture>;
+  oracleFixtures: Map<string, Set<string>>;
+} {
   record(ledger, "fixture compatibility ledger");
   exactKeys(ledger, [
     "schema",
@@ -110,19 +180,19 @@ export function validateCompatibilityLedger(ledger, context = createCompatibilit
   validateTrackingIssues(ledger.trackingIssues);
 
   const fixtureMap = validateFixtures(ledger.fixtures, context);
-  validateCapabilities(ledger.capabilities, fixtureMap, context.rootDir);
+  const capabilities = validateCapabilities(ledger.capabilities, fixtureMap, context.rootDir);
   const { byKind: oracleFixtures, runtimeEvidence } = validateOracles(
     ledger.oracles,
     fixtureMap,
     context.rootDir,
   );
-  validateCapabilityRuntimeClaims(ledger.capabilities, runtimeEvidence);
+  validateCapabilityRuntimeClaims(capabilities, runtimeEvidence);
   validateUnresolved(ledger.unresolved);
   validateRatchets(oracleFixtures, fixtureMap, context);
-  return { fixtureMap, oracleFixtures };
+  return { ledger: ledger as unknown as CompatibilityLedger, fixtureMap, oracleFixtures };
 }
 
-function validateTrackingIssues(value) {
+function validateTrackingIssues(value: unknown): void {
   record(value, "trackingIssues");
   exactKeys(value, ["authoredLspExpansion", "vueTscParityExpansion", "dropInCompatibility"]);
   equal(value.authoredLspExpansion, 3952, "authored LSP ownership drifted");
@@ -130,9 +200,10 @@ function validateTrackingIssues(value) {
   equal(value.dropInCompatibility, 3227, "drop-in compatibility ownership drifted");
 }
 
-function validateFixtures(fixtures, context) {
+function validateFixtures(fixtures: unknown, context: CompatibilityContext): Map<string, Fixture> {
   array(fixtures, "fixtures");
   const expectedGitlinks = context.gitlinkPaths;
+  const validated: Fixture[] = [];
   const actualPaths = fixtures.map((fixture, index) => {
     record(fixture, `fixtures[${index}]`);
     exactKeys(fixture, ["fixturePath", "memberships", "dialectCoverage"]);
@@ -141,6 +212,8 @@ function validateFixtures(fixtures, context) {
     unique(fixture.memberships, `${fixture.fixturePath}.memberships`);
     for (const membership of fixture.memberships) enumValue(membership, memberships, "membership");
     validateDialectCoverage(fixture.dialectCoverage, fixture.fixturePath, context);
+    // Every field of the closed shape was checked above.
+    validated.push(fixture as unknown as Fixture);
     return fixture.fixturePath;
   });
   unique(actualPaths, "fixture paths");
@@ -153,8 +226,8 @@ function validateFixtures(fixtures, context) {
 
   const ecosystem = new Set(context.registry.projects.map((project) => project.fixturePath));
   const app = new Set(context.appRows.flatMap((row) => row.fixtures));
-  const fixtureMap = new Map(fixtures.map((fixture) => [fixture.fixturePath, fixture]));
-  for (const fixture of fixtures) {
+  const fixtureMap = new Map(validated.map((fixture) => [fixture.fixturePath, fixture]));
+  for (const fixture of validated) {
     const expected = [
       ...(ecosystem.has(fixture.fixturePath) ? ["ecosystem"] : []),
       ...(app.has(fixture.fixturePath) ? ["app"] : []),
@@ -164,17 +237,25 @@ function validateFixtures(fixtures, context) {
   return fixtureMap;
 }
 
-function validateCapabilities(capabilities, fixtureMap, rootDir) {
+function validateCapabilities(
+  capabilities: unknown,
+  fixtureMap: FixtureMap,
+  rootDir: string,
+): Capability[] {
   array(capabilities, "capabilities");
-  const identities = [];
+  const identities: string[] = [];
+  const validated: Capability[] = [];
   for (const [index, capability] of capabilities.entries()) {
     record(capability, `capabilities[${index}]`);
     exactKeys(capability, ["fixturePath", "dimension", "value", "levels", "evidence"]);
-    if (!fixtureMap.has(capability.fixturePath))
-      invalid(`unknown fixture ${capability.fixturePath}`);
-    const values = capabilityValues[capability.dimension];
-    if (values == null) invalid(`unknown capability dimension ${capability.dimension}`);
-    enumValue(capability.value, values, `${capability.dimension} value`);
+    const { fixturePath, dimension } = capability;
+    string(fixturePath, "capability fixturePath");
+    string(dimension, "capability dimension");
+    const fixture = fixtureMap.get(fixturePath);
+    if (fixture === undefined) return invalid(`unknown fixture ${fixturePath}`);
+    const values = capabilityValues[dimension];
+    if (values == null) return invalid(`unknown capability dimension ${dimension}`);
+    enumValue(capability.value, values, `${dimension} value`);
     array(capability.levels, "capability levels");
     if (capability.levels.length === 0) invalid("capability levels must not be empty");
     unique(capability.levels, "capability levels");
@@ -185,41 +266,45 @@ function validateCapabilities(capabilities, fixtureMap, rootDir) {
     ) {
       invalid("runtime capability must also be present and exercised");
     }
-    if (
-      capability.levels.includes("runtime") &&
-      !fixtureMap.get(capability.fixturePath).memberships.includes("app")
-    ) {
-      invalid(`runtime capability claim is not an App fixture: ${capability.fixturePath}`);
+    if (capability.levels.includes("runtime") && !fixture.memberships.includes("app")) {
+      invalid(`runtime capability claim is not an App fixture: ${fixturePath}`);
     }
     validateEvidence(capability.evidence, rootDir);
-    identities.push(`${capability.fixturePath}\0${capability.dimension}\0${capability.value}`);
+    identities.push(`${fixturePath}\0${dimension}\0${capability.value}`);
+    // Every field of the closed shape was checked above.
+    validated.push(capability as unknown as Capability);
   }
   unique(identities, "capability claims");
+  return validated;
 }
 
-function validateOracles(oracles, fixtureMap, rootDir) {
+function validateOracles(
+  oracles: unknown,
+  fixtureMap: FixtureMap,
+  rootDir: string,
+): { byKind: Map<string, Set<string>>; runtimeEvidence: Set<string> } {
   array(oracles, "oracles");
-  const identities = [];
-  const byKind = new Map(oracleKinds.map((kind) => [kind, new Set()]));
-  const runtimeEvidence = new Set();
+  const identities: string[] = [];
+  const byKind = new Map(oracleKinds.map((kind) => [kind, new Set<string>()]));
+  const runtimeEvidence = new Set<string>();
   for (const [index, oracle] of oracles.entries()) {
     record(oracle, `oracles[${index}]`);
     exactKeys(oracle, ["kind", "selection", "evidence"]);
     enumValue(oracle.kind, oracleKinds, "oracle kind");
     const selected = expandSelection(oracle.selection, fixtureMap);
     if (selected.length === 0) invalid(`${oracle.kind} oracle selected no fixtures`);
-    validateEvidence(oracle.evidence, rootDir);
+    const evidence = validateEvidence(oracle.evidence, rootDir);
     for (const fixturePath of selected) {
       identities.push(`${oracle.kind}\0${fixturePath}`);
-      byKind.get(oracle.kind).add(fixturePath);
+      byKind.get(oracle.kind)?.add(fixturePath);
       if (runtimeOracleKinds.has(oracle.kind)) {
-        runtimeEvidence.add(evidenceIdentity(fixturePath, oracle.evidence));
+        runtimeEvidence.add(evidenceIdentity(fixturePath, evidence));
       }
       if (
         ["production-build", "ssr", "hydration", "preview", "vrt", "real-vite-hmr"].includes(
           oracle.kind,
         ) &&
-        !fixtureMap.get(fixturePath).memberships.includes("app")
+        fixtureMap.get(fixturePath)?.memberships.includes("app") !== true
       ) {
         invalid(`${oracle.kind} App oracle is not an App fixture: ${fixturePath}`);
       }
@@ -229,57 +314,72 @@ function validateOracles(oracles, fixtureMap, rootDir) {
   return { byKind, runtimeEvidence };
 }
 
-export function expandSelection(selection, fixtureMap) {
+export function expandSelection(selection: unknown, fixtureMap: FixtureMap): readonly string[] {
   record(selection, "oracle selection");
   if (selection.type === "membership") {
     exactKeys(selection, ["type", "membership"]);
-    enumValue(selection.membership, memberships, "selection membership");
+    const { membership } = selection;
+    enumValue(membership, memberships, "selection membership");
     return [...fixtureMap.values()]
-      .filter((fixture) => fixture.memberships.includes(selection.membership))
+      .filter((fixture) => fixture.memberships.includes(membership))
       .map((fixture) => fixture.fixturePath);
   }
   if (selection.type === "fixtures") {
     exactKeys(selection, ["type", "fixturePaths"]);
-    array(selection.fixturePaths, "selection.fixturePaths");
-    unique(selection.fixturePaths, "selection.fixturePaths");
-    for (const fixturePath of selection.fixturePaths) {
-      if (!fixtureMap.has(fixturePath)) invalid(`oracle selected unknown fixture ${fixturePath}`);
+    const { fixturePaths } = selection;
+    array(fixturePaths, "selection.fixturePaths");
+    unique(fixturePaths, "selection.fixturePaths");
+    const selected: string[] = [];
+    for (const fixturePath of fixturePaths) {
+      if (typeof fixturePath !== "string" || !fixtureMap.has(fixturePath))
+        return invalid(`oracle selected unknown fixture ${String(fixturePath)}`);
+      selected.push(fixturePath);
     }
-    return selection.fixturePaths;
+    return selected;
   }
-  invalid(`unknown oracle selection type ${selection.type}`);
+  return invalid(`unknown oracle selection type ${String(selection.type)}`);
 }
 
-function validateEvidence(evidence, rootDir) {
+function validateEvidence(evidence: unknown, rootDir: string): Evidence {
   record(evidence, "evidence");
   exactKeys(evidence, ["file", "selector"]);
-  string(evidence.file, "evidence.file");
-  string(evidence.selector, "evidence.selector");
-  if (path.isAbsolute(evidence.file) || evidence.file.split(/[\\/]/).includes("..")) {
-    invalid(`evidence path must stay repository-relative: ${evidence.file}`);
+  const { file, selector } = evidence;
+  string(file, "evidence.file");
+  string(selector, "evidence.selector");
+  if (path.isAbsolute(file) || file.split(/[\\/]/).includes("..")) {
+    invalid(`evidence path must stay repository-relative: ${file}`);
   }
-  const absolute = path.join(rootDir, evidence.file);
+  const absolute = path.join(rootDir, file);
   if (!fs.statSync(absolute, { throwIfNoEntry: false })?.isFile()) {
-    invalid(`evidence file does not exist: ${evidence.file}`);
+    invalid(`evidence file does not exist: ${file}`);
   }
-  const occurrences = fs.readFileSync(absolute, "utf8").split(evidence.selector).length - 1;
+  const occurrences = fs.readFileSync(absolute, "utf8").split(selector).length - 1;
   if (occurrences !== 1) {
-    invalid(`evidence selector is stale in ${evidence.file}: ${evidence.selector}`);
+    invalid(`evidence selector is stale in ${file}: ${selector}`);
   }
+  return { file, selector };
 }
 
-function validateUnresolved(unresolved) {
+function validateUnresolved(unresolved: unknown): void {
   array(unresolved, "unresolved");
-  const identities = [];
-  const rows = new Map();
+  const identities: string[] = [];
+  const rows = new Map<string, Readonly<Record<string, unknown>>>();
   for (const [index, item] of unresolved.entries()) {
     record(item, `unresolved[${index}]`);
     exactKeys(item, ["dimension", "value", "state", "reason", "trackingIssue"]);
     enumValue(item.dimension, unresolvedDimensions, "unresolved dimension");
-    enumValue(item.value, unresolvedValues[item.dimension], `${item.dimension} unresolved value`);
+    enumValue(
+      item.value,
+      unresolvedValues[item.dimension] ?? [],
+      `${item.dimension} unresolved value`,
+    );
     enumValue(item.state, unresolvedStates, "unresolved state");
     string(item.reason, "unresolved reason");
-    if (!Number.isInteger(item.trackingIssue) || item.trackingIssue <= 0) {
+    if (
+      typeof item.trackingIssue !== "number" ||
+      !Number.isInteger(item.trackingIssue) ||
+      item.trackingIssue <= 0
+    ) {
       invalid("unresolved trackingIssue must be a positive integer");
     }
     const identity = `${item.dimension}\0${item.value}`;
@@ -296,13 +396,17 @@ function validateUnresolved(unresolved) {
   ]);
   for (const [identity, state] of required) {
     const row = rows.get(identity);
-    if (row == null) invalid(`missing explicit unresolved dimension ${identity}`);
+    if (row == null) return invalid(`missing explicit unresolved dimension ${identity}`);
     equal(row.state, state, `unresolved state drifted for ${identity}`);
     equal(row.trackingIssue, 3227, `unresolved owner drifted for ${identity}`);
   }
 }
 
-function validateRatchets(oracles, fixtureMap, context) {
+function validateRatchets(
+  oracles: ReadonlyMap<string, ReadonlySet<string>>,
+  fixtureMap: FixtureMap,
+  context: CompatibilityContext,
+): void {
   equal(fixtureMap.size, 148, "gitlink count drifted");
   equal(countMembership(fixtureMap, "ecosystem"), 143, "ecosystem fixture count drifted");
   equal(countMembership(fixtureMap, "app"), 16, "App fixture count drifted");
@@ -320,12 +424,14 @@ function validateRatchets(oracles, fixtureMap, context) {
     "App-only fixture membership drifted",
   );
   for (const kind of ["compiler", "formatter-idempotency", "linter", "typechecker"]) {
-    equal(oracles.get(kind).size, 143, `${kind} oracle count drifted`);
+    equal(oracles.get(kind)?.size, 143, `${kind} oracle count drifted`);
   }
-  equal(oracles.get("authored-lsp").size, 55, "authored LSP oracle count drifted");
-  equal(oracles.get("vue-tsc-parity").size, 11, "vue-tsc parity count drifted");
+  const authoredLsp = oracles.get("authored-lsp") ?? new Set<string>();
+  const vueTscParity = oracles.get("vue-tsc-parity") ?? new Set<string>();
+  equal(authoredLsp.size, 55, "authored LSP oracle count drifted");
+  equal(vueTscParity.size, 11, "vue-tsc parity count drifted");
   deepEqual(
-    [...oracles.get("authored-lsp")].sort(compareCodepoints),
+    [...authoredLsp].sort(compareCodepoints),
     [
       ...new Set(
         context.registry.projects
@@ -336,7 +442,7 @@ function validateRatchets(oracles, fixtureMap, context) {
     "authored LSP oracle membership drifted",
   );
   deepEqual(
-    [...oracles.get("vue-tsc-parity")].sort(compareCodepoints),
+    [...vueTscParity].sort(compareCodepoints),
     [
       ...new Set(
         context.registry.projects

@@ -7,12 +7,20 @@ import {
   oracleKinds,
   readCompatibilityLedger,
   validateCompatibilityLedger,
-} from "./fixture-compatibility-ledger.mjs";
-import { compareCodepoints, countMembership } from "./fixture-compatibility-validation.mjs";
-import { dialectCoverageSummary } from "./fixture-dialect-coverage.mjs";
+  type CompatibilityContext,
+} from "./fixture-compatibility-ledger.ts";
+import {
+  compareCodepoints,
+  countMembership,
+  type Capability,
+} from "./fixture-compatibility-validation.ts";
+import { dialectCoverageSummary } from "./fixture-dialect-coverage.ts";
 
-export function createCompatibilityReport(ledger, context = createCompatibilityContext()) {
-  const { fixtureMap } = validateCompatibilityLedger(ledger, context);
+export function createCompatibilityReport(
+  input: unknown,
+  context: CompatibilityContext = createCompatibilityContext(),
+) {
+  const { ledger, fixtureMap } = validateCompatibilityLedger(input, context);
   const capabilityReport = Object.fromEntries(
     Object.entries(capabilityValues).map(([dimension, values]) => [
       dimension,
@@ -56,7 +64,7 @@ export function createCompatibilityReport(ledger, context = createCompatibilityC
   };
 }
 
-function capabilityCounts(capabilities, dimension, value) {
+function capabilityCounts(capabilities: readonly Capability[], dimension: string, value: string) {
   const claims = capabilities.filter(
     (capability) => capability.dimension === dimension && capability.value === value,
   );
@@ -67,7 +75,7 @@ function capabilityCounts(capabilities, dimension, value) {
   };
 }
 
-function levelSummary(claims, level) {
+function levelSummary(claims: readonly Capability[], level: string) {
   const fixturePaths = [
     ...new Set(
       claims.filter((claim) => claim.levels.includes(level)).map((claim) => claim.fixturePath),
@@ -76,7 +84,7 @@ function levelSummary(claims, level) {
   return { count: fixturePaths.length, fixturePaths };
 }
 
-export function formatCompatibilityReport(report) {
+export function formatCompatibilityReport(report: unknown): string {
   return `${JSON.stringify(report, null, 2)}\n`;
 }
 

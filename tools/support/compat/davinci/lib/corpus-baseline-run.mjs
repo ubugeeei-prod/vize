@@ -214,7 +214,7 @@ function reduceRun(shardDir, projectId, run) {
   };
 }
 
-/** Mirrors tools/fixtures/tool-matrix-metrics.mjs, from the payload side. */
+/** Mirrors tools/fixtures/tool-matrix-metrics.ts, from the payload side. */
 function payloadFileCount(tool, payload) {
   if (tool === "compiler") return payload.compilerArtifacts.inputFileCount;
   if (tool === "typechecker") return payload.parsed.fileCount;

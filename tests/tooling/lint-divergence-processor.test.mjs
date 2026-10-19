@@ -13,11 +13,11 @@ import {
   runBaseline,
   selectComparableRules,
 } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
-import { collectBaselineFindings } from "../../tools/support/compat/fixtures/lint-divergence-records.mjs";
+import { collectBaselineFindings } from "../../tools/support/compat/fixtures/lint-divergence-records.ts";
 import {
   assertBudgetsPassed,
   evaluateBudget,
-} from "../../tools/support/compat/fixtures/lint-divergence-budget.mjs";
+} from "../../tools/support/compat/fixtures/lint-divergence-budget.ts";
 import { baselineScript as embedded } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");

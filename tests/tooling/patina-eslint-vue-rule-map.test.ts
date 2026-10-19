@@ -3,7 +3,7 @@ import { test } from "node:test";
 import {
   readRuleMap,
   validateRuleMap,
-} from "../../tools/support/compat/fixtures/patina-rule-map.mjs";
+} from "../../tools/support/compat/fixtures/patina-rule-map.ts";
 
 test("the Patina scorecard exhaustively maps the pinned eslint-plugin-vue rule surface", () => {
   const ruleMap = validateRuleMap(readRuleMap());

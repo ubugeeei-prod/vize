@@ -4,6 +4,42 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+export type RuleMapEntry =
+  | {
+      readonly status: "mapped";
+      readonly patinaRule: string;
+      readonly patinaSeverity: string;
+      readonly patinaPresets: readonly string[];
+    }
+  | { readonly status: "unimplemented"; readonly issue: number }
+  | { readonly status: "intentional-divergence"; readonly reason: string };
+
+export interface RuleMap {
+  readonly schemaVersion: number;
+  readonly upstream: {
+    readonly package: string;
+    readonly version: string;
+    readonly ruleCount: number;
+  };
+  readonly summary: {
+    readonly mapped: number;
+    readonly unimplemented: number;
+    readonly intentionalDivergence: number;
+  };
+  readonly entries: Readonly<Record<string, RuleMapEntry>>;
+}
+
+interface PatinaRuleMeta {
+  readonly defaultSeverity: string;
+  readonly presets: string[];
+}
+
+function field(value: unknown, key: string): unknown {
+  return value != null && (typeof value === "object" || typeof value === "function")
+    ? (value as Readonly<Record<string, unknown>>)[key]
+    : undefined;
+}
+
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 export const ruleMapPath = path.join(
   repoRoot,
@@ -17,7 +53,8 @@ const trackingIssue = 3223;
 // Code-point ordering, not localeCompare: the rule map is a checked-in artifact
 // that must be byte-identical across runners regardless of the host's ICU locale
 // data, and the Rust-side drift test reads it as written.
-const byCodePoint = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+const byCodePoint = (left: string, right: string): number =>
+  left < right ? -1 : left > right ? 1 : 0;
 const explicitPatinaAliases = new Map([
   ["vue/attributes-order", "vue/attribute-order"],
   ["vue/block-order", "vue/sfc-element-order"],
@@ -34,27 +71,29 @@ const intentionalDivergenceOverrides = new Map([
   ],
 ]);
 
-function loadUpstream() {
+function loadUpstream(): { ruleIds: string[]; version: string } {
   const requireFromBench = createRequire(
     path.join(repoRoot, "tools", "benchmarks", "scripts", "package.json"),
   );
-  const plugin = requireFromBench(upstreamPackage);
-  const manifest = requireFromBench(`${upstreamPackage}/package.json`);
-  const benchManifest = JSON.parse(
+  const plugin: unknown = requireFromBench(upstreamPackage);
+  const version = field(requireFromBench(`${upstreamPackage}/package.json`), "version");
+  const rules = field(plugin, "rules");
+  assert.ok(typeof version === "string" && rules != null && typeof rules === "object");
+  const benchManifest: unknown = JSON.parse(
     fs.readFileSync(path.join(repoRoot, "tools", "benchmarks", "scripts", "package.json"), "utf8"),
   );
 
   assert.equal(
-    benchManifest.devDependencies?.[upstreamPackage],
-    manifest.version,
+    field(field(benchManifest, "devDependencies"), upstreamPackage),
+    version,
     `${upstreamPackage} must stay exactly pinned in tools/benchmarks/scripts/package.json`,
   );
 
   return {
-    ruleIds: Object.keys(plugin.rules)
+    ruleIds: Object.keys(rules)
       .map((name) => `vue/${name}`)
       .sort(),
-    version: manifest.version,
+    version,
   };
 }
 
@@ -63,39 +102,48 @@ function loadUpstream() {
  *
  * The recorded `defaultSeverity` and `presets` are what lets a consumer decide,
  * from the checked-in map alone, which rules are comparable against upstream
- * under a given preset and at which severity — `tools/fixtures/lint-divergence.mjs`
+ * under a given preset and at which severity — `tools/fixtures/lint-divergence.ts`
  * classifies on severity, so a baseline configured at the wrong one turns every
  * agreement into a false-positive/false-negative pair. Reading them here keeps
  * the native binding a `--write`-time dependency instead of a run-time one.
  */
-async function loadPatinaRules() {
+async function loadPatinaRules(): Promise<Map<string, PatinaRuleMeta>> {
   const nativeEntry = process.env.VIZE_PATINA_NATIVE_MODULE
     ? path.resolve(process.env.VIZE_PATINA_NATIVE_MODULE)
     : path.join(repoRoot, "npm", "native", "index.js");
-  const nativeModule = await import(pathToFileURL(nativeEntry));
-  const binding = nativeModule.default ?? nativeModule;
-  assert.equal(
-    typeof binding.getPatinaRules,
-    "function",
+  const nativeModule: unknown = await import(pathToFileURL(nativeEntry).href);
+  const binding = field(nativeModule, "default") ?? nativeModule;
+  const getPatinaRules = field(binding, "getPatinaRules");
+  assert.ok(
+    typeof getPatinaRules === "function",
     "building the rule map requires a local @vizejs/native binding",
   );
-  const rules = new Map();
-  for (const rule of binding.getPatinaRules()) {
+  const listed: unknown = getPatinaRules.call(binding);
+  assert.ok(Array.isArray(listed), "getPatinaRules must return a list");
+  const rules = new Map<string, PatinaRuleMeta>();
+  for (const rule of listed as readonly unknown[]) {
+    const name = String(field(rule, "name"));
+    const defaultSeverity = field(rule, "defaultSeverity");
+    const presets = field(rule, "presets");
+    assert.ok(typeof defaultSeverity === "string", `${name} has an unsupported default severity`);
     assert.match(
-      rule.defaultSeverity,
+      defaultSeverity,
       /^(?:error|warning)$/u,
-      `${rule.name} has an unsupported default severity`,
+      `${name} has an unsupported default severity`,
     );
-    assert.ok(Array.isArray(rule.presets), `${rule.name} must record its presets`);
-    rules.set(rule.name, {
-      defaultSeverity: rule.defaultSeverity,
-      presets: [...rule.presets].sort(byCodePoint),
+    assert.ok(Array.isArray(presets), `${name} must record its presets`);
+    rules.set(name, {
+      defaultSeverity,
+      presets: (presets as readonly unknown[]).map(String).sort(byCodePoint),
     });
   }
   return rules;
 }
 
-function patinaTargetFor(upstreamRule, patinaRules) {
+function patinaTargetFor(
+  upstreamRule: string,
+  patinaRules: ReadonlyMap<string, PatinaRuleMeta>,
+): string | null {
   if (patinaRules.has(upstreamRule)) {
     return upstreamRule;
   }
@@ -109,10 +157,10 @@ function patinaTargetFor(upstreamRule, patinaRules) {
   return alias != null && patinaRules.has(alias) ? alias : null;
 }
 
-export async function generateRuleMap() {
+export async function generateRuleMap(): Promise<RuleMap> {
   const upstream = loadUpstream();
   const patinaRules = await loadPatinaRules();
-  const entries = {};
+  const entries: Record<string, RuleMapEntry> = {};
   let mapped = 0;
   let intentionalDivergence = 0;
 
@@ -133,6 +181,7 @@ export async function generateRuleMap() {
       continue;
     }
     const meta = patinaRules.get(patinaRule);
+    if (meta === undefined) throw new Error(`${patinaRule} is not a registered patina rule`);
     entries[ruleId] = {
       status: "mapped",
       patinaRule,
@@ -158,11 +207,12 @@ export async function generateRuleMap() {
   };
 }
 
-export function readRuleMap() {
-  return JSON.parse(fs.readFileSync(ruleMapPath, "utf8"));
+export function readRuleMap(): RuleMap {
+  // The checked-in map; validateRuleMap() checks every field against upstream.
+  return JSON.parse(fs.readFileSync(ruleMapPath, "utf8")) as RuleMap;
 }
 
-export function validateRuleMap(ruleMap = readRuleMap()) {
+export function validateRuleMap(ruleMap: RuleMap = readRuleMap()): RuleMap {
   const upstream = loadUpstream();
 
   assert.equal(ruleMap.schemaVersion, 1);
@@ -196,7 +246,8 @@ export function validateRuleMap(ruleMap = readRuleMap()) {
       // can run on every PR.
       assert.match(entry.patinaSeverity, /^(?:error|warning)$/u, `${ruleId} needs a severity`);
       assert.ok(
-        Array.isArray(entry.patinaPresets) && entry.patinaPresets.every((v) => /\S/u.test(v)),
+        Array.isArray(entry.patinaPresets) &&
+          entry.patinaPresets.every((preset) => /\S/u.test(preset)),
         `${ruleId} needs its patina preset membership`,
       );
       assert.deepEqual(
@@ -219,7 +270,7 @@ export function validateRuleMap(ruleMap = readRuleMap()) {
       intentionalDivergence += 1;
       continue;
     }
-    assert.fail(`${ruleId} has unsupported status ${JSON.stringify(entry.status)}`);
+    assert.fail(`${ruleId} has unsupported status ${JSON.stringify(field(entry, "status"))}`);
   }
 
   assert.deepEqual(ruleMap.summary, { mapped, unimplemented, intentionalDivergence });
@@ -231,7 +282,7 @@ export function validateRuleMap(ruleMap = readRuleMap()) {
   return ruleMap;
 }
 
-async function main() {
+async function main(): Promise<void> {
   if (process.argv[1] == null || path.resolve(process.argv[1]) !== fileURLToPath(import.meta.url)) {
     return;
   }

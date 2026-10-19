@@ -10,10 +10,10 @@ import {
   collectLinterHistory,
   inventoryTsv,
   writeInventory,
-} from "../../tools/support/compat/fixtures/linter-fix-history.mjs";
+} from "../../tools/support/compat/fixtures/linter-fix-history.ts";
 
 const tool = fileURLToPath(
-  new URL("../../tools/support/compat/fixtures/linter-fix-history.mjs", import.meta.url),
+  new URL("../../tools/support/compat/fixtures/linter-fix-history.ts", import.meta.url),
 );
 const scope = "crates/vize_patina";
 

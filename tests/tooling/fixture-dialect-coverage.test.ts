@@ -5,8 +5,8 @@ import {
   createCompatibilityContext,
   readCompatibilityLedger,
   validateCompatibilityLedger,
-} from "../../tools/support/compat/fixtures/fixture-compatibility-ledger.mjs";
-import { createCompatibilityReport } from "../../tools/support/compat/fixtures/fixture-compatibility-report.mjs";
+} from "../../tools/support/compat/fixtures/fixture-compatibility-ledger.ts";
+import { createCompatibilityReport } from "../../tools/support/compat/fixtures/fixture-compatibility-report.ts";
 
 const context = createCompatibilityContext();
 const ledger = readCompatibilityLedger();

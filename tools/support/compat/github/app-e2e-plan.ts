@@ -1,10 +1,33 @@
 import { fileURLToPath } from "node:url";
 
-const fixture = (id) => `tests/_fixtures/_git/${id}`;
+export interface AppE2eRow {
+  profile: string;
+  suite: string;
+  shard: string;
+  task: string;
+  fixtures: readonly string[];
+  needsPlaywright: boolean;
+  timeout: string;
+  runner: string;
+  cacheKey: string;
+  worktreeId: string;
+  artifactStem: string;
+}
+
+const fixture = (id: string): string => `tests/_fixtures/_git/${id}`;
 
 const BLACKSMITH_RUNNER = "blacksmith-32vcpu-ubuntu-2404";
 
-function row(profile, suite, shard, task, fixtureIds, needsPlaywright, timeout, runner) {
+function row(
+  profile: string,
+  suite: string,
+  shard: string,
+  task: string,
+  fixtureIds: readonly string[],
+  needsPlaywright: boolean,
+  timeout: string,
+  runner?: string,
+): AppE2eRow {
   return {
     profile,
     suite,
@@ -111,19 +134,21 @@ export const readinessRows = [
   ),
 ];
 
-const profiles = new Map([
+const profiles = new Map<string, readonly AppE2eRow[]>([
   ["full", fullAppE2eRows],
   ["readiness", readinessRows],
 ]);
 const fullSuites = ["dev", "vrt", "preview", "check", "lint", "build", "all"];
 
-export function validateAppE2eRows(rows) {
+export function validateAppE2eRows(rows: unknown): AppE2eRow[] {
   if (!Array.isArray(rows) || rows.length === 0) throw new Error("App E2E plan must not be empty");
   const uniqueFields = ["identity", "task", "cacheKey", "worktreeId", "artifactStem"];
-  const seen = new Map(uniqueFields.map((field) => [field, new Set()]));
-  for (const current of rows) {
-    if (current == null || typeof current !== "object")
-      throw new Error("Plan rows must be objects");
+  const seen = new Map(uniqueFields.map((field) => [field, new Set<string>()]));
+  const valid: AppE2eRow[] = [];
+  for (const entry of rows as readonly unknown[]) {
+    if (entry == null || typeof entry !== "object") throw new Error("Plan rows must be objects");
+    // Every field below is checked before the row is accepted.
+    const current = entry as AppE2eRow;
     const identity = `${current.profile}:${current.suite}:${current.shard}`;
     const expectedPrefix = `${current.profile}-${current.suite}-${current.shard}`;
     if (!profiles.has(current.profile))
@@ -168,23 +193,27 @@ export function validateAppE2eRows(rows) {
     if (current.worktreeId !== `ci-app-e2e-${expectedPrefix}`) {
       throw new Error(`${identity} worktree drifted`);
     }
-    for (const [field, value] of [
+    const unique: readonly (readonly [string, string])[] = [
       ["identity", identity],
       ["task", current.task],
       ["cacheKey", current.cacheKey],
       ["worktreeId", current.worktreeId],
       ["artifactStem", current.artifactStem],
-    ]) {
-      if (seen.get(field).has(value)) throw new Error(`Duplicate ${field}: ${value}`);
-      seen.get(field).add(value);
+    ];
+    for (const [field, value] of unique) {
+      const values = seen.get(field);
+      if (values === undefined || values.has(value))
+        throw new Error(`Duplicate ${field}: ${value}`);
+      values.add(value);
     }
+    valid.push(current);
   }
-  return rows;
+  return valid;
 }
 
 validateAppE2eRows([...fullAppE2eRows, ...readinessRows]);
 
-export function planAppE2eRows(profile, suite = "all") {
+export function planAppE2eRows(profile: string, suite = "all"): AppE2eRow[] {
   const rows = profiles.get(profile);
   if (rows == null) throw new Error(`Unknown App E2E profile: ${profile}`);
   if (profile === "readiness") {
@@ -198,15 +227,21 @@ export function planAppE2eRows(profile, suite = "all") {
   return selected.map((current) => structuredClone(current));
 }
 
-export function findAppE2eRow(profile, suite, shard) {
+export function findAppE2eRow(profile: string, suite: string, shard: string): AppE2eRow {
   const matches = planAppE2eRows(profile, profile === "readiness" ? "all" : suite).filter(
     (current) => current.suite === suite && current.shard === shard,
   );
-  if (matches.length !== 1) throw new Error(`Unknown App E2E row: ${profile}:${suite}:${shard}`);
-  return matches[0];
+  const [match] = matches;
+  if (matches.length !== 1 || match === undefined)
+    throw new Error(`Unknown App E2E row: ${profile}:${suite}:${shard}`);
+  return match;
 }
 
-export function validateAppE2eTarget(suite, targetSha, runHeadSha) {
+export function validateAppE2eTarget(
+  suite: string,
+  targetSha: string,
+  runHeadSha: string,
+): string | null {
   if (targetSha === "") {
     if (suite === "all") throw new Error("target_sha is required when suite=all");
     return null;
@@ -220,7 +255,12 @@ export function validateAppE2eTarget(suite, targetSha, runHeadSha) {
   return targetSha;
 }
 
-export function createAppE2ePlanEvidence(profile, suite, targetSha, sourceHeadSha = null) {
+export function createAppE2ePlanEvidence(
+  profile: string,
+  suite: string,
+  targetSha: string,
+  sourceHeadSha: string | null = null,
+) {
   if (!/^[0-9a-f]{40}$/.test(targetSha))
     throw new Error("Plan evidence requires an exact target SHA");
   if (sourceHeadSha != null && !/^[0-9a-f]{40}$/.test(sourceHeadSha)) {
@@ -239,8 +279,17 @@ export function createAppE2ePlanEvidence(profile, suite, targetSha, sourceHeadSh
   };
 }
 
-function parseArgs(argv) {
-  const args = {
+interface Args {
+  profile: string | null;
+  suite: string;
+  shard: string | null;
+  field: string;
+  targetSha: string | null;
+  runHeadSha: string | null;
+}
+
+function parseArgs(argv: readonly string[]): Args & { profile: string } {
+  const args: Args = {
     profile: null,
     suite: "all",
     shard: null,
@@ -250,8 +299,10 @@ function parseArgs(argv) {
   };
   for (let index = 0; index < argv.length; index += 1) {
     const value = () => {
-      if (argv[index + 1] == null) throw new Error(`${argv[index]} requires a value`);
-      return argv[++index];
+      const next = argv[index + 1];
+      if (next == null) throw new Error(`${argv[index]} requires a value`);
+      index += 1;
+      return next;
     };
     if (argv[index] === "--profile") args.profile = value();
     else if (argv[index] === "--suite") args.suite = value();
@@ -261,11 +312,12 @@ function parseArgs(argv) {
     else if (argv[index] === "--run-head-sha") args.runHeadSha = value();
     else throw new Error(`Unknown argument: ${argv[index]}`);
   }
-  if (args.profile == null) throw new Error("--profile is required");
-  return args;
+  const { profile } = args;
+  if (profile == null) throw new Error("--profile is required");
+  return { ...args, profile };
 }
 
-function main(argv) {
+function main(argv: readonly string[]): void {
   const args = parseArgs(argv);
   if (args.targetSha != null) {
     if (args.runHeadSha == null)
@@ -294,7 +346,7 @@ function main(argv) {
     return;
   }
   const current = findAppE2eRow(args.profile, args.suite, args.shard);
-  const fields = {
+  const fields: Readonly<Record<string, string>> = {
     fixtures: current.fixtures.join("\n"),
     task: current.task,
     timeout: current.timeout,
@@ -303,8 +355,9 @@ function main(argv) {
     "worktree-id": current.worktreeId,
     "artifact-stem": current.artifactStem,
   };
-  if (!(args.field in fields)) throw new Error(`Unknown row field: ${args.field}`);
-  process.stdout.write(`${fields[args.field]}\n`);
+  const value = fields[args.field];
+  if (value === undefined) throw new Error(`Unknown row field: ${args.field}`);
+  process.stdout.write(`${value}\n`);
 }
 
 if (process.argv[1] != null && fileURLToPath(import.meta.url) === process.argv[1]) {
