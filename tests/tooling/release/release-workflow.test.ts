@@ -131,6 +131,9 @@ test("registries publish in parallel behind one credential-free smoke", () => {
     "publish-open-vsx",
     "publish-vscode",
   ]);
+  for (const build of ["build-packages", "build-native", "build-wasm"]) {
+    assert.ok(needs("smoke").includes(build), `smoke waits for ${build}`);
+  }
   for (const name of ["publish-crates", "publish-npm", "publish-open-vsx", "publish-vscode"]) {
     assert.ok(needs(name).includes("smoke"), name);
     assert.ok(!needs(name).some((other) => other.startsWith("publish-")), name);

@@ -200,10 +200,11 @@ jobs:
           compression-level: 0
 
   # The single pre-publish gate: install every package tarball together and
-  # run it. Runs without registry credentials.
+  # run it. Runs without registry credentials. Every registry waits for it, so
+  # a failed build (wasm included) publishes nowhere.
   smoke:
     name: Smoke package tarballs
-    needs: [version, build-packages, build-native]
+    needs: [version, build-packages, build-native, build-wasm]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -220,7 +221,7 @@ jobs:
 
   publish-npm:
     name: Publish npm packages
-    needs: [version, build-wasm, smoke]
+    needs: [version, smoke]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: npm
