@@ -18,6 +18,7 @@ pub struct Fixture {
     pub uri: String,
     lsp: LspProcess,
     next_id: i64,
+    trace_preparation: bool,
 }
 
 impl Fixture {
@@ -43,6 +44,18 @@ impl Fixture {
 
     pub fn new_with_vue_and_patterns(source: &str) -> Self {
         Self::new_with_options(source, true, false, true, false)
+    }
+
+    pub fn new_with_vue_and_patterns_traced(source: &str) -> Self {
+        Self::new_with_preparation_trace(
+            source,
+            true,
+            false,
+            true,
+            false,
+            ("App.vue", &[], None),
+            true,
+        )
     }
 
     pub fn new_with_vue_options_api(source: &str) -> Self {
@@ -106,6 +119,26 @@ impl Fixture {
         options_api: bool,
         files: (&str, &[(&str, &str)], Option<&Path>),
     ) -> Self {
+        Self::new_with_preparation_trace(
+            source,
+            enabled,
+            cross_file,
+            real_vue,
+            options_api,
+            files,
+            false,
+        )
+    }
+
+    fn new_with_preparation_trace(
+        source: &str,
+        enabled: bool,
+        cross_file: bool,
+        real_vue: bool,
+        options_api: bool,
+        files: (&str, &[(&str, &str)], Option<&Path>),
+        trace_preparation: bool,
+    ) -> Self {
         let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
             .unwrap()
@@ -156,7 +189,14 @@ impl Fixture {
             std::fs::write(path, content).unwrap();
         }
         let uri = file_uri(&path).to_string();
-        let mut lsp = LspProcess::spawn(project.path());
+        let mut lsp = if trace_preparation {
+            LspProcess::spawn_preparation_traced(project.path())
+        } else {
+            LspProcess::spawn(project.path())
+        };
+        if trace_preparation {
+            lsp.retain_protocol();
+        }
         lsp.send(
             json!({ "jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
                 "processId": null, "rootUri": file_uri(project.path()), "capabilities": {},
@@ -170,6 +210,7 @@ impl Fixture {
             uri,
             lsp,
             next_id: 2,
+            trace_preparation,
         }
     }
 
@@ -286,6 +327,18 @@ impl Fixture {
         assert!(self.lsp.recv_response(id)["result"].is_null());
         self.lsp.send(json!({ "jsonrpc": "2.0", "method": "exit" }));
         assert!(self.lsp.wait_for_exit().success());
+    }
+}
+
+impl Drop for Fixture {
+    fn drop(&mut self) {
+        if self.trace_preparation && std::thread::panicking() {
+            self.lsp.shutdown();
+            eprintln!(
+                "complete original patterned LSP packets and preparation log:\n{}",
+                self.lsp.terminal_evidence()
+            );
+        }
     }
 }
 

@@ -66,6 +66,16 @@ impl LspProcess {
         Self::spawn_command(command, stderr_target)
     }
 
+    /// Enable existing passive preparation logging only in this child.
+    pub fn spawn_preparation_traced(project_root: &Path) -> Self {
+        let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
+        command
+            .current_dir(project_root)
+            .arg("lsp")
+            .env("VIZE_TRACE_EDITOR_PREPARATION", "1");
+        Self::spawn_command(command, Stdio::piped())
+    }
+
     pub fn spawn_native(project_root: &Path, executable: &Path) -> Self {
         let mut command = Command::new(executable);
         command.current_dir(project_root).args(["--lsp", "--stdio"]);
@@ -302,7 +312,7 @@ impl LspProcess {
         );
     }
 
-    fn shutdown(&mut self) {
+    pub(super) fn shutdown(&mut self) {
         self.stdin.take();
         if let Some(mut child) = self.child.take() {
             let _ = child.kill();

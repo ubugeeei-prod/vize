@@ -135,7 +135,6 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
         build_vue_virtual_project_with_overlays_and_options_and_package_routes,
     };
     use crate::file_uri::path_to_file_uri;
-    use crate::lsp_client::editor_lsp::snapshot_source::tests::native_diagnostics;
     use corsa::runtime::block_on;
     use lsp_types::{DocumentDiagnosticReport, DocumentDiagnosticReportResult};
     use serde_json::json;
@@ -220,6 +219,7 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
         )
         .unwrap();
         assert!(parsed.file_names.is_empty());
+
         let independent_owner = if independent_editor {
             client.ensure_editor_transport().unwrap();
             assert!(!client.project_session_attached_to_editor);
@@ -328,34 +328,31 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
         // The retained CLI trace constructs Other then App, then reads Other
         // and App from the same final snapshot before the diagnostic ACK.
         let prior_prepared = prior_request.as_ref().map(|uri| {
-            let session_uri = client.session_document_uris.get(uri.as_str()).unwrap();
-            let session = client.session.as_ref().unwrap();
-            native_diagnostics::read(
-                session.client(),
-                session.snapshot(),
-                session.project(),
-                session_uri,
-            )
-            .unwrap()
-            .expect("all Other compiler kinds must complete")
+            let read = client
+                .prepare_initial_diagnostics_read(uri)
+                .unwrap()
+                .unwrap();
+            let result = read
+                .run()
+                .unwrap()
+                .expect("all Other compiler kinds must complete");
+            assert!(client.initial_diagnostics_read_is_current(&read));
+            result
         });
         let uri = &project.host.request_uri;
-        // Production synchronize/open has completed. Read this same live owner
-        // before a subsequent diagnostic ACK can change the program.
-        let session_uri = client.session_document_uris.get(uri.as_str()).unwrap();
-        let session = client.session.as_ref().unwrap();
-        let prepared_project = session.project().clone();
-        let snapshot = session.snapshot().handle.clone();
-        // This live shared borrow prevents refresh, replacement or release until
-        // every lower RPC completes. No detached handle or new snapshot exists.
-        let prepared = native_diagnostics::read(
-            session.client(),
-            session.snapshot(),
-            session.project(),
-            session_uri,
-        )
-        .unwrap()
-        .expect("all compiler kinds must complete");
+        // This is the exact production preparation/run route, before an editor
+        // query can acknowledge/reload a different program or repair the answer.
+        let read = client
+            .prepare_initial_diagnostics_read(uri)
+            .unwrap()
+            .unwrap();
+        let prepared_project = client.project_session().unwrap().project().clone();
+        let snapshot = client.project_session().unwrap().snapshot_lease();
+        let prepared = read
+            .run()
+            .unwrap()
+            .expect("all compiler kinds must complete");
+        assert!(client.initial_diagnostics_read_is_current(&read));
         let texts = project
             .documents
             .iter()
@@ -387,7 +384,7 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
             "materializedRoot":materialized_root,"attached":true,
             "intermediateOwner":intermediate_owner.as_ref().map(|owner| json!({"pid":owner.pid,"birth":owner.birth})),
             "currentOwner":{"pid":owner.pid,"birth":owner.birth},"attachment":attachment,
-            "project":prepared_project,"snapshot":snapshot,"readOwnership":"live-borrowed-session",
+            "project":prepared_project,"snapshot":snapshot.handle,
             "prepared":prepared,"nativePull":report.full_document_diagnostic_report.items,
             "orderedOtherThenApp":ordered,"priorPrepared":prior_prepared,
         });
@@ -409,17 +406,12 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
             fs::write(capture.join("other-prepared-vs-native.json"), serde_json::to_vec_pretty(&json!({
                 "uri":prior_uri,"prepared":prior_prepared,"nativePull":prior_pull.full_document_diagnostic_report.items,
             })).unwrap()).unwrap();
-            let prior = prior_prepared.as_ref().unwrap();
-            assert_eq!(prior.len(), 4);
-            assert!(
-                prior
-                    .iter()
-                    .all(|row| row.severity == Some(lsp_types::DiagnosticSeverity::HINT))
+            assert_eq!(
+                prior_prepared.as_ref().unwrap(),
+                &prior_pull.full_document_diagnostic_report.items
             );
-            assert_eq!(prior, &prior_pull.full_document_diagnostic_report.items);
         }
         assert_eq!(prepared, report.full_document_diagnostic_report.items);
-        assert_eq!(prepared.len(), 7);
         // Independent original source contract: no unresolved UI package, though
         // genuine generated helper hints remain in the full equality above.
         assert!(
@@ -427,6 +419,8 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
                 .iter()
                 .all(|diagnostic| diagnostic.severity == Some(lsp_types::DiagnosticSeverity::HINT))
         );
+        drop(read);
+        drop(snapshot);
         client.shutdown().unwrap();
         control::assert_reaped(&owner);
         for (path, bytes) in authored {

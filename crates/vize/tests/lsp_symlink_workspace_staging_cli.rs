@@ -33,7 +33,7 @@ fn original_include_and_open_order_controls_keep_all_authored_bytes() {
 
 fn run(layout: Layout, open_other: bool, reverse: bool, original_wait: bool) {
     let fixture = Fixture::new(layout);
-    let mut process = LspProcess::spawn(&fixture.app);
+    let mut process = LspProcess::spawn_preparation_traced(&fixture.app);
     process.send(
         json!({ "jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
             "processId": std::process::id(), "rootUri": file_uri(&fixture.app), "capabilities": {}

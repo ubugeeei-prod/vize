@@ -18,9 +18,9 @@ mod protocol;
 #[cfg(test)]
 pub(in crate::lsp_client) mod tests;
 
-/// Decode one owned response while a test retains the same live snapshot.
-#[cfg(test)]
-pub(in crate::lsp_client) fn decode_snapshot_text<'a>(
+/// Decode an already-owned response without minting another native snapshot.
+/// The caller retains the actual managed lease and exact project/file identity.
+pub(crate) fn decode_snapshot_text<'a>(
     encoded: &'a EncodedPayload,
     expected_name: &str,
 ) -> Result<&'a str, SourceTextRefusal> {

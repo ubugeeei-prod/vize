@@ -194,6 +194,20 @@ impl Fixture {
     }
 }
 
+// The process (declared after Fixture) has already joined before this panic
+// custody runs. Preserve its existing full log without adding any native read.
+impl Drop for Fixture {
+    fn drop(&mut self) {
+        if std::thread::panicking() {
+            let path = self.app.join("node_modules/.vize/lsp.log");
+            match fs::read_to_string(&path) {
+                Ok(log) => eprintln!("complete original LSP log {}:\n{log}", path.display()),
+                Err(error) => eprintln!("original LSP log unavailable {}: {error}", path.display()),
+            }
+        }
+    }
+}
+
 fn snapshot(root: &Path) -> BTreeMap<PathBuf, Entry> {
     fn walk(root: &Path, directory: &Path, entries: &mut BTreeMap<PathBuf, Entry>) {
         for entry in fs::read_dir(directory).unwrap() {

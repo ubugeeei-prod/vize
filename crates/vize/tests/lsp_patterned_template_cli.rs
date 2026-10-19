@@ -153,9 +153,13 @@ fn check_guard_comment(newline: &str) {
         "<script setup lang=\"ts\">\r\nconst state = undefined as string | undefined;\r\n</script>\r\n<template v-match=\"state\">\r\n<p v-when=\"const text if (text !== undefined // guard ){newline})\">{{{{ '\u{1f600}' }}}}{{{{ text.toFixed() }}}}</p>\r\n<p v-when=\"_\"/>\r\n</template>"
     );
     let source = source.as_str();
-    let mut fixture = Fixture::new_with_vue_and_patterns(source);
+    let mut fixture = Fixture::new_with_vue_and_patterns_traced(source);
     let diagnostics = fixture.open(source);
-    assert_eq!(diagnostics.as_array().unwrap().len(), 1, "{diagnostics:#}");
+    assert_eq!(
+        diagnostics.as_array().unwrap().len(),
+        1,
+        "{newline:?}: {diagnostics:#}"
+    );
     assert_eq!(diagnostics[0]["code"], 2551);
     assert_eq!(
         diagnostics[0]["range"]["start"],

@@ -18,6 +18,9 @@ use super::{
     utils::remap_serialized_uris,
 };
 
+mod diagnostic_response;
+pub(super) mod native_diagnostics;
+
 /// The Arc owns the actual remote snapshot, not merely its opaque handle.
 /// Project metadata and URI translations belong to that same captured revision.
 pub(crate) struct InitialDiagnosticsRead {
@@ -65,6 +68,13 @@ impl CorsaProjectClient {
             file_supported: self.supports_file_diagnostics_api(),
             project_supported: self.supports_project_diagnostics_api(),
         };
+        if crate::corsa_bridge::preparation_trace::enabled() {
+            tracing::info!(target: "vize_editor_preparation", phase="initial_api_owner",
+                snapshot=read.snapshot.handle.as_str(), uri=%read.uri,
+                shared_editor=self.project_session_attached_to_editor,
+                editor_documents_dirty=self.editor_lsp_documents_dirty,
+                materialized=self.materialized_project_session);
+        }
         read.trace_route("capture", "prepared", None);
         Ok(Some(read))
     }
@@ -96,6 +106,19 @@ impl CorsaProjectClient {
             && self.document_texts.get(read.uri.as_str()) == read.text.as_ref()
             && self.external_document_uris == read.external_document_uris
             && self.session_document_uris.get(read.uri.as_str()) == Some(&read.document_uri)
+    }
+}
+
+// Passive values already owned by the same read; no extra RPC/disk lookup.
+fn trace_kind(params: &serde_json::Value, method: &str, response: &serde_json::Value) {
+    if crate::corsa_bridge::preparation_trace::enabled() {
+        tracing::info!(target: "vize_editor_preparation", phase="initial_compiler_kind",
+            request=%params, method, response=%response);
+    }
+}
+fn trace_source(params: &serde_json::Value, name: &str, text: &str) {
+    if crate::corsa_bridge::preparation_trace::enabled() {
+        tracing::info!(target: "vize_editor_preparation", phase="initial_compiler_source", request=%params, name, text);
     }
 }
 
@@ -159,12 +182,40 @@ impl InitialDiagnosticsRead {
                 }
             }
         }
-        self.trace_route("read", "unsupported", None);
-        Ok(None)
+        if !self.file_supported {
+            self.trace_route("read", "unsupported", None);
+            return Ok(None);
+        }
+        crate::corsa_bridge::native_operation::checkpoint()?;
+        // Standard native 7.0.2 has compiler-kind endpoints, not the optional
+        // aggregate SDK methods. This read retains this same snapshot lease;
+        // no project selection, overlay update or live disk read occurs here.
+        self.trace_route("compiler_kinds", "entered", None);
+        let result = native_diagnostics::read(
+            &self.client,
+            &self.snapshot,
+            &self.project,
+            &self.document_uri,
+        )?;
+        self.trace_route(
+            "compiler_kinds",
+            if result.is_some() {
+                "complete"
+            } else {
+                "unsupported"
+            },
+            None,
+        );
+        Ok(result.map(|diagnostics| self.remap(diagnostics)))
     }
 
     fn trace_route(&self, route: &str, event: &str, error: Option<&CorsaError>) {
         if crate::corsa_bridge::preparation_trace::enabled() {
+            if route == "capture" {
+                tracing::info!(target: "vize_editor_preparation", phase="initial_api_input",
+                    snapshot=self.snapshot.handle.as_str(), project=?self.project,
+                    logical_uri=%self.uri, request_uri=%self.document_uri, query_text=?self.text);
+            }
             tracing::info!(target: "vize_editor_preparation", phase = "initial_api_read",
                 route, event, logical_uri = %self.uri, request_uri = %self.document_uri,
                 project = self.project.id.as_str(), config = self.project.config_file_name.as_str(),

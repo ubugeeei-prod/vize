@@ -283,6 +283,7 @@ fn native_editor_resolves_package_alias_from_monorepo_root_keeps_memberless_api_
     let native = control::runtime();
     let mut client =
         CorsaProjectClient::new_for_editor_workspace(native.to_str(), root.path()).unwrap();
+    assert!(client.shared_editor_transport_requested);
     assert!(!client.shared_editor_transport);
     assert!(!client.project_session_attached_to_editor);
     assert!(client.editor_lsp.is_none());

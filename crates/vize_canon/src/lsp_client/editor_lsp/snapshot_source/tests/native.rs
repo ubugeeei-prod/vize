@@ -11,9 +11,9 @@ use std::{path::Path, process::Command};
 #[test]
 #[ignore = "requires the locked native 7.0.2 runtime; Actions qualification only"]
 fn actual_native_compiler_kind_reads_match_whole_ts_and_generated_vue_pull_packets() {
-    use super::native_diagnostics;
     use crate::{
         batch::{ImportRewriter, generate_vue_document_virtual_ts},
+        lsp_client::initial_diagnostics::native_diagnostics,
         virtual_ts::VirtualTsOptions,
     };
     use corsa::runtime::block_on;
