@@ -95,11 +95,24 @@ impl TsconfigOwnershipCache {
         source_path: &Path,
         source_kind: TsconfigSourceKind,
     ) -> bool {
+        self.project_owns_normalized_source(
+            tsconfig_path,
+            &graph::normalize_path(source_path),
+            source_kind,
+        )
+    }
+
+    fn project_owns_normalized_source(
+        &mut self,
+        tsconfig_path: &Path,
+        source_path: &Path,
+        source_kind: TsconfigSourceKind,
+    ) -> bool {
         let case_sensitive = self.options.case_sensitive;
         let Some(spec) = self.specs.load(tsconfig_path) else {
             return false;
         };
-        spec.includes(source_path, case_sensitive, source_kind)
+        spec.includes_normalized(source_path, case_sensitive, source_kind)
     }
 
     /// The inherited `compilerOptions.allowJs` for one effective project.
@@ -123,9 +136,10 @@ impl TsconfigOwnershipCache {
             .first()
             .cloned()
             .unwrap_or_else(|| graph::normalize_path(tsconfig_path));
+        let source_path = graph::normalize_path(source_path);
         let mut owner = None;
         for project in projects {
-            if !self.project_owns_source(&project, source_path, source_kind) {
+            if !self.project_owns_normalized_source(&project, &source_path, source_kind) {
                 continue;
             }
             if owner.is_some() {

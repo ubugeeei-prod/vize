@@ -11,7 +11,8 @@ use super::{
 
 #[derive(Clone)]
 pub(super) struct OwnershipSpec {
-    default_base: PathBuf,
+    /// `**/*` under the config directory, used when no `include` is inherited.
+    default_include: Option<GlobSpec>,
     files: Option<Vec<PathBuf>>,
     includes: Option<Vec<GlobSpec>>,
     excludes: Option<Vec<GlobSpec>>,
@@ -21,20 +22,7 @@ pub(super) struct OwnershipSpec {
 }
 
 impl OwnershipSpec {
-    pub(super) fn includes(
-        &self,
-        source_path: &Path,
-        case_sensitive: bool,
-        source_kind: TsconfigSourceKind,
-    ) -> bool {
-        self.includes_normalized(
-            &graph::normalize_path(source_path),
-            case_sensitive,
-            source_kind,
-        )
-    }
-
-    /// [`Self::includes`] for a path already passed through `graph::normalize_path`.
+    /// Membership of a path already passed through `graph::normalize_path`.
     pub(super) fn includes_normalized(
         &self,
         source_path: &Path,
@@ -57,7 +45,9 @@ impl OwnershipSpec {
                 .iter()
                 .any(|include| include.matches_include(source_path, case_sensitive)),
             None if self.files.is_some() => false,
-            None => GlobSpec::new(&self.default_base, "**/*")
+            None => self
+                .default_include
+                .as_ref()
                 .is_some_and(|include| include.matches_include(source_path, case_sensitive)),
         };
         if !included {
@@ -127,7 +117,7 @@ impl SpecCache {
         let config = parse_jsonc_value(&content).ok()?;
         let base = config_path.parent().unwrap_or(Path::new("."));
         let mut effective = OwnershipSpec {
-            default_base: graph::normalize_path(base),
+            default_include: GlobSpec::new(base, "**/*"),
             files: None,
             includes: None,
             excludes: None,
@@ -303,9 +293,10 @@ fn paths_equal(left: &Path, right: &Path, case_sensitive: bool) -> bool {
     relative_to(left, right, case_sensitive).is_some_and(|path| path.as_os_str().is_empty())
 }
 
+/// Both paths are already `graph::normalize_path` results: specs normalize
+/// their bases and files once at load, and callers normalize each source once.
+/// Normalizing here again canonicalized twice per glob per source.
 fn relative_to(path: &Path, base: &Path, case_sensitive: bool) -> Option<PathBuf> {
-    let path = graph::normalize_path(path);
-    let base = graph::normalize_path(base);
     let mut path_parts = path.components();
     for base_part in base.components() {
         let path_part = path_parts.next()?;
