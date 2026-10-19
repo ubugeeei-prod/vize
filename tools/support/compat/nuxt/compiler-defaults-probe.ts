@@ -42,7 +42,7 @@ interface Scenario {
   id: string;
   forward: boolean;
   nuxtWhitespace?: string;
-  config: JsonRecord | string;
+  config: JsonRecord | string | null;
   module: JsonRecord;
   expected: string[];
   html: string;
@@ -55,7 +55,8 @@ function parseScenario(value: unknown): Scenario {
     id: asString(scenario.id, "scenario.id"),
     forward: scenario.forward === true,
     nuxtWhitespace,
-    config: typeof config === "string" ? config : asRecord(config, "scenario.config"),
+    config:
+      typeof config === "string" || config === null ? config : asRecord(config, "scenario.config"),
     module: asRecord(scenario.module, "scenario.module"),
     expected: asStringArray(scenario.expected, "scenario.expected"),
     html: asString(scenario.html, "scenario.html"),
