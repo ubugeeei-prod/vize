@@ -296,4 +296,5 @@ fn recovered(element: &Element<'_>) -> bool {
 }
 
 #[cfg(test)]
+#[path = "body_tests.rs"]
 mod tests;

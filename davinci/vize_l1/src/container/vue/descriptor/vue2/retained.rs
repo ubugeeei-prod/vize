@@ -218,4 +218,5 @@ impl<'o, 'a> Vue2RetainedTemplateView<'o, 'a> {
 }
 
 #[cfg(test)]
+#[path = "retained_tests.rs"]
 mod tests;

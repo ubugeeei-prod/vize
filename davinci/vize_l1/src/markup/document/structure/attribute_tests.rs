@@ -5,7 +5,7 @@ use super::super::DocumentHtmlStructure;
 use super::super::{DocumentHtmlRefusal, NativeDocument};
 use crate::markup::{QuoteType, document::DocumentLexicalRefusal};
 
-const CORPUS: &str = include_str!("../../../../../tests/fixtures/document/html-attributes.json");
+const CORPUS: &str = include_str!("../../../../tests/fixtures/document/html-attributes.json");
 
 fn root(source: &str) -> SourceRoot<'_> {
     SourceRoot::new(source).expect("original small source")

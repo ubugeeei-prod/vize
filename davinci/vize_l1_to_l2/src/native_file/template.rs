@@ -261,4 +261,5 @@ pub(super) fn prepare<'a>(
 }
 
 #[cfg(test)]
+#[path = "template_tests.rs"]
 mod tests;

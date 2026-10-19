@@ -16,6 +16,7 @@ use vize_l1::{
 use vize_l2::lang::js::{NativeScopedTemplateIssueKind as Kind, NativeScopedTemplateView};
 
 #[cfg(test)]
+#[path = "selected_scoped_tests.rs"]
 mod tests;
 
 /// Original Descriptor, original CSS parser owner and sole selected File stay

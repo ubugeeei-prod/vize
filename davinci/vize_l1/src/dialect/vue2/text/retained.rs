@@ -257,4 +257,5 @@ pub(super) fn consume(binding: TextBinding<'_>) -> RetainedTextBinding<'_> {
 }
 
 #[cfg(test)]
+#[path = "retained_tests.rs"]
 mod tests;

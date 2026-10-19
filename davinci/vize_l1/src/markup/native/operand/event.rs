@@ -186,4 +186,5 @@ impl<'s, 'a> NativeAttributeHandlerView<'s, 'a> {
 }
 
 #[cfg(test)]
+#[path = "event_tests.rs"]
 mod tests;
