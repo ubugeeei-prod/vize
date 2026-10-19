@@ -64,33 +64,39 @@ pub(crate) fn is_inside_html_comment(content: &str, offset: usize) -> bool {
         .is_some_and(|(_, after_start)| !after_start.contains("-->"))
 }
 
+/// Text after the last `<name` that opens exactly that tag, so `<article`
+/// never reads as `<art` and `<variant-card` never as `<variant`.
+fn after_last_open_tag<'a>(before: &'a str, name: &str) -> Option<&'a str> {
+    before.rmatch_indices('<').find_map(|(start, _)| {
+        let after = before.get(start + 1..)?.strip_prefix(name)?;
+        after
+            .chars()
+            .next()
+            .is_none_or(|next| next.is_ascii_whitespace() || matches!(next, '>' | '/'))
+            .then_some(after)
+    })
+}
+
 /// Check if cursor is inside <art ...> opening tag.
 pub(crate) fn is_inside_art_tag(before: &str) -> bool {
-    before
-        .rsplit_once("<art")
-        .is_some_and(|(_, after_art)| !after_art.contains('>'))
+    after_last_open_tag(before, "art").is_some_and(|after_art| !after_art.contains('>'))
 }
 
 /// Check if cursor is inside <variant ...> opening tag.
 pub(crate) fn is_inside_variant_tag(before: &str) -> bool {
-    before
-        .rsplit_once("<variant")
-        .is_some_and(|(_, after_variant)| !after_variant.contains('>'))
+    after_last_open_tag(before, "variant").is_some_and(|after| !after.contains('>'))
 }
 
 /// Check if we should suggest <art> block at root level.
 pub(crate) fn should_suggest_art_block(before: &str) -> bool {
-    !before.contains("<art")
+    after_last_open_tag(before, "art").is_none()
         && (before.trim().is_empty() || before.ends_with('\n') || before.ends_with('<'))
 }
 
 /// Check if we should suggest <variant> block inside <art>.
 pub(crate) fn should_suggest_variant_block(before: &str) -> bool {
-    if let Some((_, after_art)) = before.rsplit_once("<art") {
-        after_art.contains('>') && !after_art.contains("</art>")
-    } else {
-        false
-    }
+    after_last_open_tag(before, "art")
+        .is_some_and(|after_art| after_art.contains('>') && !after_art.contains("</art>"))
 }
 
 #[cfg(test)]

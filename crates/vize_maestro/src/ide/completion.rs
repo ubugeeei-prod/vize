@@ -30,6 +30,8 @@ mod style;
 pub(crate) mod template;
 
 #[cfg(test)]
+mod art_tests;
+#[cfg(test)]
 mod component_alias_props_tests;
 #[cfg(test)]
 mod component_emits_tests;
