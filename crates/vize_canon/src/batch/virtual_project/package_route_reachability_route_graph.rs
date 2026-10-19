@@ -13,7 +13,7 @@ pub(super) fn seed_route_graph(
     packages: &mut FxHashSet<PackageIdentity>,
     queue: &mut BinaryHeap<(u8, Reverse<PathBuf>)>,
     queued: &mut FxHashSet<PathBuf>,
-    inputs: &mut Vec<PathBuf>,
+    inputs: &mut FxHashSet<PathBuf>,
     work: &mut ReachabilityWork,
     budget: ReachabilityBudget,
 ) -> bool {
@@ -40,7 +40,7 @@ pub(super) fn seed_route_graph(
             if queued.contains(path) {
                 continue;
             }
-            inputs.push(path.clone());
+            super::record_input(inputs, path);
             if queued.len() == budget.max_queued_files {
                 return false;
             }

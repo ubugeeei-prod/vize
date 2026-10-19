@@ -10,6 +10,7 @@
     "bench:scale:cache": "node scale/cache-equivalence.ts",
     "bench:lint": "node lint.ts",
     "bench:check": "node check.ts",
+    "bench:check-workspace": "node check-workspace.ts",
     "bench:fmt": "node fmt.ts",
     "compare-tools": "node compare-tools.mjs"
   },

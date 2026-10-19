@@ -1,8 +1,14 @@
 //! Deterministically bounded Vue reachability for importer-scoped packages.
 
+#![expect(
+    clippy::disallowed_types,
+    reason = "one sorted input set is shared by every importer of a route"
+)]
+
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String as CompactString};
@@ -49,7 +55,9 @@ pub struct ReachabilityWork {
 #[derive(Clone, Debug, Default)]
 pub struct PackageRouteReachability {
     pub outcome: ReachabilityOutcome,
-    pub inputs: Vec<PathBuf>,
+    /// Unique, byte-ordered (`as_os_str`) inputs. Shared, so every importer
+    /// of the route reuses one sorted set instead of copying and re-sorting it.
+    pub inputs: Arc<[PathBuf]>,
     pub work: ReachabilityWork,
 }
 
@@ -173,7 +181,9 @@ where
 {
     let mut queued = FxHashSet::default();
     let mut queue = BinaryHeap::new();
-    let mut inputs = Vec::new();
+    // Deduplicated on arrival: lookups re-report the same manifests and
+    // context files for every edge, which made the final sort dominate.
+    let mut inputs = FxHashSet::default();
     let mut work = ReachabilityWork::default();
     let mut packages = FxHashSet::default();
     if !route_graph::seed_route_graph(
@@ -198,7 +208,7 @@ where
     let rewriter = crate::batch::ImportRewriter::new();
     let mut edges = FxHashSet::<(PathBuf, CompactString, crate::PackageResolutionMode)>::default();
     while let Some((_, Reverse(path))) = queue.pop() {
-        inputs.push(path.clone());
+        record_input(&mut inputs, &path);
         if work.files == budget.max_files {
             return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
         }
@@ -244,7 +254,7 @@ where
             let (local_dependency, local_inputs) = resolve_local(&path, &specifier);
             inputs.extend(local_inputs);
             if let Some(dependency) = local_dependency {
-                inputs.push(dependency.clone());
+                record_input(&mut inputs, &dependency);
                 if dependency
                     .extension()
                     .is_some_and(|extension| extension == "vue")
@@ -314,13 +324,20 @@ fn source_priority(path: &Path) -> u8 {
     }
 }
 
+fn record_input(inputs: &mut FxHashSet<PathBuf>, path: &Path) {
+    if !inputs.contains(path) {
+        inputs.insert(path.to_path_buf());
+    }
+}
+
 fn finish(
     outcome: ReachabilityOutcome,
-    mut inputs: Vec<PathBuf>,
+    inputs: FxHashSet<PathBuf>,
     work: ReachabilityWork,
     budget: ReachabilityBudget,
 ) -> PackageRouteReachability {
-    vize_carton::path::sort_dedup_paths(&mut inputs);
+    let mut inputs = inputs.into_iter().collect::<Vec<_>>();
+    inputs.sort_unstable_by(|left, right| left.as_os_str().cmp(right.as_os_str()));
     debug_assert!(
         outcome == ReachabilityOutcome::BudgetExceeded
             || (work.files <= budget.max_files
@@ -331,7 +348,7 @@ fn finish(
     );
     PackageRouteReachability {
         outcome,
-        inputs,
+        inputs: inputs.into(),
         work,
     }
 }

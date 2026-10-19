@@ -112,7 +112,7 @@ impl VirtualProject {
                 if !route_requires_invalidation_binding(has_route, watchable_negative) {
                     continue;
                 }
-                invalidation_paths.extend(reachability.inputs);
+                invalidation_paths.extend(reachability.inputs.iter().cloned());
                 invalidation_paths.extend(resolution.input_paths().iter().cloned());
                 invalidation_paths.extend(context_inputs);
                 invalidation_paths.push(importer.clone());

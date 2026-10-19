@@ -135,7 +135,7 @@ impl<'a> RouteDiscovery<'a> {
                 .as_ref()
                 .is_some_and(crate::PackageRoute::requires_workspace_source_shadow);
         let track_reachability = reachability.requires_tracking();
-        self.inputs.extend(reachability.inputs);
+        self.inputs.extend(reachability.inputs.iter().cloned());
         if needs_shadow && let Some(route) = route.as_ref() {
             self.routes.insert(
                 (logical_absolute(importer_dir), specifier.into()),

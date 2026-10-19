@@ -82,6 +82,7 @@ pub(super) fn source_needs_virtual_registration(
                     let mut binding_route = None;
                     let mut track_reachability = false;
                     let mut needs_shadow = false;
+                    let mut reachability_inputs = None;
                     if let Some(route) = route {
                         let reachability_key = (
                             route.manifest_path.clone(),
@@ -108,15 +109,19 @@ pub(super) fn source_needs_virtual_registration(
                         needs_shadow = reachability.requires_shadow()
                             || route.requires_workspace_source_shadow();
                         needs_registration |= needs_shadow;
-                        invalidation_paths.extend(reachability.inputs);
+                        reachability_inputs = Some(reachability.inputs);
                         if needs_shadow {
                             binding_route = Some(route);
                         }
                     }
-                    super::super::super::imports_package_routes::dedup_paths_sorted(
-                        &mut invalidation_paths,
-                    );
                     if needs_shadow || track_reachability || watchable_negative {
+                        // Only bindings that are kept pay for their inputs: the
+                        // route's shared sorted set is merged, not re-sorted.
+                        let invalidation_paths =
+                            super::super::super::imports_package_routes::merge_sorted_paths(
+                                invalidation_paths,
+                                reachability_inputs.as_deref().unwrap_or_default(),
+                            );
                         discovered_routes.push(vize_canon::PackageRouteBinding {
                             importer_path: file.clone(),
                             specifier: specifier.clone(),
