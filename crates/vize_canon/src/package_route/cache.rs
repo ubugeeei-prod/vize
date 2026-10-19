@@ -15,8 +15,10 @@ pub use lookup::PackageRouteLookup;
 
 #[path = "cache_lookup.rs"]
 mod lookup;
+#[cfg(feature = "native")]
 #[path = "cache_reachability.rs"]
 mod reachability;
+#[cfg(feature = "native")]
 use reachability::ReachabilityCacheKey;
 
 type ResolutionKey = (
@@ -40,6 +42,7 @@ pub struct PackageRouteResolver {
 #[derive(Default)]
 struct PackageRouteResolverState {
     resolutions: FxHashMap<ResolutionKey, CachedPackageRouteLookup>,
+    #[cfg(feature = "native")]
     reachability: FxHashMap<ReachabilityCacheKey, reachability::CachedReachability>,
     search: PackageSearchCache,
     canonical_paths: PackagePathCache,
@@ -300,6 +303,7 @@ impl PackageRouteResolver {
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         state.resolutions.clear();
+        #[cfg(feature = "native")]
         state.reachability.clear();
         state.search.clear();
         state.canonical_paths.clear();
