@@ -14,7 +14,7 @@ use super::collect_classes_from_selector_prelude;
 const MAX_SELECTORS: usize = 256;
 
 #[derive(Clone, Copy, PartialEq)]
-enum Dialect {
+pub(super) enum Dialect {
     Scss,
     Less,
 }
@@ -30,7 +30,10 @@ pub fn authored_local_less_classes(less: &str) -> Option<BTreeSet<CompactString>
     authored_local_nested_classes(less, Dialect::Less)
 }
 
-fn authored_local_nested_classes(scss: &str, dialect: Dialect) -> Option<BTreeSet<CompactString>> {
+pub(super) fn authored_local_nested_classes(
+    scss: &str,
+    dialect: Dialect,
+) -> Option<BTreeSet<CompactString>> {
     let bytes = scss.as_bytes();
     let interpolation = match dialect {
         Dialect::Scss => b'#',
@@ -123,7 +126,7 @@ fn authored_local_nested_classes(scss: &str, dialect: Dialect) -> Option<BTreeSe
     (quote.is_none() && blocks.is_empty()).then_some(classes)
 }
 
-fn resolve(
+pub(super) fn resolve(
     prelude: &[u8],
     parent: Option<Vec<CompactString>>,
     interpolated: bool,

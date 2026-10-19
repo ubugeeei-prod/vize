@@ -220,7 +220,7 @@ Vite 通常跳过`import.meta.*`替换虚拟模块（前缀为 `\0`）。Vize �
 | `vize build` | 通过 Node 运行已安装的预处理器 | 原生 |
 | `vize fmt` | 预处理器块保持原样，一个字节都不改 | 格式化 |
 | `vize lint` | 应用模板规则；样式块不会作为 CSS 进行 lint | 应用模板规则 |
-| LSP | CSS 补全和悬停（包括缩进语法）、`v-bind()` 跳转到定义、scss 和 less 中的 CSS Modules 类名补全 | 标签补全和跳转到定义 |
+| LSP | CSS 补全和悬停（包括缩进语法）、`v-bind()` 跳转到定义、所有预处理器中的 CSS Modules 类名补全 | 标签补全和跳转到定义 |
 
 ## Nuxt 兼容性
 

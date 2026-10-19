@@ -7,7 +7,9 @@ use std::collections::BTreeSet;
 
 use vize_carton::{String as CompactString, ToCompactString};
 
+mod indented;
 mod nested;
+pub use indented::{authored_local_sass_classes, authored_local_stylus_classes};
 pub use nested::{authored_local_less_classes, authored_local_scss_classes};
 
 /// Extract simple authored class selectors from selector preludes. Declarations

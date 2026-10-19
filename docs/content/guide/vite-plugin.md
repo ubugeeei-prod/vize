@@ -265,7 +265,7 @@ For Nuxt compatibility, the plugin isolates `define` values per Vite environment
 | `vize build` | Runs your installed preprocessor through Node | Native |
 | `vize fmt` | Preprocessor blocks are left byte-identical | Formatted |
 | `vize lint` | Template rules apply; style blocks are not linted as CSS | Template rules apply |
-| LSP | CSS completion and hover (indented syntax included); `v-bind()` go-to-definition; CSS-module class completion in scss and less | Tag completion and go-to-definition |
+| LSP | CSS completion and hover (indented syntax included); `v-bind()` go-to-definition; CSS-module class completion in every preprocessor | Tag completion and go-to-definition |
 
 ## Nuxt Compatibility
 

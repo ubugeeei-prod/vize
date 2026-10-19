@@ -59,11 +59,11 @@ const STYLES: &str = r#"
 "#;
 
 #[test]
-fn style_dot_lists_css_and_scss_module_classes_sorted() {
+fn style_dot_lists_every_module_dialect_sorted() {
     let source = vize_l0::cstr!("<template>\n  <div :class=\"$style.\" />\n</template>\n{STYLES}");
     assert_eq!(
         complete(&source, "$style."),
-        fields(&["card", "from-scss", "icon", "title", "wide"])
+        fields(&["card", "from-sass", "from-scss", "icon", "title", "wide"])
     );
 }
 
@@ -72,7 +72,7 @@ fn style_dot_in_an_interpolation_lists_module_classes() {
     let source = vize_l0::cstr!("<template>\n  <p>{{{{ $style. }}}}</p>\n</template>\n{STYLES}");
     assert_eq!(
         complete(&source, "$style."),
-        fields(&["card", "from-scss", "icon", "title", "wide"])
+        fields(&["card", "from-sass", "from-scss", "icon", "title", "wide"])
     );
 }
 
@@ -82,7 +82,7 @@ fn a_partially_typed_class_still_lists_module_classes() {
         vize_l0::cstr!("<template>\n  <div :class=\"$style.ti\" />\n</template>\n{STYLES}");
     assert_eq!(
         complete(&source, "$style.ti"),
-        fields(&["card", "from-scss", "icon", "title", "wide"])
+        fields(&["card", "from-sass", "from-scss", "icon", "title", "wide"])
     );
 }
 
@@ -98,6 +98,15 @@ fn scss_modules_resolve_nested_parent_references() {
 #[test]
 fn less_modules_resolve_parents_and_skip_mixin_definitions() {
     let source = "<template>\n  <div :class=\"$style.\" />\n</template>\n<style module lang=\"less\">\n.panel { &-head {} .m() { .hidden {} } }\n</style>\n";
+    assert_eq!(
+        complete(source, "$style."),
+        fields(&["panel", "panel-head"])
+    );
+}
+
+#[test]
+fn stylus_modules_resolve_indented_parent_references() {
+    let source = "<template>\n  <div :class=\"$style.\" />\n</template>\n<style module lang=\"stylus\">\n.panel\n  &-head\n    color red\nmixin(n)\n  .hidden\n    width n\n</style>\n";
     assert_eq!(
         complete(source, "$style."),
         fields(&["panel", "panel-head"])

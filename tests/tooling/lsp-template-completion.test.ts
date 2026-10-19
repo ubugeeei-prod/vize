@@ -334,7 +334,7 @@ const count = ref(0)
         "<style>.plainOnly {}</style>",
         '<style module="theme">.themeOnly {}</style>',
         '<style module src="./foreign.css"></style>',
-        '<style module lang="sass">.sassOnly\n  color: red</style>',
+        '<style module lang="unknown">.unknownOnly {}</style>',
       ];
       for (const [index, style] of unsupported.entries()) {
         const text = `${template}\n${style}\n`;
