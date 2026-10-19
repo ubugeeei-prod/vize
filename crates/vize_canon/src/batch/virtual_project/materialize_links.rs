@@ -5,7 +5,9 @@ use std::path::{Path, PathBuf};
 use vize_carton::FxHashSet;
 
 use super::VirtualProject;
-use super::package_node_modules::{PackageNodeModulesLink, package_node_modules_links};
+use super::package_node_modules::{
+    PackageNodeModulesLink, package_node_modules_links_with_passthrough,
+};
 
 impl VirtualProject {
     pub(super) fn preserved_package_link_overlaps_files(
@@ -40,10 +42,12 @@ impl VirtualProject {
         &self,
         expected_files: &FxHashSet<PathBuf>,
     ) -> Vec<PackageNodeModulesLink> {
-        package_node_modules_links(
+        let passthrough = self.passthrough_files.keys().cloned().collect();
+        package_node_modules_links_with_passthrough(
             &self.project_root,
             &self.virtual_root,
             expected_files.iter().map(PathBuf::as_path),
+            &passthrough,
         )
     }
 
