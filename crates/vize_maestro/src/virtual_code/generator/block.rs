@@ -3,7 +3,7 @@
 use vize_atelier_sfc::SfcDescriptor;
 
 use super::VirtualLanguage;
-use super::inline_art_variants;
+use super::inline_art::{find_tag_end, inline_art_variants};
 
 /// Information about cursor position within an art variant template.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -283,7 +283,7 @@ fn find_variant_template_body_range(
         return None;
     }
 
-    let tag_end = source.get(variant_start..variant_end)?.find('>')? + variant_start;
+    let tag_end = find_tag_end(source.get(..variant_end)?, variant_start)?;
     let body_start = tag_end + 1;
     let close_start = source.get(body_start..variant_end)?.rfind("</variant>")? + body_start;
 

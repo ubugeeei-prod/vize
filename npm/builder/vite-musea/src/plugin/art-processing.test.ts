@@ -64,6 +64,45 @@ void test("processMuseaArtFile scopes art style blocks onto variant elements", a
   }
 });
 
+void test("processMuseaArtFile keeps arrow functions intact under a scoped style (#9752)", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-scoped-arrow-"));
+  const artPath = path.join(tempDir, "WithScopedStyle.art.vue");
+
+  try {
+    await fs.promises.writeFile(
+      artPath,
+      `<script setup lang="ts">
+defineArt("./PressButton.vue", { title: "With scoped style" });
+</script>
+
+<style scoped>
+button {
+  padding: 8px;
+}
+</style>
+
+<art title="A > B" action-events="press">
+  <variant default name="Arrow">
+    <PressButton @press="() => {}" />
+  </variant>
+</art>
+`,
+      "utf8",
+    );
+
+    const info = await processMuseaArtFile(artPath, { root: tempDir, command: "build" });
+    assert.ok(info);
+    const scopeAttr = artScopeAttribute(artPath);
+    assert.equal(
+      info.variants[0]?.template.trim(),
+      `<PressButton @press="() => {}" ${scopeAttr} />`,
+    );
+    assert.deepEqual(info.metadata.actionEvents, ["press"]);
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
 void test("processMuseaArtFile keeps dev processing non-fatal", async () => {
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-dev-bad-art-"));
   const artPath = path.join(tempDir, "stories", "Broken.art.vue");

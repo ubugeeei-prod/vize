@@ -14,7 +14,7 @@ export interface ArtProcessingContext {
 }
 
 function extractArtTagAttributes(source: string): Record<string, string | true> {
-  const artTagMatch = source.match(/<art\b([\s\S]*?)>/i);
+  const artTagMatch = source.match(/<art\b((?:[^>"']|"[^"]*"|'[^']*')*)>/i);
   if (!artTagMatch) return {};
 
   const attributes: Record<string, string | true> = {};
@@ -60,7 +60,9 @@ function extractStyleBlocks(
 ): { blocks: string[]; scopeAttr?: string } {
   const styles: Array<{ content: string; scoped: boolean }> = [];
 
-  for (const match of source.matchAll(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi)) {
+  for (const match of source.matchAll(
+    /<style\b((?:[^>"']|"[^"]*"|'[^']*')*)>([\s\S]*?)<\/style>/gi,
+  )) {
     const attrs = match[1] ?? "";
     const content = match[2]?.trim();
     const lang = attrs.match(/\blang\s*=\s*["']([^"']+)["']/i)?.[1]?.toLowerCase();

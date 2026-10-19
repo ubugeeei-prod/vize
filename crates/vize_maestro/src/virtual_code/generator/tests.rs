@@ -283,6 +283,25 @@ const count = ref(0)
 }
 
 #[test]
+fn test_find_art_block_at_offset_keeps_arrow_in_variant_tag_attribute() {
+    let source = r#"<art title="Button" component="./Button.vue">
+  <variant name="Arrow" :args="{ onPress: () => {} }">
+    <Button />
+  </variant>
+</art>"#;
+
+    let after_arrow = source.find("=> {}").unwrap() + 3;
+    assert_eq!(
+        find_art_block_at_offset(source, after_arrow),
+        Some(BlockType::Art(ArtCursorPosition::VariantTag(0)))
+    );
+    assert!(matches!(
+        find_art_block_at_offset(source, source.find("<Button").unwrap()),
+        Some(BlockType::Art(ArtCursorPosition::VariantTemplate(_)))
+    ));
+}
+
+#[test]
 #[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 fn bare_void_substrings_map_to_emitted_expression_instead_of_keyword() {
     for newline in ["\n", "\r\n"] {

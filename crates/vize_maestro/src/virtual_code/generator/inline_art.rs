@@ -94,7 +94,8 @@ fn find_variant_close(content: &str, start: usize) -> Option<(usize, usize)> {
     None
 }
 
-fn find_tag_end(content: &str, start: usize) -> Option<usize> {
+/// Byte offset of the `>` ending the tag at `start`, skipping quoted attribute values.
+pub(super) fn find_tag_end(content: &str, start: usize) -> Option<usize> {
     let mut quote = None;
     for (relative, byte) in content.as_bytes().get(start..)?.iter().copied().enumerate() {
         match quote {
