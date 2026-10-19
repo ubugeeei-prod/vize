@@ -11,10 +11,10 @@ import { readRepoFile } from "./support/github-workflows.ts";
 
 const packagePath = "npm/plugin-sdk";
 
-test("SDK publication uses the built artifact and waits for the smoke", () => {
+test("SDK publication uses the built artifact and waits for the tagged release", () => {
   const workflow = parse(readRepoFile(".github/workflows/release.yml"));
   const publish = workflow.jobs["publish-npm"];
-  assert.ok(publish.needs.includes("smoke"));
+  assert.ok(publish.needs.includes("tag"));
   assert.ok(workflow.env.RELEASE_JS_PACKAGES.split(" ").includes(packagePath));
   assert.ok(
     readRepoFile(".github/actions/release-build-packages/action.yml").includes(

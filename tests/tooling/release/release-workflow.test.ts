@@ -108,13 +108,20 @@ test("release is dispatched on main with an optional exact version", () => {
   assert.match(JSON.stringify(version.steps), /release\/release\/main\.ts cut/);
 });
 
-test("every build checks out the release tag and starts right after tagging", () => {
+test("builds use the untagged candidate; only a fully built release is tagged", () => {
+  const prePublish = (name: string) =>
+    name.startsWith("build-") || name === "smoke" || name === "tag";
   for (const [name, job] of Object.entries(workflow.jobs)) {
     if (name === "version" || job.uses) continue;
     assert.ok(needs(name).includes("version"), `${name} needs version`);
     const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
-    assert.equal(checkout?.with?.ref, "${{ needs.version.outputs.tag }}", name);
+    const ref = prePublish(name) ? "ref" : "tag";
+    assert.equal(checkout?.with?.ref, `${"${{"} needs.version.outputs.${ref} }}`, name);
   }
+  for (const gate of ["smoke", "build-cli", "build-editor-extensions"]) {
+    assert.ok(needs("tag").includes(gate), `tag waits for ${gate}`);
+  }
+  assert.match(JSON.stringify(workflow.jobs.tag.steps), /refs\/tags\/\$RELEASE_TAG/);
   for (const build of ["build-cli", "build-native", "build-packages", "build-wasm"]) {
     assert.deepEqual(needs(build), ["version"], build);
   }
@@ -135,7 +142,7 @@ test("registries publish in parallel behind one credential-free smoke", () => {
     assert.ok(needs("smoke").includes(build), `smoke waits for ${build}`);
   }
   for (const name of ["publish-crates", "publish-npm", "publish-open-vsx", "publish-vscode"]) {
-    assert.ok(needs(name).includes("smoke"), name);
+    assert.ok(needs(name).includes("tag"), name);
     assert.ok(!needs(name).some((other) => other.startsWith("publish-")), name);
   }
   const npm = JSON.stringify(workflow.jobs["publish-npm"].steps);
@@ -198,12 +205,21 @@ test("the hourly cadence releases a green main commit only after user-facing cha
   assert.ok(!decide(["docs: x", "ci(release): y", "test(jsx): z", "refactor: w"]));
   assert.ok(!decide(["fix: x"], null), "no green Check");
   assert.ok(!decide(["fix: x"], released), "already released");
+  assert.ok(
+    !cadenceDecision({
+      greenSha: green,
+      releasedSha: released,
+      subjects: ["fix: x"],
+      attempted: true,
+    }).release,
+    "a failed candidate of the same commit is not retried hourly",
+  );
   const on = workflow.on as unknown as { schedule?: Array<{ cron: string }> };
   assert.equal(on.schedule?.length, 1);
   for (const build of ["build-cli", "build-native", "build-packages", "build-wasm"]) {
     assert.equal(
       (workflow.jobs[build] as Job & { if?: string }).if,
-      "needs.version.outputs.tag != ''",
+      "needs.version.outputs.ref != ''",
     );
   }
 });

@@ -16,7 +16,7 @@ const USAGE = `Usage:
   main.ts dispatch [version] dispatch the Release workflow on main (\`vp run release\`)
   main.ts next               print the next release version
   main.ts stamp <version>    stamp <version> into the working tree
-  main.ts cut [version]      CI only: stamp, commit and push tag v<version>
+  main.ts cut [version]      CI only: stamp, commit and push a release candidate ref
   main.ts cadence            CI only: decide whether a scheduled run releases
 `;
 
@@ -79,12 +79,21 @@ async function git(...args: string[]): Promise<boolean> {
   return (await run("git", args)) === 0;
 }
 
-/** Stamps, commits and pushes the release tag. The tag push is the lock. */
+/** Candidate refs are keyed by the main commit they stamp. */
+export const candidateRef = (source: string) => `refs/release-candidates/${source}`;
+
+/**
+ * Stamps and commits the release version and pushes the commit to a candidate
+ * ref. The tag is only pushed once every artifact is built, so a failed build
+ * burns no version and the next run retries the same number.
+ */
 async function cut(current: string, requested: string | undefined): Promise<number> {
   const version = await resolveVersion(current, requested);
   if (version === null) return 1;
   const tag = `v${version}`;
-  println(`Releasing ${tag} (workspace manifests say ${current})`);
+  const source = (await collectStdout("git", ["rev-parse", "HEAD"])).stdout.trim();
+  const ref = candidateRef(source);
+  println(`Preparing ${tag} from ${source} (workspace manifests say ${current})`);
   if (!(await stampVersion(current, version))) return 1;
   const ok =
     (await git(
@@ -98,16 +107,14 @@ async function cut(current: string, requested: string | undefined): Promise<numb
       "--no-verify",
       "-m",
       `chore(release): ${tag}`,
-    )) &&
-    (await git("tag", tag)) &&
-    (await git("push", "origin", `refs/tags/${tag}`));
-  if (!ok) return fail(`Failed to commit or push ${tag}\n`);
+    )) && (await git("push", "--force", "origin", `HEAD:${ref}`));
+  if (!ok) return fail(`Failed to commit or push ${ref}\n`);
   const sha = (await collectStdout("git", ["rev-parse", "HEAD"])).stdout.trim();
   const output = nonEmptyEnv("GITHUB_OUTPUT");
   if (output !== undefined) {
-    appendFileSync(output, `version=${version}\ntag=${tag}\nsha=${sha}\n`);
+    appendFileSync(output, `version=${version}\ntag=${tag}\nsha=${sha}\nref=${ref}\n`);
   }
-  println(`Pushed ${tag} at ${sha}`);
+  println(`Pushed ${ref} at ${sha}`);
   return 0;
 }
 
@@ -117,7 +124,12 @@ async function cadence(): Promise<number> {
   if (tags === null) return fail("Failed to read release tags\n");
   const highest = highestReleaseVersion(tags);
   const input = await readCadenceInput(highest === null ? null : `v${highest}`);
-  const decision = cadenceDecision(input);
+  const attempted =
+    input.greenSha !== null &&
+    (
+      await collectStdout("git", ["ls-remote", "origin", candidateRef(input.greenSha)])
+    ).stdout.trim() !== "";
+  const decision = cadenceDecision({ ...input, attempted });
   println(
     `${decision.release ? "Releasing" : "Skipping"} ${input.greenSha ?? "-"}: ${decision.reason}`,
   );

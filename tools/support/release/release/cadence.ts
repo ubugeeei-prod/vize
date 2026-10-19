@@ -10,11 +10,15 @@ export interface CadenceInput {
   releasedSha: string | null;
   /** Subjects of the commits in releasedSha..greenSha. */
   subjects: readonly string[];
+  /** A candidate for greenSha exists: an earlier run failed before tagging. */
+  attempted?: boolean;
 }
 
-export function cadenceDecision({ greenSha, releasedSha, subjects }: CadenceInput) {
+export function cadenceDecision({ greenSha, releasedSha, subjects, attempted }: CadenceInput) {
   if (greenSha === null) return { release: false, reason: "no green Check on main" };
   if (greenSha === releasedSha) return { release: false, reason: "already released" };
+  // Retry only from a newer green commit; dispatch retries the same one.
+  if (attempted) return { release: false, reason: "a release of this commit already failed" };
   const changes = subjects.filter((subject) => USER_FACING.test(subject));
   return changes.length > 0
     ? { release: true, reason: `${changes.length} fix/feat/perf commits since the last release` }

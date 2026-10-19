@@ -3,15 +3,18 @@ name: Release
 #
 # main is already validated by the merge queue, so nothing here re-runs Check.
 # `version` picks the next minor above every tag and npm version, stamps it into
-# all manifests, and pushes tag vX.Y.0 on a commit whose only parent is the
-# dispatched main commit. main itself is never rewritten. Every other job builds
-# that tag: all platforms build in parallel, one pre-publish smoke gates the
-# registries, every registry publishes in parallel, and npm publishes all of
-# its packages at once because npm does not resolve dependencies at publish
-# time. Registry visibility is checked once, after publishing.
-# Re-running failed jobs is safe: every publisher skips versions that exist.
+# all manifests on a commit whose only parent is the main commit, and pushes it
+# to refs/release-candidates/<main sha>. main itself is never rewritten. All
+# platforms build that candidate in parallel and one pre-publish smoke checks
+# the tarballs. Only when every artifact exists does `tag` push vX.Y.0, so a
+# failed build burns no version: the next run retries the same number. Every
+# registry then publishes in parallel; npm publishes all packages at once
+# because it does not resolve dependencies at publish time. Registry visibility
+# is checked once, after publishing. Re-running failed jobs is safe: every
+# publisher skips versions that exist.
 # The hourly schedule releases the newest main commit with a green push Check
-# when fix/feat/perf commits landed since the last release tag.
+# when fix/feat/perf commits landed since the last release tag, and does not
+# retry a commit whose candidate already failed.
 on:
   schedule:
     - cron: "23 * * * *"
@@ -35,7 +38,7 @@ env:
 jobs:
   version:
     if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
-    name: Tag the release version
+    name: Prepare the release candidate
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: { contents: write, actions: read }
@@ -43,6 +46,7 @@ jobs:
       version: ${{ steps.cut.outputs.version }}
       tag: ${{ steps.cut.outputs.tag }}
       sha: ${{ steps.cut.outputs.sha }}
+      ref: ${{ steps.cut.outputs.ref }}
       cli_matrix: ${{ steps.platforms.outputs.cli_matrix }}
       native_matrix: ${{ steps.platforms.outputs.native_matrix }}
     steps:
@@ -58,21 +62,21 @@ jobs:
         if: steps.cadence.outputs.release == 'true'
         env: { RELEASE_SOURCE: "${{ steps.cadence.outputs.sha }}" }
         run: git fetch --depth=1 origin "$RELEASE_SOURCE" && git checkout --detach FETCH_HEAD
-      - name: Stamp, commit and push the release tag
+      - name: Stamp, commit and push the release candidate
         id: cut
         if: github.event_name != 'schedule' || steps.cadence.outputs.release == 'true'
         env: { RELEASE_VERSION: "${{ inputs.version }}" }
         run: node tools/support/release/release/main.ts cut ${RELEASE_VERSION:+"$RELEASE_VERSION"}
       - name: Select release platforms
         id: platforms
-        if: steps.cut.outputs.tag != ''
+        if: steps.cut.outputs.ref != ''
         env: { RELEASE_TAG: "${{ steps.cut.outputs.tag }}" }
         run: node tools/support/github/release-platforms.ts github-output "$RELEASE_TAG"
 
   build-cli:
     name: Build CLI - ${{ matrix.settings.target }}
     needs: version
-    if: needs.version.outputs.tag != ''
+    if: needs.version.outputs.ref != ''
     runs-on: ${{ matrix.settings.host }}
     timeout-minutes: 60
     strategy:
@@ -81,7 +85,7 @@ jobs:
         settings: ${{ fromJSON(needs.version.outputs.cli_matrix) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+        with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
       - uses: ./.github/actions/build-release-cli
         with:
           target: ${{ matrix.settings.target }}
@@ -91,7 +95,7 @@ jobs:
   build-native:
     name: Build Native - ${{ matrix.settings.target }}
     needs: version
-    if: needs.version.outputs.tag != ''
+    if: needs.version.outputs.ref != ''
     runs-on: ${{ matrix.settings.host }}
     timeout-minutes: 60
     strategy:
@@ -100,7 +104,7 @@ jobs:
         settings: ${{ fromJSON(needs.version.outputs.native_matrix) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+        with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
       - uses: ./.github/actions/build-release-native
         with:
           target: ${{ matrix.settings.target }}
@@ -110,23 +114,23 @@ jobs:
   build-packages:
     name: Build npm packages
     needs: version
-    if: needs.version.outputs.tag != ''
+    if: needs.version.outputs.ref != ''
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+        with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
       - uses: ./.github/actions/release-build-packages
 
   build-wasm:
     name: Build @vizejs/wasm
     needs: version
-    if: needs.version.outputs.tag != ''
+    if: needs.version.outputs.ref != ''
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+        with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
@@ -158,12 +162,12 @@ jobs:
   build-editor-extensions:
     name: Build editor extensions
     needs: version
-    if: needs.version.outputs.tag != ''
+    if: needs.version.outputs.ref != ''
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+        with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", cache: true, run-install: false }
       - name: Install JS dependencies
@@ -209,7 +213,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
+        with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
       - uses: ./.github/actions/setup-runtime-package-managers
         with: { node-version-file: "package.json" }
       - uses: ./.github/actions/release-npm-artifacts
@@ -219,9 +223,27 @@ jobs:
           node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks \
             npm/native npm/native/npm/* npm/fresco-native "${js[@]}"
 
+  # Every artifact exists: only now does the version become real.
+  tag:
+    name: Tag the release
+    needs: [version, smoke, build-cli, build-editor-extensions]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: { contents: write }
+    env:
+      RELEASE_TAG: ${{ needs.version.outputs.tag }}
+      RELEASE_CANDIDATE: ${{ needs.version.outputs.ref }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.ref }}" }
+      - name: Push the tag and drop the candidate ref
+        run: |
+          git push origin "HEAD:refs/tags/$RELEASE_TAG"
+          git push origin ":$RELEASE_CANDIDATE"
+
   publish-npm:
     name: Publish npm packages
-    needs: [version, smoke]
+    needs: [version, tag]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: npm
@@ -246,7 +268,7 @@ jobs:
 
   publish-crates:
     name: Publish crates
-    needs: [version, smoke]
+    needs: [version, tag]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     environment: crates-io
@@ -272,7 +294,7 @@ jobs:
 
   publish-vscode:
     name: Publish VS Code extension
-    needs: [version, build-editor-extensions, smoke]
+    needs: [version, tag]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: vscode-marketplace
@@ -291,7 +313,7 @@ jobs:
 
   publish-open-vsx:
     name: Publish Open VSX extension
-    needs: [version, build-editor-extensions, smoke]
+    needs: [version, tag]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: open-vsx-registry
@@ -311,7 +333,7 @@ jobs:
 
   github-release:
     name: Create GitHub Release
-    needs: [version, build-cli, build-editor-extensions, publish-npm]
+    needs: [version, tag, publish-npm]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     # id-token mints the keyless cosign certificate.
