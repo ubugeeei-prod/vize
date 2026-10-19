@@ -144,33 +144,6 @@ impl PackageRouteResolver {
 
     /// Derive one importer occurrence context through the resolver-owned
     /// manifest cache. The returned inputs join the binding's reverse index.
-    /// Lend this validation epoch's filesystem observations to an editor
-    /// preparation step, so each input is stamped once per preparation.
-    /// Outside an epoch the lent cache starts empty and is dropped on return.
-    pub(crate) fn lend_epoch_stamps(&self) -> (u64, InputStampCache) {
-        let mut state = self
-            .state
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        let epoch = state.validation_epoch;
-        let stamps = if epoch == 0 {
-            InputStampCache::default()
-        } else {
-            std::mem::take(&mut state.stamp_snapshots)
-        };
-        (epoch, stamps)
-    }
-
-    pub(crate) fn return_epoch_stamps(&self, (epoch, stamps): (u64, InputStampCache)) {
-        let mut state = self
-            .state
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        if epoch != 0 && state.validation_epoch == epoch {
-            state.stamp_snapshots.absorb(stamps);
-        }
-    }
-
     pub fn resolution_context(
         &mut self,
         importer: &Path,

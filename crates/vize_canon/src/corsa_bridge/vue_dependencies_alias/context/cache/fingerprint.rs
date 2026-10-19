@@ -56,8 +56,7 @@ impl ContextFingerprint {
 
     #[cfg(test)]
     pub(crate) fn stamp(&mut self, context: &AliasContext) {
-        let mut observed = crate::package_route::stamp::InputStampCache::default();
-        self.stamp_inner(context, None, &mut observed);
+        self.stamp_inner(context, None);
     }
 
     /// Syntax facts end with this build/stamp invocation; probe and disk
@@ -67,25 +66,13 @@ impl ContextFingerprint {
         context: &AliasContext,
         facts: &mut ModuleSpecifierFactsCache,
     ) {
-        let mut observed = crate::package_route::stamp::InputStampCache::default();
-        self.stamp_inner(context, Some(facts), &mut observed);
-    }
-
-    /// Stamp with the observations the current preparation already made.
-    pub(in super::super) fn stamp_with_import_facts_observed(
-        &mut self,
-        context: &AliasContext,
-        facts: &mut ModuleSpecifierFactsCache,
-        observed: &mut crate::package_route::stamp::InputStampCache,
-    ) {
-        self.stamp_inner(context, Some(facts), observed);
+        self.stamp_inner(context, Some(facts));
     }
 
     fn stamp_inner(
         &mut self,
         context: &AliasContext,
         facts: Option<&mut ModuleSpecifierFactsCache>,
-        observed: &mut crate::package_route::stamp::InputStampCache,
     ) {
         let mut paths = Vec::new();
         if let Some(mirror) = context.mirror.as_ref() {
@@ -123,7 +110,7 @@ impl ContextFingerprint {
         paths.dedup();
         self.stamps = paths
             .into_iter()
-            .map(|path| observed.capture(&path))
+            .map(crate::package_route::stamp::InputStamp::capture)
             .collect();
     }
 

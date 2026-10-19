@@ -97,25 +97,15 @@ impl SessionCache {
         // One filesystem observation per path in this lookup. The cache never
         // survives a request, so same-mtime/same-length edits remain detectable.
         let mut observed = crate::package_route::stamp::InputStampCache::default();
-        self.get_observed(source_path, fingerprint, &mut observed)
-    }
-
-    /// [`Self::get`] with the observations of the current preparation.
-    pub(super) fn get_observed(
-        &mut self,
-        source_path: &Path,
-        fingerprint: &ContextFingerprint,
-        observed: &mut crate::package_route::stamp::InputStampCache,
-    ) -> Option<Arc<AliasContext>> {
         let valid = self.slots.get(source_path).is_some_and(|cached| {
             cached.fingerprint == *fingerprint
-                && cached.fingerprint.stamps_still_valid(observed)
+                && cached.fingerprint.stamps_still_valid(&mut observed)
                 && cached.context.mirror.as_ref().is_none_or(|mirror| {
                     !self.project_members.contains_key(mirror.virtual_root())
                         || self.project_revision_is_current_with_cache(
                             mirror.virtual_root(),
                             fingerprint.overlay_identity(),
-                            observed,
+                            &mut observed,
                         )
                 })
         });

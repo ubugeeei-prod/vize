@@ -45,24 +45,19 @@ impl AliasContext {
         capture_phase.finish();
         let cache_phase =
             crate::corsa_bridge::preparation_trace::Phase::start("alias_cache_lookup", 1);
-        // Lookup, route validation and stamping observe each input once.
-        let mut observed = environment.package_routes.lend_epoch_stamps();
         let cached = {
             let mut cache = environment.editor_session.cache();
-            cache
-                .get_observed(source_path, &fingerprint, &mut observed.1)
-                .map(|context| {
-                    let catalog = context
-                        .mirror
-                        .as_ref()
-                        .map_or_else(Default::default, |mirror| {
-                            cache.source_catalog(mirror.virtual_root())
-                        });
-                    (context, catalog)
-                })
+            cache.get(source_path, &fingerprint).map(|context| {
+                let catalog = context
+                    .mirror
+                    .as_ref()
+                    .map_or_else(Default::default, |mirror| {
+                        cache.source_catalog(mirror.virtual_root())
+                    });
+                (context, catalog)
+            })
         };
         cache_phase.finish();
-        environment.package_routes.return_epoch_stamps(observed);
         if let Some((context, source_catalog)) = cached {
             return Ok(PreparedAliasContext {
                 source_catalog,
@@ -105,9 +100,7 @@ impl AliasContext {
             build_phase.finish();
             let stamp_phase =
                 crate::corsa_bridge::preparation_trace::Phase::start("alias_stamp", 1);
-            let mut observed = environment.package_routes.lend_epoch_stamps();
-            fingerprint.stamp_with_import_facts_observed(&context, &mut facts, &mut observed.1);
-            environment.package_routes.return_epoch_stamps(observed);
+            fingerprint.stamp_with_import_facts(&context, &mut facts);
             stamp_phase.finish();
             context
         };
