@@ -334,4 +334,5 @@ fn range_from_offsets(content: &str, start: usize, end: usize) -> Range {
 
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
+#[path = "template_ref_tests.rs"]
 mod tests;
