@@ -468,7 +468,7 @@ pub(super) mod current;
 mod lock_order_tests;
 #[cfg(feature = "experimental-source-navigation")]
 mod navigation;
-pub(super) mod paths;
+mod paths;
 mod pool;
 #[cfg(test)]
 mod reference_tests;

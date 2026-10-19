@@ -57,7 +57,7 @@ impl WorkspaceFolderConfig {
         // A document opened through a symlinked workspace keeps its authored
         // path while config bases may be physical, so both spellings are
         // matched (#9686).
-        let physical = super::project_contexts::paths::physical_path(path);
+        let physical = vize_carton::path::physical_path(path);
         let spellings = [path, physical.as_path()];
         if spellings.iter().any(|path| {
             self.project_ignores

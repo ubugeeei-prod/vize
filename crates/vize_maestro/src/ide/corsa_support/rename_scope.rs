@@ -347,7 +347,7 @@ fn physical_path(path: &Path) -> Option<PathBuf> {
     Some(normalize_physical_path(physical))
 }
 
-pub(crate) fn normalize_physical_path(path: PathBuf) -> PathBuf {
+fn normalize_physical_path(path: PathBuf) -> PathBuf {
     vize_carton::path::normalize_windows_verbatim_path(path)
 }
 
