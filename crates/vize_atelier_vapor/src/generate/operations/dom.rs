@@ -1,6 +1,8 @@
-use crate::ir::{SetDynamicPropsIRNode, SetHtmlIRNode, SetPropIRNode, SetTextIRNode};
+use crate::ir::{
+    SetDynamicPropsIRNode, SetHtmlIRNode, SetPropIRNode, SetTextIRNode, is_on, listener_prop,
+};
 use vize_atelier_core::{Namespace, SimpleExpressionNode, codegen::document::EmitDocument};
-use vize_carton::cstr;
+use vize_carton::{String, cstr};
 
 use super::super::{context::GenerateContext, setup::escape_js_string_literal};
 
@@ -75,6 +77,33 @@ pub(crate) fn set_prop_call(
         ("setValue", call("_setValue", None, ""))
     } else if set_prop.prop_modifier {
         ("setDOMProp", call("_setDOMProp", Some(&named), ""))
+    } else if is_on(key) && ctx.in_effect {
+        // `:onClick` is a listener on any element (Vue's `isOn`); `setProp`
+        // would stringify the handler into an `onClick` attribute.
+        ("setListener", call("_setListener", Some(&named), ""))
+    } else if is_on(key) {
+        // Without an effect to own its cleanup, a once-bound listener
+        // attaches like `@click`, as upstream emits `on`.
+        let (event, options) = listener_prop(key);
+        let mut suffix = String::default();
+        for (set, name) in [
+            (options.capture, "capture"),
+            (options.once, "once"),
+            (options.passive, "passive"),
+        ] {
+            if set {
+                suffix.push_str(if suffix.is_empty() { ", { " } else { ", " });
+                suffix.push_str(name);
+                suffix.push_str(": true");
+            }
+        }
+        if !suffix.is_empty() {
+            suffix.push_str(" }");
+        }
+        (
+            "on",
+            call("_on", Some(&EmitDocument::plain(&event)), &suffix),
+        )
     } else if is_svg {
         // SVG properties are always attributes (Vue's `getRuntimeHelper`).
         ("setAttr", call("_setAttr", Some(&named), ", true"))

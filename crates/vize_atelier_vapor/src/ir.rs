@@ -2,6 +2,7 @@
 mod constructors;
 mod control_flow;
 mod events;
+pub(crate) use events::{is_on, listener_prop};
 mod props;
 mod slots;
 

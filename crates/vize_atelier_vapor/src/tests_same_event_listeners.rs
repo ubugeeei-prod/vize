@@ -87,3 +87,56 @@ fn a_stop_listener_for_the_same_event_keeps_both_listeners_direct() {
         );
     }
 }
+
+/// `:onClick` binds a listener (Vue's `isOn`), as `@vue/compiler-vapor`
+/// 3.6.0-rc.11 emits: `setListener` in an effect, `on` once-bound. `setProp`
+/// would stringify the handler into an `onClick` attribute.
+#[test]
+fn on_props_bind_listeners() {
+    for retained in [false, true] {
+        let code = compile(
+            r#"<a :onClick="f" :on:MyEvent="g"/><svg :onClick="f"/><b :onclick="f"/>"#,
+            retained,
+        );
+        assert!(
+            code.contains(r#"_setListener(n0, "onClick", _ctx.f)"#),
+            "{code}"
+        );
+        assert!(
+            code.contains(r#"_setListener(n0, "on:MyEvent", _ctx.g)"#),
+            "{code}"
+        );
+        assert!(
+            code.contains(r#"_setListener(n1, "onClick", _ctx.f)"#),
+            "{code}"
+        );
+        assert!(
+            code.contains(r#"_setProp(n2, "onclick", _ctx.f)"#),
+            "{code}"
+        );
+
+        let code = compile(
+            r#"<i v-once :onKeyupOnceCapture="f" :onMyEvent="ok ? f : g"/>"#,
+            retained,
+        );
+        assert!(
+            code.contains(r#"_on(n0, "keyup", _ctx.f, { capture: true, once: true })"#),
+            "{code}"
+        );
+        assert!(
+            code.contains(r#"_on(n0, "my-event", _ctx.ok ? _ctx.f : _ctx.g)"#),
+            "{code}"
+        );
+        assert!(!code.contains("setListener"), "{code}");
+
+        let code = compile(r#"<a :onClick.attr="f" :onFocus.prop="g"/>"#, retained);
+        assert!(
+            code.contains(r#"_setAttr(n0, "onClick", _ctx.f)"#),
+            "{code}"
+        );
+        assert!(
+            code.contains(r#"_setDOMProp(n0, "onFocus", _ctx.g)"#),
+            "{code}"
+        );
+    }
+}

@@ -229,7 +229,9 @@ impl<'b, 'a> EffectOrder<'b, 'a> {
         };
         let single = chosen.next().is_none();
         ctx.use_helper("renderEffect");
+        let outer = core::mem::replace(&mut ctx.in_effect, true);
         if single && let Some(code) = generate_operation_inline(ctx, first) {
+            ctx.in_effect = outer;
             ctx.push_indent();
             ctx.push("_renderEffect(() => ");
             ctx.push_spanned(&code);
@@ -243,6 +245,7 @@ impl<'b, 'a> EffectOrder<'b, 'a> {
         }
         ctx.deindent();
         ctx.push_line("})");
+        ctx.in_effect = outer;
     }
 }
 
