@@ -2,7 +2,7 @@ use serde_json::{Value, json};
 use vize_patina::rules::vue::RequireVForKey;
 use vize_patina::{HelpLevel, Linter, RuleRegistry};
 
-mod v_for_key_capture;
+use crate::v_for_key_capture;
 use v_for_key_capture::{whole_packet, write_capture};
 
 // The original 21 before packets remain intact in CASES.

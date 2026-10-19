@@ -1,12 +1,10 @@
 //! A dev-only legacy oracle checks complete diagnostics; production uses L1 only.
 #[cfg(test)]
-mod native_syntax_img_alt {
-    mod iframe_has_title;
-    pub mod support;
-    mod tabindex_no_positive;
-}
+mod iframe_has_title;
+pub mod support;
+mod tabindex_no_positive;
 
-use native_syntax_img_alt::support::{native, owner, parity};
+use self::support::{native, owner, parity};
 use vize_carton::i18n::{Locale, translator};
 use vize_l0::{Allocator, Span};
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint};

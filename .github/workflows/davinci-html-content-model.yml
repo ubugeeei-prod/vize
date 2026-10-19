@@ -2,7 +2,7 @@ name: Davinci HTML content model
 
 # P4-11a parser oracle: the checker's committed parser-family verdicts
 # (crates/vize_patina/tests/html_content_model/checker-verdicts.tsv, kept
-# current by `cargo test -p vize_patina --test html_content_model_differential`
+# current by `cargo test -p vize_patina --test integration html_content_model_differential::`
 # in the Check workflow) must agree exactly with Chromium's HTML parser.
 # Charter #36: the checker's walk and verdict rule are sound for every context
 # a truncated chain describes. Kani verifies the shipped kernel in the Davinci

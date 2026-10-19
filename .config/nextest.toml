@@ -40,7 +40,7 @@ junit.store-success-output = true
 # JUnit receipts. Only these exact two laws opt in; runtime policies stay fixed.
 [[profile.default.overrides]]
 filter = '''(package(=vize) & binary(=integration) & test(=lint_call_source_cli::original_argv_and_complete_comment_string_real_call_vectors_are_checked)) |
-(package(=vize_patina) & binary(=call_source_7989) & test(=original_and_controls_keep_complete_configured_service_results))'''
+(package(=vize_patina) & binary(=integration) & test(=call_source_7989::original_and_controls_keep_complete_configured_service_results))'''
 junit.store-success-output = true
 
 # Start the 30-110s tests first so they do not finish a cohort alone.

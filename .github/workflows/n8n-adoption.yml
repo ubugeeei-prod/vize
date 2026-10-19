@@ -263,7 +263,7 @@ jobs:
         run: vp node tests/tooling/support/n8n-slot-options-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/slot-options"
       - name: Verify retained parameter grammar through whole source CLI and JSON-RPC packets
         run: |
-          cargo test --locked --profile ci -p vize_patina --test valid_v_slot_regression --test valid_v_slot_parameter_bindings
+          cargo test --locked --profile ci -p vize_patina --test integration -- valid_v_slot_regression:: valid_v_slot_parameter_bindings::
           vp node --test tests/tooling/patina-slot-parameter-bindings-oracle.test.ts
           vp node tests/tooling/support/n8n-slot-parameters-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/slot-parameters"
       - name: Compare whole-corpus lint findings with eslint-plugin-vue

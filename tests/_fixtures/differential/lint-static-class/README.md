@@ -20,7 +20,7 @@ shared #6891 registration and native comparisons are still separate work.
 `before-fix-history-cases.json` preserves the exact initial 13-case JSON pack,
 including its original bad static-class case identity. Its SHA256 is the
 `caseFileSha256` in the original history capture receipt. The unchanged
-`lint_history__static-class-utf8-fix-control.snap` records the original offered
+`integration__lint_history__static-class-utf8-fix-control.snap` records the original offered
 bad edit, malformed applied bytes and three parser errors. Neither archive is
 an executable valid-output oracle or an eligible additional native case.
 

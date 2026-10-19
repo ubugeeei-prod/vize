@@ -7,6 +7,7 @@ license.workspace = true
 repository.workspace = true
 description = "Patina - The quality checker for Vize code linting"
 metadata.vize.stability = "compatibility-preview"
+autotests = false
 
 [features]
 # Arms the TS-25 markup lane (`tests/davinci_markup_differential.rs`): the
@@ -96,6 +97,15 @@ required-features = ["legacy-differential"]
 [[test]]
 name = "davinci_authored_markup_budget"
 harness = false
+
+# The custody-pinned native-phase workflow runs this binary by name.
+[[test]]
+name = "documented_rule_examples"
+
+# Ordinary integration tests link as one binary; see tests/main.rs.
+[[test]]
+name = "integration"
+path = "tests/main.rs"
 
 [lints]
 workspace = true

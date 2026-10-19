@@ -5,7 +5,7 @@ use vize_l0::String;
 use vize_patina::rules::vue::{RequireVForKey, ValidVFor};
 use vize_patina::{HelpLevel, JsxLang, Linter, RuleRegistry};
 
-mod v_for_key_capture;
+use crate::v_for_key_capture;
 use v_for_key_capture::{whole_packet, write_capture};
 
 #[derive(Deserialize)]
