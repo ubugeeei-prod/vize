@@ -17,11 +17,11 @@ import { useStageLadder, type StageId } from "./useStageLadder";
 import { stepKeyAction } from "./keys";
 import { formatArg } from "./remarks";
 
-const targets = ["dom", "ssr", "vapor"] as const;
-
 const props = defineProps<{
   compiler: WasmModule | null;
 }>();
+
+const targets = ["dom", "ssr", "vapor"] as const;
 
 const {
   theme,

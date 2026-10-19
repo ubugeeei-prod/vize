@@ -24,7 +24,7 @@ const rootProps: InstanceType<typeof Fieldset>["$props"] = {
   name: "address",
   errors: [{ name: "address", message: "Required", path: ["address"] }],
   hasDescription: true,
-  "onInvalid-change": (invalid: boolean) => invalid,
+  onInvalidChange: (invalid: boolean) => invalid,
 };
 const errorProps: InstanceType<typeof FieldsetErrorMessage>["$props"] = { forceMount: true };
 const descriptionProps: InstanceType<typeof FieldsetDescription>["$props"] = { as: "div" };

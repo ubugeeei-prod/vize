@@ -66,7 +66,7 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 
   /** Fired after any distinct open-state request. */
-  "open-change": [value: boolean, previous: boolean, nativeEvent: Event | null];
+  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
 
   /** Fired after the confirmation handler succeeded and the popover closed. */
   confirmed: [nativeEvent: Event | null];
@@ -119,7 +119,7 @@ function setOpen(value: boolean, nativeEvent: Event | null = null): boolean {
   if (!openState.set(value)) return false;
   if (value) errorState.value = null;
   emit("update:open", value);
-  emit("open-change", value, previous, nativeEvent);
+  emit("openChange", value, previous, nativeEvent);
   return true;
 }
 

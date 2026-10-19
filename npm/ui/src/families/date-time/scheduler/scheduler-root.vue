@@ -66,15 +66,15 @@ const emit = defineEmits<{
   /** Fired when navigation requests a new anchor date. */
   "update:date": [date: PlainDate];
   /** Fired when an event is clicked or activated with Enter/Space. */
-  "event-activate": [event: SchedulerEvent<Data>, nativeEvent: Event];
+  eventActivate: [event: SchedulerEvent<Data>, nativeEvent: Event];
   /** Fired when a time-grid slot is clicked or activated. */
-  "slot-activate": [range: SchedulerSlotRange, nativeEvent: Event];
+  slotActivate: [range: SchedulerSlotRange, nativeEvent: Event];
   /** Fired when a month-view day is clicked or activated. */
-  "day-activate": [date: PlainDate, nativeEvent: Event];
+  dayActivate: [date: PlainDate, nativeEvent: Event];
   /** Fired when a drag or Alt+Arrow requests a new start (duration preserved). */
-  "event-move": [change: SchedulerEventChange<Data>, nativeEvent: Event | null];
+  eventMove: [change: SchedulerEventChange<Data>, nativeEvent: Event | null];
   /** Fired when a resize drag or Alt+Shift+Arrow requests a new end. */
-  "event-resize": [change: SchedulerEventChange<Data>, nativeEvent: Event | null];
+  eventResize: [change: SchedulerEventChange<Data>, nativeEvent: Event | null];
 }>();
 
 defineSlots<{
@@ -88,11 +88,11 @@ const { id, slotState, direction, exposed } = useScheduler<Data>(
   {
     view: (view) => emit("update:view", view),
     date: (date) => emit("update:date", date),
-    eventActivate: (event, nativeEvent) => emit("event-activate", event, nativeEvent),
-    slotActivate: (range, nativeEvent) => emit("slot-activate", range, nativeEvent),
-    dayActivate: (date, nativeEvent) => emit("day-activate", date, nativeEvent),
-    eventMove: (change, nativeEvent) => emit("event-move", change, nativeEvent),
-    eventResize: (change, nativeEvent) => emit("event-resize", change, nativeEvent),
+    eventActivate: (event, nativeEvent) => emit("eventActivate", event, nativeEvent),
+    slotActivate: (range, nativeEvent) => emit("slotActivate", range, nativeEvent),
+    dayActivate: (date, nativeEvent) => emit("dayActivate", date, nativeEvent),
+    eventMove: (change, nativeEvent) => emit("eventMove", change, nativeEvent),
+    eventResize: (change, nativeEvent) => emit("eventResize", change, nativeEvent),
   },
   root,
 );

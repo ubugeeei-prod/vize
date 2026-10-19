@@ -21,17 +21,17 @@ import type {
   ScrubberPreviewThumbnailSlotState,
 } from "./scrubber-preview-types.ts";
 
+const emit = defineEmits<{
+  /** Fired when a thumbnail cannot be produced. */
+  error: [error: ScrubberPreviewError];
+}>();
+
 defineSlots<{
   /**
    * Custom thumbnail rendering. Defaults to an `<img>` for captured frames;
    * sprite and VTT frames are published as custom properties for CSS backgrounds.
    */
   default(props: ScrubberPreviewThumbnailSlotState): unknown;
-}>();
-
-const emit = defineEmits<{
-  /** Fired when a thumbnail cannot be produced. */
-  error: [error: ScrubberPreviewError];
 }>();
 
 const context = scrubberPreviewContext.use();

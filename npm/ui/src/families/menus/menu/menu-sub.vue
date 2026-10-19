@@ -46,7 +46,7 @@ const emit = defineEmits<{
   /** Fired with the requested submenu open value (supports `v-model:open`). */
   "update:open": [value: boolean];
   /** Fired after any distinct open-state request with the previous value and native event. */
-  "open-change": [value: boolean, previous: boolean, nativeEvent: Event | null];
+  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{
@@ -65,7 +65,7 @@ const level = createMenuLevel({
   disabled: () => disabled,
   onOpenChange: (value, previous, event) => {
     emit("update:open", value);
-    emit("open-change", value, previous, event);
+    emit("openChange", value, previous, event);
   },
 });
 menuLevelContext.provide(level);

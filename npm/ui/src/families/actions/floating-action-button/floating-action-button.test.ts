@@ -88,7 +88,7 @@ test("speed dial trigger follows the menu button pattern", async () => {
   assert.equal(trigger.getAttribute("aria-expanded"), "true");
   assert.equal(menu.hidden, false);
   assert.ok(handle.activeElement() !== actions[0], "pointer opening keeps focus on the trigger");
-  assert.deepEqual(handle.wrapper.emitted("open-change")?.[0]?.slice(0, 2), [true, "pointer"]);
+  assert.deepEqual(handle.wrapper.emitted("openChange")?.[0]?.slice(0, 2), [true, "pointer"]);
 
   handle.unmount();
 });
@@ -160,7 +160,7 @@ test("selecting an action emits select, closes, and restores trigger focus", asy
     "false",
   );
   assert.ok(handle.activeElement() === handle.getByRole("button", { name: "Create" }));
-  assert.deepEqual(handle.wrapper.emitted("open-change")?.at(-1)?.slice(0, 2), [false, "action"]);
+  assert.deepEqual(handle.wrapper.emitted("openChange")?.at(-1)?.slice(0, 2), [false, "action"]);
 
   handle.unmount();
 });
@@ -217,7 +217,7 @@ test("hover opening is opt-in and ignores touch", async () => {
   root.dispatchEvent(new PointerEvent("pointerleave", { pointerType: "mouse" }));
   await settle();
   assert.equal(trigger.getAttribute("aria-expanded"), "false");
-  assert.equal(handle.wrapper.emitted("open-change")?.[0]?.[1], "hover");
+  assert.equal(handle.wrapper.emitted("openChange")?.[0]?.[1], "hover");
 
   handle.unmount();
 });

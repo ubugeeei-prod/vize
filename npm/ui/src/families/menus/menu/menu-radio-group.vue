@@ -45,7 +45,7 @@ const emit = defineEmits<{
   /** Fired with the newly selected value (supports `v-model`). */
   "update:modelValue": [value: Value | null];
   /** Fired after a distinct value is selected, with the previous value and native event. */
-  "value-change": [value: Value | null, previous: Value | null, nativeEvent: Event | null];
+  valueChange: [value: Value | null, previous: Value | null, nativeEvent: Event | null];
 }>();
 
 defineSlots<{
@@ -66,7 +66,7 @@ function setValue(next: Value | null, event: Event | null = null): boolean {
   const previous = valueState.value.value;
   if (!valueState.set(next)) return false;
   emit("update:modelValue", next);
-  emit("value-change", next, previous, event);
+  emit("valueChange", next, previous, event);
   return true;
 }
 

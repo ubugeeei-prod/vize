@@ -2,7 +2,7 @@
 
 | Surface   | Contract                                                                                                                                                                                                               |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| State     | `PopoverRoot` supports uncontrolled `defaultOpen` and controlled `open` with `update:open` and `open-change` events; disabled roots request closure and publish `data-disabled`.                                       |
+| State     | `PopoverRoot` supports uncontrolled `defaultOpen` and controlled `open` with `update:open` and `openChange` events; disabled roots request closure and publish `data-disabled`.                                        |
 | Trigger   | `PopoverTrigger` renders a native button with deterministic ids, `aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`, `part="trigger"`, `data-state`, and disabled data hooks.                                  |
 | Content   | `PopoverContent` composes `Portal`, `Presence`, `Positioner`, `DismissableLayer`, and optional focus/isolation controllers; it renders `role="dialog"` (or `"alertdialog"` via `role`) with deterministic content ids. |
 | Dismissal | Escape, outside pointer-down, and outside focus request closing unless the preventable callback was canceled; trigger interaction is treated as an inside branch and toggles through state.                            |
@@ -24,12 +24,12 @@
 | `popover-content.vue` | closed and force-mounted                | Keeps content in the DOM with `hidden` state while document controllers remain inactive.                            |
 | `popover-arrow.vue`   | inside positioned content               | Registers with `Positioner`, publishes arrow geometry to CSS, and exposes slot coordinates.                         |
 
-| Event                  | Dispatch timing and payload                                                               |
-| ---------------------- | ----------------------------------------------------------------------------------------- |
-| `open-auto-focus`      | Before automatic entry focus; payload is a preventable focus-scope event.                 |
-| `close-auto-focus`     | Before automatic focus restoration; payload is a preventable focus-scope event.           |
-| `escape-key-down`      | Before Escape dismissal; payload is the preventable dismissable-layer Escape event.       |
-| `pointer-down-outside` | Before pointer dismissal; payload is the preventable outside pointer event.               |
-| `focus-outside`        | Before focus dismissal; payload is the preventable outside focus event.                   |
-| `interact-outside`     | Before pointer or focus dismissal; payload is the preventable outside interaction event.  |
-| `dismiss`              | After an unprevented dismissal request; payload records reason, target, and native event. |
+| Event                | Dispatch timing and payload                                                               |
+| -------------------- | ----------------------------------------------------------------------------------------- |
+| `openAutoFocus`      | Before automatic entry focus; payload is a preventable focus-scope event.                 |
+| `closeAutoFocus`     | Before automatic focus restoration; payload is a preventable focus-scope event.           |
+| `escapeKeyDown`      | Before Escape dismissal; payload is the preventable dismissable-layer Escape event.       |
+| `pointerDownOutside` | Before pointer dismissal; payload is the preventable outside pointer event.               |
+| `focusOutside`       | Before focus dismissal; payload is the preventable outside focus event.                   |
+| `interactOutside`    | Before pointer or focus dismissal; payload is the preventable outside interaction event.  |
+| `dismiss`            | After an unprevented dismissal request; payload records reason, target, and native event. |

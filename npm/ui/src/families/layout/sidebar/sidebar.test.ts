@@ -134,7 +134,7 @@ test("trigger toggles an off-canvas sidebar and makes the collapsed landmark ine
   assert.equal(aside(handle).getAttribute("data-collapsible"), "offcanvas");
   assert.equal(aside(handle).hasAttribute("inert"), true);
   assert.deepEqual(handle.wrapper.emitted("update:open"), [[false]]);
-  const change = handle.wrapper.emitted("open-change")?.[0];
+  const change = handle.wrapper.emitted("openChange")?.[0];
   assert.deepEqual(change?.slice(0, 2), [false, true]);
 
   await handle.click(button);

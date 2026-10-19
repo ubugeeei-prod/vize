@@ -54,7 +54,7 @@ const Harness = defineComponent({
             columns: personColumns,
             getRowId: (row: Person) => row.id,
             ...props.gridProps,
-            "onCell-edit": (event: DataGridCellEditEvent<Person>) => {
+            onCellEdit: (event: DataGridCellEditEvent<Person>) => {
               props.log.push(`edit:${event.rowId}:${event.columnId}:${String(event.value)}`);
               rows.value = rows.value.map((row) =>
                 row.id === event.rowId ? { ...row, [event.columnId]: event.value } : row,

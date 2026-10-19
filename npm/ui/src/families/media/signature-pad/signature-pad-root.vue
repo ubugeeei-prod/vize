@@ -26,8 +26,6 @@ import type {
   SignatureValue,
 } from "./signature-pad-types.ts";
 
-const EMPTY: SignatureValue = Object.freeze([]);
-
 const {
   id = undefined,
   modelValue = undefined,
@@ -165,6 +163,8 @@ const emit = defineEmits<{
   /** Fired when a stroke is committed. */
   strokeEnd: [stroke: SignatureStroke];
 }>();
+
+const EMPTY: SignatureValue = Object.freeze([]);
 
 defineSlots<{
   /** Canvas, guide, and controls. Receives the signature state. */

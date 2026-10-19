@@ -101,11 +101,11 @@ function mountTour(
     record: [
       "update:open",
       "update:step",
-      "step-change",
+      "stepChange",
       "complete",
       "dismiss",
-      "navigation-cancel",
-      "navigation-error",
+      "navigationCancel",
+      "navigationError",
     ],
     slots: {
       default: (state: TourSlotState<DemoStep>) => [
@@ -219,7 +219,7 @@ test("next and previous walk steps, anchor resolved targets, and complete on the
     ["search"],
     ["profile"],
   ]);
-  assert.deepEqual(handle.wrapper.emitted("step-change")?.[0]?.slice(0, 2), ["search", "welcome"]);
+  assert.deepEqual(handle.wrapper.emitted("stepChange")?.[0]?.slice(0, 2), ["search", "welcome"]);
   handle.unmount();
   targets.cleanup();
 });
@@ -621,11 +621,11 @@ test("beforeEnter false cancels and failures report navigation-error while keepi
   await settle();
   assert.equal(tour.value, "welcome");
   assert.equal(tour.pending, false);
-  assert.deepEqual(handle.wrapper.emitted("navigation-cancel"), [
+  assert.deepEqual(handle.wrapper.emitted("navigationCancel"), [
     ["search", "welcome"],
     ["search", "welcome"],
   ]);
-  assert.deepEqual(handle.wrapper.emitted("navigation-error"), [
+  assert.deepEqual(handle.wrapper.emitted("navigationError"), [
     [failure, "profile", "welcome"],
     [failure, "search", "welcome"],
   ]);

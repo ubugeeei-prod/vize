@@ -59,9 +59,6 @@ import type {
 } from "./avatar-types.ts";
 import type { PrimitiveAs } from "../../foundations/primitive/primitive.ts";
 
-const IMAGE_SOURCE_SCHEME = /^([a-z][a-z\d+.-]*):/i;
-const DATA_IMAGE_SOURCE = /^data:image\/(?:avif|gif|jpeg|jpg|png|webp);base64,[a-z\d+/]+={0,2}$/i;
-
 const {
   as = "span",
   src = undefined,
@@ -153,20 +150,23 @@ const {
   readonly referrerPolicy?: AvatarImageReferrerPolicy;
 }>();
 
-defineSlots<{
-  /** Renders fallback content with the current avatar hooks. */
-  default(props: AvatarSlotState): unknown;
-
-  /** Renders named fallback content with the current avatar hooks. */
-  fallback(props: AvatarSlotState): unknown;
-}>();
-
 const emit = defineEmits<{
   /** Fired after the image part dispatches a native load event. */
   load: [nativeEvent: Event];
 
   /** Fired after the image part dispatches a native error event and Avatar renders fallback. */
   error: [nativeEvent: Event];
+}>();
+
+const IMAGE_SOURCE_SCHEME = /^([a-z][a-z\d+.-]*):/i;
+const DATA_IMAGE_SOURCE = /^data:image\/(?:avif|gif|jpeg|jpg|png|webp);base64,[a-z\d+/]+={0,2}$/i;
+
+defineSlots<{
+  /** Renders fallback content with the current avatar hooks. */
+  default(props: AvatarSlotState): unknown;
+
+  /** Renders named fallback content with the current avatar hooks. */
+  fallback(props: AvatarSlotState): unknown;
 }>();
 
 const slots = useSlots();

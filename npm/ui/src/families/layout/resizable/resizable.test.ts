@@ -48,7 +48,7 @@ function mountResizable(props: Record<string, unknown> = {}, edges: readonly str
         ...edges.map((edge) => h(ResizableHandle, { key: edge, edge })),
       ],
     },
-    record: ["resize-start", "resize", "resize-end"],
+    record: ["resizeStart", "resize", "resizeEnd"],
   });
 }
 
@@ -122,7 +122,7 @@ test("arrow keys resize by step, Shift by the large step, and Home/End jump to l
   assert.equal(east.getAttribute("aria-valuenow"), "100");
 
   const events = host.recorded().map((entry) => entry.event);
-  assert.deepEqual(events.slice(0, 3), ["resize-start", "resize", "resize-end"]);
+  assert.deepEqual(events.slice(0, 3), ["resizeStart", "resize", "resizeEnd"]);
   const first = host.recorded()[1]?.payload[0] as ResizableResizeEvent;
   assert.equal(first.source, "keyboard");
   assert.equal(first.edge, "e");
@@ -155,8 +155,8 @@ test("pointer drag resizes from the pressed edge with capture and clamps to cons
   assert.equal(host.root().getAttribute("data-state"), "idle");
   assert.deepEqual(captured, [3]);
   const names = host.recorded().map((entry) => entry.event);
-  assert.equal(names[0], "resize-start");
-  assert.equal(names.at(-1), "resize-end");
+  assert.equal(names[0], "resizeStart");
+  assert.equal(names.at(-1), "resizeEnd");
   const last = host.recorded().at(-1)?.payload[0] as ResizableResizeEvent;
   assert.equal(last.source, "pointer");
 

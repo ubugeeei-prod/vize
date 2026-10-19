@@ -117,17 +117,17 @@ const {
   readonly ariaInvalid?: SwitchAriaInvalid;
 }>();
 
-defineSlots<{
-  /** Renders the switch contents with current checked and availability state. */
-  default(props: SwitchSlotState): unknown;
-}>();
-
 const emit = defineEmits<{
   /** Fired when the checked state requests a new controlled boolean value. */
   "update:modelValue": [value: boolean];
 
   /** Fired after user activation requests the next checked value. */
   change: [value: boolean, nativeEvent: MouseEvent];
+}>();
+
+defineSlots<{
+  /** Renders the switch contents with current checked and availability state. */
+  default(props: SwitchSlotState): unknown;
 }>();
 
 const element = useTemplateRef<HTMLButtonElement>("element");

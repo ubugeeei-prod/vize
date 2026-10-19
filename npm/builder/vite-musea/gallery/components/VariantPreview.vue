@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onUnmounted } from "vue";
+import { computed, ref, watch, onMounted, onUnmounted, useTemplateRef } from "vue";
 import type { ArtVariant } from "../../src/types/index.js";
 import { getPreviewUrl, vMuseaGlobals, withGlobalsQuery } from "../api";
 import { safeUrl } from "../utils/safeUrl";
@@ -16,7 +16,7 @@ const emit = defineEmits<{
   (e: "event", event: { type: string; target?: string; payload?: unknown }): void;
 }>();
 
-const iframeRef = ref<HTMLIFrameElement | null>(null);
+const iframeRef = useTemplateRef<HTMLIFrameElement>("iframeRef");
 const iframeReady = ref(false);
 
 const previewUrl = computed(() => getPreviewUrl(props.artPath, props.variant.name));

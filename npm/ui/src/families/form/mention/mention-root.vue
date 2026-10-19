@@ -67,13 +67,13 @@ const emit = defineEmits<{
   "update:query": [query: string];
 
   /** Fired when the active token changes, with its query and trigger or `null` for both when it ends. */
-  "query-change": [query: string | null, trigger: MentionTrigger | null];
+  queryChange: [query: string | null, trigger: MentionTrigger | null];
 
   /** Fired when the popup requests a controlled open value. */
   "update:open": [open: boolean];
 
   /** Fired after any distinct open-state request with next state, previous state, and event. */
-  "open-change": [open: boolean, previous: boolean, nativeEvent: Event | null];
+  openChange: [open: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{
@@ -184,7 +184,7 @@ function setOpen(value: boolean, nativeEvent: Event | null = null): boolean {
   const changed = openState.set(next);
   if (changed || previous !== next) {
     emit("update:open", next);
-    emit("open-change", next, previous, nativeEvent);
+    emit("openChange", next, previous, nativeEvent);
   }
   return changed;
 }
@@ -199,7 +199,7 @@ function updateMatch(next: MentionMatch | null, nativeEvent: Event | null): void
     match.value = next;
     if (previous?.query !== next?.query || previous?.trigger !== next?.trigger) {
       emit("update:query", next?.query ?? "");
-      emit("query-change", next?.query ?? null, next?.trigger ?? null);
+      emit("queryChange", next?.query ?? null, next?.trigger ?? null);
     }
   }
   const shouldOpen = next !== null && dismissedAt.value === null;

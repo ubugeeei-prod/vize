@@ -2,9 +2,6 @@
 import { defineAsyncComponent, ref, useId, watch } from "vue";
 import { fetchArtSource, updateArtSource } from "../../api";
 
-const MonacoEditor = defineAsyncComponent(() => import("../MonacoEditor.vue"));
-const titleId = useId();
-
 const props = defineProps<{
   isOpen: boolean;
   artPath: string;
@@ -16,6 +13,9 @@ const emit = defineEmits<{
   close: [];
   saved: [];
 }>();
+
+const MonacoEditor = defineAsyncComponent(() => import("../MonacoEditor.vue"));
+const titleId = useId();
 
 const source = ref("");
 const loading = ref(false);

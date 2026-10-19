@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { defineAsyncComponent, ref, useId, watch } from "vue";
 
-const MonacoEditor = defineAsyncComponent(() => import("../MonacoEditor.vue"));
-
 const props = defineProps<{
   label: string;
   description?: string;
@@ -13,6 +11,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "update:modelValue", value: unknown): void;
 }>();
+
+const MonacoEditor = defineAsyncComponent(() => import("../MonacoEditor.vue"));
 
 const jsonString = ref(JSON.stringify(props.modelValue ?? {}, null, 2));
 const parseError = ref(false);

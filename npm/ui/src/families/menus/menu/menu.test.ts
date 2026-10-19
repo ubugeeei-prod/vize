@@ -186,7 +186,7 @@ test("radio groups select generic values with custom equality", async () => {
                 "onUpdate:modelValue": (value: Theme | null) => {
                   selected.value = value;
                 },
-                "onValue-change": (value: Theme | null, previous: Theme | null) =>
+                onValueChange: (value: Theme | null, previous: Theme | null) =>
                   changes.push(`${previous?.id}->${value?.id}`),
               },
               () =>

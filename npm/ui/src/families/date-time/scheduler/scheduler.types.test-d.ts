@@ -41,7 +41,7 @@ const props: SchedulerProps = {
   events,
   view: "month",
   dayStartHour: 8,
-  "onEvent-move": (value: SchedulerEventChange<Ticket>) => value.event.data.priority,
+  onEventMove: (value: SchedulerEventChange<Ticket>) => value.event.data.priority,
 };
 
 // @ts-expect-error views are day, week, or month.

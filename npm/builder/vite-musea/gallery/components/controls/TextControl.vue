@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { useId } from "vue";
 
-const model = defineModel<string>({ default: "" });
-
 defineProps<{
   label: string;
   description?: string;
   required?: boolean;
 }>();
+
+const model = defineModel<string>({ default: "" });
 
 const inputId = useId();
 </script>

@@ -4,8 +4,6 @@ import { computed, useTemplateRef } from "vue";
 import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import type { LinkExpose, LinkProps, LinkSlotState } from "./link-types.ts";
 
-const UNSAFE_HREF = /^(?:data|javascript|vbscript):/i;
-
 const {
   id = undefined,
   href = undefined,
@@ -17,14 +15,16 @@ const {
   ariaCurrent = undefined,
 } = defineProps<LinkProps>();
 
-defineSlots<{
-  /** Renders link contents with current availability state. */
-  default(props: LinkSlotState): unknown;
-}>();
-
 const emit = defineEmits<{
   /** Fired when an enabled link receives pointer or keyboard activation. */
   navigate: [event: MouseEvent];
+}>();
+
+const UNSAFE_HREF = /^(?:data|javascript|vbscript):/i;
+
+defineSlots<{
+  /** Renders link contents with current availability state. */
+  default(props: LinkSlotState): unknown;
 }>();
 
 const element = useTemplateRef<HTMLAnchorElement>("element");

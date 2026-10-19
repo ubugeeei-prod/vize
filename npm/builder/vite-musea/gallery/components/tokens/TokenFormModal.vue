@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onUnmounted, useId } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onUnmounted, useId, useTemplateRef } from "vue";
 import type { DesignToken } from "../../api";
 
 const props = defineProps<{
@@ -24,8 +24,8 @@ const tokenDescription = ref("");
 const tier = ref<"primitive" | "semantic">("primitive");
 const reference = ref("");
 const validationError = ref<string | null>(null);
-const modalRef = ref<HTMLElement | null>(null);
-const pathInputRef = ref<HTMLInputElement | null>(null);
+const modalRef = useTemplateRef<HTMLElement>("modalRef");
+const pathInputRef = useTemplateRef<HTMLInputElement>("pathInputRef");
 const fieldIds = {
   title: useId(),
   path: useId(),

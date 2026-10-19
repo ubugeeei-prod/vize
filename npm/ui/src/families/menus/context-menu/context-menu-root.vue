@@ -68,14 +68,14 @@ const {
   readonly disabled?: boolean;
 }>();
 
-const dirState = useResolvedDirection(() => dir);
-
 const emit = defineEmits<{
   /** Fired with the requested open value (supports `v-model:open`). */
   "update:open": [value: boolean];
   /** Fired after any distinct open-state request with the previous value and native event. */
-  "open-change": [value: boolean, previous: boolean, nativeEvent: Event | null];
+  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
+
+const dirState = useResolvedDirection(() => dir);
 
 defineSlots<{
   /** ContextMenuTrigger and menu content. Receives the menu open state. */
@@ -106,7 +106,7 @@ const menu = useMenuRoot({
   restoreTarget: () => null,
   onOpenChange: (value, previous, event) => {
     emit("update:open", value);
-    emit("open-change", value, previous, event);
+    emit("openChange", value, previous, event);
   },
 });
 

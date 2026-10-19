@@ -47,7 +47,7 @@ export function fruitSelectOptions(
 ) {
   return {
     props: { by: "id", id: "fruit", itemText: (fruit: Fruit) => fruit.name, ...rootProps },
-    record: ["update:modelValue", "change", "update:open", "open-change"],
+    record: ["update:modelValue", "change", "update:open", "openChange"],
     slots: {
       default: () => [
         h(SelectTrigger, { ariaLabel: "Fruit" }, () => h(SelectValue)),

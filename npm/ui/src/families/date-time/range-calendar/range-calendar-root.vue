@@ -80,7 +80,7 @@ const emit = defineEmits<{
   /** Fired for every completed range selection, even when the range is unchanged. */
   select: [value: DateRange, nativeEvent: Event];
   /** Fired when the first endpoint of a new range is picked, or `null` when cancelled or completed. */
-  "anchor-change": [anchor: PlainDate | null];
+  anchorChange: [anchor: PlainDate | null];
   /** Fired when keyboard or navigation moves the focus date. */
   "update:focusedDate": [date: PlainDate];
 }>();
@@ -99,7 +99,7 @@ const selection = useRangeCalendarSelection({
   onUpdate: (value) => emit("update:modelValue", value),
   onChange: (value, previous, event) => emit("change", value, previous, event),
   onSelect: (value, event) => emit("select", value, event),
-  onAnchorChange: (anchor) => emit("anchor-change", anchor),
+  onAnchorChange: (anchor) => emit("anchorChange", anchor),
 });
 const core = useCalendarCore(props, selection.adapter, root, (date) =>
   emit("update:focusedDate", date),

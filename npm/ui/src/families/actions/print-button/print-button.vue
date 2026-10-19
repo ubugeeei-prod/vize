@@ -16,8 +16,6 @@ import type {
 type PrintButtonKeyboardPhase = "keydown" | "keyup";
 type PrintButtonKeyboardAction = "activate" | "prevent" | "ignore";
 
-const PRINT_BUTTON_ACTION_UNAVAILABLE = "VIZE_UI_PRINT_BUTTON_ACTION_UNAVAILABLE";
-
 const {
   as = "button",
   native = undefined,
@@ -33,12 +31,14 @@ const {
   action = undefined,
 } = defineProps<PrintButtonProps>();
 
+const emit = defineEmits<PrintButtonEmits>();
+
+const PRINT_BUTTON_ACTION_UNAVAILABLE = "VIZE_UI_PRINT_BUTTON_ACTION_UNAVAILABLE";
+
 defineSlots<{
   /** Renders button contents with the current print state. */
   default(props: PrintButtonSlotState): unknown;
 }>();
-
-const emit = defineEmits<PrintButtonEmits>();
 
 const element = useTemplateRef<PrintButtonElement>("element");
 const stateValue = shallowRef<PrintButtonState>("idle");

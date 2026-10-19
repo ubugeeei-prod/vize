@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUnmounted, defineAsyncComponent } from "vue";
+import { ref, watch, computed, onMounted, onUnmounted, defineAsyncComponent, useTemplateRef } from "vue";
 import { shallowRef } from "vue";
 import { usePalette } from "../composables/usePalette";
 import { useArts } from "../composables/useArts";
@@ -12,12 +12,12 @@ import { supportedProps, unsupportedPropEdit } from "../utils/supportedProps";
 import SlotEditor from "./SlotEditor.vue";
 import HighlightedCode from "./HighlightedCode.vue";
 
-const MonacoEditor = defineAsyncComponent(() => import("./MonacoEditor.vue"));
-
 const props = defineProps<{
   artPath: string;
   defaultVariantName?: string;
 }>();
+
+const MonacoEditor = defineAsyncComponent(() => import("./MonacoEditor.vue"));
 
 const {
   palette,
@@ -40,7 +40,7 @@ const {
 } = usePalette();
 const { getArt } = useArts();
 
-const iframeRef = ref<HTMLIFrameElement | null>(null);
+const iframeRef = useTemplateRef<HTMLIFrameElement>("iframeRef");
 const iframeReady = ref(false);
 const slotContent = shallowRef<Record<string, string>>({});
 const copiedUsage = ref(false);

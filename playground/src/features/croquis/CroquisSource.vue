@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { useTemplateRef } from "vue";
 import { mdiCodeTags } from "@mdi/js";
 import MonacoEditor, { type ScopeDecoration, type Diagnostic } from "../../shared/MonacoEditor.vue";
 import ExperimentalFeatures from "../../shared/ExperimentalFeatures.vue";
@@ -7,14 +7,16 @@ import type { ExperimentalOptions } from "../../shared/experimentalFeatures";
 import { ANALYSIS_PRESET } from "../../shared/presets/croquis";
 
 defineProps<{ theme: "dark" | "light"; scopes: ScopeDecoration[]; diagnostics: Diagnostic[] }>();
+
+const emit = defineEmits<{ example: [key: string] }>();
+
 const source = defineModel<string>({ required: true });
 const visualize = defineModel<boolean>("visualize", { required: true });
 const experimentals = defineModel<ExperimentalOptions>("experimentals", { required: true });
-const emit = defineEmits<{ example: [key: string] }>();
 function loadExample(key: string) {
   emit("example", key);
 }
-const editor = ref<InstanceType<typeof MonacoEditor> | null>(null);
+const editor = useTemplateRef<InstanceType<typeof MonacoEditor>>("editor");
 defineExpose({
   applyScopeDecorations: (scopes: ScopeDecoration[]) => editor.value?.applyScopeDecorations(scopes),
 });

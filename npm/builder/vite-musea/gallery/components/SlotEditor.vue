@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed, defineAsyncComponent } from "vue";
 
-const MonacoEditor = defineAsyncComponent(() => import("./MonacoEditor.vue"));
-
 const props = defineProps<{
   slots: Record<string, string>;
   availableSlots?: string[];
@@ -11,6 +9,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "update", slots: Record<string, string>): void;
 }>();
+
+const MonacoEditor = defineAsyncComponent(() => import("./MonacoEditor.vue"));
 
 const activeSlot = ref("default");
 const localSlots = ref<Record<string, string>>({});

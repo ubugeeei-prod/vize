@@ -26,7 +26,7 @@ const props: InstanceType<typeof Sticky>["$props"] = {
   offset: 16,
   root: null,
   side: "top",
-  "onStuck-change": (stuck: boolean) => stuck,
+  onStuckChange: (stuck: boolean) => stuck,
 };
 
 // @ts-expect-error side is a closed union.

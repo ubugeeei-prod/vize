@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { useTemplateRef } from "vue";
 import { useDropZone } from "@vizejs/composable/use-drop-zone";
 
-const zone = ref<HTMLElement | null>(null);
+const zone = useTemplateRef<HTMLElement>("zone");
 const { isOverDropZone, files } = useDropZone(zone, { accept: ["image/*"], multiple: true });
 </script>
 

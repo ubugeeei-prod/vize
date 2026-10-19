@@ -31,7 +31,7 @@ const props: InstanceType<typeof BackToTop>["$props"] = {
   focusTarget: "#main",
   target: null,
   threshold: 600,
-  "onScroll-top": (container: HTMLElement | Window) => container,
+  onScrollTop: (container: HTMLElement | Window) => container,
 };
 
 // @ts-expect-error behavior is a closed union.

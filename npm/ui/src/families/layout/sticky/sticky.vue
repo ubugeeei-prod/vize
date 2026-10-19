@@ -52,7 +52,7 @@ const {
 
 const emit = defineEmits<{
   /** Fired when the element becomes pinned or releases. */
-  "stuck-change": [stuck: boolean];
+  stuckChange: [stuck: boolean];
 }>();
 
 defineSlots<{
@@ -94,7 +94,7 @@ function containerEdges(target: HTMLElement): { readonly top: number; readonly b
 function setStuck(next: boolean): boolean {
   if (stuck.value !== next) {
     stuck.value = next;
-    emit("stuck-change", next);
+    emit("stuckChange", next);
   }
   return next;
 }

@@ -114,17 +114,17 @@ const {
 
 const emit = defineEmits<{
   /** Fired before automatic entry focus is applied. */
-  "open-auto-focus": [event: FocusScopeAutoFocusEvent];
+  openAutoFocus: [event: FocusScopeAutoFocusEvent];
   /** Fired before automatic focus restoration is applied. */
-  "close-auto-focus": [event: FocusScopeAutoFocusEvent];
+  closeAutoFocus: [event: FocusScopeAutoFocusEvent];
   /** Fired before Escape requests dismissal. */
-  "escape-key-down": [event: DismissableLayerEscapeKeyDownEvent];
+  escapeKeyDown: [event: DismissableLayerEscapeKeyDownEvent];
   /** Fired before an outside pointer-down requests dismissal. */
-  "pointer-down-outside": [event: DismissableLayerPointerDownOutsideEvent];
+  pointerDownOutside: [event: DismissableLayerPointerDownOutsideEvent];
   /** Fired before outside focus movement requests dismissal. */
-  "focus-outside": [event: DismissableLayerFocusOutsideEvent];
+  focusOutside: [event: DismissableLayerFocusOutsideEvent];
   /** Fired before outside pointer or focus interaction requests dismissal. */
-  "interact-outside": [event: DismissableLayerInteractOutsideEvent];
+  interactOutside: [event: DismissableLayerInteractOutsideEvent];
   /** Fired after an unprevented dismissal request, before the tour closes. */
   dismiss: [event: DismissableLayerDismissEvent];
 }>();
@@ -185,10 +185,10 @@ const dismissableLayer = createDismissableLayer({
   escapeKey: () => closeOnEscape,
   outsideFocus: () => closeOnFocusOutside,
   outsidePointerDown: () => closeOnPointerDownOutside,
-  onEscapeKeyDown: (event) => emit("escape-key-down", event),
-  onFocusOutside: (event) => emit("focus-outside", event),
-  onInteractOutside: (event) => emit("interact-outside", event),
-  onPointerDownOutside: (event) => emit("pointer-down-outside", event),
+  onEscapeKeyDown: (event) => emit("escapeKeyDown", event),
+  onFocusOutside: (event) => emit("focusOutside", event),
+  onInteractOutside: (event) => emit("interactOutside", event),
+  onPointerDownOutside: (event) => emit("pointerDownOutside", event),
   onDismiss: (event) => {
     emit("dismiss", event);
     context.dismiss(event.reason, event.originalEvent);
@@ -201,8 +201,8 @@ const focusScope = createFocusScope({
   restoreFocus: () => restoreFocus,
   initialFocus: () => element.value,
   fallbackFocus: () => element.value,
-  onMountAutoFocus: (event) => emit("open-auto-focus", event),
-  onUnmountAutoFocus: (event) => emit("close-auto-focus", event),
+  onMountAutoFocus: (event) => emit("openAutoFocus", event),
+  onUnmountAutoFocus: (event) => emit("closeAutoFocus", event),
 });
 
 function syncControllers(): void {

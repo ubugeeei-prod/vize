@@ -149,7 +149,7 @@ test("week view renders an APG slot grid, day columns, laid-out events, and all-
 test("slot keyboard navigation moves by slot, day, edges, and period, and activation emits a range", async () => {
   const handle = mountInteraction(SchedulerRoot, {
     props: { events, today, locale: "en-US", dayStartHour: 8, dayEndHour: 10, weekStartsOn: 1 },
-    record: ["slot-activate", "update:date"],
+    record: ["slotActivate", "update:date"],
   });
   const root = handle.root();
   slot(root, "2026-09-21", 480).focus();
@@ -169,7 +169,7 @@ test("slot keyboard navigation moves by slot, day, edges, and period, and activa
   await handle.press(slot(root, "2026-09-27", 480), "Enter");
   const activation = handle
     .recorded()
-    .filter((entry) => entry.event === "slot-activate")
+    .filter((entry) => entry.event === "slotActivate")
     .at(-1);
   const range = activation?.payload[0] as SchedulerSlotRange;
   assert.equal(formatIsoDateTime(range.start), "2026-09-27T08:00");
@@ -180,7 +180,7 @@ test("slot keyboard navigation moves by slot, day, edges, and period, and activa
 test("events activate and Alt+Arrow keys request typed moves and resizes", async () => {
   const handle = mountInteraction(SchedulerRoot, {
     props: { events, today, locale: "en-US", snapMinutes: 15 },
-    record: ["event-activate", "event-move", "event-resize"],
+    record: ["eventActivate", "eventMove", "eventResize"],
   });
   const root = handle.root();
   const review = eventElement(root, "review");
@@ -196,7 +196,7 @@ test("events activate and Alt+Arrow keys request typed moves and resizes", async
   assert.equal(formatIsoDateTime(nextDay.start), "2026-09-26T09:00");
   await key(review, "ArrowUp", { altKey: true, shiftKey: true });
   const resized = handle.recorded().at(-1);
-  assert.equal(resized?.event, "event-resize");
+  assert.equal(resized?.event, "eventResize");
   assert.equal(formatIsoDateTime(changeOf(resized).end), "2026-09-25T09:45");
   await handle.wrapper.setProps({ events: [meeting("review", 25, [9, 0], [9, 15])] });
   await key(eventElement(root, "review"), "ArrowUp", { altKey: true, shiftKey: true });
@@ -216,7 +216,7 @@ test("events activate and Alt+Arrow keys request typed moves and resizes", async
 test("pointer drags move and resize events through drop targets", async () => {
   const handle = mountInteraction(SchedulerRoot, {
     props: { events, today, locale: "en-US", view: "day", dayStartHour: 8, dayEndHour: 12 },
-    record: ["event-move", "event-resize"],
+    record: ["eventMove", "eventResize"],
   });
   const root = handle.root();
   const column = root.querySelector<HTMLElement>("[data-vize-ui='scheduler-day-column']");
@@ -241,7 +241,7 @@ test("pointer drags move and resize events through drop targets", async () => {
   document.dispatchEvent(pointer("pointerup", 10, 130));
   await nextTick();
   const moved = handle.recorded().at(-1);
-  assert.equal(moved?.event, "event-move");
+  assert.equal(moved?.event, "eventMove");
   assert.equal(formatIsoDateTime(changeOf(moved).start), "2026-09-25T10:00");
   assert.equal(formatIsoDateTime(changeOf(moved).end), "2026-09-25T11:00");
 
@@ -255,7 +255,7 @@ test("pointer drags move and resize events through drop targets", async () => {
   document.dispatchEvent(pointer("pointerup", 10, 185));
   await nextTick();
   const resized = handle.recorded().at(-1);
-  assert.equal(resized?.event, "event-resize");
+  assert.equal(resized?.event, "eventResize");
   assert.equal(formatIsoDateTime(changeOf(resized).end), "2026-09-25T11:30");
   handle.unmount();
 });
@@ -266,7 +266,7 @@ test("month view lays out week rows, overflow, keyboard day navigation, and day 
   );
   const handle = mountInteraction(SchedulerRoot, {
     props: { events: [...events, ...busy], today, locale: "en-US", view: "month", maxLanes: 2 },
-    record: ["day-activate", "event-move", "update:date"],
+    record: ["dayActivate", "eventMove", "update:date"],
   });
   const root = handle.root();
   assert.equal(
@@ -306,7 +306,7 @@ test("month view lays out week rows, overflow, keyboard day navigation, and day 
   await handle.press(document.activeElement as HTMLElement, "Enter");
   assert.equal(
     formatIsoDate(
-      handle.recorded().find((entry) => entry.event === "day-activate")?.payload[0] as PlainDate,
+      handle.recorded().find((entry) => entry.event === "dayActivate")?.payload[0] as PlainDate,
     ),
     "2026-10-02",
   );

@@ -21,7 +21,7 @@ const addressError: FormFieldError = {
 function mountFieldset(props: Record<string, unknown> = {}) {
   return mountInteraction(Fieldset, {
     props: { id: "address", name: "address", hasDescription: true, ...props },
-    record: ["invalid-change"],
+    record: ["invalidChange"],
     slots: {
       default: (state: FieldsetSlotState) => [
         h(FieldsetLegend, null, { default: () => "Shipping address" }),
@@ -69,7 +69,7 @@ test("matching form errors mark the group invalid and reference the error messag
   assert.equal(root.getAttribute("aria-describedby"), "address-description address-error");
   await nextTick();
   assert.deepEqual(handle.recorded(), [
-    { event: "invalid-change", payload: [true, [addressError]] },
+    { event: "invalidChange", payload: [true, [addressError]] },
   ]);
 
   await handle.wrapper.setProps({ hasErrorMessage: false });

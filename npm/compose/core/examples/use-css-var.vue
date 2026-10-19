@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { useTemplateRef } from "vue";
 import { useCssVar } from "@vizejs/composable/use-css-var";
 
-const card = ref<HTMLElement | null>(null);
+const card = useTemplateRef<HTMLElement>("card");
 const { value: accent } = useCssVar("--accent", card, { initialValue: "#42b883" });
 const colors = [
   { label: "Green", value: "#42b883" },

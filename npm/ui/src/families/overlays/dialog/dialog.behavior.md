@@ -2,7 +2,7 @@
 
 | Surface     | Contract                                                                                                                                                            |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| State       | `DialogRoot` supports uncontrolled `defaultOpen` and controlled `open` with `update:open` and `open-change` events.                                                 |
+| State       | `DialogRoot` supports uncontrolled `defaultOpen` and controlled `open` with `update:open` and `openChange` events.                                                  |
 | Trigger     | `DialogTrigger` renders a native button with `aria-haspopup="dialog"`, `aria-expanded`, and `aria-controls` wired to content.                                       |
 | Portal      | `DialogPortal` composes `Portal`, defers teleport until hydration, and can stay mounted with `forceMount`.                                                          |
 | Modal layer | `DialogContent` uses dismissable layer, focus scope, focus guards, inert outside, and scroll lock while open and modal.                                             |
@@ -12,26 +12,26 @@
 | SSR         | Server output is deterministic, renders in place through `Portal`, and activates document controllers only after mount.                                             |
 | Composition | `dialogContext` is exported so composed families (Drawer) provide the Dialog contract and reuse trigger, title, description, and close parts.                       |
 | Styling     | JavaScript remains headless. Optional `@vizejs/ui/component-dialog.css` styles the published `data-vize-ui`, `part`, and `data-state` hooks.                        |
-| Exit        | `exit-complete` fires once after an open dialog closes, including when CSS motion is absent or reduced. Reopening cancels the pending exit.                         |
+| Exit        | `exitComplete` fires once after an open dialog closes, including when CSS motion is absent or reduced. Reopening cancels the pending exit.                          |
 
-| Component                | State x input                           | Outcome                                                                                                             |
-| ------------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `dialog-root.vue`        | controlled or uncontrolled open request | Publishes `open`, `modal`, ids, and `data-state`; emits `update:open` and `open-change` only for distinct requests. |
-| `dialog-trigger.vue`     | enabled click                           | Emits `click`, then opens the root when the event was not canceled.                                                 |
-| `dialog-portal.vue`      | open or `forceMount`                    | Renders `Portal`; otherwise leaves only a hidden host.                                                              |
-| `dialog-overlay.vue`     | open or `forceMount`                    | Renders an inert-safe backdrop branch with `aria-hidden="true"`.                                                    |
-| `dialog-content.vue`     | open modal                              | Activates dismissal, focus containment, focus guards, inert outside, and scroll lock.                               |
-| `dialog-title.vue`       | no explicit id                          | Uses the root deterministic title id for `aria-labelledby`.                                                         |
-| `dialog-description.vue` | no explicit id                          | Uses the root deterministic description id for `aria-describedby`.                                                  |
-| `dialog-close.vue`       | enabled click                           | Emits `click`, then closes the root when the event was not canceled.                                                |
+| Component                | State x input                           | Outcome                                                                                                            |
+| ------------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `dialog-root.vue`        | controlled or uncontrolled open request | Publishes `open`, `modal`, ids, and `data-state`; emits `update:open` and `openChange` only for distinct requests. |
+| `dialog-trigger.vue`     | enabled click                           | Emits `click`, then opens the root when the event was not canceled.                                                |
+| `dialog-portal.vue`      | open or `forceMount`                    | Renders `Portal`; otherwise leaves only a hidden host.                                                             |
+| `dialog-overlay.vue`     | open or `forceMount`                    | Renders an inert-safe backdrop branch with `aria-hidden="true"`.                                                   |
+| `dialog-content.vue`     | open modal                              | Activates dismissal, focus containment, focus guards, inert outside, and scroll lock.                              |
+| `dialog-title.vue`       | no explicit id                          | Uses the root deterministic title id for `aria-labelledby`.                                                        |
+| `dialog-description.vue` | no explicit id                          | Uses the root deterministic description id for `aria-describedby`.                                                 |
+| `dialog-close.vue`       | enabled click                           | Emits `click`, then closes the root when the event was not canceled.                                               |
 
-| Event                  | Dispatch timing and payload                                                                                       |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `open-auto-focus`      | Before automatic entry focus; payload is a preventable focus-scope event.                                         |
-| `close-auto-focus`     | Before automatic focus restoration; payload is a preventable focus-scope event.                                   |
-| `escape-key-down`      | Before Escape dismissal; payload is the preventable dismissable-layer Escape event.                               |
-| `pointer-down-outside` | Before pointer dismissal; payload is the preventable outside pointer event.                                       |
-| `focus-outside`        | Before focus dismissal; payload is the preventable outside focus event.                                           |
-| `interact-outside`     | Before pointer or focus dismissal; payload is the preventable outside interaction event.                          |
-| `dismiss`              | After an unprevented dismissal request; payload records the reason, target, and native event.                     |
-| `exit-complete`        | After an open dialog's visual exit finishes or is skipped; no payload. Initial closed state does not dispatch it. |
+| Event                | Dispatch timing and payload                                                                                       |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `openAutoFocus`      | Before automatic entry focus; payload is a preventable focus-scope event.                                         |
+| `closeAutoFocus`     | Before automatic focus restoration; payload is a preventable focus-scope event.                                   |
+| `escapeKeyDown`      | Before Escape dismissal; payload is the preventable dismissable-layer Escape event.                               |
+| `pointerDownOutside` | Before pointer dismissal; payload is the preventable outside pointer event.                                       |
+| `focusOutside`       | Before focus dismissal; payload is the preventable outside focus event.                                           |
+| `interactOutside`    | Before pointer or focus dismissal; payload is the preventable outside interaction event.                          |
+| `dismiss`            | After an unprevented dismissal request; payload records the reason, target, and native event.                     |
+| `exitComplete`       | After an open dialog's visual exit finishes or is skipped; no payload. Initial closed state does not dispatch it. |

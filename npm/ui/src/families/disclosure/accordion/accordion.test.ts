@@ -117,7 +117,7 @@ test("single accordion switches items and locks the open item unless collapsible
   assert.equal(shipping.getAttribute("aria-disabled"), null);
   assert.equal(returns.getAttribute("aria-expanded"), "true");
   assert.deepEqual(handle.wrapper.emitted("update:modelValue"), [["returns"]]);
-  const change = handle.wrapper.emitted("value-change")?.[0];
+  const change = handle.wrapper.emitted("valueChange")?.[0];
   assert.deepEqual(change?.slice(0, 2), ["returns", "shipping"]);
   assert.ok(change?.[2] instanceof MouseEvent);
 
@@ -293,7 +293,7 @@ test("hidden until-found keeps closed panels searchable and beforematch expands 
   await nextTick();
   assert.equal(returns.hasAttribute("hidden"), false);
   assert.equal(trigger(handle, "Returns").getAttribute("aria-expanded"), "true");
-  const change = handle.wrapper.emitted("value-change")?.[0];
+  const change = handle.wrapper.emitted("valueChange")?.[0];
   assert.equal(change?.[0], "returns");
   assert.ok(change?.[2] instanceof Event);
 

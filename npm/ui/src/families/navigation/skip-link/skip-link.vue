@@ -13,22 +13,20 @@ import type {
   SkipLinkState,
 } from "./skip-link-types.ts";
 
-const DEFAULT_HREF = "#main" satisfies SkipLinkHref;
-
 const {
   id = undefined,
-  href = DEFAULT_HREF,
+  href = "#main",
   focusTarget: shouldFocusTarget = true,
 } = defineProps<SkipLinkProps>();
-
-defineSlots<{
-  /** Renders skip-link contents with the resolved hash target and focus state. */
-  default(props: SkipLinkSlotState): unknown;
-}>();
 
 const emit = defineEmits<{
   /** Fired when a valid skip link receives native pointer or keyboard activation. */
   activate: [event: MouseEvent, detail: SkipLinkActivation];
+}>();
+
+defineSlots<{
+  /** Renders skip-link contents with the resolved hash target and focus state. */
+  default(props: SkipLinkSlotState): unknown;
 }>();
 
 const element = useTemplateRef<HTMLAnchorElement>("element");

@@ -14,9 +14,6 @@ import type {
   SpinnerState,
 } from "./spinner-types.ts";
 
-const SPINNER_DEFAULT_MIN = 0;
-const SPINNER_DEFAULT_MAX = 100;
-
 const {
   as = "span",
   id = undefined,
@@ -24,8 +21,8 @@ const {
   visible = true,
   role = "status",
   value = null,
-  min = SPINNER_DEFAULT_MIN,
-  max = SPINNER_DEFAULT_MAX,
+  min = 0,
+  max = 100,
   atomic = true,
   ariaHidden = undefined,
   ariaLabel = undefined,
@@ -131,6 +128,10 @@ const {
    */
   readonly ariaValueText?: string;
 }>();
+
+// Fallbacks for non-finite bounds; they match the `min`/`max` defaults above.
+const SPINNER_DEFAULT_MIN = 0;
+const SPINNER_DEFAULT_MAX = 100;
 
 defineSlots<{
   /** Optional spinner contents. Receives current state for composition. */

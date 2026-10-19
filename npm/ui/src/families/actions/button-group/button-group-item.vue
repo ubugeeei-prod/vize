@@ -14,15 +14,6 @@ import type {
 type ButtonGroupKeyboardPhase = "keydown" | "keyup";
 type ButtonGroupKeyboardAction = "activate" | "prevent" | "ignore";
 
-function getButtonGroupKeyboardAction(
-  key: string,
-  phase: ButtonGroupKeyboardPhase,
-): ButtonGroupKeyboardAction {
-  if (key === "Enter") return phase === "keydown" ? "activate" : "ignore";
-  if (key === " ") return phase === "keydown" ? "prevent" : "activate";
-  return "ignore";
-}
-
 const {
   as = "button",
   native = undefined,
@@ -51,14 +42,23 @@ const {
   readonly ariaDescribedby?: string;
 }>();
 
-defineSlots<{
-  /** Renders item contents with current availability and navigation state. */
-  default(props: ButtonGroupItemSlotState): unknown;
-}>();
-
 const emit = defineEmits<{
   /** Fired after user activation reaches this enabled item. */
   press: [value: string, nativeEvent: MouseEvent];
+}>();
+
+function getButtonGroupKeyboardAction(
+  key: string,
+  phase: ButtonGroupKeyboardPhase,
+): ButtonGroupKeyboardAction {
+  if (key === "Enter") return phase === "keydown" ? "activate" : "ignore";
+  if (key === " ") return phase === "keydown" ? "prevent" : "activate";
+  return "ignore";
+}
+
+defineSlots<{
+  /** Renders item contents with current availability and navigation state. */
+  default(props: ButtonGroupItemSlotState): unknown;
 }>();
 
 const context = buttonGroupContext.use();

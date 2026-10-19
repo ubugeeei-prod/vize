@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { useId } from "vue";
 
-const model = defineModel<number>({ default: 0 });
-
 defineProps<{
   label: string;
   description?: string;
@@ -11,6 +9,8 @@ defineProps<{
   max?: number;
   step?: number;
 }>();
+
+const model = defineModel<number>({ default: 0 });
 
 const inputId = useId();
 </script>

@@ -25,7 +25,7 @@ function mountPicker(props: Record<string, unknown> = {}, record: readonly strin
     props: {
       pickerProps: { type: Object as PropType<Record<string, unknown>>, default: () => ({}) },
     },
-    emits: ["update:modelValue", "change", "update:open", "open-change"],
+    emits: ["update:modelValue", "change", "update:open", "openChange"],
     setup(componentProps, { emit, expose }) {
       const exposed: { root: DatePickerRootExpose | null } = { root: null };
       expose(exposed);
@@ -40,7 +40,7 @@ function mountPicker(props: Record<string, unknown> = {}, record: readonly strin
             "onUpdate:modelValue": (value: PlainDate | null) => emit("update:modelValue", value),
             onChange: (...args: unknown[]) => emit("change", ...args),
             "onUpdate:open": (value: boolean) => emit("update:open", value),
-            "onOpen-change": (...args: unknown[]) => emit("open-change", ...args),
+            onOpenChange: (...args: unknown[]) => emit("openChange", ...args),
           },
           () => [
             h(DatePickerField, { ariaLabel: "Departure" }, () =>
@@ -76,7 +76,7 @@ function day(iso: string): HTMLButtonElement {
 test("renders a date field with a trigger that opens a calendar dialog focused on the value", async () => {
   const handle = mountPicker({ defaultValue: createPlainDate(2026, 10, 12), name: "departure" }, [
     "update:open",
-    "open-change",
+    "openChange",
   ]);
   const root = handle.root();
   assert.equal(root.getAttribute("data-vize-ui"), "date-picker");
@@ -100,7 +100,7 @@ test("renders a date field with a trigger that opens a calendar dialog focused o
     handle.recorded().map((entry) => [entry.event, entry.payload[0]]),
     [
       ["update:open", true],
-      ["open-change", true],
+      ["openChange", true],
     ],
   );
   handle.unmount();

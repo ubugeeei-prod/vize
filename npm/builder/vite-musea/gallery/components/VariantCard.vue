@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, useTemplateRef } from "vue";
 import { mdiContentCopy, mdiCheck, mdiCodeTags, mdiFullscreen, mdiOpenInNew } from "@mdi/js";
 import type { ArtVariant } from "../../src/types/index.js";
 import { getPreviewUrl, vMuseaGlobals, withGlobalsQuery } from "../api";
@@ -40,7 +40,7 @@ async function copyTemplate() {
 
 const previewUrl = computed(() => getPreviewUrl(props.artPath, props.variant.name));
 
-const iframeRef = ref<HTMLIFrameElement | null>(null);
+const iframeRef = useTemplateRef<HTMLIFrameElement>("iframeRef");
 const iframeReady = ref(false);
 const showSource = ref(false);
 

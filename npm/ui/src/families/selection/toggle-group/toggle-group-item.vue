@@ -14,15 +14,6 @@ import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/
 type ToggleGroupKeyboardPhase = "keydown" | "keyup";
 type ToggleGroupKeyboardAction = "activate" | "prevent" | "ignore";
 
-function getToggleGroupKeyboardAction(
-  key: string,
-  phase: ToggleGroupKeyboardPhase,
-): ToggleGroupKeyboardAction {
-  if (key === "Enter") return phase === "keydown" ? "activate" : "ignore";
-  if (key === " ") return phase === "keydown" ? "prevent" : "activate";
-  return "ignore";
-}
-
 const {
   as = "button",
   native = undefined,
@@ -51,14 +42,23 @@ const {
   readonly ariaDescribedby?: string;
 }>();
 
-defineSlots<{
-  /** Renders item contents with current pressed and availability state. */
-  default(props: ToggleGroupItemSlotState): unknown;
-}>();
-
 const emit = defineEmits<{
   /** Fired after user activation requests this item to toggle. */
   press: [value: string, pressed: boolean, nativeEvent: MouseEvent];
+}>();
+
+function getToggleGroupKeyboardAction(
+  key: string,
+  phase: ToggleGroupKeyboardPhase,
+): ToggleGroupKeyboardAction {
+  if (key === "Enter") return phase === "keydown" ? "activate" : "ignore";
+  if (key === " ") return phase === "keydown" ? "prevent" : "activate";
+  return "ignore";
+}
+
+defineSlots<{
+  /** Renders item contents with current pressed and availability state. */
+  default(props: ToggleGroupItemSlotState): unknown;
 }>();
 
 const context = toggleGroupContext.use();

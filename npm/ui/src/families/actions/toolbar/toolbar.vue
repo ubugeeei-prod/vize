@@ -33,12 +33,12 @@ const {
   ariaDescribedby = undefined,
 } = defineProps<ToolbarProps>();
 
+const emit = defineEmits<ToolbarEmits>();
+
 defineSlots<{
   /** Renders grouped action controls with toolbar navigation state. */
   default(props: ToolbarSlotState): unknown;
 }>();
-
-const emit = defineEmits<ToolbarEmits>();
 
 const element = useTemplateRef<PrimitiveElement>("element");
 const items = new Set<ToolbarItemRegistration>();

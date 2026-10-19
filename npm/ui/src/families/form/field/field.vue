@@ -75,7 +75,7 @@ const {
 
 const emit = defineEmits<{
   /** Fired after the derived invalid boolean changes. */
-  "invalid-change": [invalid: boolean, errors: readonly FormFieldError[]];
+  invalidChange: [invalid: boolean, errors: readonly FormFieldError[]];
 }>();
 
 defineSlots<{
@@ -120,7 +120,7 @@ const context = fieldContext.provide({
 });
 
 watch(isInvalid, (next, previous) => {
-  if (next !== previous) emit("invalid-change", next, formField.errors.value);
+  if (next !== previous) emit("invalidChange", next, formField.errors.value);
 });
 
 type FieldRootSetupExpose = Omit<

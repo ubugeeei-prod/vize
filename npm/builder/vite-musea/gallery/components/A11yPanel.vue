@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, useTemplateRef } from "vue";
 import {
   mdiPlay,
   mdiLoading,
@@ -21,7 +21,7 @@ const props = defineProps<{
 
 const { isKeyRunning, init, runA11y, getResult } = useA11y();
 
-const iframeRef = ref<HTMLIFrameElement | null>(null);
+const iframeRef = useTemplateRef<HTMLIFrameElement>("iframeRef");
 const hasRun = ref(false);
 const expandedViolation = ref<string | null>(null);
 

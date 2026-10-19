@@ -54,14 +54,14 @@ const {
   readonly ariaDescribedby?: string;
 }>();
 
-defineSlots<{
-  /** Compound ButtonGroup items. Receives grouping, availability, and navigation state. */
-  default(props: ButtonGroupSlotState): unknown;
-}>();
-
 const emit = defineEmits<{
   /** Fired after an enabled item is activated by pointer or keyboard. */
   press: [value: string, nativeEvent: MouseEvent];
+}>();
+
+defineSlots<{
+  /** Compound ButtonGroup items. Receives grouping, availability, and navigation state. */
+  default(props: ButtonGroupSlotState): unknown;
 }>();
 
 const element = useTemplateRef<PrimitiveElement>("element");

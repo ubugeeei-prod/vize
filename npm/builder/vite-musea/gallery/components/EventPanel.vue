@@ -16,8 +16,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "clear"): void;
   (e: "filter", type: string): void;
-  (e: "toggle-pause"): void;
-  (e: "toggle-panel"): void;
+  (e: "togglePause"): void;
+  (e: "togglePanel"): void;
 }>();
 
 const selectedEvent = ref<CapturedEvent | null>(null);
@@ -69,7 +69,7 @@ const getEventTypeColor = (type: string) => {
 
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value;
-  emit("toggle-panel");
+  emit("togglePanel");
 };
 
 function changeFilter(event: Event) {
@@ -78,7 +78,7 @@ function changeFilter(event: Event) {
 }
 
 function togglePause() {
-  emit("toggle-pause");
+  emit("togglePause");
 }
 
 function clearEvents() {

@@ -28,7 +28,7 @@ const props: InstanceType<typeof RangeCalendarRoot>["$props"] = {
   startName: "from",
   endName: "to",
   "onUpdate:modelValue": (value: DateRange | null) => value,
-  "onAnchor-change": (anchor: PlainDate | null) => anchor,
+  onAnchorChange: (anchor: PlainDate | null) => anchor,
 };
 
 root.cancel();

@@ -24,7 +24,7 @@ const props: InstanceType<typeof AppBar>["$props"] = {
   hideOnScroll: true,
   hideThreshold: 80,
   target: "#main",
-  "onVisibility-change": (hidden: boolean) => {
+  onVisibilityChange: (hidden: boolean) => {
     void hidden;
   },
 };

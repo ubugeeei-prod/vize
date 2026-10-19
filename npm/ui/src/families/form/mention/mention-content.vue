@@ -115,10 +115,10 @@ const {
 
 const emit = defineEmits<{
   /** Fired before Escape closes the popup. Call `preventDefault()` to keep it open. */
-  "escape-key-down": [event: DismissableLayerEscapeKeyDownEvent];
+  escapeKeyDown: [event: DismissableLayerEscapeKeyDownEvent];
 
   /** Fired before an outside pointer-down closes the popup. Call `preventDefault()` to keep it open. */
-  "pointer-down-outside": [event: DismissableLayerPointerDownOutsideEvent];
+  pointerDownOutside: [event: DismissableLayerPointerDownOutsideEvent];
 
   /** Fired after an unprevented dismissal request closes the popup. */
   dismiss: [event: DismissableLayerDismissEvent];
@@ -146,8 +146,8 @@ const layer = useDismissableLayer({
   root: element,
   branches: () => (context.fieldElement.value === null ? [] : [context.fieldElement.value]),
   enabled: () => context.open.value,
-  onEscapeKeyDown: (event) => emit("escape-key-down", event),
-  onPointerDownOutside: (event) => emit("pointer-down-outside", event),
+  onEscapeKeyDown: (event) => emit("escapeKeyDown", event),
+  onPointerDownOutside: (event) => emit("pointerDownOutside", event),
   onDismiss: (event) => {
     emit("dismiss", event);
     context.setOpen(false, event.originalEvent);

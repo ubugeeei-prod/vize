@@ -64,16 +64,16 @@ const {
   readonly ariaDescribedby?: string;
 }>();
 
-defineSlots<{
-  /** Compound ToggleGroup items. Receives normalized selection and navigation state. */
-  default(props: ToggleGroupSlotState): unknown;
-}>();
-
 const emit = defineEmits<{
   /** Fired when the selected value requests a new controlled value. */
   "update:modelValue": [value: ToggleGroupValue];
   /** Fired after user activation requests a distinct group value. */
   change: [value: ToggleGroupValue, previous: ToggleGroupValue, nativeEvent: MouseEvent];
+}>();
+
+defineSlots<{
+  /** Compound ToggleGroup items. Receives normalized selection and navigation state. */
+  default(props: ToggleGroupSlotState): unknown;
 }>();
 
 const element = useTemplateRef<PrimitiveElement>("element");

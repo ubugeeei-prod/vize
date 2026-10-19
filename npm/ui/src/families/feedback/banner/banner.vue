@@ -32,6 +32,15 @@ const {
   ariaLabelledby = undefined,
   ariaDescribedby = undefined,
 } = defineProps<BannerProps>();
+
+const emit = defineEmits<{
+  /** Request that the controlled `open` prop moves to a new value. */
+  "update:open": [open: boolean];
+
+  /** Fired after the dismiss control is activated. */
+  dismiss: [nativeEvent: MouseEvent];
+}>();
+
 const slots = defineSlots<{
   /** Render the primary banner body. */
   default?(props: BannerSlotState): unknown;
@@ -45,14 +54,6 @@ const slots = defineSlots<{
   /** Render trailing actions. */
   actions?(props: BannerSlotState): unknown;
 }>();
-const emit = defineEmits<{
-  /** Request that the controlled `open` prop moves to a new value. */
-  "update:open": [open: boolean];
-
-  /** Fired after the dismiss control is activated. */
-  dismiss: [nativeEvent: MouseEvent];
-}>();
-
 const element = useTemplateRef<BannerElement>("element");
 const rootId = useDeterministicId({ id: () => id, hint: "banner" });
 const titleId = computed(() => deriveDeterministicId(rootId.value, "title"));

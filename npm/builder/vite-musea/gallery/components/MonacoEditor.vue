@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, computed } from "vue";
+import { onMounted, onBeforeUnmount, watch, computed, useTemplateRef } from "vue";
 import type * as Monaco from "monaco-editor";
 import { useTheme } from "../composables/useTheme";
 import EditorWorker from "monaco-editor/editor/editor.worker?worker";
@@ -23,7 +23,7 @@ const emit = defineEmits<{
 
 const { resolvedTheme } = useTheme();
 
-const containerRef = ref<HTMLDivElement | null>(null);
+const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
 let editor: Monaco.editor.IStandaloneCodeEditor | null = null;
 let monaco: typeof Monaco | null = null;
 let completionDisposable: Monaco.IDisposable | null = null;

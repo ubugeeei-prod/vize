@@ -43,9 +43,6 @@ import type {
 
 type StepValue = TStep["value"];
 
-const TARGET_ATTRIBUTE = "data-vize-tour-target";
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-
 const {
   steps,
   id = undefined,
@@ -151,7 +148,7 @@ const {
 
   /**
    * Hook run before any step becomes current, before the step's own `beforeEnter`. Receives the
-   * inferred step type. Resolving `false` cancels; rejecting emits `navigation-error`. While it is
+   * inferred step type. Resolving `false` cancels; rejecting emits `navigationError`. While it is
    * pending the root publishes `data-pending` and TourPrev/TourNext are disabled; a newer request
    * aborts the pending one through `signal`.
    *
@@ -179,13 +176,13 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 
   /** Fired after any distinct open-state request. */
-  "open-change": [value: boolean, previous: boolean, nativeEvent: Event | null];
+  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
 
   /** Fired when the tour requests a controlled step value. */
   "update:step": [value: StepValue];
 
   /** Fired after any distinct step request. */
-  "step-change": [value: StepValue, previous: StepValue | null, nativeEvent: Event | null];
+  stepChange: [value: StepValue, previous: StepValue | null, nativeEvent: Event | null];
 
   /** Fired when TourNext is activated on the last step or `complete()` is called. */
   complete: [nativeEvent: Event | null];
@@ -194,11 +191,14 @@ const emit = defineEmits<{
   dismiss: [reason: TourDismissReason, nativeEvent: Event | null];
 
   /** Fired when a `beforeEnter` hook resolves `false`; the current step is kept. */
-  "navigation-cancel": [value: StepValue, from: StepValue | null];
+  navigationCancel: [value: StepValue, from: StepValue | null];
 
   /** Fired when a `beforeEnter` hook throws or rejects; the current step is kept. */
-  "navigation-error": [error: unknown, value: StepValue, from: StepValue | null];
+  navigationError: [error: unknown, value: StepValue, from: StepValue | null];
 }>();
+
+const TARGET_ATTRIBUTE = "data-vize-tour-target";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 defineSlots<{
   /** Compound Tour children. Receives the inferred current step and progress. */
@@ -316,7 +316,7 @@ function commitOpen(value: boolean, nativeEvent: Event | null): boolean {
   const changed = openState.set(value);
   if (changed || previous !== value) {
     emit("update:open", value);
-    emit("open-change", value, previous, nativeEvent);
+    emit("openChange", value, previous, nativeEvent);
     return true;
   }
   return false;
@@ -333,7 +333,7 @@ function commitStep(value: StepValue, nativeEvent: Event | null): boolean {
   if (previous === value) return false;
   stepState.set(value);
   emit("update:step", value);
-  emit("step-change", value, previous, nativeEvent);
+  emit("stepChange", value, previous, nativeEvent);
   if (readOpen()) leave(left, readCurrentStep());
   return true;
 }
@@ -382,8 +382,8 @@ function requestStep(candidate: TStep, opening: boolean, nativeEvent: Event | nu
       pending.value = false;
     }
     if (outcome === "enter") return commit();
-    if (outcome === "cancel") emit("navigation-cancel", candidate.value, fromValue);
-    else emit("navigation-error", outcome.error, candidate.value, fromValue);
+    if (outcome === "cancel") emit("navigationCancel", candidate.value, fromValue);
+    else emit("navigationError", outcome.error, candidate.value, fromValue);
     return false;
   };
   const result = evaluateHooks(hooks, {

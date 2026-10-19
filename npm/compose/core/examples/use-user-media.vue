@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
+import { computed, watchEffect, useTemplateRef } from "vue";
 import { useMounted } from "@vizejs/composable/use-mounted";
 import { useUserMedia } from "@vizejs/composable/use-user-media";
 
 const mounted = useMounted();
-const camera = ref<HTMLVideoElement | null>(null);
+const camera = useTemplateRef<HTMLVideoElement>("camera");
 const { supported, stream, status, start, stop } = useUserMedia({ constraints: { video: true } });
 const live = computed(() => stream.value !== undefined);
 watchEffect(() => {

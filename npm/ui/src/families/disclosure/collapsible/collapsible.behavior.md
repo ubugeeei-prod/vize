@@ -4,7 +4,7 @@ Normative behavior for the `@vizejs/ui/collapsible` disclosure primitive.
 
 | Area                 | Input                                                                        | Observable outcome                                                                                                                                     | Evidence                         |
 | -------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
-| State                | `collapsible-root.vue` receives `defaultOpen` without `open`                 | root owns uncontrolled state, trigger activation toggles content visibility, and `update:open` plus `open-change` report distinct requests             | `collapsible.test.ts`            |
+| State                | `collapsible-root.vue` receives `defaultOpen` without `open`                 | root owns uncontrolled state, trigger activation toggles content visibility, and `update:open` plus `openChange` report distinct requests              | `collapsible.test.ts`            |
 | Controlled state     | `open` is provided                                                           | trigger activation emits the requested value while rendered state follows the prop until the parent accepts it                                         | `collapsible.test.ts`            |
 | Disclosure semantics | `collapsible-trigger.vue` and `collapsible-content.vue` render inside a root | trigger is a native `button` with `aria-expanded` and `aria-controls`; content owns the controlled id, default `region` role, and trigger-backed label | `collapsible.test.ts`            |
 | Native keyboard      | `collapsible-trigger.vue` receives Enter or Space                            | the native button activation path toggles once per key press with no custom roving focus or Accordion navigation                                       | `collapsible.test.ts`            |
@@ -47,7 +47,7 @@ Normative behavior for the `@vizejs/ui/collapsible` disclosure primitive.
 | Event         | Payload                                                           | Contract                                                                                        |
 | ------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `update:open` | `[value: boolean]`                                                | Emitted by `CollapsibleRoot` for every distinct requested open value.                           |
-| `open-change` | `[value: boolean, previous: boolean, nativeEvent: Event \| null]` | Emitted by `CollapsibleRoot` after a distinct request.                                          |
+| `openChange`  | `[value: boolean, previous: boolean, nativeEvent: Event \| null]` | Emitted by `CollapsibleRoot` after a distinct request.                                          |
 | `click`       | `[nativeEvent: MouseEvent]`                                       | Emitted by `CollapsibleTrigger` before requesting `toggle`; prevent it to keep state unchanged. |
 
 ## Public Slots

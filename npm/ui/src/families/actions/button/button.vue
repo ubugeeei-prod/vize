@@ -48,15 +48,6 @@ const {
   readonly loading?: boolean;
 }>();
 
-defineSlots<{
-  /** Renders the button contents with current availability state. */
-  default(props: {
-    readonly disabled: boolean;
-    readonly loading: boolean;
-    readonly unavailable: boolean;
-  }): unknown;
-}>();
-
 const emit = defineEmits<{
   /**
    * Fired when pointer or keyboard activation reaches the rendered control.
@@ -64,6 +55,15 @@ const emit = defineEmits<{
    * Carries the resulting `MouseEvent`.
    */
   press: [event: MouseEvent];
+}>();
+
+defineSlots<{
+  /** Renders the button contents with current availability state. */
+  default(props: {
+    readonly disabled: boolean;
+    readonly loading: boolean;
+    readonly unavailable: boolean;
+  }): unknown;
 }>();
 
 const element = useTemplateRef<PrimitiveElement>("element");

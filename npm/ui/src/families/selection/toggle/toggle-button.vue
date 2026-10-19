@@ -8,12 +8,6 @@ import type { ToggleExpose, ToggleSlotState } from "./toggle-types.ts";
 type ToggleKeyboardPhase = "keydown" | "keyup";
 type ToggleKeyboardAction = "activate" | "prevent" | "ignore";
 
-function getToggleKeyboardAction(key: string, phase: ToggleKeyboardPhase): ToggleKeyboardAction {
-  if (key === "Enter") return phase === "keydown" ? "activate" : "ignore";
-  if (key === " ") return phase === "keydown" ? "prevent" : "activate";
-  return "ignore";
-}
-
 const {
   as = "button",
   native = undefined,
@@ -73,16 +67,22 @@ const {
   readonly ariaLabel?: string;
 }>();
 
-defineSlots<{
-  /** Renders the toggle contents with current pressed and availability state. */
-  default(props: ToggleSlotState): unknown;
-}>();
-
 const emit = defineEmits<{
   /** Fired when the pressed state requests a new controlled boolean value. */
   "update:modelValue": [value: boolean];
   /** Fired after user interaction requests the next pressed value. */
   change: [value: boolean, nativeEvent: MouseEvent];
+}>();
+
+function getToggleKeyboardAction(key: string, phase: ToggleKeyboardPhase): ToggleKeyboardAction {
+  if (key === "Enter") return phase === "keydown" ? "activate" : "ignore";
+  if (key === " ") return phase === "keydown" ? "prevent" : "activate";
+  return "ignore";
+}
+
+defineSlots<{
+  /** Renders the toggle contents with current pressed and availability state. */
+  default(props: ToggleSlotState): unknown;
 }>();
 
 const element = useTemplateRef<PrimitiveElement>("element");

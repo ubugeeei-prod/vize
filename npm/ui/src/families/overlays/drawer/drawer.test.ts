@@ -277,7 +277,7 @@ test("dragging publishes offsets and releases to the nearest snap point", async 
   const handle = mountDrawer({
     defaultOpen: true,
     snapPoints: [0.5, 1],
-    "onDrag-end": (event: DrawerDragEndEvent) => ends.push(event),
+    onDragEnd: (event: DrawerDragEndEvent) => ends.push(event),
   });
   await settle();
   const dialog = dialogOf(handle.root());
@@ -303,7 +303,7 @@ test("dragging publishes offsets and releases to the nearest snap point", async 
   assert.deepEqual(handle.wrapper.emitted("update:activeSnapPoint"), [[1]]);
   assert.equal(ends[0]?.outcome, "snap");
   assert.equal(ends[0]?.snapPoint, 1);
-  assert.equal(handle.wrapper.emitted("drag-start")?.length, 1);
+  assert.equal(handle.wrapper.emitted("dragStart")?.length, 1);
   handle.unmount();
 });
 
@@ -333,7 +333,7 @@ test("non-dismissible drawers never close from drags and pointercancel restores 
   const handle = mountDrawer({
     defaultOpen: true,
     dismissible: false,
-    "onDrag-end": (event: DrawerDragEndEvent) => ends.push(event),
+    onDragEnd: (event: DrawerDragEndEvent) => ends.push(event),
   });
   await settle();
   const dialog = dialogOf(handle.root());

@@ -49,9 +49,9 @@ const emit = defineEmits<{
   /** Fired when the Dialog requests a controlled open value. */
   "update:open": [value: boolean];
   /** Fired after any distinct open-state request. */
-  "open-change": [value: boolean, previous: boolean, nativeEvent: Event | null];
+  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
   /** Fired once when an open dialog has fully closed, including without exit motion. */
-  "exit-complete": [];
+  exitComplete: [];
 }>();
 
 defineSlots<{
@@ -94,7 +94,7 @@ function clearExit(): void {
 function finishExit(): void {
   if (!exitPending) return;
   clearExit();
-  emit("exit-complete");
+  emit("exitComplete");
 }
 
 function exitDuration(element: HTMLElement): number {
@@ -173,7 +173,7 @@ function setOpen(value: boolean, nativeEvent: Event | null = null): boolean {
   const changed = openState.set(value);
   if (changed) {
     emit("update:open", value);
-    emit("open-change", value, previous, nativeEvent);
+    emit("openChange", value, previous, nativeEvent);
   }
   return changed;
 }

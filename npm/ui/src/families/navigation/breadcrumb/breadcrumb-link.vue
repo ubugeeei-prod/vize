@@ -22,8 +22,6 @@ import type {
 } from "./breadcrumb-types.ts";
 import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
 
-const UNSAFE_HREF = /^(?:data|javascript|vbscript):/i;
-
 const {
   as = "a",
   current = false,
@@ -50,6 +48,8 @@ const {
    */
   readonly href?: string;
 }>();
+
+const UNSAFE_HREF = /^(?:data|javascript|vbscript):/i;
 
 defineSlots<{
   /** Renders link content with resolved current-route state. */

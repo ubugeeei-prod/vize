@@ -73,11 +73,6 @@ const {
   readonly ariaInvalid?: SearchFieldAriaInvalid;
 }>();
 
-defineSlots<{
-  /** Replaces the default clear button contents with availability state. */
-  clear?(props: SearchFieldClearSlotState): unknown;
-}>();
-
 const emit = defineEmits<{
   /** Fired when the value requests a new controlled string. */
   "update:modelValue": [value: string];
@@ -93,6 +88,11 @@ const emit = defineEmits<{
   input: [value: string, nativeEvent: Event];
   /** Fired after a native search event with the committed search string. */
   search: [value: string, nativeEvent: Event];
+}>();
+
+defineSlots<{
+  /** Replaces the default clear button contents with availability state. */
+  clear?(props: SearchFieldClearSlotState): unknown;
 }>();
 
 const element = useTemplateRef<HTMLInputElement>("element");

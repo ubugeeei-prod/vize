@@ -47,7 +47,7 @@ MentionRoot({
     type _Selected = Expect<Equal<typeof user, User>>;
     type _Trigger = Expect<Equal<typeof trigger, MentionTrigger>>;
   },
-  "onQuery-change": (query, trigger) => {
+  onQueryChange: (query, trigger) => {
     type _Query = Expect<Equal<typeof query, string | null>>;
     type _QueryTrigger = Expect<Equal<typeof trigger, MentionTrigger | null>>;
   },

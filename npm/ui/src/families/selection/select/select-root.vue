@@ -75,7 +75,7 @@ const emit = defineEmits<{
   "update:open": [open: boolean];
 
   /** Fired after any distinct open-state request with the next state, previous state, and triggering event. */
-  "open-change": [open: boolean, previous: boolean, nativeEvent: Event | null];
+  openChange: [open: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{
@@ -222,7 +222,7 @@ function setOpen(value: boolean, nativeEvent: Event | null = null): boolean {
   const changed = openState.set(next);
   if (changed || previous !== next) {
     emit("update:open", next);
-    emit("open-change", next, previous, nativeEvent);
+    emit("openChange", next, previous, nativeEvent);
   }
   return changed || previous !== next;
 }

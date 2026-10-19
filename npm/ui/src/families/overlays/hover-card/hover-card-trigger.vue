@@ -8,9 +8,6 @@ import type { Point } from "../../interaction/pointer-grace/pointer-grace.ts";
 import { hoverCardContext } from "./hover-card-context.ts";
 import type { HoverCardSlotState, HoverCardTriggerExpose } from "./hover-card-types.ts";
 
-/** Movement in CSS pixels that cancels a pending touch long-press. */
-const touchSlop = 10;
-
 const { as = "a", disabled = false } = defineProps<{
   /**
    * Element or component rendered as the trigger. Hover cards usually enhance
@@ -28,6 +25,9 @@ const { as = "a", disabled = false } = defineProps<{
    */
   readonly disabled?: boolean;
 }>();
+
+/** Movement in CSS pixels that cancels a pending touch long-press. */
+const touchSlop = 10;
 
 defineSlots<{
   /** Trigger contents. Receives the current HoverCard state. */

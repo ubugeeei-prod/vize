@@ -86,7 +86,7 @@ const {
 
 const emit = defineEmits<{
   /** Fired before Escape requests dismissal. */
-  "escape-key-down": [event: DismissableLayerEscapeKeyDownEvent];
+  escapeKeyDown: [event: DismissableLayerEscapeKeyDownEvent];
   /** Fired after an unprevented dismissal request. */
   dismiss: [event: DismissableLayerDismissEvent];
 }>();
@@ -128,7 +128,7 @@ const dismissableLayer = createDismissableLayer({
   escapeKey: () => closeOnEscape,
   outsideFocus: false,
   outsidePointerDown: false,
-  onEscapeKeyDown: (event) => emit("escape-key-down", event),
+  onEscapeKeyDown: (event) => emit("escapeKeyDown", event),
   onDismiss: (event) => {
     emit("dismiss", event);
     context.close(event.originalEvent);

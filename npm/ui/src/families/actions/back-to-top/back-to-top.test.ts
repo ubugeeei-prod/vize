@@ -70,7 +70,7 @@ test("activation scrolls smoothly to the top and focuses the container", async (
   assert.deepEqual(requests, [{ behavior: "smooth", top: 0 }]);
   assert.ok(handle.activeElement() === element, "focus moves to the top of the container");
   assert.equal(element.getAttribute("tabindex"), "-1");
-  assert.equal(handle.wrapper.emitted("scroll-top")?.[0]?.[0], element);
+  assert.equal(handle.wrapper.emitted("scrollTop")?.[0]?.[0], element);
   await nextTick();
   assert.equal(button.hidden, true, "the button hides once it loses focus at the top");
 
@@ -127,7 +127,7 @@ test("reduced motion downgrades smooth scrolling and click is preventable", asyn
     await scrollTo(element, 40);
     await prevented.click(prevented.root());
     assert.equal(requests.length, 1);
-    assert.equal(prevented.wrapper.emitted("scroll-top"), undefined);
+    assert.equal(prevented.wrapper.emitted("scrollTop"), undefined);
     prevented.unmount();
   } finally {
     Object.defineProperty(window, "matchMedia", { configurable: true, value: originalMatchMedia });

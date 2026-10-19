@@ -248,7 +248,7 @@ const emit = defineEmits<{
   /** Fired when rows expand or collapse. */
   "update:expanded": [value: readonly string[]];
   /** Fired when a cell edit commits; update `rows` to apply it. */
-  "cell-edit": [event: DataGridCellEditEvent<Row>];
+  cellEdit: [event: DataGridCellEditEvent<Row>];
 }>();
 
 defineSlots<{
@@ -325,7 +325,7 @@ const grid = useDataGrid<Row, Column>({
   },
   defaultState: () => defaultState,
   onStateChange: emitState,
-  onCellEdit: (event) => emit("cell-edit", event),
+  onCellEdit: (event) => emit("cellEdit", event),
 });
 
 function initialRect(): { readonly width: number; readonly height: number } {

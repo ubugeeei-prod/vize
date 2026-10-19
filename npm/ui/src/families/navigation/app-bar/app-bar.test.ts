@@ -23,7 +23,7 @@ async function scrollWindow(offset: number): Promise<void> {
 function mountBar(props: Record<string, unknown> = {}) {
   return mountInteraction(AppBar, {
     props,
-    record: ["visibility-change"],
+    record: ["visibilityChange"],
     slots: {
       start: () => h("button", { type: "button", "aria-label": "Open menu" }, "≡"),
       default: () => h("span", { id: "app-title" }, "Inbox"),

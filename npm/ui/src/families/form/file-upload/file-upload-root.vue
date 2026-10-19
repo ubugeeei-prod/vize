@@ -29,8 +29,6 @@ import {
   validateFiles,
 } from "./file-upload-validation.ts";
 
-const EMPTY: readonly File[] = Object.freeze([]);
-
 const {
   id = undefined,
   modelValue = undefined,
@@ -55,6 +53,8 @@ const {
 } = defineProps<FileUploadRootProps>();
 
 const emit = defineEmits<FileUploadRootEmits>();
+
+const EMPTY: readonly File[] = Object.freeze([]);
 
 defineSlots<{
   /** Compound FileUpload parts. Receives the file list, availability, and actions. */

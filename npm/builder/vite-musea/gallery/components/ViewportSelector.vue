@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, useTemplateRef } from "vue";
 import { useAddons, VIEWPORT_PRESETS } from "../composables/useAddons";
 
 const { viewport, viewportRotated, setViewport, rotateViewport } = useAddons();
 const showDropdown = ref(false);
-const selectorRef = ref<HTMLElement | null>(null);
+const selectorRef = useTemplateRef<HTMLElement>("selectorRef");
 
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value;

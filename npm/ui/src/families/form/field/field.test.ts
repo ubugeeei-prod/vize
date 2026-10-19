@@ -80,7 +80,7 @@ test("renders normalized form errors and emits invalid changes", async () => {
       id: "email",
       name: "email",
     },
-    record: ["invalid-change"],
+    record: ["invalidChange"],
     slots: {
       default: ({ fieldProps }: FieldRootSlotState) => [
         h(FieldLabel, null, { default: () => "Email" }),
@@ -102,14 +102,14 @@ test("renders normalized form errors and emits invalid changes", async () => {
   assert.equal(control.getAttribute("aria-describedby"), "email-description email-error");
   assert.equal(error?.id, "email-error");
   assert.equal(error?.textContent, "Enter an email");
-  assert.deepEqual(handle.recorded(), [{ event: "invalid-change", payload: [true, [emailError]] }]);
+  assert.deepEqual(handle.recorded(), [{ event: "invalidChange", payload: [true, [emailError]] }]);
 
   await handle.wrapper.setProps({ errors: [] });
   await nextTick();
   assert.equal(control.getAttribute("aria-invalid"), null);
   assert.equal(handle.root().querySelector('[data-vize-ui="field-error-message"]'), null);
   assert.equal(handle.root().querySelector('[data-vize-ui="field-error-message-host"]'), null);
-  assert.equal(handle.recorded()[1]?.event, "invalid-change");
+  assert.equal(handle.recorded()[1]?.event, "invalidChange");
   assert.deepEqual(handle.recorded()[1]?.payload, [false, []]);
   handle.unmount();
 });

@@ -41,12 +41,12 @@ const {
   ariaInvalid = false,
 } = defineProps<NativeSelectProps>();
 
+const emit = defineEmits<NativeSelectEmits>();
+
 defineSlots<{
   /** Renders optional custom option content with the current NativeSelect state. */
   default?(props: NativeSelectSlotState): unknown;
 }>();
-
-const emit = defineEmits<NativeSelectEmits>();
 
 const element = useTemplateRef<HTMLSelectElement>("element");
 const controlId = useDeterministicId({ id: () => id, hint: "native-select" });

@@ -28,6 +28,6 @@ named test in `split-button.test.ts` or `split-button-ssr.test.ts`.
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | parts  | `root` (group), `action` (primary button), `trigger` (menu button); menu parts are documented in the Menu contract                                  |
 | data   | `data-vize-ui` (`split-button`, `split-button-action`, `split-button-trigger`), `data-state` (`open` / `closed`), `data-disabled`                   |
-| emits  | root: `update:open`, `open-change`; action: `press`, `keydown`; trigger: `pointerdown`, `keydown`                                                   |
+| emits  | root: `update:open`, `openChange`; action: `press`, `keydown`; trigger: `pointerdown`, `keydown`                                                    |
 | expose | root: the Menu root surface plus `disabled` and `element`; action and trigger: `element`, `focus()`                                                 |
 | naming | the group needs `aria-label` or `aria-labelledby`; an icon-only trigger needs `aria-label` because it also names the menu through `aria-labelledby` |

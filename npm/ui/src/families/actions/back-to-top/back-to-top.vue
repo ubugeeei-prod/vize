@@ -60,7 +60,7 @@ const emit = defineEmits<{
   click: [nativeEvent: MouseEvent];
 
   /** Fired after scrolling to the top was requested. */
-  "scroll-top": [container: HTMLElement | Window];
+  scrollTop: [container: HTMLElement | Window];
 }>();
 
 defineSlots<{
@@ -138,7 +138,7 @@ function scrollToTop(): boolean {
     }
     focusElement.focus({ preventScroll: true });
   }
-  emit("scroll-top", scroller);
+  emit("scrollTop", scroller);
   return true;
 }
 

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
+import { computed, watchEffect, useTemplateRef } from "vue";
 import { useDisplayMedia } from "@vizejs/composable/use-display-media";
 import { useMounted } from "@vizejs/composable/use-mounted";
 
 const mounted = useMounted();
-const preview = ref<HTMLVideoElement | null>(null);
+const preview = useTemplateRef<HTMLVideoElement>("preview");
 const { supported, stream, status, start, stop } = useDisplayMedia({ video: true });
 const sharing = computed(() => stream.value !== undefined);
 watchEffect(() => {

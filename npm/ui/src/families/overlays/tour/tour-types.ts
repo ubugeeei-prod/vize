@@ -68,7 +68,7 @@ export interface TourBeforeEnterContext<Step extends TourStepDefinition = TourSt
 /**
  * Runs before a step becomes current, e.g. to open a menu or route so the target exists.
  * Returning (or resolving) `false` cancels the navigation; throwing or rejecting reports
- * `navigation-error`. The target is resolved after the hook settles.
+ * `navigationError`. The target is resolved after the hook settles.
  */
 export type TourBeforeEnter<Step extends TourStepDefinition = TourStepDefinition> = (
   context: TourBeforeEnterContext<Step>,

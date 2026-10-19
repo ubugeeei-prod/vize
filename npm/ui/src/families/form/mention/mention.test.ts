@@ -67,7 +67,7 @@ test("typing a trigger opens the listbox, filters by query, and highlights the f
   await typeInto(textarea, "hi @al");
   assert.deepEqual(options(handle), ["Alan Turing"]);
   await typeInto(textarea, "hi @a");
-  assert.deepEqual(handle.wrapper.emitted("query-change")?.at(-1), ["a", { char: "@" }]);
+  assert.deepEqual(handle.wrapper.emitted("queryChange")?.at(-1), ["a", { char: "@" }]);
   assert.deepEqual(handle.wrapper.emitted("update:query")?.at(-1), ["a"]);
 
   await typeInto(textarea, "hi @gr");
@@ -92,7 +92,7 @@ test("mid-word triggers never open and moving the caret out of the token closes"
   textarea.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, key: "End" }));
   await settle();
   assert.equal(handle.root().getAttribute("data-state"), "closed");
-  assert.deepEqual(handle.wrapper.emitted("query-change")?.at(-1), [null, null]);
+  assert.deepEqual(handle.wrapper.emitted("queryChange")?.at(-1), [null, null]);
   handle.unmount();
 });
 

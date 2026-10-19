@@ -35,7 +35,7 @@ async function key(target: Element, value: string): Promise<boolean> {
 test("two activations anchor, preview, and commit an ordered range", async () => {
   const handle = mountInteraction(RangeCalendarRoot, {
     props: { today, locale: "en-US", startName: "from", endName: "to" },
-    record: ["update:modelValue", "change", "anchor-change"],
+    record: ["update:modelValue", "change", "anchorChange"],
   });
   const root = handle.root();
   assert.equal(root.getAttribute("data-mode"), "range");
@@ -57,15 +57,15 @@ test("two activations anchor, preview, and commit an ordered range", async () =>
       .recorded()
       .map((entry) => [
         entry.event,
-        entry.event === "anchor-change"
+        entry.event === "anchorChange"
           ? entry.payload[0] === null
             ? "null"
             : formatIsoDate(entry.payload[0] as PlainDate)
           : rangeText(entry.payload[0]),
       ]),
     [
-      ["anchor-change", "2026-09-20"],
-      ["anchor-change", "null"],
+      ["anchorChange", "2026-09-20"],
+      ["anchorChange", "null"],
       ["update:modelValue", "2026-09-14/2026-09-20"],
       ["change", "2026-09-14/2026-09-20"],
     ],

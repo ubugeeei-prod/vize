@@ -116,7 +116,7 @@ test("reports stuck when the box rests on its offset line and releases after", a
   observer.fire(root, 0);
   await nextTick();
   assert.equal(root.getAttribute("data-stuck"), null);
-  assert.deepEqual(handle.wrapper.emitted("stuck-change"), [[true], [false]]);
+  assert.deepEqual(handle.wrapper.emitted("stuckChange"), [[true], [false]]);
 
   handle.unmount();
 });

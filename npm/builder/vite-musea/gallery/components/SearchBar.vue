@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, useTemplateRef } from "vue";
 
 const model = defineModel<string>({ default: "" });
-const inputRef = ref<HTMLInputElement | null>(null);
+const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
 
 function onKeydown(e: KeyboardEvent) {
   if ((e.metaKey || e.ctrlKey) && e.key === "k") {

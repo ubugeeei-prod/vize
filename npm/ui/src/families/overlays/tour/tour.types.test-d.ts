@@ -168,7 +168,7 @@ typedRoot({
     return step.value !== "profile";
   },
   messages: { progress: (current, total) => `${current}/${total}` },
-  "onNavigation-error": (error, value) => {
+  onNavigationError: (error, value) => {
     type _ErrorValueIsNarrow = Expect<Equal<typeof value, "welcome" | "search" | "profile">>;
     void error;
   },

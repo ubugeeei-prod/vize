@@ -47,20 +47,20 @@ const {
   ariaInvalid = false,
 } = defineProps<ListboxProps>();
 
-defineSlots<{
-  /** Compound ListboxItem options. Receives current selection and focus state. */
-  default(props: ListboxSlotState): unknown;
-
-  /** Empty collection fallback rendered when no options are registered. */
-  empty(props: ListboxSlotState): unknown;
-}>();
-
 const emit = defineEmits<{
   /** Fired when the selected value requests a new controlled value. */
   "update:modelValue": [value: ListboxValue];
 
   /** Fired after user selection requests a distinct Listbox value. */
   change: [value: ListboxValue, previous: ListboxValue, nativeEvent: Event];
+}>();
+
+defineSlots<{
+  /** Compound ListboxItem options. Receives current selection and focus state. */
+  default(props: ListboxSlotState): unknown;
+
+  /** Empty collection fallback rendered when no options are registered. */
+  empty(props: ListboxSlotState): unknown;
 }>();
 
 const element = useTemplateRef<HTMLDivElement>("element");

@@ -35,8 +35,6 @@ type PlatformNavigatorWithShare = {
   readonly share?: (payload: ShareButtonPayload) => void | Promise<void>;
 };
 
-const SHARE_BUTTON_ACTION_UNAVAILABLE = "VIZE_UI_SHARE_BUTTON_ACTION_UNAVAILABLE";
-
 const {
   as = "button",
   native = undefined,
@@ -56,12 +54,14 @@ const {
   action = undefined,
 } = defineProps<ShareButtonProps>();
 
+const emit = defineEmits<ShareButtonEmits>();
+
+const SHARE_BUTTON_ACTION_UNAVAILABLE = "VIZE_UI_SHARE_BUTTON_ACTION_UNAVAILABLE";
+
 defineSlots<{
   /** Renders button contents with the current share state. */
   default(props: ShareButtonSlotState): unknown;
 }>();
-
-const emit = defineEmits<ShareButtonEmits>();
 
 const element = useTemplateRef<ShareButtonElement>("element");
 const stateValue = shallowRef<ShareButtonState>("idle");

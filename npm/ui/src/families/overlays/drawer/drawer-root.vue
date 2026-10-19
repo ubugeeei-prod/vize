@@ -38,9 +38,6 @@ interface DragSession {
   started: boolean;
 }
 
-const dragSlop = 4;
-const emptySnapPoints: readonly DrawerSnapPoint[] = Object.freeze([]);
-
 const {
   id = undefined,
   open = undefined,
@@ -138,24 +135,27 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 
   /** Fired after any distinct open-state request. */
-  "open-change": [value: boolean, previous: boolean, nativeEvent: Event | null];
+  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
 
   /** Fired when the Drawer requests a controlled snap point. */
   "update:activeSnapPoint": [value: DrawerSnapPoint | null];
 
   /** Fired after any distinct snap point request. */
-  "snap-point-change": [
+  snapPointChange: [
     value: DrawerSnapPoint | null,
     previous: DrawerSnapPoint | null,
     nativeEvent: Event | null,
   ];
 
   /** Fired once a pointer has moved past the drag slop. */
-  "drag-start": [nativeEvent: PointerEvent];
+  dragStart: [nativeEvent: PointerEvent];
 
   /** Fired when a started drag gesture ends. */
-  "drag-end": [event: DrawerDragEndEvent];
+  dragEnd: [event: DrawerDragEndEvent];
 }>();
+
+const dragSlop = 4;
+const emptySnapPoints: readonly DrawerSnapPoint[] = Object.freeze([]);
 
 defineSlots<{
   /** Compound Drawer children. Receives the current open, snap, and drag state. */
@@ -210,7 +210,7 @@ function setOpen(value: boolean, nativeEvent: Event | null = null): boolean {
   const changed = openState.set(value);
   if (changed) {
     emit("update:open", value);
-    emit("open-change", value, previous, nativeEvent);
+    emit("openChange", value, previous, nativeEvent);
   }
   return changed;
 }
@@ -228,7 +228,7 @@ function commitSnapPoint(
   if (drawerSnapPointEquals(previous, snapPoint)) return false;
   snapState.set(snapPoint);
   emit("update:activeSnapPoint", snapPoint);
-  emit("snap-point-change", snapPoint, previous, nativeEvent);
+  emit("snapPointChange", snapPoint, previous, nativeEvent);
   return true;
 }
 
@@ -285,7 +285,7 @@ function moveDrag(event: PointerEvent): void {
     if (Math.abs(distance) < dragSlop) return;
     active.started = true;
     dragging.value = true;
-    emit("drag-start", event);
+    emit("dragStart", event);
   }
   const time = event.timeStamp;
   const elapsed = time - active.lastTime;
@@ -308,7 +308,7 @@ function endDrag(event: PointerEvent, cancelled: boolean): boolean {
   dragging.value = false;
   dragOffset.value = 0;
   if (cancelled) {
-    emit("drag-end", {
+    emit("dragEnd", {
       distance,
       outcome: "cancel",
       snapPoint: activeSnap.value,
@@ -327,12 +327,12 @@ function endDrag(event: PointerEvent, cancelled: boolean): boolean {
     velocityThreshold,
   });
   if (result.outcome === "dismiss") {
-    emit("drag-end", { distance, outcome: "dismiss", snapPoint: null, velocity: active.velocity });
+    emit("dragEnd", { distance, outcome: "dismiss", snapPoint: null, velocity: active.velocity });
     setOpen(false, event);
     return true;
   }
   if (result.snapPoint !== null) snapTo(result.snapPoint, event);
-  emit("drag-end", {
+  emit("dragEnd", {
     distance,
     outcome: "snap",
     snapPoint: activeSnap.value,

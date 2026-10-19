@@ -135,7 +135,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: AccordionModelValue<Value, Type>];
 
   /** Fired after any distinct open-item request. */
-  "value-change": [
+  valueChange: [
     value: AccordionModelValue<Value, Type>,
     previous: AccordionModelValue<Value, Type>,
     nativeEvent: Event | null,
@@ -217,7 +217,7 @@ function commit(next: readonly Value[], nativeEvent: Event | null): boolean {
   if (!openState.set(normalized)) return false;
   const value = toAccordionModel(type, normalized);
   emit("update:modelValue", value);
-  emit("value-change", value, previous, nativeEvent);
+  emit("valueChange", value, previous, nativeEvent);
   return true;
 }
 

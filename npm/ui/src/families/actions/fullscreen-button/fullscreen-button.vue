@@ -19,8 +19,6 @@ import type {
 type FullscreenButtonKeyboardPhase = "keydown" | "keyup";
 type FullscreenButtonKeyboardAction = "activate" | "prevent" | "ignore";
 
-const FULLSCREEN_BUTTON_ACTION_UNAVAILABLE = "VIZE_UI_FULLSCREEN_BUTTON_ACTION_UNAVAILABLE";
-
 const {
   as = "button",
   native = undefined,
@@ -37,12 +35,14 @@ const {
   controller = undefined,
 } = defineProps<FullscreenButtonProps>();
 
+const emit = defineEmits<FullscreenButtonEmits>();
+
+const FULLSCREEN_BUTTON_ACTION_UNAVAILABLE = "VIZE_UI_FULLSCREEN_BUTTON_ACTION_UNAVAILABLE";
+
 defineSlots<{
   /** Renders button contents with the current fullscreen state. */
   default(props: FullscreenButtonSlotState): unknown;
 }>();
-
-const emit = defineEmits<FullscreenButtonEmits>();
 
 const element = useTemplateRef<FullscreenButtonElement>("element");
 const stateValue = shallowRef<FullscreenButtonState>("idle");

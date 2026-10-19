@@ -30,7 +30,7 @@ const paris = france.children?.[0] as Place;
 function mountCascader(props: Record<string, unknown> = {}) {
   return mountInteraction(CascaderRoot, {
     props: { ...cascaderFixtureProps, id: "place", ...props },
-    record: ["update:modelValue", "change", "update:open", "load-error"],
+    record: ["update:modelValue", "change", "update:open", "loadError"],
     slots: { default: cascaderFixtureSlot({ portalDisabled: true }) },
   });
 }
@@ -325,7 +325,7 @@ test("unmount aborts pending loads and rejected loads emit load-error", async ()
   await settle();
   reject(new Error("offline"));
   await settle();
-  assert.equal(handle.wrapper.emitted("load-error")?.[0]?.[1] instanceof Error, true);
+  assert.equal(handle.wrapper.emitted("loadError")?.[0]?.[1] instanceof Error, true);
   await handle.click(handle.getByRole("option", { name: "France" }));
   await settle();
   handle.unmount();

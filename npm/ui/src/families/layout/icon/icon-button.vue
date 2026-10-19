@@ -29,11 +29,6 @@ const {
   ariaDescribedby = undefined,
 } = defineProps<IconButtonProps>();
 
-defineSlots<{
-  /** Renders the icon-only contents with current availability and styling hooks. */
-  default(props: IconButtonSlotState): unknown;
-}>();
-
 const emit = defineEmits<{
   /**
    * Fired when pointer or keyboard activation reaches the rendered control.
@@ -41,6 +36,11 @@ const emit = defineEmits<{
    * Carries the resulting `MouseEvent`.
    */
   press: [event: MouseEvent];
+}>();
+
+defineSlots<{
+  /** Renders the icon-only contents with current availability and styling hooks. */
+  default(props: IconButtonSlotState): unknown;
 }>();
 
 const element = useTemplateRef<IconButtonElement>("element");

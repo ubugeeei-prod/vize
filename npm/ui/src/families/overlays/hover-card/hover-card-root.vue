@@ -90,7 +90,7 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 
   /** Fired after any distinct open-state request. */
-  "open-change": [value: boolean, previous: boolean, nativeEvent: Event | null];
+  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{
@@ -164,7 +164,7 @@ function commitOpen(
   const changed = openState.set(next);
   if (changed) {
     emit("update:open", next);
-    emit("open-change", next, previous, nativeEvent);
+    emit("openChange", next, previous, nativeEvent);
   }
   return changed;
 }
@@ -212,7 +212,7 @@ watch(disabledState, (next) => {
     const changed = openState.set(false);
     if (changed) {
       emit("update:open", false);
-      emit("open-change", false, true, null);
+      emit("openChange", false, true, null);
     }
   }
 });

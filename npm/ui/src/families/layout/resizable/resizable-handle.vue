@@ -19,17 +19,6 @@ import type {
   ResizableSlotState,
 } from "./resizable-types.ts";
 
-const edgeNames: Readonly<Record<ResizablePhysicalEdge, string>> = {
-  e: "right edge",
-  n: "top edge",
-  ne: "top-right corner",
-  nw: "top-left corner",
-  s: "bottom edge",
-  se: "bottom-right corner",
-  sw: "bottom-left corner",
-  w: "left edge",
-};
-
 const { edge = "se", ariaLabel = undefined } = defineProps<{
   /**
    * Edge or corner this handle resizes from. `start`/`end` follow the root `dir`.
@@ -45,6 +34,17 @@ const { edge = "se", ariaLabel = undefined } = defineProps<{
    */
   readonly ariaLabel?: string;
 }>();
+
+const edgeNames: Readonly<Record<ResizablePhysicalEdge, string>> = {
+  e: "right edge",
+  n: "top edge",
+  ne: "top-right corner",
+  nw: "top-left corner",
+  s: "bottom edge",
+  se: "bottom-right corner",
+  sw: "bottom-left corner",
+  w: "left edge",
+};
 
 defineSlots<{
   /** Optional grip contents. Receives the current Resizable state. */

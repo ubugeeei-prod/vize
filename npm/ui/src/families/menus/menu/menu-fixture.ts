@@ -45,7 +45,7 @@ export const MenuFixture = defineComponent({
           {
             id: "actions",
             ...props.rootProps,
-            "onOpen-change": (value: boolean) => props.log.push(`open:${value}`),
+            onOpenChange: (value: boolean) => props.log.push(`open:${value}`),
           },
           () => [
             h(MenuTrigger, null, () => "Actions"),

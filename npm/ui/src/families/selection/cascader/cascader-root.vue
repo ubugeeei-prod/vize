@@ -77,7 +77,7 @@ const emit = defineEmits<{
   "update:search": [query: string];
 
   /** Fired when `loadChildren` rejects for a branch, with the error. */
-  "load-error": [node: T, error: unknown];
+  loadError: [node: T, error: unknown];
 }>();
 
 defineSlots<{
@@ -347,7 +347,7 @@ function load(level: number, node: T): void {
       (error: unknown) => {
         if (controller.signal.aborted) return;
         finish();
-        emit("load-error", node, error);
+        emit("loadError", node, error);
       },
     );
 }

@@ -76,7 +76,7 @@ const {
 
 const emit = defineEmits<{
   /** Fired after the derived invalid state changes, with the matching errors. */
-  "invalid-change": [invalid: boolean, errors: readonly FormFieldError[]];
+  invalidChange: [invalid: boolean, errors: readonly FormFieldError[]];
 }>();
 
 defineSlots<{
@@ -111,7 +111,7 @@ const slotState = computed<FieldsetSlotState>(() => ({
   state: dataState.value,
 }));
 
-watch(isInvalid, (next) => emit("invalid-change", next, matchingErrors.value));
+watch(isInvalid, (next) => emit("invalidChange", next, matchingErrors.value));
 
 fieldsetContext.provide({
   descriptionId: wiring.descriptionId,

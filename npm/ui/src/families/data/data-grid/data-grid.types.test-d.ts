@@ -148,7 +148,7 @@ const gridProps: GridProps = {
   getSubRows: (user) => user.children,
   selectionMode: "multiple",
   sorting: [{ columnId: "age", direction: "ascending" }],
-  "onCell-edit": (event) => event.row.name,
+  onCellEdit: (event) => event.row.name,
 };
 // @ts-expect-error rows must match the column row type.
 const badGridRows: GridProps = { rows: [{ id: "x" }], columns };

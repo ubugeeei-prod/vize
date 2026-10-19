@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { onMounted, watch, useTemplateRef } from "vue";
 import hljs from "highlight.js/lib/core";
 import xml from "highlight.js/lib/languages/xml";
 import json from "highlight.js/lib/languages/json";
@@ -9,7 +9,7 @@ const props = defineProps<{
   language: "xml" | "json";
 }>();
 
-const codeElement = ref<HTMLElement | null>(null);
+const codeElement = useTemplateRef<HTMLElement>("codeElement");
 
 hljs.registerLanguage("xml", xml);
 hljs.registerLanguage("json", json);

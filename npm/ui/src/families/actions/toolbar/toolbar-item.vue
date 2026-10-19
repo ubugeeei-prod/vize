@@ -16,12 +16,6 @@ import type {
 type ToolbarKeyboardPhase = "keydown" | "keyup";
 type ToolbarKeyboardAction = "activate" | "prevent" | "ignore";
 
-function getToolbarKeyboardAction(key: string, phase: ToolbarKeyboardPhase): ToolbarKeyboardAction {
-  if (key === "Enter") return phase === "keydown" ? "activate" : "ignore";
-  if (key === " ") return phase === "keydown" ? "prevent" : "activate";
-  return "ignore";
-}
-
 const {
   as = "button",
   native = undefined,
@@ -33,12 +27,18 @@ const {
   ariaDescribedby = undefined,
 } = defineProps<ToolbarItemProps>();
 
+const emit = defineEmits<ToolbarItemEmits>();
+
+function getToolbarKeyboardAction(key: string, phase: ToolbarKeyboardPhase): ToolbarKeyboardAction {
+  if (key === "Enter") return phase === "keydown" ? "activate" : "ignore";
+  if (key === " ") return phase === "keydown" ? "prevent" : "activate";
+  return "ignore";
+}
+
 defineSlots<{
   /** Renders item contents with current availability and navigation state. */
   default(props: ToolbarItemSlotState): unknown;
 }>();
-
-const emit = defineEmits<ToolbarItemEmits>();
 
 const context = toolbarContext.use();
 const element = useTemplateRef<PrimitiveElement>("element");

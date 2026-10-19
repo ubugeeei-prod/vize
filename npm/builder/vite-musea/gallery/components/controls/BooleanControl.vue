@@ -1,11 +1,12 @@
 <script setup lang="ts">
-const model = defineModel<boolean>({ default: false });
-
 defineProps<{
   label: string;
   description?: string;
   required?: boolean;
 }>();
+
+const model = defineModel<boolean>({ default: false });
+
 </script>
 
 <template>

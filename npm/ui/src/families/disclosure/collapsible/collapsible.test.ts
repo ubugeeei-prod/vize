@@ -92,7 +92,7 @@ test("uncontrolled disclosure toggles through pointer and native keyboard activa
   assert.equal(trigger.getAttribute("aria-expanded"), "true");
   assert.equal(content.hidden, false);
   assert.equal(handle.wrapper.emitted("update:open")?.length, 3);
-  assert.equal(handle.wrapper.emitted("open-change")?.length, 3);
+  assert.equal(handle.wrapper.emitted("openChange")?.length, 3);
 
   handle.unmount();
 });
@@ -107,7 +107,7 @@ test("controlled open state waits for the parent to accept a request", async () 
   assert.equal(trigger.getAttribute("aria-expanded"), "false");
   assert.equal(content.hidden, true);
   assert.deepEqual(handle.wrapper.emitted("update:open"), [[true]]);
-  const openChange = handle.wrapper.emitted("open-change");
+  const openChange = handle.wrapper.emitted("openChange");
   assert.equal(openChange?.length, 1);
   assert.deepEqual(openChange?.[0]?.slice(0, 2), [true, false]);
   assert.ok(openChange?.[0]?.[2] instanceof MouseEvent);
@@ -134,7 +134,7 @@ test("trigger click is preventable before state changes", async () => {
   assert.equal(trigger.getAttribute("aria-expanded"), "false");
   assert.equal(content.hidden, true);
   assert.equal(handle.wrapper.emitted("update:open"), undefined);
-  assert.equal(handle.wrapper.emitted("open-change"), undefined);
+  assert.equal(handle.wrapper.emitted("openChange"), undefined);
 
   handle.unmount();
 });

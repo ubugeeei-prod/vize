@@ -21,9 +21,6 @@ import type {
   DrawerState,
 } from "./drawer-types.ts";
 
-const noDragSelector =
-  'input, textarea, select, [contenteditable=""], [contenteditable="true"], [data-vize-drawer-no-drag]';
-
 const {
   forceMount = false,
   autoFocus = true,
@@ -71,18 +68,21 @@ const {
 
 const emit = defineEmits<{
   /** Fired before automatic entry focus is applied. */
-  "open-auto-focus": [event: DrawerAutoFocusEvent];
+  openAutoFocus: [event: DrawerAutoFocusEvent];
   /** Fired before automatic focus restoration is applied. */
-  "close-auto-focus": [event: DrawerAutoFocusEvent];
+  closeAutoFocus: [event: DrawerAutoFocusEvent];
   /** Fired before Escape requests dismissal. */
-  "escape-key-down": [event: DrawerEscapeKeyDownEvent];
+  escapeKeyDown: [event: DrawerEscapeKeyDownEvent];
   /** Fired before an outside pointer-down requests dismissal of a non-modal drawer. */
-  "pointer-down-outside": [event: DrawerPointerDownOutsideEvent];
+  pointerDownOutside: [event: DrawerPointerDownOutsideEvent];
   /** Fired before a modal `::backdrop` press requests dismissal. */
-  "backdrop-pointer-down": [event: DrawerBackdropPointerDownEvent];
+  backdropPointerDown: [event: DrawerBackdropPointerDownEvent];
   /** Fired after an unprevented dismissal request. */
   dismiss: [event: DrawerDismissEvent];
 }>();
+
+const noDragSelector =
+  'input, textarea, select, [contenteditable=""], [contenteditable="true"], [data-vize-drawer-no-drag]';
 
 defineSlots<{
   /** Drawer content. Receives the current open, snap, and drag state. */
@@ -144,9 +144,9 @@ const dismissableLayer = createDismissableLayer({
   outsidePointerDown: () => !context.modal.value && closeOnPointerDownOutside && canDismiss.value,
   onEscapeKeyDown: (event) => {
     rememberEscape();
-    emit("escape-key-down", event);
+    emit("escapeKeyDown", event);
   },
-  onPointerDownOutside: (event) => emit("pointer-down-outside", event),
+  onPointerDownOutside: (event) => emit("pointerDownOutside", event),
   onDismiss: (event) =>
     dismiss(
       event.reason === "escape-key" ? "escape-key" : "pointer-down-outside",
@@ -160,8 +160,8 @@ const focusScope = createFocusScope({
   restoreFocus: () => restoreFocus,
   restoreTarget: () => context.triggerElement.value,
   fallbackFocus: () => element.value,
-  onMountAutoFocus: (event) => emit("open-auto-focus", event),
-  onUnmountAutoFocus: (event) => emit("close-auto-focus", event),
+  onMountAutoFocus: (event) => emit("openAutoFocus", event),
+  onUnmountAutoFocus: (event) => emit("closeAutoFocus", event),
 });
 const scrollLock = createScrollLock({
   document: ownerDocument,
@@ -308,7 +308,7 @@ function handlePointerDown(event: PointerEvent, dialog: HTMLDialogElement | null
   if (dialog === null || !(target instanceof Element)) return;
   if (target === dialog && context.modal.value && isOutsideBox(dialog, event)) {
     let prevented = false;
-    emit("backdrop-pointer-down", {
+    emit("backdropPointerDown", {
       get defaultPrevented() {
         return prevented;
       },

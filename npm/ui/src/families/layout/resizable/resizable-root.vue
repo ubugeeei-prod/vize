@@ -134,13 +134,13 @@ const emit = defineEmits<{
   "update:size": [value: ResizableSize];
 
   /** Fired when a pointer or keyboard resize begins. */
-  "resize-start": [event: ResizableResizeEvent];
+  resizeStart: [event: ResizableResizeEvent];
 
   /** Fired for every distinct size produced by an interaction. */
   resize: [event: ResizableResizeEvent];
 
   /** Fired when a pointer or keyboard resize ends. */
-  "resize-end": [event: ResizableResizeEvent];
+  resizeEnd: [event: ResizableResizeEvent];
 }>();
 
 defineSlots<{
@@ -214,7 +214,7 @@ function begin(edge: ResizablePhysicalEdge, source: ResizableSource, event: Even
   if (disabledState.value) return;
   const active = { edge, initialSize: readSize(), source };
   session.value = active;
-  emit("resize-start", eventFor(active, event));
+  emit("resizeStart", eventFor(active, event));
 }
 
 function update(
@@ -233,7 +233,7 @@ function end(event: Event | null): void {
   const active = readSession();
   if (active === null) return;
   session.value = null;
-  emit("resize-end", eventFor(active, event));
+  emit("resizeEnd", eventFor(active, event));
 }
 
 function setSize(next: ResizableSize): boolean {

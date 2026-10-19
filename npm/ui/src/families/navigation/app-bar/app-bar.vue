@@ -66,7 +66,7 @@ const {
 
 const emit = defineEmits<{
   /** Fired when `hideOnScroll` hides or reveals the bar. */
-  "visibility-change": [hidden: boolean];
+  visibilityChange: [hidden: boolean];
 }>();
 
 defineSlots<{
@@ -97,7 +97,7 @@ let container: HTMLElement | Window | null = null;
 function setHidden(next: boolean): void {
   if (hidden.value === next) return;
   hidden.value = next;
-  emit("visibility-change", next);
+  emit("visibilityChange", next);
 }
 
 function resolveContainer(): HTMLElement | Window | null {

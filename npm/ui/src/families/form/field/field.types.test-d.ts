@@ -26,7 +26,7 @@ const rootProps: InstanceType<typeof Field>["$props"] = {
   id: "email",
   invalid: false,
   name: "email",
-  "onInvalid-change": (invalid: boolean, nextErrors: readonly FormFieldError[]) => {
+  onInvalidChange: (invalid: boolean, nextErrors: readonly FormFieldError[]) => {
     void invalid;
     void nextErrors;
   },

@@ -85,17 +85,17 @@ const {
 
 const emit = defineEmits<{
   /** Fired before automatic entry focus; preventable. */
-  "open-auto-focus": [event: MenuAutoFocusEvent];
+  openAutoFocus: [event: MenuAutoFocusEvent];
   /** Fired before automatic focus restoration; preventable. */
-  "close-auto-focus": [event: MenuAutoFocusEvent];
+  closeAutoFocus: [event: MenuAutoFocusEvent];
   /** Fired before Escape closes the submenu; preventable. */
-  "escape-key-down": [event: MenuEscapeKeyDownEvent];
+  escapeKeyDown: [event: MenuEscapeKeyDownEvent];
   /** Fired before an outside pointer-down closes the submenu; preventable. */
-  "pointer-down-outside": [event: MenuPointerDownOutsideEvent];
+  pointerDownOutside: [event: MenuPointerDownOutsideEvent];
   /** Fired before outside focus closes the submenu; preventable. */
-  "focus-outside": [event: MenuFocusOutsideEvent];
+  focusOutside: [event: MenuFocusOutsideEvent];
   /** Fired before any outside interaction closes the submenu; preventable. */
-  "interact-outside": [event: MenuInteractOutsideEvent];
+  interactOutside: [event: MenuInteractOutsideEvent];
   /** Fired after an unprevented dismissal request. */
   dismiss: [event: MenuDismissEvent];
 }>();
@@ -119,12 +119,12 @@ const menu = useMenuContent({
   closeOnPointerDownOutside: () => closeOnPointerDownOutside,
   closeOnFocusOutside: () => closeOnFocusOutside,
   callbacks: {
-    openAutoFocus: (event) => emit("open-auto-focus", event),
-    closeAutoFocus: (event) => emit("close-auto-focus", event),
-    escapeKeyDown: (event) => emit("escape-key-down", event),
-    pointerDownOutside: (event) => emit("pointer-down-outside", event),
-    focusOutside: (event) => emit("focus-outside", event),
-    interactOutside: (event) => emit("interact-outside", event),
+    openAutoFocus: (event) => emit("openAutoFocus", event),
+    closeAutoFocus: (event) => emit("closeAutoFocus", event),
+    escapeKeyDown: (event) => emit("escapeKeyDown", event),
+    pointerDownOutside: (event) => emit("pointerDownOutside", event),
+    focusOutside: (event) => emit("focusOutside", event),
+    interactOutside: (event) => emit("interactOutside", event),
     dismiss: (event) => emit("dismiss", event),
   },
 });

@@ -64,17 +64,17 @@ const {
 
 const emit = defineEmits<{
   /** Fired before automatic entry focus is applied. */
-  "open-auto-focus": [event: DialogAutoFocusEvent];
+  openAutoFocus: [event: DialogAutoFocusEvent];
   /** Fired before automatic focus restoration is applied. */
-  "close-auto-focus": [event: DialogAutoFocusEvent];
+  closeAutoFocus: [event: DialogAutoFocusEvent];
   /** Fired before Escape requests dismissal. */
-  "escape-key-down": [event: DismissableLayerEscapeKeyDownEvent];
+  escapeKeyDown: [event: DismissableLayerEscapeKeyDownEvent];
   /** Fired before an outside pointer-down requests dismissal. */
-  "pointer-down-outside": [event: DismissableLayerPointerDownOutsideEvent];
+  pointerDownOutside: [event: DismissableLayerPointerDownOutsideEvent];
   /** Fired before outside focus movement requests dismissal. */
-  "focus-outside": [event: DismissableLayerFocusOutsideEvent];
+  focusOutside: [event: DismissableLayerFocusOutsideEvent];
   /** Fired before outside pointer or focus interaction requests dismissal. */
-  "interact-outside": [event: DismissableLayerInteractOutsideEvent];
+  interactOutside: [event: DismissableLayerInteractOutsideEvent];
   /** Fired after an unprevented dismissal request. */
   dismiss: [event: DismissableLayerDismissEvent];
 }>();
@@ -122,27 +122,27 @@ const exposed = {
 defineExpose(exposed);
 
 function onOpenAutoFocus(event: DialogAutoFocusEvent): void {
-  emit("open-auto-focus", event);
+  emit("openAutoFocus", event);
 }
 
 function onCloseAutoFocus(event: DialogAutoFocusEvent): void {
-  emit("close-auto-focus", event);
+  emit("closeAutoFocus", event);
 }
 
 function onEscapeKeyDown(event: DismissableLayerEscapeKeyDownEvent): void {
-  emit("escape-key-down", event);
+  emit("escapeKeyDown", event);
 }
 
 function onPointerDownOutside(event: DismissableLayerPointerDownOutsideEvent): void {
-  emit("pointer-down-outside", event);
+  emit("pointerDownOutside", event);
 }
 
 function onFocusOutside(event: DismissableLayerFocusOutsideEvent): void {
-  emit("focus-outside", event);
+  emit("focusOutside", event);
 }
 
 function onInteractOutside(event: DismissableLayerInteractOutsideEvent): void {
-  emit("interact-outside", event);
+  emit("interactOutside", event);
 }
 
 function onDismiss(event: DismissableLayerDismissEvent): void {

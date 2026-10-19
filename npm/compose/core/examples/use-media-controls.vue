@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { useTemplateRef } from "vue";
 import { useMediaControls } from "@vizejs/composable/use-media-controls";
 import { useMounted } from "@vizejs/composable/use-mounted";
 import { useObjectUrl } from "@vizejs/composable/use-object-url";
@@ -26,7 +26,7 @@ function silentWav(seconds: number, rate = 8000): Blob {
   return new Blob([view.buffer], { type: "audio/wav" });
 }
 
-const audio = ref<HTMLAudioElement | null>(null);
+const audio = useTemplateRef<HTMLAudioElement>("audio");
 // The generated file only exists in the browser, so create the element after hydration.
 const mounted = useMounted();
 const captions = `data:text/vtt,${encodeURIComponent("WEBVTT\n\n00:00.000 --> 00:01.000\n(silence)\n")}`;

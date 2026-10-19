@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, useId } from "vue";
 
-defineOptions({ inheritAttrs: false });
 const props = defineProps<{ label: string; modelValue?: unknown }>();
+
+defineOptions({ inheritAttrs: false });
 const inputId = useId();
 const retained = computed(() =>
   typeof props.modelValue === "string" ? props.modelValue : JSON.stringify(props.modelValue),

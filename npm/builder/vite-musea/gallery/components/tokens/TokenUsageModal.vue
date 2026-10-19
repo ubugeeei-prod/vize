@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, useId, onUnmounted } from "vue";
+import { ref, watch, nextTick, useId, onUnmounted, useTemplateRef } from "vue";
 import { useRouter } from "vue-router";
 import type { DesignToken, TokenUsageEntry } from "../../api";
 
@@ -17,7 +17,7 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const expandedArts = ref<Set<string>>(new Set());
-const dialogRef = ref<HTMLElement | null>(null);
+const dialogRef = useTemplateRef<HTMLElement>("dialogRef");
 const titleId = useId();
 let previousFocus: HTMLElement | null = null;
 

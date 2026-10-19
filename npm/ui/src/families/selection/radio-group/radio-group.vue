@@ -113,17 +113,17 @@ const {
   readonly ariaInvalid?: RadioGroupAriaInvalid;
 }>();
 
-defineSlots<{
-  /** Compound RadioGroup items. Receives current value, validity, and availability state. */
-  default(props: RadioGroupSlotState): unknown;
-}>();
-
 const emit = defineEmits<{
   /** Fired when the selected value requests a new controlled value. */
   "update:modelValue": [value: RadioGroupValue];
 
   /** Fired after user selection requests a distinct radio value. */
   change: [value: string, previous: RadioGroupValue, nativeEvent: Event];
+}>();
+
+defineSlots<{
+  /** Compound RadioGroup items. Receives current value, validity, and availability state. */
+  default(props: RadioGroupSlotState): unknown;
 }>();
 
 const element = useTemplateRef<HTMLDivElement>("element");

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, useTemplateRef } from "vue";
 import { useRouter } from "vue-router";
 import {
   mdiMagnify,
@@ -37,8 +37,8 @@ const navItems: NavItem[] = [
   { name: "Test Summary", route: "/tests", icon: mdiCheckCircleOutline },
 ];
 
-const searchInput = ref<HTMLInputElement | null>(null);
-const dialogRef = ref<HTMLDivElement | null>(null);
+const searchInput = useTemplateRef<HTMLInputElement>("searchInput");
+const dialogRef = useTemplateRef<HTMLDivElement>("dialogRef");
 const query = ref("");
 const selectedIndex = ref(0);
 const searchHistory = ref<string[]>([]);

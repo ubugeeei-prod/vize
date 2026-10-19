@@ -91,7 +91,7 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 
   /** Fired after any distinct open-state request, with its cause. */
-  "open-change": [value: boolean, reason: SpeedDialChangeReason, nativeEvent: Event | null];
+  openChange: [value: boolean, reason: SpeedDialChangeReason, nativeEvent: Event | null];
 
   /** Fired when an action is selected. Call `preventDefault()` to keep the speed dial open. */
   select: [event: SpeedDialSelectEvent];
@@ -143,7 +143,7 @@ function setOpenWithReason(
   pendingReason = reason;
   openState.set(next);
   emit("update:open", next);
-  emit("open-change", next, pendingReason, nativeEvent);
+  emit("openChange", next, pendingReason, nativeEvent);
   return true;
 }
 

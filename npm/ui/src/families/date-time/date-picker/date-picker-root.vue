@@ -80,7 +80,7 @@ const emit = defineEmits<{
   /** Fired when the picker requests a new controlled open state. */
   "update:open": [value: boolean];
   /** Fired after any distinct open-state request. */
-  "open-change": [value: boolean, previous: boolean, nativeEvent: Event | null];
+  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{
@@ -110,7 +110,7 @@ const picker = usePickerRoot({
   }),
   onOpenChange: (value, previous, event) => {
     emit("update:open", value);
-    emit("open-change", value, previous, event);
+    emit("openChange", value, previous, event);
   },
 });
 const { baseId, popoverId, state, shared, onPopoverOpenChange } = picker;

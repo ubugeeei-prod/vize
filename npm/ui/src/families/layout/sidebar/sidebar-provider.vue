@@ -152,7 +152,7 @@ const emit = defineEmits<{
   "update:openMobile": [value: boolean];
 
   /** Fired after any distinct desktop open request. */
-  "open-change": [value: boolean, previous: boolean, nativeEvent: Event | null];
+  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{
@@ -201,7 +201,7 @@ function setOpen(value: boolean, nativeEvent: Event | null = null): boolean {
   const previous = readOpen();
   if (!openState.set(value)) return false;
   emit("update:open", value);
-  emit("open-change", value, previous, nativeEvent);
+  emit("openChange", value, previous, nativeEvent);
   storage?.set(storageKey, String(value));
   return true;
 }

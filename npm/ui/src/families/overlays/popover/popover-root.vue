@@ -57,7 +57,7 @@ const emit = defineEmits<{
   /** Fired when the Popover requests a controlled open value. */
   "update:open": [value: boolean];
   /** Fired after any distinct open-state request. */
-  "open-change": [value: boolean, previous: boolean, nativeEvent: Event | null];
+  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{
@@ -91,7 +91,7 @@ function commitOpen(value: boolean, nativeEvent: Event | null = null): boolean {
   const changed = openState.set(next);
   if (changed || previous !== next) {
     emit("update:open", next);
-    emit("open-change", next, previous, nativeEvent);
+    emit("openChange", next, previous, nativeEvent);
   }
   return changed || previous !== next;
 }
@@ -118,7 +118,7 @@ watch(disabledState, (next, previousDisabled) => {
     const changed = openState.set(false);
     if (changed || previous) {
       emit("update:open", false);
-      emit("open-change", false, previous, null);
+      emit("openChange", false, previous, null);
     }
   }
 });

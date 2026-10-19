@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useSlots, useTemplateRef } from "vue";
+import { useTemplateRef } from "vue";
 
 import type { PrimitiveAs, PrimitiveElement } from "./primitive.ts";
 
@@ -12,7 +12,8 @@ const { as = "div" } = defineProps<{
   readonly as?: PrimitiveAs;
 }>();
 
-const slots = useSlots();
+/** Forwards every slot to the rendered element unchanged. */
+const slots = defineSlots<{ [name: string]: () => unknown }>();
 const element = useTemplateRef<PrimitiveElement>("element");
 
 function getSlotNames(): string[] {

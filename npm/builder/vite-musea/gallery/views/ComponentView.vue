@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, useTemplateRef } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 import { mdiViewGrid, mdiFolder, mdiChevronUp, mdiChevronDown } from "@mdi/js";
 import { useArts } from "../composables/useArts";
@@ -34,7 +34,7 @@ const { setCurrentVariant } = useEventCapture();
 const activeTab = ref<"variants" | "props" | "docs" | "a11y" | "vrt">("variants");
 const actionCount = computed(() => events.value.length);
 const actionsExpanded = ref(false);
-const actionsContentRef = ref<HTMLElement | null>(null);
+const actionsContentRef = useTemplateRef<HTMLElement>("actionsContentRef");
 const actionsPanel = useResizable({
   direction: "vertical",
   minSize: 88,

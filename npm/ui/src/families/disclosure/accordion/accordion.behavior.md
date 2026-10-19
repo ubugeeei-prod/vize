@@ -15,7 +15,7 @@ trigger, or arrow-key navigation. `hidden="until-found"` keeps find-in-page supp
 | any render                                                        | Root, item, trigger, and content ids derive from the root id and item value; the trigger is a native `button` inside a native `h3` heading.   | `renders APG accordion semantics with deterministic ids and native headings`     |
 | open item                                                         | Trigger reports `aria-expanded="true"` and `aria-controls`; content is a `region` labelled by the trigger and has no `hidden`.                | `renders APG accordion semantics with deterministic ids and native headings`     |
 | `type="single"`, not `collapsible`, click on the open trigger     | State is unchanged; the open trigger reports `aria-disabled="true"` and `data-locked`.                                                        | `single accordion switches items and locks the open item unless collapsible`     |
-| `type="single"`, click on a closed trigger                        | The clicked item opens, the previous one closes, and `update:modelValue` plus `value-change` report the scalar model and native event.        | `single accordion switches items and locks the open item unless collapsible`     |
+| `type="single"`, click on a closed trigger                        | The clicked item opens, the previous one closes, and `update:modelValue` plus `valueChange` report the scalar model and native event.         | `single accordion switches items and locks the open item unless collapsible`     |
 | `type="single"`, `collapsible`, click on the open trigger         | The item closes and the model becomes `null`.                                                                                                 | `collapsible single accordion collapses the open item to null`                   |
 | `type="multiple"`, clicks                                         | Items open and close independently; the model is a readonly list in opening order.                                                            | `multiple accordion keeps independent items open and emits readonly lists`       |
 | controlled `modelValue`                                           | Requests emit the next model but rendered state follows the prop until the parent accepts it.                                                 | `controlled accordion waits for the parent to accept each request`               |
@@ -43,7 +43,7 @@ trigger, or arrow-key navigation. `hidden="until-found"` keeps find-in-page supp
 
 | Component               | State x input                        | Outcome                                                                                                      |
 | ----------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `accordion-root.vue`    | controlled or uncontrolled model     | Owns open items, deterministic ids, keyboard navigation, and emits `update:modelValue`/`value-change`.       |
+| `accordion-root.vue`    | controlled or uncontrolled model     | Owns open items, deterministic ids, keyboard navigation, and emits `update:modelValue`/`valueChange`.        |
 | `accordion-item.vue`    | registered `value`                   | Publishes item and Collapsible contexts, `data-state`, and `data-disabled`.                                  |
 | `accordion-header.vue`  | root `headingLevel` or `level`       | Renders the native heading around the trigger.                                                               |
 | `accordion-trigger.vue` | click, Enter/Space, arrows, Home/End | Toggles its item through native button activation and moves focus between enabled triggers.                  |
@@ -70,7 +70,7 @@ trigger, or arrow-key navigation. `hidden="until-found"` keeps find-in-page supp
 | Event               | Payload                                  | Contract                                         |
 | ------------------- | ---------------------------------------- | ------------------------------------------------ |
 | `update:modelValue` | `[value]`                                | Emitted for every distinct model request.        |
-| `value-change`      | `[value, previous, nativeEvent \| null]` | Emitted after every distinct model request.      |
+| `valueChange`       | `[value, previous, nativeEvent \| null]` | Emitted after every distinct model request.      |
 | `click` (trigger)   | `[nativeEvent: MouseEvent]`              | Preventable before the trigger toggles its item. |
 
 ## Parts And Data

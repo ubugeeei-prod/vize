@@ -59,7 +59,7 @@ export function mentionOptions(
       items: people,
       ...rootProps,
     },
-    record: ["update:modelValue", "select", "update:query", "query-change", "update:open"],
+    record: ["update:modelValue", "select", "update:query", "queryChange", "update:open"],
     slots: {
       default: (state: MentionSlotState<Person>) => [
         h(MentionInput, { ariaLabel: "Message", ...inputProps }),

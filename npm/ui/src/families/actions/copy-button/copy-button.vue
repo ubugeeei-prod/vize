@@ -15,8 +15,6 @@ import type {
 type CopyButtonKeyboardPhase = "keydown" | "keyup";
 type CopyButtonKeyboardAction = "activate" | "prevent" | "ignore";
 
-const COPY_BUTTON_CLIPBOARD_UNAVAILABLE = "VIZE_UI_COPY_BUTTON_CLIPBOARD_UNAVAILABLE";
-
 const {
   as = "button",
   native = undefined,
@@ -32,12 +30,14 @@ const {
   writer = undefined,
 } = defineProps<CopyButtonProps>();
 
+const emit = defineEmits<CopyButtonEmits>();
+
+const COPY_BUTTON_CLIPBOARD_UNAVAILABLE = "VIZE_UI_COPY_BUTTON_CLIPBOARD_UNAVAILABLE";
+
 defineSlots<{
   /** Renders button contents with the current copy state. */
   default(props: CopyButtonSlotState): unknown;
 }>();
-
-const emit = defineEmits<CopyButtonEmits>();
 
 const element = useTemplateRef<CopyButtonElement>("element");
 const stateValue = shallowRef<CopyButtonState>("idle");

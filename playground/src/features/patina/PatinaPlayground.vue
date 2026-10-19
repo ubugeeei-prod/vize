@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import "./PatinaPlayground.css";
-import { ref, watch, computed, onMounted, onUnmounted, inject, type ComputedRef } from "vue";
+import {
+  ref,
+  watch,
+  computed,
+  onMounted,
+  onUnmounted,
+  inject,
+  type ComputedRef,
+  useTemplateRef,
+} from "vue";
 import MonacoEditor from "../../shared/MonacoEditor.vue";
 import type { WasmModule, LintResult, LintRule } from "../../wasm/index";
 import { getWasm } from "../../wasm/index";
@@ -24,7 +33,7 @@ const rules = ref<LintRule[]>([]);
 const error = ref<string | null>(null);
 const activeTab = ref<"diagnostics" | "rules">("diagnostics");
 const lintTime = ref<number | null>(null);
-const editorRef = ref<InstanceType<typeof MonacoEditor> | null>(null);
+const editorRef = useTemplateRef<InstanceType<typeof MonacoEditor>>("editorRef");
 
 // Wire in composables (lazy callbacks to resolve circular dependency)
 let lintFn: () => void = () => {};

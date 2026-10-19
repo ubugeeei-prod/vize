@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { useTemplateRef } from "vue";
 import { useFullscreen } from "@vizejs/composable/use-fullscreen";
 import { useMounted } from "@vizejs/composable/use-mounted";
 
 const mounted = useMounted();
-const slide = ref<HTMLElement | null>(null);
+const slide = useTemplateRef<HTMLElement>("slide");
 const { supported, isFullscreen, toggle } = useFullscreen(slide);
 </script>
 
