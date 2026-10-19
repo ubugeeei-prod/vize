@@ -5,6 +5,23 @@ use super::{
     SimpleExpressionNode, SlotOutletIRNode, SourceLocation, String, TransformContext, Vec,
     transform_children,
 };
+use crate::ir::{SlotLayout, finish_slot_fallback};
+
+/// Lower outlet fallback content, finishing its boundary inside slot content.
+pub(super) fn lower_fallback<'a>(
+    ctx: &mut TransformContext<'a>,
+    el: &ElementNode<'a>,
+) -> Option<BlockIRNode<'a>> {
+    if el.children.is_empty() {
+        return None;
+    }
+    let mut fallback = transform_children(ctx, &el.children);
+    if ctx.slot_content_depth > 0 {
+        let layout = SlotLayout::new(&ctx.templates, &ctx.element_template_map);
+        finish_slot_fallback(&mut fallback, &layout);
+    }
+    Some(fallback)
+}
 
 pub(super) fn get_slot_outlet_name<'a>(
     ctx: &TransformContext<'a>,
@@ -174,7 +191,7 @@ pub(in crate::lower) fn transform_slot<'a>(
         ctx.enter_non_reactive_scope();
     }
     let id = ctx.next_id();
-    let fallback = (!el.children.is_empty()).then(|| transform_children(ctx, &el.children));
+    let fallback = lower_fallback(ctx, el);
     block
         .operation
         .push(OperationNode::SlotOutlet(SlotOutletIRNode {

@@ -254,8 +254,28 @@ fn template_v_for_nested_if_root_keeps_runtime_directive_wrappers() {
     );
 }
 
+fn legacy(source: &str) -> String {
+    let allocator = Allocator::new();
+    let (_, errors, result) = vize_atelier_dom::compile_template_legacy_with_options(
+        &allocator,
+        source,
+        vize_atelier_dom::DomCompilerOptions::default(),
+    );
+    assert!(
+        errors.is_empty(),
+        "legacy lane errors for {source:?}: {errors:?}"
+    );
+    format!("{}\n{}", result.preamble, result.code)
+}
+
+/// Vue 3.5 keys a sole component directly; both lanes (the corpus oracle too) agree.
 #[test]
 fn single_component_template_loops_match_direct_component_items() {
+    let keyed = legacy(r#"<template v-for="o in xs" :key="o.id"><Comp :a="o" /></template>"#);
+    assert!(
+        keyed.contains("return (_openBlock(), _createBlock(_component_Comp, {\n      key: o.id,\n      a: o\n    }, null, 8 /* PROPS */, [\"a\"]))"),
+        "{keyed}"
+    );
     for (template, direct) in [
         (
             r#"<template v-for="item in list" :key="item.id"><Foo /></template>"#,
@@ -271,5 +291,6 @@ fn single_component_template_loops_match_direct_component_items() {
         ),
     ] {
         assert_eq!(assembled(template), assembled(direct), "{template}");
+        assert_eq!(legacy(template), legacy(direct), "legacy {template}");
     }
 }

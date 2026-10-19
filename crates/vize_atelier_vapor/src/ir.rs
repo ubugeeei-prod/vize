@@ -5,6 +5,7 @@ mod events;
 pub(crate) use events::{is_on, listener_prop};
 mod props;
 mod slot_roots;
+pub(crate) use slot_roots::{Layout as SlotLayout, finish_slot, finish_slot_fallback};
 mod slots;
 
 pub use control_flow::{ForIRNode, IfIRNode, KeyIRNode, NegativeBranch};

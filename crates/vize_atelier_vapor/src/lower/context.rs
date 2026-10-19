@@ -29,6 +29,8 @@ pub(crate) struct TransformContext<'a> {
     pub(crate) non_reactive_keys: bool,
     /// Preserve authored text anchors in structural slot bodies.
     pub(crate) structural_slot_spans: bool,
+    /// Component slot bodies being lowered; their outlet fallbacks own boundaries.
+    pub(crate) slot_content_depth: usize,
     pub(crate) diagnostics: std::vec::Vec<String>,
     /// `Some` when a source map is requested.
     pub(crate) template_spans: Option<TemplateSpans>,
@@ -50,6 +52,7 @@ impl<'a> TransformContext<'a> {
             for_depth: 0,
             non_reactive_keys: false,
             structural_slot_spans: false,
+            slot_content_depth: 0,
             diagnostics: std::vec::Vec::new(),
             template_spans: None,
         }

@@ -5,7 +5,7 @@ mod deferred;
 mod insertion;
 mod outlet;
 pub(super) use outlet::transform_slot;
-use outlet::{get_slot_outlet_name, get_slot_outlet_props};
+use outlet::{get_slot_outlet_name, get_slot_outlet_props, lower_fallback};
 pub(super) mod template;
 
 use vize_carton::{Box, String, Vec, ensure_sufficient_stack};
@@ -377,7 +377,7 @@ pub(super) fn transform_classified_element<'a>(
         ElementType::Slot => {
             let name = get_slot_outlet_name(ctx, el);
             let props = get_slot_outlet_props(ctx, el);
-            let fallback = (!el.children.is_empty()).then(|| transform_children(ctx, &el.children));
+            let fallback = lower_fallback(ctx, el);
             let slot_outlet = SlotOutletIRNode {
                 flags: 0,
                 id: element_id,

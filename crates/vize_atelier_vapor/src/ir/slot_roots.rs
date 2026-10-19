@@ -5,19 +5,53 @@ use super::{
 };
 use vize_carton::{FxHashMap, ensure_sufficient_stack};
 
-struct Layout<'a> {
+/// Registered element templates, used to decide whether a returned root is content.
+pub(crate) struct Layout<'a> {
     templates: &'a [&'a str],
     elements: &'a FxHashMap<usize, usize>,
 }
 
+impl<'a> Layout<'a> {
+    pub(crate) fn new(templates: &'a [&'a str], elements: &'a FxHashMap<usize, usize>) -> Self {
+        Self {
+            templates,
+            elements,
+        }
+    }
+}
+
 impl RootIRNode<'_> {
-    /// Both lowering lanes finish the same explicit slot-boundary contract.
+    /// The native lane finishes slot boundaries in one pass over its emitted IR.
+    /// The lowering lane finishes each slot and in-slot fallback as it is built.
     pub(crate) fn prepare_slot_roots(&mut self) {
-        let layout = Layout {
-            templates: &self.templates,
-            elements: &self.element_template_map,
-        };
+        let layout = Layout::new(&self.templates, &self.element_template_map);
         visit_block(&mut self.block, &layout, false);
+    }
+}
+
+/// Finish a complete component slot and its conditional alternatives.
+pub(crate) fn finish_slot(slot: &mut IRSlot<'_>, layout: &Layout<'_>) {
+    ensure_sufficient_stack(|| {
+        finish_slot_root(slot, layout);
+        if let Some(IRSlotControl::If {
+            negative: Some(next),
+            ..
+        }) = &mut slot.control
+        {
+            finish_slot(next, layout);
+        }
+    });
+}
+
+/// Finish an outlet fallback that is rendered inside component slot content.
+pub(crate) fn finish_slot_fallback(fallback: &mut BlockIRNode<'_>, layout: &Layout<'_>) {
+    mark(fallback, layout, false);
+}
+
+fn finish_slot_root(slot: &mut IRSlot<'_>, layout: &Layout<'_>) {
+    slot.nonstable = !stable(&slot.block, layout);
+    if slot.nonstable {
+        mark_returns(&mut slot.block, layout, false);
     }
 }
 
@@ -68,10 +102,13 @@ fn stable(block: &BlockIRNode<'_>, layout: &Layout<'_>) -> bool {
 }
 
 fn mark(block: &mut BlockIRNode<'_>, layout: &Layout<'_>, shared: bool) {
+    if !stable(block, layout) {
+        mark_returns(block, layout, shared);
+    }
+}
+
+fn mark_returns(block: &mut BlockIRNode<'_>, layout: &Layout<'_>, shared: bool) {
     ensure_sufficient_stack(|| {
-        if stable(block, layout) {
-            return;
-        }
         let shared = shared
             || block
                 .operation
@@ -113,10 +150,7 @@ fn mark_negative(negative: Option<&mut NegativeBranch<'_>>, layout: &Layout<'_>,
 
 fn visit_slot(slot: &mut IRSlot<'_>, layout: &Layout<'_>) {
     ensure_sufficient_stack(|| {
-        slot.nonstable = !stable(&slot.block, layout);
-        if slot.nonstable {
-            mark(&mut slot.block, layout, false);
-        }
+        finish_slot_root(slot, layout);
         visit_block(&mut slot.block, layout, true);
         if let Some(IRSlotControl::If {
             negative: Some(next),

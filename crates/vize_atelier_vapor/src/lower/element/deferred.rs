@@ -8,7 +8,7 @@ use super::template::{RootAttributes, is_static_element, transform_template_ref}
 use super::{
     BlockIRNode, ChildRefIRNode, ElementNode, ElementType, NextRefIRNode, OperationNode, PropNode,
     SlotOutletIRNode, TemplateChildNode, TransformContext, get_slot_outlet_name,
-    get_slot_outlet_props, transform_children, transform_directive, transform_for_node_into_parent,
+    get_slot_outlet_props, lower_fallback, transform_directive, transform_for_node_into_parent,
     transform_if_node_into_parent, transform_text_children,
 };
 
@@ -278,7 +278,7 @@ fn transform_slot_outlet_child<'a>(
 ) {
     let name = get_slot_outlet_name(ctx, el);
     let props = get_slot_outlet_props(ctx, el);
-    let fallback = (!el.children.is_empty()).then(|| transform_children(ctx, &el.children));
+    let fallback = lower_fallback(ctx, el);
     block
         .operation
         .push(OperationNode::SlotOutlet(SlotOutletIRNode {
