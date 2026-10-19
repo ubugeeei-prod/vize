@@ -124,7 +124,10 @@ mod tests {
         let source = "<script setup>const count = 1</script>\n<template lang=\"pug\">\np(:title=\"count\") {{ count }}\n</template>\n<style>.a{}</style>\n";
         let sfc = AuthoredSfc::new(source);
         let analyzed = sfc.analyzed();
-        assert!(analyzed.contains("<p :title=\"count\">"), "{analyzed}");
+        assert_eq!(
+            analyzed,
+            "<script setup>const count = 1</script>\n<template lang=\"pug\"><p :title=\"count\">{{ count }}</p></template>\n<style>.a{}</style>\n"
+        );
         let attribute = analyzed.find("\"count\"").unwrap() + 1;
         let authored = sfc.to_authored(attribute..attribute + 5);
         assert_eq!(&source[authored.clone()], "count");
