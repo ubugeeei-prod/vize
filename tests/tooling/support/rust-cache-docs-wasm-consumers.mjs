@@ -19,7 +19,6 @@ const dynamicPrefixes = new Set([
   "fuzz-",
   "native-smoke-",
   "fresh-install-smoke-",
-  "oxc-pure-capture-",
   "real-project-matrix-",
   "release-cli-",
   "release-native-",

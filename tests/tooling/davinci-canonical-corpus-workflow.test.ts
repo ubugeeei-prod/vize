@@ -85,7 +85,7 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tools/support/compat/github/require-needs-success.ts",
     "tools/support/compat/github/require-rust-tier.ts",
     "tools/support/compat/github/plan-source-checks.ts",
-    "tools/benchmarks/scripts/vue-benchmarks-current-typecheck.mjs",
+    "tools/benchmarks/scripts/vue-benchmarks-replay.ts",
     ".github/workflows/davinci-canonical-corpus.yml",
     ".github/workflows/pr-source-checks.yml",
     ".github/workflows/check.yml",
