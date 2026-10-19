@@ -181,6 +181,18 @@ pub(crate) fn generated_text_range(
 /// leading character keeps its case and `_` is not a separator; renaming either
 /// way looks up a key no declared prop matches, so a bound prop reads as missing
 /// (#3863). `"my-prop"` -> `"myProp"`, `"MyProp"` -> `"MyProp"`, `"my_prop"` -> `"my_prop"`.
+/// Key of an authored component attribute in a checked props object. Like
+/// `vue-tsc` (default `htmlAttributes: ['aria-*']`), an `aria-*` name keeps its
+/// HTML spelling and is checked as an attribute; other kebab names camelize
+/// like Vue props.
+pub(crate) fn component_prop_key(name: &str) -> String {
+    if name.starts_with("aria-") {
+        String::from(name)
+    } else {
+        to_camel_case(name)
+    }
+}
+
 pub(crate) fn to_camel_case(s: &str) -> String {
     let mut result = String::with_capacity(s.len());
     let mut capitalize_next = false;

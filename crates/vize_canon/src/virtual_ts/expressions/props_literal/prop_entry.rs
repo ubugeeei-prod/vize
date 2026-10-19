@@ -7,7 +7,7 @@ use crate::virtual_ts::expressions::prop_sources::{
     PropSpan, append_prop_value, generated_prop_span, prop_name_source_range,
     prop_value_source_range,
 };
-use crate::virtual_ts::helpers::to_camel_case;
+use crate::virtual_ts::helpers::component_prop_key;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 use vize_carton::{String, append};
@@ -71,7 +71,7 @@ pub(super) fn append_prop_entry(
             (template_offset + prop.end) as usize,
         )
     };
-    let camel_prop_name = to_camel_case(prop.name.as_str());
+    let camel_prop_name = component_prop_key(prop.name.as_str());
 
     if wrap_for_following_spread {
         if *open_named_group {

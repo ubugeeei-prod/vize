@@ -257,3 +257,17 @@ fn empty_options_component_does_not_infer_unowned_optional_raw_metadata() {
         "{code}"
     );
 }
+
+/// `vue-tsc` keeps `aria-*` component attributes as HTML attributes
+/// (`htmlAttributes: ['aria-*']`), so the checked props object must not
+/// camelize them onto a declared `ariaLabel` prop.
+#[test]
+fn checked_component_props_keep_aria_attributes_as_authored() {
+    let code = generate_usage(
+        "import Child from './Child.vue'; const label: string | undefined = undefined;",
+        r#"<Child :aria-label="label" :data-test="label" />"#,
+        true,
+    );
+    assert!(code.contains("\"aria-label\": label"), "{code}");
+    assert!(code.contains("\"dataTest\": label"), "{code}");
+}
