@@ -301,11 +301,12 @@ test("suppression telemetry reports the mapped FP candidate and the unmapped nam
     readJson(path.join(expectedDir, "suppression-report.json")),
   );
   const lines = result.stdout.trim().split("\n");
-  assert.equal(
-    lines[1],
-    "scope-proof: files-scanned=4 suppression-comments=2 named=2 bare=0 " +
-      "rules-mapped=127 mapped-seen=1 unmapped-seen=1 fp-candidates=1",
+  // The rule-map size follows the linter catalog; only the fixture counts are pinned.
+  const proof = lines[1]?.match(
+    /^scope-proof: files-scanned=4 suppression-comments=2 named=2 bare=0 rules-mapped=(\d+) mapped-seen=1 unmapped-seen=1 fp-candidates=1$/,
   );
+  assert.ok(proof, lines[1]);
+  assert.ok(Number(proof[1]) > 0, lines[1]);
 });
 
 // This exercises the JavaScript compatibility writer with synthetic diagnostic
