@@ -30,6 +30,7 @@ use super::{
     setup_props::{RuntimePropResolveCache, augment_type_based_props_from_script_context},
 };
 
+pub(super) mod generic_attribute;
 mod style_modules;
 mod template;
 mod types;
@@ -300,8 +301,15 @@ pub(super) fn generate_vue_virtual_ts(
     }
 
     let mut code = output.code;
-    let (mut mappings, mapping_meta, semantic_links, prop_default_key_links) =
+    let (mut mappings, mut mapping_meta, semantic_links, prop_default_key_links) =
         output.mapping.into_binding_parts_with_metadata();
+    generic_attribute::map_generic_attribute(
+        &code,
+        &mut mappings,
+        &mut mapping_meta,
+        source,
+        descriptor,
+    );
     style_modules::append_style_scoped_classes(
         &mut code,
         source,

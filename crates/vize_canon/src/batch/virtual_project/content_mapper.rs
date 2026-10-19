@@ -29,7 +29,7 @@ pub use protocol::{
 
 #[path = "content_mapper_directives.rs"]
 mod directives;
-use directives::sfc_diagnostic_directives;
+use directives::{sfc_diagnostic_directives, with_generic_echoes};
 
 #[path = "content_mapper_component_name.rs"]
 mod component_name;
@@ -38,6 +38,7 @@ use component_name::content_mapper_component_name;
 use super::build::{descriptor_uses_jsx_script, prepend_vue_jsx_reference};
 use super::diagnostics::invalid_sfc_fallback_virtual_ts;
 use super::javascript_sfc::prepare_script_blocks;
+use super::vue_codegen::generic_attribute::GenericCopies;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
 #[path = "content_mapper_masked_spans.rs"]
@@ -210,7 +211,13 @@ pub fn generate_vue_content_mapper_transform_with_options(
         extension: CONTENT_MAPPER_VIRTUAL_EXTENSION,
         // Directive comments are read from HTML templates and SFC blocks only.
         diagnostic_directives: (!authored.is_derived())
-            .then(|| sfc_diagnostic_directives(content, &descriptor, &spans))
+            .then(|| {
+                let echoes = GenericCopies::find(&code, &mappings, content, &descriptor);
+                with_generic_echoes(
+                    sfc_diagnostic_directives(content, &descriptor, &spans),
+                    echoes.as_ref(),
+                )
+            })
             .flatten(),
         mappings: spans,
         semantic_links: protocol_semantic_links(&semantic_links),

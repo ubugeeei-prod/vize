@@ -10,6 +10,7 @@ use std::ops::Range;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::String as CompactString;
 
+use super::super::vue_codegen::generic_attribute::GenericCopies;
 use crate::template_diagnostic_directives::{DirectivePolicy, TemplateDiagnosticDirectives};
 
 use super::protocol::{
@@ -86,6 +87,32 @@ pub(super) fn sfc_diagnostic_directives(
         unused_expect_directive_diagnostics,
         directives,
     })
+}
+
+/// Generated copies of the `generic` attribute repeat the diagnostics of the
+/// one mapped copy; ignore them so each authored error reports once.
+pub(super) fn with_generic_echoes(
+    directives: Option<ContentMapperDiagnosticDirectives>,
+    copies: Option<&GenericCopies>,
+) -> Option<ContentMapperDiagnosticDirectives> {
+    let Some(copies) = copies else {
+        return directives;
+    };
+    let mut directives = directives.unwrap_or(ContentMapperDiagnosticDirectives {
+        unused_expect_directive_diagnostics: Vec::new(),
+        directives: Vec::new(),
+    });
+    directives.directives.extend(copies.echoes().map(|echo| {
+        ContentMapperDiagnosticDirective([
+            copies.attribute.start,
+            copies.attribute.len(),
+            echo.start,
+            echo.end,
+            DIRECTIVE_POLICY_IGNORE,
+            0,
+        ])
+    }));
+    Some(directives)
 }
 
 fn mapped_virtual_ranges(
