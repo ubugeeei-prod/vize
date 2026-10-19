@@ -118,7 +118,7 @@ export function unpackPublicArchive(kind: "zip" | "tar", archive: string, destin
   } finally {
     fs.writeFileSync(
       `${destination}.process.json`,
-      `${JSON.stringify({ status: error === undefined ? 0 : 1, error: error === undefined ? undefined : String(error) }, null, 2)}\n`,
+      `${JSON.stringify({ status: error === undefined ? 0 : 1, error: error instanceof Error ? error.message : undefined }, null, 2)}\n`,
     );
   }
 }
