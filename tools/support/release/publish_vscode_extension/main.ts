@@ -8,7 +8,7 @@
 // 3. Skip publish entirely when the exact version is already visible.
 // 4. Treat a non-zero `vsce publish` exit as success if the version becomes
 //    visible immediately after the attempted publish.
-import { collectOutput, println, run, runMain, sleepSeconds, writeStderr } from "../command_io.ts";
+import { collectOutput, println, run, runMain, sleepSeconds } from "../command_io.ts";
 import { cliArgs, moonTrim, nonEmptyEnv, resolvePath } from "../command_runtime.ts";
 import {
   envIntAtLeast,
