@@ -57,6 +57,11 @@ pub struct SfcScriptContext<'a> {
     /// Whether this is a `<script setup>` block. Some Vue macros are only
     /// available there, even though ordinary scripts may call the same APIs.
     pub is_script_setup: bool,
+    /// Whether the block is TypeScript: an SFC block with `lang="ts"` or
+    /// `lang="tsx"`, or a `.ts`/`.tsx`/`.mts`/`.cts` file. Every block is
+    /// parsed as TypeScript, so rules that only make sense with type syntax
+    /// read this instead of the parse result.
+    pub typescript: bool,
     /// Raw `<template>` block content, when the SFC declares a template.
     pub template_source: Option<&'a str>,
     /// Parsed `<template>` AST, when the SFC declares a template, some enabled

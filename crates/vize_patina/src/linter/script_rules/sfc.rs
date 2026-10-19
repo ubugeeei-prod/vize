@@ -294,6 +294,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
     let sfc_context = SfcScriptContext {
         is_sfc: true,
         is_script_setup: false,
+        typescript: false,
         template_source: descriptor
             .template
             .as_ref()
@@ -327,6 +328,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
                 offset,
                 script_parsed.as_ref(),
                 SfcScriptContext {
+                    typescript: is_typescript_block(descriptor.script.as_ref()),
                     sibling_program: setup_program,
                     ..sfc_context
                 },
@@ -346,6 +348,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
                 script_setup_parsed.as_ref(),
                 SfcScriptContext {
                     is_script_setup: true,
+                    typescript: is_typescript_block(descriptor.script_setup.as_ref()),
                     sibling_program: normal_program,
                     ..sfc_context
                 },
@@ -381,6 +384,13 @@ fn sfc_script_source_type(lang: Option<&str>) -> oxc_span::SourceType {
         lang,
         None | Some("js" | "javascript" | "jsx" | "tsx")
     ))
+}
+
+fn is_typescript_block(block: Option<&vize_atelier_sfc::SfcScriptBlock<'_>>) -> bool {
+    matches!(
+        block.and_then(|block| block.lang.as_deref()),
+        Some("ts" | "tsx" | "typescript")
+    )
 }
 
 #[cfg(test)]

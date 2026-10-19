@@ -90,7 +90,7 @@ Imposer PascalCase à l’option `name` du composant
 [Mauvais](#script-component-options-name-casing-bad) · [Bon](#script-component-options-name-casing-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -218,7 +218,7 @@ Imposer la forme typée defineEmits&lt;{}&gt;() à la place de la forme à l’e
 [Mauvais](#script-define-emits-declaration-bad) · [Bon](#script-define-emits-declaration-good)
 
 Gravité par défaut: `warning`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -348,7 +348,7 @@ Imposer la forme typée defineProps&lt;{ ... }&gt;() à la place de la forme à 
 [Mauvais](#script-define-props-declaration-bad) · [Bon](#script-define-props-declaration-good)
 
 Gravité par défaut: `warning`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -628,7 +628,7 @@ Interdire une valeur par défaut sur une prop Boolean
 [Mauvais](#script-no-boolean-default-bad) · [Bon](#script-no-boolean-default-good)
 
 Gravité par défaut: `warning`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -2622,7 +2622,7 @@ Signaler les événements déclarés qui ne sont jamais émis
 [Mauvais](#script-no-unused-emit-declarations-bad) · [Bon](#script-no-unused-emit-declarations-good)
 
 Gravité par défaut: `warning`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -2876,7 +2876,7 @@ Préférer defineOptions() à un &lt;script&gt; ordinaire qui ne définit que na
 [Mauvais](#script-prefer-define-options-bad) · [Bon](#script-prefer-define-options-good)
 
 Gravité par défaut: `warning`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -3347,7 +3347,7 @@ Exiger une valeur par défaut pour chaque prop facultative non booléenne
 [Mauvais](#script-require-default-prop-bad) · [Bon](#script-require-default-prop-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -3841,7 +3841,7 @@ Exiger un type explicite sur une prop dont le type à l’exécution est `Object
 [Mauvais](#script-require-typed-object-prop-bad) · [Bon](#script-require-typed-object-prop-good)
 
 Gravité par défaut: `warning`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.

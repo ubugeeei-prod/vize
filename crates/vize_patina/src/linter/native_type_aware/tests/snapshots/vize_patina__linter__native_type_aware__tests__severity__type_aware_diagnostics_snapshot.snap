@@ -4,6 +4,24 @@ expression: diagnostics
 ---
 [
     (
+        "script/define-emits-declaration",
+        "Prefer the type-based defineEmits<{}>() declaration over the runtime/array form",
+        72,
+        83,
+        Some(
+            "Use the type-based form: `const emit = defineEmits<{ change: [id: number] }>()`",
+        ),
+    ),
+    (
+        "script/define-props-declaration",
+        "Prefer the type-based `defineProps<{ ... }>()` declaration over the runtime form",
+        51,
+        71,
+        Some(
+            "Move the props to a type argument, e.g. `defineProps<{ count?: number }>()`, instead of passing a runtime object/array.",
+        ),
+    ),
+    (
         "script/require-prop-types",
         "Prop 'msg' should define a type.",
         64,

@@ -91,7 +91,7 @@ title: "类型与脚本规则"
 [错误示例](#script-component-options-name-casing-bad) · [正确示例](#script-component-options-name-casing-good)
 
 默认严重程度: `error`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -219,7 +219,7 @@ emit('myEvent')
 [错误示例](#script-define-emits-declaration-bad) · [正确示例](#script-define-emits-declaration-good)
 
 默认严重程度: `warning`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -349,7 +349,7 @@ defineSlots<{ default(props: {}): any }>()
 [错误示例](#script-define-props-declaration-bad) · [正确示例](#script-define-props-declaration-good)
 
 默认严重程度: `warning`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -629,7 +629,7 @@ watch(query, async (value, _oldValue, onCleanup) => {
 [错误示例](#script-no-boolean-default-bad) · [正确示例](#script-no-boolean-default-good)
 
 默认严重程度: `warning`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -2623,7 +2623,7 @@ export default { setup() { return { Child }; } };
 [错误示例](#script-no-unused-emit-declarations-bad) · [正确示例](#script-no-unused-emit-declarations-good)
 
 默认严重程度: `warning`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -2877,7 +2877,7 @@ const doubled = computed(() => count.value * 2);
 [错误示例](#script-prefer-define-options-bad) · [正确示例](#script-prefer-define-options-good)
 
 默认严重程度: `warning`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -3348,7 +3348,7 @@ const error = ref(null)
 [错误示例](#script-require-default-prop-bad) · [正确示例](#script-require-default-prop-good)
 
 默认严重程度: `error`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -3842,7 +3842,7 @@ const user = inject(UserKey)
 [错误示例](#script-require-typed-object-prop-bad) · [正确示例](#script-require-typed-object-prop-good)
 
 默认严重程度: `warning`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。

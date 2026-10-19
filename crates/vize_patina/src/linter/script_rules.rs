@@ -29,7 +29,8 @@ mod setup_emits_dispatch_tests;
 
 use html_scripts::extract_inline_scripts;
 use prefilter::{
-    script_rule_applies_to_filename, script_rule_applies_to_module, script_rule_may_match,
+    is_typescript_filename, script_rule_applies_to_filename, script_rule_applies_to_language,
+    script_rule_applies_to_module, script_rule_may_match,
 };
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
@@ -220,7 +221,9 @@ fn run_builtin_script_rule(
     runtime_props_eligible: bool,
     result: &mut LintResult,
 ) {
-    if !entry_may_match(linter, entry, source, result.filename.as_str()) {
+    if !entry_may_match(linter, entry, source, result.filename.as_str())
+        || !script_rule_applies_to_language(entry.rule_name, sfc.typescript)
+    {
         return;
     }
     let mut lint = ScriptLintResult::default();
@@ -337,7 +340,7 @@ pub(crate) fn append_builtin_script_rules_for_source(
 
     for entry in active_builtin_script_rule_entries(linter, linter.vapor_mode) {
         let rule = resolved_rule(linter, entry);
-        // Inline HTML scripts have no SFC template, so the context is empty.
+        // Standalone and inline HTML scripts have no SFC template.
         run_builtin_script_rule(
             linter,
             entry,
@@ -345,7 +348,10 @@ pub(crate) fn append_builtin_script_rules_for_source(
             source,
             offset,
             parsed.as_ref(),
-            SfcScriptContext::default(),
+            SfcScriptContext {
+                typescript: is_typescript_filename(result.filename.as_str()),
+                ..SfcScriptContext::default()
+            },
             None,
             None,
             false,

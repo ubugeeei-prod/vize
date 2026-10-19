@@ -89,7 +89,7 @@ title: "型と script のルール"
 [悪い例](#script-component-options-name-casing-bad) · [良い例](#script-component-options-name-casing-good)
 
 既定の重大度: `error`  
-プリセット: _none_  
+プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -217,7 +217,7 @@ defineEmits を型による宣言形式に揃えます。
 [悪い例](#script-define-emits-declaration-bad) · [良い例](#script-define-emits-declaration-good)
 
 既定の重大度: `warning`  
-プリセット: _none_  
+プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -347,7 +347,7 @@ defineProps を型による宣言形式に揃えます。
 [悪い例](#script-define-props-declaration-bad) · [良い例](#script-define-props-declaration-good)
 
 既定の重大度: `warning`  
-プリセット: _none_  
+プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -627,7 +627,7 @@ Boolean prop の冗長な default を検出します。
 [悪い例](#script-no-boolean-default-bad) · [良い例](#script-no-boolean-default-good)
 
 既定の重大度: `warning`  
-プリセット: _none_  
+プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -2621,7 +2621,7 @@ export default { setup() { return { Child }; } };
 [悪い例](#script-no-unused-emit-declarations-bad) · [良い例](#script-no-unused-emit-declarations-good)
 
 既定の重大度: `warning`  
-プリセット: _none_  
+プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -2875,7 +2875,7 @@ name / inheritAttrs だけの通常 script を defineOptions() にまとめま�
 [悪い例](#script-prefer-define-options-bad) · [良い例](#script-prefer-define-options-good)
 
 既定の重大度: `warning`  
-プリセット: _none_  
+プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -3346,7 +3346,7 @@ const error = ref(null)
 [悪い例](#script-require-default-prop-bad) · [良い例](#script-require-default-prop-good)
 
 既定の重大度: `error`  
-プリセット: _none_  
+プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -3840,7 +3840,7 @@ Object / Array の prop に具体的な型を指定します。
 [悪い例](#script-require-typed-object-prop-bad) · [良い例](#script-require-typed-object-prop-good)
 
 既定の重大度: `warning`  
-プリセット: _none_  
+プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。

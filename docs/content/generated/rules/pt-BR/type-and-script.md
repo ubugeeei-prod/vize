@@ -90,7 +90,7 @@ Exigir PascalCase na opção `name` do componente
 [Incorreto](#script-component-options-name-casing-bad) · [Correto](#script-component-options-name-casing-good)
 
 Severidade padrão: `error`  
-Predefinições: _none_  
+Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -218,7 +218,7 @@ Exigir a forma de defineEmits&lt;{}&gt;() baseada em tipos em vez da forma em te
 [Incorreto](#script-define-emits-declaration-bad) · [Correto](#script-define-emits-declaration-good)
 
 Severidade padrão: `warning`  
-Predefinições: _none_  
+Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -348,7 +348,7 @@ Exigir defineProps&lt;{ ... }&gt;() baseado em tipos em vez da forma com objeto 
 [Incorreto](#script-define-props-declaration-bad) · [Correto](#script-define-props-declaration-good)
 
 Severidade padrão: `warning`  
-Predefinições: _none_  
+Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -628,7 +628,7 @@ Proibir um valor padrão em uma prop Boolean
 [Incorreto](#script-no-boolean-default-bad) · [Correto](#script-no-boolean-default-good)
 
 Severidade padrão: `warning`  
-Predefinições: _none_  
+Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -2622,7 +2622,7 @@ Sinalizar eventos declarados que nunca são emitidos
 [Incorreto](#script-no-unused-emit-declarations-bad) · [Correto](#script-no-unused-emit-declarations-good)
 
 Severidade padrão: `warning`  
-Predefinições: _none_  
+Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -2876,7 +2876,7 @@ Preferir defineOptions() a um &lt;script&gt; comum que só define name/inheritAt
 [Incorreto](#script-prefer-define-options-bad) · [Correto](#script-prefer-define-options-good)
 
 Severidade padrão: `warning`  
-Predefinições: _none_  
+Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -3347,7 +3347,7 @@ Exigir um valor padrão para toda prop opcional que não seja Boolean
 [Incorreto](#script-require-default-prop-bad) · [Correto](#script-require-default-prop-good)
 
 Severidade padrão: `error`  
-Predefinições: _none_  
+Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -3841,7 +3841,7 @@ Exigir um tipo explícito em uma prop cujo tipo de tempo de execução seja `Obj
 [Incorreto](#script-require-typed-object-prop-bad) · [Correto](#script-require-typed-object-prop-good)
 
 Severidade padrão: `warning`  
-Predefinições: _none_  
+Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.

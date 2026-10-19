@@ -190,5 +190,121 @@
         "after": "    \"vue/v-on-event-hyphenation\": {\n      \"patinaPresets\": [\n        \"ecosystem\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\""
       }
     ]
+  },
+  {
+    "reason": "opinionated and nuxt: eight props/emits and script setup style rules",
+    "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+    "before": {
+      "bytes": 21998,
+      "sha256": "7e090c3aa73b0ee1243dac5370a4f46d666fec4a8d466aabdfbe3c451e1a7759"
+    },
+    "after": {
+      "bytes": 22110,
+      "sha256": "c47c827bf6984d372d2603e633bed579c5919bc1b6bb53d92eff3c975061a659"
+    },
+    "hunks": [
+      {
+        "before": "    BuiltinScriptRuleEntry { rule_name: RULE_NO_DEPRECATED_EVENTS_API, profile_name: \"patina.script_rule.no_deprecated_events_api\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoDeprecatedEventsApi },\n    BuiltinScriptRuleEntry { rule_name: RULE_COMPONENT_OPTIONS_NAME_CASING, profile_name: \"patina.script_rule.component_options_name_casing\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &ComponentOptionsNameCasing },\n    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, profile_name: \"patina.script_rule.require_prop_type_constructor\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &RequirePropTypeConstructor },\n    BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_MACROS_ORDER, profile_name: \"patina.script_rule.define_macros_order\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &DefineMacrosOrder },\n    BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_EMITS_DECLARATION, profile_name: \"patina.script_rule.define_emits_declaration\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &DefineEmitsDeclaration },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, profile_name: \"patina.script_rule.no_use_computed_property_like_method\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoUseComputedPropertyLikeMethod },\n    BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_PROPS_DECLARATION, profile_name: \"patina.script_rule.define_props_declaration\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &DefinePropsDeclaration },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_REQUIRED_PROP_WITH_DEFAULT, profile_name: \"patina.script_rule.no_required_prop_with_default\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoRequiredPropWithDefault },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, profile_name: \"patina.script_rule.no_deprecated_props_default_this\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoDeprecatedPropsDefaultThis },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_BOOLEAN_DEFAULT, profile_name: \"patina.script_rule.no_boolean_default\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoBooleanDefault },\n    BuiltinScriptRuleEntry { rule_name: RULE_VALID_NEXT_TICK, profile_name: \"patina.script_rule.valid_next_tick\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &ValidNextTick },",
+        "after": "    BuiltinScriptRuleEntry { rule_name: RULE_NO_DEPRECATED_EVENTS_API, profile_name: \"patina.script_rule.no_deprecated_events_api\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoDeprecatedEventsApi },\n    BuiltinScriptRuleEntry { rule_name: RULE_COMPONENT_OPTIONS_NAME_CASING, profile_name: \"patina.script_rule.component_options_name_casing\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &ComponentOptionsNameCasing },\n    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, profile_name: \"patina.script_rule.require_prop_type_constructor\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &RequirePropTypeConstructor },\n    BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_MACROS_ORDER, profile_name: \"patina.script_rule.define_macros_order\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &DefineMacrosOrder },\n    BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_EMITS_DECLARATION, profile_name: \"patina.script_rule.define_emits_declaration\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &DefineEmitsDeclaration },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, profile_name: \"patina.script_rule.no_use_computed_property_like_method\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoUseComputedPropertyLikeMethod },\n    BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_PROPS_DECLARATION, profile_name: \"patina.script_rule.define_props_declaration\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &DefinePropsDeclaration },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_REQUIRED_PROP_WITH_DEFAULT, profile_name: \"patina.script_rule.no_required_prop_with_default\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoRequiredPropWithDefault },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, profile_name: \"patina.script_rule.no_deprecated_props_default_this\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoDeprecatedPropsDefaultThis },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_BOOLEAN_DEFAULT, profile_name: \"patina.script_rule.no_boolean_default\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &NoBooleanDefault },\n    BuiltinScriptRuleEntry { rule_name: RULE_VALID_NEXT_TICK, profile_name: \"patina.script_rule.valid_next_tick\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &ValidNextTick },"
+      },
+      {
+        "before": "    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_TYPED_REF, profile_name: \"patina.script_rule.require_typed_ref\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &RequireTypedRef },\n    BuiltinScriptRuleEntry { rule_name: RULE_PREFER_DEFINE_OPTIONS, profile_name: \"patina.script_rule.prefer_define_options\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &PreferDefineOptions },\n    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_DEFAULT_PROP, profile_name: \"patina.script_rule.require_default_prop\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &RequireDefaultProp },\n    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_PROP_TYPES, profile_name: \"patina.script_rule.require_prop_types\", category: \"Script\", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &RequirePropTypes },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_RESERVED_PROPS, profile_name: \"patina.script_rule.no_reserved_props\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoReservedProps },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_UNUSED_EMIT_DECLARATIONS, profile_name: \"patina.script_rule.no_unused_emit_declarations\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoUnusedEmitDeclarations },\n    BuiltinScriptRuleEntry { rule_name: RULE_RETURN_IN_EMITS_VALIDATOR, profile_name: \"patina.script_rule.return_in_emits_validator\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &ReturnInEmitsValidator },",
+        "after": "    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_TYPED_REF, profile_name: \"patina.script_rule.require_typed_ref\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &RequireTypedRef },\n    BuiltinScriptRuleEntry { rule_name: RULE_PREFER_DEFINE_OPTIONS, profile_name: \"patina.script_rule.prefer_define_options\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &PreferDefineOptions },\n    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_DEFAULT_PROP, profile_name: \"patina.script_rule.require_default_prop\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &RequireDefaultProp },\n    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_PROP_TYPES, profile_name: \"patina.script_rule.require_prop_types\", category: \"Script\", fixable: false, presets: OPINIONATED_SCRIPT_PRESETS, rule: &RequirePropTypes },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_RESERVED_PROPS, profile_name: \"patina.script_rule.no_reserved_props\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoReservedProps },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_UNUSED_EMIT_DECLARATIONS, profile_name: \"patina.script_rule.no_unused_emit_declarations\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &NoUnusedEmitDeclarations },\n    BuiltinScriptRuleEntry { rule_name: RULE_RETURN_IN_EMITS_VALIDATOR, profile_name: \"patina.script_rule.return_in_emits_validator\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &ReturnInEmitsValidator },"
+      },
+      {
+        "before": "    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_VALID_DEFAULT_PROP, profile_name: \"patina.script_rule.require_valid_default_prop\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &RequireValidDefaultProp },\n    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_TYPED_OBJECT_PROP, profile_name: \"patina.script_rule.require_typed_object_prop\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &RequireTypedObjectProp },\n    BuiltinScriptRuleEntry { rule_name: RULE_CUSTOM_EVENT_NAME_CASING, profile_name: \"patina.script_rule.custom_event_name_casing\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &CUSTOM_EVENT_NAME_CASING_RULE },",
+        "after": "    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_VALID_DEFAULT_PROP, profile_name: \"patina.script_rule.require_valid_default_prop\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &RequireValidDefaultProp },\n    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_TYPED_OBJECT_PROP, profile_name: \"patina.script_rule.require_typed_object_prop\", category: \"Script\", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &RequireTypedObjectProp },\n    BuiltinScriptRuleEntry { rule_name: RULE_CUSTOM_EVENT_NAME_CASING, profile_name: \"patina.script_rule.custom_event_name_casing\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &CUSTOM_EVENT_NAME_CASING_RULE },"
+      }
+    ]
+  },
+  {
+    "reason": "opinionated and nuxt: eight props/emits and script setup style rules",
+    "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "before": {
+      "bytes": 30377,
+      "sha256": "b29ae48fa9a5ddc37040129f42207cb44f42a45046bf70ca389d3a673d7f6b3e"
+    },
+    "after": {
+      "bytes": 30993,
+      "sha256": "39e34177acb3af8702875dd51d0f02cc8c653340e08a8562dce3d310f5fbfbb7"
+    },
+    "hunks": [
+      {
+        "before": "    \"script/no-deep-destructure-in-props\",\n    \"script/no-internal-imports\",\n    \"script/no-import-compiler-macros\",\n    \"script/no-reserved-identifiers\",\n    \"script/no-reserved-keys\",\n    \"script/no-dupe-keys\",\n    \"script/no-side-effects-in-computed-properties\",\n    \"script/no-arrow-functions-in-watch\",\n    \"script/no-export-in-script-setup\",\n    \"script/no-deprecated-dollar-listeners-api\",\n    \"script/no-potential-component-option-typo\",\n    \"script/return-in-computed-property\",\n    \"script/no-deprecated-dollar-scopedslots-api\",\n    \"script/no-deprecated-data-object-declaration\",\n    \"script/no-deprecated-destroyed-lifecycle\",\n    \"script/no-deprecated-events-api\",\n    \"script/require-prop-type-constructor\",\n    \"script/no-use-computed-property-like-method\",\n    \"script/no-required-prop-with-default\",\n    \"script/no-deprecated-props-default-this\",\n    \"script/valid-next-tick\",\n    \"script/valid-define-options\",\n    \"script/no-reserved-props\",\n    \"script/return-in-emits-validator\",\n    \"script/valid-define-props\",\n    \"script/valid-define-emits\",\n    \"script/require-valid-default-prop\",\n    \"script/no-ref-as-operand\",\n    \"script/no-duplicate-attr-inheritance\",\n    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\",\n    \"css/no-important\",\n    \"css/no-id-selectors\",",
+        "after": "    \"script/no-deep-destructure-in-props\",\n    \"script/no-internal-imports\",\n    \"script/no-import-compiler-macros\",\n    \"script/no-reserved-identifiers\",\n    \"script/no-reserved-keys\",\n    \"script/no-dupe-keys\",\n    \"script/no-side-effects-in-computed-properties\",\n    \"script/no-arrow-functions-in-watch\",\n    \"script/no-export-in-script-setup\",\n    \"script/no-deprecated-dollar-listeners-api\",\n    \"script/no-potential-component-option-typo\",\n    \"script/return-in-computed-property\",\n    \"script/no-deprecated-dollar-scopedslots-api\",\n    \"script/no-deprecated-data-object-declaration\",\n    \"script/no-deprecated-destroyed-lifecycle\",\n    \"script/no-deprecated-events-api\",\n    \"script/component-options-name-casing\",\n    \"script/require-prop-type-constructor\",\n    \"script/define-emits-declaration\",\n    \"script/no-use-computed-property-like-method\",\n    \"script/define-props-declaration\",\n    \"script/no-required-prop-with-default\",\n    \"script/no-deprecated-props-default-this\",\n    \"script/no-boolean-default\",\n    \"script/valid-next-tick\",\n    \"script/valid-define-options\",\n    \"script/prefer-define-options\",\n    \"script/require-default-prop\",\n    \"script/no-reserved-props\",\n    \"script/no-unused-emit-declarations\",\n    \"script/return-in-emits-validator\",\n    \"script/valid-define-props\",\n    \"script/valid-define-emits\",\n    \"script/require-valid-default-prop\",\n    \"script/require-typed-object-prop\",\n    \"script/no-ref-as-operand\",\n    \"script/no-duplicate-attr-inheritance\",\n    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\",\n    \"css/no-important\",\n    \"css/no-id-selectors\","
+      },
+      {
+        "before": "    \"script/no-reserved-keys\",\n    \"script/no-dupe-keys\",\n    \"script/no-side-effects-in-computed-properties\",\n    \"script/no-arrow-functions-in-watch\",\n    \"script/no-export-in-script-setup\",\n    \"script/no-deprecated-dollar-listeners-api\",\n    \"script/no-potential-component-option-typo\",\n    \"script/return-in-computed-property\",\n    \"script/no-deprecated-dollar-scopedslots-api\",\n    \"script/no-deprecated-data-object-declaration\",\n    \"script/no-deprecated-destroyed-lifecycle\",\n    \"script/no-deprecated-events-api\",\n    \"script/require-prop-type-constructor\",\n    \"script/no-use-computed-property-like-method\",\n    \"script/no-required-prop-with-default\",\n    \"script/no-deprecated-props-default-this\",\n    \"script/valid-next-tick\",\n    \"script/valid-define-options\",\n    \"script/require-prop-types\",\n    \"script/no-reserved-props\",\n    \"script/return-in-emits-validator\",\n    \"script/valid-define-props\",\n    \"script/valid-define-emits\",\n    \"script/require-valid-default-prop\",\n    \"script/no-ref-as-operand\",\n    \"script/no-duplicate-attr-inheritance\",\n    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\",\n    \"css/no-important\",\n    \"css/no-id-selectors\",",
+        "after": "    \"script/no-reserved-keys\",\n    \"script/no-dupe-keys\",\n    \"script/no-side-effects-in-computed-properties\",\n    \"script/no-arrow-functions-in-watch\",\n    \"script/no-export-in-script-setup\",\n    \"script/no-deprecated-dollar-listeners-api\",\n    \"script/no-potential-component-option-typo\",\n    \"script/return-in-computed-property\",\n    \"script/no-deprecated-dollar-scopedslots-api\",\n    \"script/no-deprecated-data-object-declaration\",\n    \"script/no-deprecated-destroyed-lifecycle\",\n    \"script/no-deprecated-events-api\",\n    \"script/component-options-name-casing\",\n    \"script/require-prop-type-constructor\",\n    \"script/define-emits-declaration\",\n    \"script/no-use-computed-property-like-method\",\n    \"script/define-props-declaration\",\n    \"script/no-required-prop-with-default\",\n    \"script/no-deprecated-props-default-this\",\n    \"script/no-boolean-default\",\n    \"script/valid-next-tick\",\n    \"script/valid-define-options\",\n    \"script/prefer-define-options\",\n    \"script/require-default-prop\",\n    \"script/require-prop-types\",\n    \"script/no-reserved-props\",\n    \"script/no-unused-emit-declarations\",\n    \"script/return-in-emits-validator\",\n    \"script/valid-define-props\",\n    \"script/valid-define-emits\",\n    \"script/require-valid-default-prop\",\n    \"script/require-typed-object-prop\",\n    \"script/no-ref-as-operand\",\n    \"script/no-duplicate-attr-inheritance\",\n    \"script/no-multiple-slot-args\",\n    \"script/require-explicit-emits\",\n    \"script/no-unstable-nested-components\",\n    \"css/no-important\",\n    \"css/no-id-selectors\","
+      }
+    ]
+  },
+  {
+    "reason": "opinionated and nuxt: eight props/emits and script setup style rules",
+    "path": "tests/_fixtures/patina-eslint-vue-rule-map.json",
+    "before": {
+      "bytes": 46491,
+      "sha256": "79566cc791d3cb0eefe12f2340f02b417ffccfb8724e15da11608b82ec3f5a8d"
+    },
+    "after": {
+      "bytes": 46851,
+      "sha256": "21df64bde7451415d294ab1beb8f32e0e045a92dd149d55d1da598750e3c354d"
+    },
+    "hunks": [
+      {
+        "before": "    \"vue/component-options-name-casing\": {\n      \"patinaPresets\": [],\n      \"patinaRule\": \"script/component-options-name-casing\",",
+        "after": "    \"vue/component-options-name-casing\": {\n      \"patinaPresets\": [\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/component-options-name-casing\","
+      },
+      {
+        "before": "    \"vue/define-emits-declaration\": {\n      \"patinaPresets\": [],\n      \"patinaRule\": \"script/define-emits-declaration\",",
+        "after": "    \"vue/define-emits-declaration\": {\n      \"patinaPresets\": [\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/define-emits-declaration\","
+      },
+      {
+        "before": "    \"vue/define-props-declaration\": {\n      \"patinaPresets\": [],\n      \"patinaRule\": \"script/define-props-declaration\",",
+        "after": "    \"vue/define-props-declaration\": {\n      \"patinaPresets\": [\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/define-props-declaration\","
+      },
+      {
+        "before": "    \"vue/no-boolean-default\": {\n      \"patinaPresets\": [],\n      \"patinaRule\": \"script/no-boolean-default\",",
+        "after": "    \"vue/no-boolean-default\": {\n      \"patinaPresets\": [\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/no-boolean-default\","
+      },
+      {
+        "before": "    \"vue/no-unused-emit-declarations\": {\n      \"patinaPresets\": [],\n      \"patinaRule\": \"script/no-unused-emit-declarations\",",
+        "after": "    \"vue/no-unused-emit-declarations\": {\n      \"patinaPresets\": [\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/no-unused-emit-declarations\","
+      },
+      {
+        "before": "    \"vue/prefer-define-options\": {\n      \"patinaPresets\": [],\n      \"patinaRule\": \"script/prefer-define-options\",",
+        "after": "    \"vue/prefer-define-options\": {\n      \"patinaPresets\": [\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/prefer-define-options\","
+      },
+      {
+        "before": "    \"vue/require-default-prop\": {\n      \"patinaPresets\": [],\n      \"patinaRule\": \"script/require-default-prop\",",
+        "after": "    \"vue/require-default-prop\": {\n      \"patinaPresets\": [\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/require-default-prop\","
+      },
+      {
+        "before": "    \"vue/require-typed-object-prop\": {\n      \"patinaPresets\": [],\n      \"patinaRule\": \"script/require-typed-object-prop\",",
+        "after": "    \"vue/require-typed-object-prop\": {\n      \"patinaPresets\": [\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"script/require-typed-object-prop\","
+      }
+    ]
+  },
+  {
+    "reason": "opinionated and nuxt: eight props/emits and script setup style rules",
+    "path": "crates/vize_patina/src/linter/script_rules/registry.rs",
+    "before": {
+      "bytes": 4818,
+      "sha256": "f20c6289e2b95e1b45c854a048a4212572dd71511e9d0ad293e5cf190aef75ea"
+    },
+    "after": {
+      "bytes": 4904,
+      "sha256": "d80d12bc0c6b720373194ac82873fd58c0a23b9a9df49c90274c1d03adc5f1f4"
+    },
+    "hunks": [
+      {
+        "before": "pub(crate) use names::{\n    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED,\n    RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION, RULE_NO_DEPRECATED_DESTROYED_LIFECYCLE,\n    RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API, RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,\n    RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, RULE_NO_DUPE_KEYS,\n    RULE_NO_DUPLICATE_ATTR_INHERITANCE, RULE_NO_GET_CURRENT_INSTANCE,\n    RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS, RULE_NO_MULTIPLE_SLOT_ARGS,\n    RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REF_AS_OPERAND,\n    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS,",
+        "after": "pub(crate) use names::{\n    RULE_DEFINE_EMITS_DECLARATION, RULE_DEFINE_PROPS_DECLARATION, RULE_NO_ARROW_FUNCTIONS_IN_WATCH,\n    RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,\n    RULE_NO_DEPRECATED_DESTROYED_LIFECYCLE, RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,\n    RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API, RULE_NO_DEPRECATED_EVENTS_API,\n    RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, RULE_NO_DUPE_KEYS, RULE_NO_DUPLICATE_ATTR_INHERITANCE,\n    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS,\n    RULE_NO_MULTIPLE_SLOT_ARGS, RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REF_AS_OPERAND,\n    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS,"
+      },
+      {
+        "before": "    RULE_PREFER_IMPORT_FROM_VUE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES,\n    RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,\n    RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,",
+        "after": "    RULE_PREFER_IMPORT_FROM_VUE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES,\n    RULE_REQUIRE_TYPED_REF, RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,\n    RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,"
+      }
+    ]
   }
 ]
