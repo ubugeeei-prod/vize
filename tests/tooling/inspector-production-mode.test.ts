@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { compileFunction } from "node:vm";
@@ -186,5 +188,52 @@ void test("the complete original SSR render preserves production comments in bot
       } else
         assert.equal(oldHtml, expected, "true branch and direct SSR push are unchanged controls");
     }
+  }
+});
+
+void test("the reference formatter accepts CommonJS Prettier bundles exposed only as default", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "vize-inspector-prettier-"));
+  const write = (name: string, body: string) => {
+    mkdirSync(path.dirname(path.join(root, name)), { recursive: true });
+    writeFileSync(path.join(root, name), body);
+  };
+  // Prettier 3.8.3 ships UMD bundles; Node detects no named exports, only `default`.
+  const umd = (api: string) =>
+    `(function (factory) { module.exports = factory(); })(function () { return ${api}; });\n`;
+  try {
+    write("package.json", "{}");
+    write("node_modules/prettier/package.json", '{ "name": "prettier", "version": "3.8.3" }');
+    write(
+      "node_modules/prettier/standalone.js",
+      umd(
+        '{ format: async (source, options) => "// " + options.parser + ": " + options.plugins.map((plugin) => plugin.name).join(",") + "\\n" + source }',
+      ),
+    );
+    for (const [name, member] of [
+      ["babel", "parsers"],
+      ["estree", "printers"],
+      ["typescript", "parsers"],
+    ]) {
+      write(`node_modules/prettier/plugins/${name}.js`, umd(`{ name: "${name}", ${member}: {} }`));
+    }
+    const result = spawnSync(process.execPath, ["--input-type=module", "-e", embedded], {
+      cwd: root,
+      input: JSON.stringify({
+        target: "dom",
+        moduleRoot: cwd,
+        files: [{ path: origin.path, source, vizeCode: "const value = 1;" }],
+      }),
+      encoding: "utf8",
+      timeout: 30_000,
+    });
+    assert.ifError(result.error);
+    assert.equal(result.status, 0, result.stderr);
+    const [file] = JSON.parse(result.stdout).files;
+    const header = `// ${file.parser}: ${file.parser === "typescript" ? "typescript" : "babel"},estree\n`;
+    assert.equal(file.official.error, null);
+    assert.equal(file.official.formattedCode, header + file.official.code);
+    assert.equal(file.vizeFormattedCode, `${header}const value = 1;`);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
   }
 });

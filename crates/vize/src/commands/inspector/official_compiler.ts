@@ -42,6 +42,11 @@ function toErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
 
+// CommonJS bundles whose exports Node cannot detect expose their API only as `default`.
+function moduleApi(namespace, member) {
+  return member in namespace ? namespace : (namespace.default ?? namespace);
+}
+
 async function loadFormatter(roots) {
   try {
     const [prettier, parserBabel, parserEstree, parserTypescript] = await Promise.all([
@@ -50,7 +55,12 @@ async function loadFormatter(roots) {
       importFromRoots("prettier/plugins/estree", roots),
       importFromRoots("prettier/plugins/typescript", roots),
     ]);
-    return { prettier, parserBabel, parserEstree, parserTypescript };
+    return {
+      prettier: moduleApi(prettier, "format"),
+      parserBabel: moduleApi(parserBabel, "parsers"),
+      parserEstree: moduleApi(parserEstree, "printers"),
+      parserTypescript: moduleApi(parserTypescript, "parsers"),
+    };
   } catch {
     return null;
   }
