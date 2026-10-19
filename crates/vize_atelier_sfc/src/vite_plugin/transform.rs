@@ -588,4 +588,5 @@ fn is_define_tail_byte(byte: u8) -> bool {
 }
 
 #[cfg(test)]
+#[path = "transform_tests.rs"]
 mod tests;
