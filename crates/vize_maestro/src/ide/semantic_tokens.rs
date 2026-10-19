@@ -25,6 +25,8 @@ mod regression_8014_tests;
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod resident_tests;
 #[cfg(test)]
+mod style_tests;
+#[cfg(test)]
 mod tests;
 
 pub use types::{TokenModifier, TokenType};
