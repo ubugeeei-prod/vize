@@ -2,6 +2,7 @@
 mod basics;
 mod contexts;
 mod preprocessor_styles;
+mod slots;
 mod template;
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location};

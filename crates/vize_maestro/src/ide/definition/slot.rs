@@ -77,63 +77,116 @@ fn slot_navigation_source_range(
     if name.is_empty() {
         return None;
     }
-
     let start = slot.start as usize;
     let end = slot.end as usize;
-    let source = template_source?;
-    let raw = source.get(start..end)?;
-    if !(raw.contains('#') || raw.contains("v-slot")) {
+    let raw = template_source?.get(start..end)?;
+    // The name is the directive argument; `v-slot` alone names no slot here.
+    let argument = raw
+        .strip_prefix('#')
+        .or_else(|| raw.strip_prefix("v-slot:"))?;
+    if !argument.starts_with(name) {
         return None;
     }
-    raw.find(name)
-        .map(|relative_start| start + relative_start..start + relative_start + name.len())
+    let name_start = start + (raw.len() - argument.len());
+    Some(name_start..name_start + name.len())
 }
 
+/// Offset of `slot_name` as a direct member key of `defineSlots<{ … }>`.
+/// Nested keys (slot props) and `=>` in member types are not slot keys.
 fn find_slot_in_define_slots(content: &str, slot_name: &str) -> Option<usize> {
-    let mut search_start = 0;
-    while let Some(relative) = content
-        .get(search_start..)
-        .and_then(|rest| rest.find(slot_name))
-    {
-        let pos = search_start + relative;
-        let end = pos + slot_name.len();
-        if is_inside_define_slots_type(content, pos) && is_slot_key_at(content, pos, end) {
-            return Some(pos);
+    let bytes = content.as_bytes();
+    let open = content.find('<')?;
+    let mut index = open + 1;
+    while bytes.get(index).is_some_and(u8::is_ascii_whitespace) {
+        index += 1;
+    }
+    if bytes.get(index) != Some(&b'{') {
+        return None;
+    }
+    let mut depth = 0usize;
+    let mut member_start = false;
+    while let Some(&byte) = bytes.get(index) {
+        let next = bytes.get(index + 1).copied();
+        match byte {
+            b'/' if next == Some(b'/') => {
+                index =
+                    memchr::memchr(b'\n', bytes.get(index..)?).map_or(bytes.len(), |n| index + n);
+                continue;
+            }
+            b'/' if next == Some(b'*') => {
+                index = memchr::memmem::find(bytes.get(index + 2..)?, b"*/")
+                    .map_or(bytes.len(), |n| index + 2 + n + 2);
+                continue;
+            }
+            b'{' | b'(' | b'[' => {
+                depth += 1;
+                member_start = depth == 1;
+            }
+            b'}' | b')' | b']' => {
+                depth = depth.checked_sub(1)?;
+                if depth == 0 {
+                    return None;
+                }
+            }
+            b';' | b',' | b'\n' if depth == 1 => member_start = true,
+            b'\'' | b'"' | b'`' => {
+                let end = string_end(bytes, index)?;
+                if depth == 1 && member_start {
+                    if content.get(index + 1..end) == Some(slot_name)
+                        && is_member_key_end(bytes, end + 1)
+                    {
+                        return Some(index + 1);
+                    }
+                    member_start = false;
+                }
+                index = end + 1;
+                continue;
+            }
+            _ if depth == 1 && member_start && is_identifier_byte(byte) => {
+                let end = bytes
+                    .get(index..)?
+                    .iter()
+                    .position(|byte| !is_identifier_byte(*byte))
+                    .map_or(bytes.len(), |n| index + n);
+                if content.get(index..end) == Some(slot_name) && is_member_key_end(bytes, end) {
+                    return Some(index);
+                }
+                member_start = false;
+                index = end;
+                continue;
+            }
+            _ if depth == 1 && !byte.is_ascii_whitespace() => member_start = false,
+            _ => {}
         }
-        search_start = end;
+        index += 1;
     }
 
     None
 }
 
-fn is_slot_key_at(content: &str, start: usize, end: usize) -> bool {
-    let bytes = content.as_bytes();
-    if let Some(quote) = start
-        .checked_sub(1)
-        .and_then(|index| bytes.get(index))
-        .filter(|byte| matches!(byte, b'\'' | b'"'))
-    {
-        return bytes.get(end) == Some(quote);
+fn string_end(bytes: &[u8], open: usize) -> Option<usize> {
+    let quote = *bytes.get(open)?;
+    let mut index = open + 1;
+    while let Some(&byte) = bytes.get(index) {
+        if byte == b'\\' {
+            index += 2;
+            continue;
+        }
+        if byte == quote {
+            return Some(index);
+        }
+        index += 1;
     }
+    None
+}
 
-    let before = start.checked_sub(1).and_then(|index| bytes.get(index));
-    if before.is_some_and(|byte| is_identifier_byte(*byte)) {
-        return false;
-    }
-
-    content.get(end..).is_some_and(|tail| {
-        tail.starts_with('(') || tail.starts_with(':') || tail.starts_with("?:")
-    })
+fn is_member_key_end(bytes: &[u8], end: usize) -> bool {
+    bytes
+        .get(end..)
+        .and_then(|tail| tail.iter().find(|byte| !matches!(byte, b' ' | b'\t')))
+        .is_some_and(|byte| matches!(byte, b'?' | b':' | b'('))
 }
 
 fn is_identifier_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$' || byte == b'-'
-}
-
-fn is_inside_define_slots_type(content: &str, pos: usize) -> bool {
-    let Some(before) = content.get(..pos) else {
-        return false;
-    };
-    before.matches('<').count() > before.matches('>').count()
-        && before.matches('{').count() > before.matches('}').count()
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }
