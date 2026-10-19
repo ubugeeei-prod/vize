@@ -155,7 +155,9 @@ test("registry visibility is checked once, after publishing, and gates only JSR"
 });
 
 test("the stamp reaches every tracked non-private npm and editor manifest", async () => {
-  const extra = new Set(await extraReleasePackageJsonPaths());
+  const extra = new Set(
+    (await extraReleasePackageJsonPaths()).map((file) => file.replaceAll("\\", "/")),
+  );
   const tracked = execFileSync("git", ["ls-files", "-z", "--", "editors", "npm"], { cwd: root })
     .toString()
     .split("\0")
