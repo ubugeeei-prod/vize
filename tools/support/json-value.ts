@@ -38,12 +38,18 @@ export function asStringArray(value: unknown, label = "value"): string[] {
   return asArray(value, label).map((entry, index) => asString(entry, `${label}[${index}]`));
 }
 
-/** Follow `keys` through nested objects and arrays; a missing step yields `undefined`. */
+/**
+ * Follow `keys` through nested values; a missing step yields `undefined`.
+ * Numbers index arrays. Names read properties of objects and functions, so a
+ * class instance's prototype methods and a callable module's exports resolve.
+ */
 export function at(value: unknown, ...keys: readonly (string | number)[]): unknown {
   let current = value;
   for (const key of keys) {
     if (typeof key === "number") current = Array.isArray(current) ? current[key] : undefined;
-    else current = isRecord(current) ? current[key] : undefined;
+    else if ((typeof current === "object" && current !== null) || typeof current === "function")
+      current = Reflect.get(current, key);
+    else current = undefined;
   }
   return current;
 }
