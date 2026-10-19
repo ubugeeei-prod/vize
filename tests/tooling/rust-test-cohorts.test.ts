@@ -31,22 +31,27 @@ function workspaceMetadata(): CargoMetadata {
 
 // Evaluate the small documented nextest filter vocabulary emitted by the
 // registry, so coverage tests exercise the actual expressions handed to CI.
-function matches(filter: string, pkg: string, binary: string) {
+function matches(filter: string, pkg: string, binary: string, name: string) {
   return filter.split(" | ").some((clause) => {
     const exact = clause.match(/^package\(=([\w-]+)\)$/);
     if (exact) return exact[1] === pkg;
-    const cli = clause.match(/^\(package\(=vize\) & (not )?binary\(\/(.+)\/\)\)$/);
+    const cli = clause.match(
+      /^\(package\(=vize\) & (not )?\(binary\(=integration\) & test\(\/(.+)\/\)\)\)$/,
+    );
     assert.ok(cli, `unsupported nextest clause: ${clause}`);
-    const included = new RegExp(cli[2]).test(binary);
+    const included = binary === "integration" && new RegExp(cli[2]).test(name);
     return pkg === "vize" && (cli[1] ? !included : included);
   });
 }
 
-function owners(pkg: string, binary: string) {
-  return RUST_TEST_COHORTS.filter((cohort) => matches(cohort.filter, pkg, binary)).map(
+function owners(pkg: string, binary: string, name = "case") {
+  return RUST_TEST_COHORTS.filter((cohort) => matches(cohort.filter, pkg, binary, name)).map(
     (cohort) => cohort.id,
   );
 }
+
+// A former CLI test file is now a module of the single integration binary.
+const cliModule = (module: string) => owners("vize", "integration", `${module}::case`);
 
 test("every current workspace package has one owner and future test names remain covered", () => {
   const metadata = workspaceMetadata();
@@ -60,32 +65,34 @@ test("every current workspace package has one owner and future test names remain
   );
   for (const { name } of metadata.packages) {
     assert.equal(RUST_TEST_COHORTS.filter((cohort) => cohort.packages.includes(name)).length, 1);
-    for (const binary of [name, "future_regression", "check_new", "lsp_new", "fmt_new"]) {
-      assert.equal(owners(name, binary).length, 1, `${name}::${binary}`);
+    for (const module of [name, "future_regression", "check_new", "lsp_new", "fmt_new"]) {
+      assert.equal(owners(name, "integration", `${module}::case`).length, 1, `${name}::${module}`);
+      assert.equal(owners(name, name, `${module}::case`).length, 1, `${name}::${module}`);
     }
   }
 });
 
-test("every existing CLI integration binary belongs to exactly one semantic cohort", () => {
-  const binaries = readdirSync(join(root, "crates/vize/tests"))
-    .filter((name) => name.endsWith(".rs"))
+test("every existing CLI integration module belongs to exactly one semantic cohort", () => {
+  const modules = readdirSync(join(root, "crates/vize/tests"))
+    .filter((name) => name.endsWith(".rs") && name !== "main.rs")
     .map((name) => name.slice(0, -3));
-  assert.ok(binaries.length > 0);
-  for (const binary of binaries) assert.equal(owners("vize", binary).length, 1, binary);
-  for (const [binary, cohort] of [
+  assert.ok(modules.length > 0);
+  for (const module of modules) assert.equal(cliModule(module).length, 1, module);
+  for (const [module, cohort] of [
     ["check_new_project", "typechecker"],
     ["typecheck_new_project", "typechecker"],
     ["lsp_new_request", "language-server"],
     ["lint_new_rule", "lint-and-format"],
     ["fmt_new_document", "lint-and-format"],
     ["format_new_document", "lint-and-format"],
-    ["vize", "cli-and-integrations"],
     ["future_command", "cli-and-integrations"],
     ["my_lsp_command", "cli-and-integrations"],
     ["check", "cli-and-integrations"],
   ]) {
-    assert.deepEqual(owners("vize", binary), [cohort], binary);
+    assert.deepEqual(cliModule(module), [cohort], module);
   }
+  // The library and binary unit tests are not integration modules.
+  assert.deepEqual(owners("vize", "vize", "lsp_new::case"), ["cli-and-integrations"]);
   assert.deepEqual(owners("vize_canon", "lsp_new_request"), ["typechecker"]);
   assert.deepEqual(owners("vize_maestro", "check_new_project"), ["language-server"]);
   assert.deepEqual(owners("vize_canon_extra", "check_new_project"), []);

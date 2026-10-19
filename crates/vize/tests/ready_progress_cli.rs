@@ -168,8 +168,9 @@ fn terminal_ready(mut command: Command) -> (std::process::Output, String) {
             &raw mut master,
             &raw mut slave,
             std::ptr::null_mut(),
-            std::ptr::null(),
-            std::ptr::null(),
+            // macOS declares these mutable; a null mutable pointer also coerces on Linux.
+            std::ptr::null_mut(),
+            std::ptr::null_mut(),
         )
     };
     assert_eq!(status, 0, "{}", std::io::Error::last_os_error());

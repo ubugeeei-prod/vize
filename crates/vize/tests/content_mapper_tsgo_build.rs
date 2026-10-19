@@ -8,7 +8,7 @@ use std::process::{Command, Output};
 use serde_json::json;
 use vize_l0::{String as CompactString, cstr};
 
-mod content_mapper_declaration_map_support;
+use crate::content_mapper_declaration_map_support;
 use content_mapper_declaration_map_support::{
     assert_authored_vue_declaration_map, assert_authored_vue_source,
 };

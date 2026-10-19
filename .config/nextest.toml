@@ -3,18 +3,18 @@ nextest-version = "0.9.146"
 
 # Retain complete default/off/repair/alias CLI packets without changing selection.
 [[profile.default.overrides]]
-filter = 'package(=vize) & binary(=lint_preset_scope_cli) & test(=six_default_presets_preserve_complete_cli_warning_off_repair_and_alias_packets)'
+filter = 'package(=vize) & binary(=integration) & test(=lint_preset_scope_cli::six_default_presets_preserve_complete_cli_warning_off_repair_and_alias_packets)'
 junit.store-success-output = true
 
 # Retain all 147 original/boundary/component CLI observation packets and the isolated whole-output
 # semantic/observed-cost comparison. Runtime, selection and retry policies stay fixed.
 [[profile.default.overrides]]
-filter = '''(package(=vize) & binary(=lint_legacy_instance_api_cli) & (
-  test(=all_original_legacy_api_controls_use_the_actual_cli_and_complete_json_formatter) |
-  test(=all_template_authority_boundaries_use_the_actual_cli_and_complete_json_formatter) |
-  test(=component_owned_legacy_api_values_preserve_script_warnings_and_complete_cli_packets) |
-  test(=script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_this_frontier) |
-  test(=legacy_instance_cli::callback_return_ownership_keeps_all_six_whole_cli_packets)
+filter = '''(package(=vize) & binary(=integration) & (
+  test(=lint_legacy_instance_api_cli::all_original_legacy_api_controls_use_the_actual_cli_and_complete_json_formatter) |
+  test(=lint_legacy_instance_api_cli::all_template_authority_boundaries_use_the_actual_cli_and_complete_json_formatter) |
+  test(=lint_legacy_instance_api_cli::component_owned_legacy_api_values_preserve_script_warnings_and_complete_cli_packets) |
+  test(=lint_legacy_instance_api_cli::script_setup_declaration_forms_preserve_complete_cli_packets_and_unqualified_this_frontier) |
+  test(=lint_legacy_instance_api_cli::legacy_instance_cli::callback_return_ownership_keeps_all_six_whole_cli_packets)
 )) | (package(=vize_croquis) & binary(=template_semantic_reuse) &
   test(=ordinary_and_demand_semantics_keep_complete_outputs_and_observed_parse_receipts)
 )'''
@@ -23,10 +23,10 @@ junit.store-success-output = true
 # Keep complete copied-runtime packets and immutable asset hashes in the same
 # PR/full JUnit receipt; only these three exact source laws retain stdout.
 [[profile.default.overrides]]
-filter = '''package(=vize) & binary(=lsp_component_attribute_authority_cli) & (
-  test(=runtime_distribution::physically_copied_native_distribution_refuses_whole_mutable_emit_transaction) |
-  test(=runtime_distribution::outside_root_native_relay_cannot_authorize_its_inside_root_distribution) |
-  test(=runtime_distribution::copied_distribution_preserves_complete_sfc_and_imported_alias_packets)
+filter = '''package(=vize) & binary(=integration) & (
+  test(=lsp_component_attribute_authority_cli::runtime_distribution::physically_copied_native_distribution_refuses_whole_mutable_emit_transaction) |
+  test(=lsp_component_attribute_authority_cli::runtime_distribution::outside_root_native_relay_cannot_authorize_its_inside_root_distribution) |
+  test(=lsp_component_attribute_authority_cli::runtime_distribution::copied_distribution_preserves_complete_sfc_and_imported_alias_packets)
 )'''
 junit.store-success-output = true
 
@@ -39,7 +39,7 @@ junit.store-success-output = true
 # Preserve complete public #7989 CLI/API observations in both inherited PR/full
 # JUnit receipts. Only these exact two laws opt in; runtime policies stay fixed.
 [[profile.default.overrides]]
-filter = '''(package(=vize) & binary(=lint_call_source_cli) & test(=original_argv_and_complete_comment_string_real_call_vectors_are_checked)) |
+filter = '''(package(=vize) & binary(=integration) & test(=lint_call_source_cli::original_argv_and_complete_comment_string_real_call_vectors_are_checked)) |
 (package(=vize_patina) & binary(=call_source_7989) & test(=original_and_controls_keep_complete_configured_service_results))'''
 junit.store-success-output = true
 

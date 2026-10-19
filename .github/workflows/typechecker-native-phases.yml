@@ -105,8 +105,8 @@ jobs:
             # VIZE_NATIVE_SOURCE_INLINE_BEGIN
             unset VIZE_TEST_DISABLE_TSGO
             cd "$NATIVE_PHASE_SOURCE_ROOT"
-            VIZE_UNCHECKED_INDEX_CAPTURE="$RUNNER_TEMP/unchecked-index-access" cargo test --locked --profile ci-opt -p vize --test check_template_emit_cli --test check_vue_helper_scope_cli --test lint_unchecked_indexed_access_cli --test check_canon_define_model_modifiers_cli --test lsp_generic_prop_hover_cli --test lsp_data_aria_attributes_cli --test tsconfig_diamond --test check_tsconfig_types_extends_cli --test lsp_bare_script_symbols_cli --test check_tsconfig_bom_cli --test check_tsconfig_ignore_cli --test check_jsx_slot_parameter_types_cli --test check_canon_selected_alias_cli --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
-            env -u VIZE_INLAY_HINT_CAPTURE VIZE_LSP_PASSIVE_EVIDENCE="$RUNNER_TEMP/lsp-passive-3952" VIZE_TRACE_EDITOR_PREPARATION=1 cargo test --locked --profile ci-opt -p vize --test lsp_passive_evidence_cli --test lsp_reactive_diagnostics_cli --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
+            VIZE_UNCHECKED_INDEX_CAPTURE="$RUNNER_TEMP/unchecked-index-access" cargo test --locked --profile ci-opt -p vize --test integration --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- check_template_emit_cli:: check_vue_helper_scope_cli:: lint_unchecked_indexed_access_cli:: check_canon_define_model_modifiers_cli:: lsp_generic_prop_hover_cli:: lsp_data_aria_attributes_cli:: tsconfig_diamond:: check_tsconfig_types_extends_cli:: lsp_bare_script_symbols_cli:: check_tsconfig_bom_cli:: check_tsconfig_ignore_cli:: check_jsx_slot_parameter_types_cli:: check_canon_selected_alias_cli:: --nocapture
+            env -u VIZE_INLAY_HINT_CAPTURE VIZE_LSP_PASSIVE_EVIDENCE="$RUNNER_TEMP/lsp-passive-3952" VIZE_TRACE_EDITOR_PREPARATION=1 cargo test --locked --profile ci-opt -p vize --test integration --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- lsp_passive_evidence_cli:: lsp_reactive_diagnostics_cli:: --nocapture
             export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync,readdirSync} from "node:fs";import {join} from "node:path";const root=process.env.VIZE_TEMPLATE_EMIT_CAPTURE;const name=readdirSync(root,{withFileTypes:true}).find(e=>e.isDirectory()).name;process.stdout.write(JSON.parse(readFileSync(join(root,name,"oracle.json"),"utf8")).nativeBinary)')"
             cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_emit_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
             cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_vue_helper_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
@@ -131,7 +131,7 @@ jobs:
           unset VIZE_TEST_DISABLE_TSGO
           git show "$GITHUB_WORKFLOW_SHA:tools/benchmarks/scripts/typechecker-native-project-retirement.mjs" > "$RUNNER_TEMP/typechecker-native-project-retirement.mjs"
           cd "$NATIVE_PHASE_SOURCE_ROOT"
-          cargo test --locked --profile ci-opt -p vize --test check_outside_import_types_cli --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
+          cargo test --locked --profile ci-opt -p vize --test integration --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- check_outside_import_types_cli:: --nocapture
           export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync} from "node:fs"; process.stdout.write(JSON.parse(readFileSync(process.env.VIZE_TYPECHECK_REGRESSION_CAPTURE + "/outside_import_preserves_original_type_libraries_and_real_cli_diagnostics/oracle.json", "utf8")).nativeBinary)')"
           export CORSA_PATH="$VIZE_TEST_TSGO_PATH"
           cargo test --locked --profile ci-opt -p vize_canon --test original_program_check process_reuse:: --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture || exit $?; cargo test --locked --profile ci-opt -p vize_canon --lib lsp_client::editor_lsp::original_program::process_tests:: --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture || exit $?; cargo test --locked --profile ci-opt -p vize_canon --lib original_outside_import_preserves_types_in_native_editor --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
@@ -178,7 +178,7 @@ jobs:
           cargo test --locked --profile ci -p vize_l1_to_l2 --features legacy-differential --test davinci_lowering_corpus -- --nocapture
           cargo test --locked --profile ci -p vize_l1_to_l2 --features legacy-differential --test davinci_dom_corpus -- --nocapture
           cargo test --locked --profile ci -p vize_l1_to_l2 --features legacy-differential --test davinci_remarks_corpus -- --nocapture
-          VIZE_TEST_REQUIRE_TSGO=1 cargo test --locked --profile ci -p vize --test check_allowjs_imports_cli referenced_projects_apply_allowjs_to_explicit_and_default_checks -- --nocapture
+          VIZE_TEST_REQUIRE_TSGO=1 cargo test --locked --profile ci -p vize --test integration -- check_allowjs_imports_cli::referenced_projects_apply_allowjs_to_explicit_and_default_checks --nocapture
       - name: Build the actual production CLI and standalone projection example
         run: |
           set -euo pipefail
@@ -215,11 +215,11 @@ jobs:
           set -euo pipefail
           unset VIZE_TEST_DISABLE_TSGO
           cd "$NATIVE_PHASE_SOURCE_ROOT"
-          cargo test --locked --profile ci-opt -p vize --test check_undefined_default_props_cli \
+          cargo test --locked --profile ci-opt -p vize --test integration \
             --config 'profile.ci-opt.inherits="release"' \
             --config 'profile.ci-opt.lto="thin"' \
             --config 'profile.ci-opt.codegen-units=16' \
-            --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
+            --config 'profile.ci-opt.package.vize.strip="symbols"' -- check_undefined_default_props_cli:: --nocapture
           export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync,readdirSync} from "node:fs";import {join} from "node:path";const root=process.env.VIZE_DEFAULT_PROP_CAPTURE;const name=readdirSync(root,{withFileTypes:true}).find(e=>e.isDirectory()).name;process.stdout.write(JSON.parse(readFileSync(join(root,name,"oracle.json"),"utf8")).nativeBinary)')"
           export CORSA_PATH="$VIZE_TEST_TSGO_PATH"
           node --input-type=module -e 'import {writeFileSync} from "node:fs";import {join} from "node:path";writeFileSync(join(process.env.VIZE_DEFAULT_PROP_CAPTURE,"imported-runtime-props.runtime.json"),JSON.stringify({sourceSha:process.env.SOURCE_SHA,nativeBinary:process.env.CORSA_PATH})+"\n")'

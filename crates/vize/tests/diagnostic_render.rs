@@ -13,7 +13,7 @@
 //! missing locale fails, which is what keeps "exact per locale" enumerable.
 //!
 //! Regenerate with `DAVINCI_RENDER_SNAPSHOTS=overwrite cargo test -p
-//! vize --test diagnostic_render -- --test-threads=1` (the inventory
+//! vize --test integration diagnostic_render -- --test-threads=1` (the inventory
 //! test reads the directory the overwrite writes), then review every changed
 //! line: the committed snapshot is the oracle, and a regenerated one is only
 //! as true as that review.
@@ -30,12 +30,8 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-/// `tests/diagnostic_render/…`, by ordinary module discovery.
-mod diagnostic_render {
-    pub mod cases;
-}
-
-use diagnostic_render::cases;
+/// `tests/diagnostic_render/cases.rs`, by ordinary module discovery.
+mod cases;
 
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};

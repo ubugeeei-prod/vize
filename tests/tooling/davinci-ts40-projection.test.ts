@@ -109,7 +109,7 @@ test("TS-40 baselines are wired into exact Content Mapper CI", () => {
       .split("\n")
       .map((line) => line.trim()),
     [
-      "cargo test -p vize --test davinci_ts40_projection_cli -- --nocapture",
+      "cargo test -p vize --test integration -- davinci_ts40_projection_cli:: --nocapture",
       "cargo test -p vize_maestro --test davinci_ts40_projection -- --nocapture",
       "cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture",
       "node --test tests/tooling/davinci-ts40-projection.test.ts",

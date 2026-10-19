@@ -35,7 +35,7 @@ import {
 // snapshot case is committed in all three locales. Codes are enumerated from
 // the producers' sources mechanically — never from a hand-kept list — so a new
 // phrase, code or case without its translations fails here. The rendering
-// half is `cargo test -p vize --test diagnostic_render`.
+// half is `cargo test -p vize --test integration diagnostic_render`.
 
 const vocabularySource = read("crates", "vize", "src", "render", "catalog.rs");
 

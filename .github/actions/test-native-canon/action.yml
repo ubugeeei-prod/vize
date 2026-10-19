@@ -126,7 +126,7 @@ runs:
       run: |
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
-        cargo test --locked --profile ci -p vize --test check_flow_depth_isolation_cli -- --nocapture
+        cargo test --locked --profile ci -p vize --test integration -- check_flow_depth_isolation_cli:: --nocapture
     - name: Test native syntax, semantic completion and transport refusals
       shell: bash
       env:

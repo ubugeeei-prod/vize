@@ -25,7 +25,7 @@ pub(super) static IGNORE_SETTINGS: LazyLock<String> = LazyLock::new(|| {
 
 macro_rules! oracle {
     ($name:literal) => {
-        $crate::root::support::canonical_oracle(
+        $crate::project_config_cli::root::support::canonical_oracle(
             serde_json::from_str::<Value>(include_str!(concat!(
                 env!("CARGO_MANIFEST_DIR"),
                 "/../../tests/_fixtures/differential/config/vite-root-8371/oracles/",

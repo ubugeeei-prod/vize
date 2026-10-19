@@ -63,7 +63,7 @@ const tailCommands = [
   "cargo test -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture",
   'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --nocapture',
   "cargo test -p vize_atelier_jsx --features legacy-differential --lib vdom::l2_differential::l2_vdom_admitted_cases_match_relief_codegen -- --exact",
-  "cargo test -p vize --features legacy --test check_nuxt_tsconfig_isolation_cli",
+  "cargo test -p vize --features legacy --test integration -- check_nuxt_tsconfig_isolation_cli::",
   "cargo test -p vize_atelier_core --features legacy --test davinci_l2_transform_vue2",
   "cargo test -p vize_vitrine --no-default-features --features wasm",
   'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features legacy-differential --test davinci_markup_differential -- --nocapture',

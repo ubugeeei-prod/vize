@@ -7,6 +7,7 @@ license.workspace = true
 repository.workspace = true
 description = "Vize - High-performance Vue.js toolchain in Rust"
 publish = false
+autotests = false
 
 [[bin]]
 name = "vize"
@@ -107,6 +108,11 @@ davinci_test_support = { workspace = true }
 insta.workspace = true
 lsp-types.workspace = true
 url.workspace = true
+
+# One integration binary instead of one link per tests/*.rs file.
+[[test]]
+name = "integration"
+path = "tests/main.rs"
 
 [[example]]
 name = "css_engine_vendor_observer"

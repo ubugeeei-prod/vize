@@ -21,12 +21,12 @@ const MAESTRO_COMMAND = "cargo test -p vize_maestro -- --quiet";
 const MAESTRO_LOOP = "for iteration in $(seq 1 20); do";
 const MAESTRO_SUCCESS_LOG = 'echo "Content Mapper Maestro lifecycle cycle $iteration/20 passed"';
 const PACKAGE_ROUTE_COMMANDS = [
-  "cargo test -p vize --test check_importer_scoped_package_cli -- --nocapture",
-  "cargo test -p vize --test check_package_declaration_barrel_cli -- --nocapture",
-  "cargo test -p vize --test check_package_paths_authority_cli -- --nocapture",
-  "cargo test -p vize --test check_package_resolution_modes_cli -- --nocapture",
-  "cargo test -p vize --test check_package_scope_mode_cli -- --nocapture",
-  "cargo test -p vize --test check_package_tsx_shadow_cli -- --nocapture",
+  "cargo test -p vize --test integration -- check_importer_scoped_package_cli:: --nocapture",
+  "cargo test -p vize --test integration -- check_package_declaration_barrel_cli:: --nocapture",
+  "cargo test -p vize --test integration -- check_package_paths_authority_cli:: --nocapture",
+  "cargo test -p vize --test integration -- check_package_resolution_modes_cli:: --nocapture",
+  "cargo test -p vize --test integration -- check_package_scope_mode_cli:: --nocapture",
+  "cargo test -p vize --test integration -- check_package_tsx_shadow_cli:: --nocapture",
 ];
 interface WorkflowStep {
   id?: string;
@@ -128,15 +128,30 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     job,
     /VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: \$\{\{ github\.workspace \}\}\/npm\/cli\/node_modules\/\.bin\/tsc/,
   );
-  assert.match(job, /cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture/);
-  assert.match(job, /cargo test -p vize --test content_mapper_tsgo_directives -- --nocapture/);
-  assert.match(job, /cargo test -p vize --test content_mapper_tsgo_build -- --nocapture/);
-  assert.match(job, /cargo test -p vize --test content_mapper_tsgo_incremental -- --nocapture/);
   assert.match(
     job,
-    /cargo test -p vize --test content_mapper_tsgo_package_references -- --nocapture/,
+    /cargo test -p vize --test integration -- content_mapper_tsgo_cli:: --nocapture/,
   );
-  assert.match(job, /cargo test -p vize --test content_mapper_tsgo_watch -- --nocapture/);
+  assert.match(
+    job,
+    /cargo test -p vize --test integration -- content_mapper_tsgo_directives:: --nocapture/,
+  );
+  assert.match(
+    job,
+    /cargo test -p vize --test integration -- content_mapper_tsgo_build:: --nocapture/,
+  );
+  assert.match(
+    job,
+    /cargo test -p vize --test integration -- content_mapper_tsgo_incremental:: --nocapture/,
+  );
+  assert.match(
+    job,
+    /cargo test -p vize --test integration -- content_mapper_tsgo_package_references:: --nocapture/,
+  );
+  assert.match(
+    job,
+    /cargo test -p vize --test integration -- content_mapper_tsgo_watch:: --nocapture/,
+  );
   assert.match(job, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.match(job, /\(cd npm\/cli && vp pack\)/);
   assert.match(job, /vp exec napi create-npm-dirs/);
@@ -155,10 +170,10 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.equal(packageRouteStep.env?.CORSA_PATH, "${{ runner.temp }}/tsgo");
   assert.equal(packageRouteStep.env?.VIZE_TEST_REQUIRE_TSGO, "1");
   const editorCommands = [
-    "cargo test -p vize --test content_mapper_tsgo_lsp -- --nocapture",
-    "cargo test -p vize --test content_mapper_lsp_shutdown -- --nocapture",
-    "cargo test -p vize --test content_mapper_tsgo_declaration_lsp -- --nocapture",
-    "cargo test -p vize --test content_mapper_tsgo_lsp_event_forms -- --nocapture",
+    "cargo test -p vize --test integration -- content_mapper_tsgo_lsp:: --nocapture",
+    "cargo test -p vize --test integration -- content_mapper_lsp_shutdown:: --nocapture",
+    "cargo test -p vize --test integration -- content_mapper_tsgo_declaration_lsp:: --nocapture",
+    "cargo test -p vize --test integration -- content_mapper_tsgo_lsp_event_forms:: --nocapture",
     "cargo test -p vize_canon --test lsp_import_resolution -- --nocapture",
   ];
   const editorSteps = steps.filter((step) =>
@@ -281,9 +296,12 @@ test("manual focused campaigns preserve the full default and upload before gatin
     transactions.env?.VIZE_TEST_CONTENT_MAPPER_VUE,
     "${{ github.workspace }}/npm/cli/node_modules/vue",
   );
-  assert.match(transactions.run ?? "", /cargo test --locked --profile ci --no-fail-fast -p vize/u);
+  assert.match(
+    transactions.run ?? "",
+    /cargo test --locked --profile ci --no-fail-fast -p vize --test integration/u,
+  );
   for (const target of ["lsp_bound_event_casing_cli", "lsp_named_model_transactions_cli"])
-    assert.match(transactions.run ?? "", new RegExp(`--test ${target}\\b`, "u"));
+    assert.match(transactions.run ?? "", new RegExp(`\\s${target}::(?:\\s|$)`, "mu"));
   const upload = focused.steps.findIndex((step) =>
     step.uses?.startsWith("actions/upload-artifact@"),
   );

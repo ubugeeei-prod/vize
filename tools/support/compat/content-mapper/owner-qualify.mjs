@@ -118,10 +118,18 @@ async function testList(executable, directory) {
   assert(names.length > 0);
   return names;
 }
+// The baseline still links each CLI test file as its own binary; the candidate
+// links them as modules of one `integration` binary.
+const layouts = {
+  old: { target: (name) => name, prefix: () => "" },
+  new: { target: () => "integration", prefix: (name) => `${name}::` },
+};
 async function phase(name, artifacts) {
   const directory = path.join(root, name);
+  const layout = layouts[name];
   const cli = artifact(artifacts, "vize", "bin");
-  const harness = artifact(artifacts, "content_mapper_tsgo_directives", "test");
+  const owner = "content_mapper_tsgo_directives";
+  const harness = artifact(artifacts, layout.target(owner), "test");
   await json(path.join(directory, "binaries.json"), {
     cli: await preserve(cli, path.join(directory, "vize")),
     harness: await preserve(harness, path.join(directory, "owner-harness")),
@@ -130,7 +138,7 @@ async function phase(name, artifacts) {
   for (const [file, selector] of [
     ["cli-test", "owners::parent_expect_keeps_child_visible_after_each_parent_repair"],
     ["lsp-test", "owner_lsp::parent_expect_editor_repairs_preserve_whole_reports"],
-  ]) {
+  ].map(([file, test]) => [file, layout.prefix(owner) + test])) {
     assert(names.includes(selector));
     await test(harness, ["--exact", selector, "--nocapture"], path.join(directory, file), {
       VIZE_TEST_OWNER_CAPTURE_DIR: path.join(directory, "packets"),
@@ -148,16 +156,19 @@ async function phase(name, artifacts) {
 async function stockGates(artifacts, canonArtifacts) {
   const results = [];
   for (const name of [...stock, "lsp_import_resolution"]) {
-    const executable = artifact(
-      name === "lsp_import_resolution" ? canonArtifacts : artifacts,
-      name,
-      "test",
-    );
+    const canon = name === "lsp_import_resolution";
+    const prefix = canon ? "" : layouts.new.prefix(name);
+    const executable = canon
+      ? artifact(canonArtifacts, name, "test")
+      : artifact(artifacts, layouts.new.target(name), "test");
     const directory = path.join(root, "new/stock", name);
     await mkdir(directory, { recursive: true });
     const binary = await preserve(executable, path.join(directory, "harness"));
-    const names = await testList(executable, path.join(directory, "list"));
-    const result = await test(executable, ["--nocapture"], path.join(directory, "run"));
+    const names = (await testList(executable, path.join(directory, "list")))
+      .filter((test) => test.startsWith(prefix))
+      .map((test) => test.slice(prefix.length));
+    const filter = prefix ? [prefix] : [];
+    const result = await test(executable, [...filter, "--nocapture"], path.join(directory, "run"));
     const pureNames = names.filter(
       (test) =>
         test.includes("leak_assertions::tests::") ||
@@ -341,11 +352,7 @@ try {
   for (const file of overlay.slice(1)) await unlink(file);
   await git("checkout", "--detach", candidate);
   assert.equal(await git("status", "--porcelain", "--untracked-files=no"), "");
-  const artifacts = await build("new", [
-    "-p",
-    "vize",
-    ...["content_mapper_tsgo_directives", ...stock].flatMap((name) => ["--test", name]),
-  ]);
+  const artifacts = await build("new", ["-p", "vize", "--test", "integration"]);
   await phase("new", artifacts);
   const canon = await build("canon", [
     "-p",

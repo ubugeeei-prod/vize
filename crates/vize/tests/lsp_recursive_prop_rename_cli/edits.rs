@@ -3,7 +3,7 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-use crate::support::position;
+use super::support::position;
 use serde_json::{Value, json};
 
 pub(super) fn location(uri: &str, source: &str, needle: &str, length: usize) -> Value {

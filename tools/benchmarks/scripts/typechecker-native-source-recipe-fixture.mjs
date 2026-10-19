@@ -106,7 +106,7 @@ assert.equal(
     .replace(receiptCommands.join("\n") + "\n", receiptCommands.join("; ") + "\n"),
 );
 
-export const currentRequiredRun = readFileSync(
+export const passiveRequiredRun = readFileSync(
   new URL(
     "../../../tests/_fixtures/tooling/native-current-recipe-passive-lsp-3952.sh",
     import.meta.url,
@@ -114,19 +114,50 @@ export const currentRequiredRun = readFileSync(
   "utf8",
 );
 assert.equal(
-  hash(currentRequiredRun),
+  hash(passiveRequiredRun),
   "9a6c630b68910f0c48f45040eb166ae7fa7fa4b0df798d34c74154eb1742d518",
 );
 const selectedAliasFirstCargo = selectedAliasRequiredRun.split("\n")[3];
 const passiveCargo =
   "env -u VIZE_INLAY_HINT_CAPTURE VIZE_LSP_PASSIVE_EVIDENCE=\"$RUNNER_TEMP/lsp-passive-3952\" VIZE_TRACE_EDITOR_PREPARATION=1 cargo test --locked --profile ci-opt -p vize --test lsp_passive_evidence_cli --test lsp_reactive_diagnostics_cli --config 'profile.ci-opt.inherits=\"release\"' --config 'profile.ci-opt.lto=\"thin\"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip=\"symbols\"' -- --nocapture";
 assert.equal(
-  currentRequiredRun,
+  passiveRequiredRun,
   selectedAliasRequiredRun.replace(
     selectedAliasFirstCargo + "\n",
     selectedAliasFirstCargo + "\n" + passiveCargo + "\n",
   ),
 );
+
+// The CLI's integration tests became one binary: each former `--test` target
+// of the vize package is now a module filter of `--test integration`.
+export function integrationBinaryRun(run) {
+  return run
+    .split("\n")
+    .map((line) => {
+      if (!line.includes(" -p vize --test ")) return line;
+      const filters = [...line.matchAll(/ --test ([a-z0-9_]+)/gu)].map(([, name]) => `${name}::`);
+      let first = true;
+      const command = line.replace(/ --test ([a-z0-9_]+)/gu, () => {
+        if (!first) return "";
+        first = false;
+        return " --test integration";
+      });
+      return command.replace(" -- --nocapture", ` -- ${filters.join(" ")} --nocapture`);
+    })
+    .join("\n");
+}
+export const currentRequiredRun = readFileSync(
+  new URL(
+    "../../../tests/_fixtures/tooling/native-current-recipe-integration-binary.sh",
+    import.meta.url,
+  ),
+  "utf8",
+);
+assert.equal(
+  hash(currentRequiredRun),
+  "880218d69b963ec2feb279bc818922dc58192a46b17b2f2b8fddaab98c943c71",
+);
+assert.equal(currentRequiredRun, integrationBinaryRun(passiveRequiredRun));
 
 export function git(root, ...args) {
   const r = spawnSync("git", args, {

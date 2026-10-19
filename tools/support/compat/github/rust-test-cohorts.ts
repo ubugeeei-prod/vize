@@ -16,8 +16,8 @@ type Definition = {
   cliPrefixes?: readonly string[];
 };
 
-// Every workspace package has one owner. The CLI's integration binaries follow
-// their product feature; its remaining binaries belong to CLI and integrations.
+// Every workspace package has one owner. The CLI's integration test modules follow
+// their product feature; its remaining tests belong to CLI and integrations.
 const definitions: Record<RustTestCohortId, Definition> = {
   compiler: {
     name: "Compiler",
@@ -82,16 +82,19 @@ const definitions: Record<RustTestCohortId, Definition> = {
 const cliPrefixes = Object.values(definitions).flatMap(
   (definition) => definition.cliPrefixes ?? [],
 );
-const cliBinaries = (prefixes: readonly string[]) => `binary(/^(${prefixes.join("|")})/)`;
+// The CLI links its integration tests as one binary; each former test file is
+// a module whose name keeps its feature prefix.
+const cliTests = (prefixes: readonly string[]) =>
+  `(binary(=integration) & test(/^(${prefixes.join("|")})/))`;
 
 export const RUST_TEST_COHORTS = RUST_TEST_COHORT_IDS.map((id) => {
   const { name, packages, cliPrefixes: prefixes } = definitions[id];
   const filters = packages.filter((pkg) => pkg !== "vize").map((pkg) => `package(=${pkg})`);
-  if (prefixes) filters.push(`(package(=vize) & ${cliBinaries(prefixes)})`);
+  if (prefixes) filters.push(`(package(=vize) & ${cliTests(prefixes)})`);
   if (packages.includes("vize")) {
-    // A complement, rather than an enumerated target list, also covers every
-    // future CLI binary that does not match a feature prefix.
-    filters.push(`(package(=vize) & not ${cliBinaries(cliPrefixes)})`);
+    // A complement, rather than an enumerated module list, also covers every
+    // future CLI test that does not match a feature prefix.
+    filters.push(`(package(=vize) & not ${cliTests(cliPrefixes)})`);
   }
   return { id, name, packages, filter: filters.join(" | ") };
 });

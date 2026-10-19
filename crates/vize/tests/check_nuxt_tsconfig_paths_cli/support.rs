@@ -5,8 +5,8 @@ use std::{
     process::Command,
 };
 
-use crate::nuxt_cli::{workspace_node_modules, workspace_root};
-pub(super) use crate::{nuxt_cli::resolve_test_corsa_path, nuxt_stress::required_iterations};
+use super::nuxt_cli::{workspace_node_modules, workspace_root};
+pub(super) use super::{nuxt_cli::resolve_test_corsa_path, nuxt_stress::required_iterations};
 
 pub(super) fn run_nuxt2_alias_check(
     project_root: &Path,

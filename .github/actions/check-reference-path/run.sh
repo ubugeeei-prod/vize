@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set +e
-cargo test --locked --profile ci-opt -p vize --test check_reference_path_cli
+cargo test --locked --profile ci-opt -p vize --test integration -- check_reference_path_cli::
 cli_exit=$?
 cargo test --locked --profile ci-opt -p vize_canon --lib reference_paths::
 native_exit=$?

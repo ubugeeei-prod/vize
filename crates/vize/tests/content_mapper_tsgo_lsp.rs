@@ -8,7 +8,7 @@ use lsp_types::Uri;
 use serde_json::json;
 use vize_l0::cstr;
 
-pub mod content_mapper_lsp_support;
+use crate::content_mapper_lsp_support;
 use content_mapper_lsp_support::raw_requests::{
     RawInitialize, RawInitialized, RawSetContentMapperContributions,
 };

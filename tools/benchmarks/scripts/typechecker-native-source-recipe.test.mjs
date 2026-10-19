@@ -79,19 +79,19 @@ await test("ordinary source retains the complete authored thirteen-target succes
     const run = parse(currentBytes).jobs["native-phases"].steps.find((s) => s.name === STEP).run;
     const inline = declaredSourceRecipe(run).recipe.replace(/^  /gmu, "");
     assert.equal(inline, currentRequiredRun);
-    assert.equal([...inline.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 13);
+    assert.equal([...inline.split("\n")[3].matchAll(/ ([a-z0-9_]+)::(?= )/gu)].length, 13);
     assert.equal([...jsxRequiredRun.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 12);
     assert.equal([...bomRequiredRun.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 10);
     assert.equal(
       [...currentOriginalRun.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length,
       9,
     );
-    assert.ok(inline.includes("--test lsp_bare_script_symbols_cli"));
-    assert.equal([...inline.matchAll(/--test check_jsx_slot_parameter_types_cli/gu)].length, 1);
-    assert.equal([...inline.matchAll(/--test check_canon_selected_alias_cli/gu)].length, 1);
+    assert.ok(inline.includes(" lsp_bare_script_symbols_cli:: "));
+    assert.equal([...inline.matchAll(/ check_jsx_slot_parameter_types_cli:: /gu)].length, 1);
+    assert.equal([...inline.matchAll(/ check_canon_selected_alias_cli:: /gu)].length, 1);
     assert.ok(run.includes('bash --noprofile --norc -e -o pipefail "$recipe"'));
     assert.ok(run.includes("GITHUB_WORKFLOW_SHA"));
-    assert.equal([...run.matchAll(/--test check_tsconfig_types_extends_cli/gu)].length, 1);
+    assert.equal([...run.matchAll(/ check_tsconfig_types_extends_cli:: /gu)].length, 1);
     for (const line of sourceRun.split("\n").slice(4).filter(Boolean))
       assert.ok(run.includes(line), line);
   });
@@ -364,9 +364,9 @@ await test("future version-only sources execute their complete inline commands o
       );
       for (const change of [
         (bytes) => bytes.replace("--locked", "--offline"),
-        (bytes) => bytes.replace(" --test lsp_bare_script_symbols_cli", ""),
-        (bytes) => bytes.replace(" --test check_tsconfig_bom_cli", ""),
-        (bytes) => bytes.replace(" --test check_tsconfig_ignore_cli", ""),
+        (bytes) => bytes.replace(" lsp_bare_script_symbols_cli::", ""),
+        (bytes) => bytes.replace(" check_tsconfig_bom_cli::", ""),
+        (bytes) => bytes.replace(" check_tsconfig_ignore_cli::", ""),
       ]) {
         git(f.root, "checkout", "--detach", f.source);
         put(f.root, WORKFLOW, change(currentBytes));

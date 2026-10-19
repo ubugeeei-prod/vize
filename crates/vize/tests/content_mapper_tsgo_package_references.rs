@@ -6,7 +6,7 @@ use std::process::{Command, Output};
 
 use serde_json::json;
 
-mod content_mapper_declaration_map_support;
+use crate::content_mapper_declaration_map_support;
 use content_mapper_declaration_map_support::assert_authored_vue_declaration_map;
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";

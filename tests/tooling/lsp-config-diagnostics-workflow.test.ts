@@ -148,7 +148,7 @@ test("startup diagnostics retain the production producer and unchanged scale-one
   assert.equal(
     steps[renameControls].run,
     "set +e\n" +
-      "cargo test --locked --profile ci -p vize --features profiling --message-format=json --test lsp_component_attribute_authority_cli library_refusal::original_emit_string_keeps_atomic_owned_updates_and_unsafe_name_refusals_without_file_writes -- --exact --nocapture > target/vize-tests/lsp-config-diagnostics/rename.stdout 2> target/vize-tests/lsp-config-diagnostics/rename.stderr\n" +
+      "cargo test --locked --profile ci -p vize --features profiling --message-format=json --test integration -- lsp_component_attribute_authority_cli::library_refusal::original_emit_string_keeps_atomic_owned_updates_and_unsafe_name_refusals_without_file_writes --exact --nocapture > target/vize-tests/lsp-config-diagnostics/rename.stdout 2> target/vize-tests/lsp-config-diagnostics/rename.stderr\n" +
       "status=$?\n" +
       "printf '%s\\n' \"$status\" > target/vize-tests/lsp-config-diagnostics/rename.status\n" +
       "node tools/support/compat/github/run-lsp-config-diagnostics.ts --retain-rename-producer\n" +
@@ -235,7 +235,7 @@ test("startup diagnostics retain the production producer and unchanged scale-one
   }
   assert.match(
     steps[completionControls].run!,
-    /--test lsp_completion_sibling_overlay_cli -- --nocapture/,
+    /--test integration -- lsp_completion_sibling_overlay_cli:: --nocapture/,
   );
   assert.match(steps[completionControls].run!, /--retain-completion-producer/);
   assert.match(steps[completionControls].run!, /exit "\$status"/);
@@ -284,7 +284,7 @@ test("startup diagnostics retain the production producer and unchanged scale-one
   assert.equal(
     steps[symlinkControls].run,
     "set +e\n" +
-      "cargo test --locked --profile ci -p vize --features legacy --message-format=json --test lsp_symlink_workspace_staging_cli original_include_and_open_order_controls_keep_all_authored_bytes -- --nocapture > target/vize-tests/lsp-config-diagnostics/symlink.stdout 2> target/vize-tests/lsp-config-diagnostics/symlink.stderr\n" +
+      "cargo test --locked --profile ci -p vize --features legacy --message-format=json --test integration -- lsp_symlink_workspace_staging_cli::original_include_and_open_order_controls_keep_all_authored_bytes --nocapture > target/vize-tests/lsp-config-diagnostics/symlink.stdout 2> target/vize-tests/lsp-config-diagnostics/symlink.stderr\n" +
       "status=$?\nset -e\n" +
       "printf '%s\\n' \"$status\" > target/vize-tests/lsp-config-diagnostics/symlink.status\n" +
       "node tools/support/compat/github/run-lsp-config-diagnostics.ts --retain-symlink-producer\n" +

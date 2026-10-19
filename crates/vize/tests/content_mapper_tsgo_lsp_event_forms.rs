@@ -14,7 +14,7 @@ use cases::EVENT_CASES;
 #[path = "content_mapper_tsgo_lsp_event_forms/model_props.rs"]
 mod model_props;
 
-pub mod content_mapper_lsp_support;
+use crate::content_mapper_lsp_support;
 use content_mapper_lsp_support::{
     EditorResponder, assert_completion, assert_no_generated_uri_or_zero_range,
     assert_prop_navigation, contains_location, contains_location_range, contains_text_edit,

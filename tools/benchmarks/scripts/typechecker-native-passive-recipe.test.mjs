@@ -13,7 +13,7 @@ await test("passive original-law command is scoped and both native failures stop
     const mock = `#!${process.execPath}
 import {appendFileSync} from "node:fs";
 const name=process.argv[1].split("/").at(-1), args=process.argv.slice(2);
-const passive=args.includes("lsp_reactive_diagnostics_cli");
+const passive=args.includes("lsp_reactive_diagnostics_cli::");
 appendFileSync(process.env.JOURNAL,JSON.stringify({name,args,capture:process.env.VIZE_INLAY_HINT_CAPTURE??null,passive:process.env.VIZE_LSP_PASSIVE_EVIDENCE??null,trace:process.env.VIZE_TRACE_EDITOR_PREPARATION??null})+"\\n");
 if(name==="cargo" && (passive?process.env.FAIL_PASSIVE:process.env.FAIL_ORIGINAL)==="1")process.exit(passive?31:29);
 if(name==="node")process.stdout.write("/authored/native");
@@ -66,8 +66,8 @@ if(name==="node")process.stdout.write("/authored/native");
     );
     assert.deepEqual(second.rows[0], first.rows[0]);
     assert.deepEqual(
-      second.rows[1].args.filter((_, i, all) => all[i - 1] === "--test"),
-      ["lsp_passive_evidence_cli", "lsp_reactive_diagnostics_cli"],
+      second.rows[1].args.filter((arg) => arg.endsWith("::")),
+      ["lsp_passive_evidence_cli::", "lsp_reactive_diagnostics_cli::"],
     );
     assert.deepEqual(
       {

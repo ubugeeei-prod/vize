@@ -127,7 +127,20 @@ export const rustDifferentialLanes: readonly Lane[] = [
       corpus("vize_atelier_dom", ["v_pre_freezes_its_subtree"]),
     ],
   },
-  { name: "cli", steps: [corpus("vize", ["check_nuxt_tsconfig_isolation_cli"], "legacy")] },
+  {
+    name: "cli",
+    steps: [
+      test("vize", [
+        "--features",
+        "legacy",
+        "--test",
+        "integration",
+        "--",
+        "check_nuxt_tsconfig_isolation_cli::",
+        "--nocapture",
+      ]),
+    ],
+  },
   { name: "wasm", steps: [test("vize_vitrine", ["--no-default-features", "--features", "wasm"])] },
   {
     name: "formatter",
