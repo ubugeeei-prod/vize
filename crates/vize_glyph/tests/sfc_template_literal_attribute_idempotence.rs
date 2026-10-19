@@ -163,11 +163,12 @@ fn assert_unchanged(source: &str) {
 }
 
 #[test]
-fn markup_after_a_directive_with_a_quoted_backtick_keeps_its_indentation() {
-    // `'a ` b'` flips the raw-byte quasi parity, which used to keep the
-    // attribute "open" past its closing quote and strip the SFC indentation
-    // from every later line of the template.
-    let source = r#"<template>
+fn a_quoted_backtick_before_a_multiline_literal_keeps_every_line_in_place() {
+    // #9583: the value is owned by its parsed literal spans, so the backtick
+    // in 'a ` b' does not flip later lines into raw ones, inside the value or
+    // after it.
+    assert_unchanged(
+        r#"<template>
   <div>
     <i
       :title="[
@@ -182,34 +183,33 @@ fn markup_after_a_directive_with_a_quoted_backtick_keeps_its_indentation() {
     </p>
   </div>
 </template>
-"#;
-    let options = FormatOptions::default();
-    let first = format_sfc(source, &options).unwrap();
-    // Lines inside the attribute keep the #9583 dedent; pin only the quasi
-    // bytes and the markup after the closing quote.
-    let lines: Vec<&str> = first.code.lines().collect();
-    assert_eq!(
-        lines.get(6..8),
-        Some(["          x", "        `,"].as_slice())
+"#,
     );
-    assert_eq!(
-        lines.get(9..),
-        Some(
-            [
-                "    />",
-                "    <p>",
-                "      <span>after</span>",
-                "    </p>",
-                "  </div>",
-                "</template>",
-            ]
-            .as_slice()
-        ),
-        "later markup lost its indentation:\n{}",
-        first.code
+}
+
+#[test]
+fn a_backtick_in_a_block_comment_before_a_multiline_literal_is_not_a_literal() {
+    assert_unchanged(
+        r#"<template>
+  <i
+    :class="[
+      /* `not a literal */ a,
+      `
+        keep   this
+      `,
+    ]"
+  />
+</template>
+"#,
     );
-    let second = format_sfc(&first.code, &options).unwrap();
-    assert_eq!(second.code, first.code, "fmt; fmt must be a no-op");
+}
+
+#[test]
+fn an_entity_quoted_string_with_a_backtick_does_not_own_later_lines() {
+    assert_stable(
+        "<template>\n  <i\n    :title=\"cond\n      ? &quot;a  `  b&quot;\n      : `\n          x\n        `\"\n  />\n</template>\n",
+        "<template>\n  <i\n    :title=\"cond\n      ? 'a  `  b'\n      : `\n          x\n        `\"\n  />\n</template>\n",
+    );
 }
 
 #[test]

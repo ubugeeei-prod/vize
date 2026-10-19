@@ -1,7 +1,7 @@
 //! Attribute emission and literal continuation ownership.
 
 use super::{ParsedAttribute, rendered_attribute_is_multiline};
-use crate::template::literal_lines::LiteralLineState;
+use crate::template::literal_spans::ValueLines;
 use vize_l0::String;
 
 mod value_layout;
@@ -61,11 +61,9 @@ pub(super) fn write_rendered_attribute(
     indent_continuation: bool,
 ) {
     let mut lines = attr.split('\n');
-    let mut literal = LiteralLineState::default();
+    let mut literal = ValueLines::for_attribute(attr);
     if let Some(first) = lines.next() {
-        let first = first.trim_end_matches('\r');
-        output.extend_from_slice(first.as_bytes());
-        literal = LiteralLineState::from_attribute(first);
+        output.extend_from_slice(first.trim_end_matches('\r').as_bytes());
     }
 
     for line in lines {

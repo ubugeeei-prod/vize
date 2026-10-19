@@ -2,7 +2,8 @@
 
 use super::{AttributeLayout, ParsedAttribute, write_indent};
 use crate::template::directives::should_format_expression;
-use crate::template::literal_lines::LiteralLineState;
+use crate::template::literal_lines::Representation;
+use crate::template::literal_spans::ValueLines;
 use unicode_width::UnicodeWidthStr;
 
 pub(super) fn write_overflowing_value(
@@ -49,7 +50,7 @@ pub(super) fn write_overflowing_value(
     output.extend_from_slice(newline);
     // The existing SFC mask owns all lines after a quote with no same-line
     // value. Emit their final indentation here; its outer writer keeps them raw.
-    let mut literal = LiteralLineState::rendered();
+    let mut literal = ValueLines::new(value, Representation::Html);
     for line in value.split('\n') {
         let line = line.trim_end_matches('\r');
         if !literal.line_is_raw() {

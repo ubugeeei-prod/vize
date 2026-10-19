@@ -7,7 +7,8 @@ use interpolation::InterpolationScan;
 use tags::{RawRegion, starts_v_pre_attribute, tag_name_at};
 
 use crate::template::WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS;
-use crate::template::literal_lines::LiteralLineState;
+use crate::template::literal_lines::{LiteralLineState, Representation};
+use crate::template::literal_spans::parsed_raw_lines;
 
 pub(super) use tags::starts_v_pre_attribute as starts_v_pre_attribute_at;
 
@@ -88,7 +89,7 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
             if in_tag {
                 match byte {
                     quote @ (b'"' | b'\'') => {
-                        open_quote = Some(OpenQuote::new(bytes, cursor, quote));
+                        open_quote = Some(OpenQuote::new(lines, i, cursor, quote));
                     }
                     b'>' => {
                         in_tag = false;
@@ -208,6 +209,7 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
         }
         if let Some(quote) = &mut open_quote {
             quote.literal.finish_line();
+            quote.line += 1;
         }
         interpolation.finish_line();
     }
@@ -257,22 +259,60 @@ struct OpenQuote {
     raw: bool,
     directive: bool,
     literal: LiteralLineState,
+    /// Parsed literal ownership of a directive value, by line from the quote.
+    parsed: Option<Vec<bool>>,
+    line: usize,
 }
 
 impl OpenQuote {
-    fn new(line: &[u8], quote_pos: usize, quote: u8) -> Self {
+    fn new(lines: &[&[u8]], index: usize, quote_pos: usize, quote: u8) -> Self {
+        let line = lines.get(index).copied().unwrap_or_default();
         let attr_name = attr_name_before_quote(line, quote_pos);
+        let raw = literal_attr_quote(line, quote_pos);
+        let directive = attr_name.is_some_and(directive_expr_attr);
+        let parsed = (directive && !raw)
+            .then(|| quoted_value(lines, index, quote_pos, quote))
+            .flatten()
+            .and_then(|value| parsed_raw_lines(&value, Representation::Html));
         Self {
             quote,
-            raw: literal_attr_quote(line, quote_pos),
-            directive: attr_name.is_some_and(directive_expr_attr),
+            raw,
+            directive,
             literal: LiteralLineState::rendered(),
+            parsed,
+            line: 0,
         }
     }
 
     fn marks_line_raw(&self) -> bool {
-        self.raw || self.literal.line_is_raw()
+        self.raw
+            || self.parsed.as_ref().map_or_else(
+                || self.literal.line_is_raw(),
+                |raw| raw.get(self.line).copied().unwrap_or(false),
+            )
     }
+}
+
+/// The attribute value from after `quote_pos` to its closing quote, with the
+/// lines it spans joined by `\n`.
+fn quoted_value(
+    lines: &[&[u8]],
+    index: usize,
+    quote_pos: usize,
+    quote: u8,
+) -> Option<vize_l0::String> {
+    let mut value = Vec::new();
+    let mut tail = lines.get(index)?.get(quote_pos + 1..)?;
+    for next in lines.iter().skip(index + 1).map(Some).chain([None]) {
+        if let Some(close) = memchr::memchr(quote, tail) {
+            value.extend_from_slice(tail.get(..close)?);
+            return std::str::from_utf8(&value).ok().map(vize_l0::String::from);
+        }
+        value.extend_from_slice(tail);
+        value.push(b'\n');
+        tail = next?;
+    }
+    None
 }
 
 fn verbatim_multiline_directive_attr(name: &[u8], line: &[u8], quote_pos: usize) -> bool {

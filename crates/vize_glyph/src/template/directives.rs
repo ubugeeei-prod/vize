@@ -10,7 +10,8 @@ use vize_l1::embed::{
     syntax::{ForKeyword, parse_vue_for_head_once},
 };
 
-use super::literal_lines::{LiteralLineState, Representation, encode_reference_data};
+use super::literal_lines::{Representation, encode_reference_data};
+use super::literal_spans::ValueLines;
 
 mod normalize;
 pub(crate) use normalize::normalize_attribute_with_vue_version;
@@ -145,11 +146,12 @@ pub(super) fn reanchor_continuation_lines(
         return (value.to_compact_string(), false);
     }
 
-    let common_indent = common_continuation_indent(first_line, rest, representation);
+    let common_indent = common_continuation_indent(value, first_line, rest, representation);
     let indent = options.indent_string();
     let mut reanchored = String::with_capacity(value.len() + indent.len());
     reanchored.push_str(first_line);
-    let mut state = LiteralLineState::from_line(first_line, representation);
+    let mut state = ValueLines::new(value, representation);
+    state.advance_line(first_line);
     for line in rest.split('\n') {
         let line = line.trim_end_matches('\r');
         if state.line_holds_code(line) {
@@ -173,11 +175,13 @@ pub(super) fn reanchor_continuation_lines(
 /// The narrowest indentation shared by the continuation lines that hold code,
 /// which becomes the value's zero column when they are re-anchored.
 fn common_continuation_indent(
+    value: &str,
     first_line: &str,
     rest: &str,
     representation: Representation,
 ) -> usize {
-    let mut state = LiteralLineState::from_line(first_line, representation);
+    let mut state = ValueLines::new(value, representation);
+    state.advance_line(first_line);
     let mut common: Option<usize> = None;
     for line in rest.split('\n') {
         let line = line.trim_end_matches('\r');
