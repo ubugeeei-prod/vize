@@ -312,8 +312,30 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 fn v_for_alias_named_like_a_host_global_is_not_hoisted() {
     let source = r#"<div><NodeListInline v-for="document of filteredNodes" :key="document.id" :document="document" class="line-item" /><Foo v-for="window in wins" :w="window" /><span v-for="navigator in navs" :title="navigator.name" /></div>"#;
     let out = assembled(source);
-    assert!(!out.contains("_hoisted"), "{out}");
-    assert!(out.contains("key: document.id"), "{out}");
-    assert!(out.contains("{ w: window }"), "{out}");
+    assert_eq!(
+        out,
+        r#"const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_NodeListInline = _resolveComponent("NodeListInline")
+  const _component_Foo = _resolveComponent("Foo")
+  
+  return (_openBlock(), _createElementBlock("div", null, [
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(filteredNodes, (document) => {
+      return (_openBlock(), _createBlock(_component_NodeListInline, {
+        key: document.id,
+        document: document,
+        class: "line-item"
+      }, null, 8 /* PROPS */, ["document"]))
+    }), 128 /* KEYED_FRAGMENT */)),
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(wins, (window) => {
+      return (_openBlock(), _createBlock(_component_Foo, { w: window }, null, 8 /* PROPS */, ["w"]))
+    }), 256 /* UNKEYED_FRAGMENT */)),
+    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(navs, (navigator) => {
+      return (_openBlock(), _createElementBlock("span", { title: navigator.name }, null, 8 /* PROPS */, ["title"]))
+    }), 256 /* UNKEYED_FRAGMENT */))
+  ]))
+}"#
+    );
     assert_shipped_parity(source);
 }
