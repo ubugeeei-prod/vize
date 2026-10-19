@@ -248,20 +248,3 @@ paths = [
 justification = "landed on main after the P0-12 snapshot; pair each source with its expected output upstream"
 expires = "2026-10-31"
 paths = ["crates/vize_glyph/src/style/stabilization.rs"]
-
-[[allow]]
-# Partial matches that already existed in out-of-line `<module>/tests.rs`
-# files, which the scan never reached. Inlining those modules into their
-# parent (no subdirectory just for tests) makes them visible; they are the
-# same pre-existing debt, not new test code.
-justification = "pre-existing partial assertions surfaced by inlining tests.rs modules; replace with exact oracles"
-expires = "2026-12-31"
-paths = [
-  "crates/vize_atelier_sfc/src/compile_script/props/validation/macro_scope.rs",
-  "crates/vize_atelier_sfc/src/compile_script/statement_sections.rs",
-  "crates/vize_atelier_sfc/src/croquis/module_exports.rs",
-  "crates/vize_atelier_sfc/src/module_shape.rs",
-  "crates/vize_vitrine/src/napi/jsx.rs",
-  "crates/vize_vitrine/src/napi/plugin_sdk/providers/cache.rs",
-  "crates/vize_vitrine/src/wasm/analyze/input.rs",
-]

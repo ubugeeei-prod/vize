@@ -97,6 +97,36 @@ mod tests {
     use crate::{SfcParseOptions, parse_sfc};
     use vize_l0::Allocator;
 
+    /// Setup bindings for each `(first, second)` capture mode of the mixed SFC.
+    fn expected_bindings(mode: (bool, bool)) -> Vec<(&'static str, vize_croquis::BindingType)> {
+        use vize_croquis::BindingType::{
+            Data, Props, SetupConst, SetupMaybeRef, SetupReactiveConst, SetupRef, VueGlobal,
+        };
+        let globals = [
+            "$config",
+            "$fetchState",
+            "$nuxt",
+            "$route",
+            "$router",
+            "$store",
+        ];
+        let mut expected = Vec::new();
+        if mode.1 {
+            expected.extend(globals.map(|name| (name, VueGlobal)));
+        }
+        expected.extend([
+            ("PlainCard", SetupConst),
+            ("count", SetupRef),
+            ("label", Props),
+            ("props", SetupReactiveConst),
+            ("ref", SetupMaybeRef),
+        ]);
+        if mode.0 || mode.1 {
+            expected.push(("title", Data));
+        }
+        expected
+    }
+
     fn assert_capture(
         source: &str,
         options: SfcCroquisOptions,
@@ -291,8 +321,15 @@ mod tests {
                 SfcCroquisOptions::lint_demand().with_unused_bindings(),
             ] {
                 let captured = assert_capture(source, options, mode, true);
-                assert!(captured.croquis.bindings.contains("PlainCard"));
-                assert!(captured.croquis.bindings.contains("count"));
+                let mut bindings = captured
+                    .croquis
+                    .bindings
+                    .bindings
+                    .iter()
+                    .map(|(name, kind)| (name.as_str(), *kind))
+                    .collect::<Vec<_>>();
+                bindings.sort_unstable_by_key(|(name, _)| *name);
+                assert_eq!(bindings, expected_bindings(mode));
                 let script = captured.script_content.as_deref().unwrap();
                 let (start, end) = captured.croquis.binding_spans["count"];
                 assert_eq!(script.get(start as usize..end as usize), Some("count"));

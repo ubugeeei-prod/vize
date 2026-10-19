@@ -417,8 +417,15 @@ const msg = 'ready'
         let (imports, setup, module) = extract_script_sections(content, true).unwrap();
 
         assert_eq!(imports.len(), 1);
-        assert!(setup.iter().any(|line| line.contains("definePage")));
-        assert!(setup.iter().any(|line| line.contains("const msg")));
+        assert_eq!(
+            setup,
+            [
+                "definePage(() => ({",
+                "  title: 'runtime page',",
+                "}))",
+                "const msg = 'ready'"
+            ]
+        );
         assert!(module.is_empty());
     }
 

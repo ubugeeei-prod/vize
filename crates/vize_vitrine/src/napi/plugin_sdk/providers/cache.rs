@@ -300,8 +300,8 @@ mod tests {
             .expect("actual old result key");
         let current = migration_key();
         let (groups, output) = output();
-        assert!(old.starts_with("s0.v1:"));
-        assert!(current.starts_with("l0.v2:"));
+        assert_eq!(old, "s0.v1:599021f015a56fa001b300e6ce7125a9");
+        assert_eq!(current, "l0.v2:1ccccbcc91f10fbd2bc9dd3e65f39ad5");
         assert_ne!(output.result_key, old_result);
         let old_output = ProviderOutput {
             values: output.values.clone(),

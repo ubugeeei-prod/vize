@@ -127,11 +127,9 @@ mod tests {
             let result = analyze(&broken);
             assert_eq!(result["croquis"]["stats"]["error_count"], 1);
             assert_eq!(result["diagnostics"], result["croquis"]["diagnostics"]);
-            assert!(
-                result["diagnostics"][0]["message"]
-                    .as_str()
-                    .unwrap()
-                    .contains("Duplicate")
+            assert_eq!(
+                result["diagnostics"][0]["message"],
+                "Duplicate pattern binding rows."
             );
             assert_eq!(analyze(&source)["diagnostics"], serde_json::json!([]));
         }
@@ -141,11 +139,35 @@ mod tests {
     fn root_requires_explicit_opt_in_and_preserves_original_body_for_inspection() {
         let source = "<template v-match=\"subject\"><p v-when=\"_\">ok</p></template>";
         let off = analyze_sfc_json_with_options(source, "Pattern.vue", false, false).unwrap_err();
-        assert!(off.contains("patternedTemplate"));
+        assert_eq!(
+            off,
+            "`v-match` / `v-when` patterned templates require `experimentals.patternedTemplate`."
+        );
         let result = analyze(source);
         assert_eq!(result["diagnostics"], serde_json::json!([]));
         assert_eq!(result["vir"], result["folio"]["croquis"]);
-        assert!(result["vir"].as_str().unwrap().contains("v-match"));
+        // Exact VIR shape; only the universal scope's global list is elided.
+        let lines = result["vir"]
+            .as_str()
+            .unwrap()
+            .lines()
+            .map(|line| line.split_once(" [").map_or(line, |(head, _)| head))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            lines,
+            [
+                "[vir]",
+                "script_setup=false",
+                "scopes=3",
+                "bindings=0",
+                "",
+                "[scopes]",
+                "~0 univ @0:0",
+                "~1 v-match @0:44 < ~0",
+                "~2 v-when @28:44 < ~1",
+                "",
+            ]
+        );
     }
 
     #[test]

@@ -290,13 +290,14 @@ mod tests {
         let result = compile_jsx_impl(source.to_string(), None);
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
-        assert_eq!(result.scoped_styles.len(), 1);
-        let style = &result.scoped_styles[0];
-        assert!(style.scope_id.starts_with("data-v-"), "{}", style.scope_id);
-        assert!(
-            style.css.contains(".box") && style.css.contains(&style.scope_id),
-            "{}",
-            style.css
+        let styles = result
+            .scoped_styles
+            .iter()
+            .map(|style| (style.scope_id.as_str(), style.css.as_str()))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            styles,
+            [("data-v-94896887", ".box[data-v-94896887]{ color: red }")]
         );
     }
 
@@ -315,13 +316,18 @@ mod tests {
         let result = compile_jsx_impl(source.to_string(), None);
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
-        assert!(result.code.contains("from \"vue\""), "{}", result.code);
-        let import_at = result.code.find("from \"vue\"").expect("vue import");
-        let usage_at = result
-            .code
-            .find("_createElementBlock(")
-            .expect("render uses _createElementBlock");
-        assert!(import_at < usage_at, "{}", result.code);
+        // The helper import precedes the render that uses it.
+        assert_eq!(
+            result.code,
+            "import { toDisplayString as _toDisplayString, openBlock as _openBlock, \
+             createElementBlock as _createElementBlock } from \"vue\"\n\n\
+             const App = () => (() => {\n\
+             return ((_ctx, _cache) => {\n  \
+             return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(message), 1 /* TEXT */))\n\
+             })(undefined, [])\n\
+             })();\n\
+             export default App;\n"
+        );
     }
 
     #[test]
@@ -342,22 +348,30 @@ mod tests {
         let result = compile_jsx_impl(source.to_string(), None);
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
-        assert!(
-            result
-                .code
-                .contains("import { defineComponent as _defineComponent } from \"vue\""),
-            "{}",
-            result.code
+        // Setup state stays inside `setup()`; no separate `render` export.
+        assert_eq!(
+            result.code,
+            "import { toDisplayString as _toDisplayString, openBlock as _openBlock, \
+             createElementBlock as _createElementBlock } from \"vue\"\n\n\
+             import { defineComponent as _defineComponent } from \"vue\"\n\n        \
+             import { computed, ref } from \"vue\";\n\n        \
+             export const App = _defineComponent({\n\
+             name: \"App\",\n\
+             setup() {\n\n            \
+             const count = ref(0);\n            \
+             const doubled = computed(() => count.value * 2);\n            \
+             const increment = () => {\n                \
+             count.value += 1;\n            \
+             };\n\n            \
+             return (() => {\n\
+             return ((_ctx, _cache) => {\n  \
+             return (_openBlock(), _createElementBlock(\"button\", { onClick: increment }, \
+             _toDisplayString(doubled.value), 9 /* TEXT, PROPS */, [\"onClick\"]))\n\
+             })\n\
+             })()\n\
+             }\n\
+             });\n    "
         );
-        assert!(
-            result
-                .code
-                .contains("export const App = _defineComponent({")
-        );
-        assert!(result.code.contains("const count = ref(0);"));
-        assert!(result.code.contains("count.value += 1;"));
-        assert!(result.code.contains("return ((_ctx, _cache) =>"));
-        assert!(!result.code.contains("export function render("));
     }
 
     #[test]
@@ -411,15 +425,13 @@ mod tests {
         );
 
         assert!(result.errors.is_empty(), "errors: {:?}", result.errors);
-        assert!(
-            result.code.contains("function ssrRender"),
-            "{}",
-            result.code
-        );
-        assert!(
-            result.code.contains("@vue/server-renderer"),
-            "{}",
-            result.code
+        assert_eq!(
+            result.code,
+            "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } \
+             from \"@vue/server-renderer\"\n\n\
+             function ssrRender(_ctx, _push, _parent, _attrs) {\n  \
+             _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(message)}</div>`)\n\
+             }\n"
         );
         assert!(result.map.is_none(), "SSR output has no source map yet");
     }

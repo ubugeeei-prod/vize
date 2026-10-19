@@ -392,8 +392,15 @@ mod tests {
                 Some("SCRIPT_SETUP_MACRO_SCOPE"),
                 "{label}"
             );
-            assert!(error.message.contains(macro_name), "{label}: {error:?}");
-            assert!(error.message.contains("`local`"), "{label}: {error:?}");
+            assert_eq!(
+                error.message,
+                vize_carton::cstr!(
+                    "`{macro_name}()` in <script setup> cannot reference locally declared variable \
+                     `local` because its arguments are hoisted outside setup(). Move the \
+                     initialization to a normal <script> block or import it from another module."
+                ),
+                "{label}"
+            );
             let loc = error.loc.expect("invalid reference should have a location");
             assert_eq!(
                 &source[loc.start..loc.end],

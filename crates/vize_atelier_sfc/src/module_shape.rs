@@ -434,7 +434,11 @@ mod tests {
                     assert!(is_plain_javascript(&code));
                 }
                 if let Some(start) = shape.as_ref().and_then(|shape| shape.default_export_start) {
-                    assert!(code[start as usize..].starts_with("export default"));
+                    let start = start as usize;
+                    assert_eq!(
+                        code.get(start..start + "export default".len()),
+                        Some("export default")
+                    );
                 }
             }
         }
