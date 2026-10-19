@@ -111,6 +111,10 @@ const toolingInputs = [
   "Cargo.toml",
   "Cargo.lock",
   "rust-toolchain.toml",
+  // Root TypeScript projects, nextest and ignore rules configure tooling too.
+  "tsconfig*.json",
+  ".config/**",
+  ".gitignore",
   "crates/**",
   "davinci/**",
   "tools/**",

@@ -1,0 +1,60 @@
+name: Affected tooling worker
+description: Run one planned shard of the PR-tier tooling tests that the change can affect.
+inputs:
+  producer:
+    description: Complete source CLI producer outputs.
+    required: true
+  base:
+    description: Comparison base the planner selected the affected tests against.
+    required: true
+  shard:
+    description: One-based worker index in the planned matrix.
+    required: true
+  total:
+    description: Worker count of the planned matrix.
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      with: { node-version-file: package.json, cache: true, run-install: false }
+    - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+      with: { toolchain: stable }
+    - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      with: { wild-version: "0.9.0" }
+    # Read-only clone of the disk the first full tooling worker commits.
+    - uses: ./.github/actions/setup-rust-sticky-cache
+      with:
+        key: test-scripts
+        cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-shard-1
+    - uses: ./.github/actions/setup-rust-script
+    - name: Select the same affected tooling tests as the planner
+      shell: bash
+      env: { BASE_SHA: "${{ inputs.base }}" }
+      run: |
+        if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags origin "$BASE_SHA"; fi
+        node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json"
+    - name: Hydrate CLI diagnostic fixtures and install JS dependencies
+      shell: bash
+      run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline
+    - uses: ./.github/actions/restore-source-cli
+      with: { producer: "${{ inputs.producer }}" }
+    - name: Prepare the pinned plugin isolation runtime
+      shell: bash
+      run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.ts
+    - name: Install CSS formatter reference browser
+      uses: ./.github/actions/install-formatter-css-browser
+      env:
+        VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
+        VIZE_TOOLING_TEST_TIER: pr
+        VIZE_TOOLING_TEST_SHARD: ${{ inputs.shard }}/${{ inputs.total }}
+    - name: Test affected tooling scripts
+      shell: bash
+      env:
+        SOURCE_LENGTH_BASE_REF: ${{ inputs.base }}
+        VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+        VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+        VIZE_TOOLING_TEST_TIER: pr
+        VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
+        VIZE_TOOLING_TEST_SHARD: ${{ inputs.shard }}/${{ inputs.total }}
+      run: vp run --workspace-root test:scripts:pr

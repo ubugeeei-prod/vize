@@ -97,7 +97,7 @@ test("scheduled full tooling requires the original current-source CLI receipt be
   for (const step of restore.runs.steps) assert.notEqual(step["continue-on-error"], true);
 });
 
-test("PR product checks remain independent of the scheduled tooling producer", () => {
+test("PR product lanes stay independent of the affected tooling producer", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as Workflow;
   assert.equal(workflow.jobs["pr-source-cli"], undefined);
   assert.equal(workflow.jobs["pr-tooling-scripts"], undefined);
@@ -108,12 +108,15 @@ test("PR product checks remain independent of the scheduled tooling producer", (
     "pr-playground-test",
   ])
     assert.equal(workflow.jobs[name].needs, "pr-source-plan", name);
-  for (const job of Object.values(workflow.jobs)) {
-    assert.notEqual(job.uses, "./.github/workflows/full-source-cli.yml");
+  // Only the affected tooling lane builds and consumes the source CLI.
+  for (const [name, job] of Object.entries(workflow.jobs)) {
+    if (job.uses === "./.github/workflows/full-source-cli.yml")
+      assert.equal(name, "affected-tooling-cli");
     for (const step of job.steps ?? []) {
       assert.notEqual(step.uses, "./.github/actions/test-full-tooling");
       assert.notEqual(step.uses, "./.github/actions/restore-source-cli");
-      assert.doesNotMatch(step.run ?? "", /vp run --workspace-root test:scripts/);
+      if (step.uses === "./.github/actions/test-affected-tooling")
+        assert.equal(name, "affected-tooling");
     }
   }
 });

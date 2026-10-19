@@ -51,6 +51,7 @@ const sourceNeeds = [
   "canonical-corpus",
   "ci-selection-tests",
   "wasm-release-check",
+  "affected-tooling-report",
 ];
 const fullNeeds = ["full-source-cli", "tooling-plan", "test-scripts"];
 const fullCondition =

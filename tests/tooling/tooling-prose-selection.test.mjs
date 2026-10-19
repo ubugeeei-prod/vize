@@ -33,16 +33,17 @@ void test("a prose path is read when a source names it, a directory above it or 
   assert.equal(read("AGENTS.md", 'readFileSync("README.md"); const glob = "**/*";'), false);
 });
 
-void test("PRs select prose readers only, while code and the merge tier stay broad", () => {
+void test("PRs select readers by name, while the merge tier stays complete", () => {
   assert.ok(isProse("docs/content/guide/index.md") && isProse("AGENTS.md"));
   assert.ok(!isProse("docs/scripts/build.ts"));
   const prose = planToolingTests(["docs/content/guide/index.md"]);
-  assert.equal(prose.reason, "prose read by name");
+  assert.equal(prose.reason, "import closures and named repository paths");
   assert.ok(prose.tests.length > 0 && prose.tests.length < prose.totalTests / 4);
   // The merge runner requires the whole suite, prose-only candidates included.
   const merge = planToolingTests(["docs/content/guide/index.md"], { tier: "merge" });
   assert.equal(merge.tests.length, merge.totalTests);
+  // Code is selected the same way, by the tests that name its directory.
   const mixed = planToolingTests(["docs/content/guide/index.md", "tools/support/ci/x.ts"]);
-  assert.ok(mixed.tests.length > prose.tests.length);
+  assert.ok(mixed.tests.length < mixed.totalTests / 4);
   assert.ok(prose.tests.every((file) => mixed.tests.includes(file)));
 });

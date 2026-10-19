@@ -27,6 +27,8 @@ jobs:
       native-runtime-matrix: ${{ steps.plan.outputs.native-runtime-matrix }}
       playground: ${{ steps.plan.outputs.playground }}
       tooling: ${{ steps.plan.outputs.tooling }}
+      affected-tooling: ${{ steps.tooling-plan.outputs.tooling }}
+      affected-tooling-matrix: ${{ steps.tooling-plan.outputs.tooling-matrix }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -58,6 +60,10 @@ jobs:
         id: canonical-corpus-plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
         run: node tools/support/compat/github/canonical-corpus-selection.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
+      - name: Plan affected tooling tests
+        id: tooling-plan
+        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
+        run: node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json" --github-output
   # PR and queue Rust lanes build only native configurations; the release
   # also builds @vizejs/wasm without it. Check that configuration first.
   wasm-release-check:
@@ -76,6 +82,50 @@ jobs:
         if: ${{ env.AFFECTED == 'true' }}
       - uses: ./.github/actions/check-wasm-release
         if: ${{ env.AFFECTED == 'true' }}
+  # Tooling tests otherwise ran only in scheduled Full qualification, so docs
+  # and tooling breaks reached main. The PR tier selects what a change affects.
+  affected-tooling-cli:
+    name: Affected tooling CLI
+    needs: pr-source-plan
+    if: ${{ needs.pr-source-plan.outputs.affected-tooling == 'true' }}
+    uses: ./.github/workflows/full-source-cli.yml
+  affected-tooling:
+    name: Affected tooling (${{ matrix.name }})
+    needs: [pr-source-plan, affected-tooling-cli]
+    if: ${{ needs.pr-source-plan.outputs.affected-tooling == 'true' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.pr-source-plan.outputs.affected-tooling-matrix) }}
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.affected-tooling-cli.outputs.receipt-sha256 }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0 }
+      - uses: ./.github/actions/test-affected-tooling
+        with:
+          producer: ${{ toJSON(needs.affected-tooling-cli.outputs) }}
+          base: ${{ needs.pr-source-plan.outputs.comparison-base }}
+          shard: ${{ matrix.index }}
+          total: ${{ matrix.total }}
+  affected-tooling-report:
+    name: Affected tooling report
+    if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
+    needs: [pr-source-plan, affected-tooling-cli, affected-tooling]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require every selected tooling worker
+        env:
+          SELECTED: ${{ needs.pr-source-plan.outputs.affected-tooling }}
+          CLI: ${{ needs.affected-tooling-cli.result }}
+          WORKERS: ${{ needs.affected-tooling.result }}
+        run: |
+          echo "selected=$SELECTED cli=$CLI workers=$WORKERS"
+          if [[ "$SELECTED" == true ]]; then [[ "$CLI" == success && "$WORKERS" == success ]]
+          else [[ "$SELECTED" == false && "$CLI" == skipped && "$WORKERS" == skipped ]]; fi
   # Beside the lanes, not before them: every lane already waits for the source
   # report, which requires this job.
   ci-selection-tests:
@@ -323,7 +373,7 @@ jobs:
     # A superseded run reports nothing: its required check fails in test-report.
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
     # prettier-ignore
-    needs: [pr-source-plan, pr-rust-source, pr-rust-products, pr-js-packages, pr-native-runtime, pr-playground-test, nuxt-module-qualification, canonical-corpus, ci-selection-tests, wasm-release-check]
+    needs: [pr-source-plan, pr-rust-source, pr-rust-products, pr-js-packages, pr-native-runtime, pr-playground-test, nuxt-module-qualification, canonical-corpus, ci-selection-tests, wasm-release-check, affected-tooling-report]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:

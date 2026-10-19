@@ -30,9 +30,11 @@ function fixture() {
   return { cwd, write, cleanup: () => rmSync(cwd, { recursive: true, force: true }) };
 }
 
-void test("unrelated source edits omit audited plan contracts but keep broad runtime checks", () => {
+void test("a source edit selects only the tests that import or name it", () => {
   const f = fixture();
   try {
+    assert.deepEqual(planToolingTests(["davinci/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, []);
+    f.write("tests/tooling/native.test.ts", 'const crate = ["davinci", "vize_l1"];');
     assert.deepEqual(planToolingTests(["davinci/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, [
       "tests/tooling/native.test.ts",
     ]);
@@ -64,7 +66,7 @@ void test("transitive imports and deleted inputs select the contract", () => {
   }
 });
 
-void test("unknown, dynamic, and shared dependency inputs restore the broad PR suite", () => {
+void test("unknown and shared dependency inputs restore the broad PR suite", () => {
   const f = fixture();
   try {
     for (const paths of [
@@ -75,8 +77,18 @@ void test("unknown, dynamic, and shared dependency inputs restore the broad PR s
     ]) {
       assert.equal(planToolingTests(paths, { cwd: f.cwd }).tests.length, 2);
     }
+    // This audited plan contract has a curated scope, so an incomplete
+    // closure keeps the broad inputs instead of trusting named paths.
     f.write("tests/tooling/davinci-phase4-contract-status.test.ts", "import(variable);");
-    assert.equal(planToolingTests(["davinci/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests.length, 2);
+    assert.deepEqual(planToolingTests(["davinci/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, [
+      "tests/tooling/davinci-phase4-contract-status.test.ts",
+    ]);
+    // An unscoped test with a computed import runs on the paths it names.
+    f.write("tests/tooling/native.test.ts", 'import(join("davinci/vize_l1", variable));');
+    f.write("tests/tooling/davinci-phase4-contract-status.test.ts", "");
+    assert.deepEqual(planToolingTests(["davinci/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, [
+      "tests/tooling/native.test.ts",
+    ]);
   } finally {
     f.cleanup();
   }

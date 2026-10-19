@@ -16,7 +16,9 @@ export function toolingTestFiles(cwd = fileURLToPath(new URL("../../../../", imp
 // checkouts; every runner still executes its own files serially. Measured timings only decide
 // where a file runs and how many runners a plan needs, never whether it runs.
 export const MAX_TOOLING_SHARDS = 16;
-export const TARGET_TOOLING_SHARD_MS = 100_000;
+// Full qualification shards run alone. PR and queue shards start after the
+// source CLI and finish beside the ~4 min Rust cohorts, so each takes more.
+export const TOOLING_SHARD_TARGET_MS = Object.freeze({ pr: 180_000, merge: 100_000 });
 export const TOOLING_TIMINGS_SCHEMA = "vize-tooling-test-timings-v1";
 // The table names every tooling test, so it lives beside them.
 export const TOOLING_TIMINGS_PATH = new URL(
@@ -184,7 +186,7 @@ export function toolingShards(plan: ToolingShardPlan) {
   const limit = Math.min(MAX_TOOLING_SHARDS, Math.max(1, plan.tests.length));
   const budget = plan.tests.reduce(
     (largest, file) => Math.max(largest, estimateToolingTestMs(plan.tier, file)),
-    TARGET_TOOLING_SHARD_MS,
+    TOOLING_SHARD_TARGET_MS[plan.tier],
   );
   for (let total = 1; ; total += 1) {
     const shards = pack(plan, total, leadMs);

@@ -90,6 +90,7 @@ test("queue scope reaches the planner and every selected source lane remains req
     "canonical-corpus",
     "ci-selection-tests",
     "wasm-release-check",
+    "affected-tooling-report",
   ]);
   assert.equal(
     source.jobs["source-report"].if,

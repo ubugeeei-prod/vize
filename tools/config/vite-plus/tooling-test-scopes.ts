@@ -156,6 +156,12 @@ export const toolingTestScopes = [
       "tests/tooling/release/release-smoke-runtime-oracle.test.ts",
     ],
   },
+  // Release contracts not yet reviewed into the scope above keep every
+  // tooling input until their owners audit what they read.
+  {
+    input: "tooling",
+    tests: ["tests/tooling/release/**"],
+  },
   {
     input: "toolingPlans",
     tests: [

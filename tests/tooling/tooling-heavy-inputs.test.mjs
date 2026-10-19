@@ -92,12 +92,11 @@ void test("standalone bench comparison retains Rust script, common helper and re
 void test("real test import closures permit the five scopes while package generation retains fallback", () => {
   const guide = new Set(planToolingTests(["docs/content/guide.md"]).tests);
   for (const file of heavy) assert.equal(guide.has(file), false, file);
-  // Generated fixture code imports App.vue relative to a temporary consumer.
-  // The current literal-import scanner cannot prove that resolution, so the
-  // package test keeps its broad coverage for code. Prose it never names is
-  // left to the merge queue.
+  // Generated fixture code imports App.vue relative to a temporary consumer,
+  // so the closure is incomplete; without a curated scope the package test is
+  // selected by the paths it names, and an unnamed new helper is not one.
   assert.ok(!guide.has(pack));
-  assert.ok(planToolingTests(["tools/support/compat/github/new-helper.mjs"]).tests.includes(pack));
+  assert.ok(!planToolingTests(["tools/support/compat/github/new-helper.mjs"]).tests.includes(pack));
   const merge = planToolingTests(["tools/support/compat/github/new-helper.mjs"], { tier: "merge" });
   assert.deepEqual(merge.tests, toolingTestFiles());
 });

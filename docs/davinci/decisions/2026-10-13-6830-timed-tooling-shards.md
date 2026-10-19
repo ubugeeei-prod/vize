@@ -32,7 +32,8 @@ runner regenerates the same plan and table, so all of them derive the same
 partition. Inside a runner, files keep plan order.
 
 The matrix uses the fewest runners, up to `MAX_TOOLING_SHARDS = 16`, whose
-estimated test time stays within `TARGET_TOOLING_SHARD_MS = 100_000`. The
+estimated test time stays within `TOOLING_SHARD_TARGET_MS` (180 s for the PR tier,
+which starts after the source CLI beside the Rust cohorts; 100 s for Full). The
 target never drops below the single heaviest file, which no partition can split.
 Small selections therefore still get one runner.
 

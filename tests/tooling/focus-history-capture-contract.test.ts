@@ -10,7 +10,10 @@ import {
   loadFocusCases,
   validateFocusProbe,
 } from "../differential/focus-history.ts";
-import { planToolingTests } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
+import {
+  localImportInputs,
+  planToolingTests,
+} from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixtures = loadFocusCases(root);
@@ -173,7 +176,10 @@ void test("the first real source-built capture is retained only in full T1; pure
     const pr = planToolingTests([input], { cwd: root }).tests;
     const full = planToolingTests([input], { tier: "merge", cwd: root }).tests;
     assert(!pr.includes(execution));
-    assert(pr.includes(contracts) && pr.includes(protocol));
+    assert(pr.includes(contracts));
+    // The synthetic protocol laws depend only on their TypeScript import closure.
+    if (localImportInputs(protocol, root).files.includes(input))
+      assert(pr.includes(protocol), input);
     assert(full.includes(execution) && full.includes(contracts) && full.includes(protocol));
   }
   assert(planToolingTests([contracts], { cwd: root }).tests.includes(contracts));

@@ -12,7 +12,7 @@ import {
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 import {
   MAX_TOOLING_SHARDS,
-  TARGET_TOOLING_SHARD_MS,
+  TOOLING_SHARD_TARGET_MS,
   TOOLING_LEAD_STEPS,
   TOOLING_TIMINGS_LOG_MARKER,
   estimateToolingTestMs,
@@ -66,7 +66,7 @@ void test("timed packing uses the fewest runners within the target and bounds th
   const unmeasured = (size) =>
     Array.from({ length: size }, (_, index) => `tests/tooling/new-${index}.test.ts`);
   const estimate = estimateToolingTestMs("pr", "tests/tooling/new-0.test.ts");
-  const perRunner = Math.floor(TARGET_TOOLING_SHARD_MS / estimate);
+  const perRunner = Math.floor(TOOLING_SHARD_TARGET_MS.pr / estimate);
   for (const size of [1, perRunner, perRunner + 1, perRunner * 5, perRunner * 50]) {
     assert.equal(
       toolingShards(plan(unmeasured(size))).length,
@@ -84,7 +84,7 @@ void test("timed packing uses the fewest runners within the target and bounds th
     assert.ok(longest <= sum / shards.length + Math.max(...estimates), tier);
     assert.ok(
       shards.length === MAX_TOOLING_SHARDS ||
-        longest <= Math.max(TARGET_TOOLING_SHARD_MS, ...estimates),
+        longest <= Math.max(TOOLING_SHARD_TARGET_MS[tier], ...estimates),
       tier,
     );
     for (const [index, shard] of shards.entries()) {

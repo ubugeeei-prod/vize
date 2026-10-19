@@ -51,9 +51,7 @@ export function localImportInputs(file, cwd = root, visited = new Set()) {
   return { files, complete };
 }
 
-// Prose never runs as code. A PR that changes only prose selects the tests
-// whose sources name that file, a directory above it or a glob over it. The
-// merge queue still runs every test.
+// Prose never runs as code; it is selected only by name like any other path.
 export const isProse = (path) => /\.mdx?$/.test(path);
 const literal = /(["'`])((?:(?!\1)[^\\\n])*)\1/g;
 const segmentRun = /(?:["'`][\w.@*-]+["'`]\s*,\s*)+["'`][\w.@*-]+["'`]/g;
@@ -73,42 +71,71 @@ export function readsProse(path, sources) {
   return sources.some((references) =>
     references.some((reference) => {
       const directory = reference.replace(/\/+$/, "");
+      // A multi-segment name may be relative to a joined root (docs/, a
+      // package directory), so it also matches as a path suffix or segment.
+      const nested =
+        directory.includes("/") &&
+        !directory.startsWith(".") &&
+        (path.endsWith(`/${directory}`) || path.includes(`/${directory}/`));
       return (
         path === directory ||
         path.startsWith(`${directory}/`) ||
+        nested ||
         (reference.includes("*") && matchesGlob(path, reference))
       );
     }),
   );
 }
 
+// A module that most tests share (an LSP launcher, the task catalog) may walk a
+// whole top-level tree for its own bookkeeping. Such a one-segment reference in
+// a widely shared helper says nothing about what any one test exercises; the
+// same reference in a test or a narrow helper still selects it.
+export const SHARED_HELPER_IMPORTERS = 10;
+const topLevelOnly = (reference) => !reference.replace(/\/[*/]*$/, "").includes("/");
+
 export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
   if (!["pr", "merge"].includes(tier)) throw new Error("tier must be pr or merge");
   const files = toolingTestFiles(cwd);
   const mergeOnly = new Set(mergeOnlyToolingTests);
-  const prose = paths.filter(isProse);
   const code = paths.filter((path) => !isProse(path));
   const unknown =
     paths.length === 0 ||
     code.some((path) => !matchesAny(path, [...cacheInputs.tooling, ...globalInputs]));
   const global = code.some((path) => matchesAny(path, globalInputs));
+  const candidates = files.filter((file) => tier === "pr" && !mergeOnly.has(file));
+  const closures = new Map(candidates.map((file) => [file, localImportInputs(file, cwd)]));
+  const importers = new Map();
+  for (const { files: members } of closures.values())
+    for (const member of members) importers.set(member, (importers.get(member) ?? 0) + 1);
+  const referenceCache = new Map();
+  const references = (member) => {
+    if (!referenceCache.has(member)) {
+      const found = proseReferences(readFileSync(join(cwd, member), "utf8"));
+      referenceCache.set(
+        member,
+        (importers.get(member) ?? 0) > SHARED_HELPER_IMPORTERS
+          ? found.filter((reference) => !topLevelOnly(reference))
+          : found,
+      );
+    }
+    return referenceCache.get(member);
+  };
   const tests = files.filter((file) => {
     if (tier === "merge") return true;
     if (mergeOnly.has(file)) return false;
     if (unknown || global || paths.includes(file)) return true;
+    const imports = closures.get(file);
+    if (paths.some((path) => imports.files.includes(path))) return true;
+    // A declared scope is curated: its inputs decide, and an incomplete closure
+    // keeps that scope's broad inputs.
     const scope = toolingTestScopes.find((entry) => matchesAny(file, entry.tests));
-    const imports = localImportInputs(file, cwd);
-    const inputs = scope && imports.complete ? cacheInputs[scope.input] : cacheInputs.tooling;
-    if (code.some((path) => matchesAny(path, [...inputs, ...imports.files]))) return true;
-    if (prose.length === 0) return false;
-    // A declared scope is curated: its inputs, or the broad inputs when its
-    // closure is incomplete, still decide prose.
-    if (scope && prose.some((path) => matchesAny(path, inputs))) return true;
-    // Any other test reads prose only by naming it in a resolvable source.
-    const sources = imports.files.map((member) =>
-      proseReferences(readFileSync(join(cwd, member), "utf8")),
-    );
-    return prose.some((path) => readsProse(path, sources));
+    const inputs = scope && (imports.complete ? cacheInputs[scope.input] : cacheInputs.tooling);
+    if (inputs && paths.some((path) => matchesAny(path, inputs))) return true;
+    // Otherwise a test depends on its import closure and on every repository
+    // path its sources name: a file, a directory above it or a glob over it.
+    const sources = imports.files.map(references);
+    return paths.some((path) => readsProse(path, sources));
   });
   return {
     version: 1,
@@ -123,9 +150,7 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
           ? "unknown inputs: broad PR suite"
           : global
             ? "shared task or dependency inputs"
-            : code.length === 0
-              ? "prose read by name"
-              : "declared task and import inputs",
+            : "import closures and named repository paths",
   };
 }
 
