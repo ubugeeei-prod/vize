@@ -2,7 +2,7 @@
 #![expect(
     clippy::disallowed_types,
     clippy::disallowed_macros,
-    clippy::disallowed_methods,
+    clippy::string_slice,
     reason = "whole CLI fixtures use std strings"
 )]
 
@@ -37,27 +37,32 @@ const count: number = 2;
 
 const PLAIN: &str = "<style>\n.legacy { color: red !important; }\n</style>\n";
 
-/// `(lang, scoped body, module body)` written the way each language is used.
-const FIXTURES: &[(&str, &str, &str)] = &[
+/// `(lang, scoped body, module body, built scoped CSS)` written the way each
+/// language is used; `{id}` is the component's scope id.
+const FIXTURES: &[(&str, &str, &str, &str)] = &[
     (
         "scss",
         "$gap: 8px;\n.card {\n  padding: $gap;\n  color: v-bind(accent) !important;\n  &__body { margin: 0; }\n}\n",
         ".title {\n  &--large { font-size: 2em; }\n}\n",
+        ".card[data-v-{id}]{ padding: 8px; color: var(--{id}-accent) !important; }.card__body[data-v-{id}]{ margin: 0; }",
     ),
     (
         "sass",
         "$gap: 8px\n.card\n  padding: $gap\n  color: v-bind(accent) !important\n",
         ".title\n  &--large\n    font-size: 2em\n",
+        ".card[data-v-{id}]{ padding: 8px; color: var(--{id}-accent) !important; }",
     ),
     (
         "less",
         ".card {\n  padding: 8px;\n  color: v-bind(accent) !important;\n  &:hover { opacity: 0.8; }\n}\n",
         ".title {\n  &--large { font-size: 2em; }\n}\n",
+        ".card[data-v-{id}]{ padding: 8px; color: var(--{id}-accent) !important; }.card[data-v-{id}]:hover{ opacity: 0.8; }",
     ),
     (
         "stylus",
         ".card\n  padding 8px\n  color v-bind(accent) !important\n",
         ".title\n  &--large\n    font-size 2em\n",
+        ".card[data-v-{id}]{ padding: 8px; color: var(--{id}-accent) !important; }",
     ),
 ];
 
@@ -84,21 +89,6 @@ fn details(output: &std::process::Output) -> String {
     )
 }
 
-/// The contents of every preprocessor `<style>` block.
-fn preprocessor_style_bodies(source: &str) -> Vec<&str> {
-    source
-        .match_indices("<style")
-        .filter_map(|(start, _)| {
-            let rest = source.get(start..)?;
-            let open = rest.find('>')?;
-            let close = rest.find("</style>")?;
-            rest.get(..open)?
-                .contains("lang=")
-                .then(|| rest.get(open + 1..close))?
-        })
-        .collect()
-}
-
 fn project(lang: &str, scoped: &str, module: &str) -> tempfile::TempDir {
     let dir = tempfile::tempdir().unwrap();
     let status = Command::new("node")
@@ -123,7 +113,7 @@ fn project(lang: &str, scoped: &str, module: &str) -> tempfile::TempDir {
 
 #[test]
 fn preprocessor_components_build_scoped_and_module_mapped() {
-    for (lang, scoped, module) in FIXTURES {
+    for (lang, scoped, module, built_scoped) in FIXTURES {
         let dir = project(lang, scoped, module);
         let output = vize(
             dir.path(),
@@ -148,18 +138,30 @@ fn preprocessor_components_build_scoped_and_module_mapped() {
                 .unwrap();
         assert_eq!(built["warnings"], serde_json::json!([]), "{lang}");
         let css = built["css"].as_str().unwrap_or_default();
-        assert!(css.contains(".card[data-v-"), "{lang}: {css}");
-        assert!(css.contains("padding: 8px"), "{lang}: {css}");
-        assert!(css.contains("color: var(--"), "{lang}: {css}");
-        assert!(!css.contains('$') && !css.contains('&'), "{lang}: {css}");
+        let id = css
+            .split_once("[data-v-")
+            .and_then(|(_, rest)| rest.split_once(']'))
+            .map_or("", |(id, _)| id);
+        // The module class is hashed; the code's class map names it.
         let code = built["code"].as_str().unwrap_or_default();
-        assert!(code.contains("\"title--large\":"), "{lang}: {code}");
+        let class = code
+            .split_once("\"title--large\": \"")
+            .and_then(|(_, rest)| rest.split_once('"'))
+            .map_or("", |(class, _)| class);
+        assert_eq!(
+            css,
+            format!(
+                "{}\n.{class} {{\n  font-size: 2em;\n}}\n\n\n.legacy {{ color: red !important; }}\n",
+                built_scoped.replace("{id}", id)
+            ),
+            "{lang}"
+        );
     }
 }
 
 #[test]
 fn preprocessor_blocks_survive_formatting_byte_identical() {
-    for (lang, scoped, module) in FIXTURES {
+    for (lang, scoped, module, _) in FIXTURES {
         let dir = project(lang, scoped, module);
         let before = fs::read_to_string(dir.path().join("Card.vue")).unwrap();
         let output = vize(dir.path(), &["fmt", "--no-config", "--write", "Card.vue"]);
@@ -170,17 +172,19 @@ fn preprocessor_blocks_survive_formatting_byte_identical() {
             details(&output)
         );
         let after = fs::read_to_string(dir.path().join("Card.vue")).unwrap();
-        assert_ne!(after, before, "{lang}: the template is reformatted");
-        assert!(
-            after.contains("<section class=\"card\">"),
-            "{lang}: {after}"
-        );
-        assert_eq!(
-            preprocessor_style_bodies(&after),
-            preprocessor_style_bodies(&before),
-            "{lang}"
-        );
-        assert_eq!(preprocessor_style_bodies(&before).len(), 2, "{lang}");
+        // The template and the plain CSS are formatted; both preprocessor
+        // bodies stay byte-identical.
+        let expected = before
+            .replace("<section   class", "<section class")
+            .replace(
+                &format!("<style module lang=\"{lang}\">"),
+                &format!("<style lang=\"{lang}\" module>"),
+            )
+            .replace(
+                ".legacy { color: red !important; }",
+                ".legacy {\n  color: red !important;\n}",
+            );
+        assert_eq!(after, expected, "{lang}");
         let check = vize(dir.path(), &["fmt", "--no-config", "--check", "Card.vue"]);
         assert_eq!(check.status.code(), Some(0), "{lang}: {}", details(&check));
     }
@@ -188,7 +192,7 @@ fn preprocessor_blocks_survive_formatting_byte_identical() {
 
 #[test]
 fn css_rules_report_only_the_plain_css_block() {
-    for (lang, scoped, module) in FIXTURES {
+    for (lang, scoped, module, _) in FIXTURES {
         let dir = project(lang, scoped, module);
         let source = component(lang, scoped, module);
         let legacy_line = source[..source.find(".legacy").unwrap()]
@@ -233,7 +237,7 @@ fn preprocessor_components_type_check_around_their_styles() {
     let Some(corsa) = corsa_requirement::required_or_skip(None::<std::path::PathBuf>) else {
         return;
     };
-    for (lang, scoped, module) in FIXTURES {
+    for (lang, scoped, module, _) in FIXTURES {
         let dir = project(lang, scoped, module);
         let broken = component(lang, scoped, module).replace("{{ count }}", "{{ count.trim() }}");
         let line = broken[..broken.find("count.trim").unwrap()]

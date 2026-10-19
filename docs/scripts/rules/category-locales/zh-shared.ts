@@ -18,7 +18,8 @@ export const chineseShared: Record<string, string> = {
   "None; review related files and apply the repair": "无；请检查相关文件并应用修复",
   "Analyzed component graph and the supported facts described below":
     "已分析的组件图，以及下方说明的受支持事实",
-  "Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)": "纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）",
+  "Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)":
+    "纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）",
   "HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.":
     "检测为 petite-vue 的 HTML 文档；普通 Vue SFC 不在此规则范围内。",
   "JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form":
