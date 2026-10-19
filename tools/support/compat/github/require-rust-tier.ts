@@ -8,7 +8,7 @@ import type { GateReport } from "./require-needs-success.ts";
 type Tier = "all" | "source" | "products";
 type ProductInput = { qualification: unknown; product: unknown };
 type ProductVerifier = (input: ProductInput) => unknown;
-const productJobs = ["merge-rust-source", "pr-rust-shard"];
+const productJobs = ["pr-rust-shard"];
 const sourceJobs = ["merge-rust-differential", "pr-rust-build"];
 
 function context(event: unknown, runRust: unknown, needs: unknown) {
@@ -39,7 +39,7 @@ export function requireRustTier(
       : tier === "products"
         ? productJobs
         : event === "merge_group"
-          ? ["merge-rust-source", "merge-rust-differential", "pr-rust-build", "pr-rust-shard"]
+          ? ["merge-rust-differential", "pr-rust-build", "pr-rust-shard"]
           : ["pr-rust-build", "pr-rust-shard"];
   const selected: Record<string, unknown> = {};
   for (const job of required) {
@@ -47,10 +47,11 @@ export function requireRustTier(
     selected[job] = jobs[job];
   }
   if (tier !== "all") assert.deepEqual(Object.keys(jobs).sort(), [...required].sort());
-  const inactive = tier === "source" ? "merge-rust-differential" : "merge-rust-source";
   return aggregateNeedsResults(
     selected,
-    tier !== "all" && event === "pull_request" ? { [inactive]: "merge-group only" } : {},
+    tier === "source" && event === "pull_request"
+      ? { "merge-rust-differential": "merge-group only" }
+      : {},
   );
 }
 

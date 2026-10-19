@@ -40,7 +40,9 @@ const disk = (steps) =>
 
 await test("affected differential lanes share the full recipe and remain required beside the producer", () => {
   const sibling = rust.jobs["merge-rust-differential"];
-  const producer = products.jobs["merge-rust-source"];
+  const cohort = products.jobs["pr-rust-shard"];
+  const seed = workflow(".github/workflows/rust-pr-target-seed.yml");
+  const producer = seed.jobs["rust-differential-target-seed"];
   assert.equal(sibling.needs, undefined);
   assert.equal(sibling.if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
   assert.equal(sibling.uses, "./.github/workflows/pr-rust-differential.yml");
@@ -48,7 +50,7 @@ await test("affected differential lanes share the full recipe and remain require
   assert.equal(sibling.with["run-rust"], "${{ inputs.run-rust }}");
   for (const [report, requiredJobs] of [
     [rust.jobs["rust-source-report"], ["merge-rust-differential", "pr-rust-build"]],
-    [products.jobs["rust-product-report"], ["merge-rust-source", "pr-rust-shard"]],
+    [products.jobs["rust-product-report"], ["pr-rust-shard"]],
   ])
     for (const required of requiredJobs) assert(report.needs.includes(required), required);
   assert.equal(job.if, sibling.if);
@@ -67,7 +69,7 @@ await test("affected differential lanes share the full recipe and remain require
     assert.equal(actual.uses, original.uses);
     assert.deepEqual(actual.with, original.with);
   }
-  assert.equal(disk(producer.steps), "nextest-ci");
+  assert.equal(disk(cohort.steps), "nextest-ci");
   assert.equal(disk(job.steps), "clippy-test");
   assert.match(
     commands(job.steps),
@@ -80,7 +82,6 @@ await test("affected differential lanes share the full recipe and remain require
   );
   assert(!job.steps.some((step) => step.uses?.startsWith("actions/download-artifact@")));
   assert.doesNotMatch(commands(job.steps), /nextest|rust-test-archive|write-coverage-summary/);
-  const seed = workflow(".github/workflows/rust-pr-target-seed.yml");
   assert.equal(seed.concurrency["cancel-in-progress"], false);
   assert.equal(disk(seed.jobs["rust-pr-target-seed"].steps), "nextest-ci");
   assert.equal(disk(seed.jobs["rust-differential-target-seed"].steps), "clippy-test");

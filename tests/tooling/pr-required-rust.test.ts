@@ -276,17 +276,17 @@ process.stdout.write(fs.readFileSync(process.env.CARGO_METADATA, "utf8"));
 
 const results = (jobs: string[], result = "success") =>
   Object.fromEntries(jobs.map((job) => [job, { result, outputs: {} }]));
-const productJobs = ["merge-rust-source", "pr-rust-shard"];
+const productJobs = ["pr-rust-shard"];
 const sourceJobs = ["merge-rust-differential", "pr-rust-build"];
 
 test("source and product modes strictly require all actual jobs, including failures and unknown results", () => {
   for (const [mode, ids, inactive] of [
     ["source", sourceJobs, "merge-rust-differential"],
-    ["products", productJobs, "merge-rust-source"],
+    ["products", productJobs, null],
   ] as const)
     for (const event of ["pull_request", "merge_group"]) {
       const needs = results(ids);
-      if (event === "pull_request") needs[inactive].result = "skipped";
+      if (event === "pull_request" && inactive) needs[inactive].result = "skipped";
       assert.equal(requireRustTier(event, "true", needs, mode).exitCode, 0);
       for (const id of ids) {
         const missing = { ...needs };

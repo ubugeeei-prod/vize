@@ -167,7 +167,6 @@ const dependencyConsumers = [
   ["pr-js-checks.yml", "pr-js-package-conformance"],
   ["pr-source-checks.yml", "pr-native-runtime"],
   ["pr-source-checks.yml", "pr-playground-test"],
-  ["pr-rust-products.yml", "merge-rust-source"],
   ["pr-rust-products.yml", "pr-rust-shard"],
   ["pr-rust-differential.yml", "differential"],
   ["rust-pr-target-seed.yml", "rust-differential-target-seed"],
@@ -205,13 +204,13 @@ function assertDependencyConsumer(job, runtime = "manifest") {
 }
 
 void test("Linux source consumers retain the same dependency identity without cache publication", () => {
-  assert.equal(dependencyConsumers.length, 12, "eleven ordinary jobs plus the differential seed");
+  assert.equal(dependencyConsumers.length, 11, "ten ordinary jobs plus the differential seed");
   for (const [file, name, runtime] of dependencyConsumers) {
     const job = workflow(`.github/workflows/${file}`).jobs[name];
     const setup = assertDependencyConsumer(job, runtime);
     assert.equal(
       setup.with["run-install"],
-      ["merge-rust-source", "pr-rust-shard", "rust-differential-target-seed"].includes(name),
+      ["pr-rust-shard", "rust-differential-target-seed"].includes(name),
     );
     assert.ok(!JSON.stringify(job.needs ?? []).includes("seed-vp-dependencies"));
     for (const change of [

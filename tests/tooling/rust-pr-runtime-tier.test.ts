@@ -100,7 +100,7 @@ test("only the present audited real-TSGO cases leave the PR default filter", () 
   }
   assert.ok(canon.includes('assert_eq!(pack.diagnostic_contract.required_tier, "T1")'));
 
-  const merge = workflow.jobs["merge-rust-source"].steps;
+  const cohorts = workflow.jobs["pr-rust-shard"].steps;
   assert.ok(
     sourceWorkflow.jobs["pr-rust-build"].steps.some(
       (step) => step.name === "Run affected Rust doctests",
@@ -114,7 +114,7 @@ test("only the present audited real-TSGO cases leave the PR default filter", () 
   assert.equal(full["default-filter"], undefined);
   assert.equal(full.retries, 0);
   assert.equal(
-    merge.some((step) => step.run?.includes("--profile pr")),
+    cohorts.some((step) => step.run?.includes("--profile pr")),
     false,
   );
 });
@@ -126,9 +126,10 @@ const plan = {
   cargoArgs: ["--package", "vize_armature", "--package", "vize_l1"],
 };
 
-for (const [event, profile, stepName] of [
-  ["merge_group", "full", "Run Rust test cohort without rebuilding"],
-  ["pull_request", "pr", "Build and run the affected Rust test cohort"],
+const stepName = "Build and run the affected Rust test cohort";
+for (const [event, profile] of [
+  ["merge_group", "full"],
+  ["pull_request", "pr"],
 ] as const) {
   test(`${profile} cohort shell keeps its semantic filter with the exclusive runtime flag`, () => {
     const cwd = mkdtempSync(join(tmpdir(), "vize-shard-prepare-"));
@@ -139,7 +140,7 @@ for (const [event, profile, stepName] of [
       writeFileSync(
         join(bin, "cargo"),
         `#!/bin/sh
-exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);const full=process.env.NEXTEST_PROFILE==="full";if(full?(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")):(process.env.VIZE_TEST_DISABLE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_REQUIRE_TSGO")))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(full!==args.includes("--extract-overwrite"))process.exit(91);if(full)fs.writeFileSync("target/tmp/observation","writable");fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
+exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);const full=process.env.NEXTEST_PROFILE==="full";if(full?(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")):(process.env.VIZE_TEST_DISABLE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_REQUIRE_TSGO")))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(args.includes("--archive-file"))process.exit(91);fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
 `,
         { mode: 0o755 },
       );
@@ -201,22 +202,8 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);co
       );
       assert.equal(result.status, 0, result.stderr);
       const filter = ["--profile", profile, "-E", environment.NEXTEST_FILTER, "--no-tests=pass"];
-      if (event === "merge_group") {
-        assert.equal(readFileSync(join(cwd, "target/tmp/observation"), "utf8"), "writable");
-        assert.deepEqual(JSON.parse(readFileSync(argv, "utf8")), [
-          "nextest",
-          "run",
-          "--archive-file",
-          ".artifacts/rust-test-archive/tests.tar.zst",
-          "--extract-to",
-          cwd,
-          "--extract-overwrite",
-          "--workspace-remap",
-          cwd,
-          ...filter,
-        ]);
-      } else {
-        // The same affected packages and Cargo profile the archive was built from.
+      // Both events build the same affected packages in place.
+      {
         assert.deepEqual(JSON.parse(readFileSync(argv, "utf8")), [
           "nextest",
           "run",

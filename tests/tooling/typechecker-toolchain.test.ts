@@ -4,10 +4,7 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test, type TestContext } from "node:test";
-import {
-  typecheckerSourceIdentity,
-  validateTypecheckerReceipt,
-} from "../differential/typechecker-shards.ts";
+import { typecheckerSourceIdentity } from "../differential/typechecker-shards.ts";
 
 function source(t: TestContext, channel?: string) {
   const directory = fs.mkdtempSync(path.join(tmpdir(), "vize-typechecker-toolchain-"));
@@ -27,47 +24,9 @@ function source(t: TestContext, channel?: string) {
   return directory;
 }
 
-function receipt(identity: ReturnType<typeof typecheckerSourceIdentity>) {
-  return {
-    schemaVersion: 3,
-    sha: identity.sha,
-    tree: identity.tree,
-    cargoProfile: "ci",
-    nextestVersion: "0.9.146",
-    rustcVersion: `rustc ${identity.toolchain} synthetic-unit-test`,
-    requireTsgo: "1",
-    disableTsgo: null,
-    nuxtIterations: "100",
-    archiveSha256: "0".repeat(64),
-  };
-}
-
-test("reviewed source pins retain strict compiler identity without runtime credit", (t) => {
-  for (const channel of ["1.98.0", "1.99.0", "1.99.1"]) {
-    const identity = typecheckerSourceIdentity(source(t, channel));
-    const original = receipt(identity);
-    assert.equal(identity.toolchain, channel);
-    assert.deepEqual(
-      validateTypecheckerReceipt(Buffer.from(JSON.stringify(original)), identity),
-      original,
-    );
-  }
-});
-
-test("current source rejects old, future, malformed and missing actual compiler stamps", (t) => {
-  const identity = typecheckerSourceIdentity(source(t, "1.99.1"));
-  for (const compiler of [
-    "rustc 1.98.0 synthetic-unit-test",
-    "rustc 1.99.0 synthetic-unit-test",
-    "rustc 1.100.0 synthetic-unit-test",
-    "rustc 1.99.1-nightly synthetic-unit-test",
-    "rustc 1x99x0 synthetic-unit-test",
-    "rustc 1.99.01 synthetic-unit-test",
-    undefined,
-  ]) {
-    const changed = { ...receipt(identity), rustcVersion: compiler };
-    assert.throws(() => validateTypecheckerReceipt(Buffer.from(JSON.stringify(changed)), identity));
-  }
+test("reviewed source pins resolve their committed compiler identity", (t) => {
+  for (const channel of ["1.98.0", "1.99.0", "1.99.1"])
+    assert.equal(typecheckerSourceIdentity(source(t, channel)).toolchain, channel);
 });
 
 test("unsupported or absent committed source stamps cannot qualify observations", (t) => {
@@ -83,8 +42,4 @@ test("a working-tree pin edit cannot change the compiler authority at the stampe
     '[toolchain]\nchannel = "1.98.0"\n',
   );
   assert.deepEqual(typecheckerSourceIdentity(directory), expected);
-  const historical = { ...receipt(expected), rustcVersion: "rustc 1.98.0 synthetic-unit-test" };
-  assert.throws(() =>
-    validateTypecheckerReceipt(Buffer.from(JSON.stringify(historical)), expected),
-  );
 });

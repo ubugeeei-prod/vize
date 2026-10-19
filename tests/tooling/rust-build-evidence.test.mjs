@@ -197,10 +197,7 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
       const packet = json(join(directory, "rust-build-evidence/cargo.jsonl"));
       assert.equal(packet.success, exit === 0);
       assert.equal(json(join(directory, "target/nextest/pr/timing.json")).exit_code, exit);
-      assert.equal(
-        workflowStep("Upload PR Rust build evidence").if,
-        "${{ always() && github.event_name == 'pull_request' }}",
-      );
+      assert.equal(workflowStep("Upload Rust build evidence").if, "${{ always() }}");
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

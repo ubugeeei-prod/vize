@@ -111,7 +111,6 @@ void test("Rust archives reject different source, baked paths, runner, nextest, 
 void test("Rust tier gate rejects failed, cancelled, absent, and skipped required shards", () => {
   const success = { result: "success" };
   const needs = {
-    "merge-rust-source": success,
     "merge-rust-differential": success,
     "pr-rust-build": success,
     "pr-rust-shard": success,
@@ -119,10 +118,7 @@ void test("Rust tier gate rejects failed, cancelled, absent, and skipped require
   assert.equal(requireRustTier("pull_request", "true", needs).exitCode, 0);
   for (const [event, jobs] of [
     ["pull_request", ["pr-rust-build", "pr-rust-shard"]],
-    [
-      "merge_group",
-      ["merge-rust-source", "merge-rust-differential", "pr-rust-build", "pr-rust-shard"],
-    ],
+    ["merge_group", ["merge-rust-differential", "pr-rust-build", "pr-rust-shard"]],
   ]) {
     assert.equal(requireRustTier(event, "true", needs).exitCode, 0);
     for (const job of jobs) {
@@ -142,7 +138,7 @@ void test("Rust tier gate rejects failed, cancelled, absent, and skipped require
     }
   }
   assert.equal(
-    requireRustTier("merge_group", "true", { ...needs, "merge-rust-source": { result: "skipped" } })
+    requireRustTier("merge_group", "true", { ...needs, "pr-rust-shard": { result: "skipped" } })
       .exitCode,
     1,
   );

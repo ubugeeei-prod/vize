@@ -76,7 +76,7 @@ function observe(row: Case, gate = { aggregateNeedsResults, aggregateCheckNeedsR
 void test("CI gates retain independently authored whole result and refusal packets", () => {
   assert.equal(
     createHash("sha256").update(ledger).digest("hex"),
-    "32356f6238736b58724b209e5496bcbc068522b90ee7703518525e548a83bfee",
+    "025feeec3f683b000661f61fc9f560d203652624b0f822b94f6c22baaf496545",
     "the complete archived ledger must remain unchanged",
   );
   const nonJsonCases: Array<Case & { inputRecipe: string }> = [
@@ -267,7 +267,6 @@ void test("real Node directly executes both erasable TypeScript gate entrypoints
 
 void test("the Rust CLI rejects disabled or missing plans even when every job reports success", () => {
   const needs = JSON.stringify({
-    "merge-rust-source": { result: "success" },
     "merge-rust-differential": { result: "success" },
     "pr-rust-build": { result: "success" },
     "pr-rust-shard": { result: "success" },

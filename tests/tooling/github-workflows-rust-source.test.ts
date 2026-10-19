@@ -121,65 +121,38 @@ void test("Clippy and doctests start beside affected cohort execution and stay r
   );
   assert.match(validation, /cargo test @packages@ --profile ci --doc/);
   assert.doesNotMatch(validation, /nextest archive/);
-  const producer = products.jobs["merge-rust-source"];
-  assert.match(producer.if ?? "", /github\.event_name == 'merge_group'/);
-  assert.match(commands(producer), /nextest archive @packages@ --cargo-profile ci/);
-  const producerSteps = producer.steps ?? [];
-  const build = producerSteps.findIndex((step) => /nextest archive/.test(step.run ?? ""));
-  const pkl = producerSteps.findIndex((step) =>
-    /npm install --global @pkl-community\/pkl@/.test(step.run ?? ""),
-  );
-  assert.ok(pkl >= 0 && pkl < build, "Pkl is available before archive compilation");
+  assert.equal(Object.hasOwn(products.jobs, "merge-rust-source"), false);
   for (const [report, names] of [
     [rust.jobs["rust-source-report"], ["merge-rust-differential", "pr-rust-build"]],
-    [products.jobs["rust-product-report"], ["merge-rust-source", "pr-rust-shard"]],
+    [products.jobs["rust-product-report"], ["pr-rust-shard"]],
   ] as const)
     for (const name of names) assert.ok(needs(report).includes(name), `${name} is required`);
   assert.match(commands(rust.jobs["rust-source-report"]), /require-rust-tier\.ts --source/);
   assert.match(commands(products.jobs["rust-product-report"]), /require-rust-tier\.ts --products/);
 });
 
-void test("named Rust cohorts preserve filtered execution and receipt-bound queue archives", () => {
+void test("PR and queue cohorts build in place from the warm disk and run filtered", () => {
   const workers = products.jobs["pr-rust-shard"];
   assert.equal(workers.strategy?.matrix, "${{ fromJSON(inputs.rust-plan).testMatrix }}");
   assert.equal(workers.strategy?.["fail-fast"], false);
   assert.equal(workers.env?.COHORT, "${{ matrix.cohort }}");
   assert.equal(workers.env?.NEXTEST_FILTER, "${{ matrix.filter }}");
-  assert.deepEqual(needs(workers), ["merge-rust-source"]);
+  assert.deepEqual(needs(workers), []);
   const steps = workers.steps ?? [];
-  const prRun = steps.find((step) => /cargo nextest run @packages@/.test(step.run ?? ""));
-  const archiveRun = steps.find((step) => /cargo nextest run --archive-file/.test(step.run ?? ""));
-  assert.ok(prRun && archiveRun);
-  assert.match(prRun.if ?? "", /pull_request/);
-  assert.match(archiveRun.if ?? "", /merge_group/);
-  for (const step of [prRun, archiveRun]) {
-    assert.match(step.run ?? "", /-E "\$NEXTEST_FILTER"/);
-    assert.match(step.run ?? "", /--profile "\$NEXTEST_PROFILE"/);
-    assert.match(step.run ?? "", /else phase_exit=\$\?/);
-    assert.match(step.run ?? "", /exit "\$phase_exit"/);
-    assert.doesNotMatch(step.run ?? "", /--partition/);
-  }
-  const verify = steps.findIndex((step) => /rust-test-archive\.mjs verify/.test(step.run ?? ""));
-  assert.ok(
-    verify >= 0 && verify < steps.indexOf(archiveRun),
-    "verify custody before executing archived binaries",
-  );
-  assert.match(archiveRun.run ?? "", /--extract-to "\$GITHUB_WORKSPACE"/);
-  assert.match(archiveRun.run ?? "", /--workspace-remap "\$GITHUB_WORKSPACE"/);
-  assert.match(steps[verify].if ?? "", /merge_group/);
-  const artifacts = steps.filter((step) => step.uses?.startsWith("actions/download-artifact@"));
-  assert.equal(artifacts.length, 2, "one bounded attempt and one clean retry");
-  for (const artifact of artifacts) {
-    assert.equal(artifact.with?.["artifact-ids"], "${{ steps.rust-archive.outputs.id }}");
-    assert.equal(artifact.with?.["digest-mismatch"], "error");
-    assert.equal(artifact["timeout-minutes"], 3);
-  }
-  assert.ok(
-    steps.some(
-      (step) =>
-        step.id === "rust-archive" && /rust-archive-download\.ts select/.test(step.run ?? ""),
-    ),
-  );
+  const runs = steps.filter((step) => /cargo nextest run/.test(step.run ?? ""));
+  assert.equal(runs.length, 1, "one in-place build and run for both events");
+  const [run] = runs;
+  assert.equal(run.if, undefined);
+  assert.match(run.run ?? "", /cargo nextest run @packages@ --cargo-profile ci/);
+  assert.match(run.run ?? "", /-E "\$NEXTEST_FILTER"/);
+  assert.match(run.run ?? "", /--profile "\$NEXTEST_PROFILE"/);
+  assert.match(run.run ?? "", /else phase_exit=\$\?/);
+  assert.match(run.run ?? "", /exit "\$phase_exit"/);
+  assert.doesNotMatch(run.run ?? "", /--archive-file|--partition/);
+  const cache = steps.find((step) => step.uses === "./.github/actions/setup-rust-sticky-cache");
+  assert.equal(cache?.if, undefined);
+  assert.equal(cache?.with?.key, "nextest-ci");
+  assert.ok(steps.every((step) => !step.uses?.startsWith("actions/download-artifact@")));
 });
 
 void test("full repository ratchets and coverage remain scheduled or explicitly requested", () => {
@@ -244,7 +217,7 @@ const yaml = createRequire(import.meta.url)("yaml") as {
 };
 const rustWorkflow = (name: string) => yaml.parse(readFileSync(join(workflowRoot, name), "utf8"));
 const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
-const productJobs = ["merge-rust-source", "pr-rust-shard"];
+const productJobs = ["pr-rust-shard"];
 const sourceJobs = ["merge-rust-differential", "pr-rust-build"];
 
 function requireSplitRustRecipes(
@@ -260,17 +233,11 @@ function requireSplitRustRecipes(
   assert.deepEqual(Object.keys(source), [...sourceJobs, "rust-source-report"]);
   assert.deepEqual(Object.keys(products), [...productJobs, "rust-product-report"]);
   const oldHashes = {
-    "merge-rust-source": "cccdc6b58005acb2655d0f54af2485dde7be81ef40d40da7a6827759192b155b",
     "merge-rust-differential": "13c78bc5c1872dffc8af00f380e4b65177e524cf516b5914d808aa0bdea1194e",
     "pr-rust-build": "08e14fc4bc848f4b90cf136b9558a0ab3bc91d3e835405a3f0a59fc27999282a",
-    "pr-rust-shard": "47b21f1fcea99b21abdacaf04c18014f886277d824a47d7e1c86e2f021958a6c",
   };
   for (const [id, expected] of Object.entries(oldHashes)) {
-    const job = structuredClone(source[id] ?? products[id]);
-    if (productJobs.includes(id)) {
-      assert.equal(job.if.split(" && inputs.product-qualification == ''").length, 2);
-      job.if = job.if.replace(" && inputs.product-qualification == ''", "");
-    }
+    const job = structuredClone(source[id]);
     if (id === "pr-rust-build") {
       job.steps[contracts].run =
         "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts";
@@ -309,17 +276,7 @@ function requireSplitRustRecipes(
     RELEASE_QUALIFICATION: "${{ inputs.release-qualification }}",
     GH_TOKEN: "${{ github.token }}",
   });
-  const artifactSteps = structuredClone(productReport.steps.slice(4));
-  for (const step of artifactSteps) {
-    assert.equal(typeof step.if, "string");
-    const guard = String(step.if);
-    assert.equal(guard.split(" && inputs.product-qualification == ''").length, 2);
-    step.if = guard.replace(" && inputs.product-qualification == ''", "");
-  }
-  assert.equal(
-    digest(artifactSteps),
-    "f66b569dbbaa0f609d5dfa5bec576e5e4eab3dc845c7d74f19b4ff4c0b04a40e",
-  );
+  assert.equal(productReport.steps.length, 4, "no archive custody follows the tier gate");
 }
 
 test("split Rust workflows preserve whole original producer and corpus recipes", () => {
@@ -374,13 +331,11 @@ test("actual job selectors keep ordinary workers and source checks while only fo
           .replaceAll("github.event_name", "event")
           .replaceAll("inputs.run-rust", "runRust")
           .replaceAll("inputs.product-qualification", "product")
-          .replaceAll("needs.merge-rust-source.result", "result")
           .replaceAll("always()", "true")
           .replaceAll("cancelled()", "cancelled")})`,
         context,
       );
-  const archive = selector(products["merge-rust-source"]),
-    cohort = selector(products["pr-rust-shard"]);
+  const cohort = selector(products["pr-rust-shard"]);
   const clippy = selector(source["pr-rust-build"]),
     differential = selector(source["merge-rust-differential"]);
   for (const event of ["pull_request", "merge_group"])
@@ -389,14 +344,7 @@ test("actual job selectors keep ordinary workers and source checks while only fo
         for (const result of ["success", "failure", "skipped"])
           for (const cancelled of [true, false]) {
             const args = { event, runRust, product, result, cancelled };
-            assert.equal(archive(args), event === "merge_group" && runRust && product === "");
-            assert.equal(
-              cohort(args),
-              !cancelled &&
-                runRust &&
-                product === "" &&
-                (event === "pull_request" || result === "success"),
-            );
+            assert.equal(cohort(args), runRust && product === "");
             assert.equal(clippy(args), runRust);
             assert.equal(differential(args), event === "merge_group" && runRust);
           }

@@ -371,7 +371,6 @@ test("Rust report rejects skipped checks and missing or failed required work", (
     /Rust source checks must run for every pull request and merge group/,
   );
   const results = {
-    "merge-rust-source": { result: "success" },
     "merge-rust-differential": { result: "success" },
     "pr-rust-build": { result: "success" },
     "pr-rust-shard": { result: "success" },

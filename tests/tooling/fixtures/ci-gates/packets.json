@@ -192,7 +192,6 @@
     "event": "pull_request",
     "runRust": "true",
     "needs": {
-      "merge-rust-source": { "result": "skipped" },
       "merge-rust-differential": { "result": "skipped" },
       "pr-rust-build": { "result": "success" },
       "pr-rust-shard": { "result": "success" }
@@ -210,7 +209,6 @@
     "event": "merge_group",
     "runRust": "true",
     "needs": {
-      "merge-rust-source": { "result": "success" },
       "merge-rust-differential": { "result": "success" },
       "pr-rust-build": { "result": "skipped" },
       "pr-rust-shard": { "result": "success" }
@@ -218,7 +216,7 @@
     "expected": {
       "result": {
         "exitCode": 1,
-        "message": "test-report gate: 1 of 4 needed jobs did not succeed.\n  - pr-rust-build: skipped\ntest-report is a required status check, so it must not pass while a job it aggregates is red.\nOnly these jobs may skip on a pull request: ."
+        "message": "test-report gate: 1 of 3 needed jobs did not succeed.\n  - pr-rust-build: skipped\ntest-report is a required status check, so it must not pass while a job it aggregates is red.\nOnly these jobs may skip on a pull request: ."
       }
     }
   },

@@ -272,13 +272,7 @@ void test("a failed or disabled Rust tier cannot reach a green required Check re
         "pr-rust-build",
         "merge-rust-differential",
       ],
-      [
-        "products",
-        products.jobs["rust-product-report"],
-        "pr-rust-products",
-        "pr-rust-shard",
-        "merge-rust-source",
-      ],
+      ["products", products.jobs["rust-product-report"], "pr-rust-products", "pr-rust-shard", null],
     ] as const) {
       const rustNeeds = success(report);
       const propagate = (runRust: string, results: unknown) => {
@@ -302,7 +296,7 @@ void test("a failed or disabled Rust tier cannot reach a green required Check re
       assert.equal(propagate("true", rustNeeds), 0);
       assert.equal(propagate("false", rustNeeds), 1);
       assert.equal(propagate("", rustNeeds), 1);
-      for (const job of event === "merge_group" ? [ordinary, queue] : [ordinary]) {
+      for (const job of event === "merge_group" && queue ? [ordinary, queue] : [ordinary]) {
         for (const result of ["failure", "cancelled", "skipped"])
           assert.equal(propagate("true", { ...rustNeeds, [job]: { result } }), 1);
         const omitted = { ...rustNeeds };

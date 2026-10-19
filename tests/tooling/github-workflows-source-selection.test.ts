@@ -203,25 +203,23 @@ test("opted-in PR and merge browser qualification retain tests and enforce merge
 
 test("the Rust report waits for the builder and every named test cohort", () => {
   const shard = products.jobs["pr-rust-shard"];
-  // PR shards build in place beside the lanes; only the merge queue waits for its archive.
-  assert.deepEqual(shard.needs, ["merge-rust-source"]);
+  // PR and queue cohorts build in place beside the lanes.
+  assert.equal(shard.needs, undefined);
   assert.equal(shard.strategy?.["fail-fast"], false);
   assert.equal(shard.name, "Rust tests (${{ matrix.name }})");
   assert.equal(shard.strategy?.matrix, "${{ fromJSON(inputs.rust-plan).testMatrix }}");
   const steps = shard.steps ?? [];
-  const verify = steps.findIndex((step) => step.name === "Verify Rust archive identity");
-  const run = steps.findIndex((step) => step.name === "Run Rust test cohort without rebuilding");
-  assert.ok(verify >= 0 && verify < run);
+  const run = steps.findIndex(
+    (step) => step.name === "Build and run the affected Rust test cohort",
+  );
+  assert.ok(run >= 0);
   assert.match(steps[run].run ?? "", /-E "\$NEXTEST_FILTER"/);
   assert.doesNotMatch(steps[run].run ?? "", /--partition/);
   assert.deepEqual(rust.jobs["rust-source-report"].needs, [
     "merge-rust-differential",
     "pr-rust-build",
   ]);
-  assert.deepEqual(products.jobs["rust-product-report"].needs, [
-    "merge-rust-source",
-    "pr-rust-shard",
-  ]);
+  assert.deepEqual(products.jobs["rust-product-report"].needs, ["pr-rust-shard"]);
   assert.equal(
     products.jobs["rust-product-report"].if,
     "${{ always() && !contains(needs.*.result, 'cancelled') }}",
@@ -241,32 +239,7 @@ test("the Rust report waits for the builder and every named test cohort", () => 
     "node-version-file": "package.json",
     "run-install": false,
   });
-  const select = reportSteps.findIndex(
-    (step) => step.name === "Select latest source-bound Rust workers",
-  );
-  const download = reportSteps.findIndex(
-    (step) => step.name === "Download every current Rust test cohort",
-  );
-  const reconcile = reportSteps.findIndex(
-    (step) => step.name === "Require all registered typechecker observations",
-  );
-  assert.ok(gate >= 0 && gate < select && select < download && download < reconcile);
-  assert.equal(reportSteps[select].if, reportSteps[download].if);
-  assert.equal(reportSteps[reconcile].if, reportSteps[download].if);
-  assert.equal(
-    reportSteps[download].with?.["artifact-ids"],
-    "${{ steps.rust-workers.outputs.artifact-ids }}",
-  );
-  assert.equal(reportSteps[download].with?.pattern, undefined);
-  assert.equal(reportSteps[download].with?.["github-token"], "${{ github.token }}");
-  assert.equal(reportSteps[download].with?.["run-id"], "${{ github.run_id }}");
-  assert.equal(reportSteps[download].with?.["merge-multiple"], false);
-  assert.equal(reportSteps[download].with?.["digest-mismatch"], "error");
-  assert.match(reportSteps[select].run ?? "", /select-rust-workers\.mjs select/);
-  assert.match(
-    reportSteps[reconcile].run ?? "",
-    /select-rust-workers\.mjs verify .*\n.*typechecker-shards\.ts aggregate/,
-  );
+  assert.equal(gate, reportSteps.length - 1, "no worker selection follows the tier gate");
   const check = parse(readRepoFile(".github", "workflows", "check.yml"));
   assert.deepEqual(check.jobs["pr-source-checks"].permissions, {
     contents: "read",
@@ -290,26 +263,6 @@ test("the Rust report waits for the builder and every named test cohort", () => 
   });
 });
 
-test("merge Rust timing receipts remain available after workspace failure", () => {
-  const steps = products.jobs["merge-rust-source"].steps ?? [];
-  const summary = steps.find((step) => step.name === "Summarize Rust test timing evidence");
-  const upload = steps.find((step) => step.name === "Upload Rust test timing evidence");
-  assert.equal(summary?.if, "${{ !cancelled() && inputs.run-rust }}");
-  assert.equal(upload?.if, "${{ !cancelled() && inputs.run-rust }}");
-  assert.equal(summary?.env?.BUILD_OUTCOME, "${{ steps.rust-test-build.outcome }}");
-  assert.equal(summary?.env?.RUN_OUTCOME, "skipped");
-  assert.equal(summary?.env?.RUN_COMMAND, "parallel Clippy and doctest job");
-  const doctests = rust.jobs["pr-rust-build"].steps?.find(
-    (step) => step.name === "Run affected Rust doctests",
-  );
-  assert.match(
-    doctests?.run ?? "",
-    /run-affected-rust\.ts.*cargo test @packages@ --profile ci --doc/,
-  );
-  assert.equal(upload?.with?.["if-no-files-found"], "error");
-  assert.equal(summary?.run, "node tools/support/compat/github/rust-test-timings.mjs");
-});
-
 test("unchanged queue gate hydrates the same pinned fixture for all five full Rust cohorts", () => {
   const job = products.jobs["pr-rust-shard"];
   assert.ok(job.steps);
@@ -323,7 +276,7 @@ test("unchanged queue gate hydrates the same pinned fixture for all five full Ru
   );
   assert.deepEqual(step.with, { fixture: "tests/_fixtures/_git/element-plus" });
   assert.equal(step["continue-on-error"], undefined);
-  assert.deepEqual(job.needs, ["merge-rust-source"]);
+  assert.equal(job.needs, undefined);
   assert.deepEqual(job.strategy, {
     "fail-fast": false,
     matrix: "${{ fromJSON(inputs.rust-plan).testMatrix }}",
