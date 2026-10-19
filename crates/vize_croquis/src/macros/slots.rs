@@ -30,6 +30,11 @@ impl super::MacroTracker {
         self.slot_type_argument_range
     }
 
+    /// The authored key range of the `index`th slot, when it is static.
+    pub fn slot_declaration(&self, index: usize) -> Option<(u32, u32)> {
+        self.slot_declarations.get(index).copied().flatten()
+    }
+
     /// Every static written key in source order, including repeated names.
     pub fn static_slot_declarations(&self) -> impl Iterator<Item = (u32, u32)> + '_ {
         self.slot_declarations.iter().flatten().copied()

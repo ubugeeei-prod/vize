@@ -14,6 +14,7 @@ mod rank;
 mod script;
 #[cfg(feature = "native")]
 mod sources;
+mod style;
 #[cfg(test)]
 mod tests;
 
@@ -192,11 +193,18 @@ impl WorkspaceSymbolsService {
         // Slots declared via defineSlots<{...}>(). Expose each as an
         // INTERFACE symbol — slots define the parent-child contract, much
         // like a TypeScript interface.
-        for slot in croquis.macros.slots() {
+        for (index, slot) in croquis.macros.slots().iter().enumerate() {
             let name = slot.name.as_str();
             if !query.is_empty() && !name.to_lowercase().contains(query) {
                 continue;
             }
+            let range = Self::macro_declaration_range(
+                descriptor.source.as_ref(),
+                script_setup.content.as_ref(),
+                script_setup.loc.start,
+                croquis.macros.slot_declaration(index),
+                placeholder_range,
+            );
             symbols.push(SymbolInformation {
                 name: name.to_string(),
                 kind: SymbolKind::INTERFACE,
@@ -204,7 +212,7 @@ impl WorkspaceSymbolsService {
                 deprecated: None,
                 location: Location {
                     uri: uri.clone(),
-                    range: placeholder_range,
+                    range,
                 },
                 container_name: container.clone(),
             });
@@ -434,35 +442,20 @@ impl WorkspaceSymbolsService {
         container: Option<&str>,
         symbols: &mut Vec<SymbolInformation>,
     ) {
-        for (line_idx, line) in style.lines().enumerate() {
-            let line_num = base_line + line_idx as u32;
-            let trimmed = line.trim();
-
-            // CSS class selectors
-            for class in Self::extract_css_classes(trimmed) {
-                if class.to_lowercase().contains(query) {
-                    symbols.push(Self::create_symbol(
-                        format!(".{}", class),
-                        SymbolKind::STRING,
-                        uri.clone(),
-                        line_num - 1,
-                        container,
-                    ));
-                }
+        for (offset, marker, name) in style::css_selector_names(style) {
+            if !name.to_lowercase().contains(query) {
+                continue;
             }
-
-            // CSS ID selectors
-            for id in Self::extract_css_ids(trimmed) {
-                if id.to_lowercase().contains(query) {
-                    symbols.push(Self::create_symbol(
-                        format!("#{}", id),
-                        SymbolKind::STRING,
-                        uri.clone(),
-                        line_num - 1,
-                        container,
-                    ));
-                }
-            }
+            let line_idx = style
+                .get(..offset)
+                .map_or(0, |before| before.matches('\n').count());
+            symbols.push(Self::create_symbol(
+                format!("{marker}{name}"),
+                SymbolKind::STRING,
+                uri.clone(),
+                base_line + line_idx as u32 - 1,
+                container,
+            ));
         }
     }
 
@@ -495,37 +488,6 @@ impl WorkspaceSymbolsService {
             .take_while(|byte| Self::is_ident_char(char::from(*byte)))
             .count();
         Some(s.get(..end)?.to_string())
-    }
-
-    /// Extract CSS class names from a selector line.
-    fn extract_css_classes(line: &str) -> Vec<String> {
-        Self::extract_css_names(line, '.')
-    }
-
-    /// Extract CSS ID names from a selector line.
-    fn extract_css_ids(line: &str) -> Vec<String> {
-        Self::extract_css_names(line, '#')
-    }
-
-    /// Names following each `marker` (`.class`, `#id`) in a selector line.
-    fn extract_css_names(line: &str, marker: char) -> Vec<String> {
-        let mut names = Vec::new();
-        let mut rest = line;
-
-        while let Some((_, after)) = rest.split_once(marker) {
-            let end = after
-                .find(|c: char| !c.is_ascii_alphanumeric() && c != '-' && c != '_')
-                .unwrap_or(after.len());
-            let Some((name, tail)) = after.split_at_checked(end) else {
-                break;
-            };
-            if !name.is_empty() {
-                names.push(name.to_string());
-            }
-            rest = tail;
-        }
-
-        names
     }
 
     /// Create a symbol information entry.
