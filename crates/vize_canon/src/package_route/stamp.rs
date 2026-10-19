@@ -12,6 +12,10 @@ pub(crate) struct InputStamp {
     len: Option<u64>,
     kind: Option<InputKind>,
     content_digest: Option<[u8; 32]>,
+    /// Device, inode and status-change time of an installed file. Any write
+    /// moves its ctime even when mtime and size are restored, so installed
+    /// packages need no content hash on every editor revision.
+    installed_identity: Option<(u64, u64, i64, i64)>,
     symlink_target: Option<PathBuf>,
     source_content: bool,
 }
@@ -145,8 +149,17 @@ impl InputStamp {
         // Metadata keeps warm lookup O(depth) without rehashing megabytes;
         // actual package links/manifests and source inputs retain strong
         // same-mtime content stamps.
+        // Installed package files are identified by metadata: an editor
+        // revision may consult ~10^5 of them, and hashing every byte on each
+        // edit dominated latency. Authored sources keep content digests.
+        let installed_identity =
+            (content.is_none() && !source_content && matches!(kind, Some(InputKind::File)))
+                .then(|| metadata.as_ref().and_then(installed_identity))
+                .flatten()
+                .filter(|_| is_installed_path(&path));
         let content_digest = content.map(digest).or_else(|| {
             ((matches!(kind, Some(InputKind::File))
+                && installed_identity.is_none()
                 && !super::graph_inputs::is_large_lockfile(&path))
                 || (source_content && matches!(kind, Some(InputKind::Symlink))))
             .then(|| read_digest(&path, stats))
@@ -161,6 +174,7 @@ impl InputStamp {
             len,
             kind,
             content_digest,
+            installed_identity,
             symlink_target,
             source_content,
         }
@@ -233,6 +247,28 @@ fn read_digest(path: &Path, stats: Option<&mut InputStampReadStats>) -> Option<[
     let result = digest(&content);
     stats.digest_time += started.elapsed();
     Some(result)
+}
+
+fn is_installed_path(path: &Path) -> bool {
+    path.components()
+        .any(|component| component.as_os_str() == "node_modules")
+}
+
+#[cfg(unix)]
+fn installed_identity(metadata: &std::fs::Metadata) -> Option<(u64, u64, i64, i64)> {
+    use std::os::unix::fs::MetadataExt;
+    Some((
+        metadata.dev(),
+        metadata.ino(),
+        metadata.ctime(),
+        metadata.ctime_nsec(),
+    ))
+}
+
+/// Without a status-change time, installed files keep content digests.
+#[cfg(not(unix))]
+fn installed_identity(_metadata: &std::fs::Metadata) -> Option<(u64, u64, i64, i64)> {
+    None
 }
 
 // Private, process-local change detection, never a persisted/public artifact key.
@@ -415,5 +451,39 @@ mod tests {
                 0xf2, 0x00, 0x15, 0xad,
             ],
         );
+    }
+
+    /// Installed files are stamped by metadata, never read; a same-size,
+    /// same-mtime rewrite still moves their status-change time. Authored
+    /// sources keep a content digest.
+    #[cfg(unix)]
+    #[test]
+    fn installed_files_use_metadata_identity_and_still_see_same_mtime_rewrites() {
+        let root = tempfile::tempdir().unwrap();
+        let installed = root.path().join("node_modules/pkg/index.d.ts");
+        let authored = root.path().join("src/index.ts");
+        for path in [&installed, &authored] {
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, "export const a = 1;\n").unwrap();
+        }
+        let stamp = super::InputStamp::capture(&installed);
+        assert!(stamp.content_digest.is_none());
+        assert!(stamp.installed_identity.is_some());
+        assert!(
+            super::InputStamp::capture(&authored)
+                .content_digest
+                .is_some()
+        );
+
+        let modified = std::fs::metadata(&installed).unwrap().modified().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(20));
+        std::fs::write(&installed, "export const b = 2;\n").unwrap();
+        std::fs::File::options()
+            .write(true)
+            .open(&installed)
+            .unwrap()
+            .set_times(std::fs::FileTimes::new().set_modified(modified))
+            .unwrap();
+        assert!(!stamp.is_current());
     }
 }
