@@ -3,13 +3,11 @@
     transform: rotate(0deg);
   }
 }
-
 @-ms-keyframes orbit {
   0% {
     transform: rotate(0deg);
   }
 }
-
 @keyframes orbit {
   0% {
     transform: rotate(0deg);

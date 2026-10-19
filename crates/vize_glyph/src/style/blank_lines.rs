@@ -30,7 +30,6 @@ pub(super) fn preserve_rule_layout(
     let mut values = super::values::DeclarationValues::default();
     let mut previous_boundary = false;
     let mut previous_close = false;
-    let mut previous_close_line = false;
     let mut previous_declaration = false;
     let mut previous_comma = false;
     let mut brace = 0;
@@ -75,8 +74,9 @@ pub(super) fn preserve_rule_layout(
                     };
                     let mut adjustment =
                         Adjustment::new(&authored, &target, newlines, previous_comma);
-                    adjustment.authored_rule_gap = authored.gap.contains(['\r', '\n'])
-                        && (previous_close_line || previous_declaration);
+                    // Rule boundaries keep the authored gap (Oxfmt/Prettier parity, #9608).
+                    adjustment.authored_rule_gap = previous_close
+                        || (previous_declaration && authored.gap.contains(['\r', '\n']));
                     pending.push(adjustment);
                 }
                 if authored.parens == 0 && authored.brackets == 0 {
@@ -127,12 +127,6 @@ pub(super) fn preserve_rule_layout(
                     previous_boundary = matches!(authored.text, ";" | "}");
                     previous_close =
                         authored.text == "}" && authored.parens == 0 && authored.brackets == 0;
-                    // Compact blocks retain gaps unless an actual selector list owns them.
-                    previous_close_line = previous_close
-                        && source
-                            .get(..authored.start)
-                            .and_then(|prefix| prefix.rsplit(['\r', '\n']).next())
-                            .is_some_and(|line| line.trim().is_empty());
                     previous_declaration =
                         authored.text == ";" && authored.parens == 0 && authored.brackets == 0;
                     previous_comma =

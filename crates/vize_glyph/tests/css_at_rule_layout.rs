@@ -19,7 +19,7 @@ fn assert_formats(source: &str, expected: &str) {
 fn grouping_at_rules_expand_their_nested_rules() {
     assert_formats(
         "@layer base,components;\n@layer base{html{color:black}}\n@container sidebar (min-width:400px){.card{display:grid}}\n@scope (.card) to (.content){img{border:1px solid}}\n@starting-style{.fade{opacity:0}}\n",
-        "@layer base,components;\n@layer base {\n  html {\n    color: black;\n  }\n}\n\n@container sidebar (min-width:400px) {\n  .card {\n    display: grid;\n  }\n}\n\n@scope (.card) to (.content) {\n  img {\n    border: 1px solid;\n  }\n}\n\n@starting-style {\n  .fade {\n    opacity: 0;\n  }\n}\n",
+        "@layer base,components;\n@layer base {\n  html {\n    color: black;\n  }\n}\n@container sidebar (min-width:400px) {\n  .card {\n    display: grid;\n  }\n}\n@scope (.card) to (.content) {\n  img {\n    border: 1px solid;\n  }\n}\n@starting-style {\n  .fade {\n    opacity: 0;\n  }\n}\n",
     );
 }
 
@@ -27,7 +27,7 @@ fn grouping_at_rules_expand_their_nested_rules() {
 fn descriptor_at_rules_expand_their_declarations() {
     assert_formats(
         "@page :first{margin:1in}\n@counter-style thumbs{system:cyclic;symbols:\"👍\";suffix:\" \"}\n@property --angle{syntax:'<angle>';inherits:false;initial-value:0deg}\n@font-feature-values Font One{@styleset{nice-style:12}}\n@position-try --top{top:anchor(bottom)}\n@view-transition{navigation:auto}\n",
-        "@page :first {\n  margin: 1in;\n}\n\n@counter-style thumbs {\n  system: cyclic;\n  symbols: \"👍\";\n  suffix: \" \";\n}\n\n@property --angle {\n  syntax: '<angle>';\n  inherits: false;\n  initial-value: 0deg;\n}\n\n@font-feature-values Font One {\n  @styleset {\n    nice-style: 12;\n  }\n}\n\n@position-try --top {\n  top: anchor(bottom);\n}\n\n@view-transition {\n  navigation: auto;\n}\n",
+        "@page :first {\n  margin: 1in;\n}\n@counter-style thumbs {\n  system: cyclic;\n  symbols: \"👍\";\n  suffix: \" \";\n}\n@property --angle {\n  syntax: '<angle>';\n  inherits: false;\n  initial-value: 0deg;\n}\n@font-feature-values Font One {\n  @styleset {\n    nice-style: 12;\n  }\n}\n@position-try --top {\n  top: anchor(bottom);\n}\n@view-transition {\n  navigation: auto;\n}\n",
     );
 }
 
@@ -35,7 +35,7 @@ fn descriptor_at_rules_expand_their_declarations() {
 fn keyframes_and_font_face_keep_their_authored_values() {
     assert_formats(
         "@font-face{font-family:\"X\";src:url(data:font/woff2;base64,AAAA) format(\"woff2\")}\n@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}\n",
-        "@font-face {\n  font-family: \"X\";\n  src: url(data:font/woff2;base64,AAAA) format(\"woff2\");\n}\n\n@keyframes spin {\n  from {\n    transform: rotate(0deg);\n  }\n  to {\n    transform: rotate(360deg);\n  }\n}\n",
+        "@font-face {\n  font-family: \"X\";\n  src: url(data:font/woff2;base64,AAAA) format(\"woff2\");\n}\n@keyframes spin {\n  from {\n    transform: rotate(0deg);\n  }\n  to {\n    transform: rotate(360deg);\n  }\n}\n",
     );
 }
 
@@ -43,7 +43,7 @@ fn keyframes_and_font_face_keep_their_authored_values() {
 fn multi_value_transitions_and_shadows_break_one_value_per_line() {
     assert_formats(
         ".a{transition:opacity .3s ease,transform .3s ease;box-shadow:0 1px 2px rgba(0,0,0,.2),0 2px 4px rgba(0,0,0,.2)}\n.b{transition:color .2s}\n",
-        ".a {\n  transition:\n    opacity .3s ease,\n    transform .3s ease;\n  box-shadow:\n    0 1px 2px rgba(0,0,0,.2),\n    0 2px 4px rgba(0,0,0,.2);\n}\n\n.b {\n  transition: color .2s;\n}\n",
+        ".a {\n  transition:\n    opacity .3s ease,\n    transform .3s ease;\n  box-shadow:\n    0 1px 2px rgba(0,0,0,.2),\n    0 2px 4px rgba(0,0,0,.2);\n}\n.b {\n  transition: color .2s;\n}\n",
     );
 }
 
@@ -70,5 +70,15 @@ fn non_ascii_selectors_and_strings_do_not_shift_later_preludes() {
     assert_formats(
         ".日本語 {\n  content: \"🎉🎉\";\n}\n.後 {\n  color: red;\n}\n.emoji::before {\n  content: \"👍\";\n}\n.x,.y {\n  color: blue;\n}\n",
         ".日本語 {\n  content: \"🎉🎉\";\n}\n.後 {\n  color: red;\n}\n.emoji::before {\n  content: \"👍\";\n}\n.x,\n.y {\n  color: blue;\n}\n",
+    );
+}
+
+#[test]
+fn compact_rules_keep_authored_adjacency_and_blank_lines() {
+    // #9608: like Oxfmt/Prettier, gaps between rules come from the source,
+    // whether or not the next prelude is a selector list.
+    assert_formats(
+        ".a{color:red}\n.b,.c{color:blue}\n.d{color:green}\n\n.e{color:black}.f{color:white}\n",
+        ".a {\n  color: red;\n}\n.b,\n.c {\n  color: blue;\n}\n.d {\n  color: green;\n}\n\n.e {\n  color: black;\n}\n.f {\n  color: white;\n}\n",
     );
 }

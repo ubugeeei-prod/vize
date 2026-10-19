@@ -8,7 +8,7 @@
       "id": "original-plain",
       "api": "sfc",
       "input": "<style>\n.a { color: red }\n.b{margin:0}\n</style>\n",
-      "expected": "<style>\n.a {\n  color: red;\n}\n\n.b {\n  margin: 0;\n}\n</style>\n",
+      "expected": "<style>\n.a {\n  color: red;\n}\n.b {\n  margin: 0;\n}\n</style>\n",
       "options": {},
       "cli": true
     },
@@ -16,7 +16,7 @@
       "id": "original-opacity-trigger",
       "api": "sfc",
       "input": "<style>\n.a { color: red }\n.b{margin:0}\n.c { opacity: .5 }\n</style>\n",
-      "expected": "<style>\n.a {\n  color: red;\n}\n\n.b {\n  margin: 0;\n}\n\n.c {\n  opacity: .5;\n}\n</style>\n",
+      "expected": "<style>\n.a {\n  color: red;\n}\n.b {\n  margin: 0;\n}\n.c {\n  opacity: .5;\n}\n</style>\n",
       "options": {},
       "cli": true
     },
@@ -24,7 +24,7 @@
       "id": "opacity-value",
       "api": "style",
       "input": ".a{color:red}.b{opacity:.5}",
-      "expected": ".a {\n  color: red;\n}\n\n.b {\n  opacity: .5;\n}\n",
+      "expected": ".a {\n  color: red;\n}\n.b {\n  opacity: .5;\n}\n",
       "options": {},
       "cli": false
     },
@@ -32,7 +32,7 @@
       "id": "animation-value",
       "api": "sfc",
       "input": "<style>.a{color:red}.b{animation:spin 1s linear infinite}</style>\n",
-      "expected": "<style>\n.a {\n  color: red;\n}\n\n.b {\n  animation: spin 1s linear infinite;\n}\n</style>\n",
+      "expected": "<style>\n.a {\n  color: red;\n}\n.b {\n  animation: spin 1s linear infinite;\n}\n</style>\n",
       "options": {},
       "cli": true
     },
@@ -40,7 +40,7 @@
       "id": "transition-shorthand",
       "api": "style",
       "input": ".a{color:red}.b{transition:opacity 0.2s ease}",
-      "expected": ".a {\n  color: red;\n}\n\n.b {\n  transition: opacity 0.2s ease;\n}\n",
+      "expected": ".a {\n  color: red;\n}\n.b {\n  transition: opacity 0.2s ease;\n}\n",
       "options": {},
       "cli": false
     },
@@ -56,7 +56,7 @@
       "id": "pseudo-element",
       "api": "style",
       "input": ".a{color:red}.b::before{content:\"\"}",
-      "expected": ".a {\n  color: red;\n}\n\n.b::before {\n  content: \"\";\n}\n",
+      "expected": ".a {\n  color: red;\n}\n.b::before {\n  content: \"\";\n}\n",
       "options": {},
       "cli": false
     },
@@ -80,7 +80,7 @@
       "id": "font-face-strings",
       "api": "style",
       "input": "@font-face{font-family:\"Authored: ; {}\";src:url(\"font.woff2\") format(\"woff2\")} .a{opacity:.5}",
-      "expected": "@font-face {\n  font-family: \"Authored: ; {}\";\n  src: url(\"font.woff2\") format(\"woff2\");\n}\n\n.a {\n  opacity: .5;\n}\n",
+      "expected": "@font-face {\n  font-family: \"Authored: ; {}\";\n  src: url(\"font.woff2\") format(\"woff2\");\n}\n.a {\n  opacity: .5;\n}\n",
       "options": {},
       "cli": false
     },
@@ -206,7 +206,7 @@
       "id": "original-captured-box-values",
       "api": "style",
       "input": "hr{border:solid;border-width:thin 0 0 0;margin:0 0 0 0}.wrap{color:red;.item{color:blue}}",
-      "expected": "hr {\n  border: solid;\n  border-width: thin 0 0 0;\n  margin: 0 0 0 0;\n}\n\n.wrap {\n  color: red;\n  .item {\n    color: blue;\n  }\n}\n",
+      "expected": "hr {\n  border: solid;\n  border-width: thin 0 0 0;\n  margin: 0 0 0 0;\n}\n.wrap {\n  color: red;\n  .item {\n    color: blue;\n  }\n}\n",
       "options": {},
       "cli": false
     },
