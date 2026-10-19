@@ -141,7 +141,7 @@ test("assertion lint exits 0 on the real tree under the committed allowlist", ()
   assert.equal(result.stderr, "");
   assert.equal(result.status, 0, result.stdout);
   const summary =
-    /^assertion-lint: OK \((\d+) findings in (\d+) files suppressed by allowlist\)\n$/.exec(
+    /^assertion-lint: OK \((\d+) findings in (\d+) files suppressed by allowlist(?:; \d+ findings in \d+ files held by ratchet)?\)\n$/.exec(
       result.stdout,
     );
   assert.ok(summary, `unexpected lint output: ${result.stdout}`);

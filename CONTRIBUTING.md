@@ -166,6 +166,12 @@ described in [Source Layout](#source-layout). `insta` keeps the recorded snapsho
   module discovery. A directory whose only file is `tests.rs` (or `test.rs`) fails the length
   check. A `tests/` directory that holds several test files is fine.
 
+- **Exact assertions in every test file.** `tools/commands/davinci/assertion-lint.rs` scans inline
+  `#[cfg(test)]` modules and every file reached through a `cfg(test)` module declaration. Partial
+  assertions that already existed in out-of-line test files are held by the generated per-file
+  ratchet `docs/davinci/plan/assertion-ratchet.tsv`: counts only go down, so after replacing a
+  `contains`/`starts_with` probe with an exact oracle, regenerate it with `--write-ratchet`.
+
 ## Language Processor Change Discipline
 
 Vize follows compiler-project practice from rustc, TypeScript, TypeScript-Go, and Flow: classify the

@@ -17,6 +17,10 @@ use std::{
 
 #[path = "../../support/common.rs"]
 mod common;
+#[path = "assertion_lint_ratchet.rs"]
+mod ratchet;
+#[path = "assertion_lint_test_modules.rs"]
+mod test_modules;
 
 #[derive(Clone, Debug)]
 struct Finding {
@@ -31,6 +35,8 @@ struct Target {
     file: PathBuf,
     rel: String,
     whole_file: bool,
+    /// Out-of-line test module: pre-existing findings are held by the ratchet.
+    ratcheted: bool,
 }
 
 #[derive(Debug)]
@@ -38,6 +44,8 @@ struct Args {
     list: bool,
     root: Option<PathBuf>,
     allowlist: Option<PathBuf>,
+    ratchet: Option<PathBuf>,
+    write_ratchet: bool,
     help: bool,
 }
 
@@ -53,7 +61,7 @@ enum TomlValue {
     Array(Vec<TomlValue>),
 }
 
-const USAGE: &str = "Usage: rust-script tools/commands/davinci/assertion-lint.rs [--list] [--root <dir>] [--allowlist <file>]\n\nScans Rust test code for banned weak-assertion patterns (Davinci assurance\ndoctrine). Without flags: scans crates/** and davinci/**, applies the committed allowlist,\nexits 1 on unlisted findings. --list ignores the allowlist and exits 0.\n--root scans an alternate directory tree (self-test hook) with no default\nallowlist.";
+const USAGE: &str = "Usage: rust-script tools/commands/davinci/assertion-lint.rs [--list] [--root <dir>] [--allowlist <file>] [--ratchet <file>] [--write-ratchet]\n\nScans Rust test code for banned weak-assertion patterns (Davinci assurance\ndoctrine). Without flags: scans crates/** and davinci/**, applies the committed allowlist,\nexits 1 on unlisted findings. --list ignores the allowlist and exits 0.\n--root scans an alternate directory tree (self-test hook) with no default\nallowlist. Out-of-line test modules (files reached through a cfg(test) mod\ndeclaration) are held by a generated per-file count ratchet\n(docs/davinci/plan/assertion-ratchet.tsv); --write-ratchet regenerates it\nand counts may only go down.";
 
 fn main() -> ExitCode {
     match run() {
@@ -87,12 +95,12 @@ fn run() -> Result<u8, (u8, String)> {
         let source = fs::read_to_string(&target.file)
             .map_err(|error| (2, format!("cannot read {}: {error}", target.file.display())))?;
         for finding in scan_file(&source, target.whole_file) {
-            findings.push((target.rel.clone(), finding));
+            findings.push((target.rel.clone(), finding, target.ratcheted));
         }
     }
 
     if args.list {
-        for (path, finding) in &findings {
+        for (path, finding, _) in &findings {
             println!(
                 "{}:{} [{}] {}",
                 path, finding.line, finding.category, finding.text
@@ -100,7 +108,7 @@ fn run() -> Result<u8, (u8, String)> {
         }
         let files = findings
             .iter()
-            .map(|(path, _)| path.as_str())
+            .map(|(path, _, _)| path.as_str())
             .collect::<BTreeSet<_>>();
         println!(
             "assertion-lint: {} findings in {} files (allowlist ignored)",
@@ -125,7 +133,8 @@ fn run() -> Result<u8, (u8, String)> {
     let mut expired = BTreeSet::new();
     let mut suppressed = 0usize;
     let mut suppressed_files = BTreeSet::new();
-    for (path, finding) in findings {
+    let mut ratchet_findings = BTreeMap::<String, Vec<Finding>>::new();
+    for (path, finding, ratcheted) in findings {
         if let Some(entry) = allowlist.get_mut(&path) {
             if entry.expires >= today {
                 entry.used = true;
@@ -135,7 +144,64 @@ fn run() -> Result<u8, (u8, String)> {
             }
             expired.insert(path.clone());
         }
+        if ratcheted && !expired.contains(&path) {
+            ratchet_findings.entry(path).or_default().push(finding);
+            continue;
+        }
         unlisted.push((path, finding));
+    }
+
+    let default_ratchet = repo_root.join(ratchet::DEFAULT_PATH);
+    let ratchet_path = args
+        .ratchet
+        .or_else(|| default_tree.then_some(default_ratchet));
+    let counts = ratchet_findings
+        .iter()
+        .map(|(path, found)| (path.clone(), found.len()))
+        .collect::<BTreeMap<_, _>>();
+    if args.write_ratchet {
+        let Some(path) = &ratchet_path else {
+            return Err((
+                2,
+                "--write-ratchet requires --ratchet <file> with --root".to_string(),
+            ));
+        };
+        ratchet::write(path, &counts).map_err(|error| (2, error))?;
+        println!(
+            "assertion-lint: wrote ratchet for {} findings in {} files to {}",
+            counts.values().sum::<usize>(),
+            counts.len(),
+            path.display()
+        );
+        return Ok(0);
+    }
+    let baseline = match &ratchet_path {
+        Some(path) => ratchet::read(path).map_err(|error| (2, error))?,
+        None => BTreeMap::new(),
+    };
+    let mut held = 0usize;
+    let mut held_files = 0usize;
+    for (path, found) in ratchet_findings {
+        let allowed = baseline.get(&path).copied().unwrap_or(0);
+        if found.len() > allowed {
+            unlisted.extend(found.into_iter().map(|finding| (path.clone(), finding)));
+            continue;
+        }
+        if found.len() < allowed {
+            eprintln!(
+                "warning: ratchet allows {allowed} findings in {path} but {} remain — lower it with --write-ratchet",
+                found.len()
+            );
+        }
+        held += found.len();
+        held_files += 1;
+    }
+    for (path, allowed) in &baseline {
+        if !counts.contains_key(path) {
+            eprintln!(
+                "warning: ratchet allows {allowed} findings in {path} but none remain — lower it with --write-ratchet"
+            );
+        }
     }
 
     for (path, finding) in &unlisted {
@@ -164,11 +230,21 @@ fn run() -> Result<u8, (u8, String)> {
         );
         return Ok(1);
     }
-    println!(
-        "assertion-lint: OK ({} findings in {} files suppressed by allowlist)",
-        suppressed,
-        suppressed_files.len()
-    );
+    if held == 0 {
+        println!(
+            "assertion-lint: OK ({} findings in {} files suppressed by allowlist)",
+            suppressed,
+            suppressed_files.len()
+        );
+    } else {
+        println!(
+            "assertion-lint: OK ({} findings in {} files suppressed by allowlist; {} findings in {} files held by ratchet)",
+            suppressed,
+            suppressed_files.len(),
+            held,
+            held_files
+        );
+    }
     Ok(0)
 }
 
@@ -177,6 +253,8 @@ fn parse_args(argv: Vec<String>) -> Result<Args, (u8, String)> {
         list: false,
         root: None,
         allowlist: None,
+        ratchet: None,
+        write_ratchet: false,
         help: false,
     };
     let mut index = 0;
@@ -197,6 +275,14 @@ fn parse_args(argv: Vec<String>) -> Result<Args, (u8, String)> {
                     .ok_or_else(|| (2, "--allowlist requires a file argument".to_string()))?;
                 args.allowlist = Some(PathBuf::from(value));
             }
+            "--ratchet" => {
+                index += 1;
+                let value = argv
+                    .get(index)
+                    .ok_or_else(|| (2, "--ratchet requires a file argument".to_string()))?;
+                args.ratchet = Some(PathBuf::from(value));
+            }
+            "--write-ratchet" => args.write_ratchet = true,
             "--help" | "-h" => args.help = true,
             other => return Err((2, format!("unknown argument {other}"))),
         }
@@ -467,6 +553,7 @@ fn collect_targets(root: &Path, default_tree: bool) -> Result<Vec<Target>, Strin
     } else {
         walk_rust_files(root, &mut files)?;
     }
+    let test_only = test_modules::test_only_files(&files);
     let mut targets = Vec::new();
     for file in files {
         let rel = common::relative_path(root, &file);
@@ -476,20 +563,25 @@ fn collect_targets(root: &Path, default_tree: bool) -> Result<Vec<Target>, Strin
                     file,
                     rel,
                     whole_file: true,
+                    ratcheted: false,
                 });
             } else if is_crate_source(&rel) {
+                let ratcheted = test_only.contains(&file);
                 targets.push(Target {
                     file,
                     rel,
-                    whole_file: false,
+                    whole_file: ratcheted,
+                    ratcheted,
                 });
             }
         } else {
-            let whole_file = rel.split('/').any(|part| part == "tests");
+            let ratcheted = test_only.contains(&file);
+            let whole_file = ratcheted || rel.split('/').any(|part| part == "tests");
             targets.push(Target {
                 file,
                 rel,
                 whole_file,
+                ratcheted,
             });
         }
     }
