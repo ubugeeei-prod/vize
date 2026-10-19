@@ -79,7 +79,7 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
                     cursor += quote.literal.advance_at(bytes, cursor);
                     continue;
                 }
-                if byte == quote.quote && !quote.literal.quasi_is_raw() {
+                if byte == quote.quote {
                     open_quote = None;
                 }
                 cursor += 1;

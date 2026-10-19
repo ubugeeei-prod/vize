@@ -135,3 +135,15 @@ fn a_v_pre_region_on_a_hyphenated_component_closes_on_its_own_tag() {
     let source = "<my-code v-pre>\n  a\n</my-code>\n<span>y</span>";
     assert_eq!(mask(source), [false, true, true, false]);
 }
+
+#[test]
+fn a_directive_closing_quote_ends_the_value_after_a_quoted_backtick() {
+    // The raw-byte quasi bound counts the backtick in `'a ` b'`, so its
+    // parity is flipped after the literal closes. HTML still ends the value at
+    // the matching quote; later markup must keep its SFC indentation.
+    let source = "<div>\n  <i\n    :title=\"[\n      'a ` b',\n      `\n        x\n      `,\n    ]\"\n  />\n  <p>y</p>\n</div>";
+    assert_eq!(
+        mask(source).get(8..),
+        Some([false, false, false].as_slice())
+    );
+}
