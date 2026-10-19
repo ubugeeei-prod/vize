@@ -1,0 +1,43 @@
+name: Release cadence
+# Starts a release on its own. After every completed Check on main (and on an
+# hourly fallback schedule) `main.ts cadence` picks the newest main commit whose
+# push Check passed and dispatches release.yml for it when fix/feat/perf commits
+# landed since the last release, at most once per 50 minutes, never retrying a
+# commit whose release candidate already failed. It dispatches instead of
+# releasing in place because crates.io trusted publishing refuses workflow_run
+# and schedule triggers.
+on:
+  workflow_run:
+    workflows: [Check]
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: "23 * * * *"
+permissions: { contents: read }
+concurrency:
+  group: release-cadence
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  cadence:
+    if: github.repository == 'ubugeeei-prod/vize'
+    name: Dispatch a release when one is due
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: { contents: read, actions: write }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Decide
+        id: cadence
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
+        run: node tools/support/release/release/main.ts cadence
+      - name: Dispatch release.yml
+        if: steps.cadence.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SOURCE: ${{ steps.cadence.outputs.sha }}
+        run: gh workflow run release.yml --repo "$GITHUB_REPOSITORY" --ref main -f source="$RELEASE_SOURCE"

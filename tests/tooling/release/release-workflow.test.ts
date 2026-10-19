@@ -102,9 +102,11 @@ test("stamping moves every versioned manifest and leaves the native pins alone",
 });
 
 test("release is dispatched on main with an optional exact version", () => {
-  assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), ["version"]);
+  // Dispatch only: crates.io trusted publishing refuses workflow_run and schedule.
+  assert.deepEqual(Object.keys(workflow.on), ["workflow_dispatch"]);
+  assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), ["version", "source"]);
   const version = workflow.jobs.version;
-  assert.deepEqual(version.permissions, { contents: "write", actions: "read" });
+  assert.deepEqual(version.permissions, { contents: "write" });
   assert.match(JSON.stringify(version.steps), /release\/release\/main\.ts cut/);
 });
 
@@ -224,10 +226,15 @@ test("the automatic cadence releases a green main commit only after user-facing 
       now: 10 * hour,
     }).release;
   assert.ok(spaced(9 * hour) && !spaced(9.5 * hour), "at most one release per 50 minutes");
-  const on = workflow.on as unknown as {
-    schedule?: Array<{ cron: string }>;
-    workflow_run?: { workflows: string[]; types: string[]; branches: string[] };
+  const cadence = parse(readRepoFile(".github", "workflows", "release-cadence.yml")) as {
+    on: {
+      schedule?: Array<{ cron: string }>;
+      workflow_run?: { workflows: string[]; types: string[]; branches: string[] };
+    };
+    jobs: Record<string, Job>;
   };
+  const on = cadence.on;
+  assert.match(JSON.stringify(cadence.jobs.cadence.steps), /gh workflow run release\.yml/);
   assert.equal(on.schedule?.length, 1);
   assert.deepEqual(on.workflow_run, {
     workflows: ["Check"],
