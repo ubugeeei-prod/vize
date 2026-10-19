@@ -3,14 +3,21 @@
 import { appendFileSync } from "node:fs";
 import { collectStdout, println, run, runMain, writeStderr } from "../command_io.ts";
 import { cliArgs, nonEmptyEnv, readFileToString } from "../command_runtime.ts";
+import { cadenceDecision, readCadenceInput } from "./cadence.ts";
 import { stampVersion } from "./stamp.ts";
-import { isUnclaimedVersion, nextReleaseVersion, workspaceVersionFromContent } from "./versions.ts";
+import {
+  highestReleaseVersion,
+  isUnclaimedVersion,
+  nextReleaseVersion,
+  workspaceVersionFromContent,
+} from "./versions.ts";
 
 const USAGE = `Usage:
   main.ts dispatch [version] dispatch the Release workflow on main (\`vp run release\`)
   main.ts next               print the next release version
   main.ts stamp <version>    stamp <version> into the working tree
   main.ts cut [version]      CI only: stamp, commit and push tag v<version>
+  main.ts cadence            CI only: decide whether a scheduled run releases
 `;
 
 function fail(message: string): number {
@@ -104,6 +111,23 @@ async function cut(current: string, requested: string | undefined): Promise<numb
   return 0;
 }
 
+/** Writes release=true|false and the green main sha for a scheduled run. */
+async function cadence(): Promise<number> {
+  const tags = await remoteTagVersions();
+  if (tags === null) return fail("Failed to read release tags\n");
+  const highest = highestReleaseVersion(tags);
+  const input = await readCadenceInput(highest === null ? null : `v${highest}`);
+  const decision = cadenceDecision(input);
+  println(
+    `${decision.release ? "Releasing" : "Skipping"} ${input.greenSha ?? "-"}: ${decision.reason}`,
+  );
+  const output = nonEmptyEnv("GITHUB_OUTPUT");
+  if (output !== undefined) {
+    appendFileSync(output, `release=${decision.release}\nsha=${input.greenSha ?? ""}\n`);
+  }
+  return 0;
+}
+
 export async function release(args: readonly string[]): Promise<number> {
   const [command, value, ...rest] = args;
   if (rest.length > 0) return fail(USAGE);
@@ -116,6 +140,8 @@ export async function release(args: readonly string[]): Promise<number> {
       println(version);
       return 0;
     }
+    case "cadence":
+      return cadence();
     case "stamp":
       if (value === undefined) return fail(USAGE);
       return (await stampVersion(current, value)) ? 0 : 1;

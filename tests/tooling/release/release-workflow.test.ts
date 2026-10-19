@@ -6,6 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
+import { cadenceDecision } from "../../../tools/support/release/release/cadence.ts";
 import { extraReleasePackageJsonPaths } from "../../../tools/support/release/release/preparation.ts";
 import { stampCargoLock } from "../../../tools/support/release/release/stamp.ts";
 import {
@@ -103,7 +104,7 @@ test("stamping moves every versioned manifest and leaves the native pins alone",
 test("release is dispatched on main with an optional exact version", () => {
   assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), ["version"]);
   const version = workflow.jobs.version;
-  assert.deepEqual(version.permissions, { contents: "write" });
+  assert.deepEqual(version.permissions, { contents: "write", actions: "read" });
   assert.match(JSON.stringify(version.steps), /release\/release\/main\.ts cut/);
 });
 
@@ -182,4 +183,24 @@ test("the stamp rewrites aliased fork pins and keeps upstream versions", () => {
 test("Open VSX publication tolerates ovsx dependency build scripts", () => {
   const job = (workflow.jobs["publish-open-vsx"] as Job & { env?: Record<string, string> }).env;
   assert.equal(job?.PNPM_CONFIG_STRICT_DEP_BUILDS, "false");
+});
+
+test("the hourly cadence releases a green main commit only after user-facing changes", () => {
+  const released = "a".repeat(40);
+  const green = "b".repeat(40);
+  const decide = (subjects: string[], greenSha: string | null = green) =>
+    cadenceDecision({ greenSha, releasedSha: released, subjects }).release;
+  assert.ok(decide(["fix(patina): x", "chore: y"]));
+  assert.ok(decide(["feat!: x"]) && decide(["perf(lsp): x"]));
+  assert.ok(!decide(["docs: x", "ci(release): y", "test(jsx): z", "refactor: w"]));
+  assert.ok(!decide(["fix: x"], null), "no green Check");
+  assert.ok(!decide(["fix: x"], released), "already released");
+  const on = workflow.on as unknown as { schedule?: Array<{ cron: string }> };
+  assert.equal(on.schedule?.length, 1);
+  for (const build of ["build-cli", "build-native", "build-packages", "build-wasm"]) {
+    assert.equal(
+      (workflow.jobs[build] as Job & { if?: string }).if,
+      "needs.version.outputs.tag != ''",
+    );
+  }
 });

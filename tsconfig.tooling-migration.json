@@ -85,6 +85,7 @@
     "tests/tooling/release/release-workflow.test.ts",
     "tools/support/release/publish_open_vsx_extension/main.ts",
     "tools/support/release/publish_vscode_extension/main.ts",
+    "tools/support/release/release/cadence.ts",
     "tools/support/release/release/main.ts",
     "tools/support/release/release/preparation.ts",
     "tools/support/release/release/readmes.ts",

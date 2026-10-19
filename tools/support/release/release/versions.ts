@@ -178,12 +178,7 @@ function parseClaimed(value: string): Version | null {
   return version === null || version.prerelease !== null ? null : version;
 }
 
-/**
- * Every release bumps the minor of the highest version already claimed
- * anywhere (workspace manifest, git tags, npm), so a burned or partial release
- * never collides with the next one.
- */
-export function nextReleaseVersion(claimed: readonly string[]): string | null {
+function highestClaimed(claimed: readonly string[]): Version | null {
   let highest: Version | null = null;
   for (const value of claimed) {
     const version = parseClaimed(value);
@@ -191,6 +186,24 @@ export function nextReleaseVersion(claimed: readonly string[]): string | null {
       highest = version;
     }
   }
+  return highest;
+}
+
+/** The highest stable version among `claimed`, e.g. the latest release tag. */
+export function highestReleaseVersion(claimed: readonly string[]): string | null {
+  const highest = highestClaimed(claimed);
+  return highest === null
+    ? null
+    : formatVersion(highest.major, highest.minor, highest.patch, null, null);
+}
+
+/**
+ * Every release bumps the minor of the highest version already claimed
+ * anywhere (workspace manifest, git tags, npm), so a burned or partial release
+ * never collides with the next one.
+ */
+export function nextReleaseVersion(claimed: readonly string[]): string | null {
+  const highest = highestClaimed(claimed);
   return highest === null
     ? null
     : formatVersion(highest.major, increment(highest.minor), 0, null, null);

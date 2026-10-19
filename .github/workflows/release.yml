@@ -10,7 +10,11 @@ name: Release
 # its packages at once because npm does not resolve dependencies at publish
 # time. Registry visibility is checked once, after publishing.
 # Re-running failed jobs is safe: every publisher skips versions that exist.
+# The hourly schedule releases the newest main commit with a green push Check
+# when fix/feat/perf commits landed since the last release tag.
 on:
+  schedule:
+    - cron: "23 * * * *"
   workflow_dispatch:
     inputs:
       version:
@@ -18,7 +22,7 @@ on:
         required: false
         default: ""
         type: string
-run-name: Release ${{ inputs.version || 'next minor' }}
+run-name: ${{ github.event_name == 'schedule' && 'Release (scheduled)' || format('Release {0}', inputs.version || 'next minor') }}
 concurrency:
   group: release
   cancel-in-progress: false
@@ -34,7 +38,7 @@ jobs:
     name: Tag the release version
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    permissions: { contents: write }
+    permissions: { contents: write, actions: read }
     outputs:
       version: ${{ steps.cut.outputs.version }}
       tag: ${{ steps.cut.outputs.tag }}
@@ -45,18 +49,30 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Decide whether the scheduled run releases
+        id: cadence
+        if: github.event_name == 'schedule'
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
+        run: node tools/support/release/release/main.ts cadence
+      - name: Check out the green main commit
+        if: steps.cadence.outputs.release == 'true'
+        env: { RELEASE_SOURCE: "${{ steps.cadence.outputs.sha }}" }
+        run: git fetch --depth=1 origin "$RELEASE_SOURCE" && git checkout --detach FETCH_HEAD
       - name: Stamp, commit and push the release tag
         id: cut
+        if: github.event_name != 'schedule' || steps.cadence.outputs.release == 'true'
         env: { RELEASE_VERSION: "${{ inputs.version }}" }
         run: node tools/support/release/release/main.ts cut ${RELEASE_VERSION:+"$RELEASE_VERSION"}
       - name: Select release platforms
         id: platforms
+        if: steps.cut.outputs.tag != ''
         env: { RELEASE_TAG: "${{ steps.cut.outputs.tag }}" }
         run: node tools/support/github/release-platforms.ts github-output "$RELEASE_TAG"
 
   build-cli:
     name: Build CLI - ${{ matrix.settings.target }}
     needs: version
+    if: needs.version.outputs.tag != ''
     runs-on: ${{ matrix.settings.host }}
     timeout-minutes: 60
     strategy:
@@ -75,6 +91,7 @@ jobs:
   build-native:
     name: Build Native - ${{ matrix.settings.target }}
     needs: version
+    if: needs.version.outputs.tag != ''
     runs-on: ${{ matrix.settings.host }}
     timeout-minutes: 60
     strategy:
@@ -93,6 +110,7 @@ jobs:
   build-packages:
     name: Build npm packages
     needs: version
+    if: needs.version.outputs.tag != ''
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
@@ -103,6 +121,7 @@ jobs:
   build-wasm:
     name: Build @vizejs/wasm
     needs: version
+    if: needs.version.outputs.tag != ''
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
@@ -139,6 +158,7 @@ jobs:
   build-editor-extensions:
     name: Build editor extensions
     needs: version
+    if: needs.version.outputs.tag != ''
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
