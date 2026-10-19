@@ -21,6 +21,9 @@ use vize_l0::line_index::offset_to_line_col;
 
 #[cfg(test)]
 mod diagnostic_selection_tests;
+mod ref_value;
+#[cfg(test)]
+mod ref_value_tests;
 mod script_bindings;
 #[cfg(test)]
 mod source_position_tests;
@@ -59,8 +62,8 @@ impl CodeActionService {
 
         // Vue-flavored quick fixes: today this surfaces a "Wrap with `.value`"
         // edit when the cursor sits on a known reactive ref. See #691.
-        actions.extend(Self::collect_wrap_with_value(ctx, range));
-        actions.extend(Self::collect_unwrap_value(ctx, range));
+        actions.extend(Self::collect_wrap_with_value(ctx));
+        actions.extend(Self::collect_unwrap_value(ctx));
         actions.extend(Self::collect_auto_import(ctx, range));
 
         actions
@@ -124,16 +127,21 @@ impl CodeActionService {
             }
         };
 
-        // Insert at the start of script setup if present, otherwise at the
-        // start of the regular script block.
-        let insert_offset = descriptor
+        // Insert on the first line of script setup if present, otherwise of
+        // the regular script block, not after `<script …>` on its own line.
+        let Some(script) = descriptor
             .script_setup
             .as_ref()
-            .map(|s| s.loc.start)
-            .or_else(|| descriptor.script.as_ref().map(|s| s.loc.start));
-        let Some(insert_offset) = insert_offset else {
+            .or(descriptor.script.as_ref())
+        else {
             return Vec::new();
         };
+        let leading_newline = script
+            .content
+            .strip_prefix("\r\n")
+            .or_else(|| script.content.strip_prefix('\n'))
+            .map_or(0, |rest| script.content.len() - rest.len());
+        let insert_offset = script.loc.start + leading_newline;
         let (line, character) = offset_to_line_col(&ctx.content, insert_offset);
         let insert_position = Position { line, character };
         let edit_range = Range {
@@ -164,150 +172,6 @@ impl CodeActionService {
             disabled: None,
             data: None,
         };
-        vec![CodeActionOrCommand::CodeAction(action)]
-    }
-
-    /// Offer an "Unwrap `.value`" quick fix when the cursor sits on the
-    /// `.value` segment of a reactive ref access in script context. Useful
-    /// when the user copies template code (where refs auto-unwrap) into
-    /// script and the trailing `.value` is now redundant — or when they
-    /// pass `count.value` to a function that expects the wrapper itself.
-    fn collect_unwrap_value(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
-        if !matches!(
-            ctx.block_type,
-            Some(crate::virtual_code::BlockType::ScriptSetup)
-                | Some(crate::virtual_code::BlockType::Script)
-        ) {
-            return Vec::new();
-        }
-
-        // Look for a `.value` token straddling the cursor.
-        let cursor = ctx.offset.min(ctx.content.len());
-        let Some((before, after)) = ctx.content.split_at_checked(cursor) else {
-            return Vec::new();
-        };
-        let dot_pos = match (before.rfind(".value"), after.starts_with("value")) {
-            (Some(p), _) if cursor >= p && cursor <= p + ".value".len() => p,
-            (Some(p), _) if cursor == p + ".value".len() => p,
-            _ if before.ends_with('.') && after.starts_with("value") => cursor - 1,
-            _ => return Vec::new(),
-        };
-        let Some(prefix) = before.get(..dot_pos) else {
-            return Vec::new();
-        };
-        if !prefix.ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '$') {
-            return Vec::new();
-        }
-        // Resolve the receiver identifier just before the `.`.
-        let ident_len = prefix
-            .bytes()
-            .rev()
-            .take_while(|b| is_ident_byte(*b))
-            .count();
-        let receiver = prefix.get(prefix.len() - ident_len..).unwrap_or_default();
-        if !is_reactive_ref_in_script(ctx, receiver) {
-            return Vec::new();
-        }
-
-        let value_end = dot_pos + ".value".len();
-        let (start_line, start_col) = offset_to_line_col(&ctx.content, dot_pos);
-        let (end_line, end_col) = offset_to_line_col(&ctx.content, value_end);
-        let edit_range = Range {
-            start: Position {
-                line: start_line,
-                character: start_col,
-            },
-            end: Position {
-                line: end_line,
-                character: end_col,
-            },
-        };
-
-        let mut changes = std::collections::HashMap::new();
-        changes.insert(
-            ctx.uri.clone(),
-            vec![TextEdit {
-                range: edit_range,
-                new_text: String::new(),
-            }],
-        );
-
-        let action = CodeAction {
-            title: format!("Unwrap `.value` from `{receiver}`"),
-            kind: Some(CodeActionKind::QUICKFIX),
-            diagnostics: None,
-            edit: Some(WorkspaceEdit {
-                changes: Some(changes),
-                document_changes: None,
-                change_annotations: None,
-            }),
-            command: None,
-            is_preferred: None,
-            disabled: None,
-            data: None,
-        };
-        let _ = range;
-        vec![CodeActionOrCommand::CodeAction(action)]
-    }
-
-    /// Offer a "Wrap with `.value`" quick fix when the cursor sits on an
-    /// identifier that resolves to a reactive ref in script context. This is
-    /// the most common Vue fix-up; complementary actions (unwrap, add to
-    /// defineEmits, etc.) follow the same shape and will land in follow-ups.
-    fn collect_wrap_with_value(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
-        // Only activate on script blocks — refs in template are auto-unwrapped.
-        if !matches!(
-            ctx.block_type,
-            Some(crate::virtual_code::BlockType::ScriptSetup)
-                | Some(crate::virtual_code::BlockType::Script)
-        ) {
-            return Vec::new();
-        }
-
-        let Some((identifier_range, identifier)) = identifier_at_cursor(&ctx.content, ctx.offset)
-        else {
-            return Vec::new();
-        };
-        if !is_reactive_ref_in_script(ctx, identifier) {
-            return Vec::new();
-        }
-
-        let (start_line, start_col) = offset_to_line_col(&ctx.content, identifier_range.end);
-        let edit_range = Range {
-            start: Position {
-                line: start_line,
-                character: start_col,
-            },
-            end: Position {
-                line: start_line,
-                character: start_col,
-            },
-        };
-
-        let mut changes = std::collections::HashMap::new();
-        changes.insert(
-            ctx.uri.clone(),
-            vec![TextEdit {
-                range: edit_range,
-                new_text: ".value".to_string(),
-            }],
-        );
-
-        let action = CodeAction {
-            title: format!("Wrap `{identifier}` with `.value`"),
-            kind: Some(CodeActionKind::QUICKFIX),
-            diagnostics: None,
-            edit: Some(WorkspaceEdit {
-                changes: Some(changes),
-                document_changes: None,
-                change_annotations: None,
-            }),
-            command: None,
-            is_preferred: Some(true),
-            disabled: None,
-            data: None,
-        };
-        let _ = range;
         vec![CodeActionOrCommand::CodeAction(action)]
     }
 
@@ -485,34 +349,6 @@ fn identifier_at_cursor(content: &str, offset: usize) -> Option<(std::ops::Range
 
 fn is_ident_byte(b: u8) -> bool {
     b.is_ascii_alphanumeric() || b == b'_' || b == b'$'
-}
-
-/// True when `name` resolves to a Vue ref (Ref / ShallowRef / ToRef /
-/// ComputedRef) declared anywhere in the SFC's script-setup block. Used to
-/// decide whether "Wrap with `.value`" makes sense at the cursor.
-fn is_reactive_ref_in_script(ctx: &IdeContext, name: &str) -> bool {
-    use vize_croquis::reactivity::ReactiveKind;
-    let Some(descriptor) = ctx.descriptor() else {
-        return false;
-    };
-    let Some(ref script_setup) = descriptor.script_setup else {
-        return false;
-    };
-    let mut analyzer = vize_croquis::Drawer::with_options(vize_croquis::DrawerOptions {
-        analyze_script: true,
-        ..Default::default()
-    });
-    analyzer.analyze_script_setup(&script_setup.content);
-    let croquis = analyzer.finish();
-    vize_croquis::facts::reactivity_lookup(&croquis, name).is_some_and(|source| {
-        matches!(
-            source.kind,
-            ReactiveKind::Ref
-                | ReactiveKind::ShallowRef
-                | ReactiveKind::ToRef
-                | ReactiveKind::Computed
-        )
-    })
 }
 
 fn ranges_overlap(a: &Range, b: &Range) -> bool {
