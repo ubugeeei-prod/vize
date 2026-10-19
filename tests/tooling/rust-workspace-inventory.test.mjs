@@ -109,7 +109,12 @@ void test("profile defaults are inferred only after manifest, config and environ
   const manifest = '[profile.ci]\ninherits = "dev"\ndebug = false\n';
   const expected = source.inferredProfileDefaults;
   assert.deepEqual(inferWorkspaceProfileDefaults(manifest, ""), expected);
+  assert.deepEqual(
+    inferWorkspaceProfileDefaults(manifest + "[profile.dev.package.sha2]\nopt-level = 3\n", ""),
+    expected,
+  );
   for (const extra of [
+    "[profile.dev.package.sha2]\nopt-level = 3\ndebug-assertions = false\n",
     "[profile.ci.package.example]\ndebug-assertions = false\n",
     "[profile.dev.build-override]\noverflow-checks = false\n",
     "[profile.test]\ndebug-assertions = false\n",

@@ -75,8 +75,12 @@ export function inferWorkspaceProfileDefaults(
     const profile = profiles[name] ?? {};
     for (const flag of ["opt-level", "debug-assertions", "overflow-checks"])
       assert.ok(!Object.hasOwn(profile, flag), `${name} overrides ${flag}`);
+    // A per-package opt-level (e.g. sha2 for fast fingerprints) cannot change the
+    // inferred assertion defaults; any other package or build override can.
+    const packages = Object.values((profile.package ?? {}) as Record<string, object>);
     assert.ok(
-      !profile.package && !profile["build-override"],
+      !profile["build-override"] &&
+        packages.every((settings) => Object.keys(settings).every((key) => key === "opt-level")),
       `${name} has package/build overrides`,
     );
     assert.ok(!config.profile?.[name], `Cargo config overrides ${name}`);

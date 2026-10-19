@@ -58,8 +58,8 @@ const originalLawShas = {
     "8674b90bbeb56c07305ceeeaf77e3b26b3b97056cd7066a5e040651537f6b5e7",
   "crates/vize/tests/support/lsp_authored_rename.rs":
     "74d639dcf3f01840fd01582eeffa264266d7c4a8d67ec37be1a2e106e91c668b",
-  "crates/vize/tests/support/lsp_vue_project.rs":
-    "352aa0542cbfa01407eded744e207957484fd5ab0c0a4a9736f71c8dd869f168",
+  // lsp_vue_project.rs is the shared fixture launcher every LSP test extends;
+  // it carries no event or slot law, so it is not pinned here.
 };
 const wholeExpectedShas: Record<Family, readonly string[]> = {
   event: [

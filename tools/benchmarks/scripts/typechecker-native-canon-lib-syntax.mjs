@@ -68,6 +68,8 @@ export function validateScopeAuthority(items, { library = false } = {}) {
         if (
           /^#\[cfg\([\s\S]+\)\]$/u.test(normalized) ||
           normalized === "#[test]" ||
+          // Documentation attributes cannot register or provide anything.
+          /^#\[doc\([\s\S]*\)\]$/u.test(normalized) ||
           /^#\[expect\([\s\S]+\)\]$/u.test(normalized)
         )
           continue;

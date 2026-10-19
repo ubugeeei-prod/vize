@@ -149,7 +149,6 @@ test("original source, independent golden, and Rust-law mutations fail byte cust
     "crates/vize/tests/lsp_original_event_rename_cli.rs",
     "crates/vize/tests/lsp_original_slot_rename_cli.rs",
     "crates/vize/tests/support/lsp_authored_rename.rs",
-    "crates/vize/tests/support/lsp_vue_project.rs",
   ];
   try {
     for (const owner of owners) {

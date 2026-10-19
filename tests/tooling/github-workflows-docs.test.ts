@@ -259,6 +259,7 @@ test("docs deployment serializes before validating actual source and publication
     "primary custody must be checked before any source checkout or Pages effects",
   );
   assert.equal(compare.env?.GITHUB_TOKEN, "${{ github.token }}");
+  // Trusted main validators run from a copy, so an older completed source cannot swap them.
   assert.match(
     compare.run ?? "",
     /cp tools\/support\/compat\/github\/docs-deployment-\*\.ts "\$validator\/"/,
