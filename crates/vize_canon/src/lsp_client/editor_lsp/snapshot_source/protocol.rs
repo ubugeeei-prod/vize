@@ -99,7 +99,7 @@ pub(super) fn source_text<'a>(
     {
         return Err(Refuse::Root);
     }
-    if file_name != expected_name || path != expected_name {
+    if !source_identity_matches(file_name, path, expected_name) {
         return Err(Refuse::SourceIdentity);
     }
     let structured_len = nodes - structured;
@@ -119,6 +119,29 @@ pub(super) fn source_text<'a>(
     Ok((text, file_name, path))
 }
 
+/// The encoded `fileName` is the name as requested, but `path` is the
+/// checker's canonical key: on a case-insensitive host (macOS, Windows) it is
+/// `tspath.ToFileNameLowerCase` of that name. A session directory such as
+/// `session-EAOcM2` or a Nuxt route folder such as `[userId]` therefore never
+/// matches byte for byte, and refusing it retired the backend on every decode.
+fn source_identity_matches(file_name: &str, path: &str, expected_name: &str) -> bool {
+    file_name == expected_name
+        && (path == expected_name || path == to_file_name_lower_case(expected_name))
+}
+
+/// `tspath.ToFileNameLowerCase`: lowercase every character except U+0130,
+/// whose lowercase form would change the name's length.
+fn to_file_name_lower_case(name: &str) -> vize_carton::String {
+    name.chars()
+        .flat_map(|character| {
+            let keep = character == '\u{0130}';
+            keep.then_some(character)
+                .into_iter()
+                .chain(character.to_lowercase().filter(move |_| !keep))
+        })
+        .collect()
+}
+
 fn word(bytes: &[u8], offset: usize) -> Result<u32, SourceTextRefusal> {
     let end = offset.checked_add(4).ok_or(SourceTextRefusal::Sections)?;
     let value = bytes
@@ -130,4 +153,25 @@ fn word(bytes: &[u8], offset: usize) -> Result<u32, SourceTextRefusal> {
 
 fn index(bytes: &[u8], offset: usize) -> Result<usize, SourceTextRefusal> {
     usize::try_from(word(bytes, offset)?).map_err(|_| SourceTextRefusal::Sections)
+}
+
+#[cfg(test)]
+mod identity_tests {
+    use super::source_identity_matches;
+
+    #[test]
+    fn case_insensitive_canonical_paths_match_their_requested_name() {
+        let name =
+            "/private/var/T/vize-canon/session-EAOcM2/app/pages/ticket/[userId]/index.vue.ts";
+        let canonical =
+            "/private/var/t/vize-canon/session-eaocm2/app/pages/ticket/[userid]/index.vue.ts";
+        assert!(source_identity_matches(name, name, name));
+        assert!(source_identity_matches(name, canonical, name));
+        assert!(!source_identity_matches(canonical, canonical, name));
+        assert!(!source_identity_matches(
+            name,
+            "/private/var/t/vize-canon/session-eaocm2/app/pages/ticket/[other]/index.vue.ts",
+            name
+        ));
+    }
 }
