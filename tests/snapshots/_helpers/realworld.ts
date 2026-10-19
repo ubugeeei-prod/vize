@@ -5,6 +5,7 @@ import * as path from "node:path";
 
 import type { AppConfig } from "../../_helpers/apps.ts";
 import { CORSA_BIN, VIZE_BIN } from "../../_helpers/apps.ts";
+import { linkWorkspacePackages } from "../../_helpers/realworld-patch.ts";
 
 export interface VizeCheckSummary {
   fileCount: number;
@@ -189,6 +190,13 @@ const __vizeIntentionalTypeError: number = "not-a-number";
 `;
   const expectedDiagnostic = "error:2:7 [TS2322] Type 'string' is not assignable to type 'number'.";
 
+  // The fixture is not installed; link its workspace packages for this check
+  // and restore the checkout afterwards.
+  const modules = path.join(checkConfig.cwd, "node_modules");
+  const ownsModules = !fs.existsSync(modules);
+  const linked = checkConfig.workspacePackages
+    ? linkWorkspacePackages(checkConfig.cwd, checkConfig.workspacePackages)
+    : [];
   fs.writeFileSync(absoluteFile, cleanSource, "utf-8");
   if (tempTsconfig && absoluteTempTsconfig) {
     fs.mkdirSync(path.dirname(absoluteTempTsconfig), { recursive: true });
@@ -252,6 +260,8 @@ const __vizeIntentionalTypeError: number = "not-a-number";
     if (absoluteTempTsconfig) {
       fs.rmSync(absoluteTempTsconfig, { force: true });
     }
+    if (linked.length > 0 && ownsModules) fs.rmSync(modules, { recursive: true, force: true });
+    else for (const name of linked) fs.rmSync(path.join(modules, name), { force: true });
   }
 }
 

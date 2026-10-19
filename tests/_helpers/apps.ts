@@ -60,6 +60,8 @@ export interface AppConfig {
     cwd: string;
     patterns: string[];
     tsconfig?: string;
+    /** Workspace roots linked into node_modules like a hoisted install. */
+    workspacePackages?: string[];
   };
   lint?: {
     cwd: string;
@@ -1764,6 +1766,8 @@ export const vueVbenAdminApp: AppConfig = {
   check: {
     cwd: VUE_VBEN_ADMIN_DIR,
     patterns: ["playground/src/**/*.vue", "apps/**/*.vue", "packages/**/*.vue"],
+    // Apps extend `@vben/tsconfig` by package name (#9645).
+    workspacePackages: ["apps", "packages", "internal"],
   },
   lint: {
     cwd: VUE_VBEN_ADMIN_DIR,
