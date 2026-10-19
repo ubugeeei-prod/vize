@@ -92,12 +92,30 @@ pub(super) struct ProjectContexts {
     contexts: Mutex<FxHashMap<ProjectContextKey, Arc<registry::ProjectContext>>>,
     reload_admission: Mutex<FxHashMap<PathBuf, Weak<futures::lock::Mutex<()>>>>,
     pending_config_reloads: Mutex<FxHashSet<ProjectContextKey>>,
+    /// Saves and watched-file events so far, and the count each unobservable
+    /// configuration failure was last evaluated at.
+    retry_triggers: AtomicU64,
+    unobservable_retries: Mutex<FxHashMap<ProjectContextKey, u64>>,
     routes: DashMap<Url, ProjectContextKey>,
     initialization_options: RwLock<Option<serde_json::Value>>,
     client_capabilities: RwLock<ClientCapabilities>,
 }
 
 impl ServerState {
+    /// A save or watched-file event can repair a failure Vize cannot observe.
+    pub(crate) fn observe_configuration_retry_trigger(&self) {
+        let contexts = &self.project_contexts;
+        contexts.retry_triggers.fetch_add(1, Ordering::AcqRel);
+    }
+
+    /// An unobservable failure is evaluated again once per save or watched-file
+    /// event, never on ordinary requests (each attempt runs the Vite config).
+    pub(super) fn unobservable_retry_due(&self, key: &ProjectContextKey) -> bool {
+        let triggers = self.project_contexts.retry_triggers.load(Ordering::Acquire);
+        let mut seen = self.project_contexts.unobservable_retries.lock();
+        seen.insert(key.clone(), triggers).unwrap_or(0) < triggers
+    }
+
     pub(super) fn configuration_evaluation_session(
         &self,
     ) -> Arc<super::config::host::ConfigEvaluationSession> {

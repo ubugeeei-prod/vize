@@ -132,6 +132,8 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
+        #[cfg(feature = "native")]
+        self.state.observe_configuration_retry_trigger();
         let server = self.for_document(&params.text_document.uri).await;
         let uri = params.text_document.uri;
         server.publish_saved_diagnostics(&uri).await;
@@ -316,6 +318,8 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn did_change_watched_files(&self, params: DidChangeWatchedFilesParams) {
+        #[cfg(feature = "native")]
+        self.state.observe_configuration_retry_trigger();
         super::workspace_files::did_change_watched_files(self, &params).await;
     }
 

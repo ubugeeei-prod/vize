@@ -117,7 +117,8 @@ fn vite_factory_runs_once_per_attempt_and_stable_or_failed_boundaries_do_not_eva
 }
 
 #[test]
-fn incomplete_failed_package_resolution_retries_next_operation_without_repeating_notification() {
+fn incomplete_failed_package_resolution_retries_after_a_save_or_watch_event_without_repeating_notification()
+ {
     let (fixture, state, a, _) = tests::fixture();
     let root = fixture.path().join("packages/a");
     let config = root.join("vite.config.mjs");
@@ -130,7 +131,7 @@ fn incomplete_failed_package_resolution_retries_next_operation_without_repeating
     assert_eq!(refresh(&state, &a).errors.len(), 1);
     assert_eq!(std::fs::read_to_string(&counter).unwrap(), "x");
     assert!(refresh(&state, &a).errors.is_empty());
-    assert_eq!(std::fs::read_to_string(&counter).unwrap(), "xx");
+    assert_eq!(std::fs::read_to_string(&counter).unwrap(), "x");
     assert!(Arc::ptr_eq(&retained, &current(&state, &a)));
     let installed = root.join("node_modules/missing-editor-plugin");
     std::fs::create_dir_all(&installed).unwrap();
@@ -144,8 +145,10 @@ fn incomplete_failed_package_resolution_retries_next_operation_without_repeating
         "export const vue = {languageServer:{hover:true}};",
     )
     .unwrap();
+    // The install is not observable; the save or watch event it causes is.
+    state.observe_configuration_retry_trigger();
     assert!(refresh(&state, &a).errors.is_empty());
-    assert_eq!(std::fs::read_to_string(&counter).unwrap(), "xxx");
+    assert_eq!(std::fs::read_to_string(&counter).unwrap(), "xx");
     assert!(current(&state, &a).lsp_features().hover);
     assert!(!Arc::ptr_eq(&retained, &current(&state, &a)));
     // The newly reported installed graph is confirmed without retiring an
@@ -153,11 +156,11 @@ fn incomplete_failed_package_resolution_retries_next_operation_without_repeating
     let confirmed = current(&state, &a);
     let pending = confirmed.corsa_request_stamp();
     assert!(refresh(&state, &a).errors.is_empty());
-    assert_eq!(std::fs::read_to_string(&counter).unwrap(), "xxxx");
+    assert_eq!(std::fs::read_to_string(&counter).unwrap(), "xxx");
     assert!(Arc::ptr_eq(&confirmed, &current(&state, &a)));
     assert!(pending.is_current(&confirmed));
     assert!(refresh(&state, &a).errors.is_empty());
-    assert_eq!(std::fs::read_to_string(&counter).unwrap(), "xxxx");
+    assert_eq!(std::fs::read_to_string(&counter).unwrap(), "xxx");
 }
 
 #[test]
@@ -204,7 +207,7 @@ fn a_known_input_edit_after_confirmation_preparation_still_replaces_the_owner() 
 }
 
 #[test]
-fn incomplete_resolution_retries_once_without_claiming_unchanged_watch_paths_changed() {
+fn incomplete_resolution_retries_once_per_save_or_watch_event_without_claiming_changes() {
     let (fixture, state, a, _) = tests::fixture();
     let root = fixture.path().join("packages/a");
     let counter = root.join("factory-count.txt");
@@ -233,6 +236,13 @@ fn incomplete_resolution_retries_once_without_claiming_unchanged_watch_paths_cha
         "retry eligibility is not a physical edit"
     );
     assert_eq!(std::fs::read_to_string(&counter).unwrap(), "x");
+    // Ordinary requests serve the last good configuration without evaluating
+    // the Vite config again; nothing observable can have repaired it.
+    for _ in 0..3 {
+        assert!(refresh(&state, &a).errors.is_empty());
+    }
+    assert_eq!(std::fs::read_to_string(&counter).unwrap(), "x");
+    state.observe_configuration_retry_trigger();
     let retried = refresh(&state, &a);
     assert!(
         retried.errors.is_empty(),
@@ -245,8 +255,10 @@ fn incomplete_resolution_retries_once_without_claiming_unchanged_watch_paths_cha
     assert_eq!(
         std::fs::read_to_string(&counter).unwrap(),
         "xx",
-        "one required retry, with one original factory evaluation"
+        "one retry for the save or watch event, with one factory evaluation"
     );
+    assert!(refresh(&state, &a).errors.is_empty());
+    assert_eq!(std::fs::read_to_string(&counter).unwrap(), "xx");
     assert!(Arc::ptr_eq(&retained, &current(&state, &a)));
 }
 
@@ -269,6 +281,7 @@ fn retry_notices_distinguish_new_failures_from_physical_changes() {
         typ: tower_lsp::lsp_types::MessageType::ERROR,
         message: vize_l0::cstr!("Vize could not reload project configuration for {root_uri} after changes to {config_uri}. Keeping the last good configuration.").into(),
     }]);
+    state.observe_configuration_retry_trigger();
     let repeat = refresh(&state, &a);
     assert!(repeat.errors.is_empty());
     assert!(repeat.configuration_events.is_empty());
@@ -288,12 +301,14 @@ fn retry_notices_distinguish_new_failures_from_physical_changes() {
         "throw new Error('a distinct installed plugin failure');",
     )
     .unwrap();
+    state.observe_configuration_retry_trigger();
     let distinct = refresh(&state, &a);
     assert!(distinct.configuration_events.is_empty());
     assert_eq!(distinct.errors, vec![tower_lsp::lsp_types::ShowMessageParams {
         typ: tower_lsp::lsp_types::MessageType::ERROR,
         message: vize_l0::cstr!("Vize could not reload project configuration for {root_uri}. Keeping the last good configuration.").into(),
     }]);
+    state.observe_configuration_retry_trigger();
     assert!(refresh(&state, &a).errors.is_empty());
     assert_eq!(std::fs::read_to_string(&counter).unwrap(), "xxxx");
 
