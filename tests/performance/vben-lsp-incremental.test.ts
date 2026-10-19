@@ -3,7 +3,13 @@ import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
-import { withPinnedFixtureWorkspace } from "../_helpers/realworld-patch.ts";
+import {
+  linkWorkspacePackages,
+  repoRoot,
+  symlinkDirectory,
+  withPinnedFixtureWorkspace,
+} from "../_helpers/realworld-patch.ts";
+import { symlinkVueTypes } from "../_helpers/realworld-typecheck.ts";
 import { completionLabels, hoverToText } from "../tooling/support/lsp/assertions.ts";
 import { LspSession } from "../tooling/support/lsp/session.ts";
 import { assertCancellationWindow, recordPublishes } from "./support/churn-oracle.ts";
@@ -36,10 +42,25 @@ test(
     await withPinnedFixtureWorkspace(
       {
         fixtureId: "vue-vben-admin",
-        includePaths: ["apps", "packages", "playground", "package.json", "pnpm-workspace.yaml"],
+        includePaths: [
+          "apps",
+          "packages",
+          "internal",
+          "playground",
+          "package.json",
+          "pnpm-workspace.yaml",
+        ],
       },
       async (fixture) => {
         const workspaceDir = fixture.workspaceDir;
+        // Apps extend `@vben/tsconfig` by package name; link the workspace like an install.
+        const linked = linkWorkspacePackages(workspaceDir, ["apps", "packages", "internal"]);
+        assert.ok(linked.includes("@vben/tsconfig"), "the shared tsconfig package is linked");
+        symlinkVueTypes(workspaceDir);
+        symlinkDirectory(
+          path.join(repoRoot, "node_modules/vite"),
+          path.join(workspaceDir, "node_modules/vite"),
+        );
         const sharedUri = pathToFileURL(fixture.resolve(sharedComponentPath)).href;
         const firstLeafUri = pathToFileURL(fixture.resolve(firstLeafPath)).href;
         const secondLeafUri = pathToFileURL(fixture.resolve(secondLeafPath)).href;

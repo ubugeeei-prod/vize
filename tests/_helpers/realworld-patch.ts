@@ -186,3 +186,29 @@ function git(cwd: string, ...args: string[]): string {
     env: { ...process.env, LANG: "C", LC_ALL: "C" },
   }).trim();
 }
+
+/**
+ * Link every workspace package under `roots` into `workspaceDir/node_modules`,
+ * as a hoisted workspace install would, so package-name `extends`, `types` and
+ * imports between workspace packages resolve without installing the fixture.
+ */
+export function linkWorkspacePackages(workspaceDir: string, roots: string[]): string[] {
+  const linked: string[] = [];
+  const visit = (directory: string): void => {
+    const manifest = path.join(directory, "package.json");
+    if (fs.existsSync(manifest)) {
+      const { name } = JSON.parse(fs.readFileSync(manifest, "utf8")) as { name?: unknown };
+      if (typeof name === "string") {
+        symlinkDirectory(directory, path.join(workspaceDir, "node_modules", name));
+        linked.push(name);
+      }
+    }
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      if (entry.isDirectory() && entry.name !== "node_modules" && !entry.name.startsWith(".")) {
+        visit(path.join(directory, entry.name));
+      }
+    }
+  };
+  for (const root of roots) visit(resolveInside(workspaceDir, root));
+  return linked.sort();
+}
