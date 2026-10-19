@@ -6,7 +6,7 @@ title: JSX & TSX
 
 > [!NOTE]
 > JSX/TSX works in the compiler, linter, type checker, language server, and formatter.
-> Vue JSX type checking is on by default; change it with `vue.typeChecker.jsxTypecheck` in `vite.config.*`. The new default is still in release testing, and projects that also use React JSX must turn it off.
+> Vue JSX type checking is on by default; change it with `vue.typeChecker.jsxTypecheck` in `vite.config.*`. Projects that also use React JSX must turn it off.
 > HMR for standalone `.jsx`/`.tsx` modules is not wired yet.
 
 Vize compiles `.jsx` and `.tsx` Vue components through the compiler crates used by `.vue` files:
@@ -359,7 +359,7 @@ vize fmt src --write
 ## Type-checking
 
 Project defaults enable Vue JSX checking; configure `vue.typeChecker.jsxTypecheck` in `vite.config.*` to override it.
-This default is still in release testing. For mixed React projects, [explicitly disable Vue JSX checking](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md#react-owned-projects); Vue SFC checking remains available.
+In projects that also use React JSX, set `jsxTypecheck: false` so Vize leaves React `.tsx` files to TypeScript; Vue SFC checking stays on.
 
 ```ts
 // vite.config.ts
@@ -489,8 +489,8 @@ See [Static Analysis](./static-analysis.md) for the lint and type-check model, a
 
 Be aware of the current edges:
 
-- **The new type-checking default is still in release testing.** Mixed Vue/React projects must set
-  `vue.typeChecker.jsxTypecheck: false`.
+- **Mixed Vue/React projects must opt out.** Set `vue.typeChecker.jsxTypecheck: false` so React
+  `.tsx` files are not checked as Vue components.
 - **HMR is not yet wired for `.jsx`/`.tsx` modules.** VDOM compilation preserves authored
   imports and exports. Block-body setup state and JSX parameter defaults retain their scopes.
   Edits still trigger a normal reload because the bundler adapters do not register Vue HMR boundaries.

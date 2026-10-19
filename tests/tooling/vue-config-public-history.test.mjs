@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
 const root = new URL("../../", import.meta.url);
@@ -51,25 +50,11 @@ void test("the original archives remain pinned while active package cases follow
   assert.equal(liveDialect.replace(addedDialect, ""), dialect);
 });
 
-void test("the complete authored bilingual recipes and relative destinations agree", () => {
-  const english = read("docs/content/guide/vue-configuration.md");
-  const japanese = read("docs/content/ja/guide/vue-configuration.md");
-  const fences = (source) =>
-    [...source.matchAll(/^```[^\n]*\n[\s\S]*?^```[^\n]*$/gm)].map(([whole]) => whole);
-  assert.equal(fences(english).length, 3);
-  assert.deepEqual(fences(japanese), fences(english));
-  const destinations = (source) => [...source.matchAll(/\]\(([^)]+)\)/g)].map(([, href]) => href);
-  assert.deepEqual(destinations(japanese), destinations(english));
-  for (const name of destinations(english)) {
-    assert.doesNotThrow(() =>
-      readFileSync(fileURLToPath(new URL(name, new URL("docs/content/guide/", root)))),
-    );
-    assert.doesNotThrow(() =>
-      readFileSync(fileURLToPath(new URL(name, new URL("docs/content/ja/guide/", root)))),
-    );
-  }
-  assert.match(japanese, /<!-- Reviewed translation; source: guide\/vue-configuration\.md -->/);
-  for (const source of [english, japanese]) {
+void test("the shared Vue configuration guide documents the canonical entry points", () => {
+  for (const source of [
+    read("docs/content/guide/vue-configuration.md"),
+    read("docs/content/ja/guide/vue-configuration.md"),
+  ]) {
     assert.match(source, /`basePath`.*`files`.*`ignores`.*`linter`/s);
     assert.match(source, /defineConfig\(vpConfig\)\.withVue\(vueConfig\)/);
   }

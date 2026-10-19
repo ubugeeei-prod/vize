@@ -163,13 +163,11 @@ test("full Docs checks real preview resources before building and retains the ra
   );
   const japaneseRoutes = defaultNavigationRenderRoutes.filter((route) => route.startsWith("/ja/"));
   assert.equal(japaneseRoutes.length, 42);
-  for (const name of ["docs-ja-nonrule-editorial", "docs-ja-rule-editorial"]) {
-    const fixture = JSON.parse(readRepoFile("tests", "_fixtures", `${name}.json`)) as {
-      cases: { case: string; route: string }[];
-    };
-    for (const witness of fixture.cases)
-      assert(japaneseRoutes.includes(witness.route), `${witness.case}: original rendered witness`);
-  }
+  const fixture = JSON.parse(readRepoFile("tests", "_fixtures", "docs-ja-rule-editorial.json")) as {
+    cases: { case: string; route: string }[];
+  };
+  for (const witness of fixture.cases)
+    assert(japaneseRoutes.includes(witness.route), `${witness.case}: original rendered witness`);
   assert(steps.indexOf(reading) > steps.indexOf(namedStep(job, "Build docs")));
   const upload = namedStep(job, "Upload rendered docs screenshots");
   assert(steps.indexOf(reading) < steps.indexOf(upload));

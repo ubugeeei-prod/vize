@@ -23,8 +23,8 @@ props の分割代入の方針を決めたいときに、このページの例�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "script/no-restricted-globals": "error"
       },
@@ -71,8 +71,8 @@ const token = authStorage.read("auth.token");
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "script/no-restricted-members": "error"
       },
@@ -119,8 +119,8 @@ const env = readServerEnv();
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "script/custom-event-name-casing": "error"
       },

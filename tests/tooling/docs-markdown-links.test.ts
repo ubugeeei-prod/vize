@@ -9,8 +9,8 @@ const require = createRequire(new URL("../../docs/package.json", import.meta.url
 const native = createRequire(require.resolve("@ox-content/vite-plugin"))("@ox-content/napi");
 const { Window } = createRequire(new URL("../package.json", import.meta.url))("happy-dom");
 const supportUrl = "https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md";
-const jsxPolicyUrl =
-  "https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md#react-owned-projects";
+const repositoryDocumentUrl =
+  "https://github.com/ubugeeei-prod/vize/blob/main/CONTRIBUTING.md#pull-requests";
 
 void test("each authored testing guide retains its external Support destination in native SSG", () => {
   for (const locale of ["", "ja/", "zh-CN/", "pt-BR/", "fr/"]) {
@@ -31,7 +31,7 @@ void test("each authored testing guide retains its external Support destination 
 
 void test("native SSG distinguishes external Markdown URLs from generated local routes", () => {
   const cases = [
-    [jsxPolicyUrl, jsxPolicyUrl],
+    [repositoryDocumentUrl, repositoryDocumentUrl],
     [
       "https://example.com/docs/README.md?plain=1#support",
       "https://example.com/docs/README.md?plain=1#support",

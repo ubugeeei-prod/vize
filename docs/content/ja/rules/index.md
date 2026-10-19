@@ -11,6 +11,8 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 `vp run lint` で Vize と Oxlint の検査を実行します。既存の同名 script がある場合は
 `vp run vize:lint` を使ってください。組み込みの `vp lint` は Vite+ 自身の検査です。
 
+## ページ
+
 - [全ルールの検索・一覧](./all.md)
 - [ルールのオプション](./options.md)：型と既定値
 - [ESLint からの移行対応表](./migration.md)
@@ -42,6 +44,8 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 `compiler.compatibility.vueVersion` が `2` または `2.7` のときは、Vue 3 で削除された構文と API の検査を無効にします。
 
 `vue/no-use-v-else-with-v-for` は、同じ要素に条件とループを置く、Vue が受け付ける構文への警告です。条件をラッパーに分け、役割を明確にします。`script/no-deep-destructure-in-props` は `opinionated` と `nuxt` で有効な深さの規約です。コンパイラーの `propsDestructure` 設定は参照せず、リアクティブな分割代入を無効にした場合や `withDefaults` を使った場合は、入れ子の代入もコンパイルできます。どちらも警告であり、ルール名を指定して無効にできます。これらのルールは、`essential` と `incremental` では既定で無効です。
+
+## 型情報を使う設定
 
 型を使うルールには TypeScript プロジェクトと `typeAware` が必要です。グローバル名の型は
 `tsconfig.json` の `compilerOptions.types` や project references で管理してください。

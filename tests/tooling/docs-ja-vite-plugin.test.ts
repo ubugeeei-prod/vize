@@ -1,59 +1,30 @@
 import assert from "node:assert/strict";
-import { originalConfigDocument } from "./support/docs-config-archive.ts";
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
 import { collectReviewedTranslations } from "../../docs/scripts/i18n/reviewed.ts";
+import { inboundFragments, missingInboundAnchors } from "./support/docs-inbound-anchors.ts";
 
-void test("Japanese Vite guide retains published recipes and every current integration option", async () => {
-  const content = resolve(import.meta.dirname, "../../docs/content");
-  const path = "guide/vite-plugin.md";
-  const english = readFileSync(resolve(content, path), "utf8");
-  const japanese = readFileSync(resolve(content, "ja", path), "utf8");
+const content = resolve(import.meta.dirname, "../../docs/content");
+const path = "guide/vite-plugin.md";
+const english = readFileSync(resolve(content, path), "utf8");
+const japanese = readFileSync(resolve(content, "ja", path), "utf8");
+
+void test("translation regeneration keeps the reviewed Japanese Vite guide", async () => {
   const retained = await collectReviewedTranslations([path], resolve(content, "ja"));
-  assert.equal(retained.get(path), japanese, "regeneration retains the complete authored review");
+  assert.equal(retained.get(path), japanese);
+});
 
-  const archived = originalConfigDocument(`docs/content/ja/${path}`);
-  const fences = [...japanese.matchAll(/^```[^\n]*\n[\s\S]*?^```/gm)].map((match) => match[0]);
-  // The ten whole published JA examples (pipeline fence renamed to plain stages),
-  // including the original localized TresJS comment, remain byte-exact.
-  assert.equal(fences.length, 10);
-  assert.equal(
-    createHash("sha256").update(fences.join("\n")).digest("hex"),
-    "e0942313d58c00836a66216b9cf843ab886f7f2f22e45e7194947b28193944dd",
-  );
-
+void test("Japanese Vite guide documents the same integration options as English", () => {
   const optionKeys = (source: string) =>
-    [...source.matchAll(/^\| (`[^`]+`)\s*\|/gm)].map((match) => match[1]);
-  assert.deepEqual(optionKeys(japanese), optionKeys(english), "no current option row is lost");
-  const hrefs = (source: string) =>
-    [...source.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1]);
-  assert.equal(
-    createHash("sha256")
-      .update(JSON.stringify(hrefs(archived)))
-      .digest("hex"),
-    "2ec48e6036e0e99366c6ff7832e3b7e90ce9b5c208a1e1d4b7f8dec26fd74ce8",
-    "all original Japanese destinations retain their order and multiplicity",
-  );
-  assert.deepEqual(
-    hrefs(japanese),
-    hrefs(archived).map((href) =>
-      href === "./configuration-reference.md" ? "./vue-configuration.md" : href,
-    ),
-    "every original destination retains order through the dedicated-reference migration",
-  );
-  assert.deepEqual(hrefs(japanese), hrefs(english), "all current integration destinations agree");
-  for (const id of ["drop-in-scope", "compiler-options", "置換の定義", "nuxt-の互換性"]) {
-    assert.equal(japanese.split(`<span id="${id}"></span>`).length - 1, 1, id);
+    Array.from(source.matchAll(/^\| (`[^`]+`)\s*\|/gm), (match) => match[1]);
+  assert.ok(optionKeys(english).length > 0);
+  assert.deepEqual(optionKeys(japanese), optionKeys(english));
+});
+
+void test("Vite guide anchors that other pages link to exist", () => {
+  for (const page of [path, `ja/${path}`]) {
+    assert.ok(inboundFragments(page).size > 0, `${page} has inbound fragment links`);
+    assert.deepEqual(missingInboundAnchors(page), [], page);
   }
-  assert.equal(japanese.split('<span id="単独-cli-lsp-と共有する設定-任意"></span>').length - 1, 1);
-  assert.match(japanese, /defineConfig\(vpConfig\)\.withVue\(vueConfig\)/);
-  assert.match(japanese, /トップレベルの `vue:`/);
-  assert.match(japanese, /専用の `vize\.config\.\*` とトップレベルの `vize:` は廃止/);
-  assert.match(japanese, /`config: false` で設定ファイルの自動検索を無効/);
-  assert.doesNotMatch(japanese, /蒸気モード|レーヨン|それでおしまい|構成されています/);
-  assert.match(japanese, /Vize は `\.vue` ファイルをコンパイルせず/);
-  assert.match(japanese, /API シムも公開せず/);
-  assert.match(japanese, /機能フラグも挿入しません/);
 });

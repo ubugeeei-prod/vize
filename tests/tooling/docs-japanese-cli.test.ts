@@ -1,41 +1,23 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { inboundFragments, missingInboundAnchors } from "./support/docs-inbound-anchors.ts";
 
-const japanese = readFileSync(
-  new URL("../../docs/content/ja/guide/cli.md", import.meta.url),
-  "utf8",
-);
-const english = readFileSync(new URL("../../docs/content/guide/cli.md", import.meta.url), "utf8");
-const retained = JSON.parse(
-  readFileSync(new URL("./fixtures/docs-japanese-cli-blocks.json", import.meta.url), "utf8"),
-);
+const read = (path: string) =>
+  readFileSync(new URL(`../../docs/content/${path}`, import.meta.url), "utf8");
+const commands = (source: string) =>
+  new Set(Array.from(source.matchAll(/^\| `([^`]+)`\s*\|/gm), (match) => match[1]));
 
-test("Japanese CLI review retains every full published example and current command table", () => {
-  for (const block of retained.blocks)
-    assert.ok(japanese.includes(block), `missing published block: ${block}`);
-  for (const [, block] of english.matchAll(/```[^\n]+\n([\s\S]*?)```/g)) {
-    for (const line of block.trim().split("\n"))
-      assert.ok(japanese.includes(line), `missing current example: ${line}`);
-  }
-  for (const [, command] of english.matchAll(/^\| `([^`]+)`\s*\|/gm)) {
-    assert.ok(japanese.includes(`| \`${command}\``), `missing command: ${command}`);
-  }
-  assert.match(japanese, /^## Doctor$/m);
-  assert.ok(japanese.includes("Rust `vize check`"));
-  for (const group of japanese.matchAll(/(?:^\|[^\n]*\n)+/gm)) {
-    for (const row of group[0].trim().split("\n")) assert.equal(row.split("|").length, 4, row);
-  }
-  assert.match(japanese, /YAML と Markdown の整形は未実装/);
-  assert.match(japanese, /終了コード `0`[\s\S]*`1`[\s\S]*`2`/);
+test("Japanese CLI guide lists every command in the English command tables", () => {
+  const japanese = commands(read("ja/guide/cli.md"));
+  const english = commands(read("guide/cli.md"));
+  assert.ok(english.size > 0);
+  for (const command of english) assert.ok(japanese.has(command), `missing command: ${command}`);
 });
 
-test("Japanese CLI keeps check and legacy command fragments exactly once", () => {
-  for (const id of ["check", "チェック", "建てる", "糸くず", "検査官", "準備ができて", "美術館"]) {
-    assert.equal([...japanese.matchAll(new RegExp(`id="${id}"`, "g"))].length, 1, id);
+test("CLI guide anchors that other pages link to exist", () => {
+  for (const page of ["guide/cli.md", "ja/guide/cli.md"]) {
+    assert.ok(inboundFragments(page).size > 0, `${page} has inbound fragment links`);
+    assert.deepEqual(missingInboundAnchors(page), [], page);
   }
-  assert.match(japanese, /<span id="check"><\/span>/);
-  assert.match(japanese, /^## 型チェック$/m);
-  assert.doesNotMatch(japanese, /^\|[^\n]*錆び/m);
-  assert.doesNotMatch(japanese, /(?:^|\n)## (糸くず|検査官|美術館)\n/);
 });

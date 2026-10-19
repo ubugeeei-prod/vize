@@ -127,9 +127,41 @@ Vize は Vue ファイル、Oxfmt はその他のファイルをフォーマッ�
 `lint.vue: false`・`fmt.vue: false` を使う場合は、対応する共有ネイティブ設定がツールを明示的に有効化しないようにします。
 `vue.compiler` を省略して `compiler: false` を指定すると、既存の Vue コンパイラプラグインを保持します。
 
-## 次の設定
+<span id="library-declarations-and-maps"></span>
 
-- [移行](./migration.md) — 既存の import・plugin・script から置き換える。
-- [設定](./configuration.md) — 必要な設定場所を選ぶ。
-- [型宣言・共有設定・editor の詳細（英語）](../../guide/vite-plus.md) — `pack.vue`、fluent API と高度なオプション。
-- [エディター設定](./vite-plus-editor.md) — エディターと統合設定の役割。
+## ライブラリの型宣言とマップ
+
+```ts
+export default defineConfig({
+  pack: {
+    entry: ["src/index.ts"],
+    outDir: "dist",
+    format: ["esm"],
+    vue: {
+      dts: true,
+      declarationMap: true,
+      sourcemap: true,
+    },
+  },
+});
+```
+
+Vue ライブラリのバンドルには Vize の Rolldown 連携を使います。`pack.vue` を指定すると、ネイティブの型宣言生成が
+デフォルトで有効になります。無効にする場合は `dts: false` を指定します。型宣言はバンドルが成功した後に出力され、
+型エラーがあると pack コマンドは失敗します。そのエントリーでは tsdown の型宣言処理の代わりにネイティブの生成を
+使うため、Vue SFC も扱えます。
+
+出力先は `declarationDir` で変更でき、指定しない場合は `pack.outDir` を使います。`tsconfig` で TypeScript
+プロジェクトを選べます。`declarationMap` は、作成済みの tsconfig を書き換えずにそのプロジェクトのマップ設定を
+上書きします。`sourcemap` はコンパイラーとバンドルのマップを制御します。`pack` 配列の各エントリーで `vue` を
+個別に設定でき、`pack.vue: false` のエントリーは Vite+ に任せます。
+
+<span id="editor-setup"></span>
+
+## エディターの設定
+
+`vp run editor:setup` を実行すると、Vize と Vite Plus の拡張機能の推奨設定と、Vue 向けのエディター設定を追加します。
+コメント、既存の推奨設定、明示的な設定、他の言語に選んだフォーマッターは保持されます。
+
+推奨する役割分担と、エディターとネイティブ設定を共有する方法は[エディター設定](./vite-plus-editor.md)を参照してください。
+既存のプロジェクトから置き換える手順は[移行](./migration.md)、設定場所の選び方は[設定](./configuration.md)にまとめています。

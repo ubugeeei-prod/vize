@@ -66,8 +66,8 @@ export default defineConfig({
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "vue/component-name-in-template-casing": "warn"
       },
@@ -115,8 +115,8 @@ import PrimaryButton from "./PrimaryButton.vue";
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "vue/no-mutating-props": "error"
       },
@@ -164,8 +164,8 @@ SFC ブロックの並び順を統一するためのオプションです。
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "vue/sfc-element-order": "warn"
       },
@@ -213,8 +213,8 @@ export default defineConfig({
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "vue/html-self-closing": "warn"
       },
@@ -265,8 +265,8 @@ export default defineConfig({
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "vue/v-on-event-hyphenation": "warn"
       },
@@ -308,8 +308,8 @@ export default defineConfig({
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "vue/attribute-hyphenation": "warn"
       },

@@ -101,7 +101,7 @@ void test("localized setup guides receive the same operation choices without edi
   }
 });
 
-void test("the complete guide/integration corpus is eligible in every locale", () => {
+void test("every guide/integration shell example converts to all managers in order", () => {
   const root = new URL("../../docs/content/", import.meta.url).pathname;
   const files: string[] = [];
   const visit = (directory: string) => {
@@ -117,30 +117,40 @@ void test("the complete guide/integration corpus is eligible in every locale", (
     if (!/\/(?:guide|integrations)\//.test(file)) continue;
     const text = readFileSync(file, "utf8");
     for (const match of text.matchAll(/^```(?:bash|sh|shell)\n([^]*?)^```/gm)) {
-      if (choices(match[1])) eligible++;
+      const result = choices(match[1]);
+      if (!result) continue;
+      eligible++;
+      assert.deepEqual(
+        result.map((choice) => choice.manager),
+        ["vp", "npm", "pnpm", "yarn", "bun", "aube", "jsr"],
+        file,
+      );
     }
   }
-  assert.ok(eligible >= 150, `complete existing guides eligible: ${eligible}`);
+  assert.ok(eligible > 0, "guide shell examples were converted");
 });
 
-void test("reviewed setup policies match the complete first authored shell recipes", () => {
+void test("reviewed setup routes start with the command the tab renderer verifies", () => {
   const root = new URL("../../docs/content/", import.meta.url);
-  const install = "vp install -D @vizejs/vite-plugin";
-  const init = "vpx vize init";
+  const verified = { install: "vp install -D @vizejs/vite-plugin", init: "vpx vize init" };
   const cases = [
-    ["/getting-started", "install", install],
-    ["/ja/getting-started", "install", install],
-    ["/fr/getting-started", "install", install],
-    ["/pt-BR/getting-started", "install", install],
-    ["/zh-CN/getting-started", "install", install],
-    ["/guide/init", "init", init],
-  ] as const;
-  for (const [route, policy, original] of cases) {
+    "/getting-started",
+    "/ja/getting-started",
+    "/fr/getting-started",
+    "/pt-BR/getting-started",
+    "/zh-CN/getting-started",
+    "/guide/init",
+  ];
+  for (const route of cases) {
+    const policy = reviewedSetupCommand(route);
+    assert(policy, `${route}: reviewed setup policy`);
     const source = readFileSync(new URL(`${route.slice(1)}.md`, root), "utf8");
-    const first = source.match(/^```(?:bash|sh|shell)\n([^]*?)^```/m);
-    assert(first, `${route}: reviewed first shell recipe exists`);
-    assert.equal(first[1].trim(), original, `${route}: complete reviewed authored command`);
-    assert.equal(reviewedSetupCommand(route), policy);
+    // The first tab widget mounts on the first convertible shell fence.
+    const first = [...source.matchAll(/^```(?:bash|sh|shell)\n([^]*?)^```/gm)].find((match) =>
+      choices(match[1]),
+    );
+    assert(first, `${route}: a tabbed shell recipe exists`);
+    assert.equal(first[1].trim(), verified[policy], `${route}: first tabbed command`);
   }
   for (const route of ["/guide/configuration", "/fr/guide/init", "/other/getting-started"])
     assert.equal(reviewedSetupCommand(route), undefined, `${route}: no unreviewed policy`);

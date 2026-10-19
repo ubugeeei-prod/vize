@@ -19,8 +19,8 @@ An explicit `off` setting keeps the rule disabled, even when the token list is n
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "musea/prefer-design-tokens": "warn"
       },

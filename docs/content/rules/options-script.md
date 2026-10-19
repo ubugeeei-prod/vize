@@ -18,8 +18,8 @@ disable the rule.
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "script/no-restricted-globals": "error"
       },
@@ -65,8 +65,8 @@ rule is enabled. Each entry matches a bare identifier receiver plus a static pro
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "script/no-restricted-members": "error"
       },
@@ -114,8 +114,8 @@ event names in their template-facing form.
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "script/custom-event-name-casing": "error"
       },

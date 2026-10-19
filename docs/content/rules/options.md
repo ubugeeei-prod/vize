@@ -18,8 +18,8 @@ before adjusting the options below.
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "script/no-restricted-globals": "error",
         "vue/html-self-closing": "warn",
@@ -102,8 +102,8 @@ This setting does not validate sanitization or enable the rule.
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "html/no-empty-palpable-content": "error"
       },

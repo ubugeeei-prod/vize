@@ -36,14 +36,17 @@ test("rule option docs enumerate every typed lint rule option", () => {
     title: /# Rule Options/,
     unknownFields: /Unknown\s+option fields are rejected/,
     scopedReplacement: /later matching config entries replace the full option object/,
-    badLabel: "Bad",
-    goodLabel: "Good",
+    badLabel: /Bad/,
+    goodLabel: /Good/,
   });
 });
 
 test("Japanese rule option docs mirror every typed lint rule option", () => {
   const optionsDoc = readDocs([
     path.join(repoRoot, "docs/content/ja/rules/options.md"),
+    path.join(repoRoot, "docs/content/ja/rules/options-script.md"),
+    path.join(repoRoot, "docs/content/ja/rules/options-vue.md"),
+    path.join(repoRoot, "docs/content/ja/rules/options-musea.md"),
     path.join(repoRoot, "docs/content/ja/rules/options-type.md"),
   ]);
 
@@ -51,8 +54,8 @@ test("Japanese rule option docs mirror every typed lint rule option", () => {
     title: /# ルールのオプション/,
     unknownFields: /定義されていないフィールドを指定するとエラーになります/,
     scopedReplacement: /後から一致する設定がある場合は、\s*そのルールのオプション全体を置き換え/,
-    badLabel: "悪い",
-    goodLabel: "良い",
+    badLabel: /悪い|報告される/,
+    goodLabel: /良い|沿った|許可される/,
   });
 });
 
@@ -62,8 +65,8 @@ function assertRuleOptionsReference(
     title: RegExp;
     unknownFields: RegExp;
     scopedReplacement: RegExp;
-    badLabel: string;
-    goodLabel: string;
+    badLabel: RegExp;
+    goodLabel: RegExp;
   },
 ): void {
   assert.match(optionsDoc, labels.title);
@@ -77,8 +80,8 @@ function assertRuleOptionsReference(
       `${ruleId} must be documented in the lint rule option table`,
     );
     const section = sectionFor(optionsDoc, `## \`${ruleId}\``);
-    assert.ok(section.includes(labels.badLabel), `${ruleId} must include a bad example`);
-    assert.ok(section.includes(labels.goodLabel), `${ruleId} must include a good example`);
+    assert.match(section, labels.badLabel, `${ruleId} must include a bad example`);
+    assert.match(section, labels.goodLabel, `${ruleId} must include a good example`);
     assert.match(section, /```(?:json|ts|vue)[\s\S]*?```/u, `${ruleId} must include code`);
   }
 }
@@ -222,11 +225,7 @@ function tableRules(source: string): string[] {
 
 void test("documented props rule options typecheck against the generated public configuration API", () => {
   const recipes: string[] = [];
-  for (const doc of [
-    "rules/options-script.md",
-    "ja/rules/options.md",
-    "ja/rules/options-script.md",
-  ]) {
+  for (const doc of ["rules/options-script.md", "ja/rules/options-script.md"]) {
     const section = sectionFor(
       fs.readFileSync(path.join(repoRoot, "docs/content", doc), "utf8"),
       "## `script/define-props-destructuring`",

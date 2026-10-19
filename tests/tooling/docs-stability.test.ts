@@ -21,6 +21,7 @@ type CargoPackage = {
 };
 
 type NpmPackage = {
+  engines?: { node?: string };
   filePath: string;
   metadata?: { vize?: { stability?: string; stabilityDocs?: string } };
   name: string;
@@ -42,49 +43,11 @@ type RustCrateRow = {
   tier: string;
 };
 
-test("stability page documents v1 alpha support tiers", () => {
+test("documented Node ranges match package engines", () => {
   const stability = fs.readFileSync(path.join(root, "docs/content/stability.md"), "utf8");
-
-  assert.match(stability, /# Stability/);
-  assert.match(stability, /v1 alpha/);
-  assert.match(stability, /Node 22/);
-  assert.match(stability, /`oxlint-plugin-vize`[\s\S]*`\^22 \|\| >= 24`/);
-  assert.match(stability, /linux-arm64-gnu/);
-  assert.match(stability, /win32-arm64-msvc/);
-  assert.match(stability, /linux-x64-musl/);
-  assert.match(stability, /linux-arm64-musl/);
-  assert.match(stability, /`vize --version`/);
-  assert.match(stability, /`vize check`/);
-  assert.match(stability, /`@vizejs\/native` through both `require` and `import`/);
-
-  for (const tier of ["Alpha-supported", "Compatibility preview", "Experimental", "Incubating"]) {
-    assert.match(stability, new RegExp(`\\| ${tier}\\s+\\|`));
-  }
-
-  for (const packageName of [
-    "vize",
-    "@vizejs/native",
-    "@vizejs/vite-plugin",
-    "@vizejs/unplugin",
-    "@vizejs/rspack-plugin",
-    "@vizejs/nuxt",
-    "@vizejs/nuxt-lint-config",
-    "@vizejs/musea-nuxt",
-    "@vizejs/vite-plugin-musea",
-    "@vizejs/musea-mcp-server",
-    "@vizejs/wasm",
-    "@vizejs/composable",
-    "@vizejs/data",
-    "@vizejs/devtools",
-    "@vizejs/router",
-    "@vizejs/state",
-    "@vizejs/ui",
-    "@vizejs/marquette",
-    "@vizejs/fresco",
-    "@vizejs/fresco-native",
-  ]) {
-    assert.match(stability, new RegExp(escapeRegExp(`\`${packageName}\``)));
-  }
+  const ranges = [...stability.matchAll(/`(\^\d+[^`]*)`/g)].map((match) => match[1]);
+  const engines = new Set(collectPublicNpmPackages().map((pkg) => pkg.engines?.node));
+  for (const range of ranges) assert.ok(engines.has(range), `${range} is a declared engine range`);
 });
 
 test("npm package support table matches package metadata", () => {

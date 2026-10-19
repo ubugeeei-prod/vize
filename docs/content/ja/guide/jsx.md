@@ -9,7 +9,7 @@ title: JSX と TSX
 > [!NOTE]
 > JSX/TSX はコンパイラ、リンター、型チェッカー、LSP、フォーマッタで扱えます。
 > Vue JSX の型チェックはプロジェクトの既定値で有効です。`vite.config.*` の `vue.typeChecker.jsxTypecheck` で変更できます。
-> 新規プロジェクトの既定値のリリース検証は未完了です。React が混在するプロジェクトでは、Vue JSX の型チェックを明示的に無効にしてください。
+> React が混在するプロジェクトでは、Vue JSX の型チェックを無効にしてください。
 > スタンドアロンの `.jsx`/`.tsx` モジュールでは、HMR 対応が主な未完了項目です。
 
 Vize は `.jsx`/`.tsx` の Vue コンポーネントを、`.vue` ファイルと同じコンパイラクレートでコンパイルします。
@@ -351,7 +351,7 @@ vize fmt src --write
 ## 型チェック
 
 Vue JSX の型チェックはプロジェクトの既定値で**有効**です。`vite.config.*` の `vue.typeChecker.jsxTypecheck` で変更できます。
-新規プロジェクトの既定値のリリース検証は未完了です。Vue と React が混在する場合は、[Vue JSX の型チェックを明示的に無効にしてください](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md#react-owned-projects)。Vue SFC の型チェックは引き続き利用できます。
+Vue と React が混在する場合は、`jsxTypecheck: false` にして React の `.tsx` を TypeScript に任せてください。Vue SFC の型チェックは引き続き有効です。
 
 ```ts
 // vite.config.ts
@@ -474,7 +474,7 @@ lint と型チェックの仕組みは[静的解析](./static-analysis.md)を、
 
 現在の制限は次のとおりです。
 
-- **新規プロジェクトの既定値のリリース検証は未完了です。** Vue と React が混在する場合は、Vue JSX の型チェックを明示的に無効にしてください。
+- **Vue と React が混在するプロジェクトでは無効にする必要があります。** `vue.typeChecker.jsxTypecheck: false` を設定し、React の `.tsx` を Vue コンポーネントとして検査しないようにしてください。
 - **`.jsx`/`.tsx` モジュールの HMR は未対応です。** VDOM は元の import、export、ブロック内の setup 状態、JSX の引数のデフォルト値とスコープを保持します。ただし、バンドラーが Vue の HMR 境界を登録しないため、編集時は通常の再読み込みになります。
 - **Vapor と SSR で元のモジュールを保持する処理は未完了です。** スタンドアロンのレンダラーが保持できない import、export、setup 文、捕捉したローカルの束縛は診断します。静的なスタンドアロンのレンダラーとコンポーネント単位の出力は利用できます。
 - **実行時ヘルパーの別名は隠せません。** `_openBlock` などの生成するヘルパーと元の束縛が衝突すると、不正なモジュールを出力せず診断します。

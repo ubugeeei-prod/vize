@@ -56,8 +56,8 @@ the ESLint `ignores` option remain unsupported. Native HTML, SVG, MathML, `slot`
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "vue/component-name-in-template-casing": "warn"
       },
@@ -102,8 +102,8 @@ the prop binding itself. The default `false` reports both direct and nested muta
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "vue/no-mutating-props": "error"
       },
@@ -148,8 +148,8 @@ custom block names.
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "vue/sfc-element-order": "warn"
       },
@@ -195,8 +195,8 @@ fields keep the Vize defaults.
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "vue/html-self-closing": "warn"
       },
@@ -244,8 +244,8 @@ events, object syntax, and dynamic arguments are skipped.
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "vue/v-on-event-hyphenation": "warn"
       },
@@ -285,8 +285,8 @@ are skipped.
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "vue/attribute-hyphenation": "warn"
       },

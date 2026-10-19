@@ -24,8 +24,8 @@ CLI では、空でないトークン一覧を設定すると、このルール�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
+  vue: {
+    linter: {
       "rules": {
         "musea/prefer-design-tokens": "warn"
       },

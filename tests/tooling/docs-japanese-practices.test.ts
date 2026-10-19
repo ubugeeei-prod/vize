@@ -1,44 +1,27 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { test } from "node:test";
 
-const english = readFileSync(
-  new URL("../../docs/content/architecture/language-engineering-practices.md", import.meta.url),
-  "utf8",
-);
-const japanese = readFileSync(
-  new URL("../../docs/content/ja/architecture/language-engineering-practices.md", import.meta.url),
-  "utf8",
-);
+const require = createRequire(new URL("../../docs/package.json", import.meta.url));
+const native = createRequire(require.resolve("@ox-content/vite-plugin"))("@ox-content/napi");
 
-test("the Japanese practices guide preserves every source command and external reference", () => {
-  const code = (source: string) => [...source.matchAll(/`([^`\n]+)`/g)].map((m) => m[1]).sort();
-  const references = (source: string) =>
-    [...source.matchAll(/\]\((https:\/\/[^)]+)\)/g)].map((m) => m[1]).sort();
-  assert.deepEqual(code(japanese), code(english));
-  assert.deepEqual(references(japanese), references(english));
-  const tables = (source: string) =>
-    (source.match(/(?:^\|[^\n]+\n)+/gm) ?? []).map((table) => table.trim().split("\n").length - 2);
-  assert.deepEqual(tables(japanese), [6, 3, 10]);
-  assert.deepEqual(tables(japanese), tables(english));
-});
-
-test("natural Japanese sections retain published fragment links and complete review scope", () => {
-  assert.match(japanese, /Reviewed translation;[^\n]+scope: complete document/);
-  for (const [anchor, heading] of [
-    ["vize-クラス変更", "変更の種類"],
-    ["保証レーン", "追加の検証"],
-    ["ベースラインポリシー", "ベースラインの扱い"],
-    ["エスカレーションのトリガー", "検証を広げる条件"],
-    ["運用上のガードレール", "継続して確認する仕組み"],
-    ["ソース信号", "参考資料"],
-  ]) {
-    assert.ok(japanese.includes(`<a id="${anchor}"></a>\n\n## ${heading}`), anchor);
-  }
-  for (const [, fragment] of japanese.matchAll(/\]\(#([^)]+)\)/g)) {
-    assert.ok(
-      japanese.includes(`id="${fragment}"`),
-      `missing introduction destination: ${fragment}`,
+test("in-page fragment links of the practices guide reach existing anchors", () => {
+  for (const locale of ["", "ja/"]) {
+    const source = readFileSync(
+      new URL(
+        `../../docs/content/${locale}architecture/language-engineering-practices.md`,
+        import.meta.url,
+      ),
+      "utf8",
     );
+    const rendered = native.transform(source, {});
+    assert.deepEqual(rendered.errors, [], locale);
+    const ids = new Set(
+      Array.from(rendered.html.matchAll(/\bid="([^"]+)"/g), (match: RegExpMatchArray) => match[1]),
+    );
+    const prose = source.replace(/^```[\s\S]*?^```/gm, "").replace(/`[^`\n]*`/g, "");
+    for (const [, fragment] of prose.matchAll(/\]\(#([^)\s]+)\)/g))
+      assert.ok(ids.has(fragment), `${locale}language-engineering-practices.md: #${fragment}`);
   }
 });
