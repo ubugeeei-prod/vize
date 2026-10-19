@@ -260,6 +260,7 @@ paths = [
   "crates/vize/src/commands/dump/script.rs",
   "crates/vize/src/commands/lint/cross_file/fallthrough.rs",
   "crates/vize/src/commands/ready/progress.rs",
+  "crates/vize_atelier_vapor/src/l3/text.rs",
   "crates/vize_canon/src/batch/import_rewriter_facts.rs",
   "crates/vize_canon/src/batch/virtual_project/jsx_codegen.rs",
   "crates/vize_canon/src/batch/virtual_project/package_route_reachability_route_graph.rs",
