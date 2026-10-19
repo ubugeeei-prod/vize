@@ -345,10 +345,11 @@ mod tests {
             facts("import { ref } from 'vue'; const count = ref(dynamic());"),
             Vec::new()
         );
-        let debug = format!("{:?}", croquis.types);
-        assert!(
-            !debug.contains("builtin_reactive"),
-            "compatibility dump retains its old shape"
+        // The compatibility dump keeps its old shape: no builtin reactive facts.
+        assert_eq!(
+            format!("{:?}", croquis.types),
+            "TypeResolver { definitions: TypeDefinitions { interfaces: {}, type_aliases: \
+             {\"\\0vize:imported_type_export:ref\": \"ref\"}, imported_types: {\"ref\": \"vue\"} } }"
         );
     }
 

@@ -231,7 +231,6 @@ mod tests {
         let first = lowered.embeds.first().unwrap();
         assert_eq!(first.node, None);
         assert_eq!(first.syntax.source().text(), "value //tail");
-        assert!(!first.syntax.source().text().ends_with('\n'));
         assert_eq!(first.syntax.hole(), None);
         assert!(first.syntax.expression().is_some());
         assert_eq!(
@@ -286,14 +285,14 @@ mod tests {
 
     #[test]
     fn characters_inside_original_comments_and_literals_do_not_trigger_edge_refusal() {
-        for expression in [
-            "/*\u{00a0}*/msg",
-            "msg/*\u{feff}*/",
-            "'\u{00a0}msg'",
-            "'msg\u{feff}'",
-            "/*&#160;*/msg",
-            "msg/*&#65279;*/",
-            "'&#160;msg'",
+        for (expression, comments) in [
+            ("/*\u{00a0}*/msg", 1),
+            ("msg/*\u{feff}*/", 1),
+            ("'\u{00a0}msg'", 0),
+            ("'msg\u{feff}'", 0),
+            ("/*&#160;*/msg", 1),
+            ("msg/*&#65279;*/", 1),
+            ("'&#160;msg'", 0),
         ] {
             let a = Allocator::default();
             let file = cstr!("{{{{ {expression} }}}}");
@@ -314,10 +313,7 @@ mod tests {
             };
             assert!(core::ptr::eq(js.ast, retained.expression().unwrap()));
             assert!(js.matches_authored_source(&file));
-            assert_eq!(
-                retained.comments().count(),
-                usize::from(expression.contains("/*"))
-            );
+            assert_eq!(retained.comments().count(), comments);
         }
     }
 

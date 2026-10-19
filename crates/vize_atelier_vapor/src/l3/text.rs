@@ -149,12 +149,19 @@ mod tests {
             .into_ir(&allocator, "<b>decoy</b>", None)
             .expect("an admitted artifact emits");
         let code = crate::generate::generate_vapor(&ir, None).code;
-        assert!(
-            code.contains("\"Hello \" + _toDisplayString(_ctx.changed) + \"!\""),
-            "{code}"
+        // The rewritten operand drives generation; neither the decoy source
+        // nor the authored `name` reaches the output.
+        assert_eq!(
+            code,
+            "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, \
+             renderEffect as _renderEffect, template as _template } from 'vue';\n\
+             const t0 = _template(\"<div>Hello  !</div>\", true)\n\n\
+             export function render(_ctx) {\n  \
+             const n0 = t0()\n  \
+             const x0 = _txt(n0)\n  \
+             _renderEffect(() => _setText(x0, \"Hello \" + _toDisplayString(_ctx.changed) + \"!\"))\n  \
+             return n0\n}\n"
         );
-        assert!(!code.contains("decoy"));
-        assert!(!code.contains("_ctx.name"));
     }
 
     #[test]

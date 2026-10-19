@@ -319,9 +319,10 @@ mod tests {
 
     #[test]
     fn test_extract_modifiers() {
-        let modifiers = extract_modifiers("@click.stop.prevent");
-        assert!(modifiers.contains(&CompactString::new("stop")));
-        assert!(modifiers.contains(&CompactString::new("prevent")));
+        assert_eq!(
+            extract_modifiers("@click.stop.prevent"),
+            [CompactString::new("stop"), CompactString::new("prevent")]
+        );
     }
 
     #[test]

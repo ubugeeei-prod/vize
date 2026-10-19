@@ -145,8 +145,21 @@ mod tests {
         let croquis = assert_capture(source, true, true);
         assert_eq!(croquis.get_props().collect::<Vec<_>>(), [("label", true)]);
         assert_eq!(croquis.get_emits().collect::<Vec<_>>(), ["save"]);
-        assert!(croquis.bindings.contains("props"));
-        assert!(croquis.bindings.contains("emit"));
+        let mut bindings = croquis
+            .bindings
+            .bindings
+            .iter()
+            .map(|(name, kind)| (name.as_str(), *kind))
+            .collect::<Vec<_>>();
+        bindings.sort_unstable_by_key(|(name, _)| *name);
+        assert_eq!(
+            bindings,
+            [
+                ("emit", crate::BindingType::SetupConst),
+                ("label", crate::BindingType::Props),
+                ("props", crate::BindingType::SetupReactiveConst),
+            ]
+        );
     }
 
     #[test]

@@ -368,12 +368,14 @@ mod tests {
             references(&packet, "hint")[0].start as usize,
             TEMPLATE.find("{{ hint").unwrap() + 3
         );
-        assert!(references(&packet, "id").iter().all(|reference| {
-            !TEMPLATE
-                .get(..reference.start as usize)
-                .expect("reference prefix stays within authored UTF-8 boundaries")
-                .ends_with(':')
-        }));
+        // Every `id` read is the bound value, never the `:id` attribute name.
+        assert_eq!(
+            references(&packet, "id")
+                .iter()
+                .map(|reference| reference.start)
+                .collect::<Vec<_>>(),
+            [13, 49, 67]
+        );
     }
 
     #[test]

@@ -292,7 +292,10 @@ mod tests {
     #[test]
     fn original_closing_token_preserves_case_and_excludes_accepted_gap_bytes() {
         let arena = Allocator::default();
-        for source in ["<Widget></wIDGET>", "<Widget></ Widget >"] {
+        for (source, closing) in [
+            ("<Widget></wIDGET>", "wIDGET"),
+            ("<Widget></ Widget >", "Widget"),
+        ] {
             let owner =
                 NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
                     .unwrap();
@@ -305,11 +308,7 @@ mod tests {
             assert_eq!(names.opening(), Span::new(1, 7));
             assert_eq!(
                 source.get(close.start as usize..close.end as usize),
-                Some(if source.contains("wIDGET") {
-                    "wIDGET"
-                } else {
-                    "Widget"
-                })
+                Some(closing)
             );
             assert_eq!(check_fidelity(&owner.carrier().tree), Ok(()));
         }

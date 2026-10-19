@@ -147,7 +147,16 @@ mod tests {
 
     #[test]
     fn boundaries_and_unterminated_literals_recover_without_swallowing_markup() {
-        for suffix in ["=\"value\"", " other", "/>", ">", "\nother", ""] {
+        // A suffix that never closes the tag also reports `EofInTag` at the end;
+        // with no suffix at all the end of input is reached inside the argument.
+        for (suffix, eof) in [
+            ("=\"value\"", Some(Eof::AfterArgument)),
+            (" other", Some(Eof::AfterArgument)),
+            ("/>", None),
+            (">", None),
+            ("\nother", Some(Eof::AfterArgument)),
+            ("", Some(Eof::InsideArgument)),
+        ] {
             for argument in [
                 "keys[index]",
                 "keys['broken",
@@ -159,13 +168,14 @@ mod tests {
                 let source = cstr!("<Child :[{argument}{suffix}");
                 let tokenizer = lex_with(&source, LexOptions::default());
                 let boundary = "<Child :[".len() + argument.len();
-                assert!(
-                    tokenizer
-                        .errors
-                        .contains(&(LexErrorCode::MissingDynamicDirectiveArgumentEnd, boundary)),
-                    "{source}: {:?}",
-                    tokenizer.errors
-                );
+                let unterminated = (LexErrorCode::MissingDynamicDirectiveArgumentEnd, boundary);
+                let end = (LexErrorCode::EofInTag, source.len());
+                let expected: &[(LexErrorCode, usize)] = match eof {
+                    None => &[unterminated],
+                    Some(Eof::AfterArgument) => &[unterminated, end],
+                    Some(Eof::InsideArgument) => &[end, unterminated],
+                };
+                assert_eq!(tokenizer.errors.as_slice(), expected, "{source}");
                 let args: SmallVec<[&str; 2]> = tokenizer
                     .events
                     .iter()
@@ -177,6 +187,11 @@ mod tests {
                 assert_eq!(args.as_slice(), [argument], "{source}");
             }
         }
+    }
+
+    enum Eof {
+        AfterArgument,
+        InsideArgument,
     }
 
     #[test]

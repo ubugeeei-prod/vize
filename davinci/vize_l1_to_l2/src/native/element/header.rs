@@ -367,9 +367,11 @@ mod tests {
 
     #[test]
     fn prepared_pre_carrier_and_missing_owner_keep_original_facts_without_duplicate_admission() {
-        for file in [
-            "<template v-pre><p :id=\"bad +\">{{bad +}}</p>",
-            "<div><p>kept</p>",
+        // A `<template v-pre>` header is admitted before its carrier and emits no
+        // nodes; an ordinary element emits itself and its child.
+        for (file, pre_carrier, nodes) in [
+            ("<template v-pre><p :id=\"bad +\">{{bad +}}</p>", true, 0),
+            ("<div><p>kept</p>", false, 2),
         ] {
             let a = Allocator::default();
             let component =
@@ -396,12 +398,9 @@ mod tests {
                 );
                 assert_eq!(cx.holes.len(), holes);
                 assert!(cx.embeds.is_empty());
-                assert_eq!(pre, file.starts_with("<template"));
+                assert_eq!(pre, pre_carrier);
             }
-            assert_eq!(
-                builder.finish().unwrap().node_count(),
-                if file.starts_with("<template") { 0 } else { 2 }
-            );
+            assert_eq!(builder.finish().unwrap().node_count(), nodes);
         }
     }
 }
