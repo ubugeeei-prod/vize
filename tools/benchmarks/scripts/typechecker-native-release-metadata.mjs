@@ -1,4 +1,4 @@
-/** Exact field rewrite mirrored from tools/support/release/pr_pin_metadata.rs. */
+/** Rewrites one manifest's version fields the way the release stamp does. */
 export function rewriteVersionMetadata(path, content, old, next) {
   const packageJson =
     path.endsWith("/package.json") &&

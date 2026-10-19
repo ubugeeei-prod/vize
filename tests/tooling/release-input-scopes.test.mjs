@@ -52,17 +52,7 @@ const installedHttpsContracts = [
 
 void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
   const historicalUnscoped = [
-    "tests/tooling/release/integration-product.test.ts",
-    "tests/tooling/release/legacy-check-qualification.test.ts",
-    "tests/tooling/release/release-corsa-bootstrap-freshness.test.ts",
-    "tests/tooling/release/release-corsa-bootstrap-registry.test.ts",
-    "tests/tooling/release/release-corsa-bootstrap.test.ts",
-    "tests/tooling/release/release-integration-catalog.test.ts",
-    "tests/tooling/release/release-integration-http.test.ts",
-    "tests/tooling/release/release-integration-qualification.test.ts",
-    "tests/tooling/release/release-integration-release.test.ts",
     "tests/tooling/release/release-notes.test.ts",
-    "tests/tooling/release/release-preflight-full-js.test.ts",
     "tests/tooling/release/release-smoke-init-fresh.test.ts",
     "tests/tooling/release/release-smoke-init-typecheck.test.ts",
   ];
@@ -77,7 +67,6 @@ void test("audited release contracts have complete imports and leave unresolved 
     "tests/tooling/release/release-public-lsp-source.test.ts",
     "tests/tooling/release/release-signing.test.ts",
     "tests/tooling/release/release-workflow.test.ts",
-    "tests/tooling/release/retirement-qualification.test.ts",
   ].sort();
   const inventory = [...scoped, ...expectedUnscoped].sort();
   assert.equal(new Set(inventory).size, inventory.length, "contracts belong to exactly one scope");
@@ -177,50 +166,15 @@ void test("installed VRT inputs retain the complete observer and broad real-proj
   }
 });
 
-void test("Matrix attempt selectors select the new audited evidence contract", () => {
-  const contract = "tests/tooling/release/release-preflight-matrix-selection.test.ts";
-  assert.ok(scoped.includes(contract));
-  for (const input of [
-    "tools/support/release/preflight_matrix_selection.rs",
-    "tools/support/compat/github/release-preflight-matrix-selection.mjs",
-    "tests/tooling/support/release-matrix-attempt-fixture.ts",
-  ]) {
-    assert.ok(selected(input).includes(contract), input);
-  }
-});
-
-void test("Matrix enforcement inputs select the complete actual-runtime contract", () => {
-  const contract = "tests/tooling/release/release-matrix-enforcement.test.ts";
-  assert.ok(scoped.includes(contract));
-  assert.equal(localImportInputs(contract).complete, true);
-  for (const input of [
-    ".github/workflows/real-project-matrix.yml",
-    "tools/commands/fixtures/real-project-surface-verdict.rs",
-    "tools/commands/ci/github/release-preflight.rs",
-    "tools/support/release/preflight_surface_evidence.rs",
-    "tools/support/compat/github/release-preflight-surface-evidence.mjs",
-  ]) {
-    assert.ok(selected(input).includes(contract), input);
-  }
-});
-
 void test("public absence source and copied fixtures select the existing audited contract", () => {
   const contract = "tests/tooling/release/release-public-acceptance.test.ts";
-  for (const input of [
-    "tools/support/release/retirement_absence.ts",
-    "tools/support/release/retirement_evidence.ts",
-    "tools/support/release/retirement_transport.ts",
-    "tests/tooling/support/release-retirement-absence-fixtures.ts",
-    "tests/tooling/support/release-retirement-transport-law.ts",
-    "tests/tooling/support/release-retirement-marketplace-fixtures.ts",
-  ]) {
+  for (const input of ["tests/tooling/support/release-retirement-marketplace-fixtures.ts"]) {
     assert.ok(selected(input).includes(contract), input);
   }
 });
 
 void test("release scripts, manifests, workflow, docs and copied fixture restore every contract", () => {
   for (const path of [
-    "tools/commands/release/pr.rs",
     "tools/support/compat/npm/smoke-release-runtime.mjs",
     ".github/workflows/release.yml",
     "npm/cli/package.json",

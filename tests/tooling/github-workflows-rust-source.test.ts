@@ -272,8 +272,6 @@ function requireSplitRustRecipes(
   assert.deepEqual(productReport.steps[3].env, {
     RUN_RUST: "${{ inputs.run-rust }}",
     NEEDS_JSON: "${{ toJSON(needs) }}",
-    PRODUCT_QUALIFICATION: "${{ inputs.product-qualification }}",
-    RELEASE_QUALIFICATION: "${{ inputs.release-qualification }}",
     GH_TOKEN: "${{ github.token }}",
   });
   assert.equal(productReport.steps.length, 4, "no archive custody follows the tier gate");
@@ -330,7 +328,6 @@ test("actual job selectors keep ordinary workers and source checks while only fo
           .slice(3, -2)
           .replaceAll("github.event_name", "event")
           .replaceAll("inputs.run-rust", "runRust")
-          .replaceAll("inputs.product-qualification", "product")
           .replaceAll("always()", "true")
           .replaceAll("cancelled()", "cancelled")})`,
         context,
@@ -344,7 +341,7 @@ test("actual job selectors keep ordinary workers and source checks while only fo
         for (const result of ["success", "failure", "skipped"])
           for (const cancelled of [true, false]) {
             const args = { event, runRust, product, result, cancelled };
-            assert.equal(cohort(args), runRust && product === "");
+            assert.equal(cohort(args), runRust);
             assert.equal(clippy(args), runRust);
             assert.equal(differential(args), event === "merge_group" && runRust);
           }

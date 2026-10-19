@@ -7,8 +7,6 @@ import {
   prepareLspSourceRoot,
   assertLspSourceRoot,
 } from "../../../tools/support/release/public_acceptance/lsp_source.ts";
-import { retirementAbsenceLaw } from "../support/release-retirement-absence-fixtures.ts";
-import { retirementTransportLaw } from "../support/release-retirement-transport-law.ts";
 import { publicArchiveReceiptLaw } from "../support/release-public-archive-receipt-law.ts";
 import {
   independentPublicObservationLaw,
@@ -38,8 +36,6 @@ import {
   refuse,
   fixtureUrl,
 } from "../support/release-public-acceptance-fixtures.ts";
-
-test("retirement refuses incomplete or ambiguous public absence", retirementAbsenceLaw);
 
 function sourceActors(context: { after: (callback: () => void) => void }) {
   const temporary = fs.realpathSync(
@@ -148,7 +144,6 @@ test("source isolation refuses root overlap and ownership-marker substitution", 
   fs.symlinkSync(foreign, marker);
   assert.throws(() => assertLspSourceRoot(actors.owned), /normal source ownership marker/);
 });
-test("retirement retries preserve complete absence refusals", retirementTransportLaw);
 test(
   "public browser observation requires completed prerequisites, preserving a strict seal",
   independentPublicObservationLaw,

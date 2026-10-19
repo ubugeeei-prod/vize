@@ -152,9 +152,9 @@ void test("unknown source directories fail closed", () => {
 
 void test("release sources and tooling tests require the script gate", () => {
   for (const path of [
-    "tools/support/release/pr_watch.rs",
+    "tools/support/release/release/main.ts",
     "tools/commands/release/promote.rs",
-    "tests/tooling/release/release-pr.test.ts",
+    "tests/tooling/release/release-workflow.test.ts",
     ".github/workflows/release.yml",
   ]) {
     assert.deepEqual(

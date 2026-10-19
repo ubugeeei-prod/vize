@@ -257,8 +257,6 @@ test("the Rust report waits for the builder and every named test cohort", () => 
   assert.deepEqual(reportSteps[gate].env, {
     RUN_RUST: "${{ inputs.run-rust }}",
     NEEDS_JSON: "${{ toJSON(needs) }}",
-    PRODUCT_QUALIFICATION: "${{ inputs.product-qualification }}",
-    RELEASE_QUALIFICATION: "${{ inputs.release-qualification }}",
     GH_TOKEN: "${{ github.token }}",
   });
 });

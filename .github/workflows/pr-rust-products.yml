@@ -8,14 +8,6 @@ on:
       rust-plan:
         type: string
         required: true
-      product-qualification:
-        type: string
-        required: false
-        default: ""
-      release-qualification:
-        type: string
-        required: false
-        default: ""
 permissions:
   contents: read
 env:
@@ -29,7 +21,7 @@ jobs:
   pr-rust-shard:
     permissions: { contents: read, actions: read }
     name: Rust tests (${{ matrix.name }})
-    if: ${{ inputs.run-rust && inputs.product-qualification == '' }}
+    if: ${{ inputs.run-rust }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     strategy:
@@ -140,7 +132,5 @@ jobs:
         env:
           RUN_RUST: ${{ inputs.run-rust }}
           NEEDS_JSON: ${{ toJSON(needs) }}
-          PRODUCT_QUALIFICATION: ${{ inputs.product-qualification }}
-          RELEASE_QUALIFICATION: ${{ inputs.release-qualification }}
           GH_TOKEN: ${{ github.token }}
         run: node tools/support/compat/github/require-rust-tier.ts --products

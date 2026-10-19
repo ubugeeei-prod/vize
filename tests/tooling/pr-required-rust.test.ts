@@ -1,7 +1,4 @@
-import {
-  requireRustTier,
-  requireRustProducts,
-} from "../../tools/support/compat/github/require-rust-tier.ts";
+import { requireRustTier } from "../../tools/support/compat/github/require-rust-tier.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -312,93 +309,5 @@ test("source and product modes strictly require all actual jobs, including failu
   assert.equal(
     requireRustTier("merge_group", "true", results([...sourceJobs, ...productJobs])).exitCode,
     0,
-  );
-});
-
-test("product reuse invokes both original and adjacent live proofs and refuses every unproved shortcut", () => {
-  // Controlled protocol objects grant no genuine GitHub/native qualification.
-  const product = { kind: "controlled product proof" };
-  const qualification = { kind: "controlled original proof" };
-  const needs = results(productJobs, "skipped");
-  const footprint = JSON.stringify(product),
-    original = JSON.stringify(qualification);
-  const observed: unknown[] = [];
-  const verify = (input: unknown) => {
-    observed.push(input);
-    return product;
-  };
-  assert.equal(
-    requireRustProducts("merge_group", "true", needs, footprint, original, verify).exitCode,
-    0,
-  );
-  assert.deepEqual(observed, [{ qualification, product }]);
-  for (const rejected of [null, {}, { ...product, changed: true }])
-    assert.throws(() =>
-      requireRustProducts("merge_group", "true", needs, footprint, original, () => rejected),
-    );
-  assert.throws(
-    () =>
-      requireRustProducts("merge_group", "true", needs, footprint, original, () => {
-        throw new Error("live refusal");
-      }),
-    /live refusal/,
-  );
-  for (const [event, runRust, jobs, adjacent, release] of [
-    ["pull_request", "true", needs, footprint, original],
-    ["merge_group", "false", needs, footprint, original],
-    ["merge_group", "true", {}, footprint, original],
-    ["merge_group", "true", needs, footprint, ""],
-    ["merge_group", "true", needs, "null", original],
-    ["merge_group", "true", needs, "[]", original],
-    ["merge_group", "true", needs, "broken", original],
-    ["merge_group", "true", needs, footprint, "broken"],
-    ["merge_group", "true", needs, footprint, " ".repeat(24_576)],
-  ] as const)
-    assert.throws(() => requireRustProducts(event, runRust, jobs, adjacent, release, verify));
-  for (const id of productJobs)
-    for (const result of ["success", "failure", "cancelled", "pending"])
-      assert.throws(() =>
-        requireRustProducts(
-          "merge_group",
-          "true",
-          { ...needs, [id]: { result } },
-          footprint,
-          original,
-          verify,
-        ),
-      );
-  // Empty footprint never calls a provider and instead requires actual workers.
-  assert.equal(
-    requireRustProducts("merge_group", "true", results(productJobs), "", "", () => {
-      throw new Error("must not call");
-    }).exitCode,
-    0,
-  );
-  assert.equal(requireRustProducts("merge_group", "true", needs, "", "").exitCode, 1);
-});
-
-test("the production product CLI cannot accept self-declared JSON as live qualification", () => {
-  const script = fileURLToPath(
-    new URL("../../tools/support/compat/github/require-rust-tier.ts", import.meta.url),
-  );
-  const result = spawnSync(process.execPath, [script, "--products"], {
-    encoding: "utf8",
-    env: {
-      ...process.env,
-      GITHUB_EVENT_NAME: "merge_group",
-      RUN_RUST: "true",
-      NEEDS_JSON: JSON.stringify(
-        Object.fromEntries(productJobs.map((job) => [job, { result: "skipped" }])),
-      ),
-      PRODUCT_QUALIFICATION: '{"kind":"forged"}',
-      RELEASE_QUALIFICATION: '{"kind":"forged"}',
-      GITHUB_TOKEN: "",
-      GH_TOKEN: "",
-    },
-  });
-  assert.notEqual(result.status, 0);
-  assert.match(
-    result.stderr,
-    /current read-only GitHub authority required|Live integration product verification failed/,
   );
 });
