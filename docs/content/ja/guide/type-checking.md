@@ -75,7 +75,7 @@ src/Counter.vue
 | テンプレートの式とバインディング          | 有効       | `--no-check-template-bindings`    |
 | 子コンポーネントに渡す props              | 有効       | `--no-check-props`                |
 | emit するイベントとその引数               | 有効       | `--no-check-emits`                |
-| Options API のテンプレートバインディング（`data`、`computed`、`methods` など） | 有効 | `typeChecker.optionsApi: false` |
+| Options API のテンプレートバインディング（`data`、`computed`、`methods` など） | 有効 | `vue.typeChecker.optionsApi: false` |
 | 通常の `.ts` / `.tsx` / `.d.ts`           | 有効       | `tsconfig` でファイルを除外する   |
 
 同じ設定は `vite.config.ts` にも書けます。
@@ -84,17 +84,19 @@ src/Counter.vue
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  typecheck: {
-    checkProps: true,
-    checkEmits: true,
-    checkTemplateBindings: true,
-    optionsApi: true,
+  vue: {
+    typeChecker: {
+      checkProps: true,
+      checkEmits: true,
+      checkTemplateBindings: true,
+      optionsApi: true,
+    },
   },
 });
 ```
 
-型チェックを現在のツールに任せる場合は `typecheck: false` にします。Vite+ のヘルパー以外では、同じ
-オブジェクトを `typeChecker` と書きます。すべてのキーは[設定リファレンス](./configuration-reference.md)
+型チェックを現在のツールに任せる場合は `vue.typeChecker.enabled: false` にします。同じ `vue` の設定は
+通常の Vite プラグインでも使えます。すべてのキーは[設定リファレンス](./configuration-reference.md)
 を参照してください。
 
 ## グローバルな型と自動インポート

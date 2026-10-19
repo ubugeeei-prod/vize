@@ -74,7 +74,7 @@ The exit code is non-zero when there are errors, so the command can gate CI as i
 | Template expressions and bindings         | Yes                | `--no-check-template-bindings`    |
 | Props passed to child components          | Yes                | `--no-check-props`                |
 | Emitted events and their payloads         | Yes                | `--no-check-emits`                |
-| Options API template bindings (`data`, `computed`, `methods`, ...) | Yes | `typeChecker.optionsApi: false` |
+| Options API template bindings (`data`, `computed`, `methods`, ...) | Yes | `vue.typeChecker.optionsApi: false` |
 | Plain `.ts` / `.tsx` / `.d.ts` files       | Yes                | Exclude the file in `tsconfig`    |
 
 The same switches are available in `vite.config.ts`:
@@ -83,17 +83,19 @@ The same switches are available in `vite.config.ts`:
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  typecheck: {
-    checkProps: true,
-    checkEmits: true,
-    checkTemplateBindings: true,
-    optionsApi: true,
+  vue: {
+    typeChecker: {
+      checkProps: true,
+      checkEmits: true,
+      checkTemplateBindings: true,
+      optionsApi: true,
+    },
   },
 });
 ```
 
-Set `typecheck: false` to leave type checking to your current tool. Outside the Vite+ helper the
-same object is called `typeChecker`; see the
+Set `vue.typeChecker.enabled: false` to leave type checking to your current tool. The same `vue`
+section works with the plain Vite plugin; see the
 [configuration reference](./configuration-reference.md) for every key.
 
 ## Global types and auto-imports

@@ -20,7 +20,7 @@ description: Vize で Vue コンポーネントを Vapor 出力にコンパイ�
 flowchart TD
   A["コンポーネント"] --> B{"script ブロックに vapor 属性がある?"}
   B -- はい --> V["Vapor 出力"]
-  B -- いいえ --> C{"compiler.vapor: true?"}
+  B -- いいえ --> C{"vue.compiler.vapor: true?"}
   C -- はい --> V
   C -- いいえ --> D["VDOM 出力"]
 ```
@@ -56,7 +56,9 @@ const count = ref(0);
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  compiler: { vapor: true },
+  vue: {
+    compiler: { vapor: true },
+  },
 });
 ```
 
@@ -77,8 +79,8 @@ Nuxt では `nuxt.config.ts` の `vize.compiler.vapor` を設定します。[Nux
 | 設定                                      | 範囲                         | 補足                                           |
 | ----------------------------------------- | ---------------------------- | ---------------------------------------------- |
 | `<script vapor>` / `<script setup vapor>` | 1 つの SFC                   | そのファイルでは常に優先される                 |
-| `compiler.vapor` / `vize({ vapor })`      | プロジェクトのすべての SFC   | 安定した設定。`false` で明示的に無効にできる   |
-| `experimentals.vapor`                     | すべての SFC（実験として）   | `compiler.vapor` がある場合は無視される。[Experimentals](./experimentals.md#vapor) を参照 |
+| `vue.compiler.vapor` / `vize({ vapor })`      | プロジェクトのすべての SFC   | 安定した設定。`false` で明示的に無効にできる   |
+| `experimentals.vapor`                     | すべての SFC（実験として）   | `vue.compiler.vapor` がある場合は無視される。[Experimentals](./experimentals.md#vapor) を参照 |
 
 ## JSX と TSX
 

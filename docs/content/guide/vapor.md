@@ -19,7 +19,7 @@ compiler, so the same Vite plugin, CLI, linter, and inspector handle Vapor compo
 flowchart TD
   A["Component"] --> B{"script block has the vapor attribute?"}
   B -- yes --> V["Vapor output"]
-  B -- no --> C{"compiler.vapor: true?"}
+  B -- no --> C{"vue.compiler.vapor: true?"}
   C -- yes --> V
   C -- no --> D["VDOM output"]
 ```
@@ -55,7 +55,9 @@ Compile every SFC to Vapor from `vite.config.ts`:
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  compiler: { vapor: true },
+  vue: {
+    compiler: { vapor: true },
+  },
 });
 ```
 
@@ -75,8 +77,8 @@ In Nuxt, set `vize.compiler.vapor` in `nuxt.config.ts`; see the [Nuxt integratio
 | Setting                                  | Scope                       | Notes                                          |
 | ---------------------------------------- | --------------------------- | ---------------------------------------------- |
 | `<script vapor>` / `<script setup vapor>` | One SFC                     | Always wins for that file                      |
-| `compiler.vapor` / `vize({ vapor })`     | Every SFC in the project    | Stable switch; `false` is an explicit opt-out  |
-| `experimentals.vapor`                    | Every SFC, as an experiment | Ignored when `compiler.vapor` is set; see [Experimentals](./experimentals.md#vapor) |
+| `vue.compiler.vapor` / `vize({ vapor })`     | Every SFC in the project    | Stable switch; `false` is an explicit opt-out  |
+| `experimentals.vapor`                    | Every SFC, as an experiment | Ignored when `vue.compiler.vapor` is set; see [Experimentals](./experimentals.md#vapor) |
 
 ## JSX and TSX
 
