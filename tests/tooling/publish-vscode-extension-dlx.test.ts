@@ -128,3 +128,41 @@ test("publish_vscode_extension can publish with npx without pnpm hydration", () 
     rmSync(tempDir, { recursive: true, force: true });
   }
 });
+
+test("publish_vscode_extension finishes on a successful publish without waiting for the listing", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "release-publish-vsix-success-"));
+  const binDir = path.join(tempDir, "bin");
+  const logPath = path.join(tempDir, "calls.log");
+  const vsixPath = path.join(tempDir, "vize.vsix");
+  const packageJsonPath = path.join(tempDir, "package.json");
+  try {
+    fs.mkdirSync(binDir, { recursive: true });
+    writeFileSync(vsixPath, "placeholder");
+    writeFileSync(
+      packageJsonPath,
+      JSON.stringify({ publisher: "ubugeeei", name: "vize", version: "0.58.0" }),
+    );
+    // The Marketplace never lists the version; publish itself succeeds.
+    writeFakeCommand(
+      binDir,
+      "vp",
+      [
+        "const args = process.argv.slice(2);",
+        "require('node:fs').appendFileSync(process.env.CALLS_LOG, args[4] + '\\n');",
+        "process.exit(args[4] === 'publish' ? 0 : 1);",
+      ].join("\n"),
+    );
+    const result = runReleaseCommand("publish_vscode_extension", [vsixPath, packageJsonPath], {
+      env: {
+        PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+        CALLS_LOG: logPath,
+        PUBLISH_RESOLUTION_RETRY_LIMIT: "3",
+        PUBLISH_RESOLUTION_RETRY_DELAY: "0",
+      },
+    });
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.deepEqual(fs.readFileSync(logPath, "utf8").trim().split("\n"), ["show", "publish"]);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
