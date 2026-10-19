@@ -295,4 +295,5 @@ impl Rule for NoUnsafeUrl {
 }
 
 #[cfg(test)]
+#[path = "no_unsafe_url_tests.rs"]
 mod tests;

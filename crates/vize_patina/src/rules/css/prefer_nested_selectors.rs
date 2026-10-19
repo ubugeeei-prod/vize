@@ -319,4 +319,5 @@ fn split_descendant_selector(selector: &str) -> Option<(&str, &str)> {
 
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
+#[path = "prefer_nested_selectors_tests.rs"]
 mod tests;

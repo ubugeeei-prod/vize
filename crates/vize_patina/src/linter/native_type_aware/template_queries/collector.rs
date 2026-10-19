@@ -572,4 +572,5 @@ fn expression_binding_generated_offset(generated: &str, expression_offset: u32) 
 
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
+#[path = "collector_tests.rs"]
 mod tests;

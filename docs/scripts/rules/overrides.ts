@@ -91,7 +91,7 @@ export const overrides: Record<string, RuleExample> = {
   "nuxt/no-page-meta-runtime-values": pair(
     script("definePageMeta({ title: useRoute() });"),
     script("definePageMeta({ validate: () => Boolean(useRoute().params.id) });"),
-    "crates/vize_patina/src/rules/script/no_page_meta_runtime_values/tests.rs",
+    "crates/vize_patina/src/rules/script/no_page_meta_runtime_values.rs",
   ),
   "script/no-potential-component-option-typo": pair(
     script("export default { method: { save() {} } };", false),

@@ -249,7 +249,7 @@ first-name 符合配置要求的连字符组件属性命名规范。
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L35) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L32) · [全部规则](all.md)
 
 ### `vue/attribute-order`
 
@@ -2431,7 +2431,7 @@ vp run lint
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L27) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L23) · [全部规则](all.md)
 
 ### `vue/no-mutating-props`
 

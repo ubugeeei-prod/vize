@@ -249,7 +249,7 @@ La graphie first-name respecte la convention configurée qui sépare les mots de
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L35) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L32) · [Toutes les règles](all.md)
 
 ### `vue/attribute-order`
 
@@ -2431,7 +2431,7 @@ Un élément section enveloppe les paragraphes dans une seule racine ; activez c
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L27) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L23) · [Toutes les règles](all.md)
 
 ### `vue/no-mutating-props`
 

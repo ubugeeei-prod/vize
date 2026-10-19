@@ -250,7 +250,7 @@ A grafia first-name segue a convenção configurada de atributos de componente s
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L35) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L32) · [Todas as regras](all.md)
 
 ### `vue/attribute-order`
 
@@ -2432,7 +2432,7 @@ Uma section envolve os parágrafos em uma única raiz; ative essa convenção ap
 
 O exemplo correto evita o diagnóstico desta regra com a configuração acima; outras regras ainda podem emitir diagnósticos.
 
-[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L27) · [Todas as regras](all.md)
+[Implementação](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L23) · [Todas as regras](all.md)
 
 ### `vue/no-mutating-props`
 
