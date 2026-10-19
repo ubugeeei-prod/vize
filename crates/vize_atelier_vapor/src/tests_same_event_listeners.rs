@@ -154,3 +154,23 @@ fn listener_props_merge_into_a_spread() {
         assert!(!code.contains("_setListener"), "{code}");
     }
 }
+
+/// A destructuring assignment in a handler or ref callback keeps the target's
+/// key once the name resolves to `_ctx`, as upstream emits.
+#[test]
+fn destructuring_assignment_targets_keep_their_keys() {
+    for retained in [false, true] {
+        let code = compile(
+            r#"<a @click="({ x } = y)"/><b :ref="el => { ({ baz } = el) }"/>"#,
+            retained,
+        );
+        assert!(
+            code.contains(r#"_on(n0, "click", $event => (({ x: _ctx.x } = _ctx.y)))"#),
+            "{code}"
+        );
+        assert!(
+            code.contains("el => { ({ baz: _ctx.baz } = el) }"),
+            "{code}"
+        );
+    }
+}

@@ -1,5 +1,8 @@
 use oxc_ast::ast as oxc_ast_types;
-use oxc_ast_visit::{Visit, walk::walk_object_property};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_assignment_target_property_identifier, walk_object_property},
+};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_syntax::scope::ScopeFlags;
@@ -320,6 +323,31 @@ impl<'a, 'ctx> Visit<'_> for ExpressionRewriteCollector<'a, 'ctx> {
         }
 
         walk_object_property(self, property);
+    }
+
+    /// `({ x } = y)` assigns `x`; once `x` resolves to `_ctx.x` the
+    /// target needs a key: `({ x: _ctx.x } = _ctx.y)`.
+    fn visit_assignment_target_property_identifier(
+        &mut self,
+        property: &oxc_ast_types::AssignmentTargetPropertyIdentifier<'_>,
+    ) {
+        let name = property.binding.name.as_str();
+        if let Some(replacement) = self.replacement_for_identifier(name) {
+            let mut expanded = String::with_capacity(name.len() + replacement.len() + 2);
+            expanded.push_str(name);
+            expanded.push_str(": ");
+            expanded.push_str(replacement.as_str());
+            self.rewrites.push(Rewrite {
+                start: property.binding.span.start as usize,
+                end: property.binding.span.end as usize,
+                replacement: expanded,
+            });
+            if let Some(init) = &property.init {
+                self.visit_expression(init);
+            }
+            return;
+        }
+        walk_assignment_target_property_identifier(self, property);
     }
 }
 

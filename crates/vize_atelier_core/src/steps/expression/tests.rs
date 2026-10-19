@@ -175,6 +175,27 @@ mod transform_expression_tests {
     }
 
     #[test]
+    fn test_process_expression_keys_shorthand_assignment_targets() {
+        // A destructuring target that needs a prefix or `.value` keeps its
+        // key, as `@vue/compiler-core` does; `{ _ctx.x }` is a syntax error.
+        let allocator = Allocator::new();
+        let source = "({ x, folder, y = 1, ...rest } = obj)";
+        let mut ctx = test_context(&allocator, source);
+        let expr = compound_expression(&allocator, source);
+
+        let result = process_expression(&mut ctx, &expr, false);
+        let ExpressionNode::Simple(result) = result else {
+            panic!("expected simple expression");
+        };
+
+        assert_eq!(
+            result.content,
+            "({ x: _ctx.x, folder: folder.value, y: _ctx.y = 1, ..._ctx.rest } = _ctx.obj)"
+        );
+        assert!(ctx.errors.is_empty(), "errors: {:?}", ctx.errors);
+    }
+
+    #[test]
     fn test_process_expression_keyword_identifier_has_no_diagnostic() {
         // `class` fails to parse as an expression but is a rewritable simple
         // identifier; vue-core never parses it (simple-identifier fast path)

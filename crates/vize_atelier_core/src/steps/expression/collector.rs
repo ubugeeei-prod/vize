@@ -6,7 +6,10 @@
 use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{
     Visit,
-    walk::{walk_assignment_expression, walk_object_property, walk_update_expression},
+    walk::{
+        walk_assignment_expression, walk_assignment_target_property_identifier,
+        walk_object_property, walk_update_expression,
+    },
 };
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::FxHashSet;
@@ -346,5 +349,37 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
         }
 
         walk_object_property(self, prop);
+    }
+
+    /// `({ x } = y)` assigns `x`; a prefixed or ref target needs a key:
+    /// `({ x: _ctx.x } = _ctx.y)`, `({ x: x.value } = y)`.
+    fn visit_assignment_target_property_identifier(
+        &mut self,
+        property: &oxc_ast_types::AssignmentTargetPropertyIdentifier<'_>,
+    ) {
+        let ident = &property.binding;
+        let name = ident.name.as_str();
+        if !self.is_local(name) && !is_template_global(name) && !self.ctx.is_in_scope(name) {
+            let prefix = get_identifier_prefix(name, self.ctx).filter(|prefix| !prefix.is_empty());
+            let is_ref = self.ctx.options.inline && self.is_ref_binding(name);
+            if prefix.is_some() || is_ref {
+                self.has_identifiers = true;
+                let prefix = prefix.unwrap_or("");
+                let mut key = String::with_capacity(name.len() + 2 + prefix.len());
+                key.push_str(name);
+                key.push_str(": ");
+                key.push_str(prefix);
+                self.rewrites.insert((ident.span.start as usize, key));
+                if is_ref {
+                    self.suffix_rewrites
+                        .push((ident.span.end as usize, String::new(".value")));
+                }
+                if let Some(init) = &property.init {
+                    self.visit_expression(init);
+                }
+                return;
+            }
+        }
+        walk_assignment_target_property_identifier(self, property);
     }
 }
