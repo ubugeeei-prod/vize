@@ -38,11 +38,13 @@ export function verifyReleaseBridge(
     assert.ok(Number.isSafeInteger(count) && count > 0);
   assert.equal(sha256(JSON.stringify(projection)), authority.versionBridge.sha256);
   assert.ok(Number.isSafeInteger(authority.releasePr) && authority.releasePr > 7811);
-  const script = fileURLToPath(new URL("./warm-type-backed-release-bridge.py", import.meta.url));
+  const script = fileURLToPath(
+    new URL("./warm-type-backed-release-bridge-verifier.ts", import.meta.url),
+  );
   const recipe = fileURLToPath(new URL("./warm-type-backed-release-bridge.json", import.meta.url));
   assert.equal(
     sha256(fs.readFileSync(script)),
-    "8f72189ee25b56f64413f49ce717b1c29750c78d3ac41d65b1c85f89a5b8a767",
+    "a9ed87a505b875b93b1b3850dff3d1050f55a91e5da11fffa32565b0813a51a1",
     "the independently reviewed verifier bytes are frozen",
   );
   assert.equal(
@@ -64,14 +66,17 @@ export function verifyReleaseBridge(
     "--pr",
     String(authority.releasePr),
   ];
-  const result = spawnSync("python3", args, { cwd: driverRoot, maxBuffer: 64 * 1024 * 1024 });
+  const result = spawnSync(process.execPath, args, {
+    cwd: driverRoot,
+    maxBuffer: 64 * 1024 * 1024,
+  });
   fs.writeFileSync(path.join(output, "official-version-bridge.stdout"), result.stdout);
   fs.writeFileSync(path.join(output, "official-version-bridge.stderr"), result.stderr);
   fs.writeFileSync(
     path.join(output, "official-version-bridge-command.json"),
     `${JSON.stringify(
       {
-        command: ["python3", ...args],
+        command: [process.execPath, ...args],
         status: result.status,
         signal: result.signal,
         error: result.error?.message ?? null,

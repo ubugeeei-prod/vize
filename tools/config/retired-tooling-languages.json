@@ -3,7 +3,6 @@
   "permanent": [],
   "retiring": {
     "py": [
-      "tests/performance/support/warm-type-backed-release-bridge.py",
       "tools/support/compat/github/artifact_payload.py",
       "tools/support/compat/github/artifact_payload_download.py",
       "tools/support/compat/github/artifact_payload_files.py",

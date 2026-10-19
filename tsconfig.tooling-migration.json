@@ -53,6 +53,7 @@
     "tests/performance/support/current-baseline/sample-rss.ts",
     "tests/_fixtures/differential/lsp/event-rename/4075/named-model/author_contracts.ts",
     "tests/editor-conformance/drivers/pty-bridge.ts",
+    "tests/performance/support/warm-type-backed-release-bridge-verifier.ts",
     "tools/support/release/qualify_check/main.ts",
     "tools/support/archive/tar.ts",
     "tools/support/release/lint_reports/package_members.ts",
