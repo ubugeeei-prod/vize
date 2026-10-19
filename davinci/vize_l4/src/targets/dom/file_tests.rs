@@ -1,6 +1,6 @@
 //! Genuine factories exercise the private splice preflight and equal-id owners.
 
-#[path = "../../../../tests/native_dom_file/support.rs"]
+#[path = "../../../tests/native_dom_file/support.rs"]
 mod support;
 
 use super::{ExpressionWriter, FileExpressions};
