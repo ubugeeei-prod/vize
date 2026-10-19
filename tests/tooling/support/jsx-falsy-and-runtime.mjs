@@ -1,6 +1,6 @@
 // Execute actual compiled JSX with real Vue, Babel, DOM updates and hydration.
 import assert from "node:assert/strict";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { compileFunction } from "node:vm";
 import { transformSync } from "@babel/core";
@@ -136,7 +136,9 @@ function mount(backend, render, node, warnings) {
   return app;
 }
 
-for (const [id, fixture] of Object.entries(fixtures).filter(([id]) => id !== "loop")) {
+for (const [id, fixture] of Object.entries(fixtures).filter(
+  ([id]) => id !== "loop" && id !== "ternary",
+)) {
   const state = Vue.shallowReactive({ value: 0 });
   for (const backend of ["vdom", "vapor"]) {
     let calls = 0;
@@ -289,5 +291,167 @@ for (const backend of ["vdom", "vapor"]) {
   app.unmount();
   node.remove();
 }
+// #6890: execute one instrumented children/ternary row, independently of &&.
+// Both render functions use the same pinned Vue VDOM runtime. No new Vapor
+// carrier, v-slots admission, or SSR once-only claim is made by this probe.
+if (fixtures.ternary) {
+  const fixture = fixtures.ternary;
+  assert.equal(fixture.corpusId, "children/ternary");
+  assert.deepEqual(Object.keys(fixture.outputs), ["vdom"]);
+  assert.deepEqual(fixture.outputs.vdom.diagnostics, []);
+  const recording = JSON.parse(
+    readFileSync(
+      new URL(
+        "../../../crates/vize_atelier_jsx/tests/babel_compat/fixtures/babel-output.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  assert.equal(compilerVersions.babelJsx, recording.pluginVersion);
+  const state = Vue.shallowReactive({ value: 0, label: "initial" });
+  const phases = [];
+  receipt.ternary = {
+    source: fixture.source,
+    corpusId: fixture.corpusId,
+    recordedCorpusCode: recording.cases[fixture.corpusId],
+    vizeModule: fixture.outputs.vdom,
+    phases,
+    invertedConditionRefused: false,
+    owner: "exact real render instance asserted on every condition/branch read",
+    clientVapor: "not qualified by this VDOM-only witness",
+  };
+  function createTernary(kind, source = fixture.source) {
+    let owner = null;
+    const reads = [];
+    const warnings = [];
+    const read = (role) => {
+      assert.equal(Vue.getCurrentInstance(), owner, `${kind}: authored render owner`);
+      assert.ok(["condition", "truthy", "falsy"].includes(role), role);
+      reads.push(role);
+      return role === "condition" ? state.value : `${role}:${state.label}`;
+    };
+    const compiled =
+      kind === "vize"
+        ? {
+            code: fixture.outputs.vdom.code,
+            render: executable(fixture.outputs.vdom.code, "App", read),
+          }
+        : oracle(source, read);
+    const node = host();
+    const app = Vue.createApp({
+      setup() {
+        owner = Vue.getCurrentInstance();
+        assert.ok(owner, "one real component owner");
+        return () => compiled.render({}, []);
+      },
+    });
+    app.config.warnHandler = (message) => warnings.push(message);
+    app.config.errorHandler = (error) => warnings.push(String(error));
+    app.mount(node);
+    return { app, node, reads, warnings, code: compiled.code, root: node.firstElementChild };
+  }
+  function checkTernary(instance) {
+    const branch = state.value ? "truthy" : "falsy";
+    const tag = state.value ? "a" : "b";
+    assert.deepEqual(instance.reads, ["condition", branch], "only one selected branch per render");
+    assert.deepEqual(instance.warnings, []);
+    assert.equal(instance.node.innerHTML, `<div><${tag}>${branch}:${state.label}</${tag}></div>`);
+    assert.equal(instance.node.firstElementChild, instance.root, "authored root survives updates");
+    return {
+      html: instance.node.innerHTML,
+      tree: observeChildren(instance.node),
+      reads: [...instance.reads],
+      warnings: [...instance.warnings],
+    };
+  }
+  const actual = createTernary("vize");
+  const reference = createTernary("babel");
+  receipt.ternary.babelModule = reference.code;
+  await Vue.nextTick();
+  let previous = null;
+  function observePhase() {
+    phases.push({
+      label: state.label,
+      conditionType: typeof state.value,
+      truthy: Boolean(state.value),
+      vize: {
+        html: actual.node.innerHTML,
+        tree: observeChildren(actual.node),
+        reads: [...actual.reads],
+        warnings: [...actual.warnings],
+      },
+      babel: {
+        html: reference.node.innerHTML,
+        tree: observeChildren(reference.node),
+        reads: [...reference.reads],
+        warnings: [...reference.warnings],
+      },
+    });
+    const native = checkTernary(actual);
+    const babel = checkTernary(reference);
+    assert.deepEqual(native, babel, `whole mounted phase ${state.label}`);
+    const branch = actual.node.querySelector("a,b");
+    const referenceBranch = reference.node.querySelector("a,b");
+    assert.ok(branch && referenceBranch);
+    if (previous) {
+      if (previous.truthy === Boolean(state.value)) {
+        assert.equal(branch, previous.branch, "same branch retains native element identity");
+        assert.equal(
+          referenceBranch,
+          previous.referenceBranch,
+          "same branch retains oracle identity",
+        );
+      } else {
+        assert.notEqual(branch, previous.branch, "a branch switch replaces the native element");
+        assert.notEqual(
+          referenceBranch,
+          previous.referenceBranch,
+          "a branch switch replaces the oracle element",
+        );
+      }
+    }
+    previous = { truthy: Boolean(state.value), branch, referenceBranch };
+  }
+  observePhase();
+  for (const [label, value] of values) {
+    actual.reads.length = 0;
+    reference.reads.length = 0;
+    state.value = value;
+    state.label = label;
+    await Vue.nextTick();
+    observePhase();
+  }
+  // A real independently emitted counterfactual must be rejected by the same
+  // whole-output/read-order oracle; it is not a Vize output normalization.
+  const invertedSource = fixture.source.replace('read("condition")', '!read("condition")');
+  assert.notEqual(invertedSource, fixture.source);
+  const inverted = createTernary("babel", invertedSource);
+  await Vue.nextTick();
+  receipt.ternary.refused = {
+    source: invertedSource,
+    code: inverted.code,
+    html: inverted.node.innerHTML,
+    tree: observeChildren(inverted.node),
+    reads: [...inverted.reads],
+    warnings: [...inverted.warnings],
+  };
+  const opposite = state.value ? "falsy" : "truthy";
+  const oppositeTag = state.value ? "b" : "a";
+  assert.deepEqual(inverted.warnings, []);
+  assert.deepEqual(inverted.reads, ["condition", opposite]);
+  assert.equal(
+    inverted.node.innerHTML,
+    `<div><${oppositeTag}>${opposite}:${state.label}</${oppositeTag}></div>`,
+  );
+  assert.throws(() => checkTernary(inverted));
+  receipt.ternary.invertedConditionRefused = true;
+  for (const instance of [inverted, actual, reference]) {
+    instance.app.unmount();
+    assert.equal(instance.node.childNodes.length, 0, "complete mounted cleanup");
+    instance.node.remove();
+  }
+}
+
 await window.happyDOM.abort();
 console.log(JSON.stringify(receipt));

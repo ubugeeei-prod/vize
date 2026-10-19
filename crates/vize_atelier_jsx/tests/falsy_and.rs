@@ -84,6 +84,38 @@ fn compile_fixtures() -> Value {
     Value::Object(fixtures)
 }
 
+// A value-varying witness for the existing children/ternary corpus row (#6890).
+// Only VDOM is qualified here; the original && witnesses retain their three backends.
+fn compile_value_sensitive_ternary() -> Value {
+    let source = r#"const App = () => <div>{read("condition") ? <a>{read("truthy")}</a> : <b>{read("falsy")}</b>}</div>;"#;
+    let allocator = Allocator::new();
+    let output = compile_jsx(
+        &allocator,
+        source,
+        JsxLang::Jsx,
+        &JsxCompileConfig {
+            default_mode: JsxOutputMode::Vdom,
+            ssr: false,
+            ..Default::default()
+        },
+    );
+    assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+    assert_eq!(output.components.len(), 1);
+    let component = output.components.first().expect("one authored component");
+    json!({
+        "source": source,
+        "corpusId": "children/ternary",
+        "outputs": { "vdom": {
+            "code": output.module_code(),
+            "componentCode": format!("{}\n{}", component.preamble(), component.code()),
+            "functionName": "App",
+            "diagnostics": [],
+            "map": component.map(),
+        }},
+        "clientVapor": "not qualified by this VDOM-only witness",
+    })
+}
+
 #[test]
 fn fixed_legacy_output_matches_complete_frozen_bytes_and_metadata() {
     let golden: Value = serde_json::from_str(include_str!(
@@ -151,7 +183,24 @@ fn fixed_legacy_output_matches_complete_frozen_bytes_and_metadata() {
 
 #[test]
 fn actual_values_updates_and_hydration_match_jsx_child_semantics() {
-    let fixtures = compile_fixtures();
+    let mut fixtures = compile_fixtures();
+    fixtures
+        .as_object_mut()
+        .expect("fixture table")
+        .insert("ternary".into(), compile_value_sensitive_ternary());
+    if let Some(path) = std::env::var_os("VIZE_JSX_VALUE_CAPTURE") {
+        std::fs::write(
+            path,
+            serde_json::to_vec(&fixtures).expect("whole modules/maps"),
+        )
+        .expect("capture value-sensitive modules before runtime");
+    } else {
+        assert_ne!(
+            std::env::var("VIZE_L4_SSR_REQUIRE_NATIVE").as_deref(),
+            Ok("1"),
+            "the affected NativeSSR carrier requires the whole JSX capture"
+        );
+    }
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut child = Command::new("node")
         .arg(root.join("tests/tooling/support/jsx-falsy-and-runtime.mjs"))
@@ -177,6 +226,15 @@ fn actual_values_updates_and_hydration_match_jsx_child_semantics() {
     let receipt: Value = serde_json::from_slice(&output.stdout).expect("runtime receipt");
     assert_eq!(receipt["failures"], 0);
     assert_eq!(receipt["nativeBytePair"], "pending");
+    assert_eq!(receipt["fixtures"], fixtures);
+    assert_eq!(
+        receipt["ternary"]["phases"]
+            .as_array()
+            .expect("all value phases")
+            .len(),
+        15
+    );
+    assert_eq!(receipt["ternary"]["invertedConditionRefused"], true);
 }
 
 #[test]
