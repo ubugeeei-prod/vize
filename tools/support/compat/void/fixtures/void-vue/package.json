@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@void/vue": "1.1.12",
     "@vizejs/vite-plugin": "0.474.0",
+    "@void/vue": "1.1.12",
     "typescript": "5.9.3",
     "vite": "8.3.4",
     "void": "1.1.12",

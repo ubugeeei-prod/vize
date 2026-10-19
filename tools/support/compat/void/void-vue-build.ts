@@ -219,13 +219,15 @@ try {
     await stop(preview.server);
   }
   const dev = await serve("dev", "dev", binding.environment);
+  let native: unknown;
   try {
     await assertSsr(dev.origin, false);
+    // Custody covers the original fixture bytes; the HMR edit below changes them.
+    native = binding.verify();
     await assertHydrationAndHmr(dev.origin);
   } finally {
     await stop(dev.server);
   }
-  const native = binding.verify();
 
   assertCheckParity();
   for (const [name, args] of [
