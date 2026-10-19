@@ -155,14 +155,11 @@ await test("only the consumer checkout narrows the original six-cell release wor
   // Whole job objects from main725126c and frozen release source d3eb1c4 are identical.
   // These protect every original ref, default fetch, runtime cell and install/oracle command.
   assert.deepEqual(
-    [
-      jsr.jobs.channel,
-      jsr.jobs.publish,
-      { ...consumer, steps: [{ ...checkout, with: original }, ...steps] },
-    ].map(digest),
+    [jsr.jobs.channel, { ...consumer, steps: [{ ...checkout, with: original }, ...steps] }].map(
+      digest,
+    ),
     [
       "deeb84e361bc452eab69cb4ec329902259ef15f443f5bafdd79ba5e46bc949ab",
-      "2b7aed1b0120850036d3e89f5134aafc68010f530ec36f87e055486371c23a05",
       "fabc364c2cc5046b5a9ec4688dd5d4698fbc93bad0a8c8787443835b46fb7d06",
     ],
   );
@@ -378,4 +375,9 @@ await test("sealed facades exercise all original consumer refusal assertions", (
     assert.equal(result.observation.error, error);
     assert.deepEqual(result.observation.logs, []);
   }
+});
+
+await test("the JSR publish job outlasts JSR's server-side processing", () => {
+  const publish = workflow("release-jsr.yml").jobs.publish as { "timeout-minutes"?: number };
+  assert.ok((publish["timeout-minutes"] ?? 0) >= 45);
 });

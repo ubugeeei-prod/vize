@@ -44,7 +44,9 @@ jobs:
     name: Publish the JSR package
     needs: channel
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # JSR processes the npm-backed facade server-side for 10-30 min before
+    # `deno publish` returns; a shorter limit cancels a publication that lands anyway.
+    timeout-minutes: 45
     permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
