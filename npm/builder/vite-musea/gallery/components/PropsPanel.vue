@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUnmounted, defineAsyncComponent, useTemplateRef } from "vue";
+import {
+  ref,
+  watch,
+  computed,
+  onMounted,
+  onUnmounted,
+  defineAsyncComponent,
+  useTemplateRef,
+} from "vue";
 import { shallowRef } from "vue";
 import { usePalette } from "../composables/usePalette";
 import { useArts } from "../composables/useArts";

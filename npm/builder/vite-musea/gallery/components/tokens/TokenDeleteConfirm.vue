@@ -13,7 +13,6 @@ const emit = defineEmits<{
 }>();
 
 const titleId = useId();
-
 </script>
 
 <template>

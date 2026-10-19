@@ -6,7 +6,6 @@ defineProps<{
 }>();
 
 const model = defineModel<boolean>({ default: false });
-
 </script>
 
 <template>
