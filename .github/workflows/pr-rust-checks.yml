@@ -36,7 +36,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     env:
-      CARGO_BUILD_JOBS: "12"
+      CARGO_BUILD_JOBS: "24"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
       RUST_PLAN_JSON: ${{ inputs.rust-plan }}
     steps:

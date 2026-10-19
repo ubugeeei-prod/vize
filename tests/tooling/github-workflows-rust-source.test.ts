@@ -260,10 +260,10 @@ function requireSplitRustRecipes(
   assert.deepEqual(Object.keys(source), [...sourceJobs, "rust-source-report"]);
   assert.deepEqual(Object.keys(products), [...productJobs, "rust-product-report"]);
   const oldHashes = {
-    "merge-rust-source": "d607059b87aae591d6f83cb6be640da086eb70cda213fcbbef47732d9ff5a754",
+    "merge-rust-source": "cccdc6b58005acb2655d0f54af2485dde7be81ef40d40da7a6827759192b155b",
     "merge-rust-differential": "13c78bc5c1872dffc8af00f380e4b65177e524cf516b5914d808aa0bdea1194e",
-    "pr-rust-build": "b6196b2390e511fcbe60021124f07e84642e0d3d377d489316241575df3ffea5",
-    "pr-rust-shard": "fac12385c01201bbb2645d0424c6ceb5a3083aad90e58fdc8c4d605ffdc93397",
+    "pr-rust-build": "08e14fc4bc848f4b90cf136b9558a0ab3bc91d3e835405a3f0a59fc27999282a",
+    "pr-rust-shard": "47b21f1fcea99b21abdacaf04c18014f886277d824a47d7e1c86e2f021958a6c",
   };
   for (const [id, expected] of Object.entries(oldHashes)) {
     const job = structuredClone(source[id] ?? products[id]);
