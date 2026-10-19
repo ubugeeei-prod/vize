@@ -263,3 +263,37 @@ const label = "panel";
         "{result:?}"
     );
 }
+
+#[test]
+fn handler_parameters_shadow_browser_globals() {
+    for source in [
+        r#"<button @click="(open) => open">Open</button>"#,
+        r#"<button @click="function (location) { return location }">Go</button>"#,
+        r#"<button @click="({ open, close: [top] }) => open(top)">Go</button>"#,
+        r#"<button @click="const open = 1; emit(open)">Go</button>"#,
+        r#"<button @click="try { run() } catch (window) { log(window) }">Go</button>"#,
+    ] {
+        let result = lint_with_ssr(source);
+        assert!(result.is_empty(), "{source}: {result:?}");
+    }
+}
+
+#[test]
+fn free_browser_globals_next_to_shadowing_parameters_are_reported() {
+    for source in [
+        r#"<button @click="(open) => close(open)">Go</button>"#,
+        r#"<button @click="(e) => open(e)">Go</button>"#,
+        r#"<button @click="emit(open); const x = 1">Go</button>"#,
+    ] {
+        let result = lint_with_ssr(source);
+        assert_eq!(result.len(), 1, "{source}: {result:?}");
+    }
+}
+
+#[test]
+fn slot_and_for_aliases_are_scoped_but_their_sources_are_read() {
+    let result = lint_with_ssr(r#"<div v-for="item of document.links">{{ item }}</div>"#);
+    assert_eq!(result.len(), 1, "{result:?}");
+    let result = lint_with_ssr(r#"<Comp v-slot="{ size = innerWidth }">{{ size }}</Comp>"#);
+    assert_eq!(result.len(), 1, "{result:?}");
+}

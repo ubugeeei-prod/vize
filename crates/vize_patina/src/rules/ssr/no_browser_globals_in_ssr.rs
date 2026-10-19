@@ -51,7 +51,6 @@ mod script_layout;
 mod script_reads;
 mod script_symbols;
 mod template_identifiers;
-mod type_ranges;
 mod typeof_guard;
 use vize_relief::{ElementNode, ExpressionNode, InterpolationNode, RootNode};
 
@@ -230,9 +229,9 @@ impl Rule for NoBrowserGlobalsInSsr {
             ExpressionNode::Simple(s) => s.content,
             ExpressionNode::Compound(_) => return, // Skip compound expressions for now
         };
-        let identifiers = Self::runtime_identifiers(content);
+        let identifiers = Self::runtime_identifiers(content, None);
 
-        for ident in identifiers {
+        for ident in identifiers.iter().map(|name| name.as_str()) {
             if Self::is_local_binding(ctx, ident) {
                 continue;
             }
@@ -264,9 +263,9 @@ impl Rule for NoBrowserGlobalsInSsr {
                 ExpressionNode::Simple(s) => s.content,
                 ExpressionNode::Compound(_) => return, // Skip compound expressions
             };
-            let identifiers = Self::runtime_identifiers(content);
+            let identifiers = Self::runtime_identifiers(content, Some(directive.name));
 
-            for ident in identifiers {
+            for ident in identifiers.iter().map(|name| name.as_str()) {
                 if Self::is_local_binding(ctx, ident) {
                     continue;
                 }
