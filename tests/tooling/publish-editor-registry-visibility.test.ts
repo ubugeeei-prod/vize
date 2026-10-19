@@ -24,7 +24,10 @@ const scenarios = [
 for (const scenario of scenarios) {
   for (const publishExit of [0, 42]) {
     const outcome = publishExit === 0 ? "successful" : "failed";
-    test(`${scenario.script} rejects an unconfirmed ${outcome} publish`, () => {
+    // vsce's zero exit is final; the Marketplace can take minutes to list it.
+    const trustsExit = scenario.script === "publish_vscode_extension" && publishExit === 0;
+    const verdict = trustsExit ? "accepts" : "rejects";
+    test(`${scenario.script} ${verdict} an unconfirmed ${outcome} publish`, () => {
       const tempDir = mkdtempSync(path.join(tmpdir(), "editor-registry-visibility-"));
       const binDir = path.join(tempDir, "bin");
       const manifestPath = path.join(tempDir, "package.json");
@@ -76,15 +79,15 @@ for (const scenario of scenarios) {
           },
         });
 
-        assert.equal(result.status, publishExit === 0 ? 1 : publishExit);
-        if (publishExit === 0) {
+        assert.equal(result.status, trustsExit ? 0 : publishExit === 0 ? 1 : publishExit);
+        if (publishExit === 0 && !trustsExit) {
           assert.match(result.stderr, new RegExp(`${scenario.registry} did not expose`));
         }
         const calls = JSON.parse(fs.readFileSync(callsPath, "utf8")) as string[][];
         const metadataCalls = calls.filter(
           (args) => args[4] === scenario.metadataCommand || args[0] === scenario.metadataCommand,
         );
-        assert.equal(metadataCalls.length, 2);
+        assert.equal(metadataCalls.length, trustsExit ? 1 : 2);
         if (scenario.script === "publish_open_vsx_extension") {
           for (const call of metadataCalls) {
             assert.deepEqual(call, [

@@ -237,12 +237,12 @@ void test("release scripts, manifests, workflow, docs and copied fixture restore
 
 void test("direct, global and unknown changes remain broad; merge runs every release test", () => {
   for (const path of [
-    "tests/tooling/release/release-pr.test.ts",
+    "tests/tooling/release/release-workflow.test.ts",
     "pnpm-lock.yaml",
     "new-root/unknown.ts",
   ]) {
     const plan = planToolingTests([path]);
-    if (path.endsWith("release-pr.test.ts")) {
+    if (path.endsWith("release-workflow.test.ts")) {
       assert.ok(plan.tests.includes(path));
     } else {
       assert.deepEqual(
