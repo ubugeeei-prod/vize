@@ -1,6 +1,6 @@
 // #8099: reuse the original Nuxt build cell and its genuine current native receipt.
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -29,33 +29,37 @@ for (const name of [
   "VIZE_NUXT_NATIVE_CUSTODY",
 ])
   assert.ok(!process.env[name], `unbound ambient ${name}`);
-const { corpus } = inputCorpus(root);
-const failures = [];
-for (const cohort of corpus.cohorts) {
+
+// Each cohort owns its staged project and artifacts, so their probes overlap.
+function probe(context) {
+  const fd = fs.openSync(path.join(context.artifacts, "process.log"), "w");
+  const serialized = JSON.stringify({ ...context, environment: undefined, finish: undefined });
+  return new Promise((resolve) => {
+    const child = spawn(
+      process.execPath,
+      [
+        fileURLToPath(new URL("./javascript-workspace-probe.mjs", import.meta.url)),
+        root,
+        serialized,
+      ],
+      {
+        cwd: context.project,
+        env: context.environment,
+        stdio: ["ignore", fd, fd],
+        timeout: 360_000,
+      },
+    );
+    child.once("error", (error) => resolve({ status: null, signal: null, error }));
+    child.once("close", (status, signal) => resolve({ status, signal, error: undefined }));
+  }).finally(() => fs.closeSync(fd));
+}
+
+async function run(cohort) {
+  const failures = [];
   let context;
   try {
     context = prepareProject(root, output, cohort, custody);
-    const fd = fs.openSync(path.join(context.artifacts, "process.log"), "w");
-    let result;
-    try {
-      const serialized = JSON.stringify({ ...context, environment: undefined, finish: undefined });
-      result = spawnSync(
-        process.execPath,
-        [
-          fileURLToPath(new URL("./javascript-workspace-probe.mjs", import.meta.url)),
-          root,
-          serialized,
-        ],
-        {
-          cwd: context.project,
-          env: context.environment,
-          stdio: ["ignore", fd, fd],
-          timeout: 360_000,
-        },
-      );
-    } finally {
-      fs.closeSync(fd);
-    }
+    const result = await probe(context);
     save(context.artifacts, "process.json", {
       status: result.status,
       signal: result.signal,
@@ -79,7 +83,11 @@ for (const cohort of corpus.cohorts) {
       });
     }
   }
+  return failures;
 }
+
+const { corpus } = inputCorpus(root);
+const failures = (await Promise.all(corpus.cohorts.map(run))).flat();
 save(output, "result.json", { source: custody.source, corpus, failures });
 assert.equal(sha(fs.readFileSync(custody.binary.path)), custody.binary.sha256);
 assert.deepEqual(failures, [], "every whole cohort must pass; no failing cohort is skipped");
