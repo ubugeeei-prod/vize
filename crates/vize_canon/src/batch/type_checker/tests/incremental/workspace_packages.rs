@@ -32,5 +32,6 @@ fn package_binding(
             nested_routes: Vec::new(),
         }),
         invalidation_paths: vec![source_path.to_path_buf(), package_root.join("package.json")],
+        shared_invalidation_paths: Vec::new(),
     }
 }

@@ -147,6 +147,7 @@ fn scanned_project(monorepo: &Monorepo) -> VirtualProject {
             context: PackageResolutionContext::default(),
             route: Some(shared_route.clone()),
             invalidation_paths: vec![monorepo.manifest_path.clone()],
+            shared_invalidation_paths: Vec::new(),
         }
     }));
     let mut roots = monorepo.importer_paths.clone();

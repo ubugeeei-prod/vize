@@ -45,7 +45,7 @@ impl VirtualProject {
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
             typed_router: Default::default(),
             package_routes: FxHashMap::default(),
-            package_route_reverse: FxHashMap::default(),
+            package_route_reverse: Default::default(),
             package_route_importers: FxHashMap::default(),
             package_route_source_owners: FxHashMap::default(),
             package_route_source_paths: FxHashMap::default(),

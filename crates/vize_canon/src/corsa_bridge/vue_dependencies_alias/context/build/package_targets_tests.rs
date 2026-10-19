@@ -48,6 +48,7 @@ fn missing_package_target_terminates_and_a_later_wave_registers_its_recreated_so
                 nested_routes: Vec::new(),
             }),
             invalidation_paths: vec![manifest, missing.clone()],
+            shared_invalidation_paths: Vec::new(),
         }]);
         let mut processed = Default::default();
         project

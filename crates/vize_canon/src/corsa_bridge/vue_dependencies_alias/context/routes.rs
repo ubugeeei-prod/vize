@@ -155,6 +155,7 @@ impl<'a> RouteDiscovery<'a> {
                     .chain(context_inputs)
                     .chain(std::iter::once(importer.to_path_buf()))
                     .collect(),
+                shared_invalidation_paths: Vec::new(),
             });
         }
         needs_shadow

@@ -35,6 +35,7 @@ fn binding(importer_path: &Path, route: PackageRoute) -> PackageRouteBinding {
         context: PackageResolutionContext::default(),
         route: Some(route),
         invalidation_paths: Vec::new(),
+        shared_invalidation_paths: Vec::new(),
     }
 }
 

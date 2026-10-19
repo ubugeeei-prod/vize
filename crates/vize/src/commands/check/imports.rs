@@ -207,6 +207,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
                     context: context.clone(),
                     route: None,
                     invalidation_paths: invalidation_paths.clone(),
+                    shared_invalidation_paths: Vec::new(),
                 });
             }
             let Some(resolved) = resolved else {
@@ -296,6 +297,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
                     context: context.clone(),
                     route: Some(route.clone()),
                     invalidation_paths: invalidation_paths.clone(),
+                    shared_invalidation_paths: Vec::new(),
                 });
                 for candidate in route.all_source_paths() {
                     if is_declaration_file(candidate) {

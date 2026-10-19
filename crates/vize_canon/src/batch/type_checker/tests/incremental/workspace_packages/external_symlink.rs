@@ -59,6 +59,7 @@ fn external_symlink_manifest_lifecycle_updates_every_dependent_and_reverse_index
                 context: PackageResolutionContext::default(),
                 route,
                 invalidation_paths,
+                shared_invalidation_paths: Vec::new(),
             }
         })
         .collect::<Vec<_>>();

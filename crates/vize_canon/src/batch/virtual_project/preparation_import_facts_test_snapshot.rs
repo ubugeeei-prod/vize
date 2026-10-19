@@ -79,11 +79,7 @@ impl VirtualProject {
                 .iter()
                 .map(|(path, count)| (path.clone(), *count))
                 .collect(),
-            reverse_routes: self
-                .package_route_reverse
-                .iter()
-                .map(|(path, keys)| (path.clone(), keys.iter().cloned().collect()))
-                .collect(),
+            reverse_routes: self.package_route_reverse.flattened(),
             artifacts: self
                 .source_artifacts
                 .iter()
@@ -293,6 +289,7 @@ fn walk_with_resolver(
                         .chain(context_inputs)
                         .chain(std::iter::once(importer.to_path_buf()))
                         .collect(),
+                    shared_invalidation_paths: Vec::new(),
                 });
             }
             found

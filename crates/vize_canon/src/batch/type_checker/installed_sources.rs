@@ -313,6 +313,7 @@ mod tests {
                 nested_routes: vec![],
             }),
             invalidation_paths: vec![manifest],
+            shared_invalidation_paths: Vec::new(),
         }]);
         let before = owner.project.package_routes_snapshot();
         assert_eq!(before.len(), 1);

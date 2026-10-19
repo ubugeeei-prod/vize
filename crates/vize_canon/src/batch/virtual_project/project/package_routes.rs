@@ -75,12 +75,7 @@ impl VirtualProject {
     pub(crate) fn insert_route_binding_inner(&mut self, binding: crate::PackageRouteBinding) {
         let key = binding.key();
         self.remove_package_route_binding(&key);
-        for path in &binding.invalidation_paths {
-            self.package_route_reverse
-                .entry(path.clone())
-                .or_default()
-                .insert(key.clone());
-        }
+        self.package_route_reverse.insert(&key, &binding);
         self.package_route_importers
             .entry(binding.importer_path.clone())
             .or_default()
@@ -131,18 +126,7 @@ impl VirtualProject {
         key: &crate::package_route::PackageRouteKey,
         binding: &crate::PackageRouteBinding,
     ) {
-        for path in &binding.invalidation_paths {
-            let remove = self
-                .package_route_reverse
-                .get_mut(path)
-                .is_some_and(|keys| {
-                    keys.remove(key);
-                    keys.is_empty()
-                });
-            if remove {
-                self.package_route_reverse.remove(path);
-            }
-        }
+        self.package_route_reverse.remove(key, binding);
         let remove = self
             .package_route_importers
             .get_mut(&binding.importer_path)
@@ -223,14 +207,12 @@ impl VirtualProject {
             } else {
                 self.project_root.join(path)
             };
-            if let Some(keys) = self.package_route_reverse.get(&logical) {
-                affected.extend(keys.iter().cloned());
-            }
+            self.package_route_reverse
+                .extend_keys_for(&logical, &mut affected);
             let canonical = crate::package_route::stamp::canonicalize_changed_path(&logical);
-            if canonical != logical
-                && let Some(keys) = self.package_route_reverse.get(&canonical)
-            {
-                affected.extend(keys.iter().cloned());
+            if canonical != logical {
+                self.package_route_reverse
+                    .extend_keys_for(&canonical, &mut affected);
             }
             if let Some(keys) = self.package_route_importers.get(&canonical) {
                 affected.extend(keys.iter().cloned());
@@ -333,6 +315,8 @@ impl VirtualProject {
             binding.context = context;
             if route.is_none() {
                 invalidation_paths.extend(binding.invalidation_paths.iter().cloned());
+            } else {
+                binding.shared_invalidation_paths.clear();
             }
             binding.route = route;
             invalidation_paths.sort();

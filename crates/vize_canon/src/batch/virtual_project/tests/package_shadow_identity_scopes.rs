@@ -42,6 +42,7 @@ fn a_scope_never_lands_where_the_real_tree_owns_an_install() {
                 context: PackageResolutionContext::default(),
                 route: Some(shared_route.clone()),
                 invalidation_paths: vec![monorepo.manifest_path.clone()],
+                shared_invalidation_paths: Vec::new(),
             }),
     );
     let mut roots = importer_paths.clone();
@@ -107,6 +108,7 @@ fn divergent_identities_keep_their_own_importer_scoped_shadows() {
             context: PackageResolutionContext::default(),
             route: Some(shared_route),
             invalidation_paths: vec![monorepo.manifest_path.clone()],
+            shared_invalidation_paths: Vec::new(),
         },
         PackageRouteBinding {
             importer_path: monorepo.importer_paths[1].clone(),
@@ -115,6 +117,7 @@ fn divergent_identities_keep_their_own_importer_scoped_shadows() {
             context: PackageResolutionContext::default(),
             route: Some(forked_route),
             invalidation_paths: vec![forked_manifest.clone()],
+            shared_invalidation_paths: Vec::new(),
         },
     ]);
     let mut roots = monorepo.importer_paths.clone();

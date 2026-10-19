@@ -116,6 +116,7 @@ fn package_shadow_preserves_user_paths_and_raw_manifest() {
         context: PackageResolutionContext::default(),
         route: Some(route),
         invalidation_paths: vec![manifest_path.clone(), component_path.clone()],
+        shared_invalidation_paths: Vec::new(),
     }]);
     let context = &project.package_routes_snapshot()[0].context;
     assert_eq!(context.module_resolution.as_deref(), Some("bundler"));
@@ -258,6 +259,7 @@ fn measured_warm_package_patch(route_count: usize) -> WarmWork {
                 nested_routes: Vec::new(),
             }),
             invalidation_paths: vec![source, root.join("package.json")],
+            shared_invalidation_paths: Vec::new(),
         });
     }
 

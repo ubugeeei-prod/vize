@@ -5,6 +5,7 @@
 use std::path::{Path, PathBuf};
 
 use crate::batch::SfcBlockType;
+use vize_carton::FxHashSet;
 
 use super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 
@@ -138,6 +139,15 @@ impl VirtualProject {
                 .values()
                 .flat_map(|binding| binding.invalidation_paths.iter().cloned()),
         );
+        // Importers of one route share its set; copy each set once.
+        let mut shared_sets = FxHashSet::default();
+        for binding in self.package_routes.values() {
+            for set in &binding.shared_invalidation_paths {
+                if shared_sets.insert(set.as_ptr()) {
+                    paths.extend(set.iter().cloned());
+                }
+            }
+        }
         paths.extend(self.package_routes.values().flat_map(|binding| {
             binding.route.iter().flat_map(|route| {
                 route

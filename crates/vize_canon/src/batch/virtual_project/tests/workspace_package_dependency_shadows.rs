@@ -87,6 +87,7 @@ fn workspace_build_shadow_mirrors_source_dependency_tree() {
         context: PackageResolutionContext::default(),
         route: Some(route),
         invalidation_paths: vec![manifest_path.clone(), index_path.clone()],
+        shared_invalidation_paths: Vec::new(),
     }]);
     project.register_path(&entry_path).unwrap();
     project.register_package_route_targets().unwrap();
@@ -211,6 +212,7 @@ fn nested_workspace_package_shadow_tracks_late_relative_dependencies() {
         context: PackageResolutionContext::default(),
         route: Some(a),
         invalidation_paths: Vec::new(),
+        shared_invalidation_paths: Vec::new(),
     }]);
     project.register_path(&importer).unwrap();
     project.register_package_route_targets().unwrap();

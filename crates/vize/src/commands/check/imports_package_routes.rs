@@ -10,31 +10,6 @@ pub(super) fn dedup_paths_sorted(paths: &mut Vec<PathBuf>) {
     paths.dedup();
 }
 
-/// `own` (any order) united with `shared`, which is already unique and in
-/// the same byte order, without sorting `shared` again.
-pub(super) fn merge_sorted_paths(mut own: Vec<PathBuf>, shared: &[PathBuf]) -> Vec<PathBuf> {
-    dedup_paths_sorted(&mut own);
-    if shared.is_empty() {
-        return own;
-    }
-    let mut merged = Vec::with_capacity(own.len() + shared.len());
-    let mut shared = shared.iter().peekable();
-    for path in own {
-        while let Some(next) = shared.next_if(|next| next.as_os_str() < path.as_os_str()) {
-            merged.push(next.clone());
-        }
-        if shared
-            .peek()
-            .is_some_and(|next| next.as_os_str() == path.as_os_str())
-        {
-            shared.next();
-        }
-        merged.push(path);
-    }
-    merged.extend(shared.cloned());
-    merged
-}
-
 pub(super) fn sort_package_route_bindings(bindings: &mut Vec<PackageRouteBinding>) {
     bindings.sort_by(compare_binding_keys);
 
@@ -47,6 +22,16 @@ pub(super) fn sort_package_route_bindings(bindings: &mut Vec<PackageRouteBinding
             previous
                 .invalidation_paths
                 .append(&mut binding.invalidation_paths);
+            for set in binding.shared_invalidation_paths {
+                // Sets are shared by allocation; one copy per binding is enough.
+                if !previous
+                    .shared_invalidation_paths
+                    .iter()
+                    .any(|kept| kept.as_ptr() == set.as_ptr())
+                {
+                    previous.shared_invalidation_paths.push(set);
+                }
+            }
             merged = true;
             if binding.route.is_some() {
                 previous.route = binding.route;
@@ -112,6 +97,7 @@ mod tests {
             context: PackageResolutionContext::new(Some("bundler"), mode, ["import"]),
             route: None,
             invalidation_paths: invalidation_paths.into_iter().map(PathBuf::from).collect(),
+            shared_invalidation_paths: Vec::new(),
         }
     }
 
@@ -141,21 +127,6 @@ mod tests {
             ]
         );
         assert_eq!(bindings[1].occurrence_mode, PackageResolutionMode::Require);
-    }
-
-    #[test]
-    fn merging_a_shared_sorted_set_matches_sorting_the_union() {
-        let paths = |items: &[&str]| items.iter().map(PathBuf::from).collect::<Vec<_>>();
-        let mut shared = paths(&["/w/a-b", "/w/a/b", "/w/c", "/w/pkg/package.json"]);
-        dedup_paths_sorted(&mut shared);
-        let own = paths(&["/w/pkg/package.json", "/w/a", "/w/z", "/w/a", "/w/a-b"]);
-
-        let mut expected = own.clone();
-        expected.extend(shared.iter().cloned());
-        dedup_paths_sorted(&mut expected);
-
-        assert_eq!(merge_sorted_paths(own, &shared), expected);
-        assert_eq!(merge_sorted_paths(Vec::new(), &shared), shared);
     }
 
     #[test]

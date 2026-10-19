@@ -36,6 +36,7 @@ fn cold_negative_package_route_activates_after_manifest_creation() {
         context: PackageResolutionContext::default(),
         route,
         invalidation_paths,
+        shared_invalidation_paths: Vec::new(),
     }]);
     checker.scan_project().unwrap();
     let missing = checker

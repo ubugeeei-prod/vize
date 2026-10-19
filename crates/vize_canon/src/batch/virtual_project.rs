@@ -85,6 +85,7 @@ pub(crate) mod package_resolution;
 mod package_route_discovery;
 pub use package_route_discovery::is_vue_runtime_support_specifier;
 mod package_route_reachability;
+mod package_route_reverse;
 pub(crate) use package_route_reachability::package_route_reaches_vue;
 pub use package_route_reachability::{
     PACKAGE_REACHABILITY_BUDGET_REVISION, PackageRouteReachability, ReachabilityOutcome,
@@ -220,7 +221,7 @@ pub struct VirtualProject {
     /// Reverse invalidation and importer indexes for persistent refreshes.
     /// These live beside the authoritative bindings so a warm check never has
     /// to clone/sort the whole workspace route set merely to find one package.
-    package_route_reverse: FxHashMap<PathBuf, FxHashSet<crate::package_route::PackageRouteKey>>,
+    package_route_reverse: package_route_reverse::PackageRouteReverse,
     package_route_importers: FxHashMap<PathBuf, FxHashSet<crate::package_route::PackageRouteKey>>,
     package_route_source_owners: FxHashMap<PathBuf, usize>,
     /// `package_route_source_owners` keyed by the uncanonicalized route source

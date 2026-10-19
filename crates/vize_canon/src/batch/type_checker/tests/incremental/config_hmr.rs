@@ -67,6 +67,7 @@ void props
         context: crate::PackageResolutionContext::default(),
         route,
         invalidation_paths,
+        shared_invalidation_paths: Vec::new(),
     }]);
     checker.scan_project().unwrap();
 

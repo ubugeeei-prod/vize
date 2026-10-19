@@ -1,6 +1,12 @@
 //! Public package-route identities and importer-scoped resolution context.
 
+#![expect(
+    clippy::disallowed_types,
+    reason = "importers of one package route share its reachability inputs"
+)]
+
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use vize_carton::String;
 
@@ -273,6 +279,9 @@ pub struct PackageRouteBinding {
     /// Positive and negative filesystem inputs consulted for this binding.
     /// Incremental refresh indexes these paths instead of scanning all routes.
     pub invalidation_paths: Vec<PathBuf>,
+    /// Inputs shared by every importer of one route (its reachability scan).
+    /// Consulted like `invalidation_paths`, but stored and indexed once.
+    pub shared_invalidation_paths: Vec<Arc<[PathBuf]>>,
 }
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]

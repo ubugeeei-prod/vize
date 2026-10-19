@@ -109,19 +109,18 @@ pub(super) fn source_needs_virtual_registration(
                         needs_shadow = reachability.requires_shadow()
                             || route.requires_workspace_source_shadow();
                         needs_registration |= needs_shadow;
-                        reachability_inputs = Some(reachability.inputs);
+                        if !reachability.inputs.is_empty() {
+                            reachability_inputs = Some(reachability.inputs);
+                        }
                         if needs_shadow {
                             binding_route = Some(route);
                         }
                     }
                     if needs_shadow || track_reachability || watchable_negative {
-                        // Only bindings that are kept pay for their inputs: the
-                        // route's shared sorted set is merged, not re-sorted.
-                        let invalidation_paths =
-                            super::super::super::imports_package_routes::merge_sorted_paths(
-                                invalidation_paths,
-                                reachability_inputs.as_deref().unwrap_or_default(),
-                            );
+                        super::super::super::imports_package_routes::dedup_paths_sorted(
+                            &mut invalidation_paths,
+                        );
+                        // Every importer of the route shares its reachability set.
                         discovered_routes.push(vize_canon::PackageRouteBinding {
                             importer_path: file.clone(),
                             specifier: specifier.clone(),
@@ -129,6 +128,7 @@ pub(super) fn source_needs_virtual_registration(
                             context: context.clone(),
                             route: binding_route,
                             invalidation_paths,
+                            shared_invalidation_paths: reachability_inputs.into_iter().collect(),
                         });
                     }
                     None
