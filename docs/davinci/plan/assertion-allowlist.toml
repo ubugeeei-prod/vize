@@ -257,9 +257,6 @@ paths = ["crates/vize_glyph/src/style/stabilization.rs"]
 justification = "pre-existing partial assertions surfaced by inlining tests.rs modules; replace with exact oracles"
 expires = "2026-12-31"
 paths = [
-  "crates/vize/src/commands/dump/script.rs",
-  "crates/vize/src/commands/lint/cross_file/fallthrough.rs",
-  "crates/vize/src/commands/ready/progress.rs",
   "crates/vize_atelier_sfc/src/compile_script/props/validation/macro_scope.rs",
   "crates/vize_atelier_sfc/src/compile_script/statement_sections.rs",
   "crates/vize_atelier_sfc/src/croquis/module_exports.rs",

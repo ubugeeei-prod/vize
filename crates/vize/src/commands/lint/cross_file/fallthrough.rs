@@ -144,20 +144,21 @@ defineProps<{ title: string }>()
 defineEmits(['close'])
 </script>
 <template><Teleport to="body"><div /></Teleport></template>"#;
-        let found = diagnostics(parent, child);
-        assert_eq!(found.len(), 2, "{found:?}");
+        let class = parent.find("class=\"overlay\"").unwrap() as u32;
+        let style = parent.find(":style=\"styling\"").unwrap() as u32;
+        let teleport = |attr: &str| {
+            vize_l0::cstr!(
+                "{attr} passed to <Dialog> cannot fall through because the component has a Teleport root"
+            )
+            .as_str()
+            .to_owned()
+        };
         assert_eq!(
-            found[0].1 as usize,
-            parent.find("class=\"overlay\"").unwrap()
-        );
-        assert_eq!(
-            found[1].1 as usize,
-            parent.find(":style=\"styling\"").unwrap()
-        );
-        assert!(
-            found
-                .iter()
-                .all(|(message, _, _)| message.contains("Teleport root"))
+            diagnostics(parent, child),
+            [
+                (teleport("class"), class, class + 15),
+                (teleport("style"), style, style + 16),
+            ]
         );
     }
 

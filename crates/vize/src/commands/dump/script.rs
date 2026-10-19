@@ -135,32 +135,44 @@ mod tests {
     use vize_l1::embed::Lang;
     use vize_l1::embed::syntax::{ProgramGoal, ProgramOptions};
 
+    const LEXED_HOLE: &str =
+        "  code=OxcCode { scope: None, number: None } help=None note=None url=None\n";
+
     #[test]
     fn explicit_languages_inspect_real_statement_kinds_and_preserve_every_byte() {
-        for (lang, jsx, input, kind) in [
+        for (lang, jsx, input, facts) in [
             (
                 Lang::Js,
                 false,
                 "/* α */ import { ref } from 'vue';\r\nexport const x = ref(0);",
-                "ImportDeclaration",
+                "script: js module; hole=None\n\
+                 statement ImportDeclaration @Span { start: 9, end: 35 }\n\
+                 statement ExportNamedDeclaration @Span { start: 37, end: 61 }\n\
+                 comment SingleLineBlock @Span { start: 0, end: 8 } \"/* α */\"\n",
             ),
             (
                 Lang::Ts,
                 false,
                 "/* β */ interface Props { value: number }\nexport const x: Props = { value: 1 };",
-                "TSInterfaceDeclaration",
+                "script: ts module; hole=None\n\
+                 statement TSInterfaceDeclaration @Span { start: 9, end: 42 }\n\
+                 statement ExportNamedDeclaration @Span { start: 43, end: 80 }\n\
+                 comment SingleLineBlock @Span { start: 0, end: 8 } \"/* β */\"\n",
             ),
             (
                 Lang::Js,
                 true,
                 "const node = <section>{values.map(value => <span>{value}</span>)}</section>;",
-                "VariableDeclaration",
+                "script: jsx module; hole=None\n\
+                 statement VariableDeclaration @Span { start: 0, end: 76 }\n",
             ),
             (
                 Lang::Ts,
                 true,
                 "type Props = { value: number }; export const View = ({ value }: Props) => <span>{value}</span>;",
-                "TSTypeAliasDeclaration",
+                "script: tsx module; hole=None\n\
+                 statement TSTypeAliasDeclaration @Span { start: 0, end: 31 }\n\
+                 statement ExportNamedDeclaration @Span { start: 32, end: 95 }\n",
             ),
         ] {
             let observed = inspect(
@@ -173,26 +185,50 @@ mod tests {
             )
             .unwrap();
             assert_eq!(observed.printed.as_str(), input);
-            assert!(observed.facts.contains("hole=None"));
-            assert!(observed.facts.contains(kind));
-            assert!(!observed.facts.contains("diagnostic "));
+            assert_eq!(observed.facts.as_str(), facts);
         }
     }
 
     #[test]
     fn language_and_syntax_failures_remain_visible_without_losing_authored_bytes() {
-        for (lang, goal, input) in [
+        let regex = vize_l0::cstr!(
+            "script: ts module; hole=Some(Syntax)\n\
+             diagnostic Error: Unterminated regular expression\n{LEXED_HOLE}\
+             \x20 label @Span {{ start: 34, end: 41 }} primary=false None\n\
+             diagnostic Error: Unexpected token\n{LEXED_HOLE}\
+             \x20 label @Span {{ start: 34, end: 41 }} primary=false None\n"
+        );
+        let generic = vize_l0::cstr!(
+            "script: ts module; hole=Some(Syntax)\n\
+             comment Line @Span {{ start: 9, end: 21 }} \"//#__PURE__0\"\n\
+             diagnostic Error: Type argument list cannot be empty.\n\
+             \x20 code=OxcCode {{ scope: Some(\"TS\"), number: Some(\"1099\") }} help=None note=None url=None\n\
+             \x20 label @Span {{ start: 1, end: 3 }} primary=false None\n\
+             diagnostic Error: Unexpected token\n{LEXED_HOLE}\
+             \x20 label @Span {{ start: 21, end: 21 }} primary=false None\n"
+        );
+        for (lang, goal, input, facts) in [
             (
                 Lang::Js,
                 ProgramGoal::Module,
                 "interface Props { value: number }",
+                "script: js module; hole=Some(Syntax)\n\
+                 diagnostic Error: Expected a semicolon or an implicit semicolon after a statement, but found none\n\
+                 \x20 code=OxcCode { scope: None, number: None } help=Some(\"Try inserting a semicolon here\") note=None url=None\n\
+                 \x20 label @Span { start: 9, end: 9 } primary=false None\n",
             ),
             (
                 Lang::Ts,
                 ProgramGoal::Module,
                 "export const node = <span>{value}</span>;",
+                regex.as_str(),
             ),
-            (Lang::Ts, ProgramGoal::Module, "f<>/((\nd=//#__PURE__0"),
+            (
+                Lang::Ts,
+                ProgramGoal::Module,
+                "f<>/((\nd=//#__PURE__0",
+                generic.as_str(),
+            ),
         ] {
             let observed = inspect(
                 input,
@@ -204,14 +240,7 @@ mod tests {
             )
             .unwrap();
             assert_eq!(observed.printed.as_str(), input);
-            assert!(
-                observed.facts.contains("hole=Some(Syntax)"),
-                "input={input:?} facts={:?}",
-                observed.facts
-            );
-            assert!(observed.facts.contains("diagnostic Error:"));
-            assert!(observed.facts.contains("label @"));
-            assert!(!observed.facts.contains("statement "));
+            assert_eq!(observed.facts.as_str(), facts, "input={input:?}");
         }
     }
 
@@ -227,14 +256,36 @@ mod tests {
             let authored = input.get(..cut).unwrap();
             let observed = inspect(authored, options).unwrap();
             assert_eq!(observed.printed.as_str(), authored);
-            assert!(observed.facts.starts_with("script: tsx script; hole="));
+            // Only the empty prefix and the complete leading comment parse clean.
+            let hole = if cut == 0 || (8..=13).contains(&cut) {
+                "None"
+            } else {
+                "Some(Syntax)"
+            };
+            let header = vize_l0::cstr!("script: tsx script; hole={hole}");
+            assert_eq!(
+                observed.facts.lines().next(),
+                Some(header.as_str()),
+                "cut={cut}"
+            );
         }
+
         let observed = inspect(input, options).unwrap();
-        assert!(observed.facts.contains("/* α */"));
-        assert!(observed.facts.contains("diagnostic Error:"));
+        assert_eq!(
+            observed.facts.as_str(),
+            "script: tsx script; hole=Some(Syntax)\n\
+             comment SingleLineBlock @Span { start: 0, end: 8 } \"/* α */\"\n\
+             diagnostic Error: Unexpected token\n\
+             \x20 code=OxcCode { scope: None, number: None } help=None note=None url=None\n\
+             \x20 label @Span { start: 31, end: 32 } primary=false None\n"
+        );
         let valid = inspect("/* α */ const value: number = 1;\r\n// β", options).unwrap();
-        assert!(valid.facts.contains("/* α */"));
-        assert!(valid.facts.contains("// β"));
-        assert!(valid.facts.contains("script: tsx script; hole=None"));
+        assert_eq!(
+            valid.facts.as_str(),
+            "script: tsx script; hole=None\n\
+             statement VariableDeclaration @Span { start: 9, end: 33 }\n\
+             comment SingleLineBlock @Span { start: 0, end: 8 } \"/* α */\"\n\
+             comment Line @Span { start: 35, end: 40 } \"// β\"\n"
+        );
     }
 }

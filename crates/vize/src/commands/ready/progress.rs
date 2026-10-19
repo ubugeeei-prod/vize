@@ -122,7 +122,22 @@ mod tests {
             progress.stage(command, label, || {});
         }
         progress.finish();
-        std::str::from_utf8(&progress.writer).unwrap().into()
+        without_elapsed(std::str::from_utf8(&progress.writer).unwrap())
+    }
+
+    /// Stage timings are wall-clock; replace each `<n> ms` with `<t>`.
+    fn without_elapsed(output: &str) -> String {
+        let mut stable = String::default();
+        let mut rest = output;
+        while let Some(end) = rest.find(" ms") {
+            let head = &rest[..end];
+            let digits = head.trim_end_matches(|ch: char| ch.is_ascii_digit());
+            stable.push_str(digits);
+            stable.push_str("<t>");
+            rest = &rest[end + 3..];
+        }
+        stable.push_str(rest);
+        stable
     }
 
     #[test]
@@ -141,35 +156,41 @@ mod tests {
 
     #[test]
     fn no_color_retains_stage_counts_and_completion_meaning() {
-        let output = transcript(&profile().with_no_color(true));
-        assert!(!output.contains('\x1b'));
-        for expected in [
-            "vize ready",
-            "[1/4] Format",
-            "[2/4] Lint",
-            "[3/4] Type check",
-            "[4/4] Build",
-            "✓ Ready  4 stages completed in",
-        ] {
-            assert!(output.contains(expected), "missing {expected} in {output}");
-        }
+        assert_eq!(
+            transcript(&profile().with_no_color(true)),
+            "\n  vize ready\n\n  [1/4] Format\n  ✓ Format  <t>\n\n  [2/4] Lint\n  ✓ Lint  <t>\n\n  \
+             [3/4] Type check\n  ✓ Type check  <t>\n\n  [4/4] Build\n  ✓ Build  <t>\n\n  \
+             ✓ Ready  4 stages completed in <t>\n\n"
+        );
     }
 
     #[test]
     fn ascii_profile_retains_every_completion_without_unicode() {
-        let output = transcript(&profile().with_locale("C").with_no_color(true));
-        assert!(output.is_ascii());
-        assert!(output.contains("done Format"));
-        assert!(output.contains("done Ready  4 stages completed in"));
+        assert_eq!(
+            transcript(&profile().with_locale("C").with_no_color(true)),
+            "\n  vize ready\n\n  [1/4] Format\n  done Format  <t>\n\n  [2/4] Lint\n  done Lint  <t>\n\n  \
+             [3/4] Type check\n  done Type check  <t>\n\n  [4/4] Build\n  done Build  <t>\n\n  \
+             done Ready  4 stages completed in <t>\n\n"
+        );
     }
 
     #[test]
     fn terminal_color_styles_the_existing_stage_meaning() {
-        let output = transcript(&profile());
-        assert!(output.contains("\x1b[1;96mvize ready\x1b[0m"));
-        assert!(output.contains("\x1b[1;32mReady\x1b[0m"));
-        assert!(!output.contains('\r'));
-        assert!(!output.contains("\x1b[?"));
+        let stage = |n: u8, label: &str| {
+            vize_l0::cstr!(
+                "  \x1b[90m[{n}/4]\x1b[0m \x1b[1m{label}\x1b[0m\n  \
+                 \x1b[32m✓\x1b[0m {label}  \x1b[90m<t>\x1b[0m\n\n"
+            )
+        };
+        let expected = vize_l0::cstr!(
+            "\n  \x1b[1;96mvize ready\x1b[0m\n\n{}{}{}{}  \
+             \x1b[1;32m✓\x1b[0m \x1b[1;32mReady\x1b[0m  4 stages completed in <t>\n\n",
+            stage(1, "Format"),
+            stage(2, "Lint"),
+            stage(3, "Type check"),
+            stage(4, "Build"),
+        );
+        assert_eq!(transcript(&profile()), expected);
     }
 
     #[test]
@@ -180,10 +201,10 @@ mod tests {
         }));
         assert!(result.is_err());
         progress.finish();
-        let output = std::str::from_utf8(&progress.writer).unwrap();
-        assert!(output.contains("[1/4] Format"));
-        assert!(!output.contains("✓ Format"));
-        assert!(!output.contains("stages completed"));
+        assert_eq!(
+            std::str::from_utf8(&progress.writer).unwrap(),
+            "\n  vize ready\n\n  [1/4] Format\n"
+        );
     }
 
     #[test]
