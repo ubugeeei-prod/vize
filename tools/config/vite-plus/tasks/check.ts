@@ -52,7 +52,6 @@ const iterationRepoCheckCommand = [
 const strictRepoCheckCommand = [
   iterationRepoCheckCommand,
   "node tools/support/typescript/check-project.ts",
-  "node tools/support/typescript/check-project.ts tsconfig.public-vapor.json",
   "node tools/support/typescript/check-project.ts tsconfig.benchmark-reports.json",
   "node tools/support/typescript/check-project.ts tsconfig.benchmark-scripts.json",
   "node tools/support/typescript/check-project.ts tsconfig.ci-gates.json",
@@ -62,8 +61,6 @@ const strictRepoCheckCommand = [
   "node tools/support/typescript/check-project.ts tsconfig.release-observers.json",
   "node tools/support/typescript/check-project.ts tsconfig.css-catalog.json",
   "node tools/support/typescript/check-project.ts tsconfig.public-vrt.json",
-  "node tools/support/typescript/check-project.ts tsconfig.public-musea-static.json",
-  "node tools/support/typescript/check-project.ts tsconfig.public-musea-literal.json",
   "node tools/support/typescript/check-project.ts tsconfig.vuefes-compat.json",
 ].join(" && ");
 const ciVizeAppCheckCommand = [

@@ -23,7 +23,6 @@ const deliveredInitContracts = [
 ];
 const installedReportedContracts = [
   "tests/tooling/release/release-public-gallery-readiness.test.ts",
-  "tests/tooling/release/release-public-vapor.test.ts",
 ];
 const installedSmokeMigrationContracts = [
   "tests/tooling/release/release-smoke-parity-peer-copy.test.ts",

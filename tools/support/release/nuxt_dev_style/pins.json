@@ -1,8 +1,0 @@
-{
-  "tests/_fixtures/_projects/nuxt-dev-ssr-style/package.json": "11e2088f7606c5695d3650dfbf64b561b1ff80436c0271908165dd02d44dd98f",
-  "tests/_fixtures/_projects/nuxt-dev-ssr-style/package-lock.json": "303503476b9efca14665fdbc2cffca7f9425a7ebdab92249c46e4d6abd7e56b6",
-  "tests/_fixtures/_projects/nuxt-dev-ssr-style/nuxt.config.ts": "f56b02be230fb88386a2caeda65c9c118871d73a9b965fbbc5414215d49ada4b",
-  "tests/_fixtures/_projects/nuxt-dev-ssr-style/app/app.vue": "0f726f6a452814de5029d73f9df4803400a737cb2dfa2364455edda42012b5c6",
-  "tests/_fixtures/_projects/nuxt-dev-ssr-style/app/pages/index.vue": "82bf03332f29092a42c4158654df068854578d0c132d537ae8b6113058866492",
-  "tools/support/compat/nuxt/dev-ssr-style.mjs": "4c600df758dc0ee645e99b3a98530b6ca501cc08cdaedbe602910cb562e49f96"
-}

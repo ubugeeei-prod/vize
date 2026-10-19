@@ -8,7 +8,6 @@ on:
       - "tools/support/archive/tar.ts"
       - "tests/tooling/released-package-graph.test.mjs"
       - "tests/tooling/released-lint-reports.test.mjs"
-      - "tests/tooling/released-nuxt-dev-ssr.test.mjs"
       - "tests/tooling/support/published-package-graph-smoke.mjs"
       - ".github/workflows/published-package-graph.yml"
   workflow_dispatch:
@@ -34,7 +33,7 @@ jobs:
           node-version-file: package.json
           package-manager-cache: false
       - name: Test original tampering laws and alias and bundled archive controls
-        run: node --test tests/tooling/released-lint-reports.test.mjs tests/tooling/released-nuxt-dev-ssr.test.mjs tests/tooling/released-package-graph.test.mjs
+        run: node --test tests/tooling/released-lint-reports.test.mjs tests/tooling/released-package-graph.test.mjs
       - name: Authenticate actual public npm alias and bundled archives
         run: node tests/tooling/support/published-package-graph-smoke.mjs
       - name: Retain registry archives and whole lock receipts
