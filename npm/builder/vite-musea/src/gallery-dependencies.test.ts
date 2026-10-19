@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
@@ -150,5 +150,19 @@ void test("explicit build inputs retain their app scan instead of crawling unrel
     assert.ok(metadata.optimized["highlight.js/lib/languages/css"]);
   } finally {
     await rm(root, { recursive: true, force: true });
+  }
+});
+
+void test("the gallery document and styles request no external origins", async () => {
+  const gallery = fileURLToPath(new URL("../gallery/", import.meta.url));
+  const external =
+    /(?:href|src)\s*=\s*["']?(?:https?:)?\/\/|url\(\s*["']?(?:https?:)?\/\/|@import\s+["'](?:https?:)?\/\//iu;
+  const documents = (await readdir(gallery, { recursive: true })).filter((file) =>
+    /\.(?:html|css|vue)$/u.test(file),
+  );
+  assert.ok(documents.includes("index.html"));
+  for (const file of documents) {
+    const source = await readFile(path.join(gallery, file), "utf8");
+    assert.doesNotMatch(source, external, file);
   }
 });
