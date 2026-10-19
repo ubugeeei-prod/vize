@@ -12,7 +12,7 @@ import {
   readMetadata,
   repoRoot,
   validateAllowlist,
-} from "../../tools/support/compat/davinci/level-dependencies.mjs";
+} from "../../tools/support/compat/davinci/level-dependencies.ts";
 
 import { fixture, rejectsPath } from "./support/level-dependencies.mjs";
 

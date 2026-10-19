@@ -1,6 +1,4 @@
-// Minimal TOML-subset parser shared by the Davinci tooling
-// (tools/davinci/assertion-lint.mjs, tools/davinci/matrix-gen.mjs,
-// tools/davinci/bench-compare.mjs).
+// Minimal TOML-subset parser shared by the Davinci budget and benchmark tooling.
 //
 // Node builtins only is a hard constraint for these tools, so this file
 // implements exactly the subset the committed Davinci TOML artifacts use
@@ -22,8 +20,19 @@
 // (e.g. expires = "2026-12-31"); native TOML date values are rejected.
 // Duplicate keys and duplicate non-array table headers are errors.
 
+export type TomlValue = string | number | boolean | TomlValue[] | TomlTable;
+export interface TomlTable {
+  [key: string]: TomlValue;
+}
+interface Read {
+  readonly value: TomlValue;
+  readonly rest: string;
+}
+
 class TomlLiteError extends Error {
-  constructor(message, line) {
+  readonly line: number | undefined;
+
+  constructor(message: string, line?: number) {
     super(line == null ? message : `line ${line}: ${message}`);
     this.name = "TomlLiteError";
     this.line = line;
@@ -32,7 +41,7 @@ class TomlLiteError extends Error {
 
 const BARE_KEY = /^[A-Za-z0-9_-]+$/;
 
-function parseDottedKey(raw, lineNo) {
+function parseDottedKey(raw: string, lineNo: number): string[] {
   const parts = raw.split(".").map((part) => part.trim());
   if (parts.length === 0 || parts.some((part) => !BARE_KEY.test(part))) {
     throw new TomlLiteError(`invalid key ${JSON.stringify(raw)} (bare dotted keys only)`, lineNo);
@@ -40,7 +49,7 @@ function parseDottedKey(raw, lineNo) {
   return parts;
 }
 
-function unescapeBasicString(body, lineNo) {
+function unescapeBasicString(body: string, lineNo: number): string {
   let result = "";
   for (let i = 0; i < body.length; i += 1) {
     const ch = body[i];
@@ -71,7 +80,7 @@ function unescapeBasicString(body, lineNo) {
 
 // Tokenizes a value expression. Returns { value, rest } where rest is the
 // remaining text after the value (used for arrays and trailing comments).
-function readValue(text, lineNo) {
+function readValue(text: string, lineNo: number): Read {
   const trimmed = text.trimStart();
   if (trimmed.startsWith('"')) {
     for (let i = 1; i < trimmed.length; i += 1) {
@@ -92,7 +101,7 @@ function readValue(text, lineNo) {
     return { value: trimmed.slice(1, end), rest: trimmed.slice(end + 1) };
   }
   if (trimmed.startsWith("[")) {
-    const items = [];
+    const items: TomlValue[] = [];
     let rest = trimmed.slice(1);
     for (;;) {
       rest = rest.trimStart();
@@ -118,7 +127,7 @@ function readValue(text, lineNo) {
     }
   }
   if (trimmed.startsWith("{")) {
-    const table = {};
+    const table: TomlTable = {};
     let rest = trimmed.slice(1);
     for (;;) {
       // Inline tables are single-line per the TOML spec, so a newline before
@@ -134,7 +143,7 @@ function readValue(text, lineNo) {
       if (keyParts.length !== 1) {
         throw new TomlLiteError("dotted keys in inline tables are not supported", lineNo);
       }
-      const key = keyParts[0];
+      const [key = ""] = keyParts;
       if (key in table) throw new TomlLiteError(`duplicate key ${key} in inline table`, lineNo);
       const item = readValue(rest.slice(equals + 1), lineNo);
       table[key] = item.value;
@@ -160,25 +169,35 @@ function readValue(text, lineNo) {
   );
 }
 
-function assertOnlyComment(rest, lineNo) {
+function assertOnlyComment(rest: string, lineNo: number): void {
   const trailing = rest.trim();
   if (trailing.length > 0 && !trailing.startsWith("#")) {
     throw new TomlLiteError(`unexpected trailing content ${JSON.stringify(trailing)}`, lineNo);
   }
 }
 
-function navigate(root, parts, lineNo, { arrayTable }) {
+function isTable(value: TomlValue | undefined): value is TomlTable {
+  return typeof value === "object" && !Array.isArray(value);
+}
+
+function navigate(
+  root: TomlTable,
+  parts: readonly string[],
+  lineNo: number,
+  { arrayTable }: { readonly arrayTable: boolean },
+): TomlTable {
   let node = root;
   for (let i = 0; i < parts.length; i += 1) {
-    const key = parts[i];
+    const key = parts[i] ?? "";
     const last = i === parts.length - 1;
     if (last && arrayTable) {
-      if (!(key in node)) node[key] = [];
-      if (!Array.isArray(node[key])) {
+      const tables = node[key] ?? [];
+      if (!Array.isArray(tables)) {
         throw new TomlLiteError(`key ${key} is not an array of tables`, lineNo);
       }
-      const table = {};
-      node[key].push(table);
+      node[key] = tables;
+      const table: TomlTable = {};
+      tables.push(table);
       return table;
     }
     if (!(key in node)) {
@@ -187,21 +206,20 @@ function navigate(root, parts, lineNo, { arrayTable }) {
       throw new TomlLiteError(`duplicate table [${parts.join(".")}]`, lineNo);
     }
     const next = node[key];
-    node = Array.isArray(next) ? next[next.length - 1] : next;
-    if (node == null || typeof node !== "object") {
-      throw new TomlLiteError(`key ${key} is not a table`, lineNo);
-    }
+    const table = Array.isArray(next) ? next.at(-1) : next;
+    if (!isTable(table)) throw new TomlLiteError(`key ${key} is not a table`, lineNo);
+    node = table;
   }
   return node;
 }
 
-export function parseTomlLite(text) {
-  const root = {};
+export function parseTomlLite(text: string): TomlTable {
+  const root: TomlTable = {};
   let current = root;
   const lines = text.split("\n");
   for (let index = 0; index < lines.length; index += 1) {
     const lineNo = index + 1;
-    const line = lines[index].trim();
+    const line = (lines[index] ?? "").trim();
     if (line.length === 0 || line.startsWith("#")) continue;
     if (line.startsWith("[[")) {
       const end = line.indexOf("]]");
@@ -228,11 +246,11 @@ export function parseTomlLite(text) {
     if (keyParts.length !== 1) {
       throw new TomlLiteError("dotted keys in assignments are not supported", lineNo);
     }
-    const key = keyParts[0];
+    const [key = ""] = keyParts;
     if (key in current) throw new TomlLiteError(`duplicate key ${key}`, lineNo);
     // Multi-line arrays: keep appending source lines until the value closes.
     let valueText = line.slice(equals + 1);
-    let parsed;
+    let parsed: Read;
     for (;;) {
       try {
         parsed = readValue(valueText, lineNo);
@@ -242,7 +260,7 @@ export function parseTomlLite(text) {
           error instanceof TomlLiteError && /^line \d+: unterminated array/.test(error.message);
         if (unterminated && index + 1 < lines.length) {
           index += 1;
-          valueText += `\n${lines[index]}`;
+          valueText += `\n${lines[index] ?? ""}`;
           continue;
         }
         throw error;

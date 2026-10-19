@@ -3,7 +3,7 @@ import {
   assertDependencyReport,
   initialEntries,
   inspectLevelDependencies,
-} from "../../../tools/support/compat/davinci/level-dependencies.mjs";
+} from "../../../tools/support/compat/davinci/level-dependencies.ts";
 
 const revision = "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04";
 export function fixture() {

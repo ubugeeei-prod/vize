@@ -4,7 +4,54 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
-import { checkNativeMap } from "./selected-template-literals-map.mjs";
+import { checkNativeMap, type NativeOutput } from "./selected-template-literals-map.ts";
+
+interface CompileResult {
+  readonly code: string;
+  readonly map: unknown;
+}
+interface VNode {
+  readonly type: unknown;
+  readonly props: unknown;
+  readonly children: unknown;
+  readonly patchFlag: unknown;
+  readonly key: unknown;
+  readonly dynamicChildren?: readonly unknown[] | null;
+}
+interface VueRuntime {
+  readonly version: string;
+  readonly Fragment: unknown;
+  readonly Text: unknown;
+  readonly Comment: unknown;
+  isVNode(value: unknown): value is VNode;
+}
+interface SfcCompiler {
+  parse(
+    source: string,
+    options: { filename: string },
+  ): { errors: unknown[]; descriptor: { template: { content: string } | null } };
+}
+interface RenderModule {
+  render(...args: unknown[]): unknown;
+}
+interface LiteralFixture extends Readonly<Record<string, unknown>> {
+  readonly id: string;
+  readonly source: string;
+  readonly nodes: number;
+  readonly template: string;
+  readonly code: string;
+  readonly referenceMap: unknown;
+  readonly referenceMapSha256: string;
+  readonly sourceSha256: string;
+  readonly runtime: unknown;
+  readonly nativeMapSha256?: string;
+  readonly nativeLinksSha256?: string;
+}
+interface NativeCapture extends NativeOutput {
+  readonly id: string;
+  readonly nodes: number;
+  readonly links: unknown;
+}
 
 const fixturePath = new URL(
   "../../../../davinci/vize_l4/tests/fixtures/selected-template-literal-vue-3.5.35.json",
@@ -12,11 +59,15 @@ const fixturePath = new URL(
 );
 const fromUi = createRequire(new URL("../../../../npm/ui/package.json", import.meta.url));
 const fromVue = createRequire(fromUi.resolve("vue/package.json"));
-const compiler = fromVue("@vue/compiler-dom");
-const sfc = fromVue("@vue/compiler-sfc");
-const runtime = fromVue("vue");
+const compiler = fromVue("@vue/compiler-dom") as {
+  compile(template: string, options: object): CompileResult;
+};
+const sfc = fromVue("@vue/compiler-sfc") as SfcCompiler;
+const runtime = fromVue("vue") as VueRuntime;
+assert.equal(typeof compiler.compile, "function");
+assert.equal(typeof sfc.parse, "function");
 for (const name of ["vue", "@vue/compiler-dom", "@vue/compiler-sfc"]) {
-  assert.equal(fromVue(name + "/package.json").version, "3.5.35");
+  assert.equal((fromVue(name + "/package.json") as { version?: unknown }).version, "3.5.35");
 }
 assert.equal(runtime.version, "3.5.35");
 const options = {
@@ -29,7 +80,7 @@ const options = {
   bindingMetadata: {},
   cacheHandlers: false,
 };
-const sources = [
+const sources: readonly (readonly [id: string, source: string, nodes: number])[] = [
   ["decimal", "<template>{{42}}</template>", 1],
   ["hex", "<template>{{0x2a}}</template>", 1],
   ["octal-modern", "<template>{{0o52}}</template>", 1],
@@ -43,8 +94,9 @@ const sources = [
   ["comment-literal", "<template>{{ /*keep*/ '雪&amp;🌸' }}</template>", 1],
   ["mixed", "<template>pré{{true}}<!--keep-->{{null}}</template>", 4],
 ];
-const hash = (text) => createHash("sha256").update(text).digest("hex");
-const data = (text) => "data:text/javascript;base64," + Buffer.from(text).toString("base64");
+const hash = (text: string): string => createHash("sha256").update(text).digest("hex");
+const data = (text: string): string =>
+  "data:text/javascript;base64," + Buffer.from(text).toString("base64");
 const runtimeUrl = data(
   "import runtime from " +
     JSON.stringify(pathToFileURL(fromVue.resolve("vue")).href) +
@@ -74,9 +126,14 @@ const forbidden = new Proxy(
     },
   },
 );
-const load = (code) =>
-  import(data(code.replace('from "vue"', "from " + JSON.stringify(runtimeUrl))));
-function shape(value) {
+const load = async (code: string): Promise<RenderModule> => {
+  const module = (await import(
+    data(code.replace('from "vue"', "from " + JSON.stringify(runtimeUrl)))
+  )) as Partial<RenderModule>;
+  assert.equal(typeof module.render, "function");
+  return module as RenderModule;
+};
+function shape(value: unknown): unknown {
   if (!runtime.isVNode(value)) {
     assert.equal(typeof value, "string");
     return { result: "string", value };
@@ -96,22 +153,27 @@ function shape(value) {
     patchFlag: value.patchFlag,
   };
 }
-function render(module, context) {
+function render(module: RenderModule, context: object): unknown {
   return module.render(context, [], forbidden, forbidden, forbidden, forbidden);
 }
-function reference(source) {
+function reference(source: string): CompileResult & { template: string } {
   const parsed = sfc.parse(source, { filename: options.filename });
   assert.deepEqual(parsed.errors, []);
-  assert(parsed.descriptor.template);
-  const template = parsed.descriptor.template.content;
+  const templateBlock = parsed.descriptor.template;
+  assert(templateBlock);
+  const template = templateBlock.content;
   return { template, ...compiler.compile(template, options) };
 }
-function caseFile(id) {
+function caseFile(id: string): string {
   return "selected-template-literal-vue-3.5.35/" + id + ".json";
 }
 if (process.argv[2] === "--write-fixture") {
   assert(process.argv[3], "the original primary-only packet is required");
-  const primary = JSON.parse(fs.readFileSync(process.argv[3], "utf8"));
+  const primary = JSON.parse(fs.readFileSync(process.argv[3], "utf8")) as {
+    version: unknown;
+    referenceOnly: unknown;
+    cases: readonly { readonly id: string }[];
+  };
   assert.equal(primary.version, "3.5.35");
   assert.equal(primary.referenceOnly, true);
   assert.deepEqual(
@@ -171,7 +233,14 @@ if (process.argv[2] === "--write-fixture") {
 
 const mode = process.argv[2];
 assert(mode, "the actual Rust capture path or --check-reference is required");
-const pack = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
+const pack = JSON.parse(fs.readFileSync(fixturePath, "utf8")) as {
+  schema: unknown;
+  version: unknown;
+  compiler: unknown;
+  options: unknown;
+  nativeCapturePinned: unknown;
+  fixtures: readonly { readonly id: string; readonly file: string }[];
+};
 assert.equal(pack.schema, "vize.selected-template-literal-reference");
 assert.equal(pack.version, 1);
 assert.deepEqual(pack.compiler, { name: "@vue/compiler-dom", version: "3.5.35" });
@@ -181,7 +250,10 @@ assert.deepEqual(
   pack.fixtures,
   sources.map(([id]) => ({ id, file: caseFile(id) })),
 );
-const captured = mode === "--check-reference" ? null : JSON.parse(fs.readFileSync(mode, "utf8"));
+const captured: readonly NativeCapture[] | null =
+  mode === "--check-reference"
+    ? null
+    : (JSON.parse(fs.readFileSync(mode, "utf8")) as readonly NativeCapture[]);
 if (mode !== "--check-reference") {
   assert.equal(pack.nativeCapturePinned, true, "actual hosted map/link freeze required");
   assert(Array.isArray(captured) && captured.length === 12, "all twelve native outputs required");
@@ -191,9 +263,11 @@ if (mode !== "--check-reference") {
   );
 }
 for (const [index, [id, source, nodes]] of sources.entries()) {
+  const entry = pack.fixtures[index];
+  assert(entry, id);
   const fixture = JSON.parse(
-    fs.readFileSync(new URL(pack.fixtures[index].file, fixturePath), "utf8"),
-  );
+    fs.readFileSync(new URL(entry.file, fixturePath), "utf8"),
+  ) as LiteralFixture;
   assert.equal(fixture.id, id);
   assert.equal(fixture.source, source);
   assert.equal(fixture.nodes, nodes);
@@ -201,8 +275,8 @@ for (const [index, [id, source, nodes]] of sources.entries()) {
     ["source", "sourceSha256"],
     ["template", "templateSha256"],
     ["code", "codeSha256"],
-  ]) {
-    assert.equal(hash(fixture[field]), fixture[digest], id);
+  ] as const) {
+    assert.equal(hash(String(fixture[field])), fixture[digest], id);
   }
   assert.equal(hash(JSON.stringify(fixture.referenceMap)), fixture.referenceMapSha256, id);
   const fresh = reference(source);
@@ -213,12 +287,13 @@ for (const [index, [id, source, nodes]] of sources.entries()) {
   const nativePinned =
     fixture.nativeMapSha256 !== undefined || fixture.nativeLinksSha256 !== undefined;
   if (pack.nativeCapturePinned || nativePinned) {
-    for (const field of ["nativeMapSha256", "nativeLinksSha256"]) {
-      assert.equal(typeof fixture[field], "string", id + ": actual capture freeze required");
-      assert.match(fixture[field], /^[0-9a-f]{64}$/u);
+    for (const field of ["nativeMapSha256", "nativeLinksSha256"] as const) {
+      const value = fixture[field];
+      assert(typeof value === "string", id + ": actual capture freeze required");
+      assert.match(value, /^[0-9a-f]{64}$/u);
     }
   }
-  const native = captured?.[index];
+  const native: NativeCapture | undefined = captured?.[index];
   if (native) {
     assert.equal(native.source, source, id);
     assert.equal(hash(native.source), fixture.sourceSha256, id);
@@ -239,6 +314,7 @@ for (const [index, [id, source, nodes]] of sources.entries()) {
       assert.deepEqual(shape(actual), fixture.runtime, id + ": captured native runtime");
       assert.deepEqual(shape(actual), shape(expected), id);
       if (runtime.isVNode(actual)) {
+        assert(runtime.isVNode(expected), id);
         assert.equal(actual.key, expected.key, id);
         assert.equal(actual.dynamicChildren?.length, expected.dynamicChildren?.length, id);
       }

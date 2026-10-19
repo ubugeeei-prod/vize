@@ -23,23 +23,23 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const matrices = [
   {
     name: "croquis consumption matrix",
-    generator: "tools/commands/davinci/croquis-consumers.rs",
+    generator: "tools/support/compat/davinci/croquis-consumers.ts",
     artifact: "docs/davinci/plan/croquis-consumption.md + croquis-consumption/<crate>.md",
   },
   {
     name: "SourceLocation consumer inventory",
-    generator: "tools/commands/davinci/sourcelocation-inventory.rs",
+    generator: "tools/support/compat/davinci/sourcelocation-inventory.ts",
     artifact: "docs/davinci/plan/sourcelocation-inventory.md",
   },
   {
     name: "consumer migration surface inventory",
-    generator: "tools/commands/davinci/consumer-migration-surfaces.rs",
+    generator: "tools/support/compat/davinci/consumer-migration-surfaces.ts",
     artifact:
       "docs/davinci/plan/consumer-migration-surfaces.md + consumer-migration-surfaces/<consumer>/<crate>.tsv",
   },
   {
     name: "natural v-on corpus inventory (evidence for the inline v-on buckets)",
-    generator: "tools/commands/davinci/v-on-corpus.rs",
+    generator: "tools/support/compat/davinci/v-on-corpus.ts",
     artifact: "docs/davinci/plan/v-on-corpus/<area>.tsv",
   },
   {
@@ -54,8 +54,11 @@ const matrices = [
   },
 ];
 
+// TypeScript generators run on Node directly; the remaining Rust ones on rust-script.
+const runner = (generator: string) => (generator.endsWith(".ts") ? "node" : "rust-script");
+
 function runCheck(generator: string, extraArgs: string[] = []) {
-  return spawnSync("rust-script", [path.join(repoRoot, generator), "--check", ...extraArgs], {
+  return spawnSync(runner(generator), [path.join(repoRoot, generator), "--check", ...extraArgs], {
     cwd: repoRoot,
     encoding: "utf8",
   });
@@ -69,7 +72,7 @@ for (const matrix of matrices) {
       result.status,
       0,
       `${matrix.artifact} is stale. Regenerate it with:\n` +
-        `  rust-script ${matrix.generator} --write\n\n` +
+        `  ${runner(matrix.generator)} ${matrix.generator} --write\n\n` +
         `${result.stdout}${result.stderr}`.trim(),
     );
   });
@@ -78,7 +81,7 @@ for (const matrix of matrices) {
 for (const name of ["rule-parity", "storage-summary"]) {
   test(`${name} run artifact is deterministic and rejects missing or edited output`, () => {
     const scratch = fs.mkdtempSync(path.join(os.tmpdir(), `davinci-${name}-`));
-    const generator = path.join(repoRoot, `tools/support/compat/davinci/${name}.mjs`);
+    const generator = path.join(repoRoot, `tools/support/compat/davinci/${name}.ts`);
     const run = (mode: string) =>
       spawnSync(process.execPath, [generator, mode, "--out-dir", scratch], {
         cwd: repoRoot,

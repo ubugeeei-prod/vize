@@ -8,7 +8,7 @@ import { gateOf, gatedProductIds } from "./croquis-gates.mjs";
 import { formatTable } from "./markdown.mjs";
 import { byKey } from "./ordering.mjs";
 
-export const SUMMARY_COMMAND = "rust-script tools/commands/davinci/croquis-consumers.rs --summary";
+export const SUMMARY_COMMAND = "node tools/support/compat/davinci/croquis-consumers.ts --summary";
 
 /** Every product in artifact order: type products by name, then `Croquis.<field>` rows. */
 export function productIdsOf(products) {

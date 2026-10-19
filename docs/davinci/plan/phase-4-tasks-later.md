@@ -56,11 +56,11 @@
 
 **Steps:**
 
-- [x] Table keys == registered rule names, asserted by a test; `tools/davinci/rule-parity.mjs` gains a `tier` column and fails on a rule without one
+- [x] Table keys == registered rule names, asserted by a test; `tools/davinci/rule-parity.ts` gains a `tier` column and fails on a rule without one
 - [x] Error-default rules (99 today) without witnesses enter `witness-exemptions.tsv`; that list is the P4-8 waves' drain queue (98 rows: `script/no-potential-component-option-typo` is heuristic, so its contract declares warning — the one `DEMOTED` rule)
 - [x] Offsets canonicalized through the L0 frame — in `crates/vize_patina/src/output/frame.rs` (`ScriptFrame`) rather than `output/shared.rs`, because the formatters only ever see file-absolute offsets: the frame is applied where a range's frame is known (the rule path and the native type-aware warnings). FP-1 [fixed](./ledger-fp.md), 17 → 0 baseline-shift pairs
 
-**Acceptance:** [ledger-fp.md](./ledger-fp.md) FP-1 flipped to `fixed` with the layoutit-grid pairs re-measured at 0 of 17; `rust-script tools/commands/davinci/rule-parity.rs --check` green with the tier column (TS-12); TS-9 snapshots unchanged except the FP-1 spans, each changed line listed in the PR; exemption inventory ≤ 99 rule entries; TS-13.
+**Acceptance:** [ledger-fp.md](./ledger-fp.md) FP-1 flipped to `fixed` with the layoutit-grid pairs re-measured at 0 of 17; `node tools/support/compat/davinci/rule-parity.ts --check` green with the tier column (TS-12); TS-9 snapshots unchanged except the FP-1 spans, each changed line listed in the PR; exemption inventory ≤ 99 rule entries; TS-13.
 
 **Deps:** P4-6a.
 

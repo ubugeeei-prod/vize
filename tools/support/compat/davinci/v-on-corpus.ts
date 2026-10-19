@@ -9,8 +9,8 @@
 // inventory (an intentional update, reviewed per spelling).
 //
 // Usage:
-//   rust-script tools/commands/davinci/v-on-corpus.rs --write   # regenerate
-//   rust-script tools/commands/davinci/v-on-corpus.rs --check   # diff committed
+//   node tools/support/compat/davinci/v-on-corpus.ts --write   # regenerate
+//   node tools/support/compat/davinci/v-on-corpus.ts --check   # diff committed
 
 import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.mjs";
 import {
@@ -23,7 +23,7 @@ import {
 function main() {
   const mode = process.argv[2];
   if (mode !== "--write" && mode !== "--check") {
-    console.error("usage: rust-script tools/commands/davinci/v-on-corpus.rs --write | --check");
+    console.error("usage: node tools/support/compat/davinci/v-on-corpus.ts --write | --check");
     process.exit(2);
   }
   const set = {

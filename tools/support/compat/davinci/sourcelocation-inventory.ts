@@ -20,9 +20,9 @@
 // or deleted consumer fails regeneration instead of going silently stale.
 //
 // Usage:
-//   rust-script tools/commands/davinci/sourcelocation-inventory.rs --write     # regenerate
-//   rust-script tools/commands/davinci/sourcelocation-inventory.rs --check     # diff committed
-//   rust-script tools/commands/davinci/sourcelocation-inventory.rs --summary   # span-read counts
+//   node tools/support/compat/davinci/sourcelocation-inventory.ts --write     # regenerate
+//   node tools/support/compat/davinci/sourcelocation-inventory.ts --check     # diff committed
+//   node tools/support/compat/davinci/sourcelocation-inventory.ts --summary   # span-read counts
 //
 // Node builtins only. Output is deterministic (stable sort everywhere,
 // no timestamps, no absolute paths).
@@ -39,8 +39,8 @@ import {
 } from "./lib/sourcelocation-scan.mjs";
 
 const ARTIFACT_REL = "docs/davinci/plan/sourcelocation-inventory.md";
-const REGEN_COMMAND = "rust-script tools/commands/davinci/sourcelocation-inventory.rs --write";
-const SUMMARY_COMMAND = "rust-script tools/commands/davinci/sourcelocation-inventory.rs --summary";
+const REGEN_COMMAND = "node tools/support/compat/davinci/sourcelocation-inventory.ts --write";
+const SUMMARY_COMMAND = "node tools/support/compat/davinci/sourcelocation-inventory.ts --summary";
 
 /** `source` reads counted at generation time of the P0-9 map, all migrated
  * away from `SourceLocation::source` by Davinci P1-3. */
@@ -49,7 +49,18 @@ const P0_9_SOURCE_READS = 106;
  * known-missed reads the limits section of the P0-9 map documented. */
 const P1_4_LINE_COL_READS = "3 direct sites + 4 known-missed";
 
-function generate(scan) {
+type Align = "left" | "right";
+interface WorkspaceScan {
+  readonly crates: readonly { readonly total: number }[];
+  readonly allSites: readonly {
+    readonly member: string;
+    readonly relPath: string;
+    readonly line: number;
+  }[];
+  readonly offsetReadsByCrate: ReadonlyMap<string, number>;
+}
+
+function generate(scan: WorkspaceScan): string {
   const { crates, allSites } = scan;
   const grandTotal = crates.reduce((sum, c) => sum + c.total, 0);
   if (grandTotal !== 0) {
@@ -79,7 +90,7 @@ function generate(scan) {
 
   const countsTable = formatTable(
     ["crate", ...MEMBERS.map((m) => `\`${m}\``), "total", "in test code"],
-    ["left", ...MEMBERS.map(() => "right"), "right", "right"],
+    ["left", ...MEMBERS.map((): Align => "right"), "right", "right"] satisfies Align[],
     [["**total**", ...MEMBERS.map(() => "0"), "0", "0"]],
   );
 
@@ -132,8 +143,8 @@ function generate(scan) {
 
   return `<!-- GENERATED FILE — do not edit by hand.
      Regenerate: ${REGEN_COMMAND}
-     Verify:     rust-script tools/commands/davinci/sourcelocation-inventory.rs --check
-     Generator:  tools/support/compat/davinci/sourcelocation-inventory.mjs -->
+     Verify:     node tools/support/compat/davinci/sourcelocation-inventory.ts --check
+     Generator:  tools/support/compat/davinci/sourcelocation-inventory.ts -->
 
 # \`SourceLocation\` consumer inventory
 
@@ -250,14 +261,14 @@ representation:
 `;
 }
 
-function renderSummary(offsetReadsByCrate) {
+function renderSummary(offsetReadsByCrate: ReadonlyMap<string, number>): string {
   const crates = [...offsetReadsByCrate.keys()].sort(byKey);
-  const total = crates.reduce((sum, crate) => sum + offsetReadsByCrate.get(crate), 0);
+  const total = crates.reduce((sum, crate) => sum + (offsetReadsByCrate.get(crate) ?? 0), 0);
   const table = formatTable(
     ["crate", "loc-shaped span reads"],
-    ["left", "right"],
+    ["left", "right"] satisfies Align[],
     [
-      ...crates.map((crate) => [`\`${crate}\``, String(offsetReadsByCrate.get(crate))]),
+      ...crates.map((crate) => [`\`${crate}\``, String(offsetReadsByCrate.get(crate) ?? 0)]),
       [`**total** (${crates.length} crates)`, String(total)],
     ],
   );
@@ -268,7 +279,7 @@ function main() {
   const mode = process.argv[2];
   if (mode !== "--write" && mode !== "--check" && mode !== "--summary") {
     console.error(
-      "usage: rust-script tools/commands/davinci/sourcelocation-inventory.rs --write | --check | --summary",
+      "usage: node tools/support/compat/davinci/sourcelocation-inventory.ts --write | --check | --summary",
     );
     process.exit(2);
   }

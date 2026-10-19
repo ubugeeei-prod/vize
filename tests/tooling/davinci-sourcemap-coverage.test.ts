@@ -14,7 +14,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.mjs";
+import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.ts";
 
 type Budget = {
   backend: string;

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { parseTomlLite } from "../../support/compat/davinci/toml-lite.mjs";
+import { parseTomlLite } from "../../support/compat/davinci/toml-lite.ts";
 
 // Before this manifest existed, the repository pin was also the measurement pin.
 // Keep those historical sources reproducible; an explicit malformed pin must fail.

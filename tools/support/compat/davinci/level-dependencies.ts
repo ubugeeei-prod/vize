@@ -2,28 +2,29 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { inspectDirectoryDependencies } from "./directory-dependencies.mjs";
+import { inspectDirectoryDependencies, type DirectoryViolation } from "./directory-dependencies.ts";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 import {
   assertAllowlistRatchet,
+  type AllowlistKey,
   forbidden,
   key,
   policyPath,
   readBaseAllowlist,
   requireEvidence,
   validateAllowlist,
-} from "./level-dependency-policy.mjs";
+} from "./level-dependency-policy.ts";
 export {
   assertAllowlistRatchet,
   initialEntries,
   policyPath,
   readBaseAllowlist,
   validateAllowlist,
-} from "./level-dependency-policy.mjs";
+} from "./level-dependency-policy.ts";
 const levelName = /^vize_l[0-9]+(?:_to_l[0-9]+|_derive)?$/u;
 
-export function readMetadata(cwd = repoRoot) {
+export function readMetadata(cwd = repoRoot): unknown {
   return JSON.parse(
     execFileSync("cargo", ["metadata", "--no-deps", "--format-version", "1", "--locked"], {
       cwd,
@@ -33,41 +34,139 @@ export function readMetadata(cwd = repoRoot) {
   );
 }
 
-export function inspectLevelDependencies(metadata, policy) {
-  validateAllowlist(policy);
+type Record_ = Readonly<Record<string, unknown>>;
+type DependencyKind = "dev" | "build" | null;
+interface Dependency {
+  readonly name: string;
+  readonly kind: DependencyKind;
+  readonly optional: boolean;
+  readonly rename: string | null;
+  readonly target: string | null;
+  readonly path?: string;
+}
+interface Package {
+  readonly id: string;
+  readonly name: string;
+  readonly manifest_path: string;
+  readonly dependencies: readonly unknown[];
+}
+interface Declaration {
+  readonly from: string;
+  readonly to: string;
+  readonly rename: string | null;
+  readonly target: string | null;
+  readonly optional: boolean;
+  readonly kind: DependencyKind;
+  readonly destination: Package | null;
+}
+interface Witness {
+  readonly root: string;
+  readonly edge: AllowlistKey;
+  readonly path: readonly string[];
+}
+export interface DependencyReport {
+  readonly directoryViolations: readonly DirectoryViolation[];
+  readonly roots: readonly {
+    readonly name: string;
+    readonly id: string;
+    readonly manifest: string;
+  }[];
+  readonly aliases: Readonly<Record<string, string>>;
+  readonly exceptions: number;
+  readonly witnesses: readonly Witness[];
+  readonly unlisted: readonly Witness[];
+  readonly stale: readonly { readonly root: string; readonly edge: string }[];
+  readonly devOracleEdges: number;
+  readonly buildEdges: readonly Omit<Declaration, "destination">[];
+  readonly unknown: readonly string[];
+}
+
+const isRecord = (value: unknown): value is Record_ =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+const byCodeUnit = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+const dependencyKinds: readonly unknown[] = [null, "dev", "build"];
+
+function dependency(dep: unknown): Dependency {
   requireEvidence(
-    Array.isArray(metadata?.packages) &&
+    isRecord(dep) &&
+      typeof dep.name === "string" &&
+      dependencyKinds.includes(dep.kind) &&
+      typeof dep.optional === "boolean",
+    "invalid dependency declaration",
+  );
+  requireEvidence(
+    dep.rename === null || typeof dep.rename === "string",
+    "missing dependency rename",
+  );
+  requireEvidence(
+    dep.target === null || typeof dep.target === "string",
+    "missing dependency target",
+  );
+  if (dep.path !== undefined)
+    requireEvidence(
+      typeof dep.path === "string" && path.isAbsolute(dep.path),
+      "invalid dependency path",
+    );
+  return {
+    name: dep.name,
+    kind: dep.kind as DependencyKind,
+    optional: dep.optional,
+    rename: dep.rename,
+    target: dep.target,
+    ...(typeof dep.path === "string" ? { path: dep.path } : {}),
+  };
+}
+
+function workspacePackage(pkg: Record_): Package {
+  requireEvidence(
+    typeof pkg.id === "string" &&
+      pkg.id.length > 0 &&
+      typeof pkg.name === "string" &&
+      pkg.name.length > 0 &&
+      typeof pkg.manifest_path === "string" &&
+      path.isAbsolute(pkg.manifest_path) &&
+      Array.isArray(pkg.dependencies),
+    "invalid workspace package identity",
+  );
+  return {
+    id: pkg.id,
+    name: pkg.name,
+    manifest_path: pkg.manifest_path,
+    dependencies: pkg.dependencies as readonly unknown[],
+  };
+}
+
+export function inspectLevelDependencies(metadata: unknown, policy: unknown): DependencyReport {
+  const allowlist = validateAllowlist(policy);
+  requireEvidence(
+    isRecord(metadata) &&
+      Array.isArray(metadata.packages) &&
       Array.isArray(metadata.workspace_members) &&
       metadata.workspace_members.length > 0,
     "missing workspace metadata",
   );
+  const workspaceRoot = metadata.workspace_root;
   requireEvidence(
-    typeof metadata.workspace_root === "string" && path.isAbsolute(metadata.workspace_root),
+    typeof workspaceRoot === "string" && path.isAbsolute(workspaceRoot),
     "missing workspace root",
   );
-  const members = new Set(metadata.workspace_members);
+  const memberIds = metadata.workspace_members as readonly unknown[];
+  const members = new Set(memberIds);
   requireEvidence(
-    members.size === metadata.workspace_members.length &&
+    members.size === memberIds.length &&
       [...members].every((id) => typeof id === "string" && id.length > 0),
     "duplicate or invalid workspace member IDs",
   );
-  const packages = metadata.packages.filter((pkg) => members.has(pkg.id));
+  const packages = (metadata.packages as readonly unknown[])
+    .filter((pkg): pkg is Record_ => isRecord(pkg) && members.has(pkg.id))
+    .map(workspacePackage);
   requireEvidence(packages.length === members.size, "missing or duplicate workspace package IDs");
-  const byName = new Map(),
-    byDirectory = new Map(),
-    seenIds = new Set(),
-    roots = new Set(),
-    aliases = new Map();
+  const byName = new Map<string, Package>(),
+    byDirectory = new Map<string, Package>(),
+    seenIds = new Set<string>(),
+    roots = new Set<string>(),
+    aliases = new Map<string, string>();
   for (const pkg of packages) {
-    requireEvidence(
-      typeof pkg.id === "string" &&
-        pkg.id.length > 0 &&
-        typeof pkg.name === "string" &&
-        pkg.name.length > 0 &&
-        path.isAbsolute(pkg.manifest_path ?? "") &&
-        Array.isArray(pkg.dependencies),
-      "invalid workspace package identity",
-    );
     const directory = path.dirname(path.resolve(pkg.manifest_path));
     requireEvidence(
       !seenIds.has(pkg.id) && !byName.has(pkg.name) && !byDirectory.has(directory),
@@ -78,31 +177,14 @@ export function inspectLevelDependencies(metadata, policy) {
     byDirectory.set(directory, pkg);
     if (levelName.test(pkg.name)) roots.add(pkg.name);
   }
-  const edges = new Map();
+  const edges = new Map<string, Declaration[]>();
   for (const pkg of packages) {
-    const declarations = [];
-    for (const dep of pkg.dependencies) {
-      requireEvidence(
-        typeof dep.name === "string" &&
-          [null, "dev", "build"].includes(dep.kind) &&
-          typeof dep.optional === "boolean",
-        "invalid dependency declaration",
-      );
-      requireEvidence(
-        dep.rename === null || typeof dep.rename === "string",
-        "missing dependency rename",
-      );
-      requireEvidence(
-        dep.target === null || typeof dep.target === "string",
-        "missing dependency target",
-      );
-      let destination = null;
+    const declarations: Declaration[] = [];
+    for (const raw of pkg.dependencies) {
+      const dep = dependency(raw);
+      let destination: Package | null = null;
       if (dep.path !== undefined) {
-        requireEvidence(
-          typeof dep.path === "string" && path.isAbsolute(dep.path),
-          "invalid dependency path",
-        );
-        destination = byDirectory.get(path.resolve(dep.path));
+        destination = byDirectory.get(path.resolve(dep.path)) ?? null;
         requireEvidence(
           destination?.name === dep.name,
           "missing or inconsistent dependency package identity: " + dep.name,
@@ -137,13 +219,14 @@ export function inspectLevelDependencies(metadata, policy) {
     edges.set(pkg.name, declarations);
   }
   requireEvidence(roots.size > 0, "no level roots found in workspace metadata");
-  const witnesses = [];
-  for (const root of [...roots].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))) {
+  const witnesses: Witness[] = [];
+  for (const root of [...roots].sort(byCodeUnit)) {
     const seen = new Set([root]),
       queue = [{ name: root, path: [root] }];
     for (let index = 0; index < queue.length; index += 1) {
       const current = queue[index];
-      for (const edge of edges.get(current.name)) {
+      if (!current) continue;
+      for (const edge of edges.get(current.name) ?? []) {
         if (edge.kind !== null) continue;
         const route = [...current.path, edge.to];
         if (forbidden(edge.to)) {
@@ -167,11 +250,11 @@ export function inspectLevelDependencies(metadata, policy) {
     }
   }
   witnesses.sort((a, b) => (a.root + key(a.edge)).localeCompare(b.root + key(b.edge)));
-  const allowed = new Map(policy.entries.map((entry) => [key(entry), entry]));
+  const allowed = new Map(allowlist.entries.map((entry) => [key(entry), entry]));
   const unlisted = witnesses.filter(
     ({ root, edge }) => !allowed.get(key(edge))?.roots.includes(root),
   );
-  const stale = policy.entries.flatMap((entry) =>
+  const stale = allowlist.entries.flatMap((entry) =>
     entry.roots
       .filter(
         (root) =>
@@ -179,18 +262,20 @@ export function inspectLevelDependencies(metadata, policy) {
       )
       .map((root) => ({ root, edge: key(entry) })),
   );
-  const rootDeclarations = [...roots].flatMap((root) => edges.get(root));
+  const rootDeclarations = [...roots].flatMap((root) => edges.get(root) ?? []);
   return {
-    directoryViolations: inspectDirectoryDependencies(metadata),
-    roots: [...roots]
-      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
-      .map((name) => ({
-        name,
-        id: byName.get(name).id,
-        manifest: path.relative(metadata.workspace_root, byName.get(name).manifest_path),
-      })),
+    directoryViolations: inspectDirectoryDependencies({
+      workspace_root: workspaceRoot,
+      workspace_members: [...seenIds],
+      packages: packages.map((pkg) => ({ ...pkg, dependencies: pkg.dependencies.map(dependency) })),
+    }),
+    roots: [...roots].sort(byCodeUnit).map((name) => {
+      const pkg = byName.get(name);
+      requireEvidence(pkg, "missing level root package: " + name);
+      return { name, id: pkg.id, manifest: path.relative(workspaceRoot, pkg.manifest_path) };
+    }),
     aliases: Object.fromEntries([...aliases].sort(([a], [b]) => a.localeCompare(b))),
-    exceptions: policy.entries.length,
+    exceptions: allowlist.entries.length,
     witnesses,
     unlisted,
     stale,
@@ -208,7 +293,7 @@ export function inspectLevelDependencies(metadata, policy) {
   };
 }
 
-export function assertDependencyReport(report) {
+export function assertDependencyReport(report: DependencyReport): void {
   requireEvidence(
     report.directoryViolations.length === 0,
     "Davinci-to-crates dependency paths: " + JSON.stringify(report.directoryViolations),
@@ -227,7 +312,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const args = process.argv.slice(2);
   requireEvidence(
     args.length === 2 && args[0] === "--base",
-    "usage: node level-dependencies.mjs --base <full SHA>",
+    "usage: node level-dependencies.ts --base <full SHA>",
   );
   const policy = validateAllowlist(
     JSON.parse(readFileSync(path.join(repoRoot, policyPath), "utf8")),

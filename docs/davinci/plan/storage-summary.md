@@ -9,13 +9,13 @@ Generated aggregate tables are not committed.
 Generate and verify the bundle locally with:
 
 ```sh
-node tools/support/compat/davinci/generated-ledgers.mjs --write
-node tools/support/compat/davinci/generated-ledgers.mjs --check
+node tools/support/compat/davinci/generated-ledgers.ts --write
+node tools/support/compat/davinci/generated-ledgers.ts --check
 ```
 
 Outputs live in the Git-ignored `artifacts/davinci-ledgers/` directory. To compare
 an isolated individual report, pass `--out-dir <dir>` to
-`node tools/support/compat/davinci/storage-summary.mjs --write` and `--check`.
+`node tools/support/compat/davinci/storage-summary.ts --write` and `--check`.
 The check rejects absent output and any byte difference from the current TSV.
 
 The [storage boundary](./storage-boundary.md) remains the policy. Its reviewed

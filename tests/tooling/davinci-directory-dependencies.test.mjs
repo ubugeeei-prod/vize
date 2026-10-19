@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { inspectDirectoryDependencies } from "../../tools/support/compat/davinci/directory-dependencies.mjs";
+import { inspectDirectoryDependencies } from "../../tools/support/compat/davinci/directory-dependencies.ts";
 
 function fixture() {
   const packages = [

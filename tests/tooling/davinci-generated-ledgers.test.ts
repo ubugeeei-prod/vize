@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const generator = "tools/support/compat/davinci/generated-ledgers.mjs";
+const generator = "tools/support/compat/davinci/generated-ledgers.ts";
 const names = [
   "analysis-consumption-summary.md",
   "consumer-migration-summary.md",

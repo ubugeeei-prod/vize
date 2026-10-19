@@ -2,7 +2,7 @@
 // (docs/davinci/plan/storage-inventory.tsv). The per-file rows are the ratchet
 // — the storage policy test holds them to strict equality with the measured
 // sources — and every aggregate below is a pure function of those rows, so it
-// is generated (`rust-script tools/commands/davinci/storage-summary.rs
+// is generated (`node tools/support/compat/davinci/storage-summary.ts
 // --write`) instead of hand-copied into the plan and the test.
 
 import { formatTable } from "../../tools/support/compat/davinci/lib/markdown.mjs";
@@ -17,8 +17,7 @@ import { storageKinds, type StorageKind } from "./davinci-storage-scan.ts";
 
 export const STORAGE_INVENTORY_REL = "docs/davinci/plan/storage-inventory.tsv";
 export const STORAGE_SUMMARY_REL = "artifacts/davinci-ledgers/storage-summary.md";
-export const STORAGE_SUMMARY_REGEN =
-  "rust-script tools/commands/davinci/storage-summary.rs --write";
+export const STORAGE_SUMMARY_REGEN = "node tools/support/compat/davinci/storage-summary.ts --write";
 
 export const storageTypeNames: Record<StorageKind, string> = {
   allocVec: "alloc::vec::Vec",
@@ -52,7 +51,7 @@ export function renderStorageSummary(rows: readonly InventoryRow[]): string {
   );
   return `<!-- GENERATED FILE - do not edit by hand.
      Regenerate: ${STORAGE_SUMMARY_REGEN}
-     Verify:     rust-script tools/commands/davinci/storage-summary.rs --check
+     Verify:     node tools/support/compat/davinci/storage-summary.ts --check
      Source:     ${STORAGE_INVENTORY_REL} (the reviewed per-file ratchet) -->
 
 # Davinci storage summary

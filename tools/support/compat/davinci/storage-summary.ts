@@ -17,5 +17,5 @@ aggregateMain(
     renderStorageSummary(
       parseStorageInventory(readFileSync(path.join(repoRoot, STORAGE_INVENTORY_REL), "utf8")),
     ),
-  "usage: rust-script tools/commands/davinci/storage-summary.rs --write | --check | --summary [--out-dir <dir>]",
+  "usage: node tools/support/compat/davinci/storage-summary.ts --write | --check | --summary [--out-dir <dir>]",
 );

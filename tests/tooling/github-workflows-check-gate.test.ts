@@ -160,11 +160,11 @@ test("source gates cover iteration events while full qualification runs on sched
   assert.deepEqual(
     sourceInventoryLanes.flat().map((args) => `node ${args.join(" ")}`),
     [
-      "node tools/support/compat/davinci/croquis-consumers.mjs --check",
-      "node tools/support/compat/davinci/consumer-migration-surfaces.mjs --check",
+      "node tools/support/compat/davinci/croquis-consumers.ts --check",
+      "node tools/support/compat/davinci/consumer-migration-surfaces.ts --check",
       "node --test tests/tooling/davinci-storage-policy.test.ts",
-      "node tools/support/compat/davinci/generated-ledgers.mjs --write",
-      "node tools/support/compat/davinci/generated-ledgers.mjs --check",
+      "node tools/support/compat/davinci/generated-ledgers.ts --write",
+      "node tools/support/compat/davinci/generated-ledgers.ts --check",
     ],
   );
   assert.ok(

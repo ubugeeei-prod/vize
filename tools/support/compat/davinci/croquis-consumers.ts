@@ -29,9 +29,9 @@
 // --summary prints the same source-qualified report on demand.
 //
 // Usage:
-//   rust-script tools/commands/davinci/croquis-consumers.rs --write     # regenerate index + shards
-//   rust-script tools/commands/davinci/croquis-consumers.rs --check     # byte-compare against committed
-//   rust-script tools/commands/davinci/croquis-consumers.rs --summary   # print cross-crate totals
+//   node tools/support/compat/davinci/croquis-consumers.ts --write     # regenerate index + shards
+//   node tools/support/compat/davinci/croquis-consumers.ts --check     # byte-compare against committed
+//   node tools/support/compat/davinci/croquis-consumers.ts --summary   # print cross-crate totals
 //
 // Node builtins only. Output is deterministic (stable sort everywhere,
 // no timestamps, no absolute paths).
@@ -45,7 +45,15 @@ import { gateViolations, renderSummary } from "./lib/croquis-render.mjs";
 import { renderCroquisArtifacts } from "./lib/croquis-shards.mjs";
 import { ARTIFACT_REL, REGEN_COMMAND, SHARD_DIR_REL, repoRoot } from "./lib/paths.mjs";
 
-function splitCroquisArtifacts(all) {
+interface ArtifactFile {
+  readonly relPath: string;
+  readonly text: string;
+}
+
+function splitCroquisArtifacts(all: readonly ArtifactFile[]): {
+  files: ArtifactFile[];
+  runFiles: ArtifactFile[];
+} {
   return {
     files: all.filter((file) => file.relPath === ARTIFACT_REL),
     runFiles: all.filter((file) => file.relPath !== ARTIFACT_REL),
@@ -56,7 +64,7 @@ function main() {
   const mode = process.argv[2];
   if (mode !== "--write" && mode !== "--check" && mode !== "--summary") {
     console.error(
-      "usage: rust-script tools/commands/davinci/croquis-consumers.rs --write | --check | --summary",
+      "usage: node tools/support/compat/davinci/croquis-consumers.ts --write | --check | --summary",
     );
     process.exit(2);
   }

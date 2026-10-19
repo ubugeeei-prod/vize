@@ -12,7 +12,7 @@ import {
   sha256,
   MEMORY_ENVIRONMENT,
 } from "../../../tools/benchmarks/scripts/level-memory-lib.mjs";
-import { parseTomlLite } from "../../../tools/support/compat/davinci/toml-lite.mjs";
+import { parseTomlLite } from "../../../tools/support/compat/davinci/toml-lite.ts";
 import {
   write,
   listing,

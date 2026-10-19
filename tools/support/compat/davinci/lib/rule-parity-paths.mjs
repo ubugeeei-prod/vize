@@ -20,7 +20,7 @@ export const ARTIFACT_REL = "artifacts/davinci-ledgers/rule-parity.md";
 export const ARTIFACT = path.join(repoRoot, ARTIFACT_REL);
 export const OVERRIDES_REL = "docs/davinci/plan/rule-parity-overrides.toml";
 export const OVERRIDES = path.join(repoRoot, OVERRIDES_REL);
-export const REGEN_COMMAND = "rust-script tools/commands/davinci/rule-parity.rs --write";
+export const REGEN_COMMAND = "node tools/support/compat/davinci/rule-parity.ts --write";
 
 /** `static META` type -> rule family, the partition every count is grouped by. */
 export const META_KINDS = new Map([

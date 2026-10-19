@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse as parseToml } from "@iarna/toml";
 import { withoutHostRuntimeReferences } from "./davinci-host-imports.ts";
-import { readMetadata as readCargoMetadata } from "../../../tools/support/compat/davinci/level-dependencies.mjs";
+import { readMetadata as readCargoMetadata } from "../../../tools/support/compat/davinci/level-dependencies.ts";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 

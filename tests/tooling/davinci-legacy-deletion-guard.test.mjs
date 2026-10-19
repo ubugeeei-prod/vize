@@ -6,7 +6,7 @@ import path from "node:path";
 import {
   hasExactSuccessfulAudit,
   removedLegacyManifests,
-} from "../../tools/support/compat/davinci/legacy-deletion-guard.mjs";
+} from "../../tools/support/compat/davinci/legacy-deletion-guard.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const sha = "a".repeat(40);
@@ -62,5 +62,5 @@ void test("the existing PR and merge-group check runs the conditional deletion g
   assert.match(workflow, /- name: Guard legacy crate deletion\n\s+if: .*pull_request.*merge_group/);
   assert.match(workflow, /BASE_SHA: .*pull_request\.base\.sha.*merge_group\.base_sha/);
   assert.match(workflow, /CANDIDATE_SHA: .*pull_request\.head\.sha.*merge_group\.head_sha/);
-  assert.match(workflow, /vp node tools\/support\/compat\/davinci\/legacy-deletion-guard\.mjs/);
+  assert.match(workflow, /vp node tools\/support\/compat\/davinci\/legacy-deletion-guard\.ts/);
 });

@@ -39,4 +39,4 @@ jobs:
       - name: Test dependency policy mutations
         run: node --test tests/tooling/davinci-level-dependencies.test.mjs tests/tooling/davinci-directory-dependencies.test.mjs
       - name: Report and ratchet normal level dependencies
-        run: node tools/support/compat/davinci/level-dependencies.mjs --base "$DEPENDENCY_BASE"
+        run: node tools/support/compat/davinci/level-dependencies.ts --base "$DEPENDENCY_BASE"

@@ -8,16 +8,16 @@ run's checkout. Generated tables are not committed.
 Generate and verify the same bundle locally with:
 
 ```sh
-node tools/support/compat/davinci/generated-ledgers.mjs --write
-node tools/support/compat/davinci/generated-ledgers.mjs --check
+node tools/support/compat/davinci/generated-ledgers.ts --write
+node tools/support/compat/davinci/generated-ledgers.ts --check
 ```
 
 The output lives in `artifacts/davinci-ledgers/`, which Git ignores. For an
 isolated individual report:
 
 ```sh
-node tools/support/compat/davinci/rule-parity.mjs --write --out-dir /tmp/vize-rule-parity
-node tools/support/compat/davinci/rule-parity.mjs --check --out-dir /tmp/vize-rule-parity
+node tools/support/compat/davinci/rule-parity.ts --write --out-dir /tmp/vize-rule-parity
+node tools/support/compat/davinci/rule-parity.ts --check --out-dir /tmp/vize-rule-parity
 ```
 
 The generator derives rule identity, registration surfaces, SFC/JSX dispatch,

@@ -14,9 +14,9 @@
 // uploaded by CI. Cross-file totals are never committed; --summary prints them.
 //
 // Usage:
-//   rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write
-//   rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
-//   rust-script tools/commands/davinci/consumer-migration-surfaces.rs --summary
+//   node tools/support/compat/davinci/consumer-migration-surfaces.ts --write
+//   node tools/support/compat/davinci/consumer-migration-surfaces.ts --check
+//   node tools/support/compat/davinci/consumer-migration-surfaces.ts --summary
 
 import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.mjs";
 import {
@@ -31,13 +31,13 @@ import {
 } from "./lib/consumer-migration-summary.mjs";
 
 const ARTIFACT_REL = "docs/davinci/plan/consumer-migration-surfaces.md";
-const REGEN_COMMAND = "rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write";
+const REGEN_COMMAND = "node tools/support/compat/davinci/consumer-migration-surfaces.ts --write";
 
 function main() {
   const mode = process.argv[2];
   if (mode !== "--write" && mode !== "--check" && mode !== "--summary") {
     console.error(
-      "usage: rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write | --check | --summary",
+      "usage: node tools/support/compat/davinci/consumer-migration-surfaces.ts --write | --check | --summary",
     );
     process.exit(2);
   }

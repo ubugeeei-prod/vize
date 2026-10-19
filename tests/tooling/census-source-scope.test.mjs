@@ -10,7 +10,7 @@ import { fixture } from "./_helpers/rust-workspace-fixture.mjs";
 
 void test("known census renderers and owned reports retain tooling without product source lanes", () => {
   const paths = [
-    "tools/support/compat/davinci/croquis-consumers.mjs",
+    "tools/support/compat/davinci/croquis-consumers.ts",
     "tools/support/compat/davinci/lib/croquis-render.mjs",
     "tools/support/compat/davinci/lib/croquis-shards.mjs",
     "docs/davinci/plan/croquis-consumption.md",
@@ -107,7 +107,7 @@ void test("census-only reports and exact Node renderers select no workspace Rust
   const plan = planAffectedRust(fixture(), [
     "docs/davinci/plan/croquis-consumption.md",
     "docs/davinci/plan/croquis-consumption/vize_atelier_sfc.md",
-    "tools/support/compat/davinci/croquis-consumers.mjs",
+    "tools/support/compat/davinci/croquis-consumers.ts",
     "tools/support/compat/davinci/lib/croquis-render.mjs",
     "tools/support/compat/davinci/lib/croquis-shards.mjs",
   ]);

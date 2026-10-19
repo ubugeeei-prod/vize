@@ -9,7 +9,7 @@ import { modeLabel, surfaceList } from "./consumer-migration-render.mjs";
 import { SURFACES } from "./consumer-migration-scan.mjs";
 
 export const SUMMARY_COMMAND =
-  "rust-script tools/commands/davinci/consumer-migration-surfaces.rs --summary";
+  "node tools/support/compat/davinci/consumer-migration-surfaces.ts --summary";
 
 function n(value) {
   return String(value);

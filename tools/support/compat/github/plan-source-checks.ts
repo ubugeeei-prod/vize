@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 
 const censusScripts = new Set([
-  "tools/support/compat/davinci/croquis-consumers.mjs",
+  "tools/support/compat/davinci/croquis-consumers.ts",
   "tools/support/compat/davinci/lib/croquis-render.mjs",
   "tools/support/compat/davinci/lib/croquis-shards.mjs",
 ]);

@@ -27,7 +27,7 @@ The executable ledger requires strict equality, so both growth and reduction
 must update the file row in the same change. The aggregates (retained
 `alloc::vec::Vec` totals, per category and per scope) are derived from those
 rows into the [storage summary run artifact](./storage-summary.md) by
-`node tools/support/compat/davinci/generated-ledgers.mjs --write`, never copied
+`node tools/support/compat/davinci/generated-ledgers.ts --write`, never copied
 by hand or committed; full CI and release publish the validated checkout’s totals.
 
 | Category | Reason                                                                                                                    |

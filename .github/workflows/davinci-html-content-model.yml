@@ -14,7 +14,7 @@ on:
     paths:
       - "crates/vize_patina/src/html_content_model/**"
       - "crates/vize_patina/tests/html_content_model/**"
-      - "tools/support/compat/davinci/html-content-model-oracle.mjs"
+      - "tools/support/compat/davinci/html-content-model-oracle.ts"
       - ".github/workflows/davinci-html-content-model.yml"
   workflow_dispatch:
 
@@ -48,4 +48,4 @@ jobs:
         working-directory: tests
         run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
       - name: Compare checker verdicts with Chromium's parser
-        run: node tools/support/compat/davinci/html-content-model-oracle.mjs --engine chromium
+        run: node tools/support/compat/davinci/html-content-model-oracle.ts --engine chromium

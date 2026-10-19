@@ -7,9 +7,9 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const command = path.join(repoRoot, "tools/commands/davinci/consumer-migration-surfaces.rs");
+const generator = "tools/support/compat/davinci/consumer-migration-surfaces.ts";
 const legacyFiles = [
-  "tools/support/compat/davinci/consumer-migration-surfaces.mjs",
+  generator,
   "tools/support/compat/davinci/lib/artifact-set.mjs",
   "tools/support/compat/davinci/lib/consumer-migration-render.mjs",
   "tools/support/compat/davinci/lib/consumer-migration-scan.mjs",
@@ -65,10 +65,10 @@ function createScratchRepo() {
 }
 
 function runSurfaceCommand(root, mode) {
-  return spawnSync("rust-script", [command, mode], {
+  // The scratch copy resolves its repository root from its own location.
+  return spawnSync(process.execPath, [path.join(root, generator), mode], {
     cwd: root,
     encoding: "utf8",
-    env: { ...process.env, VIZE_REPO_ROOT: root },
   });
 }
 
@@ -99,7 +99,7 @@ void test("consumer migration surfaces are run artifacts and a committed shard i
     );
     assert.match(
       stale.stderr,
-      /Regenerate with: rust-script tools\/commands\/davinci\/consumer-migration-surfaces\.rs --write/,
+      /Regenerate with: node tools\/support\/compat\/davinci\/consumer-migration-surfaces\.ts --write/,
     );
 
     // A shard committed under the plan directory is stale, and --write deletes it.

@@ -65,7 +65,7 @@ test("genuine value producers, consumers, writers and capture dependencies quali
     "davinci/vize_l3/Cargo.toml",
     ".cargo/config.toml",
     "rust-toolchain.toml",
-    "tools/support/compat/davinci/plugin-sandbox-image.mjs",
+    "tools/support/compat/davinci/plugin-sandbox-image.ts",
     "tools/support/compat/github/native-attribute-values-7502-capture.mjs",
     "tools/support/compat/github/plan-tooling-tests.mjs",
     ".github/actions/test-native-attribute-values-7502/action.yml",
@@ -115,7 +115,7 @@ test("the dedicated action preserves both failing processes and all evidence", (
   );
   assert.match(
     action,
-    /run: vp exec node tools\/support\/compat\/davinci\/plugin-sandbox-image\.mjs/,
+    /run: vp exec node tools\/support\/compat\/davinci\/plugin-sandbox-image\.ts/,
   );
   for (const [key, suffix] of [
     ["CAPTURE", "/first.capture.json"],

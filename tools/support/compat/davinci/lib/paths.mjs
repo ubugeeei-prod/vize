@@ -23,4 +23,4 @@ export const ARTIFACT_REL = "docs/davinci/plan/croquis-consumption.md";
 export const ARTIFACT = path.join(repoRoot, ARTIFACT_REL);
 // One shard per consuming crate; the generator owns this directory outright.
 export const SHARD_DIR_REL = "docs/davinci/plan/croquis-consumption";
-export const REGEN_COMMAND = "rust-script tools/commands/davinci/croquis-consumers.rs --write";
+export const REGEN_COMMAND = "node tools/support/compat/davinci/croquis-consumers.ts --write";

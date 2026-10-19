@@ -12,7 +12,7 @@ runs:
         cargo test -p vize_l4 --profile ci --doc targets::dom::output
         rm -f "$VIZE_L4_SELECTED_LITERAL_CAPTURE"
         cargo test -p vize_l4 --profile ci --test native_selected_template_literals original_modern_literals_keep_complete_module_map_and_projection_custody -- --exact
-        vp node tools/support/compat/davinci/selected-template-literals.mjs "$VIZE_L4_SELECTED_LITERAL_CAPTURE"
+        vp node tools/support/compat/davinci/selected-template-literals.ts "$VIZE_L4_SELECTED_LITERAL_CAPTURE"
     - name: Retain the actual literal module, map and range capture
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

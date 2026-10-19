@@ -26,7 +26,7 @@
 // chain (0 when the whole chain is faithful).
 //
 // Usage:
-//   node tools/support/compat/davinci/html-content-model-oracle.mjs --engine chromium|parse5 [--module <path>]
+//   node tools/support/compat/davinci/html-content-model-oracle.ts --engine chromium|parse5 [--module <path>]
 
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -55,12 +55,53 @@ const VOID = new Set([
 ]);
 const SELECT_FAMILY = new Set(["select", "option", "optgroup", "datalist", "selectedcontent"]);
 
-function arg(name) {
+interface Chain {
+  readonly tags: readonly string[];
+  readonly expected: string | undefined;
+}
+interface Verdicts {
+  readonly verdicts: readonly string[];
+  readonly label: string;
+}
+interface Parse5Node {
+  readonly nodeName: string;
+  readonly tagName?: string;
+  readonly value?: string;
+  readonly childNodes?: readonly Parse5Node[];
+}
+interface Parse5 {
+  parse(html: string): Parse5Node;
+}
+interface Page {
+  evaluate<A, R>(callback: (argument: A) => R, argument: A): Promise<R>;
+}
+interface Browser {
+  newPage(): Promise<Page>;
+  version(): string;
+  close(): Promise<void>;
+}
+interface Playwright {
+  readonly chromium: { launch(): Promise<Browser> };
+}
+
+const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
+  typeof value === "object" && value !== null;
+
+async function importMember<T>(
+  modulePath: string,
+  check: (module: unknown) => boolean,
+): Promise<T> {
+  const module: unknown = await import(pathToFileURL(modulePath).href);
+  if (!check(module)) throw new Error(`unexpected module shape: ${modulePath}`);
+  return module as T;
+}
+
+function arg(name: string): string | undefined {
   const index = process.argv.indexOf(name);
   return index === -1 ? undefined : process.argv[index + 1];
 }
 
-function serialize(tags) {
+function serialize(tags: readonly string[]): string {
   let open = "";
   let close = "";
   for (const tag of tags) {
@@ -74,21 +115,23 @@ function serialize(tags) {
   return open + close;
 }
 
-function document(tags) {
+function document(tags: readonly string[]): string {
   return `<!DOCTYPE html><html><head></head><body>${serialize(tags)}</body></html>`;
 }
 
-function readChains() {
-  const chains = [];
-  const universes = new Map();
+function readChains(): Chain[] {
+  const chains: Chain[] = [];
+  const universes = new Map<string | undefined, string[]>();
   for (const line of readFileSync(verdictsPath, "utf8").split("\n")) {
     if (!line || line.startsWith("#")) continue;
     const [kind, section, ...rest] = line.split("\t");
-    if (kind === "universe") universes.set(section, rest[0].split(" "));
+    if (kind === "universe") universes.set(section, (rest[0] ?? "").split(" "));
     if (kind === "chain") {
-      const prefix = rest[0].split(" ");
-      const digits = rest[1];
-      universes.get(section).forEach((leaf, index) => {
+      const prefix = (rest[0] ?? "").split(" ");
+      const digits = rest[1] ?? "";
+      const universe = universes.get(section);
+      if (!universe) throw new Error(`chain before its universe: ${section ?? ""}`);
+      universe.forEach((leaf, index) => {
         chains.push({ tags: [...prefix, leaf], expected: digits[index] });
       });
     }
@@ -97,25 +140,30 @@ function readChains() {
 }
 
 // parse5 tree walk: the faithful-chain predicate over its default tree adapter.
-function parse5Faithful(parse5, tags) {
+function parse5Faithful(parse5: Parse5, tags: readonly string[]): boolean {
   const doc = parse5.parse(document(tags));
-  const html = doc.childNodes.find((node) => node.nodeName === "html");
-  let node = html.childNodes.find((child) => child.nodeName === "body");
+  const html = doc.childNodes?.find((node) => node.nodeName === "html");
+  let node = html?.childNodes?.find((child) => child.nodeName === "body");
+  if (!node) throw new Error("parse5 produced no document body");
   for (const tag of tags) {
-    const kids = node.childNodes;
-    if (kids.length !== 1) return false;
-    const kid = kids[0];
+    const kids: readonly Parse5Node[] = node.childNodes ?? [];
+    const [kid] = kids;
+    if (kids.length !== 1 || !kid) return false;
     const ok =
       tag === "#text"
         ? kid.nodeName === "#text" && kid.value === "x"
-        : kid.tagName !== undefined && kid.tagName.toLowerCase() === tag.toLowerCase();
+        : kid.tagName?.toLowerCase() === tag.toLowerCase();
     if (!ok) return false;
     node = kid;
   }
   return (node.childNodes ?? []).length === 0;
 }
 
-function verdictWith(faithful, memo, tags) {
+function verdictWith(
+  faithful: (tags: readonly string[]) => boolean,
+  memo: Map<string, boolean>,
+  tags: readonly string[],
+): string {
   for (let k = 1; k <= tags.length; k++) {
     const key = tags.slice(0, k).join(" ");
     if (!memo.has(key)) memo.set(key, faithful(tags.slice(0, k)));
@@ -124,16 +172,26 @@ function verdictWith(faithful, memo, tags) {
   return "0";
 }
 
-async function chromiumVerdicts(modulePath, chains) {
-  const { chromium } = await import(pathToFileURL(modulePath).href);
+async function chromiumVerdicts(modulePath: string, chains: readonly Chain[]): Promise<Verdicts> {
+  const { chromium } = await importMember<Playwright>(
+    modulePath,
+    (module) =>
+      isRecord(module) && isRecord(module.chromium) && typeof module.chromium.launch === "function",
+  );
   const browser = await chromium.launch();
   const page = await browser.newPage();
   const documents = chains.map((chain) => chain.tags);
   const verdicts = await page.evaluate(
-    ({ documents, voidTags }) => {
+    ({
+      documents,
+      voidTags,
+    }: {
+      documents: readonly (readonly string[])[];
+      voidTags: string[];
+    }) => {
       const VOID = new Set(voidTags);
       const parser = new DOMParser();
-      const serialize = (tags) => {
+      const serialize = (tags: readonly string[]): string => {
         let open = "";
         let close = "";
         for (const tag of tags) {
@@ -146,26 +204,26 @@ async function chromiumVerdicts(modulePath, chains) {
         }
         return open + close;
       };
-      const faithful = (tags) => {
+      const faithful = (tags: readonly string[]): boolean => {
         const doc = parser.parseFromString(
           `<!DOCTYPE html><html><head></head><body>${serialize(tags)}</body></html>`,
           "text/html",
         );
-        let node = doc.body;
+        let node: Node = doc.body;
         for (const tag of tags) {
           const kids = node.childNodes;
-          if (kids.length !== 1) return false;
           const kid = kids[0];
+          if (kids.length !== 1 || !kid) return false;
           const ok =
             tag === "#text"
-              ? kid.nodeType === 3 && kid.data === "x"
-              : kid.nodeType === 1 && kid.localName.toLowerCase() === tag.toLowerCase();
+              ? kid instanceof Text && kid.data === "x"
+              : kid instanceof Element && kid.localName.toLowerCase() === tag.toLowerCase();
           if (!ok) return false;
           node = kid;
         }
-        return (node.childNodes ?? []).length === 0;
+        return node.childNodes.length === 0;
       };
-      const memo = new Map();
+      const memo = new Map<string, boolean>();
       return documents.map((tags) => {
         for (let k = 1; k <= tags.length; k++) {
           const key = tags.slice(0, k).join(" ");
@@ -184,7 +242,7 @@ async function chromiumVerdicts(modulePath, chains) {
 
 const engine = arg("--engine");
 const chains = readChains();
-let result;
+let result: Verdicts;
 let compared = chains;
 let skipped = 0;
 if (engine === "chromium") {
@@ -194,10 +252,13 @@ if (engine === "chromium") {
 } else if (engine === "parse5") {
   const modulePath =
     arg("--module") ?? path.join(repoRoot, "node_modules/.pnpm/node_modules/parse5/dist/index.js");
-  const parse5 = await import(pathToFileURL(modulePath).href);
+  const parse5 = await importMember<Parse5>(
+    modulePath,
+    (module) => isRecord(module) && typeof module.parse === "function",
+  );
   compared = chains.filter((chain) => !chain.tags.some((tag) => SELECT_FAMILY.has(tag)));
   skipped = chains.length - compared.length;
-  const memo = new Map();
+  const memo = new Map<string, boolean>();
   result = {
     verdicts: compared.map((chain) =>
       verdictWith((tags) => parse5Faithful(parse5, tags), memo, chain.tags),
@@ -205,11 +266,11 @@ if (engine === "chromium") {
     label: "parse5",
   };
 } else {
-  console.error("usage: html-content-model-oracle.mjs --engine chromium|parse5 [--module <path>]");
+  console.error("usage: html-content-model-oracle.ts --engine chromium|parse5 [--module <path>]");
   process.exit(2);
 }
 
-const mismatches = [];
+const mismatches: string[] = [];
 compared.forEach((chain, index) => {
   if (result.verdicts[index] !== chain.expected) {
     mismatches.push(

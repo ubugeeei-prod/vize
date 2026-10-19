@@ -12,7 +12,7 @@ import { byKey } from "./ordering.mjs";
 import { SUMMARY_COMMAND, groupByCrate, methodLines, productIdsOf } from "./croquis-render.mjs";
 import { ARTIFACT_REL, REGEN_COMMAND, SHARD_DIR_REL } from "./paths.mjs";
 
-const CHECK_COMMAND = "rust-script tools/commands/davinci/croquis-consumers.rs --check";
+const CHECK_COMMAND = "node tools/support/compat/davinci/croquis-consumers.ts --check";
 
 function header(extra = []) {
   const lines = [
@@ -32,7 +32,7 @@ function tableOrNone(headers, aligns, rows) {
 function renderIndex(products, analysis, productIds) {
   const lines = header([
     `     Totals:     ${SUMMARY_COMMAND}`,
-    "     Generator:  tools/support/compat/davinci/croquis-consumers.mjs",
+    "     Generator:  tools/support/compat/davinci/croquis-consumers.ts",
   ]);
   lines.push("");
   lines.push("# Croquis consumption matrix");

@@ -6,7 +6,7 @@ runs:
     - name: Prepare the pinned plugin isolation runtime
       if: ${{ !cancelled() }}
       shell: bash
-      run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
+      run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.ts
     - name: Capture original native values and verify independent runtime evidence
       if: ${{ !cancelled() }}
       shell: bash

@@ -1,7 +1,7 @@
 <!-- GENERATED FILE — do not edit by hand.
-     Regenerate: rust-script tools/commands/davinci/sourcelocation-inventory.rs --write
-     Verify:     rust-script tools/commands/davinci/sourcelocation-inventory.rs --check
-     Generator:  tools/support/compat/davinci/sourcelocation-inventory.mjs -->
+     Regenerate: node tools/support/compat/davinci/sourcelocation-inventory.ts --write
+     Verify:     node tools/support/compat/davinci/sourcelocation-inventory.ts --check
+     Generator:  tools/support/compat/davinci/sourcelocation-inventory.ts -->
 
 # `SourceLocation` consumer inventory
 
@@ -29,7 +29,7 @@ any read — or any deleted carrier — comes back.
   the surviving offset representation — the pre-migration
   `start.offset` / `end.offset` reads moved to them verbatim
   (their per-crate counts churn with every PR, so they are not committed:
-  `rust-script tools/commands/davinci/sourcelocation-inventory.rs --summary` prints them).
+  `node tools/support/compat/davinci/sourcelocation-inventory.ts --summary` prints them).
 - `#[cfg(test)]` code inside `src/` is included and reported in the
   "in test code" column: a site counts as test code when its file is a test
   module by name (`tests.rs`, `*_tests.rs`, `/tests/`) or sits at or

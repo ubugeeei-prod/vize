@@ -65,7 +65,7 @@ const exactInputs = new Set([
   "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output.json",
   "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v2.json",
   "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v3.json",
-  "tools/support/compat/davinci/plugin-sandbox-image.mjs",
+  "tools/support/compat/davinci/plugin-sandbox-image.ts",
   "tools/support/compat/github/native-attribute-values-7502-capture.mjs",
   "tools/support/compat/github/plan-tooling-tests.mjs",
   "tools/config/vite-plus/tooling-test-scopes.ts",

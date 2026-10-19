@@ -4,6 +4,73 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 
+export interface Fixture {
+  source: string;
+  modules?: Readonly<Record<string, string>>;
+  arguments: readonly (readonly unknown[])[];
+  registered?: boolean;
+  referenceCode?: string;
+  referenceMap?: unknown;
+  runtime?: unknown;
+}
+export interface Pack {
+  babelVersion: string;
+  pluginVersion: string;
+  vueVersion: string;
+  pluginOptions: unknown;
+  fixtures: Fixture[];
+  refusals: Fixture[];
+}
+interface BabelCore {
+  transformSync(source: string, options: object): { code?: string | null; map?: unknown } | null;
+}
+interface HostNode {
+  kind: "element" | "text" | "comment";
+  tag?: string;
+  text?: string;
+  props: Record<string, unknown>;
+  children: HostNode[];
+  parent: HostNode | null;
+}
+interface VNode {
+  readonly type: unknown;
+  readonly props: unknown;
+  readonly key: unknown;
+  readonly ref: unknown;
+  readonly shapeFlag: unknown;
+  readonly patchFlag: unknown;
+  readonly dynamicProps: unknown;
+  readonly dynamicChildren: unknown;
+  readonly children: unknown;
+}
+interface App {
+  component(name: string, definition: { render: () => VNode }): App;
+  mount(root: HostNode): unknown;
+  unmount(): void;
+}
+interface Renderer {
+  render(vnode: unknown, root: HostNode): void;
+  createApp(component: { render: unknown }): App;
+}
+interface RendererOptions {
+  createElement(tag: string): HostNode;
+  createText(text: string): HostNode;
+  createComment(text: string): HostNode;
+  setText(child: HostNode, text: string): void;
+  setElementText(parent: HostNode, text: string): void;
+  parentNode(child: HostNode): HostNode | null;
+  nextSibling(child: HostNode): HostNode | null;
+  patchProp(child: HostNode, key: string, previous: unknown, next: unknown): void;
+  insert(child: HostNode, parent: HostNode, anchor?: HostNode | null): void;
+  remove(child: HostNode): void;
+}
+interface VueRuntime {
+  readonly Text: unknown;
+  createRenderer(options: RendererOptions): Renderer;
+  isVNode(value: unknown): value is VNode;
+  createVNode(type: string, props: null, children: string): VNode;
+}
+
 export const fixtureUrl = new URL(
   "../../../../davinci/vize_l4/tests/fixtures/jsx-js-module-vue-3.5.35.json",
   import.meta.url,
@@ -11,11 +78,19 @@ export const fixtureUrl = new URL(
 const fromRoot = createRequire(new URL("../../../../package.json", import.meta.url));
 const fromUi = createRequire(new URL("../../../../npm/ui/package.json", import.meta.url));
 const fromVue = createRequire(fromUi.resolve("vue/package.json"));
-const babel = fromRoot("@babel/core");
-const loadedPlugin = fromRoot("@vue/babel-plugin-jsx");
-const plugin = loadedPlugin.default ?? loadedPlugin;
-const vue = fromVue("vue");
-const url = (code) => `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
+const babel = fromRoot("@babel/core") as BabelCore;
+const loadedPlugin: unknown = fromRoot("@vue/babel-plugin-jsx");
+const plugin =
+  typeof loadedPlugin === "object" && loadedPlugin !== null && "default" in loadedPlugin
+    ? loadedPlugin.default
+    : loadedPlugin;
+const vue = fromVue("vue") as VueRuntime;
+assert.equal(typeof babel.transformSync, "function");
+assert.equal(typeof vue.createRenderer, "function");
+const version = (require: NodeJS.Require, name: string): unknown =>
+  (require(`${name}/package.json`) as { version?: unknown }).version;
+const url = (code: string): string =>
+  `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
 const runtimeUrl = url(
   `import runtime from ${JSON.stringify(pathToFileURL(fromVue.resolve("vue")).href)};\n` +
     ["createVNode", "createTextVNode", "resolveComponent"]
@@ -23,17 +98,17 @@ const runtimeUrl = url(
       .join("\n"),
 );
 
-export function readPack(url = fixtureUrl) {
-  return JSON.parse(fs.readFileSync(url, "utf8"));
+export function readPack(url: URL = fixtureUrl): Pack {
+  return JSON.parse(fs.readFileSync(url, "utf8")) as Pack;
 }
 
-export function checkVersions(pack) {
-  assert.equal(fromRoot("@babel/core/package.json").version, pack.babelVersion);
-  assert.equal(fromRoot("@vue/babel-plugin-jsx/package.json").version, pack.pluginVersion);
-  assert.equal(fromVue("vue/package.json").version, pack.vueVersion);
+export function checkVersions(pack: Pack): void {
+  assert.equal(version(fromRoot, "@babel/core"), pack.babelVersion);
+  assert.equal(version(fromRoot, "@vue/babel-plugin-jsx"), pack.pluginVersion);
+  assert.equal(version(fromVue, "vue"), pack.vueVersion);
 }
 
-export function reference(fixture, pack) {
+export function reference(fixture: Fixture, pack: Pack): { code: string; map: unknown } {
   const result = babel.transformSync(fixture.source, {
     babelrc: false,
     configFile: false,
@@ -42,14 +117,21 @@ export function reference(fixture, pack) {
     sourceMaps: true,
     plugins: [[plugin, pack.pluginOptions]],
   });
+  assert(result && typeof result.code === "string", "Babel produced no module");
   // Compare the whole serialized wire map; undefined object properties have
   // no JSON representation, matching the immutable fixture and map consumers.
-  return { code: result.code, map: JSON.parse(JSON.stringify(result.map)) };
+  return { code: result.code, map: JSON.parse(JSON.stringify(result.map)) as unknown };
 }
 
-function hostRenderer() {
-  const node = (kind, fields) => ({ kind, ...fields, parent: null });
-  const detach = (child) => {
+function hostRenderer(): Renderer {
+  const node = (kind: HostNode["kind"], fields: Partial<HostNode>): HostNode => ({
+    kind,
+    props: {},
+    children: [],
+    ...fields,
+    parent: null,
+  });
+  const detach = (child: HostNode): void => {
     if (child.parent) {
       const siblings = child.parent.children;
       siblings.splice(siblings.indexOf(child), 1);
@@ -85,13 +167,17 @@ function hostRenderer() {
   });
 }
 
-function shape(node) {
+type Shape =
+  | { kind: HostNode["kind"]; tag?: string; props: Record<string, unknown>; children: Shape[] }
+  | { kind: HostNode["kind"]; text?: string };
+
+function shape(node: HostNode): Shape {
   return node.kind === "element"
     ? { kind: node.kind, tag: node.tag, props: node.props, children: node.children.map(shape) }
     : { kind: node.kind, text: node.text };
 }
 
-function vnodeShape(node) {
+function vnodeShape(node: unknown): unknown {
   if (!vue.isVNode(node)) return node;
   const type =
     node.type === vue.Text
@@ -112,7 +198,9 @@ function vnodeShape(node) {
   };
 }
 
-async function loadModule(code, fixture) {
+type RenderModule = Readonly<Record<string, unknown>>;
+
+async function loadModule(code: string, fixture: Fixture): Promise<RenderModule> {
   // Only the import address is adapted; the complete generated module executes.
   let addressed = code.replace('from "vue"', `from ${JSON.stringify(runtimeUrl)}`);
   for (const [name, external] of Object.entries(fixture.modules ?? {})) {
@@ -122,27 +210,39 @@ async function loadModule(code, fixture) {
       `from ${JSON.stringify(moduleUrl)}`,
     );
   }
-  return import(url(addressed));
+  return (await import(url(addressed))) as RenderModule;
 }
 
-async function executeMeasured(code, fixture, snapshot) {
-  const retain = (value) => (snapshot ? structuredClone(value) : value);
+const emptyRoot = (): HostNode => ({
+  kind: "element",
+  tag: "root",
+  props: {},
+  children: [],
+  parent: null,
+});
+
+async function executeMeasured(
+  code: string,
+  fixture: Fixture,
+  snapshot: boolean,
+): Promise<{ exports: string[]; results: unknown[] }> {
+  const retain = <T>(value: T): T => (snapshot ? structuredClone(value) : value);
   const module = await loadModule(code, fixture);
   const render = module.render ?? module.default;
-  assert.equal(typeof render, "function");
+  assert(typeof render === "function");
   const renderer = hostRenderer();
-  const root = { kind: "element", tag: "root", props: {}, children: [], parent: null };
-  const results = [];
+  const root = emptyRoot();
+  const results: unknown[] = [];
   // Re-render into the same actual host, exercising changed real parameter reads.
   for (const args of fixture.arguments) {
-    const vnode = render(...args);
+    const vnode: unknown = render(...args);
     assert(vue.isVNode(vnode));
     const originalVNode = retain(vnodeShape(vnode));
     renderer.render(vnode, root);
     results.push(retain({ arguments: args, vnode: originalVNode, tree: root.children.map(shape) }));
   }
   if (typeof module.first === "function") {
-    const first = module.first();
+    const first: unknown = module.first();
     const originalVNode = retain(vnodeShape(first));
     renderer.render(first, root);
     results.push(
@@ -159,20 +259,20 @@ async function executeMeasured(code, fixture, snapshot) {
   return { exports: Object.keys(module), results };
 }
 
-export async function execute(code, fixture) {
+export async function execute(code: string, fixture: Fixture): Promise<unknown> {
   return executeMeasured(code, fixture, false);
 }
 
 // New changing-prop laws retain each actual pre-mount VNode and host state.
 // Existing frozen callers keep their original observation semantics.
-export async function executeSnapshots(code, fixture) {
+export async function executeSnapshots(code: string, fixture: Fixture): Promise<unknown> {
   return executeMeasured(code, fixture, true);
 }
 
-export async function executeRegistered(code, fixture) {
+export async function executeRegistered(code: string, fixture: Fixture): Promise<Shape[]> {
   const module = await loadModule(code, fixture);
   const renderer = hostRenderer();
-  const root = { kind: "element", tag: "root", props: {}, children: [], parent: null };
+  const root = emptyRoot();
   const app = renderer.createApp({ render: module.render });
   app.component("search", { render: () => vue.createVNode("b", null, "registered") });
   app.mount(root);

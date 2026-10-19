@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "allowJs": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  },
+  "include": [],
+  "files": [
+    "tools/support/compat/davinci/consumer-migration-surfaces.ts",
+    "tools/support/compat/davinci/croquis-consumers.ts",
+    "tools/support/compat/davinci/directory-dependencies.ts",
+    "tools/support/compat/davinci/generated-ledgers.ts",
+    "tools/support/compat/davinci/html-content-model-oracle.ts",
+    "tools/support/compat/davinci/jsx-js-module-reference.ts",
+    "tools/support/compat/davinci/legacy-deletion-guard.ts",
+    "tools/support/compat/davinci/level-dependencies.ts",
+    "tools/support/compat/davinci/level-dependency-policy.ts",
+    "tools/support/compat/davinci/plugin-sandbox-image.ts",
+    "tools/support/compat/davinci/rule-parity.ts",
+    "tools/support/compat/davinci/selected-template-dom.ts",
+    "tools/support/compat/davinci/selected-template-literals-map.ts",
+    "tools/support/compat/davinci/selected-template-literals.ts",
+    "tools/support/compat/davinci/sourcelocation-inventory.ts",
+    "tools/support/compat/davinci/storage-summary.ts",
+    "tools/support/compat/davinci/toml-lite.ts",
+    "tools/support/compat/davinci/v-on-corpus.ts"
+  ]
+}

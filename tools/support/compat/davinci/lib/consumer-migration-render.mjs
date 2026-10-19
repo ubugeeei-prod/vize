@@ -148,9 +148,9 @@ export function renderConsumerMigrationSurfaces(scan, options) {
 
   return `<!-- GENERATED FILE - do not edit by hand.
      Regenerate: ${options.regenCommand}
-     Verify:     rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
+     Verify:     node tools/support/compat/davinci/consumer-migration-surfaces.ts --check
      Totals:     ${options.summaryCommand}
-     Generator:  tools/support/compat/davinci/consumer-migration-surfaces.mjs -->
+     Generator:  tools/support/compat/davinci/consumer-migration-surfaces.ts -->
 
 # Consumer migration surfaces
 
@@ -209,7 +209,7 @@ ${renderSlices()}
 
 \`\`\`sh
 ${options.regenCommand}
-rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
+node tools/support/compat/davinci/consumer-migration-surfaces.ts --check
 ${options.summaryCommand}
 \`\`\`
 `;

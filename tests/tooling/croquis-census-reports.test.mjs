@@ -61,7 +61,7 @@ void test("resolved consumption and non-product changes still change byte-compar
 
 void test("the actual check producer prints source-qualified per-crate diagnostics", () => {
   const generator = fileURLToPath(
-    new URL("../../tools/support/compat/davinci/croquis-consumers.mjs", import.meta.url),
+    new URL("../../tools/support/compat/davinci/croquis-consumers.ts", import.meta.url),
   );
   const result = spawnSync(process.execPath, [generator, "--check"], { encoding: "utf8" });
   assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);

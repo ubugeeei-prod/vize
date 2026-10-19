@@ -1,6 +1,6 @@
 // Natural modified-v-on corpus scan shared by the v-on storage gate
 // (tests/tooling/davinci-v-on-storage.test.ts) and the committed inventory
-// generator (tools/support/compat/davinci/v-on-corpus.mjs).
+// generator (tools/support/compat/davinci/v-on-corpus.ts).
 //
 // Reviewed scope: Git-tracked template files, documentation, and source/test
 // formats that carry inline template fixtures. Binary/generated/untracked
@@ -26,7 +26,7 @@ import { repoRoot } from "./paths.mjs";
 // The gate itself carries lookalike and boundary fixtures for its unit tests.
 export const V_ON_GATE = "tests/tooling/davinci-v-on-storage.test.ts";
 export const V_ON_CORPUS_DIR = "docs/davinci/plan/v-on-corpus";
-export const V_ON_CORPUS_REGEN = "rust-script tools/commands/davinci/v-on-corpus.rs --write";
+export const V_ON_CORPUS_REGEN = "node tools/support/compat/davinci/v-on-corpus.ts --write";
 
 export const templateCarrierExtensions = new Set([
   ".astro",

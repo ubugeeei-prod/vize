@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { ratchetInstructionMethodology } from "./instruction-methodology-transition.mjs";
-import { parseTomlLite } from "../../support/compat/davinci/toml-lite.mjs";
+import { parseTomlLite } from "../../support/compat/davinci/toml-lite.ts";
 
 export const ID = /^[A-Za-z0-9._-]+$/;
 export const METHODOLOGY_KEYS = [

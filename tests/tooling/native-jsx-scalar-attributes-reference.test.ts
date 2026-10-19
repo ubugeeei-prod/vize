@@ -6,7 +6,7 @@ import {
   executeSnapshots,
   readPack,
   reference,
-} from "../../tools/support/compat/davinci/jsx-js-module-reference.mjs";
+} from "../../tools/support/compat/davinci/jsx-js-module-reference.ts";
 
 const pack = readPack(
   new URL(

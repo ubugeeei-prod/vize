@@ -35,7 +35,7 @@ runs:
     - name: Prepare the pinned plugin isolation runtime for other workers
       if: ${{ !cancelled() && inputs.shard != '1' }}
       shell: bash
-      run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
+      run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.ts
     - name: Prepare plugin runtime and test native JS setup
       if: ${{ !cancelled() && inputs.shard == '1' }}
       uses: ./.github/actions/test-native-js-setup

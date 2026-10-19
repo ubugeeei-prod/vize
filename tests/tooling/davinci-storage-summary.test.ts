@@ -34,7 +34,7 @@ const expectedRows = parseStorageInventory(
 test("the storage aggregates are derived from the exact inventory, never hand-copied", () => {
   const summary = execFileSync(
     process.execPath,
-    ["tools/support/compat/davinci/storage-summary.mjs", "--summary"],
+    ["tools/support/compat/davinci/storage-summary.ts", "--summary"],
     { cwd: repoRoot, encoding: "utf8" },
   );
   assert.equal(

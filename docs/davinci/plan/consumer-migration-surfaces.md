@@ -1,8 +1,8 @@
 <!-- GENERATED FILE - do not edit by hand.
-     Regenerate: rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write
-     Verify:     rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
-     Totals:     rust-script tools/commands/davinci/consumer-migration-surfaces.rs --summary
-     Generator:  tools/support/compat/davinci/consumer-migration-surfaces.mjs -->
+     Regenerate: node tools/support/compat/davinci/consumer-migration-surfaces.ts --write
+     Verify:     node tools/support/compat/davinci/consumer-migration-surfaces.ts --check
+     Totals:     node tools/support/compat/davinci/consumer-migration-surfaces.ts --summary
+     Generator:  tools/support/compat/davinci/consumer-migration-surfaces.ts -->
 
 # Consumer migration surfaces
 
@@ -65,7 +65,7 @@ fixed by the consumer scopes (table below), so it only changes when a scope does
 Cross-file aggregates — per-consumer and per-surface totals and the top files
 by site count — are deliberately **not committed**: they changed with every PR
 and made every open PR conflict. They are pure sums over the shards; print
-them with `rust-script tools/commands/davinci/consumer-migration-surfaces.rs --summary`. The staleness check (TS-12)
+them with `node tools/support/compat/davinci/consumer-migration-surfaces.ts --summary`. The staleness check (TS-12)
 byte-compares this page and refuses shards committed under
 `docs/davinci/plan/consumer-migration-surfaces/`.
 
@@ -132,7 +132,7 @@ protocol behavior.
 ## Regeneration
 
 ```sh
-rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write
-rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
-rust-script tools/commands/davinci/consumer-migration-surfaces.rs --summary
+node tools/support/compat/davinci/consumer-migration-surfaces.ts --write
+node tools/support/compat/davinci/consumer-migration-surfaces.ts --check
+node tools/support/compat/davinci/consumer-migration-surfaces.ts --summary
 ```
