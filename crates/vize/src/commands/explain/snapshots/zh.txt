@@ -1888,16 +1888,16 @@ script/define-macros-order · lint 规则
 文档: docs/content/rules/type-and-script.md
 
 错误示例:
-  // defineProps before defineModel (out of canonical order)
+  // defineEmits before defineProps
+  const emit = defineEmits<{ change: [value: string] }>()
   const props = defineProps<{ count: number }>()
-  const model = defineModel<string>()
 
 正确示例:
-  defineOptions({ name: 'MyComponent' })
-  const model = defineModel<string>()
+  import { ref } from 'vue'
   const props = defineProps<{ count: number }>()
   const emit = defineEmits<{ change: [value: string] }>()
-  defineSlots<{ default(props: {}): any }>()
+  const model = defineModel<string>()
+  const value = ref(0)
 === script/define-props-declaration
 script/define-props-declaration · lint 规则
 强制使用基于类型的 defineProps<{ ... }>()，而不是运行时/对象形式

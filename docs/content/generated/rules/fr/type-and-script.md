@@ -158,7 +158,7 @@ Imposer camelCase aux noms des événements personnalisés émis
 [Mauvais](#script-custom-event-name-casing-bad) · [Bon](#script-custom-event-name-casing-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Consultez les [options typées et leurs valeurs par défaut](/rules/options.md).
@@ -284,7 +284,7 @@ Imposer un ordre cohérent aux macros du compilateur Vue dans &lt;script setup&g
 [Mauvais](#script-define-macros-order-bad) · [Bon](#script-define-macros-order-good)
 
 Gravité par défaut: `warning`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -314,13 +314,13 @@ vp run lint
 
 **Mauvais**
 
-`defineProps` apparaît avant `defineModel`, alors que `defineModel` occupe une position antérieure dans l’ordre canonique des macros.
+`defineEmits` apparaît avant `defineProps`, alors que `defineProps` puis `defineEmits` doivent être les premières instructions de `<script setup>`.
 
 ```vue annotate="remove:2,3"
 <script setup lang="ts">
-// defineProps before defineModel (out of canonical order)
+// defineEmits before defineProps
+const emit = defineEmits<{ change: [value: string] }>()
 const props = defineProps<{ count: number }>()
-const model = defineModel<string>()
 </script>
 ```
 
@@ -328,21 +328,21 @@ const model = defineModel<string>()
 
 **Bon**
 
-Les déclarations suivent exactement la séquence `defineOptions`, `defineModel`, `defineProps`, `defineEmits`, `defineSlots`, avant les instructions d’exécution sans rapport avec elles.
+`defineProps` puis `defineEmits` suivent directement les imports, avant toute autre instruction ; les autres macros peuvent suivre dans n’importe quel ordre.
 
 ```vue annotate="add:2,4,5,6"
 <script setup lang="ts">
-defineOptions({ name: 'MyComponent' })
-const model = defineModel<string>()
+import { ref } from 'vue'
 const props = defineProps<{ count: number }>()
 const emit = defineEmits<{ change: [value: string] }>()
-defineSlots<{ default(props: {}): any }>()
+const model = defineModel<string>()
+const value = ref(0)
 </script>
 ```
 
 Le bon exemple évite le diagnostic de cette règle avec la configuration ci-dessus ; d’autres règles peuvent encore signaler des diagnostics.
 
-[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) · [Toutes les règles](all.md)
+[Implémentation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L45) · [Toutes les règles](all.md)
 
 ### `script/define-props-declaration`
 
@@ -3486,7 +3486,7 @@ Recommander useTemplateRef plutôt que ref pour les références de template (Vu
 [Mauvais](#script-prefer-use-template-ref-bad) · [Bon](#script-prefer-use-template-ref-good)
 
 Gravité par défaut: `warning`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -3695,7 +3695,7 @@ Exiger que les slots utilisés via useSlots() soient explicitement typés avec d
 [Mauvais](#script-require-explicit-slots-bad) · [Bon](#script-require-explicit-slots-good)
 
 Gravité par défaut: `warning`  
-Préréglages: _none_  
+Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.

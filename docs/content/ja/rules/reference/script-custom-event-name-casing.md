@@ -9,7 +9,7 @@ emit するカスタムイベント名を指定した形式に揃えます。
 [悪い例](#悪い) · [良い例](#良い)
 
 既定の重大度: `error`  
-プリセット: _none_  
+プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: [型付きオプションと既定値](../options.md)を参照してください。

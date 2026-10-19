@@ -1,260 +1,144 @@
 use super::DefineMacrosOrder;
 use crate::rules::script::ScriptLinter;
 
-fn create_linter() -> ScriptLinter {
+fn lint(source: &str) -> Vec<String> {
     let mut linter = ScriptLinter::new();
     linter.add_rule(Box::new(DefineMacrosOrder));
     linter
+        .lint(source, 0)
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message.to_string())
+        .collect()
 }
 
-// --- Valid: macros in canonical order ---
+const NOT_AT_TOP: &str = "should be placed at the top of `<script setup>` (after any potential import statements or type definitions).";
+
+// --- Valid: eslint-plugin-vue's default order ---
 
 #[test]
-fn test_valid_full_canonical_order() {
-    let source = r#"
-defineOptions({ name: 'MyComponent' })
-const model = defineModel<string>()
-const props = defineProps<{ count: number }>()
-const emit = defineEmits<{ change: [value: string] }>()
-defineSlots<{ default(props: {}): any }>()
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
-}
-
-#[test]
-fn test_valid_subset_in_order() {
-    // Not every macro must be present; the present ones just need to be ordered.
-    let source = r#"
-const props = defineProps<{ count: number }>()
-const emit = defineEmits<{ change: [value: string] }>()
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
-}
-
-#[test]
-fn test_valid_single_macro() {
-    let source = "const props = defineProps<{ count: number }>()\n";
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
-}
-
-#[test]
-fn test_valid_with_defaults_wrapper_in_order() {
-    // `withDefaults(defineProps(...))` is still a defineProps macro statement.
-    let source = r#"
-const model = defineModel<string>()
-const props = withDefaults(defineProps<{ count?: number }>(), { count: 0 })
-const emit = defineEmits<{ change: [value: string] }>()
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
-}
-
-#[test]
-fn test_valid_imports_and_types_before_macros() {
-    // Imports and type aliases are exempt and may precede the macros.
+fn props_then_emits_first() {
     let source = r#"
 import { ref } from 'vue'
 type Props = { count: number }
 const props = defineProps<Props>()
 const emit = defineEmits<{ change: [] }>()
+defineOptions({ name: 'MyComponent' })
+const model = defineModel<string>()
+defineSlots<{ default(props: {}): any }>()
+const value = ref(0)
 "#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
+    assert!(lint(source).is_empty());
 }
 
 #[test]
-fn test_valid_exported_types_before_macros() {
+fn either_macro_alone() {
+    assert!(lint("const props = defineProps<{ count: number }>()\n").is_empty());
+    assert!(
+        lint("import { ref } from 'vue'\nconst emit = defineEmits(['change'])\nconst a = ref(0)\n")
+            .is_empty()
+    );
+}
+
+#[test]
+fn unordered_macros_are_not_checked() {
+    // defineModel, defineOptions and defineSlots are outside the default order.
+    let source = r#"
+const value = ref(0)
+const model = defineModel<string>()
+defineSlots<{ default(props: {}): any }>()
+defineOptions({ name: 'MyComponent' })
+"#;
+    assert!(lint(source).is_empty());
+}
+
+#[test]
+fn skipped_statements_may_precede_the_macros() {
     let source = r#"
 import type { Item } from "./item";
 export type { Item };
 export interface Props { label: string }
-export type Emits = { change: [value: string] }
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+export const ready = true
+enum Mode { A }
+declare const injected: string
+debugger
+;
+const props = withDefaults(defineProps<Props>(), { label: '' })
+const { change } = defineEmits<{ change: [] }>()
 "#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
+    assert!(lint(source).is_empty());
 }
 
 #[test]
-fn test_invalid_exported_value_before_macros() {
+fn no_macros() {
+    assert!(lint("import { ref } from 'vue'\nconst count = ref(0)\n").is_empty());
+    assert!(lint("const label = 'defineProps then defineEmits'\n").is_empty());
+}
+
+// --- Invalid ---
+
+#[test]
+fn emits_before_props() {
     let source = r#"
-export const ready = true
+const emit = defineEmits<{ change: [] }>()
 const props = defineProps<{ count: number }>()
 "#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(
+        lint(source),
+        ["`defineProps` should be above `defineEmits`."]
+    );
 }
 
 #[test]
-fn test_valid_type_alias_between_macros_is_ignored() {
-    // A type-only statement between macros is not a runtime boundary.
+fn statement_before_props() {
+    let source = r#"
+const value = ref(0)
+const props = defineProps<{ count: number }>()
+"#;
+    assert_eq!(lint(source), [format!("`defineProps` {NOT_AT_TOP}")]);
+}
+
+#[test]
+fn other_macro_before_props() {
+    // As upstream: an unordered macro is an ordinary statement.
+    let source = r#"
+const model = defineModel<string>()
+const props = withDefaults(defineProps<{ count?: number }>(), { count: 0 })
+"#;
+    assert_eq!(lint(source), [format!("`defineProps` {NOT_AT_TOP}")]);
+}
+
+#[test]
+fn statement_between_props_and_emits() {
     let source = r#"
 const props = defineProps<{ count: number }>()
 type Emits = { change: [] }
 const emit = defineEmits<Emits>()
 "#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(lint(source), [format!("`defineEmits` {NOT_AT_TOP}")]);
 }
 
 #[test]
-fn test_valid_no_macros_at_all() {
-    let source = r#"
-import { ref } from 'vue'
-const count = ref(0)
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
-}
-
-#[test]
-fn test_valid_other_statements_after_macros() {
-    // Runtime code after the whole macro block is fine.
-    let source = r#"
-const props = defineProps<{ count: number }>()
-const emit = defineEmits<{ change: [] }>()
-const doubled = props.count * 2
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
-}
-
-// --- Invalid: macros out of canonical order ---
-
-#[test]
-fn test_invalid_props_before_model() {
-    let source = r#"
-const props = defineProps<{ count: number }>()
-const model = defineModel<string>()
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
-    insta::assert_debug_snapshot!(result.diagnostics);
-}
-
-#[test]
-fn test_invalid_emits_before_props() {
-    let source = r#"
-const emit = defineEmits<{ change: [] }>()
-const props = defineProps<{ count: number }>()
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
-}
-
-#[test]
-fn test_invalid_options_after_props() {
-    let source = r#"
-const props = defineProps<{ count: number }>()
-defineOptions({ name: 'MyComponent' })
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
-}
-
-#[test]
-fn test_invalid_slots_before_emits() {
-    let source = r#"
-defineSlots<{ default(props: {}): any }>()
-const emit = defineEmits<{ change: [] }>()
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
-}
-
-#[test]
-fn test_invalid_with_defaults_props_out_of_order() {
-    // The `withDefaults` wrapper is unwrapped to a defineProps macro, which here
-    // appears after defineEmits.
-    let source = r#"
-const emit = defineEmits<{ change: [] }>()
-const props = withDefaults(defineProps<{ count?: number }>(), { count: 0 })
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
-}
-
-#[test]
-fn test_invalid_fully_reversed_order() {
-    // defineSlots, defineEmits, defineProps, defineModel, defineOptions — every
-    // macro after the first is out of order, so four are reported.
-    let source = r#"
-defineSlots<{ default(props: {}): any }>()
-const emit = defineEmits<{ change: [] }>()
-const props = defineProps<{ count: number }>()
-const model = defineModel<string>()
-defineOptions({ name: 'MyComponent' })
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 4);
-}
-
-// --- Invalid: macro after a non-macro runtime statement ---
-
-#[test]
-fn test_invalid_macro_after_runtime_statement() {
+fn reports_one_statement_per_block() {
     let source = r#"
 const value = ref(0)
-const props = defineProps<{ count: number }>()
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
-    insta::assert_debug_snapshot!(result.diagnostics);
-}
-
-#[test]
-fn test_invalid_macro_after_function_declaration() {
-    let source = r#"
-const props = defineProps<{ count: number }>()
-function helper() {}
 const emit = defineEmits<{ change: [] }>()
-"#;
-    let result = create_linter().lint(source, 0);
-    // Only the trailing emit is after the function statement; order is otherwise
-    // canonical, so exactly one diagnostic is produced.
-    assert_eq!(result.warning_count, 1);
-}
-
-#[test]
-fn test_invalid_both_out_of_order_and_after_statement() {
-    // defineModel is after a runtime statement *and* the macros are out of order
-    // relative to each other; both problems are reported.
-    let source = r#"
 const props = defineProps<{ count: number }>()
-const value = ref(0)
-const model = defineModel<string>()
 "#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 2);
-}
-
-// --- Edge cases ---
-
-#[test]
-fn test_valid_macro_like_call_not_a_macro() {
-    // A non-macro call between macros is a runtime statement, but here it comes
-    // after the whole macro block, so it is fine.
-    let source = r#"
-const props = defineProps<{ count: number }>()
-const emit = defineEmits<{ change: [] }>()
-useSomething()
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(lint(source), [format!("`defineProps` {NOT_AT_TOP}")]);
 }
 
 #[test]
-fn test_valid_macro_name_only_in_string() {
-    // The macro names appearing only inside a string literal must not trip the
-    // AST-based detection.
-    let source = r#"
-const label = 'defineProps then defineEmits'
-const order = 'defineOptions'
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
+fn diagnostic_spans_the_statement() {
+    let source = "const a = 1\nconst props = defineProps()\n";
+    let mut linter = ScriptLinter::new();
+    linter.add_rule(Box::new(DefineMacrosOrder));
+    let result = linter.lint(source, 0);
+    let [diagnostic] = result.diagnostics.as_slice() else {
+        panic!("one diagnostic")
+    };
+    assert_eq!(
+        source.get(diagnostic.start as usize..diagnostic.end as usize),
+        Some("const props = defineProps()")
+    );
 }

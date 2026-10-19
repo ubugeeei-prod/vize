@@ -72,10 +72,10 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "script/define-macros-order",
-    "`defineProps` appears before `defineModel`, although `defineModel` has the earlier rank in the canonical macro order.",
-    "The declarations follow the exact sequence `defineOptions`, `defineModel`, `defineProps`, `defineEmits`, `defineSlots`, before unrelated runtime statements.",
-    "`defineProps` が `defineModel` より先にありますが、定められたマクロ順序では `defineModel` が先です。",
-    "宣言を `defineOptions`、`defineModel`、`defineProps`、`defineEmits`、`defineSlots` の順に並べ、無関係な実行時処理より前に置きます。",
+    "`defineEmits` comes before `defineProps`, but `defineProps` and then `defineEmits` must be the first statements of `<script setup>`.",
+    "`defineProps` and then `defineEmits` come right after the imports, before every other statement; the other macros may follow in any order.",
+    "`defineEmits` が `defineProps` より先にありますが、`<script setup>` の先頭は `defineProps`、次に `defineEmits` でなければなりません。",
+    "import の直後、他のすべての文より前に `defineProps`、`defineEmits` の順で置きます。その他のマクロの順序は自由です。",
   ],
   [
     "script/define-props-declaration",

@@ -159,7 +159,7 @@ export default {
 [错误示例](#script-custom-event-name-casing-bad) · [正确示例](#script-custom-event-name-casing-good)
 
 默认严重程度: `error`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 参见[类型化选项和默认值](/rules/options.md)。
@@ -285,7 +285,7 @@ emit("change", 1);
 [错误示例](#script-define-macros-order-bad) · [正确示例](#script-define-macros-order-good)
 
 默认严重程度: `warning`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -315,13 +315,13 @@ vp run lint
 
 **错误示例**
 
-`defineProps` 位于 `defineModel` 之前，但标准宏顺序中 `defineModel` 更靠前。
+`defineEmits` 位于 `defineProps` 之前，但 `<script setup>` 必须先写 `defineProps`，再写 `defineEmits`。
 
 ```vue annotate="remove:2,3"
 <script setup lang="ts">
-// defineProps before defineModel (out of canonical order)
+// defineEmits before defineProps
+const emit = defineEmits<{ change: [value: string] }>()
 const props = defineProps<{ count: number }>()
-const model = defineModel<string>()
 </script>
 ```
 
@@ -329,21 +329,21 @@ const model = defineModel<string>()
 
 **正确示例**
 
-声明严格按照 `defineOptions`、`defineModel`、`defineProps`、`defineEmits`、`defineSlots` 排列，再写无关的运行时语句。
+`defineProps` 和 `defineEmits` 依次紧跟在 import 之后、其他所有语句之前；其余宏的顺序不限。
 
 ```vue annotate="add:2,4,5,6"
 <script setup lang="ts">
-defineOptions({ name: 'MyComponent' })
-const model = defineModel<string>()
+import { ref } from 'vue'
 const props = defineProps<{ count: number }>()
 const emit = defineEmits<{ change: [value: string] }>()
-defineSlots<{ default(props: {}): any }>()
+const model = defineModel<string>()
+const value = ref(0)
 </script>
 ```
 
 正确示例在上述配置下不会触发这条规则的诊断；其他规则仍可能报告诊断。
 
-[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) · [全部规则](all.md)
+[实现](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L45) · [全部规则](all.md)
 
 ### `script/define-props-declaration`
 
@@ -3487,7 +3487,7 @@ export default defineComponent({
 [错误示例](#script-prefer-use-template-ref-bad) · [正确示例](#script-prefer-use-template-ref-good)
 
 默认严重程度: `warning`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -3696,7 +3696,7 @@ emit("save");
 [错误示例](#script-require-explicit-slots-bad) · [正确示例](#script-require-explicit-slots-good)
 
 默认严重程度: `warning`  
-预设: _none_  
+预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式  
 选项: 没有规则专属选项。可以配置严重程度和预设。

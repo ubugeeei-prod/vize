@@ -9,7 +9,7 @@ Enforce camelCase for emitted custom event names
 [Bad](#bad) · [Good](#good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: See [typed options and defaults](../options.md).

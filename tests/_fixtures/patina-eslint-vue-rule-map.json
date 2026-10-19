@@ -112,7 +112,10 @@
       "status": "mapped"
     },
     "vue/custom-event-name-casing": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/custom-event-name-casing",
       "patinaSeverity": "error",
       "status": "mapped"
@@ -127,7 +130,10 @@
       "status": "mapped"
     },
     "vue/define-macros-order": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/define-macros-order",
       "patinaSeverity": "warning",
       "status": "mapped"
@@ -1310,7 +1316,10 @@
       "status": "mapped"
     },
     "vue/prefer-use-template-ref": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/prefer-use-template-ref",
       "patinaSeverity": "warning",
       "status": "mapped"
@@ -1379,7 +1388,10 @@
       "status": "mapped"
     },
     "vue/require-explicit-slots": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/require-explicit-slots",
       "patinaSeverity": "warning",
       "status": "mapped"

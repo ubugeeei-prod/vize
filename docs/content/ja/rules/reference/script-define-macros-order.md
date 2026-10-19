@@ -9,7 +9,7 @@ script setup のコンパイラーマクロを一定の順に宣言します。
 [悪い例](#悪い) · [良い例](#良い)
 
 既定の重大度: `warning`  
-プリセット: _none_  
+プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -37,30 +37,30 @@ vp run lint
 
 ## 悪い
 
-`defineProps` が `defineModel` より先にありますが、定められたマクロ順序では `defineModel` が先です。
+`defineEmits` が `defineProps` より先にありますが、`<script setup>` の先頭は `defineProps`、次に `defineEmits` でなければなりません。
 
 ```vue
 <script setup lang="ts">
-// defineProps before defineModel (out of canonical order)
+// defineEmits before defineProps
+const emit = defineEmits<{ change: [value: string] }>()
 const props = defineProps<{ count: number }>()
-const model = defineModel<string>()
 </script>
 ```
 
 ## 良い
 
-宣言を `defineOptions`、`defineModel`、`defineProps`、`defineEmits`、`defineSlots` の順に並べ、無関係な実行時処理より前に置きます。
+import の直後、他のすべての文より前に `defineProps`、`defineEmits` の順で置きます。その他のマクロの順序は自由です。
 
 ```vue
 <script setup lang="ts">
-defineOptions({ name: 'MyComponent' })
-const model = defineModel<string>()
+import { ref } from 'vue'
 const props = defineProps<{ count: number }>()
 const emit = defineEmits<{ change: [value: string] }>()
-defineSlots<{ default(props: {}): any }>()
+const model = defineModel<string>()
+const value = ref(0)
 </script>
 ```
 
 良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) · [全ルール](../all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L45) · [全ルール](../all.md)

@@ -1,40 +1,39 @@
 //! script/define-macros-order
 //!
-//! Enforce a consistent order of the Vue compiler macros in `<script setup>`.
+//! Enforce the order of the Vue compiler macros in `<script setup>`.
 //!
-//! The Vue style guide and `eslint-plugin-vue` recommend declaring the compiler
-//! macros in a fixed order so every component reads the same way. This rule
-//! enforces the canonical order
-//! `defineOptions` → `defineModel` → `defineProps` → `defineEmits` → `defineSlots`
-//! and additionally expects every macro to precede other top-level statements.
+//! Matches eslint-plugin-vue's `vue/define-macros-order` with its default
+//! options: `defineProps` and then `defineEmits` must be the first statements
+//! of `<script setup>`, after imports, type declarations, enums and exports.
+//! Other macros (`defineOptions`, `defineModel`, `defineSlots`) are not
+//! ordered, but they count as ordinary statements. Like the upstream rule, it
+//! reports at most one statement per block.
 //!
 //! A macro statement is a top-level expression statement or variable declaration
-//! whose value is (possibly through `withDefaults(...)`) a call to one of the
-//! recognised macros. Imports and type-only statements are ignored; the first
-//! non-macro *runtime* statement marks where the macro block ends.
+//! whose value is (possibly through `withDefaults(...)`) a call to the macro.
 //!
 //! ## Examples
 //!
 //! ### Invalid
 //! ```ts
-//! // defineProps before defineModel (out of canonical order)
+//! // defineEmits before defineProps
+//! const emit = defineEmits<{ change: [value: string] }>()
 //! const props = defineProps<{ count: number }>()
-//! const model = defineModel<string>()
 //! ```
 //!
 //! ```ts
-//! // a macro after a non-macro runtime statement
+//! // a statement before the macros
 //! const value = ref(0)
 //! const props = defineProps<{ count: number }>()
 //! ```
 //!
 //! ### Valid
 //! ```ts
-//! defineOptions({ name: 'MyComponent' })
-//! const model = defineModel<string>()
+//! import { ref } from 'vue'
 //! const props = defineProps<{ count: number }>()
 //! const emit = defineEmits<{ change: [value: string] }>()
-//! defineSlots<{ default(props: {}): any }>()
+//! const model = defineModel<string>()
+//! const value = ref(0)
 //! ```
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
@@ -49,33 +48,10 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// The compiler macros this rule orders, in their canonical order. A macro's
-/// index in this slice is its rank: a lower rank must appear earlier in source.
-const MACRO_ORDER: [&str; 5] = [
-    "defineOptions",
-    "defineModel",
-    "defineProps",
-    "defineEmits",
-    "defineSlots",
-];
+/// The macros this rule orders: eslint-plugin-vue's default `order` option.
+const MACRO_ORDER: [&str; 2] = ["defineProps", "defineEmits"];
 
-/// A macro's position within [`MACRO_ORDER`] together with its canonical name.
-#[derive(Clone, Copy)]
-struct MacroRank {
-    index: usize,
-    name: &'static str,
-}
-
-/// Rank of a macro name within [`MACRO_ORDER`], or `None` if it is not ordered.
-fn macro_rank(name: &str) -> Option<MacroRank> {
-    MACRO_ORDER
-        .iter()
-        .enumerate()
-        .find(|(_, candidate)| **candidate == name)
-        .map(|(index, &name)| MacroRank { index, name })
-}
-
-/// Enforce a consistent order of the Vue compiler macros in `<script setup>`.
+/// Enforce the order of the Vue compiler macros in `<script setup>`.
 pub struct DefineMacrosOrder;
 
 impl ScriptRule for DefineMacrosOrder {
@@ -95,88 +71,43 @@ impl ScriptRule for DefineMacrosOrder {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        // Walk the top-level statements once, recording every macro call and the
-        // first non-macro *runtime* statement. Every macro should sit at the top
-        // of the block, so any runtime statement (even one before the first
-        // macro) marks a boundary that no macro may appear after.
-        let mut macros: Vec<MacroOccurrence> = Vec::new();
-        let mut first_runtime: Option<Span> = None;
-
-        for statement in &program.body {
-            if let Some((rank, span)) = macro_occurrence(statement) {
-                macros.push(MacroOccurrence { rank, span });
-            } else if first_runtime.is_none() && is_runtime_statement(statement) {
-                first_runtime = Some(statement.span());
-            }
-        }
-
-        if macros.is_empty() {
+        let body = &program.body;
+        // The last declaration of each ordered macro, in the expected order.
+        let ordered: Vec<(&'static str, usize)> = MACRO_ORDER
+            .iter()
+            .filter_map(|name| {
+                body.iter()
+                    .rposition(|statement| macro_name(statement) == Some(name))
+                    .map(|index| (*name, index))
+            })
+            .collect();
+        if ordered.is_empty() {
             return;
         }
-
-        report_out_of_order(&macros, offset, result);
-        report_after_non_macro(&macros, first_runtime, offset, result);
-    }
-}
-
-/// A recognised compiler-macro call found at the top level.
-struct MacroOccurrence {
-    /// Rank within [`MACRO_ORDER`].
-    rank: MacroRank,
-    /// Source span of the whole statement (used for diagnostics).
-    span: Span,
-}
-
-/// Report each macro that appears after a macro which should come later per the
-/// canonical order. We compare every macro against the maximum rank seen so far:
-/// a macro whose rank is *strictly less* than an earlier macro's rank is out of
-/// order (e.g. `defineProps` (rank 2) appearing after `defineEmits` (rank 3)).
-fn report_out_of_order(macros: &[MacroOccurrence], offset: usize, result: &mut ScriptLintResult) {
-    let [first, rest @ ..] = macros else {
-        return;
-    };
-    let mut max_rank_so_far = first.rank;
-    for occurrence in rest {
-        if occurrence.rank.index < max_rank_so_far.index {
-            let expected = occurrence.rank.name;
-            let after = max_rank_so_far.name;
-            report(
-                occurrence.span,
-                offset,
-                cstr!(
-                    "`{expected}` should be declared before `{after}` to follow the \
-                     canonical macro order."
+        let first = body
+            .iter()
+            .position(|statement| !is_skipped_statement(statement))
+            .unwrap_or(body.len());
+        for (position, &(name, index)) in ordered.iter().enumerate() {
+            let target = first + position;
+            if index == target {
+                continue;
+            }
+            let before = body
+                .get(target)
+                .and_then(macro_name)
+                .filter(|macro_name| MACRO_ORDER.contains(macro_name));
+            let message = match before {
+                Some(before) => cstr!("`{name}` should be above `{before}`."),
+                None => cstr!(
+                    "`{name}` should be placed at the top of `<script setup>` (after any \
+                     potential import statements or type definitions)."
                 ),
-                result,
-            );
-        } else {
-            max_rank_so_far = occurrence.rank;
-        }
-    }
-}
-
-/// Report any macro that appears after the first non-macro runtime statement.
-fn report_after_non_macro(
-    macros: &[MacroOccurrence],
-    first_runtime: Option<Span>,
-    offset: usize,
-    result: &mut ScriptLintResult,
-) {
-    let Some(boundary) = first_runtime else {
-        return;
-    };
-    for occurrence in macros {
-        if occurrence.span.start > boundary.start {
-            let name = occurrence.rank.name;
-            report(
-                occurrence.span,
-                offset,
-                cstr!(
-                    "`{name}` should be declared before other statements in \
-                     `<script setup>`."
-                ),
-                result,
-            );
+            };
+            if let Some(statement) = body.get(index) {
+                report(statement.span(), offset, message, result);
+            }
+            return;
         }
     }
 }
@@ -188,35 +119,28 @@ fn report(span: Span, offset: usize, message: CompactString, result: &mut Script
         LintDiagnostic::warn(META.name, message, start, end)
             .with_label("compiler macro out of order", start, end)
             .with_help(
-                "Declare the Vue compiler macros in the canonical order: \
-                 `defineOptions`, `defineModel`, `defineProps`, `defineEmits`, \
-                 `defineSlots`, before any other statement.",
+                "Declare `defineProps` and then `defineEmits` first in `<script setup>`, \
+                 right after imports and type declarations.",
             ),
     );
 }
 
-/// The macro rank and statement span if `statement` is a recognised top-level
-/// compiler-macro call.
-fn macro_occurrence(statement: &Statement<'_>) -> Option<(MacroRank, Span)> {
+/// The compiler macro a top-level statement declares, if any.
+fn macro_name<'s>(statement: &Statement<'s>) -> Option<&'s str> {
     match statement {
-        Statement::ExpressionStatement(stmt) => {
-            macro_rank_of_expression(&stmt.expression).map(|rank| (rank, stmt.span))
-        }
-        Statement::VariableDeclaration(decl) => {
-            // `const props = defineProps(...)` — inspect each declarator's init,
-            // reporting on the whole declaration statement.
-            decl.declarations
-                .iter()
-                .find_map(|declarator| declarator.init.as_ref().and_then(macro_rank_of_expression))
-                .map(|rank| (rank, decl.span))
-        }
+        Statement::ExpressionStatement(stmt) => macro_of_expression(&stmt.expression),
+        // `const props = defineProps(...)`: any declarator may hold the macro.
+        Statement::VariableDeclaration(decl) => decl
+            .declarations
+            .iter()
+            .find_map(|declarator| declarator.init.as_ref().and_then(macro_of_expression)),
         _ => None,
     }
 }
 
-/// The macro rank of an expression, unwrapping a single `withDefaults(...)`
-/// wrapper (`withDefaults(defineProps(...), {})`) to its inner macro call.
-fn macro_rank_of_expression(expression: &Expression<'_>) -> Option<MacroRank> {
+/// The macro an expression calls, looking through one `withDefaults(...)`
+/// wrapper (`withDefaults(defineProps(...), {})`).
+fn macro_of_expression<'s>(expression: &Expression<'s>) -> Option<&'s str> {
     let Expression::CallExpression(call) = expression else {
         return None;
     };
@@ -224,57 +148,38 @@ fn macro_rank_of_expression(expression: &Expression<'_>) -> Option<MacroRank> {
         return None;
     };
     let name = callee.name.as_str();
-
     if name == "withDefaults" {
-        // The macro is the first argument of `withDefaults(defineProps(...), …)`.
         return call
             .arguments
             .first()
             .and_then(|argument| argument.as_expression())
-            .and_then(macro_rank_of_expression);
+            .and_then(macro_of_expression);
     }
-
-    macro_rank(name)
+    name.starts_with("define").then_some(name)
 }
 
-/// Whether a statement is a runtime statement that should not appear in the
-/// middle of the macro block. Imports and TS type-only declarations are exempt
-/// because they are hoisted / erased and conventionally precede the macros.
-fn is_runtime_statement(statement: &Statement<'_>) -> bool {
+/// Statements that may precede the macros, as in eslint-plugin-vue: imports,
+/// type declarations, enums, exports, `declare` statements, `debugger`, empty
+/// statements and a `"use strict"` directive.
+fn is_skipped_statement(statement: &Statement<'_>) -> bool {
     match statement {
         Statement::ImportDeclaration(_)
-        | Statement::TSTypeAliasDeclaration(_)
-        | Statement::TSInterfaceDeclaration(_)
+        | Statement::TSEnumDeclaration(_)
         | Statement::TSModuleDeclaration(_)
-        | Statement::TSImportEqualsDeclaration(_)
-        | Statement::TSExportAssignment(_)
-        | Statement::EmptyStatement(_) => false,
-        // `export interface` / `export type` are still erased. A value export is not.
-        Statement::ExportNamedDeclaration(export) => !is_type_only_named_export(export),
-        _ => true,
+        | Statement::TSInterfaceDeclaration(_)
+        | Statement::TSTypeAliasDeclaration(_)
+        | Statement::DebuggerStatement(_)
+        | Statement::EmptyStatement(_)
+        | Statement::ExportNamedDeclaration(_) => true,
+        Statement::VariableDeclaration(decl) => decl.declare,
+        Statement::ClassDeclaration(class) => class.declare,
+        Statement::FunctionDeclaration(function) => function.declare,
+        Statement::ExpressionStatement(stmt) => matches!(
+            &stmt.expression,
+            Expression::StringLiteral(literal) if literal.value == "use strict"
+        ),
+        _ => false,
     }
-}
-
-fn is_type_only_named_export(export: &oxc_ast::ast::ExportNamedDeclaration<'_>) -> bool {
-    use oxc_ast::ast::{Declaration, ImportOrExportKind};
-
-    if export.export_kind == ImportOrExportKind::Type {
-        return true;
-    }
-    if let Some(declaration) = &export.declaration {
-        return matches!(
-            declaration,
-            Declaration::TSTypeAliasDeclaration(_)
-                | Declaration::TSInterfaceDeclaration(_)
-                | Declaration::TSModuleDeclaration(_)
-                | Declaration::TSImportEqualsDeclaration(_)
-        );
-    }
-    !export.specifiers.is_empty()
-        && export
-            .specifiers
-            .iter()
-            .all(|specifier| specifier.export_kind == ImportOrExportKind::Type)
 }
 
 #[cfg(test)]
