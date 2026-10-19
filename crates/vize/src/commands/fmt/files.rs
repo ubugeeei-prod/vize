@@ -100,8 +100,11 @@ fn should_walk_with_gitignore(pattern: &str) -> bool {
     // `normalize_fmt_pattern` strips leading `./`, but accept it defensively.
     let bare = pattern.strip_prefix("./").unwrap_or(pattern);
     let path = Path::new(bare);
+    // The default globs are rooted at the Vite project root, so an absolute
+    // glob inside the working directory honors ignore files like its relative
+    // form; build output and generated `.void`/`.nuxt` stay out.
     contains_glob_char(bare)
-        && !path.is_absolute()
+        && (!path.is_absolute() || std::env::current_dir().is_ok_and(|cwd| path.starts_with(cwd)))
         && !path
             .components()
             .any(|component| component == Component::ParentDir)
@@ -281,6 +284,35 @@ mod files_tests {
         let _ = fs::remove_dir_all(&root);
 
         assert_eq!(files, vec![relative_root.join("apps/web/src/App.vue")]);
+    }
+
+    #[test]
+    fn default_absolute_glob_under_cwd_respects_gitignore() {
+        // `vize fmt` in a Vite project roots its default globs at the project
+        // root; ignored build output must not be reformatted (Void's dist/.void).
+        let cwd = std::env::current_dir().unwrap();
+        let root = cwd
+            .join("tests")
+            .join(unique_case_dir("absolute-glob-ignore").file_name().unwrap());
+        let source = root.join("pages/index.vue");
+        let _ = fs::remove_dir_all(&root);
+        for file in [
+            &source,
+            &root.join("dist/index.vue"),
+            &root.join(".void/entry.vue"),
+        ] {
+            fs::create_dir_all(file.parent().unwrap()).unwrap();
+            fs::write(file, "<template><main /></template>").unwrap();
+        }
+        fs::write(root.join(".gitignore"), "dist\n.void\n").unwrap();
+
+        let files = collect_files(
+            &[root.join("**/*.vue").to_string_lossy().into_owned()],
+            None,
+        );
+        let _ = fs::remove_dir_all(&root);
+
+        assert_eq!(files, vec![source]);
     }
 
     #[test]
