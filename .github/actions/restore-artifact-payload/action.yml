@@ -10,6 +10,8 @@ inputs:
 runs:
   using: composite
   steps:
+    - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      with: { node-version-file: "package.json", package-manager-cache: false }
     - name: Download the complete experimental envelope into a fresh consumer
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
@@ -21,4 +23,4 @@ runs:
         PAYLOAD_ARTIFACT_ID: ${{ inputs.artifact_id }}
         PAYLOAD_SOURCE_SHA: ${{ inputs.artifact_source_sha }}
       run: |
-        /usr/bin/time -v -o "$RUNNER_TEMP/payload-restore-resources.txt" python3 -B tools/support/compat/github/artifact_payload.py restore "$RUNNER_TEMP/payload-envelope" "$RUNNER_TEMP/payload-restored" --source-sha "$PAYLOAD_SOURCE_SHA" --driver-sha "$GITHUB_SHA" --artifact-id "$PAYLOAD_ARTIFACT_ID" --report "$RUNNER_TEMP/payload-restore.json"
+        /usr/bin/time -v -o "$RUNNER_TEMP/payload-restore-resources.txt" node tools/support/compat/github/artifact-payload.ts restore "$RUNNER_TEMP/payload-envelope" "$RUNNER_TEMP/payload-restored" --source-sha "$PAYLOAD_SOURCE_SHA" --driver-sha "$GITHUB_SHA" --artifact-id "$PAYLOAD_ARTIFACT_ID" --report "$RUNNER_TEMP/payload-restore.json"

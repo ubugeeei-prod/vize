@@ -3,17 +3,19 @@ description: Authenticate and preserve every whole original file in an opt-in en
 runs:
   using: composite
   steps:
+    - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      with: { node-version-file: "package.json", package-manager-cache: false }
     - name: Exercise whole-body corruption, missing files, identity and mutable alias controls
       shell: bash
-      run: python3 -B -m unittest discover -s tools/support/compat/github -p artifact_payload_test.py
+      run: node --test tests/tooling/artifact-payload.test.ts
     - name: Download and authenticate the entire original ZIP
       env: { GH_TOKEN: "${{ github.token }}" }
       shell: bash
-      run: python3 -B tools/support/compat/github/artifact_payload_download.py "$RUNNER_TEMP/payload-original"
+      run: node tools/support/compat/github/artifact-payload.ts download "$RUNNER_TEMP/payload-original"
     - name: Pack every original file after whole-body SHA-256 comparison
       shell: bash
       run: |
-        /usr/bin/time -v -o "$RUNNER_TEMP/payload-pack-resources.txt" python3 -B tools/support/compat/github/artifact_payload.py pack "$RUNNER_TEMP/payload-original/original.zip" "$RUNNER_TEMP/payload-envelope" --metadata "$RUNNER_TEMP/payload-original/original-metadata.json" --source-sha "$PAYLOAD_SOURCE_SHA" --driver-sha "$GITHUB_SHA"
+        /usr/bin/time -v -o "$RUNNER_TEMP/payload-pack-resources.txt" node tools/support/compat/github/artifact-payload.ts pack "$RUNNER_TEMP/payload-original/original.zip" "$RUNNER_TEMP/payload-envelope" --metadata "$RUNNER_TEMP/payload-original/original-metadata.json" --source-sha "$PAYLOAD_SOURCE_SHA" --driver-sha "$GITHUB_SHA"
     - name: Upload the experimental complete envelope without recompression
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:

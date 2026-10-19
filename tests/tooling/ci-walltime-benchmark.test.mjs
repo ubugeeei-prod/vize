@@ -263,7 +263,7 @@ void test("whole artifact payload trial is manual-only with a separate complete 
   assert.equal(upload.with["if-no-files-found"], "error");
   assert.equal(download.with.path, "${{ runner.temp }}/payload-envelope");
   const restore = restoreAction.runs.steps.find((step) =>
-    step.run?.includes("artifact_payload.py restore"),
+    step.run?.includes("artifact-payload.ts restore"),
   );
   assert.match(
     restore.run,

@@ -2,12 +2,7 @@
   "$comment": "Tracked files in tooling languages the maintainer retired on 2026-10-13 (#8840): Python moves to TypeScript, Lean moves to Rust Kani harnesses, MoonBit tooling moves to TypeScript. `retiring` only shrinks: delete an entry in the change that ports or removes its file. New files in these languages are refused by tests/tooling/retired-tooling-languages.test.ts.",
   "permanent": [],
   "retiring": {
-    "py": [
-      "tools/support/compat/github/artifact_payload.py",
-      "tools/support/compat/github/artifact_payload_download.py",
-      "tools/support/compat/github/artifact_payload_files.py",
-      "tools/support/compat/github/artifact_payload_test.py"
-    ],
+    "py": [],
     "lean": [
       "tests/formal/impeto/Impeto.lean",
       "tests/formal/impeto/Impeto/Audit.lean",
