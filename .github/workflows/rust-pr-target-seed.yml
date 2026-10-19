@@ -76,6 +76,15 @@ jobs:
       - name: Seed native Program and Vue navigation
         uses: ./.github/actions/test-native-navigation
 
+  wasm-check-target-seed:
+    name: Seed WASM release check target
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env: { CARGO_BUILD_JOBS: "24" }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/check-wasm-release
+
   # No trusted run wrote this disk before, so every queue candidate compiled the
   # differential feature builds, and the producer its ci profile, from scratch.
   rust-differential-target-seed:

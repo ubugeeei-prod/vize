@@ -70,6 +70,24 @@ jobs:
         id: canonical-corpus-plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
         run: node tools/support/compat/github/canonical-corpus-selection.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
+  # PR and queue Rust lanes build only native configurations; the release
+  # also builds @vizejs/wasm without it. Check that configuration first.
+  wasm-release-check:
+    name: WASM release build check
+    needs: pr-source-plan
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: "24"
+      AFFECTED: ${{ contains(fromJSON(needs.pr-source-plan.outputs.rust-plan).packages, 'vize_vitrine') }}
+    steps:
+      - name: Explain unaffected skip
+        if: ${{ env.AFFECTED != 'true' }}
+        run: echo 'The WASM release crate depends on no changed Rust package.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ env.AFFECTED == 'true' }}
+      - uses: ./.github/actions/check-wasm-release
+        if: ${{ env.AFFECTED == 'true' }}
   # Beside the lanes, not before them: every lane already waits for the source
   # report, which requires this job.
   ci-selection-tests:
@@ -321,7 +339,7 @@ jobs:
     # A superseded run reports nothing: its required check fails in test-report.
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
     # prettier-ignore
-    needs: [pr-source-plan, pr-rust-source, pr-rust-products, pr-js-packages, pr-native-runtime, pr-playground-test, nuxt-module-qualification, canonical-corpus, release-integration-catalog, ci-selection-tests]
+    needs: [pr-source-plan, pr-rust-source, pr-rust-products, pr-js-packages, pr-native-runtime, pr-playground-test, nuxt-module-qualification, canonical-corpus, release-integration-catalog, ci-selection-tests, wasm-release-check]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:

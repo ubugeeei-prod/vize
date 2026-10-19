@@ -1,0 +1,18 @@
+name: Check the WASM release build
+description: Type-check the exact @vizejs/wasm release crate configuration on its own warm disk.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      with: { node-version-file: "package.json", package-manager-cache: false }
+    - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+      with:
+        toolchain: "1.99.1"
+        targets: wasm32-unknown-unknown
+    - uses: ./.github/actions/setup-rust-sticky-cache
+      with:
+        key: wasm-check
+        cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+    - name: Check the release WASM crate without the native feature
+      shell: bash
+      run: node tools/support/tasks/build-vize-wasm-package.ts --check

@@ -209,7 +209,7 @@ void test("build-vize-wasm-package reports each failed stage and restores packag
   fs.mkdirSync(path.join(root, "npm/wasm"), { recursive: true });
   fs.writeFileSync(path.join(root, "npm/wasm/package.json"), "generated");
   const run = () =>
-    runToolCommand(wasmPackage, ["ignored"], { cwd: root, env: { ...env, RUSTFLAGS: "-Cx" } });
+    runToolCommand(wasmPackage, [], { cwd: root, env: { ...env, RUSTFLAGS: "-Cx" } });
 
   for (const message of [
     "Failed to build the WASM crate\n",
@@ -253,6 +253,35 @@ void test("build-vize-wasm-package reports each failed stage and restores packag
   );
   assert.equal(calls.at(-3)!.env.RUSTFLAGS, '-Cx --cfg getrandom_backend="wasm_js"');
   assert.equal(calls.at(-2)!.env.RUSTFLAGS, "-Cx");
+});
+
+void test("build-vize-wasm-package --check type-checks the release configuration only", (t) => {
+  const { root, bin, log, env } = workspace(t);
+  writeRecordingCommand(bin, "cargo", log, { exitCodes: [4, 0] });
+  writeRecordingCommand(bin, "wasm-bindgen", log, { exitCodes: [0] });
+  writeRecordingCommand(bin, "git", log, { exitCodes: [0] });
+  const run = (args: string[]) =>
+    runToolCommand(wasmPackage, args, { cwd: root, env: { ...env, RUSTFLAGS: "-Cx" } });
+  assert.equal(run(["--check"]).status, 4);
+  assert.equal(run(["--check"]).status, 0);
+  assert.equal(run(["--bogus"]).status, 1);
+  const calls = readRecordedCalls(log);
+  assert.deepEqual(
+    calls.map(({ name, argv }) => [name, ...argv]),
+    Array.from({ length: 2 }, () => [
+      "cargo",
+      "check",
+      "--release",
+      "-p",
+      "vize_vitrine",
+      "--no-default-features",
+      "--features",
+      "wasm",
+      "--target",
+      "wasm32-unknown-unknown",
+    ]),
+  );
+  assert.equal(calls[0]!.env.RUSTFLAGS, '-Cx --cfg getrandom_backend="wasm_js"');
 });
 
 void test("dev-app and generate-expected forward to their Node support scripts", (t) => {

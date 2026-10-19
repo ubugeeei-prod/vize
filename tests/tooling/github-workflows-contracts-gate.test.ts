@@ -84,6 +84,7 @@ test("retiring the WIT lane preserves the required source report and existing Ch
     "canonical-corpus",
     "release-integration-catalog",
     "ci-selection-tests",
+    "wasm-release-check",
   ]);
   assert.equal(
     source.jobs["source-report"].if,
