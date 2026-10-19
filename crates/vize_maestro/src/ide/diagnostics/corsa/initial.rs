@@ -32,6 +32,7 @@ pub(crate) struct PreparedInitialApiDiagnostics {
     content: String,
     sync: Vec<Diagnostic>,
     native_script_syntax: bool,
+    configuration: Vec<Diagnostic>,
 }
 
 impl PreparedInitialApiDiagnostics {
@@ -62,7 +63,12 @@ impl PreparedInitialApiDiagnostics {
             .filter_map(|diagnostic| finished_from_lsp(&document.code, diagnostic, 0))
             .collect();
         let native = assemble_corsa_diagnostics(&self.content, &[document], finished);
-        merge_complete_native(self.sync.clone(), native, self.native_script_syntax)
+        merge_complete_native(
+            self.sync.clone(),
+            native,
+            self.native_script_syntax,
+            self.configuration.clone(),
+        )
     }
 }
 
@@ -143,6 +149,7 @@ impl DiagnosticService {
             content,
             sync,
             native_script_syntax,
+            configuration: super::collect::configuration_disclosures(state),
         }))
     }
 
@@ -169,9 +176,12 @@ impl DiagnosticService {
             Self::collect_corsa_diagnostics_with_first_failure(state, uri, Some(failure)).await
         };
         let mut diagnostics = match result {
-            CorsaDiagnostics::Complete(native) => {
-                merge_complete_native(sync, native, native_script_syntax)
-            }
+            CorsaDiagnostics::Complete(native) => merge_complete_native(
+                sync,
+                native,
+                native_script_syntax,
+                super::collect::configuration_disclosures(state),
+            ),
             CorsaDiagnostics::Unavailable(hints) => {
                 let mut diagnostics = sync;
                 diagnostics.extend(hints);

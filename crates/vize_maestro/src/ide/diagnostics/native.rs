@@ -75,8 +75,12 @@ impl DiagnosticService {
                         serde_json::json!(corsa_diags)
                     });
                     tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
-                    diagnostics =
-                        merge_complete_native(diagnostics, corsa_diags, native_script_syntax);
+                    diagnostics = merge_complete_native(
+                        diagnostics,
+                        corsa_diags,
+                        native_script_syntax,
+                        super::corsa::collect::configuration_disclosures(state),
+                    );
                 }
                 Ok(CorsaDiagnostics::Unavailable(hints)) => {
                     #[cfg(test)]
@@ -141,12 +145,14 @@ pub(super) fn merge_complete_native(
     mut diagnostics: Vec<Diagnostic>,
     corsa: Vec<Diagnostic>,
     native_script_syntax: bool,
+    configuration: Vec<Diagnostic>,
 ) -> Vec<Diagnostic> {
     if native_script_syntax {
         diagnostics
             .retain(|diagnostic| diagnostic.source.as_deref() != Some(sources::SCRIPT_PARSER));
     }
     diagnostics.extend(without_duplicate_required_props(corsa, &diagnostics));
+    diagnostics.extend(configuration);
     diagnostics
 }
 

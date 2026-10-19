@@ -72,16 +72,7 @@ impl DiagnosticService {
                 None => Self::try_collect_corsa_diagnostics(state, uri).await,
             };
             match result {
-                Ok(mut diagnostics) => {
-                    // A skipped `extends` keeps typed services running with the
-                    // rest of the chain, but stays visible like `tsc`'s TS6053.
-                    diagnostics.extend(state.unresolved_tsconfig_extends().iter().map(
-                        |unresolved| {
-                            project_configuration_error(&unresolved.configuration_message())
-                        },
-                    ));
-                    return CorsaDiagnostics::Complete(diagnostics);
-                }
+                Ok(diagnostics) => return CorsaDiagnostics::Complete(diagnostics),
                 Err(CollectFailure::Unavailable) => return CorsaDiagnostics::Unavailable(vec![]),
                 Err(CollectFailure::DeadBridge(bridge, error)) if attempt == 0 => {
                     #[cfg(test)]
@@ -311,6 +302,18 @@ impl DiagnosticService {
         // the whole set, so it lands once.
         Ok(assemble_corsa_diagnostics(&content, &documents, finished))
     }
+}
+
+/// A skipped `extends` keeps typed services running with the rest of the
+/// chain, but stays visible next to them like `tsc`'s TS6053.
+pub(in crate::ide::diagnostics) fn configuration_disclosures(
+    state: &ServerState,
+) -> Vec<Diagnostic> {
+    state
+        .unresolved_tsconfig_extends()
+        .iter()
+        .map(|unresolved| project_configuration_error(&unresolved.configuration_message()))
+        .collect()
 }
 
 fn project_configuration_error(message: &str) -> Diagnostic {

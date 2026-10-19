@@ -199,9 +199,10 @@ fn watched_reference_failures_keep_dispatch_and_native_environment_of_each_full_
             r#"{"vueCompilerOptions":{"target":3.5}}"#,
             VueVersion::V3,
         ),
+        // A deleted base would be skipped like `tsc`; a malformed one rejects.
         (
             &base,
-            None,
+            Some("{"),
             r#"{"vueCompilerOptions":{"target":2.7}}"#,
             VueVersion::V2_7,
         ),

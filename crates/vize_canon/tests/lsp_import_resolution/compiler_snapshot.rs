@@ -102,7 +102,9 @@ fn admitted_compiler_configuration_survives_deleted_extends_before_first_native_
                 assert_typed_hover(&bridge, &source, original, "string").await;
             }
             std::fs::remove_file(&base).unwrap();
-            assert!(CompilerConfigurationSnapshot::capture(root.path(), Some(&config)).is_err());
+            // A live capture skips the deleted base like `tsc`, reporting it.
+            let live = CompilerConfigurationSnapshot::capture(root.path(), Some(&config)).unwrap();
+            assert_eq!(live.unresolved_extends().len(), 1);
             bridge.spawn().await.unwrap();
             assert_typed_hover(&bridge, &source, original, "string").await;
             let unsaved =
