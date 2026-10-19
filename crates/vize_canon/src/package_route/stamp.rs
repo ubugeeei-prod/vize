@@ -62,6 +62,13 @@ impl InputStampCache {
         stamp
     }
 
+    /// Keep observations already made here; add the lent cache's others.
+    pub(crate) fn absorb(&mut self, other: Self) {
+        for (path, stamp) in other.snapshots {
+            self.snapshots.entry(path).or_insert(stamp);
+        }
+    }
+
     #[cfg(test)]
     pub(crate) fn captures(&self) -> usize {
         self.captures

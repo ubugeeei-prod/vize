@@ -126,3 +126,29 @@ fn write_package(root: &std::path::Path, name: &str, manifest: &str) {
     std::fs::write(package.join("package.json"), manifest).unwrap();
     std::fs::write(package.join("index.ts"), "export const value = 1;\n").unwrap();
 }
+
+/// Editor preparation lends the epoch's observations to its cache lookup and
+/// fingerprint stamping, so a file already stamped is not read and hashed again.
+#[test]
+fn lent_epoch_stamps_return_their_observations_to_the_epoch() {
+    let root = tempfile::tempdir().unwrap();
+    let input = root.path().join("index.d.ts");
+    std::fs::write(&input, "export {};\n").unwrap();
+    let resolver = PackageRouteResolver::default();
+    let _scope = resolver.validation_scope();
+
+    let mut lent = resolver.lend_epoch_stamps();
+    let _ = lent.1.capture(&input);
+    resolver.return_epoch_stamps(lent);
+    let (_, entries, _) = resolver.debug_validation_cache_counts();
+    assert_eq!(entries, 1);
+
+    let mut lent = resolver.lend_epoch_stamps();
+    let _ = lent.1.capture(&input);
+    assert_eq!(lent.1.captures(), 0, "the returned observation is reused");
+    resolver.return_epoch_stamps(lent);
+
+    drop(_scope);
+    let (_, entries, _) = resolver.debug_validation_cache_counts();
+    assert_eq!(entries, 0, "observations never outlive their epoch");
+}
