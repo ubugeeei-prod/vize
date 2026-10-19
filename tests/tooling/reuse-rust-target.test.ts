@@ -218,6 +218,7 @@ await test("a reused target keeps only Cargo's build cache", () => {
     "tmp/scratch",
     "doc/vize/index.html",
     "llvm-cov/source-summary.json",
+    "llvm-cov-target/vize-12345-678.profraw",
   ];
   try {
     for (const path of [...kept, ...removed]) touch(path);
@@ -228,6 +229,30 @@ await test("a reused target keeps only Cargo's build cache", () => {
       assert.ok(!existsSync(join(target, directory)), `${directory} must go`);
   } finally {
     rmSync(target, { recursive: true, force: true });
+  }
+});
+
+await test("a trusted run commits its target without run outputs", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "vize-prune-post-"));
+  const target = join(cwd, "target");
+  const profraw = join(target, "llvm-cov-target/vize-12345-678.profraw");
+  const fingerprint = join(target, "llvm-cov-target/debug/.fingerprint/carton-5/lib");
+  try {
+    for (const path of [profraw, fingerprint]) {
+      mkdirSync(dirname(path), { recursive: true });
+      writeFileSync(path, "x");
+    }
+    const post = new URL("../../.github/actions/reuse-rust-target/post.ts", import.meta.url);
+    const result = spawnSync(process.execPath, [post.pathname], {
+      cwd,
+      encoding: "utf8",
+      env: { ...process.env, STATE_target: target },
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.ok(!existsSync(profraw), "coverage profiles must not be committed");
+    assert.ok(existsSync(fingerprint), "Cargo cache stays");
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
   }
 });
 
