@@ -7,8 +7,7 @@
       "tools/support/compat/github/artifact_payload.py",
       "tools/support/compat/github/artifact_payload_download.py",
       "tools/support/compat/github/artifact_payload_files.py",
-      "tools/support/compat/github/artifact_payload_test.py",
-      "tools/support/compat/github/mounted-child-saturation.py"
+      "tools/support/compat/github/artifact_payload_test.py"
     ],
     "lean": [
       "tests/formal/impeto/Impeto.lean",
