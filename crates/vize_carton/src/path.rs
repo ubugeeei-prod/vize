@@ -24,6 +24,19 @@ pub fn canonicalize_non_verbatim(path: &Path) -> PathBuf {
     normalize_windows_verbatim_path(canonical)
 }
 
+/// `sort(); dedup();` for path lists dominated by repeats (resolver inputs).
+///
+/// `PathBuf` ordering walks components, so sorting every repeat is slow. Byte
+/// copies are dropped first with a byte sort, then only unique paths take the
+/// component-ordered sort, giving the same order and the same set under
+/// `Path` equality.
+pub fn sort_dedup_paths(paths: &mut Vec<PathBuf>) {
+    paths.sort_unstable_by(|left, right| left.as_os_str().cmp(right.as_os_str()));
+    paths.dedup_by(|left, right| left.as_os_str() == right.as_os_str());
+    paths.sort();
+    paths.dedup();
+}
+
 /// Strip a Windows verbatim path prefix from `path` when running on Windows.
 pub fn normalize_windows_verbatim_path(path: PathBuf) -> PathBuf {
     normalize_windows_verbatim_path_impl(path)
@@ -73,7 +86,23 @@ fn strip_windows_verbatim_prefix(value: &str) -> Option<std::string::String> {
 
 #[cfg(test)]
 mod tests {
-    use super::strip_windows_verbatim_prefix;
+    use super::{sort_dedup_paths, strip_windows_verbatim_prefix};
+    use std::path::PathBuf;
+
+    #[test]
+    fn sort_dedup_paths_matches_component_sort_and_dedup() {
+        let input = [
+            "/r/a-b", "/r/a/b", "/r/a", "/r/a/b", "/r/a-b", "/r/a.b", "/r/a/b",
+        ];
+        let mut expected: Vec<PathBuf> = input.iter().map(PathBuf::from).collect();
+        expected.sort();
+        expected.dedup();
+        let mut actual: Vec<PathBuf> = input.iter().map(PathBuf::from).collect();
+        sort_dedup_paths(&mut actual);
+        assert_eq!(actual, expected);
+        assert_eq!(actual.first(), Some(&PathBuf::from("/r/a")));
+        assert_eq!(actual.get(1), Some(&PathBuf::from("/r/a/b")));
+    }
 
     #[test]
     fn strips_windows_drive_verbatim_prefixes() {

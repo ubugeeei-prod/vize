@@ -139,8 +139,7 @@ fn lookup_uncached(
         graph_inputs::collect(&route.package_link_root, &mut invalidation_paths);
     }
     graph_inputs::collect(importer_dir, &mut invalidation_paths);
-    invalidation_paths.sort();
-    invalidation_paths.dedup();
+    vize_carton::path::sort_dedup_paths(&mut invalidation_paths);
     cache::PackageRouteLookup {
         route,
         invalidation_paths,

@@ -320,8 +320,7 @@ fn finish(
     work: ReachabilityWork,
     budget: ReachabilityBudget,
 ) -> PackageRouteReachability {
-    inputs.sort();
-    inputs.dedup();
+    vize_carton::path::sort_dedup_paths(&mut inputs);
     debug_assert!(
         outcome == ReachabilityOutcome::BudgetExceeded
             || (work.files <= budget.max_files

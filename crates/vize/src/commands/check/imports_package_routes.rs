@@ -2,17 +2,12 @@ use std::{cmp::Ordering, path::PathBuf};
 
 use vize_canon::{PackageResolutionContext, PackageRouteBinding};
 
-/// Byte-order dedup. `PathBuf` equality is bytewise, so this is exact; it only
-/// avoids `PathBuf::cmp`'s component-wise walk over long package-manager paths.
+/// Byte-order sort and dedup. It avoids `PathBuf`'s component-wise compare and
+/// hash over long package-manager paths; merged bindings carry tens of
+/// thousands of repeated invalidation inputs.
 pub(super) fn dedup_paths_sorted(paths: &mut Vec<PathBuf>) {
     paths.sort_unstable_by(|left, right| left.as_os_str().cmp(right.as_os_str()));
     paths.dedup();
-}
-
-fn dedup_paths_merged(paths: &mut Vec<PathBuf>) {
-    let mut seen = vize_l0::FxHashSet::default();
-    paths.retain(|path| seen.insert(path.clone()));
-    paths.sort_unstable_by(|left, right| left.as_os_str().cmp(right.as_os_str()));
 }
 
 pub(super) fn sort_package_route_bindings(bindings: &mut Vec<PackageRouteBinding>) {
@@ -37,7 +32,7 @@ pub(super) fn sort_package_route_bindings(bindings: &mut Vec<PackageRouteBinding
     }
     if merged {
         for binding in &mut deduped {
-            dedup_paths_merged(&mut binding.invalidation_paths);
+            dedup_paths_sorted(&mut binding.invalidation_paths);
         }
     }
     *bindings = deduped;
