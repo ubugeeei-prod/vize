@@ -121,6 +121,7 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
                     continue;
                 }
             } else if !condition
+                && !guard_header(trimmed)
                 && !line.trim_end().ends_with(";  // handler expression")
                 && !line
                     .trim_end()
@@ -145,37 +146,110 @@ pub(super) fn bind_checked_expressions(document: &mut TypeAwareDocument, index: 
             if !complete {
                 continue;
             }
-            let indent_len = line.len() - trimmed.len();
-            let indent = line.get(..indent_len).unwrap_or_default();
-            let prefix = cstr!("{indent}const __expr_{index} = (");
-            let statement = cstr!("{prefix}{expression});\n");
-            edits.push((
-                line_start,
-                prefix.len(),
-                expression.len(),
-                authored.clone(),
-                statement,
-            ));
+            let name = cstr!("__expr_{index}");
             *index += 1;
+            if condition || checked || !guard_header(trimmed) {
+                let indent_len = line.len() - trimmed.len();
+                let indent = line.get(..indent_len).unwrap_or_default();
+                let prefix = cstr!("{indent}const {name} = (");
+                let name_start = indent_len + "const ".len();
+                edits.push(Edit {
+                    at: line_start,
+                    text: cstr!("{prefix}{expression});\n"),
+                    authored: authored.clone(),
+                    probe: Some(Probe {
+                        name: name_start..name_start + name.len(),
+                        copy: prefix.len()..prefix.len() + expression.len(),
+                    }),
+                    inline: false,
+                });
+                continue;
+            }
+            // A nested or else-if condition evaluates after other guard terms,
+            // where no declaration can sit. An IIFE parameter is inferred from
+            // its argument in place; the comma keeps narrowing on the original.
+            let prefix = cstr!("((({name}) => {name})(");
+            edits.push(Edit {
+                at: generated.start,
+                text: cstr!("{prefix}{expression}), "),
+                authored: authored.clone(),
+                probe: Some(Probe {
+                    name: 3..3 + name.len(),
+                    copy: prefix.len()..prefix.len() + expression.len(),
+                }),
+                inline: true,
+            });
+            edits.push(Edit {
+                at: generated.end,
+                text: String::from(")"),
+                authored: authored.clone(),
+                probe: None,
+                inline: true,
+            });
         }
     }
-    edits.sort_unstable_by_key(|(at, _, _, _, _)| *at);
-    // A mapped initializer can occur in more than one diagnostic row.
-    edits.dedup_by(|left, right| left.0 == right.0 && left.3 == right.3);
+    edits.sort_by_key(|edit| edit.at);
+    // A mapped initializer can occur in more than one diagnostic row. A
+    // declared probe is preferred; otherwise the first inline copy owns it.
+    let declared: Vec<_> = edits
+        .iter()
+        .filter(|edit| !edit.inline)
+        .map(|edit| edit.authored.clone())
+        .collect();
+    let mut kept = Vec::new();
+    edits.retain(|edit| {
+        if edit.inline && declared.contains(&edit.authored) {
+            return false;
+        }
+        let at = (!edit.inline).then_some(edit.at);
+        let key = (at, edit.probe.is_some(), edit.authored.clone());
+        if kept.contains(&key) {
+            return false;
+        }
+        kept.push(key);
+        true
+    });
     if edits.is_empty() {
         return;
     }
     let mut updated = String::from(text);
-    for (at, prefix_len, expression_len, authored, statement) in edits.into_iter().rev() {
+    for edit in edits.into_iter().rev() {
         document
             .mapping
-            .note_generated_replacement(at, 0, statement.len());
-        document.mapping.push(VizeMapping::new(
-            at + prefix_len..at + prefix_len + expression_len,
-            authored.clone(),
-        ));
-        mark_inferred_binding(document, at, &statement, authored);
-        updated.insert_str(at, &statement);
+            .note_generated_replacement(edit.at, 0, edit.text.len());
+        if let Some(Probe { name, copy }) = edit.probe {
+            document.mapping.push(VizeMapping::new(
+                edit.at + copy.start..edit.at + copy.end,
+                edit.authored.clone(),
+            ));
+            document.mapping.push_with(
+                VizeMapping::new(edit.at + name.start..edit.at + name.end, edit.authored),
+                INFERRED_BINDING,
+            );
+        }
+        updated.insert_str(edit.at, &edit.text);
     }
     document.content = updated;
+}
+
+/// Generated text inserted for one authored expression.
+struct Edit {
+    at: usize,
+    text: String,
+    authored: std::ops::Range<usize>,
+    /// The probe name and expression copy, as offsets within `text`.
+    probe: Option<Probe>,
+    inline: bool,
+}
+
+struct Probe {
+    name: std::ops::Range<usize>,
+    copy: std::ops::Range<usize>,
+}
+
+/// An `if` / `else if` header line.
+fn guard_header(trimmed: &str) -> bool {
+    let header = trimmed.strip_prefix('}').unwrap_or(trimmed).trim_start();
+    (header.starts_with("if (") || header.starts_with("else if ("))
+        && trimmed.trim_end().ends_with(") {")
 }

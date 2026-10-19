@@ -188,3 +188,49 @@ let value: any = []
         ]
     );
 }
+
+#[test]
+fn nested_and_else_if_conditions_keep_their_own_inferred_type() {
+    if !runtime_available() {
+        return;
+    }
+    let linter = Linter::new().with_rule(Box::new(NoUnsafeTemplateBinding::new()));
+    let source = r#"<script setup lang="ts">
+const isA = (o: { kind: string }) => o.kind === "a";
+function getUnsafe(): any { return 'unsafe' }
+const show = true as boolean;
+</script>
+<template>
+  <div v-if="show">
+    <p v-if="isA({ kind: 'a' })">nested</p>
+    <p v-if="!isA({ kind: 'a' } as const)">nested</p>
+    <p v-if="getUnsafe({ kind: 'a' })">nested unsafe</p>
+  </div>
+  <p v-if="show">shown</p>
+  <p v-else-if="isA({ kind: 'a' })">else-if</p>
+  <p v-else-if="getUnsafe({ kind: 'b' })">else-if unsafe</p>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "NestedConditions.vue");
+    let actual: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| {
+            diagnostic.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING
+                || diagnostic.rule_name == "type/corsa-runtime"
+        })
+        .map(|diagnostic| (diagnostic.start, diagnostic.end))
+        .collect();
+    let range = |needle: &str| {
+        let start = source.find(needle).expect("condition") as u32;
+        (start, start + needle.len() as u32)
+    };
+    assert_eq!(
+        actual,
+        vec![
+            range("getUnsafe({ kind: 'a' })"),
+            range("getUnsafe({ kind: 'b' })")
+        ],
+        "{:?}",
+        result.diagnostics
+    );
+}

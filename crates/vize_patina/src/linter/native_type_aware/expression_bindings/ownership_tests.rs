@@ -98,19 +98,23 @@ fn condition_alias_stays_in_the_same_scope_and_keeps_the_original_guard() {
         );
         assert_owner(&document, 12..12 + expression.len(), "__expr_0");
     }
-    for original in [
-        format!("}} else if ({expression}) {{\n"),
-        format!("if (parent && ({expression})) {{\n"),
-        format!("if (({expression}) {{\n"),
-        format!("if ({expression})) {{\n"),
-    ] {
-        let mut refusal = mapped_document(&original, &[(expression, 12)]);
-        bind_template_expressions(&mut refusal);
-        assert_eq!(refusal.content.as_str(), original);
-        assert_eq!(
-            inferred_binding_offset(&refusal, &(12..12 + expression.len())),
-            None
-        );
+    // An else-if or later guard term cannot be preceded by a declaration;
+    // its probe stays in place and the guard still narrows on the original.
+    let probe = format!("(((__expr_0) => __expr_0)({expression}), {expression})");
+    for (before, after) in [("} else if (", ") {\n"), ("if (parent && (", ")) {\n")] {
+        let original = format!("{before}{expression}{after}");
+        let mut document = mapped_document(&original, &[(expression, 12)]);
+        bind_template_expressions(&mut document);
+        assert_eq!(document.content.as_str(), format!("{before}{probe}{after}"));
+        assert_owner(&document, 12..12 + expression.len(), "__expr_0");
+        // Both the probe copy and the original condition keep exact rows.
+        let mapped: Vec<_> = document
+            .mapping
+            .rows()
+            .filter(|row| row.span.src_range == (12..12 + expression.len()))
+            .filter_map(|row| document.content.get(row.span.gen_range.clone()))
+            .collect();
+        assert_eq!(mapped.iter().filter(|text| **text == expression).count(), 2);
     }
 }
 
