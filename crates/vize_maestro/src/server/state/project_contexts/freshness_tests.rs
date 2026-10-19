@@ -70,6 +70,8 @@ fn failed_boundary_retains_owner_without_repeated_errors_and_repairs_new_externa
     let outside = fixture.path().join("shared");
     std::fs::create_dir_all(&outside).unwrap();
     let base = outside.join("new-base.json");
+    // A missing base is skipped like `tsc`; a malformed one still rejects.
+    std::fs::write(&base, "{").unwrap();
     std::fs::write(&config, r#"{"extends":"../../shared/new-base.json"}"#).unwrap();
     let rejected = refresh(&state, &a);
     assert_eq!(rejected.errors.len(), 1);
@@ -104,6 +106,7 @@ fn vite_factory_runs_once_per_attempt_and_stable_or_failed_boundaries_do_not_eva
     assert!(Arc::ptr_eq(&stable, &current(&state, &a)));
 
     let tsconfig = root.join("tsconfig.json");
+    std::fs::write(root.join("missing-base.json"), "{").unwrap();
     std::fs::write(&tsconfig, r#"{"extends":"./missing-base.json"}"#).unwrap();
     assert_eq!(refresh(&state, &a).errors.len(), 1);
     assert_eq!(std::fs::read_to_string(&counter).unwrap(), "xx");

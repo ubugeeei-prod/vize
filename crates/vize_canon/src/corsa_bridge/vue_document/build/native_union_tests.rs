@@ -15,7 +15,9 @@ fn native_documents(project: &CorsaVueVirtualProject) -> Vec<(String, String)> {
 }
 
 #[test]
-fn materialization_preserves_typed_configuration_failure_until_physical_repair() {
+/// Like `tsc`, an unresolved authored base is reported and skipped: typed
+/// services keep running on the rest of the configuration until it appears.
+fn materialization_skips_an_unresolved_base_until_physical_repair() {
     let directory = tempfile::tempdir().unwrap();
     let root = vize_carton::path::canonicalize_non_verbatim(directory.path());
     let host = root.join("Host.vue");
@@ -30,17 +32,13 @@ fn materialization_preserves_typed_configuration_failure_until_physical_repair()
         build_vue_virtual_workspace_project(&host, CHILD, Default::default(), &[], &[], env)
     };
     for _ in 0..2 {
-        let Err(error) = build() else {
-            panic!("an unresolved authored base must reject materialization");
-        };
-        assert!(matches!(&error, CorsaBridgeError::Configuration(_)));
-        assert_eq!(
-            vize_carton::cstr!("{error}"),
-            vize_carton::cstr!(
-                "Configuration error: cannot resolve tsconfig extends \"./base.json\" from {}",
-                config.display()
-            )
-            .as_str()
+        let skipped = build().expect("an unresolved base must not stop typed services");
+        assert!(
+            skipped
+                .host
+                .materialized_sources
+                .iter()
+                .any(|source| source.source_path == host)
         );
     }
     std::fs::write(root.join("base.json"), "{}").unwrap();

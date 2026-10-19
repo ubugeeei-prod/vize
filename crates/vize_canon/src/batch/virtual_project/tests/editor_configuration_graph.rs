@@ -1,9 +1,21 @@
 //! Batch checking and editor admission share compiler-option dependency errors.
+//!
+//! A missing `extends` entry behaves as in `tsc`: it is reported (TS6053) and
+//! skipped, and the rest of the chain still applies. Unreadable or malformed
+//! configs remain errors.
 use crate::VirtualProject;
 use vize_carton::cstr;
 
+fn unresolved_messages(project: &VirtualProject) -> Vec<vize_carton::String> {
+    project
+        .unresolved_tsconfig_extends()
+        .iter()
+        .map(crate::UnresolvedExtends::configuration_message)
+        .collect()
+}
+
 #[test]
-fn missing_relative_and_package_extends_reject_only_checked_editor_admission() {
+fn missing_relative_and_package_extends_are_reported_and_skipped() {
     for extends in ["./missing.json", "@fixture/missing/tsconfig.json"] {
         let root = tempfile::tempdir().unwrap();
         let config = root.path().join("tsconfig.json");
@@ -15,13 +27,21 @@ fn missing_relative_and_package_extends_reject_only_checked_editor_admission() {
         let mut project = VirtualProject::new(root.path()).unwrap();
         project.set_tsconfig_path(Some(config.clone()));
         assert_eq!(project.governing_config_paths(), vec![config.clone()]);
-        let error = project.checked_config_chain_paths().unwrap_err();
         assert_eq!(
-            cstr!("{error}"),
-            cstr!(
-                "Configuration error: cannot resolve tsconfig extends {extends:?} from {}",
+            project.checked_config_chain_paths().unwrap(),
+            vec![config.clone()]
+        );
+        assert_eq!(
+            unresolved_messages(&project),
+            vec![cstr!(
+                "cannot resolve tsconfig extends {extends:?} from {}",
                 config.display()
-            )
+            )]
+        );
+        let unresolved = project.unresolved_tsconfig_extends();
+        assert_eq!(
+            unresolved[0].message(),
+            cstr!("File '{extends}' not found.")
         );
     }
 }
@@ -59,7 +79,15 @@ fn checked_admission_uses_array_and_package_resolution_and_reports_the_whole_gra
     expected.sort();
     assert_eq!(project.checked_config_chain_paths().unwrap(), expected);
     std::fs::remove_file(package.join("policy.json")).unwrap();
-    assert!(project.checked_config_chain_paths().is_err());
+    assert!(project.checked_config_chain_paths().is_ok());
+    assert_eq!(
+        project
+            .unresolved_tsconfig_extends()
+            .iter()
+            .map(|unresolved| unresolved.specifier.clone())
+            .collect::<Vec<_>>(),
+        vec![vize_carton::String::from("@fixture/base")]
+    );
 }
 
 #[test]
@@ -79,7 +107,7 @@ fn malformed_inherited_json_rejects_checked_admission_and_recreation_repairs_it(
 }
 
 #[test]
-fn batch_materialization_and_snapshots_preserve_missing_extends_errors() {
+fn batch_materialization_and_snapshots_skip_missing_extends_but_keep_own_options() {
     for extends in [
         "./tsconfig.base.json",
         "@fixture/missing",
@@ -98,20 +126,25 @@ fn batch_materialization_and_snapshots_preserve_missing_extends_errors() {
             .unwrap();
             let mut project = VirtualProject::new(root.path()).unwrap();
             project.set_tsconfig_path(Some(config.clone()));
-            let expected = cstr!(
-                "Configuration error: cannot resolve tsconfig extends {extends:?} from {}",
-                config.display()
-            );
-            for error in [
-                project.materialize().unwrap_err(),
-                project.checked_config_chain_paths().unwrap_err(),
+            project.materialize().unwrap();
+            project.checked_config_chain_paths().unwrap();
+            assert_eq!(
                 project
                     .load_compiler_options_verbatim(Some(&config))
-                    .unwrap_err(),
-                crate::snapshot_tsconfig_compiler_options(root.path(), &config).unwrap_err(),
-            ] {
-                assert_eq!(cstr!("{error}"), expected);
-            }
+                    .unwrap()["strict"],
+                serde_json::json!(true)
+            );
+            assert_eq!(
+                crate::snapshot_tsconfig_compiler_options(root.path(), &config).unwrap()["strict"],
+                serde_json::json!(true)
+            );
+            assert_eq!(
+                unresolved_messages(&project),
+                vec![cstr!(
+                    "cannot resolve tsconfig extends {extends:?} from {}",
+                    config.display()
+                )]
+            );
         }
     }
 }
@@ -145,7 +178,7 @@ fn absent_implicit_config_keeps_defaults_but_an_explicit_missing_config_is_named
 }
 
 #[test]
-fn deleted_relative_and_package_extends_fail_until_recreated_with_new_options() {
+fn deleted_relative_and_package_extends_are_skipped_until_recreated_with_new_options() {
     for (extends, base_name) in [
         ("./tsconfig.base.json", "tsconfig.base.json"),
         ("@fixture/base", "node_modules/@fixture/base/policy.json"),
@@ -175,12 +208,19 @@ fn deleted_relative_and_package_extends_fail_until_recreated_with_new_options() 
             serde_json::json!(true)
         );
         std::fs::remove_file(&base).unwrap();
+        project.materialize().unwrap();
+        assert!(
+            crate::snapshot_tsconfig_compiler_options(root.path(), &config)
+                .unwrap()
+                .get("strict")
+                .is_none()
+        );
         assert_eq!(
-            cstr!("{}", project.materialize().unwrap_err()),
-            cstr!(
-                "Configuration error: cannot resolve tsconfig extends {extends:?} from {}",
+            unresolved_messages(&project),
+            vec![cstr!(
+                "cannot resolve tsconfig extends {extends:?} from {}",
                 config.display()
-            )
+            )]
         );
         std::fs::write(&base, r#"{"compilerOptions":{"strict":false}}"#).unwrap();
         project.materialize().unwrap();
@@ -221,12 +261,13 @@ fn selected_reference_owner_reports_its_extends_without_admitting_an_unrelated_o
         project.effective_tsconfig_path(),
         Some(vize_carton::path::canonicalize_non_verbatim(&app_config))
     );
+    project.materialize().unwrap();
     assert_eq!(
-        cstr!("{}", project.materialize().unwrap_err()),
-        cstr!(
-            "Configuration error: cannot resolve tsconfig extends \"./tsconfig.base.json\" from {}",
+        unresolved_messages(&project),
+        vec![cstr!(
+            "cannot resolve tsconfig extends \"./tsconfig.base.json\" from {}",
             app_config.display()
-        )
+        )]
     );
     std::fs::write(
         root.path().join("tsconfig.base.json"),

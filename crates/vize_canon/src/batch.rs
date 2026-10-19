@@ -50,7 +50,7 @@ pub use virtual_project::{
     ContentMapperTransform, ContentMapperTransformOptions, ContentMapperUnusedExpectDiagnostic,
     JsxDocumentVirtualTs, OriginalPosition, PACKAGE_REACHABILITY_BUDGET_REVISION,
     PackageRouteReachability, ReachabilityOutcome, ReachabilityWork, TsconfigOwnershipCache,
-    TsconfigOwnershipOptions, TsconfigSourceKind, VirtualFile, VirtualProject,
+    TsconfigOwnershipOptions, TsconfigSourceKind, UnresolvedExtends, VirtualFile, VirtualProject,
     VueDocumentVirtualTs, VueDocumentVirtualTsOptions, external_mirror_original_path,
     generate_jsx_document_virtual_ts, generate_vue_content_mapper_transform,
     generate_vue_content_mapper_transform_with_options, generate_vue_document_virtual_ts,

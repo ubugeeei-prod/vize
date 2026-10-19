@@ -126,6 +126,14 @@ impl CorsaExecutor {
             result.exit_code = result.exit_code.max(1);
         }
         result.diagnostics.extend(options);
+        // A skipped `extends` is an error like `tsc`'s TS6053, but the rest
+        // of the program was still checked with the remaining options.
+        let unresolved = cli::project_diagnostics::unresolved_extends(project);
+        if !unresolved.is_empty() {
+            result.success = false;
+            result.exit_code = result.exit_code.max(1);
+        }
+        result.diagnostics.extend(unresolved);
         result.diagnostics = dedup_diagnostics(result.diagnostics);
         Ok(result)
     }

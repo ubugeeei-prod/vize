@@ -147,7 +147,8 @@ fn inherited_base_failure_is_checked_even_with_explicit_vite_vue_dialect() {
             .unwrap();
         }
         let sibling = state.document_project_state(&b).unwrap();
-        for invalid in [None, Some("{ invalid JSON")] {
+        // A missing base is skipped like `tsc`; malformed bases still reject.
+        for invalid in [Some("{ invalid JSON"), Some("{")] {
             let previous = state.document_project_state(&a).unwrap();
             let before = settings(&previous);
             let stamp = previous.corsa_request_stamp();
@@ -256,7 +257,7 @@ fn deleting_root_vite_config_can_select_defaults() {
 }
 
 #[test]
-fn lazy_native_owner_retains_admitted_compiler_authority_after_inherited_config_deletion() {
+fn lazy_native_owner_retains_admitted_compiler_authority_after_inherited_config_corruption() {
     let (fixture, state, a, b) = tests::fixture();
     let root = fixture.path().join("packages/a").canonicalize().unwrap();
     let base = root.join("base.json");
@@ -276,9 +277,10 @@ fn lazy_native_owner_retains_admitted_compiler_authority_after_inherited_config_
     assert!(initial.project_context_retired());
     // The replacement has admitted config bytes but no initialized state/backend.
     assert_eq!(state.cached_project_states().len(), 1);
-    std::fs::remove_file(&base).unwrap();
+    // A deleted base would be skipped like `tsc`; a malformed one still rejects.
+    std::fs::write(&base, "{").unwrap();
     let rejected =
-        state.observe_project_config_events_checked(&[event(&base, FileChangeType::DELETED)]);
+        state.observe_project_config_events_checked(&[event(&base, FileChangeType::CHANGED)]);
     assert_error(&rejected, &root, &base);
     let retained = state.document_project_state(&a).unwrap();
     assert!(retained.corsa_bridge.read().is_none());
@@ -297,7 +299,7 @@ fn lazy_native_owner_retains_admitted_compiler_authority_after_inherited_config_
     ));
     std::fs::write(&base, r#"{"compilerOptions":{"strictNullChecks":false}}"#).unwrap();
     let recovered =
-        state.observe_project_config_events_checked(&[event(&base, FileChangeType::CREATED)]);
+        state.observe_project_config_events_checked(&[event(&base, FileChangeType::CHANGED)]);
     assert!(recovered.errors.is_empty());
     let repaired = state.document_project_state(&a).unwrap();
     assert!(!Arc::ptr_eq(&retained, &repaired));

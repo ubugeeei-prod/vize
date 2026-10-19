@@ -4,6 +4,7 @@ pub(super) mod compiler_inputs;
 pub(super) mod compiler_options;
 mod compiler_options_snapshot;
 mod compiler_snapshot;
+pub use compiler_options::UnresolvedExtends;
 pub use compiler_snapshot::{
     CompilerConfigurationAttempt, CompilerConfigurationSnapshot, ConfigurationObservations,
 };

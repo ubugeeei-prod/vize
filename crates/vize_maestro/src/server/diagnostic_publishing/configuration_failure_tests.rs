@@ -38,6 +38,8 @@ async fn publication(
 }
 
 #[test]
+/// Like `tsc`, a missing base is disclosed but skipped: typed diagnostics keep
+/// running on the rest of the configuration, and the disclosure clears after repair.
 fn missing_compiler_base_publishes_once_keeps_backend_and_repairs_after_watch() {
     // Stay under the real workspace runtime resolution boundary. No fake
     // checker or extra interactive request is needed to trigger diagnostics.
@@ -128,6 +130,10 @@ fn missing_compiler_base_publishes_once_keeps_backend_and_repairs_after_watch() 
                 failure,
                 json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{
                     "uri":uri,"version":1,"diagnostics":[{
+                        "range":{"start":{"line":1,"character":6},"end":{"line":1,"character":11}},
+                        "severity":1,"code":2322,"source":"vize/types",
+                        "message":"Type 'null' is not assignable to type 'string'."
+                    },{
                         "range":{"start":{"line":0,"character":0},"end":{"line":0,"character":0}},
                         "severity":1,"code":"configuration-error","source":"vize/types",
                         "message":vize_l0::cstr!("Configuration error: cannot resolve tsconfig extends \"./base.json\" from {}",config.display())

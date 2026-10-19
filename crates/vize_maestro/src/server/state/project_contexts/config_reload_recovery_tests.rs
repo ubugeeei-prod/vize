@@ -2,9 +2,12 @@
 use super::*;
 
 #[test]
-fn newly_introduced_missing_or_malformed_inherited_bases_recover_without_config_edit() {
+/// A newly introduced missing base is skipped like `tsc`; a malformed one
+/// keeps the last good owner until it is repaired.
+fn newly_introduced_malformed_inherited_bases_recover_without_config_edit() {
     for shared in [false, true] {
-        for malformed in [false, true] {
+        {
+            let malformed = true;
             let (fixture, state, a, b) = tests::fixture();
             let root = fixture.path().join("packages/a");
             let base = root.join("base.json");
@@ -384,6 +387,8 @@ fn first_failed_admission_observations_route_external_base_creation_to_primary_a
             !is_config_marker(&base),
             "repair must use observations, not marker discovery"
         );
+        // A missing base would be skipped like `tsc`; a malformed one rejects.
+        std::fs::write(&base, "{").unwrap();
         std::fs::write(
             root.join("tsconfig.json"),
             serde_json::to_vec(&serde_json::json!({"extends":base})).unwrap(),
@@ -424,7 +429,7 @@ fn first_failed_admission_observations_route_external_base_creation_to_primary_a
                 .contains(&super::paths::physical_path(&base))
         );
         std::fs::write(&base, r#"{"vueCompilerOptions":{"target":2.7}}"#).unwrap();
-        let change = event(&base, FileChangeType::CREATED);
+        let change = event(&base, FileChangeType::CHANGED);
         let scope = state.project_config_event_scope(std::slice::from_ref(&change));
         assert_eq!(scope.affected, vec![ProjectContextKey::from(root)]);
         let repaired = state.observe_project_config_events_checked(&[change]);

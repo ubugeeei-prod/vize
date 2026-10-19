@@ -144,7 +144,8 @@ fn shared_vite_baseline_preserves_full_key_compiler_graphs_and_failed_repair() {
     std::fs::write(&base, "{}").unwrap();
     assert_eq!(base_snapshot.observation.changes(), vec![base]);
     assert!(leaf_snapshot.observation.changes().is_empty());
-    std::fs::remove_file(&leaf_base).unwrap();
+    // A missing base is skipped like `tsc`; a malformed one still rejects.
+    std::fs::write(&leaf_base, "{").unwrap();
     let (rejected, failed) = ServerState::prepare_configuration_attempt(
         &leaf_key,
         &raw,

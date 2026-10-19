@@ -67,6 +67,34 @@ struct ChainLoad<'a> {
     /// depends on which configs happened to be active, so it is not reusable
     /// from anywhere else in the graph and must not be cached.
     cycle_cut: bool,
+    /// `extends` entries that did not resolve. TypeScript reports each one
+    /// (TS6053) and keeps checking with the rest of the chain.
+    unresolved: Vec<UnresolvedExtends>,
+}
+
+/// One `extends` entry that names no readable config.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct UnresolvedExtends {
+    /// The authored config that declares the entry.
+    pub config: PathBuf,
+    /// The entry as written.
+    pub specifier: vize_carton::String,
+}
+
+impl UnresolvedExtends {
+    /// TypeScript's own TS6053 wording.
+    pub fn message(&self) -> vize_carton::String {
+        vize_carton::cstr!("File '{}' not found.", self.specifier)
+    }
+
+    /// Disclosure for editors, which keep typed services running.
+    pub fn configuration_message(&self) -> vize_carton::String {
+        vize_carton::cstr!(
+            "cannot resolve tsconfig extends {:?} from {}",
+            self.specifier,
+            self.config.display()
+        )
+    }
 }
 
 /// Flattened options plus the effective `baseUrl` (#3886).
@@ -80,6 +108,8 @@ pub(in super::super) struct FlattenedCompilerOptions {
     pub(in super::super) base_url: Option<vize_carton::String>,
     /// Every config file actually read while flattening this chain.
     pub(in super::super) input_paths: Vec<PathBuf>,
+    /// Entries TypeScript would report and skip.
+    pub(in super::super) unresolved_extends: Vec<UnresolvedExtends>,
 }
 
 impl VirtualProject {
@@ -145,11 +175,7 @@ impl VirtualProject {
             return Ok(snapshot.flattened.clone());
         }
         let Some(tsconfig_path) = tsconfig_path else {
-            return Ok(FlattenedCompilerOptions {
-                options: Map::new(),
-                base_url: None,
-                input_paths: Vec::new(),
-            });
+            return Ok(FlattenedCompilerOptions::default());
         };
         let mut load = ChainLoad {
             inputs,
@@ -188,6 +214,7 @@ impl VirtualProject {
             options,
             base_url,
             input_paths,
+            unresolved_extends: load.unresolved,
         })
     }
 
@@ -277,9 +304,8 @@ impl VirtualProject {
         // `extends` may be a single specifier or an array; array entries are
         // applied in order, with later entries overriding earlier ones, and
         // the extending file overriding them all.
-        // Every authored dependency must resolve before flattening erases the
-        // chain. Otherwise the generated native config silently loses the
-        // missing-file diagnostic that the original tsconfig would report.
+        // An entry that does not resolve is recorded for its TS6053 report and
+        // skipped, as TypeScript does: the rest of the chain still applies.
         let mut inherited = Map::new();
         let mut inherited_dirs = DeclarationDirs::default();
         match config.get("extends") {
@@ -292,7 +318,7 @@ impl VirtualProject {
                     inherited = parent;
                     inherited_dirs = parent_dirs;
                 } else {
-                    return Err(unresolved_extends(normalized, extends));
+                    record_unresolved(load, normalized, extends);
                 }
             }
             Some(Value::Array(entries)) => {
@@ -305,7 +331,7 @@ impl VirtualProject {
                         inherited.extend(parent);
                         inherited_dirs.absorb_overriding(parent_dirs);
                     } else {
-                        return Err(unresolved_extends(normalized, extends));
+                        record_unresolved(load, normalized, extends);
                     }
                 }
             }
@@ -321,9 +347,12 @@ impl VirtualProject {
     }
 }
 
-fn unresolved_extends(config: &Path, extends: &str) -> crate::batch::error::CorsaError {
-    crate::batch::error::CorsaError::Configuration(vize_carton::cstr!(
-        "cannot resolve tsconfig extends {extends:?} from {}",
-        config.display()
-    ))
+fn record_unresolved(load: &mut ChainLoad<'_>, config: &Path, extends: &str) {
+    let unresolved = UnresolvedExtends {
+        config: config.to_path_buf(),
+        specifier: extends.into(),
+    };
+    if !load.unresolved.contains(&unresolved) {
+        load.unresolved.push(unresolved);
+    }
 }

@@ -107,7 +107,7 @@ mod included_sources;
 mod tsconfig_gen;
 pub use tsconfig_gen::{
     CompilerConfigurationAttempt, CompilerConfigurationSnapshot, ConfigurationObservations,
-    TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind,
+    TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind, UnresolvedExtends,
     snapshot_tsconfig_compiler_options, snapshot_tsconfig_vue_target,
 };
 mod tsconfig_paths;

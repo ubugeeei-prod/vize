@@ -78,10 +78,10 @@ fn admitted_options_keep_package_path_anchors_vue_options_and_live_source_rebuil
         generated["compilerOptions"]["strictNullChecks"],
         json!(true)
     );
-    assert!(
-        crate::snapshot_tsconfig_compiler_options(root.path(), &config).is_err(),
-        "direct batch loading must still reject the missing dependency"
-    );
+    // Direct loading skips the deleted base like `tsc`: only own options remain.
+    let direct = crate::snapshot_tsconfig_compiler_options(root.path(), &config).unwrap();
+    assert_eq!(direct["strictNullChecks"], json!(true));
+    assert!(direct.get("strict").is_none());
 }
 
 #[test]
@@ -101,12 +101,10 @@ fn admitted_absence_does_not_adopt_a_new_invalid_live_config() {
     assert!(project.effective_tsconfig_path().is_none());
     assert!(project.load_compiler_options(None).unwrap().is_empty());
     project.materialize().unwrap();
-    assert!(
-        VirtualProject::new(root.path())
-            .unwrap()
-            .materialize()
-            .is_err()
-    );
+    // A live project reads the new config, reporting and skipping its base.
+    let live = VirtualProject::new(root.path()).unwrap();
+    live.materialize().unwrap();
+    assert_eq!(live.unresolved_tsconfig_extends().len(), 1);
 }
 
 #[test]
@@ -376,15 +374,12 @@ fn failed_capture_retains_new_external_extends_candidates_until_repaired() {
         dependencies,
         ..
     } = CompilerConfigurationSnapshot::capture_attempt(&root, Some(&config));
-    let error = outcome
-        .err()
-        .expect("missing config must never admit options");
-    let strict = CompilerConfigurationSnapshot::capture(&root, Some(&config))
-        .err()
-        .unwrap();
+    // The missing base is reported and skipped; its candidates stay watched.
+    let admitted = outcome.expect("a missing base is skipped like tsc");
+    assert_eq!(admitted.unresolved_extends().len(), 1);
     assert_eq!(
-        vize_carton::cstr!("{error}"),
-        vize_carton::cstr!("{strict}")
+        admitted.unresolved_extends()[0].specifier,
+        "../shared/new-base"
     );
     for candidate in [
         config.clone(),
@@ -412,11 +407,13 @@ fn failed_capture_retains_new_external_extends_candidates_until_repaired() {
     assert_eq!(snapshot.vue_options["jsxSlots"], json!(true));
     std::fs::remove_file(&ancestor).unwrap();
     let removed = CompilerConfigurationSnapshot::capture_attempt(&root, Some(&config));
-    assert!(removed.outcome.is_err());
     assert!(removed.dependencies.contains(&ancestor));
-    assert!(CompilerConfigurationSnapshot::capture(&root, Some(&config)).is_err());
+    let removed = removed.outcome.unwrap();
+    assert_eq!(removed.unresolved_extends()[0].specifier, "./ancestor.json");
+    assert_eq!(removed.flattened.options["strict"], json!(true));
     std::fs::write(&ancestor, "{}").unwrap();
-    assert!(CompilerConfigurationSnapshot::capture(&root, Some(&config)).is_ok());
+    let restored = CompilerConfigurationSnapshot::capture(&root, Some(&config)).unwrap();
+    assert!(restored.unresolved_extends().is_empty());
 }
 
 #[cfg(unix)]
@@ -434,7 +431,10 @@ fn failed_package_capture_retains_missing_manifest_and_symlink_ancestor() {
     let config = root.join("tsconfig.json");
     std::fs::write(&config, r#"{"extends":"@fixture/policy"}"#).unwrap();
     let attempted = CompilerConfigurationSnapshot::capture_attempt(&root, Some(&config));
-    assert!(attempted.outcome.is_err());
+    assert_eq!(
+        attempted.outcome.as_ref().unwrap().unresolved_extends()[0].specifier,
+        "@fixture/policy"
+    );
     assert!(attempted.dependencies.contains(&linked));
     assert!(
         attempted

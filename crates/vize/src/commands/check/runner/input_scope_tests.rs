@@ -300,16 +300,20 @@ fn widened_scope_note_reports_the_root_and_the_input_counts() {
     );
 }
 
-fn missing_error(config: &Path, dependency: &str) -> vize_l0::String {
-    cstr!(
-        "Failed to resolve TypeScript configuration `{}`: Configuration error: cannot resolve tsconfig extends {dependency:?} from {}",
-        config.display(),
-        config.display()
-    )
+/// Missing `extends` entries are skipped like `tsc` does, each reported
+/// against the config that declares it (TS6053) while checking continues.
+fn unresolved(config: &Path) -> Vec<(std::path::PathBuf, vize_l0::String)> {
+    let mut project = vize_canon::VirtualProject::new(config.parent().unwrap()).unwrap();
+    project.set_tsconfig_path(Some(config.to_path_buf()));
+    project
+        .unresolved_tsconfig_extends()
+        .into_iter()
+        .map(|unresolved| (unresolved.config.clone(), unresolved.message()))
+        .collect()
 }
 
 #[test]
-fn missing_inherited_base_is_named_and_recreation_recovers_without_source_edit() {
+fn missing_inherited_base_is_reported_and_recreation_recovers_without_source_edit() {
     let case = tempfile::tempdir().unwrap();
     let config = case.path().join("tsconfig.json");
     let base = case.path().join("tsconfig.base.json");
@@ -322,25 +326,25 @@ fn missing_inherited_base_is_named_and_recreation_recovers_without_source_edit()
     )
     .unwrap();
     let config_before = fs::read(&config).unwrap();
-    assert_eq!(
-        validate_tsconfig_chain(&config).unwrap_err(),
-        missing_error(&config, "./tsconfig.base.json")
-    );
+    let missing = vec![(
+        config.clone(),
+        vize_l0::String::from("File './tsconfig.base.json' not found."),
+    )];
+    validate_tsconfig_chain(&config).unwrap();
+    assert_eq!(unresolved(&config), missing);
     fs::write(&base, r#"{"compilerOptions":{"strictNullChecks":false}}"#).unwrap();
     validate_tsconfig_chain(&config).unwrap();
+    assert!(unresolved(&config).is_empty());
     fs::remove_file(&base).unwrap();
-    assert_eq!(
-        validate_tsconfig_chain(&config).unwrap_err(),
-        missing_error(&config, "./tsconfig.base.json")
-    );
+    assert_eq!(unresolved(&config), missing);
     fs::write(&base, r#"{"compilerOptions":{"strictNullChecks":true}}"#).unwrap();
-    validate_tsconfig_chain(&config).unwrap();
+    assert!(unresolved(&config).is_empty());
     assert_eq!(fs::read(&source).unwrap(), bytes.as_bytes());
     assert_eq!(fs::read(&config).unwrap(), config_before);
 }
 
 #[test]
-fn array_and_package_extends_use_the_same_strict_resolver() {
+fn array_and_package_extends_use_the_same_resolver() {
     let case = tempfile::tempdir().unwrap();
     let config = case.path().join("tsconfig.json");
     fs::write(case.path().join("present.json"), "{}").unwrap();
@@ -355,27 +359,28 @@ fn array_and_package_extends_use_the_same_strict_resolver() {
         ),
     ] {
         fs::write(&config, content).unwrap();
+        validate_tsconfig_chain(&config).unwrap();
         assert_eq!(
-            validate_tsconfig_chain(&config).unwrap_err(),
-            missing_error(&config, dependency)
+            unresolved(&config),
+            vec![(config.clone(), cstr!("File '{dependency}' not found."))]
         );
     }
 }
 
 #[test]
-fn nested_missing_dependency_names_the_selected_and_declaring_configs() {
+fn nested_missing_dependency_names_the_declaring_config() {
     let case = tempfile::tempdir().unwrap();
     let config = case.path().join("tsconfig.json");
     let base = case.path().join("base.json");
     fs::write(&config, r#"{"extends":"./base.json"}"#).unwrap();
     fs::write(&base, r#"{"extends":"./missing.json"}"#).unwrap();
+    validate_tsconfig_chain(&config).unwrap();
     assert_eq!(
-        validate_tsconfig_chain(&config).unwrap_err(),
-        cstr!(
-            "Failed to resolve TypeScript configuration `{}`: Configuration error: cannot resolve tsconfig extends \"./missing.json\" from {}",
-            config.display(),
-            base.display()
-        )
+        unresolved(&config),
+        vec![(
+            base,
+            vize_l0::String::from("File './missing.json' not found.")
+        )]
     );
 }
 

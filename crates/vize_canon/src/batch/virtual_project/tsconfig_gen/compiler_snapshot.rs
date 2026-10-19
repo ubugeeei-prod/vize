@@ -50,6 +50,11 @@ pub struct CompilerConfigurationAttempt {
 mod tests;
 
 impl CompilerConfigurationSnapshot {
+    /// `extends` entries this admitted chain skipped, as TypeScript does.
+    pub fn unresolved_extends(&self) -> &[super::UnresolvedExtends] {
+        &self.flattened.unresolved_extends
+    }
+
     /// Compare complete compiler authority, excluding only observation metadata.
     /// Exhaustive destructuring makes added authority fields require a decision.
     pub fn same_authority(&self, other: &Self) -> bool {

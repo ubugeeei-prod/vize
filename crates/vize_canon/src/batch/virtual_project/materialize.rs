@@ -401,6 +401,17 @@ impl VirtualProject {
         self.checked_compiler_config_paths(&anchored)
     }
 
+    /// `extends` entries of the effective chain that TypeScript reports (TS6053)
+    /// and skips. Checking continues with the rest of the chain.
+    pub fn unresolved_tsconfig_extends(&self) -> Vec<super::UnresolvedExtends> {
+        let Some(anchored) = self.resolved_tsconfig_path() else {
+            return Vec::new();
+        };
+        self.load_compiler_options_flattened(Some(&anchored))
+            .map(|flattened| flattened.unresolved_extends)
+            .unwrap_or_default()
+    }
+
     /// File that project-level (file-less) diagnostics are attributed to:
     /// the effective tsconfig when one exists, otherwise the project root.
     pub(crate) fn project_diagnostics_anchor(&self) -> PathBuf {

@@ -21,7 +21,7 @@ mod output;
 use outcome::{CliCheckFailure, CliCheckResult};
 mod partition;
 mod patterns;
-mod project_diagnostics;
+pub(super) mod project_diagnostics;
 mod shard_sizing;
 mod syntax_abort;
 mod union_find;

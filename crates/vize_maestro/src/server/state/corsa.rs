@@ -10,6 +10,16 @@ use vize_canon::{CorsaBridge, CorsaBridgeConfig, CorsaBridgeError};
 use super::ServerState;
 
 impl ServerState {
+    /// `extends` entries the admitted compiler configuration skipped.
+    pub(crate) fn unresolved_tsconfig_extends(&self) -> Vec<vize_canon::UnresolvedExtends> {
+        self.project_contexts
+            .compiler_configuration
+            .read()
+            .as_ref()
+            .map(|snapshot| snapshot.unresolved_extends().to_vec())
+            .unwrap_or_default()
+    }
+
     /// Try to claim the right to fire the "type checking unavailable"
     /// message. Returns true the first time it is called, false thereafter
     /// for the lifetime of the server. The caller is responsible for

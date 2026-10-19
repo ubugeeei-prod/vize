@@ -4,12 +4,6 @@
 
 use std::{fs, path::Path, process::Command};
 
-const SOURCE: &str = "<script setup lang=\"ts\">\nconst value: string = null;\n</script>\n<template><p>{{ value }}</p></template>\n";
-const CONFIG: &str = r#"{
-  "compilerOptions":{"target":"ES2022","module":"ESNext","moduleResolution":"Bundler","jsx":"preserve","lib":["ES2022","DOM","DOM.Iterable"],"types":[],"strict":true,"noEmit":true,"skipLibCheck":true},
-  "include":["TypedPanel.vue"],
-  "extends":"./tsconfig.base.json"
-}"#;
 const DENY_JS: &str = r#"{"extends":"./tsconfig.base.json","compilerOptions":{"allowJs":false}}"#;
 
 fn run(root: &Path, args: &[&str], code: i32, expected_stderr: &str) {
@@ -59,8 +53,10 @@ fn no_match(input: &str) -> String {
     )
 }
 
+/// A missing `extends` entry is reported and skipped like `tsc` (TS6053), so
+/// it never refuses before collection; a malformed base still does.
 #[test]
-fn invalid_discovered_roots_refuse_before_empty_or_excluded_input_shortcuts() {
+fn missing_extends_continues_but_malformed_bases_refuse_before_collection() {
     let case = tempfile::tempdir().unwrap();
     let root = fs::canonicalize(case.path()).unwrap();
     let config = root.join("tsconfig.json");
@@ -69,34 +65,13 @@ fn invalid_discovered_roots_refuse_before_empty_or_excluded_input_shortcuts() {
         r#"{"private":true,"type":"module"}"#,
     )
     .unwrap();
-    fs::write(root.join("TypedPanel.vue"), SOURCE).unwrap();
-    fs::write(&config, CONFIG).unwrap();
-    run(&root, &["TypedPanel.vue"], 2, &error(&config, false));
-    run(
-        &root,
-        &["TypedPanel.vue", "--tsconfig", "tsconfig.json"],
-        2,
-        &error(&config, false),
-    );
-    fs::write(&config, r#"{"extends":"./tsconfig.base.json","files":[]}"#).unwrap();
-    run(&root, &[], 2, &error(&config, false));
     fs::write(root.join("input.js"), "export const value = 1;\n").unwrap();
     fs::write(&config, DENY_JS).unwrap();
-    run(&root, &["input.js"], 2, &error(&config, false));
+    run(&root, &["input.js"], 0, &no_match("input.js"));
     fs::write(root.join("tsconfig.base.json"), "{invalid").unwrap();
     run(&root, &["input.js"], 2, &error(&config, true));
     fs::remove_file(root.join("tsconfig.base.json")).unwrap();
-    fs::write(
-        root.join("package.json"),
-        r#"{"private":true,"dependencies":{"nuxt":"3.0.0"}}"#,
-    )
-    .unwrap();
-    fs::write(root.join("nuxt.config.ts"), "export default {}\n").unwrap();
-    run(&root, &["input.js"], 2, &error(&config, false));
-    assert_eq!(
-        fs::read_to_string(root.join("TypedPanel.vue")).unwrap(),
-        SOURCE
-    );
+    run(&root, &["input.js"], 0, &no_match("input.js"));
     assert_eq!(
         fs::read_to_string(root.join("input.js")).unwrap(),
         "export const value = 1;\n"
@@ -122,7 +97,7 @@ fn nested_selected_owner_refuses_before_its_javascript_filter() {
     let config = app.join("tsconfig.json");
     fs::write(&config, DENY_JS).unwrap();
     fs::write(app.join("input.js"), "export const value = 1;\n").unwrap();
-    run(&root, &["app/input.js"], 1, &error(&config, false));
+    run(&root, &["app/input.js"], 0, &no_match("app/input.js"));
     fs::write(app.join("tsconfig.base.json"), "{invalid").unwrap();
     run(&root, &["app/input.js"], 1, &error(&config, true));
     // Repair the same selected owner without changing its source or shell.
@@ -147,7 +122,7 @@ fn valid_denied_javascript_configuration_keeps_no_match_success_after_repair() {
     let config = root.join("tsconfig.json");
     fs::write(&config, DENY_JS).unwrap();
     fs::write(root.join("input.js"), "export const value = 1;\n").unwrap();
-    run(&root, &["input.js"], 2, &error(&config, false));
+    run(&root, &["input.js"], 0, &no_match("input.js"));
     fs::write(root.join("tsconfig.base.json"), "{}").unwrap();
     run(&root, &["input.js"], 0, &no_match("input.js"));
     run(
