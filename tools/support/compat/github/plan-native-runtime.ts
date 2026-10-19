@@ -32,7 +32,17 @@ export function planNativeRuntime(
     paths.some((path) =>
       /^(?:crates\/vize_canon\/|\.github\/actions\/test-native-canon\/)/.test(path),
     );
+  const formatter = paths.some(
+    (path) =>
+      /^tests\/tooling\/(?:formatter-(?:expression-width-semantics|continuation-prefix-width)\.test\.mjs|support\/(?:formatter-(?:expression-width|continuation)-semantics\.mjs|sfc-equivalence(?:\.ts|\/blocks\.ts)|babel-expression-signature\.ts|sfc-opening-tag\.ts))$/.test(
+        path,
+      ) ||
+      /^tests\/_fixtures\/differential\/formatter-regressions\/(?:expression-print-width-7876|continuation-prefix-width-7876)\//.test(
+        path,
+      ),
+  );
   const lsp =
+    formatter ||
     rust?.packages.some((pkg) => pkg === "vize" || pkg === "vize_maestro") ||
     paths.some((path) =>
       /^(?:crates\/vize(?:_maestro)?\/|tests\/tooling\/(?:lsp-|support\/(?:lsp\/|editor-jsconfig|package-private-imports|project-navigation|typecheck-dependency))|tests\/differential\/|tests\/_fixtures\/differential\/lsp\/|\.github\/actions\/test-native-lsp\/)/.test(
