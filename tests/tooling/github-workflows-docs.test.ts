@@ -261,9 +261,9 @@ test("docs deployment serializes before validating actual source and publication
   assert.equal(compare.env?.GITHUB_TOKEN, "${{ github.token }}");
   assert.match(
     compare.run ?? "",
-    /cp tools\/support\/compat\/github\/docs-deployment-\*\.ts "\$RUNNER_TEMP\/"/,
+    /cp tools\/support\/compat\/github\/docs-deployment-\*\.ts "\$validator\/"/,
   );
-  assert.match(compare.run ?? "", /vp node "\$RUNNER_TEMP\/docs-deployment-entry\.ts" prepare/);
+  assert.match(compare.run ?? "", /vp node "\$validator\/docs-deployment-entry\.ts" prepare/);
 });
 
 test("only a source-custody-qualified build can download or deploy, and success follows actual Pages", () => {
