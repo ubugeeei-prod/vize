@@ -51,8 +51,9 @@ export async function readCadenceInput(lastTag: string | null): Promise<CadenceI
   if (releasedSha === null || releasedSha === greenSha)
     return { greenSha, releasedSha, subjects: [] };
   const compare = await api(`compare/${releasedSha}...${greenSha}`);
-  const subjects = ((compare.commits as Json[] | undefined) ?? []).map(
-    (commit) => String((commit.commit as Json | undefined)?.message ?? "").split("\n")[0],
-  );
+  const subjects = ((compare.commits as Json[] | undefined) ?? []).map((commit) => {
+    const message = (commit.commit as Json | undefined)?.message;
+    return typeof message === "string" ? message.split("\n")[0] : "";
+  });
   return { greenSha, releasedSha, subjects };
 }
