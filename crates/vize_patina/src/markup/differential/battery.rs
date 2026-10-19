@@ -276,8 +276,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // The `@vue:` vnode-hook exemption adds one literal template over two calls.
     // placeholder-label-option's rewritten unit tests (#9749) loop over
     // template lists: five fewer literal templates and one more nonliteral call.
-    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5,
-    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1,
+    // The combobox exemption tests (#9750) add three nonliteral calls.
+    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5 + 3,
+    rule_fixture_skipped: 87 + 4 + 3 + 1 + 1 + 6 + 5 + 1 + 1 + 3,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49,
     restructured: 0,

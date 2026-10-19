@@ -3,7 +3,10 @@
 //! Require elements with interactive roles to be focusable.
 //!
 //! Elements that have interactive ARIA roles (button, link, etc.) must
-//! be focusable either natively or via tabindex.
+//! be focusable either natively or via tabindex. In the APG combobox pattern,
+//! focus stays on the element with `aria-activedescendant`, so the listbox it
+//! controls (`aria-controls`, matched against the listbox `id` as static text
+//! or as the same bound expression) and the options inside it are exempt.
 //!
 //! ## Examples
 //!
@@ -21,7 +24,9 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::TemplateSyntax;
-use crate::markup::{MarkupBindingKind, MarkupContext, MarkupDocument, MarkupElement, MarkupRule};
+use crate::markup::{
+    MarkupBindingKind, MarkupContext, MarkupDocument, MarkupElement, MarkupNode, MarkupRule,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::FxHashSet;
 use vize_relief::RootNode;
@@ -44,7 +49,7 @@ impl InteractiveSupportsFocus {
     fn check_element(
         ctx: &mut LintContext<'_>,
         element: &MarkupElement<'_>,
-        controlled_listboxes: Option<&FxHashSet<&str>>,
+        exempt: &FxHashSet<u32>,
     ) {
         if element.is_component() {
             return;
@@ -65,11 +70,10 @@ impl InteractiveSupportsFocus {
             return;
         }
 
-        if role == "listbox"
-            && let Some(controlled_listboxes) = controlled_listboxes
-            && let Some(id) = markup_helpers::get_static_markup_attribute_value(element, "id")
-            && controlled_listboxes.contains(id)
-        {
+        // APG combobox: focus stays on the combobox, which points at the active
+        // option with `aria-activedescendant`, so its listbox and options need
+        // no focus of their own (#5941, #9750).
+        if matches!(role, "listbox" | "option") && exempt.contains(&element.range().start) {
             return;
         }
 
@@ -93,26 +97,87 @@ impl InteractiveSupportsFocus {
     }
 
     fn check_document(ctx: &mut LintContext<'_>, document: &MarkupDocument<'_>) {
-        let controlled = Self::collect_controlled_listboxes(document);
+        let exempt = Self::activedescendant_listboxes(document);
         document.walk_elements(&mut |element| {
-            Self::check_element(ctx, &element, Some(&controlled));
+            Self::check_element(ctx, &element, &exempt);
         });
     }
 
-    fn collect_controlled_listboxes<'a>(document: &MarkupDocument<'a>) -> FxHashSet<&'a str> {
+    /// Start offsets of the listboxes an `aria-activedescendant` owner
+    /// controls, and of every element inside them.
+    fn activedescendant_listboxes(document: &MarkupDocument<'_>) -> FxHashSet<u32> {
         let mut controlled = FxHashSet::default();
         document.walk_elements(&mut |element| {
             if markup_helpers::has_named_markup_attribute_or_bind(&element, "aria-activedescendant")
-                && let Some(id) = markup_helpers::get_static_or_bound_literal_markup_value(
-                    &element,
-                    "aria-controls",
-                )
             {
-                controlled.insert(id);
+                controlled.extend(id_references(&element, "aria-controls"));
             }
         });
-        controlled
+        let mut listboxes = FxHashSet::default();
+        if controlled.is_empty() {
+            return listboxes;
+        }
+        document.walk_elements(&mut |element| {
+            if markup_helpers::get_static_markup_attribute_value(&element, "role")
+                == Some("listbox")
+                && id_references(&element, "id")
+                    .into_iter()
+                    .any(|id| controlled.contains(&id))
+            {
+                // The listbox and every element inside it.
+                collect_subtree(&element, &mut listboxes);
+            }
+        });
+        listboxes
     }
+}
+
+fn collect_subtree(element: &MarkupElement<'_>, starts: &mut FxHashSet<u32>) {
+    starts.insert(element.range().start);
+    element.walk_children(&mut |child| {
+        if let MarkupNode::Element(child) = child {
+            collect_subtree(&child, starts);
+        }
+    });
+}
+
+/// An id an attribute names: a static token, or a bound expression whose
+/// source text identifies the value (`:id="listId"` / `:aria-controls="listId"`).
+#[derive(PartialEq, Eq, Hash)]
+enum IdReference<'a> {
+    Static(&'a str),
+    Bound(&'a str),
+}
+
+/// The ids `name` references; `aria-controls` may list several.
+fn id_references<'a>(element: &MarkupElement<'a>, name: &str) -> Vec<IdReference<'a>> {
+    let mut ids = Vec::new();
+    element.walk_bindings(&mut |binding| {
+        if !binding.is_unqualified_arg_exact(name) {
+            return;
+        }
+        let value = match binding.kind() {
+            MarkupBindingKind::Attribute => binding.static_value(),
+            MarkupBindingKind::Bind => match binding.expression() {
+                Some(expression) => match super::helpers::string_literal_value(expression) {
+                    Some(literal) => Some(literal),
+                    None => {
+                        let expression = expression.trim();
+                        if !expression.is_empty() {
+                            ids.push(IdReference::Bound(expression));
+                        }
+                        None
+                    }
+                },
+                None => None,
+            },
+            _ => None,
+        };
+        if let Some(value) = value {
+            ids.extend(value.split_ascii_whitespace().map(IdReference::Static));
+        }
+    });
+    ids
 }
 
 impl MarkupRule for InteractiveSupportsFocus {
@@ -129,7 +194,7 @@ impl MarkupRule for InteractiveSupportsFocus {
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         if ctx.is_jsx() {
-            Self::check_element(ctx.lint(), element, None);
+            Self::check_element(ctx.lint(), element, &FxHashSet::default());
         }
     }
 }
@@ -260,6 +325,72 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn combobox_listbox_and_options_need_no_focus() {
+        let linter = create_linter();
+        for ids in [
+            r#"aria-controls="fruits" | id="fruits""#,
+            r#":aria-controls="listId" | :id="listId""#,
+            r#":aria-controls="'fruits'" | id="fruits""#,
+            r#"aria-controls="other fruits" | :id="`fruits`""#,
+        ] {
+            let (controls, id) = ids.split_once(" | ").unwrap_or_default();
+            let source = format!(
+                r#"<input aria-activedescendant="fruit-0" {controls} aria-expanded="true" aria-label="Fruit" role="combobox" />
+<ul {id} role="listbox">
+  <li id="fruit-0" aria-selected="true" role="option">Apple</li>
+  <li role="option"><span>Banana</span></li>
+</ul>"#
+            );
+            let result = linter.lint_template(&source, "test.vue");
+            assert_eq!(result.warning_count, 0, "{ids}: {:?}", result.diagnostics);
+        }
+    }
+
+    #[test]
+    fn combobox_with_bound_ids_in_an_sfc() {
+        let source = r#"<script setup lang="ts">
+const listId = "fruits";
+</script>
+
+<template>
+  <input
+    aria-activedescendant="fruit-0"
+    :aria-controls="listId"
+    aria-expanded="true"
+    aria-label="Fruit"
+    role="combobox"
+  />
+  <ul :id="listId" role="listbox">
+    <li id="fruit-0" aria-selected="true" role="option">Apple</li>
+  </ul>
+</template>
+"#;
+        let result = create_linter().lint_sfc(source, "BoundIds.vue");
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn listboxes_without_an_activedescendant_owner_still_need_focus() {
+        let linter = create_linter();
+        for source in [
+            // No aria-activedescendant on the controlling element.
+            r#"<input :aria-controls="listId" role="combobox" /><ul :id="listId" role="listbox"><li role="option">A</li></ul>"#,
+            // A different expression is a different id.
+            r#"<input aria-activedescendant="a" :aria-controls="listId" role="combobox" /><ul :id="otherId" role="listbox"><li role="option">A</li></ul>"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(
+                result.warning_count, 2,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
+        // Options outside the controlled listbox are still checked.
+        let outside = r#"<input aria-activedescendant="a" aria-controls="lb" role="combobox" /><ul id="lb" role="listbox"><li role="option">A</li></ul><div role="option">B</div>"#;
+        assert_eq!(linter.lint_template(outside, "test.vue").warning_count, 1);
     }
 
     #[test]
