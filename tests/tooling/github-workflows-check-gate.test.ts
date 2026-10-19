@@ -102,38 +102,13 @@ test("source gates cover iteration events while full qualification runs on sched
   );
   const reportSteps = workflow.jobs?.["test-report"]?.steps ?? [];
   const aggregate = reportSteps.find((step) => step.name === "Require every needed job to succeed");
-  const select = reportSteps.find(
-    (step) => step.name === "Re-select the current integration before the required final gate",
-  );
-  const final = reportSteps.find(
-    (step) =>
-      step.name === "Freshly verify the same exact qualification at the required final gate",
-  );
-  const custody = reportSteps.find(
-    (step) => step.name === "Retain the required final qualification observations",
-  );
-  assert.ok(aggregate && select && final && custody);
+  assert.ok(aggregate);
   assert.equal(
     aggregate.run,
     "node tools/support/compat/github/require-needs-success.ts --check-report",
   );
-  assert.ok(reportSteps.indexOf(aggregate) < reportSteps.indexOf(select));
-  assert.ok(reportSteps.indexOf(select) < reportSteps.indexOf(final));
-  assert.equal(select.if, "${{ github.event_name == 'merge_group' }}");
-  assert.equal(select.run, "node tools/support/compat/github/release-integration-event.ts");
-  assert.equal(final.if, "${{ github.event_name == 'merge_group' }}");
-  assert.ok(
-    final.run?.includes(
-      'integration-release.ts --verify < "$directory/qualification.json" > "$directory/final-qualification.json"',
-    ),
-  );
-  for (const step of [aggregate, select, final]) assert.equal(step["continue-on-error"], undefined);
-  assert.equal(reportSteps.at(-2), final);
-  assert.equal(reportSteps.at(-1), custody);
-  assert.equal(custody.if, "${{ always() && github.event_name == 'merge_group' }}");
-  assert.equal(custody.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
-  assert.equal(custody.with?.path, "${{ runner.temp }}/vize-release-integration-final/");
-  assert.equal(custody.with?.["if-no-files-found"], "error");
+  assert.equal(aggregate["continue-on-error"], undefined);
+  assert.equal(reportSteps.at(-1), aggregate);
   const commands = (job: string) =>
     (workflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
   const checkSteps = workflow.jobs?.["check-js"]?.steps ?? [];

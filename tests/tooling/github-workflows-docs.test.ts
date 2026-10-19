@@ -7,13 +7,7 @@ import { test } from "node:test";
 import { defaultNavigationRenderRoutes } from "../../docs/scripts/navigation-render-routes.ts";
 import { parse } from "yaml";
 
-import {
-  requiredReleaseWorkflowEvidence,
-  requiredReleaseWorkflows,
-  selectRequiredWorkflowRuns,
-} from "../../tools/support/compat/github/release-preflight-evidence.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
-import { releaseSha, successfulReleaseRun } from "./support/release-preflight.ts";
 
 interface WorkflowStep {
   name?: string;
@@ -299,16 +293,4 @@ test("only a source-custody-qualified build can download or deploy, and success 
   );
   assert(deploy.steps!.indexOf(record) < deploy.steps!.indexOf(pages));
   assert(deploy.steps!.indexOf(confirm) > deploy.steps!.indexOf(pages));
-});
-
-test("release preflight does not wait on docs build or mutable deployment", () => {
-  assert.equal(requiredReleaseWorkflows.includes("Docs build"), false);
-  assert.equal(requiredReleaseWorkflows.includes("Deploy docs"), false);
-  assert.deepEqual(requiredReleaseWorkflowEvidence.get("Docs build"), {
-    path: ".github/workflows/build-docs.yml",
-    events: ["workflow_dispatch"],
-  });
-
-  const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
-  assert.doesNotThrow(() => selectRequiredWorkflowRuns(runs, releaseSha));
 });

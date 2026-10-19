@@ -131,9 +131,11 @@ title: "全部规则"
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [错误示例](#script-no-dupe-keys-bad) · [正确示例](#script-no-dupe-keys-good) | 禁止 Options API 的 props/data/computed/methods/setup/inject 之间重复的键 |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [错误示例](#script-no-duplicate-attr-inheritance-bad) · [正确示例](#script-no-duplicate-attr-inheritance-good) | 标记重复应用透传属性的组件 |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [错误示例](#script-no-export-in-script-setup-bad) · [正确示例](#script-no-export-in-script-setup-good) | 禁止 &lt;script setup&gt; 内的 export 语句 |
+| [`script/no-expose-after-await`](#script-no-expose-after-await) | [错误示例](#script-no-expose-after-await-bad) · [正确示例](#script-no-expose-after-await-good) | 禁止在 await 之后调用 expose() 和 defineExpose() |
 | [`script/no-get-current-instance`](#script-no-get-current-instance) | [错误示例](#script-no-get-current-instance-bad) · [正确示例](#script-no-get-current-instance-good) | 禁止在 Vapor 模式使用 getCurrentInstance()（返回 null） |
 | [`script/no-import-compiler-macros`](#script-no-import-compiler-macros) | [错误示例](#script-no-import-compiler-macros-bad) · [正确示例](#script-no-import-compiler-macros-good) | 禁止导入自动可用的 Vue 编译器宏 |
 | [`script/no-internal-imports`](#script-no-internal-imports) | [错误示例](#script-no-internal-imports-bad) · [正确示例](#script-no-internal-imports-good) | 禁止从 Vue 内部模块导入 |
+| [`script/no-lifecycle-after-await`](#script-no-lifecycle-after-await) | [错误示例](#script-no-lifecycle-after-await-bad) · [正确示例](#script-no-lifecycle-after-await-good) | 禁止在 setup() 中 await 之后注册生命周期钩子 |
 | [`script/no-multiple-slot-args`](#script-no-multiple-slot-args) | [错误示例](#script-no-multiple-slot-args-bad) · [正确示例](#script-no-multiple-slot-args-good) | 禁止向作用域插槽函数调用传入多个参数 |
 | [`script/no-next-tick`](#script-no-next-tick) | [错误示例](#script-no-next-tick-bad) · [正确示例](#script-no-next-tick-good) | 禁止面向 Vapor 的组件使用 nextTick() |
 | [`script/no-options-api`](#script-no-options-api) | [错误示例](#script-no-options-api-bad) · [正确示例](#script-no-options-api-good) | 禁止 Vapor 模式中的 Options API 模式 |
@@ -151,6 +153,7 @@ title: "全部规则"
 | [`script/no-unstable-nested-components`](#script-no-unstable-nested-components) | [错误示例](#script-no-unstable-nested-components-bad) · [正确示例](#script-no-unstable-nested-components-good) | 禁止在 setup 或 render 函数内定义组件 |
 | [`script/no-unused-emit-declarations`](#script-no-unused-emit-declarations) | [错误示例](#script-no-unused-emit-declarations-bad) · [正确示例](#script-no-unused-emit-declarations-good) | 标记已声明却从未发出的事件 |
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [错误示例](#script-no-use-computed-property-like-method-bad) · [正确示例](#script-no-use-computed-property-like-method-good) | 禁止像方法一样调用 Options API 计算属性 |
+| [`script/no-watch-after-await`](#script-no-watch-after-await) | [错误示例](#script-no-watch-after-await-bad) · [正确示例](#script-no-watch-after-await-good) | 禁止在 setup() 中 await 之后注册未保留停止句柄的侦听器 |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [错误示例](#script-no-with-defaults-bad) · [正确示例](#script-no-with-defaults-good) | 不建议使用 withDefaults，优先使用解构默认值（Vue 3.5+） |
 | [`script/prefer-computed`](#script-prefer-computed) | [错误示例](#script-prefer-computed-bad) · [正确示例](#script-prefer-computed-good) | 响应式派生状态优先使用 computed() |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [错误示例](#script-prefer-define-options-bad) · [正确示例](#script-prefer-define-options-good) | 优先使用 defineOptions()，而不是仅设置 name/inheritAttrs 的普通 &lt;script&gt; |
@@ -1690,6 +1693,20 @@ Vue Router 编程式导航优先使用具名路由对象
 
 [分组示例](./type-and-script.md#script-no-export-in-script-setup) · [规则参考](/rules/reference/script-no-export-in-script-setup.md)
 
+### `script/no-expose-after-await`
+
+禁止在 await 之后调用 expose() 和 defineExpose()
+
+<span id="script-no-expose-after-await-bad"></span>
+
+[错误示例](./type-and-script.md#script-no-expose-after-await-bad)
+
+<span id="script-no-expose-after-await-good"></span>
+
+[正确示例](./type-and-script.md#script-no-expose-after-await-good)
+
+[分组示例](./type-and-script.md#script-no-expose-after-await) · [规则参考](/rules/reference/script-no-expose-after-await.md)
+
 ### `script/no-get-current-instance`
 
 禁止在 Vapor 模式使用 getCurrentInstance()（返回 null）
@@ -1731,6 +1748,20 @@ Vue Router 编程式导航优先使用具名路由对象
 [正确示例](./type-and-script.md#script-no-internal-imports-good)
 
 [分组示例](./type-and-script.md#script-no-internal-imports) · [规则参考](/rules/reference/script-no-internal-imports.md)
+
+### `script/no-lifecycle-after-await`
+
+禁止在 setup() 中 await 之后注册生命周期钩子
+
+<span id="script-no-lifecycle-after-await-bad"></span>
+
+[错误示例](./type-and-script.md#script-no-lifecycle-after-await-bad)
+
+<span id="script-no-lifecycle-after-await-good"></span>
+
+[正确示例](./type-and-script.md#script-no-lifecycle-after-await-good)
+
+[分组示例](./type-and-script.md#script-no-lifecycle-after-await) · [规则参考](/rules/reference/script-no-lifecycle-after-await.md)
 
 ### `script/no-multiple-slot-args`
 
@@ -1969,6 +2000,20 @@ Vue Router 编程式导航优先使用具名路由对象
 [正确示例](./type-and-script.md#script-no-use-computed-property-like-method-good)
 
 [分组示例](./type-and-script.md#script-no-use-computed-property-like-method) · [规则参考](/rules/reference/script-no-use-computed-property-like-method.md)
+
+### `script/no-watch-after-await`
+
+禁止在 setup() 中 await 之后注册未保留停止句柄的侦听器
+
+<span id="script-no-watch-after-await-bad"></span>
+
+[错误示例](./type-and-script.md#script-no-watch-after-await-bad)
+
+<span id="script-no-watch-after-await-good"></span>
+
+[正确示例](./type-and-script.md#script-no-watch-after-await-good)
+
+[分组示例](./type-and-script.md#script-no-watch-after-await) · [规则参考](/rules/reference/script-no-watch-after-await.md)
 
 ### `script/no-with-defaults`
 

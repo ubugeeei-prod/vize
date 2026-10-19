@@ -1,17 +1,6 @@
 //! P2-11 corpus residual witnesses for expression edge forms.
 
-#[expect(
-    dead_code,
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::string_slice,
-    clippy::expect_used,
-    clippy::indexing_slicing,
-    clippy::panic,
-    reason = "shared test support; each binary uses a subset"
-)]
-mod support;
+use crate::support;
 
 const BATTERY: &[(&str, &str)] = &[
     ("reserved_bind_value", r#"<div :class="class"></div>"#),

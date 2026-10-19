@@ -10,10 +10,6 @@ import {
   realProjectRegistryPath,
   realProjectWorkflowPath,
 } from "../../tools/support/compat/github/real-project-matrix-plan.ts";
-import {
-  assertRequiredWorkflowJobs,
-  requiredWorkflowJobNames,
-} from "../../tools/support/compat/github/release-preflight-evidence.mjs";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 import { matrixSourceFixture } from "./support/real-project-matrix-source.ts";
 
@@ -70,27 +66,6 @@ test("historical and named job evidence reads only its selected source revision"
     ),
   );
   assert.deepEqual(cli, named, "Rust CLI and JS share one name authority");
-  for (const [headSha, names, wrong] of [
-    [source.legacySha, old, named],
-    [source.namedSha, named, old],
-  ] as const) {
-    const run = { head_sha: headSha };
-    const jobs = names.map((name) => ({ name, status: "completed", conclusion: "success" }));
-    assert.deepEqual(requiredWorkflowJobNames("Real Project Matrix", run, source.repoRoot), names);
-    assert.doesNotThrow(() =>
-      assertRequiredWorkflowJobs("Real Project Matrix", jobs, run, source.repoRoot),
-    );
-    assert.throws(
-      () =>
-        assertRequiredWorkflowJobs(
-          "Real Project Matrix",
-          jobs.map((job, index) => ({ ...job, name: wrong[index] })),
-          run,
-          source.repoRoot,
-        ),
-      /found 0/,
-    );
-  }
 });
 
 test("unknown, unavailable or ambiguous source naming fails closed", () => {
@@ -104,7 +79,6 @@ test("unknown, unavailable or ambiguous source naming fails closed", () => {
     () => realProjectJobNamesAtRevision("e".repeat(40), source.repoRoot),
     /source is unavailable/,
   );
-  assert.throws(() => requiredWorkflowJobNames("Real Project Matrix"), /exact source SHA/);
   const workflow = readRepoFile(realProjectWorkflowPath);
   const registry = JSON.parse(readRepoFile(realProjectRegistryPath));
   assert.throws(
@@ -164,27 +138,6 @@ test("scoped diagnostics select exactly one original pinned row without changing
   assert.deepEqual(JSON.parse(cli(["--project", ""])), { include: full });
   const scoped = realProjectMatrix(registry, "hoppscotch");
   assert.deepEqual(JSON.parse(cli(["--project", "hoppscotch"])), { include: scoped });
-  const jobs = scoped.map(({ name }) => ({
-    name: `real projects (${name})`,
-    status: "completed",
-    conclusion: "success",
-  }));
-  assert.throws(
-    () =>
-      assertRequiredWorkflowJobs(
-        "Real Project Matrix",
-        jobs,
-        {
-          head_sha: execFileSync("git", ["rev-parse", "HEAD"], {
-            cwd: root,
-            encoding: "utf8",
-          }).trim(),
-        },
-        root,
-      ),
-    /found 0/,
-    "a scoped success is never whole-matrix evidence",
-  );
   for (const invalid of [
     "missing-project",
     " hoppscotch",

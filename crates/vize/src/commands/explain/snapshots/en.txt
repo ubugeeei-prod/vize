@@ -1875,16 +1875,16 @@ autofix: no
 docs: docs/content/rules/type-and-script.md
 
 invalid:
-  // defineProps before defineModel (out of canonical order)
+  // defineEmits before defineProps
+  const emit = defineEmits<{ change: [value: string] }>()
   const props = defineProps<{ count: number }>()
-  const model = defineModel<string>()
 
 valid:
-  defineOptions({ name: 'MyComponent' })
-  const model = defineModel<string>()
+  import { ref } from 'vue'
   const props = defineProps<{ count: number }>()
   const emit = defineEmits<{ change: [value: string] }>()
-  defineSlots<{ default(props: {}): any }>()
+  const model = defineModel<string>()
+  const value = ref(0)
 === script/define-props-declaration
 script/define-props-declaration · lint rule
 Enforce type-based defineProps<{ ... }>() over the runtime/object form
@@ -2292,6 +2292,24 @@ severity: error
 category: script
 autofix: no
 docs: docs/content/rules/type-and-script.md
+=== script/no-expose-after-await
+script/no-expose-after-await · lint rule
+Disallow expose() and defineExpose() after an await
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  await loadData()
+  defineExpose({ reload })
+
+valid:
+  defineExpose({ reload })
+  await loadData()
 === script/no-get-current-instance
 script/no-get-current-instance · lint rule
 Disallow getCurrentInstance() in Vapor mode (returns null)
@@ -2358,6 +2376,34 @@ invalid:
 
 valid:
   import { ref, computed } from 'vue'
+=== script/no-lifecycle-after-await
+script/no-lifecycle-after-await · lint rule
+Disallow lifecycle hooks registered after an await in setup()
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  import { onMounted } from 'vue'
+  export default {
+    async setup() {
+      await loadData()
+      onMounted(() => {})
+    },
+  }
+
+valid:
+  import { onMounted } from 'vue'
+  export default {
+    async setup() {
+      onMounted(() => {})
+      await loadData()
+    },
+  }
 === script/no-multiple-slot-args
 script/no-multiple-slot-args · lint rule
 Disallow passing more than one argument to a scoped-slot function call
@@ -2725,6 +2771,34 @@ severity: error
 category: script
 autofix: no
 docs: docs/content/rules/type-and-script.md
+=== script/no-watch-after-await
+script/no-watch-after-await · lint rule
+Disallow watchers registered after an await in setup() without keeping their stop handle
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/type-and-script.md
+
+invalid:
+  import { watch } from 'vue'
+  export default {
+    async setup(props) {
+      await loadData()
+      watch(() => props.id, reload)
+    },
+  }
+
+valid:
+  import { watch } from 'vue'
+  export default {
+    async setup(props) {
+      watch(() => props.id, reload)
+      await loadData()
+    },
+  }
 === script/no-with-defaults
 script/no-with-defaults · lint rule
 Discourage withDefaults in favor of destructuring defaults (Vue 3.5+)

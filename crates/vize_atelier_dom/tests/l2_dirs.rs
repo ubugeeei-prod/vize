@@ -2,18 +2,7 @@
 //! compared **byte-for-byte** including helper usage, asset order, and
 //! NEED_PATCH.
 
-#[expect(
-    dead_code,
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::string_slice,
-    clippy::expect_used,
-    clippy::indexing_slicing,
-    clippy::panic,
-    reason = "shared test support; each binary uses a subset"
-)]
-mod support;
+use crate::support;
 
 const BATTERY: &[(&str, &str)] = &[
     ("empty", r#"<div v-example></div>"#),

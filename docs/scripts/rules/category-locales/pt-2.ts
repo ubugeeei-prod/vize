@@ -1,8 +1,8 @@
 export const portugueseRules2: Record<string, readonly [string, string, string]> = {
   "script/define-macros-order": [
     "Exigir uma ordem consistente para as macros do compilador Vue em &lt;script setup&gt;",
-    "`defineProps` aparece antes de `defineModel`, embora `defineModel` venha primeiro na ordem canônica das macros.",
-    "As declarações seguem a sequência exata `defineOptions`, `defineModel`, `defineProps`, `defineEmits`, `defineSlots`, antes de instruções não relacionadas em tempo de execução.",
+    "`defineEmits` aparece antes de `defineProps`, mas `defineProps` e depois `defineEmits` devem ser as primeiras instruções de `<script setup>`.",
+    "`defineProps` e depois `defineEmits` vêm logo após os imports, antes de qualquer outra instrução; as demais macros podem vir em qualquer ordem.",
   ],
   "script/define-props-declaration": [
     "Exigir defineProps&lt;{ ... }&gt;() baseado em tipos em vez da forma com objeto em tempo de execução",

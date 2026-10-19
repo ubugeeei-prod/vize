@@ -54,19 +54,29 @@ impl WorkspaceFolderConfig {
         if !self.valid {
             return None;
         }
-        if self
-            .project_ignores
-            .as_ref()
-            .is_some_and(|ignores| ignores.is_ignored(path))
-            || self.global_ignores.iter().any(|scope| scope.ignores(path))
-        {
+        // A document opened through a symlinked workspace keeps its authored
+        // path while config bases may be physical, so both spellings are
+        // matched (#9686).
+        let physical = vize_carton::path::physical_path(path);
+        let spellings = [path, physical.as_path()];
+        if spellings.iter().any(|path| {
+            self.project_ignores
+                .as_ref()
+                .is_some_and(|ignores| ignores.is_ignored(path))
+                || self.global_ignores.iter().any(|scope| scope.ignores(path))
+        }) {
             return None;
         }
         let matching = self
             .scopes
             .iter()
             .enumerate()
-            .filter_map(|(index, scope)| scope.matches(path).then_some(index))
+            .filter_map(|(index, scope)| {
+                spellings
+                    .iter()
+                    .any(|path| scope.matches(path))
+                    .then_some(index)
+            })
             .collect::<Vec<_>>();
         let resolved = self.plan.resolve_matching_entries(&matching);
         Some((resolved.config, resolved.rule_options, self.features))

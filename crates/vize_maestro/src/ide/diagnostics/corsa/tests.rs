@@ -179,7 +179,7 @@ defineArt("./Button.vue", { title: "Button" });
 
 #[test]
 fn editor_virtual_ts_preserves_computed_map_value_types() {
-    use std::path::{Path, PathBuf};
+    use std::path::PathBuf;
 
     use crate::DiagnosticService;
     use tower_lsp::lsp_types::Url;
@@ -324,18 +324,6 @@ const speakerOptions = computed(() =>
     );
 
     fn resolve_test_tsgo_binary() -> Option<PathBuf> {
-        if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
-            return None;
-        }
-
-        let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .parent()
-            .and_then(Path::parent)?;
-        let sibling_cache = workspace_root.parent()?.join("corsa-bind/.cache/tsgo");
-        if sibling_cache.exists() {
-            return Some(sibling_cache);
-        }
-
-        vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
+        crate::test_support::tsgo()
     }
 }

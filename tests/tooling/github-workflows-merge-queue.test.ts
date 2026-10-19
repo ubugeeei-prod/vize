@@ -88,7 +88,6 @@ test("queue scope reaches the planner and every selected source lane remains req
     ...lanes.slice(2),
     "nuxt-module-qualification",
     "canonical-corpus",
-    "release-integration-catalog",
     "ci-selection-tests",
     "wasm-release-check",
   ]);

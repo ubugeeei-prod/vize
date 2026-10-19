@@ -66,8 +66,34 @@ impl DeclarationService {
             character,
         )
         .await?;
-        let locations = corsa_support::map_canonical_corsa_locations(ctx, &document, locations);
-        TypeDefinitionService::convert_locations(locations)
+        let mapped =
+            corsa_support::map_canonical_corsa_locations(ctx, &document, locations.clone());
+        if !mapped.is_empty() {
+            return TypeDefinitionService::convert_locations(mapped);
+        }
+        // A template ref-unwrap shadow (`var name: __U<__R_name>`) has no
+        // authored span; its semantic link leads to the setup binding capture,
+        // whose declaration is the authored one.
+        let mut followed = Vec::new();
+        for location in &locations {
+            for position in
+                corsa_support::linked_semantic_positions(&document, &location.uri, &location.range)
+            {
+                if let Some(found) = Self::declaration_or_definition_locations(
+                    bridge,
+                    &position.request_uri,
+                    position.line,
+                    position.character,
+                )
+                .await
+                {
+                    followed.extend(found);
+                }
+            }
+        }
+        TypeDefinitionService::convert_locations(corsa_support::map_canonical_corsa_locations(
+            ctx, &document, followed,
+        ))
     }
 
     async fn declaration_in_split_script(
@@ -265,18 +291,6 @@ const product = {} as Product
     }
 
     fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
-        if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
-            return None;
-        }
-        let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .parent()
-            .and_then(std::path::Path::parent)?;
-        vize_carton::corsa_resolver::resolve_corsa_executable(
-            vize_carton::corsa_resolver::CorsaResolveRequest {
-                project_root: Some(workspace_root),
-                ..Default::default()
-            },
-        )
-        .ok()
+        crate::test_support::tsgo()
     }
 }

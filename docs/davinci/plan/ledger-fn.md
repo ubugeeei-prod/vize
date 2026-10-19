@@ -172,9 +172,11 @@ assert is not relaxed to count-only or to an optional span.
 - `script/no-deprecated-props-default-this`
 - `script/no-dupe-keys`
 - `script/no-export-in-script-setup`
+- `script/no-expose-after-await`
 - `script/no-get-current-instance`
 - `script/no-import-compiler-macros`
 - `script/no-internal-imports`
+- `script/no-lifecycle-after-await`
 - `script/no-multiple-slot-args`
 - `script/no-next-tick`
 - `script/no-options-api`
@@ -185,6 +187,7 @@ assert is not relaxed to count-only or to an optional span.
 - `script/no-restricted-globals`
 - `script/no-restricted-members`
 - `script/no-top-level-ref-in-script`
+- `script/no-watch-after-await`
 - `script/no-with-defaults`
 - `script/prefer-define-options`
 - `script/prefer-import-from-vue`

@@ -9,18 +9,7 @@
 //! byte-for-byte release ratchet, and its pinned count makes any accidental
 //! reduction in coverage loud.
 
-#[expect(
-    dead_code,
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::string_slice,
-    clippy::expect_used,
-    clippy::indexing_slicing,
-    clippy::panic,
-    reason = "shared test support; each binary uses a subset"
-)]
-mod support;
+use crate::support;
 
 #[test]
 fn l2_native_html_and_interpolations_match_the_shipped_dom_lane_byte_for_byte() {

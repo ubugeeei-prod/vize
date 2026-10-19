@@ -248,3 +248,11 @@ test("the automatic cadence releases a green main commit only after user-facing 
     );
   }
 });
+
+test("only release builds drop the -dev version suffix", () => {
+  assert.equal(workflow.env.VIZE_RELEASE_BUILD, "1");
+  assert.match(
+    readRepoFile("crates", "vize_carton", "src", "lib.rs"),
+    /option_env!\("VIZE_RELEASE_BUILD"\)[\s\S]*concat!\(env!\("CARGO_PKG_VERSION"\), "-dev"\)/,
+  );
+});

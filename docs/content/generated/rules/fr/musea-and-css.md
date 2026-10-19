@@ -39,7 +39,7 @@ Suggérer v-show plutôt que display: none
 Gravité par défaut: `warning`  
 Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
-Champ d’application: CSS dans les blocs style des SFC  
+Champ d’application: Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
 
 **Configuration (Vite+)**
@@ -106,7 +106,7 @@ Suggérer des variables CSS plutôt que des valeurs codées en dur
 Gravité par défaut: `warning`  
 Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
-Champ d’application: CSS dans les blocs style des SFC  
+Champ d’application: Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
 
 **Configuration (Vite+)**
@@ -173,7 +173,7 @@ Déconseiller les sélecteurs d’identifiant en CSS
 Gravité par défaut: `warning`  
 Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
-Champ d’application: CSS dans les blocs style des SFC  
+Champ d’application: Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
 
 **Configuration (Vite+)**
@@ -238,7 +238,7 @@ Déconseiller !important en CSS
 Gravité par défaut: `warning`  
 Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
-Champ d’application: CSS dans les blocs style des SFC  
+Champ d’application: Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
 
 **Configuration (Vite+)**
@@ -303,7 +303,7 @@ Déconseiller l’implémentation de classes utilitaires dans les styles des com
 Gravité par défaut: `warning`  
 Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
-Champ d’application: CSS dans les blocs style des SFC  
+Champ d’application: Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
 
 **Configuration (Vite+)**
@@ -366,7 +366,7 @@ Signaler le coût de performance de v-bind() en CSS
 Gravité par défaut: `warning`  
 Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
-Champ d’application: CSS dans les blocs style des SFC  
+Champ d’application: Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
 
 **Configuration (Vite+)**
@@ -429,7 +429,7 @@ Recommander les propriétés logiques CSS pour mieux prendre en charge l’inter
 Gravité par défaut: `warning`  
 Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
-Champ d’application: CSS dans les blocs style des SFC  
+Champ d’application: Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
 
 **Configuration (Vite+)**
@@ -494,7 +494,7 @@ Recommander l’imbrication CSS pour les sélecteurs de descendants
 Gravité par défaut: `warning`  
 Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
-Champ d’application: CSS dans les blocs style des SFC  
+Champ d’application: Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
 
 **Configuration (Vite+)**
@@ -555,7 +555,7 @@ Recommander ::v-slotted() pour styliser le contenu des slots
 Gravité par défaut: `warning`  
 Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
-Champ d’application: CSS dans les blocs style des SFC  
+Champ d’application: Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
 
 **Configuration (Vite+)**
@@ -616,7 +616,7 @@ Exiger font-display dans les règles @font-face
 Gravité par défaut: `warning`  
 Préréglages: `opinionated`, `nuxt`  
 Correction automatique: Aucune ; examinez la modification proposée  
-Champ d’application: CSS dans les blocs style des SFC  
+Champ d’application: Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
 
 **Configuration (Vite+)**

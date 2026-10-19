@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   appendSsrModuleRegistration,
+  ssrEnvironmentBundles,
   ssrModuleRegistrationCode,
   toManifestModuleId,
 } from "./ssr-modules.ts";
@@ -120,4 +121,18 @@ void test("an SFC that already uses the helper names still registers, with fresh
     once,
     "appending again is a no-op",
   );
+});
+
+void test("a worker environment that bundles dependencies keeps Vue in its bundle", () => {
+  assert.equal(ssrEnvironmentBundles(undefined, "vue"), false, "Node SSR leaves Vue external");
+  assert.equal(ssrEnvironmentBundles({ noExternal: true }, "vue/server-renderer"), true);
+  assert.equal(ssrEnvironmentBundles({ noExternal: ["vue"] }, "vue/server-renderer"), true);
+  assert.equal(ssrEnvironmentBundles({ noExternal: [/^@vue\//] }, "@vue/shared"), true);
+  assert.equal(ssrEnvironmentBundles({ noExternal: ["vuex"] }, "vue"), false);
+  assert.equal(
+    ssrEnvironmentBundles({ noExternal: true, external: ["vue"] }, "vue"),
+    false,
+    "an explicit external entry wins, as in Vite",
+  );
+  assert.equal(ssrEnvironmentBundles({ noExternal: true, external: true }, "vue"), true);
 });

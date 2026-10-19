@@ -19,6 +19,7 @@ import { isInsidePath, isProjectSourceImporter, normalizeImporterFilePath } from
 import { resolvePackageJsonImportFromVizeImporter } from "./package-imports.ts";
 import { cleanVueSfcImporter, resolveRelativeVueSfcImport } from "./resolve-relative-vue.ts";
 import { isOptimizedVueDependency } from "./resolve-optimized-vue.ts";
+import { ssrEnvironmentBundles, type SsrEnvironmentResolve } from "./ssr-modules.ts";
 export { isOptimizedVueDependency };
 import {
   LEGACY_VIZE_PREFIX,
@@ -42,7 +43,7 @@ const VUE_PEER_RUNTIME_ESM_ENTRIES = new Map<string, string[]>([
 ]);
 
 interface ResolveContext {
-  environment?: { name?: string };
+  environment?: { name?: string; config?: { resolve?: SsrEnvironmentResolve } };
   resolve(
     id: string,
     importer?: string,
@@ -978,7 +979,12 @@ export async function resolveIdHook(
             return devSsrVueEntry;
           }
         }
-        return { id: ssrExternalVueRequest, external: true };
+        if (!ssrEnvironmentBundles(ctx.environment?.config?.resolve, ssrExternalVueRequest)) {
+          return { id: ssrExternalVueRequest, external: true };
+        }
+        return resolveWithVite(ctx, state, ssrExternalVueRequest, cleanImporter, {
+          skipSelf: true,
+        });
       }
 
       // For bare module specifiers (not relative, not absolute),

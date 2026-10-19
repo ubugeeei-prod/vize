@@ -47,7 +47,19 @@ pub(super) fn uses_computed_props(el: &ElementNode<'_>) -> bool {
             }
         }
     }
-    computed || object && forced
+    // Beside an object spread, a bound listener joins the spread's sources so
+    // the runtime's `mergeProps` chains it with the object's own handler.
+    computed || object && (forced || has_listener_bind(el))
+}
+
+/// A static `:onX` binding. Only an element with a spread pays for this
+/// second walk, so the common per-element check costs what it did.
+fn has_listener_bind(el: &ElementNode<'_>) -> bool {
+    el.props.iter().any(|prop| {
+        matches!(prop, PropNode::Directive(dir) if dir.name == "bind"
+            && matches!(&dir.arg, Some(ExpressionNode::Simple(key))
+                if key.is_static && crate::ir::is_on(key.content)))
+    })
 }
 
 pub(super) fn transform<'a>(

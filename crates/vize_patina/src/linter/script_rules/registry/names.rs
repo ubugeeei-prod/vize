@@ -86,6 +86,9 @@ pub(crate) const RULE_NO_DUPLICATE_ATTR_INHERITANCE: &str = "script/no-duplicate
 pub(crate) const RULE_NO_MULTIPLE_SLOT_ARGS: &str = "script/no-multiple-slot-args";
 pub(crate) const RULE_REQUIRE_EXPLICIT_EMITS: &str = "script/require-explicit-emits";
 pub(crate) const RULE_NO_UNSTABLE_NESTED_COMPONENTS: &str = "script/no-unstable-nested-components";
+pub(crate) const RULE_NO_LIFECYCLE_AFTER_AWAIT: &str = "script/no-lifecycle-after-await";
+pub(crate) const RULE_NO_WATCH_AFTER_AWAIT: &str = "script/no-watch-after-await";
+pub(crate) const RULE_NO_EXPOSE_AFTER_AWAIT: &str = "script/no-expose-after-await";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
@@ -159,6 +162,9 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_MULTIPLE_SLOT_ARGS,
     RULE_REQUIRE_EXPLICIT_EMITS,
     RULE_NO_UNSTABLE_NESTED_COMPONENTS,
+    RULE_NO_LIFECYCLE_AFTER_AWAIT,
+    RULE_NO_WATCH_AFTER_AWAIT,
+    RULE_NO_EXPOSE_AFTER_AWAIT,
 ];
 
 #[cfg(test)]
@@ -231,4 +237,7 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_MULTIPLE_SLOT_ARGS,
     RULE_REQUIRE_EXPLICIT_EMITS,
     RULE_NO_UNSTABLE_NESTED_COMPONENTS,
+    RULE_NO_LIFECYCLE_AFTER_AWAIT,
+    RULE_NO_WATCH_AFTER_AWAIT,
+    RULE_NO_EXPOSE_AFTER_AWAIT,
 ];

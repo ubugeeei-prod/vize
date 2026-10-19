@@ -37,7 +37,7 @@ Suggest using v-show instead of display: none
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
 **Configuration (Vite+)**
@@ -104,7 +104,7 @@ Suggest using CSS variables instead of hardcoded values
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
 **Configuration (Vite+)**
@@ -171,7 +171,7 @@ Discourage use of ID selectors in CSS
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
 **Configuration (Vite+)**
@@ -236,7 +236,7 @@ Discourage use of !important in CSS
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
 **Configuration (Vite+)**
@@ -301,7 +301,7 @@ Warn against implementing utility classes in component styles
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
 **Configuration (Vite+)**
@@ -364,7 +364,7 @@ Warn about performance cost of CSS v-bind()
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
 **Configuration (Vite+)**
@@ -427,7 +427,7 @@ Recommend CSS logical properties for better i18n support
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
 **Configuration (Vite+)**
@@ -492,7 +492,7 @@ Recommend using CSS nesting for descendant selectors
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
 **Configuration (Vite+)**
@@ -553,7 +553,7 @@ Recommend ::v-slotted() for styling slot content
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
 **Configuration (Vite+)**
@@ -614,7 +614,7 @@ Require font-display in @font-face rules
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
 **Configuration (Vite+)**

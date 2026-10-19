@@ -96,7 +96,7 @@ impl LanguageServer for MaestroServer {
             capabilities: self.client_capabilities(),
             server_info: Some(ServerInfo {
                 name: "vize-maestro".to_owned(),
-                version: Some(env!("CARGO_PKG_VERSION").to_owned()),
+                version: Some(vize_carton::VERSION.to_owned()),
             }),
         })
     }

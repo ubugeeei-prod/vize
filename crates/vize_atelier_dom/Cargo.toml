@@ -7,6 +7,7 @@ license.workspace = true
 repository.workspace = true
 description = "Atelier DOM - The DOM compiler workshop for Vize"
 metadata.vize.stability = "alpha-supported"
+autotests = false
 
 [features]
 legacy = ["vize_atelier_core/legacy"]
@@ -67,6 +68,54 @@ required-features = ["legacy-differential"]
 [[test]]
 name = "v_pre_freezes_its_subtree"
 required-features = ["legacy-differential"]
+
+# These read process-global walk and selector counters, so each keeps its own process under cargo test.
+[[test]]
+name = "davinci_expr_reparse_floor"
+
+[[test]]
+name = "davinci_walk_baseline"
+
+[[test]]
+name = "l2_build_profile"
+
+[[test]]
+name = "l2_codegen_option_selector"
+
+[[test]]
+name = "l2_custom_element_selector"
+
+[[test]]
+name = "l2_hoist_static_selector"
+
+[[test]]
+name = "l2_legacy_selector"
+
+[[test]]
+name = "l2_production_selector"
+
+[[test]]
+name = "l2_profile"
+
+[[test]]
+name = "l2_profile_unsupported"
+
+[[test]]
+name = "l2_runtime_module_profile"
+
+[[test]]
+name = "l2_sfc_namespace_selector"
+
+[[test]]
+name = "l2_sfc_self_closing_selector"
+
+[[test]]
+name = "l2_source_map"
+
+# Ordinary integration tests link as one binary; see tests/main.rs.
+[[test]]
+name = "integration"
+path = "tests/main.rs"
 
 [lints]
 workspace = true

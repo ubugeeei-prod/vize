@@ -7,7 +7,7 @@ pub fn run() {
 
 fn collect() -> Vec<String> {
     vec![
-        cstr!("Vize: {}", env!("CARGO_PKG_VERSION")),
+        cstr!("Vize: {}", vize_carton::VERSION),
         cstr!("OS: {}", os()),
         cstr!("Architecture: {}", std::env::consts::ARCH),
         cstr!("Node.js: {}", command_version("node", &["--version"])),

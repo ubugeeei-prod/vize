@@ -14,7 +14,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 
 [ESLint からのルール移行対応表](./migration.md)で対応名と未実装の範囲を確認できます。
 
-## 単一ファイルのルール (255)
+## 単一ファイルのルール (258)
 
 | ルール | 例 | 重大度 | プリセット | 自動修正 | オプション | 実装 | 目的 | カテゴリ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -209,9 +209,9 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 | [`musea/unique-variant-names`](#musea-unique-variant-names) | [悪い例](#musea-unique-variant-names-bad) · [良い例](#musea-unique-variant-names-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/unique_variant_names.rs#L10) | 同じ Art ファイル内の variant 名を一意にします。 | Musea |
 | [`musea/valid-variant`](#musea-valid-variant) | [悪い例](#musea-valid-variant-bad) · [良い例](#musea-valid-variant-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/valid_variant.rs#L8) | variant ブロックに name を指定します。 | Musea |
 | [`script/component-options-name-casing`](#script-component-options-name-casing) | [悪い例](#script-component-options-name-casing-bad) · [良い例](#script-component-options-name-casing-good) | `error` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44) | コンポーネントの name オプションを PascalCase に揃えます。 | Script |
-| [`script/custom-event-name-casing`](#script-custom-event-name-casing) | [悪い例](#script-custom-event-name-casing-bad) · [良い例](#script-custom-event-name-casing-good) | `error` | _none_ | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61) | emit するカスタムイベント名を指定した形式に揃えます。 | Script |
+| [`script/custom-event-name-casing`](#script-custom-event-name-casing) | [悪い例](#script-custom-event-name-casing-bad) · [良い例](#script-custom-event-name-casing-good) | `error` | `opinionated`, `nuxt` | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61) | emit するカスタムイベント名を指定した形式に揃えます。 | Script |
 | [`script/define-emits-declaration`](#script-define-emits-declaration) | [悪い例](#script-define-emits-declaration-bad) · [良い例](#script-define-emits-declaration-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_emits_declaration.rs#L39) | defineEmits を型による宣言形式に揃えます。 | Script |
-| [`script/define-macros-order`](#script-define-macros-order) | [悪い例](#script-define-macros-order-bad) · [良い例](#script-define-macros-order-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) | script setup のコンパイラーマクロを一定の順に宣言します。 | Script |
+| [`script/define-macros-order`](#script-define-macros-order) | [悪い例](#script-define-macros-order-bad) · [良い例](#script-define-macros-order-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L45) | script setup のコンパイラーマクロを一定の順に宣言します。 | Script |
 | [`script/define-props-declaration`](#script-define-props-declaration) | [悪い例](#script-define-props-declaration-bad) · [良い例](#script-define-props-declaration-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_declaration.rs#L40) | defineProps を型による宣言形式に揃えます。 | Script |
 | [`script/define-props-destructuring`](#script-define-props-destructuring) | [悪い例](#script-define-props-destructuring-bad) · [良い例](#script-define-props-destructuring-good) | `warning` | _none_ | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L29) | defineProps の分割代入スタイルを指定した方針に揃えます。 | Script |
 | [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [悪い例](#script-no-arrow-functions-in-watch-bad) · [良い例](#script-no-arrow-functions-in-watch-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) | Options API の watch ハンドラーにアロー関数を使う箇所を検出します。 | Script |
@@ -227,8 +227,10 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [悪い例](#script-no-dupe-keys-bad) · [良い例](#script-no-dupe-keys-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L55) | Options API の props / data / computed などのキー重複を検出します。 | Script |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [悪い例](#script-no-duplicate-attr-inheritance-bad) · [良い例](#script-no-duplicate-attr-inheritance-good) | `warning` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L35) | fallthrough 属性を同じコンポーネントで二重に適用する箇所を検出します。 | Script |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [悪い例](#script-no-export-in-script-setup-bad) · [良い例](#script-no-export-in-script-setup-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) | script setup 内の export 文を検出します。 | Script |
+| [`script/no-expose-after-await`](#script-no-expose-after-await) | [悪い例](#script-no-expose-after-await-bad) · [良い例](#script-no-expose-after-await-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_expose_after_await.rs#L34) | await の後の expose() と defineExpose() を禁止します。 | Script |
 | [`script/no-import-compiler-macros`](#script-no-import-compiler-macros) | [悪い例](#script-no-import-compiler-macros-bad) · [良い例](#script-no-import-compiler-macros-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_import_compiler_macros.rs#L39) | 自動的に使える Vue コンパイラーマクロの import を検出します。 | Script |
 | [`script/no-internal-imports`](#script-no-internal-imports) | [悪い例](#script-no-internal-imports-bad) · [良い例](#script-no-internal-imports-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) | Vue 内部モジュールからの import を検出します。 | Script |
+| [`script/no-lifecycle-after-await`](#script-no-lifecycle-after-await) | [悪い例](#script-no-lifecycle-after-await-bad) · [良い例](#script-no-lifecycle-after-await-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_lifecycle_after_await.rs#L45) | setup() 内で await の後にライフサイクルフックを登録することを禁止します。 | Script |
 | [`script/no-multiple-slot-args`](#script-no-multiple-slot-args) | [悪い例](#script-no-multiple-slot-args-bad) · [良い例](#script-no-multiple-slot-args-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_multiple_slot_args.rs#L61) | scoped slot 関数に複数の引数を渡す箇所を検出します。 | Script |
 | [`script/no-potential-component-option-typo`](#script-no-potential-component-option-typo) | [悪い例](#script-no-potential-component-option-typo-bad) · [良い例](#script-no-potential-component-option-typo-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs#L19) | Options API のオプション名の入力ミスを検出します。 | Script |
 | [`script/no-reactive-destructure`](#script-no-reactive-destructure) | [悪い例](#script-no-reactive-destructure-bad) · [良い例](#script-no-reactive-destructure-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reactive_destructure.rs#L43) | reactive オブジェクトを分割代入し、リアクティビティを失う箇所を検出します。 | Script |
@@ -244,6 +246,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 | [`script/no-unstable-nested-components`](#script-no-unstable-nested-components) | [悪い例](#script-no-unstable-nested-components-bad) · [良い例](#script-no-unstable-nested-components-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_unstable_nested_components.rs#L19) | setup / render 内で毎回コンポーネントを定義する箇所を検出します。 | Script |
 | [`script/no-unused-emit-declarations`](#script-no-unused-emit-declarations) | [悪い例](#script-no-unused-emit-declarations-bad) · [良い例](#script-no-unused-emit-declarations-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_unused_emit_declarations.rs#L74) | 宣言したまま emit していないイベントを検出します。 | Script |
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [悪い例](#script-no-use-computed-property-like-method-bad) · [良い例](#script-no-use-computed-property-like-method-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) | Options API の computed プロパティをメソッドとして呼ぶ箇所を検出します。 | Script |
+| [`script/no-watch-after-await`](#script-no-watch-after-await) | [悪い例](#script-no-watch-after-await-bad) · [良い例](#script-no-watch-after-await-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_watch_after_await.rs#L44) | setup() 内で await の後に停止ハンドルを保持せずにウォッチャーを登録することを禁止します。 | Script |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [悪い例](#script-no-with-defaults-bad) · [良い例](#script-no-with-defaults-good) | `warning` | `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) | Vue 3.5 以降の props 分割代入の既定値を勧めます。 | Script |
 | [`script/prefer-computed`](#script-prefer-computed) | [悪い例](#script-prefer-computed-bad) · [良い例](#script-prefer-computed-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) | 他の状態から導ける値を watcher で同期する代わりに computed で表現します。 | Script |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [悪い例](#script-prefer-define-options-bad) · [良い例](#script-prefer-define-options-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) | name / inheritAttrs だけの通常 script を defineOptions() にまとめます。 | Script |
@@ -252,10 +255,10 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 | [`script/prefer-use-attrs`](#script-prefer-use-attrs) | [悪い例](#script-prefer-use-attrs-bad) · [良い例](#script-prefer-use-attrs-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_attrs.rs#L44) | setup の context.attrs を useAttrs() に置き換えます。 | Script |
 | [`script/prefer-use-id`](#script-prefer-use-id) | [悪い例](#script-prefer-use-id-bad) · [良い例](#script-prefer-use-id-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L48) | 一意な ID の生成に Vue 3.5 の useId() を使います。 | Script |
 | [`script/prefer-use-slots`](#script-prefer-use-slots) | [悪い例](#script-prefer-use-slots-bad) · [良い例](#script-prefer-use-slots-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_slots.rs#L44) | setup の context.slots を useSlots() に置き換えます。 | Script |
-| [`script/prefer-use-template-ref`](#script-prefer-use-template-ref) | [悪い例](#script-prefer-use-template-ref-bad) · [良い例](#script-prefer-use-template-ref-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_template_ref.rs#L75) | テンプレート参照に Vue 3.5 の useTemplateRef() を使います。 | Script |
+| [`script/prefer-use-template-ref`](#script-prefer-use-template-ref) | [悪い例](#script-prefer-use-template-ref-bad) · [良い例](#script-prefer-use-template-ref-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_template_ref.rs#L75) | テンプレート参照に Vue 3.5 の useTemplateRef() を使います。 | Script |
 | [`script/require-default-prop`](#script-require-default-prop) | [悪い例](#script-require-default-prop-bad) · [良い例](#script-require-default-prop-good) | `error` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_default_prop.rs#L58) | 省略可能な、Boolean 以外の prop に default を用意します。 | Script |
 | [`script/require-explicit-emits`](#script-require-explicit-emits) | [悪い例](#script-require-explicit-emits-bad) · [良い例](#script-require-explicit-emits-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L65) | emit するイベントを defineEmits または emits に宣言します。 | Script |
-| [`script/require-explicit-slots`](#script-require-explicit-slots) | [悪い例](#script-require-explicit-slots-bad) · [良い例](#script-require-explicit-slots-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L92) | useSlots() で使う slot を defineSlots の型で宣言します。 | Script |
+| [`script/require-explicit-slots`](#script-require-explicit-slots) | [悪い例](#script-require-explicit-slots-bad) · [良い例](#script-require-explicit-slots-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L92) | useSlots() で使う slot を defineSlots の型で宣言します。 | Script |
 | [`script/require-function-return-type`](#script-require-function-return-type) | [悪い例](#script-require-function-return-type-bad) · [良い例](#script-require-function-return-type-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L49) | 関数に戻り値の型注釈を指定します。 | Script |
 | [`script/require-prop-type-constructor`](#script-require-prop-type-constructor) | [悪い例](#script-require-prop-type-constructor-bad) · [良い例](#script-require-prop-type-constructor-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L65) | prop の type に文字列ではなくコンストラクターを指定します。 | Script |
 | [`script/require-prop-types`](#script-require-prop-types) | [悪い例](#script-require-prop-types-bad) · [良い例](#script-require-prop-types-good) | `error` | `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) | 各 prop の型を宣言します。 | Script |
@@ -278,7 +281,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue
 
 ## プロジェクトのルールと解析器の診断契約 (66)
 
-以下の項目は、上の 255 件の単一ファイルのルールを補足します。それぞれの例には、コンポーネントやプロジェクトの構成、または参照を追跡するグラフの具体的な条件が含まれます。CLI の検査、実験的なライブラリーの生成元、生成元のない診断契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。
+以下の項目は、上の 258 件の単一ファイルのルールを補足します。それぞれの例には、コンポーネントやプロジェクトの構成、または参照を追跡するグラフの具体的な条件が含まれます。CLI の検査、実験的なライブラリーの生成元、生成元のない診断契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。
 
 | ルール / コード | 例 | 現在の対応 |
 | --- | --- | --- |
@@ -3277,6 +3280,20 @@ script setup 内の export 文を検出します。
 
 [カテゴリの例](./type-and-script.md#script-no-export-in-script-setup) · [ルール参照](./reference/script-no-export-in-script-setup.md)
 
+### `script/no-expose-after-await`
+
+await の後の expose() と defineExpose() を禁止します。
+
+<span id="script-no-expose-after-await-bad"></span>
+
+[悪い](./type-and-script.md#script-no-expose-after-await-bad)
+
+<span id="script-no-expose-after-await-good"></span>
+
+[良い](./type-and-script.md#script-no-expose-after-await-good)
+
+[カテゴリの例](./type-and-script.md#script-no-expose-after-await) · [ルール参照](./reference/script-no-expose-after-await.md)
+
 ### `script/no-import-compiler-macros`
 
 自動的に使える Vue コンパイラーマクロの import を検出します。
@@ -3304,6 +3321,20 @@ Vue 内部モジュールからの import を検出します。
 [良い](./type-and-script.md#script-no-internal-imports-good)
 
 [カテゴリの例](./type-and-script.md#script-no-internal-imports) · [ルール参照](./reference/script-no-internal-imports.md)
+
+### `script/no-lifecycle-after-await`
+
+setup() 内で await の後にライフサイクルフックを登録することを禁止します。
+
+<span id="script-no-lifecycle-after-await-bad"></span>
+
+[悪い](./type-and-script.md#script-no-lifecycle-after-await-bad)
+
+<span id="script-no-lifecycle-after-await-good"></span>
+
+[良い](./type-and-script.md#script-no-lifecycle-after-await-good)
+
+[カテゴリの例](./type-and-script.md#script-no-lifecycle-after-await) · [ルール参照](./reference/script-no-lifecycle-after-await.md)
 
 ### `script/no-multiple-slot-args`
 
@@ -3514,6 +3545,20 @@ Options API の computed プロパティをメソッドとして呼ぶ箇所を�
 [良い](./type-and-script.md#script-no-use-computed-property-like-method-good)
 
 [カテゴリの例](./type-and-script.md#script-no-use-computed-property-like-method) · [ルール参照](./reference/script-no-use-computed-property-like-method.md)
+
+### `script/no-watch-after-await`
+
+setup() 内で await の後に停止ハンドルを保持せずにウォッチャーを登録することを禁止します。
+
+<span id="script-no-watch-after-await-bad"></span>
+
+[悪い](./type-and-script.md#script-no-watch-after-await-bad)
+
+<span id="script-no-watch-after-await-good"></span>
+
+[良い](./type-and-script.md#script-no-watch-after-await-good)
+
+[カテゴリの例](./type-and-script.md#script-no-watch-after-await) · [ルール参照](./reference/script-no-watch-after-await.md)
 
 ### `script/no-with-defaults`
 

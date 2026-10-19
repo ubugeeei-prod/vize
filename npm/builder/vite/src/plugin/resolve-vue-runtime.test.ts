@@ -5,6 +5,8 @@ import path from "node:path";
 
 import type { VizePluginState } from "./state.ts";
 import { resolveIdHook } from "./resolve.ts";
+import type { SsrEnvironmentResolve } from "./ssr-modules.ts";
+import { toVirtualId } from "../virtual.ts";
 
 const testRoot = fs.mkdtempSync(
   path.join(fs.realpathSync(os.tmpdir()), "vize-vue-runtime-resolve-"),
@@ -150,4 +152,30 @@ function createState(root: string): VizePluginState {
     `${optimizedVueEntry}?v=abc123`,
     "A Vue entry in Vite's configured cacheDir (Vitest's .vite/vitest/<hash>) is the optimized runtime and must not be replaced",
   );
+}
+
+{
+  // A workerd environment (Void, @cloudflare/vite-plugin) bundles everything:
+  // an external `vue` becomes `No such module "assets/vue"` at request time.
+  const projectRoot = fs.mkdtempSync(path.join(testRoot, "workerd-ssr-vue-"));
+  const importer = toVirtualId(path.join(projectRoot, "pages", "index.vue"), true);
+  const state = { ...createState(projectRoot), server: null };
+  const bundledVue = path.join(projectRoot, "node_modules", "vue", "index.mjs");
+  const resolveVue = async (id: string) => (id === "vue" ? { id: bundledVue } : null);
+  const resolveIn = (resolve: SsrEnvironmentResolve | undefined) =>
+    resolveIdHook(
+      { environment: { name: "ssr", config: { resolve } }, resolve: resolveVue },
+      state,
+      "vue",
+      importer,
+      { ssr: true },
+    );
+
+  assert.deepEqual(await resolveIn(undefined), { id: "vue", external: true });
+  assert.deepEqual(await resolveIn({ noExternal: true }), { id: bundledVue });
+  assert.deepEqual(await resolveIn({ noExternal: ["vue"] }), { id: bundledVue });
+  assert.deepEqual(await resolveIn({ noExternal: true, external: ["vue"] }), {
+    id: "vue",
+    external: true,
+  });
 }

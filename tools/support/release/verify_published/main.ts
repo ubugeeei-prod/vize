@@ -1,15 +1,15 @@
 // The one post-publish check: wait until every released npm package is
-// visible at the release version, then install the CLI from npm and run it.
+// visible at the release version, then install the CLI from npm and exercise
+// it the way a user does (compile, lint, fmt, LSP).
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { collectOutput, println, run, runMain, writeStderr } from "../command_io.ts";
 import { cliArgs } from "../command_runtime.ts";
 import { waitForRegistryVisibility } from "../publish_npm_package/registry.ts";
+import { userChecks, writeProject } from "./user_checks.ts";
 
-const SFC = "<script setup>const n = 1</script><template><p>{{ n }}</p></template>";
-
-/** Installs `vize@version` into a fresh project and exercises the binary. */
+/** Installs `vize@version` into a fresh project and runs what a user does first. */
 async function smokeInstall(version: string): Promise<boolean> {
   const dir = mkdtempSync(join(tmpdir(), "vize-published-"));
   try {
@@ -17,19 +17,16 @@ async function smokeInstall(version: string): Promise<boolean> {
     if ((await collectOutput(npm, ["init", "-y"], { cwd: dir })).status !== 0) return false;
     const install = ["install", "--no-audit", "--no-fund", `vize@${version}`];
     if ((await run(npm, install, { cwd: dir })) !== 0) return false;
-    const cli = await collectOutput(process.execPath, [
-      join(dir, "node_modules/vize/bin/vize"),
-      "--version",
-    ]);
-    println(cli.stdout.trim());
-    if (cli.status !== 0 || !cli.stdout.includes(version)) {
-      writeStderr(`vize --version did not report ${version}\n${cli.stderr}`);
-      return false;
+    writeProject(dir);
+    let ok = true;
+    for (const check of userChecks(dir, version)) {
+      const failure = await check.run();
+      println(
+        `${failure === null ? "ok  " : "FAIL"} ${check.name}${failure === null ? "" : `: ${failure}`}`,
+      );
+      ok &&= failure === null;
     }
-    const compile = `const { compileSfc } = require(require.resolve("@vizejs/native", { paths: [${JSON.stringify(dir)}] }));
-      const out = compileSfc(${JSON.stringify(SFC)}, { filename: "Smoke.vue" });
-      if (!JSON.stringify(out).includes("createElementBlock")) throw new Error("unexpected compile output");`;
-    return (await run(process.execPath, ["-e", compile])) === 0;
+    return ok;
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

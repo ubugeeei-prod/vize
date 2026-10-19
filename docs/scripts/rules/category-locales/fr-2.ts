@@ -21,8 +21,8 @@ export const frenchRules2 = {
   ],
   "script/define-macros-order": [
     "Imposer un ordre cohérent aux macros du compilateur Vue dans &lt;script setup&gt;",
-    "`defineProps` apparaît avant `defineModel`, alors que `defineModel` occupe une position antérieure dans l’ordre canonique des macros.",
-    "Les déclarations suivent exactement la séquence `defineOptions`, `defineModel`, `defineProps`, `defineEmits`, `defineSlots`, avant les instructions d’exécution sans rapport avec elles.",
+    "`defineEmits` apparaît avant `defineProps`, alors que `defineProps` puis `defineEmits` doivent être les premières instructions de `<script setup>`.",
+    "`defineProps` puis `defineEmits` suivent directement les imports, avant toute autre instruction ; les autres macros peuvent suivre dans n’importe quel ordre.",
   ],
   "script/define-props-declaration": [
     "Imposer la forme typée defineProps&lt;{ ... }&gt;() à la place de la forme à l’exécution sous forme d’objet",

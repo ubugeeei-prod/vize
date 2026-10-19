@@ -144,6 +144,41 @@ function freeIdentifier(base: string, code: string): string {
   }
 }
 
+type DependencyPattern = string | RegExp;
+
+/** The resolve options of the environment a request belongs to. */
+export type SsrEnvironmentResolve = {
+  noExternal?: true | DependencyPattern | readonly DependencyPattern[];
+  external?: true | readonly string[];
+};
+
+/**
+ * Whether the environment bundles `request` instead of loading it at runtime.
+ *
+ * Node SSR leaves Vue external, but a worker runtime such as Cloudflare's
+ * workerd (Void, `@cloudflare/vite-plugin`) sets `noExternal: true` and has no
+ * `node_modules` to import from, so Vue must stay in its bundle.
+ */
+export function ssrEnvironmentBundles(
+  resolve: SsrEnvironmentResolve | undefined,
+  request: string,
+): boolean {
+  // Mirrors Vite's `createIsConfiguredAsExternal` precedence.
+  const { noExternal, external } = resolve ?? {};
+  const packageName = request.split("/", request.startsWith("@") ? 2 : 1).join("/");
+  if (external !== true && (external?.includes(request) || external?.includes(packageName))) {
+    return false;
+  }
+  if (noExternal === true) return true;
+  if (noExternal === undefined) return false;
+  const patterns: readonly DependencyPattern[] = Array.isArray(noExternal)
+    ? noExternal
+    : [noExternal as DependencyPattern];
+  return patterns.some((pattern) =>
+    typeof pattern === "string" ? pattern === packageName : pattern.test(packageName),
+  );
+}
+
 /** Keep compiler/config root separate from Nuxt's source-relative manifest IDs. */
 export function registerSfcModule(
   state: Pick<VizePluginState, "root" | "mergedOptions">,

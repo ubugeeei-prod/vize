@@ -23,6 +23,7 @@ import {
   resolveComponentsCssFileName,
 } from "./hmr.ts";
 import { handleHotUpdateEnvironmentHook } from "./hot-update-environment.ts";
+import { createManifestPlugin } from "./manifest.ts";
 import {
   createPostTransformPlugin,
   createStylePostTransformPlugin,
@@ -34,7 +35,11 @@ import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
 import { installDevMiddleware } from "./dev-middleware.ts";
 import { mergeCompilerOptions } from "./compiler-config.ts";
 import { createFileCompilerOptions } from "./compiler-scopes.ts";
-import { createLegacyVueCompatibilityPlugin, isLegacyVueCompatibilityMode } from "./vue-version.ts";
+import {
+  createLegacyVueCompatibilityPlugin,
+  isLegacyVueCompatibilityMode,
+  removeHostVueSfcCompilers,
+} from "./vue-version.ts";
 import { resolveSharedConfig } from "./shared-config.ts";
 import * as configBridge from "./config-lifecycle.ts";
 import { resolveVueFeatureDefines } from "./vue-feature-defines.ts";
@@ -171,6 +176,13 @@ export function vize(
       );
 
       state.mergedOptions = mergeCompilerOptions(options, sharedConfig, compilerDefaults);
+      const replaced = removeHostVueSfcCompilers(
+        resolvedConfig.plugins as Plugin[],
+        state.mergedOptions,
+      );
+      if (replaced > 0) {
+        state.logger.log(`Replaced ${replaced} @vitejs/plugin-vue instance(s) with Vize.`);
+      }
       state.fileCompilerOptions = createFileCompilerOptions(
         sharedConfig,
         state.root,
@@ -312,5 +324,7 @@ export function vize(
     mainPlugin,
     createStylePostTransformPlugin(),
     createPostTransformPlugin(state),
+    // Nuxt restores source identities in its own client manifest.
+    ...(hostContext === "nuxt" ? [] : [createManifestPlugin()]),
   ];
 }

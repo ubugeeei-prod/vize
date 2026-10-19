@@ -201,6 +201,10 @@ that turns the output into a reviewed contract. Local batches can be packaged wi
 - Do not refresh large snapshot baselines unless the PR is specifically about those outputs.
 - Do not include secrets, registry tokens, private vulnerability details, or machine-local paths in reports, commits, or PRs.
 
+## Releases
+
+`.github/workflows/release.yml` publishes the next minor version to npm, crates.io, JSR, the VS Code Marketplace, Open VSX and GitHub Releases. It runs on its own after a green `Check` on main when fix, feat or perf commits have landed (at most once per 50 minutes); `vp run release` dispatches it by hand. The version is stamped onto the release tag only, so main keeps the last released version and builds from source report `<version>-dev`. npm trusted publishing cannot create a package, so publish a brand-new npm package once by hand (`npm publish --access public` from its built directory, at the current release version), configure trusted publishing for `release.yml` and the `npm` environment on npmjs.com, and add its directory to `RELEASE_JS_PACKAGES` in the workflow.
+
 ## Fix Requests
 
 Use the fix report template for regressions, crashes, incorrect diagnostics, package installation problems, and release failures. Use the feature request template for new integrations, API changes, or workflow improvements.

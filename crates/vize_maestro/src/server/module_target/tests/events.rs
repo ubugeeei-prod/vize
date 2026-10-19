@@ -46,7 +46,7 @@ pub(super) fn session() -> Session {
             json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{},"initializationOptions":{"enabled":false}}})
         ),
         Some(
-            json!({"jsonrpc":"2.0","id":1,"result":{"capabilities":{"textDocumentSync":{"openClose":true,"change":2,"willSave":false,"willSaveWaitUntil":false,"save":{"includeText":false}},"workspace":{"workspaceFolders":{"supported":true,"changeNotifications":true}},"experimental":{"vize":{"jsxTypecheck":false}}},"serverInfo":{"name":"vize-maestro","version":env!("CARGO_PKG_VERSION")}}})
+            json!({"jsonrpc":"2.0","id":1,"result":{"capabilities":{"textDocumentSync":{"openClose":true,"change":2,"willSave":false,"willSaveWaitUntil":false,"save":{"includeText":false}},"workspace":{"workspaceFolders":{"supported":true,"changeNotifications":true}},"experimental":{"vize":{"jsxTypecheck":false}}},"serverInfo":{"name":"vize-maestro","version":vize_carton::VERSION}}})
         )
     );
     let state = Arc::clone(&service.inner().state);

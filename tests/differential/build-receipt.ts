@@ -67,7 +67,7 @@ export function validateBuildReceipt(
   assert.ok(typeof receipt.binarySha256 === "string", "source-build binary hash is required");
   assert.match(receipt.binarySha256, /^[a-f0-9]{64}$/);
   assert.ok(typeof receipt.cliVersion === "string", "source-build CLI version is required");
-  assert.match(receipt.cliVersion, /^vize \d+\.\d+\.\d+$/);
+  assert.match(receipt.cliVersion, /^vize \d+\.\d+\.\d+-dev$/);
   assert.ok(typeof receipt.binaryPath === "string", "source-build binary path is required");
   for (const field of ["sourceRevision", "binaryPath", "binarySha256", "cliVersion"]) {
     assert.equal(receipt[field], expected[field], `source-build receipt mismatch: ${field}`);
@@ -83,7 +83,8 @@ export function expectedBuildIdentity(repoRoot: string): BuildIdentity {
     sourceRevision: sourceRevision(repoRoot),
     binaryPath,
     binarySha256: sha256(fs.readFileSync(path.join(repoRoot, binaryPath))),
-    cliVersion: `vize ${version[1]}`,
+    // Source builds are not release builds, so they report `<version>-dev`.
+    cliVersion: `vize ${version[1]}-dev`,
   };
 }
 

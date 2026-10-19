@@ -14,7 +14,7 @@ Severity is the implementation default; override it with `off`, `warn`, or `erro
 
 See the [ESLint migration map](./migration.md) for rule IDs, differences, and unsupported mappings.
 
-## Single-file rules (255)
+## Single-file rules (258)
 
 | Rule | Examples | Severity | Presets | Fixable | Options | Implementation | Description | Category |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -209,9 +209,9 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`musea/unique-variant-names`](#musea-unique-variant-names) | [Bad](#musea-unique-variant-names-bad) · [Good](#musea-unique-variant-names-good) | `error` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/unique_variant_names.rs#L10) | Require unique variant names | Musea |
 | [`musea/valid-variant`](#musea-valid-variant) | [Bad](#musea-valid-variant-bad) · [Good](#musea-valid-variant-good) | `error` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/valid_variant.rs#L8) | Require name attribute in &lt;variant&gt; blocks | Musea |
 | [`script/component-options-name-casing`](#script-component-options-name-casing) | [Bad](#script-component-options-name-casing-bad) · [Good](#script-component-options-name-casing-good) | `error` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44) | Enforce PascalCase for the component `name` option | Script |
-| [`script/custom-event-name-casing`](#script-custom-event-name-casing) | [Bad](#script-custom-event-name-casing-bad) · [Good](#script-custom-event-name-casing-good) | `error` | _none_ | No | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61) | Enforce camelCase for emitted custom event names | Script |
+| [`script/custom-event-name-casing`](#script-custom-event-name-casing) | [Bad](#script-custom-event-name-casing-bad) · [Good](#script-custom-event-name-casing-good) | `error` | `opinionated`, `nuxt` | No | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61) | Enforce camelCase for emitted custom event names | Script |
 | [`script/define-emits-declaration`](#script-define-emits-declaration) | [Bad](#script-define-emits-declaration-bad) · [Good](#script-define-emits-declaration-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_emits_declaration.rs#L39) | Enforce the type-based defineEmits&lt;{}&gt;() form over the runtime/array form | Script |
-| [`script/define-macros-order`](#script-define-macros-order) | [Bad](#script-define-macros-order-bad) · [Good](#script-define-macros-order-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) | Enforce a consistent order of the Vue compiler macros in &lt;script setup&gt; | Script |
+| [`script/define-macros-order`](#script-define-macros-order) | [Bad](#script-define-macros-order-bad) · [Good](#script-define-macros-order-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L45) | Enforce a consistent order of the Vue compiler macros in &lt;script setup&gt; | Script |
 | [`script/define-props-declaration`](#script-define-props-declaration) | [Bad](#script-define-props-declaration-bad) · [Good](#script-define-props-declaration-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_declaration.rs#L40) | Enforce type-based defineProps&lt;{ ... }&gt;() over the runtime/object form | Script |
 | [`script/define-props-destructuring`](#script-define-props-destructuring) | [Bad](#script-define-props-destructuring-bad) · [Good](#script-define-props-destructuring-good) | `warning` | _none_ | No | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L29) | Enforce consistent style for defineProps destructuring in &lt;script setup&gt; | Script |
 | [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [Bad](#script-no-arrow-functions-in-watch-bad) · [Good](#script-no-arrow-functions-in-watch-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) | Disallow arrow functions as Options API watch handlers | Script |
@@ -227,8 +227,10 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [Bad](#script-no-dupe-keys-bad) · [Good](#script-no-dupe-keys-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L55) | Disallow duplicate keys across Options API props/data/computed/methods/setup/inject | Script |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [Bad](#script-no-duplicate-attr-inheritance-bad) · [Good](#script-no-duplicate-attr-inheritance-good) | `warning` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L35) | Flag a component that applies its fallthrough attributes twice | Script |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [Bad](#script-no-export-in-script-setup-bad) · [Good](#script-no-export-in-script-setup-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) | Disallow export statements inside &lt;script setup&gt; | Script |
+| [`script/no-expose-after-await`](#script-no-expose-after-await) | [Bad](#script-no-expose-after-await-bad) · [Good](#script-no-expose-after-await-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_expose_after_await.rs#L34) | Disallow expose() and defineExpose() after an await | Script |
 | [`script/no-import-compiler-macros`](#script-no-import-compiler-macros) | [Bad](#script-no-import-compiler-macros-bad) · [Good](#script-no-import-compiler-macros-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_import_compiler_macros.rs#L39) | Disallow importing Vue compiler macros that are auto-imported | Script |
 | [`script/no-internal-imports`](#script-no-internal-imports) | [Bad](#script-no-internal-imports-bad) · [Good](#script-no-internal-imports-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) | Disallow importing from Vue internal modules | Script |
+| [`script/no-lifecycle-after-await`](#script-no-lifecycle-after-await) | [Bad](#script-no-lifecycle-after-await-bad) · [Good](#script-no-lifecycle-after-await-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_lifecycle_after_await.rs#L45) | Disallow lifecycle hooks registered after an await in setup() | Script |
 | [`script/no-multiple-slot-args`](#script-no-multiple-slot-args) | [Bad](#script-no-multiple-slot-args-bad) · [Good](#script-no-multiple-slot-args-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_multiple_slot_args.rs#L61) | Disallow passing more than one argument to a scoped-slot function call | Script |
 | [`script/no-potential-component-option-typo`](#script-no-potential-component-option-typo) | [Bad](#script-no-potential-component-option-typo-bad) · [Good](#script-no-potential-component-option-typo-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs#L19) | Flag likely typos in Options API component option names | Script |
 | [`script/no-reactive-destructure`](#script-no-reactive-destructure) | [Bad](#script-no-reactive-destructure-bad) · [Good](#script-no-reactive-destructure-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reactive_destructure.rs#L43) | Disallow destructuring reactive objects which loses reactivity | Script |
@@ -244,6 +246,7 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`script/no-unstable-nested-components`](#script-no-unstable-nested-components) | [Bad](#script-no-unstable-nested-components-bad) · [Good](#script-no-unstable-nested-components-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_unstable_nested_components.rs#L19) | Disallow component definitions inside setup or render functions | Script |
 | [`script/no-unused-emit-declarations`](#script-no-unused-emit-declarations) | [Bad](#script-no-unused-emit-declarations-bad) · [Good](#script-no-unused-emit-declarations-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_unused_emit_declarations.rs#L74) | Flag declared events that are never emitted | Script |
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [Bad](#script-no-use-computed-property-like-method-bad) · [Good](#script-no-use-computed-property-like-method-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) | Disallow calling an Options API computed property like a method | Script |
+| [`script/no-watch-after-await`](#script-no-watch-after-await) | [Bad](#script-no-watch-after-await-bad) · [Good](#script-no-watch-after-await-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_watch_after_await.rs#L44) | Disallow watchers registered after an await in setup() without keeping their stop handle | Script |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [Bad](#script-no-with-defaults-bad) · [Good](#script-no-with-defaults-good) | `warning` | `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) | Discourage withDefaults in favor of destructuring defaults (Vue 3.5+) | Script |
 | [`script/prefer-computed`](#script-prefer-computed) | [Bad](#script-prefer-computed-bad) · [Good](#script-prefer-computed-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) | Prefer computed() for derived reactive state | Script |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [Bad](#script-prefer-define-options-bad) · [Good](#script-prefer-define-options-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) | Prefer defineOptions() over a plain &lt;script&gt; that only sets name/inheritAttrs | Script |
@@ -252,10 +255,10 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`script/prefer-use-attrs`](#script-prefer-use-attrs) | [Bad](#script-prefer-use-attrs-bad) · [Good](#script-prefer-use-attrs-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_attrs.rs#L44) | Recommend using useAttrs() over context.attrs | Script |
 | [`script/prefer-use-id`](#script-prefer-use-id) | [Bad](#script-prefer-use-id-bad) · [Good](#script-prefer-use-id-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L48) | Recommend using useId() for generating unique IDs (Vue 3.5+) | Script |
 | [`script/prefer-use-slots`](#script-prefer-use-slots) | [Bad](#script-prefer-use-slots-bad) · [Good](#script-prefer-use-slots-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_slots.rs#L44) | Recommend using useSlots() over context.slots | Script |
-| [`script/prefer-use-template-ref`](#script-prefer-use-template-ref) | [Bad](#script-prefer-use-template-ref-bad) · [Good](#script-prefer-use-template-ref-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_template_ref.rs#L75) | Recommend useTemplateRef over ref for template references (Vue 3.5+) | Script |
+| [`script/prefer-use-template-ref`](#script-prefer-use-template-ref) | [Bad](#script-prefer-use-template-ref-bad) · [Good](#script-prefer-use-template-ref-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_template_ref.rs#L75) | Recommend useTemplateRef over ref for template references (Vue 3.5+) | Script |
 | [`script/require-default-prop`](#script-require-default-prop) | [Bad](#script-require-default-prop-bad) · [Good](#script-require-default-prop-good) | `error` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_default_prop.rs#L58) | Require a default value for every optional, non-Boolean prop | Script |
 | [`script/require-explicit-emits`](#script-require-explicit-emits) | [Bad](#script-require-explicit-emits-bad) · [Good](#script-require-explicit-emits-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L65) | Require emitted events to be declared in defineEmits or the emits option | Script |
-| [`script/require-explicit-slots`](#script-require-explicit-slots) | [Bad](#script-require-explicit-slots-bad) · [Good](#script-require-explicit-slots-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L92) | Require slots consumed via useSlots() to be explicitly typed with defineSlots&lt;...&gt;() | Script |
+| [`script/require-explicit-slots`](#script-require-explicit-slots) | [Bad](#script-require-explicit-slots-bad) · [Good](#script-require-explicit-slots-good) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L92) | Require slots consumed via useSlots() to be explicitly typed with defineSlots&lt;...&gt;() | Script |
 | [`script/require-function-return-type`](#script-require-function-return-type) | [Bad](#script-require-function-return-type-bad) · [Good](#script-require-function-return-type-good) | `warning` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L49) | Require return type annotations on functions | Script |
 | [`script/require-prop-type-constructor`](#script-require-prop-type-constructor) | [Bad](#script-require-prop-type-constructor-bad) · [Good](#script-require-prop-type-constructor-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L65) | Require prop `type` values to be constructors rather than string literals | Script |
 | [`script/require-prop-types`](#script-require-prop-types) | [Bad](#script-require-prop-types-bad) · [Good](#script-require-prop-types-good) | `error` | `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) | Require every prop to declare a type | Script |
@@ -276,7 +279,7 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 
 ## Project rules and analyzer contracts (66)
 
-These project entries supplement the 255 single-file catalog entries above. Each example includes its component/project context or an explicit tracked-graph scenario. CLI, experimental library producers, and contracts without a producer have different support boundaries; see the [cross-file overview](./cross-file.md).
+These project entries supplement the 258 single-file catalog entries above. Each example includes its component/project context or an explicit tracked-graph scenario. CLI, experimental library producers, and contracts without a producer have different support boundaries; see the [cross-file overview](./cross-file.md).
 
 | Rule / code | Examples | Current support |
 | --- | --- | --- |
@@ -3275,6 +3278,20 @@ Disallow export statements inside &lt;script setup&gt;
 
 [Group examples](./type-and-script.md#script-no-export-in-script-setup) · [Rule reference](./reference/script-no-export-in-script-setup.md)
 
+### `script/no-expose-after-await`
+
+Disallow expose() and defineExpose() after an await
+
+<span id="script-no-expose-after-await-bad"></span>
+
+[Bad](./type-and-script.md#script-no-expose-after-await-bad)
+
+<span id="script-no-expose-after-await-good"></span>
+
+[Good](./type-and-script.md#script-no-expose-after-await-good)
+
+[Group examples](./type-and-script.md#script-no-expose-after-await) · [Rule reference](./reference/script-no-expose-after-await.md)
+
 ### `script/no-import-compiler-macros`
 
 Disallow importing Vue compiler macros that are auto-imported
@@ -3302,6 +3319,20 @@ Disallow importing from Vue internal modules
 [Good](./type-and-script.md#script-no-internal-imports-good)
 
 [Group examples](./type-and-script.md#script-no-internal-imports) · [Rule reference](./reference/script-no-internal-imports.md)
+
+### `script/no-lifecycle-after-await`
+
+Disallow lifecycle hooks registered after an await in setup()
+
+<span id="script-no-lifecycle-after-await-bad"></span>
+
+[Bad](./type-and-script.md#script-no-lifecycle-after-await-bad)
+
+<span id="script-no-lifecycle-after-await-good"></span>
+
+[Good](./type-and-script.md#script-no-lifecycle-after-await-good)
+
+[Group examples](./type-and-script.md#script-no-lifecycle-after-await) · [Rule reference](./reference/script-no-lifecycle-after-await.md)
 
 ### `script/no-multiple-slot-args`
 
@@ -3512,6 +3543,20 @@ Disallow calling an Options API computed property like a method
 [Good](./type-and-script.md#script-no-use-computed-property-like-method-good)
 
 [Group examples](./type-and-script.md#script-no-use-computed-property-like-method) · [Rule reference](./reference/script-no-use-computed-property-like-method.md)
+
+### `script/no-watch-after-await`
+
+Disallow watchers registered after an await in setup() without keeping their stop handle
+
+<span id="script-no-watch-after-await-bad"></span>
+
+[Bad](./type-and-script.md#script-no-watch-after-await-bad)
+
+<span id="script-no-watch-after-await-good"></span>
+
+[Good](./type-and-script.md#script-no-watch-after-await-good)
+
+[Group examples](./type-and-script.md#script-no-watch-after-await) · [Rule reference](./reference/script-no-watch-after-await.md)
 
 ### `script/no-with-defaults`
 

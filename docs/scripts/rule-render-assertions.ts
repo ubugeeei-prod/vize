@@ -84,7 +84,7 @@ export function expectedRuleReferences(route: string) {
       };
     }),
   );
-  assert.equal(expected.length, 321, "255 source rules plus 66 project entries per locale");
+  assert.equal(expected.length, 324, "258 source rules plus 66 project entries per locale");
   return { ja, locale, expected };
 }
 

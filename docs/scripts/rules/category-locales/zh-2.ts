@@ -11,8 +11,8 @@ export const chineseRules2: Record<string, readonly [string, string, string]> = 
   ],
   "script/define-macros-order": [
     "要求 &lt;script setup&gt; 中的 Vue 编译器宏保持一致的顺序",
-    "`defineProps` 位于 `defineModel` 之前，但标准宏顺序中 `defineModel` 更靠前。",
-    "声明严格按照 `defineOptions`、`defineModel`、`defineProps`、`defineEmits`、`defineSlots` 排列，再写无关的运行时语句。",
+    "`defineEmits` 位于 `defineProps` 之前，但 `<script setup>` 必须先写 `defineProps`，再写 `defineEmits`。",
+    "`defineProps` 和 `defineEmits` 依次紧跟在 import 之后、其他所有语句之前；其余宏的顺序不限。",
   ],
   "script/define-props-declaration": [
     "要求使用类型形式 defineProps&lt;{ ... }&gt;()，而不是运行时或对象形式",

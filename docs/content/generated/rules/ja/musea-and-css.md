@@ -37,7 +37,7 @@ title: "Musea と CSS のルール"
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: SFC の style ブロック内の CSS  
+適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -104,7 +104,7 @@ CSS に直接記述した値を CSS 変数にまとめます。
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: SFC の style ブロック内の CSS  
+適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -171,7 +171,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: SFC の style ブロック内の CSS  
+適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -236,7 +236,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: SFC の style ブロック内の CSS  
+適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -301,7 +301,7 @@ important を使わず、カスタムプロパティから色を参照します�
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: SFC の style ブロック内の CSS  
+適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -364,7 +364,7 @@ CSS v-bind() の実行時コストを検討するための警告です。
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: SFC の style ブロック内の CSS  
+適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -427,7 +427,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: SFC の style ブロック内の CSS  
+適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -492,7 +492,7 @@ margin-inline-start を使い、インライン方向の開始側に余白を指
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: SFC の style ブロック内の CSS  
+適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -553,7 +553,7 @@ slot や子コンポーネントに対する scoped CSS のセレクターを検
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: SFC の style ブロック内の CSS  
+適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -614,7 +614,7 @@ slot { color: red; }
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: SFC の style ブロック内の CSS  
+適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**

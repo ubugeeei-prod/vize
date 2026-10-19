@@ -43,7 +43,7 @@ jobs:
         run: cargo +nightly miri test -p vize_atelier_core --test scoped_slot_shadowing
 
       - name: Test DOM transform with Miri
-        run: cargo +nightly miri test -p vize_atelier_dom --test setup_component_unref
+        run: cargo +nightly miri test -p vize_atelier_dom --test integration "setup_component_unref::"
 
       - name: Test SFC transform with Miri
         run: cargo +nightly miri test -p vize_atelier_sfc --test setup_component_unref --no-default-features

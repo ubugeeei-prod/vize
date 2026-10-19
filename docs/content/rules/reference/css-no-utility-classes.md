@@ -11,7 +11,7 @@ Warn against implementing utility classes in component styles
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
-Applies to: CSS inside SFC style blocks  
+Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
 ## Configuration (Vite+)

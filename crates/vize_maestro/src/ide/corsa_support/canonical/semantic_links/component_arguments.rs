@@ -235,6 +235,7 @@ mod tests {
     fn native_expression_geometry_excludes_contextual_and_type_keys() {
         let source = "type Props = { id: string }; const id = 1; const o = { id: id }; o.id; o['id']; ({ id });";
         let ranges = value_expression_ranges(source).expect("valid TypeScript");
+        assert_eq!(ranges, [59..61, 67..69, 65..66, 73..77, 71..72, 83..85]);
         for (needle, expected) in [
             ("id: string", false),
             ("id = 1", false),
@@ -246,7 +247,7 @@ mod tests {
         ] {
             let offset = source.find(needle).expect("role marker");
             assert_eq!(
-                ranges.iter().any(|range| range.contains(&offset)),
+                ranges.iter().any(|range| range.start == offset),
                 expected,
                 "{needle}"
             );

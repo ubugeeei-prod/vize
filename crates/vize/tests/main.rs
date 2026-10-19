@@ -91,6 +91,7 @@ mod check_packed_declaration_consumer_cli;
 mod check_patterned_template_cli;
 mod check_plain_script_named_exports_cli;
 mod check_plain_script_namespace_cli;
+mod check_pug_template_cli;
 mod check_ref_enum_template_cli;
 mod check_reference_path_cli;
 mod check_reference_types_cli;
@@ -278,6 +279,7 @@ mod ready_progress_cli;
 mod render_why;
 mod slot_provide_inject_original_cli;
 mod source_write_atomic_cli;
+mod style_preprocessors_toolchain_cli;
 mod tsconfig_diamond;
 
 /// `autotests = false` would silently skip a new top-level test file; every one

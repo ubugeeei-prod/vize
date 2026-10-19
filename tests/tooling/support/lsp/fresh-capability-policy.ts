@@ -40,6 +40,7 @@ export function assertInitializePacket(packet: JsonRpcMessage, capabilities: unk
   assert.deepEqual(packet, {
     jsonrpc: "2.0",
     id: 1,
-    result: { capabilities, serverInfo: { name: "vize-maestro", version } },
+    // A source-built server reports `<version>-dev`.
+    result: { capabilities, serverInfo: { name: "vize-maestro", version: `${version}-dev` } },
   });
 }

@@ -11,6 +11,7 @@ import {
   getInitializationOptions,
   hasAnyEnabledCapability,
   hasAnyExplicitCapabilityValue,
+  serverMatchesExtension,
   shouldStartFromConfiguration,
   type ConfigurationInspection,
   type VizeConfigurationLike,
@@ -346,4 +347,11 @@ test("vscode capability description names file rename explicitly", () => {
     }),
     "document links, file rename",
   );
+});
+
+test("a source-built server reporting <version>-dev matches its extension", () => {
+  assert.ok(serverMatchesExtension("0.474.0", "0.474.0"));
+  assert.ok(serverMatchesExtension("0.474.0-dev", "0.474.0"));
+  assert.ok(!serverMatchesExtension("0.475.0", "0.474.0"));
+  assert.ok(!serverMatchesExtension("0.474.0-dev", "0.475.0"));
 });

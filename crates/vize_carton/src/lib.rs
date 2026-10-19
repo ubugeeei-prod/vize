@@ -52,3 +52,24 @@ pub mod lsp;
 pub mod path;
 
 pub mod timing_observer;
+
+/// The Vize version users see (`vize --version`, LSP server info).
+///
+/// main keeps the last released version in its manifests, so only builds made
+/// by the Release workflow (which sets `VIZE_RELEASE_BUILD`) report it as is;
+/// every other build reports `<version>-dev`.
+pub const VERSION: &str = match option_env!("VIZE_RELEASE_BUILD") {
+    Some(_) => env!("CARGO_PKG_VERSION"),
+    None => concat!(env!("CARGO_PKG_VERSION"), "-dev"),
+};
+
+#[cfg(test)]
+mod version_tests {
+    #[test]
+    fn unreleased_builds_identify_as_dev() {
+        match option_env!("VIZE_RELEASE_BUILD") {
+            Some(_) => assert_eq!(super::VERSION, env!("CARGO_PKG_VERSION")),
+            None => assert_eq!(super::VERSION, concat!(env!("CARGO_PKG_VERSION"), "-dev")),
+        }
+    }
+}

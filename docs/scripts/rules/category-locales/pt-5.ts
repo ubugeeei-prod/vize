@@ -164,4 +164,19 @@ export const portugueseRules5: Record<string, readonly [string, string, string]>
     'O pai passa `class="notice"` para um filho resolvido com raiz em fragmento, que não tem um destino automático para atributos e nunca lê `$attrs`.',
     "O filho escolhe `<main>` como destino vinculando `$attrs` ali; seu irmão `<aside>` permanece separado.",
   ],
+  "script/no-expose-after-await": [
+    "Proibir expose() e defineExpose() após um await",
+    "`defineExpose()` roda depois de um `await` de nível superior, quando não há instância de componente atual, então nada é exposto.",
+    "`defineExpose()` roda antes do primeiro `await`, enquanto a instância do componente ainda é a atual.",
+  ],
+  "script/no-lifecycle-after-await": [
+    "Proibir hooks de ciclo de vida registrados após um await em setup()",
+    "`setup()` chama `onMounted()` depois de `await loadData()`; sem instância de componente atual nesse ponto, o hook nunca é registrado.",
+    "`onMounted()` é registrado antes do primeiro `await`, enquanto `setup()` ainda roda de forma síncrona para o componente.",
+  ],
+  "script/no-watch-after-await": [
+    "Proibir watchers registrados após um await em setup() sem guardar a função de parada",
+    "`watch()` é criado depois de `await loadData()` e a função de parada é descartada, então o watcher nunca é parado junto com o componente.",
+    "O watcher é criado antes do primeiro `await`, então o Vue o para quando o componente é desmontado.",
+  ],
 };

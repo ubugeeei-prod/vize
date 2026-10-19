@@ -65,7 +65,7 @@ const FUNCTIONS = [
     "css_formatting_keeps_media_features_values_and_nested_selectors",
     "3f6a9b403d26482dd668c08f659cde0410a27e2b732015926938dde1b412a828",
     "3143dfb478b430951ae7b350ca61045b1ab7d9f0099cc12685d86909c9bc258a",
-    "86de29f657cdfd4056629f719ceb23f6a96abd3b1c6f0b05534a2a21a210a54a",
+    "6f2f564b7edcb36fa17eccc7658ed90e2ef781cac5a282cb94b1f1c34aa94e96",
   ],
   [
     "scoped_css_keeps_implicit_nested_selectors",

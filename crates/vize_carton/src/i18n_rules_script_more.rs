@@ -53,6 +53,12 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "禁止像方法一样调用选项式 API 的计算属性",
     ),
     (
+        "script/no-watch-after-await.description",
+        "Disallow watchers registered after an await in setup() without keeping their stop handle",
+        "setup() 内で await の後に停止ハンドルを保持せずにウォッチャーを登録することを禁止する",
+        "禁止在 setup() 中 await 之后注册未保留停止句柄的侦听器",
+    ),
+    (
         "script/no-with-defaults.description",
         "Discourage withDefaults in favor of destructuring defaults (Vue 3.5+)",
         "withDefaults を非推奨とし、分割代入でのデフォルト値を推奨する（Vue 3.5 以降）",

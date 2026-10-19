@@ -50,11 +50,11 @@ larger preset.
 
 | Preset | Rules | What is on |
 | --- | ---: | --- |
-| `essential` | 82 | Template and directive validity, Vue 3 removals (`vue/no-deprecated-*`, `script/no-deprecated-*`), script macro, `nextTick` and Options API correctness, imports from `vue` instead of `@vue/*`, unused components, `vue/no-v-html`, `vue/no-unsafe-url`, `html/id-duplication` |
-| `happy-path` (default) | 144 | `essential`, plus template formatting conventions (including `v-bind` shorthand and hyphenated component events), accessibility, HTML conformance, SSR hazards, unused properties, declared emits, and typed props and emits |
-| `ecosystem` | 152 | `happy-path`, plus the ecosystem library checks |
-| `nuxt` | 206 | `opinionated`, adjusted for Nuxt auto-imports |
-| `opinionated` | 206 | `happy-path`, plus stricter conventions, typed props, type-based `defineProps`/`defineEmits`, prop default and emit hygiene, `defineOptions`, and the `css/*` style rules |
+| `essential` | 85 | Template and directive validity, Vue 3 removals (`vue/no-deprecated-*`, `script/no-deprecated-*`), script macro, `nextTick` and Options API correctness, lifecycle hooks, watchers and `expose` registered after `await`, imports from `vue` instead of `@vue/*`, unused components, `vue/no-v-html`, `vue/no-unsafe-url`, `html/id-duplication` |
+| `happy-path` (default) | 147 | `essential`, plus template formatting conventions (including `v-bind` shorthand and hyphenated component events), accessibility, HTML conformance, SSR hazards, unused properties, declared emits, and typed props and emits |
+| `ecosystem` | 155 | `happy-path`, plus the ecosystem library checks |
+| `nuxt` | 213 | `opinionated`, adjusted for Nuxt auto-imports |
+| `opinionated` | 213 | `happy-path`, plus stricter conventions, typed props, type-based `defineProps`/`defineEmits`, `<script setup>` macro order, camelCase event names, `useTemplateRef`, `defineSlots`, prop default and emit hygiene, `defineOptions`, and the `css/*` style rules |
 | `incremental` | 0 | Nothing |
 
 Counts exclude cross-file rules. The Presets column of [All lint rules](./all.md) shows each rule's

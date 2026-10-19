@@ -40,8 +40,17 @@ export function hasDelegatedStyles(compiled: CompiledModule): boolean {
   return compiled.styles.some((s) => needsPreprocessor(s) || isCssModule(s) || needsCssPipeline(s));
 }
 
+/**
+ * Template-only HMR swaps in `updated.render`, so the render function must be
+ * standalone rather than the closure an inline-template `setup` returns.
+ * Script setup attaches it as `render: _sfc_render` in the component literal;
+ * other shapes assign `_sfc_main.render = _sfc_render` (or `= render`).
+ */
+const STANDALONE_RENDER =
+  /(?:^|\n)(?:(?:_sfc_main|__sfc__)\.render\s*=\s*(?:_sfc_render|render)\b|\s+render:\s*_sfc_render\b)/m;
+
 function supportsTemplateOnlyHmr(output: string): boolean {
-  return /(?:^|\n)(?:_sfc_main|__sfc__)\.render\s*=\s*render\b/m.test(output);
+  return STANDALONE_RENDER.test(output);
 }
 
 /**

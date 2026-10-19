@@ -164,4 +164,19 @@ export const chineseRules5: Record<string, readonly [string, string, string]> = 
     '父组件将 `class="notice"` 传给已解析的片段子组件；该子组件没有自动属性目标，也从不读取 `$attrs`。',
     "子组件将 `$attrs` 绑定在 `<main>` 上，选择它作为目标；同级 `<aside>` 保持独立。",
   ],
+  "script/no-expose-after-await": [
+    "禁止在 await 之后调用 expose() 和 defineExpose()",
+    "`defineExpose()` 在顶层 `await` 之后执行，此时没有当前组件实例，因此不会暴露任何内容。",
+    "`defineExpose()` 在第一个 `await` 之前执行，此时组件实例仍是当前实例。",
+  ],
+  "script/no-lifecycle-after-await": [
+    "禁止在 setup() 中 await 之后注册生命周期钩子",
+    "`setup()` 在 `await loadData()` 之后调用 `onMounted()`；此时没有当前组件实例，钩子不会被注册。",
+    "`onMounted()` 在第一个 `await` 之前注册，此时 `setup()` 仍在为组件同步执行。",
+  ],
+  "script/no-watch-after-await": [
+    "禁止在 setup() 中 await 之后注册未保留停止句柄的侦听器",
+    "`watch()` 在 `await loadData()` 之后创建且丢弃了停止句柄，因此侦听器不会随组件一起停止。",
+    "侦听器在第一个 `await` 之前创建，因此组件卸载时 Vue 会停止它。",
+  ],
 };

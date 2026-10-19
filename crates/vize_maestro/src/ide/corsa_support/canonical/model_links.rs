@@ -305,11 +305,13 @@ mod tests {
                 &source,
                 &declaration,
             );
-            assert_eq!(
-                generic.contains(&prefix_position),
-                name.len() < "update:".len(),
-                "short names round-trip through the synthesized prefix: {name}"
-            );
+            // Short names round-trip through the synthesized `update:` prefix.
+            let mut expected_generic = vec![(101, 3), (127, 44)];
+            if name.len() < "update:".len() {
+                expected_generic.push(prefix_position);
+            }
+            expected_generic.push((167, 35));
+            assert_eq!(generic, expected_generic, "{name}");
             assert!(!direct_model_position(
                 &result,
                 &source,
@@ -370,10 +372,13 @@ mod tests {
                 &source,
                 &declaration,
             );
-            assert!(
-                generic.contains(&script_position),
-                "the broad row round-trips"
-            );
+            // The broad row round-trips after the native rows.
+            let mut expected_generic = vec![(101, 3), (127, 44)];
+            if name.len() < "update:".len() {
+                expected_generic.push((167, 28));
+            }
+            expected_generic.extend([(167, 35), script_position]);
+            assert_eq!(generic, expected_generic, "{name}");
             assert!(!direct_model_position(
                 &document.virtual_result,
                 &source,

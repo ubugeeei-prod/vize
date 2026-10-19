@@ -135,7 +135,7 @@ impl<'a> RouteDiscovery<'a> {
                 .as_ref()
                 .is_some_and(crate::PackageRoute::requires_workspace_source_shadow);
         let track_reachability = reachability.requires_tracking();
-        self.inputs.extend(reachability.inputs);
+        self.inputs.extend(reachability.inputs.iter().cloned());
         if needs_shadow && let Some(route) = route.as_ref() {
             self.routes.insert(
                 (logical_absolute(importer_dir), specifier.into()),
@@ -209,6 +209,10 @@ mod budget_tests;
 mod private_import_tests;
 
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshots expand through std::format! (CONTRIBUTING: snapshot assertions)"
+)]
 mod tests {
     //! Native package route and declaration ownership regressions.
 
@@ -291,24 +295,18 @@ export const DecoratorBase = Vue;
                 .registered_original_paths_sorted(),
             vec![vize_carton::path::canonicalize_non_verbatim(&fixture.host)]
         );
-        assert!(
-            context
-                .route_inputs
-                .iter()
-                .any(|path| { path.ends_with("node_modules/vue-property-decorator/index.d.ts") })
+        // Every probe inside the fixture project, relative to it: both decorator
+        // packages are routed and the runtime-only Vue build never is.
+        let project = vize_carton::path::canonicalize_non_verbatim(
+            fixture.host.parent().unwrap().parent().unwrap(),
         );
-        assert!(
-            context
-                .route_inputs
-                .iter()
-                .any(|path| { path.ends_with("node_modules/vue-class-component/index.d.ts") })
-        );
-        assert!(
-            !context
-                .route_inputs
-                .iter()
-                .any(|path| path.ends_with("node_modules/vue/RuntimeOnly.vue"))
-        );
+        let routed = context
+            .route_inputs
+            .iter()
+            .filter_map(|path| path.strip_prefix(&project).ok())
+            .map(|path| path.to_str().unwrap())
+            .collect::<Vec<_>>();
+        insta::assert_snapshot!("class_component_route_inputs", routed.join("\n"));
     }
 
     #[test]
@@ -337,10 +335,22 @@ export const DecoratorBase = Vue;
             .expect("reachable declaration must be mirrored");
 
         assert_eq!(materialized.file_name().unwrap(), "remote-search.d.ts");
-        assert!(
-            mirror.expected_materialized_files().contains(&materialized),
-            "{}",
-            materialized.display()
+        let project = materialized.ancestors().nth(3).unwrap();
+        let files = mirror.expected_materialized_files();
+        let mut mirrored = files
+            .iter()
+            .map(|path| path.strip_prefix(project).unwrap().to_str().unwrap())
+            .collect::<Vec<_>>();
+        mirrored.sort_unstable();
+        assert_eq!(
+            mirrored,
+            [
+                "__vize_vue_modules.d.ts",
+                "package.json",
+                "src/App.vue.ts",
+                "src/api/remote-search.d.ts",
+                "tsconfig.json",
+            ]
         );
         assert!(!mirror.is_declaration_root(&declaration));
     }

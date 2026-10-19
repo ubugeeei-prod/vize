@@ -285,7 +285,7 @@ mod nested_tests {
         let before = std::fs::read_to_string(corpus.join("tab-nav.original-h.ts.txt")).unwrap();
         assert_eq!(parse_error_count(&source, oxc_span::SourceType::tsx()), 0);
         assert!(parse_error_count(&before, oxc_span::SourceType::ts()) > 0);
-        assert!(before.contains("<TabBar"));
+        assert_eq!(before.matches("<TabBar").count(), 2);
         let after =
             generate_jsx_virtual_ts(Path::new("tab-nav.tsx"), &source, JsxLang::Tsx).unwrap();
         assert_eq!(
@@ -313,8 +313,7 @@ mod nested_tests {
             parse_error_count(&generated.code, oxc_span::SourceType::ts()),
             0
         );
-        assert!(generated.code.contains("[1].map(item => item ? __vize_jsx"));
-        assert!(generated.code.contains("__vize_jsx_component__(Child"));
+        insta::assert_snapshot!("spread_nested_callbacks_code", generated.code);
         let token = "item.toFixed(1)";
         assert!(generated.mappings.iter().any(|mapping| {
             source.get(mapping.src_range.clone()) == Some(token)
@@ -328,9 +327,7 @@ mod nested_tests {
         let generated =
             generate_jsx_virtual_ts(Path::new("Nested.tsx"), source, JsxLang::Tsx).unwrap();
         assert!(generated.diagnostics.is_empty());
-        assert!(generated.code.contains("Array.from({ length: 3 }, (_, i) => __vize_jsx_expr__(i.toFixed(1), (() => __vize_jsx_expr__(i + 1))())"), "{}", generated.code);
-        assert!(generated.code.contains("(() => __vize_jsx_expr__(42))()"));
-        assert!(generated.code.contains("\"<p>literal</p>\""));
+        insta::assert_snapshot!("nested_native_roots_code", generated.code);
         for token in ["i.toFixed(1)", "i + 1", "42"] {
             let original = source.find(token).unwrap();
             let mapped = generated
@@ -365,15 +362,7 @@ mod nested_tests {
             .collect::<std::string::String>();
         let generated =
             generate_jsx_virtual_ts(Path::new("Siblings.tsx"), &source, JsxLang::Tsx).unwrap();
-        for index in 0..512 {
-            assert!(generated.code.contains(&format!(
-                "const view{index} = __vize_jsx_expr__(value{index});"
-            )));
-        }
-        assert_eq!(
-            generated.code.matches("__vize_jsx_expr__(value").count(),
-            512
-        );
+        insta::assert_snapshot!("adjacent_ordinary_roots_code", generated.code);
     }
 
     #[test]
@@ -382,14 +371,7 @@ mod nested_tests {
         let generated =
             generate_jsx_virtual_ts(Path::new("Conditional.tsx"), source, JsxLang::Tsx).unwrap();
         assert!(generated.diagnostics.is_empty());
-        assert!(
-            generated
-                .code
-                .contains("Array.from({ length: 3 }, (_, i) => __vize_jsx_expr__(i))"),
-            "{}",
-            generated.code
-        );
-        assert!(!generated.code.contains("<p>"));
+        insta::assert_snapshot!("conditional_raw_callback_code", generated.code);
     }
 
     #[test]
@@ -398,13 +380,7 @@ mod nested_tests {
         let generated =
             generate_jsx_virtual_ts(Path::new("Style.tsx"), source, JsxLang::Tsx).unwrap();
         assert!(generated.diagnostics.is_empty());
-        assert!(
-            generated
-                .code
-                .contains("Array.from({ length: 3 }, (_, i) => __vize_jsx_expr__(i, i.toFixed()))"),
-            "{}",
-            generated.code
-        );
+        insta::assert_snapshot!("nested_scoped_style_code", generated.code);
         assert_eq!(generated.code.matches("i.toFixed()").count(), 1);
         assert_eq!(generated.code.matches("theme").count(), 1);
         let original = source.find("i.toFixed()").unwrap();

@@ -11,7 +11,7 @@ title: "css/no-utility-classes"
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: SFC の style ブロック内の CSS  
+適用範囲: プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）

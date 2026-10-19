@@ -112,7 +112,10 @@
       "status": "mapped"
     },
     "vue/custom-event-name-casing": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/custom-event-name-casing",
       "patinaSeverity": "error",
       "status": "mapped"
@@ -127,7 +130,10 @@
       "status": "mapped"
     },
     "vue/define-macros-order": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/define-macros-order",
       "patinaSeverity": "warning",
       "status": "mapped"
@@ -678,8 +684,16 @@
       "status": "mapped"
     },
     "vue/no-expose-after-await": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/no-expose-after-await",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-extra-parens": {
       "issue": 3223,
@@ -706,8 +720,16 @@
       "status": "unimplemented"
     },
     "vue/no-lifecycle-after-await": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/no-lifecycle-after-await",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-literals-in-template": {
       "issue": 3223,
@@ -1196,8 +1218,16 @@
       "status": "mapped"
     },
     "vue/no-watch-after-await": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "script/no-watch-after-await",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/object-curly-newline": {
       "issue": 3223,
@@ -1286,7 +1316,10 @@
       "status": "mapped"
     },
     "vue/prefer-use-template-ref": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/prefer-use-template-ref",
       "patinaSeverity": "warning",
       "status": "mapped"
@@ -1355,7 +1388,10 @@
       "status": "mapped"
     },
     "vue/require-explicit-slots": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/require-explicit-slots",
       "patinaSeverity": "warning",
       "status": "mapped"
@@ -1884,8 +1920,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 127,
-    "unimplemented": 123
+    "mapped": 130,
+    "unimplemented": 120
   },
   "upstream": {
     "package": "eslint-plugin-vue",

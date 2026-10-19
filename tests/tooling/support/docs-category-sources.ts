@@ -19,12 +19,12 @@ export function verifyCompleteCategorySources(root: string) {
       }),
     ),
   );
-  assert.equal(references.size, 321);
+  assert.equal(references.size, 324);
   const counts: Record<string, number> = {
-    all: 321,
+    all: 324,
     vue: 108,
     "cross-file": 66,
-    "type-and-script": 70,
+    "type-and-script": 73,
     html: 9,
     accessibility: 31,
     ssr: 2,
@@ -110,7 +110,7 @@ export function verifyCompleteCategorySources(root: string) {
   }
   assert.equal(
     singleFile.size,
-    255,
+    258,
     "all source rules are reachable through their own complete category pages",
   );
 }

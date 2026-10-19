@@ -16,17 +16,7 @@
     reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
-#[expect(
-    dead_code,
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::string_slice,
-    clippy::expect_used,
-    clippy::indexing_slicing,
-    clippy::panic,
-    reason = "shared test support; each binary uses a subset"
-)]
-mod support;
+use crate::support;
 
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;

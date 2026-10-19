@@ -5,7 +5,7 @@ use clap::{Parser, Subcommand};
 #[derive(Parser)]
 #[command(name = "vize")]
 #[command(about = "High-performance Vue.js toolchain in Rust", long_about = None)]
-#[command(version, disable_version_flag = true)]
+#[command(version = vize_carton::VERSION, disable_version_flag = true)]
 struct Cli {
     /// Print version
     #[arg(short = 'v', short_alias = 'V', long, action = clap::ArgAction::Version)]

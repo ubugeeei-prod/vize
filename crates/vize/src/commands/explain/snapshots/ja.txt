@@ -1826,16 +1826,16 @@ script/define-macros-order · lint ルール
 ドキュメント: docs/content/rules/type-and-script.md
 
 不正な例:
-  // defineProps before defineModel (out of canonical order)
+  // defineEmits before defineProps
+  const emit = defineEmits<{ change: [value: string] }>()
   const props = defineProps<{ count: number }>()
-  const model = defineModel<string>()
 
 正しい例:
-  defineOptions({ name: 'MyComponent' })
-  const model = defineModel<string>()
+  import { ref } from 'vue'
   const props = defineProps<{ count: number }>()
   const emit = defineEmits<{ change: [value: string] }>()
-  defineSlots<{ default(props: {}): any }>()
+  const model = defineModel<string>()
+  const value = ref(0)
 === script/define-props-declaration
 script/define-props-declaration · lint ルール
 defineProps にはランタイム・オブジェクト形式ではなく型ベースの defineProps<{ ... }>() を強制する
@@ -2243,6 +2243,24 @@ script/no-export-in-script-setup · lint ルール
 カテゴリー: script
 自動修正: なし
 ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-expose-after-await
+script/no-expose-after-await · lint ルール
+await の後の expose() と defineExpose() を禁止する
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+不正な例:
+  await loadData()
+  defineExpose({ reload })
+
+正しい例:
+  defineExpose({ reload })
+  await loadData()
 === script/no-get-current-instance
 script/no-get-current-instance · lint ルール
 getCurrentInstance()を禁止する
@@ -2309,6 +2327,34 @@ Vue の内部モジュールからのインポートを禁止する
 
 正しい例:
   import { ref, computed } from 'vue'
+=== script/no-lifecycle-after-await
+script/no-lifecycle-after-await · lint ルール
+setup() 内で await の後にライフサイクルフックを登録することを禁止する
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+不正な例:
+  import { onMounted } from 'vue'
+  export default {
+    async setup() {
+      await loadData()
+      onMounted(() => {})
+    },
+  }
+
+正しい例:
+  import { onMounted } from 'vue'
+  export default {
+    async setup() {
+      onMounted(() => {})
+      await loadData()
+    },
+  }
 === script/no-multiple-slot-args
 script/no-multiple-slot-args · lint ルール
 スコープ付きスロット関数の呼び出しに 2 つ以上の引数を渡すことを禁止する
@@ -2676,6 +2722,34 @@ Options API の算出プロパティをメソッドのように呼び出すこ�
 カテゴリー: script
 自動修正: なし
 ドキュメント: docs/content/rules/type-and-script.md
+=== script/no-watch-after-await
+script/no-watch-after-await · lint ルール
+setup() 内で await の後に停止ハンドルを保持せずにウォッチャーを登録することを禁止する
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
+
+不正な例:
+  import { watch } from 'vue'
+  export default {
+    async setup(props) {
+      await loadData()
+      watch(() => props.id, reload)
+    },
+  }
+
+正しい例:
+  import { watch } from 'vue'
+  export default {
+    async setup(props) {
+      watch(() => props.id, reload)
+      await loadData()
+    },
+  }
 === script/no-with-defaults
 script/no-with-defaults · lint ルール
 withDefaults を非推奨とし、分割代入でのデフォルト値を推奨する（Vue 3.5 以降）

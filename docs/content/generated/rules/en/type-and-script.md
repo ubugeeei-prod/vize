@@ -28,9 +28,11 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [Bad](#script-no-dupe-keys-bad) · [Good](#script-no-dupe-keys-good) | Disallow duplicate keys across Options API props/data/computed/methods/setup/inject |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [Bad](#script-no-duplicate-attr-inheritance-bad) · [Good](#script-no-duplicate-attr-inheritance-good) | Flag a component that applies its fallthrough attributes twice |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [Bad](#script-no-export-in-script-setup-bad) · [Good](#script-no-export-in-script-setup-good) | Disallow export statements inside &lt;script setup&gt; |
+| [`script/no-expose-after-await`](#script-no-expose-after-await) | [Bad](#script-no-expose-after-await-bad) · [Good](#script-no-expose-after-await-good) | Disallow expose() and defineExpose() after an await |
 | [`script/no-get-current-instance`](#script-no-get-current-instance) | [Bad](#script-no-get-current-instance-bad) · [Good](#script-no-get-current-instance-good) | Disallow getCurrentInstance() in Vapor mode (returns null) |
 | [`script/no-import-compiler-macros`](#script-no-import-compiler-macros) | [Bad](#script-no-import-compiler-macros-bad) · [Good](#script-no-import-compiler-macros-good) | Disallow importing Vue compiler macros that are auto-imported |
 | [`script/no-internal-imports`](#script-no-internal-imports) | [Bad](#script-no-internal-imports-bad) · [Good](#script-no-internal-imports-good) | Disallow importing from Vue internal modules |
+| [`script/no-lifecycle-after-await`](#script-no-lifecycle-after-await) | [Bad](#script-no-lifecycle-after-await-bad) · [Good](#script-no-lifecycle-after-await-good) | Disallow lifecycle hooks registered after an await in setup() |
 | [`script/no-multiple-slot-args`](#script-no-multiple-slot-args) | [Bad](#script-no-multiple-slot-args-bad) · [Good](#script-no-multiple-slot-args-good) | Disallow passing more than one argument to a scoped-slot function call |
 | [`script/no-next-tick`](#script-no-next-tick) | [Bad](#script-no-next-tick-bad) · [Good](#script-no-next-tick-good) | Disallow nextTick() usage in Vapor-oriented components |
 | [`script/no-options-api`](#script-no-options-api) | [Bad](#script-no-options-api-bad) · [Good](#script-no-options-api-good) | Disallow Options API patterns in Vapor mode |
@@ -48,6 +50,7 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 | [`script/no-unstable-nested-components`](#script-no-unstable-nested-components) | [Bad](#script-no-unstable-nested-components-bad) · [Good](#script-no-unstable-nested-components-good) | Disallow component definitions inside setup or render functions |
 | [`script/no-unused-emit-declarations`](#script-no-unused-emit-declarations) | [Bad](#script-no-unused-emit-declarations-bad) · [Good](#script-no-unused-emit-declarations-good) | Flag declared events that are never emitted |
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [Bad](#script-no-use-computed-property-like-method-bad) · [Good](#script-no-use-computed-property-like-method-good) | Disallow calling an Options API computed property like a method |
+| [`script/no-watch-after-await`](#script-no-watch-after-await) | [Bad](#script-no-watch-after-await-bad) · [Good](#script-no-watch-after-await-good) | Disallow watchers registered after an await in setup() without keeping their stop handle |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [Bad](#script-no-with-defaults-bad) · [Good](#script-no-with-defaults-good) | Discourage withDefaults in favor of destructuring defaults (Vue 3.5+) |
 | [`script/prefer-computed`](#script-prefer-computed) | [Bad](#script-prefer-computed-bad) · [Good](#script-prefer-computed-good) | Prefer computed() for derived reactive state |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [Bad](#script-prefer-define-options-bad) · [Good](#script-prefer-define-options-good) | Prefer defineOptions() over a plain &lt;script&gt; that only sets name/inheritAttrs |
@@ -154,7 +157,7 @@ Enforce camelCase for emitted custom event names
 [Bad](#script-custom-event-name-casing-bad) · [Good](#script-custom-event-name-casing-good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: See [typed options and defaults](options.md).
@@ -280,7 +283,7 @@ Enforce a consistent order of the Vue compiler macros in &lt;script setup&gt;
 [Bad](#script-define-macros-order-bad) · [Good](#script-define-macros-order-good)
 
 Default severity: `warning`  
-Presets: _none_  
+Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -310,13 +313,13 @@ vp run lint
 
 **Bad**
 
-`defineProps` appears before `defineModel`, although `defineModel` has the earlier rank in the canonical macro order.
+`defineEmits` comes before `defineProps`, but `defineProps` and then `defineEmits` must be the first statements of `<script setup>`.
 
 ```vue annotate="remove:2,3"
 <script setup lang="ts">
-// defineProps before defineModel (out of canonical order)
+// defineEmits before defineProps
+const emit = defineEmits<{ change: [value: string] }>()
 const props = defineProps<{ count: number }>()
-const model = defineModel<string>()
 </script>
 ```
 
@@ -324,21 +327,21 @@ const model = defineModel<string>()
 
 **Good**
 
-The declarations follow the exact sequence `defineOptions`, `defineModel`, `defineProps`, `defineEmits`, `defineSlots`, before unrelated runtime statements.
+`defineProps` and then `defineEmits` come right after the imports, before every other statement; the other macros may follow in any order.
 
 ```vue annotate="add:2,4,5,6"
 <script setup lang="ts">
-defineOptions({ name: 'MyComponent' })
-const model = defineModel<string>()
+import { ref } from 'vue'
 const props = defineProps<{ count: number }>()
 const emit = defineEmits<{ change: [value: string] }>()
-defineSlots<{ default(props: {}): any }>()
+const model = defineModel<string>()
+const value = ref(0)
 </script>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L45) · [All rules](all.md)
 
 ### `script/define-props-declaration`
 
@@ -1396,6 +1399,69 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) · [All rules](all.md)
 
+### `script/no-expose-after-await`
+
+Disallow expose() and defineExpose() after an await
+
+[Bad](#script-no-expose-after-await-bad) · [Good](#script-no-expose-after-await-good)
+
+Default severity: `error`  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Automatic fix: None; review the suggested change  
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-expose-after-await": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-expose-after-await-bad"></span>
+
+**Bad**
+
+`defineExpose()` runs after a top-level `await`, when there is no current component instance, so nothing is exposed.
+
+```vue annotate="remove:2"
+<script setup lang="ts">
+await loadData()
+defineExpose({ reload })
+</script>
+```
+
+<span id="script-no-expose-after-await-good"></span>
+
+**Good**
+
+`defineExpose()` runs before the first `await`, while the component instance is still current.
+
+```vue annotate="add:3"
+<script setup lang="ts">
+defineExpose({ reload })
+await loadData()
+</script>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_expose_after_await.rs#L34) · [All rules](all.md)
+
 ### `script/no-get-current-instance`
 
 Disallow getCurrentInstance() in Vapor mode (returns null)
@@ -1584,6 +1650,79 @@ import { ref, computed } from 'vue'
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) · [All rules](all.md)
+
+### `script/no-lifecycle-after-await`
+
+Disallow lifecycle hooks registered after an await in setup()
+
+[Bad](#script-no-lifecycle-after-await-bad) · [Good](#script-no-lifecycle-after-await-good)
+
+Default severity: `error`  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Automatic fix: None; review the suggested change  
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-lifecycle-after-await": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-lifecycle-after-await-bad"></span>
+
+**Bad**
+
+`setup()` calls `onMounted()` after `await loadData()`; with no current component instance at that point, the hook is never registered.
+
+```vue annotate="remove:5"
+<script lang="ts">
+import { onMounted } from 'vue'
+export default {
+  async setup() {
+    await loadData()
+    onMounted(() => {})
+  },
+}
+</script>
+```
+
+<span id="script-no-lifecycle-after-await-good"></span>
+
+**Good**
+
+`onMounted()` is registered before the first `await`, while `setup()` still runs synchronously for the component.
+
+```vue annotate="add:6"
+<script lang="ts">
+import { onMounted } from 'vue'
+export default {
+  async setup() {
+    onMounted(() => {})
+    await loadData()
+  },
+}
+</script>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_lifecycle_after_await.rs#L45) · [All rules](all.md)
 
 ### `script/no-multiple-slot-args`
 
@@ -2739,6 +2878,79 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) · [All rules](all.md)
 
+### `script/no-watch-after-await`
+
+Disallow watchers registered after an await in setup() without keeping their stop handle
+
+[Bad](#script-no-watch-after-await-bad) · [Good](#script-no-watch-after-await-good)
+
+Default severity: `error`  
+Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
+Automatic fix: None; review the suggested change  
+Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+**Configuration (Vite+)**
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  vue: {
+    linter: {
+      "preset": "incremental",
+      "rules": {
+        "script/no-watch-after-await": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+<span id="script-no-watch-after-await-bad"></span>
+
+**Bad**
+
+`watch()` is created after `await loadData()` and its stop handle is discarded, so the watcher is never stopped with the component.
+
+```vue annotate="remove:5"
+<script lang="ts">
+import { watch } from 'vue'
+export default {
+  async setup(props) {
+    await loadData()
+    watch(() => props.id, reload)
+  },
+}
+</script>
+```
+
+<span id="script-no-watch-after-await-good"></span>
+
+**Good**
+
+The watcher is created before the first `await`, so Vue stops it when the component unmounts.
+
+```vue annotate="add:6"
+<script lang="ts">
+import { watch } from 'vue'
+export default {
+  async setup(props) {
+    watch(() => props.id, reload)
+    await loadData()
+  },
+}
+</script>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_watch_after_await.rs#L44) · [All rules](all.md)
+
 ### `script/no-with-defaults`
 
 Discourage withDefaults in favor of destructuring defaults (Vue 3.5+)
@@ -3273,7 +3485,7 @@ Recommend useTemplateRef over ref for template references (Vue 3.5+)
 [Bad](#script-prefer-use-template-ref-bad) · [Good](#script-prefer-use-template-ref-good)
 
 Default severity: `warning`  
-Presets: _none_  
+Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -3482,7 +3694,7 @@ Require slots consumed via useSlots() to be explicitly typed with defineSlots&lt
 [Bad](#script-require-explicit-slots-bad) · [Good](#script-require-explicit-slots-good)
 
 Default severity: `warning`  
-Presets: _none_  
+Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: No rule-specific options. Severity and preset selection are configurable.

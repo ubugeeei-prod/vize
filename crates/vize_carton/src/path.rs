@@ -24,6 +24,24 @@ pub fn canonicalize_non_verbatim(path: &Path) -> PathBuf {
     normalize_windows_verbatim_path(canonical)
 }
 
+/// The physical spelling of `path`: its deepest existing ancestor is
+/// canonicalized (resolving symlinks) and the rest is kept, so unsaved or newly
+/// renamed documents still map. Falls back to `path` when nothing exists.
+pub fn physical_path(path: &Path) -> PathBuf {
+    for ancestor in path.ancestors() {
+        if let Ok(physical) = ancestor.canonicalize()
+            && let Ok(relative) = path.strip_prefix(ancestor)
+        {
+            return normalize_windows_verbatim_path(if relative.as_os_str().is_empty() {
+                physical
+            } else {
+                physical.join(relative)
+            });
+        }
+    }
+    path.to_path_buf()
+}
+
 /// `sort(); dedup();` for path lists dominated by repeats (resolver inputs).
 ///
 /// `PathBuf` ordering walks components, so sorting every repeat is slow. Byte

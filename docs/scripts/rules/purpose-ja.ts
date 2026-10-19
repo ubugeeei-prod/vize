@@ -106,10 +106,13 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "script/no-duplicate-attr-inheritance":
     "fallthrough 属性を同じコンポーネントで二重に適用する箇所を検出します。",
   "script/no-export-in-script-setup": "script setup 内の export 文を検出します。",
+  "script/no-expose-after-await": "await の後の expose() と defineExpose() を禁止します。",
   "script/no-get-current-instance": "Vapor で null を返す getCurrentInstance() を検出します。",
   "script/no-import-compiler-macros":
     "自動的に使える Vue コンパイラーマクロの import を検出します。",
   "script/no-internal-imports": "Vue 内部モジュールからの import を検出します。",
+  "script/no-lifecycle-after-await":
+    "setup() 内で await の後にライフサイクルフックを登録することを禁止します。",
   "script/no-multiple-slot-args": "scoped slot 関数に複数の引数を渡す箇所を検出します。",
   "script/no-next-tick": "Vapor 向けコンポーネントの nextTick() 使用を検出します。",
   "script/no-options-api": "Vapor で Options API を使用する箇所を検出します。",
@@ -133,6 +136,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "script/no-unused-emit-declarations": "宣言したまま emit していないイベントを検出します。",
   "script/no-use-computed-property-like-method":
     "Options API の computed プロパティをメソッドとして呼ぶ箇所を検出します。",
+  "script/no-watch-after-await":
+    "setup() 内で await の後に停止ハンドルを保持せずにウォッチャーを登録することを禁止します。",
   "script/no-with-defaults": "Vue 3.5 以降の props 分割代入の既定値を勧めます。",
   "script/prefer-computed":
     "他の状態から導ける値を watcher で同期する代わりに computed で表現します。",

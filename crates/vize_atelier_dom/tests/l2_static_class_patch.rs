@@ -1,17 +1,6 @@
 //! P2-11 static class literal patch-flag witnesses.
 
-#[expect(
-    dead_code,
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::string_slice,
-    clippy::expect_used,
-    clippy::indexing_slicing,
-    clippy::panic,
-    reason = "shared test support; each binary uses a subset"
-)]
-mod support;
+use crate::support;
 
 const BATTERY: &[(&str, &str)] = &[
     ("string", r#"<div :class="'card'"></div>"#),

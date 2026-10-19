@@ -49,7 +49,6 @@ const sourceNeeds = [
   "pr-playground-test",
   "nuxt-module-qualification",
   "canonical-corpus",
-  "release-integration-catalog",
   "ci-selection-tests",
   "wasm-release-check",
 ];

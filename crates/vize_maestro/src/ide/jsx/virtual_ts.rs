@@ -249,14 +249,10 @@ mod tests {
         let source = "import Counter from './Counter.vue';\nconst props = { count: 'wrong' };\nexport const view = <Counter {...props} is-opened />;\n";
         let generated = generate(source);
 
-        assert!(
-            generated
-                .code
-                .contains(vize_canon::virtual_ts::JSX_COMPONENT_HELPER)
+        insta::assert_snapshot!(
+            "component_tags_props_and_spreads_code",
+            generated.code.as_str()
         );
-        assert!(generated.code.contains(
-        "__vize_jsx_component__(Counter)({...__vize_jsx_component_spread__(props), \"isOpened\": true})"
-    ));
         for authored in ["Counter", "props", "is-opened"] {
             assert!(generated.mappings.iter().any(|mapping| {
                 &source[mapping.src_range.clone()] == authored

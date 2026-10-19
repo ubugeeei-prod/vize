@@ -48,3 +48,27 @@ export function createLegacyVueCompatibilityPlugin(options: VizeOptions): Plugin
     },
   };
 }
+
+type HostVuePlugin = Pick<Plugin, "name" | "load" | "transform">;
+
+/**
+ * Remove `@vitejs/plugin-vue` instances that sit beside Vize, such as the one a
+ * framework adapter bundles (`@void/vue`'s `voidVue()`), so one compiler owns
+ * each `.vue` module. Vize's own `vite:vue` shim has no compiler hooks and stays.
+ * An explicit `exclude` keeps the host compiler for the SFCs Vize skips.
+ */
+export function removeHostVueSfcCompilers(
+  plugins: HostVuePlugin[],
+  options: Pick<VizeOptions, "exclude">,
+): number {
+  if (options.exclude !== undefined) return 0;
+  let removed = 0;
+  for (let index = plugins.length - 1; index >= 0; index--) {
+    const plugin = plugins[index];
+    if (plugin.name === "vite:vue" && (plugin.transform || plugin.load)) {
+      plugins.splice(index, 1);
+      removed++;
+    }
+  }
+  return removed;
+}

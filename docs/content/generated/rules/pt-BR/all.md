@@ -129,9 +129,11 @@ A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os có
 | [`script/no-dupe-keys`](#script-no-dupe-keys) | [Incorreto](#script-no-dupe-keys-bad) · [Correto](#script-no-dupe-keys-good) | Proibir chaves duplicadas entre props/data/computed/methods/setup/inject da Options API |
 | [`script/no-duplicate-attr-inheritance`](#script-no-duplicate-attr-inheritance) | [Incorreto](#script-no-duplicate-attr-inheritance-bad) · [Correto](#script-no-duplicate-attr-inheritance-good) | Sinalizar um componente que aplica duas vezes seus atributos repassados |
 | [`script/no-export-in-script-setup`](#script-no-export-in-script-setup) | [Incorreto](#script-no-export-in-script-setup-bad) · [Correto](#script-no-export-in-script-setup-good) | Proibir instruções export dentro de &lt;script setup&gt; |
+| [`script/no-expose-after-await`](#script-no-expose-after-await) | [Incorreto](#script-no-expose-after-await-bad) · [Correto](#script-no-expose-after-await-good) | Proibir expose() e defineExpose() após um await |
 | [`script/no-get-current-instance`](#script-no-get-current-instance) | [Incorreto](#script-no-get-current-instance-bad) · [Correto](#script-no-get-current-instance-good) | Proibir getCurrentInstance() no modo Vapor (retorna null) |
 | [`script/no-import-compiler-macros`](#script-no-import-compiler-macros) | [Incorreto](#script-no-import-compiler-macros-bad) · [Correto](#script-no-import-compiler-macros-good) | Proibir a importação de macros do compilador Vue que são importadas automaticamente |
 | [`script/no-internal-imports`](#script-no-internal-imports) | [Incorreto](#script-no-internal-imports-bad) · [Correto](#script-no-internal-imports-good) | Proibir importações de módulos internos do Vue |
+| [`script/no-lifecycle-after-await`](#script-no-lifecycle-after-await) | [Incorreto](#script-no-lifecycle-after-await-bad) · [Correto](#script-no-lifecycle-after-await-good) | Proibir hooks de ciclo de vida registrados após um await em setup() |
 | [`script/no-multiple-slot-args`](#script-no-multiple-slot-args) | [Incorreto](#script-no-multiple-slot-args-bad) · [Correto](#script-no-multiple-slot-args-good) | Proibir passar mais de um argumento a uma chamada de função de slot com escopo |
 | [`script/no-next-tick`](#script-no-next-tick) | [Incorreto](#script-no-next-tick-bad) · [Correto](#script-no-next-tick-good) | Proibir o uso de nextTick() em componentes orientados a Vapor |
 | [`script/no-options-api`](#script-no-options-api) | [Incorreto](#script-no-options-api-bad) · [Correto](#script-no-options-api-good) | Proibir padrões da Options API no modo Vapor |
@@ -149,6 +151,7 @@ A CLI pública expõe a mesma etapa por meio de `vize lint --cross-file`. Os có
 | [`script/no-unstable-nested-components`](#script-no-unstable-nested-components) | [Incorreto](#script-no-unstable-nested-components-bad) · [Correto](#script-no-unstable-nested-components-good) | Proibir definições de componentes dentro de funções de setup ou renderização |
 | [`script/no-unused-emit-declarations`](#script-no-unused-emit-declarations) | [Incorreto](#script-no-unused-emit-declarations-bad) · [Correto](#script-no-unused-emit-declarations-good) | Sinalizar eventos declarados que nunca são emitidos |
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [Incorreto](#script-no-use-computed-property-like-method-bad) · [Correto](#script-no-use-computed-property-like-method-good) | Proibir chamar uma propriedade computada da Options API como um método |
+| [`script/no-watch-after-await`](#script-no-watch-after-await) | [Incorreto](#script-no-watch-after-await-bad) · [Correto](#script-no-watch-after-await-good) | Proibir watchers registrados após um await em setup() sem guardar a função de parada |
 | [`script/no-with-defaults`](#script-no-with-defaults) | [Incorreto](#script-no-with-defaults-bad) · [Correto](#script-no-with-defaults-good) | Desencorajar withDefaults em favor de valores padrão na desestruturação (Vue 3.5+) |
 | [`script/prefer-computed`](#script-prefer-computed) | [Incorreto](#script-prefer-computed-bad) · [Correto](#script-prefer-computed-good) | Preferir computed() para estado reativo derivado |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [Incorreto](#script-prefer-define-options-bad) · [Correto](#script-prefer-define-options-good) | Preferir defineOptions() a um &lt;script&gt; comum que só define name/inheritAttrs |
@@ -1688,6 +1691,20 @@ Proibir instruções export dentro de &lt;script setup&gt;
 
 [Exemplos do grupo](./type-and-script.md#script-no-export-in-script-setup) · [Referência da regra](/rules/reference/script-no-export-in-script-setup.md)
 
+### `script/no-expose-after-await`
+
+Proibir expose() e defineExpose() após um await
+
+<span id="script-no-expose-after-await-bad"></span>
+
+[Incorreto](./type-and-script.md#script-no-expose-after-await-bad)
+
+<span id="script-no-expose-after-await-good"></span>
+
+[Correto](./type-and-script.md#script-no-expose-after-await-good)
+
+[Exemplos do grupo](./type-and-script.md#script-no-expose-after-await) · [Referência da regra](/rules/reference/script-no-expose-after-await.md)
+
 ### `script/no-get-current-instance`
 
 Proibir getCurrentInstance() no modo Vapor (retorna null)
@@ -1729,6 +1746,20 @@ Proibir importações de módulos internos do Vue
 [Correto](./type-and-script.md#script-no-internal-imports-good)
 
 [Exemplos do grupo](./type-and-script.md#script-no-internal-imports) · [Referência da regra](/rules/reference/script-no-internal-imports.md)
+
+### `script/no-lifecycle-after-await`
+
+Proibir hooks de ciclo de vida registrados após um await em setup()
+
+<span id="script-no-lifecycle-after-await-bad"></span>
+
+[Incorreto](./type-and-script.md#script-no-lifecycle-after-await-bad)
+
+<span id="script-no-lifecycle-after-await-good"></span>
+
+[Correto](./type-and-script.md#script-no-lifecycle-after-await-good)
+
+[Exemplos do grupo](./type-and-script.md#script-no-lifecycle-after-await) · [Referência da regra](/rules/reference/script-no-lifecycle-after-await.md)
 
 ### `script/no-multiple-slot-args`
 
@@ -1967,6 +1998,20 @@ Proibir chamar uma propriedade computada da Options API como um método
 [Correto](./type-and-script.md#script-no-use-computed-property-like-method-good)
 
 [Exemplos do grupo](./type-and-script.md#script-no-use-computed-property-like-method) · [Referência da regra](/rules/reference/script-no-use-computed-property-like-method.md)
+
+### `script/no-watch-after-await`
+
+Proibir watchers registrados após um await em setup() sem guardar a função de parada
+
+<span id="script-no-watch-after-await-bad"></span>
+
+[Incorreto](./type-and-script.md#script-no-watch-after-await-bad)
+
+<span id="script-no-watch-after-await-good"></span>
+
+[Correto](./type-and-script.md#script-no-watch-after-await-good)
+
+[Exemplos do grupo](./type-and-script.md#script-no-watch-after-await) · [Referência da regra](/rules/reference/script-no-watch-after-await.md)
 
 ### `script/no-with-defaults`
 

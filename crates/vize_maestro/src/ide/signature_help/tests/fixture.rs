@@ -137,20 +137,5 @@ export interface ShallowRef<T = unknown> extends Ref<T> {}
 }
 
 pub(super) fn resolve_tsgo_binary() -> Option<PathBuf> {
-    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
-        return None;
-    }
-    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(Path::parent)?;
-    [
-        workspace_root.parent()?.join("corsa-bind/.cache/tsgo"),
-        workspace_root
-            .parent()?
-            .join("corsa-bind/ref/corsa-upstream/.cache/tsgo"),
-        workspace_root.join("node_modules/.bin/tsgo"),
-    ]
-    .into_iter()
-    .find(|candidate| candidate.exists())
-    .or_else(|| vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root))
+    crate::test_support::tsgo()
 }

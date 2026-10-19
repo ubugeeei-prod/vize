@@ -66,13 +66,10 @@ test("merge, main and manual runs retain every extended campaign and source rece
   const check = parse(readRepoFile(".github", "workflows", "check.yml"));
   assert.deepEqual(source.jobs["nuxt-module-qualification"], {
     name: "Nuxt module qualification",
-    needs: "release-integration-catalog",
-    if: "${{ github.event_name == 'merge_group' && needs.release-integration-catalog.outputs.product-qualification == '' }}",
+    if: "${{ github.event_name == 'merge_group' }}",
     uses: "./.github/workflows/nuxt3-module-build.yml",
   });
-  const condition = source.jobs["nuxt-module-qualification"].if
-    .slice(3, -2)
-    .replaceAll("needs.release-integration-catalog.outputs.product-qualification", "product");
+  const condition = source.jobs["nuxt-module-qualification"].if.slice(3, -2);
   for (const event of [
     "pull_request",
     "merge_group",
@@ -81,12 +78,11 @@ test("merge, main and manual runs retain every extended campaign and source rece
     "schedule",
     "unknown",
   ])
-    for (const product of ["", "untrusted-nonempty", "null"])
-      assert.equal(
-        runInNewContext(condition, { github: { event_name: event }, product }),
-        event === "merge_group" && product === "",
-        `${event}: ${product}`,
-      );
+    assert.equal(
+      runInNewContext(condition, { github: { event_name: event } }),
+      event === "merge_group",
+      event,
+    );
   assert.ok(source.jobs["source-report"].needs.includes("nuxt-module-qualification"));
   assert.ok(check.jobs["test-report"].needs.includes("pr-source-checks"));
   for (const event of ["merge_group", "push", "workflow_dispatch"]) {

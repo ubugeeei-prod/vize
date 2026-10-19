@@ -41,7 +41,7 @@ fn initialize_only(root: Option<&Url>) -> (LspService<MaestroServer>, ClientSock
                 "workspace":{"workspaceFolders":{"supported":true,"changeNotifications":true}},
                 "experimental":{"vize":{"jsxTypecheck":false}}
             },
-            "serverInfo":{"name":"vize-maestro","version":env!("CARGO_PKG_VERSION")}
+            "serverInfo":{"name":"vize-maestro","version":vize_carton::VERSION}
         }}))
     );
     (service, socket)

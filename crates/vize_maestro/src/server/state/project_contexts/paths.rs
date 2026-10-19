@@ -31,19 +31,7 @@ pub(super) fn document_context_root(path: &Path, roots: &[PathBuf]) -> Option<Pa
 }
 
 pub(super) fn physical_path(path: &Path) -> PathBuf {
-    for ancestor in path.ancestors() {
-        if let Ok(physical) = ancestor.canonicalize()
-            && let Ok(relative) = path.strip_prefix(ancestor)
-        {
-            // Unsaved or newly renamed documents can have no file yet.
-            return crate::ide::normalize_physical_path(if relative.as_os_str().is_empty() {
-                physical
-            } else {
-                physical.join(relative)
-            });
-        }
-    }
-    path.to_path_buf()
+    vize_carton::path::physical_path(path)
 }
 
 #[cfg(all(test, unix))]

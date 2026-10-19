@@ -132,22 +132,7 @@ fn signature_help_handler_routes_an_authored_vue_position() {
 
 #[cfg(feature = "native")]
 fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
-    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
-        return None;
-    }
-    let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(std::path::Path::parent)?;
-    [
-        workspace_root.parent()?.join("corsa-bind/.cache/tsgo"),
-        workspace_root
-            .parent()?
-            .join("corsa-bind/ref/corsa-upstream/.cache/tsgo"),
-        workspace_root.join("node_modules/.bin/tsgo"),
-    ]
-    .into_iter()
-    .find(|candidate| candidate.exists())
-    .or_else(|| vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root))
+    crate::test_support::tsgo()
 }
 disabled_open_doc_request_returns_none!(
     definition_disabled_returns_none,
