@@ -38,6 +38,18 @@ fn type_check_sfc_impl(
     options_api: bool,
     legacy_vue2: bool,
 ) -> SfcTypeCheckResult {
+    let authored = crate::authored_sfc::AuthoredSfc::new(source);
+    let mut result = type_check_analyzed(authored.analyzed(), options, options_api, legacy_vue2);
+    authored.remap_type_check_result(&mut result);
+    result
+}
+
+fn type_check_analyzed(
+    source: &str,
+    options: &SfcTypeCheckOptions,
+    options_api: bool,
+    legacy_vue2: bool,
+) -> SfcTypeCheckResult {
     use vize_atelier_core::{options::ParserOptions, parser::parse_with_options};
     use vize_atelier_sfc::{SfcParseOptions, croquis::SfcCroquisOptions, parse_sfc};
 

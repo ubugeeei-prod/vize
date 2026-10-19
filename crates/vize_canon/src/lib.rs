@@ -42,6 +42,7 @@
 //! └─────────────────────────────────────────────────────────────────┘
 //! ```
 
+mod authored_sfc;
 mod checker;
 mod context;
 #[cfg(feature = "native")]
@@ -69,8 +70,6 @@ pub mod virtual_ts;
 pub mod legacy;
 
 // Batch type checking module (requires native feature)
-#[cfg(feature = "native")]
-mod authored_sfc;
 #[cfg(feature = "native")]
 pub mod batch;
 #[cfg(feature = "native")]

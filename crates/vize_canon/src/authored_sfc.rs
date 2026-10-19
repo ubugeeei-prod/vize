@@ -10,10 +10,24 @@
 
 use std::ops::Range;
 
+#[cfg(feature = "native")]
 use vize_l1_to_l2::lower::pug::PugBlockView;
 
-use crate::batch::SfcBlockRange;
+use crate::sfc_typecheck::SfcTypeCheckResult;
 use crate::virtual_ts::VizeMapping;
+
+/// Without the native levels (WASM), Pug has no derived view.
+#[cfg(not(feature = "native"))]
+struct PugBlockView {
+    source: vize_l0::String,
+}
+
+#[cfg(not(feature = "native"))]
+impl PugBlockView {
+    fn to_host(&self, start: u32, end: u32) -> (u32, u32) {
+        (start, end)
+    }
+}
 
 pub(crate) struct AuthoredSfc<'a> {
     authored: &'a str,
@@ -36,6 +50,7 @@ impl<'a> AuthoredSfc<'a> {
     }
 
     /// Whether the analyzed text differs from the authored text.
+    #[cfg(feature = "native")]
     pub(crate) fn is_derived(&self) -> bool {
         self.view.is_some()
     }
@@ -62,8 +77,32 @@ impl<'a> AuthoredSfc<'a> {
         }
     }
 
+    /// Point every position of a single-file check result at the authored text.
+    pub(crate) fn remap_type_check_result(&self, result: &mut SfcTypeCheckResult) {
+        if self.view.is_none() {
+            return;
+        }
+        let remap = |start: &mut u32, end: &mut u32| {
+            let range = self.to_authored(*start as usize..*end as usize);
+            (*start, *end) = (range.start as u32, range.end as u32);
+        };
+        for diagnostic in &mut result.diagnostics {
+            remap(&mut diagnostic.start, &mut diagnostic.end);
+            for related in &mut diagnostic.related {
+                if related.filename.is_none() {
+                    remap(&mut related.start, &mut related.end);
+                }
+            }
+        }
+        self.remap_mappings(&mut result.virtual_ts_mappings);
+    }
+
     /// Point SFC block ranges at the authored text.
-    pub(crate) fn remap_block_ranges(&self, mut blocks: Vec<SfcBlockRange>) -> Vec<SfcBlockRange> {
+    #[cfg(feature = "native")]
+    pub(crate) fn remap_block_ranges(
+        &self,
+        mut blocks: Vec<crate::batch::SfcBlockRange>,
+    ) -> Vec<crate::batch::SfcBlockRange> {
         for block in &mut blocks {
             let range = self.to_authored(block.start as usize..block.end as usize);
             (block.start, block.end) = (range.start as u32, range.end as u32);
@@ -72,6 +111,7 @@ impl<'a> AuthoredSfc<'a> {
     }
 
     /// The authored 0-based line and UTF-16 column of an analyzed one.
+    #[cfg(feature = "native")]
     pub(crate) fn to_authored_line_column(&self, line: u32, column: u32) -> (u32, u32) {
         let Some(view) = &self.view else {
             return (line, column);
@@ -88,6 +128,12 @@ impl<'a> AuthoredSfc<'a> {
 
 /// The derived view of an inline `<template lang="pug">`, if the SFC has one
 /// the lowering accepts.
+#[cfg(not(feature = "native"))]
+fn pug_view(_source: &str) -> Option<PugBlockView> {
+    None
+}
+
+#[cfg(feature = "native")]
 fn pug_view(source: &str) -> Option<PugBlockView> {
     // Cheap gate: only sources that mention pug or jade pay for the SFC parse.
     if !source.contains("pug") && !source.contains("jade") {
@@ -119,6 +165,7 @@ mod tests {
         assert_eq!(sfc.to_authored(3..9), 3..9);
     }
 
+    #[cfg(feature = "native")]
     #[test]
     fn pug_expressions_map_back_to_their_authored_bytes() {
         let source = "<script setup>const count = 1</script>\n<template lang=\"pug\">\np(:title=\"count\") {{ count }}\n</template>\n<style>.a{}</style>\n";
@@ -144,6 +191,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "native")]
     #[test]
     fn refused_pug_keeps_the_authored_text() {
         let source = "<template lang=\"pug\">\nmixin m\n  p x\n+m\n</template>\n";
