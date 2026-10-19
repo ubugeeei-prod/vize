@@ -71,9 +71,9 @@ test("L0 retains the borrowed decoder and all filesystem declarations belong to 
   assert.match(host, /^pub use vize_l0::source_io::decode_utf8;$/mu);
   assert.match(host, /#\[cfg\(not\(target_arch = "wasm32"\)\)\]\npub fn read_to_string/u);
   assert.doesNotMatch(host, /pub fn decode_utf8/u);
-  assert.doesNotMatch(read("davinci/vize_l0/src/source_io/tests.rs"), /std::fs|read_to_string/u);
+  assert.doesNotMatch(read("davinci/vize_l0/src/source_io.rs"), /std::fs|read_to_string/u);
   assert.match(
-    read("crates/vize_carton/src/source_io/tests.rs"),
+    read("crates/vize_carton/src/source_io.rs"),
     /fn file_reader_preserves_contents_and_standard_error_contracts/u,
   );
 });

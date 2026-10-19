@@ -1,3 +1,5 @@
 file	spelling
 crates/vize_maestro/src/ide/diagnostics/linter_options.rs	@click.custom
 crates/vize_maestro/src/ide/diagnostics/linter_options.rs	@click.unknown
+crates/vize_maestro/src/ide/hover/tests/directives.rs	@submit.prevent
+crates/vize_maestro/src/ide/hover/tests/directives.rs	@click.once

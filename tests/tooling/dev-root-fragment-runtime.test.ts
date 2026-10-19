@@ -144,7 +144,7 @@ test("source changes and runtime witnesses require the executable native carrier
   for (const path of [
     "davinci/vize_l1_to_l2/src/emit/fragment.rs",
     "crates/vize_armature/src/parser/whitespace.rs",
-    "crates/vize_armature/src/parser/whitespace/tests.rs",
+    "crates/vize_armature/src/parser/whitespace_tests.rs",
     "crates/vize_atelier_dom/tests/dev_root_fragment.rs",
     "crates/vize_atelier_dom/tests/fixtures/dev_root_fragment.json",
     "tests/tooling/dev-root-fragment-runtime.test.ts",

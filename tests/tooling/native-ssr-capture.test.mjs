@@ -77,7 +77,6 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     "davinci/vize_l4/src/module/imports.rs",
     "davinci/vize_l4/src/module/setup.rs",
     "davinci/vize_l4/src/module/setup/segments.rs",
-    "davinci/vize_l4/src/module/setup/segments/tests.rs",
     "davinci/vize_l4/src/module/scope.rs",
     "davinci/vize_l4/src/expr.rs",
     "davinci/vize_l4/src/expr/resolved.rs",

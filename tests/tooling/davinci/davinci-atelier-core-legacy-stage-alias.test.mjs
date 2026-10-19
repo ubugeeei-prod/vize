@@ -10,7 +10,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const legacyRows = [
   ["crates/vize_atelier_core/src/steps/legacy.rs", "source", 1],
   ["crates/vize_atelier_core/src/steps/legacy_filters.rs", "source", 1],
-  ["crates/vize_atelier_core/src/steps/legacy/tests.rs", "test", 8],
+  ["crates/vize_atelier_core/src/steps/legacy_tests.rs", "test", 8],
 ];
 
 function compiler() {

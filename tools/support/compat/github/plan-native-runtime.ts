@@ -70,7 +70,7 @@ export function planNativeRuntime(
       "selected-template",
       dom ||
         paths.some((path) =>
-          /^(?:crates\/vize_armature\/src\/parser\/whitespace(?:\.rs|\/)|crates\/vize_atelier_dom\/tests\/(?:dev_root_fragment\.rs|fixtures\/dev_root_fragment\.json)$|tests\/tooling\/dev-root-fragment-runtime\.test\.ts$)/.test(
+          /^(?:crates\/vize_armature\/src\/parser\/whitespace(?:\.rs|_tests\.rs|\/)|crates\/vize_atelier_dom\/tests\/(?:dev_root_fragment\.rs|fixtures\/dev_root_fragment\.json)$|tests\/tooling\/dev-root-fragment-runtime\.test\.ts$)/.test(
             path,
           ),
         ) ||
