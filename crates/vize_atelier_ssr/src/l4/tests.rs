@@ -27,7 +27,7 @@ fn select(source: &str, options: &SsrCompilerOptions) -> SsrL4Selection {
             experimental: &experimental,
             template_syntax: TemplateSyntaxMode::Standard,
             has_custom_elements: false,
-            slotted: true,
+            context: crate::SsrSfcContext::new(true),
             frozen: Some((&root, &frozen)),
         },
     )

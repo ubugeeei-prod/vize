@@ -79,6 +79,17 @@ fn artifact_directory() -> std::path::PathBuf {
 }
 
 fn compile(name: &str, source: &str, target: &str, map: bool) -> SfcCompileResult {
+    compile_in_build(name, source, target, map, true, false)
+}
+
+fn compile_in_build(
+    name: &str,
+    source: &str,
+    target: &str,
+    map: bool,
+    is_prod: bool,
+    comments: bool,
+) -> SfcCompileResult {
     let filename = format!("{name}.vue");
     let descriptor = parse_sfc(
         source,
@@ -102,7 +113,11 @@ fn compile(name: &str, source: &str, target: &str, map: bool) -> SfcCompileResul
             },
             template: TemplateCompileOptions {
                 ssr,
-                is_prod: true,
+                is_prod,
+                compiler_options: comments.then(|| vize_atelier_dom::DomCompilerOptions {
+                    comments,
+                    ..Default::default()
+                }),
                 ..Default::default()
             },
             vapor: target.starts_with("vapor"),
@@ -137,6 +152,76 @@ fn compile(name: &str, source: &str, target: &str, map: bool) -> SfcCompileResul
         assert_eq!(map["sources"], json!([filename]));
     }
     result
+}
+
+#[test]
+fn conditional_ssr_vnodes_hydrate_and_update_like_each_official_compiler_build() {
+    let fixture = include_str!(
+        "../../../tests/_fixtures/differential/compiler/ssr-conditional-vnode-comments.json"
+    );
+    let source: Value = serde_json::from_str(fixture).expect("complete source fixture");
+    let directory = artifact_directory();
+    for (build, is_prod) in [("development", false), ("production", true)] {
+        let files: Vec<_> = ["Inner", "App"]
+            .into_iter()
+            .map(|name| {
+                let source = source["files"][name].as_str().expect("whole SFC");
+                let current = compile_in_build(name, source, "ssr", true, is_prod, true);
+                assert!(current.map.is_some(), "{build}/{name}: real native map");
+                json!({ "name": name, "source": source, "current": current })
+            })
+            .collect();
+        let input = json!({ "conditionalComments": { "fixture": fixture, "build": build, "files": files } });
+        let prefix = format!("ssr-conditional-vnode-comments-{build}");
+        std::fs::write(
+            directory.join(format!("{prefix}-input.json")),
+            serde_json::to_vec(&input).expect("complete native input"),
+        )
+        .expect("retain native modules before runtime assertions");
+        let mut child = Command::new("node")
+            .arg(
+                Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join("../../tests/tooling/support/ssr-slot-forwarding.mjs"),
+            )
+            .env("NODE_ENV", build)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("same compiler build and Vue runtime");
+        child
+            .stdin
+            .take()
+            .expect("oracle stdin")
+            .write_all(&serde_json::to_vec(&input).expect("whole modules"))
+            .expect("send native modules");
+        let output = child.wait_with_output().expect("runtime exits");
+        std::fs::write(
+            directory.join(format!("{prefix}-stdout.json")),
+            &output.stdout,
+        )
+        .expect("retain whole stdout");
+        std::fs::write(
+            directory.join(format!("{prefix}-stderr.txt")),
+            &output.stderr,
+        )
+        .expect("retain whole stderr");
+        assert!(
+            output.status.success(),
+            "stdout: {}\nstderr: {}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let observed: Value = serde_json::from_slice(&output.stdout).expect("whole observations");
+        assert_eq!(
+            observed["conditionalComments"]["observations"]
+                .as_array()
+                .expect("all paired rows")
+                .len(),
+            4
+        );
+        assert_eq!(observed["conditionalComments"]["stage"], "complete");
+    }
 }
 
 #[test]

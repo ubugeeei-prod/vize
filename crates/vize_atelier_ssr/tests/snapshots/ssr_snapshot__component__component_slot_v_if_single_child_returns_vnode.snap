@@ -12,7 +12,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
           _push(`<!---->`)
         }
       } else {
-        return [(_ctx.ok) ? _createElementVNode("span", { class: "item" }, "slot content") : _createCommentVNode("")]
+        return [(_ctx.ok) ? _createElementVNode("span", { class: "item" }, "slot content") : _createCommentVNode("", true)]
       }
     }),
     _: 1

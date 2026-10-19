@@ -30,7 +30,7 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
     artifact: &L2Artifact<'_, 'a>,
     options: &SsrCompilerOptions,
     experimental: &SsrCompilerExperimentalOptions,
-    slotted: bool,
+    context: crate::SsrSfcContext,
     capture: &mut C,
     admit: impl FnOnce() -> Result<TransformExpressions<'e>, LegacyReason>,
 ) -> SsrL4Selection {
@@ -95,7 +95,7 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
         artifact.source,
         experimental.clone(),
     );
-    ctx.slotted = slotted;
+    ctx.apply_sfc_context(context);
     // The L2 program covers the whole template source, which starts at 0.
     ctx.begin_render(0);
     match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
@@ -113,7 +113,7 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
     artifact: &L2Artifact<'_, 'a>,
     options: &SsrCompilerOptions,
     experimental: &SsrCompilerExperimentalOptions,
-    slotted: bool,
+    context: crate::SsrSfcContext,
     admit: impl FnOnce() -> Result<TransformExpressions<'e>, LegacyReason>,
 ) -> SsrL4Selection {
     if let Some(facts) = &artifact.facts.frozen_slots
@@ -168,7 +168,7 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
         artifact.source,
         experimental.clone(),
     );
-    ctx.slotted = slotted;
+    ctx.apply_sfc_context(context);
     // The L2 program covers the whole template source, which starts at 0.
     ctx.begin_render(0);
     match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {

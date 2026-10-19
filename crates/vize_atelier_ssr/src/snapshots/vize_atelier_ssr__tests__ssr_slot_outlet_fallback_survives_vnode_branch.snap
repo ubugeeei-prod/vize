@@ -16,7 +16,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
         }, _push, _parent, _scopeId)
         _push(`</button>`)
       } else {
-        return [_createElementVNode("button", null, [_renderSlot(_ctx.$slots, "default", { ui: _ctx.ui }, () => [(_ctx.label) ? _createElementVNode("span", null, [_createTextVNode(_toDisplayString(_ctx.label))]) : _createCommentVNode("")])])]
+        return [_createElementVNode("button", null, [_renderSlot(_ctx.$slots, "default", { ui: _ctx.ui }, () => [(_ctx.label) ? _createElementVNode("span", null, [_createTextVNode(_toDisplayString(_ctx.label))]) : _createCommentVNode("", true)])])]
       }
     }),
     _: 3 /* FORWARDED */

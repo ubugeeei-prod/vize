@@ -31,7 +31,7 @@ fn alias_source<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
 }
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
-    /// `(cond) ? a : (cond) ? b : _createCommentVNode("")`.
+    /// Conditional branches retain the host's false-branch comment metadata.
     pub(super) fn vnode_if(&mut self, if_op: &'r l2::IfOp<'a>) -> Result<String> {
         let fact = self.segment(self.pos)?.fact;
         let from_template = self
@@ -84,7 +84,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .iter()
             .all(|branch| branch.condition.is_some())
         {
-            out.push_str(" : _createCommentVNode(\"\")");
+            out.push_str(" : ");
+            out.push_str(self.ctx.conditional_comment_vnode());
         }
         self.close(
             Kind::CloseIf,

@@ -7,8 +7,9 @@ import { pathToFileURL } from "node:url";
 import { Window } from "happy-dom";
 import { loadRuntime } from "./davinci-mounted-trace.mjs";
 import { observeKeyedTemplates } from "./ssr-keyed-template-components.ts";
+import { observeConditionalComments } from "./ssr-conditional-vnode-comments.ts";
 
-assert.equal(process.env.NODE_ENV, "production");
+assert.ok(["development", "production"].includes(process.env.NODE_ENV));
 const window = new Window();
 for (const key of [
   "window",
@@ -83,11 +84,16 @@ async function reference(source, name, target, provider = {}) {
       };
     },
   };
-  const plugin = pluginFactory({ compiler: selected });
+  const plugin = pluginFactory({
+    compiler: selected,
+    ...(provider.comments === undefined
+      ? {}
+      : { template: { compilerOptions: { comments: provider.comments } } }),
+  });
   plugin.configResolved({
     root: "/slot-forwarding",
-    command: "build",
-    isProduction: true,
+    command: provider.development ? "serve" : "build",
+    isProduction: !provider.development,
     build: { sourcemap: true },
     define: {},
     logger: { warn: (warning) => context.warn(warning) },
@@ -235,36 +241,45 @@ async function observe(target, variant, mode, useActual) {
 
 const observations = [];
 try {
-  for (const fixture of input.cases) {
-    for (const variant of ["reported", "named"]) {
-      for (const mode of fixture.target.endsWith("ssr") ? ["push", "vnode"] : ["mounted"]) {
-        const reference = await observe(fixture.target, variant, mode, false);
-        const actual = await observe(fixture.target, variant, mode, true);
-        assert.equal(
-          actual.html,
-          reference.html,
-          `${fixture.target}/${variant}/${mode}: complete HTML`,
-        );
-        observations.push({ target: fixture.target, variant, mode, reference, actual });
+  if (input.conditionalComments) {
+    const conditionalComments = await observeConditionalComments(input.conditionalComments, {
+      reference,
+      evaluate,
+    });
+    process.stdout.write(JSON.stringify({ conditionalComments }));
+  } else {
+    assert.equal(process.env.NODE_ENV, "production");
+    for (const fixture of input.cases) {
+      for (const variant of ["reported", "named"]) {
+        for (const mode of fixture.target.endsWith("ssr") ? ["push", "vnode"] : ["mounted"]) {
+          const reference = await observe(fixture.target, variant, mode, false);
+          const actual = await observe(fixture.target, variant, mode, true);
+          assert.equal(
+            actual.html,
+            reference.html,
+            `${fixture.target}/${variant}/${mode}: complete HTML`,
+          );
+          observations.push({ target: fixture.target, variant, mode, reference, actual });
+        }
       }
     }
+    const keyedTemplates = await observeKeyedTemplates(input.keyedTemplates, {
+      reference,
+      evaluate,
+      evaluateModule,
+      vue,
+      vapor,
+      compiler,
+      server,
+    });
+    process.stdout.write(
+      JSON.stringify({
+        versions: { vue: vue.version, plugin: "6.0.7" },
+        observations,
+        keyedTemplates,
+      }),
+    );
   }
-  const keyedTemplates = await observeKeyedTemplates(input.keyedTemplates, {
-    reference,
-    evaluate,
-    evaluateModule,
-    vue,
-    vapor,
-    compiler,
-    server,
-  });
-  process.stdout.write(
-    JSON.stringify({
-      versions: { vue: vue.version, plugin: "6.0.7" },
-      observations,
-      keyedTemplates,
-    }),
-  );
 } catch (error) {
   process.stdout.write(
     JSON.stringify({
@@ -273,6 +288,7 @@ try {
         name: error.name,
         message: error.message,
         keyedTemplates: error.keyedTemplates ?? null,
+        conditionalComments: error.conditionalComments ?? null,
       },
     }),
   );

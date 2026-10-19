@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "issue": 9455,
+  "vue": "3.5.41",
+  "files": {
+    "Inner": "<script setup>const props = defineProps({ label: String }); const label = props.label</script><template><section :data-label=\"label\"><slot /></section></template>",
+    "App": "<script setup>import { ref, onMounted, onUnmounted } from 'vue'; import Inner from './Inner.vue'; const props = defineProps({ initial: Boolean }); const show = ref(props.initial); globalThis.__vizeConditionalSet = (value) => { show.value = value }; onMounted(() => globalThis.__vizeConditionalLifecycle.push('mounted')); onUnmounted(() => globalThis.__vizeConditionalLifecycle.push('unmounted'));</script><template><Inner label=\"whole\"><b v-if=\"show\">yes</b><!----><!--authored--><i data-tail>tail</i></Inner></template>"
+  }
+}

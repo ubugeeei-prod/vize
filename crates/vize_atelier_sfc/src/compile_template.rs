@@ -159,29 +159,35 @@ pub(crate) fn compile_template_block_with_capture(
             self_component: experimental_self_component,
             ..vize_atelier_ssr::SsrCompilerExperimentalOptions::default()
         };
+        // SFC callers own the build target (Vite forwards isProduction here).
+        // Unlike JavaScript compiler bundles, native code has no NODE_ENV
+        // module-load side effect; mismatched JS build/isProd combinations
+        // are not inferred from the process environment.
+        let ssr_context =
+            vize_atelier_ssr::SsrSfcContext::new(slotted).with_development(!options.is_prod);
 
         let (_, errors, result) = profile!(
             "atelier.sfc.template.ssr",
             if let Some(capture) = capture {
-                vize_atelier_ssr::compile_ssr_with_sfc_slotted_context_and_capture(
+                vize_atelier_ssr::compile_ssr_with_sfc_context_and_capture(
                     allocator,
                     &template.content,
                     ssr_opts,
                     template_syntax,
                     custom_elements.clone(),
                     ssr_experimental_options,
-                    slotted,
+                    ssr_context,
                     capture,
                 )
             } else {
-                vize_atelier_ssr::compile_ssr_with_sfc_slotted_context(
+                vize_atelier_ssr::compile_ssr_with_sfc_context(
                     allocator,
                     &template.content,
                     ssr_opts,
                     template_syntax,
                     custom_elements.clone(),
                     ssr_experimental_options,
-                    slotted,
+                    ssr_context,
                 )
             }
         );

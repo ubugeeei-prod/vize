@@ -58,10 +58,17 @@ pub(super) fn select_l2_lane<'a>(
         diagnostics: 0,
     };
     let experimental = SsrCompilerExperimentalOptions::default();
-    select_from_l2_plain(allocator, &artifact, options, &experimental, true, || {
-        if options.croquis.is_some() || options.binding_metadata.is_some() || options.inline {
-            return Err(LegacyReason::Options);
-        }
-        Ok(TransformExpressions::unprefixed(source, false))
-    })
+    select_from_l2_plain(
+        allocator,
+        &artifact,
+        options,
+        &experimental,
+        crate::SsrSfcContext::new(true),
+        || {
+            if options.croquis.is_some() || options.binding_metadata.is_some() || options.inline {
+                return Err(LegacyReason::Options);
+            }
+            Ok(TransformExpressions::unprefixed(source, false))
+        },
+    )
 }

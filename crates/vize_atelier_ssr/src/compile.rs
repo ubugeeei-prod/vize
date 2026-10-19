@@ -1,5 +1,6 @@
 use crate::{
     SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions,
+    SsrSfcContext,
     l4::{self, SsrL4Request, SsrL4Selection},
 };
 use vize_atelier_core::{
@@ -165,6 +166,28 @@ pub fn compile_ssr_with_sfc_slotted_context<'a>(
     )
 }
 
+/// Compile with explicit host-owned SFC codegen metadata.
+#[doc(hidden)]
+pub fn compile_ssr_with_sfc_context<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_inner_with_context(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        context,
+    )
+}
+
 /// Compile an SFC template and observe only stages that emitted its module.
 #[doc(hidden)]
 #[expect(
@@ -188,7 +211,35 @@ pub fn compile_ssr_with_sfc_slotted_context_and_capture<'a, C: CaptureSink>(
         template_syntax,
         custom_elements,
         experimental_options,
-        slotted,
+        SsrSfcContext::new(slotted),
+        capture,
+    )
+}
+
+/// Capture the same explicit SFC codegen context used for emission.
+#[doc(hidden)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC context plus an opt-in capture sink"
+)]
+pub fn compile_ssr_with_sfc_context_and_capture<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
+    capture: &mut C,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_inner_captured(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        context,
         capture,
     )
 }
@@ -205,18 +256,38 @@ fn compile_ssr_inner<'a>(
     experimental_options: SsrCompilerExperimentalOptions,
     slotted: bool,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    #[cfg(feature = "legacy-differential")]
-    let lane = crate::differential::production_lane();
-    #[cfg(not(feature = "legacy-differential"))]
-    let lane = SsrLane::Selected;
-    compile_ssr_on_lane(
+    compile_ssr_inner_with_context(
         allocator,
         source,
         options,
         template_syntax,
         custom_elements,
         experimental_options,
-        slotted,
+        SsrSfcContext::new(slotted),
+    )
+}
+
+fn compile_ssr_inner_with_context<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    #[cfg(feature = "legacy-differential")]
+    let lane = crate::differential::production_lane();
+    #[cfg(not(feature = "legacy-differential"))]
+    let lane = SsrLane::Selected;
+    compile_ssr_on_lane_with_context(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        context,
         lane,
     )
 }
@@ -234,6 +305,7 @@ pub(crate) enum SsrLane {
     clippy::too_many_arguments,
     reason = "private SFC metadata is separate from public options"
 )]
+#[cfg(any(test, feature = "legacy-differential"))]
 pub(crate) fn compile_ssr_on_lane<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -242,6 +314,32 @@ pub(crate) fn compile_ssr_on_lane<'a>(
     custom_elements: CustomElementMatcher,
     experimental_options: SsrCompilerExperimentalOptions,
     slotted: bool,
+    lane: SsrLane,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_on_lane_with_context(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        SsrSfcContext::new(slotted),
+        lane,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "private SFC metadata and selected lane"
+)]
+pub(crate) fn compile_ssr_on_lane_with_context<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
     lane: SsrLane,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     let codegen_options = options.clone();
@@ -276,7 +374,7 @@ pub(crate) fn compile_ssr_on_lane<'a>(
             &SsrL4Request {
                 options: &options,
                 experimental: &experimental_options,
-                slotted,
+                context,
                 template_syntax,
                 has_custom_elements: !custom_elements.is_empty(),
                 frozen: Some((&root, &frozen_elements)),
@@ -322,7 +420,7 @@ pub(crate) fn compile_ssr_on_lane<'a>(
                 source,
                 experimental_options,
             );
-            codegen_ctx.slotted = slotted;
+            codegen_ctx.apply_sfc_context(context);
             profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root))
         }
     };

@@ -60,7 +60,7 @@ pub fn compare_ssr_lanes(
                 experimental,
                 template_syntax: TemplateSyntaxMode::Standard,
                 has_custom_elements: false,
-                slotted: true,
+                context: crate::SsrSfcContext::new(true),
                 frozen: Some((&root, &frozen)),
             },
         );

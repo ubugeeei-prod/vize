@@ -44,9 +44,20 @@ fn five_history_fixes_preserve_complete_ssr_outputs() {
         let expected = serde_json::from_str::<Value>(expected).expect("valid case expectation");
         assert_eq!(expected.get("options"), Some(options));
         assert_eq!(expected.get("output"), captured_case.get("output"));
+        // Keep the immutable capture's old contract; this source-bound successor
+        // records only the required conditional VNode block-tracking argument.
+        let current = if *id == "slot-fallback-vnode" {
+            serde_json::from_str::<Value>(include_str!(
+                "fixtures/fix-history-next/slot-fallback-vnode-current.expected.json"
+            ))
+            .expect("valid source-bound successor")
+        } else {
+            expected
+        };
+        assert_eq!(current.get("options"), Some(options));
         assert_eq!(
             fixtures::observe(source).expect("serialize complete output"),
-            expected["output"],
+            current["output"],
             "complete SSR output changed for {id}"
         );
     }

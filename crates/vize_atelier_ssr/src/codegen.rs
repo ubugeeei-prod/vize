@@ -37,6 +37,35 @@ pub(crate) enum TemplatePart {
     Dynamic(EmitDocument),
 }
 
+/// Host-owned SFC metadata, separate from user compiler options. Existing
+/// direct-template entry points retain their production helper spelling.
+#[doc(hidden)]
+#[derive(Clone, Copy)]
+pub struct SsrSfcContext {
+    pub(crate) slotted: bool,
+    pub(crate) development: bool,
+}
+
+impl SsrSfcContext {
+    /// Preserve direct-template production metadata with explicit scope ownership.
+    #[must_use]
+    pub const fn new(slotted: bool) -> Self {
+        Self {
+            slotted,
+            development: false,
+        }
+    }
+
+    /// The adapter's explicit development target; never read the environment
+    /// from an emitter or infer it from comment preservation.
+    /// This target is independent of upstream JavaScript module-load mode.
+    #[must_use]
+    pub const fn with_development(mut self, development: bool) -> Self {
+        self.development = development;
+        self
+    }
+}
+
 /// SSR codegen context
 pub struct SsrCodegenContext<'a> {
     pub(crate) allocator: &'a Allocator,
@@ -47,6 +76,7 @@ pub struct SsrCodegenContext<'a> {
     pub(crate) experimental_self_component: bool,
     /// Whether slot outlets contribute this component's own slotted scope ID.
     pub(crate) slotted: bool,
+    development: bool,
     /// The structured emission document: generated code plus, when a Source
     /// Map v3 document is requested, the links from its bytes to the template.
     pub(crate) out: EmitDocument,
@@ -108,6 +138,7 @@ impl<'a> SsrCodegenContext<'a> {
             component_name,
             experimental_self_component: experimental_options.self_component,
             slotted: true,
+            development: false,
             source,
             out: EmitDocument::with_capacity(1024, experimental_options.source_map),
             indent_level: 0,
@@ -121,6 +152,19 @@ impl<'a> SsrCodegenContext<'a> {
             source_map_filename,
             temps: 0,
             body_start: 0,
+        }
+    }
+
+    pub(crate) fn apply_sfc_context(&mut self, context: SsrSfcContext) {
+        self.slotted = context.slotted;
+        self.development = context.development;
+    }
+
+    pub(crate) fn conditional_comment_vnode(&self) -> &'static str {
+        if self.development {
+            "_createCommentVNode(\"v-if\", true)"
+        } else {
+            "_createCommentVNode(\"\", true)"
         }
     }
 

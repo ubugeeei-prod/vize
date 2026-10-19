@@ -1,0 +1,43 @@
+{
+  "options": {
+    "bindingMetadata": null,
+    "croquis": null,
+    "customElements": "default",
+    "dialect": "V3",
+    "entrypoint": "compile_ssr",
+    "experimental": {
+      "componentName": null,
+      "selfComponent": false,
+      "sourceMap": false,
+      "sourceMapFilename": null
+    },
+    "publicOptions": {
+      "comments": false,
+      "componentName": null,
+      "customRenderer": false,
+      "experimentalInTagComments": false,
+      "experimentalPatternedTemplate": false,
+      "inline": false,
+      "isTs": false,
+      "scopeId": null,
+      "ssrCssVars": null
+    },
+    "rawTemplateSlotted": true,
+    "templateSyntax": "Standard"
+  },
+  "output": {
+    "code": "function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Outer\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`<button>`)\n        _ssrRenderSlot(_ctx.$slots, \"default\", { ui: _ctx.ui }, () => {\n          if (_ctx.label) {\n            _push(`<span>${_ssrInterpolate(_ctx.label)}</span>`)\n          } else {\n            _push(`<!---->`)\n          }\n        }, _push, _parent, _scopeId)\n        _push(`</button>`)\n      } else {\n        return [_createElementVNode(\"button\", null, [_renderSlot(_ctx.$slots, \"default\", { ui: _ctx.ui }, () => [(_ctx.label) ? _createElementVNode(\"span\", null, [_createTextVNode(_toDisplayString(_ctx.label))]) : _createCommentVNode(\"\", true)])])]\n      }\n    }),\n    _: 3 /* FORWARDED */\n  }, _parent))\n}\n",
+    "diagnostics": [],
+    "map": null,
+    "preamble": "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderSlot as _ssrRenderSlot } from \"@vue/server-renderer\"\nimport { createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, renderSlot as _renderSlot, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n"
+  },
+  "provenance": {
+    "historicalReference": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/slot-fallback-vnode.expected.json",
+    "historicalSha256": "5ebc501d34723565b01309f47875a360883429c579a67aa3689dbfd4178dfc77",
+    "sourceChange": "49bea5a75bc8919912e215c7191f939187dc1f34",
+    "observedCommit": "9c3d318cedd30c403be79f3e3ac8800d46624410",
+    "workflowRun": 39132986734,
+    "job": 117691986544,
+    "change": "Only the conditional false-branch VNode comment receives the required block-tracking argument."
+  }
+}

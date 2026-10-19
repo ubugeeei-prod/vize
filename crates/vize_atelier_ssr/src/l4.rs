@@ -31,7 +31,7 @@ use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 pub(crate) struct SsrL4Request<'o> {
     pub(crate) options: &'o SsrCompilerOptions,
     pub(crate) experimental: &'o SsrCompilerExperimentalOptions,
-    pub(crate) slotted: bool,
+    pub(crate) context: crate::SsrSfcContext,
     pub(crate) template_syntax: TemplateSyntaxMode,
     pub(crate) has_custom_elements: bool,
     /// Original parser bundle; direct L2 entry never receives this authority.

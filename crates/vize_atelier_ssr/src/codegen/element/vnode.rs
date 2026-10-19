@@ -1,20 +1,19 @@
 //! VNode fallback expression generation used by slot fallback paths.
 
-use super::super::helpers::{branch_fragment, collect_for_scoped_params, loop_children};
-use super::component::{has_slot_directive, slot_template_in_children, template_slot_is_dynamic};
 use super::props::{
-    component_prop_entry, component_props_object, is_dynamic_component_tag, is_valid_js_identifier,
-    normalize_prop_entries, quoted_js_string, transform_bound_prop_key, wrap_call,
+    component_prop_entry, component_props_object, is_dynamic_component_tag, normalize_prop_entries,
+    quoted_js_string, transform_bound_prop_key, wrap_call,
 };
 use super::{
-    ComponentSlotChildren, ElementNode, ElementType, ExpressionNode, FxHashSet, PropNode,
-    RuntimeHelper, SsrCodegenContext, String, TemplateChildNode, ToCompactString, VNodePropEntry,
-    extract_destructure_params,
+    ComponentSlotChildren, ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
+    SsrCodegenContext, String, TemplateChildNode, ToCompactString, VNodePropEntry,
 };
-use vize_atelier_core::ForNode;
 
 impl<'a> SsrCodegenContext<'a> {
-    fn vnode_children_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
+    pub(super) fn vnode_children_expression(
+        &mut self,
+        children: &[TemplateChildNode<'a>],
+    ) -> String {
         let expressions = self.vnode_child_expressions(children);
         let has_array_child = has_vnode_array_child(children);
         if has_array_child && expressions.len() == 1 {
@@ -47,7 +46,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    fn vnode_children_expression_from_refs(
+    pub(super) fn vnode_children_expression_from_refs(
         &mut self,
         children: &[&TemplateChildNode<'a>],
     ) -> String {
@@ -71,7 +70,7 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn vnode_child_expressions(
+    pub(super) fn vnode_child_expressions(
         &mut self,
         children: &[TemplateChildNode<'a>],
     ) -> std::vec::Vec<String> {
@@ -148,7 +147,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.vnode_plain_element_expression_with_key(el, None)
     }
 
-    fn vnode_plain_element_expression_with_key(
+    pub(super) fn vnode_plain_element_expression_with_key(
         &mut self,
         el: &ElementNode<'a>,
         key: Option<&str>,
@@ -172,7 +171,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.vnode_component_expression_with_key(el, None)
     }
 
-    fn vnode_component_expression_with_key(
+    pub(super) fn vnode_component_expression_with_key(
         &mut self,
         el: &ElementNode<'a>,
         key: Option<&str>,
@@ -214,287 +213,6 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    pub(super) fn vnode_component_slots_expression<'node>(
-        &mut self,
-        el: &'node ElementNode<'a>,
-    ) -> String {
-        let children: &'node [TemplateChildNode<'a>] = &el.children;
-        if children.is_empty() {
-            return "null".to_compact_string();
-        }
-
-        // `v-slot` on the component itself: every child belongs to that
-        // single slot and its props pattern must stay bound.
-        if has_slot_directive(el) {
-            self.use_core_helper(RuntimeHelper::WithCtx);
-            let mut out = String::from("{ ");
-            out.push_str(&self.vnode_slot_entry_fn_property(el));
-            out.push_str(", ");
-            out.push_str(self.component_slot_flag(el));
-            out.push_str(" }");
-            return out;
-        }
-
-        if children
-            .iter()
-            .any(|child| self.is_dynamic_slot_source(child))
-        {
-            return self.vnode_create_slots_expression(children);
-        }
-
-        self.use_core_helper(RuntimeHelper::WithCtx);
-
-        // Named templates retain their own entry and slot-props scope;
-        // default content instead compiles against the component instance.
-        let mut default_children: std::vec::Vec<&'node TemplateChildNode<'a>> =
-            std::vec::Vec::new();
-        let mut named_slots: std::vec::Vec<&'node ElementNode<'a>> = std::vec::Vec::new();
-        for child in children {
-            if let TemplateChildNode::Element(el) = child
-                && el.tag_type == ElementType::Template
-                && has_slot_directive(el)
-            {
-                named_slots.push(el.as_ref());
-            } else {
-                default_children.push(child);
-            }
-        }
-
-        let mut out = String::from("{ ");
-        if !named_slots.is_empty() {
-            super::normalize_implicit_slot_children(&mut default_children);
-        }
-        for el in named_slots {
-            out.push_str(&self.vnode_slot_entry_fn_property(el));
-            out.push_str(", ");
-        }
-        if !default_children.is_empty() {
-            out.push_str("default: _withCtx(() => ");
-            out.push_str(&self.vnode_children_expression_from_refs(&default_children));
-            out.push_str("), ");
-        }
-        out.push_str(self.component_slot_flag(el));
-        out.push_str(" }");
-        out
-    }
-
-    /// VNode fallback for dynamic/conditional/looped `createSlots` entries,
-    /// using `fn: _withCtx((params) => [children])` instead of SSR push calls.
-    fn vnode_create_slots_expression<'node>(
-        &mut self,
-        children: &'node [TemplateChildNode<'a>],
-    ) -> String {
-        self.use_core_helper(RuntimeHelper::CreateSlots);
-        self.use_core_helper(RuntimeHelper::WithCtx);
-
-        // Base object: default children plus static named slots.
-        let mut default_children: std::vec::Vec<&'node TemplateChildNode<'a>> =
-            std::vec::Vec::new();
-        let mut static_slots: std::vec::Vec<&'node ElementNode<'a>> = std::vec::Vec::new();
-        for child in children {
-            if self.is_dynamic_slot_source(child) {
-                continue;
-            }
-            if let TemplateChildNode::Element(el) = child
-                && el.tag_type == ElementType::Template
-                && has_slot_directive(el)
-            {
-                static_slots.push(el.as_ref());
-            } else {
-                default_children.push(child);
-            }
-        }
-
-        let mut out = String::from("_createSlots({ ");
-        super::normalize_implicit_slot_children(&mut default_children);
-        let mut wrote = false;
-        if !default_children.is_empty() {
-            out.push_str("default: _withCtx(() => ");
-            out.push_str(&self.vnode_children_expression_from_refs(&default_children));
-            out.push_str("), ");
-            wrote = true;
-        }
-        for el in static_slots {
-            out.push_str(&self.vnode_slot_entry_fn_property(el));
-            out.push_str(", ");
-            wrote = true;
-        }
-        let _ = wrote;
-        out.push_str("_: 2 /* DYNAMIC */ }, [");
-
-        let mut first = true;
-        for child in children {
-            match child {
-                TemplateChildNode::For(for_node)
-                    if slot_template_in_children(&for_node.children).is_some() =>
-                {
-                    if !first {
-                        out.push_str(", ");
-                    }
-                    first = false;
-                    out.push_str(&self.vnode_looped_slot_entry(for_node));
-                }
-                TemplateChildNode::If(if_node)
-                    if if_node
-                        .branches
-                        .iter()
-                        .any(|branch| slot_template_in_children(&branch.children).is_some()) =>
-                {
-                    if !first {
-                        out.push_str(", ");
-                    }
-                    first = false;
-                    out.push_str(&self.vnode_conditional_slot_entry(if_node));
-                }
-                TemplateChildNode::Element(el)
-                    if el.tag_type == ElementType::Template && template_slot_is_dynamic(el) =>
-                {
-                    if !first {
-                        out.push_str(", ");
-                    }
-                    first = false;
-                    out.push_str(&self.vnode_slot_object_entry(el, None));
-                }
-                _ => {}
-            }
-        }
-
-        out.push_str("])");
-        out
-    }
-
-    /// `name: _withCtx((params) => [children])` for a static slot inside the
-    /// vnode `createSlots` base object.
-    fn vnode_slot_entry_fn_property(&mut self, el: &ElementNode<'a>) -> String {
-        let name = self
-            .slot_directive(el)
-            .map(|dir| self.slot_entry_name(dir))
-            .unwrap_or_else(|| quoted_js_string("default"));
-        let mut out = String::default();
-        if name.starts_with('"') {
-            // Unquote when it is a valid identifier for readability/parity.
-            let inner = name.get(1..name.len() - 1).unwrap_or_default();
-            if is_valid_js_identifier(inner) {
-                out.push_str(inner);
-            } else {
-                out.push_str(&name);
-            }
-        } else {
-            out.push('[');
-            out.push_str(&name);
-            out.push(']');
-        }
-        out.push_str(": ");
-        out.push_str(&self.vnode_slot_fn(el));
-        out
-    }
-
-    fn vnode_looped_slot_entry(&mut self, for_node: &ForNode<'a>) -> String {
-        let Some(template_el) = slot_template_in_children(&for_node.children) else {
-            return "undefined".to_compact_string();
-        };
-        self.use_core_helper(RuntimeHelper::RenderList);
-
-        let mut out = String::from("_renderList(");
-        out.push_str(&self.expression_to_string(&for_node.source));
-        out.push_str(", (");
-        append_for_aliases(self, &mut out, for_node);
-        out.push_str(") => {");
-
-        self.push_scoped_params(collect_for_scoped_params(for_node, self.source));
-        out.push_str(" return ");
-        out.push_str(&self.vnode_slot_object_entry(template_el, None));
-        self.pop_scoped_params();
-
-        out.push_str(" })");
-        out
-    }
-
-    fn vnode_conditional_slot_entry(&mut self, if_node: &vize_atelier_core::IfNode<'a>) -> String {
-        let mut out = String::default();
-        for (index, branch) in if_node.branches.iter().enumerate() {
-            if index > 0 {
-                out.push_str(" : ");
-            }
-            if let Some(condition) = &branch.condition {
-                out.push('(');
-                out.push_str(&self.expression_to_string(condition));
-                out.push_str(") ? ");
-            }
-            if let Some(template_el) = slot_template_in_children(&branch.children) {
-                out.push_str(&self.vnode_slot_object_entry(template_el, Some(index)));
-            } else {
-                out.push_str("undefined");
-            }
-        }
-        if if_node
-            .branches
-            .last()
-            .is_none_or(|branch| branch.condition.is_some())
-        {
-            out.push_str(" : undefined");
-        }
-        out
-    }
-
-    /// `{ name: <expr>, fn: _withCtx((params) => [children]), key: "N" }`
-    fn vnode_slot_object_entry(
-        &mut self,
-        template_el: &ElementNode<'a>,
-        key_index: Option<usize>,
-    ) -> String {
-        let Some(dir) = self.slot_directive(template_el) else {
-            return "undefined".to_compact_string();
-        };
-        let name = self.slot_entry_name(dir);
-
-        let mut out = String::from("{ name: ");
-        out.push_str(&name);
-        out.push_str(", fn: ");
-        out.push_str(&self.vnode_slot_fn(template_el));
-        if let Some(key) = key_index {
-            out.push_str(", key: \"");
-            out.push_str(&key.to_compact_string());
-            out.push('"');
-        }
-        out.push_str(" }");
-        out
-    }
-
-    /// `_withCtx((params) => [children])` for a slot template's vnode form.
-    fn vnode_slot_fn(&mut self, template_el: &ElementNode<'a>) -> String {
-        let dir = self.slot_directive(template_el);
-        let props_pattern = dir.and_then(|d| self.slot_props_pattern(d));
-        let mut params = FxHashSet::default();
-        if let Some(pattern) = props_pattern.as_deref() {
-            extract_destructure_params(pattern.trim(), &mut params);
-        }
-
-        let mut out = String::from("_withCtx((");
-        out.push_str(props_pattern.as_deref().unwrap_or("_"));
-        out.push_str(") => ");
-
-        if !params.is_empty() {
-            self.push_scoped_params(params.clone());
-        }
-        out.push_str(&self.vnode_children_expression(&template_el.children));
-        if !params.is_empty() {
-            self.pop_scoped_params();
-        }
-        out.push(')');
-        out
-    }
-
-    fn slot_directive<'node>(
-        &self,
-        el: &'node ElementNode<'a>,
-    ) -> Option<&'node vize_atelier_core::DirectiveNode<'a>> {
-        el.props.iter().find_map(|prop| match prop {
-            PropNode::Directive(dir) if dir.name == "slot" => Some(dir.as_ref()),
-            _ => None,
-        })
-    }
-
     fn vnode_template_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
         let expressions = self.vnode_child_expressions(children);
         if expressions.len() == 1 {
@@ -524,7 +242,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.vnode_slot_outlet_expression_with_key(el, None)
     }
 
-    fn vnode_slot_outlet_expression_with_key(
+    pub(super) fn vnode_slot_outlet_expression_with_key(
         &mut self,
         el: &ElementNode<'a>,
         key: Option<&str>,
@@ -557,166 +275,6 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         self.vnode_children_expression(children)
-    }
-
-    fn vnode_if_expression(&mut self, if_node: &vize_atelier_core::IfNode<'a>) -> String {
-        self.use_core_helper(RuntimeHelper::CreateComment);
-
-        let mut out = String::default();
-        for (index, branch) in if_node.branches.iter().enumerate() {
-            if index > 0 {
-                out.push_str(" : ");
-            }
-
-            if let Some(condition) = &branch.condition {
-                out.push('(');
-                out.push_str(&self.expression_to_string(condition));
-                out.push_str(") ? ");
-            }
-
-            if branch_fragment::needs_fragment(&branch.children) {
-                let children =
-                    self.vnode_fragment_children_expression(loop_children(&branch.children));
-                self.use_core_helper(RuntimeHelper::CreateVNode);
-                self.use_core_helper(RuntimeHelper::Fragment);
-                out.push_str("_createVNode(_Fragment, null, ");
-                out.push_str(&children);
-                out.push(')');
-            } else {
-                out.push_str(&self.vnode_branch_expression(&branch.children));
-            }
-        }
-
-        if if_node
-            .branches
-            .iter()
-            .all(|branch| branch.condition.is_some())
-        {
-            out.push_str(" : _createCommentVNode(\"\")");
-        }
-
-        out
-    }
-
-    fn vnode_for_expression(&mut self, for_node: &ForNode<'a>) -> String {
-        self.use_core_helper(RuntimeHelper::RenderList);
-        self.use_core_helper(RuntimeHelper::OpenBlock);
-        self.use_core_helper(RuntimeHelper::CreateBlock);
-        self.use_core_helper(RuntimeHelper::Fragment);
-
-        let mut out = String::from("(_openBlock(true), _createBlock(_Fragment, null, _renderList(");
-        out.push_str(&self.expression_to_string(&for_node.source));
-        out.push_str(", (");
-        append_for_aliases(self, &mut out, for_node);
-        out.push_str(") => { return ");
-
-        self.push_scoped_params(collect_for_scoped_params(for_node, self.source));
-        let key = single_for_child_key_expression(self, for_node);
-        let children = loop_children(&for_node.children);
-        let body = match children {
-            [TemplateChildNode::Element(element)] => match element.tag_type {
-                ElementType::Element => {
-                    self.vnode_plain_element_expression_with_key(element, key.as_deref())
-                }
-                ElementType::Component => {
-                    self.vnode_component_expression_with_key(element, key.as_deref())
-                }
-                ElementType::Slot => {
-                    self.vnode_slot_outlet_expression_with_key(element, key.as_deref())
-                }
-                ElementType::Template => self.vnode_fragment_for_body(children, key.as_deref()),
-            },
-            _ => self.vnode_fragment_for_body(children, key.as_deref()),
-        };
-        self.pop_scoped_params();
-
-        out.push_str(&body);
-        out.push_str(" }), ");
-        if key.is_some() {
-            out.push_str("128 /* KEYED_FRAGMENT */");
-        } else {
-            out.push_str("256 /* UNKEYED_FRAGMENT */");
-        }
-        out.push_str("))");
-        out
-    }
-
-    fn vnode_fragment_for_body(
-        &mut self,
-        children: &[TemplateChildNode<'a>],
-        key: Option<&str>,
-    ) -> String {
-        let children = self.vnode_fragment_children_expression(children);
-        let mut out = String::from("(_openBlock(), _createBlock(_Fragment, ");
-        if let Some(key) = key {
-            out.push_str("{ key: ");
-            out.push_str(key);
-            out.push_str(" }");
-        } else {
-            out.push_str("null");
-        }
-        out.push_str(", ");
-        out.push_str(&children);
-        out.push_str(", 64 /* STABLE_FRAGMENT */))");
-        out
-    }
-
-    /// Forward a template loop's key into a component or renderSlot props.
-    pub(crate) fn vnode_loop_key_props(&mut self, props: &str, key: Option<&str>) -> String {
-        let Some(key) = key else {
-            return props.to_compact_string();
-        };
-        self.use_core_helper(RuntimeHelper::MergeProps);
-        let mut out = String::from("_mergeProps({ key: ");
-        out.push_str(key);
-        out.push_str(" }, ");
-        out.push_str(props);
-        out.push(')');
-        out
-    }
-
-    fn vnode_fragment_children_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
-        let expressions = self.vnode_child_expressions(children);
-        if expressions.is_empty() {
-            return "[]".to_compact_string();
-        }
-
-        let mut out = String::from("[");
-        for (index, expr) in expressions.iter().enumerate() {
-            if index > 0 {
-                out.push_str(", ");
-            }
-            out.push_str(expr);
-        }
-        out.push(']');
-        if has_vnode_array_child(children) {
-            out.push_str(".flat()");
-        }
-        out
-    }
-
-    fn vnode_branch_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
-        let expressions = self.vnode_child_expressions(children);
-        let has_array_child = has_vnode_array_child(children);
-        if expressions.is_empty() {
-            return "_createCommentVNode(\"\")".to_compact_string();
-        }
-        if expressions.len() == 1 {
-            return expressions.into_iter().next().unwrap_or_default();
-        }
-
-        let mut out = String::from("[");
-        for (index, expr) in expressions.iter().enumerate() {
-            if index > 0 {
-                out.push_str(", ");
-            }
-            out.push_str(expr);
-        }
-        out.push(']');
-        if has_array_child {
-            out.push_str(".flat()");
-        }
-        out
     }
 
     fn build_plain_vnode_props_with_key(&mut self, el: &ElementNode, key: Option<&str>) -> String {
@@ -810,25 +368,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 }
 
-fn append_for_aliases(ctx: &mut SsrCodegenContext<'_>, out: &mut String, for_node: &ForNode) {
-    let mut has_alias = false;
-    for alias in [
-        for_node.value_alias.as_ref(),
-        for_node.key_alias.as_ref(),
-        for_node.object_index_alias.as_ref(),
-    ]
-    .into_iter()
-    .flatten()
-    {
-        if has_alias {
-            out.push_str(", ");
-        }
-        out.push_str(&ctx.expression_to_string(alias));
-        has_alias = true;
-    }
-}
-
-fn has_vnode_array_child(children: &[TemplateChildNode]) -> bool {
+pub(super) fn has_vnode_array_child(children: &[TemplateChildNode]) -> bool {
     let _ = children;
     false
 }
@@ -836,40 +376,4 @@ fn has_vnode_array_child(children: &[TemplateChildNode]) -> bool {
 fn has_vnode_array_child_ref(children: &[&TemplateChildNode]) -> bool {
     let _ = children;
     false
-}
-
-fn single_for_child_key_expression(
-    ctx: &mut SsrCodegenContext<'_>,
-    for_node: &ForNode,
-) -> Option<String> {
-    let [TemplateChildNode::Element(el)] = for_node.children.as_slice() else {
-        return None;
-    };
-
-    el.props
-        .iter()
-        .find_map(|prop| key_prop_expression(ctx, prop))
-}
-
-fn key_prop_expression(ctx: &mut SsrCodegenContext<'_>, prop: &PropNode) -> Option<String> {
-    match prop {
-        PropNode::Attribute(attr) if attr.name == "key" => Some(
-            attr.value
-                .as_ref()
-                .map(|value| quoted_js_string(value.content))
-                .unwrap_or_else(|| "\"\"".to_compact_string()),
-        ),
-        PropNode::Directive(dir) if dir.name == "bind" => {
-            let is_key = matches!(
-                &dir.arg,
-                Some(ExpressionNode::Simple(arg)) if arg.content == "key"
-            );
-            if is_key {
-                dir.exp.as_ref().map(|exp| ctx.expression_to_string(exp))
-            } else {
-                None
-            }
-        }
-        _ => None,
-    }
 }

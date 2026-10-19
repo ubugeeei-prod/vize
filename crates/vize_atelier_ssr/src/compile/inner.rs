@@ -3,8 +3,8 @@
 use super::{
     Allocator, CaptureOutcome, CaptureSink, CompilerError, CustomElementMatcher, ErrorCode, Level,
     Parser, RootNode, SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions,
-    SsrCompilerOptions, SsrL4Request, SsrL4Selection, SsrLane, String, TemplateSyntaxMode, cstr,
-    l4, profile, transform_with_frozen_elements,
+    SsrCompilerOptions, SsrL4Request, SsrL4Selection, SsrLane, SsrSfcContext, String,
+    TemplateSyntaxMode, cstr, l4, profile, transform_with_frozen_elements,
 };
 
 #[expect(
@@ -18,7 +18,7 @@ pub(super) fn compile_ssr_inner_captured<'a, C: CaptureSink>(
     template_syntax: TemplateSyntaxMode,
     custom_elements: CustomElementMatcher,
     experimental_options: SsrCompilerExperimentalOptions,
-    slotted: bool,
+    context: SsrSfcContext,
     capture: &mut C,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     #[cfg(feature = "legacy-differential")]
@@ -32,7 +32,7 @@ pub(super) fn compile_ssr_inner_captured<'a, C: CaptureSink>(
         template_syntax,
         custom_elements,
         experimental_options,
-        slotted,
+        context,
         lane,
         capture,
     )
@@ -49,7 +49,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
     template_syntax: TemplateSyntaxMode,
     custom_elements: CustomElementMatcher,
     experimental_options: SsrCompilerExperimentalOptions,
-    slotted: bool,
+    context: SsrSfcContext,
     lane: SsrLane,
     capture: &mut C,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
@@ -64,7 +64,10 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
             .clone()
             .unwrap_or_else(|| String::from("<none>"))
     });
-    capture.effective_option("slotted", || cstr!("{slotted}"));
+    capture.effective_option("slotted", || cstr!("{}", context.slotted));
+    if context.development {
+        capture.effective_option("development", || cstr!("true"));
+    }
     capture.effective_option("source_map", || {
         cstr!("{}", experimental_options.source_map)
     });
@@ -105,7 +108,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
             &SsrL4Request {
                 options: &options,
                 experimental: &experimental_options,
-                slotted,
+                context,
                 template_syntax,
                 has_custom_elements: !custom_elements.is_empty(),
                 frozen: Some((&root, &frozen_elements)),
@@ -183,7 +186,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
                 source,
                 experimental_options,
             );
-            codegen_ctx.slotted = slotted;
+            codegen_ctx.apply_sfc_context(context);
             let result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
             capture.finish(|| {
                 let reason = legacy_reason
