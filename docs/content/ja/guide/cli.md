@@ -81,6 +81,7 @@ vize [COMMAND]
 | `fmt`            | Vue SFC を整形する                                                                         |
 | `lint`           | Vue SFC に lint を実行する                                                                 |
 | `check`          | Vue SFC、TS、TSX、`.d.ts` 入力を型チェックする                                             |
+| `explain`        | 診断コードの説明ページを表示する                                                           |
 | `doctor`         | アプリケーション全体の健全性を診断する                                                     |
 | `inspector`      | プレイグラウンドのコンパイラーインスペクター用データを作成する                             |
 | `clean`          | Vize が生成したキャッシュを削除する                                                        |
@@ -92,8 +93,6 @@ vize [COMMAND]
 | `musea`          | Musea のサブコマンドと雛形作成                                                             |
 | `lsp`            | 言語サーバーを起動する                                                                     |
 | `ide`            | エディター連携をインストール・管理する                                                     |
-
-すべての `--profile` のターミナル出力は、ローカル用の `vize_curator` クレートが生成します。計測フックは `vize_carton` にあり、`vize_curator` は CLI レポート、インスペクター、エージェント向けデータの形式を管理します。
 
 <a id="建てる"></a>
 
@@ -110,6 +109,8 @@ vize build --profile src
 | `-o, --output`                | 共通の入力ルートからの相対パスで出力する。同名出力の衝突はエラーにする |
 | `-f, --format`                | 出力形式: `js`、`json`、`stats`                                        |
 | `--ssr`                       | SSR 用にコンパイルする                                                 |
+| `--vapor`                     | Vapor モードでコンパイルする                                           |
+| `--template-syntax`           | 不正な構文の扱い: `standard`（デフォルト）、`strict`、`quirks`         |
 | `--custom-renderer`           | 小文字の非 HTML タグをカスタムレンダラーの要素として扱う               |
 | `--custom-elements <PATTERN>` | カスタム要素として扱うタグのパターン。複数回指定可能                   |
 | `--script-ext`                | `preserve` または `downcompile`                                        |
@@ -164,9 +165,12 @@ vize lint --help-level short src
 | `--report-unused-disable-directives` | 何も抑制していないテンプレートの `eslint-disable` コメントを `vue/comment-directive` のエラーとして報告する                         |
 | `-q, --quiet`                        | 概要だけを表示する                                                                                                                  |
 | `--help-level`                       | `full`、`short`、`none`                                                                                                             |
-| `--preset`                           | `happy-path`、`opinionated`、`essential`、`incremental`、`nuxt`                                                                     |
+| `--locale`                           | メッセージの言語: `en`、`ja`、`zh`                                                                                                  |
+| `--preset`                           | `happy-path`、`ecosystem`、`opinionated`、`essential`、`incremental`、`nuxt`                                                        |
 | `--cross-file`                       | ファイル間のチェックを有効にする（明示的な有効化が必要）                                                                            |
 | `--cross-file-tree`                  | ファイル間 lint の実行時に provide/inject ツリーを表示する                                                                          |
+| `--cross-file-complexity`            | ファイル間 lint の実行時に複雑度スコアとホットスポットを表示する                                                                    |
+| `--type-aware`                       | lint 設定で有効にした型情報を使うルールを実行する                                                                                   |
 | `--strict-reactivity`                | ネイティブチェッカーを使ってリアクティビティの喪失を検出する                                                                        |
 | `--profile`                          | 処理時間のプロファイルを表示する                                                                                                    |
 | `--slow-threshold`                   | プロファイルで遅いファイルとして報告する時間のしきい値                                                                              |
@@ -177,6 +181,7 @@ vize lint --help-level short src
 | ------------- | ------------------------------------------------------------------ |
 | `essential`   | CI で正確性を重視した診断を行いたい                                |
 | `happy-path`  | 推奨するデフォルトのルールセットを使いたい                         |
+| `ecosystem`   | `happy-path` に Router・Pinia・Nuxt・i18n の[エコシステムルール](../rules/ecosystem.md)を加えたい |
 | `opinionated` | より厳しい規約、スクリプトのルール、型情報を使う候補も有効にしたい |
 | `incremental` | 明示的に設定したルールだけを使いたい                               |
 | `nuxt`        | Nuxt コンポーネントの前提に合う、規約を重視したルールを使いたい    |
@@ -204,7 +209,7 @@ vize check --tsconfig tsconfig.app.json
 vize check --profile src
 ```
 
-`vize check` は、`vize_canon` と [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) が提供する Corsa のプロジェクトセッションを使います。Vize は Vue SFC の仮想 TypeScript を生成し、ネイティブの経路でプロジェクトを診断して、結果を元のソース位置へ対応付けます。
+`vize check` は [TypeScript のネイティブコンパイラー](https://github.com/microsoft/typescript-go)（TypeScript 7 として出荷される Go 実装、Project Corsa）で Vue SFC を型チェックします。Vize は SFC ごとに仮想 TypeScript を生成し、[`corsa-bind`](https://github.com/ubugeeei/corsa-bind) を通してネイティブにプロジェクトを診断し、結果を元の `.vue` の位置へ対応付けます。フラグや設定キーの「Corsa」は、このネイティブ TypeScript コンパイラーを指します。
 
 パスを指定しない場合、利用可能な `tsconfig.json` の `files` / `include` / `exclude` を使います。明示的な入力にはファイル・ディレクトリ・glob を指定でき、`.vue`、`.ts`、`.tsx`、`.d.ts` を扱えます。
 
@@ -214,10 +219,16 @@ vize check --profile src
 | `--tsconfig`        | 使用する `tsconfig.json` を指定する                          |
 | `-f, --format`      | 出力形式: `text` または `json`                               |
 | `--show-virtual-ts` | 生成した仮想 TypeScript を表示する                           |
+| `--save-virtual-ts-for` | 指定ファイルの仮想 TypeScript をその隣に保存する。複数回指定可能 |
+| `--max-warnings`    | 警告数が上限を超えると失敗する                               |
+| `--no-check-props`  | props の型チェックを省く                                     |
+| `--no-check-emits`  | emit の型チェックを省く                                      |
+| `--no-check-template-bindings` | テンプレートのバインディングのチェックを省く      |
 | `-q, --quiet`       | 概要だけを表示する                                           |
 | `--profile`         | `node_modules/.vize` にプロファイルを書き込む                |
-| `--corsa-path`      | Corsa 実行ファイルのパスを指定する                           |
-| `--servers`         | 将来用に予約した Corsa サーバー数。現在は `1` のみをサポート |
+| `--corsa-path`      | ネイティブ TypeScript（Corsa）実行ファイルのパスを指定する   |
+| `--servers`         | 並列に起動する Corsa CLI サーバー数（`1`〜`32`）。省略時は自動調整 |
+| `--checkers`        | Corsa プロセスごとのチェッカー数（デフォルト `1`）           |
 | `--declaration`     | `.d.ts` を出力する                                           |
 | `--declaration-dir` | 宣言ファイルの出力先                                         |
 
@@ -255,14 +266,19 @@ vize doctor src
 vize doctor src packages/shared --format json
 ```
 
-`vize doctor` は、Vue SFC とスクリプトモジュールを横断するアプリケーショングラフを、同じ入力から常に同じ結果になるように構築します。現在の解析対象は依存性注入、要素 ID の一意性、サーバーとクライアントの境界、リアクティビティの流れ、非同期の変更によるリスク、setup コンテキストの所有権、循環 import、コンポーネント間の props 契約です。
-Vue の診断位置は、元の `.vue` のバイトオフセットに対応付けます。`<script>` と `<script setup>` を併用するコンポーネントのテンプレート内の props 使用箇所と、関連する `defineProps` 宣言も対象です。
-ソース管理の ignore ファイルに従って探索し、指定したワークスペース外の入力は拒否します。コンポーネントやスクリプトを解析できない場合は処理を失敗として扱い、ファイルには書き込みません。
+`vize doctor` は Vue SFC とスクリプトモジュールを横断するアプリケーショングラフを作り、単一ファイルの lint では見えないアプリ全体の問題を報告します。
+
+- 依存性注入（`provide` / `inject`）とコンポーネント間の props 契約
+- 要素 ID の重複と、サーバーとクライアントの境界
+- リアクティビティの流れ、非同期の変更によるリスク、setup コンテキストの所有権
+- 循環 import
+
+指摘は元の `.vue` ソースの位置を指します。ignore ファイルに従ってワークスペース内だけを探索し、解析できないファイルがあればエラーで停止します。ファイルには書き込みません。
 
 | オプション     | 説明                                                                           |
 | -------------- | ------------------------------------------------------------------------------ |
 | `--root`       | ワークスペースの境界とレポート内のパスの基準（デフォルト: 現在のディレクトリ） |
-| `-f, --format` | 出力形式: `text`（デフォルト）またはバージョン付きの `json`                    |
+| `-f, --format` | 出力形式: `text`（デフォルト）、バージョン付きの `json`、コードホスト向けの `sarif` |
 | `--exit-zero`  | 通常は失敗になる、確認済みのエラーがあっても成功を返す                         |
 
 終了コード `0` は検証の通過、`1` は確実または高い確信度のエラー、`2` は探索・構文解析・解析・シリアライズ・出力の失敗を示します。警告や確信度の低い指摘は健全性スコアに影響しますが、デフォルトでは失敗にしません。
@@ -285,12 +301,12 @@ vize inspector src --format agent --output inspector-agent.json
 
 `vize inspector` は、1 つ以上の `.vue` ファイルを、プレイグラウンドのコンパイラーインスペクターが読み込めるデータにまとめます。ブラウザーでは Vue の出力、Vize の出力、Virtual TS、VIR、ファイル間のグラフを比較でき、パーマリンクや、再現情報を入力済みの PR 作成リンクも生成できます。
 
-ローカルツールや AI エージェントに同じ再現データを渡す場合は、`--format agent` を使ってください。ブラウザーを開かずに、同じデータ、プレイグラウンドの URL、概要の数値、import グラフを取得できます。データ、グラフ、行単位の差分情報はローカル用の `vize_curator` が生成し、CLI とプレイグラウンドの比較内容を揃えます。
+ローカルツールや AI エージェントに同じ再現データを渡す場合は、`--format agent` を使ってください。ブラウザーを開かずに、同じデータ、プレイグラウンドの URL、概要の数値、import グラフを取得できます。
 
 | オプション          | 説明                                         |
 | ------------------- | -------------------------------------------- |
-| `-f, --format`      | 出力形式: `url`、`json`、`agent`             |
-| `--target`          | コンパイル対象: `dom` または `ssr`           |
+| `-f, --format`      | 出力形式: `url`、`json`、`agent`、`compare`  |
+| `--target`          | コンパイル対象: `dom`、`ssr`、`vapor`        |
 | `--playground-url`  | 生成するリンクのプレイグラウンドのベース URL |
 | `--max-files`       | まとめて扱うファイル数の上限                 |
 | `--custom-renderer` | カスタムレンダラーの比較を有効にする         |
@@ -310,8 +326,13 @@ vize clean --force
 vize clean path/to/project
 ```
 
-`vize clean` は、選んだプロジェクトの既知の Vize 生成ファイルを削除し、空になった `.vize` と `node_modules/.vize` も削除します。対象はプロファイル、Musea のレポート・スナップショット・トークン、Patina セッション、設定スキーマ、LSP ログ、残ったソケット、OXC ダンプ、Oxlint の回避策ファイル、生成した Corsa のプロジェクトファイルです。
-`.vize` 内の未知のファイルはデフォルトで残します。`--force` は対象の生成ファイルルートを丸ごと削除する場合にだけ使ってください。`--dry-run` は削除予定のパスを表示し、`--scope node-modules` または `--scope project` は削除対象を片方のルートに限定します。
+`vize clean` は、Vize が `.vize` と `node_modules/.vize` に書き込むキャッシュとレポートを削除します。対象はプロファイル、Musea のレポートとスナップショット、lint のセッション、設定スキーマ、LSP ログ、`vize check` が生成する TypeScript プロジェクトです。
+
+| オプション                          | 説明                                                   |
+| ----------------------------------- | ------------------------------------------------------ |
+| `--dry-run`                         | 削除予定のパスを表示する                               |
+| `--scope node-modules` / `project` | `node_modules/.vize` または `.vize` の片方だけを削除する |
+| `--force`                           | 未知のファイルも含めてフォルダーごと削除する           |
 
 <a id="準備ができて"></a>
 
@@ -330,6 +351,8 @@ vize ready --output dist src
 | `-o, --output` | ビルドの出力先                      |
 | `--ssr`        | ビルドで SSR コンパイルを有効にする |
 | `--script-ext` | `preserve` または `downcompile`     |
+| `--tsconfig`   | 型チェックで使う `tsconfig.json`    |
+| `--no-check-props`、`--no-check-emits`、`--no-check-template-bindings` | 指定した型チェックを省く |
 
 ## アップグレード
 
@@ -338,7 +361,7 @@ vize upgrade
 vize upgrade --dry-run
 ```
 
-デフォルトでは、`vize upgrade` は Vite+ を使って npm パッケージを更新します。
+デフォルトでは、`vize upgrade` は Vite+ を使い、プロジェクトのパッケージマネージャーで npm パッケージを更新します。
 
 ```bash
 vp install -D vize@latest

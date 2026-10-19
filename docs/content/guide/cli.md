@@ -78,6 +78,7 @@ When invoked without a command, `vize` defaults to `build`.
 | `fmt`            | Format Vue SFC files                                              |
 | `lint`           | Lint Vue SFC files                                                |
 | `check`          | Type check Vue SFC, TS, TSX, and `.d.ts` inputs                   |
+| `explain`        | Print the documentation page for a diagnostic code                |
 | `doctor`         | Analyze whole-application health                                  |
 | `inspector`      | Create playground compiler inspector payloads                     |
 | `clean`          | Remove Vize-generated cache artifacts                             |
@@ -105,6 +106,8 @@ Key options:
 | `-o, --output`                | Source-relative output below the common input root; rejects collisions |
 | `-f, --format`                | Output format: `js`, `json`, `stats`                                   |
 | `--ssr`                       | Enable SSR compilation                                                 |
+| `--vapor`                     | Compile in Vapor mode                                                  |
+| `--template-syntax`           | `standard` (default), `strict`, or `quirks` handling of invalid syntax |
 | `--custom-renderer`           | Treat lowercase non-HTML tags as custom renderer elements              |
 | `--custom-elements <PATTERN>` | Tag patterns compiled as custom elements; repeat for multiple patterns |
 | `--script-ext`                | `preserve` or `downcompile`                                            |
@@ -159,9 +162,12 @@ Key options:
 | `--report-unused-disable-directives` | Report `eslint-disable` template comments that suppressed nothing, as `vue/comment-directive` errors                                    |
 | `-q, --quiet`                        | Show summary only                                                                                                                       |
 | `--help-level`                       | `full`, `short`, or `none`                                                                                                              |
-| `--preset`                           | `happy-path`, `opinionated`, `essential`, `incremental`, or `nuxt`                                                                      |
+| `--locale`                           | Message language: `en`, `ja`, or `zh`                                                                                                   |
+| `--preset`                           | `happy-path`, `ecosystem`, `opinionated`, `essential`, `incremental`, or `nuxt`                                                         |
 | `--cross-file`                       | Enable opt-in cross-file checks                                                                                                         |
 | `--cross-file-tree`                  | Print the provide/inject tree when cross-file linting is enabled                                                                        |
+| `--cross-file-complexity`            | Print the cross-file complexity score and hotspots when cross-file linting is enabled                                                   |
+| `--type-aware`                       | Enable the type-aware rules configured in your lint settings                                                                            |
 | `--strict-reactivity`                | Enable native checker-backed reactivity-loss linting                                                                                    |
 | `--profile`                          | Print timing profile                                                                                                                    |
 | `--slow-threshold`                   | Slow file threshold for profile output                                                                                                  |
@@ -172,6 +178,7 @@ Presets are intended for staged adoption:
 | ------------- | ---------------------------------------------------------------------- |
 | `essential`   | You want correctness-oriented diagnostics in CI                        |
 | `happy-path`  | You want the default recommended bundle                                |
+| `ecosystem`   | You want `happy-path` plus Router, Pinia, Nuxt, and i18n [ecosystem rules](../rules/ecosystem.md) |
 | `opinionated` | You want stronger conventions, script rules, and type-aware candidates |
 | `incremental` | You only want explicitly configured rules                              |
 | `nuxt`        | You want opinionated rules with Nuxt component assumptions             |
@@ -195,7 +202,12 @@ vize check --tsconfig tsconfig.app.json
 vize check --profile src
 ```
 
-`vize check` is backed by `vize_canon` and Corsa project sessions exposed through [`corsa-bind`](https://github.com/ubugeeei/corsa-bind). Vize generates virtual TypeScript for Vue SFCs, runs project diagnostics on a native path, and maps the results back to the original source locations.
+`vize check` type-checks Vue SFCs with [TypeScript's native compiler](https://github.com/microsoft/typescript-go)
+(Project Corsa, the Go port that ships as TypeScript 7). Vize generates virtual TypeScript for each
+SFC, runs project diagnostics natively through [`corsa-bind`](https://github.com/ubugeeei/corsa-bind),
+and maps every result back to the original `.vue` location. Flags and config keys that mention
+"Corsa" refer to that native TypeScript compiler.
+
 
 When no explicit paths are given, `vize check` uses `tsconfig.json` `files` / `include` /
 `exclude` if available. Explicit inputs may be files, directories, or globs and can include `.vue`,
@@ -209,10 +221,16 @@ Key options:
 | `--tsconfig`        | Override `tsconfig.json`                           |
 | `-f, --format`      | Output format: `text` or `json`                    |
 | `--show-virtual-ts` | Print generated virtual TypeScript                 |
+| `--save-virtual-ts-for` | Save one file's virtual TypeScript next to it; repeatable |
+| `--max-warnings`    | Fail when warnings exceed the limit                |
+| `--no-check-props`  | Skip prop type checks                              |
+| `--no-check-emits`  | Skip emit type checks                              |
+| `--no-check-template-bindings` | Skip template binding checks            |
 | `-q, --quiet`       | Show summary only                                  |
 | `--profile`         | Write profile artifacts under `node_modules/.vize` |
-| `--corsa-path`      | Override the Corsa executable path                 |
+| `--corsa-path`      | Override the native TypeScript (Corsa) executable path |
 | `--servers`         | Parallel Corsa CLI servers (`1`–`32`); auto-tuned when omitted |
+| `--checkers`        | Checker workers per Corsa process (default `1`)    |
 | `--declaration`     | Emit `.d.ts` output                                |
 | `--declaration-dir` | Output directory for emitted declarations          |
 
@@ -238,20 +256,23 @@ vize doctor src
 vize doctor src packages/shared --format json
 ```
 
-`vize doctor` builds one deterministic application graph across Vue SFCs and script modules. The
-initial analyzers cover dependency injection, unique element IDs, server/client boundaries, reactivity
-flow, asynchronous mutation risks, setup-context ownership, circular imports, and cross-component
-prop contracts. Vue diagnostics map back to byte offsets in the authored `.vue` file, including
-template prop usages and related `defineProps` declarations in components with both `<script>` and
-`<script setup>`. Discovery follows source-control ignore files, rejects inputs outside the declared
-workspace, fails closed when a component or script module cannot be parsed, and never writes files.
+`vize doctor` builds one application graph across Vue SFCs and script modules and reports
+whole-app problems that a single-file linter cannot see:
+
+- dependency injection (`provide` / `inject`) and cross-component prop contracts
+- duplicate element IDs and server/client boundaries
+- reactivity flow, asynchronous mutation risks, and setup-context ownership
+- circular imports
+
+Findings point at the authored `.vue` source. Discovery follows your ignore files, stays inside the
+workspace root, stops with an error when a file cannot be parsed, and never writes files.
 
 Key options:
 
 | Option         | Description                                                                     |
 | -------------- | ------------------------------------------------------------------------------- |
 | `--root`       | Workspace boundary and base for report paths; defaults to the current directory |
-| `-f, --format` | Output format: `text` (default) or versioned `json`                             |
+| `-f, --format` | Output format: `text` (default), versioned `json`, or `sarif` for code hosts    |
 | `--exit-zero`  | Return success even when a proven error would normally block                    |
 
 Exit status `0` means the gate passed, `1` means a certain or high-confidence error, and `2` means
@@ -284,8 +305,8 @@ Key options:
 
 | Option              | Description                              |
 | ------------------- | ---------------------------------------- |
-| `-f, --format`      | Output format: `url`, `json`, or `agent` |
-| `--target`          | Compiler target: `dom` or `ssr`          |
+| `-f, --format`      | Output format: `url`, `json`, `agent`, or `compare` |
+| `--target`          | Compiler target: `dom`, `ssr`, or `vapor` |
 | `--playground-url`  | Playground base URL for generated links  |
 | `--max-files`       | Limit files included in a batch payload  |
 | `--custom-renderer` | Enable custom renderer comparison        |
@@ -305,12 +326,15 @@ vize clean --force
 vize clean path/to/project
 ```
 
-`vize clean` removes known Vize-owned local artifacts (profile outputs, Musea
-reports/snapshots/tokens, Patina sessions, config schemas, LSP logs, socket leftovers, OXC dumps,
-Oxlint workaround files, and materialized Corsa project files) for the selected project root, then
-removes empty `.vize` and `node_modules/.vize` parents. Unknown entries under `.vize` are preserved
-unless `--force` removes the artifact root wholesale. `--dry-run` prints the paths that would be
-removed; `--scope node-modules` or `--scope project` limits cleanup to one artifact root.
+`vize clean` deletes the caches and reports Vize writes under `.vize` and `node_modules/.vize`:
+profile output, Musea reports and snapshots, lint sessions, config schemas, LSP logs, and the
+generated TypeScript project used by `vize check`.
+
+| Option                              | Description                                               |
+| ----------------------------------- | --------------------------------------------------------- |
+| `--dry-run`                         | Print what would be removed                               |
+| `--scope node-modules` / `project` | Clean only `node_modules/.vize` or only `.vize`           |
+| `--force`                           | Also remove unknown entries by deleting the whole folder |
 
 ## Ready
 
@@ -329,6 +353,8 @@ Key options:
 | `-o, --output` | Output directory for the build step |
 | `--ssr`        | Enable SSR compilation for build    |
 | `--script-ext` | `preserve` or `downcompile`         |
+| `--tsconfig`   | `tsconfig.json` for the check step  |
+| `--no-check-props`, `--no-check-emits`, `--no-check-template-bindings` | Skip those type checks |
 
 ## Upgrade
 
@@ -337,7 +363,7 @@ vize upgrade
 vize upgrade --dry-run
 ```
 
-By default, `vize upgrade` updates the npm package through Vite+:
+By default, `vize upgrade` updates the npm package through Vite+, which uses your project's package manager:
 
 ```bash
 vp install -D vize@latest

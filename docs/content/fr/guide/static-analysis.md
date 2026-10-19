@@ -288,7 +288,7 @@ Le paquet npm `vize` est destiné aux scripts de paquet et utilise la liaison NA
 {
   "scripts": {
     "vize:lint": "vize lint src",
-    "vize:check": "vize check src --strict",
+    "vize:check": "vize check src",
     "vize:ready": "vize ready src"
   }
 }

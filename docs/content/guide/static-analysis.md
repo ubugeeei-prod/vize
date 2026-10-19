@@ -284,7 +284,7 @@ The npm `vize` package is intended for package scripts and uses the packaged NAP
 {
   "scripts": {
     "vize:lint": "vize lint src",
-    "vize:check": "vize check src --strict",
+    "vize:check": "vize check src",
     "vize:ready": "vize ready src"
   }
 }

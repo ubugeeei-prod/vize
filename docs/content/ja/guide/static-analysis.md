@@ -260,7 +260,7 @@ npm の `vize` は、パッケージに含まれる NAPI バインディング�
 {
   "scripts": {
     "vize:lint": "vize lint src",
-    "vize:check": "vize check src --strict",
+    "vize:check": "vize check src",
     "vize:ready": "vize ready src"
   }
 }

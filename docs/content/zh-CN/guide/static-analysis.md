@@ -288,7 +288,7 @@ npm `vize` 包用于包脚本，使用打包的 NAPI 绑定：
 {
   "scripts": {
     "vize:lint": "vize lint src",
-    "vize:check": "vize check src --strict",
+    "vize:check": "vize check src",
     "vize:ready": "vize ready src"
   }
 }

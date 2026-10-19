@@ -30,7 +30,7 @@
     "{\n  \"include\": [\"src/**/*.ts\", \"src/**/*.tsx\", \"src/**/*.vue\", \"src/**/*.d.ts\"]\n}",
     "// src/types/vue-app.d.ts\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $t: (key: string) => string;\n    $route: { path: string };\n  }\n}",
     "vp run vize:check:app",
-    "{\n  \"scripts\": {\n    \"vize:lint\": \"vize lint src\",\n    \"vize:check\": \"vize check src --strict\",\n    \"vize:ready\": \"vize ready src\"\n  }\n}",
+    "{\n  \"scripts\": {\n    \"vize:lint\": \"vize lint src\",\n    \"vize:check\": \"vize check src\",\n    \"vize:ready\": \"vize ready src\"\n  }\n}",
     "vp run vize:lint\nvp run vize:check\nvp run vize:ready",
     "nix run github:ubugeeei-prod/vize#vize -- check --tsconfig tsconfig.app.json --profile src\nvize check --tsconfig tsconfig.app.json --profile src\nvize lsp",
     "vp install -D oxlint oxlint-plugin-vize\nvp exec oxlint-vize -c .oxlintrc.json -f stylish src",
