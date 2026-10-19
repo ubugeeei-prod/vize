@@ -93,29 +93,29 @@ jobs:
           CASE: ${{ matrix.case }}
           FILES: ${{ matrix.files }}
         run: |
-          python3 - <<'PY'
-          import json, os, pathlib, subprocess
-          source = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-          assert source == os.environ["SOURCE_SHA"]
-          data = {
-              "case": os.environ["CASE"],
-              "files": int(os.environ["FILES"]),
-              "source_revision": source,
-              "workflow_revision": os.environ["GITHUB_SHA"],
-              "before_revision": "18a105fd5fa7ebbe385881dc6052ed44f12b498b",
-              "candidate_patches": ["93c3e770fe3d5e2651355ae138d29f55abc75e87", "f18898088cd8ac6d16270674c67ba9c909e7641f"],
-              "scope": "all buffers opened first; every buffer structurally witnessed, then every distinct provider warmed",
-              "services": ["editor", "ecosystem", "lint", "typecheck"],
-              "runs": 1,
-              "idle_seconds": 10,
-              "sampler": "50 ms Linux process-tree RSS and cumulative sampled CPU, including all Corsa descendants",
-              "build": "ci-opt: release, thin LTO, 16 codegen units",
-              "acceptance": "controlled observation only; no numeric ceiling",
-              "deadline_minutes": 15,
-          }
-          path = pathlib.Path(os.environ["RUNNER_TEMP"]) / "source-methodology.json"
-          path.write_text(json.dumps(data, indent=2) + "\n")
-          PY
+          node --input-type=module <<'JS'
+          import { execFileSync } from "node:child_process";
+          import { writeFileSync } from "node:fs";
+          const source = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+          if (source !== process.env.SOURCE_SHA) throw new Error("checkout is not the requested source");
+          const data = {
+            case: process.env.CASE,
+            files: Number.parseInt(process.env.FILES, 10),
+            source_revision: source,
+            workflow_revision: process.env.GITHUB_SHA,
+            before_revision: "18a105fd5fa7ebbe385881dc6052ed44f12b498b",
+            candidate_patches: ["93c3e770fe3d5e2651355ae138d29f55abc75e87", "f18898088cd8ac6d16270674c67ba9c909e7641f"],
+            scope: "all buffers opened first; every buffer structurally witnessed, then every distinct provider warmed",
+            services: ["editor", "ecosystem", "lint", "typecheck"],
+            runs: 1,
+            idle_seconds: 10,
+            sampler: "50 ms Linux process-tree RSS and cumulative sampled CPU, including all Corsa descendants",
+            build: "ci-opt: release, thin LTO, 16 codegen units",
+            acceptance: "controlled observation only; no numeric ceiling",
+            deadline_minutes: 15,
+          };
+          writeFileSync(`${process.env.RUNNER_TEMP}/source-methodology.json`, `${JSON.stringify(data, null, 2)}\n`);
+          JS
       - name: Build the measured production server
         if: ${{ github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}
         run: >-
@@ -135,23 +135,26 @@ jobs:
       - name: Save binary identity and exact command with every result
         if: ${{ always() && github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}
         run: |
-          python3 - <<'PY'
-          import hashlib, json, os, pathlib
-          root = pathlib.Path(os.environ["RUNNER_TEMP"])
-          manifest_path = root / "source-methodology.json"
-          if manifest_path.exists():
-              manifest = json.loads(manifest_path.read_text())
-              binary = pathlib.Path("target/ci-opt/vize")
-              if binary.exists():
-                  manifest["binary_sha256"] = hashlib.sha256(binary.read_bytes()).hexdigest()
-              result_path = root / "lsp-resource.json"
-              if result_path.exists():
-                  result = json.loads(result_path.read_text())
-                  manifest["command"] = result["command"]
-                  result["comparison_source"] = manifest
-                  result_path.write_text(json.dumps(result, indent=2) + "\n")
-              manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
-          PY
+          node --input-type=module <<'JS'
+          import { createHash } from "node:crypto";
+          import { existsSync, readFileSync, writeFileSync } from "node:fs";
+          const root = process.env.RUNNER_TEMP;
+          const manifestPath = `${root}/source-methodology.json`;
+          if (existsSync(manifestPath)) {
+            const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+            const binary = "target/ci-opt/vize";
+            if (existsSync(binary))
+              manifest.binary_sha256 = createHash("sha256").update(readFileSync(binary)).digest("hex");
+            const resultPath = `${root}/lsp-resource.json`;
+            if (existsSync(resultPath)) {
+              const result = JSON.parse(readFileSync(resultPath, "utf8"));
+              manifest.command = result.command;
+              result.comparison_source = manifest;
+              writeFileSync(resultPath, `${JSON.stringify(result, null, 2)}\n`);
+            }
+            writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+          }
+          JS
       - name: Bind the original warm-request pair to its actual source baseline
         if: ${{ github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true' }}
         env:

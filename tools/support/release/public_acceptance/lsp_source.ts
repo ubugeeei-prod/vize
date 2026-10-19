@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { parse as parseToml } from "@iarna/toml";
 import { readRawBlob } from "./plan.ts";
 
 export const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
@@ -64,24 +65,18 @@ export function readLspSourceFiles(root: string, head: string) {
   };
   return { originalFiles: tracked(prefixes), atomicFiles: tracked(atomicPrefixes) };
 }
-export function python(script: string, args: string[]) {
-  return JSON.parse(
-    execFileSync("python3", ["-c", script, ...args], {
-      maxBuffer: 64 * 1024 * 1024,
-      timeout: 30_000,
-      encoding: "utf8",
-    }),
-  );
+/** Parses TOML into plain JSON values (no TOML date objects). */
+export function tomlJson(source: string) {
+  return JSON.parse(JSON.stringify(parseToml(source)));
 }
 export function sourceMetadata(root: string, head: string) {
   const read = (file: string) => readRawBlob(root, head, file);
-  const metadata = python(
-    `import json,sys,tomllib
-cargo,toolchain=sys.argv[1:]
-c=tomllib.loads(cargo); t=tomllib.loads(toolchain)
-print(json.dumps({'package':c['workspace']['package'],'dependencies':c['workspace']['dependencies'],'toolchain':t['toolchain']['channel']}))`,
-    [read("Cargo.toml").toString(), read("rust-toolchain.toml").toString()],
-  );
+  const cargo = tomlJson(read("Cargo.toml").toString());
+  const metadata = {
+    package: cargo.workspace.package,
+    dependencies: cargo.workspace.dependencies,
+    toolchain: tomlJson(read("rust-toolchain.toml").toString()).toolchain.channel,
+  };
   assert.match(metadata.toolchain, /^\d+\.\d+\.\d+$/u);
   const cli = JSON.parse(read("npm/cli/package.json").toString());
   const name = "@typescript/typescript-linux-x64";

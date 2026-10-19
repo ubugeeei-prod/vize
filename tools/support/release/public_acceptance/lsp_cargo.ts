@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { python, sha256, targets, supportTargets } from "./lsp_source.ts";
+import { sha256, supportTargets, targets, tomlJson } from "./lsp_source.ts";
 
 type Package = {
   id: string;
@@ -28,10 +28,7 @@ export function assertSupportGraph(
   originalLock: string,
   expectedTargets = targets,
 ) {
-  const locked = python(
-    "import json,sys,tomllib\nprint(json.dumps(tomllib.load(open(sys.argv[1],'rb'))['package']))",
-    [originalLock],
-  );
+  const locked = tomlJson(fs.readFileSync(originalLock, "utf8")).package;
   const allowed = new Map([
     ["vize_carton", "crates/vize_carton"],
     ["vize_l0", "davinci/vize_l0"],

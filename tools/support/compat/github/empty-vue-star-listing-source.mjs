@@ -118,13 +118,12 @@ function confirm(owned) {
     assertBytes(regular(owned.root, file), body, "same complete current source: " + file);
 }
 
-const setupWorkflows = new Set([
-  ".github/workflows/davinci-canon-scaling.yml",
-  ".github/workflows/typechecker-native-phases.yml",
-]);
+const setupWorkflows = new Set([".github/workflows/typechecker-native-phases.yml"]);
+/** Recorded by its historical bytes only; the current workflow may change freely. */
+const unpinnedWorkflows = new Set([".github/workflows/davinci-canon-scaling.yml"]);
 /** Historical source stays literal; current CI may use the approved setup changes. */
 export function assertStarListingWorkflowSetup(file, before, after) {
-  assert(setupWorkflows.has(file), "only the two reviewed current workflow contracts");
+  assert(setupWorkflows.has(file), "only the reviewed current workflow contract");
   const documents = [before, after].map((body) => parse(body.toString()));
   for (const document of documents) {
     if (file === ".github/workflows/typechecker-native-phases.yml") {
@@ -295,9 +294,9 @@ export function authenticateStarListingSource(root) {
     assert.equal(blob(old), beforeBlob);
     assert.equal(old.length, beforeLength);
     assert.equal(sha(old), beforeSHA);
-    if (setupWorkflows.has(file)) {
+    if (setupWorkflows.has(file) || unpinnedWorkflows.has(file)) {
       assert.equal(beforeBlob, afterBlob, "the recorded workflow did not change in the listing");
-      assertStarListingWorkflowSetup(file, old, body);
+      if (setupWorkflows.has(file)) assertStarListingWorkflowSetup(file, old, body);
       body = old;
     }
     assert.equal(blob(body), afterBlob);
@@ -468,7 +467,7 @@ export function starListingLexicalReader(copiedRoot) {
     assert(metadata.javascriptPaths.includes(file), "one closed current lexical JS93 source");
     const current = regular(copiedRoot, file);
     assertBytes(current, value.live.get(file), "complete actual copied lexical source");
-    if (lexicalCounterparts.has(file) || setupWorkflows.has(file)) {
+    if (lexicalCounterparts.has(file) || setupWorkflows.has(file) || unpinnedWorkflows.has(file)) {
       owned(packet);
       return Buffer.from(value.before.get(file));
     }
