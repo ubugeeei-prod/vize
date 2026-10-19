@@ -87,6 +87,28 @@ pub fn builtin_css_rules() -> Vec<BuiltinCssRuleMeta> {
 #[cfg(test)]
 mod tests {
     use super::builtin_css_rules;
+    use crate::Linter;
+
+    #[test]
+    fn css_rules_read_plain_css_blocks_only() {
+        let linter = Linter::new().with_enabled_rules(Some(vec!["css/no-important".into()]));
+        let source = "<template><div class=\"a\" /></template>\n<style>.a { margin: 0 !important; }</style>\n<style lang=\"postcss\">.b { margin: 0 !important; }</style>\n<style lang=\"scss\">.c { margin: 0 !important; }</style>\n<style lang=\"less\">.d { margin: 0 !important; }</style>\n<style lang=\"stylus\">.e { margin: 0 !important; }</style>\n<style lang=\"sass\">.f\n  margin: 0 !important</style>\n";
+        let lines: Vec<usize> = linter
+            .lint_sfc(source, "Card.vue")
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "css/no-important")
+            .map(|diagnostic| {
+                source
+                    .get(..diagnostic.start as usize)
+                    .unwrap_or_default()
+                    .matches('\n')
+                    .count()
+                    + 1
+            })
+            .collect();
+        assert_eq!(lines, [2, 3]);
+    }
 
     #[test]
     fn builtin_css_rules_cover_the_opinionated_and_nuxt_presets() {
@@ -130,8 +152,12 @@ fn css_rule_for_name(rule_name: &str) -> Option<Box<dyn CssRule>> {
     Some(rule)
 }
 
-/// Run every active built-in `css/*` rule against each `<style>` block of the
-/// SFC and append the diagnostics to `result`.
+fn is_plain_css(lang: Option<&str>) -> bool {
+    lang.is_none_or(|lang| lang.eq_ignore_ascii_case("css") || lang.eq_ignore_ascii_case("postcss"))
+}
+
+/// Run every active built-in `css/*` rule against each plain-CSS `<style>`
+/// block of the SFC and append the diagnostics to `result`.
 pub(crate) fn append_builtin_css_diagnostics(
     linter: &Linter,
     descriptor: &SfcDescriptor<'_>,
@@ -167,7 +193,9 @@ pub(crate) fn append_builtin_css_diagnostics(
 
     for style in &descriptor.styles {
         // External styles (`<style src="...">`) have no inline content to lint.
-        if style.src.is_some() {
+        // The rules read plain CSS; preprocessor syntax (scss, sass, less,
+        // stylus) is skipped rather than half-parsed as CSS.
+        if style.src.is_some() || !is_plain_css(style.lang.as_deref()) {
             continue;
         }
         let source = style.content.as_ref();

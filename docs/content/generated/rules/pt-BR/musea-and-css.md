@@ -38,7 +38,7 @@ Sugerir v-show em vez de display: none
 Severidade padrão: `warning`  
 Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
-Aplicável a: CSS dentro dos blocos style de SFCs  
+Aplicável a: Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados)  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
 
 **Configuração (Vite+)**
@@ -105,7 +105,7 @@ Sugerir variáveis CSS em vez de valores fixos escritos diretamente
 Severidade padrão: `warning`  
 Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
-Aplicável a: CSS dentro dos blocos style de SFCs  
+Aplicável a: Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados)  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
 
 **Configuração (Vite+)**
@@ -172,7 +172,7 @@ Desencorajar o uso de seletores de ID no CSS
 Severidade padrão: `warning`  
 Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
-Aplicável a: CSS dentro dos blocos style de SFCs  
+Aplicável a: Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados)  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
 
 **Configuração (Vite+)**
@@ -237,7 +237,7 @@ Desencorajar o uso de !important no CSS
 Severidade padrão: `warning`  
 Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
-Aplicável a: CSS dentro dos blocos style de SFCs  
+Aplicável a: Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados)  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
 
 **Configuração (Vite+)**
@@ -302,7 +302,7 @@ Alertar sobre a implementação de classes utilitárias nos estilos de component
 Severidade padrão: `warning`  
 Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
-Aplicável a: CSS dentro dos blocos style de SFCs  
+Aplicável a: Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados)  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
 
 **Configuração (Vite+)**
@@ -365,7 +365,7 @@ Alertar sobre o custo de desempenho do v-bind() no CSS
 Severidade padrão: `warning`  
 Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
-Aplicável a: CSS dentro dos blocos style de SFCs  
+Aplicável a: Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados)  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
 
 **Configuração (Vite+)**
@@ -428,7 +428,7 @@ Recomendar propriedades lógicas de CSS para melhorar o suporte à internacional
 Severidade padrão: `warning`  
 Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
-Aplicável a: CSS dentro dos blocos style de SFCs  
+Aplicável a: Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados)  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
 
 **Configuração (Vite+)**
@@ -493,7 +493,7 @@ Recomendar o aninhamento de CSS para seletores de descendentes
 Severidade padrão: `warning`  
 Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
-Aplicável a: CSS dentro dos blocos style de SFCs  
+Aplicável a: Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados)  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
 
 **Configuração (Vite+)**
@@ -554,7 +554,7 @@ Recomendar ::v-slotted() para estilizar o conteúdo de slots
 Severidade padrão: `warning`  
 Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
-Aplicável a: CSS dentro dos blocos style de SFCs  
+Aplicável a: Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados)  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
 
 **Configuração (Vite+)**
@@ -615,7 +615,7 @@ Exigir font-display nas regras @font-face
 Severidade padrão: `warning`  
 Predefinições: `opinionated`, `nuxt`  
 Correção automática: Nenhuma; revise a alteração sugerida  
-Aplicável a: CSS dentro dos blocos style de SFCs  
+Aplicável a: Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados)  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
 
 **Configuração (Vite+)**

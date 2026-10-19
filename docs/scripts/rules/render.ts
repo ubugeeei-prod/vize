@@ -239,7 +239,9 @@ function scopeLabel(rule: RuleMetadata, example: RuleExample, ja: boolean) {
       ? "petite-vue と判定された HTML 文書。通常の Vue SFC は対象外です。"
       : "HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.";
   if (rule.metaType === "CssRuleMeta")
-    return ja ? "SFC の style ブロック内の CSS" : "CSS inside SFC style blocks";
+    return ja
+      ? "プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）"
+      : "Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)";
   if (rule.metaType === "MuseaRuleMeta")
     return ja
       ? "Musea の .art.vue ファイルの art / variant / style"

@@ -39,7 +39,7 @@ title: "Musea 与 CSS 规则"
 默认严重程度: `warning`  
 预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
-适用范围: SFC style 块内的 CSS  
+适用范围: 纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）  
 选项: 没有规则专属选项。可以配置严重程度和预设。
 
 **配置（Vite+）**
@@ -106,7 +106,7 @@ vp run lint
 默认严重程度: `warning`  
 预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
-适用范围: SFC style 块内的 CSS  
+适用范围: 纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）  
 选项: 没有规则专属选项。可以配置严重程度和预设。
 
 **配置（Vite+）**
@@ -173,7 +173,7 @@ vp run lint
 默认严重程度: `warning`  
 预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
-适用范围: SFC style 块内的 CSS  
+适用范围: 纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）  
 选项: 没有规则专属选项。可以配置严重程度和预设。
 
 **配置（Vite+）**
@@ -238,7 +238,7 @@ vp run lint
 默认严重程度: `warning`  
 预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
-适用范围: SFC style 块内的 CSS  
+适用范围: 纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）  
 选项: 没有规则专属选项。可以配置严重程度和预设。
 
 **配置（Vite+）**
@@ -303,7 +303,7 @@ vp run lint
 默认严重程度: `warning`  
 预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
-适用范围: SFC style 块内的 CSS  
+适用范围: 纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）  
 选项: 没有规则专属选项。可以配置严重程度和预设。
 
 **配置（Vite+）**
@@ -366,7 +366,7 @@ vp run lint
 默认严重程度: `warning`  
 预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
-适用范围: SFC style 块内的 CSS  
+适用范围: 纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）  
 选项: 没有规则专属选项。可以配置严重程度和预设。
 
 **配置（Vite+）**
@@ -429,7 +429,7 @@ vp run lint
 默认严重程度: `warning`  
 预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
-适用范围: SFC style 块内的 CSS  
+适用范围: 纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）  
 选项: 没有规则专属选项。可以配置严重程度和预设。
 
 **配置（Vite+）**
@@ -494,7 +494,7 @@ vp run lint
 默认严重程度: `warning`  
 预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
-适用范围: SFC style 块内的 CSS  
+适用范围: 纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）  
 选项: 没有规则专属选项。可以配置严重程度和预设。
 
 **配置（Vite+）**
@@ -555,7 +555,7 @@ vp run lint
 默认严重程度: `warning`  
 预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
-适用范围: SFC style 块内的 CSS  
+适用范围: 纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）  
 选项: 没有规则专属选项。可以配置严重程度和预设。
 
 **配置（Vite+）**
@@ -616,7 +616,7 @@ slot { color: red; }
 默认严重程度: `warning`  
 预设: `opinionated`, `nuxt`  
 自动修复: 无；请检查建议的修改  
-适用范围: SFC style 块内的 CSS  
+适用范围: 纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）  
 选项: 没有规则专属选项。可以配置严重程度和预设。
 
 **配置（Vite+）**

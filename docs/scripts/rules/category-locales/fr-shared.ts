@@ -18,7 +18,8 @@ export const frenchShared = {
     "Aucune ; examinez les fichiers concernés et appliquez la correction",
   "Analyzed component graph and the supported facts described below":
     "Graphe de composants analysé et faits pris en charge décrits ci-dessous",
-  "CSS inside SFC style blocks": "CSS dans les blocs style des SFC",
+  "Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)":
+    "Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)",
   "HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.":
     "Documents HTML détectés comme petite-vue ; les SFC Vue ordinaires sont hors du champ de cette règle.",
   "JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form":

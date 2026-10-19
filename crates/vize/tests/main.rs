@@ -278,6 +278,7 @@ mod ready_progress_cli;
 mod render_why;
 mod slot_provide_inject_original_cli;
 mod source_write_atomic_cli;
+mod style_preprocessors_toolchain_cli;
 mod tsconfig_diamond;
 
 /// `autotests = false` would silently skip a new top-level test file; every one
