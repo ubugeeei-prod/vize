@@ -244,6 +244,7 @@ impl VirtualProject {
         // source deleted after route resolution). Attempt it once per call;
         // a later discovery wave may retry an absent, previously visited file.
         let mut attempted = FxHashSet::default();
+        let mut reachability = Default::default();
         loop {
             let mut targets = self
                 .package_route_source_paths()
@@ -259,7 +260,7 @@ impl VirtualProject {
             targets.sort();
             attempted.extend(targets.iter().cloned());
             self.register_paths(&targets)?;
-            self.reconcile_package_routes_for_importers(&targets);
+            self.reconcile_package_routes_for_importers_with(&targets, &mut reachability);
             processed.extend(targets);
         }
         Ok(())
