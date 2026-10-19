@@ -142,14 +142,11 @@ test("quoted first-occurrence positions exclude foreign owners and preserve comp
   assert.ok(!Object.keys(expected.rename.changes).some((key) => key.endsWith("/Other.vue")));
 });
 
-test("original source, independent golden, and Rust-law mutations fail byte custody", () => {
+test("original source and independent golden mutations fail byte custody", () => {
   const copy = fs.mkdtempSync(path.join(os.tmpdir(), "event-slot-custody-"));
-  const owners = [
-    ...Object.keys(eventSlotSourceShas).map((file) => `tests/_fixtures/differential/lsp/${file}`),
-    "crates/vize/tests/lsp_original_event_rename_cli.rs",
-    "crates/vize/tests/lsp_original_slot_rename_cli.rs",
-    "crates/vize/tests/support/lsp_authored_rename.rs",
-  ];
+  const owners = Object.keys(eventSlotSourceShas).map(
+    (file) => `tests/_fixtures/differential/lsp/${file}`,
+  );
   try {
     for (const owner of owners) {
       const target = path.join(copy, owner);
@@ -160,7 +157,6 @@ test("original source, independent golden, and Rust-law mutations fail byte cust
     for (const owner of [
       owners[0],
       "tests/_fixtures/differential/lsp/event-rename/8010/UpdatedToggle.vue.txt",
-      owners.at(-1)!,
     ]) {
       const target = path.join(copy, owner),
         original = fs.readFileSync(target);

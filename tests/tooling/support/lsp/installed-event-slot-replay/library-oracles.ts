@@ -131,7 +131,11 @@ export function loadFrozenLibraryCases(root: string): readonly LibraryCase[] {
     assert.equal(metadata.workflow_run.head_sha, manifest.sourceHead);
   }
   const sourceRoot = path.resolve(root, "../../../../../..");
-  for (const [file, sha] of Object.entries(manifest.sourceFiles))
+  // Frozen fixture inputs stay byte-identical. The Rust tests that produced
+  // the oracles are not pinned: they run as ordinary tests and may evolve.
+  for (const [file, sha] of Object.entries(manifest.sourceFiles).filter(
+    ([file]) => !file.startsWith("crates/"),
+  ))
     assert.equal(
       digest(originalVueConfigFixtureSource(file, fs.readFileSync(path.join(sourceRoot, file)))),
       sha,

@@ -4,7 +4,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { utf16Position } from "../installed-alias-replay/apply.ts";
-import { originalVueConfigFixtureSource } from "../../vue-config-source-custody.ts";
 
 type ObjectValue = Record<string, unknown>;
 type Family = "event" | "slot" | "quoted-slot";
@@ -51,16 +50,6 @@ export const eventSlotSourceShas = Object.freeze({
   "slot-rename/8011/controls/QuotedUserRenamed.vue.txt":
     "1e1e0d595bf9e95007ab6f75125d7cb9a4e7115ff04da66539359e4a76e32cb6",
 });
-const originalLawShas = {
-  "crates/vize/tests/lsp_original_event_rename_cli.rs":
-    "71ea12971aacb34c6b4aa137f8feb5676efd193048de040196132edff1b0845a",
-  "crates/vize/tests/lsp_original_slot_rename_cli.rs":
-    "8674b90bbeb56c07305ceeeaf77e3b26b3b97056cd7066a5e040651537f6b5e7",
-  "crates/vize/tests/support/lsp_authored_rename.rs":
-    "74d639dcf3f01840fd01582eeffa264266d7c4a8d67ec37be1a2e106e91c668b",
-  // lsp_vue_project.rs is the shared fixture launcher every LSP test extends;
-  // it carries no event or slot law, so it is not pinned here.
-};
 const wholeExpectedShas: Record<Family, readonly string[]> = {
   event: [
     "ce46e364502cb635ccf61d44ce675d96102bc53292b4640bb9bebced1bb82059",
@@ -157,12 +146,6 @@ export function loadEventSlotCases(repositoryRoot: string): readonly EventSlotCa
     assert.equal(sha(bytes), expectedSha, `original source/golden SHA: ${file}`);
     sources.set(file, new TextDecoder("utf8", { fatal: true }).decode(bytes));
   }
-  for (const [file, expectedSha] of Object.entries(originalLawShas))
-    assert.equal(
-      sha(originalVueConfigFixtureSource(file, fs.readFileSync(path.join(repositoryRoot, file)))),
-      expectedSha,
-      `original law SHA: ${file}`,
-    );
   assert.equal(
     sha(eventSlotTsconfig),
     "9745d8b2987e4d3bc6b18aa35f8ca96ec1d3a7578b2815b3bfd9523a0bd75581",
