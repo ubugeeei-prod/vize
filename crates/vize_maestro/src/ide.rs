@@ -52,7 +52,7 @@ pub mod linked_editing;
 pub(crate) mod markup;
 pub(crate) mod moniker;
 pub(crate) mod musea;
-#[cfg(test)]
+#[cfg(all(test, feature = "native"))]
 mod navigation_corsa_tests;
 pub(crate) mod pug;
 pub mod references;
