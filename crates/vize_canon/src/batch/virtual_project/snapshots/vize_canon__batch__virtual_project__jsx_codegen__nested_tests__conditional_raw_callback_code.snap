@@ -1,0 +1,28 @@
+---
+source: crates/vize_canon/src/batch/virtual_project/jsx_codegen.rs
+expression: generated.code
+---
+declare function __vize_jsx_expr__(...args: unknown[]): any;
+type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
+type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
+type __EmitFn<T, __S = __EmitShape<T>, __K extends keyof __S & string = keyof __S & string, __U = { [K in __K]: (event: K, ...args: __EmitArgs<__S, K>) => void }[__K]> = __S extends (...args: any[]) => any ? __S : [__K] extends [never] ? (event: never, ...args: any[]) => void : (__U extends unknown ? (fn: __U) => void : never) extends (fn: infer __I) => void ? __I : never;
+type Ctx<Emits = {}, Slots = {}> = { emit: __EmitFn<Emits>; slots: Slots; attrs: Record<string, unknown>; };
+type __VizeJsxKebabCase<S extends string> = S extends `${infer H}${infer T}` ? H extends Lowercase<H> ? `${H}${__VizeJsxKebabCase<T>}` : `-${Lowercase<H>}${__VizeJsxKebabCase<T>}` : S;
+type __VizeJsxCamelCase<S extends string> = S extends `data-${string}` | `aria-${string}` ? S : S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeJsxCamelCase<T>>}` : S;
+type __VizeJsxRawPropKeys<R> = R extends unknown ? { [K in keyof R]-?: K extends string ? K | __VizeJsxKebabCase<K> : K }[keyof R] : never;
+type __VizeJsxCanonicalRawProps<R> = R extends unknown ? { [K in keyof R as K extends string ? __VizeJsxCamelCase<K> : K]: R[K] } : never;
+type __VizeJsxIsUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
+type __VizeJsxUnionKeys<T> = T extends unknown ? keyof T : never;
+type __VizeJsxUnionValue<T, K extends PropertyKey> = T extends unknown ? K extends keyof T ? T[K] : never : never;
+type __VizeJsxLooseUnionProps<T> = { [K in __VizeJsxUnionKeys<T>]?: __VizeJsxUnionValue<T, K> };
+type __VizeJsxNormalizeProps<T> = __VizeJsxIsUnion<T> extends true ? __VizeJsxLooseUnionProps<T> : T;
+type __VizeJsxDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (event: GlobalEventHandlersEventMap[K]) => void };
+type __VizeJsxFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown } & Omit<__VizeJsxDomListenerProps, keyof Owned>;
+type __VizeJsxSfcComponentProps<I> = I extends { $props: infer P } ? I extends { readonly __vizeRawProps?: infer R } ? Omit<P, __VizeJsxRawPropKeys<R>> & __VizeJsxCanonicalRawProps<R> & __VizeJsxFallthroughAttrs<P> : __VizeJsxCanonicalRawProps<P> & __VizeJsxFallthroughAttrs<P> : any;
+type __VizeJsxComponentProps<C> = C extends abstract new (...args: any[]) => infer I ? __VizeJsxNormalizeProps<__VizeJsxSfcComponentProps<I>> : C extends (props: infer P, ...args: any[]) => any ? __VizeJsxNormalizeProps<__VizeJsxCanonicalRawProps<P> & __VizeJsxFallthroughAttrs<P>> : any;
+type __VizeJsxSlotPayload<C, N extends string> = C extends abstract new (...args: any[]) => infer I ? I extends { $slots: infer S } ? N extends keyof S ? NonNullable<S[N]> extends (props: infer P, ...args: any[]) => any ? P : any : any : any : any;
+declare function __vize_jsx_component_spread__<O>(value: O): __VizeJsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;
+type __VizeJsxComponentCall<C> = C extends abstract new (...args: any[]) => any ? (props: __VizeJsxComponentProps<C>) => any : C extends (...args: any[]) => any ? C : (props: __VizeJsxComponentProps<C>) => any;
+declare function __vize_jsx_component__<C>(component: C): __VizeJsxComponentCall<C>;
+declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: __VizeJsxSlotPayload<C, N>) => unknown): any;
+const view = __vize_jsx_expr__(__vize_jsx_component__(Host)({}), ok, Array.from({ length: 3 }, (_, i) => __vize_jsx_expr__(i)));

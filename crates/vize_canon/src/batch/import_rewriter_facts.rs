@@ -325,7 +325,7 @@ const sentinel = label;
             );
             assert_rewrite_equal(&actual, &expected);
             assert_eq!(actual.code.matches(target).count(), 5);
-            assert!(actual.code.contains("日本語🍣"));
+            assert_eq!(actual.code.matches("日本語🍣").count(), 1);
             let original = source.find("sentinel").unwrap() as u32;
             let generated = actual.code.find("sentinel").unwrap() as u32;
             assert_eq!(actual.source_map.get_virtual_offset(original), generated);

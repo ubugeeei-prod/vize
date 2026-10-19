@@ -221,10 +221,6 @@ const product = {} as Product
             let location = scalar_location(response);
             assert_eq!(location.uri, uri);
             assert_eq!(authored_text(source, &location), "Product");
-            assert!(
-                !location.uri.path().ends_with(".vue.ts"),
-                "generated URI leaked: {location:#?}",
-            );
         });
     }
 

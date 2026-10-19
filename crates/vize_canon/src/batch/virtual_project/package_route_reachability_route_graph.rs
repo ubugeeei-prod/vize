@@ -89,11 +89,21 @@ mod tests {
         assert_eq!(result.outcome, ReachabilityOutcome::BudgetExceeded);
         assert_eq!(result.work.packages, 2);
         assert_eq!(result.work.files, 0);
-        assert!(
-            result
-                .inputs
-                .iter()
-                .any(|path| path.ends_with("p2/package.json"))
+        let inputs = result
+            .inputs
+            .iter()
+            .map(|path| path.strip_prefix(root.path()).unwrap().to_str().unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            inputs,
+            [
+                "p0",
+                "p0/package.json",
+                "p1",
+                "p1/package.json",
+                "p2",
+                "p2/package.json"
+            ]
         );
     }
 
