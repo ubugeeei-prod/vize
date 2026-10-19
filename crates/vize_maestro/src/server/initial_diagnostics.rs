@@ -16,6 +16,7 @@ use vize_l0::FxHashMap;
 
 use super::MaestroServer;
 
+mod api_read;
 mod preparation;
 mod retry;
 pub(super) use retry::RetainedDiagnostics;
@@ -26,11 +27,13 @@ pub(super) use retry::RetainedDiagnostics;
 const INTERACTIVE_GRACE: Duration = Duration::from_secs(1);
 const MAX_PENDING_DOCUMENTS: usize = 64;
 
+#[derive(Clone)]
 struct InitialDiagnosticsJob {
     version: i32,
     not_before: Instant,
     sequence: u64,
     sync_pending: bool,
+    continuation: Option<super::state::InitialConfigurationContinuation>,
 }
 
 #[derive(Default)]
@@ -47,6 +50,16 @@ impl PendingInitialDiagnostics {
     }
 
     fn insert(&mut self, uri: Url, version: i32, not_before: Instant) {
+        self.insert_with_continuation(uri, version, not_before, None);
+    }
+
+    fn insert_with_continuation(
+        &mut self,
+        uri: Url,
+        version: i32,
+        not_before: Instant,
+        continuation: Option<super::state::InitialConfigurationContinuation>,
+    ) {
         if self
             .jobs
             .get(&uri)
@@ -75,11 +88,12 @@ impl PendingInitialDiagnostics {
                 not_before,
                 sequence,
                 sync_pending: true,
+                continuation,
             },
         );
     }
 
-    fn take_sync(&mut self) -> Option<(Url, i32)> {
+    fn take_sync(&mut self) -> Option<(Url, InitialDiagnosticsJob)> {
         let uri = self
             .jobs
             .iter()
@@ -88,7 +102,7 @@ impl PendingInitialDiagnostics {
             .map(|(uri, _)| uri.clone())?;
         let job = self.jobs.get_mut(&uri)?;
         job.sync_pending = false;
-        Some((uri, job.version))
+        Some((uri, job.clone()))
     }
 
     fn next_not_before(&self) -> Option<Instant> {
@@ -159,13 +173,21 @@ impl InitialDiagnosticsScheduler {
         }
     }
 
-    pub(super) fn schedule(&self, uri: Url, version: i32) -> bool {
+    fn schedule(
+        &self,
+        uri: Url,
+        version: i32,
+        continuation: Option<super::state::InitialConfigurationContinuation>,
+    ) -> bool {
         let Some(sender) = &self.sender else {
             return false;
         };
-        self.pending
-            .lock()
-            .insert(uri, version, Instant::now() + INTERACTIVE_GRACE);
+        self.pending.lock().insert_with_continuation(
+            uri,
+            version,
+            Instant::now() + INTERACTIVE_GRACE,
+            continuation,
+        );
         match sender.try_send(()) {
             Ok(()) | Err(mpsc::TrySendError::Full(())) => true,
             Err(mpsc::TrySendError::Disconnected(())) => {
@@ -220,13 +242,16 @@ fn run_worker(
             // off the foreground didOpen handler while still publishing prompt
             // non-empty feedback before the delayed native type pass.
             let sync_job = { pending.lock().take_sync() };
-            if let Some((uri, version)) = sync_job {
+            if let Some((uri, job)) = sync_job {
+                let version = job.version;
                 crate::runtime::block_on(async {
                     let phase = vize_canon::corsa_bridge::EditorPreparationPhase::start(
                         "initial_sync_configuration_admission",
                         1,
                     );
-                    let project = worker.for_document(&uri).await;
+                    let project = worker
+                        .for_initial_document(&uri, version, job.continuation.as_ref())
+                        .await;
                     phase.finish();
                     project
                         .publish_initial_sync_diagnostics(&uri, version)
@@ -264,10 +289,16 @@ fn run_worker(
                     "initial_type_configuration_admission",
                     1,
                 );
-                let project = worker.for_document(&uri).await;
+                let project = worker
+                    .for_initial_document(&uri, job.version, job.continuation.as_ref())
+                    .await;
                 phase.finish();
                 project
-                    .publish_diagnostics_if_version(&uri, job.version)
+                    .publish_initial_api_diagnostics_if_version(
+                        &uri,
+                        job.version,
+                        job.continuation.as_ref(),
+                    )
                     .await;
                 tracing::info!(
                     "finished initial type diagnostics for {} version {}",
@@ -291,9 +322,13 @@ async fn refresh_initial_importers(project: &MaestroServer, uri: &Url, version: 
 
 impl MaestroServer {
     pub(super) fn schedule_initial_diagnostics(&self, uri: Url, version: i32) -> bool {
-        self.initial_diagnostics
-            .as_ref()
-            .is_some_and(|scheduler| scheduler.schedule(uri, version))
+        self.initial_diagnostics.as_ref().is_some_and(|scheduler| {
+            scheduler.schedule(
+                uri.clone(),
+                version,
+                self.state.initial_configuration_continuation(&uri, version),
+            )
+        })
     }
 }
 

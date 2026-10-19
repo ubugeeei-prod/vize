@@ -52,7 +52,8 @@ use super::{
 pub use compiler_keys::*;
 pub use library::{LoadedLibConfig, load_lib_config_with_source};
 pub use lsp_snapshot::{
-    LoadedLspConfig, load_lsp_config_snapshot, load_lsp_config_snapshot_observed,
+    ConfigEvaluationSession, LoadedLspConfig, load_lsp_config_snapshot,
+    load_lsp_config_snapshot_observed,
 };
 pub use {jsx::load_compiler_jsx_compat, vapor::load_compiler_vapor};
 pub use {language_server::*, lint_features::*};

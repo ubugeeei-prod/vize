@@ -1,10 +1,16 @@
 //! Open-document lifecycle and diagnostic requests.
+#![expect(
+    clippy::disallowed_types,
+    reason = "owned SDK and mirror leases cross the initial read worker"
+)]
 
-use std::sync::atomic::Ordering;
+use std::sync::{Arc, atomic::Ordering};
 
 use vize_carton::{String, cstr};
 
-use super::CorsaBridge;
+use super::{
+    CorsaBridge, InitialApiDiagnostics, InitialApiDiagnosticsOutcome, PendingInitialApiDiagnostics,
+};
 use crate::corsa_bridge::types::{
     CorsaBridgeError, LspDiagnostic, TypeCheckResult, VIRTUAL_URI_SCHEME,
 };
@@ -142,6 +148,89 @@ impl CorsaBridge {
         Ok(())
     }
 
+    /// Must be called after the current native transaction has opened all
+    /// canonical sources. Captures without issuing a diagnostic query.
+    pub async fn prepare_initial_api_diagnostics(
+        &self,
+        uri: &str,
+    ) -> Result<Option<InitialApiDiagnostics>, CorsaBridgeError> {
+        let uri = uri.to_owned();
+        let read = self
+            .with_client(move |client| {
+                client
+                    .prepare_initial_diagnostics_read(&uri)
+                    .map_err(CorsaBridgeError::CommunicationError)
+            })
+            .await?;
+        Ok(read.map(|read| InitialApiDiagnostics {
+            read: Arc::new(read),
+            mirror: Arc::clone(&self.editor_session),
+        }))
+    }
+
+    /// The caller executes this synchronous transaction while holding its real
+    /// source guard, then checks its full owner receipt. The existing exclusive
+    /// client lane can roll back only its own row if that postguard refuses it.
+    /// No error is classified or session retired before authority is accepted.
+    pub async fn finish_initial_api_diagnostics<F>(
+        &self,
+        pending: PendingInitialApiDiagnostics,
+        with_current_source: F,
+    ) -> Result<InitialApiDiagnosticsOutcome, CorsaBridgeError>
+    where
+        F: FnOnce(&mut dyn FnMut() -> bool) -> bool + Send + 'static,
+    {
+        let (outcome, cache_len) = self
+            .with_client(move |client| {
+                let uri = pending.read.uri().to_owned();
+                // Decode the inert owned response before taking the caller's
+                // host-document guard; the guarded section only swaps a row.
+                let read = pending.read;
+                let (mut diagnostics, staged) = match pending.result {
+                    Ok(Some(diagnostics)) => match convert_bridge_diagnostics(&diagnostics) {
+                        Ok(mapped) => (
+                            Some(diagnostics),
+                            InitialApiDiagnosticsOutcome::Complete(mapped),
+                        ),
+                        Err(error) => (None, InitialApiDiagnosticsOutcome::Failed(error)),
+                    },
+                    Ok(None) => (None, InitialApiDiagnosticsOutcome::Unsupported),
+                    Err(error) => (None, InitialApiDiagnosticsOutcome::Failed(error)),
+                };
+                let mut staged = Some(staged);
+                let mut previous = None;
+                let mut inserted = false;
+                let mut outcome = InitialApiDiagnosticsOutcome::Stale;
+                let accepted = with_current_source(&mut || {
+                    if !client.initial_diagnostics_read_is_current(&read) {
+                        return false;
+                    }
+                    let Some(candidate) = staged.take() else {
+                        return false;
+                    };
+                    if let Some(diagnostics) = diagnostics.take() {
+                        previous =
+                            client.replace_initial_diagnostics_cache(&uri, Some(diagnostics));
+                        inserted = true;
+                    }
+                    outcome = candidate;
+                    true
+                });
+                if !accepted {
+                    if inserted {
+                        client.replace_initial_diagnostics_cache(&uri, previous);
+                    }
+                    outcome = InitialApiDiagnosticsOutcome::Stale;
+                }
+                Ok((outcome, client.diagnostics_cache_len()))
+            })
+            .await?;
+        if matches!(outcome, InitialApiDiagnosticsOutcome::Complete(_)) {
+            self.cache_stats.set_entries(cache_len as u64);
+            self.cache_stats.miss();
+        }
+        Ok(outcome)
+    }
     pub async fn get_diagnostics(&self, uri: &str) -> Result<Vec<LspDiagnostic>, CorsaBridgeError> {
         let uri = uri.to_owned();
         let (used_cache, cache_len, diagnostics) = self
@@ -213,7 +302,7 @@ pub(crate) fn normalize_document_uri(name: &str) -> String {
     }
 }
 
-fn convert_bridge_diagnostics(
+pub(super) fn convert_bridge_diagnostics(
     diagnostics: &[lsp_types::Diagnostic],
 ) -> Result<Vec<LspDiagnostic>, CorsaBridgeError> {
     diagnostics

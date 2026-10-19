@@ -22,13 +22,14 @@ pub(super) fn parse_js_config_observed(
     observed: &mut Vec<PathBuf>,
     complete: &mut bool,
     before_read: &mut BeforeConfigRead<'_>,
+    compile_cache: Option<&Path>,
 ) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
     let EvaluatedConfig {
         path: config_path,
         json,
         dependencies,
         policy,
-    } = evaluate_js_config_with_dependencies(path, observed, complete, before_read)?;
+    } = evaluate_js_config_with_dependencies(path, observed, complete, before_read, compile_cache)?;
 
     // Public Vite settings permit flat entry arrays. Normalize only that shape
     // with the same pure Rust projection used by vize/config; ordinary objects
@@ -65,6 +66,7 @@ fn evaluate_js_config_with_dependencies(
     observed: &mut Vec<PathBuf>,
     complete: &mut bool,
     before_read: &mut BeforeConfigRead<'_>,
+    compile_cache: Option<&Path>,
 ) -> Result<EvaluatedConfig, Box<dyn std::error::Error>> {
     *complete = false;
     let config_path = if path.is_absolute() {
@@ -87,7 +89,9 @@ fn evaluate_js_config_with_dependencies(
 import { dirname } from "node:path";
 
 const configPath = process.argv[1];
-const observing = process.argv[2] === "--observe-config-inputs";
+const observing = process.argv[2] === "--observe-config-inputs" || process.argv[3] === "--observe-config-inputs";
+// Existing wrappers retain their argv shape; the session adds one private path before the marker.
+enableConfigCompileCache(process.argv[3] === "--observe-config-inputs" ? process.argv[2] : undefined);
 const acknowledgements = observing ? process.stdin[Symbol.asyncIterator]() : undefined;
 const beforeRead = observing ? async (paths) => {
   const payload = Buffer.from(JSON.stringify(paths));
@@ -104,8 +108,9 @@ let attemptedDependencies = [configPath];
 let attemptedComplete = false;
 let evaluated;
 let failureArtifacts = [];
+let configTimings;
 try {
-const { value: config, dependencies } = await importConfigModuleWithDependencies(
+const loaded = await importConfigModuleWithDependencies(
   configPath, undefined, undefined, async (module) => {
     const exported = module.default ?? module;
     return isViteConfigFile(configPath)
@@ -117,15 +122,20 @@ const { value: config, dependencies } = await importConfigModuleWithDependencies
   (paths, complete) => { attemptedDependencies = paths; attemptedComplete = complete; },
   beforeRead,
 );
+const { value: config, dependencies } = loaded;
+configTimings = configModuleEvaluationTimings(loaded);
 evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDependencies, watchDependenciesComplete: true };
 } catch (error) {
   if (observing) failureArtifacts = configModuleFailureArtifacts(error);
+  configTimings = configModuleEvaluationTimings(error);
   throw error;
 } finally {
   if (observing) process.stdout.write("R\n");
   const failure = { dependencies: attemptedDependencies, watchDependenciesComplete: attemptedComplete };
   if (failureArtifacts.length) failure.failureArtifacts = failureArtifacts;
-  process.stdout.write(JSON.stringify(evaluated ?? failure));
+  const result = evaluated ?? failure;
+  if (configTimings) result.configEvaluationTimings = configTimings;
+  process.stdout.write(JSON.stringify(result));
 }
 "#,
     ]
@@ -137,11 +147,28 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
         .arg(script)
         .arg(&config_path)
         .current_dir(config_path.parent().unwrap_or_else(|| Path::new(".")));
+    if let Some(directory) = compile_cache {
+        command.arg(directory);
+    }
+    let trace = std::env::var_os("VIZE_TRACE_EDITOR_PREPARATION").is_some_and(|value| value == "1");
+    let started = trace.then(std::time::Instant::now);
     let output = if let Some(observe) = before_read.as_deref_mut() {
         super::js_observation::evaluate_observed(&mut command, observe)?
     } else {
         command.output()?
     };
+
+    let child_elapsed = started.map(|started| started.elapsed());
+
+    #[derive(serde::Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    struct Timing {
+        phase: std::string::String,
+        elapsed_ms: f64,
+        process_id: u32,
+        #[serde(default, rename = "cpuProfile")]
+        cpu_profile: Option<serde_json::Value>,
+    }
 
     #[derive(serde::Deserialize)]
     struct Evaluation {
@@ -154,8 +181,41 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
         dependencies: Vec<std::string::String>,
         #[serde(default, rename = "failureArtifacts")]
         failure_artifacts: Vec<(std::string::String, std::string::String)>,
+        #[serde(default, rename = "configEvaluationTimings")]
+        timings: Vec<Timing>,
     }
     let evaluated = serde_json::from_slice::<Evaluation>(&output.stdout);
+    if let Some(elapsed) = child_elapsed {
+        let process = evaluated
+            .as_ref()
+            .ok()
+            .and_then(|value| value.timings.first());
+        match process {
+            Some(timing) => eprintln!(
+                "vize_config_evaluation: process_id={} phase=child_wall elapsed_ms={}",
+                timing.process_id,
+                elapsed.as_secs_f64() * 1000.0
+            ),
+            None => eprintln!(
+                "vize_config_evaluation: process_id=unknown phase=child_wall elapsed_ms={}",
+                elapsed.as_secs_f64() * 1000.0
+            ),
+        }
+        if let Ok(evaluated) = &evaluated {
+            for timing in &evaluated.timings {
+                eprintln!(
+                    "vize_config_evaluation: process_id={} phase={} elapsed_ms={}",
+                    timing.process_id, timing.phase, timing.elapsed_ms
+                );
+                if let Some(profile) = &timing.cpu_profile {
+                    eprintln!(
+                        "vize_config_cpu_profile: process_id={} packet={}",
+                        timing.process_id, profile
+                    );
+                }
+            }
+        }
+    }
     if let Ok(evaluated) = &evaluated {
         *complete = evaluated.complete;
         observed.extend(evaluated.watch_dependencies.iter().cloned());

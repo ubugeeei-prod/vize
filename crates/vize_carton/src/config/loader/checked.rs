@@ -12,7 +12,15 @@ use super::{
 pub(super) fn load_raw_config_checked(
     path: Option<&Path>,
 ) -> Result<LoadedRawConfig, std::string::String> {
-    load_raw_checked(path, true, &mut Vec::new(), &mut true, &mut None, &mut None)
+    load_raw_checked(
+        path,
+        true,
+        &mut Vec::new(),
+        &mut true,
+        &mut None,
+        &mut None,
+        None,
+    )
 }
 
 /// An editor workspace directory can legitimately have no dedicated config.
@@ -36,7 +44,15 @@ pub(super) fn load_raw_editor_config_attempt(path: Option<&Path>) -> EditorConfi
 
 pub(super) fn load_raw_editor_config_attempt_observed(
     path: Option<&Path>,
+    before_read: BeforeConfigRead<'_>,
+) -> EditorConfigAttempt {
+    load_raw_editor_config_attempt_with_compile_cache(path, before_read, None)
+}
+
+pub(super) fn load_raw_editor_config_attempt_with_compile_cache(
+    path: Option<&Path>,
     mut before_read: BeforeConfigRead<'_>,
+    compile_cache: Option<&Path>,
 ) -> EditorConfigAttempt {
     let mut dependencies = Vec::new();
     let mut dependencies_complete = true;
@@ -48,6 +64,7 @@ pub(super) fn load_raw_editor_config_attempt_observed(
         &mut dependencies_complete,
         &mut before_read,
         &mut failure_identity,
+        compile_cache,
     );
     dependencies.sort();
     dependencies.dedup();
@@ -66,6 +83,7 @@ fn load_raw_checked(
     complete: &mut bool,
     before_read: &mut BeforeConfigRead<'_>,
     failure_identity: &mut Option<ConfigLoadFailureIdentity>,
+    compile_cache: Option<&Path>,
 ) -> Result<LoadedRawConfig, std::string::String> {
     let base = path
         .map(Path::to_path_buf)
@@ -80,7 +98,14 @@ fn load_raw_checked(
         return Err(crate::cstr!("config file not found: {}", base.display()).into());
     }
     if base.is_file() {
-        return parse(&base, dependencies, complete, before_read, failure_identity);
+        return parse(
+            &base,
+            dependencies,
+            complete,
+            before_read,
+            failure_identity,
+            compile_cache,
+        );
     }
     // The directory's children are the actual discovery inputs. Keeping its
     // mtime would turn unrelated source-file creation into config changes.
@@ -95,11 +120,12 @@ fn load_raw_checked(
             if !candidate.exists() {
                 continue;
             }
-            match super::parse::parse_raw_config_file_observed(
+            match super::parse::parse_raw_config_file_with_compile_cache(
                 &candidate,
                 dependencies,
                 complete,
                 before_read,
+                compile_cache,
             ) {
                 Ok(config) => {
                     return Ok(LoadedRawConfig {
@@ -141,14 +167,21 @@ fn parse(
     complete: &mut bool,
     before_read: &mut BeforeConfigRead<'_>,
     failure_identity: &mut Option<ConfigLoadFailureIdentity>,
+    compile_cache: Option<&Path>,
 ) -> Result<LoadedRawConfig, std::string::String> {
-    super::parse::parse_raw_config_file_observed(path, dependencies, complete, before_read)
-        .map(|config| LoadedRawConfig {
-            config,
-            source_path: Some(path.to_path_buf()),
-        })
-        .map_err(|error| {
-            *failure_identity = super::failure_identity::from_error(error.as_ref());
-            crate::cstr!("failed to parse {}: {error}", path.display()).into()
-        })
+    super::parse::parse_raw_config_file_with_compile_cache(
+        path,
+        dependencies,
+        complete,
+        before_read,
+        compile_cache,
+    )
+    .map(|config| LoadedRawConfig {
+        config,
+        source_path: Some(path.to_path_buf()),
+    })
+    .map_err(|error| {
+        *failure_identity = super::failure_identity::from_error(error.as_ref());
+        crate::cstr!("failed to parse {}: {error}", path.display()).into()
+    })
 }

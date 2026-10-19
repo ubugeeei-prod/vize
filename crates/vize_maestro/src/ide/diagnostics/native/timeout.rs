@@ -19,7 +19,7 @@ fn native_diagnostic_timeout() -> Duration {
         .map_or(DEFAULT_NATIVE_DIAGNOSTIC_TIMEOUT, Duration::from_millis)
 }
 
-pub(super) async fn with_native_diagnostic_timeout<F>(
+pub(crate) async fn with_native_diagnostic_timeout<F>(
     future: F,
 ) -> Result<F::Output, Vec<Diagnostic>>
 where

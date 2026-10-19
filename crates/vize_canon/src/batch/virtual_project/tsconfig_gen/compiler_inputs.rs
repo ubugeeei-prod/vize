@@ -13,7 +13,7 @@ use super::super::tsconfig_paths::{normalize_path_lexically, parse_jsonc_value};
 
 /// Owned filesystem observations for configuration admission and repair.
 /// These observations carry no compiler options and are safe to share across workers.
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Eq, PartialEq)]
 pub struct ConfigurationObservations {
     stamps: Vec<InputStamp>,
     changed_during_capture: bool,

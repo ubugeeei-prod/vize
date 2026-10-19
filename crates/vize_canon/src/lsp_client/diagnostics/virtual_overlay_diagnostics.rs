@@ -1,7 +1,7 @@
 use super::CorsaProjectClient;
 use crate::{file_uri::file_uri_to_path, lsp_client::virtual_overlay};
 
-pub(super) fn ensure_materialized_project<'a>(
+pub(in crate::lsp_client) fn ensure_materialized_project<'a>(
     client: &mut CorsaProjectClient,
     uris: impl IntoIterator<Item = &'a str>,
 ) -> Result<(), String> {

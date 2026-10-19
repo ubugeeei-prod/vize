@@ -11,7 +11,7 @@ pub(crate) struct InputStamp {
     modified: Option<std::time::SystemTime>,
     len: Option<u64>,
     kind: Option<InputKind>,
-    content_digest: Option<u64>,
+    content_digest: Option<[u8; 32]>,
     symlink_target: Option<PathBuf>,
     source_content: bool,
 }
@@ -219,7 +219,7 @@ pub(crate) fn canonicalize_changed_path(path: &Path) -> PathBuf {
     vize_carton::path::normalize_windows_verbatim_path(path.to_path_buf())
 }
 
-fn read_digest(path: &Path, stats: Option<&mut InputStampReadStats>) -> Option<u64> {
+fn read_digest(path: &Path, stats: Option<&mut InputStampReadStats>) -> Option<[u8; 32]> {
     let Some(stats) = stats else {
         return std::fs::read(path).ok().map(|content| digest(&content));
     };
@@ -236,12 +236,10 @@ fn read_digest(path: &Path, stats: Option<&mut InputStampReadStats>) -> Option<u
 }
 
 // Private, process-local change detection, never a persisted/public artifact key.
-// Hash the complete byte slice with the established standard-library hasher.
-fn digest(content: &[u8]) -> u64 {
-    use std::hash::{Hash, Hasher};
-    let mut hasher = std::hash::DefaultHasher::new();
-    content.hash(&mut hasher);
-    hasher.finish()
+// Hash every byte; sha2 selects hardware acceleration when the target supports it.
+fn digest(content: &[u8]) -> [u8; 32] {
+    use sha2::{Digest, Sha256};
+    Sha256::digest(content).into()
 }
 
 pub(super) fn stamp_paths(paths: &[PathBuf]) -> Vec<InputStamp> {
@@ -397,5 +395,25 @@ mod tests {
         assert!(observed.changed_paths().is_empty());
         std::fs::write(&path, b"{}").unwrap();
         assert_eq!(observed.changed_paths(), vec![path]);
+    }
+
+    #[test]
+    fn content_identity_retains_the_complete_standard_sha256_digest() {
+        assert_eq!(
+            super::digest(b""),
+            [
+                0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f,
+                0xb9, 0x24, 0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b,
+                0x78, 0x52, 0xb8, 0x55,
+            ],
+        );
+        assert_eq!(
+            super::digest(b"abc"),
+            [
+                0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea, 0x41, 0x41, 0x40, 0xde, 0x5d, 0xae,
+                0x22, 0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c, 0xb4, 0x10, 0xff, 0x61,
+                0xf2, 0x00, 0x15, 0xad,
+            ],
+        );
     }
 }

@@ -71,6 +71,7 @@ impl RetainedConfiguration {
 
 #[derive(Default)]
 pub(super) struct ProjectContexts {
+    evaluation_session: Arc<super::config::host::ConfigEvaluationSession>,
     owner: RwLock<Option<Weak<ServerState>>>,
     retired: AtomicBool,
     shutting_down: AtomicBool,
@@ -97,6 +98,12 @@ pub(super) struct ProjectContexts {
 }
 
 impl ServerState {
+    pub(super) fn configuration_evaluation_session(
+        &self,
+    ) -> Arc<super::config::host::ConfigEvaluationSession> {
+        self.project_contexts.evaluation_session.clone()
+    }
+
     pub(super) fn apply_project_path_identity(
         &self,
         directory: &Path,
@@ -235,6 +242,7 @@ impl ServerState {
     ) -> Arc<ServerState> {
         let root = &key.root;
         let mut state = ServerState::new();
+        state.project_contexts.evaluation_session = self.configuration_evaluation_session();
         state.documents = self.documents.clone();
         *state.project_contexts.owner.write() = Some(Arc::downgrade(self));
         *state.project_contexts.key.write() = Some(key.clone());
@@ -250,9 +258,12 @@ impl ServerState {
             state.apply_retained_workspace_config(root, prepared.applied.clone());
             *state.project_contexts.loaded_config.write() = Some(prepared.authored.clone());
         } else {
-            let loaded = snapshot
-                .cloned()
-                .unwrap_or_else(|| load_observed_lsp_config_snapshot(Some(root)));
+            let loaded = snapshot.cloned().unwrap_or_else(|| {
+                load_observed_lsp_config_snapshot(
+                    Some(root),
+                    &self.configuration_evaluation_session(),
+                )
+            });
             state.apply_observed_workspace_config_snapshot(root, loaded);
         }
         if snapshot_failed {
@@ -434,7 +445,7 @@ mod asynchronous;
 mod capabilities;
 #[cfg(test)]
 mod config_dependencies;
-mod current;
+pub(super) mod current;
 #[cfg(test)]
 mod lock_order_tests;
 #[cfg(feature = "experimental-source-navigation")]
@@ -457,6 +468,9 @@ pub(super) mod freshness;
 
 #[cfg(test)]
 mod freshness_tests;
+
+#[cfg(test)]
+mod config_post_read_tests;
 
 mod topology;
 

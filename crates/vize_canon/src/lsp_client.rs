@@ -17,6 +17,7 @@ mod diagnostics;
 mod diagnostics_api;
 mod diagnostics_lsp;
 mod editor_lsp;
+mod initial_diagnostics;
 mod language_id;
 mod lifecycle;
 mod lifecycle_setup;
@@ -83,7 +84,11 @@ pub struct CorsaProjectClient {
 
 #[cfg(test)]
 impl CorsaProjectClient {
-    fn empty_for_test(project_root: PathBuf) -> Self {
+    pub(crate) fn project_session_for_test(&mut self) -> &mut Option<ProjectSession> {
+        &mut self.session
+    }
+
+    pub(crate) fn empty_for_test(project_root: PathBuf) -> Self {
         Self {
             executable: String::new(""),
             cwd: project_root.clone(),
@@ -137,6 +142,8 @@ pub struct LspPosition {
     pub line: u32,
     pub character: u32,
 }
+
+pub(crate) use initial_diagnostics::InitialDiagnosticsRead;
 
 pub(crate) struct DiagnosticFetch {
     pub(crate) diagnostics: Vec<Diagnostic>,

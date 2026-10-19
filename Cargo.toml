@@ -221,9 +221,9 @@ insta = { version = "=1.49.0", features = ["toml"] }
 criterion = "=0.8.2"
 
 # Published corsa crates
-corsa = { package = "corsa", version = "=1.14.0" }
-corsa_lsp = { package = "corsa_lsp", version = "=1.14.0" }
-corsa_runtime = { package = "corsa_runtime", version = "=1.14.0" }
+corsa = { package = "corsa", version = "=1.15.0" }
+corsa_lsp = { package = "corsa_lsp", version = "=1.15.0" }
+corsa_runtime = { package = "corsa_runtime", version = "=1.15.0" }
 
 # Shared lint contract. A member opts in with `[lints] workspace = true` once it
 # is clean; `tools/commands/ci/check-workspace-lints.rs` tracks who is left.
@@ -283,6 +283,10 @@ incremental = false
 # --config 'profile.release.package.vize.strip="none"' to cargo build.
 [profile.release.package.vize]
 strip = "symbols"
+
+# Optimize full-byte fingerprints for ordinary development and inherited CI/test builds.
+[profile.dev.package.sha2]
+opt-level = 3
 
 [profile.ci]
 inherits = "dev"

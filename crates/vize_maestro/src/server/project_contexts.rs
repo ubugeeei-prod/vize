@@ -111,6 +111,34 @@ impl MaestroServer {
         }
     }
 
+    /// The first sync and type jobs are continuations of one didOpen, not new
+    /// client requests. Their original full owner/input receipt must still pass
+    /// fresh physical validation on the bounded configuration worker.
+    #[cfg(feature = "native")]
+    pub(super) async fn for_initial_document(
+        &self,
+        uri: &Url,
+        version: i32,
+        continuation: Option<&super::state::InitialConfigurationContinuation>,
+    ) -> DocumentServer<'_> {
+        let authored_revision = self.state.documents.stable_revision();
+        if let Some(continuation) = continuation
+            && let Some(state) = self
+                .state
+                .continue_initial_configuration(continuation.clone(), uri.clone(), version)
+                .await
+        {
+            let server = self
+                .with_project_state(state)
+                .with_configuration_admission(&[continuation.root().to_path_buf()]);
+            return DocumentServer {
+                owner: DocumentOwner::Project(server),
+                authored_revision,
+            };
+        }
+        self.for_document(uri).await
+    }
+
     #[cfg(feature = "native")]
     pub(super) async fn for_document_in_operation(
         &self,

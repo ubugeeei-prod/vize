@@ -61,7 +61,9 @@ pub(crate) mod worker;
 pub(crate) use worker::retirement as native_operation;
 
 pub use batch_checker::BatchTypeChecker;
-pub use bridge::CorsaBridge;
+pub use bridge::{
+    CorsaBridge, InitialApiDiagnostics, InitialApiDiagnosticsOutcome, PendingInitialApiDiagnostics,
+};
 pub use diagnosing_configuration::{DiagnosingConfiguration, DiagnosingSnapshot};
 pub(crate) use editor_session::EditorMirrorSession;
 pub use native_vue::{NativeVueCheck, NativeVueError};

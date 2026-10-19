@@ -58,8 +58,20 @@ impl DiagnosticService {
         state: &ServerState,
         uri: &Url,
     ) -> CorsaDiagnostics {
+        Self::collect_corsa_diagnostics_with_first_failure(state, uri, None).await
+    }
+
+    pub(super) async fn collect_corsa_diagnostics_with_first_failure(
+        state: &ServerState,
+        uri: &Url,
+        mut first_failure: Option<CollectFailure>,
+    ) -> CorsaDiagnostics {
         for attempt in 0..2 {
-            match Self::try_collect_corsa_diagnostics(state, uri).await {
+            let result = match first_failure.take() {
+                Some(failure) => Err(failure),
+                None => Self::try_collect_corsa_diagnostics(state, uri).await,
+            };
+            match result {
                 Ok(diagnostics) => return CorsaDiagnostics::Complete(diagnostics),
                 Err(CollectFailure::Unavailable) => return CorsaDiagnostics::Unavailable(vec![]),
                 Err(CollectFailure::DeadBridge(bridge, error)) if attempt == 0 => {

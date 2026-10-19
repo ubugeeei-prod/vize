@@ -1,6 +1,9 @@
 //! One evaluation of the workspace config for an editor session.
 
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    sync::OnceLock,
+};
 
 use crate::config::{
     ConfigFeatureFlags, ConfigLintRuleOptions, LanguageServerUnstableFlags, LinterConfig,
@@ -9,8 +12,57 @@ use crate::config::{
 
 use super::{
     BeforeConfigRead, ConfigLoadFailureIdentity, LoadedProjectConfig, LoadedRawConfig,
-    checked::load_raw_editor_config_attempt_observed, project_config_snapshot,
+    checked::load_raw_editor_config_attempt_with_compile_cache, project_config_snapshot,
 };
+
+/// Optional compiled-code storage owned by one editor server, never evaluated JS state.
+/// Each load still uses a fresh Node process and all original input observations.
+#[derive(Default)]
+pub struct ConfigEvaluationSession {
+    compile_cache: OnceLock<Option<tempfile::TempDir>>,
+}
+
+fn create_compile_cache() -> Option<tempfile::TempDir> {
+    let mut builder = tempfile::Builder::new();
+    builder.prefix("vize-config-compile-");
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        // Set privacy at creation, before a child can write compiled code.
+        builder.permissions(std::fs::Permissions::from_mode(0o700));
+    }
+    builder.tempdir().ok()
+}
+
+impl ConfigEvaluationSession {
+    /// Observe one fresh evaluation, sharing only Node's compiled code with this session.
+    pub fn load_snapshot_observed(
+        &self,
+        path: Option<&Path>,
+        before_read: &mut dyn FnMut(&[PathBuf]),
+    ) -> LoadedLspConfig {
+        // Preserve user cache/coverage policy. A setup failure is only a cache miss.
+        let externally_configured = [
+            "NODE_COMPILE_CACHE",
+            "NODE_DISABLE_COMPILE_CACHE",
+            "NODE_COMPILE_CACHE_PORTABLE",
+            "NODE_V8_COVERAGE",
+        ]
+        .iter()
+        .any(|name| std::env::var_os(name).is_some())
+            || std::env::var_os("NODE_OPTIONS")
+                .is_some_and(|options| options.to_string_lossy().contains("coverage"));
+        let directory = (!externally_configured)
+            .then(|| {
+                self.compile_cache
+                    .get_or_init(create_compile_cache)
+                    .as_ref()
+                    .map(|directory| directory.path())
+            })
+            .flatten();
+        load_snapshot(path, Some(before_read), directory)
+    }
+}
 
 /// All LSP config values derived from one raw config evaluation.
 #[derive(Debug, Clone)]
@@ -44,7 +96,7 @@ pub struct LoadedLspConfig {
 /// Evaluate JS/TS/PKL only once so the editor timeout and type checker
 /// settings always come from the same config snapshot.
 pub fn load_lsp_config_snapshot(path: Option<&Path>) -> LoadedLspConfig {
-    load_snapshot(path, None)
+    load_snapshot(path, None, None)
 }
 
 /// Observe actual discovery and loader inputs before their selection or load.
@@ -56,11 +108,16 @@ pub fn load_lsp_config_snapshot_observed(
     path: Option<&Path>,
     before_read: &mut dyn FnMut(&[PathBuf]),
 ) -> LoadedLspConfig {
-    load_snapshot(path, Some(before_read))
+    load_snapshot(path, Some(before_read), None)
 }
 
-fn load_snapshot(path: Option<&Path>, before_read: BeforeConfigRead<'_>) -> LoadedLspConfig {
-    let attempt = load_raw_editor_config_attempt_observed(path, before_read);
+fn load_snapshot(
+    path: Option<&Path>,
+    before_read: BeforeConfigRead<'_>,
+    compile_cache: Option<&Path>,
+) -> LoadedLspConfig {
+    let attempt =
+        load_raw_editor_config_attempt_with_compile_cache(path, before_read, compile_cache);
     let (loaded, error) = match attempt.outcome {
         Ok(loaded) => (loaded, None),
         Err(error) => {
@@ -128,6 +185,26 @@ mod tests {
         ]
         .map(|name| root.join(name))
         .to_vec()
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn compiled_code_directory_is_private_and_removed_with_its_session() {
+        use super::{ConfigEvaluationSession, create_compile_cache};
+        use std::os::unix::fs::PermissionsExt;
+        let session = ConfigEvaluationSession::default();
+        let directory = session
+            .compile_cache
+            .get_or_init(create_compile_cache)
+            .as_ref()
+            .unwrap();
+        let path = directory.path().to_path_buf();
+        assert_eq!(
+            std::fs::metadata(&path).unwrap().permissions().mode() & 0o077,
+            0
+        );
+        drop(session);
+        assert!(!path.exists());
     }
 
     #[test]

@@ -76,6 +76,11 @@ mod vize_sfc_type;
 mod vize_sfc_type_tests;
 
 pub use builder::DiagnosticBuilder;
+#[cfg(feature = "native")]
+pub(crate) use corsa::initial::PreparedInitialApiDiagnostics;
+#[cfg(feature = "native")]
+pub(crate) use native::timeout::with_native_diagnostic_timeout;
+
 pub use service::DiagnosticService;
 pub use severity::Severity;
 

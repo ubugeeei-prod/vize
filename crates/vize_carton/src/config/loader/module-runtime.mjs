@@ -14,8 +14,97 @@ import {
 } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+// Optional compiled artifacts only; no imported namespace or evaluated config is retained.
+export function enableConfigCompileCache(directory) {
+  if (!directory || typeof nodeModule.enableCompileCache !== "function") return;
+  if (
+    [
+      "NODE_COMPILE_CACHE",
+      "NODE_DISABLE_COMPILE_CACHE",
+      "NODE_COMPILE_CACHE_PORTABLE",
+      "NODE_V8_COVERAGE",
+    ].some((name) => Object.hasOwn(process.env, name)) ||
+    process.env.NODE_OPTIONS?.includes("coverage")
+  )
+    return;
+  // The parent owns this private directory until every fresh child has exited.
+  // Uses Node's standard source-checksum/version contract, not Canon input identity.
+  // Normal process exit flushes compiled code before the parent releases its lease.
+  return nodeModule.enableCompileCache(directory);
+}
+
 // Failure identity is host metadata; never attach it to authored exports/errors.
 const configFailureArtifacts = new WeakMap();
+const configEvaluationTimings = new WeakMap();
+
+// Private host diagnostics, never attached to authored values or exceptions.
+export function configModuleEvaluationTimings(value) {
+  return configEvaluationTimings.get(value)?.map((row) => ({ ...row }));
+}
+
+function beginConfigTiming(rows, phase, boundary) {
+  const start = rows ? performance.now() : undefined;
+  let finished = false;
+  if (boundary) boundary.active = true;
+  return () => {
+    if (start !== undefined && !finished) {
+      const end = performance.now();
+      rows.push({ phase, elapsedMs: end - start, processId: process.pid });
+      if (boundary) {
+        boundary.active = false;
+        // No observed resolution means UNKNOWN: never fabricate zero or guess
+        // an SDK-generated path outside our already-owned private directory.
+        if (boundary.resolvedAt !== undefined) {
+          rows.push({
+            phase: "public_load_until_owned_resolve",
+            elapsedMs: boundary.resolvedAt - start,
+            processId: process.pid,
+          });
+          rows.push({
+            phase: "public_load_after_owned_resolve",
+            elapsedMs: end - boundary.resolvedAt,
+            processId: process.pid,
+          });
+        }
+      }
+      finished = true;
+    }
+  };
+}
+
+// Diagnostic only: retain the complete sampling packet, never an evaluated value.
+// Setup/stop costs are separate; samples also include the adjacent host call edges.
+async function beginPublicLoadProfile() {
+  const started = performance.now();
+  let session;
+  const close = () => {
+    try {
+      session?.disconnect();
+    } catch {}
+  };
+  try {
+    const { Session } = await import("node:inspector/promises");
+    session = new Session();
+    session.connect();
+    await session.post("Profiler.enable");
+    await session.post("Profiler.start");
+    const setupMs = performance.now() - started;
+    return async () => {
+      const stopping = performance.now();
+      try {
+        const { profile } = await session.post("Profiler.stop");
+        return { status: "recorded", setupMs, stopMs: performance.now() - stopping, profile };
+      } catch (error) {
+        return { status: "unavailable", setupMs, reason: String(error) };
+      } finally {
+        close();
+      }
+    };
+  } catch (error) {
+    close();
+    return async () => ({ status: "unavailable", reason: String(error) });
+  }
+}
 
 export function configModuleFailureArtifacts(error) {
   return configFailureArtifacts.get(error)?.map(([owned, source]) => [owned, source]) ?? [];
@@ -98,6 +187,8 @@ async function captureConfigEvaluation(
   privateDirectory,
   observeDependencies,
   ownedAdapter,
+  timings,
+  boundary,
 ) {
   const files = new Set([configPath]);
   const requestedFiles = new Set();
@@ -116,6 +207,11 @@ async function captureConfigEvaluation(
             const result = nextResolve(specifier, context);
             if (result.url.startsWith("file:")) {
               const path = fileURLToPath(result.url);
+              if (boundary?.active && boundary.resolvedAt === undefined && isPrivate(path)) {
+                // Diagnostic only, after the same successful nextResolve. No
+                // extra resolution/read and no change to dependency ownership.
+                boundary.resolvedAt = performance.now();
+              }
               // Vite's generated module owns config execution, but its build engine
               // and private adapters are not authored configuration dependencies.
               if (owners.has(result.url) || owners.has(context.parentURL) || isPrivate(path)) {
@@ -151,7 +247,13 @@ async function captureConfigEvaluation(
     const { namespace, dependencies = [] } = await load();
     for (const path of dependencies) if (!isPrivate(path)) files.add(path);
     moduleGraphLoaded = true;
-    const value = evaluate ? await evaluate(namespace) : namespace;
+    const finish = beginConfigTiming(timings, "export_evaluation");
+    let value;
+    try {
+      value = evaluate ? await evaluate(namespace) : namespace;
+    } finally {
+      finish();
+    }
     return { namespace, value, dependencies: [...files] };
   } catch (error) {
     if (
@@ -195,6 +297,12 @@ export async function importConfigModuleWithDependencies(
   observeDependencies,
   beforeRead,
 ) {
+  const timings = process.env.VIZE_TRACE_EDITOR_PREPARATION === "1" ? [] : undefined;
+  const boundary = timings ? { active: false, resolvedAt: undefined } : undefined;
+  const finishTotal = beginConfigTiming(timings, "module_total");
+  const finishSelection = beginConfigTiming(timings, "engine_selection_with_ack");
+  let selectionFinished = false;
+  let result;
   const watchInputs = new Set([configPath]);
   let complete = false;
   const observe = (paths, observedComplete) => {
@@ -231,8 +339,10 @@ export async function importConfigModuleWithDependencies(
       }
     }
     if (candidate === undefined) {
+      finishSelection();
+      selectionFinished = true;
       await beforeRead?.([configPath]);
-      return await captureConfigEvaluation(
+      result = await captureConfigEvaluation(
         async () => ({
           namespace: await (withoutVite ? withoutVite(configURL) : import(configURL.href)),
         }),
@@ -241,7 +351,10 @@ export async function importConfigModuleWithDependencies(
         evaluate,
         undefined,
         observe,
+        undefined,
+        timings,
       );
+      return result;
     }
     const viteDirectory = realpathSync(candidate);
     watchInputs.add(join(viteDirectory, "package.json"));
@@ -257,8 +370,23 @@ export async function importConfigModuleWithDependencies(
       );
     }
     await beforeRead?.([resolvedEntry, viteEntry]);
-    const { loadConfigFromFile } = await import(pathToFileURL(viteEntry).href);
-    const temporary = await realpath(await mkdtemp(join(tmpdir(), "vize-config-module-")));
+    finishSelection();
+    selectionFinished = true;
+    const finishImport = beginConfigTiming(timings, "engine_import");
+    let loadConfigFromFile;
+    try {
+      ({ loadConfigFromFile } = await import(pathToFileURL(viteEntry).href));
+    } finally {
+      finishImport();
+    }
+    const finishAdapter = beginConfigTiming(timings, "adapter_prepare");
+    let temporary;
+    try {
+      temporary = await realpath(await mkdtemp(join(tmpdir(), "vize-config-module-")));
+    } catch (error) {
+      finishAdapter();
+      throw error;
+    }
     try {
       const adapter = join(temporary, "config.mjs");
       await writeFile(
@@ -266,17 +394,33 @@ export async function importConfigModuleWithDependencies(
         `import * as original from ${JSON.stringify(configModuleImportPath(configURL))};\nexport default { namespace: original };\n`,
         { flag: "wx", mode: 0o600 },
       );
-      return await captureConfigEvaluation(
+      finishAdapter();
+      result = await captureConfigEvaluation(
         async () => {
-          await beforeRead?.([configPath]);
-          const loaded = await loadConfigFromFile(
-            { mode: "development", command: "serve" },
-            adapter,
-            moduleConfigDirectory(configPath),
-            "silent",
-            undefined,
-            "bundle",
-          );
+          const finishAck = beginConfigTiming(timings, "selected_before_read_ack");
+          try {
+            await beforeRead?.([configPath]);
+          } finally {
+            finishAck();
+          }
+          const finishProfile = timings ? await beginPublicLoadProfile() : undefined;
+          const finishLoad = beginConfigTiming(timings, "public_load", boundary);
+          let loaded;
+          try {
+            loaded = await loadConfigFromFile(
+              { mode: "development", command: "serve" },
+              adapter,
+              moduleConfigDirectory(configPath),
+              "silent",
+              undefined,
+              "bundle",
+            );
+          } finally {
+            finishLoad();
+            if (finishProfile) {
+              timings.find((row) => row.phase === "public_load").cpuProfile = await finishProfile();
+            }
+          }
           if (!loaded) throw new Error(`Vite did not load the selected config: ${configPath}`);
           return {
             namespace: loaded.config.namespace,
@@ -289,11 +433,30 @@ export async function importConfigModuleWithDependencies(
         temporary,
         observe,
         adapter,
+        timings,
+        boundary,
       );
+      return result;
+    } catch (error) {
+      finishAdapter();
+      throw error;
     } finally {
-      await rm(temporary, { recursive: true, force: true });
+      const finishCleanup = beginConfigTiming(timings, "adapter_cleanup");
+      try {
+        await rm(temporary, { recursive: true, force: true });
+      } finally {
+        finishCleanup();
+      }
     }
+  } catch (error) {
+    if (timings && error !== null && (typeof error === "object" || typeof error === "function")) {
+      configEvaluationTimings.set(error, timings);
+    }
+    throw error;
   } finally {
+    if (!selectionFinished) finishSelection();
+    finishTotal();
+    if (timings && result) configEvaluationTimings.set(result, timings);
     observeDependencies?.([...watchInputs], complete);
   }
 }

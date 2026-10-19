@@ -225,7 +225,10 @@ impl ServerState {
         #[cfg(feature = "native")]
         let _ = self.apply_observed_workspace_config_snapshot(
             dir,
-            host::load_observed_lsp_config_snapshot(Some(dir)),
+            host::load_observed_lsp_config_snapshot(
+                Some(dir),
+                &self.configuration_evaluation_session(),
+            ),
         );
         #[cfg(not(feature = "native"))]
         let _ = self.apply_workspace_config_snapshot(dir, load_lsp_config_snapshot(Some(dir)));
@@ -396,7 +399,10 @@ impl ServerState {
     /// Load LSP options from the shared Vite/TypeScript project snapshot.
     pub fn load_lsp_config(&self, dir: &Path) {
         #[cfg(feature = "native")]
-        let observed = host::load_observed_lsp_config_snapshot(Some(dir));
+        let observed = host::load_observed_lsp_config_snapshot(
+            Some(dir),
+            &self.configuration_evaluation_session(),
+        );
         #[cfg(feature = "native")]
         let mut loaded = observed.loaded;
         #[cfg(not(feature = "native"))]

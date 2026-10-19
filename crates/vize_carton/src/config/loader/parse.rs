@@ -37,6 +37,16 @@ pub(super) fn parse_raw_config_file_observed(
     complete: &mut bool,
     before_read: &mut BeforeConfigRead<'_>,
 ) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    parse_raw_config_file_with_compile_cache(path, dependencies, complete, before_read, None)
+}
+
+pub(super) fn parse_raw_config_file_with_compile_cache(
+    path: &Path,
+    dependencies: &mut Vec<PathBuf>,
+    complete: &mut bool,
+    before_read: &mut BeforeConfigRead<'_>,
+    compile_cache: Option<&Path>,
+) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
     if let Some(observe) = before_read.as_deref_mut() {
         observe(&[path.to_path_buf()]);
     }
@@ -47,7 +57,7 @@ pub(super) fn parse_raw_config_file_observed(
     let mut config = match path.extension().and_then(|ext| ext.to_str()) {
         Some("pkl") => pkl::parse_pkl_config(path)?,
         Some("ts" | "js" | "mjs" | "cjs" | "mts" | "cts") => {
-            parse_js_config_observed(path, dependencies, complete, before_read)?
+            parse_js_config_observed(path, dependencies, complete, before_read, compile_cache)?
         }
         Some("json") => {
             let content = std::fs::read_to_string(path)?;

@@ -358,8 +358,9 @@ fn known_path_membership_matches_original_vec_with_absence_duplicates_and_new_pa
             .iter()
             .any(|path| !original_paths.contains(path));
         assert_eq!(original, expected);
-        let checked =
-            super::freshness::ConfigurationObservation::checked(&raw, &raw, &before, &compiler);
+        let checked = super::freshness::ConfigurationObservation::checked(
+            &raw, &raw, &before, &compiler, None,
+        );
         assert_eq!(checked.needs_confirmation(), original);
         assert_eq!(before.paths(), original_paths);
     }
@@ -368,7 +369,7 @@ fn known_path_membership_matches_original_vec_with_absence_duplicates_and_new_pa
     std::fs::write(&absent, "{}").unwrap();
     raw.watch_dependencies = vec![absent.clone(), file];
     let checked =
-        super::freshness::ConfigurationObservation::checked(&raw, &raw, &before, &compiler);
+        super::freshness::ConfigurationObservation::checked(&raw, &raw, &before, &compiler, None);
     assert!(!checked.needs_confirmation());
     assert_eq!(checked.changes(), vec![absent.clone()]);
     assert_eq!(before.changed_paths(), vec![absent]);

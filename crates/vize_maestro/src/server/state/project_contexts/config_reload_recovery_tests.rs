@@ -79,11 +79,10 @@ fn newly_introduced_missing_or_malformed_inherited_bases_recover_without_config_
 
 #[test]
 fn canceled_awaiter_keeps_root_admission_owned_by_the_running_worker() {
-    use futures::Future;
+    use futures::future::{AbortHandle, Abortable};
     use std::{
         sync::mpsc,
-        task::{Context, Poll},
-        time::Duration,
+        time::{Duration, Instant},
     };
     let (_fixture, state, a, _) = tests::fixture();
     let root = state
@@ -95,16 +94,35 @@ fn canceled_awaiter_keeps_root_admission_owned_by_the_running_worker() {
     let (entered_tx, entered_rx) = mpsc::channel();
     let (release_tx, release_rx) = mpsc::channel();
     let (done_tx, done_rx) = mpsc::channel();
-    let mut work = Box::pin(ServerState::project_background(move || {
-        let _admission = admission;
-        entered_tx.send(()).unwrap();
-        release_rx.recv_timeout(Duration::from_secs(10)).unwrap();
-        done_tx.send(()).unwrap();
-    }));
-    let mut context = Context::from_waker(futures::task::noop_waker_ref());
-    assert!(matches!(work.as_mut().poll(&mut context), Poll::Pending));
-    entered_rx.recv_timeout(Duration::from_secs(10)).unwrap();
-    drop(work);
+    let (canceled_tx, canceled_rx) = mpsc::channel();
+    let (cancel, registration) = AbortHandle::new_pair();
+    let deadline = Instant::now() + Duration::from_secs(10);
+    let awaiter = std::thread::spawn(move || {
+        // A full shared queue must wake and re-poll this real executor before
+        // cancellation. One NOOP poll cannot establish worker admission.
+        let result = futures::executor::block_on(Abortable::new(
+            ServerState::project_background(move || {
+                let _admission = admission;
+                entered_tx.send(()).unwrap();
+                release_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+                done_tx.send(()).unwrap();
+            }),
+            registration,
+        ));
+        canceled_tx.send(result).unwrap();
+    });
+    entered_rx
+        .recv_timeout(deadline.saturating_duration_since(Instant::now()))
+        .unwrap();
+    cancel.abort();
+    let canceled = canceled_rx
+        .recv_timeout(deadline.saturating_duration_since(Instant::now()))
+        .unwrap();
+    assert!(
+        canceled.is_err(),
+        "the admitted job's awaiter must be canceled"
+    );
+    awaiter.join().unwrap();
     assert!(
         gate.try_lock().is_none(),
         "canceling the notification must not admit a concurrent owner reload"

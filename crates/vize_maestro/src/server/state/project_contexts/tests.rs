@@ -355,3 +355,17 @@ fn malformed_workspace_config_keeps_the_complete_historical_feature_defaults() {
         crate::server::state::LspFeatureConfig::default()
     );
 }
+
+#[test]
+fn compiled_code_session_is_shared_by_app_owners_and_outlives_the_root() {
+    let (_fixture, root, a, b) = fixture();
+    let session = root.configuration_evaluation_session();
+    let a = root.document_project_state(&a).unwrap();
+    let b = root.document_project_state(&b).unwrap();
+    assert!(!Arc::ptr_eq(&a, &b));
+    assert!(Arc::ptr_eq(&session, &a.configuration_evaluation_session()));
+    assert!(Arc::ptr_eq(&session, &b.configuration_evaluation_session()));
+    drop(root);
+    assert!(Arc::ptr_eq(&session, &a.configuration_evaluation_session()));
+    assert!(Arc::ptr_eq(&session, &b.configuration_evaluation_session()));
+}

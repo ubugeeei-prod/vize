@@ -20,10 +20,10 @@ mod sync_feedback;
 use sync_feedback::SyncDiagnostics;
 
 pub(super) struct CollectedDiagnostics {
-    version: i32,
-    diagnostics: Vec<Diagnostic>,
+    pub(super) version: i32,
+    pub(super) diagnostics: Vec<Diagnostic>,
     #[cfg(feature = "native")]
-    stamp: Option<super::state::CorsaRequestStamp>,
+    pub(super) stamp: Option<super::state::CorsaRequestStamp>,
 }
 
 impl MaestroServer {

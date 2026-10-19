@@ -10,7 +10,7 @@ use crate::{
 };
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Url};
 
-mod timeout;
+pub(super) mod timeout;
 use timeout::with_native_diagnostic_timeout;
 
 impl DiagnosticService {
@@ -28,14 +28,7 @@ impl DiagnosticService {
     ) -> Vec<Diagnostic> {
         tracing::info!("collect_async: {}", uri);
         tracing::info!("sync diagnostics count: {}", diagnostics.len());
-        let native_script_syntax = state.is_lsp_typecheck_enabled()
-            && diagnostics
-                .iter()
-                .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SCRIPT_PARSER))
-            && state.documents.text(uri).is_some_and(|source| {
-                Self::descriptor_for_collect(state, uri, &source)
-                    .is_ok_and(|descriptor| vize_canon::supports_native_script_syntax(&descriptor))
-            });
+        let native_script_syntax = native_script_syntax(state, uri, &diagnostics);
         if has_blocking_parser_error(&diagnostics, native_script_syntax) {
             tracing::info!("collect_async: Corsa diagnostics skipped after parser error");
             return diagnostics;
@@ -81,13 +74,9 @@ impl DiagnosticService {
                     super::assembly_parity_custody::record(state, uri, "native_complete", || {
                         serde_json::json!(corsa_diags)
                     });
-                    if native_script_syntax {
-                        diagnostics.retain(|diagnostic| {
-                            diagnostic.source.as_deref() != Some(sources::SCRIPT_PARSER)
-                        });
-                    }
                     tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
-                    diagnostics.extend(without_duplicate_required_props(corsa_diags, &diagnostics));
+                    diagnostics =
+                        merge_complete_native(diagnostics, corsa_diags, native_script_syntax);
                 }
                 Ok(CorsaDiagnostics::Unavailable(hints)) => {
                     #[cfg(test)]
@@ -133,6 +122,34 @@ impl DiagnosticService {
     }
 }
 
+pub(super) fn native_script_syntax(
+    state: &ServerState,
+    uri: &Url,
+    diagnostics: &[Diagnostic],
+) -> bool {
+    state.is_lsp_typecheck_enabled()
+        && diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SCRIPT_PARSER))
+        && state.documents.text(uri).is_some_and(|source| {
+            DiagnosticService::descriptor_for_collect(state, uri, &source)
+                .is_ok_and(|descriptor| vize_canon::supports_native_script_syntax(&descriptor))
+        })
+}
+
+pub(super) fn merge_complete_native(
+    mut diagnostics: Vec<Diagnostic>,
+    corsa: Vec<Diagnostic>,
+    native_script_syntax: bool,
+) -> Vec<Diagnostic> {
+    if native_script_syntax {
+        diagnostics
+            .retain(|diagnostic| diagnostic.source.as_deref() != Some(sources::SCRIPT_PARSER));
+    }
+    diagnostics.extend(without_duplicate_required_props(corsa, &diagnostics));
+    diagnostics
+}
+
 /// The authored component check already reports the missing prop on the tag.
 /// A native TS2345 for the generated checker call repeats it and exposes
 /// internal helper types, especially after an unsaved dependency edit.
@@ -175,7 +192,10 @@ fn without_duplicate_required_props(
 #[path = "native/tests.rs"]
 mod tests;
 
-fn has_blocking_parser_error(diagnostics: &[Diagnostic], native_script_syntax: bool) -> bool {
+pub(super) fn has_blocking_parser_error(
+    diagnostics: &[Diagnostic],
+    native_script_syntax: bool,
+) -> bool {
     diagnostics.iter().any(|diagnostic| {
         if native_script_syntax && diagnostic.source.as_deref() == Some(sources::SCRIPT_PARSER) {
             return false;

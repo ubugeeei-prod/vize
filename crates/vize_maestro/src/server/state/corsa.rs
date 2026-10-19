@@ -192,6 +192,14 @@ impl ServerState {
         self.corsa_init_failed.store(true, Ordering::SeqCst);
     }
 
+    /// Inspect ownership without loading configuration, flushing sources or spawning.
+    pub(crate) fn owns_corsa_bridge(&self, expected: &Arc<CorsaBridge>) -> bool {
+        self.corsa_bridge
+            .read()
+            .as_ref()
+            .is_some_and(|current| Arc::ptr_eq(current, expected))
+    }
+
     /// Check if the Corsa bridge is available (without initializing).
     pub fn has_corsa_bridge(&self) -> bool {
         self.is_lsp_typecheck_enabled()

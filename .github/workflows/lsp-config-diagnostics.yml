@@ -67,7 +67,7 @@ jobs:
         if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
         run: |
           set +e
-          node --test --test-concurrency=1 tests/tooling/lsp-startup-local-interactive.test.ts tests/tooling/lsp-initial-diagnostics-version.test.ts > target/vize-tests/lsp-config-diagnostics/controls.stdout 2> target/vize-tests/lsp-config-diagnostics/controls.stderr
+          node --test --test-concurrency=1 tests/tooling/lsp-startup-local-interactive.test.ts tests/tooling/lsp-initial-diagnostics-version.test.ts tests/tooling/native-config-preload-observations.test.ts tests/tooling/native-config-compile-cache.test.ts > target/vize-tests/lsp-config-diagnostics/controls.stdout 2> target/vize-tests/lsp-config-diagnostics/controls.stderr
           status=$?
           cat target/vize-tests/lsp-config-diagnostics/controls.stdout
           cat target/vize-tests/lsp-config-diagnostics/controls.stderr >&2
@@ -78,6 +78,7 @@ jobs:
         run: |
           cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::initial_diagnostics::
           cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::native_requests::
+          cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::state::project_contexts:: -- --nocapture
           cargo clippy --locked --profile ci -p vize_maestro --features legacy --all-targets -- -D warnings
       - name: Verify real union ownership and reverse open-order regressions
         if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
@@ -104,6 +105,8 @@ jobs:
           }
           run_required_rust_tests native-view cargo test --locked --profile ci -p vize_canon --features legacy --lib corsa_bridge::vue_document::build::tests:: -- --nocapture
           run_required_rust_tests issued-candidates cargo test --locked --profile ci -p vize_canon --features legacy --lib lsp_client::editor_lsp::completion_resolve::issued::tests:: -- --nocapture
+          run_required_rust_tests initial-api-read cargo test --locked --profile ci -p vize_canon --features legacy --lib corsa_bridge::bridge::initial_diagnostics::tests:: -- --nocapture
+          run_required_rust_tests initial-api-dependencies cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::importers::canonical::tests:: -- --nocapture
       - name: Resolve the original native candidate after unchanged sibling diagnostics
         if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
         run: |

@@ -43,8 +43,11 @@ fn sync_feedback_runs_once_for_the_latest_open_version() {
     let mut pending = PendingInitialDiagnostics::default();
     pending.insert(uri.clone(), 1, now + Duration::from_secs(1));
     pending.insert(uri.clone(), 2, now + Duration::from_secs(1));
-    assert_eq!(pending.take_sync(), Some((uri.clone(), 2)));
-    assert_eq!(pending.take_sync(), None);
+    assert_eq!(
+        pending.take_sync().map(|(uri, job)| (uri, job.version)),
+        Some((uri.clone(), 2))
+    );
+    assert!(pending.take_sync().is_none());
     assert!(pending.take_ready(now).is_none());
     assert_eq!(
         pending

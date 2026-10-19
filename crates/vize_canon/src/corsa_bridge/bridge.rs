@@ -24,6 +24,10 @@ mod declaration;
 mod documents;
 #[path = "bridge/implementation.rs"]
 mod implementation;
+mod initial_diagnostics;
+pub use initial_diagnostics::{
+    InitialApiDiagnostics, InitialApiDiagnosticsOutcome, PendingInitialApiDiagnostics,
+};
 #[path = "bridge/inlay_hint.rs"]
 mod inlay_hint;
 mod language_features;
@@ -36,6 +40,8 @@ pub struct CorsaBridge {
     pub(super) config: CorsaBridgeConfig,
     /// Worker thread owning the synchronous Corsa project session.
     worker: BoundedWorker<Option<CorsaProjectClient>>,
+    /// Read-only initial diagnostics never occupy the mutable foreground lane.
+    initial_diagnostics_worker: BoundedWorker<()>,
     /// Whether the bridge is initialized
     initialized: Arc<AtomicBool>,
     /// Whether the reusable editor LSP session may have read stale disk state.
@@ -97,6 +103,11 @@ impl CorsaBridge {
             worker: BoundedWorker::new_with_keepalive(
                 "vize-corsa-bridge",
                 None,
+                Arc::clone(&editor_session),
+            ),
+            initial_diagnostics_worker: BoundedWorker::new_with_keepalive(
+                "vize-initial-api-read",
+                (),
                 Arc::clone(&editor_session),
             ),
             config,
@@ -183,7 +194,7 @@ impl CorsaBridge {
     /// Whether a cancelled or timed-out call still owns the synchronous lane.
     /// Retaining this bridge until it drains prevents parallel retry processes.
     pub fn is_draining(&self) -> bool {
-        self.worker.is_draining()
+        self.worker.is_draining() || self.initial_diagnostics_worker.is_draining()
     }
 
     /// Get profiler reference.

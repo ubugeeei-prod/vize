@@ -10,6 +10,230 @@ use vize_l0::cstr;
 
 use super::{MaestroServer, refresh_initial_importers};
 
+#[expect(
+    clippy::disallowed_types,
+    reason = "the actual bounded diagnostics queue is shared with its paused test consumer"
+)]
+struct QueuedOpen {
+    root: tempfile::TempDir,
+    service: LspService<MaestroServer>,
+    pending: std::sync::Arc<parking_lot::Mutex<super::PendingInitialDiagnostics>>,
+    _receiver: std::sync::mpsc::Receiver<()>,
+    uri: Url,
+}
+
+#[expect(
+    clippy::disallowed_types,
+    reason = "the real didOpen handler queues into one owned paused diagnostics consumer"
+)]
+fn queued_open() -> QueuedOpen {
+    let root = tempfile::tempdir().unwrap();
+    file(root.path(), "app/policy.mjs", "export const hover = true;");
+    file(
+        root.path(),
+        "app/vite.config.mjs",
+        r#"import {appendFileSync} from 'node:fs';
+import {hover} from './policy.mjs';
+export default () => {
+ appendFileSync(new URL('./factory-count', import.meta.url), 'once\n');
+ return {vue:{languageServer:{hover}}};
+};"#,
+    );
+    let uri = file(root.path(), "app/App.vue", "<template />");
+    let pending = std::sync::Arc::new(parking_lot::Mutex::new(
+        super::PendingInitialDiagnostics::default(),
+    ));
+    let (sender, receiver) = std::sync::mpsc::sync_channel(1);
+    let queue = pending.clone();
+    let (service, _socket) = LspService::new(|client| {
+        let mut server = MaestroServer::new(client);
+        server.initial_diagnostics = Some(super::InitialDiagnosticsScheduler {
+            sender: Some(sender),
+            worker_owned: false,
+            pending: queue,
+        });
+        server
+    });
+    let server = service.inner();
+    server.state.set_workspace_root(root.path().to_path_buf());
+    server.state.load_workspace_config(root.path());
+    server
+        .state
+        .apply_lsp_initialization_options(Some(&serde_json::json!({
+            "lint":false,"typecheck":true,"ecosystem":false
+        })));
+    crate::runtime::block_on(server.open_document(DidOpenTextDocumentParams {
+        text_document: TextDocumentItem::new(uri.clone(), "vue".into(), 1, "<template />".into()),
+    }));
+    QueuedOpen {
+        root,
+        service,
+        pending,
+        _receiver: receiver,
+        uri,
+    }
+}
+
+fn factory_count(fixture: &QueuedOpen) -> vize_l0::String {
+    std::fs::read_to_string(fixture.root.path().join("app/factory-count"))
+        .unwrap()
+        .into()
+}
+
+#[test]
+fn one_queued_open_reuses_its_owner_but_the_next_public_operation_confirms_unknown_inputs() {
+    let fixture = queued_open();
+    let (uri, sync) = fixture.pending.lock().take_sync().unwrap();
+    assert_eq!(uri, fixture.uri);
+    assert!(sync.continuation.is_some());
+    let server = fixture.service.inner();
+    let sync_owner = crate::runtime::block_on(server.for_initial_document(
+        &uri,
+        sync.version,
+        sync.continuation.as_ref(),
+    ));
+    assert!(sync_owner.state.lsp_features().hover);
+    assert_eq!(factory_count(&fixture), "once\n");
+    let (_, typed) = fixture
+        .pending
+        .lock()
+        .take_ready(std::time::Instant::now() + std::time::Duration::from_secs(2))
+        .unwrap();
+    let type_owner = crate::runtime::block_on(server.for_initial_document(
+        &uri,
+        typed.version,
+        typed.continuation.as_ref(),
+    ));
+    assert!(std::ptr::eq(
+        sync_owner.state.as_ref(),
+        type_owner.state.as_ref()
+    ));
+    assert_eq!(factory_count(&fixture), "once\n");
+    let public = crate::runtime::block_on(server.for_document(&uri));
+    assert!(std::ptr::eq(
+        sync_owner.state.as_ref(),
+        public.state.as_ref()
+    ));
+    assert_eq!(factory_count(&fixture), "once\nonce\n");
+}
+
+#[test]
+fn queued_open_receipt_refuses_changed_source_version_reopen_config_and_failed_repairs() {
+    #[derive(Clone, Copy, Eq, PartialEq)]
+    enum Edit {
+        Source,
+        Version,
+        Reopen,
+        Config,
+        FailedRepair,
+        Marker,
+        OtherApp,
+    }
+    use Edit::{Config, FailedRepair, Marker, OtherApp, Reopen, Source, Version};
+
+    for control in [
+        Source,
+        Version,
+        Reopen,
+        Config,
+        FailedRepair,
+        Marker,
+        OtherApp,
+    ] {
+        let fixture = queued_open();
+        let (uri, sync) = fixture.pending.lock().take_sync().unwrap();
+        let server = fixture.service.inner();
+        let previous = crate::runtime::block_on(server.for_initial_document(
+            &uri,
+            sync.version,
+            sync.continuation.as_ref(),
+        ));
+        assert_eq!(factory_count(&fixture), "once\n");
+        let mut target = uri.clone();
+        match control {
+            Source | Version => server.state.documents.open(
+                uri.clone(),
+                "<template>changed</template>".into(),
+                if control == Version { 2 } else { 1 },
+                "vue".into(),
+            ),
+            Reopen => {
+                server.state.documents.close(&uri);
+                server
+                    .state
+                    .documents
+                    .open(uri.clone(), "<template />".into(), 1, "vue".into());
+            }
+            Config => {
+                file(
+                    fixture.root.path(),
+                    "app/policy.mjs",
+                    "export const hover = false;",
+                );
+            }
+            FailedRepair => {
+                file(
+                    fixture.root.path(),
+                    "app/policy.mjs",
+                    "export const hover = ;",
+                );
+            }
+            Marker => {
+                std::fs::remove_file(fixture.root.path().join("app/vite.config.mjs")).unwrap()
+            }
+            OtherApp => {
+                file(
+                    fixture.root.path(),
+                    "other/vite.config.mjs",
+                    "export default {vue:{languageServer:{hover:false}}};",
+                );
+                target = file(fixture.root.path(), "other/Other.vue", "<template />");
+                server
+                    .state
+                    .documents
+                    .open(target.clone(), "<template />".into(), 1, "vue".into());
+            }
+        }
+        let (_, typed) = fixture
+            .pending
+            .lock()
+            .take_ready(std::time::Instant::now() + std::time::Duration::from_secs(2))
+            .unwrap();
+        let next = crate::runtime::block_on(server.for_initial_document(
+            &target,
+            typed.version,
+            typed.continuation.as_ref(),
+        ));
+        if control == FailedRepair {
+            assert!(std::ptr::eq(previous.state.as_ref(), next.state.as_ref()));
+            assert!(next.state.lsp_features().hover);
+            assert_eq!(factory_count(&fixture), "once\n");
+            file(
+                fixture.root.path(),
+                "app/policy.mjs",
+                "export const hover = false;",
+            );
+            let repaired = crate::runtime::block_on(server.for_initial_document(
+                &uri,
+                typed.version,
+                typed.continuation.as_ref(),
+            ));
+            assert!(!repaired.state.lsp_features().hover);
+        } else {
+            assert_eq!(
+                next.state.lsp_features().hover,
+                !matches!(control, Config | OtherApp)
+            );
+        }
+        if matches!(control, Marker | OtherApp) {
+            assert!(!std::ptr::eq(previous.state.as_ref(), next.state.as_ref()));
+            assert_eq!(factory_count(&fixture), "once\n");
+        } else {
+            assert_eq!(factory_count(&fixture), "once\nonce\n");
+        }
+    }
+}
+
 const PLAIN: &str = include_str!(
     "../../../../../tests/_fixtures/differential/lsp/bare-script-symbol-routes/H/plain.ts.txt"
 );

@@ -64,7 +64,22 @@ test("startup diagnostics retain the production producer and unchanged scale-one
     steps[controls].run,
     "cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::initial_diagnostics::\n" +
       "cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::native_requests::\n" +
+      "cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::state::project_contexts:: -- --nocapture\n" +
       "cargo clippy --locked --profile ci -p vize_maestro --features legacy --all-targets -- -D warnings\n",
+  );
+  const localControls = steps.findIndex(
+    (step) => step.name === "Protect cold local responses and existing initial diagnostic controls",
+  );
+  assert.ok(localControls > measurement && localControls < controls);
+  assert.equal(
+    steps[localControls].run,
+    "set +e\n" +
+      "node --test --test-concurrency=1 tests/tooling/lsp-startup-local-interactive.test.ts tests/tooling/lsp-initial-diagnostics-version.test.ts tests/tooling/native-config-preload-observations.test.ts tests/tooling/native-config-compile-cache.test.ts > target/vize-tests/lsp-config-diagnostics/controls.stdout 2> target/vize-tests/lsp-config-diagnostics/controls.stderr\n" +
+      "status=$?\n" +
+      "cat target/vize-tests/lsp-config-diagnostics/controls.stdout\n" +
+      "cat target/vize-tests/lsp-config-diagnostics/controls.stderr >&2\n" +
+      "printf '%s\\n' \"$status\" > target/vize-tests/lsp-config-diagnostics/controls.status\n" +
+      'exit "$status"\n',
   );
   const symlinkControls = steps.findIndex(
     (step) => step.name === "Observe the original six symlink workspace layouts",
@@ -91,6 +106,33 @@ test("startup diagnostics retain the production producer and unchanged scale-one
     steps[freshnessControls].run!,
     /run_required_rust_tests issued-candidates cargo test .*lsp_client::editor_lsp::completion_resolve::issued::tests:: -- --nocapture/,
   );
+  assert.ok(
+    steps[freshnessControls].run!.includes(
+      "run_required_rust_tests initial-api-read cargo test --locked --profile ci -p vize_canon --features legacy --lib corsa_bridge::bridge::initial_diagnostics::tests:: -- --nocapture\n",
+    ),
+  );
+  assert.ok(
+    steps[freshnessControls].run!.includes(
+      "run_required_rust_tests initial-api-dependencies cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::importers::canonical::tests:: -- --nocapture\n",
+    ),
+  );
+  const apiReadSource = readRepoFile(
+    "crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics.rs",
+  );
+  assert.deepEqual(
+    [...apiReadSource.matchAll(/#\[test\]\n\s*fn (\w+)\(/g)].map((match) => match[1]),
+    [
+      "current_read_commits_whole_cache_only_after_foreground_lane_remains_usable",
+      "refreshed_snapshot_rejects_both_old_success_and_old_error_without_effects",
+      "cancelled_caller_keeps_real_snapshot_alive_until_entered_read_drains",
+      "dropped_session_owner_does_not_drop_a_workers_snapshot_or_admit_its_result",
+      "explicit_release_still_invalidates_the_remote_snapshot_without_double_release",
+    ],
+  );
+  assert.match(
+    readRepoFile("crates/vize_maestro/src/server/importers/canonical.rs"),
+    /#\[test\]\n    fn initial_graph_replacement_refuses_stale_stamp_and_restores_own_entry_on_crossing_change\(/,
+  );
   assert.match(steps[freshnessControls].run!, /--require-rust-tests/);
   assert.match(steps[freshnessControls].run!, /return "\$status"/);
   assert.ok(symlinkControls > completionControls);
@@ -116,11 +158,38 @@ test("startup diagnostics retain the production producer and unchanged scale-one
       'if [ "$status" -ne 0 ]; then\n  exit "$status"\nfi\nexit "$retain_status"\n',
   );
   const carrier = readRepoFile("tools/support/compat/github/run-lsp-config-diagnostics.ts");
+  const custodyBlock = carrier.split("const sourcePaths = [")[1]!.split("];")[0]!;
+  const custodyNames = [...custodyBlock.matchAll(/"([^"\n]+)"/g)].map((match) => match[1]);
+  assert.equal(custodyNames.length, 144);
+  assert.equal(
+    createHash("sha256")
+      .update(JSON.stringify(custodyNames.slice(0, 130)))
+      .digest("hex"),
+    "2b650a1f0e301d4de6c808646d18dbccf116882c49717e5537d91dee8b965598",
+  );
   assert.match(
     carrier,
     /process\.argv\[2\] === "--retain-rename-producer"[\s\S]*?retainIntegrationProducer\(path\.join\(directory, "rename\.stdout"\), directory, "rename-test"\)/,
   );
   for (const sourcePath of [
+    "Cargo.toml",
+    "crates/vize_canon/src/corsa_bridge.rs",
+    "crates/vize_canon/src/corsa_bridge/bridge.rs",
+    "crates/vize_canon/src/corsa_bridge/bridge/documents.rs",
+    "crates/vize_canon/src/lsp_client.rs",
+    "crates/vize_canon/src/lsp_client/diagnostics.rs",
+    "crates/vize_canon/src/lsp_client/diagnostics/virtual_overlay_diagnostics.rs",
+    "crates/vize_maestro/src/ide/diagnostics.rs",
+    "crates/vize_maestro/src/ide/diagnostics/corsa.rs",
+    "crates/vize_maestro/src/ide/diagnostics/corsa/collect.rs",
+    "crates/vize_maestro/src/ide/diagnostics/native.rs",
+    "crates/vize_maestro/src/ide/diagnostics/native/timeout.rs",
+    "crates/vize_maestro/src/server/diagnostic_publishing.rs",
+    "crates/vize_maestro/src/server/importers/canonical.rs",
+    "crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics.rs",
+    "crates/vize_canon/src/lsp_client/initial_diagnostics.rs",
+    "crates/vize_maestro/src/ide/diagnostics/corsa/initial.rs",
+    "crates/vize_maestro/src/server/initial_diagnostics/api_read.rs",
     "crates/vize_canon/src/batch/virtual_project/materialize_delta.rs",
     "crates/vize_canon/src/corsa_bridge/source_catalog.rs",
     "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/catalog.rs",
@@ -135,6 +204,34 @@ test("startup diagnostics retain the production producer and unchanged scale-one
   ]) {
     assert.equal(carrier.split(JSON.stringify(sourcePath)).length - 1, 1, sourcePath);
     assert.ok(readRepoFile(sourcePath).length > 0, sourcePath);
+  }
+  // This qualification must retain the new IPC/admission authority as well as
+  // its original workloads; capturing only the old main pipeline hides drift.
+  for (const sourcePath of [
+    "crates/vize_carton/Cargo.toml",
+    "crates/vize_carton/src/config/loader/js.rs",
+    "crates/vize_carton/src/config/loader/failure_identity.rs",
+    "crates/vize_carton/src/config/loader/js_observation.rs",
+    "crates/vize_carton/src/config/loader/module-runtime.mjs",
+    "crates/vize_carton/src/config/loader/vite-runtime.mjs",
+    "crates/vize_maestro/src/server/project_contexts/operation_admission_tests.rs",
+    "crates/vize_maestro/src/server/diagnostic_publishing/configuration_failure_tests.rs",
+    "crates/vize_maestro/src/server/workspace_files/config_watchers_lifecycle_tests.rs",
+    "crates/vize_maestro/src/server/state/project_contexts/freshness.rs",
+    "crates/vize_maestro/src/server/state/project_contexts/config_reload.rs",
+    "crates/vize_maestro/src/server/state/project_contexts/current.rs",
+    "crates/vize_maestro/src/server/state/project_contexts/current_tests.rs",
+    "crates/vize_maestro/src/server/state.rs",
+    "tests/tooling/native-config-preload-observations.test.ts",
+    "tests/tooling/native-config-compile-cache.test.ts",
+    "tests/tooling/config-host-boundary.test.ts",
+    "tests/tooling/support/davinci-host-imports.ts",
+    "crates/vize_maestro/src/server/initial_diagnostics/open_importer_tests.rs",
+    "crates/vize_maestro/src/server/initial_diagnostics/tests.rs",
+    "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_snapshot.rs",
+    "tests/tooling/support/vue-config-fixture.ts",
+  ]) {
+    assert.equal(carrier.split(JSON.stringify(sourcePath)).length - 1, 1, sourcePath);
   }
   assert.match(
     steps[completionControls].run!,

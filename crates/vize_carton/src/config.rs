@@ -9,12 +9,12 @@ mod loader;
 pub mod matcher;
 mod project;
 pub use loader::{
-    ConfigLoadFailureIdentity, LoadedConfig, LoadedConfigEntryFiles, LoadedConfigEntryIgnores,
-    LoadedConfigExperimentalVueFlags, LoadedConfigWithFeatures, LoadedFormatterSnapshot,
-    LoadedLibConfig, LoadedLintExecutionConfig, LoadedLspConfig, LoadedProjectConfig,
-    load_compiler_custom_elements, load_compiler_host_compiler, load_compiler_jsx_compat,
-    load_compiler_jsx_mode, load_compiler_template_settings, load_compiler_template_syntax,
-    load_compiler_vapor, load_compiler_vue_version, load_config,
+    ConfigEvaluationSession, ConfigLoadFailureIdentity, LoadedConfig, LoadedConfigEntryFiles,
+    LoadedConfigEntryIgnores, LoadedConfigExperimentalVueFlags, LoadedConfigWithFeatures,
+    LoadedFormatterSnapshot, LoadedLibConfig, LoadedLintExecutionConfig, LoadedLspConfig,
+    LoadedProjectConfig, load_compiler_custom_elements, load_compiler_host_compiler,
+    load_compiler_jsx_compat, load_compiler_jsx_mode, load_compiler_template_settings,
+    load_compiler_template_syntax, load_compiler_vapor, load_compiler_vue_version, load_config,
     load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source,
     load_config_and_linter_plan_with_lint_features_and_source,
     load_config_and_linter_plan_with_rule_options_and_lint_features_and_source,

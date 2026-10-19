@@ -285,7 +285,7 @@ impl ServerState {
             .map(|record| record.input_observations())
             .unwrap_or(&empty);
         let (mut snapshot, mut observation) =
-            Self::prepare_configuration_attempt(key, &raw, before, &dependencies);
+            Self::prepare_configuration_attempt(key, &raw, before, &dependencies, None);
         if base_record
             .as_ref()
             .is_none_or(|record| record.needs_confirmation())

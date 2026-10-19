@@ -8,6 +8,7 @@ enum Phase {
     Contexts,
     Routes,
     ConfigInstall,
+    InitialContinuation,
 }
 
 type Hook = (Phase, Box<dyn FnOnce()>);
@@ -43,6 +44,14 @@ pub(super) fn before_route_changes() {
 
 pub(super) fn before_config_install() {
     arrive(Phase::ConfigInstall);
+}
+
+pub(super) fn before_initial_continuation() {
+    arrive(Phase::InitialContinuation);
+}
+
+pub(super) fn at_initial_continuation(action: impl FnOnce() + 'static) {
+    HOOK.with(|slot| *slot.borrow_mut() = Some((Phase::InitialContinuation, Box::new(action))));
 }
 
 pub(super) fn at_config_install(action: impl FnOnce() + 'static) {

@@ -10,7 +10,7 @@ pub(in crate::server::state) use vize_carton::config::load_config_with_source;
 pub(in crate::server::state) use vize_carton::config::load_lsp_config_snapshot;
 
 #[cfg(feature = "native")]
-pub(in crate::server::state) use vize_carton::config::load_lsp_config_snapshot_observed;
+pub(in crate::server::state) use vize_carton::config::ConfigEvaluationSession;
 
 /// Raw policy and actual observations from before its one host evaluation.
 #[cfg(feature = "native")]
@@ -24,11 +24,12 @@ pub(in crate::server::state) struct ObservedLspConfig {
 #[cfg(feature = "native")]
 pub(in crate::server::state) fn load_observed_lsp_config_snapshot(
     path: Option<&std::path::Path>,
+    session: &ConfigEvaluationSession,
 ) -> ObservedLspConfig {
     let phase =
         vize_canon::corsa_bridge::EditorPreparationPhase::start("public_configuration_capture", 1);
     let mut before = vize_canon::ConfigurationObservations::default();
-    let loaded = load_lsp_config_snapshot_observed(path, &mut |paths| {
+    let loaded = session.load_snapshot_observed(path, &mut |paths| {
         before.extend(&vize_canon::ConfigurationObservations::capture(paths));
     });
     phase.finish();
