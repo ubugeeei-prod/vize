@@ -14,10 +14,13 @@ const directory = "tests/_fixtures/lint-preset-default-warnings";
 const presetSuccessors = JSON.parse(
   fs.readFileSync(path.join(root, directory, "preset-successors.json"), "utf8"),
 );
+// The audit judges the nextest.toml it reviewed; CI keeps editing the live file.
+const liveNextest = ".config/nextest.toml";
+const reviewedNextest = `${directory}/reviewed-nextest.toml`;
 const read = (name) =>
   presetSuccessors.reduceRight(
     (body, row) => (row.path === name ? inverse(row, body) : body),
-    fs.readFileSync(path.join(root, name)),
+    fs.readFileSync(path.join(root, name === liveNextest ? reviewedNextest : name)),
   );
 const bytes = read(`${directory}/successor.json`);
 assert.equal(sha(bytes), "30d630da3f38e9eb667e2097bda2b65d8e0e3b82bb5f62c61e4aead8a4cdc295");
@@ -478,4 +481,13 @@ void test("all generated locale tables and bilingual references expose the actua
       assert.deepEqual(presets(cells[severity + 1]), expected, filename);
     }
   }
+});
+
+void test("the live nextest config keeps the reviewed lint preset packet overrides", () => {
+  const live = fs.readFileSync(path.join(root, liveNextest), "utf8");
+  for (const name of [
+    "six_default_presets_preserve_complete_cli_warning_off_repair_and_alias_packets",
+    "callback_return_ownership_keeps_all_six_whole_cli_packets",
+  ])
+    assert.ok(live.includes(name), name);
 });

@@ -43,6 +43,43 @@ filter = '''(package(=vize) & binary(=lint_call_source_cli) & test(=original_arg
 (package(=vize_patina) & binary(=call_source_7989) & test(=original_and_controls_keep_complete_configured_service_results))'''
 junit.store-success-output = true
 
+# Start the 30-110s tests first so they do not finish a cohort alone.
+# Substring matches survive test-binary consolidation.
+[[profile.default.overrides]]
+filter = '''(package(=vize_atelier_sfc) & (
+  test(~unicode_v_for_keys_use_their_own_parameters_in_whole_native_and_official_sfcs) |
+  test(~component_sfc_inline_handlers_are_lazy_and_receive_emitted_values) |
+  test(~slot_defaults_are_lazy_reactive_and_keep_nullish_value_semantics) |
+  test(~original_component_refs_and_loop_scope_match_pinned_vue) |
+  test(~component_sfc_insertion_preserves_authored_sibling_order) |
+  test(~compound_model_arguments_keep_derived_keys_and_listener_updates)
+)) |
+(package(=vize_atelier_vapor) & (
+  test(~custom_directive_payloads_remain_reactive_on_elements_and_components) |
+  test(~async_suspense_lifetimes_match_native_retained_and_official_vapor)
+)) |
+(package(=vize) & (
+  test(~concurrent_projects_never_share_a_nuxt_checker_config) |
+  test(~native_named_type_reactive_public_origins_preserve_complete_local_and_parent_roles) |
+  test(~native_named_type_reactive_local_origins_preserve_complete_public_and_parent_roles) |
+  test(~original_two_queued_opens_never_write_into_the_authored_workspace_package) |
+  test(~original_config_safe_updates_apply_all_owned_sites_and_validate_independent_repairs) |
+  test(~named_model_update_transactions_preserve_every_authored_cursor_and_disk) |
+  test(~check_nuxt2_options_api_component_event_payloads_resolve_through_aliases) |
+  test(~bound_generic_event_casing_is_complete_at_every_authored_cursor) |
+  test(~bound_call_signature_event_casing_is_complete_at_every_authored_cursor) |
+  test(~bound_runtime_array_event_casing_is_complete_at_every_authored_cursor) |
+  test(~bound_runtime_object_event_casing_is_complete_at_every_authored_cursor) |
+  test(~bound_record_event_casing_is_complete_at_every_authored_cursor) |
+  test(~named_model_v_model_transactions_preserve_every_authored_cursor_and_disk) |
+  test(~native_ts_diagnostics_survive_generics_guards_utf16_unsaved_errors_and_repairs) |
+  test(~complete_aliases_survive_five_cli_processes_and_stock_dom_ssr_per_case) |
+  test(~native_reactive_prop_public_rename_is_identical_from_declaration_and_parent) |
+  test(~historical_original_bare_read_vectors_refuse_writes_and_reopen) |
+  test(~physically_copied_native_distribution_refuses_whole_mutable_emit_transaction)
+))'''
+priority = 100
+
 [profile.pr]
 # Audited real-TSGO cases remain mandatory in the full Cargo T1 lane.
 # Exact package, binary and names keep future tests in the PR tier.
