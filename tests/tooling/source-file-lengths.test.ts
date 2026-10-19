@@ -79,6 +79,49 @@ test("the default limit accepts 500 lines and rejects the 501st line", () => {
   }
 });
 
+test("a new directory holding only a test module is rejected", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-test-dir-"));
+  try {
+    runGit(cwd, ["init", "-q"]);
+    fs.mkdirSync(path.join(cwd, "legacy"));
+    writeLines(path.join(cwd, "legacy.rs"), 3);
+    writeLines(path.join(cwd, "legacy/tests.rs"), 3);
+    runGit(cwd, ["add", "-A"]);
+    runGit(cwd, [
+      "-c",
+      "user.name=Vize",
+      "-c",
+      "user.email=vize@example.com",
+      "commit",
+      "-qm",
+      "base",
+    ]);
+    const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
+    assert.equal(runSourceLengthScript(["--check", "--base-ref", baseRef], cwd).status, 0);
+
+    for (const name of ["tests.rs", "test.rs"]) {
+      fs.mkdirSync(path.join(cwd, "parser"), { recursive: true });
+      writeLines(path.join(cwd, "parser.rs"), 3);
+      writeLines(path.join(cwd, "parser", name), 3);
+      runGit(cwd, ["add", "-A"]);
+      const rejected = runSourceLengthScript(["--check", "--base-ref", baseRef], cwd);
+      assert.equal(rejected.status, 1, rejected.stdout);
+      assert.match(rejected.stdout, new RegExp(`only hold a test module[^]*parser/${name}`));
+      fs.rmSync(path.join(cwd, "parser"), { recursive: true });
+    }
+
+    writeLines(path.join(cwd, "parser_tests.rs"), 3);
+    fs.mkdirSync(path.join(cwd, "nested"));
+    writeLines(path.join(cwd, "nested/tests.rs"), 3);
+    writeLines(path.join(cwd, "nested/cases.rs"), 3);
+    runGit(cwd, ["add", "-A"]);
+    const accepted = runSourceLengthScript(["--check", "--base-ref", baseRef], cwd);
+    assert.equal(accepted.status, 0, accepted.stdout);
+  } finally {
+    fs.rmSync(cwd, { recursive: true, force: true });
+  }
+});
+
 test("source length comparison keeps the event base when the branch advances", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-length-base-"));
   const remote = path.join(root, "remote.git");

@@ -143,10 +143,28 @@ one sanctioned exception. Put `#[expect(clippy::disallowed_macros, reason = "…
 `#[cfg(test)] mod …` item that hosts the snapshot assertions — never at the crate root, never on the
 lint globally, and never on a module that also contains production code — and point the reason
 back to this section.
-When the test module is inline inside an over-budget file, split it out to the ordinary module path
-next to its parent (for example, `feature/tests.rs` for `mod tests;`). Keep the corresponding
-`snapshots/` directory beside that module so `insta` still resolves the recorded snapshots. Do not
-use `#[path = "…"]`; Vize modules must follow Rust's ordinary module discovery layout.
+When the test module is inline inside an over-budget file, move it to a sibling test file as
+described in [Source Layout](#source-layout). `insta` keeps the recorded snapshots in the
+`snapshots/` directory beside the file that holds the assertions, so move that directory with them.
+
+## Source Layout
+
+- **500 lines per file.** `tools/commands/ci/source-file-lengths.rs --check` (`vp run source:lengths`)
+  rejects new files over 500 lines and files that grow past it. Split by responsibility, not by
+  size alone: do not scatter a feature across many tiny files a reader has to hop through.
+- **No directory just for tests.** Keep a module's unit tests in its own file as
+  `#[cfg(test)] mod tests { … }` at the end. When the module plus its tests would exceed 500 lines,
+  put the tests in a sibling file named `<module>_tests.rs`:
+
+  ```rust
+  #[cfg(test)]
+  #[path = "parser_tests.rs"]
+  mod tests;
+  ```
+
+  This test-only sibling is the one sanctioned `#[path]`; production modules follow Rust's ordinary
+  module discovery. A directory whose only file is `tests.rs` (or `test.rs`) fails the length
+  check. A `tests/` directory that holds several test files is fine.
 
 ## Language Processor Change Discipline
 
