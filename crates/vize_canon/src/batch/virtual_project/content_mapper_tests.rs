@@ -13,6 +13,8 @@ use crate::batch::{
     generate_vue_content_mapper_transform_with_options,
 };
 
+#[path = "content_mapper_diagnostic_origin_tests.rs"]
+mod diagnostic_origin;
 #[path = "content_mapper_model_tests.rs"]
 mod models;
 #[path = "content_mapper_navigation_tests.rs"]
