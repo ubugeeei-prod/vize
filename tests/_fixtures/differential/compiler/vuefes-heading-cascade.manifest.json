@@ -34,7 +34,7 @@
       "reference": {
         "path": "vuefes-heading-cascade/expected.json",
         "sha256": "0eb79adb7edc3729a8f5edf416342fbed12d44664689be70058ecb255eaaf55e",
-        "source": "tools/support/compat/vuefes/ssr-style-dependencies.mjs:complete official/native runtime differential; npm/builder/vite/src/compiler-ssr-style-dependencies.test.ts:actual native metadata corpus"
+        "source": "tools/support/compat/vuefes/ssr-style-dependencies.ts:complete official/native runtime differential; npm/builder/vite/src/compiler-ssr-style-dependencies.test.ts:actual native metadata corpus"
       },
       "provenance": {
         "issue": "https://github.com/ubugeeei-prod/vize/issues/6880",

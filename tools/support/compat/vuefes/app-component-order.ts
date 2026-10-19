@@ -9,35 +9,62 @@ import {
   createNuxtComponentResolver,
   injectNuxtComponentImports,
 } from "../../../../npm/framework/nuxt/src/components.ts";
-import { createNuxtImportOracle, originalNuxtComponents } from "./component-import-oracle.mjs";
+import {
+  createNuxtImportOracle,
+  nuxtTransform,
+  originalNuxtComponents,
+} from "./component-import-oracle.ts";
+import {
+  readJsonRecord,
+  record,
+  text,
+  count,
+  type BabelParse,
+  type BabelStatement,
+  type CompilerSfc,
+} from "./oracle-support.ts";
+
+interface ImportRecord {
+  readonly source: string;
+  readonly start: number;
+  readonly end: number;
+  readonly specifiers: readonly { local: string; imported: string }[];
+}
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const directory = path.join(
   root,
   "tests/_fixtures/differential/compiler/vuefes-app-component-order",
 );
-const corpus = JSON.parse(fs.readFileSync(path.join(directory, "corpus.json")));
-const full = fs.readFileSync(path.join(directory, corpus.input.file));
-const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
-assert.equal(full.length, corpus.input.bytes);
-assert.equal(hash(full), corpus.input.sha256);
+const corpus = readJsonRecord(path.join(directory, "corpus.json"));
+const input = record(corpus.input, "corpus.input");
+const full = fs.readFileSync(path.join(directory, text(input.file, "corpus.input.file")));
+const hash = (bytes: Uint8Array | string): string =>
+  createHash("sha256").update(bytes).digest("hex");
+assert.equal(full.length, count(input.bytes, "corpus.input.bytes"));
+assert.equal(hash(full), text(input.sha256, "corpus.input.sha256"));
 const gitBlob = createHash("sha1").update(`blob ${full.length}\0`).update(full).digest("hex");
-assert.equal(gitBlob, corpus.input.gitBlob);
+assert.equal(gitBlob, text(input.gitBlob, "corpus.input.gitBlob"));
 const fromVue = createRequire(
   fileURLToPath(new URL("./fixtures/heading-cascade/package.json", import.meta.url)),
 );
 const fromTests = createRequire(path.join(root, "tests/package.json"));
-const compiler = fromVue("@vue/compiler-sfc");
-assert.equal(compiler.version, corpus.oracle.compilerSfc);
-const { parse } = fromTests("@babel/parser");
+const compiler: CompilerSfc = fromVue("@vue/compiler-sfc");
+assert.equal(compiler.version, record(corpus.oracle, "corpus.oracle").compilerSfc);
+const { parse }: { parse: BabelParse } = fromTests("@babel/parser");
 const { descriptor } = compiler.parse(full.toString(), { filename: "app/app.vue" });
+assert.ok(descriptor.scriptSetup, "the original app has a setup script");
 const components = originalNuxtComponents();
 const resolver = createNuxtComponentResolver({ rootDir: root, buildDir: path.join(root, ".nuxt") });
 resolver.register(components);
 const official = createNuxtImportOracle(components);
-const imports = (code) =>
+const isImport = (
+  node: BabelStatement,
+): node is BabelStatement & Required<Pick<BabelStatement, "source" | "specifiers">> =>
+  node.type === "ImportDeclaration" && node.source !== undefined && node.specifiers !== undefined;
+const imports = (code: string): ImportRecord[] =>
   parse(code, { sourceType: "module", plugins: ["typescript"] })
-    .program.body.filter((node) => node.type === "ImportDeclaration")
+    .program.body.filter(isImport)
     .map((node) => ({
       source: node.source.value,
       start: node.start,
@@ -60,11 +87,11 @@ const receipt = {
     ),
   ),
   runtime: "source transform only; original full38 remains actual app acceptance",
-  cases: [],
+  cases: [] as unknown[],
 };
 const output = path.join(root, "target/vuefes-ssr-style-dependencies");
 fs.mkdirSync(output, { recursive: true });
-const save = () =>
+const save = (): void =>
   fs.writeFileSync(
     path.join(output, "app-component-order.json"),
     JSON.stringify(receipt, null, 2) + "\n",
@@ -75,9 +102,9 @@ for (const [name, input] of [
     "whole-official-compiled-script",
     compiler.compileScript(descriptor, { id: "full-original-app", genDefaultAs: "__app" }).content,
   ],
-]) {
-  const native = injectNuxtComponentImports(input, (name) => resolver.resolve(name));
-  const reference = (await official.transform(input, path.join(root, "app/app.vue"))).code;
+] as const) {
+  const native = injectNuxtComponentImports(input, (component) => resolver.resolve(component));
+  const reference = await nuxtTransform(official, input, path.join(root, "app/app.vue"));
   const observation = {
     name,
     input,
@@ -89,7 +116,8 @@ for (const [name, input] of [
   };
   receipt.cases.push(observation);
   save();
-  const contract = (list) => list.map(({ source, specifiers }) => ({ source, specifiers }));
+  const contract = (list: readonly ImportRecord[]) =>
+    list.map(({ source, specifiers }) => ({ source, specifiers }));
   assert.deepEqual(
     contract(observation.nativeImports),
     contract(observation.officialImports),

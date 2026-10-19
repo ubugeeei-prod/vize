@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "paths": { "playwright": ["./docs/node_modules/playwright/index.d.ts"] }
+  },
+  "include": [],
+  "files": [
+    "tools/support/compat/vuefes/oracle-support.ts",
+    "tools/support/compat/vuefes/component-import-oracle.ts",
+    "tools/support/compat/vuefes/component-bridge.ts",
+    "tools/support/compat/vuefes/missing-ssr-edge-control.ts",
+    "tools/support/compat/vuefes/app-component-order.ts",
+    "tools/support/compat/vuefes/page-meta-oracle.ts",
+    "tools/support/compat/vuefes/page-meta-dependencies.ts",
+    "tools/support/compat/vuefes/page-observations.ts",
+    "tools/support/compat/vuefes/ssr-style-dependencies.ts"
+  ]
+}

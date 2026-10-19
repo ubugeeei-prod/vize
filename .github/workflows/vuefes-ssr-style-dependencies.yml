@@ -68,18 +68,18 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Complete original VueFes app component import differential
         if: ${{ !cancelled() }}
-        run: node tools/support/compat/vuefes/app-component-order.mjs
+        run: node tools/support/compat/vuefes/app-component-order.ts
       - name: Native metadata corpus and existing Vite contracts
         if: ${{ !cancelled() }}
         run: |
           vuefes_contract_rc=0
           node --test tests/tooling/vuefes-failure-*.test.mjs tools/support/compat/vuefes/passive-failure-sidecar.browser.test.mjs || vuefes_contract_rc=$?
-          node --experimental-vm-modules tools/support/compat/vuefes/page-meta-dependencies.mjs || vuefes_contract_rc=$?
+          node --experimental-vm-modules tools/support/compat/vuefes/page-meta-dependencies.ts || vuefes_contract_rc=$?
           node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test:prepared || vuefes_contract_rc=$?
           exit "$vuefes_contract_rc"
       - name: Complete official/native SSR, DOM and hydration differential
         if: ${{ !cancelled() }}
-        run: node tools/support/compat/vuefes/ssr-style-dependencies.mjs
+        run: node tools/support/compat/vuefes/ssr-style-dependencies.ts
       - name: Retain all qualification evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
