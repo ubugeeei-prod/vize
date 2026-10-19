@@ -222,12 +222,15 @@ fn original_router_requires_reported_dependency() {
     if !runtime_available() {
         return;
     }
-    assert_reported_router_dependency();
+    let Some(project) = ReportedProject::provision() else {
+        return;
+    };
+    assert_reported_router_dependency(project.root());
     let case = authored_cases()
         .into_iter()
         .find(|case| case["id"] == "RouterViewSlot")
         .expect("unaltered conditional router oracle");
-    let filename = fixture_root().join("original-reports/RouterViewSlot.vue");
+    let filename = project.root().join("original-reports/RouterViewSlot.vue");
     let filename = filename.to_str().expect("project path");
     let actual = observe_whole_case(&scoped_linter(), &case, filename);
     eprintln!(
@@ -237,12 +240,102 @@ fn original_router_requires_reported_dependency() {
     assert_eq!(actual, expected_whole_case(&case, filename));
 }
 
-fn assert_reported_router_dependency() {
-    // Ordinary Actions installs this isolated workspace's genuine dependencies.
+/// The reporter's project: the original sources and compiler config with
+/// vue-router 5.3.1 and Vue 3.5.42 installed beside them.
+///
+/// A `pnpm install` provisions the fixture workspace itself. Without it, the
+/// same project is assembled in a temporary directory: vue-router from the
+/// authenticated registry members in `reference/`, Vue from the workspace's
+/// pnpm store. Only Vue has no frozen copy, so a checkout without any install
+/// skips the test, unless `VIZE_TEST_REQUIRE_TSGO` makes that fatal.
+enum ReportedProject {
+    Installed(PathBuf),
+    Assembled(tempfile::TempDir),
+}
+
+impl ReportedProject {
+    fn provision() -> Option<Self> {
+        let fixture = fixture_root();
+        let modules = fixture.join("node_modules");
+        if ["vue", "vue-router"]
+            .iter()
+            .all(|name| modules.join(name).join("package.json").is_file())
+        {
+            return Some(Self::Installed(fixture));
+        }
+        let Some(vue) = workspace_vue() else {
+            assert!(
+                std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
+                "the reported router project requires Vue 3.5.42; run `pnpm install`"
+            );
+            return None;
+        };
+        let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/vize-tests");
+        std::fs::create_dir_all(&workspace).expect("test workspace");
+        let project = tempfile::Builder::new()
+            .prefix("public-expression-8752-")
+            .tempdir_in(workspace)
+            .expect("reported project");
+        let root = project.path();
+        let reports = root.join("original-reports");
+        std::fs::create_dir_all(&reports).expect("original reports");
+        for entry in std::fs::read_dir(fixture.join("original-reports")).expect("reports") {
+            let entry = entry.expect("report entry");
+            std::fs::copy(entry.path(), reports.join(entry.file_name())).expect("report file");
+        }
+        let router = root.join("node_modules/vue-router");
+        let reference = fixture.join("reference");
+        let custody: Value = serde_json::from_slice(
+            &std::fs::read(reference.join("custody.json")).expect("router custody"),
+        )
+        .expect("router custody JSON");
+        for (member, entry) in custody["declarationsAndLicense"]
+            .as_object()
+            .expect("router members")
+        {
+            let target = router.join(member.strip_prefix("package/").expect("package member"));
+            std::fs::create_dir_all(target.parent().expect("member directory")).expect("dir");
+            std::fs::copy(
+                reference.join(entry["file"].as_str().expect("reference file")),
+                target,
+            )
+            .expect("router member");
+        }
+        let link = root.join("node_modules/vue");
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(&vue, &link).expect("Vue link");
+        #[cfg(windows)]
+        std::os::windows::fs::symlink_dir(&vue, &link).expect("Vue link");
+        Some(Self::Assembled(project))
+    }
+
+    fn root(&self) -> &Path {
+        match self {
+            Self::Installed(root) => root,
+            Self::Assembled(project) => project.path(),
+        }
+    }
+}
+
+/// Vue 3.5.42 from the workspace's pnpm store, if installed.
+fn workspace_vue() -> Option<PathBuf> {
+    let store = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../node_modules/.pnpm");
+    std::fs::read_dir(store)
+        .ok()?
+        .filter_map(Result::ok)
+        .filter(|entry| {
+            let name = entry.file_name();
+            let name = name.to_string_lossy();
+            name == "vue@3.5.42" || name.starts_with("vue@3.5.42_")
+        })
+        .map(|entry| entry.path().join("node_modules/vue"))
+        .find(|vue| vue.join("package.json").is_file())
+}
+
+fn assert_reported_router_dependency(project: &Path) {
     // The original source and compiler config remain below its package root.
-    let project = fixture_root();
     let package_root = project.join("node_modules/vue-router");
-    let reference = project.join("reference");
+    let reference = fixture_root().join("reference");
     let custody: Value = serde_json::from_slice(
         &std::fs::read(reference.join("custody.json")).expect("official router source custody"),
     )
@@ -293,7 +386,10 @@ fn complete_original_opinionated_config_packets_use_real_corsa() {
     if !runtime_available() {
         return;
     }
-    assert_reported_router_dependency();
+    let Some(project) = ReportedProject::provision() else {
+        return;
+    };
+    assert_reported_router_dependency(project.root());
     let packet: Value = serde_json::from_str(ORIGINAL_CONFIG).expect("original config oracles");
     let cases = packet["cases"].as_array().expect("four original cases");
     assert_eq!(cases.len(), 4);
@@ -308,9 +404,10 @@ fn complete_original_opinionated_config_packets_use_real_corsa() {
         let filename = case["filename"]
             .as_str()
             .expect("unchanged original filename");
-        let path = fixture_root().join("original-reports").join(filename);
+        let path = project.root().join("original-reports").join(filename);
         assert_eq!(
-            std::fs::read(&path).expect("original full source"),
+            std::fs::read(fixture_root().join("original-reports").join(filename))
+                .expect("original full source"),
             case["source"].as_str().expect("source").as_bytes()
         );
         for (name, field) in [

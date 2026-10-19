@@ -14,7 +14,11 @@ filter hides runtime failures or other findings. `VIZE_TEST_REQUIRE_TSGO` makes 
 missing runtime fatal and cannot be combined with `VIZE_TEST_DISABLE_TSGO`.
 
 The RouterView case uses this private fixture workspace's genuine vue-router
-5.3.1 dependency. Shared preflight compares the entire installed package.json,
+5.3.1 dependency. When the workspace is not installed, the tests assemble the
+same project in a temporary directory instead: vue-router from the
+authenticated members in `reference/` and Vue 3.5.42 from the repository's
+pnpm store. A checkout with no install at all skips these tests, unless
+`VIZE_TEST_REQUIRE_TSGO` makes that fatal. Shared preflight compares the entire installed package.json,
 all 16 declaration files, and the license byte for byte with the authenticated
 registry references, and requires the isolated Vue 3.5.42 package. The normal
 test refuses a missing/wrong package or missing declarations. A missing resolved
