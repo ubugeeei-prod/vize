@@ -77,6 +77,8 @@
   ];
   const checkSettingsPaths = [
     "/guide/static-analysis",
+    "/guide/type-checking",
+    "/guide/language-server",
     "/guide/analysis-diagnostics",
     "/guide/lint-execution",
     "/guide/check-performance",
@@ -175,6 +177,7 @@
       pathsByLocale: {
         en: [
           ...projectSetupPaths,
+          "/guide/vapor",
           "/guide/jsr",
           "/guide/vue-configuration",
           "/guide/vite-scoped-compiler",
@@ -182,6 +185,7 @@
         ],
         ja: [
           ...projectSetupPaths,
+          "/guide/vapor",
           "/guide/jsr",
           "/guide/vue-configuration",
           "/guide/vite-scoped-compiler",

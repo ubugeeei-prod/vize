@@ -119,6 +119,9 @@ It recognizes:
 
 ## Other Editors
 
+> [!TIP]
+> The [Language Server guide](../guide/language-server.md) has setup steps for Zed, Neovim, Vim, Helix, and Emacs.
+
 `vize lsp` follows the Language Server Protocol and can be used by editors such as Neovim, Helix,
 Zed, and Emacs.
 

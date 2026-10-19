@@ -210,6 +210,9 @@ CLI, Oxlint bridge, and editor server.
 
 ## Type Checking
 
+> [!TIP]
+> New to `vize check`? Start with the [Type Checking guide](./type-checking.md).
+
 `vize check` generates virtual TypeScript for Vue SFCs and asks Corsa project sessions for
 diagnostics. It checks `.vue`, `.ts`, `.tsx`, and `.d.ts` inputs and maps diagnostics back to the
 original source files.

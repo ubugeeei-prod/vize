@@ -127,6 +127,9 @@ code --install-extension dist/vize.vsix
 
 ## 他のエディター
 
+> [!TIP]
+> Zed、Neovim、Vim、Helix、Emacs の設定手順は[言語サーバーのガイド](../guide/language-server.md)を参照してください。
+
 `vize lsp` は Language Server Protocol に対応しているため、Neovim、Helix、Zed、Emacs などでも利用できます。
 
 Neovim の設定例です。

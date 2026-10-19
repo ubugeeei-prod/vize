@@ -190,6 +190,9 @@ vp run vize:lint:cross-file-tree
 
 ## 型チェック
 
+> [!TIP]
+> `vize check` を初めて使う場合は、[型チェックのガイド](./type-checking.md)から始めてください。
+
 `vize check` は Vue SFC の仮想 TypeScript を生成し、Corsa のプロジェクトセッションで診断を取得します。`.vue`、`.ts`、`.tsx`、`.d.ts` を検査し、診断を元のソースファイルに対応付けます。
 
 ```json
