@@ -15,6 +15,7 @@ pub(crate) fn tempdir() -> std::io::Result<tempfile::TempDir> {
 /// `@typescript/typescript-*` runtime is resolved. A missing binary fails in CI
 /// (`CI` or `VIZE_TEST_REQUIRE_TSGO=1`) instead of passing without running;
 /// locally it skips with a message.
+#[cfg(feature = "native")]
 pub(crate) fn tsgo() -> Option<std::path::PathBuf> {
     select_tsgo(
         |name| std::env::var_os(name),

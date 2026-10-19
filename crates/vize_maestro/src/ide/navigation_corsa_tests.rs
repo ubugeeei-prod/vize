@@ -1,5 +1,10 @@
 //! Type-aware implementation / declaration / type-definition navigation from
 //! authored Vue onto authored `.ts` and `.vue` sources through a real tsgo.
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
 
 use std::fs;
 use std::sync::Arc;
