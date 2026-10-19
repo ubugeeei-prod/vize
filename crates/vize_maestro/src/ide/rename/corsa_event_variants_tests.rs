@@ -209,5 +209,5 @@ fn authored_text(source: &str, range: Range) -> &str {
 }
 
 fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
-    super::corsa_tests::resolve_tsgo_binary()
+    crate::test_support::tsgo()
 }
