@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
-import { resolveVuePackagePath } from "../../tools/support/compat/editor-e2e/real-vue-workspace.mjs";
+import { resolveVuePackagePath } from "../../tools/support/compat/editor-e2e/real-vue-workspace.ts";
 import { readPinnedArtifact } from "../differential/harness.mjs";
 import { loadLspManifest } from "../differential/lsp-manifest.ts";
 import { hoverToText, isDiagnosticsForUri } from "./support/lsp/assertions.ts";

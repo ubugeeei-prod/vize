@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { resolveVuePackagePath } from "../../../../tools/support/compat/editor-e2e/real-vue-workspace.mjs";
+import { resolveVuePackagePath } from "../../../../tools/support/compat/editor-e2e/real-vue-workspace.ts";
 import { readPinnedArtifact, sha256 } from "../../../differential/harness.mjs";
 import { errorText, hasCapabilities } from "../../../differential/lsp-types.ts";
 import { LspWire } from "../../../differential/lsp-wire.ts";

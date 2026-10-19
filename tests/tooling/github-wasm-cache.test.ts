@@ -7,7 +7,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { gitTrackedFiles } from "../../tools/support/git-tracked-files.mjs";
+import { gitTrackedFiles } from "../../tools/support/git-tracked-files.ts";
 import { checkWorkflowJobSources, readRepoFile, root } from "./support/github-workflows.ts";
 
 type Step = { name?: string; uses?: string; with?: Record<string, string> };

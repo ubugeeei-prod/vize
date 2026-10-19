@@ -5,7 +5,7 @@ import path from "node:path";
 import {
   resolveCorsaPath,
   resolveVuePackagePath,
-} from "../../../tools/support/compat/editor-e2e/real-vue-workspace.mjs";
+} from "../../../tools/support/compat/editor-e2e/real-vue-workspace.ts";
 import { createRealHostEnvironment, runPackagedExtensionHost } from "./packaged-host-contract.mjs";
 
 /** Separate profiles prove language activation without an earlier Vue session. */

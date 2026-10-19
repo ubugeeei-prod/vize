@@ -28,7 +28,10 @@ export const realVueFixturePath = path.join(
  * Materialize the `real-vue` fixture at `workspacePath` and wire it up for the
  * real server. Returns the workspace path so callers can chain.
  */
-export function prepareRealVueWorkspace(workspacePath, { preserveExisting = false } = {}) {
+export function prepareRealVueWorkspace(
+  workspacePath: string,
+  { preserveExisting = false }: { readonly preserveExisting?: boolean } = {},
+): string {
   if (!preserveExisting) {
     fs.rmSync(workspacePath, { force: true, recursive: true });
   }
@@ -54,10 +57,14 @@ export function prepareRealVueWorkspace(workspacePath, { preserveExisting = fals
   return workspacePath;
 }
 
-function enableTsExtensionImports(tsconfigPath) {
-  const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, "utf-8"));
+function enableTsExtensionImports(tsconfigPath: string): void {
+  const parsed: unknown = JSON.parse(fs.readFileSync(tsconfigPath, "utf-8"));
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed))
+    throw new Error(`${tsconfigPath} must contain a JSON object`);
+  const tsconfig: Record<string, unknown> = { ...parsed };
+  const options = tsconfig.compilerOptions;
   tsconfig.compilerOptions = {
-    ...tsconfig.compilerOptions,
+    ...(typeof options === "object" && options !== null ? options : {}),
     allowImportingTsExtensions: true,
   };
   fs.writeFileSync(tsconfigPath, `${JSON.stringify(tsconfig, null, 2)}\n`);
@@ -68,7 +75,7 @@ function enableTsExtensionImports(tsconfigPath) {
  * points `VIZE_SERVER_PATH` at the produced artifact; local runs fall back to
  * the conventional cargo target directories.
  */
-export function resolveRealServerPath() {
+export function resolveRealServerPath(): string {
   const exeName = process.platform === "win32" ? "vize.exe" : "vize";
   const configured = process.env.VIZE_SERVER_PATH?.trim();
   const candidates = configured
@@ -97,10 +104,10 @@ export function resolveRealServerPath() {
  * own TypeScript 7 platform package so `vite.config.mjs` never depends on
  * ambient discovery.
  */
-export function resolveCorsaPath() {
+export function resolveCorsaPath(): string {
   const extensionRequire = createRequire(path.join(vscodeExtensionPath, "package.json"));
   const platformPackages = [`@typescript/typescript-${process.platform}-${process.arch}`];
-  const attempted = [];
+  const attempted: string[] = [];
 
   for (const platformPackage of platformPackages) {
     const platformManifestPath = resolveOptional(
@@ -127,7 +134,7 @@ export function resolveCorsaPath() {
 }
 
 /** `require.resolve` that reports a missing package as `undefined`. */
-function resolveOptional(resolver, specifier) {
+function resolveOptional(resolver: NodeJS.Require, specifier: string): string | undefined {
   try {
     return resolver.resolve(specifier);
   } catch {
@@ -141,7 +148,7 @@ function resolveOptional(resolver, specifier) {
  * surface as the app fixtures. pnpm keeps the package's dependencies next to
  * its real path, which keeps `@vue/*` resolution working through the symlink.
  */
-export function resolveVuePackagePath() {
+export function resolveVuePackagePath(): string {
   const testsRequire = createRequire(path.join(repositoryRoot, "tests", "package.json"));
 
   try {

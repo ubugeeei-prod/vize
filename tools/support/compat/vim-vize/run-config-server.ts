@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { repositoryRoot, resolveRealServerPath } from "../editor-e2e/real-vue-workspace.mjs";
+import { repositoryRoot, resolveRealServerPath } from "../editor-e2e/real-vue-workspace.ts";
 
 const pinnedClient = "474c656659b5fb51eec6770309e0211c8aa49b5b";
 const client = process.env.VIZE_TEST_VIM_LSP_PATH;

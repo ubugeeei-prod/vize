@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-export function moveFoundation(root, mode) {
+export function moveFoundation(root: string, mode: string): void {
   const before = path.join(root, "crates/vize_carton");
   const after = path.join(root, "davinci/vize_l0");
   if (mode === "--foundation-moves-only") {
@@ -11,8 +11,8 @@ export function moveFoundation(root, mode) {
     }
     return;
   }
-  const read = (base, file) => readFileSync(path.join(base, file), "utf8");
-  const write = (base, file, source) => writeFileSync(path.join(base, file), source);
+  const read = (base: string, file: string): string => readFileSync(path.join(base, file), "utf8");
+  const write = (base: string, file: string, source: string): void => writeFileSync(path.join(base, file), source);
   const oldLib = read(before, "src/lib.rs");
   if (oldLib.includes("pub use vize_l0::*;")) return;
   const levelLib = read(after, "src/lib.rs");
@@ -55,7 +55,7 @@ export function moveFoundation(root, mode) {
         .slice(manifest.indexOf("[dev-dependencies]"))
         .replace("[dev-dependencies]\n", "[dev-dependencies]\nserde_json.workspace = true\n"),
   );
-  const walk = (directory) => {
+  const walk = (directory: string): void => {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
       const file = path.join(directory, entry.name);
       if (entry.isDirectory()) walk(file);

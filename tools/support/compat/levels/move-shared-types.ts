@@ -1,9 +1,9 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-export function moveSharedTypes(root, mode) {
-  const read = (file) => readFileSync(path.join(root, file), "utf8");
-  const write = (file, source) => writeFileSync(path.join(root, file), source);
+export function moveSharedTypes(root: string, mode: string): void {
+  const read = (file: string): string => readFileSync(path.join(root, file), "utf8");
+  const write = (file: string, source: string): void => writeFileSync(path.join(root, file), source);
   const carton = "davinci/vize_l0/src/",
     substrate = "davinci/vize_davinci/src/";
   if (mode === "--shared-moves-only") {
@@ -18,7 +18,7 @@ export function moveSharedTypes(root, mode) {
     return;
   }
   if (existsSync(path.join(root, carton + "compiler_error.rs"))) return;
-  const take = (source, start, end) => {
+  const take = (source: string, start: string, end: string): [string, string] => {
     const first = source.indexOf(start),
       last = source.indexOf(end, first);
     if (first < 0 || last < first) throw new Error(`shared type boundary changed: ${start}`);

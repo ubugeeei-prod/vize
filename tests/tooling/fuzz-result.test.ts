@@ -4,30 +4,20 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { fuzzResultPolicy } from "../../tools/support/compat/fuzz/enforce-result.mjs";
-
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const command = path.join(root, "tools/commands/ci/fuzz/enforce-result.rs");
 
 test("fuzz result policy keeps PRs advisory and release evidence strict", () => {
+  const status = (eventName: string, outcome: string): number | null =>
+    spawnSync("rust-script", [command, eventName, "sfc_parse", outcome], { encoding: "utf8" }).status;
   for (const outcome of ["failure", "cancelled", "skipped"]) {
-    assert.deepEqual(fuzzResultPolicy("pull_request", outcome), {
-      unsuccessful: true,
-      releaseBlocking: false,
-    });
-    for (const eventName of ["merge_group", "schedule", "workflow_dispatch"]) {
-      assert.deepEqual(fuzzResultPolicy(eventName, outcome), {
-        unsuccessful: true,
-        releaseBlocking: true,
-      });
-    }
+    assert.equal(status("pull_request", outcome), 0, `advisory ${outcome}`);
+    for (const eventName of ["merge_group", "schedule", "workflow_dispatch"])
+      assert.equal(status(eventName, outcome), 1, `${eventName} ${outcome}`);
   }
-  assert.deepEqual(fuzzResultPolicy("workflow_dispatch", "success"), {
-    unsuccessful: false,
-    releaseBlocking: false,
-  });
-  assert.throws(() => fuzzResultPolicy("push", "failure"), /Unsupported fuzz event/);
-  assert.throws(() => fuzzResultPolicy("schedule", ""), /Unsupported fuzz outcome/);
+  assert.equal(status("workflow_dispatch", "success"), 0);
+  assert.equal(status("push", "failure"), 1);
+  assert.equal(status("schedule", ""), 1);
 });
 
 test("fuzz result command reports the target, event, outcome, and gate decision", () => {

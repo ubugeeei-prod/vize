@@ -30,7 +30,7 @@ runs:
     # Use this commit-built CLI without waiting for npm or building a second binary.
     - name: Lint authored source with the opinionated preset
       shell: bash
-      run: vp node tools/commands/ci/opinionated-source-lint.mjs
+      run: vp node tools/commands/ci/opinionated-source-lint.ts
     - name: Test gallery Markdown renderer
       working-directory: npm/builder/vite-musea
       shell: bash

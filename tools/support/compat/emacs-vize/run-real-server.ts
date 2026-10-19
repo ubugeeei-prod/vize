@@ -10,7 +10,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 import { isDeepStrictEqual } from "node:util";
 import { pathToFileURL } from "node:url";
 
-import { resolveRealServerPath } from "../editor-e2e/real-vue-workspace.mjs";
+import { resolveRealServerPath } from "../editor-e2e/real-vue-workspace.ts";
 
 const repository = path.resolve(import.meta.dirname, "../../../..");
 const source =

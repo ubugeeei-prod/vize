@@ -16,7 +16,7 @@ import { pathToFileURL } from "node:url";
 import {
   prepareRealVueWorkspace,
   resolveRealServerPath,
-} from "../../tools/support/compat/editor-e2e/real-vue-workspace.mjs";
+} from "../../tools/support/compat/editor-e2e/real-vue-workspace.ts";
 import { evaluate, WORKSPACE } from "./conformance.ts";
 import { negativeControl } from "./negative-control.ts";
 import { loadScenario, suiteRoot, type Driver, type DriverContext } from "./support/context.ts";

@@ -103,7 +103,7 @@ await test("npm prose and unknown non-SFC extensions do not select extra native 
 await test("the actual scanner's complete authored input set selects its app consumer", () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-authored-source-scope-"));
   const scanner = fileURLToPath(
-    new URL("../../tools/commands/ci/opinionated-source-lint.mjs", import.meta.url),
+    new URL("../../tools/commands/ci/opinionated-source-lint.ts", import.meta.url),
   );
   const roots = [
     "npm/compose/core/src",
@@ -218,7 +218,7 @@ await test("actual PR and queue diffs select authored sources after additions an
 await test("changing shared ownership changes the actual scanner and selector together", () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-authored-ownership-mutation-"));
   const helper = "tools/support/github/opinionated-source-inputs.ts";
-  const scanner = "tools/commands/ci/opinionated-source-lint.mjs";
+  const scanner = "tools/commands/ci/opinionated-source-lint.ts";
   const planner = "tools/support/compat/github/plan-check-inputs.ts";
   try {
     for (const path of [

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { resolveCorsaPath, resolveVuePackagePath } from "../../editor-e2e/real-vue-workspace.mjs";
+import { resolveCorsaPath, resolveVuePackagePath } from "../../editor-e2e/real-vue-workspace.ts";
 
 export const fileName = (index) => `Component${String(index).padStart(5, "0")}.vue`;
 

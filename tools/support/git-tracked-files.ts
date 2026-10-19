@@ -2,7 +2,10 @@ import { spawnSync } from "node:child_process";
 
 // The full tracked filename stream exceeds Node's default 1 MiB buffer.
 // A bounded overflow remains an error: never inspect a truncated inventory.
-export function gitTrackedFiles(cwd, { maxBuffer = 8 * 1024 * 1024 } = {}) {
+export function gitTrackedFiles(
+  cwd: string,
+  { maxBuffer = 8 * 1024 * 1024 }: { readonly maxBuffer?: number } = {},
+): string[] {
   const listed = spawnSync("git", ["ls-files", "-z"], {
     cwd,
     encoding: "utf8",

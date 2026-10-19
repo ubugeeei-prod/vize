@@ -20,7 +20,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { gitTrackedFiles } from "../../../git-tracked-files.mjs";
+import { gitTrackedFiles } from "../../../git-tracked-files.ts";
 import { repoRoot } from "./paths.mjs";
 
 // The gate itself carries lookalike and boundary fixtures for its unit tests.

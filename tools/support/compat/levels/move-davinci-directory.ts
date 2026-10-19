@@ -3,8 +3,8 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { moveFoundation } from "./move-foundation.mjs";
-import { moveSharedTypes } from "./move-shared-types.mjs";
+import { moveFoundation } from "./move-foundation.ts";
+import { moveSharedTypes } from "./move-shared-types.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const names = [
@@ -18,7 +18,7 @@ const names = [
   "vize_l1_to_l2",
   "vize_l2_to_l3",
 ];
-const mode = process.argv[2];
+const mode = process.argv[2] ?? "";
 if (
   ![
     "--move-only",

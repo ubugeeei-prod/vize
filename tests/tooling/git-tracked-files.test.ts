@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { gitTrackedFiles } from "../../tools/support/git-tracked-files.mjs";
+import { gitTrackedFiles } from "../../tools/support/git-tracked-files.ts";
 
 test("the complete Git index remains readable above the default 1 MiB buffer", (t) => {
   const root = mkdtempSync(path.join(tmpdir(), "vize-git-tracked-files-"));

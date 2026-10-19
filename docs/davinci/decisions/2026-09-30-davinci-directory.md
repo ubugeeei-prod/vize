@@ -50,15 +50,15 @@ passed with an empty allowlist and no normal/build reverse paths, satisfying
 Replay directory and ownership moves on fresh main:
 
 ```sh
-node tools/support/compat/levels/move-davinci-directory.mjs --move-only
+node tools/support/compat/levels/move-davinci-directory.ts --move-only
 # Commit directory moves without content edits.
-node tools/support/compat/levels/move-davinci-directory.mjs --foundation-moves-only
+node tools/support/compat/levels/move-davinci-directory.ts --foundation-moves-only
 # Commit foundation file moves without content edits.
-node tools/support/compat/levels/move-davinci-directory.mjs --foundation
-node tools/support/compat/levels/move-davinci-directory.mjs --shared-moves-only
+node tools/support/compat/levels/move-davinci-directory.ts --foundation
+node tools/support/compat/levels/move-davinci-directory.ts --shared-moves-only
 # Commit stage/code file moves without content edits.
-node tools/support/compat/levels/move-davinci-directory.mjs --shared-types
-node tools/support/compat/levels/move-davinci-directory.mjs --references
+node tools/support/compat/levels/move-davinci-directory.ts --shared-types
+node tools/support/compat/levels/move-davinci-directory.ts --references
 cargo fmt --all
 ```
 

@@ -198,7 +198,7 @@ void test("a selected shard keeps its spec output and logs one per-file timing r
   const cwd = mkdtempSync(join(tmpdir(), "vize-tooling-timed-shard-"));
   try {
     const file = join(cwd, "plan.json");
-    const selected = ["tests/tooling/ai-fix-agent.test.ts"];
+    const selected = ["tests/tooling/git-tracked-files.test.ts"];
     writeFileSync(file, JSON.stringify(plan(selected, "pr", ["historical-sfc-documents"])));
     const env = { ...process.env, VIZE_TOOLING_TEST_TIER: "pr", VIZE_TOOLING_TEST_SHARD: "1/1" };
     delete env.NODE_TEST_CONTEXT;
@@ -208,7 +208,7 @@ void test("a selected shard keeps its spec output and logs one per-file timing r
       { encoding: "utf8", env },
     );
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-    assert.match(result.stdout, /✔ parseCommandArguments splits a program/);
+    assert.match(result.stdout, /✔ a failed Git command remains a failed tracked-file inspection/);
     assert.match(result.stdout, /ℹ fail 0/);
     const records = parseToolingTimingLog(result.stdout);
     assert.equal(records.length, 1);
