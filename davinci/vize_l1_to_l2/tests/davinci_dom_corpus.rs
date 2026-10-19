@@ -122,6 +122,12 @@ const BATTERY: &[(&str, &str)] = &[
         "template_for_component_slot_keeps_directives",
         r#"<template><el-tabs><template v-for="(item, index) of list" :key="item.key"><el-tab-pane :lazy="true"><template #label><span v-tippy="{ a: 1 }">{{ item.title }}</span></template></el-tab-pane></template></el-tabs></template>"#,
     ),
+    // Keyed and key-less v-for components whose alias shadows a browser global
+    // (Alexandrie ContainerView) must hoist identically on both lanes.
+    (
+        "v_for_alias_shadowing_global_lanes_agree",
+        r#"<template><div><NodeListInline v-for="document of filteredNodes" :key="document.id" :document="document" class="line-item" /><NodeCard v-for="document in filteredNodes" :key="document.id" :node="document" /><Foo v-for="window in wins" :w="window" /></div></template>"#,
+    ),
 ];
 
 #[test]

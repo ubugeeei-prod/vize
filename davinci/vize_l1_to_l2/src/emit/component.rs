@@ -101,10 +101,13 @@ pub(super) fn emit_call(
     } else {
         call_props::hoistable_static_props(component, skip_is, &hoist_attrs, cx.is_ts, cx.scope_id)?
     };
-    // A key injected from `<template v-for>` makes the item props dynamic,
-    // so the shipped lane registers no item-root hoist for them.
+    // A key injected from `<template v-for>` (the component has no key of its
+    // own) makes the item props dynamic, so the shipped lane registers no
+    // item-root hoist for them.
+    let injected_template_key =
+        if_key.is_some() && !super::vfor::has_dynamic_item_key(&component.bindings);
     if for_item
-        && if_key.is_none()
+        && !injected_template_key
         && !has_component_root_slot
         && !has_custom
         && !has_runtime
