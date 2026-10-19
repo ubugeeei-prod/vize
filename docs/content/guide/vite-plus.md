@@ -23,9 +23,11 @@ import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 export default defineConfig({});
 ```
 
+> [!IMPORTANT]
+> The helper requires Vite+ 0.2.3 or later.
+
 Vite+ is an optional peer dependency. Vize uses the project's installed version
-and its configuration types; it never downloads or replaces Vite+. The helper
-requires Vite+ 0.2.3 or later because earlier versions can mistake a custom
+and its configuration types; it never downloads or replaces Vite+. Earlier versions can mistake a custom
 `defineConfig` for Vite+'s own and skip its generated tasks
 ([upstream fix](https://github.com/voidzero-dev/vite-plus/releases/tag/v0.2.3)).
 Ordinary Vite projects can keep the usual plugin entry point.
@@ -138,8 +140,11 @@ Pass paths after `--` to check, lint, and format tasks. Formatting also accepts
 Checks continue after diagnostics so one failing tool does not hide the others.
 Generated tasks are uncached so fixes and configuration changes take effect.
 
-Custom tasks use `vp run`. Built-in `vp check`, `vp lint`, and `vp fmt` do not
-invoke these tasks. Built-in `vp build`, `vp dev`, and `vp pack` already use the
+> [!WARNING]
+> Custom tasks use `vp run`. Built-in `vp check`, `vp lint`, and `vp fmt` do not
+> invoke these tasks.
+
+Built-in `vp build`, `vp dev`, and `vp pack` already use the
 configured compiler or pack hooks.
 
 Existing package scripts are preserved. A pre-existing `check` script causes the

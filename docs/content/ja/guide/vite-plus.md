@@ -99,8 +99,10 @@ TypeScript 標準の `extends`・`references` は引き続き使えます。
 `vp run check -- --fix` は lint 修正とフォーマットを適用します。
 パスは `vp run lint -- src` のように `--` の後ろへ渡せます。
 
-**組み込みの `vp check`・`vp lint`・`vp fmt` は生成タスクを実行しません。**
-Vize を含む検査には上の `vp run` を使います。
+> [!WARNING]
+> 組み込みの `vp check`・`vp lint`・`vp fmt` は生成タスクを実行しません。
+> Vize を含む検査には上の `vp run` を使います。
+
 既存の package script は保持されます。`check` がすでにあれば生成名は `vize:check`、
 `lint` があれば `vize:lint` です。明示的な `run.tasks` が優先されます。
 
