@@ -9,19 +9,30 @@ use vize_canon::css_classes::authored_local_css_classes;
 
 use crate::ide::IdeContext;
 
-/// `<style module>` populates a template-scope `$style` object whose
-/// properties are the declared class names. When the cursor sits at
-/// `$style.|` we surface those names instead of the usual directive list.
+/// `<style module>` populates a template-scope `$style` object (or the
+/// name given by `module="name"`) whose properties are the declared class
+/// names. When the cursor sits at `$style.|` or `$style.par|` we surface
+/// those names instead of the usual directive list.
 pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<CompletionItem>> {
     let before = ctx.content.get(..ctx.offset.min(ctx.content.len()))?;
-    let trimmed = before.trim_end_matches([' ', '\t']);
-    if !trimmed.ends_with("$style.") {
+    let receiver = before
+        .trim_end_matches(is_identifier_char)
+        .strip_suffix('.')?;
+    let module = receiver
+        .rsplit(|character| !is_identifier_char(character))
+        .next()
+        .filter(|module| !module.is_empty())?;
+    let descriptor = ctx.descriptor()?;
+    if !descriptor
+        .styles
+        .iter()
+        .any(|style| style.module.as_deref() == Some(module))
+    {
         return None;
     }
-    let descriptor = ctx.descriptor()?;
     let mut classes = BTreeSet::new();
     for style in descriptor.styles.iter() {
-        if style.module.as_deref() != Some("$style")
+        if style.module.as_deref() != Some(module)
             || style.src.is_some()
             || style
                 .lang
@@ -53,4 +64,8 @@ pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<Compl
             })
             .collect(),
     )
+}
+
+fn is_identifier_char(character: char) -> bool {
+    character.is_ascii_alphanumeric() || matches!(character, '_' | '$')
 }

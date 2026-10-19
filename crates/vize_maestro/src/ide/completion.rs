@@ -44,6 +44,8 @@ mod component_props_tests;
 #[cfg(test)]
 mod component_pug_props_tests;
 #[cfg(test)]
+mod css_module_tests;
+#[cfg(test)]
 mod dedup_tests;
 #[cfg(test)]
 mod split_component_props_tests;
