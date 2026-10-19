@@ -14,6 +14,8 @@ export interface CadenceInput {
   subjects: readonly string[];
   /** A candidate for greenSha exists: an earlier run failed before tagging. */
   attempted?: boolean;
+  /** A release run is queued or in progress; its tag is not pushed yet. */
+  running?: boolean;
   /** When the latest release tag commit was created, in ms. */
   releasedAt?: number | null;
   now?: number;
@@ -24,10 +26,12 @@ export function cadenceDecision({
   releasedSha,
   subjects,
   attempted,
+  running = false,
   releasedAt = null,
   now = Date.now(),
 }: CadenceInput) {
   if (greenSha === null) return { release: false, reason: "no green Check on main" };
+  if (running) return { release: false, reason: "a release is already running" };
   if (greenSha === releasedSha) return { release: false, reason: "already released" };
   // Retry only from a newer green commit; dispatch retries the same one.
   if (attempted) return { release: false, reason: "a release of this commit already failed" };
@@ -53,6 +57,15 @@ async function api(path: string): Promise<Json> {
   );
   if (!response.ok) throw new Error(`GET ${path}: HTTP ${response.status}`);
   return (await response.json()) as Json;
+}
+
+/** Whether release.yml has a queued or running run. */
+export async function releaseRunning(): Promise<boolean> {
+  for (const status of ["queued", "in_progress", "waiting", "pending"]) {
+    const runs = await api(`actions/workflows/release.yml/runs?status=${status}&per_page=1`);
+    if (Number(runs.total_count) > 0) return true;
+  }
+  return false;
 }
 
 /** Reads the cadence inputs from the GitHub API. `lastTag` is the highest release tag. */

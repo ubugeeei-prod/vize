@@ -216,6 +216,15 @@ test("the automatic cadence releases a green main commit only after user-facing 
     }).release,
     "a failed candidate of the same commit is not retried hourly",
   );
+  assert.ok(
+    !cadenceDecision({
+      greenSha: green,
+      releasedSha: released,
+      subjects: ["fix: x"],
+      running: true,
+    }).release,
+    "no second release while one is still building",
+  );
   const hour = 60 * 60 * 1000;
   const spaced = (releasedAt: number) =>
     cadenceDecision({
@@ -234,7 +243,9 @@ test("the automatic cadence releases a green main commit only after user-facing 
     jobs: Record<string, Job>;
   };
   const on = cadence.on;
-  assert.match(JSON.stringify(cadence.jobs.cadence.steps), /gh workflow run release\.yml/);
+  assert.match(JSON.stringify(cadence.jobs.dispatch.steps), /gh workflow run release\.yml/);
+  // JSR rejects OIDC publishes by github-actions[bot]; dispatch as the maintainer.
+  assert.match(JSON.stringify(cadence.jobs.dispatch.steps), /secrets\.RELEASE_OPERATOR_TOKEN/);
   assert.equal(on.schedule?.length, 1);
   assert.deepEqual(on.workflow_run, {
     workflows: ["Check"],

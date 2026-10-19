@@ -5,7 +5,8 @@ name: Release cadence
 # landed since the last release, at most once per 50 minutes, never retrying a
 # commit whose release candidate already failed. It dispatches instead of
 # releasing in place because crates.io trusted publishing refuses workflow_run
-# and schedule triggers.
+# and schedule triggers. It dispatches as the maintainer: JSR only accepts
+# OIDC publishes whose actor is a scope member, never github-actions[bot].
 on:
   workflow_run:
     workflows: [Check]
@@ -22,10 +23,13 @@ env:
 jobs:
   cadence:
     if: github.repository == 'ubugeeei-prod/vize'
-    name: Dispatch a release when one is due
+    name: Decide whether a release is due
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    permissions: { contents: read, actions: write }
+    permissions: { contents: read, actions: read }
+    outputs:
+      release: ${{ steps.cadence.outputs.release }}
+      sha: ${{ steps.cadence.outputs.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -35,9 +39,16 @@ jobs:
         id: cadence
         env: { GITHUB_TOKEN: "${{ github.token }}" }
         run: node tools/support/release/release/main.ts cadence
+  dispatch:
+    needs: cadence
+    if: needs.cadence.outputs.release == 'true'
+    name: Dispatch release.yml
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment: release-operator
+    steps:
       - name: Dispatch release.yml
-        if: steps.cadence.outputs.release == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_SOURCE: ${{ steps.cadence.outputs.sha }}
+          GH_TOKEN: ${{ secrets.RELEASE_OPERATOR_TOKEN }}
+          RELEASE_SOURCE: ${{ needs.cadence.outputs.sha }}
         run: gh workflow run release.yml --repo "$GITHUB_REPOSITORY" --ref main -f source="$RELEASE_SOURCE"

@@ -3,7 +3,7 @@
 import { appendFileSync } from "node:fs";
 import { collectStdout, println, run, runMain, writeStderr } from "../command_io.ts";
 import { cliArgs, nonEmptyEnv, readFileToString } from "../command_runtime.ts";
-import { cadenceDecision, readCadenceInput } from "./cadence.ts";
+import { cadenceDecision, readCadenceInput, releaseRunning } from "./cadence.ts";
 import { stampVersion } from "./stamp.ts";
 import {
   highestReleaseVersion,
@@ -129,7 +129,7 @@ async function cadence(): Promise<number> {
     (
       await collectStdout("git", ["ls-remote", "origin", candidateRef(input.greenSha)])
     ).stdout.trim() !== "";
-  const decision = cadenceDecision({ ...input, attempted });
+  const decision = cadenceDecision({ ...input, attempted, running: await releaseRunning() });
   println(
     `${decision.release ? "Releasing" : "Skipping"} ${input.greenSha ?? "-"}: ${decision.reason}`,
   );

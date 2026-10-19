@@ -148,7 +148,7 @@ async function preparePublishManifest(directory: string): Promise<number> {
 }
 
 const USAGE =
-  "Usage: node tools/support/release/publish_npm_package/main.ts <dir> [--provenance] [--no-wait] [--ignore-failure] [--retries N] [--delay N]\n";
+  "Usage: node tools/support/release/publish_npm_package/main.ts <dir> [--provenance] [--no-wait] [--prepared] [--ignore-failure] [--retries N] [--delay N]\n";
 
 /**
  * Main entry point for resilient single-package npm publishing.
@@ -173,6 +173,7 @@ export async function publishNpmPackage(args: readonly string[]): Promise<number
   let provenance = false;
   let ignoreFailure = false;
   let waitVisible = true;
+  let prepared = false;
   let index = 1;
   while (index < args.length) {
     const arg = args[index];
@@ -183,6 +184,11 @@ export async function publishNpmPackage(args: readonly string[]): Promise<number
     }
     if (arg === "--no-wait") {
       waitVisible = false;
+      index += 1;
+      continue;
+    }
+    if (arg === "--prepared") {
+      prepared = true;
       index += 1;
       continue;
     }
@@ -206,7 +212,8 @@ export async function publishNpmPackage(args: readonly string[]): Promise<number
   }
 
   const packageJsonPath = joinPath(directory, "package.json");
-  const prepareExitCode = await preparePublishManifest(directory);
+  // --prepared: the caller already resolved every manifest before publishing.
+  const prepareExitCode = prepared ? 0 : await preparePublishManifest(directory);
   if (prepareExitCode !== 0) return prepareExitCode;
   const packageJson = readPackageJson(packageJsonPath);
   if (packageJson === undefined) {

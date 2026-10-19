@@ -40,7 +40,7 @@ test("argument errors keep their exact diagnostics and statuses", (t) => {
       "",
       usage(
         "publish_npm_package",
-        "<dir> [--provenance] [--no-wait] [--ignore-failure] [--retries N] [--delay N]",
+        "<dir> [--provenance] [--no-wait] [--prepared] [--ignore-failure] [--retries N] [--delay N]",
       ),
     ],
     ["publish_npm_package", [root, "--retries"], 1, "", "Unknown argument: --retries\n"],

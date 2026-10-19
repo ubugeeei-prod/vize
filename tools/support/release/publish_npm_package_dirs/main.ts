@@ -1,5 +1,6 @@
 // Publishes many npm package directories concurrently. npm does not need a
 // dependency to exist at publish time, so release order does not matter.
+import { fileURLToPath } from "node:url";
 import { collectOutput, println, runMain, writeStderr, writeStdout } from "../command_io.ts";
 import {
   cliArgs,
@@ -77,14 +78,27 @@ export async function publishNpmPackageDirs(args: readonly string[]): Promise<nu
     return 1;
   }
   const nodeBin = toolBin("NODE_BIN", process.execPath);
-  const script = resolvePath("tools/support/release/publish_npm_package/main.ts");
+  const script = fileURLToPath(new URL("../publish_npm_package/main.ts", import.meta.url));
+  // Resolve every manifest first: a publish (e.g. napi's prepublishOnly in
+  // @vizejs/native) rewrites its package.json while others would read it.
+  const prepare = fileURLToPath(
+    new URL("../prepare_npm_publish_manifest/main.ts", import.meta.url),
+  );
+  for (const dir of packageDirs) {
+    const output = await collectOutput(process.execPath, [prepare, dir]);
+    if (output.status !== 0) {
+      writeStderr(`Failed to prepare ${dir}\n${output.stdout}${output.stderr}`);
+      return 1;
+    }
+  }
+  const forward = [...parsed.forward, "--prepared"];
   const started = Date.now();
   const failed: string[] = [];
   let next = 0;
   const worker = async (): Promise<void> => {
     while (next < packageDirs.length) {
       const dir = packageDirs[next++];
-      const output = await collectOutput(nodeBin, [script, dir, ...parsed.forward]).catch(
+      const output = await collectOutput(nodeBin, [script, dir, ...forward]).catch(
         (error: unknown) => ({ status: 1, stdout: "", stderr: `${String(error)}\n` }),
       );
       // Children are buffered and printed whole so parallel logs stay readable.

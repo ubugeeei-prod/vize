@@ -27,7 +27,7 @@ test("every package publishes at once up to the concurrency bound", () => {
     assert.equal(maxActivePublishers(events), 3);
     assert.equal(events.length, 16);
     for (const event of events)
-      assert.deepEqual(event.args, ["--provenance", "--no-wait", "--retries", "2"]);
+      assert.deepEqual(event.args, ["--provenance", "--no-wait", "--retries", "2", "--prepared"]);
     assert.match(result.stdout, /Published 8\/8 packages/);
   } finally {
     fixture.cleanup();
@@ -111,5 +111,47 @@ test("--no-wait returns after a successful publish without polling the registry"
     assert.equal(fs.readFileSync(urls, "utf8").trim().split("\n").length, 1);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("manifests are resolved before any publish rewrites a sibling package.json", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "release-publish-prepare-"));
+  const bin = path.join(root, "bin");
+  try {
+    fs.mkdirSync(bin);
+    fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), 'packages:\n  - "npm/*"\n');
+    const manifest = (name: string, dependencies = {}) =>
+      JSON.stringify({ name, version: "1.0.0", dependencies });
+    for (const [dir, json] of [
+      ["b", manifest("@vizejs/b")],
+      ["a", manifest("@vizejs/a", { "@vizejs/b": "workspace:*" })],
+    ]) {
+      fs.mkdirSync(path.join(root, "npm", dir), { recursive: true });
+      fs.writeFileSync(path.join(root, "npm", dir, "package.json"), json);
+    }
+    writeFakeNpmRegistry(bin);
+    // Publishing b rewrites its manifest non-atomically, like napi's prepublishOnly.
+    writeFakeCommand(
+      bin,
+      "vp",
+      "const fs = require('node:fs'); if (process.cwd().endsWith('b')) fs.writeFileSync('package.json', '{'); process.exit(0);",
+    );
+    const result = runReleaseCommand(
+      "publish_npm_package_dirs",
+      [path.join(root, "npm/b"), path.join(root, "npm/a"), "--concurrency", "1", "--no-wait"],
+      {
+        cwd: root,
+        env: {
+          PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}`,
+          VIZE_REPO_ROOT: root,
+          NPM_FAKE_VERSION: "1.0.0",
+        },
+      },
+    );
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
+    const published = JSON.parse(fs.readFileSync(path.join(root, "npm/a/package.json"), "utf8"));
+    assert.deepEqual(published.dependencies, { "@vizejs/b": "1.0.0" });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
   }
 });
