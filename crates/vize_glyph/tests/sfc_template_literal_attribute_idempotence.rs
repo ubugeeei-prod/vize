@@ -185,16 +185,27 @@ fn markup_after_a_directive_with_a_quoted_backtick_keeps_its_indentation() {
 "#;
     let options = FormatOptions::default();
     let first = format_sfc(source, &options).unwrap();
-    assert!(
-        first.code.ends_with(
-            "    />\n    <p>\n      <span>after</span>\n    </p>\n  </div>\n</template>\n"
+    // Lines inside the attribute keep the #9583 dedent; pin only the quasi
+    // bytes and the markup after the closing quote.
+    let lines: Vec<&str> = first.code.lines().collect();
+    assert_eq!(
+        lines.get(6..8),
+        Some(["          x", "        `,"].as_slice())
+    );
+    assert_eq!(
+        lines.get(9..),
+        Some(
+            [
+                "    />",
+                "    <p>",
+                "      <span>after</span>",
+                "    </p>",
+                "  </div>",
+                "</template>",
+            ]
+            .as_slice()
         ),
         "later markup lost its indentation:\n{}",
-        first.code
-    );
-    assert!(
-        first.code.contains("\n          x\n        `,\n"),
-        "quasi bytes changed:\n{}",
         first.code
     );
     let second = format_sfc(&first.code, &options).unwrap();
