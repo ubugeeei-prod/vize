@@ -103,6 +103,9 @@ tsgo --runExternalCode --noEmit -p tsconfig.json
 
 若注释之后同一行还有内容,指令作用于该行的剩余部分;否则作用于下一个非空行。
 
+放在 SFC 块之前的指令作用于该块的开始标签(例如重复的 `<style module="name">` 或 `generic` 属性);
+`<!-- @vue-skip -->` 作用于整个块。
+
 ## 协议
 
 Vize 使用上游合并的 Content Mapper 协议 v1:UTF-8 位置编码、按项目的

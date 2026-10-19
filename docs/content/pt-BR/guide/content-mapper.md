@@ -108,6 +108,9 @@ diretivas de comentário HTML padrão do Vue através do protocolo:
 Uma diretiva se aplica ao restante da própria linha quando há conteúdo após o comentário; caso
 contrário, à próxima linha não vazia.
 
+Colocada logo antes de um bloco SFC, uma diretiva cobre a tag de abertura desse bloco, como um
+`<style module="name">` repetido ou um atributo `generic`; `<!-- @vue-skip -->` cobre o bloco inteiro.
+
 ## Protocolo
 
 O Vize fala o protocolo v1 de content mapper conforme mesclado upstream: codificação de posição
