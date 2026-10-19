@@ -22,8 +22,6 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-mod support;
-
 use vize_l0::Allocator;
 use vize_l0::diag::Diagnostic;
 use vize_l0::dump::{Dump, Mode as DumpMode};

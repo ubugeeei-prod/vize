@@ -12,7 +12,7 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-mod support;
+use crate::support;
 
 use std::path::{Path, PathBuf};
 

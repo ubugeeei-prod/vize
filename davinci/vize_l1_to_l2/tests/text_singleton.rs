@@ -1,6 +1,6 @@
 //! Final text children keep leaf semantics without temporary compound parts.
 
-mod support;
+use crate::support;
 
 use vize_l0::Span;
 use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp};

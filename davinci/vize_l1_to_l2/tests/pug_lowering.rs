@@ -21,7 +21,7 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-mod support;
+use crate::support;
 
 use std::fmt::Write as _;
 use std::path::PathBuf;

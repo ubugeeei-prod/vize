@@ -2,7 +2,7 @@
 //! ops (with the #4365 pattern boundary) and provenance pairs that
 //! survive failure, keyed by page-order ids that resolve.
 
-mod support;
+use crate::support;
 
 use support::{artifact, with_lowered};
 use vize_l0::id::NodeId;

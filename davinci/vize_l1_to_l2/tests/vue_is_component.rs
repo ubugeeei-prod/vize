@@ -1,5 +1,5 @@
 //! Original third-party #8328 and neighboring component-casting semantics.
-mod support;
+use crate::support;
 use support::with_lowered;
 use vize_l0::{Allocator, Span};
 use vize_l1::embed::Lang;

@@ -4,7 +4,7 @@
 //! oracle is whole-artifact equality on the canonical `Full`-mode folio
 //! (assurance §4: no partial matching).
 
-mod support;
+use crate::support;
 
 use support::artifact;
 use vize_l0::Span;

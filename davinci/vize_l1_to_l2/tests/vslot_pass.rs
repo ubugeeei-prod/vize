@@ -8,7 +8,7 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-mod support;
+use crate::support;
 
 use vize_l0::id::NodeId;
 use vize_l1_to_l2::pass::vslot::{

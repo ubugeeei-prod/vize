@@ -1,6 +1,6 @@
 //! Exact-pinned lowering for `v-cloak` as the P2-11 `vue.cloak` binding.
 
-mod support;
+use crate::support;
 
 use support::artifact;
 use vize_l0::cstr;

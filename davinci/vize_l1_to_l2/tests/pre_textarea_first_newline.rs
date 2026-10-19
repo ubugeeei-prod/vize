@@ -1,5 +1,5 @@
 //! #7889: native lowering keeps complete authored spans while changing text.
-mod support;
+use crate::support;
 
 use vize_l2::dump::Op;
 

@@ -6,7 +6,7 @@
 //! synthesized name).
 //! The TS-17 folio snapshots live in `vfor_pass_snapshot.rs`.
 
-mod support;
+use crate::support;
 
 use vize_l0::id::NodeId;
 use vize_l1_to_l2::pass::vfor::{ForFacts, ForName};

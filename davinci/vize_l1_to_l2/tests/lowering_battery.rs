@@ -10,7 +10,7 @@
 
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-mod support;
+use crate::support;
 
 use davinci_test_support::surface_fixture as battery;
 use support::{assert_authored_artifact, assert_sound, with_lowered};

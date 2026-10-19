@@ -8,7 +8,7 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-mod support;
+use crate::support;
 
 use support::with_transformed;
 use vize_l0::Allocator;
@@ -43,9 +43,5 @@ fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
 }
 
-mod emit_create_slots {
-    use super::*;
-
-    mod conditional_and_looped;
-    mod dynamic_entries;
-}
+mod conditional_and_looped;
+mod dynamic_entries;

@@ -12,12 +12,8 @@
     clippy::disallowed_types,
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
-#![expect(
-    dead_code,
-    reason = "shared integration-test support: each test crate uses a subset"
-)]
 
-// Each test binary uses the subset of these helpers it needs.
+// The integration binary uses every helper; feature-gated binaries use a subset.
 
 mod authored;
 mod dump_spans;

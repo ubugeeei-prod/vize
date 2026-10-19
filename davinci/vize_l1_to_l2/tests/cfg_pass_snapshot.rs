@@ -15,7 +15,7 @@
 
 // The shared `support` oracle builds std strings for its span checks.
 
-mod support;
+use crate::support;
 
 use std::path::{Path, PathBuf};
 

@@ -10,7 +10,7 @@
     reason = "integration tests compare complete authored artifacts"
 )]
 
-mod support;
+use crate::support;
 
 use std::fmt::Write;
 

@@ -13,7 +13,7 @@
     reason = "tests assert by panicking"
 )]
 
-mod support;
+use crate::support;
 
 use vize_l0::Span;
 use vize_l0::diag::{Severity, Stage};

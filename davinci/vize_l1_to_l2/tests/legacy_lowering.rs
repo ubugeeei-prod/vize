@@ -4,7 +4,7 @@
 //! lowering admits `.sync` / `slot-scope` / pipe filters as dialect
 //! ops and expressions under Vue 2, and that Vue 3 stays inert.
 
-mod support;
+use crate::support;
 
 use support::{artifact, artifact_caps, assert_sound, assert_sound_caps};
 use vize_l0::config::VueVersion;

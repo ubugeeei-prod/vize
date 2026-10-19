@@ -2,7 +2,7 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-mod support;
+use crate::support;
 
 use vize_l0::{Allocator, Span, String};
 use vize_l1::SurfaceChild;

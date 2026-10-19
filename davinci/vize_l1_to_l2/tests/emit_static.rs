@@ -10,7 +10,7 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-mod support;
+use crate::support;
 
 use support::with_transformed;
 use vize_l0::Allocator;
@@ -40,9 +40,5 @@ fn assert_shipped_parity(source: &str) {
     assert_eq!(assembled(source), shipped(source), "{source}");
 }
 
-mod emit_static {
-    use super::*;
-
-    mod static_props;
-    mod text_and_once;
-}
+mod static_props;
+mod text_and_once;

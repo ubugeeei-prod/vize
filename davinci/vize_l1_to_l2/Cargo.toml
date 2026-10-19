@@ -18,6 +18,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "L1-to-L2 - the Davinci Vue template lowering (codename Ricalco, P2-8)"
+autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
@@ -112,6 +113,11 @@ required-features = ["legacy-differential"]
 [[test]]
 name = "davinci_remarks_corpus"
 required-features = ["legacy-differential"]
+
+# Ordinary integration tests link as one binary; see tests/main.rs.
+[[test]]
+name = "integration"
+path = "tests/main.rs"
 
 [lints]
 workspace = true

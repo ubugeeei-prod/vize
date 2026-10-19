@@ -9,7 +9,7 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-mod support;
+use crate::support;
 
 use support::with_transformed;
 use vize_l0::Allocator;
@@ -44,9 +44,5 @@ fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
 }
 
-mod emit_slots {
-    use super::*;
-
-    mod element_children;
-    mod text_and_templates;
-}
+mod element_children;
+mod text_and_templates;

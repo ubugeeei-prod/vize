@@ -12,7 +12,7 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-mod support;
+use crate::support;
 
 use support::with_transformed;
 use vize_l1_to_l2::{EmitError, emit_dom};
@@ -37,9 +37,5 @@ fn pin(visual: &str) -> String {
     visual.replace(")\n\n  return", ")\n  \n  return")
 }
 
-mod emit_model {
-    use super::*;
-
-    mod component_variants;
-    mod native_and_basic_component;
-}
+mod component_variants;
+mod native_and_basic_component;

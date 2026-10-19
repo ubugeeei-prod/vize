@@ -2,7 +2,7 @@
 //! dialect payloads into the Vue 3 surface. Vue 3 model-free artifacts
 //! skip the `v-model` diagnostic pass; text facts are lowering-published.
 
-mod support;
+use crate::support;
 
 use support::{
     assert_transformed_sound, assert_transformed_sound_caps, with_transformed,

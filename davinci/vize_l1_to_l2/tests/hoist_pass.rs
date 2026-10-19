@@ -6,7 +6,7 @@
 //! (`pass/hoist/consts.rs` module docs), whose every narrowing is
 //! pinned here so a silent widening is a loud diff.
 
-mod support;
+use crate::support;
 
 use support::{assert_transformed_sound, with_transformed};
 use vize_l1_to_l2::pass::{StaticFacts, StaticLevel};

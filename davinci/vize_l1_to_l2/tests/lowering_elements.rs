@@ -3,7 +3,7 @@
 //! ride-through, `ui.slot` outlets, and the Info deferral of bindings
 //! the P2-8 op family cannot carry (whole-artifact equality throughout).
 
-mod support;
+use crate::support;
 
 use support::artifact;
 use vize_l0::diag::{Advisory, Diagnostic, Stage};

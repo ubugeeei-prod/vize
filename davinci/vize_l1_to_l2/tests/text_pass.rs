@@ -9,7 +9,7 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-mod support;
+use crate::support;
 
 use vize_l0::id::NodeId;
 use vize_l0::{Span, String};

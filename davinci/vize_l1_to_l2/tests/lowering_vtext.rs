@@ -1,6 +1,6 @@
 //! Exact-pinned lowering for `v-text` as the P2-11 `vue.text` binding.
 
-mod support;
+use crate::support;
 
 use support::artifact;
 use vize_l0::diag::{Advisory, Diagnostic, Stage};

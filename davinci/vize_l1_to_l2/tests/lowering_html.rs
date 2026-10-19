@@ -1,6 +1,6 @@
 //! Exact-pinned lowering for `v-html` as the P2-11 `vue.html` binding.
 
-mod support;
+use crate::support;
 
 use support::artifact;
 use vize_l0::diag::{Advisory, Diagnostic, Stage};

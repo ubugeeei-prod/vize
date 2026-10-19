@@ -23,6 +23,10 @@
 //!     --test davinci_lowering_corpus -- --nocapture
 //! ```
 
+#[expect(
+    dead_code,
+    reason = "this feature-gated binary uses a subset of the shared support"
+)]
 mod support;
 
 use std::fs;

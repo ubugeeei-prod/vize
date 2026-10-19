@@ -3,7 +3,7 @@
 
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-mod support;
+use crate::support;
 
 use std::fs;
 

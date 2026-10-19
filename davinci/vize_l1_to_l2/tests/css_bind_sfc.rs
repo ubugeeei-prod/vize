@@ -7,7 +7,7 @@
     reason = "tests assert by panicking"
 )]
 
-mod support;
+use crate::support;
 
 use support::assert_authored_artifact;
 use vize_l0::dump::{Dump, Mode as DumpMode};

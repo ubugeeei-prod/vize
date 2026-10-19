@@ -6,7 +6,7 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-mod support;
+use crate::support;
 
 use support::assembled_dom as emitted;
 use vize_l0::Allocator;

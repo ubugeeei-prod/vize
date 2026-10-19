@@ -36,6 +36,10 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
+#[expect(
+    dead_code,
+    reason = "this feature-gated binary uses a subset of the shared support"
+)]
 mod support;
 
 use std::collections::BTreeMap;

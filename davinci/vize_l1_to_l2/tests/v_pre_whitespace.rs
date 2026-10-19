@@ -1,6 +1,6 @@
 //! Removed whitespace retains source provenance; literal and active text stay distinct.
 
-mod support;
+use crate::support;
 
 use support::{assert_sound, assert_transformed_sound, with_lowered};
 use vize_l0::{Span, String};

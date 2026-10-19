@@ -8,7 +8,7 @@
 //! `crates/vize_atelier_core/src/lane/traverse.rs`). The TS-17 folio
 //! snapshots live in `vmodel_pass_snapshot.rs`.
 
-mod support;
+use crate::support;
 
 use vize_l0::diag::{Severity, Stage};
 use vize_l1_to_l2::exemptions;
