@@ -42,7 +42,7 @@ export async function verifyPublished(args: readonly string[]): Promise<number> 
     return 1;
   }
   const visible = await Promise.all(
-    names.map((name) => waitForRegistryVisibility({ name, version, tag: "latest" }, 90, 10)),
+    names.map((name) => waitForRegistryVisibility({ name, version, tag: "latest" }, 180, 10)),
   );
   const missing = names.filter((_, index) => visible[index] !== 0);
   if (missing.length > 0) {

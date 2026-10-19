@@ -12,10 +12,16 @@ name: Release
 # because it does not resolve dependencies at publish time. Registry visibility
 # is checked once, after publishing. Re-running failed jobs is safe: every
 # publisher skips versions that exist.
-# The hourly schedule releases the newest main commit with a green push Check
-# when fix/feat/perf commits landed since the last release tag, and does not
-# retry a commit whose candidate already failed.
+# Releases also start on their own: every completed Check on main (plus an
+# hourly fallback schedule) runs `main.ts cadence`, which releases the newest
+# main commit whose push Check passed when fix/feat/perf commits landed since
+# the last release, at most once per 50 minutes, and never retries a commit
+# whose candidate already failed.
 on:
+  workflow_run:
+    workflows: [Check]
+    types: [completed]
+    branches: [main]
   schedule:
     - cron: "23 * * * *"
   workflow_dispatch:
@@ -25,7 +31,7 @@ on:
         required: false
         default: ""
         type: string
-run-name: ${{ github.event_name == 'schedule' && 'Release (scheduled)' || format('Release {0}', inputs.version || 'next minor') }}
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Release {0}', inputs.version || 'next minor') || 'Release (automatic)' }}
 concurrency:
   group: release
   cancel-in-progress: false
@@ -53,9 +59,9 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
-      - name: Decide whether the scheduled run releases
+      - name: Decide whether the automatic run releases
         id: cadence
-        if: github.event_name == 'schedule'
+        if: github.event_name != 'workflow_dispatch'
         env: { GITHUB_TOKEN: "${{ github.token }}" }
         run: node tools/support/release/release/main.ts cadence
       - name: Check out the green main commit
@@ -64,7 +70,7 @@ jobs:
         run: git fetch --depth=1 origin "$RELEASE_SOURCE" && git checkout --detach FETCH_HEAD
       - name: Stamp, commit and push the release candidate
         id: cut
-        if: github.event_name != 'schedule' || steps.cadence.outputs.release == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.cadence.outputs.release == 'true'
         env: { RELEASE_VERSION: "${{ inputs.version }}" }
         run: node tools/support/release/release/main.ts cut ${RELEASE_VERSION:+"$RELEASE_VERSION"}
       - name: Select release platforms
@@ -407,7 +413,7 @@ jobs:
     name: Verify npm packages
     needs: [version, publish-npm]
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }

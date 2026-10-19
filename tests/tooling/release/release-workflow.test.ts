@@ -195,7 +195,7 @@ test("Open VSX publication tolerates ovsx dependency build scripts", () => {
   assert.equal(job?.PNPM_CONFIG_STRICT_DEP_BUILDS, "false");
 });
 
-test("the hourly cadence releases a green main commit only after user-facing changes", () => {
+test("the automatic cadence releases a green main commit only after user-facing changes", () => {
   const released = "a".repeat(40);
   const green = "b".repeat(40);
   const decide = (subjects: string[], greenSha: string | null = green) =>
@@ -214,8 +214,26 @@ test("the hourly cadence releases a green main commit only after user-facing cha
     }).release,
     "a failed candidate of the same commit is not retried hourly",
   );
-  const on = workflow.on as unknown as { schedule?: Array<{ cron: string }> };
+  const hour = 60 * 60 * 1000;
+  const spaced = (releasedAt: number) =>
+    cadenceDecision({
+      greenSha: green,
+      releasedSha: released,
+      subjects: ["fix: x"],
+      releasedAt,
+      now: 10 * hour,
+    }).release;
+  assert.ok(spaced(9 * hour) && !spaced(9.5 * hour), "at most one release per 50 minutes");
+  const on = workflow.on as unknown as {
+    schedule?: Array<{ cron: string }>;
+    workflow_run?: { workflows: string[]; types: string[]; branches: string[] };
+  };
   assert.equal(on.schedule?.length, 1);
+  assert.deepEqual(on.workflow_run, {
+    workflows: ["Check"],
+    types: ["completed"],
+    branches: ["main"],
+  });
   for (const build of ["build-cli", "build-native", "build-packages", "build-wasm"]) {
     assert.equal(
       (workflow.jobs[build] as Job & { if?: string }).if,
