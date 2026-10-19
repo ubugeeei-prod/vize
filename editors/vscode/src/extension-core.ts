@@ -136,6 +136,11 @@ export function parseVizeVersion(output: string): string | undefined {
   return match?.[1];
 }
 
+/** A server built from source reports `<version>-dev`; it still matches its extension. */
+export function serverMatchesExtension(server: string, extension: string): boolean {
+  return server === extension || server === `${extension}-dev`;
+}
+
 export function hasExplicitConfigurationValue(config: VizeConfigurationLike, key: string): boolean {
   const inspected = config.inspect(key);
 

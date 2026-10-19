@@ -4,7 +4,7 @@ import * as path from "path";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import { workspace, type ExtensionContext } from "vscode";
-import { parseVizeVersion } from "./extension-core.js";
+import { parseVizeVersion, serverMatchesExtension } from "./extension-core.js";
 import { downloadFile } from "./release-download.js";
 import { extractReleaseArchive } from "./release-archive.js";
 import { trustedServerPath, workspaceDevServerPaths } from "./server-trust.js";
@@ -63,7 +63,9 @@ export function createServerDiscovery(
 
     if (expectedVersion) {
       const matchingCandidate = candidates.find(
-        (candidate) => candidate.version === expectedVersion,
+        (candidate) =>
+          candidate.version !== undefined &&
+          serverMatchesExtension(candidate.version, expectedVersion),
       );
       if (matchingCandidate) {
         logSelectedServer(matchingCandidate, expectedVersion);

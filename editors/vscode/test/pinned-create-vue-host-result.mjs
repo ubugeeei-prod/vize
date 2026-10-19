@@ -50,9 +50,10 @@ function assertServerInfo(serverInfo, expectedServerPath) {
   assert.equal(typeof serverInfo?.version, "string");
   assert.equal(typeof serverInfo?.extensionVersion, "string");
   assert.match(serverInfo.version, /^\d+\.\d+\.\d+(?:[-+][^\s]+)?$/);
-  assert.equal(
-    serverInfo.version,
-    serverInfo.extensionVersion,
+  assert.ok(
+    [serverInfo.extensionVersion, `${serverInfo.extensionVersion}-dev`].includes(
+      serverInfo.version,
+    ),
     "selected server version must match extension version",
   );
 }

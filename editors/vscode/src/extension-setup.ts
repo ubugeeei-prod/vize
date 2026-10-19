@@ -13,6 +13,7 @@ import {
   getInitializationOptions,
   hasAnyEnabledCapability,
   hasExplicitConfigurationValue,
+  serverMatchesExtension,
   shouldStartFromConfiguration,
   type LspInitializationOptions,
 } from "./extension-core.js";
@@ -404,7 +405,11 @@ export function createExtensionSetup(
     candidate: InspectedServerCandidate,
     expectedVersion: string | undefined,
   ): Promise<void> {
-    if (!expectedVersion || !candidate.version || candidate.version === expectedVersion) {
+    if (
+      !expectedVersion ||
+      !candidate.version ||
+      serverMatchesExtension(candidate.version, expectedVersion)
+    ) {
       return;
     }
 
