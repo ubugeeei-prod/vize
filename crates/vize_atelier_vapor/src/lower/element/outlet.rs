@@ -178,6 +178,7 @@ pub(in crate::lower) fn transform_slot<'a>(
     block
         .operation
         .push(OperationNode::SlotOutlet(SlotOutletIRNode {
+            flags: 0,
             id,
             name,
             props,

@@ -22,6 +22,7 @@ pub fn transform_slot_outlet<'a>(
     let props = get_slot_outlet_props(allocator, el, source);
 
     let slot_outlet = SlotOutletIRNode {
+        flags: 0,
         id: element_id,
         name,
         props,
@@ -128,6 +129,7 @@ pub fn collect_component_slots<'a>(
                     let block = transform_children(allocator, &child_el.children);
 
                     slots.push(IRSlot {
+                        nonstable: false,
                         name,
                         fn_exp,
                         control: None,
@@ -152,6 +154,7 @@ pub fn collect_component_slots<'a>(
         let default_block = transform_children(allocator, &el.children);
 
         slots.push(IRSlot {
+            nonstable: false,
             name: Box::new_in(default_name, &allocator),
             fn_exp: None,
             control: None,

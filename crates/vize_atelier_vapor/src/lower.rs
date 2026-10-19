@@ -66,26 +66,24 @@ pub(crate) fn transform_to_ir_with_spans<'a>(
     // Create block for root
     let block = transform_children(&mut ctx, &root.children);
 
-    (
-        RootIRNode {
-            node: RootNode::new(allocator, ""),
-            source,
-            template: Default::default(),
-            template_index_map: Default::default(),
-            root_template_indexes: Vec::new_in(&allocator),
-            component: Vec::new_in(&allocator),
-            directive: Vec::new_in(&allocator),
-            block,
-            has_template_ref: false,
-            has_deferred_v_show: false,
-            templates: ctx.templates,
-            template_namespaces: ctx.template_namespaces,
-            element_template_map: ctx.element_template_map,
-            standalone_text_elements: ctx.standalone_text_elements,
-        },
-        ctx.diagnostics,
-        ctx.template_spans,
-    )
+    let mut ir = RootIRNode {
+        node: RootNode::new(allocator, ""),
+        source,
+        template: Default::default(),
+        template_index_map: Default::default(),
+        root_template_indexes: Vec::new_in(&allocator),
+        component: Vec::new_in(&allocator),
+        directive: Vec::new_in(&allocator),
+        block,
+        has_template_ref: false,
+        has_deferred_v_show: false,
+        templates: ctx.templates,
+        template_namespaces: ctx.template_namespaces,
+        element_template_map: ctx.element_template_map,
+        standalone_text_elements: ctx.standalone_text_elements,
+    };
+    ir.prepare_slot_roots();
+    (ir, ctx.diagnostics, ctx.template_spans)
 }
 
 /// Transform children nodes

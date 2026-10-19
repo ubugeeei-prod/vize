@@ -154,6 +154,20 @@ pub(super) fn emit_for_template_item(
         cx.suppress_template_for_child_key = previous;
         return result;
     }
+    // A sole component is the loop item's vnode, like a sole element.
+    // Keep the existing fragment carrier for authored wrapper attributes.
+    if let [Op::Component(component)] = ops
+        && attributes.is_empty()
+        && class.is_none()
+    {
+        let id = cx.walk.mint();
+        cx.walk.skip(component.bindings.len());
+        let previous = cx.suppress_template_for_child_key;
+        cx.suppress_template_for_child_key = true;
+        let result = super::component::emit_for_item(cx, component, id, key);
+        cx.suppress_template_for_child_key = previous;
+        return result;
+    }
     if matches!(ops, [Op::Component(_)]) {
         let previous = cx.template_for_item_single_root;
         cx.template_for_item_single_root = true;

@@ -2,7 +2,7 @@
 source: crates/vize_atelier_vapor/src/tests_source_map.rs
 expression: code
 ---
-import { createComponent as _createComponent, VaporTeleport as _VaporTeleport, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+import { createComponent as _createComponent, VaporTeleport as _VaporTeleport, extend as _extend, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<span> </span>")
 const t1 = _template("<span>fallback</span>")
 
@@ -11,7 +11,7 @@ export function render(_ctx) {
     to: () => (_ctx.targets[_ctx.selected]),
     defer: () => (_ctx.deferred)
   }, {
-    "default": () => {
+    "default": _extend(() => {
       const n0 = _createIf(() => (_ctx.visible), () => {
         const n2 = t0()
         const x2 = _txt(n2)
@@ -22,7 +22,7 @@ export function render(_ctx) {
         return n4
       }, 5 /* TRUE_SINGLE_ROOT, FALSE_SINGLE_ROOT */)
       return n0
-    }
+    }, { _: 1 })
   }, true)
   return n5
 }

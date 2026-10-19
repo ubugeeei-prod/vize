@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { Window } from "happy-dom";
 import { loadRuntime } from "./davinci-mounted-trace.mjs";
+import { observeKeyedTemplates } from "./ssr-keyed-template-components.ts";
 
 assert.equal(process.env.NODE_ENV, "production");
 const window = new Window();
@@ -65,14 +66,21 @@ const context = {
   addWatchFile() {},
 };
 
-async function reference(source, name, target) {
+async function reference(source, name, target, provider = {}) {
+  const selectedCompiler = provider.compiler ?? compiler;
   const selected = {
-    ...compiler,
+    ...selectedCompiler,
     parse(...args) {
-      const result = compiler.parse(...args);
+      const result = selectedCompiler.parse(...args);
       assert.equal(result.descriptor.source, args[0]);
       // compiler-sfc caches descriptors: select this target on an owned copy.
-      return { ...result, descriptor: { ...result.descriptor, vapor: target === "vapor" } };
+      return {
+        ...result,
+        descriptor: {
+          ...result.descriptor,
+          vapor: provider.vapor ?? target === "vapor",
+        },
+      };
     },
   };
   const plugin = pluginFactory({ compiler: selected });
@@ -97,12 +105,12 @@ async function reference(source, name, target) {
   return { code: result.code, helper };
 }
 
-async function evaluate(code, runtime, dependencies, helper) {
+async function evaluateModule(code, runtime, dependencies, helper, renderer = server) {
   const modules = {
     vue: runtime,
     "vue/vapor": runtime,
-    "vue/server-renderer": server,
-    "@vue/server-renderer": server,
+    "vue/server-renderer": renderer,
+    "@vue/server-renderer": renderer,
     ...dependencies,
   };
   if (helper) modules[helperId] = await import(dataUrl(helper));
@@ -140,12 +148,19 @@ async function evaluate(code, runtime, dependencies, helper) {
       }),
     ],
   });
-  const module = await import(dataUrl(`${result.code}\n// whole component ${sequence++}`));
+  try {
+    return await import(dataUrl(`${result.code}\n// whole component ${sequence++}`));
+  } finally {
+    delete globalThis[slot];
+  }
+}
+
+async function evaluate(code, runtime, dependencies, helper, renderer = server) {
+  const module = await evaluateModule(code, runtime, dependencies, helper, renderer);
   assert.ok(
     module.default && typeof module.default === "object",
     "authored whole-SFC default component",
   );
-  delete globalThis[slot];
   return module.default;
 }
 
@@ -234,9 +249,34 @@ try {
       }
     }
   }
+  const keyedTemplates = await observeKeyedTemplates(input.keyedTemplates, {
+    reference,
+    evaluate,
+    evaluateModule,
+    vue,
+    vapor,
+    compiler,
+    server,
+  });
   process.stdout.write(
-    JSON.stringify({ versions: { vue: vue.version, plugin: "6.0.7" }, observations }),
+    JSON.stringify({
+      versions: { vue: vue.version, plugin: "6.0.7" },
+      observations,
+      keyedTemplates,
+    }),
   );
+} catch (error) {
+  process.stdout.write(
+    JSON.stringify({
+      observations,
+      failure: {
+        name: error.name,
+        message: error.message,
+        keyedTemplates: error.keyedTemplates ?? null,
+      },
+    }),
+  );
+  process.exitCode = 1;
 } finally {
   await window.happyDOM.close();
 }

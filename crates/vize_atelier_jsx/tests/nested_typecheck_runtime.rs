@@ -45,9 +45,10 @@ fn nested_analysis_keeps_complete_normal_vdom_and_vapor_packets() {
             ("vapor", JsxOutputMode::Vapor),
         ] {
             // The frozen #8441 packet still records the former nested-root bug.
-            // #8625 has an explicit whole successor for this one Vapor packet.
+            // #8625 retains the root-fallthrough successor; #9455 adds slot stability.
             let output = if name == "AfsStepperDialog.stories" && label == "vapor" {
-                "AfsStepperDialog.stories.vapor.root-fallthrough-8625.runtime.json.txt".to_owned()
+                "AfsStepperDialog.stories.vapor.forwarded-slot-boundaries-9455.runtime.json.txt"
+                    .to_owned()
             } else {
                 format!("{name}.{label}.runtime.json.txt")
             };

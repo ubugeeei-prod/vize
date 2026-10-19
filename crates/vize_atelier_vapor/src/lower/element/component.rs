@@ -214,6 +214,7 @@ pub(super) fn transform_component<'a>(
             Box::new_in(node, &ctx.allocator)
         });
         slots.push(IRSlot {
+            nonstable: false,
             name: Box::new_in(own_slot_name, &ctx.allocator),
             fn_exp,
             control: None,
@@ -242,6 +243,7 @@ pub(super) fn transform_component<'a>(
             let slot_block = transform_children(ctx, &el.children);
             let name_exp = SimpleExpressionNode::new("default", true, SourceLocation::STUB);
             slots.push(IRSlot {
+                nonstable: false,
                 name: Box::new_in(name_exp, &ctx.allocator),
                 fn_exp: None,
                 control: None,

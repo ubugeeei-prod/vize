@@ -253,3 +253,23 @@ fn template_v_for_nested_if_root_keeps_runtime_directive_wrappers() {
         r#"<template v-for="item in items"><div><span v-show="item.ok"></span><span v-ripple></span></div></template>"#,
     );
 }
+
+#[test]
+fn single_component_template_loops_match_direct_component_items() {
+    for (template, direct) in [
+        (
+            r#"<template v-for="item in list" :key="item.id"><Foo /></template>"#,
+            r#"<Foo v-for="item in list" :key="item.id" />"#,
+        ),
+        (
+            r#"<template v-for="item in list"><Foo /></template>"#,
+            r#"<Foo v-for="item in list" />"#,
+        ),
+        (
+            r#"<template v-for="item in list" :key="item.id"><Foo><slot>{{ item }}</slot></Foo></template>"#,
+            r#"<Foo v-for="item in list" :key="item.id"><slot>{{ item }}</slot></Foo>"#,
+        ),
+    ] {
+        assert_eq!(assembled(template), assembled(direct), "{template}");
+    }
+}

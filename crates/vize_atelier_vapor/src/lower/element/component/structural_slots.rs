@@ -147,6 +147,7 @@ fn template<'a>(ctx: &mut TransformContext<'a>, element: &ElementNode<'a>) -> Op
     let block = transform_children(ctx, &element.children);
     ctx.next_id();
     Some(IRSlot {
+        nonstable: false,
         name: Box::new_in(name, &ctx.allocator),
         fn_exp,
         block,

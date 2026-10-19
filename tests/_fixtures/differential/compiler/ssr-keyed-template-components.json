@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "issue": 9455,
+  "nuxtUi": {
+    "commit": "3dbca020969582d577c7df9698dc8cd484f76dc1",
+    "selectSourceSha256": "b5008615c2dbbfd1eb462fa3310997818c411d1bede9cd596e4f214e111f2b7e",
+    "observedVue": "3.5.41",
+    "observedReka": "2.10.1",
+    "scope": "Reduced compiler fixture; original complete Nuxt application qualification remains separate and pending."
+  },
+  "reka": {
+    "version": "2.10.1",
+    "gitHead": "47c433a84ad819eb6becbffc0cc7419e282cf07e",
+    "npmIntegrity": "sha512-drcOQ4rQtDYAcGCsyQBqQg8QQ+H3B+zDaMJU0h8KPEPMa7g9BHu3zcOi4OB39XJSWizceFoNO0Z9tctSGLOXqg==",
+    "sources": [
+      {
+        "name": "renderSlotFragments",
+        "path": "packages/core/src/shared/renderSlotFragments.ts",
+        "source": "import type { VNode } from 'vue'\nimport { Fragment } from 'vue'\n\nexport function renderSlotFragments(children?: VNode[]): VNode[] {\n  if (!children)\n    return []\n  return children.flatMap((child) => {\n    if (child.type === Fragment)\n      return renderSlotFragments(child.children as VNode[])\n\n    return [child]\n  })\n}\n",
+        "sha256": "01c59308747c0dee071f2f99d3a8b07ed1f6e2ac95a44b9b02145745f77ad59a",
+        "gitBlob": "88f4f461090611122317d0232e05c81737485c2e"
+      },
+      {
+        "name": "Slot",
+        "path": "packages/core/src/Primitive/Slot.ts",
+        "source": "import { cloneVNode, Comment, defineComponent, mergeProps } from 'vue'\nimport { renderSlotFragments } from '@/shared'\n\nexport const Slot = defineComponent({\n  name: 'PrimitiveSlot',\n  inheritAttrs: false,\n  setup(_, { attrs, slots }) {\n    return () => {\n      if (!slots.default)\n        return null\n\n      const children = renderSlotFragments(slots.default())\n      const firstNonCommentChildrenIndex = children.findIndex(child => child.type !== Comment)\n      if (firstNonCommentChildrenIndex === -1)\n        return children\n\n      const firstNonCommentChildren = children[firstNonCommentChildrenIndex]\n\n      // Remove props ref from being inferred\n      delete firstNonCommentChildren.props?.ref\n\n      // Manually merge props to ensure `firstNonCommentChildren.props`\n      // has higher priority than `attrs` and can override `attrs`.\n      // Otherwise `cloneVNode(firstNonCommentChildren, attrs)` will\n      // prioritize `attrs` and override `firstNonCommentChildren.props`.\n      const mergedProps = firstNonCommentChildren.props\n        ? mergeProps(attrs, firstNonCommentChildren.props)\n        : attrs\n      const cloned = cloneVNode({ ...firstNonCommentChildren, props: {} }, mergedProps)\n\n      if (children.length === 1)\n        return cloned\n\n      children[firstNonCommentChildrenIndex] = cloned\n      return children\n    }\n  },\n})\n",
+        "sha256": "a66cddceb3a687aac9c92553e223995466b99dbbb5f75f1fd518ac918e918577",
+        "gitBlob": "7f8d6e03c7e8c5ceb72401adba8b2f1f80b701cb"
+      },
+      {
+        "name": "Primitive",
+        "path": "packages/core/src/Primitive/Primitive.ts",
+        "source": "import type { Component, PropType } from 'vue'\nimport { defineComponent, h } from 'vue'\nimport { Slot } from './Slot'\n\nexport type AsTag\n  = | 'a'\n    | 'button'\n    | 'div'\n    | 'form'\n    | 'h2'\n    | 'h3'\n    | 'img'\n    | 'input'\n    | 'label'\n    | 'li'\n    | 'nav'\n    | 'ol'\n    | 'p'\n    | 'span'\n    | 'svg'\n    | 'ul'\n    | 'template'\n    | ({} & string) // any other string\n\nexport interface PrimitiveProps {\n  /**\n   * Change the default rendered element for the one passed as a child, merging their props and behavior.\n   *\n   * Read our [Composition](https://www.reka-ui.com/docs/guides/composition) guide for more details.\n   */\n  asChild?: boolean\n  /**\n   * The element or component this component should render as. Can be overwritten by `asChild`.\n   * @defaultValue \"div\"\n   */\n  as?: AsTag | Component\n}\n\n// For self closing tags, don't provide default slots because of hydration issue\nconst SELF_CLOSING_TAGS = ['area', 'img', 'input']\n\nexport const Primitive = defineComponent({\n  name: 'Primitive',\n  inheritAttrs: false,\n  props: {\n    asChild: {\n      type: Boolean,\n      default: false,\n    },\n    as: {\n      type: [String, Object] as PropType<AsTag | Component>,\n      default: 'div',\n    },\n  },\n  setup(props, { attrs, slots }) {\n    const asTag = props.asChild ? 'template' : props.as\n\n    if (typeof asTag === 'string' && SELF_CLOSING_TAGS.includes(asTag))\n      return () => h(asTag, attrs)\n\n    if (asTag !== 'template')\n      return () => h(props.as, attrs, { default: slots.default })\n\n    return () => h(Slot, attrs, { default: slots.default })\n  },\n})\n",
+        "sha256": "ce9e0c82bae7c36e40cc82cc7802874ab9da822a94b56f0a0d8ead21661d0860",
+        "gitBlob": "bd7927055a79dd3e7abe5b2d745d74550207f006"
+      }
+    ],
+    "license": {
+      "path": "LICENSE",
+      "gitBlob": "d5fc959afecc66fccc6e4c469deed4e565703bd9",
+      "sha256": "c023ce9cf3d6f6ba2ad554a0e359f0e1b3ed100a78e2004316532b5d9c272464",
+      "source": "MIT License\n\nCopyright (c) 2023 UnoVue\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n"
+    }
+  },
+  "values": [
+    "primary",
+    "solid",
+    "md"
+  ],
+  "targets": [
+    "dom",
+    "ssr",
+    "vapor",
+    "vapor-ssr"
+  ],
+  "files": {
+    "Value": "<script setup>\nimport { onMounted, onUnmounted } from \"vue\"\nimport { Primitive } from \"./Primitive\"\nconst props = defineProps({ value: { type: String, required: true } })\nonMounted(() => globalThis.__vizeKeyedLifecycle.push([\"mount\", props.value]))\nonUnmounted(() => globalThis.__vizeKeyedLifecycle.push([\"unmount\", props.value]))\n</script>\n<template><Primitive as=\"span\" :data-value=\"value\"><slot /></Primitive></template>\n",
+    "TriggerPush": "<script setup>\nconst buttonType = \"button\"\n</script>\n<template><button :type=\"buttonType\"><slot /></button></template>\n",
+    "TriggerVNode": "<script setup>\nimport { Primitive } from \"./Primitive\"\n</script>\n<template><Primitive as-child><Primitive as=\"button\" type=\"button\"><slot /></Primitive></Primitive></template>\n"
+  },
+  "cases": [
+    {
+      "name": "keyed-component",
+      "source": "<script setup>\nimport { ref } from \"vue\"\nimport Trigger from \"./Trigger.vue\"\nimport Value from \"./Value.vue\"\nconst props = defineProps({ initial: { type: String, required: true } })\nconst value = ref(props.initial)\n</script>\n<template>\n  <section><Trigger><i v-if=\"false\" /><template v-for=\"label in [value]\" :key=\"label\"><Value :value=\"label\"><slot>{{ label }}</slot></Value></template><b data-tail>tail</b></Trigger><button data-update @click=\"value = 'updated'\">update</button></section>\n</template>\n"
+    },
+    {
+      "name": "keyed-element",
+      "source": "<script setup>\nimport { ref } from \"vue\"\nimport Trigger from \"./Trigger.vue\"\nimport Value from \"./Value.vue\"\nconst props = defineProps({ initial: { type: String, required: true } })\nconst value = ref(props.initial)\n</script>\n<template>\n  <section><Trigger><i v-if=\"false\" /><template v-for=\"label in [value]\" :key=\"label\"><span data-value=\"plain\"><slot>{{ label }}</slot></span></template><b data-tail>tail</b></Trigger><button data-update @click=\"value = 'updated'\">update</button></section>\n</template>\n"
+    },
+    {
+      "name": "unkeyed-component",
+      "source": "<script setup>\nimport { ref } from \"vue\"\nimport Trigger from \"./Trigger.vue\"\nimport Value from \"./Value.vue\"\nconst props = defineProps({ initial: { type: String, required: true } })\nconst value = ref(props.initial)\n</script>\n<template>\n  <section><Trigger><i v-if=\"false\" /><template v-for=\"label in [value]\"><Value :value=\"label\"><slot>{{ label }}</slot></Value></template><b data-tail>tail</b></Trigger><button data-update @click=\"value = 'updated'\">update</button></section>\n</template>\n"
+    },
+    {
+      "name": "direct-keyed-component",
+      "source": "<script setup>\nimport { ref } from \"vue\"\nimport Trigger from \"./Trigger.vue\"\nimport Value from \"./Value.vue\"\nconst props = defineProps({ initial: { type: String, required: true } })\nconst value = ref(props.initial)\n</script>\n<template>\n  <section><Trigger><i v-if=\"false\" /><Value v-for=\"label in [value]\" :key=\"label\" :value=\"label\"><slot>{{ label }}</slot></Value><b data-tail>tail</b></Trigger><button data-update @click=\"value = 'updated'\">update</button></section>\n</template>\n"
+    },
+    {
+      "name": "keyed-multiple-roots",
+      "source": "<script setup>\nimport { ref } from \"vue\"\nimport Trigger from \"./Trigger.vue\"\nimport Value from \"./Value.vue\"\nconst props = defineProps({ initial: { type: String, required: true } })\nconst value = ref(props.initial)\n</script>\n<template>\n  <section><Trigger><i v-if=\"false\" /><template v-for=\"label in [value]\" :key=\"label\"><Value :value=\"label\"><slot>{{ label }}</slot></Value><em>{{ label }}</em></template><b data-tail>tail</b></Trigger><button data-update @click=\"value = 'updated'\">update</button></section>\n</template>\n"
+    }
+  ]
+}

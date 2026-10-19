@@ -15,6 +15,22 @@ fn paired_result(
     options: SsrCompilerOptions,
     admitted: bool,
 ) -> crate::SsrCodegenResult {
+    paired_result_with_diagnostics(source, options, admitted, &[])
+}
+
+type ExpectedDiagnostic<'a> = (
+    vize_atelier_core::ErrorCode,
+    &'a str,
+    Option<(u32, u32)>,
+    bool,
+);
+
+fn paired_result_with_diagnostics(
+    source: &str,
+    options: SsrCompilerOptions,
+    admitted: bool,
+    expected_errors: &[ExpectedDiagnostic<'_>],
+) -> crate::SsrCodegenResult {
     let experimental = SsrCompilerExperimentalOptions {
         source_map: true,
         source_map_filename: Some("SsrKeyBoundary.vue".into()),
@@ -48,8 +64,21 @@ fn paired_result(
             SsrL4Selection::Legacy(super::super::LegacyReason::Options)
         ));
     }
-    assert!(current_errors.is_empty(), "{current_errors:?}");
-    assert!(legacy_errors.is_empty(), "{legacy_errors:?}");
+    for errors in [&current_errors, &legacy_errors] {
+        assert_eq!(
+            errors
+                .iter()
+                .map(|error| (
+                    error.code,
+                    error.message.as_str(),
+                    error.loc.as_ref().map(|loc| (loc.span.start, loc.span.end)),
+                    error.is_recoverable()
+                ))
+                .collect::<std::vec::Vec<_>>(),
+            expected_errors,
+            "{source}: complete ordered diagnostics"
+        );
+    }
     assert_eq!(current.code, legacy.code, "{source}");
     assert_eq!(current.preamble, legacy.preamble, "{source}");
     assert_eq!(current.map, legacy.map, "{source}");
@@ -190,5 +219,47 @@ fn whole_ssr_key_controls_keep_context_globals_literals_and_real_local_scopes() 
             !code.contains(forbidden),
             "forbidden {forbidden:?} in {source}: {code}"
         );
+    }
+}
+
+#[test]
+fn keyed_component_hydration_vectors_keep_both_ssr_emitters_byte_identical() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../../tests/_fixtures/differential/compiler/ssr-keyed-template-components.json"
+    ))
+    .expect("complete shared hydration fixture");
+    let cases = fixture
+        .get("cases")
+        .and_then(serde_json::Value::as_array)
+        .expect("the same authored hydration cases");
+    assert_eq!(cases.len(), 5);
+    for case in cases {
+        let source = case
+            .get("source")
+            .and_then(serde_json::Value::as_str)
+            .expect("whole authored SFC");
+        let template = source
+            .split_once("<template>")
+            .expect("outer authored template")
+            .1
+            .strip_suffix("</template>\n")
+            .expect("complete outer template closing tag");
+        for (_, options, _) in super::option_sets() {
+            // Includes Vapor, scopes, TS bindings, and requested full raw maps.
+            // The helper requires Selected admission and compares LegacyOnly,
+            // including all code, preamble, source-map bytes and exact notices.
+            assert_eq!(template.get(21..39), Some("<i v-if=\"false\" />"));
+            paired_result_with_diagnostics(
+                template,
+                options,
+                true,
+                &[(
+                    vize_atelier_core::ErrorCode::ExtendPoint,
+                    "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+                    Some((21, 39)),
+                    true,
+                )],
+            );
+        }
     }
 }

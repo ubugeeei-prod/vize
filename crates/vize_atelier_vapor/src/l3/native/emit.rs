@@ -103,6 +103,7 @@ pub(super) fn emit<'a>(
         )
     });
     ir.block = block;
+    ir.prepare_slot_roots();
     Some((ir, spans))
 }
 

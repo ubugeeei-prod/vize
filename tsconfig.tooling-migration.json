@@ -6,6 +6,8 @@
   },
   "include": [],
   "files": [
+    "tests/tooling/support/ssr-keyed-template-components.ts",
+    "tests/tooling/ssr-keyed-template-components.test.ts",
     "tools/support/typescript/check-project.ts",
     "tools/support/compat/github/comparison-base.ts",
     "tools/support/compat/github/plan-source-checks.ts",

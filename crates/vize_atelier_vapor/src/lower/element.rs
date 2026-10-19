@@ -379,6 +379,7 @@ pub(super) fn transform_classified_element<'a>(
             let props = get_slot_outlet_props(ctx, el);
             let fallback = (!el.children.is_empty()).then(|| transform_children(ctx, &el.children));
             let slot_outlet = SlotOutletIRNode {
+                flags: 0,
                 id: element_id,
                 name,
                 props,

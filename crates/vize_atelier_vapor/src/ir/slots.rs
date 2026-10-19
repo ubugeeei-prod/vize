@@ -7,6 +7,8 @@ use vize_carton::Box;
 /// A slot function, optionally selected by a conditional or a slot loop.
 #[derive(Debug)]
 pub struct IRSlot<'a> {
+    /// The slot has no returned static element/text/component that guarantees content.
+    pub nonstable: bool,
     pub name: Box<'a, SimpleExpressionNode<'a>>,
     pub fn_exp: Option<Box<'a, SimpleExpressionNode<'a>>>,
     pub block: BlockIRNode<'a>,

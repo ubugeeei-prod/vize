@@ -19,7 +19,8 @@ pub(super) fn generate_slot_fn(
         kind,
         ComponentKind::Transition | ComponentKind::TransitionGroup
     );
-    let nonstable = keep_alive
+    let nonstable = slot.nonstable
+        || keep_alive
         || transition
             && slot.block.operation.iter().any(|op| {
                 matches!(

@@ -33,6 +33,50 @@ const FILES: &[(&str, &str)] = &[
     ("InnerNamed", source!("InnerNamed")),
     ("App", source!("App")),
 ];
+const KEYED_FIXTURE: &str = include_str!(
+    "../../../tests/_fixtures/differential/compiler/ssr-keyed-template-components.json"
+);
+const TARGETS: &[&str] = &["dom", "ssr", "vapor", "vapor-ssr"];
+
+fn keyed_sources() -> Vec<(String, Vec<(String, String)>)> {
+    let fixture: Value = serde_json::from_str(KEYED_FIXTURE).expect("whole keyed fixture");
+    fixture["cases"]
+        .as_array()
+        .expect("all five source vectors")
+        .iter()
+        .map(|case| {
+            let mut files = ["Value", "TriggerPush", "TriggerVNode"]
+                .into_iter()
+                .map(|name| {
+                    (
+                        name.to_owned(),
+                        fixture["files"][name]
+                            .as_str()
+                            .expect("whole common SFC")
+                            .to_owned(),
+                    )
+                })
+                .collect::<Vec<_>>();
+            files.push((
+                "App".to_owned(),
+                case["source"].as_str().expect("whole case SFC").to_owned(),
+            ));
+            (case["name"].as_str().expect("case name").to_owned(), files)
+        })
+        .collect()
+}
+
+fn artifact_directory() -> std::path::PathBuf {
+    let profile = if std::env::var("NEXTEST_PROFILE").as_deref() == Ok("full") {
+        "full"
+    } else {
+        "pr"
+    };
+    let directory =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("../../target/nextest/{profile}"));
+    std::fs::create_dir_all(&directory).expect("existing test artifact directory");
+    directory
+}
 
 fn compile(name: &str, source: &str, target: &str, map: bool) -> SfcCompileResult {
     let filename = format!("{name}.vue");
@@ -113,6 +157,26 @@ fn original_forwarding_sfc_keeps_maps_additive_and_complete_public_outputs() {
 }
 
 #[test]
+fn keyed_component_loop_vectors_keep_every_codegen_field_and_map_additive() {
+    for target in TARGETS {
+        for (case, files) in keyed_sources() {
+            for (name, source) in files {
+                let plain = compile(&name, &source, target, false);
+                let mut mapped = compile(&name, &source, target, true);
+                assert!(mapped.map.is_some(), "{target}/{case}/{name}: real map");
+                assert_eq!(plain.code, mapped.code, "{target}/{case}/{name}");
+                mapped.map = None;
+                assert_eq!(
+                    serde_json::to_value(plain).expect("whole result"),
+                    serde_json::to_value(mapped).expect("whole mapped result"),
+                    "{target}/{case}/{name}: every public field except the map"
+                );
+            }
+        }
+    }
+}
+
+#[test]
 fn original_forwarding_defaults_render_like_whole_official_sfc_components() {
     let cases: Vec<_> = ["dom", "ssr", "vapor", "vapor-ssr"]
         .into_iter()
@@ -127,7 +191,29 @@ fn original_forwarding_defaults_render_like_whole_official_sfc_components() {
             json!({ "target": target, "files": files })
         })
         .collect();
-    let input = json!({ "cases": cases });
+    let keyed: Vec<_> = keyed_sources()
+        .into_iter()
+        .flat_map(|(name, files)| {
+            TARGETS.iter().map(move |target| {
+                let files: Vec<_> = files
+                    .iter()
+                    .map(|(name, source)| {
+                        json!({ "name": name, "source": source,
+                            "current": compile(name, source, target, true) })
+                    })
+                    .collect();
+                json!({ "name": name, "target": target, "files": files })
+            })
+        })
+        .collect();
+    let input = json!({ "cases": cases,
+        "keyedTemplates": { "fixture": KEYED_FIXTURE, "cases": keyed } });
+    let directory = artifact_directory();
+    std::fs::write(
+        directory.join("ssr-keyed-template-components-native-input.json"),
+        serde_json::to_vec(&input).expect("whole native compilation packet"),
+    )
+    .expect("retain native packet before runtime assertions");
     let mut child = Command::new("node")
         .arg(
             Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -148,6 +234,16 @@ fn original_forwarding_defaults_render_like_whole_official_sfc_components() {
     let output = child
         .wait_with_output()
         .expect("whole-component oracle exits");
+    std::fs::write(
+        directory.join("ssr-keyed-template-components-runtime.stdout.json"),
+        &output.stdout,
+    )
+    .expect("retain complete raw runtime stdout on success or failure");
+    std::fs::write(
+        directory.join("ssr-keyed-template-components-runtime.stderr.txt"),
+        &output.stderr,
+    )
+    .expect("retain complete raw runtime stderr on success or failure");
     assert!(
         output.status.success(),
         "stdout: {}\nstderr: {}",
@@ -163,14 +259,14 @@ fn original_forwarding_defaults_render_like_whole_official_sfc_components() {
             .len(),
         12
     );
-    let profile = if std::env::var("NEXTEST_PROFILE").as_deref() == Ok("full") {
-        "full"
-    } else {
-        "pr"
-    };
-    let directory =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("../../target/nextest/{profile}"));
-    std::fs::create_dir_all(&directory).expect("existing test artifact directory");
+    assert_eq!(observations["keyedTemplates"]["stage"], "complete");
+    assert_eq!(
+        observations["keyedTemplates"]["observations"]
+            .as_array()
+            .expect("all five vectors, three providers, two slot branches, three values")
+            .len(),
+        90
+    );
     std::fs::write(
         directory.join("ssr-slot-forwarding-runtime.json"),
         serde_json::to_vec(&json!({ "input": input, "observations": observations }))
