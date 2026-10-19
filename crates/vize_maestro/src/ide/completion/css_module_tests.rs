@@ -96,6 +96,15 @@ fn scss_modules_resolve_nested_parent_references() {
 }
 
 #[test]
+fn less_modules_resolve_parents_and_skip_mixin_definitions() {
+    let source = "<template>\n  <div :class=\"$style.\" />\n</template>\n<style module lang=\"less\">\n.panel { &-head {} .m() { .hidden {} } }\n</style>\n";
+    assert_eq!(
+        complete(source, "$style."),
+        fields(&["panel", "panel-head"])
+    );
+}
+
+#[test]
 fn a_named_module_lists_its_own_classes() {
     let source = r#"<template>
   <div :class="classes." />

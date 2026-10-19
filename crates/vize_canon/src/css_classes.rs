@@ -7,8 +7,8 @@ use std::collections::BTreeSet;
 
 use vize_carton::{String as CompactString, ToCompactString};
 
-mod scss;
-pub use scss::authored_local_scss_classes;
+mod nested;
+pub use nested::{authored_local_less_classes, authored_local_scss_classes};
 
 /// Extract simple authored class selectors from selector preludes. Declarations
 /// are never scanned, so values such as `url(./asset.png)` cannot become fake

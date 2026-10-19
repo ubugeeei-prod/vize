@@ -5,7 +5,9 @@ use std::collections::BTreeSet;
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, Documentation, MarkupContent, MarkupKind,
 };
-use vize_canon::css_classes::{authored_local_css_classes, authored_local_scss_classes};
+use vize_canon::css_classes::{
+    authored_local_css_classes, authored_local_less_classes, authored_local_scss_classes,
+};
 
 use crate::ide::IdeContext;
 
@@ -42,6 +44,9 @@ pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<Compl
             }
             Some(language) if language.eq_ignore_ascii_case("scss") => {
                 authored_local_scss_classes(&style.content)
+            }
+            Some(language) if language.eq_ignore_ascii_case("less") => {
+                authored_local_less_classes(&style.content)
             }
             Some(_) => None,
         };

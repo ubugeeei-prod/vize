@@ -1,5 +1,5 @@
-//! Authored class names in SCSS, with nested selectors resolved against their
-//! parents (`.card { &__title {} }` declares `card__title`).
+//! Authored class names in SCSS and Less, with nested selectors resolved
+//! against their parents (`.card { &__title {} }` declares `card__title`).
 //!
 //! Rules whose selector cannot be known statically (interpolation, mixin and
 //! control-flow bodies) contribute nothing; their siblings still do.
@@ -13,9 +13,29 @@ use super::collect_classes_from_selector_prelude;
 /// A resolved selector list grows multiplicatively with nested comma lists.
 const MAX_SELECTORS: usize = 256;
 
+#[derive(Clone, Copy, PartialEq)]
+enum Dialect {
+    Scss,
+    Less,
+}
+
 /// Class names SCSS rules declare, or `None` when the source is unbalanced.
 pub fn authored_local_scss_classes(scss: &str) -> Option<BTreeSet<CompactString>> {
+    authored_local_nested_classes(scss, Dialect::Scss)
+}
+
+/// Class names Less rules declare, or `None` when the source is unbalanced.
+/// Mixin definitions (`.m() {}`) emit no rules and add no names.
+pub fn authored_local_less_classes(less: &str) -> Option<BTreeSet<CompactString>> {
+    authored_local_nested_classes(less, Dialect::Less)
+}
+
+fn authored_local_nested_classes(scss: &str, dialect: Dialect) -> Option<BTreeSet<CompactString>> {
     let bytes = scss.as_bytes();
+    let interpolation = match dialect {
+        Dialect::Scss => b'#',
+        Dialect::Less => b'@',
+    };
     let mut classes = BTreeSet::new();
     // The resolved selectors of every open block; `None` is an unknown context.
     let mut blocks: Vec<Option<Vec<CompactString>>> = Vec::new();
@@ -49,7 +69,7 @@ pub fn authored_local_scss_classes(scss: &str) -> Option<BTreeSet<CompactString>
                 index += scss.get(index..)?.find('\n').unwrap_or(bytes.len() - index);
                 continue;
             }
-            (b'#', Some(b'{')) => {
+            (opener, Some(b'{')) if opener == interpolation => {
                 index += scss.get(index..)?.find('}')? + 1;
                 interpolated = true;
                 prelude.extend_from_slice(b"#");
@@ -63,7 +83,7 @@ pub fn authored_local_scss_classes(scss: &str) -> Option<BTreeSet<CompactString>
                     Some(parent) => parent.clone(),
                     None => Some(Vec::new()),
                 };
-                let resolved = resolve(&prelude, parent, interpolated);
+                let resolved = resolve(&prelude, parent, interpolated, dialect);
                 for selector in resolved.iter().flatten() {
                     // A rule outside the supported selector grammar adds no names.
                     let mut rule = BTreeSet::new();
@@ -107,6 +127,7 @@ fn resolve(
     prelude: &[u8],
     parent: Option<Vec<CompactString>>,
     interpolated: bool,
+    dialect: Dialect,
 ) -> Option<Vec<CompactString>> {
     let text = std::str::from_utf8(prelude).ok()?.trim();
     if let Some(at_rule) = text.strip_prefix('@') {
@@ -117,18 +138,22 @@ fn resolve(
             // Their blocks keep the enclosing selector.
             "media" | "supports" | "container" | "layer" | "include" => parent,
             "at-root" if rest.trim().is_empty() => Some(Vec::new()),
-            "at-root" => resolve(rest.as_bytes(), Some(Vec::new()), interpolated),
+            "at-root" => resolve(rest.as_bytes(), Some(Vec::new()), interpolated, dialect),
             // Mixins, functions and control flow apply elsewhere or repeatedly.
             _ => None,
         };
     }
     let parent = parent?;
     // `font: { family: ... }` nests properties, not selectors.
-    if interpolated || is_nested_property(text) {
+    if interpolated || dialect == Dialect::Scss && is_nested_property(text) {
+        return None;
+    }
+    let parts = split_top_level_commas(text);
+    if dialect == Dialect::Less && parts.iter().any(|part| is_less_mixin_definition(part)) {
         return None;
     }
     let mut resolved = Vec::new();
-    for part in split_top_level_commas(text) {
+    for part in parts {
         let part = part.trim();
         if part.is_empty() {
             continue;
@@ -175,6 +200,21 @@ fn is_nested_property(text: &str) -> bool {
         && (value.is_empty() || value.starts_with(|c: char| c.is_ascii_whitespace()))
 }
 
+/// `.name(` or `#name(` opens a Less mixin definition, which emits nothing.
+fn is_less_mixin_definition(part: &str) -> bool {
+    let part = part.trim_start();
+    let Some(rest) = part.strip_prefix(['.', '#']) else {
+        return false;
+    };
+    let name_end = rest
+        .find(|c: char| !(c.is_ascii_alphanumeric() || c == '-' || c == '_'))
+        .unwrap_or(rest.len());
+    name_end > 0
+        && rest
+            .get(name_end..)
+            .is_some_and(|tail| tail.trim_start().starts_with('('))
+}
+
 fn split_top_level_commas(text: &str) -> Vec<&str> {
     let mut parts = Vec::new();
     let mut depth = 0usize;
@@ -196,7 +236,7 @@ fn split_top_level_commas(text: &str) -> Vec<&str> {
 
 #[cfg(test)]
 mod tests {
-    use super::authored_local_scss_classes;
+    use super::{authored_local_less_classes, authored_local_scss_classes};
 
     fn names(scss: &str) -> Vec<vize_carton::String> {
         authored_local_scss_classes(scss)
@@ -241,6 +281,18 @@ mod tests {
                 "@media (max-width: 1px) { .m { &-n {} } }\n.p { @media print { &-q {} } @include wide { &-r {} } @at-root .s {} }\n@mixin m { .mixed { &-x {} } }\n@each $k in a, b { .each-#{$k} {} }\n.i-#{$name} { &-j {} }\n.ok {}\n:global(.g) .l {}"
             ),
             ["l", "m", "m-n", "ok", "p", "p-q", "p-r", "s"]
+        );
+    }
+
+    #[test]
+    fn less_resolves_parents_and_skips_mixin_definitions() {
+        let names = authored_local_less_classes(
+            "@gap: 4px;\n.card { &__title {} &:extend(.base); .icon {} }\n.m() { .hidden {} }\n.guarded(@a) when (@a > 1) { .alsoHidden {} }\n#ns { .inner() {} }\n.pre-@{name} { &-x {} }\n@media screen { .m2 { &-n {} } }\n@detached: { .det {} };\n// .commented {}\n.call { .m(); }",
+        )
+        .expect("balanced Less");
+        assert_eq!(
+            names.into_iter().collect::<Vec<_>>(),
+            ["call", "card", "card__title", "icon", "m2", "m2-n"]
         );
     }
 
