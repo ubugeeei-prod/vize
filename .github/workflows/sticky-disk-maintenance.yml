@@ -1,0 +1,28 @@
+name: Sticky disk maintenance
+# Deletes Blacksmith sticky disks that nothing mounts any more, such as the
+# target lineages retired when target keys gained their toolchain channel.
+on:
+  workflow_dispatch:
+    inputs:
+      keys:
+        description: JSON array of exact sticky disk keys to delete
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  delete:
+    name: Delete ${{ matrix.key }}
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        key: ${{ fromJSON(inputs.keys) }}
+    steps:
+      - uses: useblacksmith/stickydisk-delete@b41313d28b8647d72114c9ba3c96bb04061562b6 # v1
+        with:
+          delete-key: ${{ matrix.key }}
