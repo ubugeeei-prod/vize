@@ -29,7 +29,7 @@ pub use protocol::{
 
 #[path = "content_mapper_directives.rs"]
 mod directives;
-use directives::template_diagnostic_directives;
+use directives::sfc_diagnostic_directives;
 
 #[path = "content_mapper_component_name.rs"]
 mod component_name;
@@ -208,9 +208,9 @@ pub fn generate_vue_content_mapper_transform_with_options(
     let spans = protocol_spans(content, &code, &mappings, &mapping_meta);
     Ok(ContentMapperTransform {
         extension: CONTENT_MAPPER_VIRTUAL_EXTENSION,
-        // Directive comments are read from HTML templates only.
+        // Directive comments are read from HTML templates and SFC blocks only.
         diagnostic_directives: (!authored.is_derived())
-            .then(|| template_diagnostic_directives(descriptor.template.as_ref(), &spans))
+            .then(|| sfc_diagnostic_directives(content, &descriptor, &spans))
             .flatten(),
         mappings: spans,
         semantic_links: protocol_semantic_links(&semantic_links),

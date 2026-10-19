@@ -127,6 +127,9 @@ the protocol instead:
 A directive applies to the rest of its own line when content follows the comment, otherwise to the
 next non-empty line.
 
+Placed directly before an SFC block, a directive covers that block's opening tag, such as a repeated
+`<style module="name">` or a `generic` attribute; `<!-- @vue-skip -->` covers the whole block.
+
 ## Protocol
 
 Vize uses the current Content Mapper initialization contract without numbered `protocolVersion`

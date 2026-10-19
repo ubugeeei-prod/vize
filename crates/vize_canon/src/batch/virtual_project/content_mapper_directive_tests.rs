@@ -233,3 +233,59 @@ fn unrelated_marker_text_never_creates_owner_directives() {
         (0, 0)
     );
 }
+
+/// #9746: a comment directly before an SFC block owns that block's opening tag.
+#[test]
+fn block_directives_cover_duplicate_css_module_names_only() {
+    for (token, policy) in [
+        ("@vue-ignore", DIRECTIVE_POLICY_IGNORE),
+        ("@vue-expect-error", DIRECTIVE_POLICY_EXPECT),
+    ] {
+        let source = vize_l0::cstr!(
+            "<template><div /></template>\n<!-- {token} -->\n<style module=\"foo\"></style>\n<!-- {token} -->\n<style module=\"foo\"></style>\n"
+        );
+        let source = source.as_str();
+        let result = transform(source);
+        let directives = result.diagnostic_directives.expect("block directives");
+        let text = result.text.as_str();
+        let keys: Vec<_> = text
+            .match_indices("\"foo\":")
+            .map(|(start, _)| start)
+            .collect();
+        assert_eq!(keys.len(), 2, "{text}");
+        for key in keys {
+            assert!(
+                directives.directives.iter().any(|directive| {
+                    let [_, _, start, end, kind, _] = directive.0;
+                    kind == policy && start <= key && key + "\"foo\"".len() <= end
+                }),
+                "{token} must cover generated key at {key}: {directives:?}"
+            );
+        }
+        for directive in &directives.directives {
+            let [original, length, start, end, _, _] = directive.0;
+            assert_eq!(&source[original..original + length], token);
+            assert!(
+                !text[start..end].contains("__template"),
+                "a block directive must not reach template checks: {:?}",
+                &text[start..end]
+            );
+        }
+    }
+}
+
+#[test]
+fn block_directives_do_not_reach_the_block_body_or_other_blocks() {
+    let source = "<!-- @vue-ignore -->\n<script setup lang=\"ts\">\nconst count: number = 'x'\n</script>\n<template>{{ count }}</template>\n";
+    let result = transform(source);
+    let text = result.text.as_str();
+    let body = text.find("const count: number = 'x'").expect("setup body");
+    for directive in result
+        .diagnostic_directives
+        .iter()
+        .flat_map(|directives| &directives.directives)
+    {
+        let [_, _, start, end, _, _] = directive.0;
+        assert!(end <= body || body + 25 <= start, "{:?}", &text[start..end]);
+    }
+}

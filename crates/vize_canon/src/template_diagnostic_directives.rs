@@ -2,7 +2,9 @@
 
 use std::ops::Range;
 use vize_atelier_core::{ParserOptions, parser::parse_with_options};
-use vize_atelier_sfc::{SfcParseOptions, SfcTemplateBlock, parse_sfc};
+use vize_atelier_sfc::{
+    BlockLocation, SfcDescriptor, SfcParseOptions, SfcTemplateBlock, parse_sfc,
+};
 use vize_carton::Allocator;
 use vize_relief::{RootNode, TemplateChildNode};
 
@@ -43,10 +45,63 @@ impl TemplateDiagnosticDirectives {
         let Ok(descriptor) = parse_sfc(source, SfcParseOptions::default()) else {
             return Self::default();
         };
-        descriptor
+        Self::for_descriptor(source, &descriptor)
+    }
+
+    /// Template comments plus SFC-level comments placed directly before a
+    /// block. Like `@ts-expect-error` for the next line, a block directive
+    /// owns only that block's opening tag (`module`, `generic`, `lang`
+    /// diagnostics); `@vue-skip` owns the whole block.
+    pub fn for_descriptor(source: &str, descriptor: &SfcDescriptor<'_>) -> Self {
+        let mut result = descriptor
             .template
             .as_ref()
-            .map_or_else(Self::default, Self::for_template)
+            .map_or_else(Self::default, Self::for_template);
+        if !source.contains("@vue-") {
+            return result;
+        }
+        let mut blocks: Vec<&BlockLocation> = descriptor
+            .template
+            .iter()
+            .map(|block| &block.loc)
+            .chain(descriptor.script.iter().map(|block| &block.loc))
+            .chain(descriptor.script_setup.iter().map(|block| &block.loc))
+            .chain(descriptor.styles.iter().map(|block| &block.loc))
+            .chain(descriptor.custom_blocks.iter().map(|block| &block.loc))
+            .collect();
+        blocks.sort_by_key(|loc| loc.tag_start);
+        let mut gap_start = 0;
+        for loc in blocks {
+            let mut pending = Vec::new();
+            let mut cursor = gap_start;
+            while let Some(open) = source
+                .get(cursor..loc.tag_start)
+                .and_then(|gap| gap.find("<!--"))
+            {
+                let content_start = cursor + open + 4;
+                let Some(close) = source
+                    .get(content_start..loc.tag_start)
+                    .and_then(|rest| rest.find("-->"))
+                else {
+                    break;
+                };
+                let end = content_start + close + 3;
+                let content = source.get(content_start..end - 3).unwrap_or_default();
+                pending.extend(comment_directive(content, cursor + open..end));
+                cursor = end;
+            }
+            if let Some(mut directive) = take_owner(&mut pending) {
+                let target_end = if directive.policy == DirectivePolicy::Skip {
+                    loc.tag_end
+                } else {
+                    loc.start
+                };
+                directive.targets.push(loc.tag_start..target_end);
+                result.directives.push(directive);
+            }
+            gap_start = loc.tag_end.max(loc.end);
+        }
+        result
     }
 
     pub fn for_template(template: &SfcTemplateBlock<'_>) -> Self {
@@ -116,30 +171,10 @@ impl TemplateDiagnosticDirectives {
                     );
                     continue;
                 }
-                let Some((token, policy)) = [
-                    ("@vue-expect-error", DirectivePolicy::Expect),
-                    ("@vue-ignore", DirectivePolicy::Ignore),
-                    ("@vue-skip", DirectivePolicy::Skip),
-                ]
-                .into_iter()
-                .find(|(token, _)| {
-                    trimmed.strip_prefix(token).is_some_and(|tail| {
-                        tail.chars()
-                            .next()
-                            .is_none_or(|ch| !ch.is_alphanumeric() && ch != '-' && ch != '_')
-                    })
-                }) else {
-                    continue;
-                };
-                let start = base + comment.loc.span.start as usize;
-                let token_start = start + 4 + comment.content.len() - trimmed.len();
-                pending.push(TemplateDiagnosticDirective {
-                    comment: start..base + comment.loc.span.end as usize,
-                    token: token_start..token_start + token.len(),
-                    targets: Vec::new(),
-                    policy,
-                    used: false,
-                });
+                pending.extend(comment_directive(
+                    comment.content,
+                    base + comment.loc.span.start as usize..base + comment.loc.span.end as usize,
+                ));
                 continue;
             }
             if matches!(node, TemplateChildNode::Text(text) if text.content.trim().is_empty()) {
@@ -154,23 +189,7 @@ impl TemplateDiagnosticDirectives {
             let skip = pending
                 .iter()
                 .any(|directive| directive.policy == DirectivePolicy::Skip);
-            // The upstream context gives ignore precedence, and the last expect
-            // owns diagnostics when several comments precede the same node.
-            let selected = pending
-                .iter()
-                .rposition(|directive| directive.policy == DirectivePolicy::Skip)
-                .or_else(|| {
-                    pending
-                        .iter()
-                        .rposition(|directive| directive.policy == DirectivePolicy::Ignore)
-                })
-                .or_else(|| {
-                    pending
-                        .iter()
-                        .rposition(|directive| directive.policy == DirectivePolicy::Expect)
-                });
-            if let Some(index) = selected {
-                let mut directive = pending.swap_remove(index);
+            if let Some(mut directive) = take_owner(&mut pending) {
                 if skip {
                     directive.targets.push(start..base + subtree_end(node));
                 } else {
@@ -192,6 +211,48 @@ impl TemplateDiagnosticDirectives {
         // a comment that no longer checks any authored code after an edit.
         self.directives.extend(pending);
     }
+}
+
+/// The directive an HTML comment's `content` declares, if any.
+fn comment_directive(content: &str, comment: Range<usize>) -> Option<TemplateDiagnosticDirective> {
+    let trimmed = content.trim_start();
+    let (token, policy) = [
+        ("@vue-expect-error", DirectivePolicy::Expect),
+        ("@vue-ignore", DirectivePolicy::Ignore),
+        ("@vue-skip", DirectivePolicy::Skip),
+    ]
+    .into_iter()
+    .find(|(token, _)| {
+        trimmed.strip_prefix(token).is_some_and(|tail| {
+            tail.chars()
+                .next()
+                .is_none_or(|ch| !ch.is_alphanumeric() && ch != '-' && ch != '_')
+        })
+    })?;
+    let token_start = comment.start + 4 + content.len() - trimmed.len();
+    Some(TemplateDiagnosticDirective {
+        comment,
+        token: token_start..token_start + token.len(),
+        targets: Vec::new(),
+        policy,
+        used: false,
+    })
+}
+
+/// The upstream context gives ignore precedence, and the last expect owns
+/// diagnostics when several comments precede the same node.
+fn take_owner(
+    pending: &mut Vec<TemplateDiagnosticDirective>,
+) -> Option<TemplateDiagnosticDirective> {
+    let last = |policy| {
+        pending
+            .iter()
+            .rposition(|directive: &TemplateDiagnosticDirective| directive.policy == policy)
+    };
+    let index = last(DirectivePolicy::Skip)
+        .or_else(|| last(DirectivePolicy::Ignore))
+        .or_else(|| last(DirectivePolicy::Expect))?;
+    Some(pending.swap_remove(index))
 }
 
 fn subtree_end(node: &TemplateChildNode<'_>) -> usize {

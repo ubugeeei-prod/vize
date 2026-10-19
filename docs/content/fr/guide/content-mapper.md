@@ -110,6 +110,9 @@ directives de commentaire HTML standard de Vue à travers le protocole :
 Une directive s'applique au reste de sa propre ligne quand du contenu suit le commentaire, sinon à
 la ligne non vide suivante.
 
+Placée juste avant un bloc SFC, une directive couvre la balise ouvrante de ce bloc, par exemple un
+`<style module="name">` répété ou un attribut `generic` ; `<!-- @vue-skip -->` couvre tout le bloc.
+
 ## Protocole
 
 Vize parle le protocole v1 des content mappers tel que fusionné upstream : encodage de positions

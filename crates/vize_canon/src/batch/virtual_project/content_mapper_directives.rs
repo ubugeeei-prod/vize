@@ -7,7 +7,7 @@
 
 use std::ops::Range;
 
-use vize_atelier_sfc::SfcTemplateBlock;
+use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::String as CompactString;
 
 use crate::template_diagnostic_directives::{DirectivePolicy, TemplateDiagnosticDirectives};
@@ -21,13 +21,13 @@ use super::protocol::{
 const UNUSED_EXPECT_CODE: i32 = 4;
 
 /// Project comments onto checks for their authored target nodes. Returns
-/// `None` when the template declares no directives that reach the mapper.
-pub(super) fn template_diagnostic_directives(
-    template: Option<&SfcTemplateBlock<'_>>,
+/// `None` when the SFC declares no directives that reach the mapper.
+pub(super) fn sfc_diagnostic_directives(
+    source: &str,
+    descriptor: &SfcDescriptor<'_>,
     spans: &[ContentMapperSpan],
 ) -> Option<ContentMapperDiagnosticDirectives> {
-    let template = template?;
-    let authored = TemplateDiagnosticDirectives::for_template(template);
+    let authored = TemplateDiagnosticDirectives::for_descriptor(source, descriptor);
     let mut directives = Vec::new();
     let mut expects_unused_table = false;
 
