@@ -163,7 +163,11 @@ fn rebuilt_discovery_reuses_session_reachability_until_an_input_changes() {
     };
 
     assert_eq!(discover(&mut resolver), 1);
-    assert_eq!(discover(&mut resolver), 1, "an unchanged rebuild must not rescan");
+    assert_eq!(
+        discover(&mut resolver),
+        1,
+        "an unchanged rebuild must not rescan"
+    );
     let package = fixture.host.parent().unwrap().parent().unwrap();
     write(
         &package.join("node_modules/vue-property-decorator/index.d.ts"),
