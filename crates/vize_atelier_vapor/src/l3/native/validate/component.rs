@@ -38,12 +38,9 @@ pub(super) fn component<'a>(
             {
                 crate::ir::ComponentKind::Dynamic
             }
-            "Teleport" => crate::ir::ComponentKind::Teleport,
-            "KeepAlive" => crate::ir::ComponentKind::KeepAlive,
-            "Suspense" => crate::ir::ComponentKind::Suspense,
-            "Transition" => crate::ir::ComponentKind::Transition,
-            "TransitionGroup" => crate::ir::ComponentKind::TransitionGroup,
-            _ => crate::ir::ComponentKind::Regular,
+            text => {
+                crate::ir::ComponentKind::builtin(text).unwrap_or(crate::ir::ComponentKind::Regular)
+            }
         },
         tag: tag.value.text,
         tag_span: (tag.value.span.start, tag.value.span.end),

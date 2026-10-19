@@ -59,3 +59,24 @@ fn a_static_is_resolves_the_component_once() {
         );
     }
 }
+
+#[test]
+fn kebab_case_builtins_resolve_like_their_pascal_names() {
+    // Upstream `isBuiltInType` accepts both spellings: `<transition>` is
+    // `VaporTransition`, never a `resolveComponent("transition")`.
+    for retained in [false, true] {
+        for (pascal, kebab) in [
+            ("Transition", "transition"),
+            ("TransitionGroup", "transition-group"),
+            ("KeepAlive", "keep-alive"),
+            ("Teleport", "teleport"),
+            ("Suspense", "suspense"),
+        ] {
+            let body = r#" to="body" tag="ul"><div v-if="ok">x</div></"#;
+            let expected = compiled(&vize_carton::cstr!("<{pascal}{body}{pascal}>"), retained);
+            let code = compiled(&vize_carton::cstr!("<{kebab}{body}{kebab}>"), retained);
+            assert!(!code.contains("resolveComponent"), "{kebab}: {code}");
+            assert_eq!(code, expected, "{kebab}");
+        }
+    }
+}

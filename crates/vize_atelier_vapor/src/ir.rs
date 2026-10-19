@@ -287,6 +287,21 @@ pub enum ComponentKind {
     Dynamic,
 }
 
+impl ComponentKind {
+    /// The built-in a tag names, accepting the PascalCase and kebab-case
+    /// spellings Vue resolves (`<transition>` is `<Transition>`).
+    pub fn builtin(tag: &str) -> Option<Self> {
+        Some(match tag {
+            "Teleport" | "teleport" => Self::Teleport,
+            "KeepAlive" | "keep-alive" => Self::KeepAlive,
+            "Suspense" | "suspense" => Self::Suspense,
+            "Transition" | "transition" => Self::Transition,
+            "TransitionGroup" | "transition-group" => Self::TransitionGroup,
+            _ => return None,
+        })
+    }
+}
+
 /// Create component operation
 #[derive(Debug)]
 pub struct CreateComponentIRNode<'a> {

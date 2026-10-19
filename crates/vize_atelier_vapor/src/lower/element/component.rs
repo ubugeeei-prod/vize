@@ -31,11 +31,7 @@ pub(super) fn transform_component<'a>(
 ) {
     let tag = el.tag;
     let kind = match tag {
-        "Teleport" => ComponentKind::Teleport,
-        "KeepAlive" => ComponentKind::KeepAlive,
-        "Suspense" => ComponentKind::Suspense,
-        "Transition" => ComponentKind::Transition,
-        "TransitionGroup" => ComponentKind::TransitionGroup,
+        _ if let Some(kind) = ComponentKind::builtin(tag) => kind,
         "component"
             if vize_l0::general::is_authored_tag(ctx.source, el.loc.span, tag)
                 || el.props.iter().any(|prop| {
