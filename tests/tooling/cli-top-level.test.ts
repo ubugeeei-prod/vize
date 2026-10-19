@@ -42,10 +42,10 @@ function workspaceVersion(): string {
   return version;
 }
 
-test("vize --version matches the workspace Cargo.toml version", () => {
+test("a source-built vize --version reports the workspace version as -dev", () => {
   const result = runVize(["--version"]);
   assert.equal(result.status, 0, result.stderr);
-  assert.equal(result.stdout.trim(), `vize ${workspaceVersion()}`);
+  assert.equal(result.stdout.trim(), `vize ${workspaceVersion()}-dev`);
 });
 
 test("vize --help advertises the documented subcommands and their aliases", () => {

@@ -83,7 +83,8 @@ export function expectedBuildIdentity(repoRoot: string): BuildIdentity {
     sourceRevision: sourceRevision(repoRoot),
     binaryPath,
     binarySha256: sha256(fs.readFileSync(path.join(repoRoot, binaryPath))),
-    cliVersion: `vize ${version[1]}`,
+    // Source builds are not release builds, so they report `<version>-dev`.
+    cliVersion: `vize ${version[1]}-dev`,
   };
 }
 

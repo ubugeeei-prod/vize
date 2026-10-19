@@ -67,13 +67,9 @@ pub const VERSION: &str = match option_env!("VIZE_RELEASE_BUILD") {
 mod version_tests {
     #[test]
     fn unreleased_builds_identify_as_dev() {
-        let version = env!("CARGO_PKG_VERSION");
         match option_env!("VIZE_RELEASE_BUILD") {
-            Some(_) => assert_eq!(super::VERSION, version),
-            None => {
-                assert!(super::VERSION.starts_with(version));
-                assert_eq!(&super::VERSION[version.len()..], "-dev");
-            }
+            Some(_) => assert_eq!(super::VERSION, env!("CARGO_PKG_VERSION")),
+            None => assert_eq!(super::VERSION, concat!(env!("CARGO_PKG_VERSION"), "-dev")),
         }
     }
 }

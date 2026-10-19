@@ -99,7 +99,7 @@ pub(super) fn initialize_disabled(
                         "workspace":{"workspaceFolders":{"supported":true,"changeNotifications":true}},
                         "experimental":{"vize":{"jsxTypecheck":false}}
                     },
-                    "serverInfo":{"name":"vize-maestro","version":env!("CARGO_PKG_VERSION")}
+                    "serverInfo":{"name":"vize-maestro","version":vize_carton::VERSION}
                 }
             })
         );
