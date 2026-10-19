@@ -1,8 +1,8 @@
 #![cfg(test)]
 #![expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods,
     clippy::disallowed_macros,
+    clippy::string_slice,
     reason = "whole CLI fixtures use std strings"
 )]
 
