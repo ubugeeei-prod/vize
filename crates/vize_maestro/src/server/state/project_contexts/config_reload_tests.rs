@@ -455,3 +455,22 @@ fn newly_introduced_missing_or_malformed_imports_recover_on_creation_or_change()
 
 #[path = "config_reload_recovery_tests.rs"]
 mod config_reload_recovery_tests;
+
+#[cfg(unix)]
+#[test]
+fn a_reload_notice_names_a_symlinked_change_once() {
+    let parent = crate::test_support::tempdir().unwrap();
+    let physical = parent.path().join("project");
+    std::fs::create_dir_all(&physical).unwrap();
+    std::fs::write(physical.join("vite.config.mjs"), "export default {}").unwrap();
+    let alias = parent.path().join("alias");
+    std::os::unix::fs::symlink(&physical, &alias).unwrap();
+    let through_alias = Url::from_file_path(alias.join("vite.config.mjs")).unwrap();
+    let direct = Url::from_file_path(physical.join("vite.config.mjs")).unwrap();
+    let notice = config_reload::reload_error(&physical, &[through_alias.clone(), direct]);
+    let root = Url::from_file_path(&physical).unwrap();
+    assert_eq!(
+        notice.message,
+        cstr!("Vize could not reload project configuration for {root} after changes to {through_alias}. Keeping the last good configuration.").as_str()
+    );
+}

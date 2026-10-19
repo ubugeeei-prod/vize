@@ -36,6 +36,35 @@ fn scoped_rules_and_global_ignores_match_document_paths() {
     assert!(state.linter_settings_for_uri(&ignored).is_none());
 }
 
+/// #9686: a workspace opened through a symlink still applies its scoped
+/// rules and ignores; config bases are physical, document paths are not.
+#[cfg(unix)]
+#[test]
+fn scoped_rules_and_ignores_apply_through_a_symlinked_workspace() {
+    let parent = crate::test_support::tempdir().unwrap();
+    let physical = folder_with_config(
+        parent.path(),
+        "project",
+        r#"{
+  "entries": [{"files":["src/legacy/**/*.vue"], "linter":{"rules":{"vue/permitted-contents":"off"}}}],
+  "ignores": ["src/generated/**"]
+}"#,
+    );
+    let root = parent.path().join("alias");
+    std::os::unix::fs::symlink(&physical, &root).unwrap();
+    let state = ServerState::new();
+    state.apply_initialize_workspace_folders(None, Some(&root));
+
+    let legacy = Url::from_file_path(root.join("src/legacy/table.vue")).unwrap();
+    let (legacy_config, _, _) = state.linter_settings_for_uri(&legacy).unwrap();
+    assert_eq!(
+        legacy_config.rules.get("vue/permitted-contents"),
+        Some(&LintRuleSeverity::Off)
+    );
+    let ignored = Url::from_file_path(root.join("src/generated/table.vue")).unwrap();
+    assert!(state.linter_settings_for_uri(&ignored).is_none());
+}
+
 fn folder_with_config(parent: &std::path::Path, name: &str, config: &str) -> std::path::PathBuf {
     let dir = parent.join(name);
     std::fs::create_dir_all(&dir).unwrap();

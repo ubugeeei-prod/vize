@@ -30,7 +30,7 @@ pub(super) fn document_context_root(path: &Path, roots: &[PathBuf]) -> Option<Pa
         })
 }
 
-pub(super) fn physical_path(path: &Path) -> PathBuf {
+pub(in crate::server::state) fn physical_path(path: &Path) -> PathBuf {
     for ancestor in path.ancestors() {
         if let Ok(physical) = ancestor.canonicalize()
             && let Ok(relative) = path.strip_prefix(ancestor)

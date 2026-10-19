@@ -138,8 +138,20 @@ pub(super) fn reload_error(root: &std::path::Path, changes: &[Url]) -> ShowMessa
     let root = Url::from_file_path(root)
         .map(|root| vize_l0::cstr!("{root}"))
         .unwrap_or_else(|()| vize_l0::cstr!("{}", root.display()));
+    // One file reported through a symlink and through its physical path is
+    // one change (#9686).
+    let mut seen = Vec::new();
     let changed = changes
         .iter()
+        .filter(|uri| {
+            let Ok(path) = uri.to_file_path() else {
+                return true;
+            };
+            let physical = physical_path(&path);
+            let first = !seen.contains(&physical);
+            seen.push(physical);
+            first
+        })
         .map(Url::as_str)
         .collect::<Vec<_>>()
         .join(", ");
