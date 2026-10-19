@@ -28,6 +28,7 @@ pub(crate) fn emit_accepted<'a>(
                 error_messages: vec![String::from(
                     "Davinci L3 emission rejected Vapor artifact: inconsistent checked payload",
                 )],
+                warning_messages: Vec::new(),
             }
         }
     }

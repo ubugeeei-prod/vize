@@ -81,6 +81,7 @@ pub fn observe(source: &str, prefix: bool) -> Value {
         templates,
         map,
         error_messages,
+        ..
     } = compile_vapor(&allocator, source, options(prefix));
     json!({
         "code": code.as_str(), "templates": templates,

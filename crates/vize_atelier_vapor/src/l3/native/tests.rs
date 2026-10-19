@@ -63,6 +63,7 @@ fn accepted_payload_reaches_shared_generation_with_authored_anchors() {
             templates: output.templates,
             map: output.map,
             error_messages: Vec::new(),
+            warning_messages: Vec::new(),
         }
     });
     assert_eq!(result.error_messages.len(), 0);

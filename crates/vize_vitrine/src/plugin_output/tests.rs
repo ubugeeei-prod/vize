@@ -37,6 +37,7 @@ fn native(mapped: bool) -> CompileResult {
         map: compiled.map.map(|map| serde_json::from_str(&map).unwrap()),
         helpers: vec![],
         templates: Some(compiled.templates.iter().map(ToString::to_string).collect()),
+        warnings: None,
     }
 }
 
@@ -58,6 +59,7 @@ fn simple(code: &str) -> CompileResult {
         map: None,
         helpers: vec![],
         templates: None,
+        warnings: None,
     }
 }
 

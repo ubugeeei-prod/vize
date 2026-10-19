@@ -114,6 +114,8 @@ export interface CompileResult {
   helpers: string[];
   /** Template strings for Vapor mode static parts */
   templates?: string[];
+  /** Recoverable compiler warnings (Vapor mode) */
+  warnings?: string[];
 }
 
 /** SFC block (template, script, style) */

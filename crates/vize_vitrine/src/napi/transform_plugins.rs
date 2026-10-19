@@ -114,6 +114,7 @@ pub fn compile_with_transform_plugins(
             map,
             helpers: Vec::new(),
             templates: None,
+            warnings: None,
         },
         plugins: output
             .costs

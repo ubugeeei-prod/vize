@@ -28,7 +28,6 @@ const VALID_TEMPLATE: &str = include_str!(
 );
 const INVALID_EXPRESSION: &str = r#"Template compilation errors: [CompilerError { code: InvalidExpression, message: "Error parsing JavaScript expression: Unexpected token", loc: Some(SourceLocation { start: Position { offset: 11, line: 2, column: 11 }, end: Position { offset: 14, line: 2, column: 14 }, source: "a +" }) }]"#;
 const MISSING_IF: &str = r#"Template compilation errors: [CompilerError { code: VIfNoExpression, message: "v-if/v-else-if is missing expression.", loc: Some(SourceLocation { start: Position { offset: 6, line: 2, column: 6 }, end: Position { offset: 10, line: 2, column: 10 }, source: "v-if" }) }]"#;
-const UNSUPPORTED_MEMO: &str = r#"Vapor template compilation errors: ["v-memo with dependencies is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented."]"#;
 
 #[test]
 fn build_reports_every_returned_sfc_error_and_never_counts_partial_code_as_success() {
@@ -37,7 +36,6 @@ fn build_reports_every_returned_sfc_error_and_never_counts_partial_code_as_succe
         ("TemplateOnly.vue", TEMPLATE, false, INVALID_EXPRESSION),
         ("VIf.vue", V_IF, false, MISSING_IF),
         ("Options.vue", OPTIONS, false, INVALID_EXPRESSION),
-        ("Memo.vue", MEMO, true, UNSUPPORTED_MEMO),
     ] {
         let errors = compiler_errors(name, source, vapor);
         assert_eq!(errors, [error], "{name}");
@@ -136,6 +134,23 @@ fn valid_script_and_template_only_controls_keep_whole_output_and_success() {
             }
         }
     }
+}
+
+#[test]
+fn vapor_memo_compiles_with_the_upstream_warning() {
+    // `@vue/compiler-vapor` warns and renders as if `v-memo` were absent.
+    let compiled = compiler_result("Memo.vue", MEMO, true).unwrap();
+    assert!(compiled.errors.is_empty(), "{:?}", compiled.errors);
+    let warnings: Vec<&str> = compiled
+        .warnings
+        .iter()
+        .map(|warning| warning.message.as_str())
+        .collect();
+    assert_eq!(
+        warnings,
+        ["v-memo is not supported in Vapor mode and will be ignored."]
+    );
+    assert!(compiled.code.contains("_renderEffect"), "{}", compiled.code);
 }
 
 #[test]

@@ -161,6 +161,7 @@ fn compile_scoped(
         map,
         helpers,
         templates: None,
+        warnings: None,
     })
 }
 
@@ -226,6 +227,13 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
         map,
         helpers: vec![],
         templates: Some(result.templates.iter().map(|s| s.to_string()).collect()),
+        warnings: Some(
+            result
+                .warning_messages
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+        ),
     })
 }
 

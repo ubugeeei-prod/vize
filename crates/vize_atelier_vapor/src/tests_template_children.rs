@@ -27,8 +27,13 @@ fn vapor_output(source: &str) -> std::string::String {
             ..Default::default()
         },
     );
+    let warnings = if result.warning_messages.is_empty() {
+        std::string::String::new()
+    } else {
+        format!("warnings={:?}\n", result.warning_messages)
+    };
     format!(
-        "errors={:?}\ntemplates={:?}\ncode=\n{}",
+        "errors={:?}\n{warnings}templates={:?}\ncode=\n{}",
         result.error_messages, result.templates, result.code
     )
 }
@@ -170,11 +175,9 @@ fn deeply_nested_patterned_ir_teardown_is_stack_safe() {
             let actual = vapor_output_on_small_stack(source);
             assert_eq!(actual, expected);
             if with_diagnostic {
-                assert!(
-                    actual.contains(
-                        "v-memo with dependencies is not supported in Vapor yet. Use v-once or v-memo=\\\"[]\\\" until memo guards are implemented."
-                    )
-                );
+                assert!(actual.contains(
+                    "warnings=[\"v-memo is not supported in Vapor mode and will be ignored.\"]"
+                ));
             } else {
                 assert!(actual.starts_with("errors=[]"));
             }

@@ -882,7 +882,7 @@ fn test_compile_v_memo_empty_array_lowers_without_runtime_directives() {
 }
 
 #[test]
-fn test_compile_v_memo_with_dependencies_reports_diagnostic() {
+fn test_compile_v_memo_with_dependencies_warns_and_is_ignored() {
     let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
@@ -890,13 +890,20 @@ fn test_compile_v_memo_with_dependencies_reports_diagnostic() {
         Default::default(),
     );
 
+    // Upstream warns and renders as if `v-memo` were absent.
+    assert!(
+        result.error_messages.is_empty(),
+        "{:?}",
+        result.error_messages
+    );
     assert_eq!(
-        result.error_messages,
+        result.warning_messages,
         vec![String::from(
-            "v-memo with dependencies is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.",
+            "v-memo is not supported in Vapor mode and will be ignored."
         )]
     );
     assert_parses_as_module(&result.code);
+    assert!(result.code.contains("_renderEffect"), "{}", result.code);
     assert!(!result.code.contains("_withDirectives"), "{}", result.code);
     assert!(!result.code.contains("_memo"), "{}", result.code);
 }

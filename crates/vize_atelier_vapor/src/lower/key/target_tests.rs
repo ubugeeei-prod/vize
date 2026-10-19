@@ -4,7 +4,7 @@ use vize_carton::Allocator;
 
 #[test]
 fn refused_key_targets_keep_original_once_and_first_memo_diagnostics() {
-    let memo_error = "v-memo with dependencies is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.";
+    let memo_warning = "v-memo is not supported in Vapor mode and will be ignored.";
     let cases = [
         (
             "<slot :key=\"epoch\"></slot>",
@@ -34,7 +34,7 @@ fn refused_key_targets_keep_original_once_and_first_memo_diagnostics() {
             "<slot v-memo=\"deps\" :key=\"epoch\"></slot>",
             ElementType::Slot,
             false,
-            Some(memo_error),
+            Some(memo_warning),
         ),
         (
             "<slot v-memo=\"deps\" v-once :key=\"epoch\"></slot>",
@@ -55,6 +55,6 @@ fn refused_key_targets_keep_original_once_and_first_memo_diagnostics() {
         assert_eq!(facts.key.map(|key| key.content), None, "{source}");
         assert_eq!(value(el, false).map(|key| key.content), None, "{source}");
         assert_eq!(facts.should_lower_as_once, expected_once, "{source}");
-        assert_eq!(facts.memo_error, expected_error, "{source}");
+        assert_eq!(facts.memo_warning, expected_error, "{source}");
     }
 }

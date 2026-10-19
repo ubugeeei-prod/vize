@@ -13,4 +13,6 @@ pub struct VaporCompileResult {
     pub map: Option<String>,
     /// Error messages during compilation
     pub error_messages: Vec<String>,
+    /// Recoverable warnings, such as a `v-memo` Vapor ignores
+    pub warning_messages: Vec<String>,
 }

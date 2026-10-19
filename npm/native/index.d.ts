@@ -267,6 +267,8 @@ export interface CompileResult {
   helpers: Array<string>;
   /** Template strings for Vapor mode static parts */
   templates?: Array<string>;
+  /** Recoverable compiler warnings (Vapor mode) */
+  warnings?: Array<string>;
 }
 
 /** Compiler options for bindings */

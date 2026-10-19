@@ -123,6 +123,9 @@ pub struct CompileResult {
     /// Template strings for Vapor mode static parts
     #[serde(skip_serializing_if = "Option::is_none")]
     pub templates: Option<Vec<String>>,
+    /// Recoverable compiler warnings (Vapor mode)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub warnings: Option<Vec<String>>,
 }
 
 /// Compile error

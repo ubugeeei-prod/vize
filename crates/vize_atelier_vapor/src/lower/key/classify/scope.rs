@@ -1,6 +1,9 @@
 //! Original once precedence and first memo diagnostics, shared inside required walks.
 use vize_atelier_core::{DirectiveNode, ExpressionNode};
 
+/// `@vue/compiler-vapor`'s warning for a `v-memo` it ignores.
+pub(crate) const MEMO_IGNORED: &str = "v-memo is not supported in Vapor mode and will be ignored.";
+
 pub(in crate::lower) struct ScopeDirectives<'a, 'b> {
     has_once: bool,
     first_memo: Option<&'b DirectiveNode<'a>>,
@@ -34,27 +37,17 @@ impl<'a, 'b> ScopeDirectives<'a, 'b> {
     }
 
     pub(in crate::lower) fn finish(self) -> (bool, Option<&'static str>, bool) {
-        let (once, error) = if self.has_once {
+        let (once, warning) = if self.has_once {
             (true, None)
         } else if let Some(dir) = self.first_memo {
             match dir.exp.as_ref() {
                 Some(ExpressionNode::Simple(exp)) if exp.content.trim() == "[]" => (true, None),
-                Some(ExpressionNode::Simple(_)) => (
-                    false,
-                    Some(
-                        "v-memo with dependencies is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.",
-                    ),
-                ),
-                _ => (
-                    false,
-                    Some(
-                        "v-memo is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.",
-                    ),
-                ),
+                // Vapor has no memo guard; like upstream, render as if absent.
+                _ => (false, Some(MEMO_IGNORED)),
             }
         } else {
             (false, None)
         };
-        (once, error, self.key_non_reactive)
+        (once, warning, self.key_non_reactive)
     }
 }

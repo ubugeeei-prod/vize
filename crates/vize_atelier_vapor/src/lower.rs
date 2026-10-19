@@ -42,7 +42,8 @@ pub(crate) fn transform_to_ir_with_scope_id<'a>(
     source: &'a str,
     scope_id: Option<&str>,
 ) -> (RootIRNode<'a>, std::vec::Vec<String>) {
-    let (ir, diagnostics, _) = transform_to_ir_with_spans(allocator, root, source, scope_id, false);
+    let (ir, diagnostics, _, _) =
+        transform_to_ir_with_spans(allocator, root, source, scope_id, false);
     (ir, diagnostics)
 }
 
@@ -54,7 +55,12 @@ pub(crate) fn transform_to_ir_with_spans<'a>(
     source: &'a str,
     scope_id: Option<&str>,
     spans: bool,
-) -> (RootIRNode<'a>, std::vec::Vec<String>, Option<TemplateSpans>) {
+) -> (
+    RootIRNode<'a>,
+    std::vec::Vec<String>,
+    std::vec::Vec<String>,
+    Option<TemplateSpans>,
+) {
     let mut ctx = TransformContext::new(allocator, source);
     ctx.scope_id = scope_id.map(String::from);
     ctx.template_spans = spans.then(TemplateSpans::default);
@@ -84,6 +90,7 @@ pub(crate) fn transform_to_ir_with_spans<'a>(
             standalone_text_elements: ctx.standalone_text_elements,
         },
         ctx.diagnostics,
+        ctx.warnings,
         ctx.template_spans,
     )
 }

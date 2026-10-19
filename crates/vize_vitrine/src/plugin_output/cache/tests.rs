@@ -8,6 +8,7 @@ fn compiled() -> CompileResult {
         map: None,
         helpers: vec![],
         templates: None,
+        warnings: None,
     }
 }
 

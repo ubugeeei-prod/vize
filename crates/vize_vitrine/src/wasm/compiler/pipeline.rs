@@ -80,6 +80,7 @@ fn compile_internal_scoped(
             map: parse_codegen_map(result.map)?,
             helpers: root.helpers.iter().map(|h| h.name().to_string()).collect(),
             templates: None,
+            warnings: None,
         });
     }
 
@@ -126,6 +127,13 @@ fn compile_internal_scoped(
                     .templates
                     .into_iter()
                     .map(|t| t.to_string())
+                    .collect(),
+            ),
+            warnings: Some(
+                result
+                    .warning_messages
+                    .into_iter()
+                    .map(|w| w.to_string())
                     .collect(),
             ),
         });
@@ -181,6 +189,7 @@ fn compile_internal_scoped(
         map,
         helpers: root.helpers.iter().map(|h| h.name().to_string()).collect(),
         templates: None,
+        warnings: None,
     })
 }
 

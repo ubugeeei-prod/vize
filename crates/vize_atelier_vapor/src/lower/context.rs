@@ -30,6 +30,8 @@ pub(crate) struct TransformContext<'a> {
     /// Preserve authored text anchors in structural slot bodies.
     pub(crate) structural_slot_spans: bool,
     pub(crate) diagnostics: std::vec::Vec<String>,
+    /// Recoverable notices, such as an ignored `v-memo`.
+    pub(crate) warnings: std::vec::Vec<String>,
     /// `Some` when a source map is requested.
     pub(crate) template_spans: Option<TemplateSpans>,
 }
@@ -51,6 +53,7 @@ impl<'a> TransformContext<'a> {
             non_reactive_keys: false,
             structural_slot_spans: false,
             diagnostics: std::vec::Vec::new(),
+            warnings: std::vec::Vec::new(),
             template_spans: None,
         }
     }
@@ -156,7 +159,7 @@ impl<'a> TransformContext<'a> {
         });
     }
 
-    pub(crate) fn push_diagnostic(&mut self, message: impl Into<String>) {
-        self.diagnostics.push(message.into());
+    pub(crate) fn push_warning(&mut self, message: impl Into<String>) {
+        self.warnings.push(message.into());
     }
 }

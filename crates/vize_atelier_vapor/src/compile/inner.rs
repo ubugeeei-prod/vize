@@ -208,6 +208,7 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
                 templates: Vec::new(),
                 map: None,
                 error_messages: fatal.iter().map(|e| e.message.clone()).collect(),
+                warning_messages: Vec::new(),
             },
             parser_diagnostics,
         );
@@ -237,6 +238,7 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
                     templates: Vec::new(),
                     map: None,
                     error_messages,
+                    warning_messages: Vec::new(),
                 },
                 parser_diagnostics,
             );
@@ -281,16 +283,18 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
                 templates: Vec::new(),
                 map: None,
                 error_messages: fatal.iter().map(|error| error.message.clone()).collect(),
+                warning_messages: Vec::new(),
             },
             diagnostics,
         );
     }
 
     // Lower to Vapor IR.
-    let (ir, transform_diagnostics, template_spans) =
+    let (ir, transform_diagnostics, transform_warnings, template_spans) =
         vapor_lower::transform_to_ir_with_spans(allocator, &root, source, scope_id, source_map);
     let spans = template_spans.map(|templates| VaporSourceSpans::collect(&root, templates));
-    let result = emit(&ir, transform_diagnostics, spans.as_ref());
+    let mut result = emit(&ir, transform_diagnostics, spans.as_ref());
+    result.warning_messages = transform_warnings;
     capture.finish(|| {
         if result.code.is_empty() || !result.error_messages.is_empty() {
             CaptureOutcome::Rejected(result.error_messages.first().cloned().unwrap_or_default())
@@ -329,5 +333,6 @@ fn generate(
         templates: result.templates,
         map: result.map,
         error_messages,
+        warning_messages: Vec::new(),
     }
 }

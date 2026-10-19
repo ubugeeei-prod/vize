@@ -103,9 +103,15 @@ pub(crate) fn compile_template_block_vapor(
         codegen_options.runtime_module_name.as_str(),
     )?;
 
+    let mut warnings = recoverable_template_warnings(&diagnostics);
+    warnings.extend(result.warning_messages.iter().map(|message| SfcError {
+        message: message.clone(),
+        code: Some("VAPOR_TEMPLATE_WARNING".to_compact_string()),
+        loc: Some(template.loc.clone()),
+    }));
     Ok(TemplateBlockCompileResult {
         code,
-        warnings: recoverable_template_warnings(&diagnostics),
+        warnings,
         sections: None,
     })
 }
