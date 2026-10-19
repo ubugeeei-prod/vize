@@ -1,22 +1,64 @@
 import { createHash } from "node:crypto";
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncOptionsWithStringEncoding } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
+
+type Rec = Readonly<Record<string, unknown>>;
+
+export interface BaselineRecord extends Rec {
+  readonly id: string;
+}
+
+export interface SfcFileEvidence extends Rec {
+  readonly project: string;
+  readonly path: string;
+  readonly verdict: string;
+}
+
+export interface SfcFileInput extends SfcFileEvidence {
+  readonly baseline: BaselineRecord;
+}
+
+export interface ExpectedSfcFile extends Rec {
+  readonly project: string;
+  readonly path: string;
+}
+
+export interface GlyphSfcEvidenceInput {
+  readonly availableBaselines?: readonly BaselineRecord[];
+  readonly files: readonly SfcFileInput[];
+  readonly sourceCommit: string;
+  readonly formatter: { readonly version: string; readonly binarySha256: string };
+  readonly waiverValidationError?: unknown;
+  readonly expectedFiles?: readonly ExpectedSfcFile[] | null;
+}
+
+function record(value: unknown): Rec {
+  return value != null && typeof value === "object" && !Array.isArray(value) ? (value as Rec) : {};
+}
+
+function text(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
 const hashPattern = /^[0-9a-f]{64}$/;
 const commitPattern = /^[0-9a-f]{40}$/;
-const verdicts = new Set(["equivalent", "semantic-diff", "baseline-unusable"]);
-const dialects = new Set(["0.10", "0.11", "1", "2", "2.7", "3"]);
-const failureStages = new Set([
+const verdicts: ReadonlySet<unknown> = new Set<string>([
+  "equivalent",
+  "semantic-diff",
+  "baseline-unusable",
+]);
+const dialects: ReadonlySet<unknown> = new Set<string>(["0.10", "0.11", "1", "2", "2.7", "3"]);
+const failureStages: ReadonlySet<unknown> = new Set<string>([
   "adapter-load",
   "comparison-harness",
   "sfc-parse",
   "template-compile",
   "semantic-normalize",
 ]);
-const baselineContracts = new Map([
+const baselineContracts = new Map<string, Rec>([
   [
     "unsupported-vue-0.10",
     { dialect: "0.10", package: null, version: null, normalization: "unavailable", options: {} },
@@ -72,9 +114,9 @@ const baselineContracts = new Map([
 ]);
 
 export function writeGlyphSfcEquivalenceEvidence(
-  input,
+  input: GlyphSfcEvidenceInput,
   reportDir = process.env.FIXTURE_REPORT_DIR,
-) {
+): string | null {
   if (reportDir == null || reportDir === "") return null;
   const artifact = createGlyphSfcEquivalenceEvidence(input);
   const output = resolve(repoRoot, reportDir, "glyph-sfc-dialect-equivalence.json");
@@ -83,13 +125,13 @@ export function writeGlyphSfcEquivalenceEvidence(
   return output;
 }
 
-export function createGlyphSfcEquivalenceEvidence(input) {
+export function createGlyphSfcEquivalenceEvidence(input: GlyphSfcEvidenceInput): Rec {
   const registryPath = resolve(repoRoot, "tests/_fixtures/vue-ecosystem-fixtures.json");
   const baselines = dedupeBaselines([
     ...(input.availableBaselines ?? []),
     ...input.files.map((file) => file.baseline),
   ]);
-  const files = input.files.map(({ baseline: _baseline, ...file }) => file);
+  const files: SfcFileEvidence[] = input.files.map(({ baseline: _baseline, ...file }) => file);
   const artifact = {
     schema: "vize.glyphSfcEquivalenceEvidence",
     version: 1,
@@ -108,35 +150,42 @@ export function createGlyphSfcEquivalenceEvidence(input) {
   return result;
 }
 
-export function validateGlyphSfcEquivalenceEvidence(artifact, expectedFiles = null) {
-  if (artifact?.schema !== "vize.glyphSfcEquivalenceEvidence" || artifact.version !== 1) {
+export function validateGlyphSfcEquivalenceEvidence(
+  value: unknown,
+  expectedFiles: readonly ExpectedSfcFile[] | null = null,
+): Rec {
+  const artifact = record(value);
+  if (artifact.schema !== "vize.glyphSfcEquivalenceEvidence" || artifact.version !== 1) {
     throw new Error("invalid glyph SFC equivalence artifact identity");
   }
-  if (!commitPattern.test(artifact.sourceCommit ?? "")) {
+  if (!commitPattern.test(text(artifact.sourceCommit))) {
     throw new Error("glyph SFC equivalence sourceCommit must be an exact commit");
   }
-  if (artifact.registry?.path !== "tests/_fixtures/vue-ecosystem-fixtures.json") {
+  const registry = record(artifact.registry);
+  const formatter = record(artifact.formatter);
+  if (registry.path !== "tests/_fixtures/vue-ecosystem-fixtures.json") {
     throw new Error("glyph SFC equivalence registry path is invalid");
   }
-  requireHash(artifact.registry.sha256, "registry sha256");
-  requireHash(artifact.formatter?.binarySha256, "formatter binary sha256");
-  if (typeof artifact.formatter?.version !== "string" || artifact.formatter.version.length === 0) {
+  requireHash(registry.sha256, "registry sha256");
+  requireHash(formatter.binarySha256, "formatter binary sha256");
+  if (text(formatter.version).length === 0) {
     throw new Error("formatter version must be non-empty");
   }
   const baselines = validateBaselines(artifact.baselines);
-  const identities = new Set();
-  for (const file of artifact.files ?? []) {
-    const identity = `${file.project}\0${file.path}`;
+  const identities = new Set<string>();
+  const artifactFiles: Rec[] = Array.isArray(artifact.files) ? artifact.files.map(record) : [];
+  for (const file of artifactFiles) {
+    const identity = `${text(file.project)}\0${text(file.path)}`;
     if (identities.has(identity)) throw new Error(`duplicate glyph SFC evidence: ${identity}`);
     identities.add(identity);
-    const baseline = baselines.get(file.baselineId);
+    const baseline = baselines.get(text(file.baselineId));
     if (baseline == null || baseline.dialect !== file.dialect) {
-      throw new Error(`baseline/dialect mismatch for ${file.project}:${file.path}`);
+      throw new Error(`baseline/dialect mismatch for ${text(file.project)}:${text(file.path)}`);
     }
-    if (!commitPattern.test(file.revision ?? "")) {
+    if (!commitPattern.test(text(file.revision))) {
       throw new Error(`fixture revision must be an exact commit for ${identity}`);
     }
-    if (!/^[a-z][a-z0-9-]*$/.test(file.routeId ?? "")) {
+    if (!/^[a-z][a-z0-9-]*$/.test(text(file.routeId))) {
       throw new Error(`invalid routeId for ${identity}`);
     }
     for (const field of ["originalSha256", "formattedSha256"]) {
@@ -148,16 +197,20 @@ export function validateGlyphSfcEquivalenceEvidence(artifact, expectedFiles = nu
     validateVerdict(file, identity);
   }
   if (expectedFiles != null) {
-    const expected = new Map(expectedFiles.map((file) => [`${file.project}\0${file.path}`, file]));
+    const expected = new Map<string, ExpectedSfcFile>(
+      expectedFiles.map((file) => [`${file.project}\0${file.path}`, file] as const),
+    );
     if (expected.size !== expectedFiles.length)
       throw new Error("expected glyph SFC files are duplicate");
     for (const [identity, expectedFile] of expected) {
       if (!identities.has(identity)) {
         throw new Error(`missing glyph SFC evidence: ${JSON.stringify(identity)}`);
       }
-      const actual = artifact.files.find((file) => `${file.project}\0${file.path}` === identity);
+      const actual = artifactFiles.find(
+        (file) => `${text(file.project)}\0${text(file.path)}` === identity,
+      );
       for (const field of ["revision", "routeId", "dialect", "baselineId"]) {
-        if (expectedFile[field] != null && actual[field] !== expectedFile[field]) {
+        if (expectedFile[field] != null && actual?.[field] !== expectedFile[field]) {
           throw new Error(`glyph SFC evidence ${field} mismatch: ${JSON.stringify(identity)}`);
         }
       }
@@ -168,7 +221,7 @@ export function validateGlyphSfcEquivalenceEvidence(artifact, expectedFiles = nu
       }
     }
   }
-  const summary = summarize(artifact.files, artifact.summary.waiverValidationError);
+  const summary = summarize(artifactFiles, record(artifact.summary).waiverValidationError);
   if (canonicalJson(summary) !== canonicalJson(artifact.summary)) {
     throw new Error("glyph SFC equivalence summary does not match files");
   }
@@ -180,7 +233,10 @@ export function validateGlyphSfcEquivalenceEvidence(artifact, expectedFiles = nu
   return artifact;
 }
 
-export function formatterEvidence(command, version) {
+export function formatterEvidence(
+  command: string,
+  version: unknown,
+): { version: string; binarySha256: string } {
   if (!existsSync(command)) throw new Error(`formatter evidence binary is missing: ${command}`);
   if (typeof version !== "string" || version.trim() === "") {
     throw new Error("formatter evidence version must be non-empty");
@@ -188,7 +244,16 @@ export function formatterEvidence(command, version) {
   return { version: version.trim(), binarySha256: sha256(readFileSync(command)) };
 }
 
-export function evidenceSourceCommit(environment = process.env, runGit = spawnSync) {
+type RunGit = (
+  command: string,
+  args: readonly string[],
+  options: SpawnSyncOptionsWithStringEncoding,
+) => { readonly status: number | null; readonly stdout: string; readonly stderr: string };
+
+export function evidenceSourceCommit(
+  environment: Readonly<Record<string, string | undefined>> = process.env,
+  runGit: RunGit = spawnSync,
+): string {
   const environmentSha = environment.GITHUB_SHA;
   if (environmentSha != null) return requireCommit(environmentSha, "GITHUB_SHA");
   const result = runGit("git", ["rev-parse", "HEAD"], {
@@ -201,9 +266,9 @@ export function evidenceSourceCommit(environment = process.env, runGit = spawnSy
   return requireCommit(result.stdout.trim(), "git rev-parse HEAD");
 }
 
-function validateBaselines(records) {
-  const baselines = new Map();
-  for (const baseline of records ?? []) {
+function validateBaselines(records: unknown): Map<string, Rec> {
+  const baselines = new Map<string, Rec>();
+  for (const baseline of (Array.isArray(records) ? records : []).map(record)) {
     if (typeof baseline.id !== "string" || baseline.id.length === 0) {
       throw new Error("baseline id must be non-empty");
     }
@@ -252,14 +317,14 @@ function validateBaselines(records) {
   return baselines;
 }
 
-function validateVerdict(file, identity) {
+function validateVerdict(file: Rec, identity: string): void {
   if (
     !Array.isArray(file.differences) ||
     file.differences.some((value) => typeof value !== "string")
   ) {
     throw new Error(`glyph SFC evidence differences must be strings: ${identity}`);
   }
-  const differences = file.differences;
+  const differences = file.differences as readonly string[];
   if (file.verdict === "equivalent") {
     if (
       file.reasonCode != null ||
@@ -284,7 +349,7 @@ function validateVerdict(file, identity) {
     requireHash(file.afterSemanticSha256, `${identity} after semantic sha256`);
     return;
   }
-  const failureContracts = new Map([
+  const failureContracts = new Map<unknown, { verdict: string; side: string }>([
     ["original-baseline-unusable", { verdict: "baseline-unusable", side: "original" }],
     ["formatted-baseline-unusable", { verdict: "semantic-diff", side: "formatted" }],
     ["comparison-harness-unusable", { verdict: "baseline-unusable", side: "harness" }],
@@ -293,24 +358,25 @@ function validateVerdict(file, identity) {
   if (contract == null) {
     throw new Error(`non-equivalent glyph SFC evidence reason is invalid: ${identity}`);
   }
-  if (file.verdict !== contract.verdict || file.failure?.side !== contract.side) {
-    throw new Error(`${file.reasonCode} ownership is invalid: ${identity}`);
+  const failure = record(file.failure);
+  if (file.verdict !== contract.verdict || failure.side !== contract.side) {
+    throw new Error(`${text(file.reasonCode)} ownership is invalid: ${identity}`);
   }
   if (
-    typeof file.failure.stage !== "string" ||
-    !failureStages.has(file.failure.stage) ||
-    typeof file.failure.message !== "string" ||
-    file.failure.message.length === 0
+    typeof failure.stage !== "string" ||
+    !failureStages.has(failure.stage) ||
+    typeof failure.message !== "string" ||
+    failure.message.length === 0
   ) {
     throw new Error(`glyph SFC baseline failure is incomplete: ${identity}`);
   }
   if (
     (file.reasonCode === "comparison-harness-unusable") !==
-    (file.failure.stage === "comparison-harness")
+    (failure.stage === "comparison-harness")
   ) {
     throw new Error(`glyph SFC baseline failure stage ownership is invalid: ${identity}`);
   }
-  if (!differences.includes(`${file.failure.stage}: ${file.failure.message}`)) {
+  if (!differences.includes(`${failure.stage}: ${failure.message}`)) {
     throw new Error(`glyph SFC baseline failure detail is missing: ${identity}`);
   }
   if (file.beforeSemanticSha256 != null || file.afterSemanticSha256 != null) {
@@ -318,8 +384,8 @@ function validateVerdict(file, identity) {
   }
 }
 
-function dedupeBaselines(baselineInputs) {
-  const records = new Map();
+function dedupeBaselines(baselineInputs: readonly BaselineRecord[]): BaselineRecord[] {
+  const records = new Map<string, BaselineRecord>();
   for (const baseline of baselineInputs) {
     const encoded = canonicalJson(baseline);
     const existing = records.get(baseline.id);
@@ -331,11 +397,14 @@ function dedupeBaselines(baselineInputs) {
   return [...records.values()].sort((left, right) => codePointCompare(left.id, right.id));
 }
 
-function summarize(files, waiverValidationError) {
-  const counts = Object.fromEntries([...verdicts].map((verdict) => [verdict, 0]));
+function summarize(files: readonly Rec[], waiverValidationError: unknown): Rec {
+  const counts: Record<string, number> = Object.fromEntries(
+    [...verdicts].map((verdict) => [String(verdict), 0]),
+  );
   let waivedDifferenceCount = 0;
   for (const file of files) {
-    counts[file.verdict] += 1;
+    const verdict = text(file.verdict);
+    counts[verdict] = (counts[verdict] ?? 0) + 1;
     if (file.waiver != null) waivedDifferenceCount += 1;
   }
   return {
@@ -346,34 +415,34 @@ function summarize(files, waiverValidationError) {
   };
 }
 
-function compareFiles(left, right) {
+function compareFiles(left: SfcFileEvidence, right: SfcFileEvidence): number {
   return codePointCompare(left.project, right.project) || codePointCompare(left.path, right.path);
 }
 
-function codePointCompare(left, right) {
+function codePointCompare(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function canonicalJson(value) {
+function canonicalJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
   if (value != null && typeof value === "object") {
     return `{${Object.keys(value)
       .sort()
-      .map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`)
+      .map((key) => `${JSON.stringify(key)}:${canonicalJson((value as Rec)[key])}`)
       .join(",")}}`;
   }
-  return JSON.stringify(value);
+  return JSON.stringify(value) as string;
 }
 
-function requireHash(value, label) {
-  if (!hashPattern.test(value ?? "")) throw new Error(`${label} must be a sha256`);
+function requireHash(value: unknown, label: string): void {
+  if (!hashPattern.test(text(value))) throw new Error(`${label} must be a sha256`);
 }
 
-function requireCommit(value, label) {
-  if (!commitPattern.test(value ?? "")) throw new Error(`${label} must be an exact commit`);
+function requireCommit(value: string, label: string): string {
+  if (!commitPattern.test(value)) throw new Error(`${label} must be an exact commit`);
   return value;
 }
 
-function sha256(value) {
+function sha256(value: string | Uint8Array): string {
   return createHash("sha256").update(value).digest("hex");
 }

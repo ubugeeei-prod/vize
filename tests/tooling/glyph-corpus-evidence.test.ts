@@ -8,7 +8,7 @@ import {
   loadKnownViolations,
   selectGlyphCorpusProjects,
   writeGlyphCorpusPropertyEvidence,
-} from "../../tools/support/compat/fixtures/glyph-corpus.mjs";
+} from "../../tools/support/compat/fixtures/glyph-corpus.ts";
 
 const validEntry = {
   property: "parse-preservation",

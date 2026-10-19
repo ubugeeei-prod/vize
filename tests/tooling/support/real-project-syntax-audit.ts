@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { collectVueInputPaths } from "../../../tools/support/compat/fixtures/tool-matrix-inputs.mjs";
+import { collectVueInputPaths } from "../../../tools/support/compat/fixtures/tool-matrix-inputs.ts";
 import {
   resolveCommitSha,
   writeDivergenceEvidence,

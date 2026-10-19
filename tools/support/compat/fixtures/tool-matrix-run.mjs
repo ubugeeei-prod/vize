@@ -21,12 +21,12 @@ import {
   typecheckCorpusGlobs,
   typecheckSourceTsconfig,
 } from "./tool-matrix-command.mjs";
-import { snapshotFormatterInputs, validateFormatterOutput } from "./tool-matrix-formatter.mjs";
+import { snapshotFormatterInputs, validateFormatterOutput } from "./tool-matrix-formatter.ts";
 import {
   collectTypecheckerAuthoredPaths,
   collectVueInputPaths,
   prepareScriptSourceScope,
-} from "./tool-matrix-inputs.mjs";
+} from "./tool-matrix-inputs.ts";
 import { validateLinterOutput } from "./tool-matrix-linter.mjs";
 import { validatedFileCount } from "./tool-matrix-metrics.ts";
 import {

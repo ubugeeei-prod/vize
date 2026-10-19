@@ -2,19 +2,36 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { auditKnownViolationIssues, loadKnownViolationLedger } from "./glyph-corpus.mjs";
+import { auditKnownViolationIssues, loadKnownViolationLedger } from "./glyph-corpus.ts";
+import type { KnownViolation } from "./glyph-corpus-waivers.ts";
 
-function parseArguments(argv) {
-  if (argv.length !== 2 || argv[0] !== "--output" || argv[1].startsWith("-")) {
-    throw new Error("usage: node glyph-corpus-waiver-audit.mjs --output <path>");
-  }
-  return resolve(argv[1]);
+type Environment = Readonly<Record<string, string | undefined>>;
+type Request = (url: string, init: { headers: Record<string, string> }) => Promise<Response>;
+
+interface IssueRecord {
+  readonly number: unknown;
+  readonly state: unknown;
+  readonly title: unknown;
+  readonly url: unknown;
+  readonly updatedAt: unknown;
 }
 
-async function resolveGitHubIssue(number, environment, request = fetch) {
+function parseArguments(argv: readonly string[]): string {
+  const [flag, output] = argv;
+  if (argv.length !== 2 || flag !== "--output" || output === undefined || output.startsWith("-")) {
+    throw new Error("usage: node glyph-corpus-waiver-audit.ts --output <path>");
+  }
+  return resolve(output);
+}
+
+async function resolveGitHubIssue(
+  number: number,
+  environment: Environment,
+  request: Request = fetch,
+): Promise<IssueRecord> {
   const repository = environment.GITHUB_REPOSITORY ?? "ubugeeei-prod/vize";
   const apiUrl = environment.GITHUB_API_URL ?? "https://api.github.com";
-  const headers = {
+  const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
   };
@@ -23,7 +40,7 @@ async function resolveGitHubIssue(number, environment, request = fetch) {
   if (!response.ok) {
     throw new Error(`tracking Issue #${number} lookup failed with HTTP ${response.status}`);
   }
-  const issue = await response.json();
+  const issue = (await response.json()) as Partial<Record<string, unknown>>;
   return {
     number: issue.number,
     state: issue.state,
@@ -33,11 +50,15 @@ async function resolveGitHubIssue(number, environment, request = fetch) {
   };
 }
 
-export async function createWaiverIssueAudit(entries, environment = process.env, request = fetch) {
+export async function createWaiverIssueAudit(
+  entries: readonly KnownViolation[],
+  environment: Environment = process.env,
+  request: Request = fetch,
+) {
   const issues = await auditKnownViolationIssues(entries, (number) =>
     resolveGitHubIssue(number, environment, request),
   );
-  const waiverCounts = new Map();
+  const waiverCounts = new Map<number, number>();
   for (const entry of entries) {
     waiverCounts.set(entry.trackingIssue, (waiverCounts.get(entry.trackingIssue) ?? 0) + 1);
   }

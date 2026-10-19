@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { isAbsolute } from "node:path";
-import { validateScriptScope } from "./tool-matrix-inputs.mjs";
+import { validateScriptScope } from "./tool-matrix-inputs.ts";
 
 const outputKeys = ["errorCount", "fileCount", "files", "programs", "warningCount"];
 const fileKeys = ["diagnostics", "file"];

@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import {
   collectOwnedScriptFiles,
   prepareScriptSourceScope,
-} from "../../tools/support/compat/fixtures/tool-matrix-inputs.mjs";
+} from "../../tools/support/compat/fixtures/tool-matrix-inputs.ts";
 import { runTool } from "../../tools/support/compat/fixtures/tool-matrix-run.mjs";
 import { toolArgs } from "../../tools/support/compat/fixtures/tool-matrix-command.mjs";
 import { validateTypecheckerOutput } from "../../tools/support/compat/fixtures/tool-matrix-typechecker.mjs";

@@ -4,13 +4,13 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { createFormatterChangeEvidence } from "../../tools/support/compat/fixtures/tool-matrix-formatter.mjs";
+import { createFormatterChangeEvidence } from "../../tools/support/compat/fixtures/tool-matrix-formatter.ts";
 import {
   collectFormatterWriteEvidence,
   collectProjectVueFiles,
   resolveGlyphLaunch,
   withFormattedWorkspace,
-} from "../../tools/support/compat/fixtures/glyph-corpus.mjs";
+} from "../../tools/support/compat/fixtures/glyph-corpus.ts";
 
 type CorpusProject = {
   id: string;

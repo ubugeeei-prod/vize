@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import {
   snapshotFormatterInputs,
   validateFormatterOutput,
-} from "../../tools/support/compat/fixtures/tool-matrix-formatter.mjs";
+} from "../../tools/support/compat/fixtures/tool-matrix-formatter.ts";
 import { runTool } from "../../tools/support/compat/fixtures/tool-matrix-run.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");

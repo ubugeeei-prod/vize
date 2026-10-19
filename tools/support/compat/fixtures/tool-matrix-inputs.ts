@@ -15,11 +15,11 @@ const typecheckerAuthoredGlobs = [
   "cjs",
 ].flatMap((extension) => [`**/*.${extension}`, `**/.*/**/*.${extension}`]);
 
-export function collectVueInputPaths(cwd, patterns) {
+export function collectVueInputPaths(cwd: string, patterns: readonly string[]): string[] {
   return collectInputPaths(cwd, patterns);
 }
 
-export function collectInputPaths(cwd, patterns) {
+export function collectInputPaths(cwd: string, patterns: readonly string[]): string[] {
   return [
     ...new Set(
       patterns.flatMap((pattern) =>
@@ -36,7 +36,7 @@ export function collectInputPaths(cwd, patterns) {
     .map(({ file }) => file);
 }
 
-function expandHiddenRecursiveGlobs(pattern) {
+function expandHiddenRecursiveGlobs(pattern: string): string[] {
   const normalized = pattern.replaceAll("\\", "/");
   if (!normalized.includes("**/")) return [pattern];
   return [
@@ -51,8 +51,8 @@ function expandHiddenRecursiveGlobs(pattern) {
   ];
 }
 
-function recursiveGlobIndexes(pattern) {
-  const indexes = [];
+function recursiveGlobIndexes(pattern: string): number[] {
+  const indexes: number[] = [];
   let start = 0;
   while (true) {
     const index = pattern.indexOf("**/", start);
@@ -62,14 +62,14 @@ function recursiveGlobIndexes(pattern) {
   }
 }
 
-export function collectTypecheckerAuthoredPaths(cwd) {
+export function collectTypecheckerAuthoredPaths(cwd: string): string[] {
   return collectVueInputPaths(cwd, typecheckerAuthoredGlobs);
 }
 
-export function collectOwnedScriptFiles(cwd) {
+export function collectOwnedScriptFiles(cwd: string): string[] {
   const root = realpathSync(cwd);
-  const files = [];
-  function walk(directory, ancestors) {
+  const files: string[] = [];
+  function walk(directory: string, ancestors: readonly string[]): void {
     const canonical = realpathSync(directory);
     if (relative(root, canonical).split(/[/\\]/).includes(".."))
       throw new Error(`fixture script ownership escapes root: ${directory}`);
@@ -95,18 +95,44 @@ export function collectOwnedScriptFiles(cwd) {
   return [...new Set(files)].sort((a, b) => Buffer.compare(Buffer.from(a), Buffer.from(b)));
 }
 
-export function prepareScriptSourceScope(cwd, tsconfig) {
+export interface ScriptScopeFile {
+  readonly file: string;
+  readonly bytes: number;
+  readonly sha256: string;
+}
+
+export interface ScriptSourceScope {
+  readonly schema: "vize.fixtureScriptSourceScan";
+  readonly version: 1;
+  readonly tsconfig: string;
+  readonly files: readonly ScriptScopeFile[];
+  readonly roots: readonly string[];
+  readonly config: ScriptScopeConfig;
+  readonly configSha256: string;
+}
+
+interface ScriptScopeConfig {
+  readonly compilerOptions: {
+    readonly allowJs: true;
+    readonly checkJs: true;
+    readonly jsx: "preserve";
+  };
+  readonly files: readonly string[];
+  readonly include: readonly never[];
+}
+
+function scriptScopeConfig(files: readonly string[]): ScriptScopeConfig {
+  return { compilerOptions: { allowJs: true, checkJs: true, jsx: "preserve" }, files, include: [] };
+}
+
+export function prepareScriptSourceScope(cwd: string, tsconfig: string): ScriptSourceScope {
   const files = collectOwnedScriptFiles(cwd);
   const roots = files.filter((file) => !/\.d\.(?:ts|mts|cts)$/.test(file));
   if (roots.length === 0)
     throw new Error(
       "zero-Vue fixture has no physical script roots; no files may be reported checked",
     );
-  const config = {
-    compilerOptions: { allowJs: true, checkJs: true, jsx: "preserve" },
-    files,
-    include: [],
-  };
+  const config = scriptScopeConfig(files);
   return {
     schema: "vize.fixtureScriptSourceScan",
     version: 1,
@@ -127,30 +153,57 @@ export function prepareScriptSourceScope(cwd, tsconfig) {
   };
 }
 
-export function validateScriptScope(project, output, expectedFiles, authoredFiles, scope) {
-  const invalid = (message) => {
+type JsonRecord = Readonly<Record<string, unknown>>;
+
+function isRecord(value: unknown): value is JsonRecord {
+  return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+export interface ScriptScopeProject {
+  readonly id: unknown;
+  readonly expectedVueFileCount: number;
+  readonly tsconfig?: unknown;
+  readonly typecheckPerformance?: { readonly baseline?: { readonly tsconfig?: unknown } };
+}
+
+const byteOrder = (left: string, right: string): number =>
+  Buffer.compare(Buffer.from(left), Buffer.from(right));
+
+export function validateScriptScope(
+  project: ScriptScopeProject,
+  output: JsonRecord,
+  expectedFiles: unknown,
+  authoredFiles: readonly string[],
+  scope: unknown,
+): void {
+  const invalid = (message: string): never => {
     throw new Error(`invalid typechecker JSON output: ${message}`);
   };
-  const requireRecord = (value, label) => {
-    if (value == null || typeof value !== "object" || Array.isArray(value))
-      invalid(`${label} must be an object`);
-  };
-  const requireExactKeys = (value, expected, label) => {
+  const requireRecord = (value: unknown, label: string): JsonRecord =>
+    isRecord(value) ? value : invalid(`${label} must be an object`);
+  const requireExactKeys = (value: JsonRecord, expected: readonly string[], label: string) => {
     if (JSON.stringify(Object.keys(value).sort()) !== JSON.stringify(expected))
       invalid(`${label} keys are invalid`);
   };
-  const isDependencySource = (file) =>
+  const isDependencySource = (file: unknown) =>
     typeof file === "string" && file.split("/").includes("node_modules");
-  const validateManifestInput = (files, label, accepts) => {
+  const validateManifestInput = (
+    files: readonly unknown[],
+    label: string,
+    accepts: (file: string) => boolean,
+  ): string[] => {
+    const strings = files.map((file) =>
+      typeof file === "string"
+        ? file
+        : invalid(`${label} contains an unsupported normalized source path`),
+    );
     if (
-      new Set(files).size !== files.length ||
-      JSON.stringify(files) !==
-        JSON.stringify([...files].sort((a, b) => Buffer.compare(Buffer.from(a), Buffer.from(b))))
+      new Set(strings).size !== strings.length ||
+      JSON.stringify(strings) !== JSON.stringify([...strings].sort(byteOrder))
     )
       invalid(`${label} order/duplicates are invalid`);
-    for (const file of files) {
+    for (const file of strings) {
       if (
-        typeof file !== "string" ||
         isAbsolute(file) ||
         /^[A-Za-z]:/.test(file) ||
         file.includes("\\") ||
@@ -159,6 +212,7 @@ export function validateScriptScope(project, output, expectedFiles, authoredFile
       )
         invalid(`${label} contains an unsupported normalized source path`);
     }
+    return strings;
   };
   if (
     project.expectedVueFileCount !== 0 ||
@@ -168,34 +222,37 @@ export function validateScriptScope(project, output, expectedFiles, authoredFile
     expectedFiles.length !== 0
   )
     invalid("script scope is only valid for an owned generated zero-Vue project");
-  requireRecord(scope, "script scope");
+  const record = requireRecord(scope, "script scope");
   requireExactKeys(
-    scope,
+    record,
     ["config", "configSha256", "files", "roots", "schema", "tsconfig", "version"],
     "script scope",
   );
   if (
-    scope.schema !== "vize.fixtureScriptSourceScan" ||
-    scope.version !== 1 ||
-    scope.tsconfig !==
+    record.schema !== "vize.fixtureScriptSourceScan" ||
+    record.version !== 1 ||
+    record.tsconfig !==
       `.vize-fixture-typecheck-${String(project.id).replaceAll(/[^A-Za-z0-9_.-]/g, "_")}.tsconfig.json`
   )
     invalid("script scope identity is invalid");
-  if (!Array.isArray(scope.files) || scope.files.length === 0)
+  if (!Array.isArray(record.files) || record.files.length === 0)
     invalid("script scope has no physical files");
-  const files = scope.files.map((record) => {
-    requireRecord(record, "script file");
-    requireExactKeys(record, ["bytes", "file", "sha256"], "script file");
+  const fileRecords: readonly unknown[] = Array.isArray(record.files) ? record.files : [];
+  const listed = fileRecords.map((entry) => {
+    const file = requireRecord(entry, "script file");
+    requireExactKeys(file, ["bytes", "file", "sha256"], "script file");
     if (
-      !Number.isSafeInteger(record.bytes) ||
-      record.bytes < 0 ||
-      !/^[a-f0-9]{64}$/.test(record.sha256)
+      typeof file.bytes !== "number" ||
+      !Number.isSafeInteger(file.bytes) ||
+      file.bytes < 0 ||
+      typeof file.sha256 !== "string" ||
+      !/^[a-f0-9]{64}$/.test(file.sha256)
     )
       invalid("script file bytes/hash are invalid");
-    return record.file;
+    return file.file;
   });
-  validateManifestInput(
-    files,
+  const files = validateManifestInput(
+    listed,
     "physical script files",
     (file) =>
       /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/.test(file) &&
@@ -205,43 +262,49 @@ export function validateScriptScope(project, output, expectedFiles, authoredFile
   if (files.some((file) => !authoredFiles.includes(file)))
     invalid("physical script file is not an authored fixture source");
   const roots = files.filter((file) => !/\.d\.(?:ts|mts|cts)$/.test(file));
-  const config = {
-    compilerOptions: { allowJs: true, checkJs: true, jsx: "preserve" },
-    files,
-    include: [],
-  };
+  const config = scriptScopeConfig(files);
   if (
     roots.length === 0 ||
-    JSON.stringify(scope.roots) !== JSON.stringify(roots) ||
-    JSON.stringify(scope.config) !== JSON.stringify(config) ||
-    scope.configSha256 !==
+    JSON.stringify(record.roots) !== JSON.stringify(roots) ||
+    JSON.stringify(record.config) !== JSON.stringify(config) ||
+    record.configSha256 !==
       createHash("sha256")
         .update(JSON.stringify(config, null, 2) + "\n")
         .digest("hex")
   )
     invalid("script scope config/files/roots are inconsistent");
+  const checked = output.files;
+  const fileCount = typeof output.fileCount === "number" ? output.fileCount : undefined;
   if (
-    !Array.isArray(output.files) ||
+    !Array.isArray(checked) ||
     roots.some(
       (root) =>
         !authoredFiles.includes(root) ||
-        !output.files.slice(0, output.fileCount).some((record) => record.file === root),
+        !checked
+          .slice(0, fileCount)
+          .some((entry: unknown) => isRecord(entry) && entry.file === root),
     )
   )
     invalid("physical script root was not checked");
   const programs = output.programs;
+  const program: unknown = Array.isArray(programs) ? programs[0] : undefined;
   if (
     !Array.isArray(programs) ||
     programs.length !== 1 ||
-    programs[0].root !== "." ||
-    programs[0].tsconfig !== scope.tsconfig ||
-    JSON.stringify(programs[0].compilerOptions) !== JSON.stringify(config.compilerOptions)
+    !isRecord(program) ||
+    program.root !== "." ||
+    program.tsconfig !== record.tsconfig ||
+    JSON.stringify(program.compilerOptions) !== JSON.stringify(config.compilerOptions)
   )
-    invalid("script scope has a foreign or altered owning program");
+    return invalid("script scope has a foreign or altered owning program");
+  const programFiles = program.files;
   if (
-    !Array.isArray(programs[0].files) ||
-    roots.some((root) => !programs[0].files.includes(root)) ||
-    programs[0].files.some((file) => !files.includes(file) && !isDependencySource(file))
+    !Array.isArray(programFiles) ||
+    roots.some((root) => !programFiles.includes(root)) ||
+    programFiles.some(
+      (file: unknown) =>
+        !(typeof file === "string" && files.includes(file)) && !isDependencySource(file),
+    )
   )
     invalid("script root is missing from or foreign to its owning program");
 }

@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   cpSync,
@@ -16,9 +16,14 @@ import { fileURLToPath } from "node:url";
 import {
   createFormatterChangeEvidence,
   validateFormatterChangeEvidence,
-} from "./tool-matrix-formatter.mjs";
-import { collectVueInputPaths } from "./tool-matrix-inputs.mjs";
-import { readKnownViolationLedger } from "./glyph-corpus-waivers.mjs";
+} from "./tool-matrix-formatter.ts";
+import { collectVueInputPaths } from "./tool-matrix-inputs.ts";
+import {
+  readKnownViolationLedger,
+  type GlyphProperty,
+  type KnownViolation,
+} from "./glyph-corpus-waivers.ts";
+import type { FormatterChangeEvidence } from "./tool-matrix-formatter.ts";
 
 export {
   assertHydratedKnownViolationPaths,
@@ -26,7 +31,7 @@ export {
   createKnownViolationConsumption,
   validateKnownViolationEntries,
   writeGlyphCorpusPropertyEvidence,
-} from "./glyph-corpus-waivers.mjs";
+} from "./glyph-corpus-waivers.ts";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 const registryPath = join(repoRoot, "tests", "_fixtures", "vue-ecosystem-fixtures.json");
@@ -39,26 +44,78 @@ const knownViolationsPath = join(
 const workspaceRoot = join(repoRoot, "target", "vize-tests", "glyph-corpus");
 const maxFilesEnv = "VIZE_GLYPH_CORPUS_MAX_FILES_PER_PROJECT";
 
+export interface RegistryProject {
+  readonly id: string;
+  readonly fixturePath: string;
+  readonly coverage: string[];
+  readonly expectedVueFileCount?: number;
+  readonly vueGlobs: string[];
+  readonly revision?: string;
+  readonly [field: string]: unknown;
+}
+
+export interface CorpusWorkspaceProject {
+  readonly id: string;
+  readonly fixtureDir: string;
+  readonly vueGlobs: readonly string[];
+}
+
+export interface GlyphCorpusProject extends RegistryProject {
+  readonly fixtureDir: string;
+  readonly hydrated: boolean;
+}
+
+export interface GlyphLaunch {
+  readonly command: string;
+  readonly prefix: string[];
+  readonly evidenceCommand: string;
+}
+
+type Environment = Readonly<Record<string, string | undefined>>;
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function registryProject(value: unknown): RegistryProject {
+  const project = value as Partial<Record<string, unknown>> | null;
+  if (
+    project == null ||
+    typeof project !== "object" ||
+    typeof project.id !== "string" ||
+    typeof project.fixturePath !== "string" ||
+    !isStringArray(project.coverage) ||
+    (project.expectedVueFileCount !== undefined &&
+      typeof project.expectedVueFileCount !== "number") ||
+    !isStringArray(project.vueGlobs)
+  )
+    throw new Error("invalid Vue ecosystem fixture registry project");
+  return project as RegistryProject;
+}
+
 /**
  * Registry projects the glyph property suites sweep: every project that
  * declares formatter coverage and pins at least one Vue SFC. Hydration is
  * per-project. Matrix lanes pass `FIXTURE_SHARD_INDEX`/`FIXTURE_SHARD_COUNT`,
  * so shared fixture paths never make sibling registry ids look selected.
  */
-export function loadGlyphCorpusProjects() {
+export function loadGlyphCorpusProjects(): GlyphCorpusProject[] {
   return materializeGlyphCorpusProjects(selectGlyphCorpusProjects(readGlyphCorpusRegistry()));
 }
 
-function loadAllGlyphCorpusProjects() {
+function loadAllGlyphCorpusProjects(): GlyphCorpusProject[] {
   return materializeGlyphCorpusProjects(selectGlyphCorpusProjects(readGlyphCorpusRegistry(), {}));
 }
 
-function readGlyphCorpusRegistry() {
-  const registry = JSON.parse(readFileSync(registryPath, "utf8"));
-  return registry.projects;
+function readGlyphCorpusRegistry(): RegistryProject[] {
+  const registry = JSON.parse(readFileSync(registryPath, "utf8")) as { projects?: unknown };
+  if (!Array.isArray(registry.projects)) throw new Error("fixture registry has no projects");
+  return registry.projects.map(registryProject);
 }
 
-function materializeGlyphCorpusProjects(projects) {
+function materializeGlyphCorpusProjects(
+  projects: readonly RegistryProject[],
+): GlyphCorpusProject[] {
   return projects.map((project) => {
     const fixtureDir = resolve(repoRoot, project.fixturePath);
     const hydrated = existsSync(fixtureDir) && readdirSync(fixtureDir).length > 0;
@@ -66,7 +123,9 @@ function materializeGlyphCorpusProjects(projects) {
   });
 }
 
-export function selectGlyphCorpusProjects(projects, environment = process.env) {
+export function selectGlyphCorpusProjects<
+  Project extends { readonly coverage: readonly string[]; readonly expectedVueFileCount?: number },
+>(projects: readonly Project[], environment: Environment = process.env): Project[] {
   const shardIndex = environment.FIXTURE_SHARD_INDEX;
   const shardCount = environment.FIXTURE_SHARD_COUNT;
   if ((shardIndex == null) !== (shardCount == null)) {
@@ -81,7 +140,11 @@ export function selectGlyphCorpusProjects(projects, environment = process.env) {
   );
 }
 
-function selectGlyphShard(projects, shardIndex, shardCount) {
+function selectGlyphShard<Project>(
+  projects: readonly Project[],
+  shardIndex: string,
+  shardCount: string,
+): Project[] {
   const index = nonNegativeInteger(shardIndex, "FIXTURE_SHARD_INDEX");
   const count = positiveInteger(shardCount, "FIXTURE_SHARD_COUNT");
   if (index >= count) throw new Error("FIXTURE_SHARD_INDEX must be less than FIXTURE_SHARD_COUNT");
@@ -89,7 +152,7 @@ function selectGlyphShard(projects, shardIndex, shardCount) {
 }
 
 /** Collect the project's registered Vue inputs, honoring the optional cap. */
-export function collectProjectVueFiles(project) {
+export function collectProjectVueFiles(project: CorpusWorkspaceProject): string[] {
   const files = collectVueInputPaths(project.fixtureDir, project.vueGlobs);
   const rawCap = process.env[maxFilesEnv];
   if (rawCap == null || rawCap === "") return files;
@@ -105,7 +168,7 @@ export function collectProjectVueFiles(project) {
  * and `VIZE_BIN` take precedence, then staged build profiles, then a `cargo
  * run` fallback so the suite still works on a clean checkout.
  */
-export function resolveGlyphLaunch() {
+export function resolveGlyphLaunch(): GlyphLaunch {
   const executable = process.platform === "win32" ? "vize.exe" : "vize";
   const candidates = [
     process.env.VIZE_TEST_BIN,
@@ -114,7 +177,7 @@ export function resolveGlyphLaunch() {
     join(repoRoot, "target", "debug", executable),
     join(repoRoot, "target", "release", executable),
   ]
-    .filter(Boolean)
+    .filter((candidate): candidate is string => Boolean(candidate))
     .map((candidate) => resolve(repoRoot, candidate));
   for (const candidate of candidates) {
     if (!existsSync(candidate)) continue;
@@ -137,8 +200,12 @@ export function resolveGlyphLaunch() {
   };
 }
 
-export function cargoEvidenceCommand(metadataJson, platform = process.platform) {
-  const targetDirectory = JSON.parse(metadataJson).target_directory;
+export function cargoEvidenceCommand(
+  metadataJson: string,
+  platform: NodeJS.Platform = process.platform,
+): string {
+  const metadata = JSON.parse(metadataJson) as { target_directory?: unknown } | null;
+  const targetDirectory = metadata?.target_directory;
   if (typeof targetDirectory !== "string" || targetDirectory === "") {
     throw new Error("cargo metadata omitted target_directory for formatter evidence");
   }
@@ -146,7 +213,12 @@ export function cargoEvidenceCommand(metadataJson, platform = process.platform) 
 }
 
 /** Run a vize subcommand from `cwd`, returning the raw process result. */
-export function runVize(launch, cwd, args, timeoutMs = 600_000) {
+export function runVize(
+  launch: Pick<GlyphLaunch, "command" | "prefix">,
+  cwd: string,
+  args: readonly string[],
+  timeoutMs = 600_000,
+): SpawnSyncReturns<string> {
   const result = spawnSync(launch.command, [...launch.prefix, ...args], {
     cwd,
     encoding: "utf8",
@@ -155,7 +227,7 @@ export function runVize(launch, cwd, args, timeoutMs = 600_000) {
     timeout: timeoutMs,
   });
   if (result.error != null) {
-    throw new Error(`vize ${args[0]} failed to spawn in ${cwd}: ${result.error.message}`);
+    throw new Error(`vize ${args[0] ?? ""} failed to spawn in ${cwd}: ${result.error.message}`);
   }
   return result;
 }
@@ -167,7 +239,17 @@ export function runVize(launch, cwd, args, timeoutMs = 600_000) {
  * process failures (non-0/1 exit, `Error formatting` reports) throw — the
  * corpus is expected to format cleanly, matching the fixture tool matrix.
  */
-export function withFormattedWorkspace(project, files, launch, run) {
+export interface FormattedWorkspace {
+  readonly workspaceDir: string;
+  readonly reformat: () => SpawnSyncReturns<string>;
+}
+
+export function withFormattedWorkspace<Result>(
+  project: CorpusWorkspaceProject,
+  files: readonly string[],
+  launch: Pick<GlyphLaunch, "command" | "prefix">,
+  run: (workspace: FormattedWorkspace) => Result,
+): Result {
   mkdirSync(workspaceRoot, { recursive: true });
   const workspaceDir = mkdtempSync(join(workspaceRoot, `${project.id}-`));
   try {
@@ -187,14 +269,17 @@ export function withFormattedWorkspace(project, files, launch, run) {
 }
 
 /** Load the preceding real-project matrix's validated formatter check evidence. */
-export function loadFormatterCheckEvidence(project, reportDir = process.env.FIXTURE_REPORT_DIR) {
+export function loadFormatterCheckEvidence(
+  project: { readonly id: string },
+  reportDir = process.env.FIXTURE_REPORT_DIR,
+): FormatterChangeEvidence | null {
   if (reportDir == null || reportDir === "") return null;
 
   const reportPath = resolve(repoRoot, reportDir, `${project.id}-formatter.json`);
   if (!existsSync(reportPath)) {
     throw new Error(`missing formatter check report for ${project.id}: ${reportPath}`);
   }
-  const report = JSON.parse(readFileSync(reportPath, "utf8"));
+  const report = JSON.parse(readFileSync(reportPath, "utf8")) as Partial<Record<string, unknown>>;
   if (
     report.schema !== "vize.fixtureToolRun" ||
     report.version !== 1 ||
@@ -203,15 +288,17 @@ export function loadFormatterCheckEvidence(project, reportDir = process.env.FIXT
   ) {
     throw new Error(`invalid formatter check report identity for ${project.id}: ${reportPath}`);
   }
-  validateFormatterChangeEvidence(
-    report.formatterCheck,
-    `${project.id} formatter --check evidence`,
-  );
-  return report.formatterCheck;
+  const evidence = report.formatterCheck;
+  validateFormatterChangeEvidence(evidence, `${project.id} formatter --check evidence`);
+  return evidence;
 }
 
 /** Measure which copied fixture inputs the first formatter write actually changed. */
-export function collectFormatterWriteEvidence(project, files, workspaceDir) {
+export function collectFormatterWriteEvidence(
+  project: Pick<CorpusWorkspaceProject, "fixtureDir">,
+  files: readonly string[],
+  workspaceDir: string,
+): FormatterChangeEvidence {
   const changedPaths = files.filter(
     (file) =>
       !readFileSync(join(project.fixtureDir, file)).equals(readFileSync(join(workspaceDir, file))),
@@ -220,7 +307,11 @@ export function collectFormatterWriteEvidence(project, files, workspaceDir) {
 }
 
 /** Require formatter --check's prediction to equal the first --write mutation set. */
-export function assertFormatterCheckWriteAgreement(projectId, checkEvidence, writeEvidence) {
+export function assertFormatterCheckWriteAgreement(
+  projectId: string,
+  checkEvidence: unknown,
+  writeEvidence: unknown,
+): void {
   validateFormatterChangeEvidence(checkEvidence, `${projectId} formatter --check evidence`);
   validateFormatterChangeEvidence(writeEvidence, `${projectId} formatter --write evidence`);
   const fields = [
@@ -228,7 +319,7 @@ export function assertFormatterCheckWriteAgreement(projectId, checkEvidence, wri
     "changedFileCount",
     "unchangedFileCount",
     "changedPathsSha256",
-  ];
+  ] as const;
   const mismatches = fields.filter((field) => checkEvidence[field] !== writeEvidence[field]);
   if (mismatches.length === 0) return;
   throw new Error(
@@ -239,7 +330,11 @@ export function assertFormatterCheckWriteAgreement(projectId, checkEvidence, wri
   );
 }
 
-function formatWorkspace(project, workspaceDir, launch) {
+function formatWorkspace(
+  project: CorpusWorkspaceProject,
+  workspaceDir: string,
+  launch: Pick<GlyphLaunch, "command" | "prefix">,
+): SpawnSyncReturns<string> {
   const result = runVize(launch, workspaceDir, [
     "fmt",
     ...project.vueGlobs,
@@ -257,15 +352,18 @@ function formatWorkspace(project, workspaceDir, launch) {
 }
 
 /** Hash every corpus file in a workspace, keyed by registry-relative path. */
-export function snapshotWorkspaceFiles(workspaceDir, files) {
-  const snapshot = new Map();
+export function snapshotWorkspaceFiles(
+  workspaceDir: string,
+  files: readonly string[],
+): Map<string, Buffer> {
+  const snapshot = new Map<string, Buffer>();
   for (const file of files) {
     snapshot.set(file, readFileSync(join(workspaceDir, file)));
   }
   return snapshot;
 }
 
-export function sha256(content) {
+export function sha256(content: string | Uint8Array): string {
   return createHash("sha256").update(content).digest("hex");
 }
 
@@ -273,17 +371,23 @@ export function sha256(content) {
  * Minimal line-level diff excerpt: the first diverging line with one line of
  * context on each side, truncated so corpus files cannot flood test output.
  */
-export function diffExcerpt(beforeText, afterText, beforeLabel = "before", afterLabel = "after") {
+export function diffExcerpt(
+  beforeText: string,
+  afterText: string,
+  beforeLabel = "before",
+  afterLabel = "after",
+): string {
   const before = beforeText.split("\n");
   const after = afterText.split("\n");
   const limit = Math.max(before.length, after.length);
   for (let index = 0; index < limit; index += 1) {
     if (before[index] === after[index]) continue;
     const lines = [`first divergence at line ${index + 1}:`];
-    for (const [label, side] of [
+    const sides: readonly (readonly [string, readonly string[]])[] = [
       [beforeLabel, before],
       [afterLabel, after],
-    ]) {
+    ];
+    for (const [label, side] of sides) {
       for (let offset = -1; offset <= 1; offset += 1) {
         const line = side[index + offset];
         if (line == null) continue;
@@ -296,11 +400,11 @@ export function diffExcerpt(beforeText, afterText, beforeLabel = "before", after
   return "contents differ only in trailing bytes";
 }
 
-function truncateLine(line) {
+function truncateLine(line: string): string {
   return line.length <= 160 ? line : `${line.slice(0, 160)}...`;
 }
 
-function positiveInteger(value, name) {
+function positiveInteger(value: string, name: string): number {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed <= 0) {
     throw new Error(`${name} must be a positive integer`);
@@ -308,7 +412,7 @@ function positiveInteger(value, name) {
   return parsed;
 }
 
-function nonNegativeInteger(value, name) {
+function nonNegativeInteger(value: string, name: string): number {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 0) {
     throw new Error(`${name} must be a non-negative integer`);
@@ -316,28 +420,45 @@ function nonNegativeInteger(value, name) {
   return parsed;
 }
 
-export function loadKnownViolationLedger() {
+export function loadKnownViolationLedger(): KnownViolation[] {
   return readKnownViolationLedger(knownViolationsPath, loadAllGlyphCorpusProjects());
 }
 
 /** Load the checked-in waiver ledger entries for one corpus property. */
-export function loadKnownViolations(property) {
+export function loadKnownViolations(property: GlyphProperty): KnownViolation[] {
   return loadKnownViolationLedger().filter((entry) => entry.property === property);
 }
 
 /** Publish per-file Pug semantic-oracle provenance for a hydrated matrix shard. */
+export interface PugOracleFile {
+  readonly project: string;
+  readonly path: string;
+  readonly verdict: "clean" | "violation" | "baseline-unusable";
+  readonly waived?: boolean;
+  readonly [field: string]: unknown;
+}
+
 export function writeGlyphPugSemanticEvidence(
-  { projectIds, baseline, files },
+  {
+    projectIds,
+    baseline,
+    files,
+  }: {
+    readonly projectIds: Iterable<string>;
+    readonly baseline: unknown;
+    readonly files: readonly PugOracleFile[];
+  },
   reportDir = process.env.FIXTURE_REPORT_DIR,
-) {
+): string | null {
   if (reportDir == null || reportDir === "") return null;
   // Code-point ordering, not localeCompare: the artifact must be byte-identical
   // across runners regardless of the host's ICU locale data.
-  const byCodePoint = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+  const byCodePoint = (left: string, right: string): number =>
+    left < right ? -1 : left > right ? 1 : 0;
   const sortedFiles = [...files].sort(
     (left, right) => byCodePoint(left.project, right.project) || byCodePoint(left.path, right.path),
   );
-  const identities = new Set();
+  const identities = new Set<string>();
   for (const file of sortedFiles) {
     const identity = `${file.project}\0${file.path}`;
     if (identities.has(identity)) throw new Error(`duplicate Pug oracle evidence: ${identity}`);
@@ -371,7 +492,17 @@ export function writeGlyphPugSemanticEvidence(
 
 /** Track exact waiver consumption so a fixed path makes its old waiver fail. */
 /** Render corpus violations, capped so failures stay readable. */
-export function renderViolations(property, violations, detailLimit = 8) {
+export interface CorpusViolation {
+  readonly project: string;
+  readonly file: string;
+  readonly detail: string;
+}
+
+export function renderViolations(
+  property: string,
+  violations: readonly CorpusViolation[],
+  detailLimit = 8,
+): string {
   const details = violations
     .slice(0, detailLimit)
     .map((violation) => `${violation.project}: ${violation.file}\n${violation.detail}`);

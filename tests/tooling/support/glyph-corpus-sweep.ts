@@ -13,7 +13,7 @@ import {
   sha256,
   snapshotWorkspaceFiles,
   withFormattedWorkspace,
-} from "../../../tools/support/compat/fixtures/glyph-corpus.mjs";
+} from "../../../tools/support/compat/fixtures/glyph-corpus.ts";
 import { comparePugTemplateEquivalence, isPugSfc } from "./pug-template-equivalence.ts";
 import type { PugOracleComparison, PugOracleEvidence } from "./pug-template-equivalence.ts";
 import { resolveSfcDialectPartition } from "./sfc-baseline-routes.ts";

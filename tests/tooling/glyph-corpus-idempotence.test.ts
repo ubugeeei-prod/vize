@@ -5,8 +5,8 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { loadFormatterCheckEvidenceOrRecord } from "../../tools/support/compat/fixtures/glyph-formatter-evidence.mjs";
-import { createFormatterChangeEvidence } from "../../tools/support/compat/fixtures/tool-matrix-formatter.mjs";
+import { loadFormatterCheckEvidenceOrRecord } from "../../tools/support/compat/fixtures/glyph-formatter-evidence.ts";
+import { createFormatterChangeEvidence } from "../../tools/support/compat/fixtures/tool-matrix-formatter.ts";
 import {
   assertFormatterCheckWriteAgreement,
   collectFormatterWriteEvidence,
@@ -21,7 +21,7 @@ import {
   snapshotWorkspaceFiles,
   withFormattedWorkspace,
   writeGlyphCorpusPropertyEvidence,
-} from "../../tools/support/compat/fixtures/glyph-corpus.mjs";
+} from "../../tools/support/compat/fixtures/glyph-corpus.ts";
 
 type CorpusProject = {
   id: string;

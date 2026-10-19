@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { createFormatterChangeEvidence } from "../../tools/support/compat/fixtures/tool-matrix-formatter.mjs";
+import { createFormatterChangeEvidence } from "../../tools/support/compat/fixtures/tool-matrix-formatter.ts";
 
 test("formatter changed-path evidence is byte-ordered for Rust parity", () => {
   assert.equal(

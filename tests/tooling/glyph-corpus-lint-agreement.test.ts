@@ -22,7 +22,7 @@ import {
   runVize,
   withFormattedWorkspace,
   writeGlyphCorpusPropertyEvidence,
-} from "../../tools/support/compat/fixtures/glyph-corpus.mjs";
+} from "../../tools/support/compat/fixtures/glyph-corpus.ts";
 
 type CorpusProject = {
   id: string;

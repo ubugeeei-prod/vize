@@ -14,7 +14,7 @@ import {
 import {
   collectTypecheckerAuthoredPaths,
   collectVueInputPaths,
-} from "../../../tools/support/compat/fixtures/tool-matrix-inputs.mjs";
+} from "../../../tools/support/compat/fixtures/tool-matrix-inputs.ts";
 import {
   type MutationDiagnosticMode,
   writeVize,

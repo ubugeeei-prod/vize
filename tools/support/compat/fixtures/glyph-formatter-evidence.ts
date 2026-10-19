@@ -1,10 +1,17 @@
-import { loadFormatterCheckEvidence } from "./glyph-corpus.mjs";
+import { loadFormatterCheckEvidence } from "./glyph-corpus.ts";
+import type { FormatterChangeEvidence } from "./tool-matrix-formatter.ts";
+
+export interface BaselineUnusableRecord {
+  readonly project: string;
+  readonly file: string;
+  readonly detail: string;
+}
 
 export function loadFormatterCheckEvidenceOrRecord(
-  project,
-  baselineUnusable,
+  project: { readonly id: string },
+  baselineUnusable: BaselineUnusableRecord[],
   reportDir = process.env.FIXTURE_REPORT_DIR,
-) {
+): FormatterChangeEvidence | null {
   try {
     return loadFormatterCheckEvidence(project, reportDir);
   } catch (error) {
@@ -17,6 +24,6 @@ export function loadFormatterCheckEvidenceOrRecord(
   }
 }
 
-function errorMessage(error) {
+function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }

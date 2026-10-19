@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 import { displayCommand, toolArgs, typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
-import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
+import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.ts";
 import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
 import { runTypecheckCommand } from "./typecheck-command-runner.mjs";
 import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";

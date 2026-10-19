@@ -17,7 +17,7 @@ import {
 import { renderMarkdown } from "./lint-divergence-markdown.ts";
 import { compareLintFindings } from "./lint-divergence.ts";
 import { collectRunEvidence } from "./run-evidence.mjs";
-import { collectVueInputPaths } from "./tool-matrix-inputs.mjs";
+import { collectVueInputPaths } from "./tool-matrix-inputs.ts";
 import { resolveVizeLaunch } from "./tool-matrix-run.mjs";
 
 /**

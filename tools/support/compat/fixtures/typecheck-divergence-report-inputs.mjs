@@ -4,7 +4,7 @@ import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { typecheckCorpusGlobs } from "./tool-matrix-command.mjs";
-import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
+import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.ts";
 import {
   summarizeTypecheckerCoverage,
   validateTypecheckerOutput,
