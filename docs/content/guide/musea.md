@@ -17,6 +17,7 @@ files using plain Vue syntax.
 | Check props and design tokens                          | The gallery's props palette and token view |
 | Catch visual changes and accessibility problems        | `musea-vrt` in CI                        |
 
+- `vize_musea` is the Rust core: it parses `*.art.vue`, generates docs and prop palettes, autogenerates variants, and prepares VRT data.
 - `@vizejs/vite-plugin-musea` is the recommended gallery and dev-server workflow today.
 - `musea-vrt` provides visual regression snapshots, a11y audits, approvals, cleanup, and generated art files.
 
