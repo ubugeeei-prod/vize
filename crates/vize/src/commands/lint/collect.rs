@@ -5,9 +5,6 @@ use ignore::{DirEntry, WalkBuilder};
 use std::path::{Path, PathBuf};
 use vize_l0::{FxHashSet, String};
 
-mod ignores;
-use ignores::expand_entry_ignore_patterns;
-
 use super::patterns::{is_lint_extension, is_plain_script_extension, is_standalone_html_extension};
 use crate::config;
 
@@ -315,8 +312,6 @@ pub(super) fn resolve_lint_config_path(config_dir: &Path, candidate: &str) -> Pa
     config_dir.join(path)
 }
 
-mod node_modules_ignore;
-
 fn lint_glob_match_options() -> MatchOptions {
     MatchOptions {
         case_sensitive: true,
@@ -340,4 +335,50 @@ fn canonical_ignore_path(pattern: &Path) -> PathBuf {
     } else {
         pattern.to_path_buf()
     }
+}
+
+// Dedicated config ignore paths for lint discovery.
+
+fn expand_entry_ignore_patterns(
+    ignore: &config::ConfigEntryIgnore,
+    config_dir: &Path,
+) -> Vec<PathBuf> {
+    let resolved = resolve_entry_ignore_pattern(ignore, config_dir);
+    let Some(deep_pattern) = nested_node_modules_ignore(&resolved) else {
+        return vec![resolved];
+    };
+    vec![resolved, deep_pattern]
+}
+
+fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: &Path) -> PathBuf {
+    let pattern = Path::new(ignore.pattern.as_str());
+    if pattern.is_absolute() {
+        return canonical_ignore_path(pattern);
+    }
+
+    let config_dir = absolute_config_dir(config_dir);
+    let base = ignore
+        .base_path
+        .as_deref()
+        .map(Path::new)
+        .filter(|base_path| !base_path.as_os_str().is_empty());
+    match base {
+        Some(base_path) if base_path.is_absolute() => base_path.join(pattern),
+        Some(base_path) => config_dir.join(base_path).join(pattern),
+        None => config_dir.join(pattern),
+    }
+}
+
+// Nested dependency ignore patterns.
+
+fn nested_node_modules_ignore(pattern: &Path) -> Option<PathBuf> {
+    let pattern_text = normalize_lint_path(pattern);
+    let suffix = "node_modules/**";
+    if !pattern_text.ends_with(suffix) || pattern_text.contains("**/node_modules/**") {
+        return None;
+    }
+    let prefix = pattern_text.trim_end_matches(suffix).trim_end_matches('/');
+    Some(PathBuf::from(
+        vize_l0::cstr!("{prefix}/**/{suffix}").as_str(),
+    ))
 }

@@ -24,7 +24,6 @@ mod compare_error;
 
 use compare::{VizeCompilerRun, build_compare_report};
 mod input_files;
-mod no_inputs;
 use input_files::collect_files;
 
 #[derive(Debug, Clone, Copy, ValueEnum, Default, serde::Serialize)]
@@ -148,7 +147,10 @@ pub struct InspectorArgs {
 pub fn run(args: InspectorArgs) {
     let files = collect_files(&args.patterns, args.max_files);
     if files.is_empty() {
-        no_inputs::handle(args.format);
+        eprintln!("No .vue files found matching the patterns");
+        if !matches!(args.format, InspectorOutputFormat::Json) {
+            std::process::exit(1);
+        }
     }
 
     let source_files = collect_source_files(&files);

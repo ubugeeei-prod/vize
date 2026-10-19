@@ -6,12 +6,48 @@
 //! 2. Handle bracketed paste for committed text
 //! 3. Provide a fallback inline input experience
 
-#[cfg(target_os = "linux")]
-mod linux;
-#[cfg(target_os = "macos")]
-mod macos;
-#[cfg(target_os = "windows")]
-mod windows;
+// Linux-specific IME handling.
+//
+// On Linux, terminal apps typically interact with IME through:
+// - ibus (IBus)
+// - fcitx (Fcitx5)
+// - DBus interfaces
+//
+// Direct integration is challenging in terminal contexts.
+
+// Current support: none beyond the generic `TerminalIme`. Fresco does not
+// talk to IBus or Fcitx5 over DBus and does not speak XIM. Composition
+// happens in the host terminal's own IME; Fresco sees the committed text as
+// key or bracketed-paste events. It cannot query or switch the active input
+// method and cannot position a preedit window.
+
+// macOS-specific IME handling.
+//
+// On macOS, terminal apps can use the Text Input Source Services API
+// to query and control the system IME. However, direct integration
+// is limited compared to GUI applications.
+
+// Current support: none beyond the generic `TerminalIme`. Fresco does not call
+// the Text Input Source Services API (`TISCopyCurrentKeyboardInputSource`),
+// so it cannot detect or switch the active input source, and a terminal
+// process has no `NSTextInputClient` to integrate with. Composition happens
+// in the host terminal; Fresco sees the committed text as key or
+// bracketed-paste events.
+
+// Windows-specific IME handling.
+//
+// On Windows, console apps can use:
+// - IMM32 (Input Method Manager)
+// - TSF (Text Services Framework)
+//
+// Windows Terminal has better IME support than legacy cmd.exe.
+
+// Current support: none beyond the generic `TerminalIme`. Fresco does not use
+// IMM32 (`ImmGetContext`, `ImmSetCompositionWindow`,
+// `ImmGetCompositionString`) or TSF, so it cannot read the preedit string or
+// position the composition window. Composition happens in the console host
+// (Windows Terminal or conhost); Fresco sees the committed text as key or
+// bracketed-paste events.
 
 use compact_str::ToCompactString;
 
