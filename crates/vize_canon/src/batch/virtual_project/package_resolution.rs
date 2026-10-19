@@ -41,6 +41,15 @@ impl PackageResolutionSettings {
     pub(crate) fn input_paths(&self) -> &[PathBuf] {
         &self.config_paths
     }
+
+    /// Identity of the options a package-route scan resolves with.
+    pub(crate) fn hash_identity(&self, state: &mut impl std::hash::Hasher) {
+        use std::hash::Hash;
+        serde_json::to_string(&self.options)
+            .unwrap_or_default()
+            .hash(state);
+        self.config_paths.hash(state);
+    }
 }
 
 fn context_from_options(

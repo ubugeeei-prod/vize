@@ -132,6 +132,46 @@ fn editor_paths_declaration_is_inferred_inside_the_mirror() {
     assert!(!mirror.is_declaration_root(&declaration));
 }
 
+/// Every editor edit rebuilds its alias context with fresh local maps. The
+/// session resolver must keep a route scan while its consulted inputs hold,
+/// and scan again once one of them changes.
+#[test]
+fn rebuilt_discovery_reuses_session_reachability_until_an_input_changes() {
+    let fixture = runtime_package_fixture();
+    let settings =
+        crate::batch::virtual_project::package_resolution::PackageResolutionSettings::default();
+    let mut resolver = crate::PackageRouteResolver::default();
+    let aliases = Vec::new();
+    let mut discover = |resolver: &mut crate::PackageRouteResolver| {
+        let (mut routes, mut reachability) = (FxHashMap::default(), FxHashMap::default());
+        let (mut bindings, mut inputs) = (Vec::new(), Vec::new());
+        let mut discovery = RouteDiscovery::new(
+            &settings,
+            resolver,
+            &mut routes,
+            &mut reachability,
+            &mut bindings,
+            &mut inputs,
+            &aliases,
+        );
+        discovery.resolve(
+            &fixture.host,
+            "vue-property-decorator",
+            crate::PackageResolutionMode::Import,
+        );
+        resolver.metrics().reachability_checks
+    };
+
+    assert_eq!(discover(&mut resolver), 1);
+    assert_eq!(discover(&mut resolver), 1, "an unchanged rebuild must not rescan");
+    let package = fixture.host.parent().unwrap().parent().unwrap();
+    write(
+        &package.join("node_modules/vue-property-decorator/index.d.ts"),
+        "export { Vue } from 'vue-class-component';\nexport declare const changed: true;\n",
+    );
+    assert_eq!(discover(&mut resolver), 2, "a changed input must rescan");
+}
+
 struct RuntimePackageFixture {
     _root: tempfile::TempDir,
     host: std::path::PathBuf,

@@ -29,6 +29,8 @@ pub(super) struct RouteDiscovery<'a> {
     bindings: &'a mut Vec<crate::PackageRouteBinding>,
     inputs: &'a mut Vec<PathBuf>,
     aliases: &'a [CompilerAlias],
+    /// Aliases and compiler options a session-cached scan was resolved with.
+    scope: u64,
 }
 
 impl<'a> RouteDiscovery<'a> {
@@ -41,6 +43,13 @@ impl<'a> RouteDiscovery<'a> {
         inputs: &'a mut Vec<PathBuf>,
         aliases: &'a [CompilerAlias],
     ) -> Self {
+        let scope = {
+            use std::hash::{Hash, Hasher};
+            let mut hasher = std::hash::DefaultHasher::new();
+            aliases.hash(&mut hasher);
+            settings.hash_identity(&mut hasher);
+            hasher.finish()
+        };
         Self {
             settings,
             resolver,
@@ -49,6 +58,7 @@ impl<'a> RouteDiscovery<'a> {
             bindings,
             inputs,
             aliases,
+            scope,
         }
     }
 
@@ -87,9 +97,23 @@ impl<'a> RouteDiscovery<'a> {
                     context.clone(),
                     crate::batch::PACKAGE_REACHABILITY_BUDGET_REVISION,
                 );
+                let scope = self.scope;
                 self.reachability
                     .entry(key)
-                    .or_insert_with(|| {
+                    .or_insert_with_key(|(importer, manifest, specifier, context, budget)| {
+                        // Edits rebuild the alias context; the session resolver
+                        // keeps scans whose consulted inputs are unchanged.
+                        let shared = (
+                            scope,
+                            importer.clone(),
+                            manifest.clone(),
+                            specifier.clone(),
+                            context.clone(),
+                            *budget,
+                        );
+                        if let Some(cached) = self.resolver.cached_reachability(&shared) {
+                            return cached;
+                        }
                         let scanned = crate::batch::virtual_project::package_route_reaches_vue(
                             route,
                             self.aliases,
@@ -98,6 +122,7 @@ impl<'a> RouteDiscovery<'a> {
                             crate::PackageSourceOptions::new(true, true),
                         );
                         scanned.record_work(self.resolver);
+                        self.resolver.store_reachability(shared, &scanned);
                         scanned
                     })
                     .clone()
