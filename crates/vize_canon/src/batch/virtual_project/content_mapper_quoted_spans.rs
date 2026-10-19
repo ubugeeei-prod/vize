@@ -462,18 +462,25 @@ mod model_tests {
             assert!(model_triplet(&source, &generated, &event[0], &event[1], &event[2]).is_none());
         }
 
-        // An unowned quote rewrite retains the ordinary inner verbatim row.
+        // An unowned quote rewrite retains the ordinary inner verbatim row;
+        // its generated quotes only carry diagnostics to the same name.
         let spans = protocol_spans(&source, &generated, &mappings[..2], &[]);
+        let name = mappings[0].src_range.start;
+        let atom = ContentMapperSpanKind::Atom as usize;
         assert_eq!(
             serde_json::to_value(spans).unwrap(),
-            json!([[
-                3,
-                8,
-                mappings[0].src_range.start,
-                8,
-                ContentMapperSpanKind::Verbatim as usize,
-                CONTENT_MAPPER_SPAN_FEATURES_ALL
-            ]])
+            json!([
+                [2, 1, name, 8, atom, 0],
+                [
+                    3,
+                    8,
+                    name,
+                    8,
+                    ContentMapperSpanKind::Verbatim as usize,
+                    CONTENT_MAPPER_SPAN_FEATURES_ALL
+                ],
+                [11, 1, name, 8, atom, 0]
+            ])
         );
     }
 }
