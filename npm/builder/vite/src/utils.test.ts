@@ -13,6 +13,7 @@ import os from "node:os";
 import path from "node:path";
 import { snapshot, test } from "node:test";
 import { resolveConfigExport } from "../../../cli/src/config.ts";
+import { compileFile } from "./compiler.ts";
 import { createFilter, generateOutput } from "./utils/index.ts";
 import { resolveCssImports } from "./utils/css.ts";
 
@@ -171,6 +172,45 @@ export default {
     },
   );
   t.assert.snapshot(output);
+});
+
+// Test 3c-2: A template edit keeps state for compiled script setup and options SFCs
+void test("generateOutput keeps template-only HMR for compiled _sfc_render components", () => {
+  const scriptSetup = compileFile(
+    "/src/Counter.vue",
+    new Map(),
+    { sourceMap: false, ssr: false, vapor: false },
+    `<script setup lang="ts">
+import { ref } from "vue";
+const clicks = ref(0);
+</script>
+<template><button @click="clicks++">{{ clicks }}</button></template>`,
+  );
+  const optionsApi = {
+    code: `
+const _sfc_main = { data: () => ({ clicks: 0 }) }
+function _sfc_render() {
+  return null
+}
+_sfc_main.render = _sfc_render
+export default _sfc_main
+`,
+    scopeId: "optionshmr",
+    hasScoped: false,
+    styles: [],
+  };
+  for (const compiled of [scriptSetup, optionsApi]) {
+    const output = generateOutput(compiled, {
+      isProduction: false,
+      isDev: true,
+      hmrUpdateType: "template-only",
+    });
+    assert.match(
+      output,
+      /__hmrUpdateType = "template-only"/,
+      "a full reload would discard component state on every template edit",
+    );
+  }
 });
 
 // Test 3d: Components with standalone render may keep template-only HMR
