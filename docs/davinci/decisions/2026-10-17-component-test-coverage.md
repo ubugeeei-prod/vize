@@ -303,3 +303,57 @@ reports and inspected source without creating Issues/comments, executing native
 or Cargo builds, dispatching CI, installing public packages or running browsers.
 Later dated updates distinguish earned source execution, existing declarations
 and pending installed boundaries. No Issue completion follows from test counts.
+
+## 2026-10-19 update: static volume and weakest measured files
+
+A static count at main `b972f1cb` shows where test volume sits. Units: Rust
+`#[test]`/`#[tokio::test]` attributes, or `assert*(`/`expect(` calls in
+TypeScript test files; `.snap` files; files under `fixtures/`. Test LOC counts
+test files plus everything after a file's `#[cfg(test)]`. These are
+declarations, not executions or coverage.
+
+| Component            | Tests (unit) | Snapshots | Fixtures | Test LOC | Source LOC | Ratio |
+| -------------------- | -----------: | --------: | -------: | -------: | ---------: | ----: |
+| Atelier SFC          |   1,062 Rust |       263 |      115 |   43,765 |     32,546 |  1.34 |
+| Atelier core         |     477 Rust |        48 |        5 |   17,457 |     24,127 |  0.72 |
+| Atelier Vapor        |     504 Rust |       201 |       61 |   16,431 |     22,787 |  0.72 |
+| Atelier SSR          |     215 Rust |       103 |       55 |    7,722 |     13,068 |  0.59 |
+| Glyph (formatter)    |     797 Rust |       128 |       11 |   33,633 |     13,400 |  2.51 |
+| Patina (linter)      |   4,003 Rust |       186 |      391 |   94,176 |     88,950 |  1.06 |
+| Canon (type checker) |   2,270 Rust |        89 |        6 |  110,918 |     77,064 |  1.44 |
+| Maestro (LSP)        |   1,696 Rust |        34 |        6 |   79,273 |     57,670 |  1.37 |
+| Croquis              |     545 Rust |        49 |       34 |   21,088 |     42,426 |  0.50 |
+| Musea                |     115 Rust |        23 |      219 |    2,627 |      5,542 |  0.47 |
+| Vite plugin          |     1,307 TS |         0 |        2 |   14,299 |     10,283 |  1.39 |
+| Nuxt module          |       712 TS |         0 |        3 |    7,086 |      5,762 |  1.23 |
+| npm CLI              |       286 TS |         0 |        0 |    2,578 |      4,731 |  0.54 |
+
+By volume Glyph is not weak: it has the highest test/source ratio and the best
+06a line coverage (93.52%). Maestro is the weakest measured product (84.59%),
+and its gaps cluster in user-facing handlers. Per-file uncovered lines in the
+06a export (`source-summary.json`, test files excluded):
+
+- Maestro: `code_action.rs` 203 (245/448), `workspace_symbols.rs` 166,
+  `definition/template.rs` 155, `completion/template/art.rs` 140 (0/140),
+  `hover/template.rs` 115, `definition/slot.rs` 79 (41/120),
+  `hover/template/template_directive.rs` 59 (15/74),
+  `completion/template/css_modules.rs` 61 (6/67),
+  `semantic_tokens/style.rs` 36 (6/42).
+- Glyph: `template/literal_lines.rs` 51, `style/rule_layout.rs` 38,
+  `template/formatter/interpolation.rs` 29.
+
+Corsa-backed handlers (`implementation.rs` 0/94, `declaration.rs` 40/109,
+`type_definition.rs` 34/102) are covered by tests that return early when no
+`tsgo` binary resolves, so a workspace run without one does not execute them.
+
+Behavior tests added against these files, each with the bugs they exposed:
+
+| PR    | Area                     | Tests | Fixed                                                      |
+| ----- | ------------------------ | ----: | ---------------------------------------------------------- |
+| #9584 | Glyph directive literals |     9 | a quoted backtick dedented every later template line       |
+| #9595 | Maestro art completion   |     9 | `<article`/`<variant-card` read as `<art`/`<variant`       |
+| #9609 | Maestro slot definition  |     5 | `=>` in `defineSlots` hid later slots; nested keys matched |
+| #9610 | Maestro directive hover  |     3 | `.prop` shorthand had no hover                             |
+
+Open from the same work: #9583 (in-attribute dedent after a quoted backtick)
+and #9608 (compact CSS rules get a blank line except before a selector list).
