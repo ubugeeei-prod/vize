@@ -26,7 +26,7 @@ pub fn transform_slot_outlet<'a>(
         id: element_id,
         name,
         props,
-        fallback,
+        fallback: fallback.map(|block| Box::new_in(block, &allocator)),
         parent: None,
         anchor: None,
     };

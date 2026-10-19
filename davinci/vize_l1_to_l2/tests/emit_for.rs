@@ -271,10 +271,20 @@ fn legacy(source: &str) -> String {
 /// Vue 3.5 keys a sole component directly; both lanes (the corpus oracle too) agree.
 #[test]
 fn single_component_template_loops_match_direct_component_items() {
-    let keyed = legacy(r#"<template v-for="o in xs" :key="o.id"><Comp :a="o" /></template>"#);
-    assert!(
-        keyed.contains("return (_openBlock(), _createBlock(_component_Comp, {\n      key: o.id,\n      a: o\n    }, null, 8 /* PROPS */, [\"a\"]))"),
-        "{keyed}"
+    assert_eq!(
+        legacy(r#"<template v-for="o in xs" :key="o.id"><Comp :a="o" /></template>"#),
+        "const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Comp = _resolveComponent(\"Comp\")
+  
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(xs, (o) => {
+    return (_openBlock(), _createBlock(_component_Comp, {
+      key: o.id,
+      a: o
+    }, null, 8 /* PROPS */, [\"a\"]))
+  }), 128 /* KEYED_FRAGMENT */))
+}"
     );
     for (template, direct) in [
         (

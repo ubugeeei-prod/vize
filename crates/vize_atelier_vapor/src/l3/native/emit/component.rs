@@ -115,7 +115,8 @@ impl<'a> Emitter<'a, '_> {
         let (name, dynamic) = (*name, *dynamic);
         let props = take(self.allocator, props);
         let children = take(self.allocator, children);
-        let fallback = (!children.is_empty()).then(|| self.block(&children));
+        let fallback =
+            (!children.is_empty()).then(|| Box::new_in(self.block(&children), &self.allocator));
         let props = self.props(&props, false);
         let name = self.expression(name, !dynamic);
         block

@@ -38,7 +38,7 @@ pub(super) fn generate_slot_outlet(ctx: &mut GenerateContext, slot: &SlotOutletI
             .join(", ");
         cstr!(", {} /* {names} */", slot.flags)
     };
-    match (slot_props, slot.fallback.as_ref()) {
+    match (slot_props, slot.fallback.as_deref()) {
         (None, None) if slot.flags != 0 => {
             ctx.push_line_fmt(format_args!(
                 "const {name} = _createSlot({slot_name}, null, null{flags})"

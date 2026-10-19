@@ -11,7 +11,7 @@ use crate::ir::{SlotLayout, finish_slot_fallback};
 pub(super) fn lower_fallback<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
-) -> Option<BlockIRNode<'a>> {
+) -> Option<Box<'a, BlockIRNode<'a>>> {
     if el.children.is_empty() {
         return None;
     }
@@ -20,7 +20,7 @@ pub(super) fn lower_fallback<'a>(
         let layout = SlotLayout::new(&ctx.templates, &ctx.element_template_map);
         finish_slot_fallback(&mut fallback, &layout);
     }
-    Some(fallback)
+    Some(Box::new_in(fallback, &ctx.allocator))
 }
 
 pub(super) fn get_slot_outlet_name<'a>(

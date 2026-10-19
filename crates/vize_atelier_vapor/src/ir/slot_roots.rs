@@ -30,17 +30,19 @@ impl RootIRNode<'_> {
 }
 
 /// Finish a complete component slot and its conditional alternatives.
-pub(crate) fn finish_slot(slot: &mut IRSlot<'_>, layout: &Layout<'_>) {
-    ensure_sufficient_stack(|| {
+///
+/// Stack guards sit only on nested recursion: flat forwarding slots stay cheap.
+pub(crate) fn finish_slot(mut slot: &mut IRSlot<'_>, layout: &Layout<'_>) {
+    loop {
         finish_slot_root(slot, layout);
-        if let Some(IRSlotControl::If {
-            negative: Some(next),
-            ..
-        }) = &mut slot.control
-        {
-            finish_slot(next, layout);
+        match &mut slot.control {
+            Some(IRSlotControl::If {
+                negative: Some(next),
+                ..
+            }) => slot = next,
+            _ => return,
         }
-    });
+    }
 }
 
 /// Finish an outlet fallback that is rendered inside component slot content.
@@ -76,28 +78,28 @@ fn comments_only(text: &str) -> bool {
 /// Any returned guaranteed content stabilizes the complete slot, even beside
 /// a conditional or forwarded outlet. Whitespace text is content; comments are not.
 fn stable(block: &BlockIRNode<'_>, layout: &Layout<'_>) -> bool {
-    ensure_sufficient_stack(|| {
-        block.returns.iter().any(|id| {
-            if let Some(operation) = block
-                .operation
-                .iter()
-                .find(|operation| operation_id(operation) == Some(*id))
-            {
-                return match operation {
-                    OperationNode::CreateComponent(node) => {
-                        node.kind != ComponentKind::Dynamic
-                            || node.is_expr.as_ref().is_some_and(|is| is.is_static)
-                    }
-                    OperationNode::Key(node) => stable(&node.render, layout),
-                    _ => false,
-                };
-            }
-            layout
-                .elements
-                .get(id)
-                .and_then(|index| layout.templates.get(*index))
-                .is_some_and(|text| !text.is_empty() && !comments_only(text))
-        })
+    block.returns.iter().any(|id| {
+        if let Some(operation) = block
+            .operation
+            .iter()
+            .find(|operation| operation_id(operation) == Some(*id))
+        {
+            return match operation {
+                OperationNode::CreateComponent(node) => {
+                    node.kind != ComponentKind::Dynamic
+                        || node.is_expr.as_ref().is_some_and(|is| is.is_static)
+                }
+                OperationNode::Key(node) => {
+                    ensure_sufficient_stack(|| stable(&node.render, layout))
+                }
+                _ => false,
+            };
+        }
+        layout
+            .elements
+            .get(id)
+            .and_then(|index| layout.templates.get(*index))
+            .is_some_and(|text| !text.is_empty() && !comments_only(text))
     })
 }
 
@@ -108,44 +110,48 @@ fn mark(block: &mut BlockIRNode<'_>, layout: &Layout<'_>, shared: bool) {
 }
 
 fn mark_returns(block: &mut BlockIRNode<'_>, layout: &Layout<'_>, shared: bool) {
-    ensure_sufficient_stack(|| {
-        let shared = shared
-            || block
-                .operation
-                .iter()
-                .filter(|operation| {
-                    operation_id(operation).is_some_and(|id| block.returns.contains(&id))
-                })
-                .take(2)
-                .count()
-                > 1;
-        for operation in &mut block.operation {
-            if !operation_id(operation).is_some_and(|id| block.returns.contains(&id)) {
-                continue;
-            }
-            match operation {
-                OperationNode::SlotOutlet(node) => node.flags |= 4 | if shared { 8 } else { 0 },
-                OperationNode::If(node) => {
-                    mark(&mut node.positive, layout, shared);
-                    mark_negative(node.negative.as_mut(), layout, shared);
-                }
-                OperationNode::For(node) => mark(&mut node.render, layout, true),
-                OperationNode::Key(node) => mark(&mut node.render, layout, shared),
-                _ => {}
-            }
+    let shared = shared
+        || block
+            .operation
+            .iter()
+            .filter(|operation| {
+                operation_id(operation).is_some_and(|id| block.returns.contains(&id))
+            })
+            .take(2)
+            .count()
+            > 1;
+    for operation in &mut block.operation {
+        if !operation_id(operation).is_some_and(|id| block.returns.contains(&id)) {
+            continue;
         }
-    });
+        match operation {
+            OperationNode::SlotOutlet(node) => node.flags |= 4 | if shared { 8 } else { 0 },
+            OperationNode::If(node) => ensure_sufficient_stack(|| {
+                mark(&mut node.positive, layout, shared);
+                mark_negative(node.negative.as_mut(), layout, shared);
+            }),
+            OperationNode::For(node) => {
+                ensure_sufficient_stack(|| mark(&mut node.render, layout, true));
+            }
+            OperationNode::Key(node) => {
+                ensure_sufficient_stack(|| mark(&mut node.render, layout, shared));
+            }
+            _ => {}
+        }
+    }
 }
 
-fn mark_negative(negative: Option<&mut NegativeBranch<'_>>, layout: &Layout<'_>, shared: bool) {
-    ensure_sufficient_stack(|| match negative {
-        Some(NegativeBranch::Block(block)) => mark(block, layout, shared),
-        Some(NegativeBranch::If(node)) => {
-            mark(&mut node.positive, layout, shared);
-            mark_negative(node.negative.as_mut(), layout, shared);
+fn mark_negative(mut negative: Option<&mut NegativeBranch<'_>>, layout: &Layout<'_>, shared: bool) {
+    loop {
+        match negative {
+            Some(NegativeBranch::Block(block)) => return mark(block, layout, shared),
+            Some(NegativeBranch::If(node)) => {
+                mark(&mut node.positive, layout, shared);
+                negative = node.negative.as_mut();
+            }
+            None => return,
         }
-        None => {}
-    });
+    }
 }
 
 fn visit_slot(slot: &mut IRSlot<'_>, layout: &Layout<'_>) {

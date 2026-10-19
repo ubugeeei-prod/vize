@@ -333,7 +333,8 @@ pub struct SlotOutletIRNode<'a> {
     pub id: usize,
     pub name: Box<'a, SimpleExpressionNode<'a>>,
     pub props: Vec<'a, IRProp<'a>>,
-    pub fallback: Option<BlockIRNode<'a>>,
+    /// Boxed so the outlet does not set the size of every `OperationNode`.
+    pub fallback: Option<Box<'a, BlockIRNode<'a>>>,
     /// Parent element the outlet is inserted into, when it is not a block root.
     pub parent: Option<usize>,
     /// Insertion position within `parent`.
